@@ -1,0 +1,34 @@
+-'s -able -acea -aceae -aceous -ad -ade -aemia -age -agogue -al -ales
+-algia -amine -an -ana -ance -ancy -and -androus -andry -ane -ant -ar
+-arch -archy -ard -arian -arium -art -ary -ase -asis -aster -ate -atic
+-ation -ative -ator -atory -bashing -biosis -blast -bodied -branch
+-cade -carp -carpic -carpous -cele -cene -centric -cephalic -cephalus
+-chore -chrome -chroous -cide -clase -cle -cline -colous -cracy -crat
+-cule -cy -cyst -cyte -decker -derm -diene -dom -drome -dromous -ean
+-ectomy -ed -ee -eer -eme -emia -en -ence -enchyma -ency -ene -ent
+-eous -er -ery -es -escent -ese -esque -ess -est -et -eth -ette -ey
+-facient -favoured -featured -fer -ferous -fic -fid -florous -fold
+-footed -form -free -fuge -ful -fy -gaited -gamy -gen -gene -genesis
+-genic -genous -geny -gerous -gnathous -gnosis -gon -gonium -gony
+-grade -gram -graph -grapher -graphy -gynous -haemia -haired -handed
+-hearted -hedron -hemia -hood -i -i- -ia -ial -ian -iana -iasis
+-iatrics -iatry -ible -ic -ical -ician -ics -id -idae -ide -ie -ier
+-ify -ile -in -inae -ine -ing -ion -ious -ise -ish -ism -ist -istic
+-ite -itis -itol -ity -ium -ive -ize -ji -kin -lalia -lashed -latry
+-lepsy -less -let -like -ling -lipped -lite -lith -lithic -lived -log
+-logue -logy -ly -lysis -lyte -lytic -mancy -mania -mantic -mas
+-masted -ment -mer -mere -merous -meter -metry -mo -morph -most
+-motored -mycete -n't -nasty -naut -ness -nik -nomy -o -o- -ock -ode
+-odont -oid -oidea -ol -ole -oma -ome -on -one -onym -opia -opsis -or
+-ory -ose -osis -otic -our -ous -parous -path -pathy -ped -pede
+-person -petal -phage -phagy -phane -phany -phasia -phile -philia
+-philous -phobe -phobia -phone -phony -phore -phoresis -phyll
+-phyllous -phyte -plasia -plasm -plast -plastic -plasty -plegia -ploid
+-pod -podium -podous -poiesis -pounder -prone -proof -pterous -rhoea
+-rigged -rrhagia -rrhoea -ry -s -s' -saur -scape -scope -scopy -sect
+-sepalous -shaped -ship -sided -some -sophy -sperm -sphere -sporous
+-st -stat -ster -stichous -stome -stomous -stomy -stress -tactic
+-taxis -taxy -termer -th -thermy -thymia -tion -to-be -tome -tomy
+-trix -tron -trope -trophy -tropic -tropism -tropous -tude -ty -type
+-ule -ulent -ure -uret -urgy -uria -ville -visaged -vorous -ward
+-wards -ways -wise -witted -y -yl -yne -zoa -zoon
