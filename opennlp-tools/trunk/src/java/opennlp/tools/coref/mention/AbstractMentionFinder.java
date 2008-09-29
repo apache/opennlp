@@ -47,10 +47,6 @@ public abstract class AbstractMentionFinder implements MentionFinder {
     if (head != null) {
       heads.put(head, p);
     }
-    List<Parse> nps = p.getNounPhrases();
-    for (Iterator<Parse> ni = nps.iterator(); ni.hasNext();) {
-      gatherHeads(ni.next(), heads);
-    }
   }
 
   /** Assigns head relations between noun phrases and the child np

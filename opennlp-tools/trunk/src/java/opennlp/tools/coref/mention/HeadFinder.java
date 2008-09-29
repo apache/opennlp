@@ -22,7 +22,7 @@ package opennlp.tools.coref.mention;
  */
 public interface HeadFinder {
 
-  /** Returns the child parse which contains the lexical head of the specifie parse.
+  /** Returns the child parse which contains the lexical head of the specified parse.
    * @param parse The parse in which to find the head.
    * @return The parse containing the lexical head of the specified parse.  If no head is
    * available or the constituent has no sub-components that are eligible heads then null is returned.
