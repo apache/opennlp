@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
 /**
  * The {@link StringList} is an immutable list of {@link String}s.
  */
-public class StringList {
+public class StringList implements Iterable<String> {
   
   private String tokens[];
   
@@ -43,7 +43,8 @@ public class StringList {
   /**
    * Initializes the current instance.
    * 
-   * @param tokens
+   * @param tokens the string parts of the new {@link StringList}, an empty
+   * tokens array or null is not permitted.
    */
   public StringList(String... tokens) {
     
