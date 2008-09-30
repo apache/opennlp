@@ -39,7 +39,7 @@ import opennlp.tools.util.StringList;
  * 
  * @see StringList
  */
-public class NGramModel {
+public class NGramModel implements Iterable<StringList>{
   
   protected static final String COUNT = "count";
   
@@ -142,6 +142,12 @@ public class NGramModel {
    * @param maxLength - maximal length
    */
   public void add(StringList ngram, int minLength, int maxLength) {
+    
+    if (minLength < 1 || maxLength < 1) 
+        throw new IllegalArgumentException("minLength and maxLength param must be at least 1!");
+    
+    if (minLength > maxLength)
+        throw new IllegalArgumentException("minLength param must not be larger than maxLength param!");
     
     for (int lengthIndex = minLength; lengthIndex < maxLength + 1; 
     lengthIndex++) {
