@@ -130,10 +130,13 @@ public class Context extends Mention {
     Dictionary dict = DictionaryFactory.getDictionary();
     //System.err.println(lemmas.length+" lemmas for "+c.headToken);
     for (int li = 0; li < lemmas.length; li++) {
-      synsetSet.add(dict.getSenseKey(lemmas[li],"NN",0));
-      String[] synsets = dict.getParentSenseKeys(lemmas[li],"NN",0);
-      for (int si=0,sn=synsets.length;si<sn;si++) {
-        synsetSet.add(synsets[si]);
+      String senseKey = dict.getSenseKey(lemmas[li],"NN",0);
+      if (senseKey != null) {
+        synsetSet.add(senseKey);
+        String[] synsets = dict.getParentSenseKeys(lemmas[li],"NN",0);
+        for (int si=0,sn=synsets.length;si<sn;si++) {
+          synsetSet.add(synsets[si]);
+        }
       }
     }
     return synsetSet;

@@ -101,7 +101,7 @@ public class NameFinder {
       Parse[] tagNodes = p.getTagNodes();
       String[] tokens = new String[tagNodes.length];
       for (int ti=0;ti<tagNodes.length;ti++){
-        tokens[ti] = tagNodes.toString();
+        tokens[ti] = tagNodes[ti].toString();
       }
       //System.err.println(java.util.Arrays.asList(tokens));
       for (int fi = 0, fl = finders.length; fi < fl; fi++) {
