@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-
-
 package opennlp.tools.sentdetect;
 
 import opennlp.model.Event;
@@ -28,9 +26,9 @@ import opennlp.model.Event;
  * Created: Sat Oct 27 11:53:55 2001
  *
  * @author Eric D. Friedman
- * @version $Id: SDEvent.java,v 1.3 2008-09-28 18:12:11 tsmorton Exp $
+ * @version $Id: SDEvent.java,v 1.4 2008-10-20 12:28:45 joernkottmann Exp $
  */
-
+@Deprecated
 class SDEvent extends Event  {
   private static final long serialVersionUID = 1;
   

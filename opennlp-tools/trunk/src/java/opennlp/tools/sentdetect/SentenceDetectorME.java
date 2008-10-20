@@ -26,16 +26,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import opennlp.maxent.DataStream;
 import opennlp.maxent.GIS;
+import opennlp.maxent.GISModel;
 import opennlp.maxent.IntegerPool;
 import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
+import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.lang.thai.SentenceContextGenerator;
 
 /**
@@ -44,10 +48,19 @@ import opennlp.tools.lang.thai.SentenceContextGenerator;
  * string to determine if they signify the end of a sentence.
  *
  * @author      Jason Baldridge and Tom Morton
- * @version     $Revision: 1.21 $, $Date: 2008-09-28 18:12:11 $
  */
 public class SentenceDetectorME implements SentenceDetector {
 
+  /**
+   * Constant indicates a sentence split.
+   */
+  public static final String SPLIT ="T";
+  
+  /**
+   * Constant indicates no sentence split.
+   */
+  public static final String NO_SPLIT ="F";
+  
   /** 
    * The maximum entropy model to use to evaluate contexts. 
    */
@@ -75,6 +88,11 @@ public class SentenceDetectorME implements SentenceDetector {
   
   protected boolean useTokenEnd;
 
+  /**
+   * Initializes the current instance.
+   * 
+   * @param model the {@link SentenceModel}
+   */
   public SentenceDetectorME(SentenceModel model) {
     this.model = model.getMaxentModel();
     // TODO: Why do we not pass in the end of sentence scanner here instaed of the end chars ?
@@ -82,34 +100,6 @@ public class SentenceDetectorME implements SentenceDetector {
     // TODO: Build a Default end of SentenceScanner which gets an array of end of sentence chars
     scanner = new opennlp.tools.lang.english.EndOfSentenceScanner();
     useTokenEnd = true;
-  }
-  
-  /**
-   * Constructor which takes a MaxentModel and calls the three-arg
-   * constructor with that model, an SDContextGenerator, and the
-   * default end of sentence scanner.
-   *
-   * @param m The MaxentModel which this SentenceDetectorME will use to
-   *          evaluate end-of-sentence decisions.
-   */
-  @Deprecated
-  public SentenceDetectorME(MaxentModel m) {
-    this(m, new DefaultSDContextGenerator(opennlp.tools.lang.english.EndOfSentenceScanner.eosCharacters), new opennlp.tools.lang.english.EndOfSentenceScanner());
-  }
-
-  /**
-   * Constructor which takes a MaxentModel and a ContextGenerator.
-   * calls the three-arg constructor with a default ed of sentence scanner.
-   *
-   * @param m The MaxentModel which this SentenceDetectorME will use to
-   *          evaluate end-of-sentence decisions.
-   * @param cg The ContextGenerator object which this SentenceDetectorME
-   *           will use to turn Strings into contexts for the model to
-   *           evaluate.
-   */
-  @Deprecated
-  public SentenceDetectorME(MaxentModel m, SDContextGenerator cg) {
-    this(m, cg, new opennlp.tools.lang.english.EndOfSentenceScanner());
   }
 
   /**
@@ -131,7 +121,7 @@ public class SentenceDetectorME implements SentenceDetector {
     sentProbs = new ArrayList<Double>(50);
     useTokenEnd = true;
   }
-
+  
   /**
    * Detect sentences in a String.
    *
@@ -198,11 +188,11 @@ public class SentenceDetectorME implements SentenceDetector {
         continue;
       }
 
-      double[] probs = model.eval(cgen.getContext(sb, candidate.intValue()));
+      double[] probs = model.eval(cgen.getContext(sb.toString(), candidate.intValue()));
       String bestOutcome = model.getBestOutcome(probs);
       sentProb *= probs[model.getIndex(bestOutcome)];
       //System.err.println("sentPosDetect: cand="+cint+" index="+index+" "+bestOutcome+" "+probs[model.getIndex(bestOutcome)]+" "+s.substring(0,cint));
-      if (bestOutcome.equals("T") && isAcceptableBreak(s, index, cint)) {
+      if (bestOutcome.equals(SPLIT) && isAcceptableBreak(s, index, cint)) {
         if (index != cint) {
           if (useTokenEnd) {
             positions.add(INT_POOL.get(getFirstNonWS(s, getFirstWS(s,cint + 1))));
@@ -256,6 +246,16 @@ public class SentenceDetectorME implements SentenceDetector {
     return true;
   }
 
+  public SentenceModel train(Iterator<SentenceSample> samples, 
+      char[] endOfSentenceChars, boolean useTokenEnd, Set<String> abbreviations) {
+    
+    EventStream eventStream = new SDEventStreamNew(samples);
+    
+    GISModel sentModel = GIS.trainModel(eventStream, 100, 5);
+    
+    return new SentenceModel(sentModel, endOfSentenceChars, useTokenEnd, abbreviations);
+  }
+  
   /**
    * Trains a new model for the {@link SentenceDetectorME}.
    * 
@@ -265,6 +265,7 @@ public class SentenceDetectorME implements SentenceDetector {
    * @return the new model
    * @throws IOException
    */
+  @Deprecated
   public static AbstractModel train(EventStream es, int iterations, int cut) throws IOException {
 
     return GIS.trainModel(es, iterations, cut);
@@ -283,6 +284,7 @@ public class SentenceDetectorME implements SentenceDetector {
    * @throws IOException 
    *
    */
+  @Deprecated
   public static AbstractModel train(File inFile, int iterations, int cut, EndOfSentenceScanner scanner) throws IOException {
     EventStream es;
     DataStream ds;

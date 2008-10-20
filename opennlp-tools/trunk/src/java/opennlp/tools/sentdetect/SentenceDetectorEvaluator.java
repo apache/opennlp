@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.sentdetect;
 
 import opennlp.tools.util.FMeasureEvaluator;
@@ -57,11 +56,13 @@ public class SentenceDetectorEvaluator extends FMeasureEvaluator<SentenceSample>
   
   public void evaluateSample(SentenceSample sample) {
     
-    int starts[] = sentenceDetector.sentPosDetect(sample.getDocument());
+    // TODO: Discuss with Tom changing the interface from int to Span
     
-    precisionScore.add(FMeasureEvaluator.precision(
-        convert(sample.getSentences()), convert(starts)));
-    recallScore.add(FMeasureEvaluator.recall(
-        convert(sample.getSentences()), convert(starts)));
+//    int starts[] = sentenceDetector.sentPosDetect(sample.getDocument());
+//    
+//    precisionScore.add(FMeasureEvaluator.precision(
+//        convert(sample.getSentences()), convert(starts)));
+//    recallScore.add(FMeasureEvaluator.recall(
+//        convert(sample.getSentences()), convert(starts)));
   }
 }

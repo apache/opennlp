@@ -37,7 +37,7 @@ import opennlp.model.EventStream;
  * @author      Jason Baldridge
  * @author      Eric D. Friedman
  * @author      Thomas Morton
- * @version     $Revision: 1.9 $, $Date: 2008-09-28 18:12:11 $
+ * @version     $Revision: 1.10 $, $Date: 2008-10-20 12:28:45 $
  */
 public class SDEventStream implements EventStream {
     private DataStream data;
@@ -46,7 +46,7 @@ public class SDEventStream implements EventStream {
     private SDContextGenerator cg;
     private StringBuffer sBuffer = new StringBuffer();
     private EndOfSentenceScanner scanner;
-
+    
     /**
      * Creates a new <code>SDEventStream</code> instance.  A
      * DefaultEndOfSentenceScanner is used to locate sentence endings.
@@ -122,8 +122,8 @@ public class SDEventStream implements EventStream {
         //TODO: Should only send sentence string to scanner, and sentence + next word to context generator.
         for (Iterator<Integer> i = scanner.getPositions(sb).iterator();i.hasNext();) {
             Integer candidate = (Integer)i.next();
-            String type = i.hasNext() ? "F" : "T";
-            SDEvent evt = new SDEvent(type,cg.getContext(sb,candidate.intValue()));
+            String type = i.hasNext() ? SentenceDetectorME.NO_SPLIT : SentenceDetectorME.SPLIT;
+            SDEvent evt = new SDEvent(type,cg.getContext(sb.toString(), candidate.intValue()));
 
             if (null != tail) {
                 tail.next = evt;

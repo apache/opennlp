@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.sentdetect;
+
+import opennlp.tools.util.Span;
 
 /**
  * A {@link SentenceSample} contains a document with
@@ -26,7 +27,7 @@ public class SentenceSample {
 
   private String document;
   
-  private int sentences[];
+  private Span sentences[];
   
   /**
    * Initializes the current instance.
@@ -34,7 +35,7 @@ public class SentenceSample {
    * @param sentences
    * @param sentenceSpans
    */
-  public SentenceSample(String document, int sentences[]) {
+  public SentenceSample(String document, Span sentences[]) {
     this.document = document;
     this.sentences = sentences;
   }
@@ -54,7 +55,7 @@ public class SentenceSample {
    * @return the begin indexes of the sentences 
    * in the document.
    */
-  public int[] getSentences() {
+  public Span[] getSentences() {
     return sentences;
   }
 }

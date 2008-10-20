@@ -30,7 +30,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import opennlp.maxent.GISModel;
 import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;

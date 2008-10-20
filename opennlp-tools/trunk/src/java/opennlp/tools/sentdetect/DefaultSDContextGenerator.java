@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.sentdetect;
 
 import java.util.ArrayList;
@@ -28,9 +27,8 @@ import java.util.Set;
  *
  * @author      Jason Baldridge
  * @author      Eric D. Friedman
- * @version     $Revision: 1.5 $, $Date: 2008-09-28 18:12:11 $
+ * @version     $Revision: 1.6 $, $Date: 2008-10-20 12:28:45 $
  */
-
 public class DefaultSDContextGenerator implements SDContextGenerator {
 
   /** 
@@ -78,7 +76,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
   /* (non-Javadoc)
    * @see opennlp.tools.sentdetect.SDContextGenerator#getContext(java.lang.StringBuffer, int)
    */
-  public String[] getContext(StringBuffer sb, int position) {
+  public String[] getContext(String sb, int position) {
     
     /** 
      * String preceding the eos character in the eos token.
