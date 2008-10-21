@@ -27,14 +27,18 @@ import opennlp.model.MaxentModel;
  * Ratnaparkhi (1998), PhD diss, Univ. of Pennsylvania.
  * 
  * @see Sequence
+ * @see SequenceValidator
  * @see BeamSearchContextGenerator
  */
 public class BeamSearch<T> {
 
-  protected MaxentModel model;
-  protected BeamSearchContextGenerator<T> cg;
-  protected int size;
   private static final Object[] EMPTY_ADDITIONAL_CONTEXT = new Object[0];
+  
+  protected int size;
+  protected BeamSearchContextGenerator<T> cg;
+  protected MaxentModel model;
+  private SequenceValidator<T> validator;
+  
   private double[] probs;
   private Cache contextsCache;
   private static final int zeroLog = -100000;
@@ -47,17 +51,44 @@ public class BeamSearch<T> {
    * @param model the model for assigning probabilities to the sequence outcomes.
    */
   public BeamSearch(int size, BeamSearchContextGenerator<T> cg, MaxentModel model) {
-    this(size,cg,model,0);
+    this(size, cg, model, null, 0);
   }
   
-  public BeamSearch(int size, BeamSearchContextGenerator<T> cg, MaxentModel model, int cacheSize) {
+  public BeamSearch(int size, BeamSearchContextGenerator<T> cg, MaxentModel model, 
+      int cacheSize) {
+    this (size, cg, model, null, cacheSize);
+  }
+  
+  public BeamSearch(int size, BeamSearchContextGenerator<T> cg, MaxentModel model, 
+      SequenceValidator<T> validator, int cacheSize) {
+    
     this.size = size;
     this.cg = cg;
     this.model = model;
-    this.probs = new double[model.getNumOutcomes()];
+    this.validator = validator;
     
     if (cacheSize > 0) {
       contextsCache = new Cache(cacheSize);
+    }
+    
+    this.probs = new double[model.getNumOutcomes()];
+  }
+  
+  /**
+   * Note:
+   * This method will be private in the future because clients can now
+   * pass a validator to validate the sequence.
+   * 
+   * @see SequenceValidator
+   */
+  @Deprecated
+  protected boolean validSequence(int i, T[] inputSequence, String[] outcomesSequence, String outcome) {
+  
+    if (validator != null) {
+      return validator.validSequence(i, inputSequence, outcomesSequence, outcome);
+    }
+    else {
+      return true;
     }
   }
   
@@ -166,21 +197,5 @@ public class BeamSearch<T> {
    */
   public Sequence bestSequence(T[] sequence, Object[] additionalContext) {
     return bestSequences(1, sequence, additionalContext,zeroLog)[0];
-  }
-
-  /** 
-   * Determines whether a particular continuation of a sequence is valid.  
-   * This is used to restrict invalid sequences such as thoses used in start/continue tag-based chunking 
-   * or could be used to implement tag dictionary restrictions.
-   * 
-   * @param i The index in the input sequence for which the new outcome is being proposed.
-   * @param inputSequence The input sequence.
-   * @param outcomesSequence The outcomes so far in this sequence.
-   * @param outcome The next proposed outcome for the outcomes sequence.
-   * 
-   * @return true is the sequence would still be valid with the new outcome, false otherwise.
-   */
-  protected boolean validSequence(int i, T[] inputSequence, String[] outcomesSequence, String outcome) {
-    return true;
   }
 }
