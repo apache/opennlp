@@ -37,7 +37,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
   private long numberOfCacheHits;
   private long numberOfCacheMisses;
   
-  public CachedFeatureGenerator(AdaptiveFeatureGenerator generators[]) {
+  public CachedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
     this.generators = generators;
     contextsCache = new Cache(100);
   }
