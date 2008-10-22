@@ -102,6 +102,20 @@ public class SentenceDetectorME implements SentenceDetector {
     useTokenEnd = true;
   }
 
+  
+  /**
+   * Constructor which takes a MaxentModel and calls the three-arg
+   * constructor with that model, an SDContextGenerator, and the
+   * default end of sentence scanner.
+   *
+   * @param m The MaxentModel which this SentenceDetectorME will use to
+   *          evaluate end-of-sentence decisions.
+   */
+  @Deprecated
+  public SentenceDetectorME(MaxentModel m) {
+    this(m, new DefaultSDContextGenerator(opennlp.tools.lang.english.EndOfSentenceScanner.eosCharacters), new opennlp.tools.lang.english.EndOfSentenceScanner());
+  }
+  
   /**
    * Creates a new <code>SentenceDetectorME</code> instance.
    *
