@@ -38,11 +38,13 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
    * 
    * @param generators
    */
-  AggregatedFeatureGenerator(AggregatedFeatureGenerator... generators) {
+  AggregatedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
     
     this.generators = new ArrayList<AdaptiveFeatureGenerator>(generators.length);
     
     Collections.addAll(this.generators, generators);
+    
+    this.generators = Collections.unmodifiableCollection(this.generators);
   }
   
   /**
@@ -77,5 +79,15 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
     for (AdaptiveFeatureGenerator generator : generators) {
       generator.updateAdaptiveData(tokens, outcomes);
     }
+  }
+  
+  /**
+   * Retrieves a {@link Collections} of all aggregated
+   * {@link AdaptiveFeatureGenerator}s.
+   * 
+   * @return
+   */
+  public Collection<AdaptiveFeatureGenerator> getGenerators() {
+    return generators;
   }
 }
