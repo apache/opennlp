@@ -56,7 +56,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
   /**
    * Creates a name context generator with the specified cache size.
    */
-  public DefaultNameContextGenerator(AdaptiveFeatureGenerator featureGenerators[]) {
+  public DefaultNameContextGenerator(AdaptiveFeatureGenerator... featureGenerators) {
     
     if (featureGenerators != null) {
       this.featureGenerators = featureGenerators;

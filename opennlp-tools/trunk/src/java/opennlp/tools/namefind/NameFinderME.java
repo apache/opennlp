@@ -17,11 +17,15 @@
 
 package opennlp.tools.namefind;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import opennlp.maxent.GIS;
 import opennlp.maxent.GISModel;
@@ -31,8 +35,11 @@ import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.Sequence;
+import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
+import opennlp.tools.util.featuregen.Factory;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 /**
@@ -42,39 +49,10 @@ public class NameFinderME implements TokenNameFinder {
 
   private static String[][] EMPTY = new String[0][0];
   
-  /**
-   * Implementation of the abstract beam search to allow the name finder to use
-   * the common beam search code.
-   */
-  private class NameBeamSearch extends BeamSearch<String> {
+  private static class NameFinderSequenceValidator implements
+      SequenceValidator<String> {
 
-    /**
-     * Creams a beam search of the specified size sing the specified model with
-     * the specified context generator.
-     * 
-     * @param size
-     *          The size of the beam.
-     * @param cg
-     *          The context generator used with the specified model.
-     * @param model
-     *          The model used to determine names.
-     * @param beamSize
-     */
-    public NameBeamSearch(int size, NameContextGenerator cg, MaxentModel model,
-        int beamSize) {
-      super(size, cg, model, beamSize);
-    }
-
-    /**
-     * This method determines whether the outcome is valid for the preceding
-     * sequence. This can be used to implement constraints on what sequences are
-     * valid.
-     * 
-     * @param outcome The outcome.
-     * @param inputSequence The preceding sequence of outcomes assignments.
-     * @return true is the outcome is valid for the sequence, false otherwise.
-     */
-    protected boolean validSequence(int size, String[] inputSequence,
+    public boolean validSequence(int i, String[] inputSequence,
         String[] outcomesSequence, String outcome) {
       if (outcome.equals(CONTINUE)) {
         int li = outcomesSequence.length - 1;
@@ -100,10 +78,33 @@ public class NameFinderME implements TokenNameFinder {
   private AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
       new AdditionalContextFeatureGenerator();
   
+  public NameFinderME(TokenNameFinderModel model) {
+    this(model, 3);
+  }
+  
+  /**
+   * Initializes the name finder with the specified model.
+   * 
+   * @param model
+   * @param beamSize
+   */
+  public NameFinderME(TokenNameFinderModel model, int beamSize) {
+    this.model = model.getNameFinderModel();
+    
+    contextGenerator = new DefaultNameContextGenerator(model.createFeatureGenerators());
+    
+    contextGenerator.addFeatureGenerator(
+          new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
+    beam = new BeamSearch<String>(beamSize, contextGenerator, this.model, 
+        new NameFinderSequenceValidator(), beamSize);
+    
+  }
+  
   /**
    * Creates a new name finder with the specified model.
    * @param mod The model to be used to find names.
    */
+  @Deprecated
   public NameFinderME(MaxentModel mod) {
     this(mod, new DefaultNameContextGenerator(), 3);
   }
@@ -113,6 +114,7 @@ public class NameFinderME implements TokenNameFinder {
    * @param mod The model to be used to find names.
    * @param cg The context generator to be used with this name finder.
    */
+  @Deprecated
   public NameFinderME(MaxentModel mod, NameContextGenerator cg) {
     this(mod, cg, 3);
   }
@@ -123,12 +125,14 @@ public class NameFinderME implements TokenNameFinder {
    * @param cg The context generator to be used with this name finder.
    * @param beamSize The size of the beam to be used in decoding this model.
    */
+  @Deprecated
   public NameFinderME(MaxentModel mod, NameContextGenerator cg, int beamSize) {
     model = mod;
     contextGenerator = cg;
     
     contextGenerator.addFeatureGenerator(new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
-    beam = new NameBeamSearch(beamSize, cg, mod, beamSize);
+    beam = new BeamSearch<String>(beamSize, cg, mod, 
+        new NameFinderSequenceValidator(), beamSize);
   }
 
   public Span[] find(String[] tokens) {
@@ -233,6 +237,25 @@ public class NameFinderME implements TokenNameFinder {
      return sprobs;
    }
   
+   public static TokenNameFinderModel train(Iterator<NameSample> samples, InputStream descriptorIn, 
+       Map<String, byte[]> resources) throws IOException {
+     
+     // TODO: write descriptor to byte array
+     byte descriptorBytes[] = null;
+     
+     // TODO: create resource manager
+     AdaptiveFeatureGenerator generator = Factory.create(descriptorIn, null);
+     
+     EventStream eventStream = new NameFinderEventStream(samples, 
+         new DefaultNameContextGenerator(generator));
+     
+     AbstractModel nameFinderModel = null;
+     
+     return new TokenNameFinderModel(nameFinderModel,
+         new ByteArrayInputStream(descriptorBytes), resources);
+   }
+   
+  @Deprecated
   public static GISModel train(EventStream es, int iterations, int cut) throws IOException {
     return GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
