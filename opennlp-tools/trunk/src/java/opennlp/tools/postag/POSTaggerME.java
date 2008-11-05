@@ -42,6 +42,7 @@ import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Sequence;
+import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.StringList;
 
 /**
@@ -50,22 +51,14 @@ import opennlp.tools.util.StringList;
  * surrounding context.
  *
  * @author      Gann Bierner
- * @version $Revision: 1.37 $, $Date: 2008-09-28 18:12:24 $
+ * @version $Revision: 1.38 $, $Date: 2008-11-05 13:25:13 $
  */
 public class POSTaggerME implements POSTagger {
 
-  private class PosBeamSearch extends BeamSearch<String> {
+  private class PosSequenceValidator implements SequenceValidator<String> {
 
-    PosBeamSearch(int size, POSContextGenerator cg, MaxentModel model) {
-      super(size, cg, model);
-    }
-    
-    PosBeamSearch(int size, POSContextGenerator cg, MaxentModel model, int cacheSize) {
-      super(size, cg, model, cacheSize);
-    }
-
-    
-    protected boolean validSequence(int i, String[] inputSequence, String[] outcomesSequence, String outcome) {
+    public boolean validSequence(int i, String[] inputSequence,
+        String[] outcomesSequence, String outcome) {
       if (tagDictionary == null) {
         return true;
       }
@@ -141,81 +134,8 @@ public class POSTaggerME implements POSTagger {
     contextGen = new DefaultPOSContextGenerator(model.getNgramDictionary());
     tagDictionary = model.getTagDictionary();
     size = beamSize;
-    beam = new PosBeamSearch(size, contextGen, posModel);
-  }
-  
-  /**
-   * Creates a new tagger with the specified model and tag dictionary.
-   * 
-   * @param model The model used for tagging.
-   * @param tagdict The tag dictionary used for specifing a set of valid tags.
-   */
-  @Deprecated
-  public POSTaggerME(MaxentModel model, TagDictionary tagdict) {
-    this(model, new DefaultPOSContextGenerator(null),tagdict);
-  }
-  
-  /**
-   * Creates a new tagger with the specified model and n-gram dictionary.
-   * 
-   * @param model The model used for tagging.
-   * @param dict The n-gram dictionary used for feature generation.
-   */
-  @Deprecated
-  public POSTaggerME(MaxentModel model, Dictionary dict) {
-    this(model, new DefaultPOSContextGenerator(dict));
-  }
-  
-  /**
-   * Creates a new tagger with the specified model, n-gram dictionary, and tag dictionary.
-   * 
-   * @param model The model used for tagging.
-   * @param dict The n-gram dictionary used for feature generation.
-   * @param tagdict The dictionary which specifies the valid set of tags for some words. 
-   */
-  @Deprecated
-  public POSTaggerME(MaxentModel model, Dictionary dict, TagDictionary tagdict) {
-      this(DEFAULT_BEAM_SIZE,model, new DefaultPOSContextGenerator(dict),tagdict);
-    }
-
-  /**
-   * Creates a new tagger with the specified model and context generator.
-   * 
-   * @param model The model used for tagging.
-   * @param cg The context generator used for feature creation.
-   */
-  @Deprecated
-  public POSTaggerME(MaxentModel model, POSContextGenerator cg) {
-    this(DEFAULT_BEAM_SIZE, model, cg, null);
-  }
-  
-  /**
-   * Creates a new tagger with the specified model, context generator, and tag dictionary.
-   * 
-   * @param model The model used for tagging.
-   * @param cg The context generator used for feature creation.
-   * @param tagdict The dictionary which specifies the valid set of tags for some words.
-   */
-  @Deprecated
-  public POSTaggerME(MaxentModel model, POSContextGenerator cg, TagDictionary tagdict) {
-      this(DEFAULT_BEAM_SIZE, model, cg, tagdict);
-    }
-
-  /**
-   * Creates a new tagger with the specified beam size, model, context generator, and tag dictionary.
-   * 
-   * @param beamSize The number of alturnate tagging considered when tagging. 
-   * @param model The model used for tagging.
-   * @param cg The context generator used for feature creation.
-   * @param tagdict The dictionary which specifies the valid set of tags for some words.
-   */
-  @Deprecated
-  public POSTaggerME(int beamSize, MaxentModel model, POSContextGenerator cg, TagDictionary tagdict) {
-    size = beamSize;
-    posModel = model;
-    contextGen = cg;
-    beam = new PosBeamSearch(size, cg, model);
-    tagDictionary = tagdict;
+    beam = new BeamSearch<String>(size, contextGen, posModel, 
+        new PosSequenceValidator(), 10);
   }
   
   /**
@@ -256,6 +176,14 @@ public class POSTaggerME implements POSTagger {
     return tags;
   }
 
+  public Sequence[] topKSequences(List<String> sentence) {
+    return beam.bestSequences(size, sentence.toArray(new String[sentence.size()]), null);
+  }
+
+  public Sequence[] topKSequences(String[] sentence) {
+    return beam.bestSequences(size, sentence, null);
+  }
+  
   /**
    * Populates the specified array with the probabilities for each tag of the last tagged sentence. 
    * 
