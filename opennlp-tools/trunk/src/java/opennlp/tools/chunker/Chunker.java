@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.chunker;
 
 import java.util.List;
+
+import opennlp.tools.util.Sequence;
 
 /**
  * The interface for chunkers which provide chunk tags for a sequence of tokens.
@@ -46,4 +47,20 @@ public interface Chunker {
    * @return an array of chunk tags for each token in the sequence.
    */
   public String[] chunk(String[] toks, String tags[]);
+  
+  /**
+   * Returns the top k chunk sequences for the specified sentence with the specified pos-tags   
+   * @param sentence The tokens of the sentence.
+   * @param tags The pos-tags for the specified sentence.
+   * @return the top k chunk sequences for the specified sentence.
+   */
+  public Sequence[] topKSequences(List<String> sentence, List<String> tags);
+  
+  /**
+   * Returns the top k chunk sequences for the specified sentence with the specified pos-tags   
+   * @param sentence The tokens of the sentence.
+   * @param tags The pos-tags for the specified sentence.
+   * @return the top k chunk sequences for the specified sentence.
+   */
+  public Sequence[] topKSequences(String[] sentence, String[] tags, double minSequenceScore);
 }

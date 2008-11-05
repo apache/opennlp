@@ -30,18 +30,21 @@ import opennlp.tools.util.Sequence;
 /**
  * The class represents a maximum-entropy-based chunker.  Such a chunker can be used to
  * find flat structures based on sequence inputs such as noun phrases or named entities.
- *
  */
 public class ChunkerME implements Chunker {
 
   private static final int DEFAULT_BEAM_SIZE = 10;
   
-  /** The beam used to search for sequences of chunk tag assignments. */
+  /** 
+   * The beam used to search for sequences of chunk tag assignments. 
+   */
   protected BeamSearch<String> beam;
   
   private Sequence bestSequence;
   
-  /** The model used to assign chunk tags to a sequence of tokens. */
+  /** 
+   * The model used to assign chunk tags to a sequence of tokens. 
+   */
   protected MaxentModel model;
 
   /**
@@ -115,6 +118,14 @@ public class ChunkerME implements Chunker {
     return c.toArray(new String[c.size()]);
   }
  
+  public Sequence[] topKSequences(List<String> sentence, List<String> tags) {
+    return beam.bestSequences(DEFAULT_BEAM_SIZE, sentence.toArray(new String[sentence.size()]), new Object[] { tags });
+  }
+
+  public Sequence[] topKSequences(String[] sentence, String[] tags, double minSequenceScore) {
+    return beam.bestSequences(DEFAULT_BEAM_SIZE, sentence, new Object[] { tags },minSequenceScore);
+  }
+  
   /** 
     * This method determines whether the outcome is valid for the preceding sequence.  
     * This can be used to implement constraints on what sequences are valid.  
