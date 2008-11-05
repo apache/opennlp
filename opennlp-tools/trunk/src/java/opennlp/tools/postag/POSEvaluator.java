@@ -38,7 +38,7 @@ public class POSEvaluator {
    * 
    * @param tagger
    */
-  POSEvaluator(POSTagger tagger) {
+  public POSEvaluator(POSTagger tagger) {
     this.tagger = tagger;
   }
   
