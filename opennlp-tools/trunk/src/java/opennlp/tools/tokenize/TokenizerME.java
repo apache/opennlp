@@ -15,10 +15,8 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.tokenize;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,8 +25,6 @@ import java.util.regex.Pattern;
 
 import opennlp.maxent.GIS;
 import opennlp.maxent.GISModel;
-import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
-import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
@@ -42,7 +38,6 @@ import opennlp.tools.util.Span;
  * homepage: <http://www.cis.upenn.edu/~jcreynar>.
  *
  * @author      Tom Morton
- * @version $Revision: 1.25 $, $Date: 2008-09-28 18:12:19 $
  */
 public class TokenizerME extends AbstractTokenizer {
 
@@ -85,23 +80,12 @@ public class TokenizerME extends AbstractTokenizer {
   
   private List<Span> newTokens;
 
-  /**
-   * Class constructor which takes the string locations of the
-   * information which the maxent model needs.
-   * 
-   * @param mod 
-   */
-  @Deprecated
-  public TokenizerME(MaxentModel mod) {
-    setAlphaNumericOptimization(false);
-    model = mod;
+  public TokenizerME(TokenizerModel model) {
+    this.model = model.getMaxentModel();
+    useAlphaNumericOptimization = model.useAlphaNumericOptimization();
+    
     newTokens = new ArrayList<Span>();
     tokProbs = new ArrayList<Double>(50);
-  }
-
-  public TokenizerME(TokenizerModel model) {
-    this(model.getMaxentModel());
-    useAlphaNumericOptimization = model.useAlphaNumericOptimization();
   }
   
   /** 
@@ -179,8 +163,9 @@ public class TokenizerME extends AbstractTokenizer {
    * 
    * @return the trained {@link TokenizerModel}
    * 
-   * @throws IOException its throws if an {@link IOException} is thrown
-   * during IO operations on a temp file which is created during training occur.
+   * @throws IOException it throws an {@link IOException} if an {@link IOException}
+   * is thrown during IO operations on a temp file which is 
+   * created during training.
    */
   public static TokenizerModel train(Iterator<TokenSample> samples, 
       boolean useAlphaNumericOptimization) throws IOException {
@@ -193,47 +178,12 @@ public class TokenizerME extends AbstractTokenizer {
     
     return new TokenizerModel(maxentModel, useAlphaNumericOptimization);
   }
-  
-  /**
-   * Trains the {@link TokenizerME}, use this to create a new model.
-   * 
-   * @param evc
-   * 
-   * @return the new model
-   */
-  @Deprecated
-  public static AbstractModel train(EventStream evc) throws IOException {
-    return opennlp.maxent.GIS.trainModel(100, new TwoPassDataIndexer(evc, 5));
-  }
-  
-  /**
-   * Trains the {@link TokenizerME}, use this to create a new model.
-   * 
-   * @param evc
-   * @param output
-   * 
-   * @throws IOException
-   */
-  @Deprecated
-  public static void train(EventStream evc, File output, String encoding) throws IOException {
-    new SuffixSensitiveGISModelWriter(TokenizerME.train(evc), output).persist();
-  }
 
   /**
-   * Used to have the tokenizer ignore tokens which only contain alpha-numeric characters.
+   * Returns the value of the alpha-numeric optimization flag.
    * 
-   * @param opt set to true to use the optimization, false otherwise.
+   * @return true if the tokenizer should use alpha-numeric optization, false otherwise.
    */
-  @Deprecated
-  public void setAlphaNumericOptimization(boolean opt) {
-    useAlphaNumericOptimization = opt;
-  }
-
-/**
- * Returns the value of the alpha-numeric optimization flag.
- * 
- * @return true if the tokenizer should use alpha-numeric optization, false otherwise.
- */
   public boolean useAlphaNumericOptimization() {
     return useAlphaNumericOptimization;
   }
