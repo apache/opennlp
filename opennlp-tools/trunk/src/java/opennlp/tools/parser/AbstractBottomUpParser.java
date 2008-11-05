@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import opennlp.tools.chunker.Chunker;
+import opennlp.tools.postag.POSTagger;
 import opennlp.tools.util.Heap;
 import opennlp.tools.util.ListHeap;
 import opennlp.tools.util.Sequence;
@@ -85,9 +87,10 @@ public abstract class AbstractBottomUpParser implements Parser {
   public static final String INCOMPLETE = "i";
  
   /** The pos-tagger that the parser uses. */
-  protected ParserTagger tagger;
+  protected POSTagger tagger;
+  
   /** The chunker that the parser uses to chunk non-recursive structures. */
-  protected ParserChunker chunker;
+  protected Chunker chunker;
   
   /** Specifies whether failed parses should be reported to standard error. */
   protected boolean reportFailedParse;
@@ -98,7 +101,7 @@ public abstract class AbstractBottomUpParser implements Parser {
   /** Turns debug print on or off. */
   protected boolean debugOn = false;
   
-  public AbstractBottomUpParser(ParserTagger tagger, ParserChunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
+  public AbstractBottomUpParser(POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
     this.tagger = tagger; 
     this.chunker = chunker;
     this.M = beamSize;

@@ -30,7 +30,7 @@ import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserChunker;
 import opennlp.tools.parser.ParserEventTypeEnum;
-import opennlp.tools.parser.ParserTagger;
+import opennlp.tools.postag.POSTagger;
 
 /**
  * Built/attach parser.  Nodes are built when their left-most
@@ -80,7 +80,7 @@ public class Parser extends AbstractBottomUpParser {
   
   private int[] attachments;
 
-  public Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, ParserTagger tagger, ParserChunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
+  public Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, POSTagger tagger, ParserChunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
     super(tagger,chunker,headRules,beamSize,advancePercentage);
     this.buildModel = buildModel;
     this.attachModel = attachModel;
@@ -102,7 +102,7 @@ public class Parser extends AbstractBottomUpParser {
     this.completeIndex = checkModel.getIndex(Parser.COMPLETE);
   }
   
-  public Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, ParserTagger tagger, ParserChunker chunker, HeadRules headRules) {
+  public Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, POSTagger tagger, ParserChunker chunker, HeadRules headRules) {
     this(buildModel,attachModel,checkModel, tagger,chunker,headRules,defaultBeamSize,defaultAdvancePercentage);
   }
   

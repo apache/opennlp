@@ -30,15 +30,17 @@ import opennlp.maxent.DataStream;
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
+import opennlp.tools.chunker.Chunker;
+import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.parser.ParserChunker;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
-import opennlp.tools.parser.ParserTagger;
+import opennlp.tools.postag.POSTagger;
+import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
@@ -66,9 +68,9 @@ public class Parser extends AbstractBottomUpParser {
   private int incompleteIndex;
   
   public Parser(ParserModel model) {
-    this(model.getBuildModel(), model.getCheckModel(), 
-        new opennlp.tools.lang.english.ParserTagger(model.getParserTaggerModel()),
-        new opennlp.tools.lang.english.ParserChunker(model.getParserChunkerModel()),
+    this(model.getBuildModel(), model.getCheckModel(),
+        new POSTaggerME(model.getParserTaggerModel()),
+        new ChunkerME(model.getParserChunkerModel()),
         model.getHeadRules());
   }
 
@@ -81,7 +83,7 @@ public class Parser extends AbstractBottomUpParser {
    * @param headRules The head rules for head word perculation.
    */
   @Deprecated
-  public Parser(MaxentModel buildModel, MaxentModel checkModel, ParserTagger tagger, ParserChunker chunker, HeadRules headRules) {
+  public Parser(MaxentModel buildModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules) {
   	this(buildModel,checkModel,tagger,chunker,headRules,defaultBeamSize,defaultAdvancePercentage);
   }
 
@@ -97,7 +99,7 @@ public class Parser extends AbstractBottomUpParser {
    * Only outcomes which contribute to the top "advancePercentage" will be explored.    
    */
   @Deprecated
-  public Parser(MaxentModel buildModel, MaxentModel checkModel, ParserTagger tagger, ParserChunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
+  public Parser(MaxentModel buildModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
     super(tagger,chunker,headRules,beamSize,advancePercentage);
     this.buildModel = buildModel;
     this.checkModel = checkModel;
