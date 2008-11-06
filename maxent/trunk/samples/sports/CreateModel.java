@@ -20,21 +20,23 @@ import java.io.File;
 import java.io.FileReader;
 
 import opennlp.maxent.BasicEventStream;
-import opennlp.maxent.EventStream;
 import opennlp.maxent.GIS;
-import opennlp.maxent.GISModel;
-import opennlp.maxent.OnePassRealValueDataIndexer;
 import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.maxent.RealBasicEventStream;
 import opennlp.maxent.io.GISModelWriter;
 import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
+import opennlp.model.AbstractModel;
+import opennlp.model.EventStream;
+import opennlp.model.OnePassDataIndexer;
+import opennlp.model.OnePassRealValueDataIndexer;
+import opennlp.perceptron.PerceptronTrainer;
 
 /**
  * Main class which calls the GIS procedure after building the EventStream
  * from the data.
  *
  * @author  Chieu Hai Leong and Jason Baldridge
- * @version $Revision: 1.6 $, $Date: 2007-04-13 16:24:06 $
+ * @version $Revision: 1.7 $, $Date: 2008-11-06 20:00:34 $
  */
 public class CreateModel {
 
@@ -60,9 +62,16 @@ public class CreateModel {
     public static void main (String[] args) {
       int ai = 0;
       boolean real = false;
+      String type = "maxent";
+      if(args.length == 0) {
+        usage();
+      }
       while (args[ai].startsWith("-")) {
         if (args[ai].equals("-real")) {
           real = true;
+        }
+        else if (args[ai].equals("-perceptron")) {
+          type = "perceptron";
         }
         else {
           System.err.println("Unknown option: "+args[ai]);
@@ -84,17 +93,27 @@ public class CreateModel {
           es = new RealBasicEventStream(new PlainTextByLineDataStream(datafr));
         }
         GIS.SMOOTHING_OBSERVATION = SMOOTHING_OBSERVATION;
-        GISModel model;
-        if (!real) {
-          model = GIS.trainModel(es,USE_SMOOTHING);
+        AbstractModel model;
+        if (type.equals("maxent")) {
+        
+          if (!real) {
+            model = GIS.trainModel(es,USE_SMOOTHING);
+          }
+          else {
+            model = GIS.trainModel(100, new OnePassRealValueDataIndexer(es,0), USE_SMOOTHING);
+          }
+        }
+        else if (type.equals("perceptron")){ 
+          System.err.println("Perceptron training");
+          model = new PerceptronTrainer().trainModel(10, new OnePassDataIndexer(es,0),0);
         }
         else {
-          model = GIS.trainModel(100, new OnePassRealValueDataIndexer(es,0), USE_SMOOTHING);
+          System.err.println("Unknown model type: "+type);
+          model = null;
         }
         
         File outputFile = new File(modelFileName);
-        GISModelWriter writer =
-          new SuffixSensitiveGISModelWriter(model, outputFile);
+        GISModelWriter writer =  new SuffixSensitiveGISModelWriter(model, outputFile);
         writer.persist();
       } catch (Exception e) {
         System.out.print("Unable to create model due to exception: ");

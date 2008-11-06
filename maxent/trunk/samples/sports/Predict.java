@@ -16,15 +16,22 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //////////////////////////////////////////////////////////////////////////////   
 
-import opennlp.maxent.*;
-import opennlp.maxent.io.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+
+import opennlp.maxent.BasicContextGenerator;
+import opennlp.maxent.ContextGenerator;
+import opennlp.maxent.DataStream;
+import opennlp.maxent.PlainTextByLineDataStream;
+import opennlp.model.GenericModelReader;
+import opennlp.model.MaxentModel;
+import opennlp.model.RealValueFileEventStream;
 
 /**
  * Test the model on some input.
  *
  * @author  Jason Baldridge
- * @version $Revision: 1.3 $, $Date: 2007-04-13 16:24:06 $
+ * @version $Revision: 1.4 $, $Date: 2008-11-06 20:00:34 $
  */
 public class Predict {
     MaxentModel _model;
@@ -64,11 +71,15 @@ public class Predict {
     public static void main(String[] args) {
 	String dataFileName, modelFileName;
     boolean real = false;
+    String type = "maxent";
     int ai = 0;
 	if (args.length > 0) {
       while (args[ai].startsWith("-")) {
         if (args[ai].equals("-real")) {
           real = true;
+        }
+        else if (args[ai].equals("-perceptron")) {
+          type = "perceptron";
         }
         else {
           usage();
@@ -89,10 +100,8 @@ public class Predict {
 	}
 	Predict predictor = null;
 	try {
-	    GISModel m =
-		new SuffixSensitiveGISModelReader(
-			      new File(modelFileName)).getModel();
-	    predictor = new Predict(m);
+      MaxentModel m = new GenericModelReader(new File(modelFileName)).getModel();
+	  predictor = new Predict(m);
 	} catch (Exception e) {
 	    e.printStackTrace();
 	    System.exit(0);
