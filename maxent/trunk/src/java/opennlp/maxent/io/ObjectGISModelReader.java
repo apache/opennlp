@@ -17,8 +17,9 @@
 
 package opennlp.maxent.io;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
+
+import opennlp.model.ObjectDataReader;
 
 public class ObjectGISModelReader extends GISModelReader {
 
@@ -31,21 +32,7 @@ public class ObjectGISModelReader extends GISModelReader {
    * @param dis The DataInputStream containing the model information.
    */
   
-  public ObjectGISModelReader(ObjectInputStream dis) {
-    super();
-    input = dis;
+  public ObjectGISModelReader(ObjectInputStream ois) {
+    super(new ObjectDataReader(ois));
   }
-
-  public int readInt() throws IOException {
-    return input.readInt();
-  }
-
-  public double readDouble() throws IOException {
-    return input.readDouble();
-  }
-
-  public String readUTF() throws IOException {
-    return input.readUTF();
-  }
-
 }

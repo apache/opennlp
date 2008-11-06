@@ -31,12 +31,12 @@ public abstract class AbstractModel implements MaxentModel {
   protected EvalParameters evalParams;
   protected Prior prior;
 
-  public AbstractModel  (Context[] params, String[] predLabels, String[] outcomeNames) {
+  public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames) {
     init(predLabels,outcomeNames);
     this.evalParams = new EvalParameters(params,ocNames.length);
   }
 
-  public AbstractModel  (Context[] params, String[] predLabels, String[] outcomeNames, int correctionConstant,double correctionParam) {
+  public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames, int correctionConstant,double correctionParam) {
     init(predLabels,outcomeNames);
     this.evalParams = new EvalParameters(params,correctionConstant,correctionParam,ocNames.length);
   }
@@ -121,7 +121,7 @@ public abstract class AbstractModel implements MaxentModel {
   }
 
   public int getNumOutcomes() {
-    return(evalParams.numOutcomes);
+    return(evalParams.getNumOutcomes());
   }
 
   /**
@@ -146,11 +146,11 @@ public abstract class AbstractModel implements MaxentModel {
    */
   public final Object[] getDataStructures() {
       Object[] data = new Object[5];
-      data[0] = evalParams.params;
+      data[0] = evalParams.getParams();
       data[1] = pmap;
       data[2] = ocNames;
-      data[3] = new Integer((int)evalParams.correctionConstant);
-      data[4] = new Double(evalParams.correctionParam);
+      data[3] = new Integer((int)evalParams.getCorrectionConstant());
+      data[4] = new Double(evalParams.getCorrectionParam());
       return data;
   }
 }

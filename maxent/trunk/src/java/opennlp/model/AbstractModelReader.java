@@ -17,7 +17,12 @@
 
 package opennlp.model;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.StringTokenizer;
+import java.util.zip.GZIPInputStream;
 
 
 public abstract class AbstractModelReader {
@@ -26,29 +31,63 @@ public abstract class AbstractModelReader {
    * The number of predicates contained in the model.
    */
   protected int NUM_PREDS;
+  protected DataReader dataReader;
+  
+  public AbstractModelReader(File f) throws IOException { 
+    String filename = f.getName();
+    InputStream input;
+    // handle the zipped/not zipped distinction
+    if (filename.endsWith(".gz")) {
+      input = new GZIPInputStream(new FileInputStream(f));
+      filename = filename.substring(0,filename.length()-3);
+    }
+    else {
+      input = new FileInputStream(f);
+    }
 
-  public AbstractModelReader() {
+    // handle the different formats
+    if (filename.endsWith(".bin")) {
+      this.dataReader = new BinaryFileDataReader(input);
+    }
+    else {  // filename ends with ".txt"
+      this.dataReader = new PlainTextFileDataReader(input);
+    }
+  }
+
+  public AbstractModelReader(DataReader dataReader) {
     super();
+    this.dataReader = dataReader;
+  }
+  
+  /**
+   * Implement as needed for the format the model is stored in.
+   */
+  public int readInt() throws java.io.IOException {
+    return dataReader.readInt();
   }
 
   /**
    * Implement as needed for the format the model is stored in.
    */
-  public abstract int readInt() throws java.io.IOException;
+  public double readDouble() throws java.io.IOException {
+    return dataReader.readDouble();
+  }
 
   /**
    * Implement as needed for the format the model is stored in.
    */
-  public abstract double readDouble() throws java.io.IOException;
-
-  /**
-   * Implement as needed for the format the model is stored in.
-   */
-  public abstract String readUTF() throws java.io.IOException;
+  public String readUTF() throws java.io.IOException {
+    return dataReader.readUTF();
+  }
       
-  public abstract AbstractModel getModel () throws java.io.IOException;
+  public AbstractModel getModel() throws IOException {
+    checkModelType();
+    return constructModel();
+  }
 
   public abstract void checkModelType() throws java.io.IOException;
+  
+  public abstract AbstractModel constructModel() throws java.io.IOException;
 
   protected String[] getOutcomes() throws java.io.IOException {
       int numOutcomes = readInt();

@@ -17,11 +17,12 @@
 
 package opennlp.maxent;
 
+import opennlp.model.AbstractEventStream;
 import opennlp.model.Event;
 import opennlp.model.EventStream;
 import opennlp.model.RealValueFileEventStream;
 
-public class RealBasicEventStream implements EventStream {
+public class RealBasicEventStream extends  AbstractEventStream {
   ContextGenerator cg = new BasicContextGenerator();
   DataStream ds;
   Event next;
@@ -33,7 +34,7 @@ public class RealBasicEventStream implements EventStream {
     
   }
 
-  public Event nextEvent() {
+  public Event next() {
     while (next == null && this.ds.hasNext())
       next = createEvent((String)this.ds.nextToken());
     
@@ -67,7 +68,7 @@ public class RealBasicEventStream implements EventStream {
   public static void main(String[] args) throws java.io.IOException {
     EventStream es = new RealBasicEventStream(new PlainTextByLineDataStream(new java.io.FileReader(args[0])));
     while (es.hasNext()) {
-      System.out.println(es.nextEvent());
+      System.out.println(es.next());
     }
   }
 }

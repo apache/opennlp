@@ -74,7 +74,7 @@ public class RealValueFileEventStream extends FileEventStream {
     return values;
   }
     
-  public Event nextEvent() {
+  public Event next() {
     int si = line.indexOf(' ');
     String outcome = line.substring(0,si);
     String[] contexts = line.substring(si+1).split(" ");

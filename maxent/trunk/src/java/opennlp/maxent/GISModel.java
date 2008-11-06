@@ -33,7 +33,7 @@ import opennlp.model.UniformPrior;
  * Iterative Scaling procedure (implemented in GIS.java).
  *
  * @author      Tom Morton and Jason Baldridge
- * @version     $Revision: 1.23 $, $Date: 2008-09-28 18:03:50 $
+ * @version     $Revision: 1.24 $, $Date: 2008-11-06 19:59:44 $
  */
 public final class GISModel extends AbstractModel {
     /**
@@ -77,11 +77,11 @@ public final class GISModel extends AbstractModel {
      *  	      getOutcome(int i).
      */
     public final double[] eval(String[] context) {
-      return(eval(context,new double[evalParams.numOutcomes]));
+      return(eval(context,new double[evalParams.getNumOutcomes()]));
     }
     
     public final double[] eval(String[] context, float[] values) {
-      return(eval(context,values,new double[evalParams.numOutcomes]));
+      return(eval(context,values,new double[evalParams.getNumOutcomes()]));
     }
     
     public final double[] eval(String[] context, double[] outsums) {
@@ -144,8 +144,8 @@ public final class GISModel extends AbstractModel {
      *                getOutcome(int i).
      */
     public static double[] eval(int[] context, float[] values, double[] prior, EvalParameters model) {
-      Context[] params = model.params;
-      int numfeats[] = new int[model.numOutcomes];
+      Context[] params = model.getParams();
+      int numfeats[] = new int[model.getNumOutcomes()];
       int[] activeOutcomes;
       double[] activeParameters;
       double value = 1;
@@ -166,17 +166,17 @@ public final class GISModel extends AbstractModel {
       }
 
       double normal = 0.0;
-      for (int oid = 0; oid < model.numOutcomes; oid++) {
-        if (model.correctionParam != 0) {
-          prior[oid] = Math.exp(prior[oid]*model.constantInverse+((1.0 - ((double) numfeats[oid] / model.correctionConstant)) * model.correctionParam));
+      for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
+        if (model.getCorrectionParam() != 0) {
+          prior[oid] = Math.exp(prior[oid]*model.getConstantInverse()+((1.0 - ((double) numfeats[oid] / model.getCorrectionConstant())) * model.getCorrectionParam()));
         }
         else {
-          prior[oid] = Math.exp(prior[oid]*model.constantInverse);
+          prior[oid] = Math.exp(prior[oid]*model.getConstantInverse());
         }
         normal += prior[oid];
       }
 
-      for (int oid = 0; oid < model.numOutcomes; oid++) {
+      for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
         prior[oid] /= normal;
       }
       return prior;

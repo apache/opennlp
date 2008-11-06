@@ -17,8 +17,8 @@
 
 package opennlp.maxent;
 
+import opennlp.model.AbstractEventStream;
 import opennlp.model.Event;
-import opennlp.model.EventStream;
 
 /**
  * A object which can deliver a stream of training events assuming
@@ -30,9 +30,9 @@ import opennlp.model.EventStream;
  * <p> cp_1 cp_2 ... cp_n outcome
  *
  * @author      Jason Baldridge
- * @version $Revision: 1.4 $, $Date: 2008-09-28 18:03:47 $ 
+ * @version $Revision: 1.5 $, $Date: 2008-11-06 19:59:44 $ 
  */
-public class BasicEventStream implements EventStream {
+public class BasicEventStream extends AbstractEventStream {
   ContextGenerator cg = new BasicContextGenerator();
   DataStream ds;
   Event next;
@@ -48,7 +48,7 @@ public class BasicEventStream implements EventStream {
    *
    * @return the Event object which is next in this EventStream
    */
-  public Event nextEvent () {
+  public Event next () {
     while (next == null && this.ds.hasNext())
       next = createEvent((String)this.ds.nextToken());
     

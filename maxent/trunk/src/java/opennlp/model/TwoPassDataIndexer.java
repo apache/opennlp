@@ -112,7 +112,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
     int eventCount = 0;
     Set predicateSet = new HashSet();
     while (eventStream.hasNext()) {
-      Event ev = eventStream.nextEvent();
+      Event ev = eventStream.next();
       eventCount++;
       eventStore.write(FileEventStream.toLine(ev));
       String[] ec = ev.getContext();
@@ -135,7 +135,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
     List eventsToCompare = new ArrayList(numEvents);
     List<Integer> indexedContext = new ArrayList<Integer>();
     while (es.hasNext()) {
-      Event ev = es.nextEvent();
+      Event ev = es.next();
       String[] econtext = ev.getContext();
       ComparableEvent ce;
 

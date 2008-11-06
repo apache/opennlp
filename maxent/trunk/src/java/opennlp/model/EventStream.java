@@ -17,6 +17,8 @@
 
 package opennlp.model;
 
+import java.util.Iterator;
+
 /**
  * A object which can deliver a stream of training events for the GIS
  * procedure (or others such as IIS if and when they are implemented).
@@ -28,14 +30,14 @@ package opennlp.model;
  * @version     $Revision$, $Date$
  *
  */
-public interface EventStream {
+public interface EventStream extends Iterator<Event>{
 
     /**
      * Returns the next Event object held in this EventStream.
      *
      * @return the Event object which is next in this EventStream
      */
-    public Event nextEvent ();
+    public Event next ();
  
     /**
      * Test whether there are any Events remaining in this EventStream.
@@ -43,5 +45,6 @@ public interface EventStream {
      * @return true if this EventStream has more Events
      */
     public boolean hasNext ();
+    
 }
 

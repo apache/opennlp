@@ -17,18 +17,31 @@
 
 package opennlp.maxent.io;
 
+import java.io.File;
+import java.io.IOException;
+
 import opennlp.maxent.GISModel;
 import opennlp.model.AbstractModel;
 import opennlp.model.AbstractModelReader;
 import opennlp.model.Context;
+import opennlp.model.DataReader;
 
 /**
  * Abstract parent class for readers of GISModels.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.8 $, $Date: 2008-09-28 18:04:22 $
+ * @version     $Revision: 1.9 $, $Date: 2008-11-06 19:59:44 $
  */
-public abstract class GISModelReader extends AbstractModelReader {
+public class GISModelReader extends AbstractModelReader {
+  
+    public GISModelReader(File file) throws IOException {
+      super(file);
+    }
+    
+    public GISModelReader(DataReader dataReader) {
+      super(dataReader);
+    }
+    
     /**
      * Retrieve a model from disk. It assumes that models are saved in the
      * following sequence:
@@ -51,24 +64,22 @@ public abstract class GISModelReader extends AbstractModelReader {
      *
      * @return The GISModel stored in the format and location specified to
      *         this GISModelReader (usually via its the constructor).
-     */
-    public AbstractModel getModel () throws java.io.IOException {
-        checkModelType();
-        int correctionConstant = getCorrectionConstant();
-        double correctionParam = getCorrectionParameter();
-        String[] outcomeLabels = getOutcomes();
-        int[][] outcomePatterns = getOutcomePatterns();
-        String[] predLabels = getPredicates();
-        Context[] params = getParameters(outcomePatterns);
- 	
-        return new GISModel(params,
-                            predLabels,
-                            outcomeLabels,
-                            correctionConstant,
-                            correctionParam);
-
-    }
+     */    
+    public AbstractModel constructModel() throws IOException {
+      int correctionConstant = getCorrectionConstant();
+      double correctionParam = getCorrectionParameter();
+      String[] outcomeLabels = getOutcomes();
+      int[][] outcomePatterns = getOutcomePatterns();
+      String[] predLabels = getPredicates();
+      Context[] params = getParameters(outcomePatterns);
     
+      return new GISModel(params,
+                          predLabels,
+                          outcomeLabels,
+                          correctionConstant,
+                          correctionParam);
+    }
+
     public void checkModelType() throws java.io.IOException {
       String modelType = readUTF();
       if (!modelType.equals("GIS"))

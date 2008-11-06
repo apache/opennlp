@@ -39,7 +39,7 @@ import opennlp.model.AbstractModelReader;
  *    <li>.bin --> the file is binary
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.4 $, $Date: 2008-09-28 18:04:24 $
+ * @version     $Revision: 1.5 $, $Date: 2008-11-06 19:59:44 $
  */
 public class SuffixSensitiveGISModelReader extends GISModelReader {
     protected GISModelReader suffixAppropriateReader;
@@ -51,42 +51,9 @@ public class SuffixSensitiveGISModelReader extends GISModelReader {
      * @param f The File in which the model is stored.
      */
     public SuffixSensitiveGISModelReader (File f) throws IOException {
-      InputStream input;
-      String filename = f.getName();
-
-      // handle the zipped/not zipped distinction
-      if (filename.endsWith(".gz")) {
-        input = new GZIPInputStream(new FileInputStream(f));
-        filename = filename.substring(0,filename.length()-3);
-      }
-      else {
-        input = new FileInputStream(f);
-      }
-
-      // handle the different formats
-      if (filename.endsWith(".bin")) {
-        suffixAppropriateReader =
-          new BinaryGISModelReader(new DataInputStream(input));
-      }
-      // add more else ifs here to add further Reader types, e.g.
-      // else if (filename.endsWith(".xml"))
-      //     suffixAppropriateReader = new XmlGISModelReader(input);
-      // of course, a BufferedReader may not be what is wanted here,
-      // so you might have to do a bit more to get
-      // SuffixSensitiveGISModelReader to work for xml or other formats.
-      // However, the default should be plain text (.txt).
-      else {  // filename ends with ".txt"
-        suffixAppropriateReader =
-          new PlainTextGISModelReader(
-              new BufferedReader(new InputStreamReader(input)));
-      }
-
+      super(f);
     }
     
-    protected SuffixSensitiveGISModelReader() {
-      super();
-    }
-
     // activate this if adding another type of reader which can't read model
     // information in the way that the default getModel() method in
     // GISModelReader does.
@@ -94,18 +61,6 @@ public class SuffixSensitiveGISModelReader extends GISModelReader {
     //    return suffixAppropriateReader.getModel();
     //}
     
-
-    public int readInt () throws IOException {
-      return suffixAppropriateReader.readInt();
-    }
-
-    public double readDouble () throws IOException {
-      return suffixAppropriateReader.readDouble();
-    }
-
-    public String readUTF () throws IOException {
-      return suffixAppropriateReader.readUTF();
-    }
 
     /**
      * To convert between different formats of the new style.

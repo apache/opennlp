@@ -104,7 +104,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer  {
       Map<String,Integer> counter = new HashMap<String,Integer>();
       LinkedList<Event> events = new LinkedList<Event>();
       while (eventStream.hasNext()) {
-        Event ev = eventStream.nextEvent();
+        Event ev = eventStream.next();
         events.addLast(ev);
         update(ev.getContext(),predicateSet,counter,cutoff);
       }

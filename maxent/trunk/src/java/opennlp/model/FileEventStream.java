@@ -34,7 +34,7 @@ import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
  * @author Tom Morton
  *
  */
-public class FileEventStream implements EventStream {
+public class FileEventStream extends  AbstractEventStream {
 
   BufferedReader reader;
   String line;
@@ -76,7 +76,7 @@ public class FileEventStream implements EventStream {
     }
   }
   
-  public Event nextEvent() {
+  public Event next() {
     StringTokenizer st = new StringTokenizer(line);
     String outcome = st.nextToken();
     int count = st.countTokens();

@@ -45,7 +45,7 @@ import opennlp.model.UniformPrior;
  *    
  * @author Tom Morton
  * @author  Jason Baldridge
- * @version $Revision: 1.30 $, $Date: 2008-09-28 18:03:38 $
+ * @version $Revision: 1.31 $, $Date: 2008-11-06 19:59:44 $
  */
 class GISTrainer {
 
@@ -364,7 +364,7 @@ class GISTrainer {
     findParameters(iterations);
 
     /*************** Create and return the model ******************/
-    return new GISModel(params, predLabels, outcomeLabels, correctionConstant, evalParams.correctionParam);
+    return new GISModel(params, predLabels, outcomeLabels, correctionConstant, evalParams.getCorrectionParam());
 
   }
 
@@ -467,7 +467,7 @@ class GISTrainer {
         }
       }
       if (useSlackParameter)
-        CFMOD += (evalParams.correctionConstant - contexts[ei].length) * numTimesEventsSeen[ei];
+        CFMOD += (evalParams.getCorrectionConstant() - contexts[ei].length) * numTimesEventsSeen[ei];
       
       loglikelihood += Math.log(modelDistribution[outcomeList[ei]]) * numTimesEventsSeen[ei];
       numEvents += numTimesEventsSeen[ei];
@@ -493,7 +493,7 @@ class GISTrainer {
       int[] activeOutcomes = params[pi].getOutcomes();
       for (int aoi=0;aoi<activeOutcomes.length;aoi++) {
         if (useGaussianSmoothing) {
-          params[pi].updateParameter(aoi,gaussianUpdate(pi,aoi,numEvents,evalParams.correctionConstant));
+          params[pi].updateParameter(aoi,gaussianUpdate(pi,aoi,numEvents,evalParams.getCorrectionConstant()));
         }
         else {
           if (model[aoi] == 0) {
@@ -505,7 +505,7 @@ class GISTrainer {
       }
     }
     if (CFMOD > 0.0 && useSlackParameter)
-        evalParams.correctionParam += (cfObservedExpect - Math.log(CFMOD));
+        evalParams.setCorrectionParam(evalParams.getCorrectionParam() + (cfObservedExpect - Math.log(CFMOD)));
 
     display(". loglikelihood=" + loglikelihood + "\t" + ((double) numCorrect / numEvents) + "\n");
     return (loglikelihood);

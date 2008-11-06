@@ -29,22 +29,18 @@ public class EvalParameters {
   
  /** Mapping between outcomes and paramater values for each context. 
    * The integer representation of the context can be found using <code>pmap</code>.*/
-  public Context[] params;
+  private Context[] params;
   /** The number of outcomes being predicted. */
-  public final int numOutcomes;
+  private final int numOutcomes;
   /** The maximum number of feattures fired in an event. Usually refered to a C.
    * This is used to normalize the number of features which occur in an event. */
-  public double correctionConstant;
+  private double correctionConstant;
   
   /**  Stores inverse of the correction constant, 1/C. */
-  public final double constantInverse;
+  private final double constantInverse;
   /** The correction parameter of the model. */
-  public double correctionParam;
-  /** Log of 1/C; initial value of probabilities. */
-  private final double iprob;
+  private double correctionParam;
   
-  private String[] outcomeLabels;
-    
   /**
    * Creates a set of paramters which can be evaulated with the eval method.
    * @param params The parameters of the model.
@@ -58,26 +54,39 @@ public class EvalParameters {
     this.numOutcomes = numOutcomes;
     this.correctionConstant = correctionConstant;
     this.constantInverse = 1.0 / correctionConstant;
-    this.iprob = Math.log(1.0/numOutcomes);
   }
   
   public EvalParameters(Context[] params, int numOutcomes) {
     this(params,0,0,numOutcomes);
   }
   
-  public EvalParameters(Context[] params, int numOutcomes, String[] outcomeLabels) {
-    this(params,0,0,numOutcomes);
-    this.outcomeLabels = outcomeLabels;
+  /* (non-Javadoc)
+   * @see opennlp.model.EvalParameters#getParams()
+   */
+  public Context[] getParams() {
+    return params;
+  }
+
+  /* (non-Javadoc)
+   * @see opennlp.model.EvalParameters#getNumOutcomes()
+   */
+  public int getNumOutcomes() {
+    return numOutcomes;
+  }
+
+  public double getCorrectionConstant() {
+    return correctionConstant;
+  }
+
+  public double getConstantInverse() {
+    return constantInverse;
+  }
+
+  public double getCorrectionParam() {
+    return correctionParam;
   }
   
-  public void setOutcomes(String[] outcomeLabels) {
-    this.outcomeLabels = outcomeLabels;
-  }
-  
-  public String getOutcomeLabel(int oi) {
-    if (outcomeLabels != null) {
-      return outcomeLabels[oi];
-    }
-    return null;
+  public void setCorrectionParam(double correctionParam) {
+    this.correctionParam = correctionParam;
   }
 }

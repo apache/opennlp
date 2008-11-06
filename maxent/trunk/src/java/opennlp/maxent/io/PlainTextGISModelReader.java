@@ -17,17 +17,19 @@
 
 package opennlp.maxent.io;
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+
+import opennlp.model.PlainTextFileDataReader;
 
 /**
  * A reader for GIS models stored in plain text format.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2008-09-28 18:04:30 $
+ * @version     $Revision: 1.3 $, $Date: 2008-11-06 19:59:44 $
  */
 public class PlainTextGISModelReader extends GISModelReader {
-    private BufferedReader input;
 
     /**
      * Constructor which directly instantiates the BufferedReader containing
@@ -36,7 +38,7 @@ public class PlainTextGISModelReader extends GISModelReader {
      * @param br The BufferedReader containing the model information.
      */
     public PlainTextGISModelReader (BufferedReader br) {
-	input = br;
+      super(new PlainTextFileDataReader(br));
     }
 
     /**
@@ -47,27 +49,6 @@ public class PlainTextGISModelReader extends GISModelReader {
      * @param f The File in which the model is stored.
      */
     public PlainTextGISModelReader (File f) throws IOException {
-
-	if (f.getName().endsWith(".gz")) {
-	    input = new BufferedReader(new InputStreamReader(
-  	                 new GZIPInputStream(new FileInputStream(f))));
-	}
-	else {
-	    input = new BufferedReader(new FileReader(f));
-	}
-
+      super(f);
     }
-
-    public int readInt () throws IOException {
-	return Integer.parseInt(input.readLine());
-    }
-
-    public double readDouble () throws IOException {
-	return Double.parseDouble(input.readLine());
-    }
-
-    public String readUTF () throws IOException {
-	return input.readLine();
-    }
-
 }

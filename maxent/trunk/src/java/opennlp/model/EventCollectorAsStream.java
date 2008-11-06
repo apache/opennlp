@@ -26,7 +26,7 @@ package opennlp.model;
  * @author      Jason Baldridge
  * @version     $Revision$, $Date$
  */
-public final class EventCollectorAsStream implements EventStream {
+public final class EventCollectorAsStream extends AbstractEventStream {
     final Event[] events;
     final int numEvents;
     int index = 0;
@@ -36,12 +36,12 @@ public final class EventCollectorAsStream implements EventStream {
 	numEvents = events.length;
     }
     
-    public Event nextEvent () {
-	return events[index++];
+    public Event next () {
+      return events[index++];
     }
     
     public boolean hasNext () {
-	return (index < numEvents);
+      return (index < numEvents);
     }
  
 }
