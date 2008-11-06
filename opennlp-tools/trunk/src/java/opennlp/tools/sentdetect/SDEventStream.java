@@ -34,19 +34,15 @@ import opennlp.model.EventStream;
  * sources other than plain text files; however, be sure that each
  * token your DataStream returns is a valid sentence.
  *
- * @author      Jason Baldridge
- * @author      Eric D. Friedman
- * @author      Thomas Morton
- * @version     $Revision: 1.10 $, $Date: 2008-10-20 12:28:45 $
  */
-public class SDEventStream implements EventStream {
+public class SDEventStream extends opennlp.model.AbstractEventStream {
     private DataStream data;
     private String next;
     private SDEvent head = null, tail = null;
     private SDContextGenerator cg;
     private StringBuffer sBuffer = new StringBuffer();
     private EndOfSentenceScanner scanner;
-    
+
     /**
      * Creates a new <code>SDEventStream</code> instance.  A
      * DefaultEndOfSentenceScanner is used to locate sentence endings.
@@ -88,7 +84,7 @@ public class SDEventStream implements EventStream {
         } 
     }
 
-    public Event nextEvent () {
+    public Event next () {
         SDEvent top = head;
         head = head.next;
         if (null == head) {
@@ -206,7 +202,7 @@ public class SDEventStream implements EventStream {
       }
       EventStream es =  new SDEventStream(new PlainTextByLineDataStream(new InputStreamReader(System.in,encoding)),scanner,cg);
       while(es.hasNext()) {
-        System.out.println(es.nextEvent());
+        System.out.println(es.next());
       }
     }
  

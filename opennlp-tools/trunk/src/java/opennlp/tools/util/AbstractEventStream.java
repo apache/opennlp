@@ -29,7 +29,7 @@ import opennlp.model.EventStream;
  * It takes an {@link Iterator} of sample objects as input and
  * outputs the events creates by a subclass. 
  */
-public abstract class AbstractEventStream<T> implements EventStream {
+public abstract class AbstractEventStream<T> extends opennlp.model.AbstractEventStream {
 
   private Iterator<T> samples;
   
@@ -75,7 +75,7 @@ public abstract class AbstractEventStream<T> implements EventStream {
     }
   }
   
-  public final Event nextEvent() {
+  public final Event next() {
     return events.next();
   }
 }

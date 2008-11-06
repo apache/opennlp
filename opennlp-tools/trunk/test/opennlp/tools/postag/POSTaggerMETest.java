@@ -35,7 +35,7 @@ public class POSTaggerMETest extends TestCase {
     InputStream in = getClass().getClassLoader().getResourceAsStream(
     "opennlp/tools/postag/AnnotatedSentences.txt");
     
-    POSModel posModel = POSTaggerME.train(new WordTagSampleStream(new PlainTextByLineDataStream(
+    POSModel posModel = POSTaggerTrainer.train(new WordTagSampleStream(new PlainTextByLineDataStream(
         new InputStreamReader(in))), null, null, 5);
     
     POSTagger tagger = new POSTaggerME(posModel);

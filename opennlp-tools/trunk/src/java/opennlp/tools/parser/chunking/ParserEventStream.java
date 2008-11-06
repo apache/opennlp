@@ -204,7 +204,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     }
     opennlp.model.EventStream es = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.InputStreamReader(System.in)), rules, etype, dict);
     while (es.hasNext()) {
-      System.out.println(es.nextEvent());
+      System.out.println(es.next());
     }
   }
 }

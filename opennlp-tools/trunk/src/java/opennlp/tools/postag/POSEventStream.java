@@ -33,7 +33,7 @@ import opennlp.tools.util.InvalidFormatException;
  * sentence at a time with tokens as word_tag pairs.
  */
 @Deprecated
-public class POSEventStream implements EventStream {
+public class POSEventStream extends opennlp.model.AbstractEventStream {
 
   private POSContextGenerator cg;
   private DataStream data;
@@ -99,14 +99,16 @@ public class POSEventStream implements EventStream {
     return false;
   }
   
-  public Event nextEvent() {
+  public Event next() {
     if (ei == events.length) {
       addNewEvents(line);
       ei = 0;
       line = null;
     }
     return events[ei++];
-  }    
+  }
+  
+  
 
   private void addNewEvents(String sentence) {
     //String sentence = "the_DT stories_NNS about_IN well-heeled_JJ communities_NNS and_CC developers_NNS";
@@ -124,7 +126,7 @@ public class POSEventStream implements EventStream {
       es = new POSEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.InputStreamReader(System.in)),new Dictionary(new FileInputStream(args[0])));
     }
     while (es.hasNext()) {
-      System.out.println(es.nextEvent());
+      System.out.println(es.next());
     }
   }
 }

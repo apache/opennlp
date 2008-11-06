@@ -21,6 +21,9 @@ package opennlp.tools.postag;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ParseException;
 
+/**
+ * Represents an pos-tagged sentence.
+ */
 public class POSSample {
   
   private String sentence[];

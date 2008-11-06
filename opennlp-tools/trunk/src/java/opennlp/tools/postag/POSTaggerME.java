@@ -18,66 +18,29 @@
 
 package opennlp.tools.postag;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import opennlp.maxent.DataStream;
-import opennlp.maxent.GISModel;
-import opennlp.maxent.PlainTextByLineDataStream;
-import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.AbstractModel;
-import opennlp.model.EventStream;
-import opennlp.model.MaxentModel;
-import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.BeamSearch;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
-import opennlp.tools.util.StringList;
 
 /**
  * A part-of-speech tagger that uses maximum entropy.  Trys to predict whether
  * words are nouns, verbs, or any of 70 other POS tags depending on their
  * surrounding context.
  *
- * @author      Gann Bierner
- * @version $Revision: 1.38 $, $Date: 2008-11-05 13:25:13 $
  */
 public class POSTaggerME implements POSTagger {
-
-  private class PosSequenceValidator implements SequenceValidator<String> {
-
-    public boolean validSequence(int i, String[] inputSequence,
-        String[] outcomesSequence, String outcome) {
-      if (tagDictionary == null) {
-        return true;
-      }
-      else {
-        String[] tags = tagDictionary.getTags(inputSequence[i].toString());
-        if (tags == null) {
-          return true;
-        }
-        else {
-          return Arrays.asList(tags).contains(outcome);
-        }
-      }
-    }
-  }
   
   /**
    * The maximum entropy model to use to evaluate contexts.
    */
-  protected MaxentModel posModel;
+  protected AbstractModel posModel;
 
   /**
    * The feature context generator.
@@ -109,7 +72,7 @@ public class POSTaggerME implements POSTagger {
   /** 
    * The search object used for search multiple sequences of tags. 
    */
-  protected  BeamSearch<String> beam;
+  protected  BeamSearch beam;
   
   /**
    * Initializes the current instance with the provided model
@@ -129,13 +92,86 @@ public class POSTaggerME implements POSTagger {
    * @param beamSize
    */
   public POSTaggerME(POSModel model, int beamSize) {
-    posModel = model.getMaxentPosModel();
+    posModel = model.getPosModel();
     
     contextGen = new DefaultPOSContextGenerator(model.getNgramDictionary());
     tagDictionary = model.getTagDictionary();
     size = beamSize;
-    beam = new BeamSearch<String>(size, contextGen, posModel, 
-        new PosSequenceValidator(), 10);
+    beam = new BeamSearch<String>(size, contextGen, posModel, new PosSequenceValidator(), 10);
+  }
+  
+  /**
+   * Creates a new tagger with the specified model and tag dictionary.
+   * 
+   * @param model The model used for tagging.
+   * @param tagdict The tag dictionary used for specifing a set of valid tags.
+   */
+  @Deprecated
+  public POSTaggerME(AbstractModel model, TagDictionary tagdict) {
+    this(model, new DefaultPOSContextGenerator(null),tagdict);
+  }
+  
+  /**
+   * Creates a new tagger with the specified model and n-gram dictionary.
+   * 
+   * @param model The model used for tagging.
+   * @param dict The n-gram dictionary used for feature generation.
+   */
+  @Deprecated
+  public POSTaggerME(AbstractModel model, Dictionary dict) {
+    this(model, new DefaultPOSContextGenerator(dict));
+  }
+  
+  /**
+   * Creates a new tagger with the specified model, n-gram dictionary, and tag dictionary.
+   * 
+   * @param model The model used for tagging.
+   * @param dict The n-gram dictionary used for feature generation.
+   * @param tagdict The dictionary which specifies the valid set of tags for some words. 
+   */
+  @Deprecated
+  public POSTaggerME(AbstractModel model, Dictionary dict, TagDictionary tagdict) {
+      this(DEFAULT_BEAM_SIZE,model, new DefaultPOSContextGenerator(dict),tagdict);
+    }
+
+  /**
+   * Creates a new tagger with the specified model and context generator.
+   * 
+   * @param model The model used for tagging.
+   * @param cg The context generator used for feature creation.
+   */
+  @Deprecated
+  public POSTaggerME(AbstractModel model, POSContextGenerator cg) {
+    this(DEFAULT_BEAM_SIZE, model, cg, null);
+  }
+  
+  /**
+   * Creates a new tagger with the specified model, context generator, and tag dictionary.
+   * 
+   * @param model The model used for tagging.
+   * @param cg The context generator used for feature creation.
+   * @param tagdict The dictionary which specifies the valid set of tags for some words.
+   */
+  @Deprecated
+  public POSTaggerME(AbstractModel model, POSContextGenerator cg, TagDictionary tagdict) {
+      this(DEFAULT_BEAM_SIZE, model, cg, tagdict);
+    }
+
+  /**
+   * Creates a new tagger with the specified beam size, model, context generator, and tag dictionary.
+   * 
+   * @param beamSize The number of alturnate tagging considered when tagging. 
+   * @param model The model used for tagging.
+   * @param cg The context generator used for feature creation.
+   * @param tagdict The dictionary which specifies the valid set of tags for some words.
+   */
+  @Deprecated
+  public POSTaggerME(int beamSize, AbstractModel model, POSContextGenerator cg, TagDictionary tagdict) {
+    size = beamSize;
+    posModel = model;
+    contextGen = cg;
+    beam = new BeamSearch(size, cg, model);
+    tagDictionary = tagdict;
   }
   
   /**
@@ -175,7 +211,7 @@ public class POSTaggerME implements POSTagger {
     }
     return tags;
   }
-
+  
   public Sequence[] topKSequences(List<String> sentence) {
     return beam.bestSequences(size, sentence.toArray(new String[sentence.size()]), null);
   }
@@ -183,7 +219,7 @@ public class POSTaggerME implements POSTagger {
   public Sequence[] topKSequences(String[] sentence) {
     return beam.bestSequences(size, sentence, null);
   }
-  
+
   /**
    * Populates the specified array with the probabilities for each tag of the last tagged sentence. 
    * 
@@ -240,180 +276,22 @@ public class POSTaggerME implements POSTagger {
     return orderedTags;
   }
   
-  /**
-   * .
-   * 
-   * TODO: Ask tom if the ngramDictionay is created during training, maybe we
-   * only want a flag which indicates if it should be used
-   * 
-   * @param samples
-   * @param tagDictionary
-   * @param ngramDictionary
-   * @param beamSize
-   * @param cutoff
-   * @return
-   * 
-   * @throws IOException  its throws if an {@link IOException} is thrown
-   * during IO operations on a temp file which is created during training occur.
-   */
-  public static POSModel train(Iterator<POSSample> samples, POSDictionary tagDictionary,
-      Dictionary ngramDictionary, int cutoff) throws IOException {
-    
-   int iterations = 100;
+  private class PosSequenceValidator implements SequenceValidator<String> {
 
-    GISModel posModel = opennlp.maxent.GIS.trainModel(iterations,
-        new TwoPassDataIndexer(new POSEventStreamNew(samples,
-        new DefaultPOSContextGenerator(ngramDictionary)), cutoff));
-    
-    return new POSModel(posModel, tagDictionary, ngramDictionary);
-  }
-  
-  /**
-   * Trains a new model.
-   * 
-   * @param evc
-   * @param modelFile
-   * @throws IOException
-   */
-  @Deprecated
-  public static void train(EventStream evc, File modelFile) throws IOException {
-    AbstractModel model = train(evc, 100,5);
-    new SuffixSensitiveGISModelWriter(model, modelFile).persist();
-  }
-
-  /**
-   * Trains a new model
-   * 
-   * @param es
-   * @param iterations
-   * @param cut
-   * @return the new model
-   * @throws IOException
-   */
-  @Deprecated
-  public static AbstractModel train(EventStream es, int iterations, int cut) throws IOException {
-    return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
-  }
-  
-  private static void usage() {
-    System.err.println("Usage: POSTaggerME [-encoding encoding] [-dict dict_file] training model [cutoff] [iterations]");
-    System.err.println("This trains a new model on the specified training file and writes the trained model to the model file.");
-    System.err.println("-encoding Specifies the encoding of the training file");
-    System.err.println("-dict Specifies that a dictionary file should be created for use in distinguising between rare and non-rare words");
-    System.exit(1);
-  }
-
-  /**
-   * <p>Trains a new pos model.</p>
-   *
-   * <p>Usage: java opennlp.postag.POStaggerME [-encoding charset] [-d dict_file] data_file  new_model_name (iterations cutoff)?</p>
-   * @param args 
-   * @throws IOException 
-   * @throws InvalidFormatException 
-   *
-   */
-  public static void main(String[] args) throws IOException, InvalidFormatException {
-    if (args.length == 0){
-      usage();
-    }
-    int ai=0;
-    try {
-      String encoding = null;
-      String dict = null;
-      while (args[ai].startsWith("-")) {
-        if (args[ai].equals("-encoding")) {
-          ai++;
-          if (ai < args.length) {
-            encoding = args[ai++];
-          }
-          else {
-            usage();
-          }
-        }
-        else if (args[ai].equals("-dict")) {
-          ai++;
-          if (ai < args.length) {
-            dict = args[ai++];
-          }
-          else {
-            usage();
-          }
-        }
-        else {
-          System.err.println("Unknown option "+args[ai]);
-          usage();
-        }
-      }
-      File inFile = new File(args[ai++]);
-      File outFile = new File(args[ai++]);
-      int cutoff = 5;
-      int iterations = 100;
-      if (args.length > ai) {
-        cutoff = Integer.parseInt(args[ai++]);
-        iterations = Integer.parseInt(args[ai++]);
-      }
-      AbstractModel mod;
-      if (dict != null) {
-        System.err.println("Building dictionary");
-        
-        NGramModel ngramModel = new NGramModel(); 
-        
-        DataStream data = new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile));
-        while(data.hasNext()) {
-          String tagStr = (String) data.nextToken();
-          String[] tt = tagStr.split(" ");
-          String[] words = new String[tt.length];
-          for (int wi=0;wi<words.length;wi++) {
-            words[wi] = 
-                tt[wi].substring(0,tt[wi].lastIndexOf('_'));
-          }
-          
-          ngramModel.add(new StringList(words), 1, 1);
-        }
-        
-        System.out.println("Saving the dictionary");
-        
-        ngramModel.cutoff(cutoff, Integer.MAX_VALUE);
-        Dictionary dictionary = ngramModel.toDictionary(true);
-        
-        dictionary.serialize(new FileOutputStream(dict));
-      }
-      EventStream es;
-      if (encoding == null) {
-        if (dict == null) {
-          es = new POSEventStreamNew(new WordTagSampleStream(new PlainTextByLineDataStream(
-              new InputStreamReader(new FileInputStream(inFile)))));
-        }
-        else {
-          POSContextGenerator cg = new DefaultPOSContextGenerator(new Dictionary(new FileInputStream(dict)));
-
-          es = new POSEventStreamNew(new WordTagSampleStream(new PlainTextByLineDataStream(
-              new InputStreamReader(new FileInputStream(inFile)))), 
-              cg);
-        }
+    public boolean validSequence(int i, String[] inputSequence,
+        String[] outcomesSequence, String outcome) {
+      if (tagDictionary == null) {
+        return true;
       }
       else {
-        if (dict == null) {
-          
-          es = new POSEventStreamNew(new WordTagSampleStream(new PlainTextByLineDataStream(
-              new InputStreamReader(new FileInputStream(inFile), encoding))));
+        String[] tags = tagDictionary.getTags(inputSequence[i].toString());
+        if (tags == null) {
+          return true;
         }
         else {
-          POSContextGenerator cg = new DefaultPOSContextGenerator(new Dictionary(new FileInputStream(dict)));
-          
-          es = new POSEventStreamNew(new WordTagSampleStream(new PlainTextByLineDataStream(
-              new InputStreamReader(new FileInputStream(inFile), encoding))), cg);
+          return Arrays.asList(tags).contains(outcome);
         }
       }
-      mod = train(es, iterations, cutoff);
-      
-      System.out.println("Saving the model as: " + outFile);
-      
-      new SuffixSensitiveGISModelWriter(mod, outFile).persist();
-
-    }
-    catch (Exception e) {
-      e.printStackTrace();
     }
   }
 }

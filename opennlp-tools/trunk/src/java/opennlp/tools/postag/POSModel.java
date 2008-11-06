@@ -15,9 +15,13 @@
  * limitations under the License.
  */
 
+
 package opennlp.tools.postag;
 
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,7 +31,7 @@ import java.util.zip.ZipOutputStream;
 
 import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
-import opennlp.model.MaxentModel;
+import opennlp.model.GenericModelReader;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ModelUtil;
@@ -44,31 +48,31 @@ public final class POSModel {
   private static final String TAG_DICTIONARY_ENTRY_NAME = "tag-dictionary.xml";
   private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram-dictionary.xml";
   
-  private final AbstractModel maxentPosModel;
+  private final AbstractModel posModel;
   
   private final POSDictionary tagDictionary;
   
   private final Dictionary ngramDict;
   
-  public POSModel(AbstractModel maxentPosModel, POSDictionary tagDictionary, 
+  public POSModel(AbstractModel posModel, POSDictionary tagDictionary, 
       Dictionary ngramDict) {
     
-    if (maxentPosModel == null) 
+    if (posModel == null) 
         throw new IllegalArgumentException("The maxentPosModel param must not be null!");
     
     // the model is always valid, because there
     // is nothing that can be assumed about the used
     // tags
     
-    this.maxentPosModel = maxentPosModel;
+    this.posModel = posModel;
     
     this.tagDictionary = tagDictionary;
     
     this.ngramDict = ngramDict;
   }
   
-  public MaxentModel getMaxentPosModel() {
-    return maxentPosModel;
+  public AbstractModel getPosModel() {
+    return posModel;
   }
   
   /**
@@ -105,7 +109,7 @@ public final class POSModel {
     
     zip.putNextEntry(new ZipEntry(MAXENT_MODEL_ENTRY_NAME));
 
-    ModelUtil.writeModel(maxentPosModel, zip);
+    ModelUtil.writeModel(posModel, zip);
     
     zip.closeEntry();
     
@@ -158,5 +162,31 @@ public final class POSModel {
       throw new InvalidFormatException("Could not find maxent pos model!");
     
     return new POSModel(maxentPosModel, posDictionary, ngramDictionary);
+  }
+  
+  public static void usage() {
+    System.err.println("POSModel packageName modelName [tagDictionary] [ngramDictionary]");
+  }
+  
+  public static void main(String[] args) throws IOException, InvalidFormatException {
+    if (args.length == 0){
+      usage();
+      System.exit(1);
+    }
+    int ai=0;
+    String packageName = args[ai++];
+    String modelName = args[ai++];
+    AbstractModel model = new GenericModelReader(new File(modelName)).getModel();
+    POSDictionary tagDict = null;
+    Dictionary ngramDict = null;
+    if (ai < args.length) {
+      String tagDictName = args[ai++];
+      tagDict = new POSDictionary(tagDictName);
+      if (ai < args.length) {
+        String ngramName = args[ai++];
+        ngramDict = new Dictionary(new FileInputStream(ngramName));
+      }
+    }
+    new POSModel(model,tagDict,ngramDict).serialize(new FileOutputStream(new File(packageName)));
   }
 }

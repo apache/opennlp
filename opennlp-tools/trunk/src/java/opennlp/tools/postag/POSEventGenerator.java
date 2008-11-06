@@ -28,7 +28,7 @@ import opennlp.model.EventStream;
  * One should use this generator by adding a small number of events (perhaps a sentence worth) and 
  * then removing them or the storage of events will require a large amount of memory. 
  */
-public class POSEventGenerator implements EventStream {
+public class POSEventGenerator extends opennlp.model.AbstractEventStream {
 
   private List<Event> events;
   private int eventIndex;
@@ -78,7 +78,7 @@ public class POSEventGenerator implements EventStream {
     return eventIndex < events.size();
   }
 
-  public Event nextEvent() {
+  public Event next() {
     Event e = (Event) events.get(eventIndex);
     eventIndex++;
     if (eventIndex == events.size()) {

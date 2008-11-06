@@ -25,7 +25,7 @@ import opennlp.model.EventStream;
 /**
 * Iterator-like class for modeling document classification events.
 */
-public class DocumentCategorizerEventStream implements EventStream {
+public class DocumentCategorizerEventStream extends opennlp.model.AbstractEventStream {
   
   private DocumentCategorizerContextGenerator mContextGenerator;
   
@@ -59,7 +59,7 @@ public class DocumentCategorizerEventStream implements EventStream {
     return data.hasNext();
   }
 
-  public Event nextEvent() {
+  public Event next() {
 	  
     DocumentSample sample = (DocumentSample) data.nextToken();
     

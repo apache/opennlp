@@ -196,7 +196,7 @@ public class DictionarySerializer {
       xmlReader.parse(new InputSource(new GZIPInputStream(in)));
     } 
     catch (SAXException e) {
-      throw new InvalidFormatException("The profile data stream has" +
+      throw new InvalidFormatException("The profile data stream has " +
             "an invalid format!", e);
     } 
   }

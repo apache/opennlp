@@ -27,7 +27,7 @@ import opennlp.model.EventStream;
 /**
  * Class for creating an event stream out of data files for training a chunker.
  */
-public class ChunkerEventStream implements EventStream {
+public class ChunkerEventStream extends opennlp.model.AbstractEventStream {
 
   private ChunkerContextGenerator cg;
   private DataStream data;
@@ -60,7 +60,7 @@ public class ChunkerEventStream implements EventStream {
   }
 
   /* inherieted javadoc */
-  public Event nextEvent() {
+  public Event next() {
     if (ei == events.length) {
       addNewEvents();
       ei = 0;

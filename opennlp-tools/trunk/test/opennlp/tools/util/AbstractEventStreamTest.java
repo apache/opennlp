@@ -39,7 +39,7 @@ public class AbstractEventStreamTest extends TestCase {
   /**
    * This class extends the {@link AbstractEventStream} to help
    * testing the {@link AbstractEventStream#hasNext()}
-   * and {@link AbstractEventStream#nextEvent()} methods.
+   * and {@link AbstractEventStream#next()} methods.
    */
   class TestEventStream extends AbstractEventStream<RESULT> {
 
@@ -97,7 +97,7 @@ public class AbstractEventStreamTest extends TestCase {
     
     int eventCounter = 0;
     while (eventStream.hasNext()) {
-      eventStream.nextEvent();
+      eventStream.next();
       eventCounter++;
     }
     

@@ -30,7 +30,7 @@ import opennlp.tools.util.AbstractEventStream;
  * and converts the {@link POSSample}s into {@link Event}s which
  * can be used by the maxent library for training.
  */
-public class POSEventStreamNew extends AbstractEventStream<POSSample> {
+public class POSSampleEventStream extends AbstractEventStream<POSSample> {
 
   /**
    * The {@link POSContextGenerator} used
@@ -45,7 +45,7 @@ public class POSEventStreamNew extends AbstractEventStream<POSSample> {
    * @param samples
    * @param cg
    */
-  public POSEventStreamNew(Iterator<POSSample> samples, POSContextGenerator cg) {
+  public POSSampleEventStream(Iterator<POSSample> samples, POSContextGenerator cg) {
     super(samples);
     
     this.cg = cg;
@@ -56,7 +56,7 @@ public class POSEventStreamNew extends AbstractEventStream<POSSample> {
    * and a {@link DefaultPOSContextGenerator}.
    * @param samples
    */
-  public POSEventStreamNew(Iterator<POSSample> samples) {
+  public POSSampleEventStream(Iterator<POSSample> samples) {
     this(samples, new DefaultPOSContextGenerator(null));
   }
   

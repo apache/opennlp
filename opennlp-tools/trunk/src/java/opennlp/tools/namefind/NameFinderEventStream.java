@@ -34,7 +34,7 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  * Class for creating an event stream out of data files for training an name
  * finder.
  */
-public class NameFinderEventStream implements EventStream {
+public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
 
   private Iterator<NameSample> nameSampleStream;
 
@@ -138,7 +138,7 @@ public class NameFinderEventStream implements EventStream {
     }
   }
 
-  public Event nextEvent() {
+  public Event next() {
     // call to hasNext() is necessary for reloading elements
     // if the events iterator was already consumed
     if (!events.hasNext()) {
@@ -171,7 +171,7 @@ public class NameFinderEventStream implements EventStream {
     }
     EventStream es = new NameFinderEventStream(new NameSampleDataStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.InputStreamReader(System.in))));
     while (es.hasNext()) {
-      System.out.println(es.nextEvent());
+      System.out.println(es.next());
     }
   }
 }

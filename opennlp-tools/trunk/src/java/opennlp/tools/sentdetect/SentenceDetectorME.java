@@ -112,7 +112,7 @@ public class SentenceDetectorME implements SentenceDetector {
    *          evaluate end-of-sentence decisions.
    */
   @Deprecated
-  public SentenceDetectorME(MaxentModel m) {
+  public SentenceDetectorME(AbstractModel m) {
     this(m, new DefaultSDContextGenerator(opennlp.tools.lang.english.EndOfSentenceScanner.eosCharacters), new opennlp.tools.lang.english.EndOfSentenceScanner());
   }
   
@@ -128,7 +128,7 @@ public class SentenceDetectorME implements SentenceDetector {
    *          will use to locate end of sentence indexes.
    */
   @Deprecated
-  public SentenceDetectorME(MaxentModel m, SDContextGenerator cg, EndOfSentenceScanner s) {
+  public SentenceDetectorME(AbstractModel m, SDContextGenerator cg, EndOfSentenceScanner s) {
     model = m;
     cgen = cg;
     scanner = s;

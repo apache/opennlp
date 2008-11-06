@@ -36,7 +36,7 @@ import opennlp.tools.postag.POSContextGenerator;
  * @author Tom Morton
  *
  */
-public abstract class AbstractParserEventStream implements EventStream {
+public abstract class AbstractParserEventStream extends opennlp.model.AbstractEventStream {
 
   private ChunkerContextGenerator chunkerContextGenerator;
   private POSContextGenerator tagContextGenerator;
@@ -80,7 +80,7 @@ public abstract class AbstractParserEventStream implements EventStream {
     this (d,rules,etype,null);
   }
 
-  public Event nextEvent() {
+  public Event next() {
     while (ei == events.length) {
       addNewEvents();
       ei = 0;

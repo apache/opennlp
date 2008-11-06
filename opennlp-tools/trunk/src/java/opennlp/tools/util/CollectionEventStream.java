@@ -27,7 +27,7 @@ import opennlp.model.EventStream;
 /**
  * Creates an event stream out of a collection of events. 
  */
-public class CollectionEventStream implements EventStream {
+public class CollectionEventStream extends opennlp.model.AbstractEventStream {
   
   private Iterator<Event> ci;
   
@@ -35,8 +35,8 @@ public class CollectionEventStream implements EventStream {
     ci = c.iterator();
   }
 
-  public Event nextEvent() {
-    return (Event) ci.next();
+  public Event next() {
+    return ci.next();
   }
 
   public boolean hasNext() {
