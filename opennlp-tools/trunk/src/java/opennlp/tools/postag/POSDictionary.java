@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.postag;
 
 import java.io.BufferedReader;
@@ -43,7 +42,7 @@ import opennlp.tools.util.StringList;
  * 
  * @author Tom Morton
  */
-public class POSDictionary implements TagDictionary {
+public class POSDictionary implements Iterable<String>, TagDictionary {
 
   private Map<String, String[]> dictionary;
   
@@ -133,6 +132,20 @@ public class POSDictionary implements TagDictionary {
     }
   }
   
+  /**
+   * Adds the tags for the word. 
+   * 
+   * @param word
+   * @param tags
+   */
+  void addTags(String word, String... tags) {
+    dictionary.put(word, tags);
+  }
+  
+  public Iterator<String> iterator() {
+    return dictionary.keySet().iterator();
+  }
+  
   private static String tagsToString(String tags[]) {
       
     StringBuilder tagString = new StringBuilder();
@@ -153,6 +166,9 @@ public class POSDictionary implements TagDictionary {
   /**
    * Writes the {@link POSDictionary} to the given {@link OutputStream};
    * 
+   * After the serialization is finished the provided 
+   * {@link OutputStream} remains open.
+   *
    * @param out
    *            the {@link OutputStream} to write the dictionary into.
    * 
@@ -184,6 +200,34 @@ public class POSDictionary implements TagDictionary {
     };
     
     DictionarySerializer.serialize(out, entries);
+  }
+  
+  @Override
+  public boolean equals(Object o) {
+    
+    if (o == this) {
+      return true;
+    }
+    else if (o instanceof POSDictionary) {
+      POSDictionary dictionary = (POSDictionary) o;
+      
+      if (this.dictionary.size() == dictionary.dictionary.size()) {
+        
+        for (String word : this) {
+          
+          String aTags[] = getTags(word);
+          String bTags[] = dictionary.getTags(word);
+          
+          if (!Arrays.equals(aTags, bTags)) {
+            return false;
+          }
+        }
+        
+        return true;
+      }
+    }
+    
+    return false;
   }
   
   @Override
