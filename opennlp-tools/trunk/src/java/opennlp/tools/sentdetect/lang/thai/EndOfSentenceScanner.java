@@ -16,7 +16,7 @@
  */
 
 
-package opennlp.tools.lang.thai;
+package opennlp.tools.sentdetect.lang.thai;
 
 import opennlp.tools.sentdetect.AbstractEndOfSentenceScanner;
 
@@ -27,10 +27,6 @@ public class EndOfSentenceScanner extends AbstractEndOfSentenceScanner {
 
   public static final char[] eosCharacters =  {' ','\n'};
   
-  public EndOfSentenceScanner() {
-    super();
-  }
-
   public char[] getEndOfSentenceCharacters() {
     return eosCharacters;
   }

@@ -39,8 +39,7 @@ import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
-import opennlp.model.TwoPassDataIndexer;
-import opennlp.tools.lang.thai.SentenceContextGenerator;
+import opennlp.tools.sentdetect.lang.thai.SentenceContextGenerator;
 
 /**
  * A sentence detector for splitting up raw text into sentences.  A maximum
@@ -95,14 +94,11 @@ public class SentenceDetectorME implements SentenceDetector {
    */
   public SentenceDetectorME(SentenceModel model) {
     this.model = model.getMaxentModel();
-    // TODO: Why do we not pass in the end of sentence scanner here instaed of the end chars ?
     cgen = new DefaultSDContextGenerator(model.getEndOfSentenceCharacters());
-    // TODO: Build a Default end of SentenceScanner which gets an array of end of sentence chars
-    scanner = new opennlp.tools.lang.english.EndOfSentenceScanner();
+    scanner = new DefaultEndOfSentenceScanner(model.getEndOfSentenceCharacters());
     useTokenEnd = true;
   }
 
-  
   /**
    * Constructor which takes a MaxentModel and calls the three-arg
    * constructor with that model, an SDContextGenerator, and the
@@ -372,7 +368,7 @@ public class SentenceDetectorME implements SentenceDetector {
         cg = new DefaultSDContextGenerator(scanner.getEndOfSentenceCharacters());
       }
       else if (lang.equals("thai")) {
-        scanner = new opennlp.tools.lang.thai.EndOfSentenceScanner();
+        scanner = new opennlp.tools.sentdetect.lang.thai.EndOfSentenceScanner();
         cg = new SentenceContextGenerator();
       }
       else {

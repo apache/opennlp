@@ -16,7 +16,7 @@
  */
 
 
-package opennlp.tools.lang.thai;
+package opennlp.tools.sentdetect.lang.thai;
 
 import opennlp.tools.sentdetect.DefaultSDContextGenerator;
 

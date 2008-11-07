@@ -194,8 +194,8 @@ public class SDEventStream extends opennlp.model.AbstractEventStream {
         cg = new DefaultSDContextGenerator(scanner.getEndOfSentenceCharacters());
       }
       else if (lang.equals("thai")) {
-        scanner = new opennlp.tools.lang.thai.EndOfSentenceScanner();
-        cg = new opennlp.tools.lang.thai.SentenceContextGenerator();
+        scanner = new opennlp.tools.sentdetect.lang.thai.EndOfSentenceScanner();
+        cg = new opennlp.tools.sentdetect.lang.thai.SentenceContextGenerator();
       }
       else {
         usage();
