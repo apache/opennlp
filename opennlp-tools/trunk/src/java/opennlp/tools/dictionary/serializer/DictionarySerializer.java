@@ -204,6 +204,9 @@ public class DictionarySerializer {
   /**
    * Serializes the given entries to the given {@link OutputStream}.
    * 
+   * After the serialization is finished the provided 
+   * {@link OutputStream} remains open.
+   * 
    * @param out 
    * @param entries 
    * 
