@@ -37,6 +37,7 @@ public class POSDictionaryTest extends TestCase {
     dictionary.addTags("a", "1", "2", "3");
     dictionary.addTags("b", "4", "5", "6");
     dictionary.addTags("c", "7", "8", "9");
+    dictionary.addTags("Always", "RB","NNP");
     
     
     ByteArrayOutputStream out = new ByteArrayOutputStream();
