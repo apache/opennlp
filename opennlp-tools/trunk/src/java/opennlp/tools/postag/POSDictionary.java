@@ -46,7 +46,9 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
 
   private Map<String, String[]> dictionary;
   
-  private boolean caseSensitive;
+  // TODO: Fix workaround, does not work for the false case,
+  // because the map lookup fails
+  private boolean caseSensitive = true;
 
   public POSDictionary() {
     dictionary = new HashMap<String, String[]>();
