@@ -15,9 +15,12 @@
  * limitations under the License.
  */
 
+
 package opennlp.tools.tokenize;
 
 import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -180,5 +183,39 @@ public final class TokenizerModel {
     
     return new TokenizerModel(model, 
         Boolean.parseBoolean(useAlphaNumericOptimizationString));
+  }
+  
+  public static void main(String[] args) throws IOException {
+    if (args.length < 2){
+      System.err.println("TokenizerModel [-alphaNumericOptimization] packageName modelName");
+      System.exit(1);
+    }
+    
+    int ai = 0;
+    
+    boolean alphaNumericOptimization = false;
+    
+    if ("-alphaNumericOptimization".equals(args[ai])) {
+      alphaNumericOptimization = true;
+      ai++;
+    }
+    
+    String packageName = args[ai++];
+    String modelName = args[ai];
+    
+    AbstractModel model = new BinaryGISModelReader(new DataInputStream(
+        new FileInputStream(modelName))).getModel();
+    
+    TokenizerModel packageModel = new TokenizerModel(model, alphaNumericOptimization);
+    
+    OutputStream out = null;
+    try {
+      out = new FileOutputStream(packageName);
+      packageModel.serialize(out);
+    }
+    finally {
+      if (out != null)
+        out.close();
+    }
   }
 }
