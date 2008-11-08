@@ -61,6 +61,8 @@ public class DictionarySerializer {
     
     private List<String> mTokenList = new LinkedList<String>();
 
+    private StringBuilder token = new StringBuilder();
+    
     private Attributes mAttributes;
     
     private DictionaryContenthandler(EntryInserter inserter) {
@@ -97,7 +99,7 @@ public class DictionarySerializer {
      public void characters(char[] ch, int start, int length) 
          throws SAXException {
        if (mIsInsideTokenElement) {
-         mTokenList.add(new String(ch, start, length));
+         token.append(ch, start, length);
        }
      }
 
@@ -108,7 +110,11 @@ public class DictionarySerializer {
      public void endElement(String uri, String localName, String qName) 
          throws SAXException {
        
-       if (ENTRY_ELEMENT.equals(localName)) {
+       if (TOKEN_ELEMENT.equals(localName)) {
+         mTokenList.add(token.toString().trim());
+         token.setLength(0);
+       }
+       else if (ENTRY_ELEMENT.equals(localName)) {
          
          String[] tokens = mTokenList.toArray(
              new String[mTokenList.size()]);
@@ -118,7 +124,7 @@ public class DictionarySerializer {
          try {
            mInserter.insert(entry);
          } catch (InvalidFormatException e) {
-           throw new SAXException("Invalid dictionary format!");
+           throw new SAXException("Invalid dictionary format!", e);
          }
          
          mTokenList.clear();
@@ -193,7 +199,7 @@ public class DictionarySerializer {
     try {
       xmlReader = XMLReaderFactory.createXMLReader();
       xmlReader.setContentHandler(profileContentHandler);
-      xmlReader.parse(new InputSource(new GZIPInputStream(in)));
+      xmlReader.parse(new InputSource(in));
     } 
     catch (SAXException e) {
       throw new InvalidFormatException("The profile data stream has " +
@@ -214,8 +220,7 @@ public class DictionarySerializer {
    */
   public static void serialize(OutputStream out, Iterator<Entry> entries) 
       throws IOException {
-    GZIPOutputStream gzipOut = new GZIPOutputStream(out);
-    StreamResult streamResult = new StreamResult(gzipOut);
+    StreamResult streamResult = new StreamResult(out);
     SAXTransformerFactory tf = (SAXTransformerFactory) 
         SAXTransformerFactory.newInstance();
     
@@ -252,8 +257,6 @@ public class DictionarySerializer {
     catch (SAXException e) {
       throw new IOException("There was an error during serialization!");
     }
-    
-    gzipOut.finish();
   }
   
   private static void serializeEntry(TransformerHandler hd, Entry entry) 
