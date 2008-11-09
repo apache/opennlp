@@ -19,8 +19,11 @@ public class GenericModelReader extends AbstractModelReader {
     if (modelType.equals("Perceptron")) {
       delegateModelReader = new PerceptronModelReader(this.dataReader);
     }
-    else if (modelType.equals("Maxent")) {
+    else if (modelType.equals("GIS")) {
       delegateModelReader = new GISModelReader(this.dataReader);
+    }
+    else {
+      System.err.println("Unknown model type: "+modelType);
     }
   }
   
