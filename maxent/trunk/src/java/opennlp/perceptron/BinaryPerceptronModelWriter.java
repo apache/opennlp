@@ -29,7 +29,7 @@ import opennlp.model.AbstractModel;
  * Model writer that saves models in binary format.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.1 $, $Date: 2008-11-06 19:59:44 $
+ * @version     $Revision: 1.2 $, $Date: 2008-11-10 14:51:40 $
  */
 public class BinaryPerceptronModelWriter extends PerceptronModelWriter {
   DataOutputStream output;
@@ -67,19 +67,19 @@ public class BinaryPerceptronModelWriter extends PerceptronModelWriter {
     output = dos;
   }
 
-  protected void writeUTF (String s) throws java.io.IOException {
+  public void writeUTF (String s) throws java.io.IOException {
     output.writeUTF(s);
   }
 
-  protected void writeInt (int i) throws java.io.IOException {
+  public void writeInt (int i) throws java.io.IOException {
     output.writeInt(i);
   }
 
-  protected void writeDouble (double d) throws java.io.IOException {
+  public void writeDouble (double d) throws java.io.IOException {
     output.writeDouble(d);
   }
 
-  protected void close () throws java.io.IOException {
+  public void close () throws java.io.IOException {
     output.flush();
     output.close();
   }

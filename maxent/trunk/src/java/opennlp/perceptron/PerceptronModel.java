@@ -14,6 +14,7 @@ public class PerceptronModel extends AbstractModel {
   
   public PerceptronModel(Context[] params, String[] predLabels, String[] outcomeNames) {
     super(params,predLabels,outcomeNames);
+    modelType = ModelType.Perceptron;
   }
   
   public double[] eval(String[] context) {
@@ -86,6 +87,7 @@ public class PerceptronModel extends AbstractModel {
         }
       }
     }
+    //System.err.println("Perceptron Model: "+java.util.Arrays.asList(prior));
     return prior;
   }
   

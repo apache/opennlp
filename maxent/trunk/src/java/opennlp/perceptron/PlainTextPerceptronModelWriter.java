@@ -32,7 +32,7 @@ import opennlp.model.AbstractModel;
  * Model writer that saves models in plain text format.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.1 $, $Date: 2008-11-06 19:59:44 $
+ * @version     $Revision: 1.2 $, $Date: 2008-11-10 14:51:40 $
  */
 public class PlainTextPerceptronModelWriter extends PerceptronModelWriter {
     BufferedWriter output;
@@ -70,22 +70,22 @@ public class PlainTextPerceptronModelWriter extends PerceptronModelWriter {
 	output = bw;
     }
 
-    protected void writeUTF (String s) throws java.io.IOException {
+    public void writeUTF (String s) throws java.io.IOException {
 	output.write(s);
 	output.newLine();
     }
 
-    protected void writeInt (int i) throws java.io.IOException {
+    public void writeInt (int i) throws java.io.IOException {
 	output.write(Integer.toString(i));
 	output.newLine();
     }
     
-    protected void writeDouble (double d) throws java.io.IOException {
+    public void writeDouble (double d) throws java.io.IOException {
 	output.write(Double.toString(d));
 	output.newLine();
     }
 
-    protected void close () throws java.io.IOException {
+    public void close () throws java.io.IOException {
 	output.flush();
 	output.close();
     }

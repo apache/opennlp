@@ -17,72 +17,76 @@
 
 package opennlp.maxent.io;
 
-import opennlp.maxent.*;
-import opennlp.model.AbstractModel;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.zip.GZIPOutputStream;
 
-import java.io.*;
-import java.util.zip.*;
+import opennlp.model.AbstractModel;
 
 /**
  * Model writer that saves models in plain text format.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2008-09-28 18:04:25 $
+ * @version     $Revision: 1.3 $, $Date: 2008-11-10 14:51:39 $
  */
 public class PlainTextGISModelWriter extends GISModelWriter {
-    BufferedWriter output;
-    
-   /**
-     * Constructor which takes a GISModel and a File and prepares itself to
-     * write the model to that file. Detects whether the file is gzipped or not
-     * based on whether the suffix contains ".gz".
-     *
-     * @param model The GISModel which is to be persisted.
-     * @param f The File in which the model is to be persisted.
-     */
-     public PlainTextGISModelWriter (AbstractModel model, File f)
-	throws IOException, FileNotFoundException {
+  BufferedWriter output;
 
-	super(model);
-	if (f.getName().endsWith(".gz")) {
-	    output = new BufferedWriter(new OutputStreamWriter(
-  	                 new GZIPOutputStream(new FileOutputStream(f))));
-	}
-	else {
-	    output = new BufferedWriter(new FileWriter(f));
-	}
-    }
+  /**
+   * Constructor which takes a GISModel and a File and prepares itself to
+   * write the model to that file. Detects whether the file is gzipped or not
+   * based on whether the suffix contains ".gz".
+   *
+   * @param model The GISModel which is to be persisted.
+   * @param f The File in which the model is to be persisted.
+   */
+  public PlainTextGISModelWriter (AbstractModel model, File f)
+  throws IOException, FileNotFoundException {
 
-   /**
-     * Constructor which takes a GISModel and a BufferedWriter and prepares
-     * itself to write the model to that writer.
-     *
-     * @param model The GISModel which is to be persisted.
-     * @param bw The BufferedWriter which will be used to persist the model.
-     */
-    public PlainTextGISModelWriter (AbstractModel model, BufferedWriter bw) {
-	super(model);
-	output = bw;
+    super(model);
+    if (f.getName().endsWith(".gz")) {
+      output = new BufferedWriter(new OutputStreamWriter(
+          new GZIPOutputStream(new FileOutputStream(f))));
     }
+    else {
+      output = new BufferedWriter(new FileWriter(f));
+    }
+  }
 
-    protected void writeUTF (String s) throws java.io.IOException {
-	output.write(s);
-	output.newLine();
-    }
+  /**
+   * Constructor which takes a GISModel and a BufferedWriter and prepares
+   * itself to write the model to that writer.
+   *
+   * @param model The GISModel which is to be persisted.
+   * @param bw The BufferedWriter which will be used to persist the model.
+   */
+  public PlainTextGISModelWriter (AbstractModel model, BufferedWriter bw) {
+    super(model);
+    output = bw;
+  }
 
-    protected void writeInt (int i) throws java.io.IOException {
-	output.write(Integer.toString(i));
-	output.newLine();
-    }
-    
-    protected void writeDouble (double d) throws java.io.IOException {
-	output.write(Double.toString(d));
-	output.newLine();
-    }
+  public void writeUTF (String s) throws java.io.IOException {
+    output.write(s);
+    output.newLine();
+  }
 
-    protected void close () throws java.io.IOException {
-	output.flush();
-	output.close();
-    }
-    
+  public void writeInt (int i) throws java.io.IOException {
+    output.write(Integer.toString(i));
+    output.newLine();
+  }
+
+  public void writeDouble (double d) throws java.io.IOException {
+    output.write(Double.toString(d));
+    output.newLine();
+  }
+
+  public void close () throws java.io.IOException {
+    output.flush();
+    output.close();
+  }
 }

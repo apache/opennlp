@@ -27,7 +27,7 @@ import java.util.zip.*;
  * Model writer that saves models in binary format.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.3 $, $Date: 2008-09-28 18:04:30 $
+ * @version     $Revision: 1.4 $, $Date: 2008-11-10 14:51:39 $
  */
 public class BinaryGISModelWriter extends GISModelWriter {
     DataOutputStream output;
@@ -53,7 +53,7 @@ public class BinaryGISModelWriter extends GISModelWriter {
 	}
     }
 
-   /**
+    /**
      * Constructor which takes a GISModel and a DataOutputStream and prepares
      * itself to write the model to that stream.
      *
@@ -61,25 +61,25 @@ public class BinaryGISModelWriter extends GISModelWriter {
      * @param dos The stream which will be used to persist the model.
      */
     public BinaryGISModelWriter (AbstractModel model, DataOutputStream dos) {
-	super(model);
-	output = dos;
+      super(model);
+      output = dos;
     }
 
-    protected void writeUTF (String s) throws java.io.IOException {
-	output.writeUTF(s);
+    public void writeUTF (String s) throws java.io.IOException {
+      output.writeUTF(s);
     }
 
-    protected void writeInt (int i) throws java.io.IOException {
-	output.writeInt(i);
-    }
-    
-    protected void writeDouble (double d) throws java.io.IOException {
-	output.writeDouble(d);
+    public void writeInt (int i) throws java.io.IOException {
+      output.writeInt(i);
     }
 
-    protected void close () throws java.io.IOException {
-	output.flush();
-	output.close();
+    public void writeDouble (double d) throws java.io.IOException {
+      output.writeDouble(d);
+    }
+
+    public void close () throws java.io.IOException {
+      output.flush();
+      output.close();
     }
 
 }

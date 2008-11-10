@@ -39,19 +39,19 @@ public class ObjectGISModelWriter extends GISModelWriter {
   }
 
 
-  protected void writeUTF(String s) throws IOException {
+  public void writeUTF(String s) throws IOException {
     output.writeUTF(s);
   }
 
-  protected void writeInt(int i) throws IOException {
+  public void writeInt(int i) throws IOException {
     output.writeInt(i);
   }
 
-  protected void writeDouble(double d) throws IOException {
+  public void writeDouble(double d) throws IOException {
     output.writeDouble(d);
   }
 
-  protected void close() throws IOException {
+  public void close() throws IOException {
     output.flush();
     output.close();
   }

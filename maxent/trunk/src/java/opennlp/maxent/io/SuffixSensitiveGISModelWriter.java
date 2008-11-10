@@ -17,11 +17,16 @@
 
 package opennlp.maxent.io;
 
-import opennlp.maxent.*;
-import opennlp.model.AbstractModel;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.zip.GZIPOutputStream;
 
-import java.io.*;
-import java.util.zip.*;
+import opennlp.model.AbstractModel;
 
 /**
  * A writer for GIS models which inspects the filename and invokes the
@@ -33,62 +38,61 @@ import java.util.zip.*;
  *    <li>.bin --> the file is binary
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2008-09-28 18:04:22 $
+ * @version     $Revision: 1.3 $, $Date: 2008-11-10 14:51:39 $
  */
 public class SuffixSensitiveGISModelWriter extends GISModelWriter {
-    private final GISModelWriter suffixAppropriateWriter;
+  private final GISModelWriter suffixAppropriateWriter;
 
-    /**
-     * Constructor which takes a GISModel and a File and invokes the
-     * GISModelWriter appropriate for the suffix.
-     *
-     * @param model The GISModel which is to be persisted.
-     * @param f The File in which the model is to be stored.
-     */
-    public SuffixSensitiveGISModelWriter (AbstractModel model, File f)
-	throws IOException {
+  /**
+   * Constructor which takes a GISModel and a File and invokes the
+   * GISModelWriter appropriate for the suffix.
+   *
+   * @param model The GISModel which is to be persisted.
+   * @param f The File in which the model is to be stored.
+   */
+  public SuffixSensitiveGISModelWriter (AbstractModel model, File f)
+  throws IOException {
 
-	super (model);
-	
-	OutputStream output;
-	String filename = f.getName();
+    super (model);
 
-	// handle the zipped/not zipped distinction
-	if (filename.endsWith(".gz")) {
-	    output = new GZIPOutputStream(new FileOutputStream(f));
-	    filename = filename.substring(0,filename.length()-3);
-	}
-	else {
-	    output = new DataOutputStream(new FileOutputStream(f));
-	}
+    OutputStream output;
+    String filename = f.getName();
 
-	// handle the different formats
-	if (filename.endsWith(".bin")) {
-	    suffixAppropriateWriter =
-		new BinaryGISModelWriter(model,
-					 new DataOutputStream(output));
-	}
-	else { // default is ".txt"
-	    suffixAppropriateWriter =
-		new PlainTextGISModelWriter(model,
-		    new BufferedWriter(new OutputStreamWriter(output)));
-	}    
+    // handle the zipped/not zipped distinction
+    if (filename.endsWith(".gz")) {
+      output = new GZIPOutputStream(new FileOutputStream(f));
+      filename = filename.substring(0,filename.length()-3);
+    }
+    else {
+      output = new DataOutputStream(new FileOutputStream(f));
     }
 
-    protected void writeUTF (String s) throws java.io.IOException {
-	suffixAppropriateWriter.writeUTF(s);
+    // handle the different formats
+    if (filename.endsWith(".bin")) {
+      suffixAppropriateWriter =
+        new BinaryGISModelWriter(model,
+            new DataOutputStream(output));
     }
+    else { // default is ".txt"
+      suffixAppropriateWriter =
+        new PlainTextGISModelWriter(model,
+            new BufferedWriter(new OutputStreamWriter(output)));
+    }    
+  }
 
-    protected void writeInt (int i) throws java.io.IOException {
-	suffixAppropriateWriter.writeInt(i);
-    }
-    
-    protected void writeDouble (double d) throws java.io.IOException {
-	suffixAppropriateWriter.writeDouble(d);
-    }
+  public void writeUTF (String s) throws java.io.IOException {
+    suffixAppropriateWriter.writeUTF(s);
+  }
 
-    protected void close () throws java.io.IOException {
-	suffixAppropriateWriter.close();
-    }
+  public void writeInt (int i) throws java.io.IOException {
+    suffixAppropriateWriter.writeInt(i);
+  }
 
+  public void writeDouble (double d) throws java.io.IOException {
+    suffixAppropriateWriter.writeDouble(d);
+  }
+
+  public void close () throws java.io.IOException {
+    suffixAppropriateWriter.close();
+  }
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.model.AbstractModel;
+import opennlp.model.AbstractModelWriter;
 import opennlp.model.ComparablePredicate;
 import opennlp.model.Context;
 
@@ -16,9 +17,9 @@ import opennlp.model.Context;
  * extending class to define precisely how the data should be stored.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.1 $, $Date: 2008-11-06 19:59:44 $
+ * @version     $Revision: 1.2 $, $Date: 2008-11-10 14:51:40 $
  */
-public abstract class PerceptronModelWriter {
+public abstract class PerceptronModelWriter extends AbstractModelWriter {
     protected Context[] PARAMS;
     protected String[] OUTCOME_LABELS;
     protected String[] PRED_LABELS;
@@ -36,58 +37,6 @@ public abstract class PerceptronModelWriter {
       for (String pred : pmap.keySet()) {
         PRED_LABELS[pmap.get(pred)] = pred;
       }
-    }
-
-    protected abstract void writeUTF (String s) throws java.io.IOException;
-    protected abstract void writeInt (int i) throws java.io.IOException;
-    protected abstract void writeDouble (double d) throws java.io.IOException;
-    protected abstract void close () throws java.io.IOException;
-
-    /**
-     * Writes the model to disk, using the <code>writeX()</code> methods
-     * provided by extending classes.
-     *
-     * <p>If you wish to create a PerceptronModelWriter which uses a different
-     * structure, it will be necessary to override the persist method in
-     * addition to implementing the <code>writeX()</code> methods.
-     */
-    public void persist() throws IOException {
-      
-      // the type of model (GIS)
-      writeUTF("Perceptron");
-      
-      // the mapping from outcomes to their integer indexes
-      writeInt(OUTCOME_LABELS.length);
-      
-      for (int i=0; i<OUTCOME_LABELS.length; i++)
-        writeUTF(OUTCOME_LABELS[i]); 
-      
-      // the mapping from predicates to the outcomes they contributed to.
-      // The sorting is done so that we actually can write this out more
-      // compactly than as the entire list.
-      ComparablePredicate[] sorted = sortValues();
-      List compressed = compressOutcomes(sorted);
-      
-      writeInt(compressed.size());
-      
-      for (int i=0; i<compressed.size(); i++) {
-        List a = (List)compressed.get(i);
-        writeUTF(a.size()
-            + ((ComparablePredicate)a.get(0)).toString());
-      }	
-      
-      // the mapping from predicate names to their integer indexes
-      writeInt(sorted.length);
-      
-      for (int i=0; i<sorted.length; i++)
-        writeUTF(sorted[i].name); 
-      
-      // write out the parameters
-      for (int i=0; i<sorted.length; i++)
-        for (int j=0; j<sorted[i].params.length; j++)
-          writeDouble(sorted[i].params[j]);
-      
-      close();
     }
 
     protected ComparablePredicate[] sortValues () {
@@ -147,5 +96,50 @@ public abstract class PerceptronModelWriter {
       return outcomePatterns;
     }
 
-    
+    /**
+     * Writes the model to disk, using the <code>writeX()</code> methods
+     * provided by extending classes.
+     *
+     * <p>If you wish to create a PerceptronModelWriter which uses a different
+     * structure, it will be necessary to override the persist method in
+     * addition to implementing the <code>writeX()</code> methods.
+     */
+    public void persist() throws IOException {
+      
+      // the type of model (Perceptron)
+      writeUTF("Perceptron");
+      
+      // the mapping from outcomes to their integer indexes
+      writeInt(OUTCOME_LABELS.length);
+      
+      for (int i=0; i<OUTCOME_LABELS.length; i++)
+        writeUTF(OUTCOME_LABELS[i]); 
+      
+      // the mapping from predicates to the outcomes they contributed to.
+      // The sorting is done so that we actually can write this out more
+      // compactly than as the entire list.
+      ComparablePredicate[] sorted = sortValues();
+      List compressed = compressOutcomes(sorted);
+      
+      writeInt(compressed.size());
+      
+      for (int i=0; i<compressed.size(); i++) {
+        List a = (List)compressed.get(i);
+        writeUTF(a.size()
+            + ((ComparablePredicate)a.get(0)).toString());
+      } 
+      
+      // the mapping from predicate names to their integer indexes
+      writeInt(sorted.length);
+      
+      for (int i=0; i<sorted.length; i++)
+        writeUTF(sorted[i].name); 
+      
+      // write out the parameters
+      for (int i=0; i<sorted.length; i++)
+        for (int j=0; j<sorted[i].params.length; j++)
+          writeDouble(sorted[i].params[j]);
+      
+      close();
+    }
 }

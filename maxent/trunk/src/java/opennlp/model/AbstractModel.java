@@ -30,6 +30,8 @@ public abstract class AbstractModel implements MaxentModel {
   private DecimalFormat df;
   protected EvalParameters evalParams;
   protected Prior prior;
+  public enum ModelType {Maxent,Perceptron};
+  protected ModelType modelType;
 
   public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames) {
     init(predLabels,outcomeNames);
@@ -63,6 +65,10 @@ public abstract class AbstractModel implements MaxentModel {
       for (int i = 1; i<ocs.length; i++)
           if (ocs[i] > ocs[best]) best = i;
       return ocNames[best];
+  }
+  
+  public ModelType getModelType(){
+    return modelType;
   }
 
   /**

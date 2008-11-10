@@ -27,6 +27,7 @@ import java.io.OutputStreamWriter;
 import java.util.zip.GZIPOutputStream;
 
 import opennlp.model.AbstractModel;
+import opennlp.model.AbstractModelWriter;
 
 /**
  * A writer for GIS models which inspects the filename and invokes the
@@ -38,10 +39,10 @@ import opennlp.model.AbstractModel;
  *    <li>.bin --> the file is binary
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.1 $, $Date: 2008-11-06 19:59:44 $
+ * @version     $Revision: 1.2 $, $Date: 2008-11-10 14:51:40 $
  */
 public class SuffixSensitivePerceptronModelWriter extends PerceptronModelWriter {
-    private final PerceptronModelWriter suffixAppropriateWriter;
+    private final AbstractModelWriter suffixAppropriateWriter;
 
     /**
      * Constructor which takes a GISModel and a File and invokes the
@@ -80,20 +81,20 @@ public class SuffixSensitivePerceptronModelWriter extends PerceptronModelWriter 
 	}    
     }
 
-    protected void writeUTF (String s) throws java.io.IOException {
-	suffixAppropriateWriter.writeUTF(s);
+    public void writeUTF (String s) throws java.io.IOException {
+      suffixAppropriateWriter.writeUTF(s);
     }
 
-    protected void writeInt (int i) throws java.io.IOException {
-	suffixAppropriateWriter.writeInt(i);
+    public void writeInt (int i) throws java.io.IOException {
+      suffixAppropriateWriter.writeInt(i);
     }
     
-    protected void writeDouble (double d) throws java.io.IOException {
-	suffixAppropriateWriter.writeDouble(d);
+    public void writeDouble (double d) throws java.io.IOException {
+      suffixAppropriateWriter.writeDouble(d);
     }
 
-    protected void close () throws java.io.IOException {
-	suffixAppropriateWriter.close();
+    public void close () throws java.io.IOException {
+      suffixAppropriateWriter.close();
     }
 
 }

@@ -14,6 +14,10 @@ public class GenericModelReader extends AbstractModelReader {
     super(f);
   }
   
+  public GenericModelReader(DataReader dataReader) {
+    super(dataReader);
+  }
+  
   public void checkModelType() throws IOException {
     String modelType = readUTF();
     if (modelType.equals("Perceptron")) {
@@ -23,7 +27,7 @@ public class GenericModelReader extends AbstractModelReader {
       delegateModelReader = new GISModelReader(this.dataReader);
     }
     else {
-      System.err.println("Unknown model type: "+modelType);
+      throw new IOException("Unknown model format: "+modelType);
     }
   }
   

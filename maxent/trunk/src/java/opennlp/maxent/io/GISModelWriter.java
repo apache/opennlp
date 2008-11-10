@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.model.AbstractModel;
+import opennlp.model.AbstractModelWriter;
 import opennlp.model.ComparablePredicate;
 import opennlp.model.Context;
 
@@ -33,9 +34,9 @@ import opennlp.model.Context;
  * extending class to define precisely how the data should be stored.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.8 $, $Date: 2008-09-28 18:04:29 $
+ * @version     $Revision: 1.9 $, $Date: 2008-11-10 14:51:39 $
  */
-public abstract class GISModelWriter {
+public abstract class GISModelWriter extends AbstractModelWriter {
     protected Context[] PARAMS;
     protected String[] OUTCOME_LABELS;
     protected int CORRECTION_CONSTANT;
@@ -58,10 +59,6 @@ public abstract class GISModelWriter {
       }
     }
 
-    protected abstract void writeUTF (String s) throws java.io.IOException;
-    protected abstract void writeInt (int i) throws java.io.IOException;
-    protected abstract void writeDouble (double d) throws java.io.IOException;
-    protected abstract void close () throws java.io.IOException;
 
     /**
      * Writes the model to disk, using the <code>writeX()</code> methods
