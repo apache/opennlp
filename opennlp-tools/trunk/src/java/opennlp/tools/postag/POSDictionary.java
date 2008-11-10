@@ -250,6 +250,18 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
     return dictionaryString.toString();
   }
   
+  /**
+   * Creates a new {@link POSDictionary} from a provided {@link InputStream}.
+   * 
+   * After creation is finished the provided {@link InputStream} is closed.
+   * 
+   * @param in
+   * 
+   * @return
+   * 
+   * @throws IOException
+   * @throws InvalidFormatException
+   */
   public static POSDictionary create(InputStream in) throws IOException, InvalidFormatException {
 
     final POSDictionary newPosDict = new POSDictionary();

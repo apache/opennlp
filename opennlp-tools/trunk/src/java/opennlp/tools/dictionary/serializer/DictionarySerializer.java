@@ -24,8 +24,6 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -184,8 +182,11 @@ public class DictionarySerializer {
    * Creates {@link Entry}s form the given {@link InputStream} and
    * forwards these {@link Entry}s to the {@link EntryInserter}.
    * 
+   * After creation is finished the provided {@link InputStream} is closed.
+   * 
    * @param in
    * @param inserter
+   * 
    * @throws IOException
    * @throws InvalidFormatException 
    */
