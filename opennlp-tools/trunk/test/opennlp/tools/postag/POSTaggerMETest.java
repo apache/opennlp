@@ -29,14 +29,24 @@ import opennlp.maxent.PlainTextByLineDataStream;
  * Tests for the {@link POSTaggerME} class.
  */
 public class POSTaggerMETest extends TestCase {
+  
+  /**
+   * Trains a POSModel from the annotated test data.
+   * 
+   * @return
+   * @throws IOException
+   */
+  // TODO: also use tag dictionary for training
+  static POSModel trainPOSModel() throws IOException {
+    InputStream in = POSTaggerMETest.class.getClassLoader().getResourceAsStream(
+        "opennlp/tools/postag/AnnotatedSentences.txt");
 
-  public void testPOSTagger() throws IOException {
-    
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-    "opennlp/tools/postag/AnnotatedSentences.txt");
-    
-    POSModel posModel = POSTaggerTrainer.train(new WordTagSampleStream(new PlainTextByLineDataStream(
+    return POSTaggerTrainer.train(new WordTagSampleStream(new PlainTextByLineDataStream(
         new InputStreamReader(in))), null, null, 5);
+  }
+  
+  public void testPOSTagger() throws IOException {
+    POSModel posModel = trainPOSModel();
     
     POSTagger tagger = new POSTaggerME(posModel);
     
