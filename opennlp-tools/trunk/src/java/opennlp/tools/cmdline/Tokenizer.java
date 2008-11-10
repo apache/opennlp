@@ -35,8 +35,8 @@ public class Tokenizer {
   
   public static void main(String[] args) throws IOException, InvalidFormatException {
     
-    if (args.length != 2) {
-      System.err.println("Usage: java opennlp.tools.cmdline.Tokenizer model sentences");
+    if (args.length != 1) {
+      System.err.println("Usage: java opennlp.tools.cmdline.Tokenizer model < sentences");
       System.exit(1);
     }
     
