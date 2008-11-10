@@ -18,7 +18,6 @@
 
 package opennlp.tools.postag;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -29,8 +28,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
+import opennlp.model.BinaryFileDataReader;
 import opennlp.model.GenericModelReader;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
@@ -131,7 +130,13 @@ public final class POSModel {
   }
   
   public static POSModel create(InputStream in) throws IOException, InvalidFormatException {
-    ZipInputStream zip = new ZipInputStream(in);
+    ZipInputStream zip = new ZipInputStream(in){
+      public void close() throws IOException {
+        //Do nothing: prevent xml parser from closing the stream
+        //http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6539065
+      }
+    };
+
 
     AbstractModel maxentPosModel = null;
     POSDictionary posDictionary = null;
@@ -140,9 +145,7 @@ public final class POSModel {
     ZipEntry entry;
     while((entry = zip.getNextEntry()) != null ) {
       if (MAXENT_MODEL_ENTRY_NAME.equals(entry.getName())) {
-        maxentPosModel = new BinaryGISModelReader(
-            new DataInputStream(zip)).getModel();
-        
+        maxentPosModel = new GenericModelReader(new BinaryFileDataReader(zip)).getModel();
         zip.closeEntry();
       }
       else if (TAG_DICTIONARY_ENTRY_NAME.equals(entry.getName())) {
@@ -157,7 +160,7 @@ public final class POSModel {
         throw new InvalidFormatException("Model contains unkown resource!");
       }
     }
-     
+    in.close();
     if (maxentPosModel == null)
       throw new InvalidFormatException("Could not find maxent pos model!");
     

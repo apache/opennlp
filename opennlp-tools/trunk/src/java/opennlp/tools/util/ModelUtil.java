@@ -25,9 +25,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import opennlp.maxent.io.BinaryGISModelWriter;
-import opennlp.maxent.io.GISModelWriter;
 import opennlp.model.AbstractModel;
+import opennlp.model.GenericModelWriter;
 import opennlp.model.MaxentModel;
 
 /**
@@ -48,14 +47,11 @@ public final class ModelUtil {
    * @throws IOException
    */
   public static void writeModel(AbstractModel model, final OutputStream out) throws IOException {
-    GISModelWriter modelWriter = new BinaryGISModelWriter(model,
-        new DataOutputStream(new OutputStream() {
-          @Override
-          public void write(int b) throws IOException {
-            out.write(b);
-          }
-        }));
-    
+    GenericModelWriter modelWriter = new GenericModelWriter(model,new DataOutputStream(new OutputStream() {
+      public void write(int b) throws IOException {
+        out.write(b);
+      }
+    }));
     modelWriter.persist();
   }
   

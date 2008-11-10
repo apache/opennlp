@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+
 package opennlp.tools.postag;
 
 import java.io.BufferedReader;
@@ -137,8 +138,8 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
   /**
    * Adds the tags for the word. 
    * 
-   * @param word
-   * @param tags
+   * @param word The word to be added to the dictionary.
+   * @param tags The set of tags associated with the specified word.
    */
   void addTags(String word, String... tags) {
     dictionary.put(word, tags);
@@ -263,7 +264,7 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
         StringList word = entry.getTokens();
         
         if (word.size() != 1)
-          throw new InvalidFormatException("Each entry must have exactly one token!");
+          throw new InvalidFormatException("Each entry must have exactly one token! "+word);
         
         newPosDict.dictionary.put(word.getToken(0), tags);
       }});
@@ -271,8 +272,9 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
     return newPosDict;
   }
   
-  public static void main(String[] args) throws IOException {
-    POSDictionary dict = new POSDictionary(args[0]);
+  public static void main(String[] args) throws IOException, InvalidFormatException  {
+    POSModel model = POSModel.create(new FileInputStream(args[0]));
+    POSDictionary dict = model.getTagDictionary();
     BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
     for (String line = in.readLine();line != null;line = in.readLine()) {
       System.out.println(Arrays.asList(dict.getTags(line)));
