@@ -1,10 +1,54 @@
+1.4.1
+
+Summary
+=======
+Fixed coreference performance bug where NPs were being examined multiple times.
+Fixed bug where presence of UCP in basal NP could lead to corssing constituents
+in parse.
+Updated maxent library to 2.5.1 version.
+
+1.4.0
+
+Summary
+=======
+A number of updates to name finding with minor changes to a number of other components.
+Improvements in accuracy to name finding, pos-tagging, and coreference models.
+Addition of a document classification component.
+Extended support for muli-lingual processing.
+
+Additions
+=========
+Document categorization - Allows documents to be categorized into categories.
+
+POS Tagger
+==========
+Updated models with slightly better data.
+
+Name Finder
+===========
+Support for different types of feature generation.
+Support for dictionary and regex-based name finding.
+Improvement in speed in accuracy of default name finder.
+
+Parser
+======
+Restructures the parsing packages in support of work in upcoming releases.
+
+Coreference
+===========
+Minor changes to compuation of semantic similarity.
+
+Multi-lingual
+=============
+Adds processing for the Thai language and for German
+Adds support to specifcy the encoding for many types of processing.
+
 1.3.2
 
 Summary
 =======
 This minor release adds processing for the Thai language and restructures 
 the parsing packages in support of work in upcoming releases.
-
 
 1.3.0
 
