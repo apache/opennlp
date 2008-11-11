@@ -40,7 +40,7 @@ public class Tokenizer {
       System.exit(1);
     }
     
-    TokenizerModel model = TokenizerModel.create(new FileInputStream(args[0]));
+    TokenizerModel model = new TokenizerModel(new FileInputStream(args[0]));
     
     opennlp.tools.tokenize.Tokenizer tokenizer = new TokenizerME(model);
     

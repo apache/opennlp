@@ -158,6 +158,7 @@ public class TokenizerME extends AbstractTokenizer {
   /**
    * Trains a model for the {@link TokenizerME}.
    * 
+   * @param languageCode the language of the natural text
    * @param samples the samples used for the training.
    * @param useAlphaNumericOptimization - if true alpha numerics are skipped
    * 
@@ -167,7 +168,7 @@ public class TokenizerME extends AbstractTokenizer {
    * is thrown during IO operations on a temp file which is 
    * created during training.
    */
-  public static TokenizerModel train(Iterator<TokenSample> samples, 
+  public static TokenizerModel train(String languageCode, Iterator<TokenSample> samples, 
       boolean useAlphaNumericOptimization) throws IOException {
     
     EventStream eventStream = new TokSpanEventStream(samples, 
@@ -176,7 +177,7 @@ public class TokenizerME extends AbstractTokenizer {
     GISModel maxentModel = 
         GIS.trainModel(100, new TwoPassDataIndexer(eventStream, 5));
     
-    return new TokenizerModel(maxentModel, useAlphaNumericOptimization);
+    return new TokenizerModel(languageCode, maxentModel, useAlphaNumericOptimization);
   }
 
   /**

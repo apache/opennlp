@@ -47,7 +47,7 @@ public class TokenizerTestUtil {
         new Span(0, 3),
         new Span(3, 4)}));
     
-    return TokenizerME.train(samples.iterator(), true);
+    return TokenizerME.train("en", samples.iterator(), true);
   }
   
 }
