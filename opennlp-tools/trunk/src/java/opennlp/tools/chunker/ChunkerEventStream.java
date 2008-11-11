@@ -22,7 +22,6 @@ import java.util.List;
 
 import opennlp.maxent.DataStream;
 import opennlp.model.Event;
-import opennlp.model.EventStream;
 
 /**
  * Class for creating an event stream out of data files for training a chunker.
