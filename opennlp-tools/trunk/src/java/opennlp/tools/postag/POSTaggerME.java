@@ -72,7 +72,7 @@ public class POSTaggerME implements POSTagger {
   /** 
    * The search object used for search multiple sequences of tags. 
    */
-  protected  BeamSearch beam;
+  protected BeamSearch<String> beam;
   
   /**
    * Initializes the current instance with the provided model
@@ -170,7 +170,7 @@ public class POSTaggerME implements POSTagger {
     size = beamSize;
     posModel = model;
     contextGen = cg;
-    beam = new BeamSearch(size, cg, model);
+    beam = new BeamSearch<String>(size, cg, model);
     tagDictionary = tagdict;
   }
   
