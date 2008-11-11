@@ -25,9 +25,7 @@ import opennlp.tools.util.Span;
  * text tokens.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.3 $, $Date: 2008-09-28 18:12:20 $
  */
-
 public interface Tokenizer {
     
     /**
@@ -47,5 +45,4 @@ public interface Tokenizer {
      * token as the individuals array elements.
      */
     public Span[] tokenizePos(String s);
-    
 }
