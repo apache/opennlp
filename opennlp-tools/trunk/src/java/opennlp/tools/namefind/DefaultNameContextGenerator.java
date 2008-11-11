@@ -50,7 +50,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
    * Creates a name context generator.
    */
   public DefaultNameContextGenerator() {
-    this(null);
+    this((AdaptiveFeatureGenerator[]) null);
   }
   
   /**
