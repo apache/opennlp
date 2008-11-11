@@ -81,8 +81,7 @@ public class BeamSearch<T> {
    * 
    * @see SequenceValidator
    */
-  @Deprecated
-  protected boolean validSequence(int i, T[] inputSequence, String[] outcomesSequence, String outcome) {
+  private boolean validSequence(int i, T[] inputSequence, String[] outcomesSequence, String outcome) {
   
     if (validator != null) {
       return validator.validSequence(i, inputSequence, outcomesSequence, outcome);
