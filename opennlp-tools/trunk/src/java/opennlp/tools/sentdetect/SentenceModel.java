@@ -18,54 +18,37 @@
 
 package opennlp.tools.sentdetect;
 
-import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
-import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
+import opennlp.model.GenericModelReader;
 import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.BaseModel;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ModelUtil;
-import opennlp.tools.util.StringList;
 
 /**
  * The {@link SentenceModel} is the model used
  * by a learnable {@link SentenceDetector}.
  * 
- * TODO: read and write all parts of the model!
- * 
  * @see SentenceDetectorME
  */
-public class SentenceModel {
+public class SentenceModel extends BaseModel {
 
-  private static final String MAXENT_MODEL_ENTRY_NAME = "sent.bin";
-  private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.xml";
-  private static final String SETTINGS_ENTRY_NAME = "settings.properties";
+  private static final String MAXENT_MODEL_ENTRY_NAME = "sent.model";
+  private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
   
   private static final String TOKEN_END_PROPERTY = "useTokenEnd";
   
-  private static final String END_OF_SENTENCE_CHARS_PROPERTY = "endOfSentenceChars";
-  
-  private AbstractModel sentModel;
-  
-  private char endOfSentenceChars[];
-  
-  private Set<String> abbreviations;
-  
-  private final boolean useTokenEnd;
-  
-  public SentenceModel(AbstractModel sentModel, char[] endOfSentenceChars, boolean useTokenEnd, 
-      Set<String> abbreviations) {
+  public SentenceModel(String languageCode, AbstractModel sentModel, 
+      boolean useTokenEnd, Dictionary abbreviations) {
+    
+    super(languageCode);
     
     if (sentModel == null)
         throw new IllegalArgumentException("sentModel param must not be null!");
@@ -73,13 +56,17 @@ public class SentenceModel {
     if (!isModelCompatible(sentModel))
         throw new IllegalArgumentException("The maxent model is not compatible!");
       
-    this.sentModel = sentModel;
+    artifactMap.put(MAXENT_MODEL_ENTRY_NAME, sentModel);
     
-    this.endOfSentenceChars = endOfSentenceChars;
+    setManifestProperty(TOKEN_END_PROPERTY, Boolean.toString(useTokenEnd));
     
-    this.useTokenEnd = useTokenEnd;
-    
-    this.abbreviations = abbreviations;
+    // Abbreviations are optional
+    if (abbreviations != null)
+        artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviations);
+  }
+  
+  public SentenceModel(InputStream in) throws IOException, InvalidFormatException {
+    super(in);
   }
   
   private static boolean isModelCompatible(MaxentModel model) {
@@ -87,153 +74,62 @@ public class SentenceModel {
     return true;
   }
   
-  public MaxentModel getMaxentModel() {
-    return sentModel;
+  @Override
+  protected void validateArtifactMap() throws InvalidFormatException {
+    super.validateArtifactMap();
+    
+    if (!(artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
+      throw new InvalidFormatException("Unable to find " + MAXENT_MODEL_ENTRY_NAME + 
+          " maxent model!");
+    }
+    
+    if (getManifestProperty(TOKEN_END_PROPERTY) == null)
+      throw new InvalidFormatException(TOKEN_END_PROPERTY + " is a mandatory property!");
+    
+    Object abbreviationsEntry = artifactMap.get(ABBREVIATIONS_ENTRY_NAME);
+    
+    if (abbreviationsEntry != null && !(abbreviationsEntry instanceof Dictionary)) {
+      throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
+    }
   }
   
-  public char[] getEndOfSentenceCharacters() {
-    return endOfSentenceChars;
+  public AbstractModel getMaxentModel() {
+    return (AbstractModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
   }
   
-  public Set<String> getAbbreviations() {
-    return abbreviations;
+  public Dictionary getAbbreviations() {
+    return (Dictionary) artifactMap.get(ABBREVIATIONS_ENTRY_NAME);
   }
   
   public boolean useTokenEnd() {
-    return useTokenEnd;
+    return Boolean.parseBoolean(getManifestProperty(TOKEN_END_PROPERTY));
   }
   
-  /**
-   * .
-   * 
-   * After the serialization is finished the provided 
-   * {@link OutputStream} is closed.
-   * 
-   * @param out
-   * 
-   * @throws IOException
-   */
-  public void serialize(OutputStream out) throws IOException {
-    final ZipOutputStream zip = new ZipOutputStream(out);
-    
-    // write model
-    zip.putNextEntry(new ZipEntry(MAXENT_MODEL_ENTRY_NAME));
-    ModelUtil.writeModel(sentModel, zip);
-    zip.closeEntry();
-    
-    // write abbreviations
-    zip.putNextEntry(new ZipEntry(ABBREVIATIONS_ENTRY_NAME));
-    
-    Dictionary abbreviationDictionary = new Dictionary();
-    
-    for (String abbreviation : abbreviations) {
-      abbreviationDictionary.put(new StringList(abbreviation));
+  public static void main(String[] args) throws FileNotFoundException, IOException, InvalidFormatException {
+    if (args.length < 3){
+      System.err.println("SentenceModel [-abbreviationsDictionary] [-useTokenEnd] languageCode packageName modelName");
+      System.exit(1);
     }
     
-    abbreviationDictionary.serialize(zip);
+    int ai = 0;
     
-    zip.closeEntry();
-    
-    // write properties
-    zip.putNextEntry(new ZipEntry(SETTINGS_ENTRY_NAME));
-    
-    Properties settings = new Properties();
-    
-    settings.put(TOKEN_END_PROPERTY, Boolean.toString(useTokenEnd()));
-    
-    StringBuilder endOfSentenceCharString = new StringBuilder();
-    
-    for (char character : getEndOfSentenceCharacters()) {
-      endOfSentenceCharString.append(character);
-    }
-      
-    settings.put(END_OF_SENTENCE_CHARS_PROPERTY, endOfSentenceCharString.toString());
-    
-    zip.closeEntry();
-    
-    zip.close();
-  }
-  
-  /**
-   * Creates a {@link SentenceModel} from the provided {@link InputStream}.
-   * 
-   * The {@link InputStream} in remains open after the model is read.
-   * 
-   * @param in
-   * 
-   * @return
-   * 
-   * @throws IOException
-   * @throws InvalidFormatException
-   */
-  public static SentenceModel create(InputStream in) throws IOException, InvalidFormatException {
-    
-    ZipInputStream zip = new ZipInputStream(in);
-    
-    AbstractModel sentModel = null;
-    Properties settings = null;
-    
-    Set<String> abbreviations = null;
-    
-    ZipEntry entry;
-    while((entry = zip.getNextEntry()) != null ) {
-      if (MAXENT_MODEL_ENTRY_NAME.equals(entry.getName())) {
-        
-        // read model
-        sentModel = new BinaryGISModelReader(
-            new DataInputStream(zip)).getModel();
-        
-        zip.closeEntry();
-      }
-      else if (SETTINGS_ENTRY_NAME.equals(entry.getName())) {
-        
-        // read properties
-        settings = new Properties();
-        settings.load(zip);
-        
-        zip.closeEntry();
-      }
-      else if (ABBREVIATIONS_ENTRY_NAME.equals(entry.getName())) {
-        Dictionary abbreviationDictionary = new Dictionary(zip);
-        
-        abbreviations = new HashSet<String>();
-        
-        for (StringList abbreviation : abbreviationDictionary) {
-          if (abbreviation.size() != 1) 
-            throw new InvalidFormatException("Each abbreviation must be exactly one token!");
-          
-          abbreviations.add(abbreviation.getToken(0));
-        }
-        
-        zip.closeEntry();
-      }
-      else {
-        throw new InvalidFormatException("Model contains unkown resource!");
-      }
+    Dictionary abbreviations = null;
+    if ("-abbreviationsDictionary".equals(args[ai])) {
+      abbreviations = new Dictionary(new FileInputStream(args[ai++]));
     }
     
-    if (sentModel == null)
-      throw new InvalidFormatException("Unable to find " + MAXENT_MODEL_ENTRY_NAME + " maxent model!");
+    boolean useTokenEnd = false;
+    if ("-useTokenEnd".equals(args[ai])) {
+      useTokenEnd = true;
+      ai++;
+    }
     
-    if (settings == null)
-      throw new InvalidFormatException("Unable to find " + SETTINGS_ENTRY_NAME + " !");
+    String languageCode = args[ai++];
+    String packageName = args[ai++];
+    String modelName = args[ai];
     
-    String useTokenEndString = settings.getProperty(TOKEN_END_PROPERTY);
-    
-    if (useTokenEndString == null)
-      throw new InvalidFormatException(TOKEN_END_PROPERTY + " is a mandatory property!");
-    
-    boolean useTokenEnd = Boolean.parseBoolean(useTokenEndString);
-    
-    String endOfSentenceCharsString = settings.getProperty(END_OF_SENTENCE_CHARS_PROPERTY);
-    
-    if (endOfSentenceCharsString == null)
-      throw new InvalidFormatException(END_OF_SENTENCE_CHARS_PROPERTY + " is a mandatory property!");
-    
-    if (abbreviations == null)
-      abbreviations = Collections.emptySet();
-    
-    return new SentenceModel(sentModel, endOfSentenceCharsString.toCharArray(), 
-        useTokenEnd, abbreviations);
+    AbstractModel model = new GenericModelReader(new File(modelName)).getModel();
+    SentenceModel packageModel = new SentenceModel(languageCode, model, useTokenEnd, abbreviations);
+    packageModel.serialize(new FileOutputStream(packageName));
   }
 }

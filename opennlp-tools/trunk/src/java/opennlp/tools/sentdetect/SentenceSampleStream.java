@@ -16,18 +16,36 @@
  */
 
 
-package opennlp.tools.sentdetect.lang.thai;
+package opennlp.tools.sentdetect;
 
-import opennlp.tools.sentdetect.AbstractEndOfSentenceScanner;
+import java.util.Iterator;
 
-/**
- * Identifies potential ends of sentences for Thai text. 
- */
-public class EndOfSentenceScanner extends AbstractEndOfSentenceScanner {
+import opennlp.maxent.DataStream;
+import opennlp.tools.util.Span;
 
-  public static final char[] eosCharacters =  {' ','\n'};
+public class SentenceSampleStream implements Iterator<SentenceSample> {
+
+  private DataStream sentences;
   
-  public char[] getEndOfSentenceCharacters() {
-    return eosCharacters;
+  public SentenceSampleStream(DataStream sentences) {
+    
+    if (sentences == null)
+      throw new IllegalArgumentException("sentences must not be null!");
+    
+    this.sentences = sentences; 
+  }
+  
+  public boolean hasNext() {
+    return sentences.hasNext();
+  }
+
+  public SentenceSample next() {
+    String sentence = (String) sentences.nextToken();
+    
+    return new SentenceSample(sentence, new Span(0, sentence.length()));
+  }
+
+  public void remove() {
+    throw new UnsupportedOperationException();
   }
 }

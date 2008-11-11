@@ -21,6 +21,7 @@ package opennlp.tools.sentdetect;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,7 +29,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import opennlp.maxent.DataStream;
 import opennlp.maxent.GIS;
@@ -39,7 +39,9 @@ import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
-import opennlp.tools.sentdetect.lang.thai.SentenceContextGenerator;
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.sentdetect.lang.Factory;
+import opennlp.tools.sentdetect.lang.th.SentenceContextGenerator;
 
 /**
  * A sentence detector for splitting up raw text into sentences.  A maximum
@@ -83,7 +85,7 @@ public class SentenceDetectorME implements SentenceDetector {
   /** 
    * The list of probabilities associated with each decision. 
    */
-  private List<Double> sentProbs;
+  private List<Double> sentProbs = new ArrayList<Double>();
   
   protected boolean useTokenEnd;
 
@@ -93,43 +95,14 @@ public class SentenceDetectorME implements SentenceDetector {
    * @param model the {@link SentenceModel}
    */
   public SentenceDetectorME(SentenceModel model) {
-    this.model = model.getMaxentModel();
-    cgen = new DefaultSDContextGenerator(model.getEndOfSentenceCharacters());
-    scanner = new DefaultEndOfSentenceScanner(model.getEndOfSentenceCharacters());
-    useTokenEnd = true;
+    this(model, new Factory());
   }
 
-  /**
-   * Constructor which takes a MaxentModel and calls the three-arg
-   * constructor with that model, an SDContextGenerator, and the
-   * default end of sentence scanner.
-   *
-   * @param m The MaxentModel which this SentenceDetectorME will use to
-   *          evaluate end-of-sentence decisions.
-   */
-  @Deprecated
-  public SentenceDetectorME(AbstractModel m) {
-    this(m, new DefaultSDContextGenerator(opennlp.tools.lang.english.EndOfSentenceScanner.eosCharacters), new opennlp.tools.lang.english.EndOfSentenceScanner());
-  }
-  
-  /**
-   * Creates a new <code>SentenceDetectorME</code> instance.
-   *
-   * @param m The MaxentModel which this SentenceDetectorME will use to
-   *          evaluate end-of-sentence decisions.
-   * @param cg The ContextGenerator object which this SentenceDetectorME
-   *           will use to turn Strings into contexts for the model to
-   *           evaluate.
-   * @param s the EndOfSentenceScanner which this SentenceDetectorME
-   *          will use to locate end of sentence indexes.
-   */
-  @Deprecated
-  public SentenceDetectorME(AbstractModel m, SDContextGenerator cg, EndOfSentenceScanner s) {
-    model = m;
-    cgen = cg;
-    scanner = s;
-    sentProbs = new ArrayList<Double>(50);
-    useTokenEnd = true;
+  public SentenceDetectorME(SentenceModel model, Factory factory) {
+    this.model = model.getMaxentModel();
+    cgen = factory.createSentenceContextGenerator(model.getLanguage());
+    scanner = factory.createEndOfSentenceScanner(model.getLanguage());
+    useTokenEnd = model.useTokenEnd();
   }
   
   /**
@@ -247,7 +220,7 @@ public class SentenceDetectorME implements SentenceDetector {
    * <p>The implementation here always returns true, which means
    * that the MaxentModel's outcome is taken as is.</p>
    * 
-   * @param s the string in which the break occured. 
+   * @param s the string in which the break occurred. 
    * @param fromIndex the start of the segment currently being evaluated 
    * @param candidateIndex the index of the candidate sentence ending 
    * @return true if the break is acceptable 
@@ -256,61 +229,26 @@ public class SentenceDetectorME implements SentenceDetector {
     return true;
   }
 
-  public SentenceModel train(Iterator<SentenceSample> samples, 
-      char[] endOfSentenceChars, boolean useTokenEnd, Set<String> abbreviations) {
+  public static SentenceModel train(String languageCode, Iterator<SentenceSample> samples, 
+      boolean useTokenEnd, Dictionary abbreviations) {
     
-    EventStream eventStream = new SDEventStreamNew(samples);
+    Factory factory = new Factory();
+    
+    EventStream eventStream = new SDEventStreamNew(samples, 
+        factory.createSentenceContextGenerator(languageCode),
+        factory.createEndOfSentenceScanner(languageCode));
     
     GISModel sentModel = GIS.trainModel(eventStream, 100, 5);
     
-    return new SentenceModel(sentModel, endOfSentenceChars, useTokenEnd, abbreviations);
-  }
-  
-  /**
-   * Trains a new model for the {@link SentenceDetectorME}.
-   * 
-   * @param es
-   * @param iterations
-   * @param cut
-   * @return the new model
-   * @throws IOException
-   */
-  @Deprecated
-  public static AbstractModel train(EventStream es, int iterations, int cut) throws IOException {
-
-    return GIS.trainModel(es, iterations, cut);
-  }
-
-  /**
-   * Use this training method if you wish to supply an end of
-   * sentence scanner which provides a different set of ending chars
-   * other than the default ones.  They are "\\.|!|\\?|\\\"|\\)".
-   * 
-   * @param inFile 
-   * @param iterations 
-   * @param cut 
-   * @param scanner 
-   * @return the GISModel
-   * @throws IOException 
-   *
-   */
-  @Deprecated
-  public static AbstractModel train(File inFile, int iterations, int cut, EndOfSentenceScanner scanner) throws IOException {
-    EventStream es;
-    DataStream ds;
-    Reader reader;
-
-    reader = new BufferedReader(new FileReader(inFile));
-    ds = new PlainTextByLineDataStream(reader);
-    es = new SDEventStream(ds, scanner);
-    return GIS.trainModel(es, iterations, cut);
+    return new SentenceModel(languageCode, sentModel,
+        useTokenEnd, abbreviations);
   }
   
   private static void usage() {
     System.err.println("Usage: SentenceDetectorME [-encoding charset] [-lang language] trainData modelName");
     System.err.println("-encoding charset specifies the encoding which should be used ");
     System.err.println("                  for reading and writing text.");
-    System.err.println("-lang language    specifies the language (english|spanish|thai) which ");
+    System.err.println("-lang language    specifies the language which ");
     System.err.println("                  is being processed.");
     System.exit(1);    
   }
@@ -361,29 +299,23 @@ public class SentenceDetectorME implements SentenceDetector {
     AbstractModel mod;
     
     try {
-      EndOfSentenceScanner scanner = null;
-      SDContextGenerator cg = null;
-      if (lang == null || lang.equals("english") || lang.equals("spanish")) {
-        scanner = new opennlp.tools.lang.english.EndOfSentenceScanner();
-        cg = new DefaultSDContextGenerator(scanner.getEndOfSentenceCharacters());
-      }
-      else if (lang.equals("thai")) {
-        scanner = new opennlp.tools.sentdetect.lang.thai.EndOfSentenceScanner();
-        cg = new SentenceContextGenerator();
-      }
-      else {
+      if (lang == null) {
         usage();
       }
-      EventStream es = new SDEventStream(new PlainTextByLineDataStream(new InputStreamReader(new FileInputStream(inFile),encoding)),scanner,cg);
+      
+      SentenceModel model = train("en", 
+          new SentenceSampleStream(new PlainTextByLineDataStream(
+          new InputStreamReader(new FileInputStream(inFile), encoding))), true, null);
 
-      if (args.length > ai)
-        mod = train(es, Integer.parseInt(args[ai++]), Integer.parseInt(args[ai++]));
-      else
-        mod = train(es, 100, 5);
+      // TODO: add support for iterations and cutoff settings
+      
+//      if (args.length > ai)
+//        mod = train(es, Integer.parseInt(args[ai++]), Integer.parseInt(args[ai++]));
+//      else
+//        mod = train(es, 100, 5);
 
       System.out.println("Saving the model as: " + outFile);
-      new SuffixSensitiveGISModelWriter(mod, outFile).persist();
-
+      model.serialize(new FileOutputStream(outFile));
     }
     catch (Exception e) {
       e.printStackTrace();

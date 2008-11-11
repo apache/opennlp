@@ -15,47 +15,35 @@
  * limitations under the License.
  */
 
+
 package opennlp.tools.sentdetect;
 
-import opennlp.tools.util.Span;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import junit.framework.TestCase;
+import opennlp.maxent.PlainTextByLineDataStream;
 
 /**
- * A {@link SentenceSample} contains a document with
- * begin indexes of the individual sentences.
+ * Tests for the {@link SentenceDetectorME} class.
  */
-public class SentenceSample {
-
-  private String document;
+public class SentenceDetectorMETest extends TestCase {
   
-  private Span sentences[];
-  
-  /**
-   * Initializes the current instance.
-   * 
-   * @param sentences
-   * @param sentenceSpans
-   */
-  public SentenceSample(String document, Span... sentences) {
-    this.document = document;
-    this.sentences = sentences;
-  }
-  
-  /**
-   * Retrieves the document.
-   * 
-   * @return
-   */
-  public String getDocument() {
-    return document;
-  }
-  
-  /**
-   * Retrieves the sentences.
-   * 
-   * @return the begin indexes of the sentences 
-   * in the document.
-   */
-  public Span[] getSentences() {
-    return sentences;
+  public void testSentenceDetector() {
+    
+    InputStream in = getClass().getResourceAsStream(
+        "/opennlp/tools/sentdetect/Sentences.txt");
+    
+    SentenceModel sentdetectModel = SentenceDetectorME.train(
+        "en", new SentenceSampleStream(new PlainTextByLineDataStream(
+        new InputStreamReader(in))), true, null);
+    
+    SentenceDetector sentDetect = new SentenceDetectorME(sentdetectModel);
+    
+    String sampleSentences = "First test meal. Second test sentence.";
+    
+    sentDetect.sentPosDetect(sampleSentences);
+    
+    // TODO: check result
   }
 }

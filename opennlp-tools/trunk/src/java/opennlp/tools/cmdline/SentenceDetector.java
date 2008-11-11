@@ -45,7 +45,7 @@ public class SentenceDetector{
       System.exit(1);
     }
     
-    SentenceModel model = SentenceModel.create(new FileInputStream(args[0]));
+    SentenceModel model = new SentenceModel(new FileInputStream(args[0]));
     
     SentenceDetectorME sdetector = new SentenceDetectorME(model);
     

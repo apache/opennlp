@@ -16,7 +16,7 @@
  */
 
 
-package opennlp.tools.sentdetect.lang.thai;
+package opennlp.tools.sentdetect.lang.th;
 
 import opennlp.tools.sentdetect.DefaultSDContextGenerator;
 
@@ -25,8 +25,10 @@ import opennlp.tools.sentdetect.DefaultSDContextGenerator;
  */
 public class SentenceContextGenerator extends DefaultSDContextGenerator {
 
+  public static final char[] eosCharacters =  {' ','\n'};
+  
   public SentenceContextGenerator() {
-    super(EndOfSentenceScanner.eosCharacters);
+    super(eosCharacters);
   }
 
   protected void collectFeatures(String prefix, String suffix, String previous, String next) {

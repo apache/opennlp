@@ -35,12 +35,12 @@ public class SDEventStreamNew extends AbstractEventStream<SentenceSample> {
    * 
    * @param samples
    */
-  public SDEventStreamNew(Iterator<SentenceSample> samples) {
+  public SDEventStreamNew(Iterator<SentenceSample> samples, SDContextGenerator cg, 
+      EndOfSentenceScanner scanner) {
     super(samples);
     
-    scanner = new opennlp.tools.lang.english.EndOfSentenceScanner();
-    cg = new DefaultSDContextGenerator(
-        opennlp.tools.lang.english.EndOfSentenceScanner.eosCharacters);
+    this.cg = cg;
+    this.scanner = scanner;
   }
   
   @Override
