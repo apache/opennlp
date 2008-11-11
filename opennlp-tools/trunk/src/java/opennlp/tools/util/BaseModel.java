@@ -122,7 +122,7 @@ public abstract class BaseModel {
     
     @SuppressWarnings("unchecked")
     static void register(Map<String, ArtifactSerializer> factories) {
-      factories.put("dictionary", new PropertiesSerializer());
+      factories.put("dictionary", new DictionarySerializer());
      }
   }
   
