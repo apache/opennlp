@@ -43,7 +43,7 @@ public abstract class BaseModel {
   /**
    * Responsible to create an artifact from an {@link InputStream}.
    */
-  interface ArtifactSerializer<T> {
+  protected interface ArtifactSerializer<T> {
     
     /**
      * Creates the artifact from the provided {@link InputStream}.
@@ -322,6 +322,9 @@ public abstract class BaseModel {
       }
       
       ArtifactSerializer serializer = factories.get(extension);
+      
+      // TODO: Check if serializer is there
+      
       serializer.serialize(artifactMap.get(name), zip);
       
       zip.closeEntry();
