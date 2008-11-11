@@ -138,8 +138,8 @@ public abstract class AbstractMentionFinder implements MentionFinder {
   private void collectCoordinatedNounPhraseMentions(Parse np, List<Mention> entities) {
     //System.err.println("collectCoordNp: "+np);
     //exclude nps with UCPs inside.
-    List sc = np.getSyntacticChildren();
-    for (Iterator sci = sc.iterator();sci.hasNext();) {
+    List<Parse> sc = np.getSyntacticChildren();
+    for (Iterator<Parse> sci = sc.iterator();sci.hasNext();) {
       Parse scp = (Parse) sci.next();
       if (scp.getSyntacticType().equals("UCP") || scp.getSyntacticType().equals("NX")) {
         return;
