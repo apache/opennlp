@@ -42,6 +42,10 @@ public class WordTagSampleStream implements Iterator<POSSample> {
    * @param sentences
    */
   public WordTagSampleStream(DataStream sentences) {
+    
+    if (sentences == null)
+      throw new IllegalArgumentException("sentences must not be null!");
+    
     this.sentences = sentences;
   }
   
