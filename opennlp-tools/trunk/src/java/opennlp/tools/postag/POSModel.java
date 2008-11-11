@@ -31,6 +31,7 @@ import opennlp.model.GenericModelReader;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BaseModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.UncloseableInputStream;
 
 /**
  * The {@link POSModel} is the model used
@@ -44,7 +45,7 @@ public final class POSModel extends BaseModel {
 
     public POSDictionary create(InputStream in) throws IOException,
         InvalidFormatException {
-      return POSDictionary.create(in);
+      return POSDictionary.create(new UncloseableInputStream(in));
     }
 
     public void serialize(POSDictionary artifact, OutputStream out)
