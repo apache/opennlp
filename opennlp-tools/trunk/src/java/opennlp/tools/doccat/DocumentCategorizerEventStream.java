@@ -20,7 +20,6 @@ package opennlp.tools.doccat;
 
 import opennlp.maxent.DataStream;
 import opennlp.model.Event;
-import opennlp.model.EventStream;
 
 /**
 * Iterator-like class for modeling document classification events.

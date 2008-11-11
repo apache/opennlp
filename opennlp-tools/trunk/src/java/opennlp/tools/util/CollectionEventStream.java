@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import opennlp.model.Event;
-import opennlp.model.EventStream;
 
 /**
  * Creates an event stream out of a collection of events. 

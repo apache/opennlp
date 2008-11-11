@@ -24,7 +24,6 @@ import java.util.Set;
 
 import opennlp.maxent.DataStream;
 import opennlp.model.Event;
-import opennlp.model.EventStream;
 import opennlp.tools.chunker.ChunkerContextGenerator;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.chunking.Parser;
