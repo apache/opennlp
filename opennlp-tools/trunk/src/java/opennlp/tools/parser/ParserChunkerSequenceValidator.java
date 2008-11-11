@@ -31,9 +31,9 @@ public class ParserChunkerSequenceValidator implements SequenceValidator<String>
   public ParserChunkerSequenceValidator(ChunkerModel model) {
     
     continueStartMap = 
-        new HashMap<String, String>(model.getMaxentChunkerModel().getNumOutcomes());
-    for (int oi=0, on = model.getMaxentChunkerModel().getNumOutcomes(); oi<on; oi++) {
-      String outcome = model.getMaxentChunkerModel().getOutcome(oi);
+        new HashMap<String, String>(model.getChunkerModel().getNumOutcomes());
+    for (int oi=0, on = model.getChunkerModel().getNumOutcomes(); oi<on; oi++) {
+      String outcome = model.getChunkerModel().getOutcome(oi);
       if (outcome.startsWith(Parser.CONT)){
         continueStartMap.put(outcome,Parser.START+outcome.substring(
             Parser.CONT.length()));

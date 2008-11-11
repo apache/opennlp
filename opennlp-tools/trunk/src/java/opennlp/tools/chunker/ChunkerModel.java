@@ -18,6 +18,9 @@
 
 package opennlp.tools.chunker;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import opennlp.model.AbstractModel;
 import opennlp.tools.util.BaseModel;
 import opennlp.tools.util.InvalidFormatException;
@@ -40,6 +43,10 @@ public class ChunkerModel extends BaseModel {
         throw new IllegalArgumentException("chunkerModel must not be null!");
     
     artifactMap.put(CHUNKER_MODEL_ENTRY_NAME, chunkerModel);
+  }
+  
+  public ChunkerModel(InputStream in) throws IOException, InvalidFormatException {
+    super(in);
   }
   
   @Override

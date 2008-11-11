@@ -158,7 +158,7 @@ public class ParserModel {
       }
       else if (PARSER_TAGGER_MODEL_ENTRY_NAME.equals(entry.getName())) {
         
-        parserChunker = ChunkerModel.create(zip);
+        parserChunker = new ChunkerModel(zip);
         zip.closeEntry();
       }
       else if (HEAD_RULES_MODEL_ENTRY_NAME.equals(entry.getName())) {
