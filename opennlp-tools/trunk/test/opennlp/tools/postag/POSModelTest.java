@@ -40,7 +40,7 @@ public class POSModelTest extends TestCase {
       out.close();
     }
     
-    POSModel recreatedPosModel = POSModel.create(new ByteArrayInputStream(out.toByteArray()));
+    POSModel recreatedPosModel = new POSModel(new ByteArrayInputStream(out.toByteArray()));
     
     // TODO: add equals to pos model
   }

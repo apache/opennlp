@@ -153,7 +153,7 @@ public class ParserModel {
       }
       else if (PARSER_TAGGER_MODEL_ENTRY_NAME.equals(entry.getName())) {
         
-        parserTagger = POSModel.create(zip);
+        parserTagger = new POSModel(zip);
         zip.closeEntry();
       }
       else if (PARSER_TAGGER_MODEL_ENTRY_NAME.equals(entry.getName())) {

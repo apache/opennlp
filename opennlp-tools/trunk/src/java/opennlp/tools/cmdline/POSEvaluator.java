@@ -45,7 +45,7 @@ public class POSEvaluator {
       System.exit(1);    
     }
     
-    POSModel model = POSModel.create(new FileInputStream(args[0]));
+    POSModel model = new POSModel(new FileInputStream(args[0]));
     
     POSTaggerME tagger = new POSTaggerME(model);
     

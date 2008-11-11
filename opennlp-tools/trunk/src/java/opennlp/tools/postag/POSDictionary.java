@@ -285,7 +285,7 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
   }
   
   public static void main(String[] args) throws IOException, InvalidFormatException  {
-    POSModel model = POSModel.create(new FileInputStream(args[0]));
+    POSModel model = new POSModel(new FileInputStream(args[0]));
     POSDictionary dict = model.getTagDictionary();
     BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
     for (String line = in.readLine();line != null;line = in.readLine()) {

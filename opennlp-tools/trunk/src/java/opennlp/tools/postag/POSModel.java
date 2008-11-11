@@ -24,16 +24,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import java.util.Map;
 
 import opennlp.model.AbstractModel;
-import opennlp.model.BinaryFileDataReader;
 import opennlp.model.GenericModelReader;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.BaseModel;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ModelUtil;
 
 /**
  * The {@link POSModel} is the model used
@@ -41,20 +38,34 @@ import opennlp.tools.util.ModelUtil;
  * 
  * @see POSTaggerME
  */
-public final class POSModel {
+public final class POSModel extends BaseModel {
 
-  private static final String MAXENT_MODEL_ENTRY_NAME = "pos.bin";
-  private static final String TAG_DICTIONARY_ENTRY_NAME = "tag-dictionary.xml";
-  private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram-dictionary.xml";
+  static class POSDictionarySerializer implements ArtifactSerializer<POSDictionary> {
+
+    public POSDictionary create(InputStream in) throws IOException,
+        InvalidFormatException {
+      return POSDictionary.create(in);
+    }
+
+    public void serialize(POSDictionary artifact, OutputStream out)
+        throws IOException {
+      artifact.serialize(out);
+    }
+    
+    @SuppressWarnings("unchecked")
+    static void register(Map<String, ArtifactSerializer> factories) {
+      factories.put("tagdict", new POSDictionarySerializer());
+    }
+  }
   
-  private final AbstractModel posModel;
+  private static final String POS_MODEL_ENTRY_NAME = "pos.model";
+  private static final String TAG_DICTIONARY_ENTRY_NAME = "tags.tagdict";
+  private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram.dictionary";
   
-  private final POSDictionary tagDictionary;
-  
-  private final Dictionary ngramDict;
-  
-  public POSModel(AbstractModel posModel, POSDictionary tagDictionary, 
-      Dictionary ngramDict) {
+  public POSModel(String languageCode, AbstractModel posModel, 
+      POSDictionary tagDictionary, Dictionary ngramDict) {
+    
+    super(languageCode);
     
     if (posModel == null) 
         throw new IllegalArgumentException("The maxentPosModel param must not be null!");
@@ -63,15 +74,52 @@ public final class POSModel {
     // is nothing that can be assumed about the used
     // tags
     
-    this.posModel = posModel;
+    artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
     
-    this.tagDictionary = tagDictionary;
+    if (tagDictionary != null)
+      artifactMap.put(TAG_DICTIONARY_ENTRY_NAME, tagDictionary);
     
-    this.ngramDict = ngramDict;
+    if (ngramDict != null)
+      artifactMap.put(NGRAM_DICTIONARY_ENTRY_NAME, ngramDict);
+  }
+  
+  public POSModel(InputStream in) throws IOException, InvalidFormatException {
+    super(in);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  protected void createArtifactSerializers(
+      Map<String, ArtifactSerializer> serializers) {
+    
+    super.createArtifactSerializers(serializers);
+
+    POSDictionarySerializer.register(serializers);
+  }
+  
+  @Override
+  protected void validateArtifactMap() throws InvalidFormatException {
+    super.validateArtifactMap();
+    
+    if (!(artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
+      throw new InvalidFormatException("POS model is incomplete!");
+    }
+    
+    Object tagdictEntry = artifactMap.get(TAG_DICTIONARY_ENTRY_NAME);
+    
+    if (tagdictEntry != null && !(tagdictEntry instanceof POSDictionary)) {
+      throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
+    }
+    
+    Object ngramDictEntry = artifactMap.get(NGRAM_DICTIONARY_ENTRY_NAME);
+    
+    if (ngramDictEntry != null && !(ngramDictEntry instanceof Dictionary)) {
+      throw new InvalidFormatException("NGram dictionary has wrong type!");
+    }
   }
   
   public AbstractModel getPosModel() {
-    return posModel;
+    return (AbstractModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
   }
   
   /**
@@ -80,7 +128,7 @@ public final class POSModel {
    * @return tag dictionary or null if not used
    */
   public POSDictionary getTagDictionary() {
-    return tagDictionary;
+    return (POSDictionary) artifactMap.get(TAG_DICTIONARY_ENTRY_NAME);
   }
   
   /**
@@ -89,82 +137,7 @@ public final class POSModel {
    * @return ngram dictionary or null if not used
    */
   public Dictionary getNgramDictionary() {
-    return ngramDict;
-  }
-  
-  /**
-   * .
-   * 
-   * After the serialization is finished the provided 
-   * {@link OutputStream} is closed.
-   * 
-   * @param out
-   * 
-   * @throws IOException
-   */
-  public void serialize(OutputStream out) throws IOException {
-    
-    ZipOutputStream zip = new ZipOutputStream(out);
-    
-    zip.putNextEntry(new ZipEntry(MAXENT_MODEL_ENTRY_NAME));
-
-    ModelUtil.writeModel(posModel, zip);
-    
-    zip.closeEntry();
-    
-    if (getTagDictionary() != null) {
-      zip.putNextEntry(new ZipEntry(TAG_DICTIONARY_ENTRY_NAME));
-      
-      getTagDictionary().serialize(zip);
-      
-      zip.closeEntry();
-    }
-    
-    if (getNgramDictionary() != null) {
-      zip.putNextEntry(new ZipEntry(NGRAM_DICTIONARY_ENTRY_NAME));
-      getNgramDictionary().serialize(out);
-      zip.closeEntry();
-    }
-    
-    zip.close();
-  }
-  
-  public static POSModel create(InputStream in) throws IOException, InvalidFormatException {
-    ZipInputStream zip = new ZipInputStream(in){
-      public void close() throws IOException {
-        //Do nothing: prevent xml parser from closing the stream
-        //http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6539065
-      }
-    };
-
-
-    AbstractModel maxentPosModel = null;
-    POSDictionary posDictionary = null;
-    Dictionary ngramDictionary = null;
-    
-    ZipEntry entry;
-    while((entry = zip.getNextEntry()) != null ) {
-      if (MAXENT_MODEL_ENTRY_NAME.equals(entry.getName())) {
-        maxentPosModel = new GenericModelReader(new BinaryFileDataReader(zip)).getModel();
-        zip.closeEntry();
-      }
-      else if (TAG_DICTIONARY_ENTRY_NAME.equals(entry.getName())) {
-        posDictionary = POSDictionary.create(zip);
-        zip.closeEntry();
-      }
-      else if (NGRAM_DICTIONARY_ENTRY_NAME.equals(entry.getName())) {
-        // Note: ngram dictionary is not case sensitive
-        ngramDictionary = new Dictionary(zip);
-      }
-      else {
-        throw new InvalidFormatException("Model contains unkown resource!");
-      }
-    }
-    in.close();
-    if (maxentPosModel == null)
-      throw new InvalidFormatException("Could not find maxent pos model!");
-    
-    return new POSModel(maxentPosModel, posDictionary, ngramDictionary);
+    return (Dictionary) artifactMap.get(NGRAM_DICTIONARY_ENTRY_NAME);
   }
   
   public static void usage() {
@@ -190,6 +163,7 @@ public final class POSModel {
         ngramDict = new Dictionary(new FileInputStream(ngramName));
       }
     }
-    new POSModel(model,tagDict,ngramDict).serialize(new FileOutputStream(new File(packageName)));
+    
+    new POSModel("en", model,tagDict,ngramDict).serialize(new FileOutputStream(new File(packageName)));
   }
 }

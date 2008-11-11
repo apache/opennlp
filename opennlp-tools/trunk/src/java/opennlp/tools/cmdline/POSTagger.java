@@ -59,7 +59,7 @@ public class POSTagger {
       ai++;
     }
     
-    POSModel model = POSModel.create(new FileInputStream(args[ai]));
+    POSModel model = new POSModel(new FileInputStream(args[ai]));
     
     POSTaggerME tagger = new POSTaggerME(model);
     

@@ -68,7 +68,7 @@ public class POSTaggerTrainer {
         new TwoPassDataIndexer(new POSSampleEventStream(samples,
         new DefaultPOSContextGenerator(ngramDictionary)), cutoff));
     
-    return new POSModel(posModel, tagDictionary, ngramDictionary);
+    return new POSModel("en", posModel, tagDictionary, ngramDictionary);
   }
   
   /**
