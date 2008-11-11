@@ -65,7 +65,7 @@ public class ChunkerME implements Chunker {
    * @param beamSize
    */
   public ChunkerME(ChunkerModel model, int beamSize) {
-    this.model = model.getMaxentChunkerModel();
+    this.model = model.getChunkerModel();
     beam = new ChunkBeamSearch(beamSize, new DefaultChunkerContextGenerator(), this.model);
   }
   
