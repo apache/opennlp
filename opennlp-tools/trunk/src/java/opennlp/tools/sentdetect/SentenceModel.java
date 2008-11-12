@@ -115,6 +115,7 @@ public class SentenceModel extends BaseModel {
     
     Dictionary abbreviations = null;
     if ("-abbreviationsDictionary".equals(args[ai])) {
+      ai++;
       abbreviations = new Dictionary(new FileInputStream(args[ai++]));
     }
     
