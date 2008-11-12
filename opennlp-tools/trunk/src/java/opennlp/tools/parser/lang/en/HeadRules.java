@@ -16,7 +16,7 @@
  */
 
 
-package opennlp.tools.lang.english;
+package opennlp.tools.parser.lang.en;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

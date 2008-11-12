@@ -20,6 +20,9 @@ package opennlp.tools.parser;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,6 +35,8 @@ import java.util.zip.ZipOutputStream;
 import opennlp.maxent.GISModel;
 import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
+import opennlp.model.BinaryFileDataReader;
+import opennlp.model.GenericModelReader;
 import opennlp.model.MaxentModel;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.postag.POSModel;
@@ -61,10 +66,10 @@ public class ParserModel {
   
   private ChunkerModel chunkerTagger;
   
-  private opennlp.tools.lang.english.HeadRules headRules;
+  private opennlp.tools.parser.lang.en.HeadRules headRules;
   
   public ParserModel(AbstractModel buildModel, AbstractModel checkModel, POSModel parserTagger, 
-      ChunkerModel chunkerTagger, opennlp.tools.lang.english.HeadRules headRules) {
+      ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules) {
     
     this.buildModel = buildModel;
     this.checkModel = checkModel;
@@ -95,7 +100,7 @@ public class ParserModel {
     return chunkerTagger;  
   }
   
-  public opennlp.tools.lang.english.HeadRules getHeadRules() {
+  public opennlp.tools.parser.lang.en.HeadRules getHeadRules() {
     return headRules;  
   }
   
@@ -133,7 +138,7 @@ public class ParserModel {
     POSModel parserTagger = null;
     ChunkerModel parserChunker = null;
     
-    opennlp.tools.lang.english.HeadRules headRules = null;
+    opennlp.tools.parser.lang.en.HeadRules headRules = null;
     
     ZipEntry entry;
     while((entry = zip.getNextEntry()) != null) {
@@ -163,7 +168,7 @@ public class ParserModel {
       }
       else if (HEAD_RULES_MODEL_ENTRY_NAME.equals(entry.getName())) {
         
-        headRules = new opennlp.tools.lang.english.HeadRules(new BufferedReader
+        headRules = new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader
             (new InputStreamReader(zip, "UTF-8")));
         
         zip.closeEntry();
@@ -176,5 +181,33 @@ public class ParserModel {
     // TODO: add checks, everything must be =! null
     
     return new ParserModel(buildModel, checkModel, parserTagger, parserChunker, headRules);
+  }
+  
+  private static AbstractModel readModel(String fileName) throws FileNotFoundException, IOException {
+    return new GenericModelReader(new BinaryFileDataReader(new FileInputStream(fileName))).
+        getModel();
+  }
+  
+  public static void main(String[] args) throws FileNotFoundException, IOException, InvalidFormatException {
+    if (args.length != 6){
+      System.err.println("ParserModel packageName buildModel checkModel headRules chunkerModel posModel");
+      System.exit(1);
+    }
+    
+    AbstractModel buildModel = readModel(args[1]);
+    
+    AbstractModel checkModel = readModel(args[2]);
+    
+    opennlp.tools.parser.lang.en.HeadRules headRules = 
+        new opennlp.tools.parser.lang.en.HeadRules(args[3]);
+    
+    ChunkerModel chunkerModel = new ChunkerModel(new FileInputStream(args[4]));
+    
+    POSModel posModel = new POSModel(new FileInputStream(args[5]));
+    
+    ParserModel packageModel = new ParserModel(buildModel, checkModel, posModel,
+        chunkerModel, headRules);
+    
+    packageModel.serialize(new FileOutputStream(args[0]));
   }
 }

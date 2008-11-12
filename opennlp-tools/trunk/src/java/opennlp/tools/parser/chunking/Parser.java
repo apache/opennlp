@@ -390,7 +390,7 @@ public class Parser extends AbstractBottomUpParser {
     }
     java.io.File inFile = new java.io.File(args[argIndex++]);
     String modelDirectory = args[argIndex++];
-    HeadRules rules = new opennlp.tools.lang.english.HeadRules(modelDirectory+"/head_rules");
+    HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(modelDirectory+"/head_rules");
     java.io.File dictFile = new java.io.File(modelDirectory+"/dict.bin.gz");
     java.io.File tagFile = new java.io.File(modelDirectory+"/tag.bin.gz");
     java.io.File chunkFile = new java.io.File(modelDirectory+"/chunk.bin.gz");

@@ -999,7 +999,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
       }
     }
     
-    opennlp.tools.lang.english.HeadRules rules = new opennlp.tools.lang.english.HeadRules(args[ai]);
+    opennlp.tools.parser.lang.en.HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[ai]);
     java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
     
     for (String line = in.readLine(); line != null; line = in.readLine()) {

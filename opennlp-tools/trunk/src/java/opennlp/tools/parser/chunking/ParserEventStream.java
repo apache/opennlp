@@ -194,7 +194,7 @@ public class ParserEventStream extends AbstractParserEventStream {
       }
       ai++;
     }
-    HeadRules rules = new opennlp.tools.lang.english.HeadRules(args[ai++]);
+    HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[ai++]);
     Dictionary dict = null;
     if (ai < args.length) {
       dict = new Dictionary(new FileInputStream(args[ai++]),true);
