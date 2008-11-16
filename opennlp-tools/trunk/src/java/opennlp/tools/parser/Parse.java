@@ -173,8 +173,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   public Object clone() {
     Parse p = new Parse(this.text, this.span, this.type, this.prob, this.head);
     p.parts = new LinkedList<Parse>();
-      
-    Collections.copy(p.parts, this.parts);
+    p.parts.addAll(this.parts);
     
     if (derivation != null) {
       p.derivation = new StringBuffer(100);
