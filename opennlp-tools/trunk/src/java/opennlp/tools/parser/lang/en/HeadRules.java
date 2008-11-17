@@ -44,6 +44,12 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
     public String[] tags;
     public HeadRule(boolean l2r, String[] tags) {
       leftToRight = l2r;
+      
+      for (String tag : tags) {
+        if (tag == null)
+            throw new IllegalArgumentException("tags must not contain null values!");
+      }
+      
       this.tags = tags;
     }
   }
@@ -58,6 +64,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
    * 
    * @throws IOException if the head rules file can not be read.
    */
+  @Deprecated
   public HeadRules(String ruleFile) throws IOException {
     this(new BufferedReader(new FileReader(ruleFile)));
   }
@@ -71,6 +78,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
    */
   public HeadRules(BufferedReader rulesReader) throws IOException {
     readHeadRules(rulesReader);
+    
     punctSet = new HashSet<String>();
     punctSet.add(".");
     punctSet.add(",");
@@ -156,7 +164,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
       String num = st.nextToken();
       String type = st.nextToken();
       String dir = st.nextToken();
-      String[] tags = new String[Integer.parseInt(num)];
+      String[] tags = new String[Integer.parseInt(num) - 2];
       int ti = 0;
       while (st.hasMoreTokens()) {
         tags[ti] = st.nextToken();
@@ -197,7 +205,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
       HeadRule headRule = headRules.get(type);
       
       // write num of tags
-      writer.write(Integer.toString(headRule.tags.length));
+      writer.write(Integer.toString(headRule.tags.length + 2));
       writer.write(' ');
       
       // write type
