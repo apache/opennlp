@@ -18,10 +18,15 @@
 
 package opennlp.tools.chunker;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import opennlp.model.AbstractModel;
+import opennlp.model.BinaryFileDataReader;
+import opennlp.model.GenericModelReader;
 import opennlp.tools.util.BaseModel;
 import opennlp.tools.util.InvalidFormatException;
 
@@ -60,5 +65,21 @@ public class ChunkerModel extends BaseModel {
   
   public AbstractModel getChunkerModel() {
     return (AbstractModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);
+  }
+  
+  public static void main(String[] args) throws FileNotFoundException, IOException {
+    if (args.length != 2){
+      System.err.println("ChunkerModel packageName modelName");
+      System.exit(1);
+    }
+    
+    String packageName = args[0];
+    String modelName = args[1];
+    
+    AbstractModel chunkerModel = new GenericModelReader(
+        new BinaryFileDataReader(new FileInputStream(modelName))).getModel();
+    
+    ChunkerModel packageModel = new ChunkerModel("en", chunkerModel);
+    packageModel.serialize(new FileOutputStream(packageName));
   }
 }
