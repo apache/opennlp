@@ -32,7 +32,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import opennlp.maxent.GISModel;
 import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
 import opennlp.model.BinaryFileDataReader;
@@ -161,7 +160,7 @@ public class ParserModel {
         parserTagger = new POSModel(zip);
         zip.closeEntry();
       }
-      else if (PARSER_TAGGER_MODEL_ENTRY_NAME.equals(entry.getName())) {
+      else if (CHUNKER_TAGGER_MODEL_ENTRY_NAME.equals(entry.getName())) {
         
         parserChunker = new ChunkerModel(zip);
         zip.closeEntry();
