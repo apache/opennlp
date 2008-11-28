@@ -1,5 +1,6 @@
 package opennlp.model;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,11 +14,11 @@ public class BinaryFileDataReader implements DataReader {
   
   public BinaryFileDataReader(File f) throws IOException {
     if (f.getName().endsWith(".gz")) {
-      input = new DataInputStream(
-          new GZIPInputStream(new FileInputStream(f)));
+      input = new DataInputStream(new BufferedInputStream(
+          new GZIPInputStream(new BufferedInputStream(new FileInputStream(f)))));
     }
     else {
-      input = new DataInputStream(new FileInputStream(f));
+      input = new DataInputStream(new BufferedInputStream(new FileInputStream(f)));
     }
   }
   
