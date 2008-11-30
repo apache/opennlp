@@ -93,6 +93,22 @@ public class Version {
       "." + Integer.toString(getRevision());
   }
   
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (o instanceof Version) {
+      Version version = (Version) o;
+
+      return getMajor() == version.getMajor()
+          && getMinor() == version.getMinor()
+          && getRevision() == version.getRevision();
+    } 
+    else {
+      return false;
+    }
+  }
+  
   /**
    * Return a new {@link Version} initialized to the value
    * represented by the specified {@link String}
@@ -108,14 +124,14 @@ public class Version {
     
     int indexFirstDot = version.indexOf('.');
     
-    int indexSecondDot = version.indexOf('.', indexFirstDot);
+    int indexSecondDot = version.indexOf('.', indexFirstDot + 1);
     
     if (indexFirstDot == -1 || indexSecondDot == -1)
         throw new NumberFormatException("Invalid version!");
     
     return new Version(Integer.parseInt(version.substring(0, indexFirstDot)),
-        Integer.parseInt(version.substring(indexFirstDot, indexSecondDot)),
-        Integer.parseInt(version.substring(indexSecondDot)));
+        Integer.parseInt(version.substring(indexFirstDot + 1, indexSecondDot)),
+        Integer.parseInt(version.substring(indexSecondDot + 1)));
   }
   
   /**
