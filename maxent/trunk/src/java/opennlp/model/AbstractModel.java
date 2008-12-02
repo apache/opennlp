@@ -27,7 +27,6 @@ public abstract class AbstractModel implements MaxentModel {
   protected Map<String,Integer> pmap;
   /** The names of the outcomes. */
   protected String[] ocNames;
-  private DecimalFormat df;
   protected EvalParameters evalParams;
   protected Prior prior;
   public enum ModelType {Maxent,Perceptron};
@@ -88,15 +87,13 @@ public abstract class AbstractModel implements MaxentModel {
           return "The double array sent as a parameter to GISModel.getAllOutcomes() must not have been produced by this model.";
       }
       else {
-          if (df == null) { //lazy initilazation
-            df = new DecimalFormat("0.0000");
-          }
-          StringBuffer sb = new StringBuffer(ocs.length*2);
-          sb.append(ocNames[0]).append("[").append(df.format(ocs[0])).append("]");
-          for (int i = 1; i<ocs.length; i++) {
-              sb.append("  ").append(ocNames[i]).append("[").append(df.format(ocs[i])).append("]");
-          }
-          return sb.toString();
+        DecimalFormat df =  new DecimalFormat("0.0000");
+        StringBuffer sb = new StringBuffer(ocs.length*2);
+        sb.append(ocNames[0]).append("[").append(df.format(ocs[0])).append("]");
+        for (int i = 1; i<ocs.length; i++) {
+          sb.append("  ").append(ocNames[i]).append("[").append(df.format(ocs[i])).append("]");
+        }
+        return sb.toString();
       }
   }
 

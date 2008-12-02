@@ -19,9 +19,7 @@ package opennlp.model;
 
  /**
  * This class encapsulates the varibales used in producing probabilities from a model 
- * and facilitaes passing these variables to the eval method.  Variables are declared
- * non-private so that they may be accessed and updated without a method call for efficiency
- * reasons.
+ * and facilitaes passing these variables to the eval method.
  * @author Tom Morton
  *
  */
