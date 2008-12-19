@@ -18,17 +18,18 @@
 
 package opennlp.tools.doccat;
 
+import java.util.Iterator;
+
 import opennlp.maxent.DataStream;
 import opennlp.model.Event;
+import opennlp.tools.util.AbstractEventStream;
 
 /**
 * Iterator-like class for modeling document classification events.
 */
-public class DocumentCategorizerEventStream extends opennlp.model.AbstractEventStream {
+public class DocumentCategorizerEventStream extends AbstractEventStream<DocumentSample> {
   
   private DocumentCategorizerContextGenerator mContextGenerator;
-  
-  private DataStream data;
   
   /**
    * Initializes the current instance.
@@ -37,9 +38,8 @@ public class DocumentCategorizerEventStream extends opennlp.model.AbstractEventS
    * 
    * @param featureGenerators
    */
-  public DocumentCategorizerEventStream(DataStream data, FeatureGenerator featureGenerators[]) {
-    
-    this.data = data;
+  public DocumentCategorizerEventStream(Iterator<DocumentSample> data, FeatureGenerator featureGenerators[]) {
+    super(data);
     
     mContextGenerator = 
       new DocumentCategorizerContextGenerator(featureGenerators);
@@ -50,19 +50,34 @@ public class DocumentCategorizerEventStream extends opennlp.model.AbstractEventS
    * 
    * @param data {@link DataStream} of {@link DocumentSample}s
    */
-  public DocumentCategorizerEventStream(DataStream data) {
-	  this(data, new FeatureGenerator[]{new BagOfWordsFeatureGenerator()});
-  }
-  
-  public boolean hasNext() {
-    return data.hasNext();
+  public DocumentCategorizerEventStream(Iterator<DocumentSample> sample) {
+    super(sample);
+    
+    mContextGenerator = 
+      new DocumentCategorizerContextGenerator(new BagOfWordsFeatureGenerator());
   }
 
-  public Event next() {
-	  
-    DocumentSample sample = (DocumentSample) data.nextToken();
+  @Override
+  protected Iterator<Event> createEvents(final DocumentSample sample) {
     
-    return new Event(sample.getCategory(), 
-        mContextGenerator.getContext(sample.getText()));
+    return new Iterator<Event>(){
+      
+      private boolean isVirgin = true;
+      
+      public boolean hasNext() {
+        return isVirgin;
+      }
+
+      public Event next() {
+        
+        isVirgin = false;
+        
+        return new Event(sample.getCategory(), 
+            mContextGenerator.getContext(sample.getText()));
+      }
+
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }};
   }
 }

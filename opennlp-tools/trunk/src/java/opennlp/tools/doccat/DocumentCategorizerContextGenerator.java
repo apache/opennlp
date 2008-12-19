@@ -28,7 +28,7 @@ class DocumentCategorizerContextGenerator {
   
   private FeatureGenerator[] mFeatureGenerators;
   
-  DocumentCategorizerContextGenerator(FeatureGenerator[] featureGenerators) {
+  DocumentCategorizerContextGenerator(FeatureGenerator... featureGenerators) {
     mFeatureGenerators = featureGenerators;
   }
 

@@ -36,7 +36,7 @@ public class DocumentCategorizerEvaluator {
 
   private DocumentCategorizer categorizer;
   
-  private Mean accuracy;
+  private Mean accuracy = new Mean();
   
   /**
    * Initializes the current instance.
