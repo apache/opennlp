@@ -45,7 +45,7 @@ import opennlp.model.UniformPrior;
  *    
  * @author Tom Morton
  * @author  Jason Baldridge
- * @version $Revision: 1.31 $, $Date: 2008-11-06 19:59:44 $
+ * @version $Revision: 1.32 $, $Date: 2009-01-02 04:08:25 $
  */
 class GISTrainer {
 
@@ -302,7 +302,7 @@ class GISTrainer {
       }
       else { //determine active outcomes
         for (int oi = 0; oi < numOutcomes; oi++) {
-          if (predCount[pi][oi] > 0 && predicateCounts[pi] > cutoff) {
+          if (predCount[pi][oi] > 0 && predicateCounts[pi] >= cutoff) {
             activeOutcomes[numActiveOutcomes] = oi;
             numActiveOutcomes++;
           }
