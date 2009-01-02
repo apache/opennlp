@@ -134,8 +134,8 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
 class StaticFeatureGenerator {
   
-  private static class ThreadLocalGenerator extends ThreadLocal {
-    public Object initialValue() {
+  private static class ThreadLocalGenerator extends ThreadLocal<AdaptiveFeatureGenerator> {
+    public AdaptiveFeatureGenerator initialValue() {
       return new CachedFeatureGenerator(
           new AdaptiveFeatureGenerator[]{
               new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2), 
@@ -146,7 +146,8 @@ class StaticFeatureGenerator {
   }
   
   private static ThreadLocalGenerator tlg = new ThreadLocalGenerator();
+  
   public static AdaptiveFeatureGenerator instance() {
-    return (AdaptiveFeatureGenerator) tlg.get();
+    return tlg.get();
   }
 }
