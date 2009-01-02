@@ -39,12 +39,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
   
   private AdaptiveFeatureGenerator featureGenerators[];
   
-  private static AdaptiveFeatureGenerator windowFeatures = new CachedFeatureGenerator(
-      new AdaptiveFeatureGenerator[]{
-      new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2), 
-      new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
-      new DefinitionFeatureGenerator()
-      });
+  private AdaptiveFeatureGenerator windowFeatures = StaticFeatureGenerator.instance();
   
   /**
    * Creates a name context generator.
@@ -134,5 +129,24 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
     features.add("ppo=" + ppo);
     
     return features.toArray(new String[features.size()]);
+  }
+}
+
+class StaticFeatureGenerator {
+  
+  private static class ThreadLocalGenerator extends ThreadLocal {
+    public Object initialValue() {
+      return new CachedFeatureGenerator(
+          new AdaptiveFeatureGenerator[]{
+              new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2), 
+              new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
+              new DefinitionFeatureGenerator()
+              });
+    }
+  }
+  
+  private static ThreadLocalGenerator tlg = new ThreadLocalGenerator();
+  public static AdaptiveFeatureGenerator instance() {
+    return (AdaptiveFeatureGenerator) tlg.get();
   }
 }
