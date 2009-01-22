@@ -52,7 +52,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @param featureGenerators
    */
   public DocumentCategorizerME(MaxentModel model, 
-      FeatureGenerator[] featureGenerators) {
+      FeatureGenerator... featureGenerators) {
     
     mModel = model;
     mContextGenerator = 
