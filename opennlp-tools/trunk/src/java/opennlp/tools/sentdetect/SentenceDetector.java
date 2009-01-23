@@ -18,14 +18,12 @@
 
 package opennlp.tools.sentdetect;
 
+import opennlp.tools.util.Span;
+
 /**
  * The interface for sentence detectors, which find the sentence boundaries in
  * a text.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2008-09-28 18:12:11 $
  */
-
 public interface SentenceDetector {
 
     /**
@@ -41,9 +39,9 @@ public interface SentenceDetector {
      * Sentence detect a string.
      *
      * @param s The string to be sentence detected.
-     * @return  An int[] with the starting offset positions of each
-     *          detected sentences. 
+     * 
+     * @return The Span[] with the spans (offsets into s) for each
+     * detected sentence as the individuals array elements.
      */
-    public int[] sentPosDetect(String s);
-    
+    public Span[] sentPosDetect(String s);
 }

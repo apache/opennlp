@@ -18,6 +18,7 @@
 package opennlp.tools.sentdetect;
 
 import opennlp.tools.util.FMeasureEvaluator;
+import opennlp.tools.util.Span;
 
 /**
  * The {@link SentenceDetectorEvaluator} measures the performance of
@@ -44,25 +45,13 @@ public class SentenceDetectorEvaluator extends FMeasureEvaluator<SentenceSample>
     this.sentenceDetector = sentenceDetector;
   }
   
-  private Integer[] convert(int starts[]) {
-    Integer begins[] = new Integer[starts.length];
-    
-    for (int i = 0; i < starts.length; i++) {
-      begins[i] = new Integer(starts[i]);
-    }
-    
-    return begins;
-  }
-  
   public void evaluateSample(SentenceSample sample) {
     
-    // TODO: Discuss with Tom changing the interface from int to Span
+    Span starts[] = sentenceDetector.sentPosDetect(sample.getDocument());
     
-//    int starts[] = sentenceDetector.sentPosDetect(sample.getDocument());
-//    
-//    precisionScore.add(FMeasureEvaluator.precision(
-//        convert(sample.getSentences()), convert(starts)));
-//    recallScore.add(FMeasureEvaluator.recall(
-//        convert(sample.getSentences()), convert(starts)));
+    precisionScore.add(FMeasureEvaluator.precision(
+        sample.getSentences(), starts));
+    recallScore.add(FMeasureEvaluator.recall(
+        sample.getSentences(), starts));
   }
 }

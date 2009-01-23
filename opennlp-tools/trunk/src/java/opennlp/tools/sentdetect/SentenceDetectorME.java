@@ -18,37 +18,32 @@
 
 package opennlp.tools.sentdetect;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import opennlp.maxent.DataStream;
 import opennlp.maxent.GIS;
 import opennlp.maxent.GISModel;
-import opennlp.maxent.IntegerPool;
 import opennlp.maxent.PlainTextByLineDataStream;
-import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
-import opennlp.tools.sentdetect.lang.th.SentenceContextGenerator;
+import opennlp.tools.util.Span;
 
 /**
  * A sentence detector for splitting up raw text into sentences.  A maximum
  * entropy model is used to evaluate the characters ".", "!", and "?" in a
  * string to determine if they signify the end of a sentence.
  *
- * @author      Jason Baldridge and Tom Morton
+ * @author Jason Baldridge
+ * @author Tom Morton
  */
 public class SentenceDetectorME implements SentenceDetector {
 
@@ -76,11 +71,6 @@ public class SentenceDetectorME implements SentenceDetector {
    * The {@link EndOfSentenceScanner} to use when scanning for end of sentence offsets. 
    */
   private final EndOfSentenceScanner scanner;
-
-  /** 
-   * A pool of read-only java.lang.Integer objects in the range 0..100 
-   */
-  private static final IntegerPool INT_POOL = new IntegerPool(100);
   
   /** 
    * The list of probabilities associated with each decision. 
@@ -109,30 +99,27 @@ public class SentenceDetectorME implements SentenceDetector {
    * Detect sentences in a String.
    *
    * @param s  The string to be processed.
+   * 
    * @return   A string array containing individual sentences as elements.
-   *           
    */
   public String[] sentDetect(String s) {
-    int[] starts = sentPosDetect(s);
-    if (starts.length == 0) {
-	return new String[] {s};
+    Span[] starts = sentPosDetect(s);
+    
+    String sentences[];
+    
+    if (starts.length != 0) {
+      
+      sentences = new String[starts.length];
+      
+      for (int si = 1; si < starts.length; si++) {
+        sentences[si] = starts[si].getCoveredText(s);
+      }
     }
-
-    boolean leftover = starts[starts.length - 1] != s.length() && useTokenEnd;
-    //System.err.println("sentDetect leftover="+leftover+" length="+s.length());
-    String[] sents = new String[leftover? starts.length + 1 : starts.length];
-    sents[0] = s.substring(0,starts[0]);
-    //System.err.println("sentDetect:0 "+starts[0]);
-    for (int si = 1; si < starts.length; si++) {
-      sents[si] = s.substring(starts[si - 1], starts[si]);
-      //System.err.println("sentDetect:"+si+" "+starts[si]);
-    }
-
-    if (leftover) {
-        sents[sents.length - 1] = s.substring(starts[starts.length - 1]);
+    else {
+      sentences = new String[] {s};
     }
     
-    return sents;
+    return sentences;
   }
 
   private int getFirstWS(String s, int pos) {
@@ -147,6 +134,26 @@ public class SentenceDetectorME implements SentenceDetector {
     return pos;
   }
 
+  private static boolean isWhiteSpaceChar(char theChar) {
+
+    boolean result;
+
+    switch (theChar) {
+    case ' ':
+      result = true;
+      break;
+
+    case '\n':
+      result = true;
+      break;
+
+    default:
+      result = false;
+    }
+
+    return result;
+  }
+  
   /**
    * Detect the position of the first words of sentences in a String.
    *
@@ -155,7 +162,7 @@ public class SentenceDetectorME implements SentenceDetector {
    *          every sentence
    *           
    */
-  public int[] sentPosDetect(String s) {
+  public Span[] sentPosDetect(String s) {
     double sentProb = 1;
     sentProbs.clear();
     StringBuffer sb = new StringBuffer(s);
@@ -174,14 +181,14 @@ public class SentenceDetectorME implements SentenceDetector {
       double[] probs = model.eval(cgen.getContext(sb.toString(), candidate.intValue()));
       String bestOutcome = model.getBestOutcome(probs);
       sentProb *= probs[model.getIndex(bestOutcome)];
-      //System.err.println("sentPosDetect: cand="+cint+" index="+index+" "+bestOutcome+" "+probs[model.getIndex(bestOutcome)]+" "+s.substring(0,cint));
+      
       if (bestOutcome.equals(SPLIT) && isAcceptableBreak(s, index, cint)) {
         if (index != cint) {
           if (useTokenEnd) {
-            positions.add(INT_POOL.get(getFirstNonWS(s, getFirstWS(s,cint + 1))));
+            positions.add(getFirstNonWS(s, getFirstWS(s,cint + 1)));
           }
           else {
-            positions.add(INT_POOL.get(getFirstNonWS(s,cint)));
+            positions.add(getFirstNonWS(s,cint));
           }
           sentProbs.add(new Double(probs[model.getIndex(bestOutcome)]));
         }
@@ -193,7 +200,33 @@ public class SentenceDetectorME implements SentenceDetector {
     for (int i = 0; i < sentPositions.length; i++) {
       sentPositions[i] = ((Integer) positions.get(i)).intValue();
     }
-    return sentPositions;
+    
+    // Now convert the sent indexes to spans
+    
+    Span sentSpans[] = new Span[sentPositions.length];
+    
+    for (int i = 0, begin = 0; i < sentPositions.length; i++) {
+      
+      // correct index difference between annotation index and opennlp index
+      int end = sentPositions[i] + 1;
+      
+      // remove leading spaces
+      for (int j = begin; j < end && isWhiteSpaceChar(s.charAt(j)); 
+          j++) {
+        begin = j + 1;
+      }
+      
+      // remove trailing spaces
+      // for (int i = end; i > begin && documentText.charAt(i) == ' '; i--) {
+      //  end = i;
+      //}
+      
+      sentSpans[i] = new Span(begin, end);
+
+      begin = end;
+    }   
+    
+    return sentSpans;
   }
 
   /** 
