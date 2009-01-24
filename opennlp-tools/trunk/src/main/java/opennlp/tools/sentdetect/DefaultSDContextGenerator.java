@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -27,29 +27,29 @@ import java.util.Set;
  *
  * @author      Jason Baldridge
  * @author      Eric D. Friedman
- * @version     $Revision: 1.1 $, $Date: 2009-01-24 00:22:48 $
+ * @version     $Revision: 1.2 $, $Date: 2009-01-24 01:32:19 $
  */
 public class DefaultSDContextGenerator implements SDContextGenerator {
 
-  /** 
+  /**
    * String buffer for generating features.
    */
   protected StringBuffer buf;
-  
-  /** 
+
+  /**
    * List for holding features as they are generated.
    */
   protected List<String> collectFeats;
-  
+
   private Set<String> inducedAbbreviations;
-  
+
   private char[] eosCharacters;
 
   /**
    * Creates a new <code>SDContextGenerator</code> instance with
    * no induced abbreviations.
-   * 
-   * @param eosCharacters 
+   *
+   * @param eosCharacters
    */
   @SuppressWarnings("unchecked")
   public DefaultSDContextGenerator(char[] eosCharacters) {
@@ -63,8 +63,8 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    * @param inducedAbbreviations a <code>Set</code> of Strings
    * representing induced abbreviations in the training data.
    * Example: &quot;Mr.&quot;
-   * 
-   * @param eosCharacters 
+   *
+   * @param eosCharacters
    */
   public DefaultSDContextGenerator(Set<String> inducedAbbreviations, char[] eosCharacters) {
     this.inducedAbbreviations = inducedAbbreviations;
@@ -72,32 +72,32 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     buf = new StringBuffer();
     collectFeats = new ArrayList<String>();
   }
-  
+
   /* (non-Javadoc)
    * @see opennlp.tools.sentdetect.SDContextGenerator#getContext(java.lang.StringBuffer, int)
    */
   public String[] getContext(String sb, int position) {
-    
-    /** 
+
+    /**
      * String preceding the eos character in the eos token.
      */
     String prefix;
-    
-    /** 
+
+    /**
      * Space delimited token preceding token containing eos character.
      */
     String previous;
-    
-    /** 
+
+    /**
      * String following the eos character in the eos token.
      */
     String suffix;
-    
-    /** 
+
+    /**
      * Space delimited token following token containing eos character.
      */
     String next;
-    
+
     int lastIndex = sb.length() - 1;
     { // compute space previous and space next features.
       if (position > 0 && sb.charAt(position - 1) == ' ')
@@ -107,7 +107,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
       collectFeats.add("eos=" + sb.charAt(position));
     }
     int prefixStart = previousSpaceIndex(sb, position);
-    
+
     int c = position;
     { ///assign prefix, stop if you run into a period though otherwise stop at space
       while (--c > prefixStart) {
@@ -123,7 +123,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     }
     int prevStart = previousSpaceIndex(sb, prefixStart);
     previous = sb.substring(prevStart, prefixStart).trim();
-    
+
     int suffixEnd = nextSpaceIndex(sb, position, lastIndex);
     {
       c = position;
@@ -146,18 +146,18 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
       suffix = sb.substring(position + 1, suffixEnd).trim();
       next = sb.substring(suffixEnd + 1, nextEnd).trim();
     }
-    
+
     collectFeatures(prefix,suffix,previous,next);
-    
+
     String[] context = new String[collectFeats.size()];
     context = (String[]) collectFeats.toArray(context);
     collectFeats.clear();
     return context;
   }
-  
+
   /**
    * Determines some of the features for the sentence detector and adds them to list features.
-   * 
+   *
    * @param prefix String preceeding the eos character in the eos token.
    * @param suffix String following the eos character in the eos token.
    * @param previous Space delimited token preceeding token containing eos character.

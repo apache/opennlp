@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -31,9 +31,9 @@ public class StringListTest extends TestCase {
    */
   public void testGetToken() {
     StringList l = new StringList("a", "b");
-    
+
     assertEquals(2, l.size());
-    
+
     assertEquals("a", l.getToken(0));
     assertEquals("b", l.getToken(1));
   }
@@ -43,23 +43,23 @@ public class StringListTest extends TestCase {
    */
   public void testItertor() {
     StringList l = new StringList("a");
-    
+
     Iterator<String> it = l.iterator();
-    
+
     assertTrue(it.hasNext());
     assertEquals("a", it.next());
     assertFalse(it.hasNext());
-    
+
     // now test with more than one string
     l = new StringList("a", "b", "c");
     it = l.iterator();
-    
+
     assertTrue(it.hasNext());
     assertEquals("a", it.next());
-    
+
     assertTrue(it.hasNext());
     assertEquals("b", it.next());
-    
+
     assertTrue(it.hasNext());
     assertEquals("c", it.next());
 
@@ -80,19 +80,19 @@ public class StringListTest extends TestCase {
   public void testEquals() {
     assertEquals(new StringList("a", "b"),
         new StringList("a", "b"));
-    
+
     assertFalse(new StringList("a", "b").equals(
         new StringList("A", "B")));
   }
-  
+
   /**
    * Tests {@link StringList#hashCode()}.
    */
   public void testHashCode() {
-    assertEquals(new StringList("a", "b").hashCode(), 
+    assertEquals(new StringList("a", "b").hashCode(),
         new StringList("a", "b").hashCode());
   }
-  
+
   /**
    * Tests {@link StringList#toString()}.
    */

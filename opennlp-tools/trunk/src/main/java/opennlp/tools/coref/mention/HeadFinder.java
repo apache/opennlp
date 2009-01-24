@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -18,7 +18,7 @@
 package opennlp.tools.coref.mention;
 
 /**
- * Interface for finding head words in noun phrases and head noun-phrases in parses. 
+ * Interface for finding head words in noun phrases and head noun-phrases in parses.
  */
 public interface HeadFinder {
 
@@ -28,16 +28,16 @@ public interface HeadFinder {
    * available or the constituent has no sub-components that are eligible heads then null is returned.
    */
   public Parse getHead(Parse parse);
-  
+
   /** Returns which index the specified list of token is the head word.
    * @param parse The parse in which to find the head index.
-   * @return The index of the head token.  
+   * @return The index of the head token.
    */
   public int getHeadIndex(Parse parse);
 
   /** Returns the parse bottom-most head of a <code>Parse</code>.  If no
    * head is available which is a child of <code>p</code> then
-   *  <code>p</code> is returned. 
+   *  <code>p</code> is returned.
    *  @param p Parse to find the head of.
    *  @return bottom-most head of p.
    */
@@ -48,6 +48,4 @@ public interface HeadFinder {
    * @return head token parse.
    */
   public Parse getHeadToken(Parse np);
-
-
 }

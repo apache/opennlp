@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -39,22 +39,22 @@ public class POSEventStream extends opennlp.model.AbstractEventStream {
   private DataStream data;
   private Event[] events;
   private int ei;
-  
+
   /** The last line read in from the data file. */
   private String line;
 
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param d
    */
   public POSEventStream(DataStream d) {
     this(d, new DefaultPOSContextGenerator(null));
   }
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param d
    * @param dict
    */
@@ -64,7 +64,7 @@ public class POSEventStream extends opennlp.model.AbstractEventStream {
 
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param d
    * @param cg
    */
@@ -98,7 +98,7 @@ public class POSEventStream extends opennlp.model.AbstractEventStream {
     }
     return false;
   }
-  
+
   public Event next() {
     if (ei == events.length) {
       addNewEvents(line);
@@ -107,8 +107,8 @@ public class POSEventStream extends opennlp.model.AbstractEventStream {
     }
     return events[ei++];
   }
-  
-  
+
+
 
   private void addNewEvents(String sentence) {
     //String sentence = "the_DT stories_NNS about_IN well-heeled_JJ communities_NNS and_CC developers_NNS";

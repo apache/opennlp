@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -33,57 +33,57 @@ import opennlp.tools.util.Span;
 public final class RegexNameFinder implements TokenNameFinder {
 
   private final Pattern mPatterns[];
-  
+
   public RegexNameFinder(Pattern patterns[]) {
     if (patterns == null || patterns.length == 0) {
       throw new IllegalArgumentException("patterns must not be null or emtpy!");
     }
-    
+
     mPatterns = patterns;
   }
-  
+
   public Span[] find(String tokens[]) {
     Map<Integer, Integer> sentencePosTokenMap = new HashMap<Integer, Integer>();
-    
+
     StringBuffer sentenceString = new StringBuffer(tokens.length *  10);
-    
+
     for (int i = 0; i < tokens.length; i++) {
-      
+
       int startIndex = sentenceString.length();
-      sentencePosTokenMap.put(new Integer(startIndex), 
+      sentencePosTokenMap.put(new Integer(startIndex),
           new Integer(i));
 
       sentenceString.append(tokens[i]);
-      
+
       int endIndex = sentenceString.length();
-      sentencePosTokenMap.put(new Integer(endIndex), 
+      sentencePosTokenMap.put(new Integer(endIndex),
           new Integer(i));
-      
+
       if (i < tokens.length - 1) {
         sentenceString.append(' ');
       }
     }
-    
+
     Collection<Span> annotations = new LinkedList<Span>();
-    
+
     for (int i = 0; i < mPatterns.length; i++) {
       Matcher matcher = mPatterns[i].matcher(sentenceString);
-      
+
       while (matcher.find()) {
-        Integer tokenStartIndex = 
+        Integer tokenStartIndex =
             (Integer) sentencePosTokenMap.get(new Integer(matcher.start()));
-        Integer tokenEndIndex = 
+        Integer tokenEndIndex =
             (Integer) sentencePosTokenMap.get(new Integer(matcher.end()));
-        
+
         if (tokenStartIndex != null && tokenEndIndex != null) {
-          Span annotation = new Span(tokenStartIndex.intValue(), 
+          Span annotation = new Span(tokenStartIndex.intValue(),
               tokenEndIndex.intValue());
-          
+
           annotations.add(annotation);
         }
       }
     }
-    
+
     return (Span[]) annotations.toArray(
         new Span[annotations.size()]);
   }

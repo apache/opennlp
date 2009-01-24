@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -37,20 +37,20 @@ public class POSSampleEventStream extends AbstractEventStream<POSSample> {
    * to create the training {@link Event}s.
    */
   private POSContextGenerator cg;
-  
+
   /**
    * Initializes the current instance with the given samples and the
    * given {@link POSContextGenerator}.
-   * 
+   *
    * @param samples
    * @param cg
    */
   public POSSampleEventStream(Iterator<POSSample> samples, POSContextGenerator cg) {
     super(samples);
-    
+
     this.cg = cg;
   }
-  
+
   /**
    * Initializes the current instance with given samples
    * and a {@link DefaultPOSContextGenerator}.
@@ -59,24 +59,24 @@ public class POSSampleEventStream extends AbstractEventStream<POSSample> {
   public POSSampleEventStream(Iterator<POSSample> samples) {
     this(samples, new DefaultPOSContextGenerator(null));
   }
-  
+
   @Override
   protected Iterator<Event> createEvents(POSSample sample) {
-    
+
     String sentence[] = sample.getSentence();
     String tags[] = sample.getTags();
-    
+
     List<Event> events = new ArrayList<Event>(sentence.length);
-    
+
     for (int i=0; i < sentence.length; i++) {
-      
+
       // it is safe to pass the tags as previous tags because
       // the context generator does not look for non predicted tags
       String[] context = cg.getContext(i, sentence, tags, null);
-      
+
       events.add(new Event(tags[i], context));
     }
-    
+
     return events.iterator();
   }
 }

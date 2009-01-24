@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -25,7 +25,7 @@ public class VersionTest extends TestCase {
     Version referenceVersion = Version.currentVersion();
     assertEquals(referenceVersion, Version.parse(referenceVersion.toString()));
   }
-  
+
   public void testParseInvalidVersion() {
     try {
       Version.parse("1.5.");
@@ -33,10 +33,10 @@ public class VersionTest extends TestCase {
     catch (NumberFormatException e) {
       return;
     }
-    
+
     assertTrue(false);
   }
- 
+
   public void testParseInvalidVersion2() {
     try {
       Version.parse("1.5");
@@ -44,7 +44,7 @@ public class VersionTest extends TestCase {
     catch (NumberFormatException e) {
       return;
     }
-    
+
     assertTrue(false);
   }
 }

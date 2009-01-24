@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -45,7 +45,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
 
   private AdditionalContextFeatureGenerator additionalContextFeatureGenerator = new AdditionalContextFeatureGenerator();
 
-  /** 
+  /**
    * Creates a new name finder event stream using the specified data stream and context generator.
    * @param dataStream The data stream of events.
    * @param contextGenerator The context generator used to generate features for the event stream.
@@ -59,7 +59,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
   public NameFinderEventStream(Iterator<NameSample> dataStream) {
     this(dataStream, new DefaultNameContextGenerator());
   }
-  
+
   /**
    * Generates the name tag outcomes (start, continue, other) for each token in a sentence
    * with the specified length using the specified name spans.
@@ -92,13 +92,13 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
     }
     return outcomes;
   }
-    
+
   private void createNewEvents() {
-    
+
     // TODO: the iterator of the new events can be empty
     // create as long new events as there are events
     // or the name sample stream is empty
-    
+
     if (nameSampleStream.hasNext()) {
       NameSample sample = nameSampleStream.next();
       while (sample.isClearAdaptiveDataSet()) {
@@ -113,7 +113,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
       //System.err.println(sample);
       String outcomes[] = generateOutcomes(sample.getNames(),sample.getNameTypes(),sample.getSentence().length);
       additionalContextFeatureGenerator.setCurrentContext(sample.getAdditionalContext());
-      String[] tokens = new String[sample.getSentence().length]; 
+      String[] tokens = new String[sample.getSentence().length];
       List<Event> events = new ArrayList<Event>(outcomes.length);
       for (int i = 0; i < sample.getSentence().length; i++) {
         tokens[i] = sample.getSentence()[i];
@@ -125,7 +125,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
       contextGenerator.updateAdaptiveData(tokens, outcomes);
     }
   }
-    
+
   public boolean hasNext() {
 
     // check if iterator has next event
@@ -133,7 +133,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
       return true;
     } else {
       createNewEvents();
-      
+
       return events.hasNext();
     }
   }
@@ -147,7 +147,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
 
     return (Event) events.next();
   }
-    
+
   /**
    * Generated previous decision features for each token based on contents of the specified map.
    * @param tokens The token for which the context is generated.

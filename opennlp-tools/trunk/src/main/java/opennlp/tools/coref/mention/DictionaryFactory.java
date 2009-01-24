@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -21,14 +21,14 @@ import java.io.IOException;
 
 import net.didion.jwnl.JWNLException;
 
-/** Factory class used to get an instance of a dictionary object. 
+/** Factory class used to get an instance of a dictionary object.
  * @see opennlp.tools.coref.mention.Dictionary
  * */
 public class DictionaryFactory {
-  
+
   private static Dictionary dictionary;
-  
-  /** 
+
+  /**
    * Returns the default implementation of the Dictionary interface.
    * @return the default implementation of the Dictionary interface.
    */

@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -24,25 +24,25 @@ import java.util.List;
 import opennlp.maxent.IntegerPool;
 
 /**
- * Default implementation of the {@link EndOfSentenceScanner}. 
+ * Default implementation of the {@link EndOfSentenceScanner}.
  * It uses an character array with possible end of sentence chars
  * to identify potential sentence endings.
  */
 public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
 
   protected static final IntegerPool INT_POOL = new IntegerPool(500);
-  
+
   private char eosCharacters[];
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param eosCharacters
    */
   public DefaultEndOfSentenceScanner(char eosCharacters[]) {
     this.eosCharacters = eosCharacters;
   }
-  
+
   public List<Integer> getPositions(String s) {
     return getPositions(s.toCharArray());
   }
@@ -64,7 +64,7 @@ public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
     }
     return l;
   }
-  
+
   public char[] getEndOfSentenceCharacters() {
     return eosCharacters;
   }

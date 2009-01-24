@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -36,48 +36,48 @@ import opennlp.tools.postag.POSTagger;
  * Built/attach parser.  Nodes are built when their left-most
  * child is encountered.  Subsequent children are attached as
  * daughters.  Attachment is based on node in the right-frontier
- * of the tree.  After each attachment or building, nodes are 
+ * of the tree.  After each attachment or building, nodes are
  * assesed as either complete or incomplete.  Complete nodes
  * are no longer elligable for daughter attachment.
- * Complex modifiers which produce additional node  
+ * Complex modifiers which produce additional node
  * levels of the same type are attached with sister-adjunction.
  * Attachment can not take place higher in the right-frontier
- * than an incomplete node.  
+ * than an incomplete node.
  */
 public class Parser extends AbstractBottomUpParser {
 
   /** Outcome used when a constituent needs an no additional parent node/building. */
   public static final String DONE = "d";
 
-  /** Outcome used when a node should be attached as a sister to another node. */ 
+  /** Outcome used when a node should be attached as a sister to another node. */
   public static final String ATTACH_SISTER = "s";
   /** Outcome used when a node should be attached as a daughter to another node. */
   public static final String ATTACH_DAUGHTER = "d";
   /** Outcome used when a node should not be attached to another node. */
   public static final String NON_ATTACH = "n";
-  
-  /** Label used to distinguish build nodes from non-built nodes. */ 
+
+  /** Label used to distinguish build nodes from non-built nodes. */
   public static final String BUILT = "built";
   private MaxentModel buildModel;
   private MaxentModel attachModel;
   private MaxentModel checkModel;
-  
+
   static boolean checkComplete = false;
-  
+
   private BuildContextGenerator buildContextGenerator;
   private AttachContextGenerator attachContextGenerator;
   private CheckContextGenerator checkContextGenerator;
-  
+
   private double[] bprobs;
   private double[] aprobs;
   private double[] cprobs;
-  
+
   private int doneIndex;
   private int sisterAttachIndex;
   private int daughterAttachIndex;
   private int nonAttachIndex;
   private int completeIndex;
-  
+
   private int[] attachments;
 
   public Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, POSTagger tagger, ParserChunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
@@ -85,15 +85,15 @@ public class Parser extends AbstractBottomUpParser {
     this.buildModel = buildModel;
     this.attachModel = attachModel;
     this.checkModel = checkModel;
-    
+
     this.buildContextGenerator = new BuildContextGenerator();
     this.attachContextGenerator = new AttachContextGenerator(punctSet);
     this.checkContextGenerator = new CheckContextGenerator(punctSet);
-        
+
     this.bprobs = new double[buildModel.getNumOutcomes()];
     this.aprobs = new double[attachModel.getNumOutcomes()];
     this.cprobs = new double[checkModel.getNumOutcomes()];
-    
+
     this.doneIndex = buildModel.getIndex(DONE);
     this.sisterAttachIndex = attachModel.getIndex(ATTACH_SISTER);
     this.daughterAttachIndex = attachModel.getIndex(ATTACH_DAUGHTER);
@@ -101,11 +101,11 @@ public class Parser extends AbstractBottomUpParser {
     attachments = new int[] {daughterAttachIndex,sisterAttachIndex};
     this.completeIndex = checkModel.getIndex(Parser.COMPLETE);
   }
-  
+
   public Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, POSTagger tagger, ParserChunker chunker, HeadRules headRules) {
     this(buildModel,attachModel,checkModel, tagger,chunker,headRules,defaultBeamSize,defaultAdvancePercentage);
   }
-  
+
   /**
    * Returns the right frontier of the specified parse tree with nodes ordered from deepest
    * to shallowest.
@@ -129,7 +129,7 @@ public class Parser extends AbstractBottomUpParser {
     }
     return new ArrayList<Parse>(rf);
   }
-  
+
   private void setBuilt(Parse p) {
     String l = p.getLabel();
     if (l == null) {
@@ -144,7 +144,7 @@ public class Parser extends AbstractBottomUpParser {
       }
     }
   }
-  
+
   private void setComplete(Parse p) {
     String l = p.getLabel();
     if (!isBuilt(p)) {
@@ -154,7 +154,7 @@ public class Parser extends AbstractBottomUpParser {
       p.setLabel(Parser.BUILT+"."+Parser.COMPLETE);
     }
   }
-  
+
   private void setIncomplete(Parse p) {
     if (!isBuilt(p)) {
       p.setLabel(Parser.INCOMPLETE);
@@ -163,7 +163,7 @@ public class Parser extends AbstractBottomUpParser {
       p.setLabel(Parser.BUILT+"."+Parser.INCOMPLETE);
     }
   }
-  
+
   private boolean isBuilt(Parse p) {
     String l = p.getLabel();
     if (l == null) {
@@ -173,7 +173,7 @@ public class Parser extends AbstractBottomUpParser {
       return l.startsWith(Parser.BUILT);
     }
   }
-   
+
   private boolean isComplete(Parse p) {
     String l = p.getLabel();
     if (l == null) {
@@ -183,7 +183,7 @@ public class Parser extends AbstractBottomUpParser {
       return l.endsWith(Parser.COMPLETE);
     }
   }
-  
+
   protected Parse[] advanceChunks(Parse p, double minChunkScore) {
     Parse[] parses = super.advanceChunks(p, minChunkScore);
     for (int pi=0;pi<parses.length;pi++) {
@@ -233,7 +233,7 @@ public class Parser extends AbstractBottomUpParser {
     if (1-doneProb > q) {
       double bprobSum = 0;
       while (bprobSum < probMass) {
-        /** The largest unadvanced labeling. */ 
+        /** The largest unadvanced labeling. */
         int max = 0;
         for (int pi = 1; pi < bprobs.length; pi++) { //for each build outcome
           if (bprobs[pi] > bprobs[max]) {
@@ -270,7 +270,7 @@ public class Parser extends AbstractBottomUpParser {
               if (debugOn) System.out.println("Advancing both complete and incomplete nodes");
               setComplete(newNode);
               newParse1.addProb(Math.log(cprobs[completeIndex]));
-            
+
               Parse newParse2 = (Parse) p.clone();
               Parse newNode2 = new Parse(p.getText(),advanceNode.getSpan(),tag,bprob,advanceNode.getHead());
               newParse2.insert(newNode2);
@@ -316,13 +316,13 @@ public class Parser extends AbstractBottomUpParser {
           }
           for (int ai=0;ai<attachments.length;ai++) {
             double prob = aprobs[attachments[ai]];
-            //should we try an attach if p > threshold and 
+            //should we try an attach if p > threshold and
             // if !checkComplete then prevent daughter attaching to chunk
             // if checkComplete then prevent daughter attacing to complete node or
             //    sister attaching to an incomplete node
-            if (prob > q && ( 
-                (!checkComplete && (attachments[ai]!= daughterAttachIndex || !isComplete(fn))) 
-                || 
+            if (prob > q && (
+                (!checkComplete && (attachments[ai]!= daughterAttachIndex || !isComplete(fn)))
+                ||
                 (checkComplete && ((attachments[ai]== daughterAttachIndex && !isComplete(fn)) || (attachments[ai] == sisterAttachIndex && isComplete(fn)))))) {
               Parse newParse2 = newParse1.cloneRoot(fn,originalZeroIndex);
               Parse[] newKids = Parser.collapsePunctuation(newParse2.getChildren(),punctSet);
@@ -399,11 +399,11 @@ public class Parser extends AbstractBottomUpParser {
   protected void advanceTop(Parse p) {
     p.setType(TOP_NODE);
   }
-  
+
   public static AbstractModel train(opennlp.model.EventStream es, int iterations, int cut) throws java.io.IOException {
     return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
-  
+
   private static void usage() {
     System.err.println("Usage: ParserME -[dict|tag|chunk|build|attach|fun] trainingFile parserModelDirectory [iterations cutoff]");
     System.err.println();
@@ -414,7 +414,7 @@ public class Parser extends AbstractBottomUpParser {
     System.err.println("-attach Just build the attach model");
     System.err.println("-fun Predict function tags");
   }
-  
+
   public static void main(String[] args) throws java.io.IOException {
     if (args.length < 3) {
       usage();
@@ -493,7 +493,7 @@ public class Parser extends AbstractBottomUpParser {
       System.out.println("Saving the chunker model as: " + chunkFile);
       new opennlp.maxent.io.SuffixSensitiveGISModelWriter(chunkModel, chunkFile).persist();
     }
-        
+
     if (build || all) {
       System.err.println("Training builder");
       opennlp.model.EventStream bes = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)), rules, ParserEventTypeEnum.BUILD,null);
@@ -509,7 +509,7 @@ public class Parser extends AbstractBottomUpParser {
       System.out.println("Saving the attach model as: " + attachFile);
       new opennlp.maxent.io.SuffixSensitiveGISModelWriter(attachModel, attachFile).persist();
     }
-    
+
     if (check || all) {
       System.err.println("Training checker");
       opennlp.model.EventStream ces = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)), rules, ParserEventTypeEnum.CHECK);

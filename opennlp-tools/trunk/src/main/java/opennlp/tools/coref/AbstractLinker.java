@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -28,13 +28,13 @@ import opennlp.tools.coref.resolver.AbstractResolver;
 import opennlp.tools.coref.sim.Gender;
 import opennlp.tools.coref.sim.Number;
 
-/** 
+/**
  * Provides a default implementation of many of the methods in {@link Linker} that
- * most implementations of {@link Linker} will want to extend.  
+ * most implementations of {@link Linker} will want to extend.
  */
 public abstract class AbstractLinker implements Linker {
 
-  /** The mention finder used to find mentions. */ 
+  /** The mention finder used to find mentions. */
   protected MentionFinder mentionFinder;
 
   /** Specifies whether debug print is generated. */
@@ -45,34 +45,34 @@ public abstract class AbstractLinker implements Linker {
 
   /** Instance used for for returning the same linker for subsequent getInstance requests. */
   protected static Linker linker;
-  
+
   /** The resolvers used by this Linker. */
   protected AbstractResolver[] resolvers;
   /** The names of the resolvers used by this Linker. */
   protected String[] resolverNames;
-  
-  /** Array used to store the results of each call made to the linker. */  
+
+  /** Array used to store the results of each call made to the linker. */
   protected DiscourseEntity[] entities;
-  
+
   /** The index of resolver which is used for singular pronouns. */
   protected int SINGULAR_PRONOUN;
 
-  /** The name of the project where the coreference models are stored. */ 
+  /** The name of the project where the coreference models are stored. */
   protected String corefProject;
-  
+
   /** The head finder used in this linker. */
   protected HeadFinder headFinder;
-  
-  /** Specifies whether coreferent mentions should be combined into a single entity. 
+
+  /** Specifies whether coreferent mentions should be combined into a single entity.
    * Set this to true to combine them, false otherwise.  */
   protected boolean useDiscourseModel;
-  
+
   /** Specifies whether mentions for which no resolver can be used should be added to the
    * discourse model.
-   */ 
+   */
   protected boolean removeUnresolvedMentions;
 
-  /** 
+  /**
    * Creates a new linker using the models in the specified project directory and using the specified mode.
    * @param project The location of the models or other data needed by this linker.
    * @param mode The mode the linker should be run in: testing, training, or evaluation.
@@ -82,7 +82,7 @@ public abstract class AbstractLinker implements Linker {
   }
 
   /**
-   * Creates a new linker using the models in the specified project directory, using the specified mode, 
+   * Creates a new linker using the models in the specified project directory, using the specified mode,
    * and combining coreferent entities based on the specified value.
    * @param project The location of the models or other data needed by this linker.
    * @param mode The mode the linker should be run in: testing, training, or evaluation.
@@ -105,7 +105,7 @@ public abstract class AbstractLinker implements Linker {
     //System.err.println("AbstractLinker.resolve: "+mode+"("+econtext.id+") "+econtext.toText());
     boolean validEntity = true; // true if we should add this entity to the dm
     boolean canResolve = false;
-    
+
     for (int ri = 0; ri < resolvers.length; ri++) {
       if (resolvers[ri].canResolve(mention)) {
         if (mode == LinkerMode.TEST) {
@@ -143,16 +143,16 @@ public abstract class AbstractLinker implements Linker {
       updateExtent(discourseModel, mention, de,useDiscourseModel);
     }
   }
-  
+
   public HeadFinder getHeadFinder() {
     return headFinder;
   }
-  
+
   /**
-   * Updates the specified discourse model with the specified mention as coreferent with the specified entity. 
+   * Updates the specified discourse model with the specified mention as coreferent with the specified entity.
    * @param dm The discourse model
    * @param mention The mention to be added to the specified entity.
-   * @param entity The entity which is mentioned by the specified mention.  
+   * @param entity The entity which is mentioned by the specified mention.
    * @param useDiscourseModel Whether the mentions should be kept as an entiy or simply co-indexed.
    */
   protected void updateExtent(DiscourseModel dm, MentionContext mention, DiscourseEntity entity, boolean useDiscourseModel) {
@@ -229,11 +229,11 @@ public abstract class AbstractLinker implements Linker {
       resolvers[ri].train();
     }
   }
-    
+
   public MentionFinder getMentionFinder() {
     return mentionFinder;
   }
-  
+
   public MentionContext[] constructMentionContexts(Mention[] mentions) {
     int mentionInSentenceIndex=-1;
     int numMentionsInSentence=-1;
@@ -270,7 +270,7 @@ public abstract class AbstractLinker implements Linker {
     }
     return (contexts);
   }
-  
+
   protected abstract Gender computeGender(MentionContext mention);
   protected abstract Number computeNumber(MentionContext mention);
 }

@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -24,10 +24,10 @@ import opennlp.tools.util.Span;
  * @author      Thomas Morton
  */
 public interface TokenNameFinder {
-  
+
   /** Generates name tags for the given sequence, typically a sentence, returning token spans for any identified names.
    * @param tokens an array of the tokens or words of the sequence, typically a sentence.
    * @return an array of spans for each of the names identified.
    */
-  public Span[] find(String tokens[]);  
+  public Span[] find(String tokens[]);
 }

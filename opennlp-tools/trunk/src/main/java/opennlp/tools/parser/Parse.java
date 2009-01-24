@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -33,106 +33,106 @@ import java.util.regex.Pattern;
 
 import opennlp.tools.util.Span;
 
-/** 
- * Data structure for holding parse constitents. 
+/**
+ * Data structure for holding parse constitents.
  */
 public class Parse implements Cloneable, Comparable<Parse> {
-  
-  /** 
+
+  /**
    * The text string on which this parse is based.
-   * This object is shared among all parses for the same sentence. 
+   * This object is shared among all parses for the same sentence.
    */
   private String text;
-  
-  /** 
-   * The character offsets into the text for this constituent. 
+
+  /**
+   * The character offsets into the text for this constituent.
    */
   private Span span;
 
-  /** 
-   * The syntactic type of this parse. 
+  /**
+   * The syntactic type of this parse.
    */
   private String type;
-  
-  /** 
-   * The sub-constituents of this parse. 
+
+  /**
+   * The sub-constituents of this parse.
    */
   private List<Parse> parts;
-  
-  /** 
+
+  /**
    * The head parse of this parse. A parse can be its own head.
    */
   private Parse head;
-  
+
   /**
-   * A string used during parse construction to specify which 
-   * stage of parsing has been performed on this node. 
+   * A string used during parse construction to specify which
+   * stage of parsing has been performed on this node.
    */
   private String label;
-  
-  /** 
-   * Index in the sentence of the head of this constituent. 
+
+  /**
+   * Index in the sentence of the head of this constituent.
    */
   private int headIndex;
-  
-  /** 
-   * The parent parse of this parse. 
+
+  /**
+   * The parent parse of this parse.
    */
   private Parse parent;
-  
+
   /**
    * The probability associated with the syntactic type
-   * assigned to this parse. 
+   * assigned to this parse.
    */
   private double prob;
-  
-  /** 
-   * The string buffer used to track the derivation of this parse. 
+
+  /**
+   * The string buffer used to track the derivation of this parse.
    */
   private StringBuffer derivation;
-  
-  /** 
-   * Specifies whether this constituent was built during the chunking phase. 
+
+  /**
+   * Specifies whether this constituent was built during the chunking phase.
    */
   private boolean isChunk;
-  
-  /** 
-   * The pattern used to find the base constituent label of a 
-   * Penn Treebank labeled constituent. 
+
+  /**
+   * The pattern used to find the base constituent label of a
+   * Penn Treebank labeled constituent.
    */
   private static Pattern typePattern = Pattern.compile("^([^ =-]+)");
-  
-  /** 
-   * The pattern used to find the function tags. 
-   */ 
+
+  /**
+   * The pattern used to find the function tags.
+   */
   private static Pattern funTypePattern = Pattern.compile("^[^ =-]+-([^ =-]+)");
-  
-  /** 
-   * The patter used to identify tokens in Penn Treebank labeled constituents. 
+
+  /**
+   * The patter used to identify tokens in Penn Treebank labeled constituents.
    */
   private static Pattern tokenPattern = Pattern.compile("^[^ ()]+ ([^ ()]+)\\s*\\)");
-  
-  /** 
+
+  /**
    * The set of punctuation parses which are between this parse and the previous parse.
    */
   private Collection<Parse> prevPunctSet;
-  
-  /** 
+
+  /**
    * The set of punctuation parses which are between this parse and
    * the subsequent parse.
    */
   private Collection<Parse> nextPunctSet;
-  
-  /** 
+
+  /**
    * Specifies whether constituent labels should include parts specified
-   * after minus character. 
+   * after minus character.
    */
   private static boolean useFunctionTags;
-  
+
   /**
    * Creates a new parse node for this specified text and span of the specified type with the specified probability
-   * and the specified head index.  
-   * 
+   * and the specified head index.
+   *
    * @param text The text of the sentence for which this node is a part of.
    * @param span The character offsets for this node within the specified text.
    * @param type The constituent label of this node.
@@ -154,7 +154,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   /**
    * Creates a new parse node for this specified text and span of the specified type with the specified probability
    * and the specified head and head index.
-   * 
+   *
    * @param text The text of the sentence for which this node is a part of.
    * @param span The character offsets for this node within the specified text.
    * @param type The constituent label of this node.
@@ -168,13 +168,13 @@ public class Parse implements Cloneable, Comparable<Parse> {
       this.headIndex = h.headIndex;
     }
   }
-  
+
   @Override
   public Object clone() {
     Parse p = new Parse(this.text, this.span, this.type, this.prob, this.head);
     p.parts = new LinkedList<Parse>();
     p.parts.addAll(this.parts);
-    
+
     if (derivation != null) {
       p.derivation = new StringBuffer(100);
       p.derivation.append(this.derivation.toString());
@@ -182,10 +182,10 @@ public class Parse implements Cloneable, Comparable<Parse> {
     p.label = this.label;
     return (p);
   }
-  
+
   /**
    * Clones the right frontier of parse up to the specified node.
-   * 
+   *
    * @param node The last node in the right frontier of the parse tree which should be cloned.
    * @return A clone of this parse and its right frontier up to and including the specified node.
    */
@@ -202,9 +202,9 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
   /**
    * Clones the right frontier of this root parse up to and including the specified node.
-   * 
+   *
    * @param node The last node in the right frontier of the parse tree which should be cloned.
-   * @param parseIndex The child index of the parse for this root node. 
+   * @param parseIndex The child index of the parse for this root node.
    * @return A clone of this root parse and its right frontier up to and including the specified node.
    */
   public Parse cloneRoot(Parse node, int parseIndex) {
@@ -213,10 +213,10 @@ public class Parse implements Cloneable, Comparable<Parse> {
     c.parts.set(parseIndex,fc.clone(node));
     return c;
   }
-  
+
   /**
    * Specifies whether function tags should be included as part of the constituent type.
-   * 
+   *
    * @param uft true is they should be included; false otherwise.
    */
   public static void useFunctionTags(boolean uft) {
@@ -226,7 +226,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * Set the type of this constituent to the specified type.
-   * 
+   *
    * @param type The type of this constituent.
    */
   public void setType(String type) {
@@ -235,25 +235,25 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * Returns the constituent label for this node of the parse.
-   * 
+   *
    * @return The constituent label for this node of the parse.
    */
   public String getType() {
     return type;
   }
-  
+
   /**
    * Returns the set of punctuation parses that occur immediately before this parse.
-   * 
+   *
    * @return the set of punctuation parses that occur immediately before this parse.
    */
   public Collection<Parse> getPreviousPunctuationSet() {
     return prevPunctSet;
   }
-  
+
   /**
    * Designates that the specified punctuation should is prior to this parse.
-   * 
+   *
    * @param punct The punctuation.
    */
   public void addPreviousPunctuation(Parse punct) {
@@ -262,19 +262,19 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     prevPunctSet.add(punct);
   }
-  
+
   /**
    * Returns the set of punctuation parses that occur immediately after this parse.
-   * 
+   *
    * @return the set of punctuation parses that occur immediately after this parse.
    */
   public Collection<Parse> getNextPunctuationSet() {
     return nextPunctSet;
   }
-  
+
   /**
    * Designates that the specified punctuation follows this parse.
-   * 
+   *
    * @param punct The punctuation set.
    */
   public void addNextPunctuation(Parse punct) {
@@ -283,29 +283,29 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     nextPunctSet.add(punct);
   }
-  
+
   /**
    * Sets the set of punctuation tags which follow this parse.
-   * 
+   *
    * @param punctSet The set of punctuation tags which follow this parse.
    */
   public void setNextPunctuation(Collection<Parse> punctSet) {
     this.nextPunctSet = punctSet;
   }
-  
+
   /**
    * Sets the set of punctuation tags which preceed this parse.
-   * 
+   *
    * @param punctSet The set of punctuation tags which preceed this parse.
    */
   public void setPrevPunctuation(Collection<Parse> punctSet) {
     this.prevPunctSet = punctSet;
-  }  
+  }
 
   /**
    * Inserts the specified constituent into this parse based on its text span.This
    * method assumes that the specified constituent can be inserted into this parse.
-   * 
+   *
    * @param constituent The constituent to be inserted.
    */
   public void insert(final Parse constituent) {
@@ -346,11 +346,11 @@ public class Parse implements Cloneable, Comparable<Parse> {
       throw (new InternalError("Inserting constituent not contained in the sentence!"));
     }
   }
-  
+
   /**
    * Appends the specified string buffer with a string representation of this parse.
-   * 
-   * @param sb A string buffer into which the parse string can be appended. 
+   *
+   * @param sb A string buffer into which the parse string can be appended.
    */
   public void show(StringBuffer sb) {
     int start;
@@ -381,7 +381,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   /**
-   * Displays this parse using Penn Treebank-style formatting. 
+   * Displays this parse using Penn Treebank-style formatting.
    */
   public void show() {
     StringBuffer sb = new StringBuffer(text.length()*4);
@@ -392,7 +392,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * Returns the probability associated with the pos-tag sequence assigned to this parse.
-   * 
+   *
    * @return The probability associated with the pos-tag sequence assigned to this parse.
    */
   public double getTagSequenceProb() {
@@ -414,9 +414,9 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
   }
 
-  /** 
+  /**
    * Returns whether this parse is complete.
-   * 
+   *
    * @return Returns true if the parse contains a single top-most node.
    */
   public boolean complete() {
@@ -429,8 +429,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   /**
-   * Returns the text of the sentence over which this parse was formed. 
-   * 
+   * Returns the text of the sentence over which this parse was formed.
+   *
    * @return The text of the sentence over which this parse was formed.
    */
   public String getText() {
@@ -439,7 +439,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * Returns the character offsets for this constituent.
-   * 
+   *
    * @return The character offsets for this constituent.
    */
   public Span getSpan() {
@@ -448,16 +448,16 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * Returns the log of the product of the probability associated with all the decisions which formed this constituent.
-   * 
+   *
    * @return The log of the product of the probability associated with all the decisions which formed this constituent.
    */
   public double getProb() {
     return prob;
   }
-  
+
   /**
    * Adds the specified probability log to this current log for this parse.
-   * 
+   *
    * @param logProb The probability of an action performed on this parse.
    */
   public void addProb(double logProb) {
@@ -466,16 +466,16 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * Returns the child constituents of this constituent
-   * . 
+   * .
    * @return The child constituents of this constituent.
    */
   public Parse[] getChildren() {
     return parts.toArray(new Parse[parts.size()]);
   }
-  
+
   /**
-   * Replaces the child at the specified index with a new child with the specified label. 
-   * 
+   * Replaces the child at the specified index with a new child with the specified label.
+   *
    * @param index The index of the child to be replaced.
    * @param label The label to be assigned to the new child.
    */
@@ -484,7 +484,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     newChild.setLabel(label);
     parts.set(index,newChild);
   }
-  
+
   public void add(Parse daughter, HeadRules rules) {
     if (daughter.prevPunctSet != null) {
       parts.addAll(daughter.prevPunctSet);
@@ -497,14 +497,14 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     this.headIndex = head.headIndex;
   }
-  
+
   public void remove(int index) {
     parts.remove(index);
     if (index == 0 || index == parts.size()) { //size is orig last element
       span = new Span((parts.get(0)).span.getStart(),(parts.get(parts.size()-1)).span.getEnd());
     }
   }
-  
+
   public Parse adjoinRoot(Parse node, HeadRules rules, int parseIndex) {
     Parse lastChild = parts.get(parseIndex);
     Parse adjNode = new Parse(this.text,new Span(lastChild.getSpan().getStart(),node.getSpan().getEnd()),lastChild.getType(),1,rules.getHead(new Parse[]{lastChild,node},lastChild.getType()));
@@ -516,11 +516,11 @@ public class Parse implements Cloneable, Comparable<Parse> {
     parts.set(parseIndex,adjNode);
     return adjNode;
   }
-  
+
   /**
    * Sister adjoins this node's last child and the specified sister node and returns their
    * new parent node.  The new parent node replace this nodes last child.
-   * 
+   *
    * @param sister The node to be adjoined.
    * @param rules The head rules for the parser.
    * @return The new parent node of this node and the specified sister node.
@@ -531,7 +531,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     adjNode.parts.add(lastChild);
     if (sister.prevPunctSet != null) {
       adjNode.parts.addAll(sister.prevPunctSet);
-    } 
+    }
     adjNode.parts.add(sister);
     parts.set(parts.size()-1,adjNode);
     this.span = new Span(span.getStart(),sister.getSpan().getEnd());
@@ -539,7 +539,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     this.headIndex = head.headIndex;
     return adjNode;
   }
-  
+
   public void expandTopNode(Parse root) {
     boolean beforeRoot = true;
     //System.err.println("expandTopNode: parts="+parts);
@@ -561,21 +561,21 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     root.updateSpan();
   }
-  
+
   /**
    * Returns the number of children for this parse node.
-   * 
+   *
    * @return the number of children for this parse node.
    */
   public int getChildCount() {
     return parts.size();
   }
-  
+
   /**
    * Returns the index of this specified child.
-   * 
+   *
    * @param child A child of this parse.
-   * 
+   *
    * @return the index of this specified child or -1 if the specified child is not a child of this parse.
    */
   public int indexOf(Parse child) {
@@ -583,16 +583,16 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   /** Returns the head constituent associated with this constituent.
-   * 
+   *
    * @return The head constituent associated with this constituent.
    */
   public Parse getHead() {
     return head;
   }
-  
+
   /**
    * Returns the index within a sentence of the head token for this parse.
-   * 
+   *
    * @return The index within a sentence of the head token for this parse.
    */
   public int getHeadIndex() {
@@ -600,10 +600,10 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   /**
-   * Returns the label assigned to this parse node during parsing 
+   * Returns the label assigned to this parse node during parsing
    * which specifies how this node will be formed into a constituent.
-   * 
-   * @return The outcome label assigned to this node during parsing.  
+   *
+   * @return The outcome label assigned to this node during parsing.
    */
   public String getLabel() {
     return label;
@@ -612,7 +612,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   /**
    * Assigns this parse the specified label.  This is used by parsing schemes to
    * tag parsing nodes while building.
-   * 
+   *
    * @param label A label indicating something about the stage of building for this parse node.
    */
   public void setLabel(String label) {
@@ -638,7 +638,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     else {
       Matcher typeMatcher = typePattern.matcher(rest);
       if (typeMatcher.find()) {
-        String type = typeMatcher.group(1); 
+        String type = typeMatcher.group(1);
         if (useFunctionTags) {
           Matcher funMatcher = funTypePattern.matcher(rest);
           if (funMatcher.find()) {
@@ -655,9 +655,9 @@ public class Parse implements Cloneable, Comparable<Parse> {
   /**
    * Returns the string containing the token for the specified portion of the parse string or
    * null if the portion of the parse string does not represent a token.
-   * 
+   *
    * @param rest The portion of the parse string remaining to be processed.
-   * 
+   *
    * @return The string containing the token for the specified portion of the parse string or
    * null if the portion of the parse string does not represent a token.
    */
@@ -668,11 +668,11 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     return null;
   }
-  
+
   /**
    * Computes the head parses for this parse and its sub-parses and stores this information
-   * in the parse data structure. 
-   * 
+   * in the parse data structure.
+   *
    * @param rules The head rules which determine how the head of the parse is computed.
    */
   public void updateHeads(HeadRules rules) {
@@ -693,14 +693,14 @@ public class Parse implements Cloneable, Comparable<Parse> {
       this.head = this;
     }
   }
-  
+
   public void updateSpan() {
     span = new Span((parts.get(0)).span.getStart(),(parts.get(parts.size()-1)).span.getEnd());
   }
-  
+
   /**
    * Prune the specified sentence parse of vacuous productions.
-   * 
+   *
    * @param parse
    */
   public static void pruneParse(Parse parse) {
@@ -719,7 +719,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
       nodes.addAll(Arrays.asList(children));
     }
   }
-  
+
   public static void fixPossesives(Parse parse) {
     Parse[] tags = parse.getTagNodes();
     for (int ti=0;ti<tags.length;ti++) {
@@ -741,27 +741,27 @@ public class Parse implements Cloneable, Comparable<Parse> {
       }
     }
   }
-  
-  
-  
+
+
+
   /**
-   * Parses the specified tree-bank style parse string and return a Parse structure for that string. 
-   * 
+   * Parses the specified tree-bank style parse string and return a Parse structure for that string.
+   *
    * @param parse A tree-bank style parse string.
-   * 
+   *
    * @return a Parse structure for the specified tree-bank style parse string.
    */
   public static Parse parseParse(String parse) {
     return parseParse(parse,null);
   }
-    
+
   /**
    * Parses the specified tree-bank style parse string and return a Parse structure
-   * for that string. 
-   * 
+   * for that string.
+   *
    * @param parse A tree-bank style parse string.
    * @param gl The gap labeler.
-   * 
+   *
    * @return a Parse structure for the specified tree-bank style parse string.
    */
   public static Parse parseParse(String parse, GapLabeler gl) {
@@ -785,10 +785,10 @@ public class Parse implements Cloneable, Comparable<Parse> {
             gl.labelGaps(stack);
           }
           else {
-            cons.add(new Constituent(AbstractBottomUpParser.TOK_NODE, 
+            cons.add(new Constituent(AbstractBottomUpParser.TOK_NODE,
                 new Span(offset, offset + token.length())));
             text.append(token).append(" ");
-            offset += token.length() + 1; 
+            offset += token.length() + 1;
           }
         }
       }
@@ -821,7 +821,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * Returns the parent parse node of this constituent.
-   * 
+   *
    * @return The parent parse node of this constituent.
    */
   public Parse getParent() {
@@ -830,7 +830,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * Specifies the parent parse node for this constituent.
-   * 
+   *
    * @param parent The parent parse node for this constituent.
    */
   public void setParent(Parse parent) {
@@ -839,17 +839,17 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * Indicates whether this parse node is a pos-tag.
-   * 
+   *
    * @return true if this node is a pos-tag, false otherwise.
    */
   public boolean isPosTag() {
-    return (parts.size() == 1 && 
+    return (parts.size() == 1 &&
         (parts.get(0)).getType().equals(AbstractBottomUpParser.TOK_NODE));
   }
-  
+
   /**
    * Returns true if this constituent contains no sub-constituents.
-   * 
+   *
    * @return true if this constituent contains no sub-constituents; false otherwise.
    */
   public boolean isFlat() {
@@ -859,18 +859,18 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     return flat;
   }
-  
+
   public void isChunk(boolean ic) {
     this.isChunk = ic;
   }
-  
+
   public boolean isChunk() {
     return isChunk;
   }
-  
+
   /**
    * Returns the parse nodes which are children of this node and which are pos tags.
-   * 
+   *
    * @return the parse nodes which are children of this node and which are pos tags.
    */
   public Parse[] getTagNodes() {
@@ -888,14 +888,14 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     return tags.toArray(new Parse[tags.size()]);
   }
-  
+
   /**
-   * Returns the deepest shared parent of this node and the specified node. 
-   * If the nodes are identical then their parent is returned.  
+   * Returns the deepest shared parent of this node and the specified node.
+   * If the nodes are identical then their parent is returned.
    * If one node is the parent of the other then the parent node is returned.
-   * 
+   *
    * @param node The node from which parents are compared to this node's parents.
-   * 
+   *
    * @return the deepest shared parent of this node and the specified node.
    */
   public Parse getCommonParent(Parse node) {
@@ -926,26 +926,26 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     return 0;
   }
-  
+
   /**
    * Returns the derivation string for this parse if one has been created.
-   * 
+   *
    * @return the derivation string for this parse or null if no derivation
    * string has been created.
    */
   public StringBuffer getDerivation() {
     return derivation;
   }
-  
+
   /**
    * Specifies the derivation string to be associated with this parse.
-   * 
+   *
    * @param derivation The derivation string to be associated with this parse.
    */
   public void setDerivation(StringBuffer derivation) {
     this.derivation = derivation;
   }
-  
+
   private void codeTree(Parse p,int[] levels) {
     Parse[] kids = p.getChildren();
     StringBuffer levelsBuff = new StringBuffer();
@@ -963,7 +963,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
       codeTree(kids[ki],nlevels);
     }
   }
-  
+
   /**
    * Prints to standard out a representation of the specified parse which
    * contains hash codes so that parent/child relationships can be explicitly seen.
@@ -974,9 +974,9 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * Reads training parses (one-sentence-per-line) and displays parse structure.
-   * 
+   *
    * @param args The head rules files.
-   * 
+   *
    * @throws IOException If the head rules file can not be opened and read.
    */
   public static void main(String[] args) throws java.io.IOException {
@@ -997,10 +997,10 @@ public class Parse implements Cloneable, Comparable<Parse> {
         ai++;
       }
     }
-    
+
     opennlp.tools.parser.lang.en.HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[ai]);
     java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
-    
+
     for (String line = in.readLine(); line != null; line = in.readLine()) {
       Parse p = Parse.parseParse(line,rules);
       Parse.pruneParse(p);

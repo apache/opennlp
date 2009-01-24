@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -46,14 +46,14 @@ import net.didion.jwnl.princeton.data.PrincetonWN17FileDictionaryElementFactory;
 import net.didion.jwnl.princeton.file.PrincetonRandomAccessDictionaryFile;
 
 /**
- * An implementation of the Dictionary interface using the JWNL library. 
+ * An implementation of the Dictionary interface using the JWNL library.
  */
 public class JWNLDictionary implements Dictionary {
-  
+
   private net.didion.jwnl.dictionary.Dictionary dict;
   private MorphologicalProcessor morphy;
   private static String[] empty = new String[0];
-  
+
   public JWNLDictionary(String searchDirectory) throws IOException, JWNLException {
     PointerType.initialize();
 	Adjective.initialize();
@@ -117,9 +117,9 @@ public class JWNLDictionary implements Dictionary {
       e.printStackTrace();
       return null;
     }
-    
+
   }
-  
+
   public int getNumSenses(String lemma, String pos) {
     try {
       IndexWord iw = dict.getIndexWord(POS.NOUN,lemma);
@@ -132,7 +132,7 @@ public class JWNLDictionary implements Dictionary {
       return 0;
     }
   }
-  
+
   private void getParents(Synset synset, List<String> parents) throws JWNLException {
     Pointer[] pointers = synset.getPointers();
     for (int pi=0,pn=pointers.length;pi<pn;pi++) {
@@ -163,7 +163,7 @@ public class JWNLDictionary implements Dictionary {
       return null;
     }
   }
-  
+
   public static void main(String[] args) throws IOException, JWNLException {
     String searchDir = System.getProperty("WNSEARCHDIR");
     System.err.println("searchDir="+searchDir);

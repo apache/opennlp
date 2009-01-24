@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -45,7 +45,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
     this.in = new BufferedReader(new InputStreamReader(is));
     line = in.readLine();
   }
-  
+
   public boolean hasNext() {
     return line != null;
   }
@@ -74,12 +74,12 @@ public class TokenSampleStream implements Iterator<TokenSample> {
         token = "}";
       }
       if (sb.length() == 0) {
-        
+
       }
       else if (!alphaNumeric.matcher(token).find() || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
         if ((token.equals("``") || token.equals("--") || token.equals("$") ||
             token.equals("(")  || token.equals("&")  || token.equals("#") ||
-            (token.equals("\"") && (evenq && ti != tokens.length-1))) 
+            (token.equals("\"") && (evenq && ti != tokens.length-1)))
             && (!lastToken.equals("(") || !lastToken.equals("{"))) {
           //System.out.print(" "+token);
           length++;
@@ -89,7 +89,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
         }
       }
       else {
-        if (lastToken.equals("``") || (lastToken.equals("\"") && !evenq) || lastToken.equals("(") || lastToken.equals("{") 
+        if (lastToken.equals("``") || (lastToken.equals("\"") && !evenq) || lastToken.equals("(") || lastToken.equals("{")
             || lastToken.equals("$") || lastToken.equals("#")) {
           //System.out.print(token);
         }
@@ -122,12 +122,12 @@ public class TokenSampleStream implements Iterator<TokenSample> {
     }
     return new TokenSample(sb.toString(),spans.toArray(new Span[spans.size()]));
   }
-  
+
 
   public void remove() {
     throw new UnsupportedOperationException();
   }
-  
+
   private static void usage() {
     System.err.println("TokenSampleStream [-spans] < in");
     System.err.println("Where in is a space delimited list of tokens.");

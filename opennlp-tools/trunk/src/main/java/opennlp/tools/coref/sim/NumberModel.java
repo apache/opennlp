@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -33,7 +33,7 @@ import opennlp.tools.util.CollectionEventStream;
 import opennlp.tools.util.HashList;
 
 /**
- * Class which models the number of particular mentions and the entities made up of mentions. 
+ * Class which models the number of particular mentions and the entities made up of mentions.
  */
 public class NumberModel implements TestNumberModel, TrainSimilarityModel {
 
@@ -173,7 +173,7 @@ public class NumberModel implements TestNumberModel, TrainSimilarityModel {
   }
 
   public void trainModel() throws IOException {
-    (new SuffixSensitiveGISModelWriter(GIS.trainModel(new CollectionEventStream(events),100,10),new File(modelName+modelExtension))).persist();    
+    (new SuffixSensitiveGISModelWriter(GIS.trainModel(new CollectionEventStream(events),100,10),new File(modelName+modelExtension))).persist();
   }
 
 }

@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -24,15 +24,15 @@ import java.util.List;
 import opennlp.tools.coref.mention.MentionContext;
 
 /**
- * Represents the elements which are part of a discourse. 
+ * Represents the elements which are part of a discourse.
  */
 public class DiscourseModel {
 
   private List<DiscourseEntity> entities;
-  
+
   int nextEntityId = 1;
 
-  /** 
+  /**
    * Creates a new discourse model.
    *
    */
@@ -52,7 +52,7 @@ public class DiscourseModel {
       System.err.println("DiscourseModel.mentionEntity: failed to remove "+e);
     }
   }
-  
+
   /**
    * Returns the number of entities in this discourse model.
    * @return the number of entities in this discourse model.
@@ -60,7 +60,7 @@ public class DiscourseModel {
   public int getNumEntities() {
     return(entities.size());
   }
-  
+
   /**
    * Returns the entity at the specified index.
    * @param i The index of the entity to be returned.
@@ -72,7 +72,7 @@ public class DiscourseModel {
 
   /**
    * Adds the specified entity to this discourse model.
-   * @param e the entity to be added to the model. 
+   * @param e the entity to be added to the model.
    */
   public void addEntity(DiscourseEntity e) {
     e.setId(nextEntityId);
@@ -82,7 +82,7 @@ public class DiscourseModel {
 
   /**
    * Merges the specified entities into a single entity with the specified confidence.
-   * @param e1 The first entity. 
+   * @param e1 The first entity.
    * @param e2 The second entity.
    * @param confidence The confidence.
    */

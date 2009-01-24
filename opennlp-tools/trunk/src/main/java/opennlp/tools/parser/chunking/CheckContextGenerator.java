@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -45,8 +45,8 @@ public class CheckContextGenerator extends AbstractContextGenerator {
   }
 
   /**
-   * Returns predictive context for deciding whether the specified constituents between the specified start and end index 
-   * can be combined to form a new constituent of the specified type.  
+   * Returns predictive context for deciding whether the specified constituents between the specified start and end index
+   * can be combined to form a new constituent of the specified type.
    * @param constituents The constituents which have yet to be combined into new constituents.
    * @param type The type of the new constituent proposed.
    * @param start The first constituent of the proposed constituent.
@@ -57,7 +57,7 @@ public class CheckContextGenerator extends AbstractContextGenerator {
     int ps = constituents.length;
     List<String> features = new ArrayList<String>(100);
 
-    //default 
+    //default
     features.add("default");
     //first constituent label
     features.add("fl="+constituents[0].getLabel());

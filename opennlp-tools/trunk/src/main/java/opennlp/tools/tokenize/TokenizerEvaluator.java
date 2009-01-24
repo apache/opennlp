@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -25,7 +25,7 @@ import opennlp.tools.util.Span;
  * The {@link TokenizerEvaluator} measures the performance of
  * the given {@link Tokenizer} with the provided reference
  * {@link TokenSample}s.
- * 
+ *
  * @see FMeasureEvaluator
  * @see Tokenizer
  * @see TokenSample
@@ -37,24 +37,24 @@ public class TokenizerEvaluator extends FMeasureEvaluator<TokenSample> {
    * predicted tokens.
    */
   private Tokenizer tokenizer;
-  
+
   /**
    * Initializes the current instance with the
    * given {@link Tokenizer}.
-   * 
+   *
    * @param tokenizer the {@link Tokenizer} to evaluate.
    */
   public TokenizerEvaluator(Tokenizer tokenizer) {
     this.tokenizer = tokenizer;
   }
-  
+
   /**
    * Evaluates the given reference {@link TokenSample} object.
-   * 
+   *
    * This is done by detecting the token spans with the
    * {@link Tokenizer}. The detected token spans are then
    * used to calculate calculate and update the scores.
-   * 
+   *
    * @param reference the reference {@link TokenSample}.
    */
   public void evaluateSample(TokenSample reference) {
@@ -64,7 +64,7 @@ public class TokenizerEvaluator extends FMeasureEvaluator<TokenSample> {
       precisionScore.add(FMeasureEvaluator.precision(reference.getTokenSpans(),
           predictedSpans));
     }
-    
+
     if (reference.getTokenSpans().length > 0) {
       recallScore.add(FMeasureEvaluator.recall(reference.getTokenSpans(),
           predictedSpans));

@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -25,15 +25,15 @@ import opennlp.model.EventStream;
 
 /**
  * Allows individual pos-tag events to be created and then accessed via the event stream interface.
- * One should use this generator by adding a small number of events (perhaps a sentence worth) and 
- * then removing them or the storage of events will require a large amount of memory. 
+ * One should use this generator by adding a small number of events (perhaps a sentence worth) and
+ * then removing them or the storage of events will require a large amount of memory.
  */
 public class POSEventGenerator extends opennlp.model.AbstractEventStream {
 
   private List<Event> events;
   private int eventIndex;
   private POSContextGenerator pcg;
-  
+
   /**
    * Creates an event generator with the specified context generator.
    * @param pcg The context generator for this event stream.
@@ -43,16 +43,16 @@ public class POSEventGenerator extends opennlp.model.AbstractEventStream {
     events = new ArrayList<Event>(50);
     eventIndex = 0;
   }
-  
+
   /**
    * Creates an event generator with a default context generator.
    */
   public POSEventGenerator() {
     this(new DefaultPOSContextGenerator(null));
   }
-  
+
   /**
-   * Adds an event for the tag in the tags array and token in the token array at teh specified index. 
+   * Adds an event for the tag in the tags array and token in the token array at teh specified index.
    * @param tokens The tokens of a sentence.
    * @param tags The tags of a sentence.
    * @param index The index of the tag for which this event is to be created.
@@ -62,7 +62,7 @@ public class POSEventGenerator extends opennlp.model.AbstractEventStream {
     Event e = new Event(tags[index], context);
     events.add(e);
   }
-  
+
   /**
    * Adds events for each tag/token of the specified arrays.
    * @param tokens The tags for a sentence.
@@ -73,7 +73,7 @@ public class POSEventGenerator extends opennlp.model.AbstractEventStream {
       addEvent(tokens,tags,ti);
     }
   }
-  
+
   public boolean hasNext() {
     return eventIndex < events.size();
   }
@@ -86,5 +86,5 @@ public class POSEventGenerator extends opennlp.model.AbstractEventStream {
       eventIndex = 0;
     }
     return e;
-  }  
+  }
 }

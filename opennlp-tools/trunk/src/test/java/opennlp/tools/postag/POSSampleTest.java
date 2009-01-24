@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -28,74 +28,74 @@ public class POSSampleTest extends TestCase {
 
   /**
    * Tests if it can parse a valid token_tag sentence.
-   * 
+   *
    * @throws ParseException
    */
   public void testParse() throws ParseException {
     String sentence = "the_DT stories_NNS about_IN well-heeled_JJ " +
     		"communities_NNS and_CC developers_NNS";
-    
+
     POSSample sample = POSSample.parse(sentence);
-    
+
     assertEquals(sentence, sample.toString());
   }
-  
+
   /**
    * Tests if it can parse an empty {@link String}.
    * @throws ParseException
    */
   public void testParseEmptyString() throws ParseException {
-    
+
     String sentence = "";
-    
+
     POSSample sample = POSSample.parse(sentence);
-    
+
     assertEquals(sample.getSentence().length, 0);
     assertEquals(sample.getTags().length, 0);
-    
+
     sample.toString();
   }
-  
+
   /**
    * Tests if it can parse an empty token.
-   * 
+   *
    * @throws ParseException
    */
   public void testParseEmtpyToken() throws ParseException {
     String sentence = "the_DT _NNS";
-    
+
     POSSample sample = POSSample.parse(sentence);
-     
+
     assertEquals(sample.getSentence()[1], "");
   }
-  
+
   /**
    * Tests if it can parse an empty tag.
-   * 
+   *
    * @throws ParseException
    */
   public void testParseEmtpyTag() throws ParseException {
-    
+
     String sentence = "the_DT stories_";
-    
+
     POSSample sample = POSSample.parse(sentence);
-     
+
     assertEquals(sample.getTags()[1], "");
   }
-  
+
   /**
    * Tests if an exception is thrown if there is only a token/tag
    * in the sentence.
    */
   public void testParseWithError() {
     String sentence = "the_DT stories";
-    
+
     try {
       POSSample.parse(sentence);
     } catch (ParseException e) {
       return;
     }
-    
+
     fail();
   }
 }

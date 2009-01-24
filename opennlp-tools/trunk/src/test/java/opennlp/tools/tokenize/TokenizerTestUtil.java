@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -31,7 +31,7 @@ public class TokenizerTestUtil {
 
   static TokenizerModel createMaxentTokenModel() throws IOException {
     List<TokenSample> samples = new ArrayList<TokenSample>();
-    
+
     samples.add(new TokenSample("year", new Span[]{new Span(0, 4)}));
     samples.add(new TokenSample("year,", new Span[]{
         new Span(0, 4),
@@ -46,8 +46,8 @@ public class TokenizerTestUtil {
     samples.add(new TokenSample("yes,", new Span[]{
         new Span(0, 3),
         new Span(3, 4)}));
-    
+
     return TokenizerME.train("en", samples.iterator(), true);
   }
-  
+
 }

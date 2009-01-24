@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -20,18 +20,18 @@ package opennlp.tools.coref.sim;
 public class SemanticEnum {
 
   private String compatibility;
-  
+
   /** Semantically compatible. */
   public static final SemanticEnum COMPATIBLE = new SemanticEnum("compatible");
   /** Semantically incompatible. */
   public static final SemanticEnum INCOMPATIBLE = new SemanticEnum("incompatible");
   /** Semantic compatibility Unknown. */
   public static final SemanticEnum UNKNOWN = new SemanticEnum("unknown");
-  
+
   private SemanticEnum(String g) {
     compatibility = g;
   }
-  
+
   public String toString() {
     return compatibility;
   }

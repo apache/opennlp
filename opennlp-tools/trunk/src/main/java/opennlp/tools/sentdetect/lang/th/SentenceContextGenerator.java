@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -21,12 +21,12 @@ package opennlp.tools.sentdetect.lang.th;
 import opennlp.tools.sentdetect.DefaultSDContextGenerator;
 
 /**
- * Creates contexts/features for end-of-sentence detection in Thai text. 
+ * Creates contexts/features for end-of-sentence detection in Thai text.
  */
 public class SentenceContextGenerator extends DefaultSDContextGenerator {
 
   public static final char[] eosCharacters =  {' ','\n'};
-  
+
   public SentenceContextGenerator() {
     super(eosCharacters);
   }
@@ -36,7 +36,7 @@ public class SentenceContextGenerator extends DefaultSDContextGenerator {
     buf.append(prefix);
     collectFeats.add(buf.toString());
     buf.setLength(0);
-    
+
     buf.append("s=");
     buf.append(suffix);
     collectFeats.add(buf.toString());
@@ -49,7 +49,7 @@ public class SentenceContextGenerator extends DefaultSDContextGenerator {
     collectFeats.add("p5="+prefix.substring(Math.max(prefix.length()-5,0)));
     collectFeats.add("p6="+prefix.substring(Math.max(prefix.length()-6,0)));
     collectFeats.add("p7="+prefix.substring(Math.max(prefix.length()-7,0)));
-    
+
     collectFeats.add("n1="+suffix.substring(0,Math.min(1,suffix.length())));
     collectFeats.add("n2="+suffix.substring(0,Math.min(2,suffix.length())));
     collectFeats.add("n3="+suffix.substring(0,Math.min(3,suffix.length())));

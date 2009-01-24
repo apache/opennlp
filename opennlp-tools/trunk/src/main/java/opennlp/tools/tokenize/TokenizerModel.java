@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -41,107 +41,107 @@ import opennlp.tools.util.ModelUtil;
 public final class TokenizerModel extends BaseModel {
 
   private static final String TOKENIZER_MODEL_ENTRY = "token.model";
-  
-  private static final String USE_ALPHA_NUMERIC_OPTIMIZATION = 
+
+  private static final String USE_ALPHA_NUMERIC_OPTIMIZATION =
       "useAlphaNumericOptimization";
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param tokenizerMaxentModel
    * @param useAlphaNumericOptimization
    */
-  public TokenizerModel(String language, AbstractModel tokenizerMaxentModel, 
+  public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
       boolean useAlphaNumericOptimization) {
     super(language);
-    
+
     if (tokenizerMaxentModel == null)
         throw new IllegalArgumentException("tokenizerMaxentModel param must not bet null!");
-    
+
     if (!isModelCompatible(tokenizerMaxentModel))
         throw new IllegalArgumentException("The maxent model is not compatible!");
-    
+
     artifactMap.put(TOKENIZER_MODEL_ENTRY, tokenizerMaxentModel);
-    
-    setManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION, 
+
+    setManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION,
         Boolean.toString(useAlphaNumericOptimization));
   }
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param in
-   * 
+   *
    * @throws IOException
    * @throws InvalidFormatException
    */
   public TokenizerModel(InputStream in) throws IOException, InvalidFormatException {
     super(in);
   }
-  
+
   /**
    * Checks if the tokenizer model has the right outcomes.
-   * 
+   *
    * @param model
    * @return
    */
   private static boolean isModelCompatible(MaxentModel model) {
     return ModelUtil.validateOutcomes(model, TokenizerME.SPLIT, TokenizerME.NO_SPLIT);
   }
-  
+
   @Override
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
-    
+
     if (!(artifactMap.get(TOKENIZER_MODEL_ENTRY) instanceof AbstractModel)) {
       throw new InvalidFormatException("Token model is incomplete!");
     }
-    
+
     if (!isModelCompatible(getMaxentModel())) {
       throw new InvalidFormatException("The maxent model is not compatible with the tokenizer!");
     }
-    
+
     if (getManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION) == null) {
       throw new InvalidFormatException("The " + USE_ALPHA_NUMERIC_OPTIMIZATION + " parameter " +
           "cannot be found!");
     }
   }
-  
+
   public AbstractModel getMaxentModel() {
     return (AbstractModel) artifactMap.get(TOKENIZER_MODEL_ENTRY);
   }
-  
+
   public boolean useAlphaNumericOptimization() {
     String optimization = getManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION);
-    
+
     return Boolean.parseBoolean(optimization);
   }
-  
+
   public static void main(String[] args) throws IOException {
     if (args.length < 3){
       System.err.println("TokenizerModel [-alphaNumericOptimization] languageCode packageName modelName");
       System.exit(1);
     }
-    
+
     int ai = 0;
-    
+
     boolean alphaNumericOptimization = false;
-    
+
     if ("-alphaNumericOptimization".equals(args[ai])) {
       alphaNumericOptimization = true;
       ai++;
     }
-    
+
     String languageCode = args[ai++];
     String packageName = args[ai++];
     String modelName = args[ai];
-    
+
     AbstractModel model = new BinaryGISModelReader(new DataInputStream(
         new FileInputStream(modelName))).getModel();
-    
-    TokenizerModel packageModel = new TokenizerModel(languageCode, model, 
+
+    TokenizerModel packageModel = new TokenizerModel(languageCode, model,
         alphaNumericOptimization);
-    
+
     OutputStream out = null;
     try {
       out = new FileOutputStream(packageName);

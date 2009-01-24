@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -31,13 +31,13 @@ import opennlp.tools.util.Span;
 
 /**
  * Abstract class which contains code to tag and chunk parses for bottom up parsing and
- * leaves implmentation of advancing parses and completing parses to extend class. 
+ * leaves implmentation of advancing parses and completing parses to extend class.
  * <b>Note:</b> The nodes within
  * the returned parses are shared with other parses and therefore their parent node references will not be consistent
  * with their child node reference.  {@link #setParents setParents} can be used to make the parents consistent
  * with a partuicular parse, but subsequent calls to <code>setParents</code> can invalidate the results of earlier
- * calls.<br>  
- * 
+ * calls.<br>
+ *
  */
 public abstract class AbstractBottomUpParser implements Parser {
 
@@ -57,15 +57,15 @@ public abstract class AbstractBottomUpParser implements Parser {
   protected Heap<Parse> odh;
   /** Incomplete parses which have been advanced. */
   protected Heap<Parse> ndh;
-  
+
   /** The head rules for the parser. */
   protected HeadRules headRules;
-  /** The set strings which are considered punctuation for the parser. 
+  /** The set strings which are considered punctuation for the parser.
    * Punctuation is not attached, but floats to the top of the parse as attachment
-   * decisions are made about its non-punctuation sister nodes. 
+   * decisions are made about its non-punctuation sister nodes.
    */
   protected Set<String> punctSet;
-  
+
   /** The label for the top node. */
   public static final String TOP_NODE = "TOP";
   /** The label for the top if an incomple node. */
@@ -74,7 +74,7 @@ public abstract class AbstractBottomUpParser implements Parser {
   public static final String TOK_NODE = "TK";
   /** The integer 0. */
   public static final Integer ZERO = new Integer(0);
-  
+
   /** Prefix for outcomes starting a constituent. */
   public static final String START = "S-";
   /** Prefix for outcomes continuing a constituent. */
@@ -85,24 +85,24 @@ public abstract class AbstractBottomUpParser implements Parser {
   public static final String COMPLETE = "c";
   /** Outcome used when a constituent is incomplete. */
   public static final String INCOMPLETE = "i";
- 
+
   /** The pos-tagger that the parser uses. */
   protected POSTagger tagger;
-  
+
   /** The chunker that the parser uses to chunk non-recursive structures. */
   protected Chunker chunker;
-  
+
   /** Specifies whether failed parses should be reported to standard error. */
   protected boolean reportFailedParse;
 
   /** Specifies whether a derivation string should be created during parsing. This is useful for debuging. */
   protected boolean createDerivationString = false;
-  
+
   /** Turns debug print on or off. */
   protected boolean debugOn = false;
-  
+
   public AbstractBottomUpParser(POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
-    this.tagger = tagger; 
+    this.tagger = tagger;
     this.chunker = chunker;
     this.M = beamSize;
     this.K = beamSize;
@@ -114,7 +114,7 @@ public abstract class AbstractBottomUpParser implements Parser {
     ndh = new ListHeap<Parse>(K);
     completeParses = new ListHeap<Parse>(K);
   }
-  
+
   /**
    * Specifies whether the parser should report when it was unable to find a parse for
    * a particular sentence.
@@ -127,7 +127,7 @@ public abstract class AbstractBottomUpParser implements Parser {
   /**
    * Assigns parent references for the specified parse so that they
    * are consistent with the children references.
-   * @param p The parse whose parent references need to be assigned.  
+   * @param p The parse whose parent references need to be assigned.
    */
   public static void setParents(Parse p) {
     Parse[] children = p.getChildren();
@@ -174,16 +174,16 @@ public abstract class AbstractBottomUpParser implements Parser {
     //System.err.println("collapsedPunctuation: collapsedParses"+collapsedParses);
     return collapsedParses.toArray(new Parse[collapsedParses.size()]);
   }
-  
-  
-  
+
+
+
   /** Advances the specified parse and returns the an array advanced parses whose probability accounts for
    * more than the speicficed amount of probability mass.
    * @param p The parse to advance.
-   * @param probMass The amount of probability mass that should be accounted for by the advanced parses. 
+   * @param probMass The amount of probability mass that should be accounted for by the advanced parses.
    */
   protected abstract Parse[] advanceParses(final Parse p, double probMass);
-  
+
   /**
    * Adds the "TOP" node to the specified parse.
    * @param p The complete parse.
@@ -203,12 +203,12 @@ public abstract class AbstractBottomUpParser implements Parser {
     double bestComplete = -100000; //approximating -infinity/0 in ln domain
     while (odh.size() > 0 && (completeParses.size() < M || (odh.first()).getProb() < minComplete) && derivationStage < maxDerivationLength) {
       ndh = new ListHeap<Parse>(K);
-      
+
       int derivationRank = 0;
       for (Iterator<Parse> pi = odh.iterator(); pi.hasNext() && derivationRank < K; derivationRank++) { // forearch derivation
         Parse tp = pi.next();
-        //TODO: Need to look at this for K-best parsing cases 
-        /* 
+        //TODO: Need to look at this for K-best parsing cases
+        /*
          if (tp.getProb() < bestComplete) { //this parse and the ones which follow will never win, stop advancing.
          break;
          }
@@ -281,12 +281,12 @@ public abstract class AbstractBottomUpParser implements Parser {
       while(!completeParses.isEmpty() && topParses.size() < numParses) {
         Parse tp = completeParses.extract();
         topParses.add(tp);
-        //parses.remove(tp); 
+        //parses.remove(tp);
       }
       return topParses.toArray(new Parse[topParses.size()]);
     }
   }
-  
+
   public Parse parse(Parse tokens) {
     Parse p = parse(tokens,1)[0];
     setParents(p);
@@ -358,7 +358,7 @@ public abstract class AbstractBottomUpParser implements Parser {
               start = j;
               end = j;
             }
-            else { // other 
+            else { // other
               type = null;
             }
           }
@@ -404,7 +404,7 @@ public abstract class AbstractBottomUpParser implements Parser {
   }
 
   /**
-   * Determines the mapping between the specified index into the specified parses without punctuation to 
+   * Determines the mapping between the specified index into the specified parses without punctuation to
    * the coresponding index into the specified parses.
    * @param index An index into the parses without punctuation.
    * @param nonPunctParses The parses without punctuation.

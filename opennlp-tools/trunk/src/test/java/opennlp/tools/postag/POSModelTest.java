@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -27,21 +27,21 @@ import opennlp.tools.util.InvalidFormatException;
 import junit.framework.TestCase;
 
 public class POSModelTest extends TestCase {
-  
+
   public void testPOSModelSerialization() throws IOException, InvalidFormatException {
     POSModel posModel = POSTaggerMETest.trainPOSModel();
-    
+
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    
+
     try {
       posModel.serialize(out);
     }
     finally {
       out.close();
     }
-    
+
     POSModel recreatedPosModel = new POSModel(new ByteArrayInputStream(out.toByteArray()));
-    
+
     // TODO: add equals to pos model
   }
 }

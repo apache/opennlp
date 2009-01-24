@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -31,11 +31,11 @@ import opennlp.tools.coref.mention.MentionContext;
 public class PluralPronounResolver extends MaxentResolver {
 
   int NUM_SENTS_BACK_PRONOUNS = 2;
-  
+
   public PluralPronounResolver(String projectName, ResolverMode m) throws IOException {
     super(projectName, "tmodel", m, 30);
   }
-  
+
   public PluralPronounResolver(String projectName, ResolverMode m,NonReferentialResolver nrr) throws IOException {
     super(projectName, "tmodel", m, 30,nrr);
   }
@@ -46,7 +46,7 @@ public class PluralPronounResolver extends MaxentResolver {
     //features.add("eid="+pc.id);
     if (entity != null) { //generate pronoun w/ referent features
       features.addAll(getPronounMatchFeatures(mention,entity));
-      MentionContext cec = entity.getLastExtent();      
+      MentionContext cec = entity.getLastExtent();
       features.addAll(getDistanceFeatures(mention,entity));
       features.addAll(getContextFeatures(cec));
       features.add(getMentionCountFeature(entity));
@@ -77,10 +77,10 @@ public class PluralPronounResolver extends MaxentResolver {
     }
     return (features);
   }
-  
+
   protected boolean outOfRange(MentionContext mention, DiscourseEntity entity) {
     MentionContext cec = entity.getLastExtent();
-    //System.err.println("MaxentPluralPronounResolver.outOfRange: ["+ec.toText()+" ("+ec.id+")] ["+cec.toText()+" ("+cec.id+")] ec.sentenceNumber=("+ec.sentenceNumber+")-cec.sentenceNumber=("+cec.sentenceNumber+") > "+NUM_SENTS_BACK_PRONOUNS);    
+    //System.err.println("MaxentPluralPronounResolver.outOfRange: ["+ec.toText()+" ("+ec.id+")] ["+cec.toText()+" ("+cec.id+")] ec.sentenceNumber=("+ec.sentenceNumber+")-cec.sentenceNumber=("+cec.sentenceNumber+") > "+NUM_SENTS_BACK_PRONOUNS);
     return (mention.getSentenceNumber() - cec.getSentenceNumber() > NUM_SENTS_BACK_PRONOUNS);
   }
 

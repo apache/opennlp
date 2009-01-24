@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The {@link AggregatedFeatureGenerator} aggregates a set of 
+ * The {@link AggregatedFeatureGenerator} aggregates a set of
  * {@link AdaptiveFeatureGenerator}s and calls them to generate the features.
  */
 public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
@@ -32,27 +32,27 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
    * Contains all aggregated {@link AdaptiveFeatureGenerator}s.
    */
   private Collection<AdaptiveFeatureGenerator> generators;
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param generators
    */
   AggregatedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
-    
+
     this.generators = new ArrayList<AdaptiveFeatureGenerator>(generators.length);
-    
+
     Collections.addAll(this.generators, generators);
-    
+
     this.generators = Collections.unmodifiableCollection(this.generators);
   }
-  
+
   /**
    * Calls the {@link AdaptiveFeatureGenerator#clearAdaptiveData()} method
    * on all aggregated {@link AdaptiveFeatureGenerator}s.
    */
   public void clearAdaptiveData() {
-    
+
     for (AdaptiveFeatureGenerator generator : generators) {
       generator.clearAdaptiveData();
     }
@@ -64,27 +64,27 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
    */
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
-    
+
     for (AdaptiveFeatureGenerator generator : generators) {
       generator.createFeatures(features, tokens, index, previousOutcomes);
     }
   }
 
   /**
-   * Calls the {@link AdaptiveFeatureGenerator#updateAdaptiveData(String[], String[])} 
+   * Calls the {@link AdaptiveFeatureGenerator#updateAdaptiveData(String[], String[])}
    * method on all aggregated {@link AdaptiveFeatureGenerator}s.
    */
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
-    
+
     for (AdaptiveFeatureGenerator generator : generators) {
       generator.updateAdaptiveData(tokens, outcomes);
     }
   }
-  
+
   /**
    * Retrieves a {@link Collections} of all aggregated
    * {@link AdaptiveFeatureGenerator}s.
-   * 
+   *
    * @return
    */
   public Collection<AdaptiveFeatureGenerator> getGenerators() {

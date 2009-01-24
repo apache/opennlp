@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -29,14 +29,14 @@ import opennlp.tools.parser.Cons;
 import opennlp.tools.parser.Parse;
 
 /**
- * Creates the features or contexts for the building phase of parsing. 
- * This phase builds constituents from the left-most node of these 
+ * Creates the features or contexts for the building phase of parsing.
+ * This phase builds constituents from the left-most node of these
  * constituents.
  */
 public class BuildContextGenerator extends AbstractContextGenerator {
 
   private Parse[] leftNodes;
-  
+
   public BuildContextGenerator() {
     super();
     leftNodes = new Parse[2];
@@ -46,9 +46,9 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     Object[] parts = (Object[]) o;
     return getContext((Parse[]) parts[0],((Integer)parts[1]).intValue());
   }
-    
+
   /**
-   * Returns the contexts/features for the decision to build a new constituent for the specified parse 
+   * Returns the contexts/features for the decision to build a new constituent for the specified parse
    * at the specified index.
    * @param constituents The constituents of the parse so far.
    * @param index The index of the constituent where a build decision is being made.
@@ -61,7 +61,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     Parse p1 = null;
     Parse p2 = null;
     int ps = constituents.length;
-    
+
     p0 = constituents[index];
     if (index + 1 < ps) {
       p1 = constituents[index + 1];
@@ -69,12 +69,12 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     if (index +2 < ps) {
       p2 = constituents[index + 2];
     }
-    
+
     Collection<Parse> punct1s = null;
     Collection<Parse> punct_1s = null;
     Collection<Parse> punct2s = null;
     Collection<Parse> punct_2s = null;
-    
+
     punct_1s=p0.getPreviousPunctuationSet();
     punct1s=p0.getNextPunctuationSet();
     if (p1 != null) {
@@ -83,7 +83,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     if (p_2 != null) {
       punct_2s = p_1.getPreviousPunctuationSet();
     }
-    
+
     List<Parse> rf;
     if (index == 0) {
       rf = Collections.emptyList();
@@ -96,7 +96,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     getFrontierNodes(rf,leftNodes);
     p_1 = leftNodes[0];
     p_2 = leftNodes[1];
-    
+
     String consp_2 = cons(p_2, -2);
     String consp_1 = cons(p_1, -1);
     String consp0 = cons(p0, 0);
@@ -108,16 +108,16 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     String consbop0 = consbo(p0, 0);
     String consbop1 = consbo(p1, 1);
     String consbop2 = consbo(p2, 2);
-    
+
     Cons c_2 = new Cons(consp_2,consbop_2,-2,true);
     Cons c_1 = new Cons(consp_1,consbop_1,-1,true);
     Cons c0 = new Cons(consp0,consbop0,0,true);
     Cons c1 = new Cons(consp1,consbop1,1,true);
-    Cons c2 = new Cons(consp2,consbop2,2,true);    
+    Cons c2 = new Cons(consp2,consbop2,2,true);
 
     List<String> features = new ArrayList<String>();
     features.add("default");
-    
+
     //unigrams
     features.add(consp_2);
     features.add(consbop_2);
@@ -138,12 +138,12 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     cons3(features,c0,c1,c2,punct1s,punct2s,true,true,true);
     cons3(features,c_2,c_1,c0,punct_2s,punct_1s,true,true,true);
     cons3(features,c_1,c0,c1,punct_1s,punct_1s,true,true,true);
-    
+
     if (rf.isEmpty()) {
       features.add(EOS+","+consp0);
       features.add(EOS+","+consbop0);
     }
-    
+
     return (String[]) features.toArray(new String[features.size()]);
   }
 

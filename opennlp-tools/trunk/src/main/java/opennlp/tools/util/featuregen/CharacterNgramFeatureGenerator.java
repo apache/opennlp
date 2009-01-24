@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -24,8 +24,8 @@ import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.StringList;
 
 /**
- * The {@link CharacterNgramFeatureGenerator} uses character ngrams to 
- * generate features about each token. 
+ * The {@link CharacterNgramFeatureGenerator} uses character ngrams to
+ * generate features about each token.
  * The minimum and maximum length can be specified.
  */
 public class CharacterNgramFeatureGenerator extends FeatureGeneratorAdapter {
@@ -37,14 +37,14 @@ public class CharacterNgramFeatureGenerator extends FeatureGeneratorAdapter {
     this.minLength = minLength;
     this.maxLength = maxLength;
   }
-  
+
   /**
    * Initializes the current instance with min 2 length and max 5 length of ngrams.
    */
   public CharacterNgramFeatureGenerator() {
     this(2, 5);
   }
-  
+
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
 
     NGramModel model = new NGramModel();

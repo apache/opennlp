@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -29,94 +29,94 @@ import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
-/** 
- * Class for determining contextual features for a tag/chunk style 
+/**
+ * Class for determining contextual features for a tag/chunk style
  * named-entity recognizer.
- * 
- * @version $Revision: 1.1 $, $Date: 2009-01-24 00:22:48 $
+ *
+ * @version $Revision: 1.2 $, $Date: 2009-01-24 01:32:19 $
  */
 public class DefaultNameContextGenerator implements NameContextGenerator {
-  
+
   private AdaptiveFeatureGenerator featureGenerators[];
-  
+
   private static AdaptiveFeatureGenerator windowFeatures = new CachedFeatureGenerator(
       new AdaptiveFeatureGenerator[]{
-      new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2), 
+      new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
       new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
       new DefinitionFeatureGenerator()
       });
-  
+
   /**
    * Creates a name context generator.
    */
   public DefaultNameContextGenerator() {
     this((AdaptiveFeatureGenerator[]) null);
   }
-  
+
   /**
    * Creates a name context generator with the specified cache size.
    */
   public DefaultNameContextGenerator(AdaptiveFeatureGenerator... featureGenerators) {
-    
+
     if (featureGenerators != null) {
       this.featureGenerators = featureGenerators;
     }
     else {
       // use defaults
-      
+
       this.featureGenerators = new AdaptiveFeatureGenerator[]{
-          windowFeatures, 
+          windowFeatures,
           new PreviousMapFeatureGenerator()};
-    }    
+    }
   }
-  
+
   public void addFeatureGenerator(AdaptiveFeatureGenerator generator) {
       AdaptiveFeatureGenerator generators[] = featureGenerators;
-      
+
       featureGenerators = new AdaptiveFeatureGenerator[featureGenerators.length + 1];
-      
+
       System.arraycopy(generators, 0, featureGenerators, 0, generators.length);
-      
+
       featureGenerators[featureGenerators.length - 1] = generator;
   }
-  
+
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
-    
+
     if (tokens != null && outcomes != null && tokens.length != outcomes.length) {
         throw new IllegalArgumentException(
             "The tokens and outcome arrays MUST have the same size!");
       }
-    
+
     for (int i = 0; i < featureGenerators.length; i++) {
       featureGenerators[i].updateAdaptiveData(tokens, outcomes);
-    }    
+    }
   }
-  
+
   public void clearAdaptiveData() {
     for (int i = 0; i < featureGenerators.length; i++) {
       featureGenerators[i].clearAdaptiveData();
     }
   }
-  
+
   /**
    * Return the context for finding names at the specified index.
-   * @param index The index of the token in the specified toks array for which the context should be constructed. 
+   * @param index The index of the token in the specified toks array for which the context should be constructed.
    * @param toks The tokens of the sentence.  The <code>toString</code> methods of these objects should return the token text.
    * @param preds The previous decisions made in the tagging of this sequence.  Only indices less than i will be examined.
-   * @param additionalContext Addition features which may be based on a context outside of the sentence. 
+   * @param additionalContext Addition features which may be based on a context outside of the sentence.
    * @return the context for finding names at the specified index.
    */
   public String[] getContext(int index, String[] tokens, String[] preds, Object[] additionalContext) {
     List<String> features = new ArrayList<String>();
-    
+
     for (int i = 0; i < featureGenerators.length; i++) {
       featureGenerators[i].createFeatures(features, tokens, index, preds);
     }
-    
+
     if (index == 0) {
       features.add("fwis"); //first word in sentence
     }
-    
+
     //previous outcome features
     String po = NameFinderME.OTHER;
     String ppo = NameFinderME.OTHER;
@@ -132,7 +132,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
     features.add("pow=" + po + "," + tokens[index]);
     features.add("powf=" + po + "," + FeatureGeneratorUtil.tokenFeature(tokens[index]));
     features.add("ppo=" + ppo);
-    
+
     return features.toArray(new String[features.size()]);
   }
 }

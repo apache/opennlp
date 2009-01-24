@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -30,7 +30,7 @@ import opennlp.tools.chunker.ChunkerME;
  * @author Tom Morton
  */
 public class TreebankChunker extends ChunkerME {
-  
+
   /**
    * Creates an English Treebank Chunker which uses the specified model file.
    * @param modelFile The name of the maxent model to be used.
@@ -58,8 +58,8 @@ public class TreebankChunker extends ChunkerME {
   }
 
   /**
-   * Creates an English Treebank Chunker which uses the specified model and context generator 
-   * which will be decoded using the specified beamSize. 
+   * Creates an English Treebank Chunker which uses the specified model and context generator
+   * which will be decoded using the specified beamSize.
    * @param mod The maxent model to be used.
    * @param cg The context generator to be used.
    * @param beamSize The size of the beam used for decoding.
@@ -84,7 +84,7 @@ public class TreebankChunker extends ChunkerME {
     }
     return (true);
   }
-  
+
   protected boolean validOutcome(String outcome, String[] sequence) {
     String prevOutcome = null;
     if (sequence.length > 0) {
@@ -94,7 +94,7 @@ public class TreebankChunker extends ChunkerME {
   }
 
 
-  /* inherieted java doc 
+  /* inherieted java doc
   protected boolean validOutcome(String outcome, Sequence sequence) {
     String prevOutcome = null;
     List tagList = sequence.getOutcomes();
@@ -105,7 +105,7 @@ public class TreebankChunker extends ChunkerME {
     return validOutcome(outcome,prevOutcome);
   }
   */
-  
+
   /**
    * Chunks tokenized input from stdin. <br>
    * Usage: java opennlp.tools.chunker.EnglishTreebankChunker model < tokenized_sentences <br>
@@ -135,7 +135,7 @@ public class TreebankChunker extends ChunkerME {
         for (int ci=0,cn=chunks.length;ci<cn;ci++) {
           if (ci > 0 && !chunks[ci].startsWith("I-") && !chunks[ci-1].equals("O")) {
             System.out.print(" ]");
-          }            
+          }
           if (chunks[ci].startsWith("B-")) {
             System.out.print(" ["+chunks[ci].substring(2));
           }

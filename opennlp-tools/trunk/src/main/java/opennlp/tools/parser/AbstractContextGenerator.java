@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -34,7 +34,7 @@ public abstract class AbstractContextGenerator {
   /** Set of punctuation to be used in generating features. */
   protected Set<String> punctSet;
   protected boolean useLabel;
-  
+
   /**
    * Creates punctuation feature for the specified punctuation at the specified index based on the punctuation mark.
    * @param punct The punctuation which is in context.
@@ -109,7 +109,7 @@ public abstract class AbstractContextGenerator {
         production.append(",");
         Collection<Parse> nextPunct = children[ci].getNextPunctuationSet();
         if (includePunctuation && nextPunct != null) {
-          //TODO: make sure multiple punctuation comes out the same 
+          //TODO: make sure multiple punctuation comes out the same
           for (Iterator<Parse> pit=nextPunct.iterator();pit.hasNext();) {
             Parse punct = pit.next();
             production.append(punct.getType()).append(",");
@@ -119,7 +119,7 @@ public abstract class AbstractContextGenerator {
     }
     return production.toString();
   }
-   
+
   protected void cons2(List<String> features, Cons c0, Cons c1, Collection<Parse> punct1s, boolean bigram) {
     if (punct1s != null) {
       for (Iterator<Parse> pi = punct1s.iterator();pi.hasNext();) {
@@ -131,7 +131,7 @@ public abstract class AbstractContextGenerator {
         if (false && !punct.equals(punctbo)) {
           features.add(punct);
         }
-        
+
         //punctbo(1);
         features.add(punctbo);
         if (c0.index == 0) { //TODO look at removing case
@@ -144,7 +144,7 @@ public abstract class AbstractContextGenerator {
           if (c1.unigram) features.add(punctbo+","+c1.cons);
           features.add(punctbo+","+c1.consbo);
         }
-        
+
         //cons(0)punctbo(1)cons(1)
         if (bigram) features.add(c0.cons+","+punctbo+","+c1.cons);
         if (c1.unigram)  features.add(c0.consbo+","+punctbo+","+c1.cons);
@@ -157,10 +157,10 @@ public abstract class AbstractContextGenerator {
       if (bigram) features.add(c0.cons + "," + c1.cons);
       if (c1.unigram)  features.add(c0.consbo + "," + c1.cons);
       if (c0.unigram)  features.add(c0.cons + "," + c1.consbo);
-      features.add(c0.consbo + "," + c1.consbo);      
+      features.add(c0.consbo + "," + c1.consbo);
     }
   }
-  
+
   /**
    * Creates cons features involving the 3 specified nodes and adds them to the specified feature list.
    * @param features The list of features.
@@ -173,7 +173,7 @@ public abstract class AbstractContextGenerator {
    * @param bigram1 Specifies whether lexical bi-gram features between the first and second node should be generated.
    * @param bigram2 Specifies whether lexical bi-gram features between the second and third node should be generated.
    */
-  protected void cons3(List<String> features, Cons c0, Cons c1, Cons c2, Collection<Parse> punct1s, 
+  protected void cons3(List<String> features, Cons c0, Cons c1, Cons c2, Collection<Parse> punct1s,
       Collection<Parse> punct2s, boolean trigram, boolean bigram1, boolean bigram2) {
     //  features.add("stage=cons(0),cons(1),cons(2)");
     if (punct1s != null) {
@@ -212,15 +212,15 @@ public abstract class AbstractContextGenerator {
           for (Iterator<Parse> pi1=punct1s.iterator();pi1.hasNext();) {
             String punctbo1 = punctbo(pi1.next(),c1.index <= 0 ? c1.index -1 : c1.index);
             if (trigram) features.add(c0.cons   + "," + punctbo1+","+c1.cons   + "," + punctbo2+","+c2.cons);
-            
+
             if (bigram2) features.add(c0.consbo + "," + punctbo1+","+c1.cons   + "," + punctbo2+","+c2.cons);
             if (c0.unigram && c2.unigram) features.add(c0.cons   + "," + punctbo1+","+c1.consbo + "," + punctbo2+","+c2.cons);
             if (bigram1) features.add(c0.cons   + "," + punctbo1+","+c1.cons   + "," + punctbo2+","+c2.consbo);
-            
+
             if (c2.unigram) features.add(c0.consbo + "," + punctbo1+","+c1.consbo + "," + punctbo2+","+c2.cons);
             if (c1.unigram) features.add(c0.consbo + "," + punctbo1+","+c1.cons   + "," + punctbo2+","+c2.consbo);
             if (c0.unigram) features.add(c0.cons   + "," + punctbo1+","+c1.consbo + "," + punctbo2+","+c2.consbo);
-            
+
             features.add(c0.consbo + "," + punctbo1+","+c1.consbo + "," + punctbo2+","+c2.consbo);
             if (zeroBackOff) {
               if (bigram1) features.add(c0.cons   + "," + punctbo1+","+c1.cons   + "," + punctbo2);
@@ -236,17 +236,17 @@ public abstract class AbstractContextGenerator {
         for (Iterator<Parse> pi2=punct2s.iterator();pi2.hasNext();) {
           String punctbo2 = punctbo(pi2.next(),c2.index <= 0 ? c2.index -1 : c2.index);
           if (trigram) features.add(c0.cons   + "," + c1.cons   + "," + punctbo2+","+c2.cons);
-          
+
           if (bigram2) features.add(c0.consbo + "," + c1.cons   + ","  + punctbo2+ "," + c2.cons);
           if (c0.unigram && c2.unigram) features.add(c0.cons    + "," + c1.consbo + "," + punctbo2+","+c2.cons);
           if (bigram1) features.add(c0.cons   + "," + c1.cons   + "," +  punctbo2+","+c2.consbo);
-          
+
           if (c2.unigram) features.add(c0.consbo + "," + c1.consbo + "," + punctbo2+","+c2.cons);
           if (c1.unigram) features.add(c0.consbo + "," + c1.cons   + "," + punctbo2+","+c2.consbo);
           if (c0.unigram) features.add(c0.cons   + "," + c1.consbo + "," + punctbo2+","+c2.consbo);
-          
+
           features.add(c0.consbo + "," + c1.consbo + "," + punctbo2+","+c2.consbo);
-          
+
           if (zeroBackOff) {
             if (bigram1) features.add(c0.cons   + "," + c1.cons   + "," + punctbo2);
             if (c1.unigram)  features.add(c0.consbo + "," + c1.cons   + "," + punctbo2);
@@ -262,32 +262,32 @@ public abstract class AbstractContextGenerator {
         for (Iterator<Parse> pi1=punct1s.iterator();pi1.hasNext();) {
           String punctbo1 = punctbo(pi1.next(),c1.index <= 0 ? c1.index -1 : c1.index);
           if (trigram) features.add(c0.cons     + "," + punctbo1   +","+ c1.cons   +","+c2.cons);
-          
+
           if (bigram2) features.add(c0.consbo    + "," + punctbo1   +","+ c1.cons   +","+c2.cons);
           if (c0.unigram && c2.unigram) features.add(c0.cons + "," + punctbo1   +","+ c1.consbo +","+c2.cons);
           if (bigram1) features.add(c0.cons      + "," + punctbo1   +","+ c1.cons   +","+c2.consbo);
-          
+
           if (c2.unigram) features.add(c0.consbo  + "," + punctbo1   +","+ c1.consbo +","+c2.cons);
           if (c1.unigram) features.add(c0.consbo  + "," + punctbo1   +","+ c1.cons   +","+c2.consbo);
-          if (c0.unigram) features.add(c0.cons    + "," + punctbo1   +","+ c1.consbo +","+c2.consbo);   
-          
+          if (c0.unigram) features.add(c0.cons    + "," + punctbo1   +","+ c1.consbo +","+c2.consbo);
+
           features.add(c0.consbo + "," + punctbo1   +","+ c1.consbo +","+c2.consbo);
-          
+
           //zero backoff case covered by cons(0)cons(1)
         }
       }
       else {
         //cons(0),cons(1),cons(2)
         if (trigram) features.add(c0.cons   + "," + c1.cons   + "," + c2.cons);
-        
+
         if (bigram2) features.add(c0.consbo + "," + c1.cons   + "," + c2.cons);
         if (c0.unigram && c2.unigram) features.add(c0.cons   + "," + c1.consbo + "," + c2.cons);
         if (bigram1) features.add(c0.cons   + "," + c1.cons   + "," + c2.consbo);
-        
+
         if (c2.unigram) features.add(c0.consbo + "," + c1.consbo + "," + c2.cons);
         if (c1.unigram) features.add(c0.consbo + "," + c1.cons   + "," + c2.consbo);
         if (c0.unigram) features.add(c0.cons   + "," + c1.consbo + "," + c2.consbo);
-        
+
         features.add(c0.consbo + "," + c1.consbo + "," + c2.consbo);
       }
     }
@@ -314,7 +314,7 @@ public abstract class AbstractContextGenerator {
           feat.append(type).append("|").append(EOS).append("|").append(punct.getType());
         }
         features.add(feat.toString());
-        
+
         feat.setLength(0);
         feat.append("s").append(i).append("*=");
         if (node != null) {
@@ -324,7 +324,7 @@ public abstract class AbstractContextGenerator {
           feat.append(type).append("|").append(EOS).append("|").append(punct.getType());
         }
         features.add(feat.toString());
-  
+
         feat.setLength(0);
         feat.append("s").append(i).append("*=");
         feat.append(type).append("|").append(punct.getType());
@@ -354,9 +354,9 @@ public abstract class AbstractContextGenerator {
   /**
    * Produces features to determine whether the specified child node is part of
    * a complete constituent of the specified type and adds those features to the
-   * specfied list. 
+   * specfied list.
    * @param child The parse node to consider.
-   * @param i A string indicating the position of the child node. 
+   * @param i A string indicating the position of the child node.
    * @param type The type of constituent being built.
    * @param features List to add features to.
    */
@@ -383,18 +383,18 @@ public abstract class AbstractContextGenerator {
     feat.append("ci*l*=").append(type).append(",").append(p1.getType()).append(",").append(p2.getType());
     features.add(feat.toString());
   }
-  
+
   /**
    * Populates specified nodes array with left-most right frontier
    * node with a unique head. If the right frontier doesn't contain
-   * enough nodes, then nulls are placed in the array elements. 
+   * enough nodes, then nulls are placed in the array elements.
    * @param rf The current right frontier.
    * @param nodes The array to be populated.
    */
   protected void getFrontierNodes(List<Parse> rf, Parse[] nodes) {
     int leftIndex = 0;
     int prevHeadIndex = -1;
-    
+
     for (int fi=0;fi<rf.size();fi++) {
       Parse fn = rf.get(fi);
       int headIndex = fn.getHeadIndex();

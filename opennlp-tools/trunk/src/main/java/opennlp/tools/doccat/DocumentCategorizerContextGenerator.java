@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -22,26 +22,26 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 /**
- * 
+ *
  */
 class DocumentCategorizerContextGenerator {
-  
+
   private FeatureGenerator[] mFeatureGenerators;
-  
+
   DocumentCategorizerContextGenerator(FeatureGenerator... featureGenerators) {
     mFeatureGenerators = featureGenerators;
   }
 
   public String[] getContext(String text[]) {
-    
+
     Collection<String> context = new LinkedList<String>();
-    
+
     for (int i = 0; i < mFeatureGenerators.length; i++) {
-      Collection<String> extractedFeatures = 
+      Collection<String> extractedFeatures =
           mFeatureGenerators[i].extractFeatures(text);
       context.addAll(extractedFeatures);
     }
-    
+
     return (String[]) context.toArray(new String[context.size()]);
   }
 }

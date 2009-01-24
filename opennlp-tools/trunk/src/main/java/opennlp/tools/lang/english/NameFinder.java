@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -34,11 +34,11 @@ import opennlp.tools.util.Span;
  * Class is used to create a name finder for English.
  */
 public class NameFinder {
-  
+
   public static String[] NAME_TYPES = {"person", "organization", "location", "date", "time", "percentage", "money"};
 
   private NameFinderME nameFinder;
-  
+
   /** Creates an English name finder using the specified model.
    * @param mod The model used for finding names.
    */
@@ -81,7 +81,7 @@ public class NameFinder {
       }
     }
   }
-  
+
   private static void clearPrevTokenMaps(NameFinder[] finders) {
     for (int mi = 0; mi < finders.length; mi++) {
       finders[mi].nameFinder.clearAdaptiveData();
@@ -90,7 +90,7 @@ public class NameFinder {
 
   private static void processParse(NameFinder[] finders, String[] tags, BufferedReader input) throws IOException {
     Span[][] nameSpans = new Span[finders.length][];
-    
+
     for (String line = input.readLine(); null != line; line = input.readLine()) {
       if (line.equals("")) {
         System.out.println();
@@ -108,16 +108,16 @@ public class NameFinder {
         nameSpans[fi] = finders[fi].nameFinder.find(tokens);
         //System.err.println("EnglishNameFinder.processParse: "+tags[fi] + " " + java.util.Arrays.asList(finderTags[fi]));
       }
-      
+
       for (int fi = 0, fl = finders.length; fi < fl; fi++) {
         addNames(tags[fi],nameSpans[fi],tagNodes);
       }
       p.show();
     }
   }
-      
+
   /**
-   * Adds sgml style name tags to the specified input buffer and outputs this information to stdout. 
+   * Adds sgml style name tags to the specified input buffer and outputs this information to stdout.
    * @param finders The name finders to be used.
    * @param tags The tag names for the corresponding name finder.
    * @param input The input reader.
@@ -142,12 +142,12 @@ public class NameFinder {
         //System.err.println("EnglighNameFinder.processText: "+tags[fi] + " " + java.util.Arrays.asList(finderTags[fi]));
         nameOutcomes[fi] = NameFinderEventStream.generateOutcomes(nameSpans[fi], null, tokens.length);
       }
-      
+
       for (int ti = 0, tl = tokens.length; ti < tl; ti++) {
         for (int fi = 0, fl = finders.length; fi < fl; fi++) {
           //check for end tags
           if (ti != 0) {
-            if ((nameOutcomes[fi][ti].equals(NameFinderME.START) || nameOutcomes[fi][ti].equals(NameFinderME.OTHER)) && 
+            if ((nameOutcomes[fi][ti].equals(NameFinderME.START) || nameOutcomes[fi][ti].equals(NameFinderME.OTHER)) &&
                 (nameOutcomes[fi][ti - 1].equals(NameFinderME.START) || nameOutcomes[fi][ti - 1].equals(NameFinderME.CONTINUE))) {
               output.append("</").append(tags[fi]).append(">");
             }

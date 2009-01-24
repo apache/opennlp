@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -43,37 +43,37 @@ public class POSTaggerTrainer {
     System.err.println("This trains a new model on the specified training file and writes the trained model to the model file.");
     System.err.println("-encoding Specifies the encoding of the training file");
     System.err.println("-dict Specifies that a dictionary file should be created for use in distinguising between rare and non-rare words");
-    System.err.println("-model [perceptron|maxent] Specifies what type of model should be used."); 
+    System.err.println("-model [perceptron|maxent] Specifies what type of model should be used.");
     System.exit(1);
   }
-  
+
   /**
-   * 
+   *
    * @param samples
    * @param tagDictionary
    * @param ngramDictionary
    * @param beamSize
    * @param cutoff
    * @return
-   * 
+   *
    * @throws IOException  its throws if an {@link IOException} is thrown
    * during IO operations on a temp file which is created during training occur.
    */
   public static POSModel train(Iterator<POSSample> samples, POSDictionary tagDictionary,
       Dictionary ngramDictionary, int cutoff) throws IOException {
-    
+
    int iterations = 100;
 
     GISModel posModel = opennlp.maxent.GIS.trainModel(iterations,
         new TwoPassDataIndexer(new POSSampleEventStream(samples,
         new DefaultPOSContextGenerator(ngramDictionary)), cutoff));
-    
+
     return new POSModel("en", posModel, tagDictionary, ngramDictionary);
   }
-  
+
   /**
    * Trains a new model.
-   * 
+   *
    * @param evc
    * @param modelFile
    * @throws IOException
@@ -86,7 +86,7 @@ public class POSTaggerTrainer {
 
   /**
    * Trains a new model
-   * 
+   *
    * @param es
    * @param iterations
    * @param cut
@@ -97,12 +97,12 @@ public class POSTaggerTrainer {
   public static AbstractModel trainMaxentModel(EventStream es, int iterations, int cut) throws IOException {
     return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
-  
+
   public static AbstractModel trainPerceptronModel(EventStream es, int iterations, int cut) throws IOException {
     return new opennlp.perceptron.PerceptronTrainer().trainModel(iterations, new TwoPassDataIndexer(es, cut), cut);
   }
 
-  
+
   public static void main(String[] args) {
     if (args.length == 0){
       usage();
@@ -139,7 +139,7 @@ public class POSTaggerTrainer {
               perceptron = true;
             }
             else if (type.equals("maxent")) {
-              
+
             }
             else {
               usage();
@@ -165,27 +165,27 @@ public class POSTaggerTrainer {
       AbstractModel mod;
       if (dict != null) {
         System.err.println("Building dictionary");
-        
-        NGramModel ngramModel = new NGramModel(); 
-        
+
+        NGramModel ngramModel = new NGramModel();
+
         DataStream data = new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile));
         while(data.hasNext()) {
           String tagStr = (String) data.nextToken();
           String[] tt = tagStr.split(" ");
           String[] words = new String[tt.length];
           for (int wi=0;wi<words.length;wi++) {
-            words[wi] = 
+            words[wi] =
                 tt[wi].substring(0,tt[wi].lastIndexOf('_'));
           }
-          
+
           ngramModel.add(new StringList(words), 1, 1);
         }
-        
+
         System.out.println("Saving the dictionary");
-        
+
         ngramModel.cutoff(cutoff, Integer.MAX_VALUE);
         Dictionary dictionary = ngramModel.toDictionary(true);
-        
+
         dictionary.serialize(new FileOutputStream(dict));
       }
       POSSampleEventStream es;
@@ -198,19 +198,19 @@ public class POSTaggerTrainer {
           POSContextGenerator cg = new DefaultPOSContextGenerator(new Dictionary(new FileInputStream(dict)));
 
           es = new POSSampleEventStream(new WordTagSampleStream(new PlainTextByLineDataStream(
-              new InputStreamReader(new FileInputStream(inFile)))), 
+              new InputStreamReader(new FileInputStream(inFile)))),
               cg);
         }
       }
       else {
         if (dict == null) {
-          
+
           es = new POSSampleEventStream(new WordTagSampleStream(new PlainTextByLineDataStream(
               new InputStreamReader(new FileInputStream(inFile), encoding))));
         }
         else {
           POSContextGenerator cg = new DefaultPOSContextGenerator(new Dictionary(new FileInputStream(dict)));
-          
+
           es = new POSSampleEventStream(new WordTagSampleStream(new PlainTextByLineDataStream(
               new InputStreamReader(new FileInputStream(inFile), encoding))), cg);
         }
@@ -222,9 +222,9 @@ public class POSTaggerTrainer {
       }
       else {
         mod = trainMaxentModel(es, iterations, cutoff);
-      
+
         System.out.println("Saving the model as: " + outFile);
-      
+
         new SuffixSensitiveGISModelWriter(mod, outFile).persist();
       }
 
@@ -235,4 +235,3 @@ public class POSTaggerTrainer {
   }
 
 }
-

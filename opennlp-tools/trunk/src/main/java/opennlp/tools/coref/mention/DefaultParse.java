@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -38,10 +38,10 @@ public class DefaultParse extends AbstractParse {
   private Parse parse;
   private int sentenceNumber;
   private static Set<String> entitySet = new HashSet<String>(Arrays.asList(NameFinder.NAME_TYPES));
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param parse
    * @param sentenceNumber
    */
@@ -49,11 +49,11 @@ public class DefaultParse extends AbstractParse {
     this.parse = parse;
     this.sentenceNumber = sentenceNumber;
   }
-  
+
   public int getSentenceNumber() {
     return sentenceNumber;
   }
-  
+
   public List<opennlp.tools.coref.mention.Parse> getNamedEntities() {
     List<Parse> names = new ArrayList<Parse>();
     List<Parse> kids = new LinkedList<Parse>(Arrays.asList(parse.getChildren()));
@@ -109,15 +109,15 @@ public class DefaultParse extends AbstractParse {
       return parse.getType();
     }
   }
-  
+
   private List<opennlp.tools.coref.mention.Parse> createParses(Parse[] parses) {
-    List<opennlp.tools.coref.mention.Parse> newParses = 
+    List<opennlp.tools.coref.mention.Parse> newParses =
       new ArrayList<opennlp.tools.coref.mention.Parse>(parses.length);
-    
+
     for (int pi=0,pn=parses.length;pi<pn;pi++) {
       newParses.add(new DefaultParse(parses[pi],sentenceNumber));
     }
-    
+
     return newParses;
   }
 
@@ -181,11 +181,11 @@ public class DefaultParse extends AbstractParse {
   }
 
   public int compareTo(opennlp.tools.coref.mention.Parse p) {
-    
+
     if (p == this) {
       return 0;
     }
-    
+
     if (getSentenceNumber() < p.getSentenceNumber()) {
       return -1;
     }
@@ -196,13 +196,13 @@ public class DefaultParse extends AbstractParse {
       return parse.getSpan().compareTo(p.getSpan());
     }
   }
-  
+
   @Override
   public String toString() {
     return parse.toString();
   }
 
-  
+
   public opennlp.tools.coref.mention.Parse getPreviousToken() {
     Parse parent = parse.getParent();
     Parse node = parse;
@@ -228,7 +228,7 @@ public class DefaultParse extends AbstractParse {
       return new DefaultParse(p,sentenceNumber);
     }
   }
-  
+
   public opennlp.tools.coref.mention.Parse getNextToken() {
     Parse parent = parse.getParent();
     Parse node = parse;
@@ -254,14 +254,14 @@ public class DefaultParse extends AbstractParse {
         p = p.getChildren()[0];
       }
       return new DefaultParse(p,sentenceNumber);
-    } 
+    }
   }
-  
+
   @Override
   public boolean equals(Object o) {
-    
+
     boolean result;
-    
+
     if (o == this) {
       result = true;
     }
@@ -271,7 +271,7 @@ public class DefaultParse extends AbstractParse {
     else {
       result = false;
     }
-    
+
     return result;
   }
 
@@ -279,10 +279,10 @@ public class DefaultParse extends AbstractParse {
   public int hashCode() {
     return parse.hashCode();
   }
-  
+
   /**
    * Retrieves the {@link Parse}.
-   * 
+   *
    * @return the {@link Parse}
    */
   public Parse getParse() {

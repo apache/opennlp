@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -42,8 +42,8 @@ import opennlp.tools.util.CollectionEventStream;
 import opennlp.tools.util.HashList;
 
 /**
- * Models semantic similarity between two mentions and returns a score based on 
- * how semantically comparable the mentions are with one another.  
+ * Models semantic similarity between two mentions and returns a score based on
+ * how semantically comparable the mentions are with one another.
  */
 public class SimilarityModel implements TestSimilarityModel, TrainSimilarityModel {
 
@@ -66,7 +66,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
   }
 
   private SimilarityModel(String modelName, boolean train) throws IOException {
-    this.modelName = modelName; 
+    this.modelName = modelName;
     if (train) {
       events = new ArrayList<Event>();
     }
@@ -96,9 +96,9 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
 
   /**
    * Produces a set of head words for the specified list of mentions.
-   * 
+   *
    * @param mentions The mentions to use to construct the
-   * 
+   *
    * @return A set containing the head words of the specified mentions.
    */
   private Set<String> constructHeadSet(List<Context> mentions) {
@@ -143,15 +143,15 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
   /**
    * Constructs a set of entities which may be semantically compatible with the
    * entity indicated by the specified entityKey.
-   * 
-   * @param entityKey The key of the entity for which the set is being constructed. 
-   * @param entities A mapping between entity keys and their mentions. 
+   *
+   * @param entityKey The key of the entity for which the set is being constructed.
+   * @param entities A mapping between entity keys and their mentions.
    * @param headSets A mapping between entity keys and their head sets.
    * @param nameSets A mapping between entity keys and their name sets.
    * @param singletons A list of all entities which consists of a single mentions.
-   * 
-   * @return A set of mentions for all the entities which might be semantically compatible 
-   * with entity indicated by the specified key. 
+   *
+   * @return A set of mentions for all the entities which might be semantically compatible
+   * with entity indicated by the specified key.
    */
   private Set<Context> constructExclusionSet(Integer entityKey, HashList<Integer, Context> entities, Map<Integer, Set<String>> headSets, Map<Integer, Set<String>> nameSets, List<Context> singletons) {
     Set<Context> exclusionSet = new HashSet<Context>();
@@ -202,10 +202,10 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
 
   /**
    * Constructs a mapping between the specified entities and their head set.
-   * 
+   *
    * @param entities Mapping between a key and a list of meanions which compose an entity.
-   * 
-   * @return a mapping between the keys of the specified entity mapping and the head set 
+   *
+   * @return a mapping between the keys of the specified entity mapping and the head set
    * generated from the mentions associated with that key.
    */
   private Map<Integer, Set<String>> constructHeadSets(HashList<Integer, Context> entities) {
@@ -220,9 +220,9 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
 
   /**
    * Produces the set of name types associated with each of the specified mentions.
-   * 
+   *
    * @param mentions A list of mentions.
-   * 
+   *
    * @return A set set of name types assigned to the specified mentions.
    */
   private Set<String> constructNameSet(List<Context> mentions) {
@@ -238,9 +238,9 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
 
   /**
    * Constructs a mapping between the specified entities and the names associated with these entities.
-   * 
+   *
    * @param entities A mapping between a key and a list of mentions.
-   * 
+   *
    * @return a mapping between each key in the specified entity map and the name types associated with the each mention of that entity.
    */
   private Map<Integer, Set<String>> constructNameSets(HashList<Integer, Context> entities) {
@@ -282,7 +282,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
     return mention.getHeadTokenTag().startsWith("PRP");
   }
   */
-  
+
   public void setExtents(Context[] extentContexts) {
     HashList<Integer, Context> entities = new HashList<Integer, Context>();
     /** Extents which are not in a coreference chain. */
@@ -300,18 +300,18 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
       }
       allExtents.add(ec);
     }
-    
+
     int axi = 0;
     Map<Integer, Set<String>> headSets = constructHeadSets(entities);
     Map<Integer, Set<String>> nameSets = constructNameSets(entities);
-    
+
     for (Iterator<Integer> ei = entities.keySet().iterator(); ei.hasNext();) {
       Integer key = ei.next();
       Set<String> entityNameSet = nameSets.get(key);
       if (entityNameSet.isEmpty()) {
         continue;
       }
-      List<Context> entityContexts = (List<Context>) entities.get(key);      
+      List<Context> entityContexts = (List<Context>) entities.get(key);
       Set<Context> exclusionSet = constructExclusionSet(key, entities, headSets, nameSets, singletons);
       if (entityContexts.size() == 1) {
       }

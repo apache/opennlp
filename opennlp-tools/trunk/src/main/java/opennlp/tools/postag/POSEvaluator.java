@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -30,31 +30,31 @@ import opennlp.tools.util.Mean;
 public class POSEvaluator {
 
   private POSTagger tagger;
-  
+
   private Mean wordAccuracy = new Mean();
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param tagger
    */
   public POSEvaluator(POSTagger tagger) {
     this.tagger = tagger;
   }
-  
+
   /**
    * Evaluates the given reference {@link POSSample} object.
-   * 
+   *
    * This is done by tagging the sentence from the reference
    * {@link POSSample} with the {@link POSTagger}. The
    * tags are then used to update the word accuracy score.
-   * 
+   *
    * @param reference the reference {@link POSSample}.
    */
   public void evaluateSample(POSSample reference) {
-    
+
     String predictedTags[] = tagger.tag(reference.getSentence());
-    
+
     for (int i = 0; i < reference.getTags().length; i++) {
       if (reference.getTags()[i].equals(predictedTags[i])) {
         wordAccuracy.add(1);
@@ -64,12 +64,12 @@ public class POSEvaluator {
       }
     }
   }
-  
+
   /**
    * Reads all {@link POSSample} objects from the stream
-   * and evaluates each {@link POSSample} object with 
+   * and evaluates each {@link POSSample} object with
    * {@link #evaluateSample(POSSample)} method.
-   * 
+   *
    * @param samples the stream of reference {@link POSSample} which
    * should be evaluated.
    */
@@ -78,24 +78,24 @@ public class POSEvaluator {
       evaluateSample(samples.next());
     }
   }
-  
+
   /**
-   * Retrieves the word accuracy. 
-   * 
+   * Retrieves the word accuracy.
+   *
    * This is defined as:
    * word accuracy = correctly detected tags / total words
-   * 
+   *
    * @return the word accuracy
    */
   public double getWordAccuracy() {
     return wordAccuracy.mean();
   }
-  
+
   /**
    * Represents this objects as human readable {@link String}.
    */
   public String toString() {
-    return "Accuracy:" + wordAccuracy.mean() + 
+    return "Accuracy:" + wordAccuracy.mean() +
         " Number of Samples: " + wordAccuracy.count();
   }
 }

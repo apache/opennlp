@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -35,7 +35,7 @@ import java.util.Set;
 
 import opennlp.tools.util.CountedSet;
 
-/** 
+/**
  * Class for writing a pos-tag-dictionary to a file.
  */
 @Deprecated
@@ -45,7 +45,7 @@ public class POSDictionaryWriter {
   private Map<String, Set<String>> dictionary;
   private CountedSet<String> wordCounts;
   private String newline = System.getProperty("line.separator");
-  
+
   public POSDictionaryWriter(String file, String encoding) throws IOException {
     if (encoding != null) {
       dictFile = new OutputStreamWriter(new FileOutputStream(file),encoding);
@@ -54,13 +54,13 @@ public class POSDictionaryWriter {
       dictFile = new FileWriter(file);
     }
     dictionary = new HashMap<String, Set<String>>();
-    wordCounts = new CountedSet<String>();    
+    wordCounts = new CountedSet<String>();
   }
-  
+
   public POSDictionaryWriter(String file) throws IOException {
     this(file,null);
   }
-  
+
   public void addEntry(String word, String tag) {
     Set<String> tags = dictionary.get(word);
     if (tags == null) {
@@ -70,11 +70,11 @@ public class POSDictionaryWriter {
     tags.add(tag);
     wordCounts.add(word);
   }
-  
+
   public void write() throws IOException {
     write(5);
   }
-  
+
   public void write(int cutoff) throws IOException {
     for (Iterator<String> wi = wordCounts.iterator(); wi.hasNext();) {
       String word = wi.next();
@@ -90,7 +90,7 @@ public class POSDictionaryWriter {
     }
     dictFile.close();
   }
-  
+
   private static void usage() {
     System.err.println("Usage: POSDictionaryWriter [-encoding encoding] dictionary tag_files");
     System.exit(1);

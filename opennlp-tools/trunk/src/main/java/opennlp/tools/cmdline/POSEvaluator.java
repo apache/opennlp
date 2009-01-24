@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -32,35 +32,35 @@ import opennlp.tools.util.InvalidFormatException;
 
 /**
  * The command line utility for the {@link POSEvaluator}.
- * 
+ *
  * @see POSTaggerME
  * @see POSEvaluator
  */
 public class POSEvaluator {
 
   public static void main(String[] args) throws InvalidFormatException, IOException {
-    
+
     if (args.length != 2) {
       System.err.println("Usage: java opennlp.tools.cmdline.POSTaggerEvaluator model training");
-      System.exit(1);    
+      System.exit(1);
     }
-    
+
     POSModel model = new POSModel(new FileInputStream(args[0]));
-    
+
     POSTaggerME tagger = new POSTaggerME(model);
-    
+
     opennlp.tools.postag.POSEvaluator evaluator =
         new opennlp.tools.postag.POSEvaluator(tagger);
-    
+
     InputStream in = new FileInputStream(args[1]);
-    
+
     Iterator<POSSample> samples = new WordTagSampleStream(new PlainTextByLineDataStream(
           new InputStreamReader(in)));
-        
+
     evaluator.evaluate(samples);
-    
+
     in.close();
-    
+
     System.out.println(evaluator.toString());
-  } 
+  }
 }

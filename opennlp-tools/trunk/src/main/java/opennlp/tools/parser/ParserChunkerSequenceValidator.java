@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -27,10 +27,10 @@ import opennlp.tools.util.SequenceValidator;
 public class ParserChunkerSequenceValidator implements SequenceValidator<String> {
 
   private Map<String, String> continueStartMap;
-  
+
   public ParserChunkerSequenceValidator(ChunkerModel model) {
-    
-    continueStartMap = 
+
+    continueStartMap =
         new HashMap<String, String>(model.getChunkerModel().getNumOutcomes());
     for (int oi=0, on = model.getChunkerModel().getNumOutcomes(); oi<on; oi++) {
       String outcome = model.getChunkerModel().getOutcome(oi);
@@ -39,26 +39,26 @@ public class ParserChunkerSequenceValidator implements SequenceValidator<String>
             Parser.CONT.length()));
       }
     }  }
-  
+
   public boolean validSequence(int i, String[] inputSequence,
       String[] tagList, String outcome) {
     if (continueStartMap.containsKey(outcome)) {
       int lti = tagList.length - 1;
-      
+
       if (lti == -1) {
         return false;
       }
       else {
         String lastTag = tagList[lti];
-        
+
         if (lastTag.equals(outcome)) {
            return true;
         }
-        
+
         if (lastTag.equals(continueStartMap.get(outcome))) {
           return true;
         }
-        
+
         if (lastTag.equals(Parser.OTHER)) {
           return false;
         }

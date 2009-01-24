@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -45,17 +45,17 @@ public class TokenizerME extends AbstractTokenizer {
    * Constant indicates a token split.
    */
   public static final String SPLIT ="T";
-  
+
   /**
    * Constant indicates no token split.
    */
   public static final String NO_SPLIT ="F";
-  
+
   /**
    * Alpha-Numeric Pattern
    */
   public static final Pattern alphaNumeric = Pattern.compile("^[A-Za-z0-9]+$");
-  
+
   /**
    * The maximum entropy model to use to evaluate contexts.
    */
@@ -66,32 +66,32 @@ public class TokenizerME extends AbstractTokenizer {
    */
   private final TokenContextGenerator cg = new DefaultTokenContextGenerator();
 
-  /** 
+  /**
    * Optimization flag to skip alpha numeric tokens for further
-   * tokenization 
+   * tokenization
    */
   private boolean useAlphaNumericOptimization;
 
-  /** 
+  /**
    * List of probabilities for each token returned from call to
-   * tokenize() 
+   * tokenize()
    */
   private List<Double> tokProbs;
-  
+
   private List<Span> newTokens;
 
   public TokenizerME(TokenizerModel model) {
     this.model = model.getMaxentModel();
     useAlphaNumericOptimization = model.useAlphaNumericOptimization();
-    
+
     newTokens = new ArrayList<Span>();
     tokProbs = new ArrayList<Double>(50);
   }
-  
-  /** 
+
+  /**
    * Returns the probabilities associated with the most recent
    * calls to tokenize() or tokenizePos().
-   * 
+   *
    * @return probability for each token returned for the most recent
    * call to tokenize.  If not applicable an empty array is
    * returned.
@@ -108,7 +108,7 @@ public class TokenizerME extends AbstractTokenizer {
    * Tokenizes the string.
    *
    * @param d  The string to be tokenized.
-   * 
+   *
    * @return   A span array containing individual tokens as elements.
    */
   public Span[] tokenizePos(String d) {
@@ -157,32 +157,32 @@ public class TokenizerME extends AbstractTokenizer {
 
   /**
    * Trains a model for the {@link TokenizerME}.
-   * 
+   *
    * @param languageCode the language of the natural text
    * @param samples the samples used for the training.
    * @param useAlphaNumericOptimization - if true alpha numerics are skipped
-   * 
+   *
    * @return the trained {@link TokenizerModel}
-   * 
+   *
    * @throws IOException it throws an {@link IOException} if an {@link IOException}
-   * is thrown during IO operations on a temp file which is 
+   * is thrown during IO operations on a temp file which is
    * created during training.
    */
-  public static TokenizerModel train(String languageCode, Iterator<TokenSample> samples, 
+  public static TokenizerModel train(String languageCode, Iterator<TokenSample> samples,
       boolean useAlphaNumericOptimization) throws IOException {
-    
-    EventStream eventStream = new TokSpanEventStream(samples, 
+
+    EventStream eventStream = new TokSpanEventStream(samples,
         useAlphaNumericOptimization);
-    
-    GISModel maxentModel = 
+
+    GISModel maxentModel =
         GIS.trainModel(100, new TwoPassDataIndexer(eventStream, 5));
-    
+
     return new TokenizerModel(languageCode, maxentModel, useAlphaNumericOptimization);
   }
 
   /**
    * Returns the value of the alpha-numeric optimization flag.
-   * 
+   *
    * @return true if the tokenizer should use alpha-numeric optization, false otherwise.
    */
   public boolean useAlphaNumericOptimization() {

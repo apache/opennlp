@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -35,50 +35,50 @@ import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.chunking.Parser;
 
 /**
- * Class for storing the English head rules associated with parsing. 
+ * Class for storing the English head rules associated with parsing.
  */
 public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
-  
+
   private static class HeadRule {
     public boolean leftToRight;
     public String[] tags;
     public HeadRule(boolean l2r, String[] tags) {
       leftToRight = l2r;
-      
+
       for (String tag : tags) {
         if (tag == null)
             throw new IllegalArgumentException("tags must not contain null values!");
       }
-      
+
       this.tags = tags;
     }
   }
-  
+
   private Map<String, HeadRule> headRules;
   private Set<String> punctSet;
-  
+
   /**
    * Creates a new set of head rules based on the specified head rules file.
-   * 
+   *
    * @param ruleFile the head rules file.
-   * 
+   *
    * @throws IOException if the head rules file can not be read.
    */
   @Deprecated
   public HeadRules(String ruleFile) throws IOException {
     this(new BufferedReader(new FileReader(ruleFile)));
   }
-  
+
   /**
    * Creates a new set of head rules based on the specified reader.
-   * 
+   *
    * @param rulesReader the head rules reader.
-   * 
+   *
    * @throws IOException if the head rules reader can not be read.
    */
   public HeadRules(BufferedReader rulesReader) throws IOException {
     readHeadRules(rulesReader);
-    
+
     punctSet = new HashSet<String>();
     punctSet.add(".");
     punctSet.add(",");
@@ -90,7 +90,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
   public Set<String> getPunctuationTags() {
     return punctSet;
   }
-    
+
   public Parse getHead(Parse[] constituents, String type) {
     if (constituents[0].getType() == Parser.TOK_NODE) {
       return null;
@@ -155,7 +155,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
     }
     return constituents[constituents.length - 1].getHead();
   }
-    
+
   private void readHeadRules(BufferedReader str) throws IOException {
     String line;
     headRules = new HashMap<String, HeadRule>(30);
@@ -197,33 +197,33 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
       }
     }
   }
-  
+
   public void serialize(Writer writer) throws IOException {
-    
+
     for (String type : headRules.keySet()) {
-      
+
       HeadRule headRule = headRules.get(type);
-      
+
       // write num of tags
       writer.write(Integer.toString(headRule.tags.length + 2));
       writer.write(' ');
-      
+
       // write type
       writer.write(type);
       writer.write(' ');
-      
+
       // write l2r true == 1
       if (headRule.leftToRight)
         writer.write("1");
       else
         writer.write("0");
-      
+
       // write tags
       for (String tag : headRule.tags) {
         writer.write(' ');
         writer.write(tag);
       }
-      
+
       writer.write('\n');
     }
   }

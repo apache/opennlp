@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -47,7 +47,7 @@ import opennlp.tools.coref.sim.TestSimilarityModel;
 import opennlp.tools.util.CollectionEventStream;
 
 /**
- *  Provides common functionality used by classes which implement the {@link Resolver} class and use maximum entropy models to make resolution decisions. 
+ *  Provides common functionality used by classes which implement the {@link Resolver} class and use maximum entropy models to make resolution decisions.
  */
 public abstract class MaxentResolver extends AbstractResolver {
 
@@ -74,7 +74,7 @@ public abstract class MaxentResolver extends AbstractResolver {
   private static final String GEN_UNKNOWN = "gen.unknown";
 
   private static boolean debugOn=false;
-  
+
   private static boolean loadAsResource=false;
 
   private String modelName;
@@ -86,22 +86,22 @@ public abstract class MaxentResolver extends AbstractResolver {
 
   /** When true, this designates that the resolver should use the first referent encountered which it
    * more preferable than non-reference.  When false all non-excluded referents within this resolvers range
-   * are considered. 
+   * are considered.
    */
   protected boolean preferFirstReferent;
   /** When true, this designates that training should consist of a single positive and a single negitive example
    * (when possible) for each mention. */
   protected boolean pairedSampleSelection;
   /** When true, this designates that the same maximum entropy model should be used non-reference
-   * events (the pairing of a mention and the "null" reference) as is used for potentially 
-   * referential pairs.  When false a seperate model is created for these events.  
-   */ 
+   * events (the pairing of a mention and the "null" reference) as is used for potentially
+   * referential pairs.  When false a seperate model is created for these events.
+   */
   protected boolean useSameModelForNonRef;
-  
+
   private static TestSimilarityModel simModel = null;
   /** The model for computing non-referential probabilities. */
   protected NonReferentialResolver nonReferentialResolver;
-  
+
   private static final String modelExtension = ".bin.gz";
 
   /**
@@ -114,10 +114,10 @@ public abstract class MaxentResolver extends AbstractResolver {
     super(numberOfEntitiesBack);
     this.preferFirstReferent = preferFirstReferent;
   }
-  
+
 
   /**
-   * Creates a maximum-entropy-based resolver with the specified model name, using the 
+   * Creates a maximum-entropy-based resolver with the specified model name, using the
    * specified mode, which will look the specified number of entities back for a referent and
    * prefer the first referent if specified.
    * @param modelDirectory The name of the directory where the resover models are stored.
@@ -156,7 +156,7 @@ public abstract class MaxentResolver extends AbstractResolver {
   }
 
   /**
-   * Creates a maximum-entropy-based resolver with the specified model name, using the 
+   * Creates a maximum-entropy-based resolver with the specified model name, using the
    * specified mode, which will look the specified number of entities back for a referent.
    * @param modelDirectory The name of the directory where the resover models are stored.
    * @param modelName The name of the file where this model will be read or written.
@@ -168,29 +168,29 @@ public abstract class MaxentResolver extends AbstractResolver {
   public MaxentResolver(String modelDirectory, String modelName, ResolverMode mode, int numberEntitiesBack) throws IOException {
     this(modelDirectory, modelName, mode, numberEntitiesBack, false);
   }
-  
+
   public MaxentResolver(String modelDirectory, String modelName, ResolverMode mode, int numberEntitiesBack, NonReferentialResolver nonReferentialResolver) throws IOException {
     this(modelDirectory, modelName, mode, numberEntitiesBack, false,nonReferentialResolver);
   }
-  
+
   public MaxentResolver(String modelDirectory, String modelName, ResolverMode mode, int numberEntitiesBack, boolean preferFirstReferent) throws IOException {
     //this(projectName, modelName, mode, numberEntitiesBack, preferFirstReferent, SingletonNonReferentialResolver.getInstance(projectName,mode));
     this(modelDirectory, modelName, mode, numberEntitiesBack, preferFirstReferent, new DefaultNonReferentialResolver(modelDirectory, modelName, mode));
   }
-  
+
   public MaxentResolver(String modelDirectory, String modelName, ResolverMode mode, int numberEntitiesBack, boolean preferFirstReferent, double nonReferentialProbability) throws IOException {
     //this(projectName, modelName, mode, numberEntitiesBack, preferFirstReferent, SingletonNonReferentialResolver.getInstance(projectName,mode));
     this(modelDirectory, modelName, mode, numberEntitiesBack, preferFirstReferent, new FixedNonReferentialResolver(nonReferentialProbability));
   }
-  
+
   /**
    * Specifies whether the models should be loaded from a resource.
-   * @param lar boolean which if true indicates that the model should be loaded as a resource. 
+   * @param lar boolean which if true indicates that the model should be loaded as a resource.
    */
   public static void loadAsResource(boolean lar) {
     loadAsResource = lar;
   }
-  
+
   /**
    * Returns whether the models should be loaded from a file or from a resource.
    * @return  whether the models should be loaded from a file or from a resource.
@@ -290,7 +290,7 @@ public abstract class MaxentResolver extends AbstractResolver {
    * This criteria is used to perform sample selection on the training data and to select a single
    * non-referent entity. Typcically the criteria is a hueristic for a likly referent.
    * @param de The discourse entity being considered for non-reference.
-   * @return True if the entity should be used as a default referent, false otherwise. 
+   * @return True if the entity should be used as a default referent, false otherwise.
    */
   protected boolean defaultReferent(DiscourseEntity de) {
     MentionContext ec = de.getLastExtent();
@@ -373,12 +373,12 @@ public abstract class MaxentResolver extends AbstractResolver {
     }
   }
 
-  
 
-  /** 
+
+  /**
    * Returns a list of features for deciding whether the specified mention refers to the specified discourse entity.
-   * @param mention the mention being considers as possibly referential. 
-   * @param entity The disource entity with which the mention is being considered referential.  
+   * @param mention the mention being considers as possibly referential.
+   * @param entity The disource entity with which the mention is being considered referential.
    * @return a list of features used to predict reference between the specified mention and entity.
    */
   protected List<String> getFeatures(MentionContext mention, DiscourseEntity entity) {
@@ -407,7 +407,7 @@ public abstract class MaxentResolver extends AbstractResolver {
   public static void setSimilarityModel(TestSimilarityModel sm) {
     simModel = sm;
   }
-  
+
   private String getSemanticCompatibilityFeature(MentionContext ec, DiscourseEntity de) {
     if (simModel != null) {
       double best = 0;
@@ -486,10 +486,10 @@ public abstract class MaxentResolver extends AbstractResolver {
     }
     return compatFeatures;
   }
-  
+
   /**
    * Returns a list of features based on the surrounding context of the specified mention.
-   * @param mention he mention whose surround context the features model. 
+   * @param mention he mention whose surround context the features model.
    * @return a list of features based on the surrounding context of the specified mention
    */
   public static List<String> getContextFeatures(MentionContext mention) {
@@ -569,7 +569,7 @@ public abstract class MaxentResolver extends AbstractResolver {
     /*
     else {
       if (GEN_INCOMPATIBLE == getGenderCompatibilityFeature(ec,de)) {
-        return true; 
+        return true;
       }
       else if (NUM_INCOMPATIBLE == getNumberCompatibilityFeature(ec,de)) {
         return true;
@@ -598,8 +598,8 @@ public abstract class MaxentResolver extends AbstractResolver {
       hobbsEntityDistance = cec.getNounPhraseSentenceIndex();
     }
     else {
-      //hobbsEntityDistance = entityDistance - (entities within sentence from mention to end) + (entities within sentence form start to mention) 
-      //hobbsEntityDistance = entityDistance - (cec.maxNounLocation - cec.getNounPhraseSentenceIndex) + cec.getNounPhraseSentenceIndex; 
+      //hobbsEntityDistance = entityDistance - (entities within sentence from mention to end) + (entities within sentence form start to mention)
+      //hobbsEntityDistance = entityDistance - (cec.maxNounLocation - cec.getNounPhraseSentenceIndex) + cec.getNounPhraseSentenceIndex;
       hobbsEntityDistance = entityDistance + (2 * cec.getNounPhraseSentenceIndex()) - cec.getMaxNounPhraseSentenceIndex();
     }
     features.add("hd=" + hobbsEntityDistance);
@@ -610,7 +610,7 @@ public abstract class MaxentResolver extends AbstractResolver {
     //features.add("ep=" + cec.nounLocation);
     return (features);
   }
-  
+
   private Map<String, String> getPronounFeatureMap(String pronoun) {
     Map<String, String> pronounMap = new HashMap<String, String>();
     if (Linker.malePronounPattern.matcher(pronoun).matches()) {
@@ -641,7 +641,7 @@ public abstract class MaxentResolver extends AbstractResolver {
     */
     return pronounMap;
   }
-  
+
   /**
    * Returns features indicating whether the specified mention is compatible with the pronouns
    * of the specified entity.
@@ -784,7 +784,7 @@ public abstract class MaxentResolver extends AbstractResolver {
     return features;
   }
 
-  
+
   private String mentionString(MentionContext ec) {
     StringBuffer sb = new StringBuffer();
     Object[] mtokens = ec.getTokens();

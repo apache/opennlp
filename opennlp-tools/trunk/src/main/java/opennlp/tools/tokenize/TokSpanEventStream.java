@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -36,59 +36,59 @@ import opennlp.tools.util.Span;
 public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
 
   private static Logger logger = Logger.getLogger(TokSpanEventStream.class.getName());
-  
+
   private TokenContextGenerator cg;
-  
+
   private boolean skipAlphaNumerics;
 
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param tokenSamples
    * @param skipAlphaNumerics
    * @param cg
    */
-  public TokSpanEventStream(Iterator<TokenSample> tokenSamples, 
+  public TokSpanEventStream(Iterator<TokenSample> tokenSamples,
         boolean skipAlphaNumerics, TokenContextGenerator cg) {
     super(tokenSamples);
-    
+
     this.skipAlphaNumerics = skipAlphaNumerics;
     this.cg = cg;
   }
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param tokenSamples
    * @param skipAlphaNumerics
    */
-  public TokSpanEventStream(Iterator<TokenSample> tokenSamples, 
+  public TokSpanEventStream(Iterator<TokenSample> tokenSamples,
       boolean skipAlphaNumerics) {
     this(tokenSamples, skipAlphaNumerics, new DefaultTokenContextGenerator());
   }
 
   /**
    * Adds training events to the event stream for each of the specified tokens.
-   * 
+   *
    * @param tokens character offsets into the specified text.
    * @param text The text of the tokens.
    */
   protected Iterator<Event> createEvents(TokenSample tokenSample) {
 
     List<Event> events = new ArrayList<Event>(50);
-    
+
     Span tokens[] = tokenSample.getTokenSpans();
     String text = tokenSample.getText();
-    
+
     if (tokens.length > 0) {
-      
+
       int start = tokens[0].getStart();
       int end = tokens[tokens.length - 1].getEnd();
-      
+
       String sent = text.substring(start, end);
-      
+
       Span[] candTokens = WhitespaceTokenizer.INSTANCE.tokenizePos(sent);
-      
+
       int firstTrainingToken = -1;
       int lastTrainingToken = -1;
       for (int ci = 0; ci < candTokens.length; ci++) {
@@ -119,15 +119,15 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
             else {
               System.err.println();
               if (logger.isLoggable(Level.WARNING)) {
-                logger.warning("Bad training token: " + tokens[ti] + " cand: " + cSpan + 
+                logger.warning("Bad training token: " + tokens[ti] + " cand: " + cSpan +
                     " token="+text.substring(tokens[ti].getStart(), tokens[ti].getEnd()));
               }
             }
           }
-          
+
           // create training data
           if (foundTrainingTokens) {
-            
+
             for (int ti = firstTrainingToken; ti <= lastTrainingToken; ti++) {
               Span tSpan = tokens[ti];
               int cStart = cSpan.getStart();
@@ -135,7 +135,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
                 String[] context = cg.getContext(ctok, i - cStart);
                 events.add(new Event(TokenizerME.NO_SPLIT, context));
               }
-              
+
               if (tSpan.getEnd() != cSpan.getEnd()) {
                 String[] context = cg.getContext(ctok, tSpan.getEnd() - cStart);
                 events.add(new Event(TokenizerME.SPLIT, context));
@@ -145,7 +145,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
         }
       }
     }
-    
+
     return events.iterator();
   }
 }

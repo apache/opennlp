@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Provides fixed size, pre-allocated, least recently used replacement cache. 
+ * Provides fixed size, pre-allocated, least recently used replacement cache.
  */
 public class Cache implements Map {
 
@@ -33,11 +33,11 @@ public class Cache implements Map {
   private DoubleLinkedListElement last;
   /** Temporary holder of the key of the least-recently-used element. */
   private Object lastKey;
-  /** Temporary value used in swap. */ 
+  /** Temporary value used in swap. */
   private ObjectWrapper temp;
   /** Holds the object wrappers which the keys are mapped to. */
   private ObjectWrapper[] wrappers;
-  /** Map which stores the keys and values of the cache. */ 
+  /** Map which stores the keys and values of the cache. */
   private Map map;
   /** The size of the cache. */
   private int size;
@@ -55,7 +55,7 @@ public class Cache implements Map {
     map.put(o, new ObjectWrapper(null, first));
     wrappers[0] = new ObjectWrapper(null, first);
 
-    DoubleLinkedListElement e = first; 
+    DoubleLinkedListElement e = first;
     for(int i=1; i<size; i++) {
       o = new Object();
       e = new DoubleLinkedListElement(e, null, o);
@@ -77,7 +77,7 @@ public class Cache implements Map {
       e = e.next;
     }
   }
-  
+
   public Object put(Object key, Object value) {
     ObjectWrapper o = (ObjectWrapper) map.get(key);
     if (o != null) {
@@ -167,47 +167,47 @@ public class Cache implements Map {
       return null;
     }
   }
-  
-  
+
+
   public boolean containsKey(Object key) {
     return map.containsKey(key);
   }
-  
+
   public boolean containsValue(Object value) {
     return map.containsValue(value);
   }
-  
+
   public Set entrySet() {
     return map.entrySet();
   }
-  
+
   public boolean isEmpty() {
     return map.isEmpty();
   }
-  
+
   public Set keySet() {
     return map.keySet();
   }
-  
+
   public void putAll(Map t) {
     map.putAll(t);
   }
-  
+
   public Object remove(Object key) {
     return map.remove(key);
   }
-  
+
   public int size() {
     return map.size();
   }
-  
+
   public Collection values() {
     return map.values();
   }
 }
 
 class ObjectWrapper {
-    
+
   public Object object;
   public DoubleLinkedListElement listItem;
 
@@ -243,7 +243,7 @@ class DoubleLinkedListElement {
   public DoubleLinkedListElement next;
   public Object object;
 
-  public DoubleLinkedListElement(DoubleLinkedListElement p, 
+  public DoubleLinkedListElement(DoubleLinkedListElement p,
 				   DoubleLinkedListElement n,
 				   Object o) {
 	prev = p;
@@ -305,7 +305,7 @@ class DoubleLinkedList {
 	}
   }
 
-  public DoubleLinkedListElement getFirst() { 
+  public DoubleLinkedListElement getFirst() {
 	current = first;
 	return first;
   }
@@ -332,7 +332,7 @@ class DoubleLinkedList {
 	}
 	return current;
   }
-  
+
   public String toString() {
 	DoubleLinkedListElement e = first;
 	String s = "[" + e.object.toString();

@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -30,7 +30,7 @@ import opennlp.tools.parser.Parse;
 public class CheckContextGenerator extends AbstractContextGenerator {
 
   private Parse[] leftNodes;
-  
+
   public CheckContextGenerator(Set<String> punctSet) {
     this.punctSet = punctSet;
     leftNodes = new Parse[2];
@@ -40,10 +40,10 @@ public class CheckContextGenerator extends AbstractContextGenerator {
     // TODO Auto-generated method stub
     return null;
   }
-  
+
   public String[] getContext(Parse parent, Parse[] constituents, int index, boolean trimFrontier) {
     List<String> features = new ArrayList<String>(100);
-    //default 
+    //default
     features.add("default");
     Parse[] children = Parser.collapsePunctuation(parent.getChildren(),punctSet);
     Parse pstart = children[0];
@@ -55,8 +55,8 @@ public class CheckContextGenerator extends AbstractContextGenerator {
     String punctProduction = "pp="+production(parent,true);
     features.add(production);
     features.add(punctProduction);
-    
-    
+
+
     Parse p1 = null;
     Parse p2 = null;
     Parse p_1 = null;
@@ -84,7 +84,7 @@ public class CheckContextGenerator extends AbstractContextGenerator {
         }
       }
     }
-    
+
     getFrontierNodes(rf,leftNodes);
     p_1 = leftNodes[0];
     p_2 = leftNodes[1];

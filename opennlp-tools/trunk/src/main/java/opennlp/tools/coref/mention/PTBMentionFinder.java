@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -18,7 +18,7 @@
 package opennlp.tools.coref.mention;
 
 /**
- * Finds mentions from Penn Treebank style parses. 
+ * Finds mentions from Penn Treebank style parses.
  */
 public class PTBMentionFinder extends AbstractMentionFinder {
 
@@ -28,15 +28,15 @@ public class PTBMentionFinder extends AbstractMentionFinder {
    * Creates a new mention finder with the specified head finder.
    * @param hf The head finder.
    */
-  private PTBMentionFinder(HeadFinder hf) { 
+  private PTBMentionFinder(HeadFinder hf) {
     collectPrenominalNamedEntities = false;
     collectCoordinatedNounPhrases = true;
     headFinder = hf;
   }
-  
+
   /**
    * Retrives the one and only existing instance.
-   * 
+   *
    * @param hf
    * @return the one and only existing instance
    */
@@ -49,10 +49,10 @@ public class PTBMentionFinder extends AbstractMentionFinder {
     }
     return instance;
   }
-  
-  
-  
-  
+
+
+
+
   /*
   private boolean isTraceNp(Parse np){
     List sc = np.getSyntacticChildren();

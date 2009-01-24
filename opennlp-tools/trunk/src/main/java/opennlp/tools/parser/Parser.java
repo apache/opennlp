@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -19,7 +19,7 @@
 package opennlp.tools.parser;
 
 /**
- *  Interface for full-syntactic parsers. 
+ *  Interface for full-syntactic parsers.
  */
 public interface Parser {
 
@@ -29,7 +29,7 @@ public interface Parser {
    * the returned parses are shared with other parses and therefore their parent node references will not be consistent
    * with their child node reference.  {@link #setParents setParents} can be used to make the parents consistent
    * with a partuicular parse, but subsequent calls to <code>setParents</code> can invalidate the results of earlier
-   * calls.<br>  
+   * calls.<br>
    * @param tokens A parse containing the tokens with a single parent node.
    * @param numParses The number of parses desired.
    * @return the specified number of parses for the specified tokens.
@@ -38,7 +38,7 @@ public interface Parser {
 
   /**
    * Returns a parse for the specified parse of tokens.
-   * @param tokens The root node of a flat parse containing only tokens. 
+   * @param tokens The root node of a flat parse containing only tokens.
    * @return A full parse of the specified tokens or the flat chunks of the tokens if a fullparse could not be found.
    */
   public abstract Parse parse(Parse tokens);

@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -31,7 +31,7 @@ import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
- * Wrapper class for one of four parser event streams.  The particular event stream is specified 
+ * Wrapper class for one of four parser event streams.  The particular event stream is specified
  * at construction.
  * @author Tom Morton
  *
@@ -43,7 +43,7 @@ public class ParserEventStream extends AbstractParserEventStream {
 
   /**
    * Create an event stream based on the specified data stream of the specified type using the specified head rules.
-   * @param d A 1-parse-per-line Penn Treebank Style parse. 
+   * @param d A 1-parse-per-line Penn Treebank Style parse.
    * @param rules The head rules.
    * @param etype The type of events desired (tag, chunk, build, or check).
    * @param dict A tri-gram dictionary to reduce feature generation.
@@ -51,7 +51,7 @@ public class ParserEventStream extends AbstractParserEventStream {
   public ParserEventStream(DataStream d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
     super(d,rules,etype,dict);
   }
-  
+
   protected void init() {
     if (etype == ParserEventTypeEnum.BUILD) {
       this.bcg = new BuildContextGenerator(dict);

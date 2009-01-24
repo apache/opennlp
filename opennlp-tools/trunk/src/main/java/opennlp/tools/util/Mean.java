@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -22,20 +22,20 @@ package opennlp.tools.util;
  * added with the {@link #add(double)} method.
  */
 public class Mean {
-  
+
   /**
    * The sum of all added values.
    */
   private double sum;
-  
+
   /**
    * The number of times a value was added.
    */
   private long count;
-  
+
   /**
    * Adds a value to the arithmetic mean.
-   * 
+   *
    * @param value the value which should be added
    * to the arithmetic mean.
    */
@@ -43,7 +43,7 @@ public class Mean {
     sum += value;
     count++;
   }
-  
+
   /**
    * Retrieves the mean of all values added with
    * {@link #add(double)} or 0 if there are zero added
@@ -52,15 +52,15 @@ public class Mean {
   public double mean() {
     return count > 0 ? sum / count : 0;
   }
-  
+
   /**
-   * Retrieves the number of times a value 
+   * Retrieves the number of times a value
    * was added to the mean.
    */
   public long count() {
     return count;
   }
-  
+
   @Override
   public String toString() {
     return Double.toString(mean());

@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -37,7 +37,7 @@ public class MentionContext extends Context {
   /** Position of the NP in the sentence. */
   private int nounLocation;
   /** Position of the NP in the document. */
-  private  int nounNumber; 
+  private  int nounNumber;
   /** Number of noun phrases in the sentence which contains this mention. */
   private int maxNounLocation;
   /** Index of the sentece in the document which contains this mention. */
@@ -48,8 +48,8 @@ public class MentionContext extends Context {
   private Parse nextToken;
   /** The token following this mention's basal noun phrase.*/
   private Parse basalNextToken;
-  
-  
+
+
   /** The parse of the mention's head word. */
   private Parse headToken;
   /** The parse of the first word in the mention. */
@@ -66,7 +66,7 @@ public class MentionContext extends Context {
   private NumberEnum number;
   /** The robability associated with the number assignment. */
   private double numberProb;
-  
+
 
   public MentionContext(Span span, Span headSpan, int entityId, Parse parse, String extentType, String nameType, int mentionIndex, int mentionsInSentence, int mentionIndexInDocument, int sentenceIndex, HeadFinder headFinder) {
     super(span,headSpan,entityId,parse,extentType,nameType,headFinder);
@@ -101,9 +101,9 @@ public class MentionContext extends Context {
   public MentionContext(Mention mention, int mentionIndexInSentence, int mentionsInSentence, int mentionIndexInDocument, int sentenceIndex, HeadFinder headFinder) {
     this(mention.getSpan(),mention.getHeadSpan(),mention.getId(),mention.getParse(),mention.type,mention.nameType, mentionIndexInSentence,mentionsInSentence,mentionIndexInDocument,sentenceIndex,headFinder);
   }
-      
 
-  /** 
+
+  /**
    * Constructs context information for the specified mention.
    * @param mentionParse Mention parse structure for which context is to be constructed.
    *  @param mentionIndex mention position in sentence.
@@ -162,7 +162,7 @@ public class MentionContext extends Context {
   public Parse getHeadTokenParse() {
     return headToken;
   }
-  
+
   public String getHeadText() {
     StringBuffer headText = new StringBuffer();
     for (int hsi = 0; hsi < tokens.length; hsi++) {
@@ -170,24 +170,24 @@ public class MentionContext extends Context {
     }
     return headText.toString().substring(1);
   }
-  
+
   public Parse getHead() {
     return head;
   }
-    
+
   public int getNonDescriptorStart() {
     return this.nonDescriptorStart;
   }
-  
-  /** 
+
+  /**
    * Returns a sentence-based token span for this mention.  If this mention consist
-   * of the third, fourth, and fifth token, then this span will be 2..4.   
+   * of the third, fourth, and fifth token, then this span will be 2..4.
    * @return a sentence-based token span for this mention.
    */
   public Span getIndexSpan() {
     return indexSpan;
   }
-    
+
   /**
    * Returns the index of the noun phrase for this mention in a sentence.
    * @return the index of the noun phrase for this mention in a sentence.
@@ -195,7 +195,7 @@ public class MentionContext extends Context {
   public int getNounPhraseSentenceIndex() {
     return nounLocation;
   }
-  
+
   /**
    * Returns the index of the noun phrase for this mention in a document.
    * @return the index of the noun phrase for this mention in a document.
@@ -203,32 +203,32 @@ public class MentionContext extends Context {
   public int getNounPhraseDocumentIndex() {
     return nounNumber;
   }
-  
+
   /**
    * Returns the index of the last noun phrase in the sentence containing this mention.
-   * This is one less than the number of noun phrases in the sentence which contains this mention. 
+   * This is one less than the number of noun phrases in the sentence which contains this mention.
    * @return the index of the last noun phrase in the sentence containing this mention.
    */
   public int getMaxNounPhraseSentenceIndex() {
     return maxNounLocation;
   }
-  
+
   public Parse getNextTokenBasal() {
     return basalNextToken;
   }
-  
+
   public Parse getPreviousToken() {
     return prevToken;
   }
-  
+
   public Parse getNextToken() {
     return nextToken;
   }
-  
+
   /**
    * Returns the index of the sentence which contains this mention.
    * @return the index of the sentence which contains this mention.
-   */ 
+   */
   public int getSentenceNumber() {
     return sentenceNumber;
   }
@@ -246,15 +246,15 @@ public class MentionContext extends Context {
   public String getFirstTokenText() {
     return firstTokenText;
   }
-  
+
   /**
-   * Returns the pos-tag of the first token of this mention. 
+   * Returns the pos-tag of the first token of this mention.
    * @return the pos-tag of the first token of this mention.
    */
   public String getFirstTokenTag() {
     return firstTokenTag;
   }
-  
+
   /**
    * Returns the parses for the tokens which are contained in this mention.
    * @return An array of parses, in order, for each token contained in this mention.
@@ -264,20 +264,20 @@ public class MentionContext extends Context {
   }
 
   /**
-   * Returns the text of this mention. 
+   * Returns the text of this mention.
    * @return A space-delimited string of the tokens of this mention.
    */
   public String toText() {
     return parse.toString();
   }
-  
+
   /*
   private static String[] getLemmas(MentionContext xec) {
     //TODO: Try multi-word lemmas first.
     String word = xec.getHeadTokenText();
     return DictionaryFactory.getDictionary().getLemmas(word,"NN");
   }
-  
+
   private static Set getSynsetSet(MentionContext xec) {
     //System.err.println("getting synsets for mention:"+xec.toText());
     Set synsetSet = new HashSet();
@@ -302,7 +302,7 @@ public class MentionContext extends Context {
     this.genderProb = probability;
   }
 
-  /** 
+  /**
    * Returns the gender of this mention.
    * @return The gender of this mention.
    */
@@ -327,8 +327,8 @@ public class MentionContext extends Context {
     this.number = number;
     this.numberProb = probability;
   }
-  
-  /** 
+
+  /**
    * Returns the number of this mention.
    * @return The number of this mention.
    */

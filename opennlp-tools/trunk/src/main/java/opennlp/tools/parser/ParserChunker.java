@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -23,19 +23,19 @@ import opennlp.tools.chunker.Chunker;
 import opennlp.tools.util.Sequence;
 
 /**
- * Interface that a chunker used with the parser should implement. 
+ * Interface that a chunker used with the parser should implement.
  */
 public interface ParserChunker extends Chunker {
   /**
-   * Returns the top k chunk sequences for the specified sentence with the specified pos-tags   
+   * Returns the top k chunk sequences for the specified sentence with the specified pos-tags
    * @param sentence The tokens of the sentence.
    * @param tags The pos-tags for the specified sentence.
    * @return the top k chunk sequences for the specified sentence.
    */
   public Sequence[] topKSequences(List<String> sentence, List<String> tags);
-  
+
   /**
-   * Returns the top k chunk sequences for the specified sentence with the specified pos-tags   
+   * Returns the top k chunk sequences for the specified sentence with the specified pos-tags
    * @param sentence The tokens of the sentence.
    * @param tags The pos-tags for the specified sentence.
    * @return the top k chunk sequences for the specified sentence.

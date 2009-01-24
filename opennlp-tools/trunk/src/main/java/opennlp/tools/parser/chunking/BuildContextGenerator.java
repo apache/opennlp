@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -37,7 +37,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
   private String[] unigram;
   private String[] bigram;
   private String[] trigram;
-  
+
   /**
    * Creates a new context generator for making decisions about combining constitients togehter.
    *
@@ -47,7 +47,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     zeroBackOff = false;
     useLabel = true;
   }
-  
+
   public BuildContextGenerator(Dictionary dict) {
     this();
     this.dict = dict;
@@ -60,10 +60,10 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     Object[] params = (Object[]) o;
     return getContext((Parse[]) params[0], ((Integer) params[1]).intValue());
   }
-  
+
   /**
-   * Returns the predictive context used to determine how constituent at the specified index 
-   * should be combined with other contisuents. 
+   * Returns the predictive context used to determine how constituent at the specified index
+   * should be combined with other contisuents.
    * @param constituents The constituents which have yet to be combined into new constituents.
    * @param index The index of the constituent whcihi is being considered.
    * @return the context for building constituents at the specified index.
@@ -79,7 +79,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     Parse p0 = null;
     Parse p1 = null;
     Parse p2 = null;
-    
+
     Collection<Parse> punct1s = null;
     Collection<Parse> punct2s = null;
     Collection<Parse> punct_1s = null;
@@ -95,7 +95,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     p0 = constituents[index];
     punct_1s=p0.getPreviousPunctuationSet();
     punct1s=p0.getNextPunctuationSet();
-    
+
     if (index + 1 < ps) {
       p1 = constituents[index + 1];
       punct2s = p1.getNextPunctuationSet();
@@ -103,7 +103,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     if (index + 2 < ps) {
       p2 = constituents[index + 2];
     }
-    
+
     boolean u_2 = true;
     boolean u_1 = true;
     boolean u0 = true;
@@ -116,14 +116,14 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     boolean t_2_10 = true;
     boolean t_101 = true;
     boolean t012 = true;
-    
+
     if (dict != null) {
-      
+
       if (p_2 != null) {
         unigram[0] = p_2.getHead().toString();
         u_2 = dict.contains(new StringList(unigram));
       }
-      
+
       if (p2 != null) {
         unigram[0] = p2.getHead().toString();
         u2 = dict.contains(new StringList(unigram));
@@ -131,12 +131,12 @@ public class BuildContextGenerator extends AbstractContextGenerator {
 
       unigram[0] = p0.getHead().toString();
       u0 = dict.contains(new StringList(unigram));
-      
+
       if (p_2 != null && p_1 != null) {
         bigram[0] = p_2.getHead().toString();
         bigram[1] = p_1.getHead().toString();
         b_2_1 = dict.contains(new StringList(bigram));
-        
+
         trigram[0] = p_2.getHead().toString();
         trigram[1] = p_1.getHead().toString();
         trigram[2] = p0.getHead().toString();
@@ -151,12 +151,12 @@ public class BuildContextGenerator extends AbstractContextGenerator {
       if (p_1 != null) {
         unigram[0] = p_1.getHead().toString();
         u_1 = dict.contains(new StringList(unigram));
-        
+
         //extra check for 2==null case
-        b_2_1 = b_2_1 && u_1; 
+        b_2_1 = b_2_1 && u_1;
         t_2_10 = t_2_10 && u_1;
         t_101 = t_101 && u_1;
-        
+
         bigram[0] = p_1.getHead().toString();
         bigram[1] = p0.getHead().toString();
         b_10 = dict.contains(new StringList(bigram));
@@ -165,7 +165,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
         bigram[0] = p1.getHead().toString();
         bigram[1] = p2.getHead().toString();
         b12 = dict.contains(new StringList(bigram));
-        
+
         trigram[0] = p0.getHead().toString();
         trigram[1] = p1.getHead().toString();
         trigram[2] = p2.getHead().toString();
@@ -174,12 +174,12 @@ public class BuildContextGenerator extends AbstractContextGenerator {
       if (p1 != null) {
         unigram[0] = p1.getHead().toString();
         u1 = dict.contains(new StringList(unigram));
-        
+
         //extra check fpr 2==null case
         b12 = b12 && u1;
         t012 = t012 && u1;
         t_101 = t_101 && u1;
-        
+
         bigram[0] = p0.getHead().toString();
         bigram[1] = p1.getHead().toString();
         b01 = dict.contains(new StringList(bigram));
@@ -197,18 +197,18 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     String consbop0 = consbo(p0, 0);
     String consbop1 = consbo(p1, 1);
     String consbop2 = consbo(p2, 2);
-    
+
     Cons c_2 = new Cons(consp_2,consbop_2,-2,u_2);
     Cons c_1 = new Cons(consp_1,consbop_1,-1,u_1);
     Cons c0 = new Cons(consp0,consbop0,0,u0);
     Cons c1 = new Cons(consp1,consbop1,1,u1);
     Cons c2 = new Cons(consp2,consbop2,2,u2);
-    
-    //default 
+
+    //default
     features.add("default");
     //first constituent label
     //features.add("fl="+constituents[0].getLabel());
-    
+
     // features.add("stage=cons(i)");
     // cons(-2), cons(-1), cons(0), cons(1), cons(2)
     if (u0) features.add(consp0);
@@ -222,7 +222,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     features.add(consbop1);
     if (u2) features.add(consp2);
     features.add(consbop2);
-    
+
     //cons(0),cons(1)
     cons2(features,c0,c1,punct1s,b01);
     //cons(-1),cons(0)

@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -42,7 +42,7 @@ public class Sequence implements Comparable<Sequence> {
     probs.addAll(s.probs);
     score = s.score;
   }
-  
+
   public Sequence(Sequence s,String outcome, double p) {
       outcomes = new ArrayList<String>(s.outcomes.size()+1);
       outcomes.addAll(s.outcomes);
@@ -66,7 +66,7 @@ public class Sequence implements Comparable<Sequence> {
     return 0;
   }
 
-  /** Adds an outcome and probability to this sequence. 
+  /** Adds an outcome and probability to this sequence.
    * @param outcome the outcome to be added.
    * @param p the probability associated with this outcome.
    */
@@ -91,9 +91,9 @@ public class Sequence implements Comparable<Sequence> {
     getProbs(ps);
     return ps;
   }
-  
+
   /**
-   * Returns the score of this sequence. 
+   * Returns the score of this sequence.
    * @return The score of this sequence.
    */
   public double getScore() {

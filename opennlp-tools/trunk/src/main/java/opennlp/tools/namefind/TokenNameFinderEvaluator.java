@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -23,52 +23,52 @@ import opennlp.tools.util.Span;
 
 /**
  * The {@link TokenNameFinderEvaluator} measures the performance
- * of the given {@link TokenNameFinder} with the provided 
+ * of the given {@link TokenNameFinder} with the provided
  * reference {@link NameSample}s.
- * 
+ *
  * @see FMeasureEvaluator
  * @see TokenNameFinder
  * @see NameSample
  */
 public class TokenNameFinderEvaluator extends FMeasureEvaluator<NameSample> {
-  
+
   /**
    * The {@link TokenNameFinder} used to create the predicted
    * {@link NameSample} objects.
    */
   private TokenNameFinder nameFinder;
-  
+
   /**
-   * Initializes the current instance with the given 
-   * {@link TokenNameFinder}. 
-   * 
+   * Initializes the current instance with the given
+   * {@link TokenNameFinder}.
+   *
    * @param nameFinder the {@link TokenNameFinder} to evaluate.
    */
   public TokenNameFinderEvaluator(TokenNameFinder nameFinder) {
     this.nameFinder = nameFinder;
   }
-  
+
   /**
    * Evaluates the given reference {@link NameSample} object.
-   * 
-   * This is done by finding the names with the 
-   * {@link TokenNameFinder} in the sentence from the reference 
+   *
+   * This is done by finding the names with the
+   * {@link TokenNameFinder} in the sentence from the reference
    * {@link NameSample}. The found names are then used to
    * calculate and update the scores.
-   * 
+   *
    * @param reference the reference {@link NameSample}.
    */
   public void evaluateSample(NameSample reference) {
-    
+
     Span predictedNames[] = nameFinder.find(reference.getSentence());
-    
+
     if (predictedNames.length > 0) {
-      precisionScore.add(FMeasureEvaluator.precision(reference.getNames(), 
+      precisionScore.add(FMeasureEvaluator.precision(reference.getNames(),
           predictedNames));
     }
-    
+
     if (reference.getNames().length > 0) {
-      recallScore.add(FMeasureEvaluator.recall(reference.getNames(), 
+      recallScore.add(FMeasureEvaluator.recall(reference.getNames(),
           predictedNames));
     }
   }

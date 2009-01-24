@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -30,27 +30,27 @@ import opennlp.tools.util.InvalidFormatException;
  * A sentence detector which uses a maxent model to predict the sentences.
  */
 public class SentenceDetector{
-  
+
   /**
    * Perform sentence detection the input stream.
-   * 
+   *
    * A newline will be treated as a paragraph boundary.
-   * 
+   *
    * <p>java opennlp.tools.lang.SentenceDetector model < "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea."
    */
   public static void main(String[] args) throws IOException, InvalidFormatException {
-    
+
     if (args.length != 1) {
       System.err.print("Usage java opennlp.tools.cmdline.SentenceDetector model < text");
       System.exit(1);
     }
-    
+
     SentenceModel model = new SentenceModel(new FileInputStream(args[0]));
-    
+
     SentenceDetectorME sdetector = new SentenceDetectorME(model);
-    
+
     StringBuilder para = new StringBuilder();
-    
+
     BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
     for (String line = inReader.readLine(); line != null; line = inReader.readLine()) {
       if (line.equals("")) {
@@ -67,7 +67,7 @@ public class SentenceDetector{
         para.append(line).append(" ");
       }
     }
-    
+
     if (para.length() != 0) {
       String[] sents = sdetector.sentDetect(para.toString());
       for (int si = 0, sn = sents.length; si < sn; si++) {

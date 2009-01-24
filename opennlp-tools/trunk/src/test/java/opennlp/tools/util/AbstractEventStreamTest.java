@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -35,7 +35,7 @@ public class AbstractEventStreamTest extends TestCase {
     EMPTY
   };
 
-  
+
   /**
    * This class extends the {@link AbstractEventStream} to help
    * testing the {@link AbstractEventStream#hasNext()}
@@ -43,16 +43,16 @@ public class AbstractEventStreamTest extends TestCase {
    */
   class TestEventStream extends AbstractEventStream<RESULT> {
 
-    
+
     public TestEventStream(Iterator<RESULT> samples) {
       super(samples);
     }
-    
+
     /**
      * Creates {@link Iterator}s for testing.
-     * 
+     *
      * @param sample parameter to specify the output
-     * 
+     *
      * @return it returns an {@link Iterator} which contains one
      * {@link Event} object if the sample parameter equals
      * {@link RESULT#EVENTS} or an empty {@link Iterator} if the sample
@@ -60,11 +60,11 @@ public class AbstractEventStreamTest extends TestCase {
      */
     @Override
     protected Iterator<Event> createEvents(RESULT sample) {
-      
+
       if (RESULT.EVENTS.equals(sample)) {
         List<Event> events = new ArrayList<Event>();
         events.add(new Event("test", new String[]{"f1", "f2"}));
-        
+
         return events.iterator();
       }
       else if (RESULT.EMPTY.equals(sample)) {
@@ -74,36 +74,36 @@ public class AbstractEventStreamTest extends TestCase {
       else {
         // throws runtime exception, execution stops here
         fail();
-        
+
         return null;
       }
     }
-    
+
   }
-  
+
   /**
    * Checks if the {@link AbstractEventStream} behavior is correctly
    * if the {@link AbstractEventStream#createEvents(Object)} method
    * return iterators with events and empty iterators.
    */
   public void testStandardCase() {
-    
+
     List<RESULT> samples = new ArrayList<RESULT>();
     samples.add(RESULT.EVENTS);
     samples.add(RESULT.EMPTY);
     samples.add(RESULT.EVENTS);
-    
+
     TestEventStream eventStream = new TestEventStream(samples.iterator());
-    
+
     int eventCounter = 0;
     while (eventStream.hasNext()) {
       eventStream.next();
       eventCounter++;
     }
-    
+
     assertEquals(2, eventCounter);
   }
-  
+
   /**
    * Checks if the {@link AbstractEventStream} behavior is correctly
    * if the {@link AbstractEventStream#createEvents(Object)} method
@@ -112,10 +112,10 @@ public class AbstractEventStreamTest extends TestCase {
   public void testEmtpyEventStream() {
     List<RESULT> samples = new ArrayList<RESULT>();
     samples.add(RESULT.EMPTY);
-    
+
     TestEventStream eventStream = new TestEventStream(samples.iterator());
     assertEquals(false, eventStream.hasNext());
-    
+
     // now check if it can handle multiple empty event iterators
     samples.add(RESULT.EMPTY);
     samples.add(RESULT.EMPTY);

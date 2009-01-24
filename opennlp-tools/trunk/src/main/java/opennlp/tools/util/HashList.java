@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -23,16 +23,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-/** 
- * Class which creates mapping between keys and a list of values.  
+/**
+ * Class which creates mapping between keys and a list of values.
  */
 public class HashList<K, V> extends HashMap<K, List<V>> {
 
   private static final long serialVersionUID = 1;
-  
+
   public HashList() {
   }
-  
+
   public V get(K key, int index) {
     if (get(key) != null) {
       return get(key).get(index);
@@ -60,11 +60,11 @@ public class HashList<K, V> extends HashMap<K, List<V>> {
 
   public List<V> put(K key, V value) {
     List<V> o = get(key);
-    
+
     if (o == null) {
       o = new ArrayList<V>();
       super.put(key, o);
-    } 
+    }
 
     o.add(value);
 

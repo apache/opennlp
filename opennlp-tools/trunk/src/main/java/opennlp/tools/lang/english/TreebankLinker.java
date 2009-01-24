@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -41,36 +41,36 @@ import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.Span;
 
 /**
- * This class perform coreference for treebank style parses.  
+ * This class perform coreference for treebank style parses.
  * It will only perform coreference over constituents defined in the trees and
- * will not generate new constituents for pre-nominal entities or sub-entities in 
- * simple coordinated noun phrases.  This linker requires that named-entity information also be provided.  
+ * will not generate new constituents for pre-nominal entities or sub-entities in
+ * simple coordinated noun phrases.  This linker requires that named-entity information also be provided.
  * This information can be added to the parse using the -parse option with EnglishNameFinder.
  */
 public class TreebankLinker extends DefaultLinker {
-  
+
   public TreebankLinker(String project, LinkerMode mode) throws IOException {
     super(project,mode);
   }
-  
+
   public TreebankLinker(String project, LinkerMode mode, boolean useDiscourseModel) throws IOException {
     super(project,mode,useDiscourseModel);
-  } 
-  
+  }
+
   public TreebankLinker(String project, LinkerMode mode, boolean useDiscourseModel, double fixedNonReferentialProbability) throws IOException {
     super(project,mode,useDiscourseModel,fixedNonReferentialProbability);
   }
-  
+
   protected void initMentionFinder() {
     mentionFinder = PTBMentionFinder.getInstance(headFinder);
   }
-  
+
   private static void showEntities(DiscourseEntity[] entities) {
     for (int ei=0,en=entities.length;ei<en;ei++) {
      System.out.println(ei+" "+entities[ei]);
     }
   }
-  
+
   /**
    * Identitifies corefernce relationships for parsed input passed via standard in.
    * @param args The model directory.
@@ -110,14 +110,14 @@ public class TreebankLinker extends DefaultLinker {
         //construct new parses for mentions which don't have constituents.
         for (int ei=0,en=extents.length;ei<en;ei++) {
           //System.err.println("PennTreebankLiner.main: "+ei+" "+extents[ei]);
-          
+
           if (extents[ei].getParse() == null) {
             //not sure how to get head index, but its not used at this point.
             Parse snp = new Parse(p.getText(),extents[ei].getSpan(),"NML",1.0,0);
             p.insert(snp);
             extents[ei].setParse(new DefaultParse(snp,sentenceNumber));
           }
-          
+
         }
         document.addAll(Arrays.asList(extents));
         sentenceNumber++;
@@ -132,10 +132,10 @@ public class TreebankLinker extends DefaultLinker {
 }
 
 class CorefParse {
-  
+
   private Map<Parse, Integer> parseMap;
   private List<Parse> parses;
-  
+
   public CorefParse(List<Parse> parses, DiscourseEntity[] entities) {
     this.parses = parses;
     parseMap = new HashMap<Parse, Integer>();
@@ -150,7 +150,7 @@ class CorefParse {
       }
     }
   }
-  
+
   public void show() {
     for (int pi=0,pn=parses.size();pi<pn;pi++) {
       Parse p = (Parse) parses.get(pi);
@@ -158,7 +158,7 @@ class CorefParse {
       System.out.println();
     }
   }
-  
+
   private void show(Parse p) {
     int start;
     start = p.getSpan().getStart();

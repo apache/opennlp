@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -36,14 +36,14 @@ public final class ModelUtil {
 
   private ModelUtil() {
   }
-  
+
   /**
    * Writes the given model to the given {@link OutputStream}.
-   * 
+   *
    * This methods does not closes the provided stream.
-   * 
+   *
    * @param model
-   * 
+   *
    * @throws IOException
    */
   public static void writeModel(AbstractModel model, final OutputStream out) throws IOException {
@@ -54,24 +54,24 @@ public final class ModelUtil {
     }));
     modelWriter.persist();
   }
-  
+
   /**
    * Checks if the expected outcomes are all contained as outcomes in the given model.
-   * 
+   *
    * @param model
    * @param expectedOutcomes
-   * 
+   *
    * @return true if all expected outcomes are the only outcomes of the model.
    */
   public static boolean validateOutcomes(MaxentModel model, String... expectedOutcomes) {
-    
+
     boolean result = true;
-    
+
     if (expectedOutcomes.length == model.getNumOutcomes()) {
-      
+
       Set<String> expectedOutcomesSet = new HashSet<String>();
       expectedOutcomesSet.addAll(Arrays.asList(expectedOutcomes));
-      
+
       for (int i = 0; i < model.getNumOutcomes(); i++) {
         if (!expectedOutcomesSet.contains(model.getOutcome(i))) {
           result = false;
@@ -82,7 +82,7 @@ public final class ModelUtil {
     else {
       result = false;
     }
-    
+
     return result;
   }
 }

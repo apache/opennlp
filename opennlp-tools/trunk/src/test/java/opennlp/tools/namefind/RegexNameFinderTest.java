@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -28,49 +28,49 @@ import junit.framework.TestCase;
  * Tests for the {@link RegexNameFinder} class.
  */
 public class RegexNameFinderTest extends TestCase {
-  
+
   public void testFindSingleTokenPattern() {
     Pattern testPattern = Pattern.compile("test");
-    
+
     String sentence[] = new String[]{"a", "test", "b", "c"};
-    
-    RegexNameFinder finder = 
+
+    RegexNameFinder finder =
       new RegexNameFinder(new Pattern[]{testPattern});
-    
+
     Span[] result = finder.find(sentence);
-    
+
     assertTrue(result.length == 1);
-    
+
     assertTrue(result[0].getStart() == 1);
     assertTrue(result[0].getEnd() == 1);
   }
-  
+
   public void testFindTokenizdPattern() {
     Pattern testPattern = Pattern.compile("[0-9]+ year");
-    
+
     String sentence[] = new String[]{"a", "80", "year", "b", "c"};
-    
-    RegexNameFinder finder = 
+
+    RegexNameFinder finder =
       new RegexNameFinder(new Pattern[]{testPattern});
-    
+
     Span[] result = finder.find(sentence);
-    
+
     assertTrue(result.length == 1);
-    
+
     assertTrue(result[0].getStart() == 1);
     assertTrue(result[0].getEnd() == 2);
   }
-  
+
   public void testFindMatchingPatternWithoutMatchingTokenBounds() {
     Pattern testPattern = Pattern.compile("[0-8] year"); // does match "0 year"
-    
+
     String sentence[] = new String[]{"a", "80", "year", "c"};
-    
-    RegexNameFinder finder = 
+
+    RegexNameFinder finder =
       new RegexNameFinder(new Pattern[]{testPattern});
-    
+
     Span[] result = finder.find(sentence);
-    
+
     assertTrue(result.length == 0);
   }
 }

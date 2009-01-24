@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -31,7 +31,7 @@ import opennlp.tools.coref.Linker;
 import opennlp.tools.util.Span;
 
 /**
- * Provides default implementation of many of the methods in the {@link MentionFinder} interface. 
+ * Provides default implementation of many of the methods in the {@link MentionFinder} interface.
  */
 public abstract class AbstractMentionFinder implements MentionFinder {
 
@@ -74,7 +74,7 @@ public abstract class AbstractMentionFinder implements MentionFinder {
   protected boolean isBasalNounPhrase(Parse np) {
     return np.getNounPhrases().size() == 0;
   }
-  
+
   protected boolean isPossessive(Parse np) {
     List<Parse> parts = np.getSyntacticChildren();
     if (parts.size() > 1) {
@@ -183,10 +183,10 @@ public abstract class AbstractMentionFinder implements MentionFinder {
       }
     }
   }
-  
+
   private boolean handledPronoun(String tok) {
-    return Linker.singularThirdPersonPronounPattern.matcher(tok).find() || 
-                 Linker.pluralThirdPersonPronounPattern.matcher(tok).find() || 
+    return Linker.singularThirdPersonPronounPattern.matcher(tok).find() ||
+                 Linker.pluralThirdPersonPronounPattern.matcher(tok).find() ||
                  Linker.speechPronounPattern.matcher(tok).find();
   }
 
@@ -236,7 +236,7 @@ public abstract class AbstractMentionFinder implements MentionFinder {
     }
   }
 
-  private boolean isHeadOfExistingMention(Parse np, Map<Parse, Parse> headMap, 
+  private boolean isHeadOfExistingMention(Parse np, Map<Parse, Parse> headMap,
       Set<Parse> mentions) {
     Parse head = headMap.get(np);
     while(head != null){
@@ -247,8 +247,8 @@ public abstract class AbstractMentionFinder implements MentionFinder {
     }
     return false;
   }
-  
-  
+
+
   private void clearMentions(Set<Parse> mentions, Parse np) {
     Span npSpan =np.getSpan();
     for(Iterator<Parse> mi=mentions.iterator();mi.hasNext();) {
@@ -308,9 +308,9 @@ public abstract class AbstractMentionFinder implements MentionFinder {
   }
 
   /**
-   * Adds a mention for the non-treebank-labeled possesive noun phrases.  
+   * Adds a mention for the non-treebank-labeled possesive noun phrases.
    * @param possesiveNounPhrase The possesive noun phase which may require an additional mention.
-   * @param mentions The list of mentions into which a new mention can be added. 
+   * @param mentions The list of mentions into which a new mention can be added.
    */
 //  private void addPossesiveMentions(Parse possesiveNounPhrase, List<Mention> mentions) {
 //    List<Parse> kids = possesiveNounPhrase.getSyntacticChildren();
@@ -387,11 +387,11 @@ public abstract class AbstractMentionFinder implements MentionFinder {
   }
 
   /** Return all noun phrases which are contained by <code>p</code>.
-   * @param p The parse in which to find the noun phrases. 
+   * @param p The parse in which to find the noun phrases.
    * @return A list of <code>Parse</code> objects which are noun phrases contained by <code>p</code>.
    */
   //protected abstract List getNounPhrases(Parse p);
-  
+
   public List<Parse> getNamedEntities(Parse p) {
     return p.getNamedEntities();
   }
@@ -412,5 +412,4 @@ public abstract class AbstractMentionFinder implements MentionFinder {
   public void setCoordinatedNounPhraseCollection(boolean b) {
     collectCoordinatedNounPhrases = b;
   }
-
 }

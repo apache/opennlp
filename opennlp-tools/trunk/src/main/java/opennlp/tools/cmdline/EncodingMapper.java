@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -27,23 +27,23 @@ import java.util.Properties;
  * This class tries it best to map a language to an encoding.
  */
 public class EncodingMapper {
-  
+
   /**
    * Maps the language code to an actual encoding. If
    * it cannot be mapped the default encoding is returned.
-   * 
+   *
    * @param languageCode
-   * 
+   *
    * @return
    */
   static String getEncoding(String languageCode) {
-    
+
     // get encoding properties from properties file
     InputStream in = EncodingMapper.class.getResourceAsStream(
         "/opennlp/tools/cmdline/encoding.properties");
-    
+
     Properties encodingMap = new Properties();
-    
+
     try {
       encodingMap.load(in);
     }
@@ -57,13 +57,13 @@ public class EncodingMapper {
         // sorry that this can fail
       }
     }
-    
+
     String encoding = encodingMap.getProperty(languageCode);
-    
+
     if (encoding == null) {
       encoding = Charset.defaultCharset().name();
     }
-    
-    return encoding; 
+
+    return encoding;
   }
 }

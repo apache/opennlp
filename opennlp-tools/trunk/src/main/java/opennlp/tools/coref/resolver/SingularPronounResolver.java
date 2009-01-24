@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -28,7 +28,7 @@ import opennlp.tools.coref.Linker;
 import opennlp.tools.coref.mention.MentionContext;
 
 /**
- * This class resolver singlular pronouns such as "he", "she", "it" and their various forms. 
+ * This class resolver singlular pronouns such as "he", "she", "it" and their various forms.
  */
 public class SingularPronounResolver extends MaxentResolver {
 
@@ -40,7 +40,7 @@ public class SingularPronounResolver extends MaxentResolver {
     super(projectName, "pmodel", m, 30);
     this.numSentencesBack = 2;
   }
-  
+
   public SingularPronounResolver(String projectName, ResolverMode m, NonReferentialResolver nonReferentialResolver) throws IOException {
     super(projectName, "pmodel", m, 30,nonReferentialResolver);
     this.numSentencesBack = 2;
@@ -59,8 +59,8 @@ public class SingularPronounResolver extends MaxentResolver {
       MentionContext cec = entity.getLastExtent();
       //String gen = getPronounGender(pronoun);
       features.addAll(getPronounMatchFeatures(mention,entity));
-      features.addAll(getContextFeatures(cec));      
-      features.addAll(getDistanceFeatures(mention,entity));      
+      features.addAll(getContextFeatures(cec));
+      features.addAll(getDistanceFeatures(mention,entity));
       features.add(getMentionCountFeature(entity));
       /*
       //lexical features
@@ -123,7 +123,7 @@ public class SingularPronounResolver extends MaxentResolver {
 
   protected boolean outOfRange(MentionContext mention, DiscourseEntity entity) {
     MentionContext cec = entity.getLastExtent();
-    //System.err.println("MaxentSingularPronounresolve.outOfRange: ["+entity.getLastExtent().toText()+" ("+entity.getId()+")] ["+mention.toText()+" ("+mention.getId()+")] entity.sentenceNumber=("+entity.getLastExtent().getSentenceNumber()+")-mention.sentenceNumber=("+mention.getSentenceNumber()+") > "+numSentencesBack);    
+    //System.err.println("MaxentSingularPronounresolve.outOfRange: ["+entity.getLastExtent().toText()+" ("+entity.getId()+")] ["+mention.toText()+" ("+mention.getId()+")] entity.sentenceNumber=("+entity.getLastExtent().getSentenceNumber()+")-mention.sentenceNumber=("+mention.getSentenceNumber()+") > "+numSentencesBack);
     return (mention.getSentenceNumber() - cec.getSentenceNumber() > numSentencesBack);
   }
 

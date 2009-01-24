@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -31,70 +31,70 @@ import junit.framework.TestCase;
  */
 public class WindowFeatureGeneratorTest extends TestCase {
 
-  private String[] testSentence = new String[] {"a", "b", "c", "d", 
+  private String[] testSentence = new String[] {"a", "b", "c", "d",
       "e", "f", "g", "h"};
-  
+
   private List<String> features;
-  
+
   protected void setUp() throws Exception {
     features = new ArrayList<String>();
   }
-  
+
   /**
    * Tests if the {@link WindowFeatureGenerator} works as specified, with a previous
    * and next window size of zero.
    */
   public void testWithoutWindow() {
-    
+
     AdaptiveFeatureGenerator windowFeatureGenerator = new WindowFeatureGenerator(
           new IdentityFeatureGenerator(), 0, 0);
-    
+
     int testTokenIndex = 2;
-    
+
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
-    
+
     Assert.assertEquals(1, features.size());
-    
+
     Assert.assertEquals(features.get(0), testSentence[testTokenIndex]);
   }
-  
+
   public void testWindowSizeOne() {
     AdaptiveFeatureGenerator windowFeatureGenerator = new WindowFeatureGenerator(
         new IdentityFeatureGenerator(), 1, 1);
 
     int testTokenIndex = 2;
-    
+
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
-    
+
     Assert.assertEquals(3, features.size());
   }
-  
+
   public void testWindowAtBeginOfSentence() {
     AdaptiveFeatureGenerator windowFeatureGenerator = new WindowFeatureGenerator(
         new IdentityFeatureGenerator(), 1, 0);
 
     int testTokenIndex = 0;
-    
+
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
-    
+
     Assert.assertEquals(1, features.size());
-    
+
     Assert.assertEquals(features.get(0), testSentence[testTokenIndex]);
   }
-  
+
   public void testWindowAtEndOfSentence() {
     AdaptiveFeatureGenerator windowFeatureGenerator = new WindowFeatureGenerator(
         new IdentityFeatureGenerator(), 0, 1);
 
     int testTokenIndex = testSentence.length - 1;
-    
+
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
-    
+
     Assert.assertEquals(1, features.size());
-    
+
     Assert.assertEquals(features.get(0), testSentence[testTokenIndex]);
   }
-  
+
   /**
    * Tests for a window size of previous and next 2 if the features are correct.
    */
@@ -103,21 +103,21 @@ public class WindowFeatureGeneratorTest extends TestCase {
         new IdentityFeatureGenerator(), 2, 2);
 
     int testTokenIndex = 3;
-    
+
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
-    
+
     Assert.assertEquals(5, features.size());
-    
-    Assert.assertTrue(features.contains(WindowFeatureGenerator.PREV_PREFIX + "2" + 
+
+    Assert.assertTrue(features.contains(WindowFeatureGenerator.PREV_PREFIX + "2" +
         testSentence[testTokenIndex - 2]));
-    Assert.assertTrue(features.contains(WindowFeatureGenerator.PREV_PREFIX + "1" + 
+    Assert.assertTrue(features.contains(WindowFeatureGenerator.PREV_PREFIX + "1" +
         testSentence[testTokenIndex - 1]));
 
     Assert.assertTrue(features.contains(testSentence[testTokenIndex]));
 
-    Assert.assertTrue(features.contains(WindowFeatureGenerator.NEXT_PREFIX + "1" + 
+    Assert.assertTrue(features.contains(WindowFeatureGenerator.NEXT_PREFIX + "1" +
         testSentence[testTokenIndex + 1]));
-    Assert.assertTrue(features.contains(WindowFeatureGenerator.NEXT_PREFIX + "2" + 
+    Assert.assertTrue(features.contains(WindowFeatureGenerator.NEXT_PREFIX + "2" +
         testSentence[testTokenIndex + 2]));
   }
 }

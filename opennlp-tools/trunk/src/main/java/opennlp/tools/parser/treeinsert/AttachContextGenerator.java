@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -30,7 +30,7 @@ import opennlp.tools.parser.Parse;
 
 public class AttachContextGenerator extends AbstractContextGenerator {
 
-  
+
   public AttachContextGenerator(Set<String> punctSet) {
     this.punctSet = punctSet;
   }
@@ -39,7 +39,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     Object[] parts = (Object[]) o;
     return getContext((Parse[]) parts[0],((Integer)parts[1]).intValue(),(List) parts[2],((Integer)parts[3]).intValue());
   }
-  
+
   private boolean containsPunct(Collection<Parse> puncts, String punct){
     if (puncts != null){
       for (Iterator<Parse> pi=puncts.iterator();pi.hasNext();) {
@@ -49,11 +49,11 @@ public class AttachContextGenerator extends AbstractContextGenerator {
         }
       }
     }
-    return false;    
+    return false;
   }
-  
+
   /**
-   * 
+   *
    * @param constituents The constituents as they have been constructed so far.
    * @param index The constituent index of the node being attached.
    * @param rightFrontier The nodes which have been not attach to so far.
@@ -76,7 +76,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     if (index+1 < constituents.length) {
       p1 = constituents[index+1];
     }
-    
+
     Collection<Parse> punct1s = null;
     Collection<Parse> punct_1s = null;
     Collection<Parse> punct_1fs = null;
@@ -89,20 +89,20 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     String consp_1 = cons(p_1,-1);
     String consp0 = cons(p0,0);
     String consp1 = cons(p1,1);
-    
+
     String consbofp = consbo(fp,-3);
     String consbof = consbo(fn,-2);
     String consbop_1 = consbo(p_1,-1);
     String consbop0 = consbo(p0,0);
     String consbop1 = consbo(p1,1);
-    
+
     Cons cfp = new Cons(consfp,consbofp,-3,true);
     Cons cf = new Cons(consf,consbof,-2,true);
     Cons c_1 = new Cons(consp_1,consbop_1,-1,true);
     Cons c0 = new Cons(consp0,consbop0,0,true);
     Cons c1 = new Cons(consp1,consbop1,1,true);
 
-    //default 
+    //default
     features.add("default");
 
     //unigrams
@@ -116,7 +116,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     features.add(consbop0);
     features.add(consp1);
     features.add(consbop1);
-    
+
     //productions
     String prod = production(fn,false);
     //String punctProd = production(fn,true,punctSet);
@@ -132,7 +132,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
       //features.add("ppd="+punctProd+","+punctBuf.toString()+p0.getType());
       //features.add("pps="+fn.getType()+"->"+fn.getType()+","+punctBuf.toString()+p0.getType());
     }
-    
+
     //bi-grams
     //cons(fn),cons(0)
     cons2(features,cfp,c0,punct_1s,true);
@@ -151,7 +151,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     int headDistance = (p0.getHeadIndex()-fn.getHeadIndex());
     features.add("hd="+headDistance);
     features.add("nd="+nodeDistance);
-    
+
     features.add("nd="+p0.getType()+"."+nodeDistance);
     features.add("hd="+p0.getType()+"."+headDistance);
     //features.add("fs="+rightFrontier.size());
@@ -159,7 +159,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     if (containsPunct(punct_1s,"''")) {
       if (containsPunct(punct_1fs,"``")) {
         features.add("quotematch");//? not generating feature correctly
-        
+
       }
       else {
         //features.add("noquotematch");

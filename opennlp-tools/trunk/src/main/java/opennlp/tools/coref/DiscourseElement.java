@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -27,18 +27,18 @@ import opennlp.tools.util.ReverseListIterator;
 /**
  * Represents an item in which can be put into the discourse model.  Object which are
  * to be placed in the discourse model should extend this class.
- * 
- * @see opennlp.tools.coref.DiscourseModel    
+ *
+ * @see opennlp.tools.coref.DiscourseModel
  */
 public abstract class DiscourseElement {
 
   private List<MentionContext> extents;
   private int id=-1;
   private MentionContext lastExtent;
-  
+
   /**
    * Creates a new discourse element which contains the specified mention.
-   * 
+   *
    * @param mention The mention which begins this discourse element.
    */
   public DiscourseElement(MentionContext mention) {
@@ -48,26 +48,26 @@ public abstract class DiscourseElement {
   }
 
   /**
-   * Returns an iterator over the mentions which iterates through them based on which were most recently mentioned.  
+   * Returns an iterator over the mentions which iterates through them based on which were most recently mentioned.
    * @return the {@link Iterator}.
    */
   public Iterator<MentionContext> getRecentMentions() {
     return(new ReverseListIterator<MentionContext>(extents));
   }
-  
+
   /**
-   * Returns an iterator over the mentions which iterates through them based on 
+   * Returns an iterator over the mentions which iterates through them based on
    * their occurrence in the document.
-   * 
+   *
    * @return the {@link Iterator}
    */
   public Iterator<MentionContext> getMentions() {
     return(extents.listIterator());
   }
 
-  /** 
-   * Returns the number of mentions in this element. 
-   * 
+  /**
+   * Returns the number of mentions in this element.
+   *
    * @return number of mentions
    */
   public int getNumMentions() {
@@ -102,7 +102,7 @@ public abstract class DiscourseElement {
 
   /**
    * Returns the id associated with this element.
-   * 
+   *
    * @return the id associated with this element.
    */
   public int getId() {
@@ -121,5 +121,4 @@ public abstract class DiscourseElement {
     de.append(" ]");
     return(de.toString());
   }
-
 }

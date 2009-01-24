@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -31,7 +31,7 @@ import opennlp.tools.util.StringList;
  *
  * @author      Gann Bierner
  * @author      Tom Morton
- * @version     $Revision: 1.1 $, $Date: 2009-01-24 00:22:48 $
+ * @version     $Revision: 1.2 $, $Date: 2009-01-24 01:32:19 $
  */
 
 public class DefaultPOSContextGenerator implements POSContextGenerator {
@@ -43,25 +43,25 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
 
   private static Pattern hasCap = Pattern.compile("[A-Z]");
   private static Pattern hasNum = Pattern.compile("[0-9]");
-  
+
   private Cache contextsCache;
   private Object wordsKey;
-  
+
   private Dictionary dict;
   private String[] dictGram;
 
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param dict
    */
   public DefaultPOSContextGenerator(Dictionary dict) {
     this(0,dict);
   }
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param cacheSize
    * @param dict
    */
@@ -90,13 +90,13 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
 
   public String[] getContext(int index, String[] sequence, String[] priorDecisions, Object[] additionalContext) {
     return getContext(index,sequence,priorDecisions);
-  }  
+  }
 
   /**
    * Returns the context for making a pos tag decision at the specified token index given the specified tokens and previous tags.
-   * @param index The index of the token for which the context is provided. 
+   * @param index The index of the token for which the context is provided.
    * @param tokens The tokens in the sentence.
-   * @param tags The tags assigned to the previous words in the sentence. 
+   * @param tags The tags assigned to the previous words in the sentence.
    * @return The context for making a pos tag decision at the specified token index given the specified tokens and previous tags.
    */
   public String[] getContext(int index, Object[] tokens, String[] tags) {
@@ -136,7 +136,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     String cacheKey = index+tagprev+tagprevprev;
     if (contextsCache != null) {
       if (wordsKey == tokens){
-        String[] cachedContexts = (String[]) contextsCache.get(cacheKey);    
+        String[] cachedContexts = (String[]) contextsCache.get(cacheKey);
         if (cachedContexts != null) {
           return cachedContexts;
         }
@@ -157,7 +157,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
       for (int i = 0; i < suffs.length; i++) {
         e.add("suf=" + suffs[i]);
       }
-      
+
       String[] prefs = getPrefixes(lex);
       for (int i = 0; i < prefs.length; i++) {
         e.add("pre=" + prefs[i]);
@@ -166,11 +166,11 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
       if (lex.indexOf('-') != -1) {
         e.add("h");
       }
-      
+
       if (hasCap.matcher(lex).find()) {
         e.add("c");
       }
-      
+
       if (hasNum.matcher(lex).find()) {
         e.add("d");
       }
@@ -201,5 +201,5 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     }
     return contexts;
   }
-  
+
 }

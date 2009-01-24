@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -48,7 +48,7 @@ public abstract class AbstractParserEventStream extends opennlp.model.AbstractEv
   protected ParserEventTypeEnum etype;
   protected boolean fixPossesives;
   protected Dictionary dict;
-  
+
   public AbstractParserEventStream(DataStream d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
     this.dict = dict;
     if (etype == ParserEventTypeEnum.CHUNK) {
@@ -70,11 +70,11 @@ public abstract class AbstractParserEventStream extends opennlp.model.AbstractEv
       events = new Event[0];
     }
   }
-  
+
   protected void init() {
     fixPossesives = false;
   }
-  
+
   public AbstractParserEventStream(DataStream d, HeadRules rules, ParserEventTypeEnum etype) {
     this (d,rules,etype,null);
   }
@@ -90,13 +90,13 @@ public abstract class AbstractParserEventStream extends opennlp.model.AbstractEv
   public boolean hasNext() {
     return ei < events.length || data.hasNext();
   }
-  
+
   public static Parse[] getInitialChunks(Parse p) {
     List<Parse> chunks = new ArrayList<Parse>();
     getInitialChunks(p, chunks);
     return chunks.toArray(new Parse[chunks.size()]);
   }
-  
+
   private static void getInitialChunks(Parse p, List<Parse> ichunks) {
     if (p.isPosTag()) {
       ichunks.add(p);
@@ -120,7 +120,7 @@ public abstract class AbstractParserEventStream extends opennlp.model.AbstractEv
       }
     }
   }
-  
+
   private void addNewEvents() {
     String parseStr = (String) data.nextToken();
     //System.err.println("ParserEventStream.addNewEvents: "+parseStr);
@@ -143,15 +143,15 @@ public abstract class AbstractParserEventStream extends opennlp.model.AbstractEv
     }
     this.events = newEvents.toArray(new Event[newEvents.size()]);
   }
-  
+
   /**
-   * Produces all events for the specified sentence chunks 
+   * Produces all events for the specified sentence chunks
    * and adds them to the specified list.
    * @param newEvents A list of events to be added to.
    * @param chunks Pre-chunked constituents of a sentence.
    */
   protected abstract void addParseEvents(List<Event> newEvents, Parse[] chunks);
-  
+
   private void addChunkEvents(List<Event> chunkEvents, Parse[] chunks) {
     List<String> toks = new ArrayList<String>();
     List<String> tags = new ArrayList<String>();
@@ -205,7 +205,7 @@ public abstract class AbstractParserEventStream extends opennlp.model.AbstractEv
       }
     }
     for (int ti = 0, tl = toks.size(); ti < tl; ti++) {
-      tagEvents.add(new Event(preds.get(ti), tagContextGenerator.getContext(ti, 
+      tagEvents.add(new Event(preds.get(ti), tagContextGenerator.getContext(ti,
           toks.toArray(new String[toks.size()]), preds.toArray(new String[preds.size()]), null)));
     }
   }

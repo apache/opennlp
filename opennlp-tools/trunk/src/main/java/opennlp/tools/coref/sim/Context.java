@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -38,10 +38,10 @@ public class Context extends Mention {
   protected String headTokenTag;
   protected Set<String> synsets;
   protected Object[] tokens;
-  
-  /** The token index in of the head word of this mention. */ 
+
+  /** The token index in of the head word of this mention. */
   protected int headTokenIndex;
-  
+
   public Context(Span span, Span headSpan, int entityId, Parse parse, String extentType, String nameType, HeadFinder headFinder) {
     super(span,headSpan,entityId,parse,extentType,nameType);
     init(headFinder);
@@ -55,12 +55,12 @@ public class Context extends Mention {
     this.headTokenTag = headTag;
     this.synsets = getSynsetSet(this);
   }
-      
+
   public Context(Mention mention, HeadFinder headFinder) {
     super(mention);
     init(headFinder);
   }
-  
+
   private void init(HeadFinder headFinder) {
     Parse head = headFinder.getLastHead(parse);
     List<Parse> tokenList = head.getTokens();
@@ -76,8 +76,8 @@ public class Context extends Mention {
       this.synsets = Collections.emptySet();
     }
   }
-  
-  
+
+
   public static Context[] constructContexts(Mention[] mentions,HeadFinder headFinder) {
     Context[] contexts = new Context[mentions.length];
     for (int mi=0;mi<mentions.length;mi++) {
@@ -85,8 +85,8 @@ public class Context extends Mention {
     }
     return contexts;
   }
-  
-  
+
+
   public String toString() {
     StringBuffer sb = new StringBuffer();
     for (int ti=0,tl=tokens.length;ti<tl;ti++){
@@ -94,23 +94,23 @@ public class Context extends Mention {
     }
     return sb.toString();
   }
-  
+
   public Object[] getTokens() {
     return tokens;
   }
-  
+
   public String getHeadTokenText() {
     return headTokenText;
   }
-  
+
   public String getHeadTokenTag() {
     return headTokenTag;
   }
-  
+
   public Set<String> getSynsets() {
     return synsets;
   }
-    
+
   public static Context parseContext(String word) {
       String[] parts = word.split("/");
       if (parts.length == 2) {
@@ -147,8 +147,8 @@ public class Context extends Mention {
     return DictionaryFactory.getDictionary().getLemmas(word,"NN");
   }
 
-  /** Returns the token index into the mention for the head word. 
-   * @return the token index into the mention for the head word. 
+  /** Returns the token index into the mention for the head word.
+   * @return the token index into the mention for the head word.
    */
   public int getHeadTokenIndex() {
     return headTokenIndex;

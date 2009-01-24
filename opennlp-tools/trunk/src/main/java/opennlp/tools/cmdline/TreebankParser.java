@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -36,13 +36,13 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
 
 /**
- * Class for performing full parsing on English text. 
+ * Class for performing full parsing on English text.
  */
 public class TreebankParser {
 
   private static Pattern untokenizedParenPattern1 = Pattern.compile("([^ ])([({)}])");
   private static Pattern untokenizedParenPattern2 = Pattern.compile("([({)}])([^ ])");
-  
+
   private static String convertToken(String token) {
     if (token.equals("(")) {
       return "-LRB-";
@@ -58,7 +58,7 @@ public class TreebankParser {
     }
     return token;
   }
-  
+
   public static Parse[] parseLine(String line, Parser parser, int numParses) {
     line = untokenizedParenPattern1.matcher(line).replaceAll("$1 $2");
     line = untokenizedParenPattern2.matcher(line).replaceAll("$1 $2");
@@ -97,7 +97,7 @@ public class TreebankParser {
     System.err.println("-k 5: Show the top 5 parses.  This will also display their log-probablities.");
     System.exit(1);
   }
-  
+
 
   public static void main(String[] args) throws InvalidFormatException, IOException {
     if (args.length == 0) {
@@ -106,7 +106,7 @@ public class TreebankParser {
     boolean showTopK = false;
     int numParses = 1;
     int ai = 0;
-    
+
     // TODO: Set these parameters on the parser
     int beamSize = AbstractBottomUpParser.defaultBeamSize;
     double advancePercentage = AbstractBottomUpParser.defaultAdvancePercentage;
@@ -167,10 +167,10 @@ public class TreebankParser {
       }
       ai++;
     }
-    
+
     ParserModel model = ParserModel.create(new FileInputStream(args[ai]));
     Parser parser = new opennlp.tools.parser.chunking.Parser(model);
-    
+
     BufferedReader in;
     if (ai == args.length) {
       in = new BufferedReader(new InputStreamReader(System.in));
@@ -182,7 +182,7 @@ public class TreebankParser {
     try {
       while (null != (line = in.readLine())) {
         if (line.length() == 0) {
-          System.out.println();          
+          System.out.println();
         }
         else {
           Parse[] parses = parseLine(line, parser, numParses);

@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -26,12 +26,12 @@ import java.util.NoSuchElementException;
  * The {@link StringList} is an immutable list of {@link String}s.
  */
 public class StringList implements Iterable<String> {
-  
+
   private String tokens[];
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param singleToken one single token
    */
   public StringList(String singleToken) {
@@ -39,62 +39,62 @@ public class StringList implements Iterable<String> {
           singleToken.intern()
         };
   }
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param tokens the string parts of the new {@link StringList}, an empty
    * tokens array or null is not permitted.
    */
   public StringList(String... tokens) {
-    
+
     if (tokens == null || tokens.length == 0) {
       throw new IllegalArgumentException();
     }
-    
+
     this.tokens = new String[tokens.length];
-    
+
     for (int i = 0; i < tokens.length; i++) {
       this.tokens[i] = tokens[i].intern();
     }
   }
-  
+
   /**
    * Retrieves a token from the given index.
-   * 
+   *
    * @param index
-   * 
+   *
    * @return token at the given index
    */
   public String getToken(int index) {
     return tokens[index];
   }
-  
+
   /**
    * Retrieves the number of tokens inside this list.
-   *  
+   *
    * @return number of tokens
    */
   public int size() {
     return tokens.length;
   }
-  
+
   /**
    * Retrieves an {@link Iterator} over all {@link Token}s.
-   * 
+   *
    * @return iterator over tokens
    */
   public Iterator<String> iterator() {
     return new Iterator<String>() {
-      
+
       private int index;
-      
+
       public boolean hasNext() {
         return index < size();
       }
 
       public String next() {
-        
+
         if (hasNext()) {
           return getToken(index++);
         }
@@ -106,57 +106,57 @@ public class StringList implements Iterable<String> {
       public void remove() {
         throw new UnsupportedOperationException();
       }
-      
+
     };
   }
-  
+
   /**
    * Compares to tokens list and ignores the case of the tokens.
-   * 
+   *
    * Note: This can cause problems with some locals.
-   * 
+   *
    * @param tokens
-   * 
+   *
    * @return true if identically with ignore the case otherwise false
    */
   public boolean compareToIgnoreCase(StringList tokens) {
-    
+
     if (size() == tokens.size()) {
       for (int i = 0; i < size(); i++) {
-        
+
         if (getToken(i).compareToIgnoreCase(
             tokens.getToken(i)) != 0) {
           return false;
-        } 
+        }
       }
     }
     else {
       return false;
     }
-    
+
     return true;
   }
-  
-  
+
+
   public boolean equals(Object obj) {
-    
+
     boolean result;
-    
+
     if (this == obj) {
       result = true;
     }
     else if (obj != null && obj instanceof StringList) {
       StringList tokenList = (StringList) obj;
-      
+
       result = Arrays.equals(tokens, tokenList.tokens);
     }
     else {
       result = false;
     }
-    
+
     return result;
   }
-  
+
   public int hashCode() {
     int numBitsRegular = 32 / size();
     int numExtra = 32 % size();
@@ -181,25 +181,25 @@ public class StringList implements Iterable<String> {
       leftMostBit += numBits; // set for next iteration
       code |= word;
     }
-    
+
     return code;
   }
-  
+
   public String toString() {
     StringBuffer string = new StringBuffer();
-    
+
     string.append('[');
-    
+
     for (int i = 0; i < size(); i++) {
       string.append(getToken(i));
-      
+
       if (i < size() - 1) {
         string.append(',');
       }
     }
-    
+
     string.append(']');
-    
+
     return string.toString();
   }
 }

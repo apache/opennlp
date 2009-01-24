@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -21,38 +21,38 @@ package opennlp.tools.util;
  * Recognizes predefined patterns in strings.
  */
 public class StringPattern {
-  
+
   private static int INITAL_CAPITAL_LETTER = 0x1;
   private static int ALL_CAPITAL_LETTER = 0x1 << 1;
   private static int ALL_LOWERCASE_LETTER = 0x1 << 2;
   private static int ALL_LETTERS = 0x1 << 3;
-  private static int ALL_DIGIT = 0x1 << 4;  
+  private static int ALL_DIGIT = 0x1 << 4;
   private static int CONTAINS_PERIOD = 0x1 << 5;
   private static int CONTAINS_COMMA = 0x1 << 6;
   private static int CONTAINS_SLASH = 0x1 << 7;
   private static int CONTAINS_DIGIT = 0x1 << 8;
-  private static int CONTAINS_HYPHEN = 0x1 << 9;  
+  private static int CONTAINS_HYPHEN = 0x1 << 9;
   private static int CONTAINS_LETTERS = 0x1 << 10;
   private static int CONTAINS_UPPERCASE = 0x1 << 11;
-  
+
   private final int pattern;
-  
+
   private StringPattern(int pattern) {
     this.pattern = pattern;
   }
-  
+
   public boolean isInitialCapitalLetter() {
     return (pattern & INITAL_CAPITAL_LETTER) > 0;
   }
-  
+
   public boolean isAllCapitalLetter() {
     return (pattern & ALL_CAPITAL_LETTER) > 0;
   }
-  
+
   public boolean isAllLowerCaseLetter() {
     return (pattern & ALL_LOWERCASE_LETTER) > 0;
   }
-  
+
   public boolean isAllDigit() {
     return (pattern & ALL_DIGIT) > 0;
   }
@@ -80,33 +80,33 @@ public class StringPattern {
   public boolean containsLetters() {
     return (pattern & CONTAINS_LETTERS) > 0;
   }
-  
+
   public static StringPattern recognize(String token) {
-    
+
     int pattern = ALL_CAPITAL_LETTER | ALL_LOWERCASE_LETTER | ALL_DIGIT | ALL_LETTERS;
-    
+
     for (int i = 0; i < token.length(); i++) {
       final char ch = token.charAt(i);
-      
+
       final int letterType = Character.getType(ch);
-      
-      boolean isLetter = letterType == Character.UPPERCASE_LETTER || 
+
+      boolean isLetter = letterType == Character.UPPERCASE_LETTER ||
           letterType == Character.LOWERCASE_LETTER ||
           letterType == Character.TITLECASE_LETTER  ||
           letterType == Character.MODIFIER_LETTER ||
           letterType == Character.OTHER_LETTER;
-          
+
       if (isLetter) {
         pattern |= CONTAINS_LETTERS;
         pattern &= ~ALL_DIGIT;
-        
+
         if (letterType == Character.UPPERCASE_LETTER) {
           if (i == 0) {
             pattern |= INITAL_CAPITAL_LETTER;
           }
-          
+
           pattern |= CONTAINS_UPPERCASE;
-          
+
           pattern &= ~ALL_LOWERCASE_LETTER;
         }
         else {
@@ -119,37 +119,37 @@ public class StringPattern {
         pattern &= ~ALL_LETTERS;
         pattern &= ~ALL_CAPITAL_LETTER;
         pattern &= ~ALL_LOWERCASE_LETTER;
-        
+
         if (letterType == Character.DECIMAL_DIGIT_NUMBER) {
           pattern |= CONTAINS_DIGIT;
         }
         else {
           pattern &= ~ALL_DIGIT;
         }
-        
+
         switch (ch) {
         case ',':
           pattern |= CONTAINS_COMMA;
           break;
-          
+
         case '.':
           pattern |= CONTAINS_PERIOD;
           break;
-          
+
         case '/':
           pattern |= CONTAINS_SLASH;
           break;
-          
+
         case '-':
           pattern |= CONTAINS_HYPHEN;
           break;
-          
+
         default:
           break;
         }
       }
     }
-      
+
     return new StringPattern(pattern);
   }
 }

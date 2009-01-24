@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -30,13 +30,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Set which counts the number of times a values are added to it.  
+ * Set which counts the number of times a values are added to it.
  * This value can be accessed with the #getCount method.
  */
 public class CountedSet<E> implements Set<E> {
 
   private Map<E, Integer> cset;
-  
+
   /**
    * Creates a new counted set.
    */
@@ -44,9 +44,9 @@ public class CountedSet<E> implements Set<E> {
     cset = new HashMap<E, Integer>();
   }
 
-  /** 
+  /**
    * Creates a new counted set of the specified initial size.
-   * 
+   *
    * @param size The initial size of this set.
    */
   public CountedSet(int size) {
@@ -55,12 +55,12 @@ public class CountedSet<E> implements Set<E> {
   }
 
   public boolean add(E o) {
-    Integer count = (Integer) cset.get(o);  
-    if ( count == null ) { 
+    Integer count = (Integer) cset.get(o);
+    if ( count == null ) {
       cset.put(o, 1);
       return true;
-    } 
-    else { 
+    }
+    else {
       cset.put(o, Integer.valueOf(count.intValue()+1));
       return false;
     }
@@ -69,25 +69,25 @@ public class CountedSet<E> implements Set<E> {
   /**
    * Reduces the count associated with this object by 1.  If this causes the count
    * to become 0, then the object is removed form the set.
-   * 
+   *
    * @param o The object whose count is being reduced.
    */
   public void subtract(E o) {
-    Integer count = cset.get(o);  
-    if ( count != null ) { 
+    Integer count = cset.get(o);
+    if ( count != null ) {
       int c = count.intValue()-1;
       if (c == 0) {
         cset.remove(o);
       }
       else {
-        cset.put(o, Integer.valueOf(c)); 
+        cset.put(o, Integer.valueOf(c));
       }
     }
   }
 
   /**
    * Assigns the specified object the specified count in the set.
-   * 
+   *
    * @param o The object to be added or updated in the set.
    * @param c The count of the specified object.
    */
@@ -97,12 +97,12 @@ public class CountedSet<E> implements Set<E> {
 
   /**
    * Return the count of the specified object.
-   * 
+   *
    * @param o the object whose count needs to be determined.
    * @return the count of the specified object.
    */
   public int getCount(E o) {
-    Integer count = (Integer) cset.get(o);   
+    Integer count = (Integer) cset.get(o);
     if ( count == null ) {
       return 0;
     }
@@ -112,9 +112,9 @@ public class CountedSet<E> implements Set<E> {
   }
 
   /**
-   * This methods is deprecated use opennlp.toolsdictionary.serialization 
+   * This methods is deprecated use opennlp.toolsdictionary.serialization
    * package for writing a {@link CountedSet}.
-   * 
+   *
    * @param fileName
    * @param countCutoff
    */
@@ -124,22 +124,22 @@ public class CountedSet<E> implements Set<E> {
   }
 
   /**
-   * This methods is deprecated use opennlp.toolsdictionary.serialization 
+   * This methods is deprecated use opennlp.toolsdictionary.serialization
    * package for writing a {@link CountedSet}.
-   * 
+   *
    * @param fileName
    * @param countCutoff
    * @param delim
    */
   @Deprecated
   public void write(String fileName,int countCutoff,String delim) {
-    write(fileName,countCutoff,delim,null); 
+    write(fileName,countCutoff,delim,null);
   }
 
   /**
-   * This methods is deprecated use opennlp.toolsdictionary.serialization 
+   * This methods is deprecated use opennlp.toolsdictionary.serialization
    * package for writing a {@link CountedSet}.
-   * 
+   *
    * @param fileName
    * @param countCutoff
    * @param delim
@@ -148,35 +148,35 @@ public class CountedSet<E> implements Set<E> {
   @Deprecated
   public void write(String fileName,int countCutoff,String delim,String encoding) {
     PrintWriter out = null;
-    try{  
+    try{
       if (encoding != null) {
-        out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(fileName),encoding));  
+        out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(fileName),encoding));
       }
       else {
-        out = new PrintWriter(new FileWriter(fileName));  
+        out = new PrintWriter(new FileWriter(fileName));
       }
-      
-      for (Iterator<E> e = cset.keySet().iterator();  e.hasNext();) {  
-        E key = e.next();  
+
+      for (Iterator<E> e = cset.keySet().iterator();  e.hasNext();) {
+        E key = e.next();
         int count = this.getCount(key);
         if ( count >= countCutoff ) {
-          out.println(count + delim + key);  
+          out.println(count + delim + key);
         }
-      }  
-      out.close();  
-    }  
-    catch (IOException e) {  
-      System.err.println(e);  
+      }
+      out.close();
+    }
+    catch (IOException e) {
+      System.err.println(e);
     }
   }
 
   public boolean addAll(Collection<? extends E> c) {
     boolean changed =  false;
-    
+
     for (E element : c) {
       changed = changed || add(element);
     }
-    
+
     return changed;
   }
 

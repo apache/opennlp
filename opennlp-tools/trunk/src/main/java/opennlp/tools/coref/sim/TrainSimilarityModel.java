@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -20,14 +20,14 @@ package opennlp.tools.coref.sim;
 import java.io.IOException;
 
 /**
- * Interface for training a similarity, gender, or number model. 
+ * Interface for training a similarity, gender, or number model.
  */
 public interface TrainSimilarityModel {
   public void trainModel() throws IOException;
   /**
    * Creates simialrity training pairs based on the specified extents.
    * Extents are considered compatible is they are in the same coreference chain,
-   * have the same named-entity tag, or share a common head word.  Incompatible extents are chosen at random 
+   * have the same named-entity tag, or share a common head word.  Incompatible extents are chosen at random
    * from the set of extents which don't meet this criteria.
    * @param extents
    */

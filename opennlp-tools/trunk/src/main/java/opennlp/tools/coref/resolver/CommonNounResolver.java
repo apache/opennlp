@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -25,7 +25,7 @@ import opennlp.tools.coref.DiscourseEntity;
 import opennlp.tools.coref.mention.MentionContext;
 
 /**
- * Resolves coreference between common nouns. 
+ * Resolves coreference between common nouns.
  */
 public class CommonNounResolver extends MaxentResolver {
 
@@ -34,7 +34,7 @@ public class CommonNounResolver extends MaxentResolver {
     showExclusions = false;
     preferFirstReferent = true;
   }
-  
+
   public CommonNounResolver(String projectName, ResolverMode m, NonReferentialResolver nrr) throws IOException {
     super(projectName,"cmodel", m, 80, true,nrr);
     showExclusions = false;
@@ -50,7 +50,7 @@ public class CommonNounResolver extends MaxentResolver {
     }
     return features;
   }
-  
+
   public boolean canResolve(MentionContext mention) {
     String firstTok = mention.getFirstTokenText().toLowerCase();
     String firstTokTag = mention.getFirstToken().getSyntacticType();

@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -32,23 +32,23 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
   private Cache contextsCache;
   private Object wordsKey;
 
-  
+
   public ChunkContextGenerator() {
     this(0);
   }
-  
+
   public ChunkContextGenerator(int cacheSize) {
     super();
     if (cacheSize > 0) {
       contextsCache = new Cache(cacheSize);
     }
   }
-  
+
   public String[] getContext(Object o) {
     Object[] data = (Object[]) o;
     return getContext(((Integer) data[0]).intValue(), (String[]) data[1], (String[]) data[2], (String[]) data[3]);
   }
-    
+
   public String[] getContext(int i, String[] words, String[] prevDecisions, Object[] ac) {
     return getContext(i,words,(String[]) ac[0],prevDecisions);
   }
@@ -60,7 +60,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     int x_1 = x0 - 1;
     int x2 = x0 + 2;
     int x1 = x0 + 1;
-    
+
     String w_2,w_1,w0,w1,w2;
     String t_2,t_1,t0,t1,t2;
     String p_2,p_1;
@@ -112,7 +112,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
       t2=EOS;
       w2=EOS;
     }
-    
+
     String cacheKey = x0+t_2+t1+t0+t1+t2+p_2+p_1;
     if (contextsCache!= null) {
       if (wordsKey == words) {
@@ -126,7 +126,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
         wordsKey = words;
       }
     }
-    
+
     String ct_2 = chunkandpostag(-2, w_2, t_2, p_2);
     String ctbo_2 = chunkandpostagbo(-2, t_2, p_2);
     String ct_1 = chunkandpostag(-1, w_1, t_1, p_1);
@@ -137,7 +137,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     String ctbo1 = chunkandpostagbo(1, t1, null);
     String ct2 = chunkandpostag(2, w2, t2, null);
     String ctbo2 = chunkandpostagbo(2, t2, null);
-    
+
     features.add("default");
     features.add(ct_2);
     features.add(ctbo_2);

@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -26,12 +26,12 @@ import opennlp.tools.util.Span;
 public class SentenceSample {
 
   private String document;
-  
+
   private Span sentences[];
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param sentences
    * @param sentenceSpans
    */
@@ -39,20 +39,20 @@ public class SentenceSample {
     this.document = document;
     this.sentences = sentences;
   }
-  
+
   /**
    * Retrieves the document.
-   * 
+   *
    * @return
    */
   public String getDocument() {
     return document;
   }
-  
+
   /**
    * Retrieves the sentences.
-   * 
-   * @return the begin indexes of the sentences 
+   *
+   * @return the begin indexes of the sentences
    * in the document.
    */
   public Span[] getSentences() {

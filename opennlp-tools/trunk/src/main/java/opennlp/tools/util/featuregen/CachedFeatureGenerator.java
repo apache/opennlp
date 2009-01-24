@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -36,7 +36,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private long numberOfCacheHits;
   private long numberOfCacheMisses;
-  
+
   public CachedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
     this.generators = generators;
     contextsCache = new Cache(100);
@@ -49,22 +49,22 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
     if (tokens == prevTokens) {
       cacheFeatures = (List<String>) contextsCache.get(new Integer(index));
-      
+
       if (cacheFeatures != null) {
         numberOfCacheHits++;
         features.addAll(cacheFeatures);
         return;
       }
-      
+
     } else {
       contextsCache.clear();
       prevTokens = tokens;
     }
 
     cacheFeatures = new ArrayList<String>();
-    
+
     numberOfCacheMisses++;
-    
+
     for (int i = 0; i < generators.length; i++)
       generators[i].createFeatures(cacheFeatures, tokens, index, previousOutcomes);
 
@@ -81,27 +81,27 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
     for (int i = 0; i < generators.length; i++)
       generators[i].clearAdaptiveData();
   }
-  
+
   /**
    * Retrieves the number of times a cache hit occurred.
-   * 
+   *
    * @return number of cache hits
    */
   public long getNumberOfCacheHits() {
     return numberOfCacheHits;
   }
-  
+
   /**
    * Retrieves the number of times a cache miss occurred.
-   * 
+   *
    * @return number of cache misses
    */
   public long getNumberOfCacheMisses() {
     return numberOfCacheMisses;
   }
-  
+
   public String toString() {
-    return super.toString()+": hits=" + numberOfCacheHits+" misses="+ numberOfCacheMisses+" hit%"+ (numberOfCacheHits > 0 ? 
+    return super.toString()+": hits=" + numberOfCacheHits+" misses="+ numberOfCacheMisses+" hit%"+ (numberOfCacheHits > 0 ?
         (double)numberOfCacheHits/(numberOfCacheMisses+numberOfCacheHits) : 0);
   }
 }

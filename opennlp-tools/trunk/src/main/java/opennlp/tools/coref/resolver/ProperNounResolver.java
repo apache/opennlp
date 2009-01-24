@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -52,7 +52,7 @@ public class ProperNounResolver extends MaxentResolver {
     }
     showExclusions = false;
   }
-  
+
   public ProperNounResolver(String projectName, ResolverMode m,NonReferentialResolver nonRefResolver) throws IOException {
     super(projectName,"pnmodel", m, 500,nonRefResolver);
     if (!acroMapLoaded) {
@@ -127,7 +127,7 @@ public class ProperNounResolver extends MaxentResolver {
     String xecStrip = stripNp(xec);
     if (ecStrip != null && xecStrip != null) {
       if (isAcronym(ecStrip, xecStrip)) {
-        List<String> features = new ArrayList<String>(1);        
+        List<String> features = new ArrayList<String>(1);
         features.add("knownAcronym");
         return features;
       }
@@ -150,7 +150,7 @@ public class ProperNounResolver extends MaxentResolver {
     if (super.excluded(mention, entity)) {
       return true;
     }
-    
+
     for (Iterator<MentionContext> ei = entity.getMentions(); ei.hasNext();) {
       MentionContext xec = ei.next();
       if (xec.getHeadTokenTag().startsWith("NNP")) { // || initialCaps.matcher(xec.headToken.toString()).find()) {
@@ -158,7 +158,7 @@ public class ProperNounResolver extends MaxentResolver {
         return false;
       }
     }
-    
+
     return true;
   }
 }

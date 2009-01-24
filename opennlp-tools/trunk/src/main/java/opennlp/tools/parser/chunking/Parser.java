@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -46,7 +46,7 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
 
 /**
- * Class for a shift reduce style parser based on Adwait Ratnaparkhi's 1998 thesis. 
+ * Class for a shift reduce style parser based on Adwait Ratnaparkhi's 1998 thesis.
  */
 public class Parser extends AbstractBottomUpParser {
 
@@ -63,10 +63,10 @@ public class Parser extends AbstractBottomUpParser {
   private int topStartIndex;
   private Map<String, String> startTypeMap;
   private Map<String, String> contTypeMap;
-  
+
   private int completeIndex;
   private int incompleteIndex;
-  
+
   public Parser(ParserModel model) {
     this(model.getBuildModel(), model.getCheckModel(),
         new POSTaggerME(model.getParserTaggerModel()),
@@ -94,9 +94,9 @@ public class Parser extends AbstractBottomUpParser {
    * @param tagger The model to assign pos-tags.
    * @param chunker The model to assign flat constituent labels.
    * @param headRules The head rules for head word perculation.
-   * @param beamSize The number of different parses kept during parsing. 
-   * @param advancePercentage The minimal amount of probability mass which advanced outcomes must represent.  
-   * Only outcomes which contribute to the top "advancePercentage" will be explored.    
+   * @param beamSize The number of different parses kept during parsing.
+   * @param advancePercentage The minimal amount of probability mass which advanced outcomes must represent.
+   * Only outcomes which contribute to the top "advancePercentage" will be explored.
    */
   @Deprecated
   public Parser(MaxentModel buildModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
@@ -124,7 +124,7 @@ public class Parser extends AbstractBottomUpParser {
     completeIndex = checkModel.getIndex(COMPLETE);
     incompleteIndex = checkModel.getIndex(INCOMPLETE);
   }
-  
+
   protected void advanceTop(Parse p) {
     buildModel.eval(buildContextGenerator.getContext(p.getChildren(), 0), bprobs);
     p.addProb(Math.log(bprobs[topStartIndex]));
@@ -252,12 +252,12 @@ public class Parser extends AbstractBottomUpParser {
   public static AbstractModel train(opennlp.model.EventStream es, int iterations, int cut) throws java.io.IOException {
     return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
-  
+
   private static boolean lastChild(Parse child, Parse parent, Set<String> punctSet) {
     Parse[] kids = collapsePunctuation(parent.getChildren(), punctSet);
     return (kids[kids.length - 1] == child);
   }
-  
+
   private static void usage() {
     System.err.println("Usage: Parser -[dict|tag|chunk|build|check|fun] trainingFile parserModelDirectory [iterations cutoff]");
     System.err.println();
@@ -274,7 +274,7 @@ public class Parser extends AbstractBottomUpParser {
    * Creates a n-gram dictionary from the specified data stream using the specified head rule and specified cut-off.
    * @param data The data stream of parses.
    * @param rules The head rules for the parses.
-   * @param cutoff The minimum number of entries required for the n-gram to be saved as part of the dictionary. 
+   * @param cutoff The minimum number of entries required for the n-gram to be saved as part of the dictionary.
    * @return A dictionary object.
    */
   private static Dictionary buildDictionary(DataStream data, HeadRules rules, int cutoff) {
@@ -289,7 +289,7 @@ public class Parser extends AbstractBottomUpParser {
       for (int wi=0;wi<words.length;wi++) {
         words[wi] = pwords[wi].toString();
       }
-      
+
       mdict.add(new StringList(words), 1, 1);
       //add tri-grams and bi-grams for inital sequence
       Parse[] chunks = collapsePunctuation(ParserEventStream.getInitialChunks(p),rules.getPunctuationTags());
@@ -298,8 +298,8 @@ public class Parser extends AbstractBottomUpParser {
         cwords[wi] = chunks[wi].getHead().toString();
       }
       mdict.add(new StringList(cwords), 2, 3);
-      
-      //emulate reductions to produce additional n-grams 
+
+      //emulate reductions to produce additional n-grams
       int ci = 0;
       while (ci < chunks.length) {
         //System.err.println("chunks["+ci+"]="+chunks[ci].getHead().toString()+" chunks.length="+chunks.length);
@@ -349,7 +349,7 @@ public class Parser extends AbstractBottomUpParser {
       usage();
       System.exit(1);
     }
-    boolean dict = false; 
+    boolean dict = false;
     boolean tag = false;
     boolean chunk = false;
     boolean build = false;

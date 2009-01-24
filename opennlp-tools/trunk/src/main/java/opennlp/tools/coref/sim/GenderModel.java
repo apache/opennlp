@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -40,8 +40,8 @@ import opennlp.tools.util.CollectionEventStream;
 import opennlp.tools.util.HashList;
 
 /**
- * Class which models the gender of a particular mentions and entities made up of mentions. 
- * 
+ * Class which models the gender of a particular mentions and entities made up of mentions.
+ *
  * @author Tom Morton
  */
 public class GenderModel implements TestGenderModel, TrainSimilarityModel {
@@ -49,13 +49,13 @@ public class GenderModel implements TestGenderModel, TrainSimilarityModel {
   private int maleIndex;
   private int femaleIndex;
   private int neuterIndex;
-  
+
   private String modelName;
   private String modelExtension = ".bin.gz";
   private MaxentModel testModel;
   private List<Event> events;
   private boolean debugOn = true;
-  
+
   private Set<String> maleNames;
   private Set<String> femaleNames;
 
@@ -68,7 +68,7 @@ public class GenderModel implements TestGenderModel, TrainSimilarityModel {
     GenderModel gm = new GenderModel(name, true);
     return gm;
   }
-  
+
   private Set<String> readNames(String nameFile) throws IOException {
     Set<String> names = new HashSet<String>();
     BufferedReader nameReader = new BufferedReader(new FileReader(nameFile));
@@ -77,7 +77,7 @@ public class GenderModel implements TestGenderModel, TrainSimilarityModel {
     }
     return names;
   }
-  
+
   private GenderModel(String modelName, boolean train) throws IOException {
     this.modelName = modelName;
     maleNames = readNames(modelName+".mas");
@@ -119,7 +119,7 @@ public class GenderModel implements TestGenderModel, TrainSimilarityModel {
         }
       }
     }
-    
+
     for (String si : np1.getSynsets()) {
       features.add("ss=" + si);
     }
@@ -132,7 +132,7 @@ public class GenderModel implements TestGenderModel, TrainSimilarityModel {
   }
 
   /**
-   * Heuristic computation of gender for a mention context using pronouns and honorifics. 
+   * Heuristic computation of gender for a mention context using pronouns and honorifics.
    * @param mention The mention whose gender is to be computed.
    * @return The heuristically determined gender or unknown.
    */
@@ -156,7 +156,7 @@ public class GenderModel implements TestGenderModel, TrainSimilarityModel {
         return GenderEnum.FEMALE;
       }
     }
-    
+
     return GenderEnum.UNKNOWN;
   }
 
@@ -168,7 +168,7 @@ public class GenderModel implements TestGenderModel, TrainSimilarityModel {
         return ge;
       }
     }
-    
+
     return GenderEnum.UNKNOWN;
   }
 

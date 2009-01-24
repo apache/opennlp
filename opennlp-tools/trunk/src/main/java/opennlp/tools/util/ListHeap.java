@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -27,7 +27,7 @@ import java.util.List;
  * data structure.  This heap allows values which are equals to be inserted.  The heap will
  * return the top K values which have been added where K is specified by the size passed to
  * the constructor. K+1 values are not gaurenteed to be kept in the heap or returned in a
- * particular order.     
+ * particular order.
  */
 public class ListHeap<E extends Comparable<E>> implements Heap<E> {
   private List<E> list;
@@ -40,7 +40,7 @@ public class ListHeap<E extends Comparable<E>> implements Heap<E> {
 
   /**
    * Creates a new heap with the specified size using the sorted based on the
-   * specified comparator.  
+   * specified comparator.
    * @param sz The size of the heap.
    * @param c The comparator to be used to sort heap elements.
    */
@@ -146,7 +146,7 @@ public class ListHeap<E extends Comparable<E>> implements Heap<E> {
     }
     return list.get(0);
   }
-  
+
   public E last() {
     if (list.size() == 0) {
       throw new RuntimeException("Heap Underflow");
@@ -187,11 +187,11 @@ public class ListHeap<E extends Comparable<E>> implements Heap<E> {
   public Iterator<E> iterator() {
     return list.iterator();
   }
-  
+
   public boolean isEmpty() {
     return this.list.isEmpty();
   }
-  
+
   public static void main(String[] args) {
    Heap<Integer> heap = new ListHeap<Integer>(5);
    for (int ai=0;ai<args.length;ai++){
@@ -203,4 +203,3 @@ public class ListHeap<E extends Comparable<E>> implements Heap<E> {
    System.out.println();
   }
 }
-

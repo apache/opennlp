@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -43,13 +43,13 @@ public class ParserEventStream extends AbstractParserEventStream {
   protected AttachContextGenerator attachContextGenerator;
   protected BuildContextGenerator buildContextGenerator;
   protected CheckContextGenerator checkContextGenerator;
-  
+
   private static final boolean debug = false;
-  
+
   public ParserEventStream(DataStream d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
     super(d, rules, etype, dict);
   }
-  
+
   public void init() {
     buildContextGenerator = new BuildContextGenerator();
     attachContextGenerator = new AttachContextGenerator(punctSet);
@@ -59,10 +59,10 @@ public class ParserEventStream extends AbstractParserEventStream {
   public ParserEventStream(DataStream d, HeadRules rules, ParserEventTypeEnum etype) {
     super(d, rules, etype);
   }
-  
+
   /**
    * Returns a set of parent nodes which consist of the immediate
-   * parent of the specified node and any of its parent which 
+   * parent of the specified node and any of its parent which
    * share the same syntactic type.
    * @param node The node whose parents are to be returned.
    * @return a set of parent nodes.
@@ -90,11 +90,11 @@ public class ParserEventStream extends AbstractParserEventStream {
     }
     return -1;
   }
-  
+
   private int nonPunctChildCount(Parse node) {
     return Parser.collapsePunctuation(node.getChildren(),punctSet).length;
   }
-  /*  
+  /*
   private Set getNonAdjoinedParent(Parse node) {
     Set parents = new HashSet();
     Parse parent = node.getParent();
@@ -106,7 +106,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     return parents;
   }
   */
-  
+
   protected boolean lastChild(Parse child, Parse parent) {
     boolean lc = super.lastChild(child, parent);
     while(!lc) {
@@ -153,7 +153,7 @@ public class ParserEventStream extends AbstractParserEventStream {
           //build level
           if (debug) System.err.println("Build: "+parent.getType()+" for: "+currentChunks[ci]);
           if (etype == ParserEventTypeEnum.BUILD) {
-            parseEvents.add(new Event(parent.getType(), buildContextGenerator.getContext(currentChunks, ci)));            
+            parseEvents.add(new Event(parent.getType(), buildContextGenerator.getContext(currentChunks, ci)));
           }
           builtNodes.add(off++,parent);
           Parse newParent = new Parse(currentChunks[ci].getText(),currentChunks[ci].getSpan(),parent.getType(),1,0);
@@ -178,7 +178,7 @@ public class ParserEventStream extends AbstractParserEventStream {
             currentChunks[ci].setLabel(Parser.INCOMPLETE);
             parent.setLabel(Parser.COMPLETE);
           }
-          
+
           chunks[ci] = parent;
           //System.err.println("build: "+newParent+" for "+parent);
         }
@@ -238,8 +238,8 @@ public class ParserEventStream extends AbstractParserEventStream {
         for (int cfi=0;cfi<currentRightFrontier.size();cfi++) {
           Parse frontierNode = (Parse) rightFrontier.get(cfi);
           Parse cfn = (Parse) currentRightFrontier.get(cfi);
-          if (attachNode == null && parents.containsKey(frontierNode.getParent()) 
-              && frontierNode.getType().equals(frontierNode.getParent().getType()) 
+          if (attachNode == null && parents.containsKey(frontierNode.getParent())
+              && frontierNode.getType().equals(frontierNode.getParent().getType())
               ){ //&& frontierNode.getParent().getLabel() == null) {
             attachType = Parser.ATTACH_SISTER;
             attachNode = cfn;
@@ -289,7 +289,7 @@ public class ParserEventStream extends AbstractParserEventStream {
             Parse sister = currentChunks[ci];
             if (debug) System.err.println("sister attach a="+attachNode.getType()+":"+attachNode+" s="+sister+" ap="+attachNode.getParent()+" com="+lastChild(chunks[ci], (Parse) rightFrontier.get(attachNodeIndex)));
             Parse newParent = attachNode.getParent().adjoin(sister,rules);
-            
+
             newParent.setParent(attachNode.getParent());
             attachNode.setParent(newParent);
             sister.setParent(newParent);
@@ -325,7 +325,7 @@ public class ParserEventStream extends AbstractParserEventStream {
       builtNodes.clear();
     }
   }
-  
+
   public static void main(String[] args) throws java.io.IOException, InvalidFormatException {
     if (args.length == 0) {
       System.err.println("Usage ParserEventStream -[tag|chunk|build|attach] [-fun] [-dict dictionary] [-model model] head_rules < parses");

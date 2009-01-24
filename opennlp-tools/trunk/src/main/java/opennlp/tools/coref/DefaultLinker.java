@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -42,15 +42,15 @@ import opennlp.tools.coref.sim.Number;
 import opennlp.tools.coref.sim.SimilarityModel;
 
 /**
- * This class perform coreference for treebank style parses or for noun-phrase chunked data.    
+ * This class perform coreference for treebank style parses or for noun-phrase chunked data.
  * Non-constituent entites such as pre-nominal named-entities and sub entities in simple coordinated
- * noun phases will be created.  This linker requires that named-entity information also be provided.   
- * This information can be added to the parse using the -parse option with EnglishNameFinder. 
+ * noun phases will be created.  This linker requires that named-entity information also be provided.
+ * This information can be added to the parse using the -parse option with EnglishNameFinder.
  */
 public class DefaultLinker extends AbstractLinker {
-  
+
   protected MaxentCompatibilityModel mcm;
-  
+
   /**
    * Creates a new linker with the specified model directory, running in the specified mode.
    * @param modelDirectory The directory where the models for this linker are kept.
@@ -60,7 +60,7 @@ public class DefaultLinker extends AbstractLinker {
   public DefaultLinker(String modelDirectory, LinkerMode mode) throws IOException {
     this(modelDirectory,mode,true,-1);
   }
-  
+
   /**
    * Creates a new linker with the specified model directory, running in the specified mode which uses a discourse model
    * based on the specified parameter.
@@ -72,7 +72,7 @@ public class DefaultLinker extends AbstractLinker {
   public DefaultLinker(String modelDirectory, LinkerMode mode, boolean useDiscourseModel) throws IOException {
     this(modelDirectory,mode,useDiscourseModel,-1);
   }
-  
+
   /**
    * Creates a new linker with the specified model directory, running in the specified mode which uses a discourse model
    * based on the specified parameter and uses the specified fixed non-referential probability.
@@ -94,11 +94,11 @@ public class DefaultLinker extends AbstractLinker {
       entities = new DiscourseEntity[resolvers.length];
     }
   }
-  
+
   /**
    * Initializes the resolvers used by this linker.
    * @param mode The mode in which this linker is being used.
-   * @param fixedNonReferentialProbability 
+   * @param fixedNonReferentialProbability
    * @throws IOException
    */
   protected void initResolvers(LinkerMode mode, double fixedNonReferentialProbability) throws IOException {
@@ -121,7 +121,7 @@ public class DefaultLinker extends AbstractLinker {
         };
       }
       else {
-        NonReferentialResolver nrr = new FixedNonReferentialResolver(fixedNonReferentialProbability);        
+        NonReferentialResolver nrr = new FixedNonReferentialResolver(fixedNonReferentialProbability);
         resolvers = new MaxentResolver[] {
             new SingularPronounResolver(corefProject, ResolverMode.TEST,nrr),
             new ProperNounResolver(corefProject, ResolverMode.TEST,nrr),
@@ -163,8 +163,8 @@ public class DefaultLinker extends AbstractLinker {
     headFinder = PTBHeadFinder.getInstance();
   }
   /**
-   * Initializes the mention finder for this linker.  
-   * This can be over-ridden to change the space of mentions used for coreference. 
+   * Initializes the mention finder for this linker.
+   * This can be over-ridden to change the space of mentions used for coreference.
    */
   protected void initMentionFinder() {
     mentionFinder = ShallowParseMentionFinder.getInstance(headFinder);
@@ -177,6 +177,4 @@ public class DefaultLinker extends AbstractLinker {
   protected Number computeNumber(MentionContext mention) {
     return mcm.computeNumber(mention);
   }
-  
-  
 }

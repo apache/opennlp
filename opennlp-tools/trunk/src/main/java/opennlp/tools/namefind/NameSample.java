@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -19,7 +19,7 @@ package opennlp.tools.namefind;
 
 import opennlp.tools.util.Span;
 
-/** 
+/**
  * Class for holding names for a single unit of text.
  */
 public class NameSample {
@@ -31,10 +31,10 @@ public class NameSample {
   private final boolean isClearAdaptiveData;
 
   /**
-   * Initializes the current instance. 
-   * 
+   * Initializes the current instance.
+   *
    * @param sentence training sentence
-   * @param names 
+   * @param names
    * @param additionalContext
    * @param clearAdaptiveData if true the adaptive data of the feature generators is cleared
    */
@@ -58,7 +58,7 @@ public class NameSample {
 
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param sentence
    * @param names
    * @param clearAdaptiveData
@@ -66,7 +66,7 @@ public class NameSample {
   public NameSample(String sentence[], Span[] names, boolean clearAdaptiveData) {
     this(sentence, names, null, null, clearAdaptiveData);
   }
-  
+
   public NameSample(String sentence[], Span[] names, String[] nameTypes, boolean clearAdaptiveData) {
     this(sentence, names, nameTypes, null, clearAdaptiveData);
   }
@@ -78,7 +78,7 @@ public class NameSample {
   public Span[] getNames() {
     return names;
   }
-  
+
   public String[] getNameTypes() {
     return nameTypes;
   }
@@ -86,7 +86,7 @@ public class NameSample {
   public String[][] getAdditionalContext() {
     return additionalContext;
   }
-  
+
   public boolean isClearAdaptiveDataSet() {
     return isClearAdaptiveData;
   }

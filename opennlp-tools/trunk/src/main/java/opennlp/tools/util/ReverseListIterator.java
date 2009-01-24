@@ -2,8 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -24,7 +24,7 @@ import java.util.List;
  * An iterator for a list which returns values in the opposite order as the typical list iterator.
  */
 public class ReverseListIterator<T> implements Iterator<T> {
-  
+
   private int index;
   private List<T> list;
 
@@ -44,5 +44,4 @@ public class ReverseListIterator<T> implements Iterator<T> {
   public void remove() {
     throw new UnsupportedOperationException();
   }
-
 }
