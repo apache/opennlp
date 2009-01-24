@@ -1,4 +1,4 @@
-<!-- $Id: build.xml,v 1.46 2008-09-28 18:12:19 tsmorton Exp $ -->
+<!-- $Id: build.xml,v 1.47 2009-01-24 00:26:20 joernkottmann Exp $ -->
 <!-- This build file based on the JDOM build.xml file. -->
 
 <project name="OpenNLP" default="package" basedir=".">
@@ -20,7 +20,7 @@
     <property name="optimize" value="off"/>
     <property name="deprecation" value="on"/>
 
-    <property name="src.dir" value="./src/java"/>
+    <property name="src.dir" value="./src/main/java"/>
     <property name="lib.dir" value="./lib"/>
     <property name="maxent.jar" location="${lib.dir}/maxent-3.0.0.jar"/>
     <property name="jwnl.jar" location="${lib.dir}/jwnl-1.3.3.jar"/>
