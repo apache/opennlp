@@ -15,13 +15,14 @@
  * limitations under the License.
  */
 
+
 package opennlp.tools.coref.resolver;
 
 import java.io.IOException;
 
 /**
  * This class allows you to share a single instance of a non-referential resolver
- * amoung several resolvers.
+ * among several resolvers.
  */
 public class SingletonNonReferentialResolver extends DefaultNonReferentialResolver {
 
