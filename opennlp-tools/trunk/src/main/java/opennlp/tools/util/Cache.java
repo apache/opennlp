@@ -25,6 +25,7 @@ import java.util.Set;
 /**
  * Provides fixed size, pre-allocated, least recently used replacement cache.
  */
+@SuppressWarnings("unchecked")
 public class Cache implements Map {
 
   /** The element in the linked list which was most recently used. **/
