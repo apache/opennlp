@@ -28,6 +28,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -69,7 +71,7 @@ import org.xml.sax.SAXException;
  * {@link AggregatedFeatureGenerator} which is then returned.
  *
  * TODO:
- * Extension FeatureGenerators can be specified with a special xml element
+ * - Extension FeatureGenerators can be specified with a special xml element
  * which contains the class name of the factory.
  */
 public class Factory {
@@ -92,7 +94,7 @@ public class Factory {
      * @return the configured {@link AdaptiveFeatureGenerator}
      */
     AdaptiveFeatureGenerator create(Element generatorElement,
-        FactoryResourceManager resourceManager);
+        FactoryResourceManager resourceManager) throws InvalidFormatException;
   }
 
   /**
@@ -101,7 +103,7 @@ public class Factory {
   static class AggregatedFeatureGeneratorFactory implements FeatureGeneratorFactory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
-        FactoryResourceManager resourceManager) {
+        FactoryResourceManager resourceManager)  throws InvalidFormatException {
 
       Collection<AdaptiveFeatureGenerator> aggregatedGenerators =
           new LinkedList<AdaptiveFeatureGenerator>();
@@ -137,7 +139,7 @@ public class Factory {
     }
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
-        FactoryResourceManager resourceManager) {
+        FactoryResourceManager resourceManager) throws InvalidFormatException {
 
       Element cachedGeneratorElement = null;
 
@@ -152,10 +154,11 @@ public class Factory {
         }
       }
 
-      // TODO: Check if the generator could be created to avoid NPE
+      if (cachedGeneratorElement == null) {
+        throw new InvalidFormatException("Could not find containing generator element!");
+      }
 
-      AdaptiveFeatureGenerator chachedGenerator =
-          Factory.createGenerator(cachedGeneratorElement, resourceManager);
+      AdaptiveFeatureGenerator chachedGenerator = Factory.createGenerator(cachedGeneratorElement, resourceManager);
 
       return new CachedFeatureGenerator(chachedGenerator);
     }
@@ -171,7 +174,7 @@ public class Factory {
   static class CharacterNgramFeatureGeneratorFactory implements FeatureGeneratorFactory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
-        FactoryResourceManager resourceManager) {
+        FactoryResourceManager resourceManager) throws InvalidFormatException {
 
       String minString = generatorElement.getAttribute("min");
 
@@ -180,8 +183,7 @@ public class Factory {
       try {
         min = Integer.parseInt(minString);
       } catch (NumberFormatException e) {
-        // TODO: throw parsing error
-        min = 2;
+        throw new InvalidFormatException("min attribute is not a number!");
       }
 
       String maxString = generatorElement.getAttribute("max");
@@ -191,8 +193,7 @@ public class Factory {
       try {
         max = Integer.parseInt(maxString);
       } catch (NumberFormatException e) {
-        // TODO: throw parsing error
-        max = 5;
+        throw new InvalidFormatException("max attribute is not a number!");
       }
 
       return new CharacterNgramFeatureGenerator(min, max);
@@ -214,12 +215,7 @@ public class Factory {
     }
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
-        FactoryResourceManager resourceManager) {
-
-      if (!ELEMENT_NAME.equals(generatorElement.getTagName())) {
-        // TODO throw an exception
-      }
-
+        FactoryResourceManager resourceManager) throws InvalidFormatException {
       return new DefinitionFeatureGenerator();
     }
 
@@ -235,7 +231,9 @@ public class Factory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
         FactoryResourceManager resourceManager) {
+      
       // TODO: Discuss resource loading with Tom
+      
       return null;
     }
 
@@ -251,9 +249,6 @@ public class Factory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
         FactoryResourceManager resourceManager) {
-
-      // TODO Check that element is the right one
-
       return new PreviousMapFeatureGenerator();
     }
 
@@ -292,6 +287,19 @@ public class Factory {
     }
   }
 
+  static class TokenFeatureGeneratorFactory implements FeatureGeneratorFactory {
+
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+        FactoryResourceManager resourceManager) {
+      
+      return new TokenFeatureGenerator();
+    }
+    
+    static void register(Map<String, FeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("token", new TokenPatternFeatureGeneratorFactory());
+    }
+  }
+  
   /**
    * @see TokenPatternFeatureGenerator
    */
@@ -313,13 +321,49 @@ public class Factory {
   static class WindowFeatureGeneratorFactory implements FeatureGeneratorFactory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
-        FactoryResourceManager resourceManager) {
+        FactoryResourceManager resourceManager)  throws InvalidFormatException {
 
-      // prev and next length
+      Element nestedGeneratorElement = null;
 
-      // get child element
+      NodeList kids = generatorElement.getChildNodes();
 
-      return null;
+      for (int i = 0; i < kids.getLength(); i++) {
+        Node childNode = kids.item(i);
+
+        if (childNode instanceof Element) {
+          nestedGeneratorElement = (Element) childNode;
+          break;
+        }
+      }
+
+      if (nestedGeneratorElement == null) {
+        throw new InvalidFormatException("window feature generator must contain" +
+        		"a agregator element");
+      }
+      
+      AdaptiveFeatureGenerator nestedGenerator = Factory.createGenerator(nestedGeneratorElement, resourceManager);
+      
+      String prevLengthString = generatorElement.getAttribute("prevLength");
+
+      int prevLength;
+
+      try {
+        prevLength = Integer.parseInt(prevLengthString);
+      } catch (NumberFormatException e) {
+        throw new InvalidFormatException("prevLength attribute is not a number!");
+      }
+      
+      String nextLengthString = generatorElement.getAttribute("nextLength");
+
+      int nextLength;
+
+      try {
+        nextLength = Integer.parseInt(nextLengthString);
+      } catch (NumberFormatException e) {
+        throw new InvalidFormatException("nextLength attribute is not a number!");
+      }  
+      
+      return new WindowFeatureGenerator(nestedGenerator, prevLength, nextLength);
     }
 
     static void register(Map<String, FeatureGeneratorFactory> factoryMap) {
@@ -339,6 +383,7 @@ public class Factory {
     PreviousMapFeatureGeneratorFactory.register(factories);
     SentenceFeatureGeneratorFactory.register(factories);
     TokenClassFeatureGeneratorFactory.register(factories);
+    TokenFeatureGeneratorFactory.register(factories);
     TokenPatternFeatureGeneratorFactory.register(factories);
     WindowFeatureGeneratorFactory.register(factories);
   }
@@ -355,7 +400,7 @@ public class Factory {
    * @return
    */
   static AdaptiveFeatureGenerator createGenerator(Element generatorElement,
-      FactoryResourceManager resourceManager) {
+      FactoryResourceManager resourceManager) throws InvalidFormatException {
 
     FeatureGeneratorFactory generatorFactory = factories.get(generatorElement.getTagName());
 
@@ -381,7 +426,7 @@ public class Factory {
    *     {@link InputStream}
    */
   public static AdaptiveFeatureGenerator create(InputStream xmlDescriptorIn,
-      FactoryResourceManager resourceManager) throws IOException {
+      FactoryResourceManager resourceManager) throws IOException, InvalidFormatException {
 
     DocumentBuilderFactory documentBuilderFacoty = DocumentBuilderFactory.newInstance();
 
@@ -399,8 +444,7 @@ public class Factory {
     try {
       xmlDescriptorDOM = documentBuilder.parse(xmlDescriptorIn);
     } catch (SAXException e) {
-      e.printStackTrace();
-      xmlDescriptorDOM = null;
+      throw new InvalidFormatException("Descriptor is not valid XML!", e);
     }
 
     Element generatorElement = xmlDescriptorDOM.getDocumentElement();

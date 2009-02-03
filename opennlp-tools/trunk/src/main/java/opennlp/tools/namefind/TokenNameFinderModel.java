@@ -63,8 +63,9 @@ public class TokenNameFinderModel {
 
   private Map<String, byte[]> resources;
 
+  // TODO: Test create generators, to see if they are valid
   public TokenNameFinderModel(AbstractModel nameFinderModel,
-      InputStream generatorDescriptorIn, Map<String, byte[]> resources) {
+      InputStream generatorDescriptorIn, Map<String, byte[]> resources) throws IOException {
 
     if (!isModelValid(nameFinderModel)) {
       throw new IllegalArgumentException("Model not compatible with name finder!");
@@ -72,7 +73,7 @@ public class TokenNameFinderModel {
 
     this.nameFinderModel = nameFinderModel;
 
-    // copy descriptor to an byte array
+    generatorDescriptor = ModelUtil.read(generatorDescriptorIn);
 
     // The resource map must not contain key which are already taken
     // like the name finder maxent model name
@@ -118,6 +119,12 @@ public class TokenNameFinderModel {
     } catch (IOException e) {
       logger.log(Level.SEVERE,
           "Sorry, that reading from memory can go wrong.", e);
+    }
+    catch (InvalidFormatException e) {
+      // that should never happend to test against invalid format the
+      // feature generators where created on instanciation
+      
+      // TODO: Log error
     }
 
     return generator;
@@ -224,7 +231,7 @@ public class TokenNameFinderModel {
    * @throws IOException
    * @throws InvalidFormatException
    */
-  static TokenNameFinderModel create(InputStream in) throws IOException,
+  public static TokenNameFinderModel create(InputStream in) throws IOException,
       InvalidFormatException {
 
     final ZipInputStream zip = new ZipInputStream(in);
@@ -255,6 +262,7 @@ public class TokenNameFinderModel {
       }
     }
 
-    return new TokenNameFinderModel(nameFinderModel, null, resources);
+    return new TokenNameFinderModel(nameFinderModel, new ByteArrayInputStream(generatorDescriptor),
+        resources);
   }
 }

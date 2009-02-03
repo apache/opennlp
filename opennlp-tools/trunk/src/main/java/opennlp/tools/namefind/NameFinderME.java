@@ -15,25 +15,31 @@
  * limitations under the License.
  */
 
+
 package opennlp.tools.namefind;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import opennlp.maxent.GIS;
 import opennlp.maxent.GISModel;
+import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
@@ -102,6 +108,7 @@ public class NameFinderME implements TokenNameFinder {
 
   /**
    * Creates a new name finder with the specified model.
+   * 
    * @param mod The model to be used to find names.
    */
   @Deprecated
@@ -111,6 +118,7 @@ public class NameFinderME implements TokenNameFinder {
 
   /**
    * Creates a new name finder with the specified model and context generator.
+   * 
    * @param mod The model to be used to find names.
    * @param cg The context generator to be used with this name finder.
    */
@@ -121,6 +129,7 @@ public class NameFinderME implements TokenNameFinder {
 
   /**
    * Creates a new name finder with the specified model and context generator.
+   * 
    * @param mod The model to be used to find names.
    * @param cg The context generator to be used with this name finder.
    * @param beamSize The size of the beam to be used in decoding this model.
@@ -139,9 +148,12 @@ public class NameFinderME implements TokenNameFinder {
     return find(tokens, EMPTY);
   }
 
-  /** Generates name tags for the given sequence, typically a sentence, returning token spans for any identified names.
+  /** 
+   * Generates name tags for the given sequence, typically a sentence, returning token spans for any identified names.
+   * 
    * @param tokens an array of the tokens or words of the sequence, typically a sentence.
    * @param additionalContext features which are based on context outside of the sentence but which should also be used.
+   * 
    * @return an array of spans for each of the names identified.
    */
   public Span[] find(String[] tokens, String[][] additionalContext) {
@@ -211,6 +223,7 @@ public class NameFinderME implements TokenNameFinder {
   /**
     * Returns an array with the probabilities of the last decoded sequence.  The
     * sequence was determined based on the previous call to <code>chunk</code>.
+    * 
     * @return An array with the same number of probabilities as tokens were sent to <code>chunk</code>
     * when it was last called.
     */
@@ -221,7 +234,9 @@ public class NameFinderME implements TokenNameFinder {
    /**
     * Returns an array of probabilities for each of the specified spans which is the product
     * the probabilities for each of the outcomes which make up the span.
+    * 
     * @param spans The spans of the names for which probabilities are desired.
+    * 
     * @return an array of probabilities for each of the specified spans.
     */
    public double[] probs(Span[] spans) {
@@ -238,18 +253,17 @@ public class NameFinderME implements TokenNameFinder {
    }
 
    public static TokenNameFinderModel train(Iterator<NameSample> samples, InputStream descriptorIn,
-       Map<String, byte[]> resources) throws IOException {
+       Map<String, byte[]> resources) throws IOException, InvalidFormatException {
 
-     // TODO: write descriptor to byte array
-     byte descriptorBytes[] = null;
-
+     byte descriptorBytes[] = ModelUtil.read(descriptorIn);
+     
      // TODO: create resource manager
-     AdaptiveFeatureGenerator generator = Factory.create(descriptorIn, null);
+     AdaptiveFeatureGenerator generator = Factory.create(new ByteArrayInputStream(descriptorBytes), null);
 
      EventStream eventStream = new NameFinderEventStream(samples,
          new DefaultNameContextGenerator(generator));
 
-     AbstractModel nameFinderModel = null;
+     AbstractModel nameFinderModel = GIS.trainModel(100, new TwoPassDataIndexer(eventStream, 5));
 
      return new TokenNameFinderModel(nameFinderModel,
          new ByteArrayInputStream(descriptorBytes), resources);
@@ -260,65 +274,31 @@ public class NameFinderME implements TokenNameFinder {
     return GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 
-  public static void usage(){
-    System.err.println("Usage: opennlp.tools.namefind.NameFinderME -encoding encoding training_file model");
-    System.exit(1);
-  }
-
   /**
    * Trains a new named entity model on the specified training file using the specified encoding to read it in.
    * @param args [-encoding encoding] training_file model_file
    * @throws java.io.IOException
    */
-  public static void main(String[] args) throws java.io.IOException {
-    if (args.length == 0) {
-      usage();
-    }
-    int ai = 0;
-    String encoding = null;
-    while (args[ai].startsWith("-")) {
-      if (args[ai].equals("-encoding") && ai+1 < args.length) {
-        ai++;
-        encoding = args[ai];
-      }
-      else {
-        System.err.println("Unknown option: "+args[ai]);
-        usage();
-      }
-      ai++;
-    }
-    java.io.File inFile = null;
-    java.io.File outFile = null;
-    if (ai < args.length) {
-      inFile = new java.io.File(args[ai++]);
+  public static void main(String[] args) throws IOException, InvalidFormatException {
+    
+    // Encoding must be specified !!!
+    // -encoding code train.file featuregen.file model.file
+    
+    if (args.length == 5) {
+      
+      NameSampleDataStream sampleStream = new NameSampleDataStream(
+          new PlainTextByLineDataStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
+      
+      InputStream descriptorIn = new FileInputStream(args[3]);
+      
+      TokenNameFinderModel model = 
+          NameFinderME.train(sampleStream, descriptorIn, new HashMap<String, byte[]>());
+      
+      model.serialize(new FileOutputStream(args[4]));
+      
     }
     else {
-      usage();
+      // TODO: Usage
     }
-    if (ai < args.length) {
-      outFile = new java.io.File(args[ai++]);
-    }
-    else {
-      usage();
-    }
-    int iterations = 100;
-    int cutoff = 5;
-    if (args.length > ai) {
-      iterations = Integer.parseInt(args[ai++]);
-    }
-    if (args.length > ai) {
-      cutoff = Integer.parseInt(args[ai++]);
-    }
-    AbstractModel mod;
-    opennlp.model.EventStream es;
-    if (encoding != null) {
-       es = new NameFinderEventStream(new NameSampleDataStream(new opennlp.maxent.PlainTextByLineDataStream(new InputStreamReader(new FileInputStream(inFile),encoding))));
-    }
-    else {
-      es = new NameFinderEventStream(new NameSampleDataStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile))));
-    }
-    mod = train(es, iterations, cutoff);
-    System.out.println("Saving the model as: " + outFile.toString());
-    new opennlp.maxent.io.SuffixSensitiveGISModelWriter(mod, outFile).persist();
   }
 }

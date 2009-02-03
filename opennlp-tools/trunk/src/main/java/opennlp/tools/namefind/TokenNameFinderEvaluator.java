@@ -18,7 +18,14 @@
 
 package opennlp.tools.namefind;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.tools.util.FMeasureEvaluator;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
 
 /**
@@ -70,6 +77,35 @@ public class TokenNameFinderEvaluator extends FMeasureEvaluator<NameSample> {
     if (reference.getNames().length > 0) {
       recallScore.add(FMeasureEvaluator.recall(reference.getNames(),
           predictedNames));
+    }
+  }
+  
+  public static void main(String[] args) throws IOException, InvalidFormatException{
+    
+    if (args.length == 4) {
+      
+      System.out.println("Loading name finder model ...");
+      InputStream modelIn = new FileInputStream(args[3]);
+      
+      TokenNameFinderModel model = TokenNameFinderModel.create(modelIn);
+      
+      TokenNameFinder nameFinder = new NameFinderME(model);
+      
+      System.out.println("Performing evaluation ...");
+      TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(nameFinder);
+      
+      NameSampleDataStream sampleStream = new NameSampleDataStream(
+          new PlainTextByLineDataStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
+      
+      evaluator.evaluate(sampleStream);
+      
+      System.out.println();
+      System.out.println("F-Measure: " + evaluator.getFMeasure());
+      System.out.println("Recall: " + evaluator.getRecallScore());
+      System.out.println("Precision: " + evaluator.getPrecisionScore());
+    }
+    else {
+      // usage: -encoding code test.file model.file
     }
   }
 }

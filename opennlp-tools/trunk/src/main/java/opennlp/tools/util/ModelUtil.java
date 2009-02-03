@@ -18,8 +18,10 @@
 
 package opennlp.tools.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -84,5 +86,28 @@ public final class ModelUtil {
     }
 
     return result;
+  }
+  
+  /**
+   * Writes the provided {@link InputStream} into a byte array
+   * which is returned
+   * 
+   * @param in stream to read data for the byte array from
+   * @return byte array with the contents of the stream
+   * 
+   * @throws IOException if an exception is thrown while reading
+   *     from the provided {@link InputStream}
+   */
+  public static byte[] read(InputStream in) throws IOException {
+    ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
+
+    int length;
+    byte buffer[] = new byte[1024];
+    while ((length = in.read(buffer)) > 0) {
+      byteArrayOut.write(buffer, 0, length);
+    }
+    byteArrayOut.close();
+
+    return byteArrayOut.toByteArray();
   }
 }
