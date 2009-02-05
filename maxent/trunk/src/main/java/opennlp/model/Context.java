@@ -18,9 +18,9 @@
 package opennlp.model;
 
 /**
- * Class which associates a real valueed parameter or expected value with a particular contextual
- * predicate or feature.  This is used to store maxent model parameters as well as model and emperical
- * expected values.  
+ * Class which associates a real valued parameter or expected value with a particular contextual
+ * predicate or feature.  This is used to store maxent model parameters as well as model and empirical
+ * expected values.
  * @author Tom Morton
  *
  */
@@ -32,10 +32,10 @@ public class Context {
   protected int[] outcomes;
   
   /**
-   * Creates a new parametes object with the specifed parameters associated with the specified
+   * Creates a new parameters object with the specified parameters associated with the specified
    * outcome pattern.
    * @param outcomePattern Array of outcomes for which parameters exists for this context.
-   * @param parameters Paramaters for the outcomes specified.
+   * @param parameters Parameters for the outcomes specified.
    */
   public Context(int[] outcomePattern, double[] parameters) {
     this.outcomes = outcomePattern;
@@ -51,8 +51,8 @@ public class Context {
   }
   
   /**
-   * Returns the paramaters or expected values for the outcomes which occur with this context.
-   * @return Array of paramaters for the outcomes of this context.
+   * Returns the parameters or expected values for the outcomes which occur with this context.
+   * @return Array of parameters for the outcomes of this context.
    */
   public double[] getParameters() {
     return parameters;
