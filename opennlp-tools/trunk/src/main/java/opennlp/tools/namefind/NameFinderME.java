@@ -60,14 +60,18 @@ public class NameFinderME implements TokenNameFinder {
 
     public boolean validSequence(int i, String[] inputSequence,
         String[] outcomesSequence, String outcome) {
+      
       if (outcome.equals(CONTINUE)) {
+        
         int li = outcomesSequence.length - 1;
+        
         if (li == -1) {
           return false;
         } else if (outcomesSequence[li].equals(OTHER)) {
           return false;
         }
       }
+      
       return true;
     }
   }
@@ -101,9 +105,9 @@ public class NameFinderME implements TokenNameFinder {
 
     contextGenerator.addFeatureGenerator(
           new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
+    
     beam = new BeamSearch<String>(beamSize, contextGenerator, this.model,
         new NameFinderSequenceValidator(), beamSize);
-
   }
 
   /**
@@ -193,7 +197,7 @@ public class NameFinderME implements TokenNameFinder {
       spans.add(new Span(start,end));
     }
 
-    return (Span[]) spans.toArray(new Span[spans.size()]);
+    return spans.toArray(new Span[spans.size()]);
   }
 
   /**
@@ -240,20 +244,26 @@ public class NameFinderME implements TokenNameFinder {
     * @return an array of probabilities for each of the specified spans.
     */
    public double[] probs(Span[] spans) {
+     
      double[] sprobs = new double[spans.length];
      double[] probs = bestSequence.getProbs();
+     
      for (int si=0;si<spans.length;si++) {
+       
        double p = 1;
-       for (int oi=spans[si].getStart();oi<spans[si].getEnd();oi++) {
-         p*=probs[oi];
+       
+       for (int oi = spans[si].getStart(); oi < spans[si].getEnd(); oi++) {
+         p *= probs[oi];
        }
+       
        sprobs[si] = p;
      }
+     
      return sprobs;
    }
 
-   public static TokenNameFinderModel train(Iterator<NameSample> samples, InputStream descriptorIn,
-       Map<String, byte[]> resources) throws IOException, InvalidFormatException {
+   public static TokenNameFinderModel train(String languageCode, Iterator<NameSample> samples, InputStream descriptorIn,
+       Map<String, Object> resources) throws IOException, InvalidFormatException {
 
      byte descriptorBytes[] = ModelUtil.read(descriptorIn);
      
@@ -265,7 +275,7 @@ public class NameFinderME implements TokenNameFinder {
 
      AbstractModel nameFinderModel = GIS.trainModel(100, new TwoPassDataIndexer(eventStream, 5));
 
-     return new TokenNameFinderModel(nameFinderModel,
+     return new TokenNameFinderModel(languageCode, nameFinderModel,
          new ByteArrayInputStream(descriptorBytes), resources);
    }
 
@@ -276,7 +286,9 @@ public class NameFinderME implements TokenNameFinder {
 
   /**
    * Trains a new named entity model on the specified training file using the specified encoding to read it in.
+   * 
    * @param args [-encoding encoding] training_file model_file
+   * 
    * @throws java.io.IOException
    */
   public static void main(String[] args) throws IOException, InvalidFormatException {
@@ -292,7 +304,7 @@ public class NameFinderME implements TokenNameFinder {
       InputStream descriptorIn = new FileInputStream(args[3]);
       
       TokenNameFinderModel model = 
-          NameFinderME.train(sampleStream, descriptorIn, new HashMap<String, byte[]>());
+          NameFinderME.train("x-unspecified", sampleStream, descriptorIn, new HashMap<String, Object>());
       
       model.serialize(new FileOutputStream(args[4]));
       

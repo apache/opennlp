@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-package opennlp.tools.util.featuregen;
 
-import java.io.InputStream;
+package opennlp.tools.util.featuregen;
 
 /**
  * The {@link FactoryResourceManager} is responsible to provide resources
@@ -31,7 +30,7 @@ public interface FactoryResourceManager {
    *
    * @param key - the key identifies the resource
    *
-   * @return an {@link InputStream} to read the resource from.
+   * @return the resource
    */
-  InputStream getResource(String key);
+  Object getResource(String key);
 }

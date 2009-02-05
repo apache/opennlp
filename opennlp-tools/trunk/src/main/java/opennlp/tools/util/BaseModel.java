@@ -212,14 +212,18 @@ public abstract class BaseModel {
   }
 
   /**
-   * Creates all {@link ArtifactSerializer}. Extend
-   * this method to create custom {@link ArtifactSerializer}s.
+   * Registers all {@link ArtifactSerializer} for their artifact file name extensions.
+   * The registered {@link ArtifactSerializer} are used to create and serialize
+   * resources in the model package.
+   * 
+   * Override this method to register custom {@link ArtifactSerializer}s.
    *
    * Note:
    * Subclasses should generally invoke super.createArtifactSerializers at the beginning
    * of this method.
    *
-   * @param serializers
+   * @param serializers the key of the map is the file extension used to lookup
+   *     the {@link ArtifactSerializer}.
    */
   @SuppressWarnings("unchecked")
   protected void createArtifactSerializers(

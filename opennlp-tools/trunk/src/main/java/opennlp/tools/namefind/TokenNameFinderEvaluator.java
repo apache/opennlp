@@ -87,7 +87,7 @@ public class TokenNameFinderEvaluator extends FMeasureEvaluator<NameSample> {
       System.out.println("Loading name finder model ...");
       InputStream modelIn = new FileInputStream(args[3]);
       
-      TokenNameFinderModel model = TokenNameFinderModel.create(modelIn);
+      TokenNameFinderModel model = new TokenNameFinderModel(modelIn);
       
       TokenNameFinder nameFinder = new NameFinderME(model);
       
