@@ -22,7 +22,7 @@ package opennlp.model;
 public interface DataIndexer {
   /**
    * Returns the array of predicates seen in each event. 
-   * @return a 2-D array whose first dimenstion is the event index and array this refers to contains
+   * @return a 2-D array whose first dimension is the event index and array this refers to contains
    * the contexts for that event. 
    */
   public int[][] getContexts();
