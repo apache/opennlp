@@ -39,7 +39,7 @@ public abstract class AbstractModel implements MaxentModel {
 
   public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames, int correctionConstant,double correctionParam) {
     init(predLabels,outcomeNames);
-    this.evalParams = new EvalParameters(params,correctionConstant,correctionParam,ocNames.length);
+    this.evalParams = new EvalParameters(params,correctionParam,correctionConstant,ocNames.length);
   }
   
   private void init(String[] predLabels, String[] outcomeNames){

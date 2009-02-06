@@ -23,9 +23,9 @@ public class RealValueModelTest extends TestCase {
 
     assertEquals(realResults.length, repeatResults.length);
     for(int i=0; i<realResults.length; i++) {
-      assertEquals(realResults[i], repeatResults[i], 0.01f);
       System.out.println(String.format("classifiy with realModel: %1$s = %2$f", realModel.getOutcome(i), realResults[i]));
       System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f", repeatModel.getOutcome(i), repeatResults[i]));
+      assertEquals(realResults[i], repeatResults[i], 0.01f);
     }
 
     features2Classify = new String[] {"feature1","feature2","feature3","feature4","feature5"};
@@ -35,9 +35,9 @@ public class RealValueModelTest extends TestCase {
     System.out.println();
     assertEquals(realResults.length, repeatResults.length);
     for(int i=0; i<realResults.length; i++) {
-      assertEquals(realResults[i], repeatResults[i], 0.01f);
       System.out.println(String.format("classifiy with realModel: %1$s = %2$f", realModel.getOutcome(i), realResults[i]));
       System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f", repeatModel.getOutcome(i), repeatResults[i]));
+      assertEquals(realResults[i], repeatResults[i], 0.01f);      
     }
 
   }
