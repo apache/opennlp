@@ -345,7 +345,7 @@ public class Parser extends AbstractBottomUpParser {
   }
 
   public static void main(String[] args) throws java.io.IOException, InvalidFormatException {
-    if (args.length < 3) {
+    if (args.length < 2) {
       usage();
       System.exit(1);
     }
