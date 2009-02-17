@@ -18,51 +18,20 @@
 
 package opennlp.tools.util.featuregen;
 
-import java.util.List;
-
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.namefind.DictionaryNameFinder;
-import opennlp.tools.namefind.TokenNameFinder;
-import opennlp.tools.util.Span;
 
 /**
- * Generates features if the tokens are contained in the dictionary.
+ * The {@link DictionaryFeatureGenerator} uses the {@link DictionaryNameFinder}
+ * to generated features for detected names based on the {@link InSpanGenerator}.
+ * 
+ * @see Dictionary
+ * @see DictionaryNameFinder
+ * @see InSpanGenerator
  */
-public class DictionaryFeatureGenerator extends FeatureGeneratorAdapter {
+public class DictionaryFeatureGenerator extends InSpanGenerator {
 
-  private TokenNameFinder mFinder;
-
-  private String mCurrentSentence[];
-
-  private Span mCurrentNames[];
-
-  /**
-   * Initializes the current instance. Pass in an instance of
-   * the {@link DictionaryNameFinder}.
-   *
-   * @param dictionary
-   */
-  public DictionaryFeatureGenerator(TokenNameFinder finder) {
-    mFinder = finder;
-  }
-
-  public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
-    // cache results sentence
-    if (mCurrentSentence != tokens) {
-      mCurrentSentence = tokens;
-      mCurrentNames = mFinder.find(tokens);
-    }
-
-    // iterate over names and check if a span is contained
-    for (int i = 0; i < mCurrentNames.length; i++) {
-      if (mCurrentNames[i].contains(index)) {
-        // found a span for the current token
-        features.add("w=dic");
-        features.add("w=dic=" + tokens[index]);
-
-        // TODO: consider generation start and continuation features
-
-        break;
-      }
-    }
+  public DictionaryFeatureGenerator(String prefix, Dictionary dict) {
+    super(prefix, new DictionaryNameFinder(dict));
   }
 }
