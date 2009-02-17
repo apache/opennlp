@@ -15,21 +15,20 @@
  * limitations under the License.
  */
 
+
 package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
-
-
 /**
  * The definition feature maps the underlying distribution of outcomes.
  */
-public class DefinitionFeatureGenerator extends FeatureGeneratorAdapter {
+public class OutcomePriorFeatureGenerator extends FeatureGeneratorAdapter {
 
-  public static final String DEFINITION_FEATURE = "definition";
+  public static final String OUTCOME_PRIOR_FEATURE = "outcome-prior";
 
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
-    features.add(DEFINITION_FEATURE);
+    features.add(OUTCOME_PRIOR_FEATURE);
   }
 }
