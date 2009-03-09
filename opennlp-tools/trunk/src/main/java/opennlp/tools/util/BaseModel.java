@@ -50,7 +50,7 @@ public abstract class BaseModel {
      *
      * The {@link InputStream} remains open.
      *
-     * @return
+     * @return T
      *
      * @throws IOException
      * @throws InvalidFormatException
