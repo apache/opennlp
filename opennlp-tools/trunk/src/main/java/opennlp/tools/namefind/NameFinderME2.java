@@ -37,13 +37,14 @@ import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
+import opennlp.tools.util.featuregen.DictionaryFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -257,6 +258,9 @@ public class NameFinderME2 implements TokenNameFinder {
 
    public static TokenNameFinderModel train(String languageCode, Iterator<NameSample> samples, InputStream descriptorIn, Resource resource,Map<String, Object> resources) throws IOException, InvalidFormatException {
      ConfigurableListableBeanFactory factory = new XmlBeanFactory(resource);
+     DictionaryFeatureGenerator dictFeatureGenerator =  (DictionaryFeatureGenerator) factory.getBean("dictFeatureGenerator");
+     Dictionary dict = (Dictionary) resources.get("dict");
+     dictFeatureGenerator.setDictionary(dict);
      NameContextGenerator generator =  (NameContextGenerator) factory.getBean("nameContextGenerator");
      EventStream eventStream = new NameFinderEventStream(samples, generator);
      AbstractModel nameFinderModel = GIS.trainModel(100, new TwoPassDataIndexer(eventStream, 5));

@@ -34,6 +34,8 @@
     </list>
     </constructor-arg>
   </bean>
+  
+  <bean id="dictFeatureGenerator" class="opennlp.tools.util.featuregen.DictionaryFeatureGenerator"/>
 
   <bean id="prevMapFeatureGenerator" class="opennlp.tools.util.featuregen.PreviousMapFeatureGenerator" />
 
@@ -42,6 +44,7 @@
     <list>
       <ref bean="cacheFeatureGenerator"/>
       <ref bean="prevMapFeatureGenerator"/>
+      <ref bean="dictFeatureGeneator"/>
     </list>
     </constructor-arg>
   </bean>
