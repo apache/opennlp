@@ -41,7 +41,7 @@ public class FactoryTest extends TestCase {
   public void testCreation() throws Exception {
 
     Collection<String> expectedGenerators = new ArrayList<String>();
-    expectedGenerators.add(DefinitionFeatureGenerator.class.getName());
+    expectedGenerators.add(OutcomePriorFeatureGenerator.class.getName());
 
     AggregatedFeatureGenerator aggregatedGenerator =
       (AggregatedFeatureGenerator) Factory.create(generatorDescriptorIn, null);

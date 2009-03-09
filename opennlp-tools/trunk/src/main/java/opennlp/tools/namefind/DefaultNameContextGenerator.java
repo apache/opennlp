@@ -22,8 +22,8 @@ import java.util.List;
 
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.CachedFeatureGenerator;
-import opennlp.tools.util.featuregen.DefinitionFeatureGenerator;
 import opennlp.tools.util.featuregen.FeatureGeneratorUtil;
+import opennlp.tools.util.featuregen.OutcomePriorFeatureGenerator;
 import opennlp.tools.util.featuregen.PreviousMapFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenFeatureGenerator;
@@ -33,7 +33,7 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  * Class for determining contextual features for a tag/chunk style
  * named-entity recognizer.
  *
- * @version $Revision: 1.2 $, $Date: 2009-01-24 01:32:19 $
+ * @version $Revision: 1.3 $, $Date: 2009-03-09 03:10:51 $
  */
 public class DefaultNameContextGenerator implements NameContextGenerator {
 
@@ -43,7 +43,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
       new AdaptiveFeatureGenerator[]{
       new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
       new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
-      new DefinitionFeatureGenerator()
+      new OutcomePriorFeatureGenerator()
       });
 
   /**

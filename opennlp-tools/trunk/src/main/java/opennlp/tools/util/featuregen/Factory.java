@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
  *     <window prevLength = "3" nextLength = "3">
  *       <generators>
  *         <prevmap/>
- *         <sentence/>Ê
+ *         <sentence/>ï¿½
  *         <tokenclass/>
  *         <tokenpattern/>
  *       </generators>
@@ -216,7 +216,7 @@ public class Factory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
         FactoryResourceManager resourceManager) throws InvalidFormatException {
-      return new DefinitionFeatureGenerator();
+      return new OutcomePriorFeatureGenerator();
     }
 
     static void register(Map<String, FeatureGeneratorFactory> factoryMap) {
