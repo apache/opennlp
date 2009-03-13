@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+
 package opennlp.tools.util.featuregen;
 
 import java.util.ArrayList;
@@ -36,10 +37,15 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
   /**
    * Initializes the current instance.
    *
-   * @param generators
+   * @param generators array of generators, null values are not permitted
    */
   public AggregatedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
 
+    for (AdaptiveFeatureGenerator generator : generators) {
+      if (generator == null)
+        throw new IllegalArgumentException("null values in generators are not permitted!");
+    }
+    
     this.generators = new ArrayList<AdaptiveFeatureGenerator>(generators.length);
 
     Collections.addAll(this.generators, generators);

@@ -28,7 +28,7 @@ import opennlp.tools.util.Cache;
  */
 public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private final AdaptiveFeatureGenerator generators[];
+  private final AdaptiveFeatureGenerator generator;
 
   private String[] prevTokens;
 
@@ -38,7 +38,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
   private long numberOfCacheMisses;
 
   public CachedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
-    this.generators = generators;
+    this.generator = new AggregatedFeatureGenerator(generators);
     contextsCache = new Cache(100);
   }
 
@@ -66,21 +66,18 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
     numberOfCacheMisses++;
 
-    for (int i = 0; i < generators.length; i++)
-      generators[i].createFeatures(cacheFeatures, tokens, index, previousOutcomes);
+    generator.createFeatures(cacheFeatures, tokens, index, previousOutcomes);
 
     contextsCache.put(new Integer(index), cacheFeatures);
     features.addAll(cacheFeatures);
   }
 
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
-    for (int i = 0; i < generators.length; i++)
-      generators[i].updateAdaptiveData(tokens, outcomes);
+    generator.updateAdaptiveData(tokens, outcomes);
   }
 
   public void clearAdaptiveData() {
-    for (int i = 0; i < generators.length; i++)
-      generators[i].clearAdaptiveData();
+    generator.clearAdaptiveData();
   }
 
   /**
@@ -103,6 +100,6 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
   public String toString() {
     return super.toString()+": hits=" + numberOfCacheHits+" misses="+ numberOfCacheMisses+" hit%"+ (numberOfCacheHits > 0 ?
-        (double)numberOfCacheHits/(numberOfCacheMisses+numberOfCacheHits) : 0);
+        (double) numberOfCacheHits/(numberOfCacheMisses+numberOfCacheHits) : 0);
   }
 }
