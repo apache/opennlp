@@ -35,15 +35,22 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+	
 	<scm>
+		<connection>scm:cvs:pserver:anonymous:@opennlp.cvs.sourceforge.net:/cvsroot/opennlp:opennlp</connection>
 		<url>http://opennlp.cvs.sourceforge.net/viewvc/opennlp/</url>
 	</scm>
 
+	<issueManagement>
+	  <system>sourceforge</system>
+	  <url>http://sourceforge.net/tracker/?group_id=3368</url>
+	</issueManagement>
+
 	<repositories>
 		<repository>
-			<id>ANCRepository</id>
+			<id>OpenNLPRepository</id>
 			<url>
-				http://www.anc.org/maven/thirdparty
+				http://opennlp.sourceforge.net/maven2
 			</url>
 		</repository>
 	</repositories>
@@ -69,11 +76,6 @@
 			<version>1.4.1</version>
 			<scope>compile</scope>
 		</dependency>
-		<dependency>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring</artifactId>
-                        <version>2.0.8</version>
-                </dependency>
 	</dependencies>
 
 	<pluginRepositories>
