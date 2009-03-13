@@ -68,9 +68,6 @@ public class TokenNameFinderModel extends BaseModel {
 
   private static Logger logger =
         Logger.getLogger(TokenNameFinderModel.class.getName());
-
-  private byte featureGeneratorFactoryClassBytes[];
-  
   
   // TODO: Test create generators, to see if they are valid
   public TokenNameFinderModel(String languageCode, AbstractModel nameFinderModel,
@@ -84,24 +81,10 @@ public class TokenNameFinderModel extends BaseModel {
 
     artifactMap.put(MAXENT_MODEL_ENTRY_NAME, nameFinderModel);
 
-    // The Class resouce handling is a bit tricky because it is not possible
-    // to create a .class file from a Class object.
-    // The ClassSerializer is asked to write out the FeatureGeneratorFactory,
-    // instead of serializing the Class object it serializes a byte array which
-    // was remembered on loading the Class from an InputStream
+    ArtifactSerializer<FeatureGeneratorFactory> factorySerializer = 
+        getArtifactSerializer(GENERATOR_DESCRIPTOR_ENTRY_NAME);
     
-    // If we initialize 
-    // In this constructor the serializer will only be asked to write the
-    // Class object out, thats why the bytes are stored in a field
-    // and then passed to the serializer in the createArtifactSerializer method.
-    
-    featureGeneratorFactoryClassBytes = ModelUtil.read(generatorDescriptorIn);
-    
-    FeatureGeneratorFactorySerializer factorySerializer = 
-        new FeatureGeneratorFactorySerializer();
-    
-    FeatureGeneratorFactory factory = 
-        factorySerializer.create(new ByteArrayInputStream(featureGeneratorFactoryClassBytes));
+    FeatureGeneratorFactory factory = factorySerializer.create(generatorDescriptorIn);
     
     artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, factory);
     
@@ -173,13 +156,7 @@ public class TokenNameFinderModel extends BaseModel {
     
     FeatureGeneratorFactorySerializer factorySerializer;
     
-    if (featureGeneratorFactoryClassBytes != null) {
-      factorySerializer = new FeatureGeneratorFactorySerializer(
-          featureGeneratorFactoryClassBytes);
-    }
-    else {
-      factorySerializer = new FeatureGeneratorFactorySerializer();
-    }
+    factorySerializer = new FeatureGeneratorFactorySerializer();
     
     serializers.put("class", factorySerializer);
   }

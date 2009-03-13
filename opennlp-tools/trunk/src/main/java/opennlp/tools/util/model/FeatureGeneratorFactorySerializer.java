@@ -33,11 +33,6 @@ public class FeatureGeneratorFactorySerializer
   public FeatureGeneratorFactorySerializer() {
     classSerializer = new ClassSerializer();
   }
-       
-  public FeatureGeneratorFactorySerializer(
-      byte[] featureGeneratorFactoryClassBytes) {
-    classSerializer = new ClassSerializer(featureGeneratorFactoryClassBytes);
-  }
 
   public FeatureGeneratorFactory create(InputStream in) throws IOException,
       InvalidFormatException {

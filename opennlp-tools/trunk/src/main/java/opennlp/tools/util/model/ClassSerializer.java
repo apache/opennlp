@@ -31,13 +31,6 @@ public class ClassSerializer implements ArtifactSerializer<Class> {
   
   private byte[] classBytes;
   
-  public ClassSerializer() {
-  }
-  
-  public ClassSerializer(byte[] featureGeneratorFactoryClassBytes) {
-    classBytes = featureGeneratorFactoryClassBytes;
-  }
-
   private static Class loadClass(final byte[] classBytes)
       throws InvalidFormatException {
 

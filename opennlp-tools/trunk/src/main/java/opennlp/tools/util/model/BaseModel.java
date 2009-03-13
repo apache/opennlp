@@ -35,12 +35,18 @@ import opennlp.tools.util.Version;
 /**
  * This model is a common based which can be used by the components
  * model classes.
+ * 
+ * TODO:
+ * Provide sub classes access to serializers already in constructor
  */
 public abstract class BaseModel {
 
   protected static final String MANIFEST_ENTRY = "manifest.properties";
   private static final String VERSION_PROPERTY = "version";
   private static final String LANGUAGE_PROPERTY = "language";
+  
+  private Map<String, ArtifactSerializer> artifactSerializers =
+      new HashMap<String, ArtifactSerializer>();
 
   protected final Map<String, Object> artifactMap;
 
@@ -55,7 +61,9 @@ public abstract class BaseModel {
         throw new IllegalArgumentException("languageCode must not be null!");
 
     artifactMap = new HashMap<String, Object>();
-
+    
+    createArtifactSerializers(artifactSerializers);
+    
     Properties manifest = new Properties();
     manifest.setProperty(LANGUAGE_PROPERTY, languageCode);
     manifest.setProperty(VERSION_PROPERTY, Version.currentVersion().toString());
@@ -123,6 +131,18 @@ public abstract class BaseModel {
     return entry.substring(extensionIndex);
   }
 
+  protected ArtifactSerializer getArtifactSerializer(String resoruceName) {
+    String extension = null;
+    try {
+      extension = getEntryExtension(resoruceName);
+    } catch (InvalidFormatException e) {
+      // TODO: throw runtime exception, error in model code
+      // sorry, will not fail, because the name was validated prior
+    }
+
+    return artifactSerializers.get(extension);  
+  }
+  
   /**
    * Registers all {@link ArtifactSerializer} for their artifact file name extensions.
    * The registered {@link ArtifactSerializer} are used to create and serialize
@@ -133,6 +153,8 @@ public abstract class BaseModel {
    * Note:
    * Subclasses should generally invoke super.createArtifactSerializers at the beginning
    * of this method.
+   * 
+   * This method is called during construction.
    *
    * @param serializers the key of the map is the file extension used to lookup
    *     the {@link ArtifactSerializer}.
@@ -223,21 +245,10 @@ public abstract class BaseModel {
   public void serialize(OutputStream out) throws IOException {
     ZipOutputStream zip = new ZipOutputStream(out);
 
-    Map<String, ArtifactSerializer> factories = new HashMap<String, ArtifactSerializer>();
-    createArtifactSerializers(factories);
-
     for (String name : artifactMap.keySet()) {
       zip.putNextEntry(new ZipEntry(name));
 
-      String extension = null;
-      try {
-        extension = getEntryExtension(name);
-      } catch (InvalidFormatException e) {
-        // TODO: throw runtime exception, error in model code
-        // sorry, will not fail, because the name was validated prior
-      }
-
-      ArtifactSerializer serializer = factories.get(extension);
+      ArtifactSerializer serializer = getArtifactSerializer(name);
 
       // TODO: Check if serializer is there
 
