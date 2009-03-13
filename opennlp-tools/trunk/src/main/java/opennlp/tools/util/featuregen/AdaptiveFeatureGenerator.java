@@ -23,6 +23,9 @@ import java.util.List;
 /**
  * An interface for generating features for name entity identification and for
  * updating document level contexts.
+ * 
+ * Most implementors do not need the adaptive functionality of this
+ * interface, they should extend the {@link FeatureGeneratorAdapter} class instead.
  */
 public interface AdaptiveFeatureGenerator {
 
