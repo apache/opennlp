@@ -16,32 +16,31 @@
  */
 
 
-package opennlp.tools.doccat;
+package opennlp.tools.util.model;
 
-import java.util.Collection;
-import java.util.LinkedList;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
 
-/**
- *
- */
-class DocumentCategorizerContextGenerator {
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.InvalidFormatException;
 
-  private FeatureGenerator[] mFeatureGenerators;
+class DictionarySerializer implements ArtifactSerializer<Dictionary> {
 
-  DocumentCategorizerContextGenerator(FeatureGenerator... featureGenerators) {
-    mFeatureGenerators = featureGenerators;
+  public Dictionary create(InputStream in) throws IOException,
+      InvalidFormatException {
+    // TODO: Attention stream is closed
+    return new Dictionary(in);
   }
 
-  public String[] getContext(String text[]) {
-
-    Collection<String> context = new LinkedList<String>();
-
-    for (int i = 0; i < mFeatureGenerators.length; i++) {
-      Collection<String> extractedFeatures =
-          mFeatureGenerators[i].extractFeatures(text);
-      context.addAll(extractedFeatures);
-    }
-
-    return context.toArray(new String[context.size()]);
+  public void serialize(Dictionary dictionary, OutputStream out)
+      throws IOException {
+    dictionary.serialize(out);
   }
+
+  @SuppressWarnings("unchecked")
+  static void register(Map<String, ArtifactSerializer> factories) {
+    factories.put("dictionary", new DictionarySerializer());
+   }
 }

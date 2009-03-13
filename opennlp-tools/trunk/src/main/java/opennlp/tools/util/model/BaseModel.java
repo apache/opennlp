@@ -16,7 +16,7 @@
  */
 
 
-package opennlp.tools.util;
+package opennlp.tools.util.model;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,102 +29,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import opennlp.model.AbstractModel;
-import opennlp.model.BinaryFileDataReader;
-import opennlp.model.GenericModelReader;
-import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.Version;
 
 /**
  * This model is a common based which can be used by the components
  * model classes.
  */
 public abstract class BaseModel {
-
-  /**
-   * Responsible to create an artifact from an {@link InputStream}.
-   */
-  protected interface ArtifactSerializer<T> {
-
-    /**
-     * Creates the artifact from the provided {@link InputStream}.
-     *
-     * The {@link InputStream} remains open.
-     *
-     * @return T
-     *
-     * @throws IOException
-     * @throws InvalidFormatException
-     */
-    T create(InputStream in) throws IOException, InvalidFormatException;
-
-    /**
-     * Serializes the artifact to the provided {@link OutputStream}.
-     *
-     * The {@link OutputStream} remains open.
-     *
-     * @param artifact
-     * @param out
-     * @throws IOException
-     */
-    void serialize(T artifact, OutputStream out) throws IOException;
-  }
-
-  private static class GenericModelSerializer implements ArtifactSerializer<AbstractModel> {
-
-    public AbstractModel create(InputStream in) throws IOException,
-        InvalidFormatException {
-      return new GenericModelReader(new BinaryFileDataReader(in)).getModel();
-    }
-
-    public void serialize(AbstractModel artifact, OutputStream out) throws IOException {
-      ModelUtil.writeModel(artifact, out);
-    }
-
-    @SuppressWarnings("unchecked")
-    static void register(Map<String, ArtifactSerializer> factories) {
-     factories.put("model", new GenericModelSerializer());
-    }
-
-  }
-
-  private static class PropertiesSerializer implements ArtifactSerializer<Properties> {
-
-    public Properties create(InputStream in) throws IOException,
-        InvalidFormatException {
-      Properties properties = new Properties();
-      properties.load(in);
-
-      return properties;
-    }
-
-    public void serialize(Properties properties, OutputStream out) throws IOException {
-      properties.store(out, "");
-    }
-
-    @SuppressWarnings("unchecked")
-    static void register(Map<String, ArtifactSerializer> factories) {
-      factories.put("properties", new PropertiesSerializer());
-     }
-  }
-
-  private static class DictionarySerializer implements ArtifactSerializer<Dictionary> {
-
-    public Dictionary create(InputStream in) throws IOException,
-        InvalidFormatException {
-      // TODO: Attention stream is closed
-      return new Dictionary(in);
-    }
-
-    public void serialize(Dictionary dictionary, OutputStream out)
-        throws IOException {
-      dictionary.serialize(out);
-    }
-
-    @SuppressWarnings("unchecked")
-    static void register(Map<String, ArtifactSerializer> factories) {
-      factories.put("dictionary", new DictionarySerializer());
-     }
-  }
 
   protected static final String MANIFEST_ENTRY = "manifest.properties";
   private static final String VERSION_PROPERTY = "version";

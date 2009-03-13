@@ -27,8 +27,8 @@ import java.io.InputStream;
 import opennlp.model.AbstractModel;
 import opennlp.model.BinaryFileDataReader;
 import opennlp.model.GenericModelReader;
-import opennlp.tools.util.BaseModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * The {@link ChunkerModel} is the model used

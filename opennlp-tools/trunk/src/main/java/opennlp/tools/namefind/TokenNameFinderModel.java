@@ -23,18 +23,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
-import opennlp.tools.util.BaseModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
-import opennlp.tools.util.featuregen.Factory;
-import opennlp.tools.util.featuregen.FactoryResourceManager;
+import opennlp.tools.util.featuregen.FeatureGeneratorFactory;
+import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
+import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.FeatureGeneratorFactorySerializer;
 
 /**
  * The {@link TokenNameFinderModel} is the model used
@@ -59,14 +60,21 @@ public class TokenNameFinderModel extends BaseModel {
   
   private static final String MAXENT_MODEL_ENTRY_NAME = "nameFinder.model";
 
-  private static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
+  /**
+   * The name of the {@link FeatureGeneratorFactory} implementation class resource. The name
+   * must not match the actual class name, but the class must implement the interface.
+   */
+  private static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "GeneratorFactory.class";
 
   private static Logger logger =
         Logger.getLogger(TokenNameFinderModel.class.getName());
 
+  private byte featureGeneratorFactoryClassBytes[];
+  
+  
   // TODO: Test create generators, to see if they are valid
   public TokenNameFinderModel(String languageCode, AbstractModel nameFinderModel,
-      InputStream generatorDescriptorIn, Map<String, Object> resources) throws IOException {
+      InputStream generatorDescriptorIn, Map<String, Object> resources) throws IOException, InvalidFormatException {
     
     super(languageCode);
     
@@ -76,7 +84,26 @@ public class TokenNameFinderModel extends BaseModel {
 
     artifactMap.put(MAXENT_MODEL_ENTRY_NAME, nameFinderModel);
 
-    artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, ModelUtil.read(generatorDescriptorIn));
+    // The Class resouce handling is a bit tricky because it is not possible
+    // to create a .class file from a Class object.
+    // The ClassSerializer is asked to write out the FeatureGeneratorFactory,
+    // instead of serializing the Class object it serializes a byte array which
+    // was remembered on loading the Class from an InputStream
+    
+    // If we initialize 
+    // In this constructor the serializer will only be asked to write the
+    // Class object out, thats why the bytes are stored in a field
+    // and then passed to the serializer in the createArtifactSerializer method.
+    
+    featureGeneratorFactoryClassBytes = ModelUtil.read(generatorDescriptorIn);
+    
+    FeatureGeneratorFactorySerializer factorySerializer = 
+        new FeatureGeneratorFactorySerializer();
+    
+    FeatureGeneratorFactory factory = 
+        factorySerializer.create(new ByteArrayInputStream(featureGeneratorFactoryClassBytes));
+    
+    artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, factory);
     
     // The resource map must not contain key which are already taken
     // like the name finder maxent model name
@@ -113,30 +140,18 @@ public class TokenNameFinderModel extends BaseModel {
    * @return
    */
   public AdaptiveFeatureGenerator createFeatureGenerators() {
+    
+   FeatureGeneratorFactory factory = (FeatureGeneratorFactory)
+       artifactMap.get(GENERATOR_DESCRIPTOR_ENTRY_NAME);
+    
+   FeatureGeneratorResourceProvider resourceProvider = new FeatureGeneratorResourceProvider() {
 
-    InputStream descriptorIn = new ByteArrayInputStream(
-        (byte[]) artifactMap.get(GENERATOR_DESCRIPTOR_ENTRY_NAME));
-
-    AdaptiveFeatureGenerator generator = null;
-    try {
-      generator = Factory.create(descriptorIn, new FactoryResourceManager() {
-
-        public Object getResource(String key) {
-          return artifactMap.get(key);
-        }
-      });
-    } catch (IOException e) {
-      logger.log(Level.SEVERE,
-          "Sorry, that reading from memory can go wrong.", e);
+    public Object getResource(String resourceIdentifier) {
+      return artifactMap.get(resourceIdentifier);
     }
-    catch (InvalidFormatException e) {
-      // that should never happend to test against invalid format the
-      // feature generators where created on instanciation
-      
-      // TODO: Log error
-    }
-
-    return generator;
+   };
+   
+   return factory.createFeatureGenerator(resourceProvider); 
   }
 
   private static boolean isModelValid(MaxentModel model) {
@@ -155,6 +170,18 @@ public class TokenNameFinderModel extends BaseModel {
     super.createArtifactSerializers(serializers);
     
     serializers.put("featuregen", new ByteArraySerializer());
+    
+    FeatureGeneratorFactorySerializer factorySerializer;
+    
+    if (featureGeneratorFactoryClassBytes != null) {
+      factorySerializer = new FeatureGeneratorFactorySerializer(
+          featureGeneratorFactoryClassBytes);
+    }
+    else {
+      factorySerializer = new FeatureGeneratorFactorySerializer();
+    }
+    
+    serializers.put("class", factorySerializer);
   }
   
   protected void validateArtifactMap() throws InvalidFormatException {
@@ -164,7 +191,7 @@ public class TokenNameFinderModel extends BaseModel {
       throw new InvalidFormatException("Token Name Finder model is incomplete!");
     }
     
-    if (!(artifactMap.get(GENERATOR_DESCRIPTOR_ENTRY_NAME) instanceof byte[])) {
+    if (!(artifactMap.get(GENERATOR_DESCRIPTOR_ENTRY_NAME) instanceof FeatureGeneratorFactory)) {
       throw new InvalidFormatException("Token Name Finder model is incomplete!");
     }
   }

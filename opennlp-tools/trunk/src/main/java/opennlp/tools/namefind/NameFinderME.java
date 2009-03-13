@@ -45,8 +45,10 @@ import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
-import opennlp.tools.util.featuregen.Factory;
+import opennlp.tools.util.featuregen.FeatureGeneratorFactory;
+import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
+import opennlp.tools.util.model.FeatureGeneratorFactorySerializer;
 
 /**
  * Class for creating a maximum-entropy-based name finder.
@@ -262,13 +264,23 @@ public class NameFinderME implements TokenNameFinder {
      return sprobs;
    }
 
-   public static TokenNameFinderModel train(String languageCode, Iterator<NameSample> samples, InputStream descriptorIn,
-       Map<String, Object> resources) throws IOException, InvalidFormatException {
+   public static TokenNameFinderModel train(String languageCode, Iterator<NameSample> samples, InputStream descriptorClassIn,
+       final Map<String, Object> resources) throws IOException, InvalidFormatException {
 
-     byte descriptorBytes[] = ModelUtil.read(descriptorIn);
+     byte descriptorBytes[] = ModelUtil.read(descriptorClassIn);
      
-     // TODO: create resource manager
-     AdaptiveFeatureGenerator generator = Factory.create(new ByteArrayInputStream(descriptorBytes), null);
+     FeatureGeneratorFactorySerializer generatorFactorySerializer = 
+         new FeatureGeneratorFactorySerializer();
+
+     FeatureGeneratorFactory factory = 
+         generatorFactorySerializer.create(new ByteArrayInputStream(descriptorBytes));
+     
+     AdaptiveFeatureGenerator generator = factory.createFeatureGenerator(
+         new FeatureGeneratorResourceProvider(){
+
+          public Object getResource(String resourceIdentifier) {
+            return resources.get(resourceIdentifier);
+          }});
 
      EventStream eventStream = new NameFinderEventStream(samples,
          new DefaultNameContextGenerator(generator));
@@ -294,7 +306,7 @@ public class NameFinderME implements TokenNameFinder {
   public static void main(String[] args) throws IOException, InvalidFormatException {
     
     // Encoding must be specified !!!
-    // -encoding code train.file featuregen.file model.file
+    // -encoding code train.file featuregen.class model.file
     
     if (args.length == 5) {
       

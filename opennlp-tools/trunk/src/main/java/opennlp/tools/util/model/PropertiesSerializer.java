@@ -16,21 +16,32 @@
  */
 
 
-package opennlp.tools.util.featuregen;
+package opennlp.tools.util.model;
 
-/**
- * The {@link FactoryResourceManager} is responsible to provide resources
- * during construction of the {@link AdaptiveFeatureGenerator} set by the
- * {@link Factory}.
- */
-public interface FactoryResourceManager {
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
+import java.util.Properties;
 
-  /**
-   * Looks up the resource for the provided key.
-   *
-   * @param key - the key identifies the resource
-   *
-   * @return the resource
-   */
-  Object getResource(String key);
+import opennlp.tools.util.InvalidFormatException;
+
+class PropertiesSerializer implements ArtifactSerializer<Properties> {
+
+  public Properties create(InputStream in) throws IOException,
+      InvalidFormatException {
+    Properties properties = new Properties();
+    properties.load(in);
+
+    return properties;
+  }
+
+  public void serialize(Properties properties, OutputStream out) throws IOException {
+    properties.store(out, "");
+  }
+
+  @SuppressWarnings("unchecked")
+  static void register(Map<String, ArtifactSerializer> factories) {
+    factories.put("properties", new PropertiesSerializer());
+   }
 }

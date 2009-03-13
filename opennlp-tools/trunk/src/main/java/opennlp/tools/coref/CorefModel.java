@@ -30,8 +30,8 @@ import java.util.zip.GZIPInputStream;
 import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.BaseModel;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.model.BaseModel;
 
 public class CorefModel extends BaseModel {
 

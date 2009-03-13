@@ -16,32 +16,25 @@
  */
 
 
-package opennlp.tools.doccat;
-
-import java.util.Collection;
-import java.util.LinkedList;
+package opennlp.tools.util.featuregen;
 
 /**
- *
+ * The {@link FeatureGeneratorResourceProvider} provides access to the resources
+ * provided in the model. Inside the model resources are identified by a
+ * name.
+ * 
+ * Note:
+ * This class is not be intended to be implemented by users.
+ * All implementing classes must be thread safe.
  */
-class DocumentCategorizerContextGenerator {
-
-  private FeatureGenerator[] mFeatureGenerators;
-
-  DocumentCategorizerContextGenerator(FeatureGenerator... featureGenerators) {
-    mFeatureGenerators = featureGenerators;
-  }
-
-  public String[] getContext(String text[]) {
-
-    Collection<String> context = new LinkedList<String>();
-
-    for (int i = 0; i < mFeatureGenerators.length; i++) {
-      Collection<String> extractedFeatures =
-          mFeatureGenerators[i].extractFeatures(text);
-      context.addAll(extractedFeatures);
-    }
-
-    return context.toArray(new String[context.size()]);
-  }
+public interface FeatureGeneratorResourceProvider {
+  
+  /**
+   * Retrieves the resource object for the given name/identifier.
+   * 
+   * @param resourceIdentifier the identifier which names the resource.
+   * 
+   * @return the resource object
+   */
+  Object getResource(String resourceIdentifier);
 }

@@ -29,8 +29,8 @@ import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelReader;
 import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.BaseModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * The {@link SentenceModel} is the model used

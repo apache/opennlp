@@ -29,9 +29,10 @@ import java.util.Map;
 import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelReader;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.BaseModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.UncloseableInputStream;
+import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * The {@link POSModel} is the model used

@@ -28,9 +28,9 @@ import java.io.OutputStream;
 import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
-import opennlp.tools.util.BaseModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ModelUtil;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * The {@link TokenizerModel} is the model used

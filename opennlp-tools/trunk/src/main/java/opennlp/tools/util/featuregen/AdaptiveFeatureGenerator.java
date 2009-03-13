@@ -26,6 +26,17 @@ import java.util.List;
  * 
  * Most implementors do not need the adaptive functionality of this
  * interface, they should extend the {@link FeatureGeneratorAdapter} class instead.
+ * 
+ * Note:
+ * Feature generation is not thread safe and a instance of a feature generator
+ * must only be called from one thread. The resources used by a feature
+ * generator are typically shared between man instances of features generators
+ * which are called from many threads and have to be thread safe.
+ * If that is not possible the {@link FeatureGeneratorFactory} must make a copy
+ * of the resource object for each feature generator instance.
+ * 
+ * @see FeatureGeneratorAdapter
+ * @see FeatureGeneratorFactory
  */
 public interface AdaptiveFeatureGenerator {
 
