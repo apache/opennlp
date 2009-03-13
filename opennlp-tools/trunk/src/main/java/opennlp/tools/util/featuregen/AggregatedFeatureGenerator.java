@@ -38,7 +38,7 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
    *
    * @param generators
    */
-  AggregatedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
+  public AggregatedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
 
     this.generators = new ArrayList<AdaptiveFeatureGenerator>(generators.length);
 
