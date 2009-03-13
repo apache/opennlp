@@ -21,9 +21,6 @@ package opennlp.tools.util;
 /**
  * This exception is thrown if the profile data stream has
  * an invalid format e.g. non valid xml.
- *
- * @author <a href="mailto:kottmann@gmail.com">Joern Kottmann</a>
- * @version $Revision: 1.2 $, $Date: 2009-01-24 01:32:18 $
  */
 public class InvalidFormatException extends Exception {
 
@@ -32,11 +29,15 @@ public class InvalidFormatException extends Exception {
   public InvalidFormatException() {
   }
 
-  public InvalidFormatException(String message, Throwable throwable) {
-    super(message, throwable);
-  }
-
   public InvalidFormatException(String message) {
     super(message);
+  }
+  
+  public InvalidFormatException(Throwable t) {
+    super(t);
+  }
+  
+  public InvalidFormatException(String message, Throwable t) {
+    super(message, t);
   }
 }
