@@ -34,6 +34,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class PerformanceMonitor {
 
+  private ScheduledExecutorService scheduler = 
+    Executors.newScheduledThreadPool(1);
+
   private final String unit;
   
   private ScheduledFuture<?> beeperHandle;
@@ -92,9 +95,6 @@ public class PerformanceMonitor {
       }
     }; 
     
-   ScheduledExecutorService scheduler = 
-      Executors.newScheduledThreadPool(1);
-   
    beeperHandle = scheduler.scheduleAtFixedRate(beeper, 1, 1, TimeUnit.SECONDS);
   }
   
@@ -104,6 +104,8 @@ public class PerformanceMonitor {
       // printing if there is one
       beeperHandle.cancel(false);
     }
+    
+    scheduler.shutdown();
     
     long timePassed = System.currentTimeMillis() - startTime;
     
