@@ -37,8 +37,11 @@ public class StringPattern {
 
   private final int pattern;
 
-  private StringPattern(int pattern) {
+  private final int digits;
+  
+  private StringPattern(int pattern, int digits) {
     this.pattern = pattern;
+    this.digits = digits;
   }
 
   public boolean isInitialCapitalLetter() {
@@ -57,6 +60,11 @@ public class StringPattern {
     return (pattern & ALL_DIGIT) > 0;
   }
 
+  // number of digits
+  public int digits() {
+    return digits;
+  }
+  
   public boolean containsPeriod() {
     return (pattern & CONTAINS_PERIOD) > 0;
   }
@@ -84,7 +92,9 @@ public class StringPattern {
   public static StringPattern recognize(String token) {
 
     int pattern = ALL_CAPITAL_LETTER | ALL_LOWERCASE_LETTER | ALL_DIGIT | ALL_LETTERS;
-
+    
+    int digits = 0;
+    
     for (int i = 0; i < token.length(); i++) {
       final char ch = token.charAt(i);
 
@@ -122,6 +132,7 @@ public class StringPattern {
 
         if (letterType == Character.DECIMAL_DIGIT_NUMBER) {
           pattern |= CONTAINS_DIGIT;
+          digits++;
         }
         else {
           pattern &= ~ALL_DIGIT;
@@ -150,6 +161,6 @@ public class StringPattern {
       }
     }
 
-    return new StringPattern(pattern);
+    return new StringPattern(pattern, digits);
   }
 }
