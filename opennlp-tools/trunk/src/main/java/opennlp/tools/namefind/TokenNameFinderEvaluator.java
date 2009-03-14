@@ -22,10 +22,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 
 import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.tools.util.FMeasureEvaluator;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.PerformanceMonitor;
 import opennlp.tools.util.Span;
 
 /**
@@ -94,10 +96,30 @@ public class TokenNameFinderEvaluator extends FMeasureEvaluator<NameSample> {
       System.out.println("Performing evaluation ...");
       TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(nameFinder);
       
-      NameSampleDataStream sampleStream = new NameSampleDataStream(
+      final NameSampleDataStream sampleStream = new NameSampleDataStream(
           new PlainTextByLineDataStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
       
-      evaluator.evaluate(sampleStream);
+      final PerformanceMonitor monitor = new PerformanceMonitor("Sentence");
+      
+      monitor.startPrinter();
+      
+      Iterator<NameSample> iterator = new Iterator<NameSample>() {
+        public boolean hasNext() {
+          return sampleStream.hasNext();
+        }
+
+        public NameSample next() {
+          monitor.incrementCounter();
+          return sampleStream.next();
+        }
+
+        public void remove() {
+        }
+      };
+      
+      evaluator.evaluate(iterator);
+      
+      monitor.stopPrinterAndPrintFinalResult();
       
       System.out.println();
       System.out.println("F-Measure: " + evaluator.getFMeasure());
