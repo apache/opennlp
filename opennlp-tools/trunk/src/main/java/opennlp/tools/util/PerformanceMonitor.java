@@ -87,7 +87,7 @@ public class PerformanceMonitor {
           averageThroughput = 0;
         }
         
-        System.out.printf("current: %.1f/s avg: %.1f/s total: %d %n", currentThroughput,
+        System.out.printf("current: %.1f " + unit + "/s avg: %.1f " + unit + "/s total: %d " + unit + "%n", currentThroughput,
             averageThroughput, counter);
 
         lastTimeStamp = System.currentTimeMillis();
@@ -120,8 +120,8 @@ public class PerformanceMonitor {
     System.out.println();
     System.out.println();
     
-    System.out.printf("Average: %.1f/s %n", average);
-    System.out.println("Total: " + counter);
+    System.out.printf("Average: %.1f " + unit +"/s %n", average);
+    System.out.println("Total: " + counter + " " + unit);
     System.out.println("Runtime: " + timePassed / 1000d + "s");
   }
 }

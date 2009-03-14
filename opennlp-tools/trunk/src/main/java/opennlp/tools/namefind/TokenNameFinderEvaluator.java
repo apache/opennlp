@@ -99,7 +99,7 @@ public class TokenNameFinderEvaluator extends FMeasureEvaluator<NameSample> {
       final NameSampleDataStream sampleStream = new NameSampleDataStream(
           new PlainTextByLineDataStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
       
-      final PerformanceMonitor monitor = new PerformanceMonitor("Sentence");
+      final PerformanceMonitor monitor = new PerformanceMonitor("sent");
       
       monitor.startPrinter();
       
