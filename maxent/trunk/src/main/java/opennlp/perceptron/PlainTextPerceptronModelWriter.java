@@ -1,20 +1,20 @@
-///////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2001 Jason Baldridge and Gann Bierner
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-//////////////////////////////////////////////////////////////////////////////   
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0 
+ * (the "License"); you may not use this file except in compliance with 
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package opennlp.perceptron;
 
 import java.io.BufferedWriter;
@@ -30,64 +30,61 @@ import opennlp.model.AbstractModel;
 
 /**
  * Model writer that saves models in plain text format.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.1 $, $Date: 2009-01-22 23:23:34 $
  */
 public class PlainTextPerceptronModelWriter extends PerceptronModelWriter {
-    BufferedWriter output;
-    
-   /**
-     * Constructor which takes a PerceptronModel and a File and prepares itself to
-     * write the model to that file. Detects whether the file is gzipped or not
-     * based on whether the suffix contains ".gz".
-     *
-     * @param model The PerceptronModel which is to be persisted.
-     * @param f The File in which the model is to be persisted.
-     */
-     public PlainTextPerceptronModelWriter (AbstractModel model, File f)
-	throws IOException, FileNotFoundException {
+  BufferedWriter output;
 
-	super(model);
-	if (f.getName().endsWith(".gz")) {
-	    output = new BufferedWriter(new OutputStreamWriter(
-  	                 new GZIPOutputStream(new FileOutputStream(f))));
-	}
-	else {
-	    output = new BufferedWriter(new FileWriter(f));
-	}
-    }
+  /**
+   * Constructor which takes a PerceptronModel and a File and prepares itself to
+   * write the model to that file. Detects whether the file is gzipped or not
+   * based on whether the suffix contains ".gz".
+   *
+   * @param model The PerceptronModel which is to be persisted.
+   * @param f The File in which the model is to be persisted.
+   */
+  public PlainTextPerceptronModelWriter (AbstractModel model, File f)
+  throws IOException, FileNotFoundException {
 
-   /**
-     * Constructor which takes a PerceptronModel and a BufferedWriter and prepares
-     * itself to write the model to that writer.
-     *
-     * @param model The PerceptronModel which is to be persisted.
-     * @param bw The BufferedWriter which will be used to persist the model.
-     */
-    public PlainTextPerceptronModelWriter (AbstractModel model, BufferedWriter bw) {
-	super(model);
-	output = bw;
+    super(model);
+    if (f.getName().endsWith(".gz")) {
+      output = new BufferedWriter(new OutputStreamWriter(
+          new GZIPOutputStream(new FileOutputStream(f))));
     }
+    else {
+      output = new BufferedWriter(new FileWriter(f));
+    }
+  }
 
-    public void writeUTF (String s) throws java.io.IOException {
-	output.write(s);
-	output.newLine();
-    }
+  /**
+   * Constructor which takes a PerceptronModel and a BufferedWriter and prepares
+   * itself to write the model to that writer.
+   *
+   * @param model The PerceptronModel which is to be persisted.
+   * @param bw The BufferedWriter which will be used to persist the model.
+   */
+  public PlainTextPerceptronModelWriter (AbstractModel model, BufferedWriter bw) {
+    super(model);
+    output = bw;
+  }
 
-    public void writeInt (int i) throws java.io.IOException {
-	output.write(Integer.toString(i));
-	output.newLine();
-    }
-    
-    public void writeDouble (double d) throws java.io.IOException {
-	output.write(Double.toString(d));
-	output.newLine();
-    }
+  public void writeUTF (String s) throws java.io.IOException {
+    output.write(s);
+    output.newLine();
+  }
 
-    public void close () throws java.io.IOException {
-	output.flush();
-	output.close();
-    }
-    
+  public void writeInt (int i) throws java.io.IOException {
+    output.write(Integer.toString(i));
+    output.newLine();
+  }
+
+  public void writeDouble (double d) throws java.io.IOException {
+    output.write(Double.toString(d));
+    output.newLine();
+  }
+
+  public void close () throws java.io.IOException {
+    output.flush();
+    output.close();
+  }
+
 }
