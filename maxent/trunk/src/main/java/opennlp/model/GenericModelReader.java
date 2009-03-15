@@ -35,4 +35,9 @@ public class GenericModelReader extends AbstractModelReader {
   public AbstractModel constructModel() throws IOException {
     return delegateModelReader.constructModel();
   }
+  
+  public static void main(String[] args) throws IOException {
+    AbstractModel m =  new GenericModelReader(new File(args[0])).getModel();
+    new GenericModelWriter( m, new File(args[1])).persist();
+  }
 }
