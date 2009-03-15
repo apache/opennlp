@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0 
  * (the "License"); you may not use this file except in compliance with 
@@ -27,7 +27,7 @@ import opennlp.model.Prior;
  * GISModels.
  *
  * @author  Jason Baldridge
- * @version $Revision: 1.1 $, $Date: 2009-01-22 23:23:34 $
+ * @version $Revision: 1.2 $, $Date: 2009-03-15 03:09:05 $
  */
 public class GIS {
     /**
@@ -166,7 +166,7 @@ public class GIS {
         return trainer.trainModel(iterations, indexer, modelPrior,cutoff);
       }
       else {
-        return trainer.trainModel(iterations, indexer,0);
+        return trainer.trainModel(iterations, indexer,cutoff);
       }
     }  
 }
