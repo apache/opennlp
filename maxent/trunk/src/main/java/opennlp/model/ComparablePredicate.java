@@ -23,41 +23,39 @@ package opennlp.model;
  * much more compact.
  *
  * @author      Jason Baldridge
- * @version $Revision: 1.1 $, $Date: 2009-01-22 23:23:33 $
+ * @version $Revision: 1.2 $, $Date: 2009-03-15 03:12:11 $
  */
-public class ComparablePredicate implements Comparable {
-    public String name;
-    public int[] outcomes;
-    public double[] params;
-    
-    public ComparablePredicate(String n, int[] ocs, double[] ps) {
-	name = n;
-	outcomes = ocs;
-	params = ps;
+public class ComparablePredicate implements Comparable<ComparablePredicate> {
+  public String name;
+  public int[] outcomes;
+  public double[] params;
+
+  public ComparablePredicate(String n, int[] ocs, double[] ps) {
+    name = n;
+    outcomes = ocs;
+    params = ps;
+  }
+
+  public int compareTo(ComparablePredicate cp) {
+    int smallerLength = (outcomes.length > cp.outcomes.length?
+        cp.outcomes.length : outcomes.length);
+
+    for (int i=0; i<smallerLength; i++) {
+      if (outcomes[i] < cp.outcomes[i]) return -1;
+      else if (outcomes[i] > cp.outcomes[i]) return 1;
     }
 
-    public int compareTo(Object o) {
-	ComparablePredicate cp = (ComparablePredicate)o;
+    if (outcomes.length < cp.outcomes.length) return -1;
+    else if (outcomes.length > cp.outcomes.length) return 1;
 
-	int smallerLength = (outcomes.length > cp.outcomes.length?
-			     cp.outcomes.length : outcomes.length);
+    return 0;
+  }
 
-	for (int i=0; i<smallerLength; i++) {
-	    if (outcomes[i] < cp.outcomes[i]) return -1;
-	    else if (outcomes[i] > cp.outcomes[i]) return 1;
-	}
-
-	if (outcomes.length < cp.outcomes.length) return -1;
-	else if (outcomes.length > cp.outcomes.length) return 1;
-
-	return 0;
-    }
-
-    public String toString() {
-	String s = "";
-	for (int i=0; i<outcomes.length; i++) s+= " "+outcomes[i];
-	return s;
-    }
+  public String toString() {
+    String s = "";
+    for (int i=0; i<outcomes.length; i++) s+= " "+outcomes[i];
+    return s;
+  }
 
 }
  
