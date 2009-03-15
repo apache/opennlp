@@ -1,14 +1,37 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0 
+ * (the "License"); you may not use this file except in compliance with 
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package opennlp.perceptron;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.DataIndexer;
 import opennlp.model.EvalParameters;
-import opennlp.model.EvalParameters;
 import opennlp.model.MutableContext;
-
+/**
+ * Trains models using the perceptron algorithm.  Each outcome is represented as
+ * a binary perceptron classifier.  This supports standard (integer) weighting as well
+ * average weighting as described in:
+ * Discriminative Training Methods for Hidden Markov Models: Theory and Experiments
+ * with the Perceptron Algorithm. Michael Collins, EMNLP 2002.
+ *
+ */
 public class PerceptronTrainer {
 
-  /** Number of unique events which occured in the event set. */
+  /** Number of unique events which occurred in the event set. */
   private int numUniqueEvents;
   /** Number of events in the event set. */
   private int numEvents;
@@ -100,11 +123,10 @@ public class PerceptronTrainer {
       allOutcomesPattern[oi] = oi;
     }
     
-    int numActiveOutcomes = numOutcomes;
     for (int pi = 0; pi < numPreds; pi++) {
-      params[pi] = new MutableContext(allOutcomesPattern,new double[numActiveOutcomes]);
-      if (useAverage) averageParams[pi] = new MutableContext(allOutcomesPattern,new double[numActiveOutcomes]);
-      for (int aoi=0;aoi<numActiveOutcomes;aoi++) {
+      params[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
+      if (useAverage) averageParams[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
+      for (int aoi=0;aoi<numOutcomes;aoi++) {
         params[pi].setParameter(aoi, 0.0);
         if (useAverage) averageParams[pi].setParameter(aoi, 0.0);
       }
@@ -140,17 +162,25 @@ public class PerceptronTrainer {
         display(i + ":  ");
       nextIteration(i);
     }
+    if (useAverage) {
+      trainingStats(averageParams);
+    }
+    else {
+      trainingStats(params);
+    }
     // kill a bunch of these big objects now that we don't need them
     numTimesEventsSeen = null;
     contexts = null;
   }
   
-  /* Compute one iteration of Perceptron and retutn log-likelihood.*/
+  /* Compute one iteration of Perceptron and return log-likelihood.*/
   private void nextIteration(int iteration) {
     iteration--; //move to 0-based index
     int numCorrect = 0;
     for (int ei = 0; ei < numUniqueEvents; ei++) {
+      //Arrays.sort(contexts[ei]); only needed for debugging
       for (int ni=0;ni<this.numTimesEventsSeen[ei];ni++) {
+        //System.err.print("contexts["+ei+"]=");for (int ci=0;ci<contexts[ei].length;ci++) { System.err.print(" "+contexts[ei][ci]+" ");} System.err.println();
         for (int oi = 0; oi < numOutcomes; oi++) {
           modelDistribution[oi] = 0;
         }
@@ -166,52 +196,40 @@ public class PerceptronTrainer {
             max = oi;
           }
         }
-        if (max == outcomeList[ei]) {
-          numCorrect += numTimesEventsSeen[ei];
+        boolean correct = max == outcomeList[ei]; 
+        if (correct) {
+          numCorrect ++;
         }
-        for (int oi = 0;oi<numOutcomes;oi++) {
-          if (oi == outcomeList[ei]) {
-            if (modelDistribution[oi] <= 0) {
-              for (int ci = 0; ci < contexts[ei].length; ci++) {
-                int pi = contexts[ei][ci];
-                if (values == null) {
-                  params[pi].updateParameter(oi, 1);
-                }
-                else {
-                  params[pi].updateParameter(oi, values[ei][ci]);
-                }
-                if (useAverage) {
-                  if (updates[pi][oi][VALUE] != 0) {
-                    averageParams[pi].updateParameter(oi,updates[pi][oi][VALUE]*(numEvents*(iteration-updates[pi][oi][ITER])+(ei-updates[pi][oi][EVENT])));
-                  }
-                  //System.err.println("updates["+pi+"]["+oi+"]=("+updates[pi][oi][ITER]+","+updates[pi][oi][EVENT]+","+updates[pi][oi][VALUE]+") + ("+iteration+","+ei+","+params[pi].getParameters()[oi]+") -> "+averageParams[pi].getParameters()[oi]);
-                  updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
-                  updates[pi][oi][ITER] = iteration;
-                  updates[pi][oi][EVENT] = ei;
-                }
-              }
+        if (!correct) {
+          int oi = outcomeList[ei];
+          for (int ci = 0; ci < contexts[ei].length; ci++) {
+            int pi = contexts[ei][ci];
+            if (values == null) {
+              params[pi].updateParameter(oi, 1);
+              params[pi].updateParameter(max,-1);
             }
-          }
-          else {
-            if (modelDistribution[oi] > 0) {
-              for (int ci = 0; ci < contexts[ei].length; ci++) {
-                int pi = contexts[ei][ci];
-                if (values == null) {
-                  params[pi].updateParameter(oi,-1);
-                }
-                else {
-                  params[pi].updateParameter(oi, values[ei][ci]*-1);
-                }
-                if (useAverage) {
-                  if (updates[pi][oi][VALUE] != 0) {
-                    averageParams[pi].updateParameter(oi,updates[pi][oi][VALUE]*(numEvents*(iteration-updates[pi][oi][ITER])+(ei-updates[pi][oi][EVENT])));
-                  }
-                  //System.err.println("updates["+pi+"]["+oi+"]=("+updates[pi][oi][ITER]+","+updates[pi][oi][EVENT]+","+updates[pi][oi][VALUE]+") + ("+iteration+","+ei+","+params[pi].getParameters()[oi]+") -> "+averageParams[pi].getParameters()[oi]);
-                  updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
-                  updates[pi][oi][ITER] = iteration;
-                  updates[pi][oi][EVENT] = ei;
-                }
+            else {
+              params[pi].updateParameter(oi, values[ei][ci]);
+              params[pi].updateParameter(max, values[ei][ci]*-1);
+            }
+            if (useAverage) {
+              if (updates[pi][oi][VALUE] != 0) {
+                averageParams[pi].updateParameter(oi,updates[pi][oi][VALUE]*(numEvents*(iteration-updates[pi][oi][ITER])+(ei-updates[pi][oi][EVENT])));
+                //System.err.println("p avp["+pi+"]."+oi+"="+averageParams[pi].getParameters()[oi]);
               }
+              //System.err.println("p updates["+pi+"]["+oi+"]=("+updates[pi][oi][ITER]+","+updates[pi][oi][EVENT]+","+updates[pi][oi][VALUE]+") + ("+iteration+","+ei+","+params[pi].getParameters()[oi]+") -> "+averageParams[pi].getParameters()[oi]);
+              updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
+              updates[pi][oi][ITER] = iteration;
+              updates[pi][oi][EVENT] = ei;
+              
+              if (updates[pi][max][VALUE] != 0) {
+                averageParams[pi].updateParameter(max,updates[pi][max][VALUE]*(numEvents*(iteration-updates[pi][max][ITER])+(ei-updates[pi][max][EVENT])));
+                //System.err.println("d avp["+pi+"]."+max+"="+averageParams[pi].getParameters()[max]);
+              }
+              //System.err.println(ei+" d updates["+pi+"]["+max+"]=("+updates[pi][max][ITER]+","+updates[pi][max][EVENT]+","+updates[pi][max][VALUE]+") + ("+iteration+","+ei+","+params[pi].getParameters()[max]+") -> "+averageParams[pi].getParameters()[max]);
+              updates[pi][max][VALUE] = (int) params[pi].getParameters()[max];
+              updates[pi][max][ITER] = iteration;
+              updates[pi][max][EVENT] = ei;
             }
           }
         }
@@ -234,6 +252,33 @@ public class PerceptronTrainer {
         }
       }
     }
-    display(". "+((double) numCorrect / numEvents) + "\n");
+    display(". ("+numCorrect+"/"+numEvents+") "+((double) numCorrect / numEvents) + "\n");
   }  
+  
+  private void trainingStats(MutableContext[] params) {
+    int numCorrect = 0;
+    for (int ei = 0; ei < numUniqueEvents; ei++) {
+      for (int ni=0;ni<this.numTimesEventsSeen[ei];ni++) {
+        for (int oi = 0; oi < numOutcomes; oi++) {
+          modelDistribution[oi] = 0;
+        }
+        if (values != null) {
+          PerceptronModel.eval(contexts[ei], values[ei], modelDistribution, evalParams,false);
+        }
+        else {
+          PerceptronModel.eval(contexts[ei], null, modelDistribution, evalParams, false);
+        }
+        int max = 0;
+        for (int oi = 1; oi < numOutcomes; oi++) {
+          if (modelDistribution[oi] > modelDistribution[max]) {
+            max = oi;
+          }
+        }
+        if (max == outcomeList[ei]) {
+          numCorrect ++;
+        }
+      }
+    }
+    display(". ("+numCorrect+"/"+numEvents+") "+((double) numCorrect / numEvents) + "\n");
+  }
 }
