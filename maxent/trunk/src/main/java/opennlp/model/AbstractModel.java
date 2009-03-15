@@ -27,9 +27,14 @@ public abstract class AbstractModel implements MaxentModel {
   protected Map<String,Integer> pmap;
   /** The names of the outcomes. */
   protected String[] ocNames;
+  /** Parameters for the model. */
   protected EvalParameters evalParams;
+  /** Prior distribution for this model. */
   protected Prior prior;
+  
   public enum ModelType {Maxent,Perceptron};
+  
+  /** The type of the model. */
   protected ModelType modelType;
 
   public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames) {
