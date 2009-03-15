@@ -87,7 +87,12 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
       tmp.delete();
       System.out.println("done.");
 
-      System.out.print("Sorting and merging events... ");
+      if (sort) { 
+        System.out.print("Sorting and merging events... ");
+      }
+      else {
+        System.out.print("Collecting events... ");
+      }
       sortAndMerge(eventsToCompare,sort);
       System.out.println("Done indexing.");
     }
