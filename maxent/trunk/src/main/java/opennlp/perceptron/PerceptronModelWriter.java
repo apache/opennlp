@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0 
+ * (the "License"); you may not use this file except in compliance with 
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package opennlp.perceptron;
 
 import java.io.IOException;
@@ -16,8 +33,6 @@ import opennlp.model.Context;
  * which takes care of the structure of a stored document, and requires an
  * extending class to define precisely how the data should be stored.
  *
- * @author      Jason Baldridge
- * @version     $Revision: 1.1 $, $Date: 2009-01-22 23:23:34 $
  */
 public abstract class PerceptronModelWriter extends AbstractModelWriter {
     protected Context[] PARAMS;
@@ -49,9 +64,10 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
       for (int pid=0; pid<PARAMS.length; pid++) {
         int numParams = 0;    
         double[] predParams = PARAMS[pid].getParameters();
+        int[] outcomePattern = PARAMS[pid].getOutcomes();
         for (int pi=0;pi<predParams.length;pi++) {
           if (predParams[pi] != 0d) {
-            tmpOutcomes[numParams]=pi;
+            tmpOutcomes[numParams]=outcomePattern[pi];
             tmpParams[numParams]=predParams[pi];
             numParams++;
           }
@@ -69,6 +85,7 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
           numPreds++;
         }
       }
+      System.err.println("Compressed "+PARAMS.length+" parameters to "+numPreds);
       sortPreds = new ComparablePredicate[numPreds];
       for (int pid=0;pid<numPreds;pid++) {
         sortPreds[pid] = tmpPreds[pid];
@@ -78,21 +95,23 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
     }
     
         
-    protected List compressOutcomes (ComparablePredicate[] sorted) {
+    protected List<List<ComparablePredicate>> computeOutcomePatterns(ComparablePredicate[] sorted) {
       ComparablePredicate cp = sorted[0];
-      List outcomePatterns = new ArrayList();
-      List newGroup = new ArrayList();
+      List<List<ComparablePredicate>> outcomePatterns = new ArrayList<List<ComparablePredicate>>();
+      List<ComparablePredicate> newGroup = new ArrayList<ComparablePredicate>();
       for (int i=0; i<sorted.length; i++) {
         if (cp.compareTo(sorted[i]) == 0) {
           newGroup.add(sorted[i]);
-        } else {	    
+        } 
+        else {	    
           cp = sorted[i];
           outcomePatterns.add(newGroup);
-          newGroup = new ArrayList();
+          newGroup = new ArrayList<ComparablePredicate>();
           newGroup.add(sorted[i]);
-        }	    
+        }
       }
       outcomePatterns.add(newGroup);
+      System.err.println(outcomePatterns.size()+" outcome patterns");
       return outcomePatterns;
     }
 
@@ -119,14 +138,13 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
       // The sorting is done so that we actually can write this out more
       // compactly than as the entire list.
       ComparablePredicate[] sorted = sortValues();
-      List compressed = compressOutcomes(sorted);
+      List<List<ComparablePredicate>> compressed = computeOutcomePatterns(sorted);
       
       writeInt(compressed.size());
       
       for (int i=0; i<compressed.size(); i++) {
-        List a = (List)compressed.get(i);
-        writeUTF(a.size()
-            + ((ComparablePredicate)a.get(0)).toString());
+        List<ComparablePredicate> a = compressed.get(i);
+        writeUTF(a.size() + a.get(0).toString());
       } 
       
       // the mapping from predicate names to their integer indexes
