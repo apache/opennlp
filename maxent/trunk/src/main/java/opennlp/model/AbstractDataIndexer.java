@@ -104,7 +104,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     else {
       numUniqueEvents = eventsToCompare.size();
     }
-    System.out.println("done. Reduced " + numEvents + " events to " + numUniqueEvents + ".");
+    if (sort) System.out.println("done. Reduced " + numEvents + " events to " + numUniqueEvents + ".");
 
     contexts = new int[numUniqueEvents][];
     outcomeList = new int[numUniqueEvents];
