@@ -62,10 +62,13 @@ public class POSSampleEventStream extends AbstractEventStream<POSSample> {
 
   @Override
   protected Iterator<Event> createEvents(POSSample sample) {
-
     String sentence[] = sample.getSentence();
     String tags[] = sample.getTags();
-
+    List<Event> events = generateEvents(sentence,tags,cg);
+    return events.iterator();
+  }
+  
+  public static List<Event> generateEvents(String[] sentence, String[] tags, POSContextGenerator cg){
     List<Event> events = new ArrayList<Event>(sentence.length);
 
     for (int i=0; i < sentence.length; i++) {
@@ -76,7 +79,6 @@ public class POSSampleEventStream extends AbstractEventStream<POSSample> {
 
       events.add(new Event(tags[i], context));
     }
-
-    return events.iterator();
+    return events;
   }
 }
