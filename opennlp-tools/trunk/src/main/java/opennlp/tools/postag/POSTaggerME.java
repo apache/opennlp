@@ -18,6 +18,8 @@
 
 package opennlp.tools.postag;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +32,7 @@ import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 
 /**
- * A part-of-speech tagger that uses maximum entropy.  Trys to predict whether
+ * A part-of-speech tagger that uses maximum entropy.  Tries to predict whether
  * words are nouns, verbs, or any of 70 other POS tags depending on their
  * surrounding context.
  *
@@ -93,7 +95,6 @@ public class POSTaggerME implements POSTagger {
    */
   public POSTaggerME(POSModel model, int beamSize) {
     posModel = model.getPosModel();
-
     contextGen = new DefaultPOSContextGenerator(model.getNgramDictionary());
     tagDictionary = model.getTagDictionary();
     size = beamSize;
@@ -104,7 +105,7 @@ public class POSTaggerME implements POSTagger {
    * Creates a new tagger with the specified model and tag dictionary.
    *
    * @param model The model used for tagging.
-   * @param tagdict The tag dictionary used for specifing a set of valid tags.
+   * @param tagdict The tag dictionary used for specifying a set of valid tags.
    */
   @Deprecated
   public POSTaggerME(AbstractModel model, TagDictionary tagdict) {
@@ -160,7 +161,7 @@ public class POSTaggerME implements POSTagger {
   /**
    * Creates a new tagger with the specified beam size, model, context generator, and tag dictionary.
    *
-   * @param beamSize The number of alturnate tagging considered when tagging.
+   * @param beamSize The number of alternate tagging considered when tagging.
    * @param model The model used for tagging.
    * @param cg The context generator used for feature creation.
    * @param tagdict The dictionary which specifies the valid set of tags for some words.
