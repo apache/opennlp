@@ -177,7 +177,8 @@ public class PerceptronTrainer {
   private void nextIteration(int iteration) {
     iteration--; //move to 0-based index
     int numCorrect = 0;
-    for (int ei = 0; ei < numUniqueEvents; ei++) {
+    int oei = 0;
+    for (int ei = 0; ei < numUniqueEvents; ei++,oei++) {
       //Arrays.sort(contexts[ei]); only needed for debugging
       for (int ni=0;ni<this.numTimesEventsSeen[ei];ni++) {
         //System.err.print("contexts["+ei+"]=");for (int ci=0;ci<contexts[ei].length;ci++) { System.err.print(" "+contexts[ei][ci]+" ");} System.err.println();
@@ -196,40 +197,55 @@ public class PerceptronTrainer {
             max = oi;
           }
         }
-        boolean correct = max == outcomeList[ei]; 
+        boolean correct = max == outcomeList[oei]; 
         if (correct) {
           numCorrect ++;
         }
-        if (!correct) {
-          int oi = outcomeList[ei];
-          for (int ci = 0; ci < contexts[ei].length; ci++) {
-            int pi = contexts[ei][ci];
-            if (values == null) {
-              params[pi].updateParameter(oi, 1);
-              params[pi].updateParameter(max,-1);
-            }
-            else {
-              params[pi].updateParameter(oi, values[ei][ci]);
-              params[pi].updateParameter(max, values[ei][ci]*-1);
-            }
-            if (useAverage) {
-              if (updates[pi][oi][VALUE] != 0) {
-                averageParams[pi].updateParameter(oi,updates[pi][oi][VALUE]*(numEvents*(iteration-updates[pi][oi][ITER])+(ei-updates[pi][oi][EVENT])));
-                //System.err.println("p avp["+pi+"]."+oi+"="+averageParams[pi].getParameters()[oi]);
+        for (int oi = 0;oi<numOutcomes;oi++) {
+          if (oi == outcomeList[oei]) {
+            if (modelDistribution[oi] <= 0) {
+              for (int ci = 0; ci < contexts[ei].length; ci++) {
+                int pi = contexts[ei][ci];
+                if (values == null) {
+                  params[pi].updateParameter(oi, 1);
+                }
+                else {
+                  params[pi].updateParameter(oi, values[ei][ci]);
+                }
+                if (useAverage) {
+                  if (updates[pi][oi][VALUE] != 0) {
+                    averageParams[pi].updateParameter(oi,updates[pi][oi][VALUE]*(numEvents*(iteration-updates[pi][oi][ITER])+(ei-updates[pi][oi][EVENT])));
+                    //System.err.println("p avp["+pi+"]."+oi+"="+averageParams[pi].getParameters()[oi]);
+                  }
+                  //System.err.println("p updates["+pi+"]["+oi+"]=("+updates[pi][oi][ITER]+","+updates[pi][oi][EVENT]+","+updates[pi][oi][VALUE]+") + ("+iteration+","+ei+","+params[pi].getParameters()[oi]+") -> "+averageParams[pi].getParameters()[oi]);
+                  updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
+                  updates[pi][oi][ITER] = iteration;
+                  updates[pi][oi][EVENT] = ei;
+                }
               }
-              //System.err.println("p updates["+pi+"]["+oi+"]=("+updates[pi][oi][ITER]+","+updates[pi][oi][EVENT]+","+updates[pi][oi][VALUE]+") + ("+iteration+","+ei+","+params[pi].getParameters()[oi]+") -> "+averageParams[pi].getParameters()[oi]);
-              updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
-              updates[pi][oi][ITER] = iteration;
-              updates[pi][oi][EVENT] = ei;
-              
-              if (updates[pi][max][VALUE] != 0) {
-                averageParams[pi].updateParameter(max,updates[pi][max][VALUE]*(numEvents*(iteration-updates[pi][max][ITER])+(ei-updates[pi][max][EVENT])));
-                //System.err.println("d avp["+pi+"]."+max+"="+averageParams[pi].getParameters()[max]);
+            }
+          }
+          else {
+            if (modelDistribution[oi] > 0) {
+              for (int ci = 0; ci < contexts[ei].length; ci++) {
+                int pi = contexts[ei][ci];
+                if (values == null) {
+                  params[pi].updateParameter(oi, -1);
+                }
+                else {
+                  params[pi].updateParameter(oi, -1*values[ei][ci]);
+                }
+                if (useAverage) {
+                  if (updates[pi][oi][VALUE] != 0) {
+                    averageParams[pi].updateParameter(oi,updates[pi][oi][VALUE]*(numEvents*(iteration-updates[pi][oi][ITER])+(ei-updates[pi][oi][EVENT])));
+                    //System.err.println("d avp["+pi+"]."+oi+"="+averageParams[pi].getParameters()[oi]);
+                  }
+                  //System.err.println(ei+" d updates["+pi+"]["+oi+"]=("+updates[pi][oi][ITER]+","+updates[pi][oi][EVENT]+","+updates[pi][oi][VALUE]+") + ("+iteration+","+ei+","+params[pi].getParameters()[oi]+") -> "+averageParams[pi].getParameters()[oi]);
+                  updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
+                  updates[pi][oi][ITER] = iteration;
+                  updates[pi][oi][EVENT] = ei;
+                }
               }
-              //System.err.println(ei+" d updates["+pi+"]["+max+"]=("+updates[pi][max][ITER]+","+updates[pi][max][EVENT]+","+updates[pi][max][VALUE]+") + ("+iteration+","+ei+","+params[pi].getParameters()[max]+") -> "+averageParams[pi].getParameters()[max]);
-              updates[pi][max][VALUE] = (int) params[pi].getParameters()[max];
-              updates[pi][max][ITER] = iteration;
-              updates[pi][max][EVENT] = ei;
             }
           }
         }
