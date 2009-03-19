@@ -23,10 +23,10 @@ import java.util.Map;
 
 public abstract class AbstractModel implements MaxentModel {
 
-  /** Maping between predicates/contexts and an integer representing them. */
+  /** Mapping between predicates/contexts and an integer representing them. */
   protected Map<String,Integer> pmap;
   /** The names of the outcomes. */
-  protected String[] ocNames;
+  protected String[] outcomeNames;
   /** Parameters for the model. */
   protected EvalParameters evalParams;
   /** Prior distribution for this model. */
@@ -36,15 +36,21 @@ public abstract class AbstractModel implements MaxentModel {
   
   /** The type of the model. */
   protected ModelType modelType;
+  
+  public AbstractModel(Context[] params, String[] predLabels, Map<String,Integer> pmap, String[] outcomeNames) {
+    this.pmap = pmap;
+    this.outcomeNames =  outcomeNames;
+    this.evalParams = new EvalParameters(params,outcomeNames.length);
+  }
 
   public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames) {
     init(predLabels,outcomeNames);
-    this.evalParams = new EvalParameters(params,ocNames.length);
+    this.evalParams = new EvalParameters(params,outcomeNames.length);
   }
 
   public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames, int correctionConstant,double correctionParam) {
     init(predLabels,outcomeNames);
-    this.evalParams = new EvalParameters(params,correctionParam,correctionConstant,ocNames.length);
+    this.evalParams = new EvalParameters(params,correctionParam,correctionConstant,outcomeNames.length);
   }
   
   private void init(String[] predLabels, String[] outcomeNames){
@@ -52,7 +58,7 @@ public abstract class AbstractModel implements MaxentModel {
     for (int i=0; i<predLabels.length; i++) {
       pmap.put(predLabels[i], i);
     }
-    this.ocNames =  outcomeNames;
+    this.outcomeNames =  outcomeNames;
   }
 
 
@@ -68,7 +74,7 @@ public abstract class AbstractModel implements MaxentModel {
       int best = 0;
       for (int i = 1; i<ocs.length; i++)
           if (ocs[i] > ocs[best]) best = i;
-      return ocNames[best];
+      return outcomeNames[best];
   }
   
   public ModelType getModelType(){
@@ -88,15 +94,15 @@ public abstract class AbstractModel implements MaxentModel {
    *            for each one.
    */
   public final String getAllOutcomes(double[] ocs) {
-      if (ocs.length != ocNames.length) {
+      if (ocs.length != outcomeNames.length) {
           return "The double array sent as a parameter to GISModel.getAllOutcomes() must not have been produced by this model.";
       }
       else {
         DecimalFormat df =  new DecimalFormat("0.0000");
         StringBuffer sb = new StringBuffer(ocs.length*2);
-        sb.append(ocNames[0]).append("[").append(df.format(ocs[0])).append("]");
+        sb.append(outcomeNames[0]).append("[").append(df.format(ocs[0])).append("]");
         for (int i = 1; i<ocs.length; i++) {
-          sb.append("  ").append(ocNames[i]).append("[").append(df.format(ocs[i])).append("]");
+          sb.append("  ").append(outcomeNames[i]).append("[").append(df.format(ocs[i])).append("]");
         }
         return sb.toString();
       }
@@ -109,7 +115,7 @@ public abstract class AbstractModel implements MaxentModel {
    * @return  The name of the outcome associated with that id.
    */
   public final String getOutcome(int i) {
-      return ocNames[i];
+      return outcomeNames[i];
   }
 
   /**
@@ -121,8 +127,8 @@ public abstract class AbstractModel implements MaxentModel {
    * model, -1 if it does not.
    **/
   public int getIndex(String outcome) {
-      for (int i=0; i<ocNames.length; i++) {
-          if (ocNames[i].equals(outcome))
+      for (int i=0; i<outcomeNames.length; i++) {
+          if (outcomeNames[i].equals(outcome))
               return i;
       }
       return -1;
@@ -156,7 +162,7 @@ public abstract class AbstractModel implements MaxentModel {
       Object[] data = new Object[5];
       data[0] = evalParams.getParams();
       data[1] = pmap;
-      data[2] = ocNames;
+      data[2] = outcomeNames;
       data[3] = new Integer((int)evalParams.getCorrectionConstant());
       data[4] = new Double(evalParams.getCorrectionParam());
       return data;

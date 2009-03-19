@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
+import java.util.Map;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.Context;
@@ -28,6 +29,10 @@ import opennlp.model.EvalParameters;
 
 public class PerceptronModel extends AbstractModel {
 
+  public PerceptronModel(Context[] params, String[] predLabels, Map<String,Integer> pmap, String[] outcomeNames) {
+    super(params,predLabels,outcomeNames);
+    modelType = ModelType.Perceptron;
+  }
   
   public PerceptronModel(Context[] params, String[] predLabels, String[] outcomeNames) {
     super(params,predLabels,outcomeNames);

@@ -180,7 +180,7 @@ public class SimplePerceptronSequenceTrainer {
     int oei=0;
     int si=0;
     for (Sequence sequence : sequenceStream) {
-      Event[] taggerEvents = sequenceStream.updateContext(sequence, new PerceptronModel(params,predLabels,outcomeLabels));
+      Event[] taggerEvents = sequenceStream.updateContext(sequence, new PerceptronModel(params,predLabels,pmap,outcomeLabels));
       Event[] events = sequence.getEvents();
       for (int ei=0;ei<events.length;ei++,oei++) {
         String[] contextStrings = events[ei].getContext();

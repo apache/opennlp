@@ -33,7 +33,7 @@ import opennlp.model.UniformPrior;
  * Iterative Scaling procedure (implemented in GIS.java).
  *
  * @author      Tom Morton and Jason Baldridge
- * @version     $Revision: 1.1 $, $Date: 2009-01-22 23:23:34 $
+ * @version     $Revision: 1.2 $, $Date: 2009-03-19 13:04:31 $
  */
 public final class GISModel extends AbstractModel {
     /**
@@ -60,7 +60,7 @@ public final class GISModel extends AbstractModel {
     public GISModel (Context[] params, String[] predLabels, String[] outcomeNames, int correctionConstant,double correctionParam, Prior prior) {
       super(params,predLabels,outcomeNames,correctionConstant,correctionParam);
       this.prior = prior;
-      prior.setLabels(ocNames, predLabels);
+      prior.setLabels(outcomeNames, predLabels);
       modelType = ModelType.Maxent;
     }
 
