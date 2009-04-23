@@ -49,6 +49,19 @@ import opennlp.tools.util.Span;
  * To train a new model {{@link #train(String, Iterator, boolean)} method
  * can be used.
  * 
+ * Sample usage:
+ * <code>
+ * InputStream modelIn;
+ * 
+ * ...
+ * 
+ * TokenizerModel model = TokenizerModel(modelIn);
+ * 
+ * Tokenizer tokenizer = new TokenizerME(model);
+ * 
+ * String tokens[] = tokenizer.tokenize("A sentence to be tokenized.");
+ * </code>
+ * 
  * @see Tokenizer
  * @see TokenizerModel
  * @see TokenSample
