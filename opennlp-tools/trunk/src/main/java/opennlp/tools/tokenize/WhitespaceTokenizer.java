@@ -24,6 +24,9 @@ import opennlp.tools.util.Span;
 
 /**
  * This tokenizer uses white spaces to tokenize the input text.
+ * 
+ * To obtain an instance of this tokenizer use the static final 
+ * <code>INSTANCE</code> field.
  */
 public class WhitespaceTokenizer extends AbstractTokenizer {
 
@@ -61,9 +64,11 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
         }
       }
     }
+    
     if (inTok) {
       tokens.add(new Span(tokStart, end));
     }
-    return (Span[]) tokens.toArray(new Span[tokens.size()]);
+    
+    return tokens.toArray(new Span[tokens.size()]);
   }
 }
