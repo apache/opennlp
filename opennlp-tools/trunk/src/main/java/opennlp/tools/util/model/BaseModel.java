@@ -45,6 +45,7 @@ public abstract class BaseModel {
   private static final String VERSION_PROPERTY = "version";
   private static final String LANGUAGE_PROPERTY = "language";
   
+  @SuppressWarnings("unchecked")
   private Map<String, ArtifactSerializer> artifactSerializers =
       new HashMap<String, ArtifactSerializer>();
 
@@ -131,6 +132,7 @@ public abstract class BaseModel {
     return entry.substring(extensionIndex);
   }
 
+  @SuppressWarnings("unchecked")
   protected ArtifactSerializer getArtifactSerializer(String resoruceName) {
     String extension = null;
     try {
@@ -138,6 +140,7 @@ public abstract class BaseModel {
     } catch (InvalidFormatException e) {
       // TODO: throw runtime exception, error in model code
       // sorry, will not fail, because the name was validated prior
+      e.printStackTrace();
     }
 
     return artifactSerializers.get(extension);  
