@@ -37,7 +37,21 @@ import opennlp.tools.util.Span;
  * Algorithms and Applications.", which is available from his
  * homepage: <http://www.cis.upenn.edu/~jcreynar>.
  *
- * @author      Tom Morton
+ * This tokenizer needs a statistical model to tokenize a text which reproduces
+ * the tokenization observed in the training data used to create the model.
+ * The {@link TokenizerModel} class encapsulates the model and provides
+ * methods to create it from the binary representation. 
+ * 
+ * A tokenizer instance is not thread safe. For each thread one tokenizer
+ * must be instantiated which can share one <code>TokenizerModel</code> instance
+ * to safe memory.
+ * 
+ * To train a new model {{@link #train(String, Iterator, boolean)} method
+ * can be used.
+ * 
+ * @see Tokenizer
+ * @see TokenizerModel
+ * @see TokenSample
  */
 public class TokenizerME extends AbstractTokenizer {
 
@@ -73,8 +87,8 @@ public class TokenizerME extends AbstractTokenizer {
   private boolean useAlphaNumericOptimization;
 
   /**
-   * List of probabilities for each token returned from call to
-   * tokenize()
+   * List of probabilities for each token returned from a call to
+   * <code>tokenize</code> or <code>tokenizePos</code>.
    */
   private List<Double> tokProbs;
 
