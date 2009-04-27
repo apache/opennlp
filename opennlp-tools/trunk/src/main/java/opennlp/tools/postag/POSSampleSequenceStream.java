@@ -47,7 +47,7 @@ public class POSSampleSequenceStream implements SequenceStream {
   @SuppressWarnings("unchecked")
   public Event[] updateContext(Sequence sequence, AbstractModel model) {
     Sequence<POSSample> pss = (Sequence<POSSample>) sequence;
-    POSTagger tagger = new POSTaggerME(model,(TagDictionary) null);
+    POSTagger tagger = new POSTaggerME(new POSModel("x-unspecified", model, null, null));
     String[] sentence = pss.getSource().getSentence();
     String[] tags = tagger.tag(pss.getSource().getSentence());
     Event[] events = new Event[sentence.length];
