@@ -44,23 +44,37 @@ public class StringPattern {
     this.digits = digits;
   }
 
+  /**
+   * @return true if first letter is capital.
+   */
   public boolean isInitialCapitalLetter() {
     return (pattern & INITAL_CAPITAL_LETTER) > 0;
   }
 
+  /**
+   * @return true if all letters are capital.
+   */
   public boolean isAllCapitalLetter() {
     return (pattern & ALL_CAPITAL_LETTER) > 0;
   }
-
+  
+  /**
+   * @return true if all letters are lower case.
+   */
   public boolean isAllLowerCaseLetter() {
     return (pattern & ALL_LOWERCASE_LETTER) > 0;
   }
-
+  
+  /**
+   * @return true if all chars are digits.
+   */
   public boolean isAllDigit() {
     return (pattern & ALL_DIGIT) > 0;
   }
 
-  // number of digits
+  /**
+   * Retrieves the number of digits.
+   */
   public int digits() {
     return digits;
   }
