@@ -27,7 +27,7 @@ public interface ResetableIterator<E> extends Iterator<E> {
   
   /**
    * Sets the {@link Iterator} back to the first retrieved element,
-   * the seen sequence must be repeted exactly by the {@link Iterable}.
+   * the seen sequence of elements must be repeated.
    */
   void reset();
 }
