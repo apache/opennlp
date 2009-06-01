@@ -25,20 +25,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import opennlp.tools.util.CrossValidationPartioner.TrainingIterator;
+import opennlp.tools.util.CrossValidationPartitioner.TrainingIterator;
 
 import junit.framework.TestCase;
 
 /**
- * Test for the {@link CrossValidationPartioner} class.
+ * Test for the {@link CrossValidationPartitioner} class.
  */
 public class CrossValidationPartitionerTest extends TestCase {
 
   public void testEmptyDataSet() {
     Collection<String> emptyCollection = Collections.emptySet();
     
-    CrossValidationPartioner<String> partitioner = 
-        new CrossValidationPartioner<String>(emptyCollection, 2);
+    CrossValidationPartitioner<String> partitioner = 
+        new CrossValidationPartitioner<String>(emptyCollection, 2);
     
     assertTrue(partitioner.hasNext());
     assertFalse(partitioner.next().hasNext());
@@ -76,7 +76,7 @@ public class CrossValidationPartitionerTest extends TestCase {
     data.add("09");
     data.add("10");
     
-    CrossValidationPartioner<String> partitioner = new CrossValidationPartioner<String>(data, 3);
+    CrossValidationPartitioner<String> partitioner = new CrossValidationPartitioner<String>(data, 3);
     
     // first partition
     assertTrue(partitioner.hasNext());
@@ -207,7 +207,7 @@ public class CrossValidationPartitionerTest extends TestCase {
     data.add("03");
     data.add("04");
     
-    CrossValidationPartioner<String> partitioner = new CrossValidationPartioner<String>(data, 4);
+    CrossValidationPartitioner<String> partitioner = new CrossValidationPartitioner<String>(data, 4);
     
     // Test that iterator from previous partition fails
     // if it is accessed
@@ -267,6 +267,6 @@ public class CrossValidationPartitionerTest extends TestCase {
   
   public void testToString() {
     Collection<String> emptyCollection = Collections.emptySet();
-    new CrossValidationPartioner<String>(emptyCollection, 10).toString();
+    new CrossValidationPartitioner<String>(emptyCollection, 10).toString();
   }
 }
