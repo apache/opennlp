@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import opennlp.tools.coref.Linker;
+import opennlp.tools.coref.resolver.ResolverUtils;
 import opennlp.tools.util.Span;
 
 /**
@@ -185,9 +186,9 @@ public abstract class AbstractMentionFinder implements MentionFinder {
   }
 
   private boolean handledPronoun(String tok) {
-    return Linker.singularThirdPersonPronounPattern.matcher(tok).find() ||
-                 Linker.pluralThirdPersonPronounPattern.matcher(tok).find() ||
-                 Linker.speechPronounPattern.matcher(tok).find();
+    return ResolverUtils.singularThirdPersonPronounPattern.matcher(tok).find() ||
+                 ResolverUtils.pluralThirdPersonPronounPattern.matcher(tok).find() ||
+                 ResolverUtils.speechPronounPattern.matcher(tok).find();
   }
 
   private void collectPossesivePronouns(Parse np, List<Mention> entities) {

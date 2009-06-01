@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -28,7 +28,7 @@ import opennlp.maxent.io.SuffixSensitiveGISModelReader;
 import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.Event;
 import opennlp.model.MaxentModel;
-import opennlp.tools.coref.Linker;
+import opennlp.tools.coref.resolver.ResolverUtils;
 import opennlp.tools.util.CollectionEventStream;
 import opennlp.tools.util.HashList;
 
@@ -88,10 +88,10 @@ public class NumberModel implements TestNumberModel, TrainSimilarityModel {
   }
 
   public NumberEnum getNumber(Context ec) {
-    if (Linker.singularPronounPattern.matcher(ec.getHeadTokenText()).matches()) {
+    if (ResolverUtils.singularPronounPattern.matcher(ec.getHeadTokenText()).matches()) {
       return NumberEnum.SINGULAR;
     }
-    else if (Linker.pluralPronounPattern.matcher(ec.getHeadTokenText()).matches()) {
+    else if (ResolverUtils.pluralPronounPattern.matcher(ec.getHeadTokenText()).matches()) {
       return NumberEnum.PLURAL;
     }
     else {

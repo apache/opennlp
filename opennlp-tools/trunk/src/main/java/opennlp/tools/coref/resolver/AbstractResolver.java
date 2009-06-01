@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import opennlp.tools.coref.DiscourseEntity;
 import opennlp.tools.coref.DiscourseModel;
-import opennlp.tools.coref.Linker;
 import opennlp.tools.coref.mention.MentionContext;
 import opennlp.tools.coref.mention.Parse;
 import opennlp.tools.util.CountedSet;
@@ -50,7 +49,7 @@ public abstract class AbstractResolver implements Resolver {
   protected CountedSet<Integer> distances;
   
   /** 
-   * The number of senteces back this resolver should look for a referent.
+   * The number of sentences back this resolver should look for a referent.
    */
   protected int numSentencesBack;
 
@@ -79,11 +78,11 @@ public abstract class AbstractResolver implements Resolver {
   }
 
   /**
-   * The number of entites that should be considered for resolution with the specified discourse model.
+   * The number of entities that should be considered for resolution with the specified discourse model.
    * 
    * @param dm The discourse model.
    * 
-   * @return number of entites that should be considered for resolution.
+   * @return number of entities that should be considered for resolution.
    */
   protected int getNumEntities(DiscourseModel dm) {
     return Math.min(dm.getNumEntities(),numEntitiesBack);
@@ -146,9 +145,9 @@ public abstract class AbstractResolver implements Resolver {
 
   /**
    * Excludes entities which you are not compatible with the entity under consideration.  The default
-   * implementation excludes entties whose last extent contatins the extent under consideration.
-   * This prevents posessive pronouns from refering to the noun phrases they modify and other
-   * undesireable things.
+   * implementation excludes entities whose last extent contains the extent under consideration.
+   * This prevents possessive pronouns from referring to the noun phrases they modify and other
+   * undesirable things.
    * 
    * @param mention The mention which is being considered as referential.
    * @param entity The entity to which the mention is to be resolved.
@@ -196,89 +195,5 @@ public abstract class AbstractResolver implements Resolver {
   }
 
 
-  /**
-   * Returns a string for the specified mention with punctuation, honorifics,
-   * designators, and determiners removed.
-   * 
-   * @param mention The mention to be striped.
-   * 
-   * @return a normalized string representation of the specified mention.
-   */
-  protected String stripNp(MentionContext mention) {
-    int start=mention.getNonDescriptorStart(); //start after descriptors
-
-    Parse[] mtokens = mention.getTokenParses();
-    int end=mention.getHeadTokenIndex()+1;
-    if (start == end) {
-      //System.err.println("stripNp: return null 1");
-      return null;
-    }
-    //strip determiners
-    if (mtokens[start].getSyntacticType().equals("DT")) {
-      start++;
-    }
-    if (start == end) {
-      //System.err.println("stripNp: return null 2");
-      return null;
-    }
-    //get to first NNP
-    String type;
-    for (int i=start;i<end;i++) {
-      type = mtokens[start].getSyntacticType();
-      if (type.startsWith("NNP")) {
-        break;
-      }
-      start++;
-    }
-    if (start == end) {
-      //System.err.println("stripNp: return null 3");
-      return null;
-    }
-    if (start+1 != end) { // don't do this on head words, to keep "U.S."
-      //strip off honorifics in begining
-      if (Linker.honorificsPattern.matcher(mtokens[start].toString()).find()) {
-        start++;
-      }
-      if (start == end) {
-        //System.err.println("stripNp: return null 4");
-        return null;
-      }
-      //strip off and honerifics on the end
-      if (Linker.designatorsPattern.matcher(mtokens[mtokens.length - 1].toString()).find()) {
-        end--;
-      }
-    }
-    if (start == end) {
-      //System.err.println("stripNp: return null 5");
-      return null;
-    }
-    String strip = "";
-    for (int i = start; i < end; i++) {
-      strip += mtokens[i].toString() + ' ';
-    }
-    return strip.trim();
-  }
-
-
-  public void train() throws IOException {}
-
-  /**
-   * Returns a string representing the gender of the specifed pronoun.
-   * @param pronoun An English pronoun.
-   * @return the gender of the specifed pronoun.
-   */
-  public static String getPronounGender(String pronoun) {
-    if (Linker.malePronounPattern.matcher(pronoun).matches()) {
-      return "m";
-    }
-    else if (Linker.femalePronounPattern.matcher(pronoun).matches()) {
-      return "f";
-    }
-    else if (Linker.neuterPronounPattern.matcher(pronoun).matches()) {
-      return "n";
-    }
-    else {
-      return "u";
-    }
-  };
+  public void train() throws IOException {};
 }

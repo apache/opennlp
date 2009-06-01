@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -94,11 +94,11 @@ public class IsAResolver extends MaxentResolver {
     features.addAll(super.getFeatures(mention, entity));
     if (entity != null) {
       MentionContext ant = entity.getLastExtent();
-      List<String> leftContexts = getContextFeatures(ant);
+      List<String> leftContexts = ResolverUtils.getContextFeatures(ant);
       for (int ci = 0, cn = leftContexts.size(); ci < cn; ci++) {
         features.add("l" + leftContexts.get(ci));
       }
-      List<String> rightContexts = getContextFeatures(mention);
+      List<String> rightContexts = ResolverUtils.getContextFeatures(mention);
       for (int ci = 0, cn = rightContexts.size(); ci < cn; ci++) {
         features.add("r" + rightContexts.get(ci));
       }

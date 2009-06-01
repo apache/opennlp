@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -24,11 +24,10 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import opennlp.tools.coref.DiscourseEntity;
-import opennlp.tools.coref.Linker;
 import opennlp.tools.coref.mention.MentionContext;
 
 /**
- * This class resolver singlular pronouns such as "he", "she", "it" and their various forms.
+ * This class resolver singular pronouns such as "he", "she", "it" and their various forms.
  */
 public class SingularPronounResolver extends MaxentResolver {
 
@@ -49,7 +48,7 @@ public class SingularPronounResolver extends MaxentResolver {
   public boolean canResolve(MentionContext mention) {
     //System.err.println("MaxentSingularPronounResolver.canResolve: ec= ("+mention.id+") "+ mention.toText());
     String tag = mention.getHeadTokenTag();
-    return (tag != null && tag.startsWith("PRP") && Linker.singularThirdPersonPronounPattern.matcher(mention.getHeadTokenText()).matches());
+    return (tag != null && tag.startsWith("PRP") && ResolverUtils.singularThirdPersonPronounPattern.matcher(mention.getHeadTokenText()).matches());
   }
 
   protected List<String> getFeatures(MentionContext mention, DiscourseEntity entity) {
@@ -58,10 +57,10 @@ public class SingularPronounResolver extends MaxentResolver {
     if (entity != null) { //generate pronoun w/ referent features
       MentionContext cec = entity.getLastExtent();
       //String gen = getPronounGender(pronoun);
-      features.addAll(getPronounMatchFeatures(mention,entity));
-      features.addAll(getContextFeatures(cec));
-      features.addAll(getDistanceFeatures(mention,entity));
-      features.add(getMentionCountFeature(entity));
+      features.addAll(ResolverUtils.getPronounMatchFeatures(mention,entity));
+      features.addAll(ResolverUtils.getContextFeatures(cec));
+      features.addAll(ResolverUtils.getDistanceFeatures(mention,entity));
+      features.add(ResolverUtils.getMentionCountFeature(entity));
       /*
       //lexical features
       Set featureSet = new HashSet();
@@ -108,11 +107,11 @@ public class SingularPronounResolver extends MaxentResolver {
     for (Iterator<MentionContext> ei = entity.getMentions(); ei.hasNext();) {
       MentionContext entityMention = ei.next();
       String tag = entityMention.getHeadTokenTag();
-      if (tag != null && tag.startsWith("PRP") && Linker.singularThirdPersonPronounPattern.matcher(mention.getHeadTokenText()).matches()) {
-        if (mentionGender == null) { //lazy initilization
-          mentionGender = getPronounGender(mention.getHeadTokenText());
+      if (tag != null && tag.startsWith("PRP") && ResolverUtils.singularThirdPersonPronounPattern.matcher(mention.getHeadTokenText()).matches()) {
+        if (mentionGender == null) { //lazy initialization
+          mentionGender = ResolverUtils.getPronounGender(mention.getHeadTokenText());
         }
-        String entityGender = getPronounGender(entityMention.getHeadTokenText());
+        String entityGender = ResolverUtils.getPronounGender(entityMention.getHeadTokenText());
         if (!entityGender.equals("u") && !mentionGender.equals(entityGender)) {
           return (true);
         }
@@ -126,15 +125,4 @@ public class SingularPronounResolver extends MaxentResolver {
     //System.err.println("MaxentSingularPronounresolve.outOfRange: ["+entity.getLastExtent().toText()+" ("+entity.getId()+")] ["+mention.toText()+" ("+mention.getId()+")] entity.sentenceNumber=("+entity.getLastExtent().getSentenceNumber()+")-mention.sentenceNumber=("+mention.getSentenceNumber()+") > "+numSentencesBack);
     return (mention.getSentenceNumber() - cec.getSentenceNumber() > numSentencesBack);
   }
-
-  /*
-  public boolean definiteArticle(String tok, String tag) {
-    tok = tok.toLowerCase();
-    if (tok.equals("the") || tok.equals("these")) {
-      //|| tok.equals("these") || tag.equals("PRP$")) {
-      return (true);
-    }
-    return (false);
-  }
-  */
 }

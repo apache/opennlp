@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -18,7 +18,6 @@
 package opennlp.tools.coref;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 import opennlp.tools.coref.mention.HeadFinder;
 import opennlp.tools.coref.mention.Mention;
@@ -29,9 +28,8 @@ import opennlp.tools.coref.mention.MentionFinder;
  * and creating entities out of those mentions, {@link #getEntities getEntities}.  This interface also allows
  * for the training of a resolver with the method {@link #setEntities setEntitites} which is used to give the
  * resolver mentions whose entityId fields indicate which mentions refer to the same entity and the
- * {@link #train train} method which compiles all the inormation provided via calls to
+ * {@link #train train} method which compiles all the information provided via calls to
  * {@link #setEntities setEntities} into a model.
- * @author Tom Morton
  *
  */
 public interface Linker {
@@ -39,44 +37,18 @@ public interface Linker {
 
   /** String constant used to label a mention which is a description. */
   public static final String DESCRIPTOR = "desc";
-  /** String constation used to label an mention in an appositive relationship. */
+  /** String constant used to label an mention in an appositive relationship. */
   public static final String ISA = "isa";
-  /** String constatant used to label a mention which consists of two or more noun phrases. */
+  /** String constant used to label a mention which consists of two or more noun phrases. */
   public static final String COMBINED_NPS = "cmbnd";
-  /** String constatant used to label a mention which consists of a single noun phrase. */
+  /** String constant used to label a mention which consists of a single noun phrase. */
   public static final String NP = "np";
-  /** String constatant used to label a mention which is a proper noun modifing another noun. */
+  /** String constant used to label a mention which is a proper noun modifying another noun. */
   public static final String PROPER_NOUN_MODIFIER = "pnmod";
-  /** String constatant used to label a mention which is a pronoun. */
+  /** String constant used to label a mention which is a pronoun. */
   public static final String PRONOUN_MODIFIER = "np";
 
-  /** Regular expression for English singular third person pronouns. */
-  public static final Pattern singularThirdPersonPronounPattern = Pattern.compile("^(he|she|it|him|her|his|hers|its|himself|herself|itself)$",Pattern.CASE_INSENSITIVE);
-  /** Regular expression for English plural third person pronouns. */
-  public static final Pattern pluralThirdPersonPronounPattern = Pattern.compile("^(they|their|theirs|them|themselves)$",Pattern.CASE_INSENSITIVE);
-  /** Regular expression for English speech pronouns. */
-  public static final Pattern speechPronounPattern = Pattern.compile("^(I|me|my|you|your|you|we|us|our|ours)$",Pattern.CASE_INSENSITIVE);
-  /** Regular expression for English male pronouns. */
-  public static final Pattern malePronounPattern = Pattern.compile("^(he|him|his|himself)$",Pattern.CASE_INSENSITIVE);
-  /** Regular expression for English female pronouns. */
-  public static final Pattern femalePronounPattern = Pattern.compile("^(she|her|hers|herself)$",Pattern.CASE_INSENSITIVE);
-  /** Regular expression for English nueter pronouns. */
-  public static final Pattern neuterPronounPattern = Pattern.compile("^(it|its|itself)$",Pattern.CASE_INSENSITIVE);
-  /** Regular expression for English first person pronouns. */
-  public static final Pattern firstPersonPronounPattern = Pattern.compile("^(I|me|my|we|our|us|ours)$",Pattern.CASE_INSENSITIVE);
-  /** Regular expression for English singular second person pronouns. */
-  public static final Pattern secondPersonPronounPattern = Pattern.compile("^(you|your|yours)$",Pattern.CASE_INSENSITIVE);
-  /** Regular expression for English third person pronouns. */
-  public static final Pattern thirdPersonPronounPattern = Pattern.compile("^(he|she|it|him|her|his|hers|its|himself|herself|itself|they|their|theirs|them|themselves)$",Pattern.CASE_INSENSITIVE);
-  /** Regular expression for English singular pronouns. */
-  public static final Pattern singularPronounPattern = Pattern.compile("^(I|me|my|he|she|it|him|her|his|hers|its|himself|herself|itself)$",Pattern.CASE_INSENSITIVE);
-  /** Regular expression for English plural pronouns. */
-  public static final Pattern pluralPronounPattern = Pattern.compile("^(we|us|our|ours|they|their|theirs|them|themselves)$",Pattern.CASE_INSENSITIVE);
-  /** Regular expression for English honorifics. */
-  public static final Pattern honorificsPattern = Pattern.compile("[A-Z][a-z]+\\.$|^[A-Z][b-df-hj-np-tv-xz]+$");
-  /** Regular expression for English corporate designators. */
-  public static final Pattern designatorsPattern = Pattern.compile("[a-z]\\.$|^[A-Z][b-df-hj-np-tv-xz]+$|^Co(rp)?$");
-
+ 
   /**
    * Indicated that the specified mentions can be used to train this linker.
    * This requires that the coreference relationship between the mentions have been labeled

@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.coref.DiscourseEntity;
-import opennlp.tools.coref.Linker;
 import opennlp.tools.coref.mention.MentionContext;
 
 /**
@@ -48,8 +47,8 @@ public class SpeechPronounResolver extends MaxentResolver {
     List<String> features = new ArrayList<String>();
     features.addAll(super.getFeatures(mention, entity));
     if (entity != null) {
-      features.addAll(getPronounMatchFeatures(mention,entity));
-      List<String> contexts = getContextFeatures(mention);
+      features.addAll(ResolverUtils.getPronounMatchFeatures(mention,entity));
+      List<String> contexts = ResolverUtils.getContextFeatures(mention);
       MentionContext cec = entity.getLastExtent();
       if (mention.getHeadTokenTag().startsWith("PRP") && cec.getHeadTokenTag().startsWith("PRP")) {
         features.add(mention.getHeadTokenText() + "," + cec.getHeadTokenText());
@@ -61,7 +60,7 @@ public class SpeechPronounResolver extends MaxentResolver {
         features.add(mention.getNameType() + "," + cec.getHeadTokenText());
       }
       else {
-        List<String> ccontexts = getContextFeatures(cec);
+        List<String> ccontexts = ResolverUtils.getContextFeatures(cec);
         for (int ci = 0, cl = ccontexts.size(); ci < cl; ci++) {
           features.add(ccontexts.get(ci));
         }
@@ -78,7 +77,7 @@ public class SpeechPronounResolver extends MaxentResolver {
 
   public boolean canResolve(MentionContext mention) {
     String tag = mention.getHeadTokenTag();
-    boolean fpp = tag != null && tag.startsWith("PRP") && Linker.speechPronounPattern.matcher(mention.getHeadTokenText()).matches();
+    boolean fpp = tag != null && tag.startsWith("PRP") && ResolverUtils.speechPronounPattern.matcher(mention.getHeadTokenText()).matches();
     boolean pn = tag != null && tag.startsWith("NNP");
     return (fpp || pn);
   }

@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -45,8 +45,8 @@ public class PluralNounResolver extends MaxentResolver {
     List<String> features = new ArrayList<String>();
     features.addAll(super.getFeatures(mention, entity));
     if (entity != null) {
-      features.addAll(getContextFeatures(mention));
-      features.addAll(getStringMatchFeatures(mention,entity));
+      features.addAll(ResolverUtils.getContextFeatures(mention));
+      features.addAll(ResolverUtils.getStringMatchFeatures(mention,entity));
     }
 
     return features;
@@ -55,7 +55,7 @@ public class PluralNounResolver extends MaxentResolver {
   public boolean canResolve(MentionContext mention) {
     String firstTok = mention.getFirstTokenText().toLowerCase();
     String firstTokTag = mention.getFirstToken().getSyntacticType();
-    boolean rv = mention.getHeadTokenTag().equals("NNS") && !definiteArticle(firstTok, firstTokTag);
+    boolean rv = mention.getHeadTokenTag().equals("NNS") && !ResolverUtils.definiteArticle(firstTok, firstTokTag);
     return rv;
   }
 

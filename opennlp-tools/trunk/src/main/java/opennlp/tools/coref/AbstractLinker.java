@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -97,9 +97,9 @@ public abstract class AbstractLinker implements Linker {
   }
 
   /**
-   * Removes the specified mention to an entity in the specified discourse model or creates a new entity for the mention.
+   * Resolves the specified mention to an entity in the specified discourse model or creates a new entity for the mention.
    * @param mention The mention to resolve.
-   * @param discourseModel The discource model of existing entities.
+   * @param discourseModel The discourse model of existing entities.
    */
   protected void resolve(MentionContext mention, DiscourseModel discourseModel) {
     //System.err.println("AbstractLinker.resolve: "+mode+"("+econtext.id+") "+econtext.toText());

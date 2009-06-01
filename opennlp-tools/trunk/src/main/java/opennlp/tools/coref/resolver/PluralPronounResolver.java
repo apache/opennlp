@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.coref.DiscourseEntity;
-import opennlp.tools.coref.Linker;
 import opennlp.tools.coref.mention.MentionContext;
 
 /**
@@ -45,11 +44,11 @@ public class PluralPronounResolver extends MaxentResolver {
     features.addAll(super.getFeatures(mention,entity));
     //features.add("eid="+pc.id);
     if (entity != null) { //generate pronoun w/ referent features
-      features.addAll(getPronounMatchFeatures(mention,entity));
+      features.addAll(ResolverUtils.getPronounMatchFeatures(mention,entity));
       MentionContext cec = entity.getLastExtent();
-      features.addAll(getDistanceFeatures(mention,entity));
-      features.addAll(getContextFeatures(cec));
-      features.add(getMentionCountFeature(entity));
+      features.addAll(ResolverUtils.getDistanceFeatures(mention,entity));
+      features.addAll(ResolverUtils.getContextFeatures(cec));
+      features.add(ResolverUtils.getMentionCountFeature(entity));
       /*
       //lexical features
       Set featureSet = new HashSet();
@@ -86,6 +85,6 @@ public class PluralPronounResolver extends MaxentResolver {
 
   public boolean canResolve(MentionContext mention) {
     String tag = mention.getHeadTokenTag();
-    return (tag != null && tag.startsWith("PRP") && Linker.pluralThirdPersonPronounPattern.matcher(mention.getHeadTokenText()).matches());
+    return (tag != null && tag.startsWith("PRP") && ResolverUtils.pluralThirdPersonPronounPattern.matcher(mention.getHeadTokenText()).matches());
   }
 }

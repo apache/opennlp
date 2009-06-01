@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -20,7 +20,6 @@ package opennlp.tools.coref.resolver;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 
 import opennlp.tools.coref.DiscourseEntity;
 import opennlp.tools.coref.mention.MentionContext;
@@ -40,7 +38,6 @@ import opennlp.tools.coref.mention.MentionContext;
  */
 public class ProperNounResolver extends MaxentResolver {
 
-  private static final Pattern initialCaps = Pattern.compile("^[A-Z]");
   private static Map<String, Set<String>> acroMap;
   private static boolean acroMapLoaded = false;
 
@@ -70,12 +67,7 @@ public class ProperNounResolver extends MaxentResolver {
     acroMap = new HashMap<String, Set<String>>(15000);
     try {
       BufferedReader str;
-      if (MaxentResolver.loadAsResource()) {
-        str = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(name)));
-      }
-      else {
-        str = new BufferedReader(new FileReader(name));
-      }
+      str = new BufferedReader(new FileReader(name));
       //System.err.println("Reading acronyms database: " + file + " ");
       String line;
       while (null != (line = str.readLine())) {
@@ -101,18 +93,6 @@ public class ProperNounResolver extends MaxentResolver {
     }
   }
 
-  private MentionContext getProperNounExtent(DiscourseEntity de) {
-    for (Iterator<MentionContext> ei = de.getMentions(); ei.hasNext();) { //use first extent which is propername
-      MentionContext xec = ei.next();
-      String xecHeadTag = xec.getHeadTokenTag();
-      if (xecHeadTag.startsWith("NNP") || initialCaps.matcher(xec.getHeadTokenText()).find()) {
-        return xec;
-      }
-    }
-    return null;
-  }
-
-
   private boolean isAcronym(String ecStrip, String xecStrip) {
     Set<String> exSet = acroMap.get(ecStrip);
     if (exSet != null && exSet.contains(xecStrip)) {
@@ -122,9 +102,9 @@ public class ProperNounResolver extends MaxentResolver {
   }
 
   protected List<String> getAcronymFeatures(MentionContext mention, DiscourseEntity entity) {
-    MentionContext xec = getProperNounExtent(entity);
-    String ecStrip = stripNp(mention);
-    String xecStrip = stripNp(xec);
+    MentionContext xec = ResolverUtils.getProperNounExtent(entity);
+    String ecStrip = ResolverUtils.stripNp(mention);
+    String xecStrip = ResolverUtils.stripNp(xec);
     if (ecStrip != null && xecStrip != null) {
       if (isAcronym(ecStrip, xecStrip)) {
         List<String> features = new ArrayList<String>(1);
@@ -140,7 +120,7 @@ public class ProperNounResolver extends MaxentResolver {
     List<String> features = new ArrayList<String>();
     features.addAll(super.getFeatures(mention, entity));
     if (entity != null) {
-      features.addAll(getStringMatchFeatures(mention, entity));
+      features.addAll(ResolverUtils.getStringMatchFeatures(mention, entity));
       features.addAll(getAcronymFeatures(mention, entity));
     }
     return features;

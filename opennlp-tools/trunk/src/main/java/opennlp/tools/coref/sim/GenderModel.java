@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -35,7 +35,7 @@ import opennlp.maxent.io.SuffixSensitiveGISModelReader;
 import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.Event;
 import opennlp.model.MaxentModel;
-import opennlp.tools.coref.Linker;
+import opennlp.tools.coref.resolver.ResolverUtils;
 import opennlp.tools.util.CollectionEventStream;
 import opennlp.tools.util.HashList;
 
@@ -137,13 +137,13 @@ public class GenderModel implements TestGenderModel, TrainSimilarityModel {
    * @return The heuristically determined gender or unknown.
    */
   private GenderEnum getGender(Context mention) {
-    if (Linker.malePronounPattern.matcher(mention.getHeadTokenText()).matches()) {
+    if (ResolverUtils.malePronounPattern.matcher(mention.getHeadTokenText()).matches()) {
       return GenderEnum.MALE;
     }
-    else if (Linker.femalePronounPattern.matcher(mention.getHeadTokenText()).matches()) {
+    else if (ResolverUtils.femalePronounPattern.matcher(mention.getHeadTokenText()).matches()) {
       return GenderEnum.FEMALE;
     }
-    else if (Linker.neuterPronounPattern.matcher(mention.getHeadTokenText()).matches()) {
+    else if (ResolverUtils.neuterPronounPattern.matcher(mention.getHeadTokenText()).matches()) {
       return GenderEnum.NEUTER;
     }
     Object[] mtokens = mention.getTokens();

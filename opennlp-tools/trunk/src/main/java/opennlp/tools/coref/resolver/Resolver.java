@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -29,25 +29,25 @@ import opennlp.tools.coref.mention.MentionContext;
 public interface Resolver {
 
   /** 
-   * Returns true if this resolver is able to resolve the referening experession of the same type
+   * Returns true if this resolver is able to resolve the referring expression of the same type
    * as the specified mention.
    * 
    * @param mention The mention being considered for resolution.
    * 
-   * @return true if the resolver handles this type of refering
+   * @return true if the resolver handles this type of referring
    * expression, false otherwise.
    */
   public boolean canResolve(MentionContext mention);
 
   /** 
-   * Resolve this refering extression to a discourse entity in the discourse model.
+   * Resolve this referring expression to a discourse entity in the discourse model.
    * 
-   * @param ec the refering expression.
+   * @param ec the referring expression.
    * @param dm the discourse model.
    * 
-   * @return the discourse entity which the resolver beleives this
-   * refering expression refers to or null if no discourse entity is
-   * coreferent with the refering expression.
+   * @return the discourse entity which the resolver believes this
+   * referring expression refers to or null if no discourse entity is
+   * coreferent with the referring expression.
    */
   public DiscourseEntity resolve(MentionContext ec, DiscourseModel dm);
 
@@ -59,7 +59,7 @@ public interface Resolver {
    * @param mention The mention which is being used for training.
    * @param model the discourse model.
    * 
-   * @return the discourse entity which is refered to by the refering
+   * @return the discourse entity which is referred to by the referring
    * expression or null if no discourse entity is referenced.
    */
   public DiscourseEntity retain(MentionContext mention, DiscourseModel model);

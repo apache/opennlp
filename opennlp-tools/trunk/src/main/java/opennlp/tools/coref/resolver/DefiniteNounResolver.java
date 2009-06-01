@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -44,7 +44,7 @@ public class DefiniteNounResolver extends MaxentResolver {
     Object[] mtokens = mention.getTokens();
 
     String firstTok = mention.getFirstTokenText().toLowerCase();
-    boolean rv = mtokens.length > 1 && !mention.getHeadTokenTag().startsWith("NNP") && definiteArticle(firstTok, mention.getFirstTokenTag());
+    boolean rv = mtokens.length > 1 && !mention.getHeadTokenTag().startsWith("NNP") && ResolverUtils.definiteArticle(firstTok, mention.getFirstTokenTag());
     //if (rv) {
     //  System.err.println("defNp "+ec);
     //}
@@ -55,9 +55,9 @@ public class DefiniteNounResolver extends MaxentResolver {
     List<String> features = new ArrayList<String>();
     features.addAll(super.getFeatures(mention, entity));
     if (entity != null) {
-      features.addAll(getContextFeatures(mention));
-      features.addAll(getStringMatchFeatures(mention,entity));
-      features.addAll(getDistanceFeatures(mention,entity));
+      features.addAll(ResolverUtils.getContextFeatures(mention));
+      features.addAll(ResolverUtils.getStringMatchFeatures(mention,entity));
+      features.addAll(ResolverUtils.getDistanceFeatures(mention,entity));
     }
     return (features);
   }

@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -31,13 +31,11 @@ import java.util.Map;
 import java.util.Set;
 
 import opennlp.maxent.GIS;
-import opennlp.maxent.io.PlainTextGISModelReader;
 import opennlp.maxent.io.SuffixSensitiveGISModelReader;
 import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.Event;
 import opennlp.model.MaxentModel;
-import opennlp.tools.coref.resolver.AbstractResolver;
-import opennlp.tools.coref.resolver.MaxentResolver;
+import opennlp.tools.coref.resolver.ResolverUtils;
 import opennlp.tools.util.CollectionEventStream;
 import opennlp.tools.util.HashList;
 
@@ -71,12 +69,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
       events = new ArrayList<Event>();
     }
     else {
-      if (MaxentResolver.loadAsResource()) {
-        testModel = (new PlainTextGISModelReader(new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(modelName))))).getModel();
-      }
-      else {
-        testModel = (new SuffixSensitiveGISModelReader(new File(modelName+modelExtension))).getModel();
-      }
+      testModel = (new SuffixSensitiveGISModelReader(new File(modelName+modelExtension))).getModel();
       SAME_INDEX = testModel.getIndex(SAME);
     }
   }
@@ -413,7 +406,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
   private List<String> getNamePronounFeatures(Context name, Context pronoun) {
     List<String> features = new ArrayList<String>(2);
     features.add("nw=" + name.getNameType() + "," + pronoun.getHeadTokenText().toLowerCase());
-    features.add("ng=" + name.getNameType() + "," + AbstractResolver.getPronounGender(
+    features.add("ng=" + name.getNameType() + "," + ResolverUtils.getPronounGender(
         pronoun.getHeadTokenText().toLowerCase()));
     return features;
   }
@@ -422,7 +415,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
     List<String> features = new ArrayList<String>();
     Set<String> synsets1 = common.getSynsets();
     String p = pronoun.getHeadTokenText().toLowerCase();
-    String gen = AbstractResolver.getPronounGender(p);
+    String gen = ResolverUtils.getPronounGender(p);
     features.add("wn=" + p + "," + common.getNameType());
     for (Iterator<String> si = synsets1.iterator(); si.hasNext();) {
       String synset = si.next();
@@ -447,7 +440,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
   private List<String> getNumberPronounFeatures(Context number, Context pronoun) {
     List<String> features = new ArrayList<String>();
     String p = pronoun.getHeadTokenText().toLowerCase();
-    String gen = AbstractResolver.getPronounGender(p);
+    String gen = ResolverUtils.getPronounGender(p);
     features.add("wt=" + p + "," + number.getHeadTokenTag());
     features.add("wn=" + p + "," + number.getNameType());
     features.add("wt=" + gen + "," + number.getHeadTokenTag());
@@ -523,8 +516,8 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
 
   private List<String> getPronounPronounFeatures(Context pronoun1, Context pronoun2) {
     List<String> features = new ArrayList<String>();
-    String g1 = AbstractResolver.getPronounGender(pronoun1.getHeadTokenText());
-    String g2 = AbstractResolver.getPronounGender(pronoun2.getHeadTokenText());
+    String g1 = ResolverUtils.getPronounGender(pronoun1.getHeadTokenText());
+    String g2 = ResolverUtils.getPronounGender(pronoun2.getHeadTokenText());
     if (g1.equals(g2)) {
       features.add("sameGender");
     }

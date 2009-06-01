@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -94,9 +94,9 @@ public class DefaultNonReferentialResolver implements NonReferentialResolver {
   }
 
   /**
-   * Returns a list of featues used to predict whether the sepcified mention is non-referential.
-   * @param mention The mention under considereation.
-   * @return a list of featues used to predict whether the sepcified mention is non-referential.
+   * Returns a list of features used to predict whether the specified mention is non-referential.
+   * @param mention The mention under consideration.
+   * @return a list of features used to predict whether the specified mention is non-referential.
    */
   protected List<String> getNonReferentialFeatures(MentionContext mention) {
     List<String> features = new ArrayList<String>();
@@ -104,12 +104,12 @@ public class DefaultNonReferentialResolver implements NonReferentialResolver {
     //System.err.println("getNonReferentialFeatures: mention has "+mtokens.length+" tokens");
     for (int ti = 0; ti <= mention.getHeadTokenIndex(); ti++) {
       Parse tok = mtokens[ti];
-      List<String> wfs = MaxentResolver.getWordFeatures(tok);
+      List<String> wfs = ResolverUtils.getWordFeatures(tok);
       for (int wfi = 0; wfi < wfs.size(); wfi++) {
         features.add("nr" + wfs.get(wfi));
       }
     }
-    features.addAll(MaxentResolver.getContextFeatures(mention));
+    features.addAll(ResolverUtils.getContextFeatures(mention));
     return features;
   }
 
