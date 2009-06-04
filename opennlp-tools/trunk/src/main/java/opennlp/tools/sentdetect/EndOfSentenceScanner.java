@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -32,7 +32,7 @@ import java.util.List;
  * Created: Sat Oct 27 11:42:07 2001
  *
  * @author Eric D. Friedman
- * @version $Id: EndOfSentenceScanner.java,v 1.2 2009-01-24 01:32:19 joernkottmann Exp $
+ * @version $Id: EndOfSentenceScanner.java,v 1.3 2009-06-04 22:54:23 tsmorton Exp $
  */
 
 public interface EndOfSentenceScanner {
@@ -44,7 +44,7 @@ public interface EndOfSentenceScanner {
    public char[] getEndOfSentenceCharacters();
 
     /**
-     * The receiver scans `s' for sentence ending characters and
+     * The receiver scans the specified string for sentence ending characters and
      * returns their offsets.
      *
      * @param s a <code>String</code> value

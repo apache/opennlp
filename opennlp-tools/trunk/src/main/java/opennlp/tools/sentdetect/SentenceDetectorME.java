@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -30,7 +30,6 @@ import java.util.List;
 import opennlp.maxent.GIS;
 import opennlp.maxent.GISModel;
 import opennlp.maxent.PlainTextByLineDataStream;
-import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
@@ -42,8 +41,6 @@ import opennlp.tools.util.Span;
  * entropy model is used to evaluate the characters ".", "!", and "?" in a
  * string to determine if they signify the end of a sentence.
  *
- * @author Jason Baldridge
- * @author Tom Morton
  */
 public class SentenceDetectorME implements SentenceDetector {
 
@@ -56,6 +53,8 @@ public class SentenceDetectorME implements SentenceDetector {
    * Constant indicates no sentence split.
    */
   public static final String NO_SPLIT ="F";
+  
+  private static final Double ONE = new Double(1);
 
   /**
    * The maximum entropy model to use to evaluate contexts.
@@ -103,22 +102,19 @@ public class SentenceDetectorME implements SentenceDetector {
    * @return   A string array containing individual sentences as elements.
    */
   public String[] sentDetect(String s) {
-    Span[] starts = sentPosDetect(s);
-
+    Span[] spans = sentPosDetect(s);
     String sentences[];
+    if (spans.length != 0) {
 
-    if (starts.length != 0) {
+      sentences = new String[spans.length];
 
-      sentences = new String[starts.length];
-
-      for (int si = 1; si < starts.length; si++) {
-        sentences[si] = starts[si].getCoveredText(s);
+      for (int si = 0; si < spans.length; si++) {
+        sentences[si] = spans[si].getCoveredText(s);
       }
     }
     else {
       sentences = new String[] {s};
     }
-
     return sentences;
   }
 
@@ -132,26 +128,6 @@ public class SentenceDetectorME implements SentenceDetector {
     while (pos < s.length() && Character.isWhitespace(s.charAt(pos)))
       pos++;
     return pos;
-  }
-
-  private static boolean isWhiteSpaceChar(char theChar) {
-
-    boolean result;
-
-    switch (theChar) {
-    case ' ':
-      result = true;
-      break;
-
-    case '\n':
-      result = true;
-      break;
-
-    default:
-      result = false;
-    }
-
-    return result;
   }
 
   /**
@@ -170,15 +146,15 @@ public class SentenceDetectorME implements SentenceDetector {
     List<Integer> positions = new ArrayList<Integer>(enders.size());
 
     for (int i = 0, end = enders.size(), index = 0; i < end; i++) {
-      Integer candidate = (Integer) enders.get(i);
-      int cint = candidate.intValue();
+      Integer candidate = enders.get(i);
+      int cint = candidate;
       // skip over the leading parts of non-token final delimiters
       int fws = getFirstWS(s,cint + 1);
-      if (i + 1 < end && ((Integer) enders.get(i + 1)).intValue() < fws) {
+      if (i + 1 < end && enders.get(i + 1) < fws) {
         continue;
       }
 
-      double[] probs = model.eval(cgen.getContext(sb.toString(), candidate.intValue()));
+      double[] probs = model.eval(cgen.getContext(sb.toString(), cint));
       String bestOutcome = model.getBestOutcome(probs);
       sentProb *= probs[model.getIndex(bestOutcome)];
 
@@ -196,37 +172,37 @@ public class SentenceDetectorME implements SentenceDetector {
       }
     }
 
-    int[] sentPositions = new int[positions.size()];
-    for (int i = 0; i < sentPositions.length; i++) {
-      sentPositions[i] = ((Integer) positions.get(i)).intValue();
+    int[] starts = new int[positions.size()];
+    for (int i = 0; i < starts.length; i++) {
+      starts[i] = positions.get(i);
     }
 
     // Now convert the sent indexes to spans
-
-    Span sentSpans[] = new Span[sentPositions.length];
-
-    for (int i = 0, begin = 0; i < sentPositions.length; i++) {
-
-      // correct index difference between annotation index and opennlp index
-      int end = sentPositions[i] + 1;
-
-      // remove leading spaces
-      for (int j = begin; j < end && isWhiteSpaceChar(s.charAt(j));
-          j++) {
-        begin = j + 1;
-      }
-
-      // remove trailing spaces
-      // for (int i = end; i > begin && documentText.charAt(i) == ' '; i--) {
-      //  end = i;
-      //}
-
-      sentSpans[i] = new Span(begin, end);
-
-      begin = end;
+    if (starts.length == 0) {
+      return new Span[] {};
     }
-
-    return sentSpans;
+    boolean leftover = starts[starts.length - 1] != s.length();
+    Span[] spans = new Span[leftover? starts.length + 1 : starts.length];
+    for (int si=0;si<starts.length;si++) {
+      int start,end;
+      if (si==0) {
+        start = 0;
+      }
+      else {
+        start = starts[si-1];
+      }
+      end = starts[si];
+      while (end > 0 && Character.isWhitespace(s.charAt(end-1))) {
+        end--;
+      }
+      spans[si]=new Span(start,end);
+    }
+    if (leftover) {
+      spans[spans.length-1] = new Span(starts[starts.length-1],s.length());
+      sentProbs.add(ONE);
+    }
+    //System.err.println(java.util.Arrays.asList(spans));
+    return(spans);
   }
 
   /**
@@ -261,9 +237,15 @@ public class SentenceDetectorME implements SentenceDetector {
   protected boolean isAcceptableBreak(String s, int fromIndex, int candidateIndex) {
     return true;
   }
-
+  
   public static SentenceModel train(String languageCode, Iterator<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations) {
+    return train(languageCode, samples, useTokenEnd, abbreviations,5,100);
+  }
+  
+  public static SentenceModel train(String languageCode, Iterator<SentenceSample> samples,
+      boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) {
+
 
     Factory factory = new Factory();
 
@@ -271,7 +253,7 @@ public class SentenceDetectorME implements SentenceDetector {
         factory.createSentenceContextGenerator(languageCode),
         factory.createEndOfSentenceScanner(languageCode));
 
-    GISModel sentModel = GIS.trainModel(eventStream, 100, 5);
+    GISModel sentModel = GIS.trainModel(eventStream, cutoff, iterations);
 
     return new SentenceModel(languageCode, sentModel,
         useTokenEnd, abbreviations);
@@ -329,7 +311,6 @@ public class SentenceDetectorME implements SentenceDetector {
 
     File inFile = new File(args[ai++]);
     File outFile = new File(args[ai++]);
-    AbstractModel mod;
 
     try {
       if (lang == null) {

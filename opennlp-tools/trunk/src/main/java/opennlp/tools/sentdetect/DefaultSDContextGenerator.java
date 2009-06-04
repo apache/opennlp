@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -25,9 +25,6 @@ import java.util.Set;
 /**
  * Generate event contexts for maxent decisions for sentence detection.
  *
- * @author      Jason Baldridge
- * @author      Eric D. Friedman
- * @version     $Revision: 1.2 $, $Date: 2009-01-24 01:32:19 $
  */
 public class DefaultSDContextGenerator implements SDContextGenerator {
 
@@ -223,7 +220,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
   }
 
   /**
-   * Finds the index of the nearest space before a specified index.
+   * Finds the index of the nearest space before a specified index which is not itself preceded by a space.
    *
    * @param sb   The string buffer which contains the text being examined.
    * @param seek The index to begin searching from.
@@ -231,17 +228,17 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    */
   private static final int previousSpaceIndex(CharSequence sb, int seek) {
     seek--;
-    while (seek > 0) {
-      if (sb.charAt(seek) == ' ') {
-        while (seek > 0 && sb.charAt(seek - 1) == ' ')
-          seek--;
-        return seek;
-      }
+    while (seek > 0 && sb.charAt(seek) != ' ') {
       seek--;
+    }
+    if (seek > 0 && sb.charAt(seek) == ' ') {
+      while (seek > 0 && sb.charAt(seek - 1) == ' ')
+        seek--;
+      return seek;
     }
     return 0;
   }
-
+  
   /**
    * Finds the index of the nearest space after a specified index.
    *

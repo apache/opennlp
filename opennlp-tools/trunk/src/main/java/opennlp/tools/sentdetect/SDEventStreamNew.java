@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -52,16 +52,10 @@ public class SDEventStreamNew extends AbstractEventStream<SentenceSample> {
         sample.getDocument()).iterator(); it.hasNext();) {
 
       int candidate = it.next();
-
       String type = SentenceDetectorME.NO_SPLIT;
-
-      for (Span sentenceSpan : sample.getSentences()) {
-        if (candidate == sentenceSpan.getEnd()) {
-          type = SentenceDetectorME.SPLIT;
-          break;
-        }
+      if (!it.hasNext()) {
+        type = SentenceDetectorME.SPLIT;
       }
-
       events.add(new Event(type, cg.getContext(sample.getDocument(), candidate)));
     }
 
