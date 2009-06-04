@@ -122,7 +122,7 @@ Are you going to her party next friday?
 Oh yes, I'd really like to.
 But in fact I don't know yet where it takes place.
 I can tell you: ring at Baumann, Meisenstra§e 5, in 81737 Munich.
-The party starts at  9 p.m..
+The party starts at  9 p.m.
 I hope you'll find it.
 Thank you very much, see you next friday!
 
@@ -134,3 +134,5 @@ So I decided to move into a smaller town.
 Now I'm a tenant with an elderly widow. 
 We live in BŸrgerstra§e 2 in 63737 Heidelberg.
 I really like the smalltown flair and my studies at Heidelberg's notable university.
+
+The stock rose by 3.5% yesterday in heavy trading.
