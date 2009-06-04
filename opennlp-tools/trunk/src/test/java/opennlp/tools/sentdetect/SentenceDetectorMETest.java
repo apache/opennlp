@@ -28,7 +28,7 @@ import opennlp.maxent.PlainTextByLineDataStream;
  * Tests for the {@link SentenceDetectorME} class.
  */
 public class SentenceDetectorMETest extends TestCase {
-
+  
   public void testSentenceDetector() {
 
     InputStream in = getClass().getResourceAsStream(
@@ -36,14 +36,41 @@ public class SentenceDetectorMETest extends TestCase {
 
     SentenceModel sentdetectModel = SentenceDetectorME.train(
         "en", new SentenceSampleStream(new PlainTextByLineDataStream(
-        new InputStreamReader(in))), true, null);
+        new InputStreamReader(in))), true, null,100,0);
 
-    SentenceDetector sentDetect = new SentenceDetectorME(sentdetectModel);
+    SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
 
-    String sampleSentences = "First test meal. Second test sentence.";
-
-    sentDetect.sentPosDetect(sampleSentences);
-
-    // TODO: check result
+    String sampleSentences1 = "This is a test. There are many tests, this is the second.";
+    String[] sents = sentDetect.sentDetect(sampleSentences1);
+    assertTrue(sents.length == 2);
+    assertTrue(sents[0].equals("This is a test."));
+    assertTrue(sents[1].equals("There are many tests, this is the second."));
+    double[] probs = sentDetect.getSentenceProbabilities();
+    assertTrue(probs.length == 2);
+    String sampleSentences2 = "This is a test. There are many tests, this is the second";
+    sents = sentDetect.sentDetect(sampleSentences2);
+    assertTrue(sents.length == 2);
+    probs = sentDetect.getSentenceProbabilities();
+    assertTrue(probs.length == 2);
+    assertTrue(sents[0].equals("This is a test."));
+    assertTrue(sents[1].equals("There are many tests, this is the second"));
+    assertTrue(sents.length == 2);
+    probs = sentDetect.getSentenceProbabilities();
+    assertTrue(probs.length == 2);
+    String sampleSentences3 = "This is a \"test\". He said \"There are many tests, this is the second.\"";
+    sents = sentDetect.sentDetect(sampleSentences3);
+    assertTrue(sents.length == 2);
+    probs = sentDetect.getSentenceProbabilities();
+    assertTrue(probs.length == 2);
+    assertTrue(sents[0].equals("This is a \"test\"."));
+    assertTrue(sents[1].equals("He said \"There are many tests, this is the second.\""));
+    String sampleSentences4 = "This is a \"test\". I said \"This is a test.\"  Any questions?";
+    sents = sentDetect.sentDetect(sampleSentences4);
+    assertTrue(sents.length == 3);
+    probs = sentDetect.getSentenceProbabilities();
+    assertTrue(probs.length == 3);
+    assertTrue(sents[0].equals("This is a \"test\"."));
+    assertTrue(sents[1].equals("I said \"This is a test.\""));
+    assertTrue(sents[2].equals("Any questions?"));
   }
 }
