@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 
 import junit.framework.TestCase;
 import opennlp.maxent.PlainTextByLineDataStream;
+import opennlp.tools.util.Span;
 
 /**
  * Tests for the {@link SentenceDetectorME} class.
@@ -36,10 +37,13 @@ public class SentenceDetectorMETest extends TestCase {
 
     SentenceModel sentdetectModel = SentenceDetectorME.train(
         "en", new SentenceSampleStream(new PlainTextByLineDataStream(
-        new InputStreamReader(in))), true, null,100,0);
-
+        new InputStreamReader(in))), true, null, 100, 0);
+    
+    assertEquals("en", sentdetectModel.getLanguage());
+    
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
 
+    // Tests sentence detector with sentDetect method
     String sampleSentences1 = "This is a test. There are many tests, this is the second.";
     String[] sents = sentDetect.sentDetect(sampleSentences1);
     assertTrue(sents.length == 2);
@@ -72,5 +76,13 @@ public class SentenceDetectorMETest extends TestCase {
     assertTrue(sents[0].equals("This is a \"test\"."));
     assertTrue(sents[1].equals("I said \"This is a test.\""));
     assertTrue(sents[2].equals("Any questions?"));
+    
+    // Test that sentPosPos also works
+    Span pos[] = sentDetect.sentPosDetect(sampleSentences2);
+    assertTrue(pos.length == 2);
+    probs = sentDetect.getSentenceProbabilities();
+    assertTrue(probs.length == 2);
+    assertEquals(new Span(0, 15), pos[0]);
+    assertEquals(new Span(16, 56), pos[1]);
   }
 }
