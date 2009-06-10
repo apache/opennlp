@@ -76,8 +76,31 @@ public class SentenceDetectorMETest extends TestCase {
     assertTrue(sents[0].equals("This is a \"test\"."));
     assertTrue(sents[1].equals("I said \"This is a test.\""));
     assertTrue(sents[2].equals("Any questions?"));
+    String sampleSentences5 = "This is a one sentence test space at the end.    ";
+    sents = sentDetect.sentDetect(sampleSentences5);
+    assertEquals(1, sentDetect.getSentenceProbabilities().length);
+    assertTrue(sents[0].equals("This is a one sentence test space at the end."));
+    String sampleSentences6 = "This is a one sentences test with tab at the end.            ";
+    sents = sentDetect.sentDetect(sampleSentences6);
+    assertTrue(sents[0].equals("This is a one sentences test with tab at the end."));
+    String sampleSentences7 = "This is a test.    With spaces between the two sentences.";
+    sents = sentDetect.sentDetect(sampleSentences7);
+    assertTrue(sents[0].equals("This is a test."));
+    assertTrue(sents[1].equals("With spaces between the two sentences."));
+    String sampleSentences9 = "";
+    sents = sentDetect.sentDetect(sampleSentences9);
+    assertEquals(0, sents.length);
+    String sampleSentences10 = "               "; // whitespaces and tabs
+    sents = sentDetect.sentDetect(sampleSentences10);
+    assertEquals(0, sents.length);
+    String sampleSentences11 = "This is test sentence without a dot at the end and spaces          ";
+    sents = sentDetect.sentDetect(sampleSentences11);
+    assertTrue(sents[0].equals("This is test sentence without a dot at the end and spaces"));
+    String sampleSentence12 = "    This is a test.";
+    sents = sentDetect.sentDetect(sampleSentence12);
+    assertTrue(sents[0].equals("This is a test."));
     
-    // Test that sentPosPos also works
+    // Test that sentPosDetect also works
     Span pos[] = sentDetect.sentPosDetect(sampleSentences2);
     assertTrue(pos.length == 2);
     probs = sentDetect.getSentenceProbabilities();

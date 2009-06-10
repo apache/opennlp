@@ -47,12 +47,12 @@ public class SentenceDetectorME implements SentenceDetector {
   /**
    * Constant indicates a sentence split.
    */
-  public static final String SPLIT ="T";
+  public static final String SPLIT ="s";
 
   /**
    * Constant indicates no sentence split.
    */
-  public static final String NO_SPLIT ="F";
+  public static final String NO_SPLIT ="n";
   
   private static final Double ONE = new Double(1);
 
@@ -113,7 +113,7 @@ public class SentenceDetectorME implements SentenceDetector {
       }
     }
     else {
-      sentences = new String[] {s};
+      sentences = new String[] {};
     }
     return sentences;
   }
@@ -177,16 +177,37 @@ public class SentenceDetectorME implements SentenceDetector {
       starts[i] = positions.get(i);
     }
 
-    // Now convert the sent indexes to spans
+    // string does not contain sentence end positions
     if (starts.length == 0) {
-      return new Span[] {};
+      
+        // remove leading and trailing whitespace
+        int start = 0;
+        int end = s.length();
+
+        while (start < s.length() && Character.isWhitespace(s.charAt(start)))
+          start++;
+        
+        while (end > 0 && Character.isWhitespace(s.charAt(end - 1)))
+          end--;
+        
+        Span span = new Span(start, end);
+        
+        if (span.length() > 0)
+          return new Span[] {span};
+        else 
+          return new Span[0];
     }
+    
+    // Now convert the sent indexes to spans
     boolean leftover = starts[starts.length - 1] != s.length();
     Span[] spans = new Span[leftover? starts.length + 1 : starts.length];
     for (int si=0;si<starts.length;si++) {
       int start,end;
       if (si==0) {
         start = 0;
+        
+        while (si < starts.length && Character.isWhitespace(s.charAt(start)))
+          start++;
       }
       else {
         start = starts[si-1];
@@ -201,8 +222,8 @@ public class SentenceDetectorME implements SentenceDetector {
       spans[spans.length-1] = new Span(starts[starts.length-1],s.length());
       sentProbs.add(ONE);
     }
-    //System.err.println(java.util.Arrays.asList(spans));
-    return(spans);
+    
+    return spans;
   }
 
   /**

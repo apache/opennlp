@@ -28,8 +28,8 @@ public class AdditionalContextFeatureGenerator extends FeatureGeneratorAdapter {
 
   private String[][] additionalContext;
 
-  public AdditionalContextFeatureGenerator() {
-  }
+//  public AdditionalContextFeatureGenerator() {
+//  }
 
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
 
