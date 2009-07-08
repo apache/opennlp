@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 import opennlp.tools.util.Span;
 
 /**
- * Data structure for holding parse constitents.
+ * Data structure for holding parse constituents.
  */
 public class Parse implements Cloneable, Comparable<Parse> {
 
@@ -914,6 +914,41 @@ public class Parse implements Cloneable, Comparable<Parse> {
       node = node.getParent();
     }
     return null;
+  }
+  
+  public boolean equals(Object o) {
+    if (o instanceof Parse) {
+      Parse p = (Parse) o;
+      if (this.label == null) {
+        if (p.label != null) {
+          return false;
+        }
+      }
+      else if (!this.label.equals(p.label)) {
+        return false;
+      }
+      if (!this.span.equals(p.span)) {
+        return false;
+      }
+      if (!this.text.equals(p.text)) {
+        return false;
+      }
+      for (int ci=0;ci<parts.size();ci++) {
+        if (!parts.get(ci).equals(p.parts.get(ci))) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+  
+  public int hashCode() {
+    int result = 17;
+    result = 37*result + span.hashCode();
+    result = 37*result + label.hashCode();
+    result = 37*result + text.hashCode();
+    return result;
   }
 
   public int compareTo(Parse p) {

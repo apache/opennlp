@@ -27,7 +27,7 @@ public class ParseTest extends TestCase {
   public void testParseClone() {
     Parse p1 = Parse.parseParse("(TOP  (S (S (NP-SBJ (PRP She)  )(VP (VBD was)  (ADVP (RB just)  )(NP-PRD (NP (DT another)  (NN freighter)  )(PP (IN from)  (NP (DT the)  (NNPS States)  )))))(, ,)  (CC and) (S (NP-SBJ (PRP she)  )(VP (VBD seemed)  (ADJP-PRD (ADJP (RB as)  (JJ commonplace)  )(PP (IN as)  (NP (PRP$ her)  (NN name)  )))))(. .)  ))");
     Parse p2 = (Parse) p1.clone();
-    assert(p1.equals(p2));
-    assert(p2.equals(p1));
+    assertTrue(p1.equals(p2));
+    assertTrue(p2.equals(p1));
   }
 }
