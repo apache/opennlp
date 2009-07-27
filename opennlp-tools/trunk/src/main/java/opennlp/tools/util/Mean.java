@@ -40,10 +40,23 @@ public class Mean {
    * to the arithmetic mean.
    */
   public void add(double value) {
-    sum += value;
-    count++;
+    add(value, 1);
   }
 
+  /**
+   * Adds a value count times to the arithmetic mean.
+   * 
+   * @param value the value which should be added
+   * to the arithmetic mean.
+   * 
+   * @param count number of times the value should be added to
+   * arithmetic mean.
+   */
+  public void add(double value, int count) {
+    sum += value * count;
+    this.count += count;    
+  }
+  
   /**
    * Retrieves the mean of all values added with
    * {@link #add(double)} or 0 if there are zero added
