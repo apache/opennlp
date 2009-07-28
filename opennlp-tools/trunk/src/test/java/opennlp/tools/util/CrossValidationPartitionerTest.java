@@ -20,31 +20,30 @@ package opennlp.tools.util;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import opennlp.tools.util.CrossValidationPartitioner.TrainingIterator;
+import opennlp.tools.util.CrossValidationPartioner.TrainingSampleStream;
 
 import junit.framework.TestCase;
 
 /**
- * Test for the {@link CrossValidationPartitioner} class.
+ * Test for the {@link CrossValidationPartioner} class.
  */
 public class CrossValidationPartitionerTest extends TestCase {
 
-  public void testEmptyDataSet() {
+  public void testEmptyDataSet() throws ObjectStreamException {
     Collection<String> emptyCollection = Collections.emptySet();
     
-    CrossValidationPartitioner<String> partitioner = 
-        new CrossValidationPartitioner<String>(emptyCollection, 2);
+    CrossValidationPartioner<String> partitioner = 
+        new CrossValidationPartioner<String>(emptyCollection, 2);
     
     assertTrue(partitioner.hasNext());
-    assertFalse(partitioner.next().hasNext());
+    assertNull(partitioner.next().read());
     
     assertTrue(partitioner.hasNext());
-    assertFalse(partitioner.next().hasNext());
+    assertNull(partitioner.next().read());
     
     assertFalse(partitioner.hasNext());
     
@@ -63,7 +62,7 @@ public class CrossValidationPartitionerTest extends TestCase {
   /**
    * Test 3-fold cross validation on a small sample data set.
    */
-  public void test3FoldCV() {
+  public void test3FoldCV() throws ObjectStreamException {
     List<String> data = new LinkedList<String>();
     data.add("01");
     data.add("02");
@@ -76,190 +75,119 @@ public class CrossValidationPartitionerTest extends TestCase {
     data.add("09");
     data.add("10");
     
-    CrossValidationPartitioner<String> partitioner = new CrossValidationPartitioner<String>(data, 3);
+    CrossValidationPartioner<String> partitioner = new CrossValidationPartioner<String>(data, 3);
     
     // first partition
     assertTrue(partitioner.hasNext());
-    TrainingIterator<String> firstTraining = partitioner.next();
-    assertTrue(firstTraining.hasNext());
-    assertEquals("02", firstTraining.next());
-
-    assertTrue(firstTraining.hasNext());
-    assertEquals("03", firstTraining.next());
+    TrainingSampleStream<String> firstTraining = partitioner.next();
     
-    assertTrue(firstTraining.hasNext());
-    assertEquals("05", firstTraining.next());
+    assertEquals("02", firstTraining.read());
+    assertEquals("03", firstTraining.read());
+    assertEquals("05", firstTraining.read());
+    assertEquals("06", firstTraining.read());
+    assertEquals("08", firstTraining.read());
+    assertEquals("09", firstTraining.read());
+    assertNull(firstTraining.read());
     
-    assertTrue(firstTraining.hasNext());
-    assertEquals("06", firstTraining.next());
-
-    assertTrue(firstTraining.hasNext());
-    assertEquals("08", firstTraining.next());
+    ObjectStream<String> firstTest = firstTraining.getTestSampleStream();
     
-    assertTrue(firstTraining.hasNext());
-    assertEquals("09", firstTraining.next());
-    
-    assertFalse(firstTraining.hasNext());
-    
-    Iterator<String> firstTest = firstTraining.getTestIterator();
-    
-    assertTrue(firstTest.hasNext());
-    assertEquals("01", firstTest.next());
-    
-    assertTrue(firstTest.hasNext());
-    assertEquals("04", firstTest.next());
-    
-    assertTrue(firstTest.hasNext());
-    assertEquals("07", firstTest.next());
-    
-    assertTrue(firstTest.hasNext());
-    assertEquals("10", firstTest.next());
-    
-    assertFalse(firstTest.hasNext());
+    assertEquals("01", firstTest.read());
+    assertEquals("04", firstTest.read());
+    assertEquals("07", firstTest.read());
+    assertEquals("10", firstTest.read());
+    assertNull(firstTest.read());
     
     // second partition
     assertTrue(partitioner.hasNext());
-    TrainingIterator<String> secondTraining = partitioner.next();
+    TrainingSampleStream<String> secondTraining = partitioner.next();
     
-    assertTrue(secondTraining.hasNext());
-    assertEquals("01", secondTraining.next());
+    assertEquals("01", secondTraining.read());
+    assertEquals("03", secondTraining.read());
+    assertEquals("04", secondTraining.read());
+    assertEquals("06", secondTraining.read());
+    assertEquals("07", secondTraining.read());
+    assertEquals("09", secondTraining.read());
+    assertEquals("10", secondTraining.read());
+    
+    assertNull(secondTraining.read());
+    
+    ObjectStream<String> secondTest = secondTraining.getTestSampleStream();
 
-    assertTrue(secondTraining.hasNext());
-    assertEquals("03", secondTraining.next());
-    
-    assertTrue(secondTraining.hasNext());
-    assertEquals("04", secondTraining.next());
-    
-    assertTrue(secondTraining.hasNext());
-    assertEquals("06", secondTraining.next());
-    
-    assertTrue(secondTraining.hasNext());
-    assertEquals("07", secondTraining.next());
-    
-    assertTrue(secondTraining.hasNext());
-    assertEquals("09", secondTraining.next());
-    
-    assertTrue(secondTraining.hasNext());
-    assertEquals("10", secondTraining.next());
-    
-    assertFalse(secondTraining.hasNext());
-    
-    Iterator<String> secondTest = secondTraining.getTestIterator();
-
-    assertTrue(secondTest.hasNext());
-    assertEquals("02", secondTest.next());
-    
-    assertTrue(secondTest.hasNext());
-    assertEquals("05", secondTest.next());
-    
-    assertTrue(secondTest.hasNext());
-    assertEquals("08", secondTest.next());
-    
-    assertFalse(secondTest.hasNext());
+    assertEquals("02", secondTest.read());
+    assertEquals("05", secondTest.read());
+    assertEquals("08", secondTest.read());
+    assertNull(secondTest.read());
     
     // third partition
     assertTrue(partitioner.hasNext());
-    TrainingIterator<String> thirdTraining = partitioner.next();
+    TrainingSampleStream<String> thirdTraining = partitioner.next();
     
-    assertTrue(thirdTraining.hasNext());
-    assertEquals("01", thirdTraining.next());
-
-    assertTrue(thirdTraining.hasNext());
-    assertEquals("02", thirdTraining.next());
+    assertEquals("01", thirdTraining.read());
+    assertEquals("02", thirdTraining.read());
+    assertEquals("04", thirdTraining.read());
+    assertEquals("05", thirdTraining.read());
+    assertEquals("07", thirdTraining.read());
+    assertEquals("08", thirdTraining.read());
+    assertEquals("10", thirdTraining.read());
+    assertNull(thirdTraining.read());
     
-    assertTrue(thirdTraining.hasNext());
-    assertEquals("04", thirdTraining.next());
+    ObjectStream<String> thirdTest = thirdTraining.getTestSampleStream();
     
-    assertTrue(thirdTraining.hasNext());
-    assertEquals("05", thirdTraining.next());
-    
-    assertTrue(thirdTraining.hasNext());
-    assertEquals("07", thirdTraining.next());
-    
-    assertTrue(thirdTraining.hasNext());
-    assertEquals("08", thirdTraining.next());
-    
-    assertTrue(thirdTraining.hasNext());
-    assertEquals("10", thirdTraining.next());
-    
-    assertFalse(thirdTraining.hasNext());
-    
-    Iterator<String> thirdTest = thirdTraining.getTestIterator();
-    
-    assertTrue(thirdTest.hasNext());
-    assertEquals("03", thirdTest.next());
-    
-    assertTrue(thirdTest.hasNext());
-    assertEquals("06", thirdTest.next());
-    
-    assertTrue(thirdTest.hasNext());
-    assertEquals("09", thirdTest.next());
-    
-    assertFalse(thirdTest.hasNext());
+    assertEquals("03", thirdTest.read());
+    assertEquals("06", thirdTest.read());
+    assertEquals("09", thirdTest.read());
+    assertNull(thirdTest.read());
     
     assertFalse(partitioner.hasNext());
   }
 
-  public void testFailSafty() {
+  public void testFailSafty() throws ObjectStreamException {
     List<String> data = new LinkedList<String>();
     data.add("01");
     data.add("02");
     data.add("03");
     data.add("04");
     
-    CrossValidationPartitioner<String> partitioner = new CrossValidationPartitioner<String>(data, 4);
+    CrossValidationPartioner<String> partitioner = new CrossValidationPartioner<String>(data, 4);
     
     // Test that iterator from previous partition fails
     // if it is accessed
-    TrainingIterator<String> firstTraining = partitioner.next();
-    assertTrue(firstTraining.hasNext());
-    assertEquals("02", firstTraining.next());
+    TrainingSampleStream<String> firstTraining = partitioner.next();
+    assertEquals("02", firstTraining.read());
     
-    TrainingIterator<String> secondTraining = partitioner.next();
-    
-    try {
-      firstTraining.hasNext();
-      fail();
-    }
-    catch (IllegalStateException e) {}
+    TrainingSampleStream<String> secondTraining = partitioner.next();
     
     try {
-      firstTraining.next();
+      firstTraining.read();
       fail();
     }
     catch (IllegalStateException e) {}
 
     try {
-      firstTraining.getTestIterator();
+      firstTraining.getTestSampleStream();
       fail();
     }
     catch (IllegalStateException e) {}
     
     // Test that training iterator fails if there is a test iterator
-    secondTraining.getTestIterator();
+    secondTraining.getTestSampleStream();
     
     try {
-      secondTraining.hasNext();
+      secondTraining.read();
       fail();
     }
     catch (IllegalStateException e) {}
     
     // Test that test iterator from previous partition fails
     // if there is a new partition
-    TrainingIterator<String> thirdTraining = partitioner.next();
-    Iterator<String> thridTest = thirdTraining.getTestIterator();
+    TrainingSampleStream<String> thirdTraining = partitioner.next();
+    ObjectStream<String> thridTest = thirdTraining.getTestSampleStream();
     
     assertTrue(partitioner.hasNext());
     partitioner.next();
     
     try {
-      thridTest.hasNext();
-      fail();
-    }
-    catch (IllegalStateException e) {}
-    
-    try {
-      thridTest.next();
+      thridTest.read();
       fail();
     }
     catch (IllegalStateException e) {}
@@ -267,6 +195,6 @@ public class CrossValidationPartitionerTest extends TestCase {
   
   public void testToString() {
     Collection<String> emptyCollection = Collections.emptySet();
-    new CrossValidationPartitioner<String>(emptyCollection, 10).toString();
+    new CrossValidationPartioner<String>(emptyCollection, 10).toString();
   }
 }

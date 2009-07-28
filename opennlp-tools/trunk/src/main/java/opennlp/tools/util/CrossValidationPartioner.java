@@ -31,21 +31,21 @@ import java.util.NoSuchElementException;
  * The training partition always consists of n -1 parts and one part is used for testing.
  * 
  * To use the <code>CrossValidationPartioner</code> a client iterates over the n
- * {@link TrainingIterator}s. Each </code>TrainingIterator</code> represents
+ * {@link TrainingSampleStream}s. Each </code>TrainingSampleStream</code> represents
  * one partition and is used first for training and afterwards for testing.
- * The test <code>Iterator</code> can be obtained from the <code>TrainingIterator</code>
- * with the <code>getTestIterator</code> method.
+ * The <code>TestSampleStream</code> can be obtained from the <code>TrainingSampleStream</code>
+ * with the <code>getTestSampleStream</code> method.
  */
-public class CrossValidationPartioner<E> implements Iterator<CrossValidationPartioner.TrainingIterator<E>> {
+public class CrossValidationPartioner<E> {
 
   /**
-   * The <code>TestIterator</code> iterates which iterates over all test elements.
+   * The <code>TestSampleStream</code> iterates over all test elements.
    *
    * @param <E>
    */
-  private static class TestIterator<E> implements Iterator<E> {
+  private static class TestSampleStream<E> implements ObjectStream<E> {
     
-    private Iterator<E> dataIterator;
+    private ObjectStream<E> sampleStream;
     
     private final int numberOfPartitions;
     
@@ -55,51 +55,32 @@ public class CrossValidationPartioner<E> implements Iterator<CrossValidationPart
     
     private boolean isPoisened;
     
-    private TestIterator(Iterator<E> dataIterator, int numberOfPartitions, int testIndex) {
+    private TestSampleStream(ObjectStream<E> sampleStream, int numberOfPartitions, int testIndex) {
       this.numberOfPartitions = numberOfPartitions;
-      this.dataIterator = dataIterator;
+      this.sampleStream = sampleStream;
       this.testIndex = testIndex;
     }
     
-    public boolean hasNext() {
-      
+    public E read() throws ObjectStreamException {
       if (isPoisened) {
         throw new IllegalStateException();
       }
       
+      // skip training samples
       while (index % numberOfPartitions != testIndex) {
-        if (dataIterator.hasNext()) {
-          index++;
-          dataIterator.next();
-        }
-        else {
-          return false;
-        }
-      }
-      
-      return dataIterator.hasNext();
-    }
-
-    public E next() {
-      
-      if (isPoisened) {
-        throw new IllegalStateException();
-      }
-      
-      if (hasNext()) {
+        sampleStream.read();
         index++;
-        
-        return dataIterator.next();
       }
-      else {
-        throw new NoSuchElementException();
-      }
+      
+      index++;
+      
+      return sampleStream.read();
     }
-
+    
     /**
      * Throws <code>UnsupportedOperationException</code>
      */
-    public void remove() {
+    public void reset() {
       throw new UnsupportedOperationException();
     }
     
@@ -109,25 +90,25 @@ public class CrossValidationPartioner<E> implements Iterator<CrossValidationPart
   }
   
   /**
-   * The <code>TrainingIterator</code> which iterates over
+   * The <code>TrainingSampleStream</code> which iterates over
    * all training elements.
    * 
    * Note:
-   * After the test <code>Iterator</code> was obtained
-   * the training <code>Iterator</code> must not be used
+   * After the <code>TestSampleStream</code> was obtained
+   * the <code>TrainingSampleStream</code> must not be used
    * anymore, otherwise a {@link IllegalStateException}
    * is thrown.
    * 
-   * The iterators must not be used anymore after the
+   * The <code>ObjectStream></code>s must not be used anymore after the
    * <code>CrossValidationPartitioner</code> was moved
    * to one of next partitions. If they are called anyway
    * a {@link IllegalStateException} is thrown.
    * 
    * @param <E>
    */
-  public static class TrainingIterator<E> implements Iterator<E> {
+  public static class TrainingSampleStream<E> implements ObjectStream<E> {
 
-    private ResetableIterator<E> dataIterator;
+    private ObjectStream<E> sampleStream;
     
     private final int numberOfPartitions;
     
@@ -137,139 +118,97 @@ public class CrossValidationPartioner<E> implements Iterator<CrossValidationPart
     
     private boolean isPoisened;
     
-    private TestIterator<E> testIterator;
+    private TestSampleStream<E> testSampleStream;
     
-    TrainingIterator(ResetableIterator<E> dataIterator, int numberOfPartitions, int testIndex) {
+    TrainingSampleStream(ObjectStream<E> sampleStream, int numberOfPartitions, int testIndex) {
       this.numberOfPartitions = numberOfPartitions;
-      this.dataIterator = dataIterator;
+      this.sampleStream = sampleStream;
       this.testIndex = testIndex;
     }
-    
-    /**
-     * Checks if there is one more training element.
-     * 
-     * @throw IllegalStateException
-     */
-    public boolean hasNext() {
+
+    public E read() throws ObjectStreamException {
       
-      if (testIterator != null || isPoisened) {
+      if (testSampleStream != null || isPoisened) {
         throw new IllegalStateException();
       }
       
       // If the test element is reached skip over it to not include it in
       // the training data
       if (index % numberOfPartitions == testIndex) {
-        if (dataIterator.hasNext()) {
-          index++;
-          dataIterator.next();
-        }
-        else {
-          return false;
-        }
-      }
-      
-      return dataIterator.hasNext();
-    }
-
-    /**
-     * Retrieves the next training element.
-     * 
-     * @throw IllegalStateException
-     */
-    public E next() {
-      
-      if (testIterator != null || isPoisened) {
-        throw new IllegalStateException();
-      }
-      
-      if (hasNext()) {
-        
-        E element = dataIterator.next();
-        
+        sampleStream.read();
         index++;
-        
-        return element;
       }
-      else {
-        throw new NoSuchElementException();
-      }
+      
+      index++;
+      
+      return sampleStream.read();
     }
-
+    
     /**
      * Throws <code>UnsupportedOperationException</code>
      */
-    public void remove() {
+    public void reset() {
       throw new UnsupportedOperationException();
     }
     
     void poison() {
       isPoisened = true;
-      if (testIterator != null)
-        testIterator.poison();
+      if (testSampleStream != null)
+        testSampleStream.poison();
     }
     
     /**
-     * Retrieves the <code>Iterator</code> over the test/evaluations
-     * elements and poisons this <code>TrainingIterator</code>.
+     * Retrieves the <code>ObjectStream</code> over the test/evaluations
+     * elements and poisons this <code>TrainingSampleStream</code>.
      * From now on calls to the hasNext and next methods are forbidden
      * and will raise an<code>IllegalArgumentException</code>.
      *  
      * @return
      */
-    public Iterator<E> getTestIterator() {
+    public ObjectStream<E> getTestSampleStream() throws ObjectStreamException {
       
       if (isPoisened) {
         throw new IllegalStateException();
       }
       
-      if (testIterator == null) {
+      if (testSampleStream == null) {
       
-        dataIterator.reset();
-        testIterator =  new TestIterator<E>(dataIterator, numberOfPartitions, testIndex);
+        sampleStream.reset();
+        testSampleStream =  new TestSampleStream<E>(sampleStream, numberOfPartitions, testIndex);
       }
       
-      return testIterator;
+      return testSampleStream;
     }
   }
   
-  /**
-   * A {@link ResetableIterator} over a {@link Collection}.
-   *
-   * @param <T>
-   */
-  private static class ResetableCollectionIterator<E> implements ResetableIterator<E> {
+  private static class CollectionObjectStream<E> implements ObjectStream<E> {
     private Collection<E> collection;
     
     private Iterator<E> iterator;
     
-    ResetableCollectionIterator(Collection<E> collection) {
+    CollectionObjectStream(Collection<E> collection) {
       this.collection = collection;
       
       reset();
+    }
+
+    public E read() throws ObjectStreamException {
+      if (iterator.hasNext())
+        return iterator.next();
+      else
+        return null;
     }
     
     public void reset() {
       this.iterator = collection.iterator();
     }
-
-    public boolean hasNext() {
-      return iterator.hasNext();
-    }
-
-    public E next() {
-      return iterator.next();
-    }
-
-    public void remove() {
-      iterator.remove();
-    }
   }
   
   /**
-   * An <code>Iterator</code> over the whole set of data objects which
+   * An <code>ObjectStream</code> over the whole set of data samples which
    * are used for the cross validation.
    */
-  private ResetableIterator<E> dataIterator;
+  private ObjectStream<E> sampleStream;
   
   /**
    * The number of parts the data is divided into.
@@ -286,15 +225,16 @@ public class CrossValidationPartioner<E> implements Iterator<CrossValidationPart
    * is needed to poison the instance to fail fast if it is used
    * despite the fact that it is forbidden!.
    */
-  private TrainingIterator<E> lastTrainingIterator;
+  private TrainingSampleStream<E> lastTrainingSampleStream;
+  
   /**
    * Initializes the current instance.
    * 
    * @param inElements
    * @param numberOfPartitions
    */
-  public CrossValidationPartioner(ResetableIterator<E> inElements, int numberOfPartitions) {
-    this.dataIterator = inElements;
+  public CrossValidationPartioner(ObjectStream<E> inElements, int numberOfPartitions) {
+    this.sampleStream = inElements;
     this.numberOfPartitions = numberOfPartitions;
   }
   
@@ -305,7 +245,7 @@ public class CrossValidationPartioner<E> implements Iterator<CrossValidationPart
    * @param numberOfPartitions
    */
   public CrossValidationPartioner(Collection<E> elements, int numberOfPartitions) {
-    this(new ResetableCollectionIterator<E>(elements), numberOfPartitions);
+    this(new CollectionObjectStream<E>(elements), numberOfPartitions);
   }
 
   /**
@@ -318,29 +258,25 @@ public class CrossValidationPartioner<E> implements Iterator<CrossValidationPart
   /**
    * Retrieves the next training and test partitions.
    */
-  public TrainingIterator<E> next() {
+  public TrainingSampleStream<E> next() throws ObjectStreamException {
     if (hasNext()) {
-      if (lastTrainingIterator != null)
-        lastTrainingIterator.poison();
+      if (lastTrainingSampleStream != null)
+        lastTrainingSampleStream.poison();
       
-      dataIterator.reset();
+      sampleStream.reset();
       
-      TrainingIterator<E> trainingIterator = new TrainingIterator<E>(dataIterator,
+      TrainingSampleStream<E> trainingSampleStream = new TrainingSampleStream<E>(sampleStream,
           numberOfPartitions, testIndex);
       
       testIndex++;
       
-      lastTrainingIterator = trainingIterator;
+      lastTrainingSampleStream = trainingSampleStream;
       
-      return trainingIterator;
+      return trainingSampleStream;
     }
     else {
       throw new NoSuchElementException();
     }
-  }
-
-  public void remove() {
-    throw new UnsupportedOperationException();
   }
   
   @Override
