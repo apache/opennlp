@@ -17,7 +17,8 @@
 
 package opennlp.tools.sentdetect;
 
-import opennlp.tools.util.FMeasureEvaluator;
+import opennlp.tools.util.Evaluator;
+import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.Span;
 
 /**
@@ -25,12 +26,14 @@ import opennlp.tools.util.Span;
  * the given {@link SentenceDetector} with the provided reference
  * {@link SentenceSample}s.
  *
- * @see FMeasureEvaluator
+ * @see Evaluator
  * @see SentenceDetector
  * @see SentenceSample
  */
-public class SentenceDetectorEvaluator extends FMeasureEvaluator<SentenceSample> {
+public class SentenceDetectorEvaluator extends Evaluator<SentenceSample> {
 
+  private FMeasure fmeasure = new FMeasure();
+  
   /**
    * The {@link SentenceDetector} used to predict sentences.
    */
@@ -49,9 +52,10 @@ public class SentenceDetectorEvaluator extends FMeasureEvaluator<SentenceSample>
 
     Span starts[] = sentenceDetector.sentPosDetect(sample.getDocument());
 
-    precisionScore.add(FMeasureEvaluator.precision(
-        sample.getSentences(), starts));
-    recallScore.add(FMeasureEvaluator.recall(
-        sample.getSentences(), starts));
+    fmeasure.updateScores(sample.getSentences(), starts);
+  }
+  
+  public FMeasure getFMeasure() {
+    return fmeasure;
   }
 }

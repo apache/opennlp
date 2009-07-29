@@ -25,9 +25,13 @@ import java.io.InputStreamReader;
 import java.util.Iterator;
 
 import opennlp.maxent.PlainTextByLineDataStream;
-import opennlp.tools.util.FMeasureEvaluator;
+import opennlp.tools.util.Evaluator;
+import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PerformanceMonitor;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 /**
@@ -35,12 +39,14 @@ import opennlp.tools.util.Span;
  * of the given {@link TokenNameFinder} with the provided
  * reference {@link NameSample}s.
  *
- * @see FMeasureEvaluator
+ * @see Evaluator
  * @see TokenNameFinder
  * @see NameSample
  */
-public class TokenNameFinderEvaluator extends FMeasureEvaluator<NameSample> {
+public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
 
+  private FMeasure fmeasure = new FMeasure();
+  
   /**
    * The {@link TokenNameFinder} used to create the predicted
    * {@link NameSample} objects.
@@ -70,19 +76,16 @@ public class TokenNameFinderEvaluator extends FMeasureEvaluator<NameSample> {
   public void evaluateSample(NameSample reference) {
 
     Span predictedNames[] = nameFinder.find(reference.getSentence());
-
-    if (predictedNames.length > 0) {
-      precisionScore.add(FMeasureEvaluator.precision(reference.getNames(),
-          predictedNames));
-    }
-
-    if (reference.getNames().length > 0) {
-      recallScore.add(FMeasureEvaluator.recall(reference.getNames(),
-          predictedNames));
-    }
+    
+    fmeasure.updateScores(reference.getNames(), predictedNames);
   }
   
-  public static void main(String[] args) throws IOException, InvalidFormatException{
+  public FMeasure getFMeasure() {
+    return fmeasure;
+  }
+  
+  public static void main(String[] args) throws IOException, ObjectStreamException, 
+      InvalidFormatException {
     
     if (args.length == 4) {
       
@@ -97,23 +100,20 @@ public class TokenNameFinderEvaluator extends FMeasureEvaluator<NameSample> {
       TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(nameFinder);
       
       final NameSampleDataStream sampleStream = new NameSampleDataStream(
-          new PlainTextByLineDataStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
+          new PlainTextByLineStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
       
       final PerformanceMonitor monitor = new PerformanceMonitor("sent");
       
       monitor.startPrinter();
       
-      Iterator<NameSample> iterator = new Iterator<NameSample>() {
-        public boolean hasNext() {
-          return sampleStream.hasNext();
-        }
+      ObjectStream<NameSample> iterator = new ObjectStream<NameSample>() {
 
-        public NameSample next() {
+        public NameSample read() throws ObjectStreamException {
           monitor.incrementCounter();
-          return sampleStream.next();
+          return sampleStream.read();
         }
-
-        public void remove() {
+        
+        public void reset() {
         }
       };
       
@@ -122,9 +122,9 @@ public class TokenNameFinderEvaluator extends FMeasureEvaluator<NameSample> {
       monitor.stopPrinterAndPrintFinalResult();
       
       System.out.println();
-      System.out.println("F-Measure: " + evaluator.getFMeasure());
-      System.out.println("Recall: " + evaluator.getRecallScore());
-      System.out.println("Precision: " + evaluator.getPrecisionScore());
+      System.out.println("F-Measure: " + evaluator.getFMeasure().getFMeasure());
+      System.out.println("Recall: " + evaluator.getFMeasure().getRecallScore());
+      System.out.println("Precision: " + evaluator.getFMeasure().getPrecisionScore());
     }
     else {
       // usage: -encoding code test.file model.file

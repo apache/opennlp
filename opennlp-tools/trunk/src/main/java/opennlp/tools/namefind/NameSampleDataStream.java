@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import opennlp.maxent.DataStream;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.Span;
 
 /**
@@ -30,34 +32,35 @@ import opennlp.tools.util.Span;
  * It uses text that is is one-sentence per line and tokenized
  * with names identified by <code>&lt;START&gt;</code> and <code>&lt;END&gt;</code> tags.
  */
-public class NameSampleDataStream implements Iterator<NameSample> {
+public class NameSampleDataStream implements ObjectStream<NameSample> {
 
   public static final String START_TAG = "<START>";
 
   public static final String END_TAG = "<END>";
 
-  private final DataStream in;
+  private final ObjectStream<String> in;
 
-  public NameSampleDataStream(DataStream in) {
+  public NameSampleDataStream(ObjectStream<String> in) {
     this.in = in;
   }
 
-  /* (non-Javadoc)
-   * @see opennlp.tools.namefind.NameSampleStream#hasNext()
-   */
-  public boolean hasNext() {
-    return in.hasNext();
+  public NameSample read() throws ObjectStreamException {
+      String token = in.read();
+      
+      if (token != null) {
+        // TODO: clear adaptive data for every empty line
+        return createNameSample(token);
+      }
+      else {
+        return null;
+      }
   }
 
-  /* (non-Javadoc)
-   * @see opennlp.tools.namefind.NameSampleStream#nextNameSample()
-   */
-  public NameSample next() {
-    String token = (String) in.nextToken();
-    // clear adaptive data for every empty line
-    return createNameSample(token);
+  public void reset() throws ObjectStreamException,
+      UnsupportedOperationException {
+    throw new UnsupportedOperationException();
   }
-
+  
   private NameSample createNameSample(String taggedTokens) {
     String[] parts = taggedTokens.split(" ");
 

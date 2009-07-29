@@ -35,7 +35,7 @@ import java.util.NoSuchElementException;
  * The <code>TestSampleStream</code> can be obtained from the <code>TrainingSampleStream</code>
  * with the <code>getTestSampleStream</code> method.
  */
-public class CrossValidationPartioner<E> {
+public class CrossValidationPartitioner<E> {
 
   /**
    * The <code>TestSampleStream</code> iterates over all test elements.
@@ -209,7 +209,7 @@ public class CrossValidationPartioner<E> {
    * @param inElements
    * @param numberOfPartitions
    */
-  public CrossValidationPartioner(ObjectStream<E> inElements, int numberOfPartitions) {
+  public CrossValidationPartitioner(ObjectStream<E> inElements, int numberOfPartitions) {
     this.sampleStream = inElements;
     this.numberOfPartitions = numberOfPartitions;
   }
@@ -220,7 +220,7 @@ public class CrossValidationPartioner<E> {
    * @param elements
    * @param numberOfPartitions
    */
-  public CrossValidationPartioner(Collection<E> elements, int numberOfPartitions) {
+  public CrossValidationPartitioner(Collection<E> elements, int numberOfPartitions) {
     this(new CollectionObjectStream<E>(elements), numberOfPartitions);
   }
 

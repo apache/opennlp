@@ -35,6 +35,7 @@ import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 /**
@@ -275,7 +276,7 @@ public class SentenceDetectorME implements SentenceDetector {
         factory.createSentenceContextGenerator(languageCode),
         factory.createEndOfSentenceScanner(languageCode));
 
-    GISModel sentModel = GIS.trainModel(eventStream, cutoff, iterations);
+    GISModel sentModel = GIS.trainModel(eventStream, iterations, cutoff);
 
     return new SentenceModel(languageCode, sentModel,
         useTokenEnd, abbreviations);
@@ -339,8 +340,8 @@ public class SentenceDetectorME implements SentenceDetector {
         usage();
       }
 
-      SentenceModel model = train("en", new SentenceSampleStream(
-          new InputStreamReader(new FileInputStream(inFile), encoding)), true, null);
+      SentenceModel model = train("en", new SentenceSampleStream(new PlainTextByLineStream(
+          new InputStreamReader(new FileInputStream(inFile), encoding))), true, null);
 
       // TODO: add support for iterations and cutoff settings
 

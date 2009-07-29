@@ -26,6 +26,8 @@ import java.util.NoSuchElementException;
 
 import opennlp.model.Event;
 import opennlp.model.EventStream;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
@@ -36,7 +38,7 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  */
 public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
 
-  private Iterator<NameSample> nameSampleStream;
+  private ObjectStream<NameSample> nameSampleStream;
 
   @SuppressWarnings("unchecked")
   private Iterator<Event> events = Collections.EMPTY_LIST.iterator();
@@ -50,13 +52,13 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
    * @param dataStream The data stream of events.
    * @param contextGenerator The context generator used to generate features for the event stream.
    */
-  public NameFinderEventStream(Iterator<NameSample> dataStream, NameContextGenerator contextGenerator) {
+  public NameFinderEventStream(ObjectStream<NameSample> dataStream, NameContextGenerator contextGenerator) {
     this.nameSampleStream = dataStream;
     this.contextGenerator = contextGenerator;
     this.contextGenerator.addFeatureGenerator(new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
   }
 
-  public NameFinderEventStream(Iterator<NameSample> dataStream) {
+  public NameFinderEventStream(ObjectStream<NameSample> dataStream) {
     this(dataStream, new DefaultNameContextGenerator());
   }
 
@@ -98,15 +100,12 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
     // TODO: the iterator of the new events can be empty
     // create as long new events as there are events
     // or the name sample stream is empty
-
-    if (nameSampleStream.hasNext()) {
-      NameSample sample = nameSampleStream.next();
+    try {
+    NameSample sample = null;
+    if ((sample = nameSampleStream.read()) != null) {
       while (sample.isClearAdaptiveDataSet()) {
         contextGenerator.clearAdaptiveData();
-        if (nameSampleStream.hasNext()) {
-          sample = (NameSample) nameSampleStream.next();
-        }
-        else {
+        if ((sample = nameSampleStream.read()) == null) {
           return;
         }
       }
@@ -123,6 +122,10 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
       }
       this.events = events.iterator();
       contextGenerator.updateAdaptiveData(tokens, outcomes);
+    }
+    
+    } catch (opennlp.tools.util.ObjectStreamException e) {
+      e.printStackTrace();
     }
   }
 
@@ -169,7 +172,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
       System.err.println("Usage: NameFinderEventStream < training files");
       System.exit(1);
     }
-    EventStream es = new NameFinderEventStream(new NameSampleDataStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.InputStreamReader(System.in))));
+    EventStream es = new NameFinderEventStream(new NameSampleDataStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))));
     while (es.hasNext()) {
       System.out.println(es.next());
     }

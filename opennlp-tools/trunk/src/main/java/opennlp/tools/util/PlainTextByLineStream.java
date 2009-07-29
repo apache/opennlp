@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,16 +15,22 @@
  * limitations under the License.
  */
 
+
 package opennlp.tools.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 
 /**
  * Reads a plain text file and return each line as a <code>String</code> object.
  */
 public class PlainTextByLineStream implements ObjectStream<String> {
+  
+  private FileChannel channel;
+  private String encoding;
   
   private BufferedReader in;
   
@@ -36,10 +42,13 @@ public class PlainTextByLineStream implements ObjectStream<String> {
    */
   public PlainTextByLineStream(Reader in) throws IOException {
     this.in = new BufferedReader(in);
+  }
+  
+  public PlainTextByLineStream(FileChannel channel, String encoding) {
+    this.encoding = encoding;
+    this.channel = channel;
     
-    if (in.markSupported()) {
-      in.mark(Integer.MAX_VALUE);
-    }
+    in = new BufferedReader(Channels.newReader(channel, encoding));
   }
   
   public String read() throws ObjectStreamException {
@@ -50,14 +59,18 @@ public class PlainTextByLineStream implements ObjectStream<String> {
     }
   }
 
-  public void reset() throws ObjectStreamException,
-      UnsupportedOperationException {
-    if (in.markSupported()) {
-      try {
-        in.reset();
-      } catch (IOException e) {
-        throw new ObjectStreamException(e);
+  public void reset() throws ObjectStreamException {
+    
+    try {
+      if (channel == null) {
+          in.reset();
       }
+      else {
+        channel.position(0);
+        in = new BufferedReader(Channels.newReader(channel, encoding));
+      }
+    } catch (IOException e) {
+      throw new ObjectStreamException(e);
     }
   }
 }

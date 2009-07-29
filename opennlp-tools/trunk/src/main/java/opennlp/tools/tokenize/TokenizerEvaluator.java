@@ -18,7 +18,8 @@
 
 package opennlp.tools.tokenize;
 
-import opennlp.tools.util.FMeasureEvaluator;
+import opennlp.tools.util.Evaluator;
+import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.Span;
 
 /**
@@ -26,12 +27,14 @@ import opennlp.tools.util.Span;
  * the given {@link Tokenizer} with the provided reference
  * {@link TokenSample}s.
  *
- * @see FMeasureEvaluator
+ * @see Evaluator
  * @see Tokenizer
  * @see TokenSample
  */
-public class TokenizerEvaluator extends FMeasureEvaluator<TokenSample> {
+public class TokenizerEvaluator extends Evaluator<TokenSample> {
 
+  private FMeasure fmeasure = new FMeasure();
+  
   /**
    * The {@link Tokenizer} used to create the
    * predicted tokens.
@@ -60,14 +63,10 @@ public class TokenizerEvaluator extends FMeasureEvaluator<TokenSample> {
   public void evaluateSample(TokenSample reference) {
     Span predictedSpans[] = tokenizer.tokenizePos(reference.getText());
 
-    if (predictedSpans.length > 0) {
-      precisionScore.add(FMeasureEvaluator.precision(reference.getTokenSpans(),
-          predictedSpans));
-    }
-
-    if (reference.getTokenSpans().length > 0) {
-      recallScore.add(FMeasureEvaluator.recall(reference.getTokenSpans(),
-          predictedSpans));
-    }
+    fmeasure.updateScores(reference.getTokenSpans(), predictedSpans);
+  }
+  
+  public FMeasure getFMeasure() {
+    return fmeasure;
   }
 }

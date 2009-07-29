@@ -18,8 +18,11 @@
 
 package opennlp.tools.sentdetect;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
@@ -34,12 +37,12 @@ public class SentenceSampleStream implements ObjectStream<SentenceSample> {
 
   private ObjectStream<String> sentences;
 
-  public SentenceSampleStream(Reader sentences) throws IOException {
+  public SentenceSampleStream(ObjectStream<String> sentences) throws IOException {
 
     if (sentences == null)
       throw new IllegalArgumentException("sentences must not be null!");
 
-    this.sentences = new PlainTextByLineStream(sentences);
+    this.sentences = sentences;
   }
 
   public SentenceSample read() throws ObjectStreamException {

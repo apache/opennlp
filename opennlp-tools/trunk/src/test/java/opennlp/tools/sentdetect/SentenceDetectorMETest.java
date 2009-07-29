@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import junit.framework.TestCase;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 /**
@@ -36,7 +37,7 @@ public class SentenceDetectorMETest extends TestCase {
         "/opennlp/tools/sentdetect/Sentences.txt");
 
     SentenceModel sentdetectModel = SentenceDetectorME.train(
-        "en", new SentenceSampleStream(new InputStreamReader(in)), true, null, 100, 0);
+        "en", new SentenceSampleStream(new PlainTextByLineStream(new InputStreamReader(in))), true, null, 100, 0);
     
     assertEquals("en", sentdetectModel.getLanguage());
     

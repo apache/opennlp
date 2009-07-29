@@ -40,6 +40,8 @@ import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ModelUtil;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
@@ -264,7 +266,7 @@ public class NameFinderME implements TokenNameFinder {
      return sprobs;
    }
 
-   public static TokenNameFinderModel train(String languageCode, Iterator<NameSample> samples, InputStream descriptorClassIn,
+   public static TokenNameFinderModel train(String languageCode, ObjectStream<NameSample> samples, InputStream descriptorClassIn,
        final Map<String, Object> resources) throws IOException, InvalidFormatException {
 
      byte descriptorBytes[] = ModelUtil.read(descriptorClassIn);
@@ -311,7 +313,7 @@ public class NameFinderME implements TokenNameFinder {
     if (args.length == 5) {
       
       NameSampleDataStream sampleStream = new NameSampleDataStream(
-          new PlainTextByLineDataStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
+          new PlainTextByLineStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
       
       InputStream descriptorIn = new FileInputStream(args[3]);
       

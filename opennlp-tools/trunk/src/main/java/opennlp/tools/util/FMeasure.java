@@ -15,13 +15,10 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.util;
 
-import java.util.Iterator;
-
 /**
- * The {@link FMeasureEvaluator} is an abstract base class for evaluators
+ * The {@link FMeasure} is an utility class for evaluators
  * which measure precision, recall and the resulting f-measure.
  *
  * Evaluation results are the arithmetic mean of the precision
@@ -29,42 +26,18 @@ import java.util.Iterator;
  * the arithmetic mean of the recall scores calculated for
  * each reference sample.
  */
-public abstract class FMeasureEvaluator<T> {
+public final class FMeasure {
 
   /**
    * The mean of all calculated precision scores.
    */
-  protected Mean precisionScore = new Mean();
-
+  private Mean precisionScore = new Mean();
+  
   /**
    * The mean of all calculated recall scores.
    */
-  protected Mean recallScore = new Mean();
-
-  /**
-   * Evaluates the given reference object.
-   *
-   * The implementation has to update the precisionScore and recallScore
-   * after every invocation.
-   *
-   * @param sample the sample to be evaluated
-   */
-  public abstract void evaluateSample(T sample);
-
-  /**
-   * Reads all sample objects from the stream
-   * and evaluates each sample object with
-   * {@link #evaluateSample(Object)} method.
-   *
-   * @param samples the stream of reference which
-   * should be evaluated.
-   */
-  public void evaluate(Iterator<T> samples) {
-    while (samples.hasNext()) {
-      evaluateSample(samples.next());
-    }
-  }
-
+  private Mean recallScore = new Mean();
+  
   /**
    * Retrieves the arithmetic mean of the precision scores
    * calculated for each evaluated sample.
@@ -84,7 +57,7 @@ public abstract class FMeasureEvaluator<T> {
   public double getRecallScore() {
     return recallScore.mean();
   }
-
+  
   /**
    * Retrieves the f-measure score.
    *
@@ -103,16 +76,28 @@ public abstract class FMeasureEvaluator<T> {
       return -1;
     }
   }
-
+ 
+  public void updateScores(Object references[], Object predictions[]) {
+    precisionScore.add(FMeasure.precision(
+        references, predictions), references.length);
+    recallScore.add(FMeasure.recall(
+        references, predictions), references.length);
+  }
+  
+  public void mergeInto(FMeasure measure) {
+    precisionScore.add(measure.getPrecisionScore(), measure.precisionScore.count());
+    recallScore.add(measure.getPrecisionScore(), measure.recallScore.count());
+  }
+  
   /**
    * Creates a human read-able {@link String} representation.
    */
   @Override
   public String toString() {
     return "Precision: " + Double.toString(getPrecisionScore()) + "\n" +
-        " Recall: " + Double.toString(getRecallScore());
+        "Recall: " + Double.toString(getRecallScore());
   }
-
+  
   /**
    * This method counts the number of objects which are equal and
    * occur in the references and predictions arrays.
@@ -124,12 +109,12 @@ public abstract class FMeasureEvaluator<T> {
    *
    * @return number of true positives
    */
-  public static int countTruePositives(Object references[],
+  static int countTruePositives(Object references[],
       Object predictions[]) {
 
     int truePositives = 0;
 
-    // Maybe a map should be used to improve performance
+    // Note: Maybe a map should be used to improve performance
     for (int referenceIndex = 0; referenceIndex < references.length;
         referenceIndex++) {
 

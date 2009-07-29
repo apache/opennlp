@@ -22,7 +22,7 @@ import junit.framework.TestCase;
 /**
  * Tests for the {@link EvaluatorUtil} class.
  */
-public class FMeasureEvaluatorTest extends TestCase {
+public class FMeasureTest extends TestCase {
 
   private Span gold[] = {
       new Span(8, 9),
@@ -45,20 +45,20 @@ public class FMeasureEvaluatorTest extends TestCase {
    * Test for the {@link EvaluatorUtil#countTruePositives(Span[], Span[])} method.
    */
   public void testCountTruePositives() {
-    assertEquals(2, FMeasureEvaluator.countTruePositives(gold, predicted));
+    assertEquals(2, FMeasure.countTruePositives(gold, predicted));
   }
 
   /**
    * Test for the {@link EvaluatorUtil#precision(Span[], Span[])} method.
    */
   public void testPrecision() {
-    assertEquals(2d / predicted.length, FMeasureEvaluator.precision(gold, predicted));
+    assertEquals(2d / predicted.length, FMeasure.precision(gold, predicted));
   }
 
   /**
    * Test for the {@link EvaluatorUtil#recall(Span[], Span[])} method.
    */
   public void testRecall() {
-    assertEquals(2d / gold.length, FMeasureEvaluator.recall(gold, predicted));
+    assertEquals(2d / gold.length, FMeasure.recall(gold, predicted));
   }
 }

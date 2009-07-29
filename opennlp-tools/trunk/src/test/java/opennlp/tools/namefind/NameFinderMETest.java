@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 import opennlp.maxent.GISModel;
 import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.model.EventStream;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 /**
@@ -58,7 +59,7 @@ public class NameFinderMETest extends TestCase {
     String encoding = "ISO-8859-1";
 
     EventStream es = new NameFinderEventStream(new NameSampleDataStream(
-          new PlainTextByLineDataStream(new InputStreamReader(in, encoding))));
+          new PlainTextByLineStream(new InputStreamReader(in, encoding))));
 
     GISModel nameFinderModel = NameFinderME.train(es, 70, 1);
 
