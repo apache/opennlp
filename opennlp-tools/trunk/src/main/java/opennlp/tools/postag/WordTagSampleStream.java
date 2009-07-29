@@ -18,39 +18,37 @@
 
 package opennlp.tools.postag;
 
-import java.util.Iterator;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import opennlp.maxent.DataStream;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ParseException;
+import opennlp.tools.util.PlainTextByLineStream;
 
 /**
- * The {@link WordTagSampleStream} reads a sentence which
- * contains tags in the word_tag format and outputs a {@link POSSample}
- * object.
+ * A stream filter which reads a sentence per line which contains
+ * words and tags in word_tag format and outputs a {@link POSSample} objects.
  */
-public class WordTagSampleStream implements Iterator<POSSample> {
+public class WordTagSampleStream implements ObjectStream<POSSample> {
 
   private static Logger logger = Logger.getLogger(WordTagSampleStream.class.getName());
 
-  private DataStream sentences;
+  private ObjectStream<String> sentences;
 
   /**
    * Initializes the current instance.
    *
    * @param sentences
    */
-  public WordTagSampleStream(DataStream sentences) {
+  public WordTagSampleStream(Reader sentences) throws IOException {
 
     if (sentences == null)
       throw new IllegalArgumentException("sentences must not be null!");
 
-    this.sentences = sentences;
-  }
-
-  public boolean hasNext() {
-    return sentences.hasNext();
+    this.sentences = new PlainTextByLineStream(sentences);
   }
 
   /**
@@ -60,27 +58,35 @@ public class WordTagSampleStream implements Iterator<POSSample> {
    * If an error occurs an empty {@link POSSample} object is returned
    * and an warning message is logged. Usually it does not matter if one
    * of many sentences is ignored.
+   * 
+   * TODO: An exception in error case should be thrown.
    */
-  public POSSample next() {
+  public POSSample read() throws ObjectStreamException {
 
-    String sentence = (String) sentences.nextToken();
+    String sentence = sentences.read();
 
-    POSSample sample;
-    try {
-      sample = POSSample.parse(sentence);
-    } catch (ParseException e) {
-
-      if (logger.isLoggable(Level.WARNING)) {
-        logger.warning("Error during parsing, ignoring sentence: " + sentence);
+    if (sentence != null) {
+      POSSample sample;
+      try {
+        sample = POSSample.parse(sentence);
+      } catch (ParseException e) {
+  
+        if (logger.isLoggable(Level.WARNING)) {
+          logger.warning("Error during parsing, ignoring sentence: " + sentence);
+        }
+  
+        sample = new POSSample(new String[]{}, new String[]{});
       }
-
-      sample = new POSSample(new String[]{}, new String[]{});
+  
+      return sample;
     }
-
-    return sample;
+    else {
+      // sentences stream is exhausted
+      return null;
+    }
   }
 
-  public void remove() {
-    throw new UnsupportedOperationException();
+  public void reset() throws ObjectStreamException {
+    sentences.reset();
   }
 }

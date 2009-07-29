@@ -34,6 +34,7 @@ import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 /**
@@ -259,12 +260,12 @@ public class SentenceDetectorME implements SentenceDetector {
     return true;
   }
   
-  public static SentenceModel train(String languageCode, Iterator<SentenceSample> samples,
+  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations) {
     return train(languageCode, samples, useTokenEnd, abbreviations,5,100);
   }
   
-  public static SentenceModel train(String languageCode, Iterator<SentenceSample> samples,
+  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) {
 
 
@@ -338,9 +339,8 @@ public class SentenceDetectorME implements SentenceDetector {
         usage();
       }
 
-      SentenceModel model = train("en",
-          new SentenceSampleStream(new PlainTextByLineDataStream(
-          new InputStreamReader(new FileInputStream(inFile), encoding))), true, null);
+      SentenceModel model = train("en", new SentenceSampleStream(
+          new InputStreamReader(new FileInputStream(inFile), encoding)), true, null);
 
       // TODO: add support for iterations and cutoff settings
 

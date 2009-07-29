@@ -25,24 +25,30 @@ import opennlp.model.AbstractModel;
 import opennlp.model.Event;
 import opennlp.model.Sequence;
 import opennlp.model.SequenceStream;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 
 public class POSSampleSequenceStream implements SequenceStream {
 
   private POSContextGenerator pcg;
   private List<POSSample> samples;
   
-  public POSSampleSequenceStream(Iterator<POSSample> psi, POSContextGenerator pcg) {
+  public POSSampleSequenceStream(ObjectStream<POSSample> psi) throws ObjectStreamException {
+    this(psi, new DefaultPOSContextGenerator(null));
+  }
+  
+  public POSSampleSequenceStream(ObjectStream<POSSample> psi, POSContextGenerator pcg) 
+      throws ObjectStreamException {
     samples = new ArrayList<POSSample>();
-    while(psi.hasNext()) {
-      samples.add(psi.next());
+    
+    POSSample sample;
+    while((sample = psi.read()) != null) {
+      samples.add(sample);
     }
     System.err.println("Got "+samples.size()+" sequences");
     this.pcg = pcg;
   }
   
-  public POSSampleSequenceStream(Iterator<POSSample> psi) {
-    this(psi, new DefaultPOSContextGenerator(null));
-  }
   
   @SuppressWarnings("unchecked")
   public Event[] updateContext(Sequence sequence, AbstractModel model) {

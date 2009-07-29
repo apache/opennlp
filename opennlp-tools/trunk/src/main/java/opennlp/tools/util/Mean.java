@@ -52,7 +52,7 @@ public class Mean {
    * @param count number of times the value should be added to
    * arithmetic mean.
    */
-  public void add(double value, int count) {
+  public void add(double value, long count) {
     sum += value * count;
     this.count += count;    
   }

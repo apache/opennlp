@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -17,25 +17,28 @@
 
 package opennlp.tools.util;
 
-/**
- * The exception indicated that something with the belonging <code>ObjectStream</code>
- * went wrong.
- * 
- * @see ObjectStream
- */
-public class ObjectStreamException extends Exception {
+import java.util.Collection;
+import java.util.Iterator;
 
-  private static final long serialVersionUID = 1L;
+public class CollectionObjectStream<E> implements ObjectStream<E> {
+  private Collection<E> collection;
+  
+  private Iterator<E> iterator;
 
-  public ObjectStreamException(String message) {
-    super(message);
+  public CollectionObjectStream(Collection<E> collection) {
+    this.collection = collection;
+    
+    reset();
+  }
+
+  public E read() throws ObjectStreamException {
+    if (iterator.hasNext())
+      return iterator.next();
+    else
+      return null;
   }
   
-  public ObjectStreamException(Throwable cause) {
-    super(cause);
-  }
-  
-  public ObjectStreamException(String message, Throwable cause) {
-    super(message, cause);
+  public void reset() {
+    this.iterator = collection.iterator();
   }
 }

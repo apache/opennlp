@@ -23,6 +23,7 @@ import java.util.Iterator;
 import opennlp.maxent.DataStream;
 import opennlp.model.Event;
 import opennlp.tools.util.AbstractEventStream;
+import opennlp.tools.util.ObjectStream;
 
 /**
 * Iterator-like class for modeling document classification events.
@@ -34,11 +35,11 @@ public class DocumentCategorizerEventStream extends AbstractEventStream<Document
   /**
    * Initializes the current instance.
    *
-   * @param data {@link opennlp.maxent.DataStream} of {@link DocumentSample}s
+   * @param data {@link ObjectStream} of {@link DocumentSample}s
    *
    * @param featureGenerators
    */
-  public DocumentCategorizerEventStream(Iterator<DocumentSample> data, FeatureGenerator... featureGenerators) {
+  public DocumentCategorizerEventStream(ObjectStream<DocumentSample> data, FeatureGenerator... featureGenerators) {
     super(data);
 
     mContextGenerator =
@@ -48,9 +49,9 @@ public class DocumentCategorizerEventStream extends AbstractEventStream<Document
   /**
    * Initializes the current instance.
    *
-   * @param data {@link DataStream} of {@link DocumentSample}s
+   * @param data {@link ObjectStream} of {@link DocumentSample}s
    */
-  public DocumentCategorizerEventStream(Iterator<DocumentSample> sample) {
+  public DocumentCategorizerEventStream(ObjectStream<DocumentSample> sample) {
     super(sample);
 
     mContextGenerator =

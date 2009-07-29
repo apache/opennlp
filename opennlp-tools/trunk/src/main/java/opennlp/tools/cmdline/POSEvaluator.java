@@ -21,14 +21,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Iterator;
 
-import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.postag.WordTagSampleStream;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 
 /**
  * The command line utility for the {@link POSEvaluator}.
@@ -38,7 +38,7 @@ import opennlp.tools.util.InvalidFormatException;
  */
 public class POSEvaluator {
 
-  public static void main(String[] args) throws InvalidFormatException, IOException {
+  public static void main(String[] args) throws InvalidFormatException, IOException, ObjectStreamException {
 
     if (args.length != 2) {
       System.err.println("Usage: java opennlp.tools.cmdline.POSTaggerEvaluator model training");
@@ -54,7 +54,7 @@ public class POSEvaluator {
 
     InputStream in = new FileInputStream(args[1]);
 
-    Iterator<POSSample> samples = new WordTagSampleStream(new PlainTextByLineDataStream(
+    ObjectStream<POSSample> samples = new WordTagSampleStream((
           new InputStreamReader(in)));
 
     evaluator.evaluate(samples);

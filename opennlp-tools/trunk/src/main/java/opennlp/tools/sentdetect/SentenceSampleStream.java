@@ -18,34 +18,41 @@
 
 package opennlp.tools.sentdetect;
 
-import java.util.Iterator;
+import java.io.IOException;
+import java.io.Reader;
 
-import opennlp.maxent.DataStream;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
-public class SentenceSampleStream implements Iterator<SentenceSample> {
+/**
+ * This class is a stream filter which reads a sentence by line samples from
+ * a <code>Reader</code> and converts them into {@link SentenceSample} objects.
+ */
+public class SentenceSampleStream implements ObjectStream<SentenceSample> {
 
-  private DataStream sentences;
+  private ObjectStream<String> sentences;
 
-  public SentenceSampleStream(DataStream sentences) {
+  public SentenceSampleStream(Reader sentences) throws IOException {
 
     if (sentences == null)
       throw new IllegalArgumentException("sentences must not be null!");
 
-    this.sentences = sentences;
+    this.sentences = new PlainTextByLineStream(sentences);
   }
 
-  public boolean hasNext() {
-    return sentences.hasNext();
+  public SentenceSample read() throws ObjectStreamException {
+    String sentence = sentences.read();
+    if (sentence != null) {
+      return new SentenceSample(sentence, new Span(0, sentence.length()));
+    }
+    else {
+      return null;
+    }
   }
-
-  public SentenceSample next() {
-    String sentence = (String) sentences.nextToken();
-
-    return new SentenceSample(sentence, new Span(0, sentence.length()));
-  }
-
-  public void remove() {
-    throw new UnsupportedOperationException();
+  
+  public void reset() throws ObjectStreamException {
+    sentences.reset();
   }
 }

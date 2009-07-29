@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 import opennlp.model.Event;
 import opennlp.tools.util.AbstractEventStream;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 /**
@@ -48,7 +49,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
    * @param skipAlphaNumerics
    * @param cg
    */
-  public TokSpanEventStream(Iterator<TokenSample> tokenSamples,
+  public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples,
         boolean skipAlphaNumerics, TokenContextGenerator cg) {
     super(tokenSamples);
 
@@ -62,7 +63,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
    * @param tokenSamples
    * @param skipAlphaNumerics
    */
-  public TokSpanEventStream(Iterator<TokenSample> tokenSamples,
+  public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples,
       boolean skipAlphaNumerics) {
     this(tokenSamples, skipAlphaNumerics, new DefaultTokenContextGenerator());
   }

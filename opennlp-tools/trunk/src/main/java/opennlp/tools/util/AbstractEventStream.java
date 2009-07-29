@@ -31,7 +31,7 @@ import opennlp.model.EventStream;
  */
 public abstract class AbstractEventStream<T> extends opennlp.model.AbstractEventStream {
 
-  private Iterator<T> samples;
+  private ObjectStream<T> samples;
 
   @SuppressWarnings("unchecked")
   private Iterator<Event> events = Collections.EMPTY_LIST.iterator();;
@@ -41,7 +41,7 @@ public abstract class AbstractEventStream<T> extends opennlp.model.AbstractEvent
    *
    * @param samples the sample {@link Iterator}.
    */
-  public AbstractEventStream(Iterator<T> samples) {
+  public AbstractEventStream(ObjectStream<T> samples) {
     this.samples = samples;
   }
 
@@ -67,8 +67,14 @@ public abstract class AbstractEventStream<T> extends opennlp.model.AbstractEvent
     } else {
 
       // search next event iterator which is not empty
-      while (samples.hasNext() && !events.hasNext()) {
-        events = createEvents(samples.next());
+      try {
+        T sample = null;
+        while (!events.hasNext() && (sample = samples.read()) != null) {
+          events = createEvents(sample);
+        }
+      } catch (ObjectStreamException e) {
+        // TODO: Exception is swallowed and should be handled by maxent
+        e.printStackTrace();
       }
 
       return events.hasNext();

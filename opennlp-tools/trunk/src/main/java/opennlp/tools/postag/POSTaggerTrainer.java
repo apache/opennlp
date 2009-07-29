@@ -38,6 +38,8 @@ import opennlp.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.perceptron.SuffixSensitivePerceptronModelWriter;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.StringList;
 
 public class POSTaggerTrainer {
@@ -63,7 +65,7 @@ public class POSTaggerTrainer {
    * @throws IOException  its throws if an {@link IOException} is thrown
    * during IO operations on a temp file which is created during training occur.
    */
-  public static POSModel train(Iterator<POSSample> samples, POSDictionary tagDictionary,
+  public static POSModel train(ObjectStream<POSSample> samples, POSDictionary tagDictionary,
       Dictionary ngramDictionary, int cutoff) throws IOException {
 
    int iterations = 100;
@@ -124,7 +126,7 @@ public class POSTaggerTrainer {
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException, ObjectStreamException {
     if (args.length == 0){
       usage();
     }
@@ -196,13 +198,13 @@ public class POSTaggerTrainer {
         POSSampleSequenceStream ss;
         if (encoding == null) {
           if (dict == null) {
-            ss = new POSSampleSequenceStream(new WordTagSampleStream(new PlainTextByLineDataStream(
-                new InputStreamReader(new FileInputStream(inFile)))));
+            ss = new POSSampleSequenceStream(new WordTagSampleStream(
+                new InputStreamReader(new FileInputStream(inFile))));
           }
           else {
             POSContextGenerator cg = new DefaultPOSContextGenerator(new Dictionary(new FileInputStream(dict)));
 
-            ss = new POSSampleSequenceStream(new WordTagSampleStream(new PlainTextByLineDataStream(
+            ss = new POSSampleSequenceStream(new WordTagSampleStream((
                 new InputStreamReader(new FileInputStream(inFile)))),
                 cg);
           }
@@ -210,13 +212,13 @@ public class POSTaggerTrainer {
         else {
           if (dict == null) {
 
-            ss = new POSSampleSequenceStream(new WordTagSampleStream(new PlainTextByLineDataStream(
+            ss = new POSSampleSequenceStream(new WordTagSampleStream((
                 new InputStreamReader(new FileInputStream(inFile), encoding))));
           }
           else {
             POSContextGenerator cg = new DefaultPOSContextGenerator(new Dictionary(new FileInputStream(dict)));
 
-            ss = new POSSampleSequenceStream(new WordTagSampleStream(new PlainTextByLineDataStream(
+            ss = new POSSampleSequenceStream(new WordTagSampleStream((
                 new InputStreamReader(new FileInputStream(inFile), encoding))), cg);
           }
         }
@@ -228,13 +230,13 @@ public class POSTaggerTrainer {
         POSSampleEventStream es;
         if (encoding == null) {
           if (dict == null) {
-            es = new POSSampleEventStream(new WordTagSampleStream(new PlainTextByLineDataStream(
+            es = new POSSampleEventStream(new WordTagSampleStream((
                 new InputStreamReader(new FileInputStream(inFile)))));
           }
           else {
             POSContextGenerator cg = new DefaultPOSContextGenerator(new Dictionary(new FileInputStream(dict)));
 
-            es = new POSSampleEventStream(new WordTagSampleStream(new PlainTextByLineDataStream(
+            es = new POSSampleEventStream(new WordTagSampleStream((
                 new InputStreamReader(new FileInputStream(inFile)))),
                 cg);
           }
@@ -242,13 +244,13 @@ public class POSTaggerTrainer {
         else {
           if (dict == null) {
 
-            es = new POSSampleEventStream(new WordTagSampleStream(new PlainTextByLineDataStream(
+            es = new POSSampleEventStream(new WordTagSampleStream((
                 new InputStreamReader(new FileInputStream(inFile), encoding))));
           }
           else {
             POSContextGenerator cg = new DefaultPOSContextGenerator(new Dictionary(new FileInputStream(dict)));
 
-            es = new POSSampleEventStream(new WordTagSampleStream(new PlainTextByLineDataStream(
+            es = new POSSampleEventStream(new WordTagSampleStream((
                 new InputStreamReader(new FileInputStream(inFile), encoding))), cg);
           }
         }

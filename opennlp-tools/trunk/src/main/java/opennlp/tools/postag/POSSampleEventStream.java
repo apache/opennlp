@@ -24,6 +24,7 @@ import java.util.List;
 
 import opennlp.model.Event;
 import opennlp.tools.util.AbstractEventStream;
+import opennlp.tools.util.ObjectStream;
 
 /**
  * This class reads the {@link POSSample}s from the given {@link Iterator}
@@ -45,7 +46,7 @@ public class POSSampleEventStream extends AbstractEventStream<POSSample> {
    * @param samples
    * @param cg
    */
-  public POSSampleEventStream(Iterator<POSSample> samples, POSContextGenerator cg) {
+  public POSSampleEventStream(ObjectStream<POSSample> samples, POSContextGenerator cg) {
     super(samples);
 
     this.cg = cg;
@@ -56,7 +57,7 @@ public class POSSampleEventStream extends AbstractEventStream<POSSample> {
    * and a {@link DefaultPOSContextGenerator}.
    * @param samples
    */
-  public POSSampleEventStream(Iterator<POSSample> samples) {
+  public POSSampleEventStream(ObjectStream<POSSample> samples) {
     this(samples, new DefaultPOSContextGenerator(null));
   }
 

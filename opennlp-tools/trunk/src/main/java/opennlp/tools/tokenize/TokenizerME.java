@@ -28,6 +28,7 @@ import opennlp.maxent.GISModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 /**
@@ -195,7 +196,7 @@ public class TokenizerME extends AbstractTokenizer {
    * is thrown during IO operations on a temp file which is
    * created during training.
    */
-  public static TokenizerModel train(String languageCode, Iterator<TokenSample> samples,
+  public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization) throws IOException {
 
     EventStream eventStream = new TokSpanEventStream(samples,

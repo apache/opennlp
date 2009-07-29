@@ -44,7 +44,7 @@ public class AbstractEventStreamTest extends TestCase {
   class TestEventStream extends AbstractEventStream<RESULT> {
 
 
-    public TestEventStream(Iterator<RESULT> samples) {
+    public TestEventStream(ObjectStream<RESULT> samples) {
       super(samples);
     }
 
@@ -93,7 +93,7 @@ public class AbstractEventStreamTest extends TestCase {
     samples.add(RESULT.EMPTY);
     samples.add(RESULT.EVENTS);
 
-    TestEventStream eventStream = new TestEventStream(samples.iterator());
+    TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<RESULT>(samples));
 
     int eventCounter = 0;
     while (eventStream.hasNext()) {
@@ -113,14 +113,14 @@ public class AbstractEventStreamTest extends TestCase {
     List<RESULT> samples = new ArrayList<RESULT>();
     samples.add(RESULT.EMPTY);
 
-    TestEventStream eventStream = new TestEventStream(samples.iterator());
+    TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<RESULT>(samples));
     assertEquals(false, eventStream.hasNext());
 
     // now check if it can handle multiple empty event iterators
     samples.add(RESULT.EMPTY);
     samples.add(RESULT.EMPTY);
 
-    eventStream = new TestEventStream(samples.iterator());
+    eventStream = new TestEventStream(new CollectionObjectStream<RESULT>(samples));
     assertEquals(false, eventStream.hasNext());
   }
 }

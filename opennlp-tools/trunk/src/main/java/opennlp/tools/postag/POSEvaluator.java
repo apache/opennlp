@@ -21,6 +21,8 @@ package opennlp.tools.postag;
 import java.util.Iterator;
 
 import opennlp.tools.util.Mean;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 
 /**
  * The {@link POSEvaluator} measures the performance of
@@ -73,9 +75,10 @@ public class POSEvaluator {
    * @param samples the stream of reference {@link POSSample} which
    * should be evaluated.
    */
-  public void evaluate(Iterator<POSSample> samples) {
-    while (samples.hasNext()) {
-      evaluateSample(samples.next());
+  public void evaluate(ObjectStream<POSSample> samples) throws ObjectStreamException {
+    POSSample sample;
+    while ((sample = samples.read()) != null) {
+      evaluateSample(sample);
     }
   }
 

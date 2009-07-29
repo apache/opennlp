@@ -19,7 +19,6 @@
 package opennlp.tools.util;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -178,29 +177,6 @@ public class CrossValidationPartioner<E> {
       }
       
       return testSampleStream;
-    }
-  }
-  
-  private static class CollectionObjectStream<E> implements ObjectStream<E> {
-    private Collection<E> collection;
-    
-    private Iterator<E> iterator;
-    
-    CollectionObjectStream(Collection<E> collection) {
-      this.collection = collection;
-      
-      reset();
-    }
-
-    public E read() throws ObjectStreamException {
-      if (iterator.hasNext())
-        return iterator.next();
-      else
-        return null;
-    }
-    
-    public void reset() {
-      this.iterator = collection.iterator();
     }
   }
   

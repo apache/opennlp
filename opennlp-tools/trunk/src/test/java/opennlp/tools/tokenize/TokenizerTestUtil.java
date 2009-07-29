@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.util.CollectionObjectStream;
 import opennlp.tools.util.Span;
 
 /**
@@ -47,7 +48,7 @@ public class TokenizerTestUtil {
         new Span(0, 3),
         new Span(3, 4)}));
 
-    return TokenizerME.train("en", samples.iterator(), true);
+    return TokenizerME.train("en", new CollectionObjectStream<TokenSample>(samples), true);
   }
 
 }

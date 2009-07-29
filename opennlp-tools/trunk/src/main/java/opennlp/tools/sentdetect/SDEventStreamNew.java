@@ -23,7 +23,7 @@ import java.util.Iterator;
 
 import opennlp.model.Event;
 import opennlp.tools.util.AbstractEventStream;
-import opennlp.tools.util.Span;
+import opennlp.tools.util.ObjectStream;
 
 public class SDEventStreamNew extends AbstractEventStream<SentenceSample> {
 
@@ -35,7 +35,7 @@ public class SDEventStreamNew extends AbstractEventStream<SentenceSample> {
    *
    * @param samples
    */
-  public SDEventStreamNew(Iterator<SentenceSample> samples, SDContextGenerator cg,
+  public SDEventStreamNew(ObjectStream<SentenceSample> samples, SDContextGenerator cg,
       EndOfSentenceScanner scanner) {
     super(samples);
 

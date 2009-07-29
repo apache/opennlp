@@ -18,11 +18,11 @@
 
 package opennlp.tools.sentdetect;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import junit.framework.TestCase;
-import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.tools.util.Span;
 
 /**
@@ -30,14 +30,13 @@ import opennlp.tools.util.Span;
  */
 public class SentenceDetectorMETest extends TestCase {
   
-  public void testSentenceDetector() {
+  public void testSentenceDetector() throws IOException {
 
     InputStream in = getClass().getResourceAsStream(
         "/opennlp/tools/sentdetect/Sentences.txt");
 
     SentenceModel sentdetectModel = SentenceDetectorME.train(
-        "en", new SentenceSampleStream(new PlainTextByLineDataStream(
-        new InputStreamReader(in))), true, null, 100, 0);
+        "en", new SentenceSampleStream(new InputStreamReader(in)), true, null, 100, 0);
     
     assertEquals("en", sentdetectModel.getLanguage());
     
