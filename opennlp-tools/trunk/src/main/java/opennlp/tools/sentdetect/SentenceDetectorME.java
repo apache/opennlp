@@ -24,12 +24,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import opennlp.maxent.GIS;
 import opennlp.maxent.GISModel;
-import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;

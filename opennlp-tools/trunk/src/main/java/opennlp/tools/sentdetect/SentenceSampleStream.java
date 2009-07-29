@@ -18,15 +18,10 @@
 
 package opennlp.tools.sentdetect;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.Reader;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
-import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 /**
