@@ -51,6 +51,13 @@ public class WordTagSampleStream implements ObjectStream<POSSample> {
     this.sentences = new PlainTextByLineStream(sentences);
   }
 
+  public WordTagSampleStream(ObjectStream<String> sentences) {
+    if (sentences == null)
+      throw new IllegalArgumentException("sentences must not be null!");
+
+    this.sentences = sentences;
+  }
+  
   /**
    * Parses the next sentence and return the next
    * {@link POSSample} object.
