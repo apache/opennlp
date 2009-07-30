@@ -55,5 +55,9 @@ public class WordTagSampleStreamTest extends TestCase {
     assertEquals("x4", tags[3]);
     assertEquals("x5", tags[4]);
     assertEquals("x6", tags[5]);
+    
+    assertNull(stream.read());
+    stream.reset();
+    assertNotNull(stream.read());
   }
 }
