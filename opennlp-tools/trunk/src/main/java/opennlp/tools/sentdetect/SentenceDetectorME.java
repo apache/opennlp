@@ -281,7 +281,7 @@ public class SentenceDetectorME implements SentenceDetector {
   }
 
   private static void usage() {
-    System.err.println("Usage: SentenceDetectorME [-encoding charset] [-lang language] trainData modelName");
+    System.err.println("Usage: SentenceDetectorME -encoding charset -lang language trainData modelName");
     System.err.println("-encoding charset specifies the encoding which should be used ");
     System.err.println("                  for reading and writing text.");
     System.err.println("-lang language    specifies the language which ");
@@ -334,11 +334,11 @@ public class SentenceDetectorME implements SentenceDetector {
     File outFile = new File(args[ai++]);
 
     try {
-      if (lang == null) {
+      if ((lang == null) || (encoding == null)) {
         usage();
       }
 
-      SentenceModel model = train("en", new SentenceSampleStream(new PlainTextByLineStream(
+      SentenceModel model = train(lang, new SentenceSampleStream(new PlainTextByLineStream(
           new InputStreamReader(new FileInputStream(inFile), encoding))), true, null);
 
       // TODO: add support for iterations and cutoff settings
