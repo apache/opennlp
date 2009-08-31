@@ -86,7 +86,7 @@ public final class FMeasure {
   
   public void mergeInto(FMeasure measure) {
     precisionScore.add(measure.getPrecisionScore(), measure.precisionScore.count());
-    recallScore.add(measure.getPrecisionScore(), measure.recallScore.count());
+    recallScore.add(measure.getRecallScore(), measure.recallScore.count());
   }
   
   /**
