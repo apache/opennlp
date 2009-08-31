@@ -29,7 +29,7 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
   
   public ChunkSampleStream(ObjectStream<String> in) {
     
-    if (in != null)
+    if (in == null)
         throw new IllegalArgumentException("in must not be null!");
     
     this.in = in;
