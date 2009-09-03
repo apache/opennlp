@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
 
 import junit.framework.TestCase;
 import opennlp.maxent.GISModel;
-import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.model.EventStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
