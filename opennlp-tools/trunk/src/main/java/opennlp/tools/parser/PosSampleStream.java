@@ -40,24 +40,19 @@ public class PosSampleStream implements ObjectStream<POSSample> {
     Parse parse = in.read();
     
     if (parse != null) {
-      List<String> toks = new ArrayList<String>();
-      List<String> preds = new ArrayList<String>();
       
-      if (parse.isPosTag()) {
-        toks.add(parse.toString());
-        preds.add(parse.getType());
-      }
-      else {
-        Parse[] kids = parse.getChildren();
-        for (int ti=0,tl=kids.length;ti<tl;ti++) {
-          Parse tok = kids[ti];
-          toks.add(tok.toString());
-          preds.add(tok.getType());
-        }
+      Parse[] nodes = parse.getTagNodes();
+      
+      String toks[] = new String[nodes.length];
+      String preds[] = new String[nodes.length];
+      
+      for (int ti=0; ti < nodes.length; ti++) {
+        Parse tok = nodes[ti];
+        toks[ti] = tok.toString();
+        preds[ti] = tok.getType();
       }
       
-      return new POSSample(toks.toArray(new String[toks.size()]),
-          preds.toArray(new String[preds.size()]));
+      return new POSSample(toks, preds);
     }
     else {
       return null;
