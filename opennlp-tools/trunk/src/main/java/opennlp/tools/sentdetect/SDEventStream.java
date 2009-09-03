@@ -25,7 +25,7 @@ import opennlp.model.Event;
 import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
 
-public class SDEventStreamNew extends AbstractEventStream<SentenceSample> {
+public class SDEventStream extends AbstractEventStream<SentenceSample> {
 
   private SDContextGenerator cg;
   private EndOfSentenceScanner scanner;
@@ -35,7 +35,7 @@ public class SDEventStreamNew extends AbstractEventStream<SentenceSample> {
    *
    * @param samples
    */
-  public SDEventStreamNew(ObjectStream<SentenceSample> samples, SDContextGenerator cg,
+  public SDEventStream(ObjectStream<SentenceSample> samples, SDContextGenerator cg,
       EndOfSentenceScanner scanner) {
     super(samples);
 

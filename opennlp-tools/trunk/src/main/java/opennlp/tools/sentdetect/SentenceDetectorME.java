@@ -270,7 +270,7 @@ public class SentenceDetectorME implements SentenceDetector {
 
     Factory factory = new Factory();
 
-    EventStream eventStream = new SDEventStreamNew(samples,
+    EventStream eventStream = new SDEventStream(samples,
         factory.createSentenceContextGenerator(languageCode),
         factory.createEndOfSentenceScanner(languageCode));
 
