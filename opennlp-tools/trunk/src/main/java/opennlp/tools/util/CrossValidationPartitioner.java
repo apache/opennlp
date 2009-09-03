@@ -83,6 +83,11 @@ public class CrossValidationPartitioner<E> {
       throw new UnsupportedOperationException();
     }
     
+    public void close() throws ObjectStreamException {
+      sampleStream.close();
+      isPoisened = true;
+    }
+    
     void poison() {
       isPoisened = true;
     }
@@ -148,6 +153,11 @@ public class CrossValidationPartitioner<E> {
      */
     public void reset() {
       throw new UnsupportedOperationException();
+    }
+    
+    public void close() throws ObjectStreamException {
+      sampleStream.close();
+      poison();
     }
     
     void poison() {

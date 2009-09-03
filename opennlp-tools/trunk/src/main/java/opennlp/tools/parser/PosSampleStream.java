@@ -63,4 +63,8 @@ public class PosSampleStream implements ObjectStream<POSSample> {
       UnsupportedOperationException {
     in.reset();
   }
+  
+  public void close() throws ObjectStreamException {
+    in.close();
+  }
 }

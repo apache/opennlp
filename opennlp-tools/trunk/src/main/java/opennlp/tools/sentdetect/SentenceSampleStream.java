@@ -53,4 +53,8 @@ public class SentenceSampleStream implements ObjectStream<SentenceSample> {
   public void reset() throws ObjectStreamException {
     sentences.reset();
   }
+  
+  public void close() throws ObjectStreamException {
+    sentences.close();
+  }
 }

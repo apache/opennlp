@@ -73,4 +73,18 @@ public class PlainTextByLineStream implements ObjectStream<String> {
       throw new ObjectStreamException(e);
     }
   }
+  
+  public void close() throws ObjectStreamException {
+    try {
+      if (channel == null) {
+        in.close();
+      }
+      else {
+       channel.close(); 
+      }
+    }
+    catch (IOException e) {
+      throw new ObjectStreamException(e);
+    }
+  }
 }

@@ -111,7 +111,12 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
           return sampleStream.read();
         }
         
-        public void reset() {
+        public void reset() throws ObjectStreamException {
+          sampleStream.reset();
+        }
+        
+        public void close() throws ObjectStreamException {
+          sampleStream.close();
         }
       };
       

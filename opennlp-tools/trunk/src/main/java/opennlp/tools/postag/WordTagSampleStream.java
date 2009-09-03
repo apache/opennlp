@@ -96,4 +96,8 @@ public class WordTagSampleStream implements ObjectStream<POSSample> {
   public void reset() throws ObjectStreamException {
     sentences.reset();
   }
+  
+  public void close() throws ObjectStreamException {
+    sentences.close();
+  }
 }

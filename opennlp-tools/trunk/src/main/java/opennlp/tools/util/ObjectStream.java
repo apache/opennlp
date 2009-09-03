@@ -41,4 +41,13 @@ public interface ObjectStream<T> {
    * The implementation of this method is optional.
    */
   void reset() throws ObjectStreamException, UnsupportedOperationException;
+  
+  /**
+   * Closes the <code>ObjectStream</code> and releases all allocated
+   * resources. After close was called its not allowed to call
+   * read or reset.
+   * 
+   * @throws ObjectStreamException
+   */
+  void close() throws ObjectStreamException;
 }

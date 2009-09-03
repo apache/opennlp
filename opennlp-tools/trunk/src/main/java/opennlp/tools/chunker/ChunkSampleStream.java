@@ -66,4 +66,8 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
       UnsupportedOperationException {
     in.reset();
   }
+  
+  public void close() throws ObjectStreamException {
+    in.close();
+  }
 }

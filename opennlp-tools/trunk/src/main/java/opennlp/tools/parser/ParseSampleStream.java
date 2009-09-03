@@ -44,4 +44,8 @@ public class ParseSampleStream implements ObjectStream<Parse> {
       UnsupportedOperationException {
     in.reset();
   }
+  
+  public void close() throws ObjectStreamException {
+    in.close();
+  }
 }

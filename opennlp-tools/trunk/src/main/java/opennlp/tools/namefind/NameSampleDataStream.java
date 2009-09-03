@@ -61,6 +61,10 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
     throw new UnsupportedOperationException();
   }
   
+  public void close() throws ObjectStreamException {
+    in.close();
+  }
+  
   private NameSample createNameSample(String taggedTokens) {
     String[] parts = taggedTokens.split(" ");
 
@@ -85,9 +89,5 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
     String[] sentence = (String[]) tokenList.toArray(new String[tokenList.size()]);
     Span[] names = (Span[]) nameList.toArray(new Span[nameList.size()]);
     return new NameSample(sentence,names,sentence.length==0);
-  }
-
-  public void remove() {
-    throw new UnsupportedOperationException();
   }
 }

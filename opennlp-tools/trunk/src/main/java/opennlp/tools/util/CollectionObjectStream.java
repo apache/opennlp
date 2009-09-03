@@ -41,4 +41,7 @@ public class CollectionObjectStream<E> implements ObjectStream<E> {
   public void reset() {
     this.iterator = collection.iterator();
   }
+  
+  public void close() throws ObjectStreamException {
+  }
 }
