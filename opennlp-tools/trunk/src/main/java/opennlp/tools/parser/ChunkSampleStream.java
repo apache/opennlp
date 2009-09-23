@@ -32,35 +32,69 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
   public ChunkSampleStream(ObjectStream<Parse> in) {
     this.in = in;
   }
+
+  private static void getInitialChunks(Parse p, List<Parse> ichunks) {
+    if (p.isPosTag()) {
+      ichunks.add(p);
+    }
+    else {
+      Parse[] kids = p.getChildren();
+      boolean allKidsAreTags = true;
+      for (int ci = 0, cl = kids.length; ci < cl; ci++) {
+        if (!kids[ci].isPosTag()) {
+          allKidsAreTags = false;
+          break;
+        }
+      }
+      if (allKidsAreTags) {
+        ichunks.add(p);
+      }
+      else {
+        for (int ci = 0, cl = kids.length; ci < cl; ci++) {
+          getInitialChunks(kids[ci], ichunks);
+        }
+      }
+    }
+  }
+
+  public static Parse[] getInitialChunks(Parse p) {
+    List<Parse> chunks = new ArrayList<Parse>();
+    getInitialChunks(p, chunks);
+    return chunks.toArray(new Parse[chunks.size()]);
+  }
   
   public ChunkSample read() throws ObjectStreamException {
     
     Parse parse = in.read();
     
+    Parse[] chunks = getInitialChunks(parse);
+    
     if (parse != null) {
       List<String> toks = new ArrayList<String>();
       List<String> tags = new ArrayList<String>();
       List<String> preds = new ArrayList<String>();
-      
-      if (parse.isPosTag()) {
-        toks.add(parse.toString());
-        tags.add(parse.getType());
-        preds.add(Parser.OTHER);
-      }
-      else {
-        boolean start = true;
-        String ctype = parse.getType();
-        Parse[] kids = parse.getChildren();
-        for (int ti=0,tl=kids.length;ti<tl;ti++) {
-          Parse tok = kids[ti];
-          toks.add(tok.toString());
-          tags.add(tok.getType());
-          if (start) {
-            preds.add(Parser.START + ctype);
-            start = false;
-          }
-          else {
-            preds.add(Parser.CONT + ctype);
+      for (int ci = 0, cl = chunks.length; ci < cl; ci++) {
+        Parse c = chunks[ci];
+        if (c.isPosTag()) {
+          toks.add(c.toString());
+          tags.add(c.getType());
+          preds.add(Parser.OTHER);
+        }
+        else {
+          boolean start = true;
+          String ctype = c.getType();
+          Parse[] kids = c.getChildren();
+          for (int ti=0,tl=kids.length;ti<tl;ti++) {
+            Parse tok = kids[ti];
+            toks.add(tok.toString());
+            tags.add(tok.getType());
+            if (start) {
+              preds.add(Parser.START + ctype);
+              start = false;
+            }
+            else {
+              preds.add(Parser.CONT + ctype);
+            }
           }
         }
       }
