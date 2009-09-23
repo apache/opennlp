@@ -26,13 +26,13 @@ public class Sequence implements Comparable<Sequence> {
   private double score;
   private List<String> outcomes;
   private List<Double> probs;
-  private static final Double ONE = new Double(1.0);
+  private static final Double ONE = 1.0d;
 
   /** Creates a new sequence of outcomes. */
   public Sequence() {
     outcomes = new ArrayList<String>(1);
     probs = new ArrayList<Double>(1);
-    score = 0;
+    score = 0d;
   }
 
   public Sequence(Sequence s) {
@@ -49,7 +49,7 @@ public class Sequence implements Comparable<Sequence> {
       outcomes.add(outcome);
       probs = new ArrayList<Double>(s.probs.size()+1);
       probs.addAll(s.probs);
-      probs.add(new Double(p));
+      probs.add(p);
       score = s.score+Math.log(p);
     }
 
@@ -72,7 +72,7 @@ public class Sequence implements Comparable<Sequence> {
    */
   public void add(String outcome, double p) {
     outcomes.add(outcome);
-    probs.add(new Double(p));
+    probs.add(p);
     score += Math.log(p);
   }
 
@@ -105,7 +105,7 @@ public class Sequence implements Comparable<Sequence> {
    */
   public void getProbs(double[] ps) {
     for (int pi=0,pl=probs.size();pi<pl;pi++) {
-      ps[pi] = ((Double) probs.get(pi)).doubleValue();
+      ps[pi] = probs.get(pi);
     }
   }
 
