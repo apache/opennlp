@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,56 +15,100 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.tokenize;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
-import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.StringList;
 
 /**
- * The {@link TokenSampleStream} reads token samples form a dictionary.
- * Each dictionary entry is one training sample. If the dictionary entry
- * contains multiple tokens it is assumed that they occur without
- * a whitespace in naturual text and should be splitted.
- *
- * @see Dictionary
+ * This class is a stream filter which reads in string encoded samples and creates
+ * {@link TokenSample}s out of them. The input string sample is tokenized if a
+ * whitespace or the special separator chars occur.
+ * <p>
+ * Sample:<b>
+ * "token1 token2 token3<SPLIT>token4"
+ * The tokens token1 and token2 are separated by a whitespace, token3 and token3
+ * are separated by the special character sequence, in this case the default
+ * split sequence.
+ * 
+ * The sequence must be unique in the input string and is not escaped.
  */
-public class TokenSampleStream implements Iterator<TokenSample> {
-
-  private Iterator<StringList> samples;
-
-  public TokenSampleStream(Dictionary trainingDictionary) {
-    samples = trainingDictionary.iterator();
-  }
-
-  public boolean hasNext() {
-    return samples.hasNext();
-  }
-
-  public TokenSample next() {
-
-    StringList sample = samples.next();
-
-    List<Span> tokenSpans = new ArrayList<Span>();
-    StringBuffer text = new StringBuffer();
-
-    for (String token : sample) {
-      int begin = text.length();
-      text.append(token);
-
-      tokenSpans.add(new Span(begin, text.length()));
+public class TokenSampleStream implements ObjectStream<TokenSample> {
+  
+  public static final String DEFAULT_SEPARATOR_CHARS = "<SPLIT>";
+  
+  private final String separatorChars;
+  
+  private ObjectStream<String> sampleStrings;
+  
+  public TokenSampleStream(ObjectStream<String> sampleStrings, String separatorChars) {
+    
+    if (sampleStrings == null || separatorChars == null) {
+      throw new IllegalArgumentException("parameters must not be null!");
     }
-
-    return new TokenSample(text.toString(), tokenSpans.toArray(
-        new Span[tokenSpans.size()]));
+    
+    this.sampleStrings = sampleStrings;
+    this.separatorChars= separatorChars;
+  }
+  
+  public TokenSampleStream(ObjectStream<String> sentences) {
+    this(sentences, DEFAULT_SEPARATOR_CHARS);
+  }
+  
+  public TokenSample read() throws ObjectStreamException {
+    String sampleString = sampleStrings.read();
+    
+    if (sampleString != null) {
+      
+      Span whitespaceTokenSpans[] = WhitespaceTokenizer.INSTANCE.tokenizePos(sampleString);
+      
+      // Pre-allocate 20% for newly created tokens
+      ArrayList<Span> realTokenSpans = new ArrayList<Span>((int) (whitespaceTokenSpans.length * 1.2d));
+      
+      for (Span whiteSpaceTokenSpan : whitespaceTokenSpans) {
+        String token = whiteSpaceTokenSpan.getCoveredText(sampleString);
+        
+        boolean wasTokenReplaced = false;
+        
+        int tokStart = 0;
+        int tokEnd = -1;
+        while ((tokEnd = token.indexOf(separatorChars, tokStart)) > -1) {
+          realTokenSpans.add(new Span(tokStart + whiteSpaceTokenSpan.getStart(), 
+              tokEnd + whiteSpaceTokenSpan.getStart()));
+          tokStart = tokEnd + separatorChars.length();
+          wasTokenReplaced = true;
+        }
+        
+        if (wasTokenReplaced) {
+          // If the token contains the split chars at least once
+          // a span for the last token must still be added
+          realTokenSpans.add(new Span(tokStart + whiteSpaceTokenSpan.getStart(), 
+              whiteSpaceTokenSpan.getEnd()));
+        }
+        else {
+          // If it does not contain the split chars at lest once
+          // just copy the original token span
+          realTokenSpans.add(whiteSpaceTokenSpan);
+        }
+      }
+      
+      return new TokenSample(sampleString, (Span[]) realTokenSpans.toArray(
+          new Span[realTokenSpans.size()]));
+    }
+    else {
+      return null;
+    }
   }
 
-  public void remove() {
-    throw new UnsupportedOperationException();
+  public void reset() throws ObjectStreamException,
+      UnsupportedOperationException {
+    sampleStrings.reset();
+  }
+  
+  public void close() throws ObjectStreamException {
+    sampleStrings.close();
   }
 }
