@@ -127,7 +127,7 @@ public class TokenizerME extends AbstractTokenizer {
   public double[] getTokenProbabilities() {
     double[] tokProbArray = new double[tokProbs.size()];
     for (int i = 0; i < tokProbArray.length; i++) {
-      tokProbArray[i] = ((Double) tokProbs.get(i)).doubleValue();
+      tokProbArray[i] = tokProbs.get(i);
     }
     return tokProbArray;
   }
@@ -168,13 +168,13 @@ public class TokenizerME extends AbstractTokenizer {
           tokenProb *= probs[model.getIndex(best)];
           if (best.equals(TokenizerME.SPLIT)) {
             newTokens.add(new Span(start, j));
-            tokProbs.add(new Double(tokenProb));
+            tokProbs.add(tokenProb);
             start = j;
             tokenProb = 1.0;
           }
         }
         newTokens.add(new Span(start, end));
-        tokProbs.add(new Double(tokenProb));
+        tokProbs.add(tokenProb);
       }
     }
 
