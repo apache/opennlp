@@ -95,6 +95,16 @@ public class POSEvaluator {
   }
 
   /**
+   * Retrieves the total number of words considered
+   * in the evaluation.
+   * 
+   * @return
+   */
+  public long getWordCount() {
+    return wordAccuracy.count();
+  }
+  
+  /**
    * Represents this objects as human readable {@link String}.
    */
   public String toString() {
