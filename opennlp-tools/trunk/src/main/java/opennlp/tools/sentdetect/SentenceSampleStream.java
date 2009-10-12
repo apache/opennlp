@@ -19,6 +19,8 @@
 package opennlp.tools.sentdetect;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
@@ -41,9 +43,22 @@ public class SentenceSampleStream implements ObjectStream<SentenceSample> {
   }
 
   public SentenceSample read() throws ObjectStreamException {
-    String sentence = sentences.read();
-    if (sentence != null) {
-      return new SentenceSample(sentence, new Span(0, sentence.length()));
+    
+    StringBuilder sentencesString = new StringBuilder();
+    List<Span> sentenceSpans = new LinkedList<Span>();
+    
+    String sentence; 
+    while ((sentence = sentences.read()) != null && !sentence.equals("")) {
+
+      int begin = sentencesString.length();
+      sentencesString.append(sentence.trim());
+      int end = sentencesString.length();
+      sentenceSpans.add(new Span(begin, end));
+      sentencesString.append(' ');
+    }
+    
+    if (sentenceSpans.size() > 0) {
+      return new SentenceSample(sentencesString.toString(), sentenceSpans.toArray(new Span[sentenceSpans.size()]));
     }
     else {
       return null;
