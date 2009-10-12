@@ -24,6 +24,7 @@ import java.util.Iterator;
 import opennlp.model.Event;
 import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.Span;
 
 public class SDEventStream extends AbstractEventStream<SentenceSample> {
 
@@ -48,16 +49,23 @@ public class SDEventStream extends AbstractEventStream<SentenceSample> {
 
     Collection<Event> events = new ArrayList<Event>();
 
-    for (Iterator<Integer> it = scanner.getPositions(
-        sample.getDocument()).iterator(); it.hasNext();) {
-
-      int candidate = it.next();
-      String type = SentenceDetectorME.NO_SPLIT;
-      if (!it.hasNext()) {
-        type = SentenceDetectorME.SPLIT;
+    for (Span sentenceSpan : sample.getSentences()) {
+      String sentenceString = sentenceSpan.getCoveredText(sample.getDocument());
+      
+      for (Iterator<Integer> it = scanner.getPositions(
+          sentenceString).iterator(); it.hasNext();) {
+        
+        int candidate = it.next();
+        String type = SentenceDetectorME.NO_SPLIT;
+        if (!it.hasNext()) {
+          type = SentenceDetectorME.SPLIT;
+        }
+        
+        events.add(new Event(type, cg.getContext(sample.getDocument(),
+            sentenceSpan.getStart() + candidate)));
       }
-      events.add(new Event(type, cg.getContext(sample.getDocument(), candidate)));
     }
+    
 
     return events.iterator();
   }
