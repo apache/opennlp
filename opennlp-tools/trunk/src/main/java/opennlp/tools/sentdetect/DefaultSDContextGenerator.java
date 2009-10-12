@@ -48,9 +48,8 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    *
    * @param eosCharacters
    */
-  @SuppressWarnings("unchecked")
   public DefaultSDContextGenerator(char[] eosCharacters) {
-    this(Collections.EMPTY_SET, eosCharacters);
+    this(Collections.<String>emptySet(), eosCharacters);
   }
 
   /**
