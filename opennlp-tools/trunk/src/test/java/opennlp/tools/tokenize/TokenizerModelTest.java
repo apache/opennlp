@@ -32,7 +32,7 @@ public class TokenizerModelTest extends TestCase {
 
   public void testSentenceModel() throws IOException, InvalidFormatException {
 
-    TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
+    TokenizerModel model = TokenizerTestUtil.createSimpleMaxentTokenModel();
 
     ByteArrayOutputStream arrayOut = new ByteArrayOutputStream();
     model.serialize(arrayOut);

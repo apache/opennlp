@@ -19,10 +19,14 @@
 package opennlp.tools.tokenize;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.util.CollectionObjectStream;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 /**
@@ -30,7 +34,7 @@ import opennlp.tools.util.Span;
  */
 public class TokenizerTestUtil {
 
-  static TokenizerModel createMaxentTokenModel() throws IOException {
+  static TokenizerModel createSimpleMaxentTokenModel() throws IOException {
     List<TokenSample> samples = new ArrayList<TokenSample>();
 
     samples.add(new TokenSample("year", new Span[]{new Span(0, 4)}));
@@ -51,4 +55,15 @@ public class TokenizerTestUtil {
     return TokenizerME.train("en", new CollectionObjectStream<TokenSample>(samples), true);
   }
 
+  static TokenizerModel createMaxentTokenModel() throws IOException {
+    
+    InputStream trainDataIn = TokenizerTestUtil.class.getResourceAsStream(
+        "/opennlp/tools/tokenize/token.train");
+    
+    ObjectStream<TokenSample> samples = new TokenSampleStream(
+        new PlainTextByLineStream(new InputStreamReader(trainDataIn, "UTF-8")));
+    
+    return TokenizerME.train("en", samples, true);
+  }
+  
 }

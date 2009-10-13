@@ -75,10 +75,18 @@ public class TokenSampleStreamTest {
     
     assertEquals(4, tokenSpans.length);
     
-    assertEquals("a", tokenSpans[0].getCoveredText(sampleTokens));
-    assertEquals("b", tokenSpans[1].getCoveredText(sampleTokens));
-    assertEquals("c", tokenSpans[2].getCoveredText(sampleTokens));
-    assertEquals("d", tokenSpans[3].getCoveredText(sampleTokens));
+    assertEquals("a", tokenSpans[0].getCoveredText(tokenSample.getText()));
+    assertEquals(new Span(0,1), tokenSpans[0]);
+    
+    assertEquals("b", tokenSpans[1].getCoveredText(tokenSample.getText()));
+    assertEquals(new Span(1,2), tokenSpans[1]);
+
+    assertEquals("c", tokenSpans[2].getCoveredText(tokenSample.getText()));
+    assertEquals(new Span(2,3), tokenSpans[2]);
+    
+    assertEquals("d", tokenSpans[3].getCoveredText(tokenSample.getText()));
+    assertEquals(new Span(3,4), tokenSpans[3]);
+
   }
   
   /**
@@ -100,10 +108,10 @@ public class TokenSampleStreamTest {
     
     assertEquals(5, tokenSpans.length);
     
-    assertEquals("a", tokenSpans[0].getCoveredText(sampleTokens));
-    assertEquals("b", tokenSpans[1].getCoveredText(sampleTokens));
-    assertEquals("c", tokenSpans[2].getCoveredText(sampleTokens));
-    assertEquals("d", tokenSpans[3].getCoveredText(sampleTokens));
-    assertEquals("e", tokenSpans[4].getCoveredText(sampleTokens));
+    assertEquals("a", tokenSpans[0].getCoveredText(tokenSample.getText()));
+    assertEquals("b", tokenSpans[1].getCoveredText(tokenSample.getText()));
+    assertEquals("c", tokenSpans[2].getCoveredText(tokenSample.getText()));
+    assertEquals("d", tokenSpans[3].getCoveredText(tokenSample.getText()));
+    assertEquals("e", tokenSpans[4].getCoveredText(tokenSample.getText()));
   }
 }

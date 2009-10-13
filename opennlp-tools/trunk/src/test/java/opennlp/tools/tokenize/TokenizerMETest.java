@@ -33,9 +33,9 @@ import junit.framework.TestCase;
  */
 public class TokenizerMETest extends TestCase {
 
-  public void testTokenizer() throws IOException {
+  public void testTokenizerSimpleModel() throws IOException {
 
-    TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
+    TokenizerModel model = TokenizerTestUtil.createSimpleMaxentTokenModel();
 
     TokenizerME tokenizer = new TokenizerME(model);
 
@@ -44,5 +44,24 @@ public class TokenizerMETest extends TestCase {
     assertEquals(2, tokens.length);
     assertEquals("test", tokens[0]);
     assertEquals(",", tokens[1]);
+  }
+  
+  public void testTokenizer() throws IOException {
+    TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
+
+    TokenizerME tokenizer = new TokenizerME(model);
+
+    String tokens[] = tokenizer.tokenize("Sounds like it's not properly thought through!");
+
+    assertEquals(9, tokens.length);
+    assertEquals("Sounds", tokens[0]);
+    assertEquals("like", tokens[1]);
+    assertEquals("it", tokens[2]);
+    assertEquals("'s", tokens[3]);
+    assertEquals("not", tokens[4]);
+    assertEquals("properly", tokens[5]);
+    assertEquals("thought", tokens[6]);
+    assertEquals("through", tokens[7]);
+    assertEquals("!", tokens[8]);
   }
 }
