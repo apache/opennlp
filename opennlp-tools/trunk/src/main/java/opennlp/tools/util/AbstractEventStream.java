@@ -33,8 +33,7 @@ public abstract class AbstractEventStream<T> extends opennlp.model.AbstractEvent
 
   private ObjectStream<T> samples;
 
-  @SuppressWarnings("unchecked")
-  private Iterator<Event> events = Collections.EMPTY_LIST.iterator();;
+  private Iterator<Event> events = Collections.<Event>emptyList().iterator();;
 
   /**
    * Initializes the current instance with a sample {@link Iterator}.
@@ -73,8 +72,8 @@ public abstract class AbstractEventStream<T> extends opennlp.model.AbstractEvent
           events = createEvents(sample);
         }
       } catch (ObjectStreamException e) {
-        // TODO: Exception is swallowed and should be handled by maxent
-        e.printStackTrace();
+        // TODO: Exception be handled by maxent
+        throw new RuntimeException(e);
       }
 
       return events.hasNext();
