@@ -18,14 +18,20 @@
 
 package opennlp.tools.postag;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import opennlp.model.AbstractModel;
+import opennlp.model.TwoPassDataIndexer;
+import opennlp.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BeamSearch;
+import opennlp.tools.util.ModelType;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 
@@ -36,7 +42,26 @@ import opennlp.tools.util.SequenceValidator;
  *
  */
 public class POSTaggerME implements POSTagger {
+  
+  private class PosSequenceValidator implements SequenceValidator<String> {
 
+    public boolean validSequence(int i, String[] inputSequence,
+        String[] outcomesSequence, String outcome) {
+      if (tagDictionary == null) {
+        return true;
+      }
+      else {
+        String[] tags = tagDictionary.getTags(inputSequence[i].toString());
+        if (tags == null) {
+          return true;
+        }
+        else {
+          return Arrays.asList(tags).contains(outcome);
+        }
+      }
+    }
+  }
+  
   /**
    * The maximum entropy model to use to evaluate contexts.
    */
@@ -273,24 +298,37 @@ public class POSTaggerME implements POSTagger {
       probs[max] = 0;
     }
     return orderedTags;
+    
+    
   }
 
-  private class PosSequenceValidator implements SequenceValidator<String> {
+  public static POSModel train(String languageCode, ObjectStream<POSSample> samples, ModelType modelType, POSDictionary tagDictionary,
+      Dictionary ngramDictionary, int cutoff, int iterations) throws IOException, ObjectStreamException {
 
-    public boolean validSequence(int i, String[] inputSequence,
-        String[] outcomesSequence, String outcome) {
-      if (tagDictionary == null) {
-        return true;
-      }
-      else {
-        String[] tags = tagDictionary.getTags(inputSequence[i].toString());
-        if (tags == null) {
-          return true;
-        }
-        else {
-          return Arrays.asList(tags).contains(outcome);
-        }
-      }
+    POSContextGenerator contextGenerator = new DefaultPOSContextGenerator(ngramDictionary);
+    
+    AbstractModel posModel = null;
+    
+    if (modelType.equals(ModelType.MAXENT)) {
+      posModel = opennlp.maxent.GIS.trainModel(iterations,
+          new TwoPassDataIndexer(new POSSampleEventStream(samples, contextGenerator), cutoff));
+  
     }
+    else if (modelType.equals(ModelType.PERCEPTRON)) {
+      boolean useAverage = true;
+      
+      posModel = new opennlp.perceptron.PerceptronTrainer().trainModel(
+          iterations, new TwoPassDataIndexer(new POSSampleEventStream(samples, contextGenerator),
+          cutoff, false), cutoff, useAverage);
+    }
+    else if (modelType.equals(ModelType.PERCEPTRON_SEQUENCE)) {
+      
+      POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
+      boolean useAverage = true;
+      
+      posModel = new SimplePerceptronSequenceTrainer().trainModel(iterations, ss, cutoff,useAverage);
+    }
+    
+    return new POSModel(languageCode, posModel, tagDictionary, ngramDictionary);
   }
 }
