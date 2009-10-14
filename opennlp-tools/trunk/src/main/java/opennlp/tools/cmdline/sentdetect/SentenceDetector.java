@@ -18,6 +18,7 @@
 package opennlp.tools.cmdline.sentdetect;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +26,7 @@ import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.InvalidFormatException;
@@ -46,6 +48,34 @@ public class SentenceDetector implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
+  static SentenceModel loadModel(File modelFile) {
+    CmdLineUtil.checkInputFile("Sentence Detector model", modelFile);
+    
+    System.err.print("Loading model ... ");
+    
+    SentenceModel model;
+    try {
+      InputStream modelIn = new FileInputStream(modelFile);
+      model = new SentenceModel(modelIn);
+      modelIn.close();
+    }
+    catch (IOException e) {
+      System.err.println("failed");
+      System.err.println("IO error while loading model: " + e.getMessage());
+      System.exit(-1);
+      return null;
+    }
+    catch (InvalidFormatException e) {
+      System.err.println("failed");
+      System.err.println("Model has invalid format: " + e.getMessage());
+      System.exit(-1);
+      return null;
+    }
+    System.err.println("done");
+    
+    return model;
+  }
+  
   /**
    * Perform sentence detection the input stream.
    *
@@ -58,24 +88,7 @@ public class SentenceDetector implements CmdLineTool {
       System.exit(1);
     }
 
-    System.err.print("Loading model ... ");
-    SentenceModel model;
-    try {
-      InputStream modelIn = new FileInputStream(args[0]);
-      model = new SentenceModel(modelIn);
-      modelIn.close();
-    }
-    catch (IOException e) {
-      System.err.println("IO error while loading model: " + e.getMessage());
-      System.exit(-1);
-      return;
-    }
-    catch (InvalidFormatException e) {
-      System.err.println("Model has invalid format: " + e.getMessage());
-      System.exit(-1);
-      return;
-    }
-    System.err.println("done");
+    SentenceModel model = loadModel(new File(args[0]));
     
     SentenceDetectorME sdetector = new SentenceDetectorME(model);
 

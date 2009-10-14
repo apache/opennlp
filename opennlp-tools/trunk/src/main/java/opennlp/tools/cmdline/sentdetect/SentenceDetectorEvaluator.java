@@ -15,45 +15,34 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.tokenizer;
+package opennlp.tools.cmdline.sentdetect;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.tokenize.TokenSample;
-import opennlp.tools.tokenize.TokenSampleStream;
-import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
+import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.sentdetect.SentenceSampleStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class TokenizerTrainer implements CmdLineTool {
+public class SentenceDetectorEvaluator implements CmdLineTool {
 
-//  private static void usage() {
-//    System.err.println("Usage: TokenizerCrossValidator " + TrainingParameters.getParameterUsage() +
-//        " trainData model");
-//    System.err.println(TrainingParameters.getDescription());
-//    System.err.println("trainingData      training data used for cross validation");
-//    System.err.println("model             output file for the created tokenizer model");
-//    System.exit(1);
-//  }
-  
   public String getName() {
-    return "TokenizerTrainer";
+    return "SentenceDetectorEvaluator";
   }
   
   public String getShortDescription() {
-    return "trainer for the learnable tokenizer";
+    return "evaluator for the learnable sentence detector";
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + TrainingParameters.getParameterUsage() + " trainingData model";
+    return "Usage: " + CLI.CMD + " " + getName() + " -encoding charset model testData";
   }
-
 
   public void run(String[] args) {
     if (args.length < 4) {
@@ -61,34 +50,35 @@ public class TokenizerTrainer implements CmdLineTool {
       System.exit(1);
     }
     
-    TrainingParameters parameters = new TrainingParameters(args);
+    String encoding = CmdLineUtil.getEncodingParameter(args);
     
-    if(!parameters.isValid()) {
+    if (encoding == null) {
       System.out.println(getHelp());
       System.exit(1);
     }
     
+    SentenceModel model = SentenceDetector.loadModel(new File(args[0]));
+    
     File trainingDataInFile = new File(args[args.length - 2]);
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
+    opennlp.tools.sentdetect.SentenceDetectorEvaluator evaluator = 
+        new opennlp.tools.sentdetect.SentenceDetectorEvaluator(new SentenceDetectorME(model));
+    
     try {
+      System.out.print("Evaluating ... ");
       FileInputStream trainingDataIn = new FileInputStream(trainingDataInFile);
       ObjectStream<String> lineStream = new PlainTextByLineStream(trainingDataIn.getChannel(),
-          parameters.getEncoding());
-      ObjectStream<TokenSample> sampleStream = new TokenSampleStream(lineStream);
+          encoding);
+      ObjectStream<SentenceSample> sampleStream = new SentenceSampleStream(lineStream);
       
-      TokenizerModel model = opennlp.tools.tokenize.TokenizerME.train(parameters.getLanguage(), sampleStream, 
-          parameters.isAlphaNumericOptimizationEnabled());
-      
+      evaluator.evaluate(sampleStream);
       sampleStream.close();
+      System.err.println("done");
       
-      File modelOutFile = new File(args[args.length - 1]);
-      OutputStream modelOut = new FileOutputStream(modelOutFile);
-      model.serialize(modelOut);
-      modelOut.close();
+      System.out.println();
       
-      System.out.println("Wrote tokenizer model.");
-      System.out.println("Path: " + modelOutFile.getAbsolutePath());
+      System.out.println(evaluator.getFMeasure());
     }
     catch (Exception e) {
       e.printStackTrace();

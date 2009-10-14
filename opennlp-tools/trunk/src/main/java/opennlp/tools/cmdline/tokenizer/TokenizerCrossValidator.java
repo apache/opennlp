@@ -47,19 +47,19 @@ public class TokenizerCrossValidator implements CmdLineTool {
   }
 
   public void run(String[] args) {
-    try {
       if (args.length < 5) {
         System.out.println(getHelp());
         System.exit(1);
       }
       
-      TrainingParameters parameters = TrainingParameters.parse(args);
+      TrainingParameters parameters = new TrainingParameters(args);
       
-      if(parameters == null) {
+      if(!parameters.isValid()) {
         System.out.println(getHelp());
         System.exit(1);
       }
       
+      try {
       File trainingDataInFile = new File(args[args.length -1]);
       CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
       

@@ -24,8 +24,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.cmdline.parser.BuildModelUpdater;
 import opennlp.tools.cmdline.sentdetect.SentenceDetector;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluator;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainer;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidator;
 import opennlp.tools.cmdline.tokenizer.SimpleTokenizer;
 import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidator;
 import opennlp.tools.cmdline.tokenizer.TokenizerME;
@@ -49,14 +51,21 @@ public class CLI {
     tools.add(new TokenizerTrainer());
     tools.add(new TokenizerMEEvaluator());
     tools.add(new TokenizerCrossValidator());
-    tools.add(new SentenceDetector());
     
     // Sentence detector
+    tools.add(new SentenceDetector());
+    tools.add(new SentenceDetectorTrainer());
+    tools.add(new SentenceDetectorEvaluator());
+    tools.add(new SentenceDetectorCrossValidator());
+    
     // Name Finder
+    
     // POS Tagger
     // Chunker
+    
     // Parser
 //    tools.add(new BuildModelUpdater());
+    
     // Coref
     
     for (CmdLineTool tool : tools) {
@@ -100,7 +109,11 @@ public class CLI {
     
     CmdLineTool tool = toolLookupMap.get(args[0]);
     
-    if (args.length > 1 && args[1].equals("help")) {
+    if (tool == null) {
+      usage();
+      System.exit(1); 
+    }
+    else if (args.length > 1 && args[1].equals("help")) {
       System.out.println(tool.getHelp());
       System.exit(1);
     }

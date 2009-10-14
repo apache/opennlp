@@ -42,16 +42,9 @@ public class TokenizerME implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
-  public void run(String[] args) {
-    if (args.length != 1) {
-      System.out.println(getHelp());
-      System.exit(1);
-    }
-    
-    File modelFile = new File(args[0]);
-    
+  public static TokenizerModel loadModel(File modelFile) {
     CmdLineUtil.checkInputFile("Tokenizer model", modelFile);
-    
+
     System.err.print("Loading model ... ");
     
     TokenizerModel model;
@@ -61,17 +54,31 @@ public class TokenizerME implements CmdLineTool {
       modelIn.close();
     }
     catch (IOException e) {
+      System.err.println("failed");
       System.err.println("IO error while loading model: " + e.getMessage());
       System.exit(-1);
-      return;
+      return null;
     }
     catch (InvalidFormatException e) {
+      System.err.println("failed");
       System.err.println("Model has invalid format: " + e.getMessage());
       System.exit(-1);
-      return;
+      return null;
     }
     
     System.err.println("done");
+   
+    return model;
+  }
+  
+  public void run(String[] args) {
+    if (args.length != 1) {
+      System.out.println(getHelp());
+      System.exit(1);
+    }
+    
+    TokenizerModel model = loadModel(new File(args[0]));
+    
     
     CommandLineTokenizer tokenizer = 
       new CommandLineTokenizer(new opennlp.tools.tokenize.TokenizerME(model));

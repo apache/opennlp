@@ -42,7 +42,7 @@ public class TokenizerMEEvaluator implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + "  model testData";
+    return "Usage: " + CLI.CMD + " " + getName() + "-encoding charset model testData";
   }
 
   public void run(String[] args) {
@@ -52,26 +52,24 @@ public class TokenizerMEEvaluator implements CmdLineTool {
         System.exit(1);
       }
       
-      File modelFile = new File(args[0]);
-      CmdLineUtil.checkInputFile("Tokenizer model", modelFile);
-      
       File testData = new File(args[1]);
-      CmdLineUtil.checkInputFile("Test data", modelFile);
+      CmdLineUtil.checkInputFile("Test data", testData);
       
-      System.out.print("Loading model ... ");
+      String encoding = CmdLineUtil.getEncodingParameter(args);
       
-      InputStream modelIn = new FileInputStream(modelFile);
-      TokenizerModel model = new TokenizerModel(modelIn);
-      modelIn.close();
+      if (encoding == null) {
+        System.out.println(getHelp());
+        System.exit(1);
+      }
       
-      System.out.println("done");
+      TokenizerModel model = TokenizerME.loadModel(new File(args[0]));
       
       TokenizerEvaluator evaluator = 
           new TokenizerEvaluator(new opennlp.tools.tokenize.TokenizerME(model));
       
       System.out.print("Evaluating ... ");
       ObjectStream<String> sampleStringStream = new PlainTextByLineStream(
-          new InputStreamReader(new FileInputStream(testData)));
+          new InputStreamReader(new FileInputStream(testData), encoding));
       
       evaluator.evaluate(new TokenSampleStream(sampleStringStream));
       sampleStringStream.close();

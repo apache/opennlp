@@ -15,39 +15,21 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.tokenizer;
+package opennlp.tools.cmdline.sentdetect;
 
 import opennlp.tools.cmdline.BasicTrainingParameters;
-import opennlp.tools.cmdline.CmdLineUtil;
 
-/**
- * This class is responsible to parse and provide the training parameters.
- */
-class TrainingParameters extends BasicTrainingParameters {
+public class TrainingParameters extends BasicTrainingParameters {
 
-  private boolean isAlphaNumOpt = false;
-  
-  TrainingParameters(String args[]) {
+  public TrainingParameters(String[] args) {
     super(args);
-    
-    isAlphaNumOpt = CmdLineUtil.containsParam("-alphaNumOpt", args);
-  }
-  
-  /**
-   * Retrieves the optional alphaNumOpt parameter.
-   * 
-   * @return if parameter is set true, otherwise false (default)
-   */
-  boolean isAlphaNumericOptimizationEnabled() {
-    return isAlphaNumOpt;
   }
   
   public static String getParameterUsage() {
-    return BasicTrainingParameters.getParameterUsage() + " [-alphaNumOpt]";
+    return BasicTrainingParameters.getParameterUsage();
   }
   
   public static String getDescription() {
     return BasicTrainingParameters.getDescription();
-    // TODO: add alphaNumOpt description
   }
 }
