@@ -28,10 +28,6 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.WordTagSampleStream;
-import opennlp.tools.sentdetect.SentenceDetectorME;
-import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.sentdetect.SentenceSampleStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -72,8 +68,11 @@ public class POSTaggerTrainer implements CmdLineTool {
           parameters.getEncoding());
       ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
       
+      
+      // depending on model and sequence choose training method
       POSModel model = 
-           opennlp.tools.postag.POSTaggerTrainer.train(sampleStream, null, null, 5);
+           opennlp.tools.postag.POSTaggerME.train(parameters.getLanguage(),
+           sampleStream, parameters.getModel(), null, null, parameters.getCutoff(), parameters.getNumberOfIterations());
       
       sampleStream.close();
       
@@ -82,7 +81,7 @@ public class POSTaggerTrainer implements CmdLineTool {
       model.serialize(modelOut);
       modelOut.close();
       
-      System.out.println("Wrote sentence detector model.");
+      System.out.println("Wrote POS Tagger model.");
       System.out.println("Path: " + modelOutFile.getAbsolutePath());
     } catch (Exception e) {
       e.printStackTrace();

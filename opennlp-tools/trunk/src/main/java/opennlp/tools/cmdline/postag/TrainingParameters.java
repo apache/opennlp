@@ -19,17 +19,51 @@ package opennlp.tools.cmdline.postag;
 
 import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.util.ModelType;
 
 class TrainingParameters extends BasicTrainingParameters {
 
-  private boolean isSequence;
   
   private final String dictPath;
+  private final ModelType model;
   
   TrainingParameters(String args[]) {
     super(args);
     
-    isSequence = CmdLineUtil.containsParam("-sequence", args);
     dictPath = CmdLineUtil.getParameter("-dict", args);
+    String modelString = CmdLineUtil.getParameter("-model", args);
+    
+    if (modelString == null)
+      modelString = "maxent";
+    
+    if (modelString.equals("maxent")) {
+      model = ModelType.MAXENT; 
+    }
+    else if (modelString.equals("perceptron")) {
+      model = ModelType.PERCEPTRON; 
+    }
+    else if (modelString.equals("perceptron_sequence")) {
+      model = ModelType.PERCEPTRON_SEQUENCE; 
+    }
+    else {
+      model = null;
+    }
+  }
+  
+  ModelType getModel() {
+    return model;
+  }
+  
+  String getDictionaryPath() {
+    return dictPath;
+  }
+  
+  @Override
+  public boolean isValid() {
+    
+    if (model == null)
+      return false;
+    
+    return super.isValid();
   }
 }
