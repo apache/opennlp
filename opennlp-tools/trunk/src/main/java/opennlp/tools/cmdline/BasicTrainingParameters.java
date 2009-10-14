@@ -19,10 +19,10 @@ package opennlp.tools.cmdline;
 
 public class BasicTrainingParameters {
 
-  private String language;
-  private String encoding;
-  private int numberOfIterations = 100;
-  private int cutoff = 5;
+  private final String language;
+  private final String encoding;
+  private final int numberOfIterations;
+  private final int cutoff = 5;
   
   public BasicTrainingParameters(String args[]) {
     encoding = CmdLineUtil.getEncodingParameter(args);
@@ -31,6 +31,8 @@ public class BasicTrainingParameters {
     Integer numberOfIterations = CmdLineUtil.getIntParameter("-iterations", args); 
     if (numberOfIterations != null)
       this.numberOfIterations = numberOfIterations;
+    else
+      this.numberOfIterations = 100;
   }
   
   /**

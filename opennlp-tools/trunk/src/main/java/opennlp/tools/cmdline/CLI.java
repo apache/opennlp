@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.cmdline.postag.POSTaggerTrainer;
 import opennlp.tools.cmdline.sentdetect.SentenceDetector;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluator;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainer;
@@ -61,6 +62,8 @@ public class CLI {
     // Name Finder
     
     // POS Tagger
+    tools.add(new POSTaggerTrainer());
+    
     // Chunker
     
     // Parser
