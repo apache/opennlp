@@ -38,9 +38,8 @@ public class PlainTextByLineStream implements ObjectStream<String> {
    * Initializes the current instance.
    * 
    * @param in
-   * @throws IOException
    */
-  public PlainTextByLineStream(Reader in) throws IOException {
+  public PlainTextByLineStream(Reader in) {
     this.in = new BufferedReader(in);
   }
   
