@@ -99,21 +99,18 @@ public class NameSample {
 
       for (int nameIndex = 0; nameIndex < names.length; nameIndex++) {
         if (names[nameIndex].getStart() == tokenIndex) {
-          if (nameTypes == null) {
+          // check if nameTypes is null, or if the nameType for this specific
+          // entity is empty. If it is, we leave the nameType blank.
+          if (nameTypes == null || nameTypes[nameIndex] == null) {
             result.append(NameSampleDataStream.START_TAG).append(' ');
           }
           else {
-            result.append("<").append(names[nameIndex]).append("> ");
+            result.append(NameSampleDataStream.START_TAG_PREFIX).append(nameTypes[nameIndex]).append("> ");
           }
         }
 
         if (names[nameIndex].getEnd() == tokenIndex) {
-          if (nameTypes == null) {
-            result.append(NameSampleDataStream.END_TAG).append(' ');
-          }
-          else {
-            result.append("</").append(names[nameIndex]).append("> ");
-          }
+          result.append(NameSampleDataStream.END_TAG).append(' ');
         }
       }
 
@@ -122,12 +119,7 @@ public class NameSample {
 
     for (int nameIndex = 0; nameIndex < names.length; nameIndex++) {
       if (names[nameIndex].getEnd() == sentence.length) {
-        if (nameTypes == null) {
-          result.append(NameSampleDataStream.END_TAG + ' ');
-        }
-        else {
-          result.append("</").append(names[nameIndex]).append("> ");
-        }
+        result.append("</").append(names[nameIndex]).append("> ");
       }
     }
 
