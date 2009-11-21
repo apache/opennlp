@@ -18,8 +18,9 @@
 package opennlp.tools.namefind;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import opennlp.maxent.DataStream;
 import opennlp.tools.util.ObjectStream;
@@ -34,9 +35,13 @@ import opennlp.tools.util.Span;
  */
 public class NameSampleDataStream implements ObjectStream<NameSample> {
 
-  public static final String START_TAG = "<START>";
+  // pattern to match the start/end tags with optional nameType.
+  private Pattern startTagPattern = Pattern.compile("<START(:(\\w*))?>");
 
+  public static final String START_TAG_PREFIX = "<START:";
+  public static final String START_TAG = "<START>";
   public static final String END_TAG = "<END>";
+
 
   private final ObjectStream<String> in;
 
@@ -70,24 +75,49 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
 
     List<String> tokenList = new ArrayList<String>(parts.length);
     List<Span> nameList = new ArrayList<Span>();
+    List<String> nameTypeList = new ArrayList<String>();
 
+    String nameType = "";
     int startIndex = -1;
     int wordIndex = 0;
+    
+    // we check if at least one name has the a type. If no one has, we will
+    // leave the NameType property of NameSample null.
+    boolean gotAtLeastOneNameType = false;
+    
     for (int pi = 0; pi < parts.length; pi++) {
-      if (parts[pi].equals(START_TAG)) {
+      Matcher startMatcher = this.startTagPattern.matcher(parts[pi]);
+      if (startMatcher.matches()) {
         startIndex = wordIndex;
+        nameType = startMatcher.group(2);
       }
       else if (parts[pi].equals(END_TAG)) {
         // create name
         nameList.add(new Span(startIndex, wordIndex));
+        
+        // always set a nameType, but we will only add it to the NameSample if at 
+        // least we got one not null
+        nameTypeList.add(nameType);
+        if(nameType != null)
+        {
+          gotAtLeastOneNameType = true;
+        }
+        
       }
       else {
         tokenList.add(parts[pi]);
         wordIndex++;
       }
     }
-    String[] sentence = (String[]) tokenList.toArray(new String[tokenList.size()]);
-    Span[] names = (Span[]) nameList.toArray(new Span[nameList.size()]);
-    return new NameSample(sentence,names,sentence.length==0);
+    String[] sentence = tokenList.toArray(new String[tokenList.size()]);
+    Span[] names = nameList.toArray(new Span[nameList.size()]);
+    if(gotAtLeastOneNameType) {
+      String[] nameTypes = nameTypeList.toArray(new String[nameTypeList.size()]);
+      return new NameSample(sentence, names, nameTypes, sentence.length==0 );
+    }
+    else {
+      return new NameSample(sentence, names, sentence.length==0 );
+    }    
+   
   }
 }
