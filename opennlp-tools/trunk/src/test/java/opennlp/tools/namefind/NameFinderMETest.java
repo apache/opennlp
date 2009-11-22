@@ -21,26 +21,28 @@ package opennlp.tools.namefind;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collections;
 
 import junit.framework.TestCase;
 import opennlp.maxent.GISModel;
 import opennlp.model.EventStream;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 /**
  * This is the test class for {@link NameFinderME}.
- *
+ * <p>
  * A proper testing and evaluation of the name finder
  * is only possible  with a large corpus which contains
  * a huge amount of test sentences.
- *
+ * <p>
  * The scope of this test is to make sure that the name finder
  * code can be executed. This test can not detect
  * mistakes which lead to incorrect feature generation
  * or other mistakes which decrease the tagging
  * performance of the name finder.
- *
+ * <p>
  * In this test the {@link NameFinderME} is trained with
  * a small amount of training sentences and then the
  * computed model is used to predict sentences from the
@@ -48,7 +50,7 @@ import opennlp.tools.util.Span;
  */
 public class NameFinderMETest extends TestCase {
 
-  public void testNameFinder() throws IOException {
+  public void testNameFinder() throws Exception {
 
     // train the name finder
 
@@ -57,10 +59,12 @@ public class NameFinderMETest extends TestCase {
 
     String encoding = "ISO-8859-1";
 
-    EventStream es = new NameFinderEventStream(new NameSampleDataStream(
-          new PlainTextByLineStream(new InputStreamReader(in, encoding))));
+    ObjectStream<NameSample> sampleStream = 
+          new NameSampleDataStream(
+          new PlainTextByLineStream(new InputStreamReader(in, encoding)));
 
-    GISModel nameFinderModel = NameFinderME.train(es, 70, 1);
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", sampleStream,
+        70, 1, Collections.<String, Object>emptyMap());
 
     TokenNameFinder nameFinder = new NameFinderME(nameFinderModel);
 

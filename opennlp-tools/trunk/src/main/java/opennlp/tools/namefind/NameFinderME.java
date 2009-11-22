@@ -18,28 +18,23 @@
 
 package opennlp.tools.namefind;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import opennlp.maxent.GIS;
 import opennlp.maxent.GISModel;
-import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
@@ -47,10 +42,11 @@ import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
-import opennlp.tools.util.featuregen.FeatureGeneratorFactory;
-import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
+import opennlp.tools.util.featuregen.CachedFeatureGenerator;
+import opennlp.tools.util.featuregen.OutcomePriorFeatureGenerator;
+import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
+import opennlp.tools.util.featuregen.TokenFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
-import opennlp.tools.util.model.FeatureGeneratorFactorySerializer;
 
 /**
  * Class for creating a maximum-entropy-based name finder.
@@ -105,7 +101,7 @@ public class NameFinderME implements TokenNameFinder {
   public NameFinderME(TokenNameFinderModel model, int beamSize) {
     this.model = model.getNameFinderModel();
 
-    contextGenerator = new DefaultNameContextGenerator(model.createFeatureGenerators());
+    contextGenerator = new DefaultNameContextGenerator(createFeatureGenerator());
 
     contextGenerator.addFeatureGenerator(
           new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
@@ -152,6 +148,15 @@ public class NameFinderME implements TokenNameFinder {
         new NameFinderSequenceValidator(), beamSize);
   }
 
+  private static AdaptiveFeatureGenerator createFeatureGenerator() {
+   return new CachedFeatureGenerator(
+         new AdaptiveFeatureGenerator[]{
+           new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
+           new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
+           new OutcomePriorFeatureGenerator()
+           });
+  }
+  
   public Span[] find(String[] tokens) {
     return find(tokens, EMPTY);
   }
@@ -266,31 +271,21 @@ public class NameFinderME implements TokenNameFinder {
      return sprobs;
    }
 
-   public static TokenNameFinderModel train(String languageCode, ObjectStream<NameSample> samples, InputStream descriptorClassIn,
+   public static TokenNameFinderModel train(String languageCode, ObjectStream<NameSample> samples,
        final Map<String, Object> resources) throws IOException, InvalidFormatException {
-
-     byte descriptorBytes[] = ModelUtil.read(descriptorClassIn);
+     return NameFinderME.train(languageCode, samples, 100, 5, resources);
+   }
+   
+   public static TokenNameFinderModel train(String languageCode, ObjectStream<NameSample> samples, 
+       int iterations, int cutoff,
+       final Map<String, Object> resources) throws IOException, InvalidFormatException {
      
-     FeatureGeneratorFactorySerializer generatorFactorySerializer = 
-         new FeatureGeneratorFactorySerializer();
-
-     FeatureGeneratorFactory factory = 
-         generatorFactorySerializer.create(new ByteArrayInputStream(descriptorBytes));
-     
-     AdaptiveFeatureGenerator generator = factory.createFeatureGenerator(
-         new FeatureGeneratorResourceProvider(){
-
-          public Object getResource(String resourceIdentifier) {
-            return resources.get(resourceIdentifier);
-          }});
-
      EventStream eventStream = new NameFinderEventStream(samples,
-         new DefaultNameContextGenerator(generator));
-
-     AbstractModel nameFinderModel = GIS.trainModel(100, new TwoPassDataIndexer(eventStream, 5));
-
-     return new TokenNameFinderModel(languageCode, nameFinderModel,
-         new ByteArrayInputStream(descriptorBytes), resources);
+         new DefaultNameContextGenerator(createFeatureGenerator()));
+     
+     AbstractModel nameFinderModel = GIS.trainModel(iterations, new TwoPassDataIndexer(eventStream, cutoff));
+     
+     return new TokenNameFinderModel(languageCode, nameFinderModel, resources);
    }
 
   @Deprecated
@@ -308,17 +303,15 @@ public class NameFinderME implements TokenNameFinder {
   public static void main(String[] args) throws IOException, InvalidFormatException {
     
     // Encoding must be specified !!!
-    // -encoding code train.file featuregen.class model.file
+    // -encoding code train.file model.file
     
-    if (args.length == 5) {
+    if (args.length == 4) {
       
       NameSampleDataStream sampleStream = new NameSampleDataStream(
           new PlainTextByLineStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
       
-      InputStream descriptorIn = new FileInputStream(args[3]);
-      
       TokenNameFinderModel model = 
-          NameFinderME.train("x-unspecified", sampleStream, descriptorIn, new HashMap<String, Object>());
+          NameFinderME.train("x-unspecified", sampleStream, new HashMap<String, Object>());
       
       model.serialize(new FileOutputStream(args[4]));
       
