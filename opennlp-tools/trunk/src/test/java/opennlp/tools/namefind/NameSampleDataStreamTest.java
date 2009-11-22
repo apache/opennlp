@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -112,6 +114,38 @@ public class NameSampleDataStreamTest extends TestCase {
   }
 
   /**
+   * Checks that invalid spans cause an {@link ObjectStreamException} to be thrown.
+   */
+  public void tesWithoutNameTypeAndInvalidData() {
+    NameSampleDataStream smapleStream = new NameSampleDataStream(
+        ObjectStreamUtils.createObjectStream("<START> <START> Name <END>"));
+    
+    try {
+      smapleStream.read();
+      fail();
+    } catch (ObjectStreamException e) {
+    }
+    
+    smapleStream = new NameSampleDataStream(
+        ObjectStreamUtils.createObjectStream("<START> Name <END> <END>"));
+    
+    try {
+      smapleStream.read();
+      fail();
+    } catch (ObjectStreamException e) {
+    }
+    
+    smapleStream = new NameSampleDataStream(
+        ObjectStreamUtils.createObjectStream("<START> <START> Person <END> Street <END>"));
+    
+    try {
+      smapleStream.read();
+      fail();
+    } catch (ObjectStreamException e) {
+    }
+  }
+  
+  /**
    * Create a NameSampleDataStream from a corpus with entities annotated
    * with multiple nameTypes, like person, date, location and organization, and validate it.
    * 
@@ -159,5 +193,27 @@ public class NameSampleDataStreamTest extends TestCase {
     assertEquals(date, names.get("date").size());
     assertEquals(location, names.get("location").size());
     assertEquals(organization, names.get("organization").size());
+  }
+  
+  public void tesWithNameTypeAndInvalidData() {
+    
+    // TODO: maybe this case should be considered equal to <START> ???
+    NameSampleDataStream smapleStream = new NameSampleDataStream(
+        ObjectStreamUtils.createObjectStream("<START:> Name <END>"));
+    
+    try {
+      smapleStream.read();
+      fail();
+    } catch (ObjectStreamException e) {
+    }
+    
+    smapleStream = new NameSampleDataStream(
+        ObjectStreamUtils.createObjectStream("<START:street> <START:person> Name <END> <END>"));
+    
+    try {
+      smapleStream.read();
+      fail();
+    } catch (ObjectStreamException e) {
+    }
   }
 }
