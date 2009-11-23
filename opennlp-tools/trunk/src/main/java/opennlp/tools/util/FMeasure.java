@@ -78,10 +78,14 @@ public final class FMeasure {
   }
  
   public void updateScores(Object references[], Object predictions[]) {
-    precisionScore.add(FMeasure.precision(
-        references, predictions), references.length);
-    recallScore.add(FMeasure.recall(
-        references, predictions), references.length);
+    
+    double precision = FMeasure.precision(references, predictions);
+    if (!Double.isNaN(precision))
+        precisionScore.add(precision, references.length);
+    
+    double recall = FMeasure.recall(references, predictions);
+    if (!Double.isNaN(recall))
+        recallScore.add(FMeasure.recall(references, predictions), references.length);
   }
   
   public void mergeInto(FMeasure measure) {
@@ -95,7 +99,8 @@ public final class FMeasure {
   @Override
   public String toString() {
     return "Precision: " + Double.toString(getPrecisionScore()) + "\n" +
-        "Recall: " + Double.toString(getRecallScore());
+        "Recall: " + Double.toString(getRecallScore()) + "\n" +
+        "F-Measure: " + Double.toString(getFMeasure());
   }
   
   /**
@@ -138,7 +143,7 @@ public final class FMeasure {
    * @param references the gold standard spans
    * @param predictions the predicted spans
    *
-   * @return the precision score or -1 if there are no predicted spans
+   * @return the precision score or NaN if there are no predicted spans
    */
   public static double precision(Object references[], Object predictions[]) {
 
@@ -147,7 +152,7 @@ public final class FMeasure {
           (double) predictions.length;
     }
     else {
-      return -1;
+      return Double.NaN;
     }
   }
 
@@ -158,7 +163,7 @@ public final class FMeasure {
    * @param references the gold standard spans
    * @param predictions the predicted spans
    *
-   * @return the recall score or -1 if there are no reference spans
+   * @return the recall score or NaN if there are no reference spans
    */
   public static double recall(Object references[], Object predictions[]) {
 
@@ -167,7 +172,7 @@ public final class FMeasure {
           (double) references.length;
     }
     else {
-        return -1;
+        return Double.NaN;
     }
   }
 }
