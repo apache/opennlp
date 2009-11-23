@@ -78,4 +78,22 @@ public class NameSampleTest extends TestCase {
     String nameSampleStr = createSimpleNameSample(true).toString();
     assertEquals("<START:Location> U . S . <END> President <START:Person> Barack Obama <END> is considering sending additional American forces to <START:Location> Afghanistan <END> .", nameSampleStr);
   }
+  
+  /**
+   * Checks that if the name is the last token in a sentence it is still outputed
+   * correctly.
+   */
+  public void testNameAtEnd() {
+    
+    String sentence[] = new String[] {
+        "My",
+        "name",
+        "is",
+        "Anna"
+    };
+    
+    NameSample sample = new NameSample(sentence, new Span[]{new Span(3, 4)}, false);
+    
+    assertEquals("My name is <START> Anna <END>", sample.toString());
+  }
 }

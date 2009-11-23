@@ -117,13 +117,13 @@ public class NameSample {
       result.append(sentence[tokenIndex] + ' ');
     }
 
+    result.setLength(result.length() - 1);
+    
     for (int nameIndex = 0; nameIndex < names.length; nameIndex++) {
       if (names[nameIndex].getEnd() == sentence.length) {
-        result.append("</").append(names[nameIndex]).append("> ");
+        result.append(' ').append(NameSampleDataStream.END_TAG);
       }
     }
-
-    result.setLength(result.length() - 1);
 
     return result.toString();
   }
