@@ -70,7 +70,7 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
     in.close();
   }
   
-  private NameSample createNameSample(String taggedTokens) {
+  private NameSample createNameSample(String taggedTokens) throws ObjectStreamException {
     String[] parts = taggedTokens.split(" ");
 
     List<String> tokenList = new ArrayList<String>(parts.length);
@@ -84,14 +84,27 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
     // we check if at least one name has the a type. If no one has, we will
     // leave the NameType property of NameSample null.
     boolean gotAtLeastOneNameType = false;
+    boolean catchingName = false;
     
     for (int pi = 0; pi < parts.length; pi++) {
       Matcher startMatcher = this.startTagPattern.matcher(parts[pi]);
       if (startMatcher.matches()) {
+        if(catchingName) {
+          throw new ObjectStreamException("Found unexpected annotation " + parts[pi] + " while handling a name sequence.");
+        }
+        catchingName = true;
         startIndex = wordIndex;
         nameType = startMatcher.group(2);
+        if(nameType != null && nameType.length() == 0) {
+          throw new ObjectStreamException("Missing a name type: " + parts[pi]);
+        }
+          
       }
       else if (parts[pi].equals(END_TAG)) {
+        if(catchingName == false) {
+          throw new ObjectStreamException("Found unexpected annotation " + parts[pi] + ".");
+        }
+        catchingName = false;
         // create name
         nameList.add(new Span(startIndex, wordIndex));
         

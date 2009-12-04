@@ -116,7 +116,7 @@ public class NameSampleDataStreamTest extends TestCase {
   /**
    * Checks that invalid spans cause an {@link ObjectStreamException} to be thrown.
    */
-  public void tesWithoutNameTypeAndInvalidData() {
+  public void testWithoutNameTypeAndInvalidData() {
     NameSampleDataStream smapleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START> <START> Name <END>"));
     
@@ -195,7 +195,7 @@ public class NameSampleDataStreamTest extends TestCase {
     assertEquals(organization, names.get("organization").size());
   }
   
-  public void tesWithNameTypeAndInvalidData() {
+  public void testWithNameTypeAndInvalidData() {
     
     // TODO: maybe this case should be considered equal to <START> ???
     NameSampleDataStream smapleStream = new NameSampleDataStream(
