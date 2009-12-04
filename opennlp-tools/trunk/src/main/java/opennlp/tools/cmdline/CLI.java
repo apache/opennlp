@@ -24,6 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.cmdline.namefind.TokenNameFinder;
+import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluator;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainer;
 import opennlp.tools.cmdline.postag.POSTaggerTrainer;
 import opennlp.tools.cmdline.sentdetect.SentenceDetector;
@@ -61,7 +63,9 @@ public class CLI {
     tools.add(new SentenceDetectorCrossValidator());
     
     // Name Finder
+    tools.add(new TokenNameFinder());
     tools.add(new TokenNameFinderTrainer());
+    tools.add(new TokenNameFinderEvaluator());
     
     // POS Tagger
     tools.add(new POSTaggerTrainer());
