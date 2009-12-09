@@ -23,8 +23,8 @@ package opennlp.tools.util;
 **/
 public class Span implements Comparable<Span> {
 
-  private int start;
-  private int end;
+  private final int start;
+  private final int end;
 
   /**
    * Initializes a new Span Object.
@@ -33,8 +33,8 @@ public class Span implements Comparable<Span> {
    * @param e end of span.
    */
   public Span(int s,int e) {
-    start=s;
-    end=e;
+    start = s;
+    end = e;
   }
 
   /**
