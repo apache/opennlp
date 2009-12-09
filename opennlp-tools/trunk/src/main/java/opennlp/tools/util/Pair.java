@@ -22,9 +22,9 @@ package opennlp.tools.util;
  * Dinky class to package pairs of things
  *
  * @author      Gann Bierner
- * @version     $Revision: 1.2 $, $Date: 2009-01-24 01:32:18 $
+ * @version     $Revision: 1.3 $, $Date: 2009-12-09 12:22:58 $
  */
-
+@Deprecated
 public final class Pair<A, B> {
     public final A a;
     public final B b;
