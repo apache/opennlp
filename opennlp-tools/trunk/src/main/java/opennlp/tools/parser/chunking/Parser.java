@@ -20,28 +20,42 @@ package opennlp.tools.parser.chunking;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import opennlp.maxent.DataStream;
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
+import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
+import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.parser.AbstractBottomUpParser;
+import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
+import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
+import opennlp.tools.parser.PosSampleStream;
+import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.postag.POSTaggerTrainer;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ModelType;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
 
@@ -253,6 +267,33 @@ public class Parser extends AbstractBottomUpParser {
     return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 
+  public static void train(ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
+      throws IOException, ObjectStreamException {
+    
+    System.err.println("Building dictionary");
+    Dictionary mdict = buildDictionary(parseSamples, rules, cut);
+    
+    // tag
+    POSModel posModel = POSTaggerME.train("en", new PosSampleStream(parseSamples), 
+        ModelType.MAXENT, null, null, cut, 100);
+    
+    // chunk
+    ChunkerModel chunkModel = ChunkerME.train(new ChunkSampleStream(parseSamples), iterations, cut);
+    
+    // build
+    System.err.println("Training builder");
+    opennlp.model.EventStream bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
+    AbstractModel buildModel = train(bes, iterations, cut);
+    
+    // check
+    System.err.println("Training checker");
+    opennlp.model.EventStream kes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.CHECK);
+    AbstractModel checkModel = train(kes, iterations, cut);
+    
+    // TODO: Remove cast for HeadRules
+    new ParserModel(buildModel, checkModel, posModel, chunkModel, (opennlp.tools.parser.lang.en.HeadRules) rules);
+  }
+  
   private static boolean lastChild(Parse child, Parse parent, Set<String> punctSet) {
     Parse[] kids = collapsePunctuation(parent.getChildren(), punctSet);
     return (kids[kids.length - 1] == child);
@@ -272,16 +313,17 @@ public class Parser extends AbstractBottomUpParser {
 
   /**
    * Creates a n-gram dictionary from the specified data stream using the specified head rule and specified cut-off.
+   * 
    * @param data The data stream of parses.
    * @param rules The head rules for the parses.
    * @param cutoff The minimum number of entries required for the n-gram to be saved as part of the dictionary.
    * @return A dictionary object.
    */
-  private static Dictionary buildDictionary(DataStream data, HeadRules rules, int cutoff) {
+  public static Dictionary buildDictionary(ObjectStream<Parse> data, HeadRules rules, int cutoff)
+      throws ObjectStreamException {
     NGramModel mdict = new NGramModel();
-    while(data.hasNext()) {
-      String parseStr = (String) data.nextToken();
-      Parse p = Parse.parseParse(parseStr);
+    Parse p;
+    while((p = data.read()) != null) {
       p.updateHeads(rules);
       Parse[] pwords = p.getTagNodes();
       String[] words = new String[pwords.length];
@@ -344,7 +386,8 @@ public class Parser extends AbstractBottomUpParser {
     return mdict.toDictionary(true);
   }
 
-  public static void main(String[] args) throws java.io.IOException, InvalidFormatException {
+  public static void main(String[] args) throws java.io.IOException, InvalidFormatException, 
+      ObjectStreamException {
     if (args.length < 2) {
       usage();
       System.exit(1);
@@ -405,36 +448,40 @@ public class Parser extends AbstractBottomUpParser {
     if (fun) {
       Parse.useFunctionTags(true);
     }
+    
     if (dict || all) {
       System.err.println("Building dictionary");
-      DataStream data = new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile));
+      ObjectStream<Parse> data = new ParseSampleStream(new PlainTextByLineStream(new FileReader(inFile)));
       Dictionary mdict = buildDictionary(data, rules, cutoff);
       System.out.println("Saving the dictionary");
       mdict.serialize(new FileOutputStream(dictFile));
     }
+    
     if (tag || all) {
       System.err.println("Training tagger");
-      //System.err.println("Loading Dictionary");
-      //Dictionary tridict = new Dictionary(dictFile.toString());
-      opennlp.model.EventStream tes = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)), rules, ParserEventTypeEnum.TAG);
-      AbstractModel tagModel = train(tes, iterations, cutoff);
+      ObjectStream<POSSample> tes = new PosSampleStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile))));
+      POSModel posModel = POSTaggerME.train("en", tes, ModelType.MAXENT, null, null, cutoff, 100);
       System.out.println("Saving the tagger model as: " + tagFile);
-      new opennlp.maxent.io.SuffixSensitiveGISModelWriter(tagModel, tagFile).persist();
+      OutputStream posOutputStream = new FileOutputStream(tagFile);
+      posModel.serialize(posOutputStream);
+      posOutputStream.close();
     }
 
     if (chunk || all) {
       System.err.println("Training chunker");
-      opennlp.model.EventStream ces = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)), rules, ParserEventTypeEnum.CHUNK);
-      AbstractModel chunkModel = train(ces, iterations, cutoff);
+      ObjectStream<ChunkSample> ces = new ChunkSampleStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile))));
+      ChunkerModel chunkModel = ChunkerME.train(ces, iterations, cutoff);
       System.out.println("Saving the chunker model as: " + chunkFile);
-      new opennlp.maxent.io.SuffixSensitiveGISModelWriter(chunkModel, chunkFile).persist();
+      OutputStream chunkOutputStream = new FileOutputStream(chunkFile);
+      chunkModel.serialize(chunkOutputStream);
+      chunkOutputStream.close();
     }
 
     if (build || all) {
       System.err.println("Loading Dictionary");
       Dictionary tridict = new Dictionary(new FileInputStream(dictFile.toString()),true);
       System.err.println("Training builder");
-      opennlp.model.EventStream bes = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)), rules, ParserEventTypeEnum.BUILD,tridict);
+      opennlp.model.EventStream bes = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile))), rules, ParserEventTypeEnum.BUILD,tridict);
       AbstractModel buildModel = train(bes, iterations, cutoff);
       System.out.println("Saving the build model as: " + buildFile);
       new opennlp.maxent.io.SuffixSensitiveGISModelWriter(buildModel, buildFile).persist();
@@ -442,7 +489,7 @@ public class Parser extends AbstractBottomUpParser {
 
     if (check || all) {
       System.err.println("Training checker");
-      opennlp.model.EventStream kes = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)), rules, ParserEventTypeEnum.CHECK);
+      opennlp.model.EventStream kes = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile))), rules, ParserEventTypeEnum.CHECK);
       AbstractModel checkModel = train(kes, iterations, cutoff);
       System.out.println("Saving the check model as: " + checkFile);
       new opennlp.maxent.io.SuffixSensitiveGISModelWriter(checkModel, checkFile).persist();

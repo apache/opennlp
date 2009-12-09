@@ -28,9 +28,11 @@ import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
+import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserChunker;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.postag.POSTagger;
+import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Built/attach parser.  Nodes are built when their left-most
@@ -478,9 +480,7 @@ public class Parser extends AbstractBottomUpParser {
     }
     if (tag || all) {
       System.err.println("Training tagger");
-      //System.err.println("Loading Dictionary");
-      //Dictionary tridict = new Dictionary(dictFile.toString());
-      opennlp.model.EventStream tes = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)), rules, ParserEventTypeEnum.TAG);
+      opennlp.model.EventStream tes = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile))), rules, ParserEventTypeEnum.TAG);
       AbstractModel tagModel = train(tes, iterations, cutoff);
       System.out.println("Saving the tagger model as: " + tagFile);
       new opennlp.maxent.io.SuffixSensitiveGISModelWriter(tagModel, tagFile).persist();
@@ -488,7 +488,7 @@ public class Parser extends AbstractBottomUpParser {
 
     if (chunk || all) {
       System.err.println("Training chunker");
-      opennlp.model.EventStream ces = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)), rules, ParserEventTypeEnum.CHUNK);
+      opennlp.model.EventStream ces = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile))), rules, ParserEventTypeEnum.CHUNK);
       AbstractModel chunkModel = train(ces, iterations, cutoff);
       System.out.println("Saving the chunker model as: " + chunkFile);
       new opennlp.maxent.io.SuffixSensitiveGISModelWriter(chunkModel, chunkFile).persist();
@@ -496,7 +496,7 @@ public class Parser extends AbstractBottomUpParser {
 
     if (build || all) {
       System.err.println("Training builder");
-      opennlp.model.EventStream bes = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)), rules, ParserEventTypeEnum.BUILD,null);
+      opennlp.model.EventStream bes = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile))), rules, ParserEventTypeEnum.BUILD,null);
       AbstractModel buildModel = train(bes, iterations, cutoff);
       System.out.println("Saving the build model as: " + buildFile);
       new opennlp.maxent.io.SuffixSensitiveGISModelWriter(buildModel, buildFile).persist();
@@ -504,7 +504,7 @@ public class Parser extends AbstractBottomUpParser {
 
     if (attach || all) {
       System.err.println("Training attacher");
-      opennlp.model.EventStream kes = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)), rules, ParserEventTypeEnum.ATTACH);
+      opennlp.model.EventStream kes = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile))), rules, ParserEventTypeEnum.ATTACH);
       AbstractModel attachModel = train(kes, iterations, cutoff);
       System.out.println("Saving the attach model as: " + attachFile);
       new opennlp.maxent.io.SuffixSensitiveGISModelWriter(attachModel, attachFile).persist();
@@ -512,7 +512,7 @@ public class Parser extends AbstractBottomUpParser {
 
     if (check || all) {
       System.err.println("Training checker");
-      opennlp.model.EventStream ces = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)), rules, ParserEventTypeEnum.CHECK);
+      opennlp.model.EventStream ces = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile))), rules, ParserEventTypeEnum.CHECK);
       AbstractModel checkModel = train(ces, iterations, cutoff);
       System.out.println("Saving the check model as: " + checkFile);
       new opennlp.maxent.io.SuffixSensitiveGISModelWriter(checkModel, checkFile).persist();

@@ -20,15 +20,17 @@ package opennlp.tools.parser.chunking;
 import java.io.FileInputStream;
 import java.util.List;
 
-import opennlp.maxent.DataStream;
 import opennlp.model.Event;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserEventStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
+import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Wrapper class for one of four parser event streams.  The particular event stream is specified
@@ -48,7 +50,7 @@ public class ParserEventStream extends AbstractParserEventStream {
    * @param etype The type of events desired (tag, chunk, build, or check).
    * @param dict A tri-gram dictionary to reduce feature generation.
    */
-  public ParserEventStream(DataStream d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
+  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
     super(d,rules,etype,dict);
   }
 
@@ -63,7 +65,7 @@ public class ParserEventStream extends AbstractParserEventStream {
 
 
 
-  public ParserEventStream(DataStream d, HeadRules rules, ParserEventTypeEnum etype) {
+  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype) {
     this (d,rules,etype,null);
   }
 
@@ -202,7 +204,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     if (fun) {
       Parse.useFunctionTags(true);
     }
-    opennlp.model.EventStream es = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.InputStreamReader(System.in)), rules, etype, dict);
+    opennlp.model.EventStream es = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))), rules, etype, dict);
     while (es.hasNext()) {
       System.out.println(es.next());
     }

@@ -34,8 +34,11 @@ import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserEventStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
+import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 public class ParserEventStream extends AbstractParserEventStream {
@@ -46,7 +49,7 @@ public class ParserEventStream extends AbstractParserEventStream {
 
   private static final boolean debug = false;
 
-  public ParserEventStream(DataStream d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
+  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
     super(d, rules, etype, dict);
   }
 
@@ -56,7 +59,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     checkContextGenerator = new CheckContextGenerator(punctSet);
   }
 
-  public ParserEventStream(DataStream d, HeadRules rules, ParserEventTypeEnum etype) {
+  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype) {
     super(d, rules, etype);
   }
 
@@ -374,7 +377,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     if (fun) {
       Parse.useFunctionTags(true);
     }
-    opennlp.model.EventStream es = new ParserEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.InputStreamReader(System.in)), rules, etype, dict);
+    opennlp.model.EventStream es = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))), rules, etype, dict);
     while (es.hasNext()) {
       Event e = es.next();
       if (model != null) {
