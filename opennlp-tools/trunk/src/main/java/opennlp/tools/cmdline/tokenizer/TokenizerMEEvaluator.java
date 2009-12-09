@@ -19,7 +19,6 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CLI;
