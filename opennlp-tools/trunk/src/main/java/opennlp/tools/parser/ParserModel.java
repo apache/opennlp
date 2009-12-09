@@ -85,12 +85,6 @@ public class ParserModel {
     return checkModel;
   }
 
-// only used by treeinsert parser
-//
-//  public MaxentModel getAttachModel() {
-//    return null;
-//  }
-
   public POSModel getParserTaggerModel() {
     return parserTagger;
   }
@@ -103,6 +97,11 @@ public class ParserModel {
     return headRules;
   }
 
+  public ParserModel updateBuildModel(AbstractModel buildModel) {
+    return new ParserModel(buildModel, checkModel, parserTagger,
+        chunkerTagger, headRules);
+  }
+  
   public void serialize(OutputStream out) throws IOException {
     ZipOutputStream zip = new ZipOutputStream(out);
 
