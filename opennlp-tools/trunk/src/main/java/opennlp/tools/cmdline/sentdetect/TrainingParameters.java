@@ -19,9 +19,9 @@ package opennlp.tools.cmdline.sentdetect;
 
 import opennlp.tools.cmdline.BasicTrainingParameters;
 
-public class TrainingParameters extends BasicTrainingParameters {
+class TrainingParameters extends BasicTrainingParameters {
 
-  public TrainingParameters(String[] args) {
+  TrainingParameters(String[] args) {
     super(args);
   }
   
