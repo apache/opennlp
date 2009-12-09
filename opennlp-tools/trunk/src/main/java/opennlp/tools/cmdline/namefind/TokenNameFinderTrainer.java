@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.util.Collections;
 
 import opennlp.tools.cmdline.BasicTrainingParameters;
+import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.namefind.NameSample;
@@ -43,7 +44,8 @@ public class TokenNameFinderTrainer implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "";
+    return "Usage: " + CLI.CMD + " " + getName() + " " + 
+        BasicTrainingParameters.getParameterUsage() + " trainingData model";
   }
 
   public void run(String[] args) {
