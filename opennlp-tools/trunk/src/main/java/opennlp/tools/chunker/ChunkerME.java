@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -18,13 +18,20 @@
 package opennlp.tools.chunker;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.List;
 
 import opennlp.model.AbstractModel;
+import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
 
 /**
@@ -104,14 +111,12 @@ public class ChunkerME implements Chunker {
     this.model = mod;
   }
 
-  /* inherieted javadoc */
   public List<String> chunk(List<String> toks, List<String> tags) {
     bestSequence =
         beam.bestSequence(toks.toArray(new String[toks.size()]), new Object[] { (String[]) tags.toArray(new String[tags.size()]) });
     return bestSequence.getOutcomes();
   }
 
-  /* inherieted javadoc */
   public String[] chunk(String[] toks, String[] tags) {
     bestSequence = beam.bestSequence(toks, new Object[] {tags});
     List<String> c = bestSequence.getOutcomes();
@@ -183,10 +188,15 @@ public class ChunkerME implements Chunker {
    * @param iterations
    * @param cut
    * @return the new model
-   * @throws java.io.IOException
+   * @throws IOException
    */
-  public static AbstractModel train(opennlp.model.EventStream es, int iterations, int cut) throws java.io.IOException {
-    return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
+  public static ChunkerModel train(ObjectStream<ChunkSample> in, int iterations, int cut) throws IOException, ObjectStreamException {
+    EventStream es = new ChunkerEventStream(in);
+    
+    AbstractModel maxentModel = opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
+
+    // TODO: Make language configurable
+    return new ChunkerModel("en", maxentModel);
   }
 
   private static void usage() {
@@ -203,9 +213,9 @@ public class ChunkerME implements Chunker {
    * Training file should be one word per line where each line consists of a
    * space-delimited triple of "word pos outcome".  Sentence breaks are indicated by blank lines.
    * @param args The training file and the model file.
-   * @throws java.io.IOException When the specifed files can not be read.
+   * @throws IOException When the specified files can not be read.
    */
-  public static void main(String[] args) throws java.io.IOException {
+  public static void main(String[] args) throws IOException, ObjectStreamException {
     if (args.length == 0) {
       usage();
     }
@@ -244,16 +254,18 @@ public class ChunkerME implements Chunker {
     if (args.length > ai) {
       cutoff = Integer.parseInt(args[ai++]);
     }
-    AbstractModel mod;
-    opennlp.model.EventStream es;
+    ChunkerModel mod;
+    ObjectStream<ChunkSample> es;
     if (encoding != null) {
-       es = new ChunkerEventStream(new opennlp.maxent.PlainTextByLineDataStream(new InputStreamReader(new FileInputStream(inFile),encoding)));
+       es = new ChunkSampleStream(new PlainTextByLineStream(new InputStreamReader(new FileInputStream(inFile),encoding)));
     }
     else {
-      es = new ChunkerEventStream(new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile)));
+      es = new ChunkSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile)));
     }
     mod = train(es, iterations, cutoff);
     System.out.println("Saving the model as: " + args[1]);
-    new opennlp.maxent.io.SuffixSensitiveGISModelWriter(mod, outFile).persist();
+    OutputStream out = new FileOutputStream(outFile);
+    mod.serialize(out);
+    out.close();
   }
 }

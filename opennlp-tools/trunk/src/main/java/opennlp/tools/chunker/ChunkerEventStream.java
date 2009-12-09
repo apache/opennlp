@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -17,11 +17,9 @@
 
 package opennlp.tools.chunker;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import opennlp.maxent.DataStream;
 import opennlp.model.Event;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 
 /**
  * Class for creating an event stream out of data files for training a chunker.
@@ -29,7 +27,7 @@ import opennlp.model.Event;
 public class ChunkerEventStream extends opennlp.model.AbstractEventStream {
 
   private ChunkerContextGenerator cg;
-  private DataStream data;
+  private ObjectStream<ChunkSample> data;
   private Event[] events;
   private int ei;
 
@@ -37,7 +35,7 @@ public class ChunkerEventStream extends opennlp.model.AbstractEventStream {
    * Creates a new event stream based on the specified data stream.
    * @param d The data stream for this event stream.
    */
-  public ChunkerEventStream(DataStream d) {
+  public ChunkerEventStream(ObjectStream<ChunkSample> d) {
     this(d, new DefaultChunkerContextGenerator());
   }
 
@@ -46,53 +44,43 @@ public class ChunkerEventStream extends opennlp.model.AbstractEventStream {
    * @param d The data stream for this event stream.
    * @param cg The context generator which should be used in the creation of events for this event stream.
    */
-  public ChunkerEventStream(DataStream d, ChunkerContextGenerator cg) {
+  public ChunkerEventStream(ObjectStream<ChunkSample> d, ChunkerContextGenerator cg) {
     this.cg = cg;
     data = d;
     ei = 0;
-    if (d.hasNext()) {
-      addNewEvents();
-    }
-    else {
-      events = new Event[0];
-    }
+    addNewEvents();
   }
 
-  /* inherieted javadoc */
   public Event next() {
+    
+    hasNext();
+    
+    return events[ei++];
+  }
+
+  public boolean hasNext() {
     if (ei == events.length) {
       addNewEvents();
       ei = 0;
     }
-    return events[ei++];
-  }
-
-  /* inherieted javadoc */
-  public boolean hasNext() {
-    return ei < events.length || data.hasNext();
+    return ei < events.length;
   }
 
   private void addNewEvents() {
-    List<String> toks = new ArrayList<String>();
-    List<String> tags = new ArrayList<String>();
-    List<String> preds = new ArrayList<String>();
-    for (String line = (String) data.nextToken(); line !=null && !line.equals(""); line = (String) data.nextToken()) {
-      String[] parts = line.split(" ");
-      if (parts.length != 3) {
-        System.err.println("Skipping corrupt line: "+line);
-      }
-      else {
-        toks.add(parts[0]);
-        tags.add(parts[1]);
-        preds.add(parts[2]);
-      }
+    
+    ChunkSample sample;
+    try {
+      sample = data.read();
+    } catch (ObjectStreamException e) {
+      throw new RuntimeException(e);
     }
-    events = new Event[toks.size()];
-    String[] toksArray = toks.toArray(new String[toks.size()]);
-    String[] tagsArray = tags.toArray(new String[tags.size()]);
-    String[] predsArray = preds.toArray(new String[preds.size()]);
+    
+    events = new Event[sample.getSentence().length];
+    String[] toksArray = sample.getSentence();
+    String[] tagsArray = sample.getTags();
+    String[] predsArray = sample.getPreds();
     for (int ei = 0, el = events.length; ei < el; ei++) {
-      events[ei] = new Event(preds.get(ei), cg.getContext(ei,toksArray,tagsArray,predsArray));
+      events[ei] = new Event(predsArray[ei], cg.getContext(ei,toksArray,tagsArray,predsArray));
     }
   }
 }
