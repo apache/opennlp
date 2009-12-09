@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -201,10 +201,17 @@ public class SpanTest extends TestCase {
    * Test for {@link Span#equals(Object)}.
    */
   public void testEquals() {
-    Span a = new Span(100, 1000);
-    Span b = new Span(100, 1000);
+    Span a1 = new Span(100, 1000, "test");
+    Span a2 = new Span(100, 1000, "test");
 
-    Assert.assertEquals(a.equals(b), true);
+    Assert.assertTrue(a1.equals(a2));
+    
+    Span b1 = new Span(100, 100, "test");
+    Assert.assertFalse(a1.equals(b1));
+    
+    Span c1 = new Span(100, 1000, "Test");
+    Assert.assertFalse(a1.equals(c1));
+    
   }
 
   /**

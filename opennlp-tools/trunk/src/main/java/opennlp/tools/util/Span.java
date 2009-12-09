@@ -25,6 +25,8 @@ public class Span implements Comparable<Span> {
 
   private final int start;
   private final int end;
+  
+  private final String type;
 
   /**
    * Initializes a new Span Object.
@@ -32,9 +34,21 @@ public class Span implements Comparable<Span> {
    * @param s start of span.
    * @param e end of span.
    */
-  public Span(int s,int e) {
+  public Span(int s, int e) {
+    this(s, e, null);
+  }
+
+  /**
+   * Initializes a new Span Object.
+   *
+   * @param s start of span.
+   * @param e end of span.
+   * @param type the type of the span
+   */
+  public Span(int s, int e, String type) {
     start = s;
     end = e;
+    this.type = type;
   }
 
   /**
@@ -55,6 +69,15 @@ public class Span implements Comparable<Span> {
     return end;
   }
 
+  /**
+   * Retrieves the type of the span.
+   * 
+   * @return the type or null if not set
+   */
+  public String getType() {
+    return type; 
+  }
+  
   /**
    * Returns the length of this span.
    *
@@ -184,7 +207,9 @@ public class Span implements Comparable<Span> {
     else if (o instanceof Span) {
       Span s = (Span) o;
 
-      result = getStart() == s.getStart() && getEnd() == s.getEnd();
+      result = (getStart() == s.getStart()) && 
+          (getEnd() == s.getEnd()) &&
+          (getType() != null ? type.equals(s.getType()) : true);
     }
     else {
       result = false;

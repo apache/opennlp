@@ -140,7 +140,7 @@ public class NameFinder {
       for (int fi = 0, fl = finders.length; fi < fl; fi++) {
         nameSpans[fi] = finders[fi].nameFinder.find(tokens);
         //System.err.println("EnglighNameFinder.processText: "+tags[fi] + " " + java.util.Arrays.asList(finderTags[fi]));
-        nameOutcomes[fi] = NameFinderEventStream.generateOutcomes(nameSpans[fi], null, tokens.length);
+        nameOutcomes[fi] = NameFinderEventStream.generateOutcomes(nameSpans[fi], tokens.length);
       }
 
       for (int ti = 0, tl = tokens.length; ti < tl; ti++) {

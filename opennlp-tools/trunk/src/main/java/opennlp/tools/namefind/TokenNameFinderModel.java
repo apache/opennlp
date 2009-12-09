@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -21,12 +21,10 @@ package opennlp.tools.namefind;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
 
@@ -39,9 +37,6 @@ import opennlp.tools.util.model.BaseModel;
 public class TokenNameFinderModel extends BaseModel {
 
   private static final String MAXENT_MODEL_ENTRY_NAME = "nameFinder.model";
-
-  private static Logger logger =
-        Logger.getLogger(TokenNameFinderModel.class.getName());
   
   public TokenNameFinderModel(String languageCode, AbstractModel nameFinderModel,
       Map<String, Object> resources) throws IOException, InvalidFormatException {
@@ -80,12 +75,15 @@ public class TokenNameFinderModel extends BaseModel {
 
   private static boolean isModelValid(MaxentModel model) {
 
-    return ModelUtil.validateOutcomes(model, NameFinderME.START) ||
-        ModelUtil.validateOutcomes(model, NameFinderME.OTHER) ||
-        ModelUtil.validateOutcomes(model, NameFinderME.START, NameFinderME.OTHER) ||
-        ModelUtil.validateOutcomes(model, NameFinderME.START, NameFinderME.CONTINUE) ||
-        ModelUtil.validateOutcomes(model, NameFinderME.START, NameFinderME.CONTINUE,
-            NameFinderME.OTHER);
+    // TODO: Update code to check the new models ...
+    
+//    return ModelUtil.validateOutcomes(model, NameFinderME.START) ||
+//        ModelUtil.validateOutcomes(model, NameFinderME.OTHER) ||
+//        ModelUtil.validateOutcomes(model, NameFinderME.START, NameFinderME.OTHER) ||
+//        ModelUtil.validateOutcomes(model, NameFinderME.START, NameFinderME.CONTINUE) ||
+//        ModelUtil.validateOutcomes(model, NameFinderME.START, NameFinderME.CONTINUE,
+//            NameFinderME.OTHER);
+    return true;
   }
 
   @SuppressWarnings("unchecked")

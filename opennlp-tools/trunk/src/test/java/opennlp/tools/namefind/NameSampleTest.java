@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -40,20 +40,24 @@ public class NameSampleTest extends TestCase {
         "considering", "sending", "additional", "American", "forces",
         "to", "Afghanistan", "."};
     
-    Span[] names = {new Span(0, 4), new Span(5, 7), new Span(14, 15)};
+    Span[] names = {new Span(0, 4, "Location"), new Span(5, 7, "Person"), 
+        new Span(14, 15, "Location")};
     
-    String[] nameTypes = {"Location", "Person", "Location"};
-    
-    NameSample theNameSample = null;
-    
+    NameSample nameSample;
     if(useTypes) {
-      theNameSample = new NameSample(sentence, names, nameTypes, false);
+      nameSample = new NameSample(sentence, names, false);
     }
     else {
-      theNameSample = new NameSample(sentence, names, false);
+      Span[] namesWithoutType = new Span[names.length];
+      for (int i = 0; i < names.length; i++) {
+        namesWithoutType[i] = new Span(names[i].getStart(), 
+            names[i].getEnd());
+      }
+      
+      nameSample = new NameSample(sentence, namesWithoutType, false);
     }
     
-    return theNameSample;
+    return nameSample;
   }
   
   /**
@@ -64,10 +68,6 @@ public class NameSampleTest extends TestCase {
     String nameSampleStr = createSimpleNameSample(false).toString();
     assertEquals("<START> U . S . <END> President <START> Barack Obama <END> is considering " +
     		"sending additional American forces to <START> Afghanistan <END> .", nameSampleStr);
-
-    // Checks if could create a NameSample without NameTypes and check
-    // if the getNameTypes method returns NULL.
-    assertNull(createSimpleNameSample(false).getNameTypes());
   }
   
   /**

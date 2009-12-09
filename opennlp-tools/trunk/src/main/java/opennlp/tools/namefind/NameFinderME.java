@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import opennlp.maxent.GIS;
 import opennlp.maxent.GISModel;
@@ -54,24 +56,39 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 public class NameFinderME implements TokenNameFinder {
 
   private static String[][] EMPTY = new String[0][0];
+  private static final int DEFAULT_BEAM_SIZE = 3;
+  private static final Pattern typedOutcomePattern = Pattern.compile("(.+)-\\w+");
 
   private static class NameFinderSequenceValidator implements
       SequenceValidator<String> {
-
+    
     public boolean validSequence(int i, String[] inputSequence,
         String[] outcomesSequence, String outcome) {
       
-      if (outcome.equals(CONTINUE)) {
+      // outcome is formatted like "cont" or "sometype-cont", so we
+      // can check if it ends with "cont".
+      if (outcome.endsWith(CONTINUE)) {
         
         int li = outcomesSequence.length - 1;
         
         if (li == -1) {
           return false;
-        } else if (outcomesSequence[li].equals(OTHER)) {
+        } else if (outcomesSequence[li].endsWith(OTHER)) {
           return false;
+        } else if (outcomesSequence[li].endsWith(CONTINUE)) {
+          // if it is continue, we have to check if previous match was of the same type 
+          String previousNameType = extractNameType(outcomesSequence[li]);
+          String nameType = extractNameType(outcome);
+          if( previousNameType != null || nameType != null ) {
+            if( nameType != null ) {
+              if( nameType.equals(previousNameType) ){
+                return true;
+              }
+            }
+            return false; // outcomes types are not equal
+          }
         }
       }
-      
       return true;
     }
   }
@@ -89,7 +106,7 @@ public class NameFinderME implements TokenNameFinder {
       new AdditionalContextFeatureGenerator();
 
   public NameFinderME(TokenNameFinderModel model) {
-    this(model, 3);
+    this(model, DEFAULT_BEAM_SIZE);
   }
 
   /**
@@ -117,7 +134,7 @@ public class NameFinderME implements TokenNameFinder {
    */
   @Deprecated
   public NameFinderME(MaxentModel mod) {
-    this(mod, new DefaultNameContextGenerator(), 3);
+    this(mod, new DefaultNameContextGenerator(), DEFAULT_BEAM_SIZE);
   }
 
   /**
@@ -128,7 +145,7 @@ public class NameFinderME implements TokenNameFinder {
    */
   @Deprecated
   public NameFinderME(MaxentModel mod, NameContextGenerator cg) {
-    this(mod, cg, 3);
+    this(mod, cg, DEFAULT_BEAM_SIZE);
   }
 
   /**
@@ -160,12 +177,15 @@ public class NameFinderME implements TokenNameFinder {
   public Span[] find(String[] tokens) {
     return find(tokens, EMPTY);
   }
-
+  
   /** 
-   * Generates name tags for the given sequence, typically a sentence, returning token spans for any identified names.
+   * Generates name tags for the given sequence, typically a sentence, 
+   * returning token spans for any identified names.
    * 
-   * @param tokens an array of the tokens or words of the sequence, typically a sentence.
-   * @param additionalContext features which are based on context outside of the sentence but which should also be used.
+   * @param tokens an array of the tokens or words of the sequence,
+   *     typically a sentence.
+   * @param additionalContext features which are based on context outside
+   *     of the sentence but which should also be used.
    * 
    * @return an array of spans for each of the names identified.
    */
@@ -181,21 +201,21 @@ public class NameFinderME implements TokenNameFinder {
     List<Span> spans = new ArrayList<Span>(tokens.length);
     for (int li = 0; li < c.size(); li++) {
       String chunkTag = (String) c.get(li);
-      if (chunkTag.equals(NameFinderME.START)) {
+      if (chunkTag.endsWith(NameFinderME.START)) {
         if (start != -1) {
-          spans.add(new Span(start, end));
+          spans.add(new Span(start, end, extractNameType(chunkTag)));
         }
 
         start = li;
         end = li + 1;
 
       }
-      else if (chunkTag.equals(NameFinderME.CONTINUE)) {
+      else if (chunkTag.endsWith(NameFinderME.CONTINUE)) {
         end = li + 1;
       }
-      else if (chunkTag.equals(NameFinderME.OTHER)) {
+      else if (chunkTag.endsWith(NameFinderME.OTHER)) {
         if (start != -1) {
-          spans.add(new Span(start, end));
+          spans.add(new Span(start, end, extractNameType(c.get(li - 1))));
           start = -1;
           end = -1;
         }
@@ -203,7 +223,7 @@ public class NameFinderME implements TokenNameFinder {
     }
 
     if (start != -1) {
-      spans.add(new Span(start,end));
+      spans.add(new Span(start, end, extractNameType(c.get(c.size() - 1))));
     }
 
     return spans.toArray(new Span[spans.size()]);
@@ -292,6 +312,21 @@ public class NameFinderME implements TokenNameFinder {
   public static GISModel train(EventStream es, int iterations, int cut) throws IOException {
     return GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
+  
+  /**
+   * Gets the name type from the outcome 
+   * @param outcome the outcome
+   * @return the name type, or null if not set
+   */
+  private static String extractNameType(String outcome) {
+    Matcher matcher = typedOutcomePattern.matcher(outcome);
+    if(matcher.matches()) {
+      String nameType = matcher.group(1);
+      return nameType;
+    }
+    
+    return null;
+  }
 
   /**
    * Trains a new named entity model on the specified training file using the specified encoding to read it in.
@@ -300,6 +335,7 @@ public class NameFinderME implements TokenNameFinder {
    * 
    * @throws java.io.IOException
    */
+  @Deprecated
   public static void main(String[] args) throws IOException, InvalidFormatException {
     
     // Encoding must be specified !!!

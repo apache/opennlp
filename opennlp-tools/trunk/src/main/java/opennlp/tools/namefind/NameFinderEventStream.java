@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -68,26 +68,26 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
    * @param length The length of the sentence.
    * @return An array of start, continue, other outcomes based on the specified names and sentence length.
    */
-  public static String[] generateOutcomes(Span[] names, String[] nameTypes, int length) {
+  public static String[] generateOutcomes(Span[] names, int length) {
     String[] outcomes = new String[length];
     for (int i = 0; i < outcomes.length; i++) {
       outcomes[i] = NameFinderME.OTHER;
     }
     for (int nameIndex = 0; nameIndex < names.length; nameIndex++) {
       Span name = names[nameIndex];
-      if (nameTypes == null) {
-        outcomes[name.getStart()] = NameFinderME.START;
+      if (name.getType() == null) {
+        outcomes[name.getStart()] = "default-" + NameFinderME.START;
       }
       else {
-        outcomes[name.getStart()] = nameTypes[nameIndex]+"-"+NameFinderME.START;
+        outcomes[name.getStart()] = name.getType() + "-" + NameFinderME.START;
       }
       // now iterate from begin + 1 till end
       for (int i = name.getStart() + 1; i < name.getEnd(); i++) {
-        if (nameTypes == null) {
-          outcomes[i] = NameFinderME.CONTINUE;
+        if (name.getType() == null) {
+          outcomes[i] = "default-" + NameFinderME.CONTINUE;
         }
         else {
-          outcomes[i] = nameTypes[nameIndex]+"-"+NameFinderME.CONTINUE;
+          outcomes[i] = name.getType() + "-" + NameFinderME.CONTINUE;
         }
       }
     }
@@ -109,7 +109,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
         }
       }
       //System.err.println(sample);
-      String outcomes[] = generateOutcomes(sample.getNames(),sample.getNameTypes(),sample.getSentence().length);
+      String outcomes[] = generateOutcomes(sample.getNames(), sample.getSentence().length);
       additionalContextFeatureGenerator.setCurrentContext(sample.getAdditionalContext());
       String[] tokens = new String[sample.getSentence().length];
       List<Event> events = new ArrayList<Event>(outcomes.length);

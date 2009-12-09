@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -75,15 +75,13 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
 
     List<String> tokenList = new ArrayList<String>(parts.length);
     List<Span> nameList = new ArrayList<Span>();
-    List<String> nameTypeList = new ArrayList<String>();
 
-    String nameType = "";
+    String nameType = null;
     int startIndex = -1;
     int wordIndex = 0;
     
     // we check if at least one name has the a type. If no one has, we will
     // leave the NameType property of NameSample null.
-    boolean gotAtLeastOneNameType = false;
     boolean catchingName = false;
     
     for (int pi = 0; pi < parts.length; pi++) {
@@ -106,15 +104,7 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
         }
         catchingName = false;
         // create name
-        nameList.add(new Span(startIndex, wordIndex));
-        
-        // always set a nameType, but we will only add it to the NameSample if at 
-        // least we got one not null
-        nameTypeList.add(nameType);
-        if(nameType != null)
-        {
-          gotAtLeastOneNameType = true;
-        }
+        nameList.add(new Span(startIndex, wordIndex, nameType));
         
       }
       else {
@@ -124,13 +114,7 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
     }
     String[] sentence = tokenList.toArray(new String[tokenList.size()]);
     Span[] names = nameList.toArray(new Span[nameList.size()]);
-    if(gotAtLeastOneNameType) {
-      String[] nameTypes = nameTypeList.toArray(new String[nameTypeList.size()]);
-      return new NameSample(sentence, names, nameTypes, sentence.length==0 );
-    }
-    else {
-      return new NameSample(sentence, names, sentence.length==0 );
-    }    
-   
+    
+    return new NameSample(sentence, names, sentence.length==0 );
   }
 }

@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreemnets.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -26,7 +26,6 @@ public class NameSample {
 
   private final String[] sentence;
   private final Span[] names;
-  private final String[] nameTypes;
   private final String[][] additionalContext;
   private final boolean isClearAdaptiveData;
 
@@ -36,9 +35,10 @@ public class NameSample {
    * @param sentence training sentence
    * @param names
    * @param additionalContext
-   * @param clearAdaptiveData if true the adaptive data of the feature generators is cleared
+   * @param clearAdaptiveData if true the adaptive data of the 
+   *     feature generators is cleared
    */
-  public NameSample(String[] sentence, Span[] names, String[] types,
+  public NameSample(String[] sentence, Span[] names,
       String[][] additionalContext, boolean clearAdaptiveData) {
 
     if (sentence == null) {
@@ -53,34 +53,18 @@ public class NameSample {
     this.names = names;
     this.additionalContext = additionalContext;
     isClearAdaptiveData = clearAdaptiveData;
-    this.nameTypes = types;
   }
 
-  /**
-   * Initializes the current instance.
-   *
-   * @param sentence
-   * @param names
-   * @param clearAdaptiveData
-   */
-  public NameSample(String sentence[], Span[] names, boolean clearAdaptiveData) {
-    this(sentence, names, null, null, clearAdaptiveData);
+  public NameSample(String[] sentence, Span[] names, boolean clearAdaptiveData) {
+    this(sentence, names, null, clearAdaptiveData);
   }
-
-  public NameSample(String sentence[], Span[] names, String[] nameTypes, boolean clearAdaptiveData) {
-    this(sentence, names, nameTypes, null, clearAdaptiveData);
-  }
-
+  
   public String[] getSentence() {
     return sentence;
   }
 
   public Span[] getNames() {
     return names;
-  }
-
-  public String[] getNameTypes() {
-    return nameTypes;
   }
 
   public String[][] getAdditionalContext() {
@@ -101,11 +85,11 @@ public class NameSample {
         if (names[nameIndex].getStart() == tokenIndex) {
           // check if nameTypes is null, or if the nameType for this specific
           // entity is empty. If it is, we leave the nameType blank.
-          if (nameTypes == null || nameTypes[nameIndex] == null) {
+          if (names[nameIndex].getType() == null) {
             result.append(NameSampleDataStream.START_TAG).append(' ');
           }
           else {
-            result.append(NameSampleDataStream.START_TAG_PREFIX).append(nameTypes[nameIndex]).append("> ");
+            result.append(NameSampleDataStream.START_TAG_PREFIX).append(names[nameIndex].getType()).append("> ");
           }
         }
 

@@ -163,31 +163,23 @@ public class NameSampleDataStreamTest extends TestCase {
     int location = 17;
     int organization = 1;
 
-    NameSample ns = ds.read();
 
     Map<String, List<String>> names = new HashMap<String, List<String>>();
 
-    while (ns != null) {
+    NameSample ns;
+    while ((ns = ds.read()) != null) {
       Span[] nameSpans = ns.getNames();
-      String[] types = ns.getNameTypes();
 
       for (int i = 0; i < nameSpans.length; i++) {
-        if (!names.containsKey(types[i])) {
-          names.put(types[i], new ArrayList<String>());
+        if (!names.containsKey(nameSpans[i].getType())) {
+          names.put(nameSpans[i].getType(), new ArrayList<String>());
         }
-        names.get(types[i])
+        names.get(nameSpans[i].getType())
             .add(sublistToString(ns.getSentence(), nameSpans[i]));
       }
-
-      ns = ds.read();
     }
     
-    for (String type : names.keySet()) {
-      System.out.println("Type: " + type + " " + names.get(type).size());
-      for (String name : names.get(type)) {
-        System.out.println("\"" + name + "\",");
-      }
-    }
+    // TODO: This test should be enhanced like testWithoutNameTypes()
     
     assertEquals(person, names.get("person").size());
     assertEquals(date, names.get("date").size());
@@ -197,7 +189,6 @@ public class NameSampleDataStreamTest extends TestCase {
   
   public void testWithNameTypeAndInvalidData() {
     
-    // TODO: maybe this case should be considered equal to <START> ???
     NameSampleDataStream smapleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START:> Name <END>"));
     
