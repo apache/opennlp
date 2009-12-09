@@ -40,8 +40,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
 
   private ObjectStream<NameSample> nameSampleStream;
 
-  @SuppressWarnings("unchecked")
-  private Iterator<Event> events = Collections.EMPTY_LIST.iterator();
+  private Iterator<Event> events = Collections.<Event>emptyList().iterator();
 
   private NameContextGenerator contextGenerator;
 
@@ -88,7 +87,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
           outcomes[i] = NameFinderME.CONTINUE;
         }
         else {
-          outcomes[name.getStart()] = nameTypes[nameIndex]+"-"+NameFinderME.CONTINUE;
+          outcomes[i] = nameTypes[nameIndex]+"-"+NameFinderME.CONTINUE;
         }
       }
     }
@@ -125,7 +124,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
     }
     
     } catch (opennlp.tools.util.ObjectStreamException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 
@@ -148,7 +147,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
       throw new NoSuchElementException();
     }
 
-    return (Event) events.next();
+    return events.next();
   }
 
   /**
