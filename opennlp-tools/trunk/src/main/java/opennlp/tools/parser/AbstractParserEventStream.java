@@ -85,7 +85,11 @@ public abstract class AbstractParserEventStream extends opennlp.model.AbstractEv
   }
 
   public boolean hasNext() {
-      while (ei == events.length) {
+    // TODO: This might cause problems if once zero events are added
+    // this problem exist in other places too ...
+    // For now I will let it like this and it should be refactored
+    // when the EventStream interface is updated
+      if (ei == events.length) {
         // refill events
         addNewEvents();
         ei = 0;
