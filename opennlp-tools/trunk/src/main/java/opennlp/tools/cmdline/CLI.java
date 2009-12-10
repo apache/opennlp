@@ -28,6 +28,7 @@ import opennlp.tools.cmdline.namefind.TokenNameFinder;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluator;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainer;
 import opennlp.tools.cmdline.parser.BuildModelUpdater;
+import opennlp.tools.cmdline.parser.ParserTrainer;
 import opennlp.tools.cmdline.postag.POSTaggerTrainer;
 import opennlp.tools.cmdline.sentdetect.SentenceDetector;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluator;
@@ -74,6 +75,7 @@ public class CLI {
     // Chunker
     
     // Parser
+    tools.add(new ParserTrainer());
     tools.add(new BuildModelUpdater());
     
     // Coref
