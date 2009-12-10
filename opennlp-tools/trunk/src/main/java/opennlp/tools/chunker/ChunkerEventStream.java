@@ -84,5 +84,8 @@ public class ChunkerEventStream extends opennlp.model.AbstractEventStream {
         events[ei] = new Event(predsArray[ei], cg.getContext(ei,toksArray,tagsArray,predsArray));
       }
     }
+    else {
+      events = new Event[0];
+    }
   }
 }
