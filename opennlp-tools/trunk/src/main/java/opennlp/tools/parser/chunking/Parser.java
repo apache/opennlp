@@ -267,7 +267,7 @@ public class Parser extends AbstractBottomUpParser {
     return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 
-  public static ParserModel train(ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
+  public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
       throws IOException, ObjectStreamException {
     
     System.err.println("Building dictionary");
@@ -276,8 +276,8 @@ public class Parser extends AbstractBottomUpParser {
     parseSamples.reset();
     
     // tag
-    POSModel posModel = POSTaggerME.train("en", new PosSampleStream(parseSamples), 
-        ModelType.MAXENT, null, null, cut, 100);
+    POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(parseSamples), 
+        ModelType.MAXENT, null, null, cut, iterations);
     
     parseSamples.reset();
     

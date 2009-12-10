@@ -75,7 +75,7 @@ public class ParserTrainer implements CmdLineTool {
       
       HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[args.length - 3]);
       
-      ParserModel model = Parser.train(sampleStream, rules, parameters.getNumberOfIterations(), 
+      ParserModel model = Parser.train(parameters.getLanguage(), sampleStream, rules, parameters.getNumberOfIterations(), 
           parameters.getCutoff());
       
       sampleStream.close();
