@@ -67,9 +67,8 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
     
     Parse parse = in.read();
     
-    Parse[] chunks = getInitialChunks(parse);
-    
     if (parse != null) {
+      Parse[] chunks = getInitialChunks(parse);
       List<String> toks = new ArrayList<String>();
       List<String> tags = new ArrayList<String>();
       List<String> preds = new ArrayList<String>();
