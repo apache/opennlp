@@ -267,7 +267,7 @@ public class Parser extends AbstractBottomUpParser {
     return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 
-  public static void train(ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
+  public static ParserModel train(ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
       throws IOException, ObjectStreamException {
     
     System.err.println("Building dictionary");
@@ -291,7 +291,7 @@ public class Parser extends AbstractBottomUpParser {
     AbstractModel checkModel = train(kes, iterations, cut);
     
     // TODO: Remove cast for HeadRules
-    new ParserModel(buildModel, checkModel, posModel, chunkModel, (opennlp.tools.parser.lang.en.HeadRules) rules);
+    return new ParserModel(buildModel, checkModel, posModel, chunkModel, (opennlp.tools.parser.lang.en.HeadRules) rules);
   }
   
   private static boolean lastChild(Parse child, Parse parent, Set<String> punctSet) {
