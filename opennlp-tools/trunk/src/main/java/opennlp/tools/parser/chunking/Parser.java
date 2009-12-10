@@ -273,17 +273,25 @@ public class Parser extends AbstractBottomUpParser {
     System.err.println("Building dictionary");
     Dictionary mdict = buildDictionary(parseSamples, rules, cut);
     
+    parseSamples.reset();
+    
     // tag
     POSModel posModel = POSTaggerME.train("en", new PosSampleStream(parseSamples), 
         ModelType.MAXENT, null, null, cut, 100);
     
+    parseSamples.reset();
+    
     // chunk
     ChunkerModel chunkModel = ChunkerME.train(new ChunkSampleStream(parseSamples), iterations, cut);
+    
+    parseSamples.reset();
     
     // build
     System.err.println("Training builder");
     opennlp.model.EventStream bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
     AbstractModel buildModel = train(bes, iterations, cut);
+    
+    parseSamples.reset();
     
     // check
     System.err.println("Training checker");
