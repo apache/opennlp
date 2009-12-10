@@ -17,9 +17,6 @@
 
 package opennlp.tools.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
