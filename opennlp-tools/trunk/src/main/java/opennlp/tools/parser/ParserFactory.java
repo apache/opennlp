@@ -22,7 +22,7 @@ public class ParserFactory {
   private ParserFactory() {
   }
   
-  public Parser create(ParserModel model) {
+  public static Parser create(ParserModel model) {
     return new opennlp.tools.parser.chunking.Parser(model);
   }
 }
