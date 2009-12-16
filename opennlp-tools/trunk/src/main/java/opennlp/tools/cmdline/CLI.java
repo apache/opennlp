@@ -28,6 +28,7 @@ import opennlp.tools.cmdline.namefind.TokenNameFinder;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluator;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainer;
 import opennlp.tools.cmdline.parser.BuildModelUpdater;
+import opennlp.tools.cmdline.parser.Parser;
 import opennlp.tools.cmdline.parser.ParserTrainer;
 import opennlp.tools.cmdline.postag.POSTaggerTrainer;
 import opennlp.tools.cmdline.sentdetect.SentenceDetector;
@@ -70,15 +71,24 @@ public class CLI {
     tools.add(new TokenNameFinderEvaluator());
     
     // POS Tagger
+    tools.add(new opennlp.tools.cmdline.postag.POSTagger());
     tools.add(new POSTaggerTrainer());
+    // add evaluator
+    // add cv validator
     
     // Chunker
+    // ChunkerME, needs ChunkerModel and input must contain POS tags ...
+    // ChunkerTrainer, on which material can we train? which format ?
+    // how to evaluate ???
     
     // Parser
-    tools.add(new ParserTrainer());
-    tools.add(new BuildModelUpdater());
+    tools.add(new Parser());
+    tools.add(new ParserTrainer()); // trains everything
+    tools.add(new BuildModelUpdater()); // re-trains  build model
     
     // Coref
+    // Add util to use coref ...
+    // training form corpus not part of 1.5
     
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);
