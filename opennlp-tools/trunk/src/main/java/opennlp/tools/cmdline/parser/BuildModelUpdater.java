@@ -18,7 +18,6 @@
 package opennlp.tools.cmdline.parser;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
@@ -26,16 +25,13 @@ import opennlp.model.AbstractModel;
 import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 public class BuildModelUpdater implements CmdLineTool {
 
@@ -59,21 +55,15 @@ public class BuildModelUpdater implements CmdLineTool {
     
     BasicTrainingParameters parameters = new BasicTrainingParameters(args);
     
+    // Load model to be updated
+    File modelFile = new File(args[args.length - 1]);
+    ParserModel parserModel =
+        opennlp.tools.cmdline.parser.Parser.loadModel(modelFile);
+      
+    ObjectStream<Parse> parseSamples = ParserTrainer.openTrainingData(new File(args[args.length - 2]), 
+        parameters.getEncoding());
+      
     try {
-      // Load model to be updated
-      File modelFile = new File(args[args.length - 1]);
-      CmdLineUtil.checkInputFile("Parser Model", modelFile);
-  
-      // TODO: close the stream
-      ParserModel parserModel = ParserModel.create(new FileInputStream(modelFile));
-      
-      File trainingDataInFile = new File(args[args.length - 2]);
-      CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
-      
-      FileInputStream trainingDataIn = new FileInputStream(trainingDataInFile);
-      ObjectStream<Parse> parseSamples = new ParseSampleStream(new PlainTextByLineStream(trainingDataIn.getChannel(),
-          parameters.getEncoding()));
-      
       // Create dictionary
       System.out.print("Building dictionary ...");
       Dictionary mdict = Parser.
@@ -82,6 +72,7 @@ public class BuildModelUpdater implements CmdLineTool {
       
       parseSamples.reset();
       
+      // TODO: Maybe that should be part of the ChunkingParser ...
       // Training build
       System.out.println("Training builder");
       opennlp.model.EventStream bes = new ParserEventStream(parseSamples, parserModel.getHeadRules(), ParserEventTypeEnum.BUILD, mdict);

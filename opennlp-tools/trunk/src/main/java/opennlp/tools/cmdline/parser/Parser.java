@@ -75,6 +75,34 @@ public class Parser implements CmdLineTool {
     return token;
   }
 
+  static ParserModel loadModel(File modelFile) {
+    
+    CmdLineUtil.checkInputFile("Tokenizer model", modelFile);
+
+    System.err.print("Loading model ... ");
+    
+    ParserModel model;
+    try {
+      InputStream modelIn = new FileInputStream(modelFile);
+      model = ParserModel.create(modelIn);
+      modelIn.close();
+    }
+    catch (IOException e) {
+      System.err.println("failed");
+      System.err.println("IO error while loading model: " + e.getMessage());
+      System.exit(-1);
+      model = null;
+    }
+    catch (InvalidFormatException e) {
+      System.err.println("failed");
+      System.err.println("Model has invalid format: " + e.getMessage());
+      System.exit(-1);
+      model = null;
+    }
+    
+    return model;
+  }
+  
   public static Parse[] parseLine(String line, opennlp.tools.parser.Parser parser, int numParses) {
     line = untokenizedParenPattern1.matcher(line).replaceAll("$1 $2");
     line = untokenizedParenPattern2.matcher(line).replaceAll("$1 $2");
@@ -107,35 +135,12 @@ public class Parser implements CmdLineTool {
   
   public void run(String[] args) {
     
-    if (args.length != 1) {
+    if (args.length  > 0) {
       System.out.println(getHelp());
       System.exit(1);
     }
     
-    File modelFile = new File(args[0]);
-    
-    CmdLineUtil.checkInputFile("Tokenizer model", modelFile);
-
-    System.err.print("Loading model ... ");
-    
-    ParserModel model;
-    try {
-      InputStream modelIn = new FileInputStream(modelFile);
-      model = ParserModel.create(modelIn);
-      modelIn.close();
-    }
-    catch (IOException e) {
-      System.err.println("failed");
-      System.err.println("IO error while loading model: " + e.getMessage());
-      System.exit(-1);
-      model = null;
-    }
-    catch (InvalidFormatException e) {
-      System.err.println("failed");
-      System.err.println("Model has invalid format: " + e.getMessage());
-      System.exit(-1);
-      model = null;
-    }
+    ParserModel model = loadModel(new File(args[0]));
     
     Integer beamSize = CmdLineUtil.getIntParameter("bs", args);
     if (beamSize == null)

@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
@@ -27,12 +28,14 @@ import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class ParserTrainer implements CmdLineTool {
@@ -49,6 +52,44 @@ public class ParserTrainer implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " head_rules trainingData model";
   }
 
+  static ObjectStream<Parse> openTrainingData(File trainingDataFile, String encoding) {
+    
+    CmdLineUtil.checkInputFile("Training data", trainingDataFile);
+
+    System.err.print("Opening training data ... ");
+    
+    FileInputStream trainingDataIn;
+    try {
+      trainingDataIn = new FileInputStream(trainingDataFile);
+    } catch (FileNotFoundException e) {
+      System.err.println("failed");
+      // TODO: Can that happen after checkInputFile ???
+      System.err.println("File not found: " + e.getMessage());
+      System.exit(-1);
+      trainingDataIn = null;
+    }
+    
+    return new ParseSampleStream(
+        new PlainTextByLineStream(trainingDataIn.getChannel(),
+        encoding));
+  }
+  
+  static Dictionary buildDictionary(ObjectStream<Parse> parseSamples, HeadRules headRules, int cutoff) {
+    System.out.print("Building dictionary ...");
+    
+    Dictionary mdict;
+    try {
+      mdict = Parser.
+          buildDictionary(parseSamples, headRules, cutoff);
+    } catch (ObjectStreamException e) {
+      System.err.println("Error while building dictionary: " + e.getMessage());
+      mdict = null;
+    }
+    System.out.println("done");
+    
+    return mdict;
+  }
+  
   public void run(String[] args) {
     
     if (args.length < 7) {
@@ -63,15 +104,8 @@ public class ParserTrainer implements CmdLineTool {
       System.exit(1);
     } 
     
-    File trainingDataInFile = new File(args[args.length - 2]);
-    CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
-    
     try {
-      FileInputStream trainingDataIn = new FileInputStream(trainingDataInFile);
-      ObjectStream<String> lineStream = new PlainTextByLineStream(trainingDataIn.getChannel(),
-          parameters.getEncoding());
-      
-      ObjectStream<Parse> sampleStream = new ParseSampleStream(lineStream);
+      ObjectStream<Parse> sampleStream = openTrainingData(new File(args[args.length - 2]), parameters.getEncoding());
       
       HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[args.length - 3]);
       
