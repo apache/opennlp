@@ -121,7 +121,7 @@ public class ParserModel extends BaseModel {
 
     super.createArtifactSerializers(serializers);
     
-    serializers.put("postager", new POSModelSerializer());
+    serializers.put("postagger", new POSModelSerializer());
     serializers.put("chunker", new ChunkerModelSerializer());
     serializers.put("headrules", new HeadRulesSerializer());
     
