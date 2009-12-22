@@ -299,7 +299,8 @@ public class Parser extends AbstractBottomUpParser {
     AbstractModel checkModel = train(kes, iterations, cut);
     
     // TODO: Remove cast for HeadRules
-    return new ParserModel(buildModel, checkModel, posModel, chunkModel, (opennlp.tools.parser.lang.en.HeadRules) rules);
+    return new ParserModel(languageCode, buildModel, checkModel,
+        posModel, chunkModel, (opennlp.tools.parser.lang.en.HeadRules) rules);
   }
   
   private static boolean lastChild(Parse child, Parse parent, Set<String> punctSet) {

@@ -84,7 +84,7 @@ public class Parser implements CmdLineTool {
     ParserModel model;
     try {
       InputStream modelIn = new FileInputStream(modelFile);
-      model = ParserModel.create(modelIn);
+      model = new ParserModel(modelIn);
       modelIn.close();
     }
     catch (IOException e) {

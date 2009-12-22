@@ -168,7 +168,7 @@ public class TreebankParser {
       ai++;
     }
 
-    ParserModel model = ParserModel.create(new FileInputStream(args[ai]));
+    ParserModel model = new ParserModel(new FileInputStream(args[ai]));
     Parser parser = new opennlp.tools.parser.chunking.Parser(model);
 
     BufferedReader in;

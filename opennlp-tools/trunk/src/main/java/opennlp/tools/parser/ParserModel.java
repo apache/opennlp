@@ -19,7 +19,6 @@
 package opennlp.tools.parser;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -28,157 +27,130 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import java.util.Map;
 
-import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
 import opennlp.model.BinaryFileDataReader;
 import opennlp.model.GenericModelReader;
-import opennlp.model.MaxentModel;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ModelUtil;
+import opennlp.tools.util.UncloseableInputStream;
+import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * This is an abstract base class for {@link ParserModel} implementations.
  */
-public class ParserModel {
+public class ParserModel extends BaseModel {
 
-  private static final String BUILD_MODEL_ENTRY_NAME = "build.bin";
+  private static class POSModelSerializer implements ArtifactSerializer<POSModel> {
 
-  private static final String CHECK_MODEL_ENTRY_NAME = "check.bin";
+    public POSModel create(InputStream in) throws IOException,
+        InvalidFormatException {
+      return new POSModel(new UncloseableInputStream(in));
+    }
 
-  private static final String PARSER_TAGGER_MODEL_ENTRY_NAME = "tagger";
+    public void serialize(POSModel artifact, OutputStream out)
+        throws IOException {
+      artifact.serialize(out);
+    }
+  }
+  
+  private static class ChunkerModelSerializer implements ArtifactSerializer<ChunkerModel> {
 
-  private static final String CHUNKER_TAGGER_MODEL_ENTRY_NAME = "chunker";
+    public ChunkerModel create(InputStream in) throws IOException,
+        InvalidFormatException {
+      return new ChunkerModel(new UncloseableInputStream(in));
+    }
 
-  private static final String HEAD_RULES_MODEL_ENTRY_NAME = "head-rules";
+    public void serialize(ChunkerModel artifact, OutputStream out)
+        throws IOException {
+      artifact.serialize(out);
+    }
+  }
+  
+  private static class HeadRulesSerializer implements ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
 
-  private AbstractModel buildModel;
+    public opennlp.tools.parser.lang.en.HeadRules create(InputStream in) throws IOException,
+        InvalidFormatException {
+      return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
+    }
 
-  private AbstractModel checkModel;
+    public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact, OutputStream out)
+        throws IOException {
+      artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
+    }
+  }
+    
+  private static final String BUILD_MODEL_ENTRY_NAME = "build.model";
 
-  private POSModel parserTagger;
+  private static final String CHECK_MODEL_ENTRY_NAME = "check.model";
 
-  private ChunkerModel chunkerTagger;
+  private static final String PARSER_TAGGER_MODEL_ENTRY_NAME = "parsertager.postagger";
+
+  private static final String CHUNKER_TAGGER_MODEL_ENTRY_NAME = "parserchunker.chunker";
+
+  private static final String HEAD_RULES_MODEL_ENTRY_NAME = "head-rules.headrules";
 
   private opennlp.tools.parser.lang.en.HeadRules headRules;
 
-  public ParserModel(AbstractModel buildModel, AbstractModel checkModel, POSModel parserTagger,
+  public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, POSModel parserTagger,
       ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules) {
 
-    this.buildModel = buildModel;
-    this.checkModel = checkModel;
-    this.parserTagger = parserTagger;
-    this.chunkerTagger = chunkerTagger;
-    this.headRules = headRules;
+    super(languageCode);
+    
+    if (buildModel == null || checkModel == null || parserTagger == null ||
+        chunkerTagger == null || headRules == null)
+        throw new IllegalArgumentException("All parameters must not be null!");
+    
+    artifactMap.put(BUILD_MODEL_ENTRY_NAME, buildModel);
+    artifactMap.put(CHECK_MODEL_ENTRY_NAME, checkModel);
+    artifactMap.put(PARSER_TAGGER_MODEL_ENTRY_NAME, parserTagger);
+    artifactMap.put(CHUNKER_TAGGER_MODEL_ENTRY_NAME, chunkerTagger);
+    artifactMap.put(HEAD_RULES_MODEL_ENTRY_NAME, headRules);
   }
 
-  public MaxentModel getBuildModel() {
-    return buildModel;
+  public ParserModel(InputStream in) throws IOException, InvalidFormatException {
+    super(in);
+  }
+  
+  @Override
+  protected void createArtifactSerializers(
+      Map<String, ArtifactSerializer> serializers) {
+
+    super.createArtifactSerializers(serializers);
+    
+    serializers.put("postager", new POSModelSerializer());
+    serializers.put("chunker", new ChunkerModelSerializer());
+    serializers.put("headrules", new HeadRulesSerializer());
+    
+  }
+  
+  public AbstractModel getBuildModel() {
+    return (AbstractModel) artifactMap.get(BUILD_MODEL_ENTRY_NAME);
   }
 
-  public MaxentModel getCheckModel() {
-    return checkModel;
+  public AbstractModel getCheckModel() {
+    return (AbstractModel) artifactMap.get(CHECK_MODEL_ENTRY_NAME);
   }
 
   public POSModel getParserTaggerModel() {
-    return parserTagger;
+    return (POSModel) artifactMap.get(PARSER_TAGGER_MODEL_ENTRY_NAME);
   }
 
   public ChunkerModel getParserChunkerModel() {
-    return chunkerTagger;
+    return (ChunkerModel) artifactMap.get(CHUNKER_TAGGER_MODEL_ENTRY_NAME);
   }
 
   public opennlp.tools.parser.lang.en.HeadRules getHeadRules() {
-    return headRules;
+    return (opennlp.tools.parser.lang.en.HeadRules) 
+        artifactMap.get(HEAD_RULES_MODEL_ENTRY_NAME);
   }
 
   public ParserModel updateBuildModel(AbstractModel buildModel) {
-    return new ParserModel(buildModel, checkModel, parserTagger,
-        chunkerTagger, headRules);
-  }
-  
-  public void serialize(OutputStream out) throws IOException {
-    ZipOutputStream zip = new ZipOutputStream(out);
-
-    zip.putNextEntry(new ZipEntry(BUILD_MODEL_ENTRY_NAME));
-    ModelUtil.writeModel(buildModel, zip);
-    zip.closeEntry();
-
-    zip.putNextEntry(new ZipEntry(CHECK_MODEL_ENTRY_NAME));
-    ModelUtil.writeModel(checkModel, zip);
-    zip.closeEntry();
-
-    zip.putNextEntry(new ZipEntry(PARSER_TAGGER_MODEL_ENTRY_NAME));
-    getParserTaggerModel().serialize(zip);
-    zip.closeEntry();
-
-    zip.putNextEntry(new ZipEntry(CHUNKER_TAGGER_MODEL_ENTRY_NAME));
-    getParserChunkerModel().serialize(zip);
-    zip.closeEntry();
-
-    zip.putNextEntry(new ZipEntry(HEAD_RULES_MODEL_ENTRY_NAME));
-    headRules.serialize(new OutputStreamWriter(zip, "UTF-8"));
-    zip.closeEntry();
-  }
-
-  public static ParserModel create(InputStream in) throws IOException, InvalidFormatException {
-
-    ZipInputStream zip = new ZipInputStream(in);
-
-    AbstractModel buildModel = null;
-    AbstractModel checkModel = null;
-
-    POSModel parserTagger = null;
-    ChunkerModel parserChunker = null;
-
-    opennlp.tools.parser.lang.en.HeadRules headRules = null;
-
-    ZipEntry entry;
-    while((entry = zip.getNextEntry()) != null) {
-      if (BUILD_MODEL_ENTRY_NAME.equals(entry.getName())) {
-
-        buildModel = new BinaryGISModelReader(
-            new DataInputStream(zip)).getModel();
-
-        zip.closeEntry();
-      }
-      else if (CHECK_MODEL_ENTRY_NAME.equals(entry.getName())) {
-
-        checkModel = new BinaryGISModelReader(
-            new DataInputStream(zip)).getModel();
-
-        zip.closeEntry();
-      }
-      else if (PARSER_TAGGER_MODEL_ENTRY_NAME.equals(entry.getName())) {
-
-        parserTagger = new POSModel(zip);
-        zip.closeEntry();
-      }
-      else if (CHUNKER_TAGGER_MODEL_ENTRY_NAME.equals(entry.getName())) {
-
-        parserChunker = new ChunkerModel(zip);
-        zip.closeEntry();
-      }
-      else if (HEAD_RULES_MODEL_ENTRY_NAME.equals(entry.getName())) {
-
-        headRules = new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader
-            (new InputStreamReader(zip, "UTF-8")));
-
-        zip.closeEntry();
-      }
-      else {
-        throw new InvalidFormatException("Model contains unkown resource!");
-      }
-    }
-
-    // TODO: add checks, everything must be =! null
-
-    return new ParserModel(buildModel, checkModel, parserTagger, parserChunker, headRules);
+    return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), getParserTaggerModel(),
+        getParserChunkerModel(), headRules);
   }
 
   private static AbstractModel readModel(String fileName) throws FileNotFoundException, IOException {
@@ -203,7 +175,7 @@ public class ParserModel {
 
     POSModel posModel = new POSModel(new FileInputStream(args[5]));
 
-    ParserModel packageModel = new ParserModel(buildModel, checkModel, posModel,
+    ParserModel packageModel = new ParserModel("en", buildModel, checkModel, posModel,
         chunkerModel, headRules);
 
     packageModel.serialize(new FileOutputStream(args[0]));
