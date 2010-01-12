@@ -28,6 +28,7 @@ import opennlp.tools.cmdline.namefind.TokenNameFinder;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluator;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainer;
 import opennlp.tools.cmdline.parser.BuildModelUpdater;
+import opennlp.tools.cmdline.parser.CheckModelUpdater;
 import opennlp.tools.cmdline.parser.Parser;
 import opennlp.tools.cmdline.parser.ParserTrainer;
 import opennlp.tools.cmdline.postag.POSTaggerTrainer;
@@ -85,6 +86,7 @@ public class CLI {
     tools.add(new Parser());
     tools.add(new ParserTrainer()); // trains everything
     tools.add(new BuildModelUpdater()); // re-trains  build model
+    tools.add(new CheckModelUpdater()); // re-trains  build model
     
     // Coref
     // Add util to use coref ...
