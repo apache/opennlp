@@ -149,10 +149,15 @@ public class ParserModel extends BaseModel {
   }
 
   public ParserModel updateBuildModel(AbstractModel buildModel) {
-    return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), getParserTaggerModel(),
+    return new ParserModel(getLanguage(), buildModel, getCheckModel(), getParserTaggerModel(),
         getParserChunkerModel(), headRules);
   }
 
+  public ParserModel updateCheckModel(AbstractModel checkModel) {
+    return new ParserModel(getLanguage(), getBuildModel(), checkModel, getParserTaggerModel(),
+        getParserChunkerModel(), headRules);
+  }
+  
   private static AbstractModel readModel(String fileName) throws FileNotFoundException, IOException {
     return new GenericModelReader(new BinaryFileDataReader(new FileInputStream(fileName))).
         getModel();
