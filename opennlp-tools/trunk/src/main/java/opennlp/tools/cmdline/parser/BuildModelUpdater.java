@@ -17,14 +17,8 @@
 
 package opennlp.tools.cmdline.parser;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-
 import opennlp.model.AbstractModel;
 import opennlp.tools.cmdline.BasicTrainingParameters;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserEventTypeEnum;
@@ -33,63 +27,41 @@ import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
 
-public class BuildModelUpdater implements CmdLineTool {
+public class BuildModelUpdater extends ModelUpdater {
 
   public String getName() {
     return "BuildModelUpdater";
   }
   
   public String getShortDescription() {
-    return "trains a build model and updates it in an existing parser model";
+    return "trains and updates the build model in a parser model";
   }
   
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " training.file parser.model";
-  }
-  
-  public void run(String[] args) {
-    if (args.length < 6) {
-      System.out.println(getHelp());
-      System.exit(1);
-    }
+  @Override
+  protected ParserModel trainAndUpdate(ParserModel originalModel,
+      ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters) {
     
-    BasicTrainingParameters parameters = new BasicTrainingParameters(args);
-    
-    // Load model to be updated
-    File modelFile = new File(args[args.length - 1]);
-    ParserModel parserModel =
-        opennlp.tools.cmdline.parser.Parser.loadModel(modelFile);
-      
-    ObjectStream<Parse> parseSamples = ParserTrainer.openTrainingData(new File(args[args.length - 2]), 
-        parameters.getEncoding());
-      
     try {
-      // Create dictionary
-      System.out.print("Building dictionary ...");
-      Dictionary mdict = Parser.
-          buildDictionary(parseSamples, parserModel.getHeadRules(), parameters.getCutoff());
-      System.out.println("done");
+      Dictionary mdict = ParserTrainer.buildDictionary(parseSamples, originalModel.getHeadRules(), parameters.getCutoff());
       
       parseSamples.reset();
       
       // TODO: Maybe that should be part of the ChunkingParser ...
       // Training build
       System.out.println("Training builder");
-      opennlp.model.EventStream bes = new ParserEventStream(parseSamples, parserModel.getHeadRules(), ParserEventTypeEnum.BUILD, mdict);
-      AbstractModel buildModel = Parser.train(bes, parameters.getNumberOfIterations(), 
-          parameters.getCutoff());
+      opennlp.model.EventStream bes = new ParserEventStream(parseSamples, 
+          originalModel.getHeadRules(), ParserEventTypeEnum.BUILD, mdict);
+      AbstractModel buildModel = Parser.train(bes, 
+          parameters.getNumberOfIterations(), parameters.getCutoff());
       
       parseSamples.close();
       
-      ParserModel updatedParserModel = parserModel.updateBuildModel(buildModel);
-      
-      // TODO: Should we overwrite the model file, really ?
-      OutputStream modelOut = new FileOutputStream(modelFile);
-      updatedParserModel.serialize(modelOut);
-      modelOut.close();
-    }
-    catch (Exception e) {
+      return originalModel.updateBuildModel(buildModel);
+    } catch (Exception e) {
+      // TODO: Improve error handling ...
       e.printStackTrace();
+      System.exit(-1);
+      return null;
     }
   }
 }
