@@ -31,6 +31,7 @@ import opennlp.tools.cmdline.parser.BuildModelUpdater;
 import opennlp.tools.cmdline.parser.CheckModelUpdater;
 import opennlp.tools.cmdline.parser.Parser;
 import opennlp.tools.cmdline.parser.ParserTrainer;
+import opennlp.tools.cmdline.postag.POSTaggerEvaluator;
 import opennlp.tools.cmdline.postag.POSTaggerTrainer;
 import opennlp.tools.cmdline.sentdetect.SentenceDetector;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluator;
@@ -74,6 +75,8 @@ public class CLI {
     // POS Tagger
     tools.add(new opennlp.tools.cmdline.postag.POSTagger());
     tools.add(new POSTaggerTrainer());
+    tools.add(new POSTaggerEvaluator());
+    
     // add evaluator
     // add cv validator
     
