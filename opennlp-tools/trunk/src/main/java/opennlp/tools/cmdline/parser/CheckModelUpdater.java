@@ -31,7 +31,7 @@ import opennlp.tools.util.ObjectStream;
 public class CheckModelUpdater extends ModelUpdater {
 
   public String getName() {
-    return "BuildModelUpdater";
+    return "CheckModelUpdater";
   }
   
   public String getShortDescription() {
