@@ -51,7 +51,7 @@ public class POSTaggerEvaluator implements CmdLineTool {
         System.exit(1);
       }
       
-      File testData = new File(args[1]);
+      File testData = new File(args[args.length - 1]);
       CmdLineUtil.checkInputFile("Test data", testData);
       
       String encoding = CmdLineUtil.getEncodingParameter(args);
@@ -61,7 +61,7 @@ public class POSTaggerEvaluator implements CmdLineTool {
         System.exit(1);
       }
       
-      POSModel model = POSTagger.loadModel(new File(args[0]));
+      POSModel model = POSTagger.loadModel(new File(args[args.length - 2]));
       
       POSEvaluator evaluator = 
           new POSEvaluator(new opennlp.tools.postag.POSTaggerME(model));
