@@ -253,8 +253,11 @@ public abstract class BaseModel {
 
       ArtifactSerializer serializer = getArtifactSerializer(name);
 
-      // TODO: Check if serializer is there
-
+      if (serializer == null)
+        // TODO: This should never happen
+        // add a method to add entries to the artifactMap
+        throw new RuntimeException("Missing serializer for " + name);
+        
       serializer.serialize(artifactMap.get(name), zip);
 
       zip.closeEntry();
