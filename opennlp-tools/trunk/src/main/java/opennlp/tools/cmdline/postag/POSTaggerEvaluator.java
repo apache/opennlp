@@ -41,12 +41,12 @@ public class POSTaggerEvaluator implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + "-encoding charset model testData";
+    return "Usage: " + CLI.CMD + " " + getName() + " -encoding charset model testData";
   }
 
   public void run(String[] args) {
     try {
-      if (args.length != 2) {
+      if (args.length != 4) {
         System.out.println(getHelp());
         System.exit(1);
       }

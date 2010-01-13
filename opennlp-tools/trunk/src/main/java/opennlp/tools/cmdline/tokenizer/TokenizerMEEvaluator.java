@@ -46,7 +46,7 @@ public class TokenizerMEEvaluator implements CmdLineTool {
 
   public void run(String[] args) {
     try {
-      if (args.length != 2) {
+      if (args.length != 4) {
         System.out.println(getHelp());
         System.exit(1);
       }

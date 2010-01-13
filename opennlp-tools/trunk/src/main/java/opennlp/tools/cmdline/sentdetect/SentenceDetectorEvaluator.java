@@ -45,7 +45,7 @@ public class SentenceDetectorEvaluator implements CmdLineTool {
   }
 
   public void run(String[] args) {
-    if (args.length < 4) {
+    if (args.length != 4) {
       System.out.println(getHelp());
       System.exit(1);
     }
