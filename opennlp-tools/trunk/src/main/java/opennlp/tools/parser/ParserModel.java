@@ -100,14 +100,29 @@ public class ParserModel extends BaseModel {
 
     super(languageCode);
     
-    if (buildModel == null || checkModel == null || parserTagger == null ||
-        chunkerTagger == null || headRules == null)
-        throw new IllegalArgumentException("All parameters must not be null!");
-    
+    if (buildModel == null) {
+      throw new IllegalArgumentException("buildModel must not be null!");
+    }
     artifactMap.put(BUILD_MODEL_ENTRY_NAME, buildModel);
+    
+    if (checkModel == null) {
+      throw new IllegalArgumentException("checkModel must not be null!");
+    }
     artifactMap.put(CHECK_MODEL_ENTRY_NAME, checkModel);
+    
+    if (parserTagger == null) {
+      throw new IllegalArgumentException("parserTagger must not be null!");
+    }
     artifactMap.put(PARSER_TAGGER_MODEL_ENTRY_NAME, parserTagger);
+    
+    if (chunkerTagger == null) {
+      throw new IllegalArgumentException("chunkerTagger must not be null!");
+    }
     artifactMap.put(CHUNKER_TAGGER_MODEL_ENTRY_NAME, chunkerTagger);
+    
+    if (headRules == null) {
+        throw new IllegalArgumentException("headRules must not be null!");
+    }
     artifactMap.put(HEAD_RULES_MODEL_ENTRY_NAME, headRules);
   }
 
