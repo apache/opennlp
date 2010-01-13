@@ -93,8 +93,6 @@ public class ParserModel extends BaseModel {
 
   private static final String HEAD_RULES_MODEL_ENTRY_NAME = "head-rules.headrules";
 
-  private opennlp.tools.parser.lang.en.HeadRules headRules;
-
   public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, POSModel parserTagger,
       ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules) {
 
@@ -165,12 +163,12 @@ public class ParserModel extends BaseModel {
 
   public ParserModel updateBuildModel(AbstractModel buildModel) {
     return new ParserModel(getLanguage(), buildModel, getCheckModel(), getParserTaggerModel(),
-        getParserChunkerModel(), headRules);
+        getParserChunkerModel(), getHeadRules());
   }
 
   public ParserModel updateCheckModel(AbstractModel checkModel) {
     return new ParserModel(getLanguage(), getBuildModel(), checkModel, getParserTaggerModel(),
-        getParserChunkerModel(), headRules);
+        getParserChunkerModel(), getHeadRules());
   }
   
   private static AbstractModel readModel(String fileName) throws FileNotFoundException, IOException {
