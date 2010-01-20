@@ -25,9 +25,11 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PerformanceMonitor;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -69,11 +71,31 @@ public class TokenNameFinderEvaluator implements CmdLineTool {
       
       ObjectStream<String> sampleStringStream = new PlainTextByLineStream(
           new InputStreamReader(new FileInputStream(testData), encoding));
+      
+      final ObjectStream<NameSample> sampleStream = 
+          new NameSampleDataStream(sampleStringStream);
+      
       final PerformanceMonitor monitor = new PerformanceMonitor("sent");
+      
+      ObjectStream<NameSample> measuredSampleStream = new ObjectStream<NameSample>() {
+
+        public NameSample read() throws ObjectStreamException {
+          monitor.incrementCounter();
+          return sampleStream.read();
+        }
+        
+        public void reset() throws ObjectStreamException {
+          sampleStream.reset();
+        }
+        
+        public void close() throws ObjectStreamException {
+          sampleStream.close();
+        }
+      };
       
       monitor.startPrinter();
       
-      evaluator.evaluate(new NameSampleDataStream(sampleStringStream));
+      evaluator.evaluate(measuredSampleStream);
       
       monitor.stopPrinterAndPrintFinalResult();
       
