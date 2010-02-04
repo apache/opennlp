@@ -18,17 +18,15 @@
 package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.tokenize.TokenSampleStream;
+import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerEvaluator;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.ObjectStreamException;
 
 public class TokenizerMEEvaluator implements CmdLineTool {
 
@@ -45,41 +43,46 @@ public class TokenizerMEEvaluator implements CmdLineTool {
   }
 
   public void run(String[] args) {
+    if (args.length != 4) {
+      System.out.println(getHelp());
+      System.exit(1);
+    }
+
+    String encoding = CmdLineUtil.getEncodingParameter(args);
+
+    if (encoding == null) {
+      System.out.println(getHelp());
+      System.exit(1);
+    }
+
+    TokenizerModel model = TokenizerME.loadModel(new File(args[0]));
+
+    TokenizerEvaluator evaluator = new TokenizerEvaluator(
+        new opennlp.tools.tokenize.TokenizerME(model));
+
+    System.out.print("Evaluating ... ");
+
+    ObjectStream<TokenSample> sampleStream = TokenizerTrainer.openSampleData(
+        "Test", new File(args[1]), encoding);
+
     try {
-      if (args.length != 4) {
-        System.out.println(getHelp());
-        System.exit(1);
+      evaluator.evaluate(sampleStream);
+    } catch (ObjectStreamException e) {
+      System.err.println("failed");
+      System.err.println("Reading test data error " + e.getMessage());
+      System.exit(-1);
+    } finally {
+      try {
+        sampleStream.close();
+      } catch (ObjectStreamException e) {
+        // sorry that this can fail
       }
-      
-      File testData = new File(args[1]);
-      CmdLineUtil.checkInputFile("Test data", testData);
-      
-      String encoding = CmdLineUtil.getEncodingParameter(args);
-      
-      if (encoding == null) {
-        System.out.println(getHelp());
-        System.exit(1);
-      }
-      
-      TokenizerModel model = TokenizerME.loadModel(new File(args[0]));
-      
-      TokenizerEvaluator evaluator = 
-          new TokenizerEvaluator(new opennlp.tools.tokenize.TokenizerME(model));
-      
-      System.out.print("Evaluating ... ");
-      ObjectStream<String> sampleStringStream = new PlainTextByLineStream(
-          new InputStreamReader(new FileInputStream(testData), encoding));
-      
-      evaluator.evaluate(new TokenSampleStream(sampleStringStream));
-      sampleStringStream.close();
-      System.out.println("done");
-      
-      System.out.println();
-      
-      System.out.println(evaluator.getFMeasure());
     }
-    catch (Exception e) {
-      e.printStackTrace();
-    }
+    
+    System.out.println("done");
+
+    System.out.println();
+
+    System.out.println(evaluator.getFMeasure());
   }
 }
