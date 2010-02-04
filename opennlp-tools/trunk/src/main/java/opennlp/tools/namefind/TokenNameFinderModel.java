@@ -20,6 +20,8 @@ package opennlp.tools.namefind;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import opennlp.model.AbstractModel;
@@ -74,15 +76,42 @@ public class TokenNameFinderModel extends BaseModel {
   }
 
   private static boolean isModelValid(MaxentModel model) {
-
-    // TODO: Update code to check the new models ...
     
-//    return ModelUtil.validateOutcomes(model, NameFinderME.START) ||
-//        ModelUtil.validateOutcomes(model, NameFinderME.OTHER) ||
-//        ModelUtil.validateOutcomes(model, NameFinderME.START, NameFinderME.OTHER) ||
-//        ModelUtil.validateOutcomes(model, NameFinderME.START, NameFinderME.CONTINUE) ||
-//        ModelUtil.validateOutcomes(model, NameFinderME.START, NameFinderME.CONTINUE,
-//            NameFinderME.OTHER);
+    // We should have one outcome named "other", some named xyz-start and sometimes 
+    // they have a pair xyz-cont. We should not have any other outcome
+    // To validate the model we check if we have  one outcome named "other", at least
+    // one outcome with suffix start. After that we check if all outcomes that ends with
+    // "cont" have a pair that ends with "start".
+    boolean otherFounded = false;
+    List<String> start = new ArrayList<String>();
+    List<String> cont = new ArrayList<String>();
+
+    for (int i = 0; i < model.getNumOutcomes(); i++) {
+      String outcome = model.getOutcome(i);
+      if (outcome.endsWith(NameFinderME.START)) {
+        start.add(outcome.substring(0, outcome.length()
+            - NameFinderME.START.length()));
+      } else if (outcome.endsWith(NameFinderME.CONTINUE)) {
+        cont.add(outcome.substring(0, outcome.length()
+            - NameFinderME.CONTINUE.length()));
+      } else if (outcome.equals(NameFinderME.OTHER)) {
+        otherFounded = true;
+      } else {
+        // got unexpected outcome
+        return false;
+      }
+    }
+
+    if (!otherFounded || start.size() == 0) {
+      return false;
+    } else {
+      for (String contPreffix : cont) {
+        if (!start.contains(contPreffix)) {
+          return false;
+        }
+      }
+    }
+
     return true;
   }
 
