@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.tokenizer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 import opennlp.tools.cmdline.CLI;
@@ -29,69 +30,92 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenSampleStream;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class TokenizerTrainer implements CmdLineTool {
 
-//  private static void usage() {
-//    System.err.println("Usage: TokenizerCrossValidator " + TrainingParameters.getParameterUsage() +
-//        " trainData model");
-//    System.err.println(TrainingParameters.getDescription());
-//    System.err.println("trainingData      training data used for cross validation");
-//    System.err.println("model             output file for the created tokenizer model");
-//    System.exit(1);
-//  }
-  
   public String getName() {
     return "TokenizerTrainer";
   }
-  
+
   public String getShortDescription() {
     return "trainer for the learnable tokenizer";
   }
-  
+
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + TrainingParameters.getParameterUsage() + " trainingData model";
+    return "Usage: " + CLI.CMD + " " + getName()
+        + TrainingParameters.getParameterUsage() + " trainingData model";
   }
 
+  static ObjectStream<TokenSample> openSampleData(String sampleDataName,
+      File sampleDataFile, String encoding) {
+    CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
+
+    FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
+
+    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn
+        .getChannel(), encoding);
+
+    return new TokenSampleStream(lineStream);
+  }
 
   public void run(String[] args) {
     if (args.length < 4) {
       System.out.println(getHelp());
       System.exit(1);
     }
-    
+
     TrainingParameters parameters = new TrainingParameters(args);
-    
-    if(!parameters.isValid()) {
+
+    if (!parameters.isValid()) {
       System.out.println(getHelp());
       System.exit(1);
     }
-    
+
     File trainingDataInFile = new File(args[args.length - 2]);
-    CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
-    
+
+    ObjectStream<TokenSample> sampleStream = openSampleData("Training",
+        trainingDataInFile, parameters.getEncoding());
+
+    TokenizerModel model;
     try {
-      FileInputStream trainingDataIn = new FileInputStream(trainingDataInFile);
-      ObjectStream<String> lineStream = new PlainTextByLineStream(trainingDataIn.getChannel(),
-          parameters.getEncoding());
-      ObjectStream<TokenSample> sampleStream = new TokenSampleStream(lineStream);
-      
-      TokenizerModel model = opennlp.tools.tokenize.TokenizerME.train(parameters.getLanguage(), sampleStream, 
-          parameters.isAlphaNumericOptimizationEnabled());
-      
-      sampleStream.close();
-      
-      File modelOutFile = new File(args[args.length - 1]);
-      OutputStream modelOut = new FileOutputStream(modelOutFile);
+      model = opennlp.tools.tokenize.TokenizerME.train(
+          parameters.getLanguage(), sampleStream, parameters
+              .isAlphaNumericOptimizationEnabled());
+    } catch (IOException e) {
+      System.err.println("Training io error: " + e.getMessage());
+      System.exit(-1);
+      model = null;
+    } finally {
+      try {
+        sampleStream.close();
+      } catch (ObjectStreamException e) {
+        // sorry that this can fail
+      }
+    }
+
+    File modelOutFile = new File(args[args.length - 1]);
+
+    CmdLineUtil.checkOutputFile("tokenizer model", modelOutFile);
+
+    OutputStream modelOut = null;
+    try {
+      modelOut = new FileOutputStream(modelOutFile);
       model.serialize(modelOut);
-      modelOut.close();
-      
-      System.out.println("Wrote tokenizer model.");
-      System.out.println("Path: " + modelOutFile.getAbsolutePath());
+    } catch (IOException e) {
+      CmdLineUtil.handleIOExceptionDuringModelWriting(e);
+    } finally {
+      if (modelOut != null) {
+        try {
+          modelOut.close();
+        } catch (IOException e) {
+          // sorry that this can fail
+        }
+      }
     }
-    catch (Exception e) {
-      e.printStackTrace();
-    }
+    
+    System.out.println("Wrote tokenizer model.");
+    System.out.println("Path: " + modelOutFile.getAbsolutePath());
   }
 }

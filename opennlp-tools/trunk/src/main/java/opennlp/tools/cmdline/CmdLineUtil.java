@@ -18,6 +18,11 @@
 package opennlp.tools.cmdline;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class CmdLineUtil {
 
@@ -39,7 +44,7 @@ public class CmdLineUtil {
    */
   public static void checkInputFile(String name, File inFile) {
     
-    boolean isFailure = false;
+    boolean isFailure;
     
     if (inFile.isDirectory()) {
       System.err.println("The " + name + " file is a directory!");
@@ -53,6 +58,9 @@ public class CmdLineUtil {
       System.err.println("No permissions to read the " + name + " file!");
       isFailure = true;
     }
+    else {
+      isFailure = false;
+    }
     
     if (isFailure) {
       System.err.println("Path: " + inFile.getAbsolutePath());
@@ -60,6 +68,52 @@ public class CmdLineUtil {
     }
   }
   
+  public static void checkOutputFile(String name, File outFile) {
+    
+    boolean isFailure;
+    
+    if (outFile.isDirectory()) {
+      System.err.println("The " + name + " file is a directory!");
+      isFailure = true;
+    }
+    else if (!outFile.canWrite()) {
+      System.err.println("No permissions to write the " + name + " file!");
+      isFailure = true;
+    }
+    else {
+      isFailure = false;
+    }
+    
+    if (isFailure) {
+      System.err.println("Path: " + outFile.getAbsolutePath());
+      System.exit(-1);
+    }
+  }
+  
+  public static FileInputStream openInFile(File file) {
+    try {
+      return new FileInputStream(file);
+    } catch (FileNotFoundException e) {
+      System.err.println("File cannot be found: " + e.getMessage());
+      System.exit(-1);
+      return null;
+    }
+  }
+  
+  public static OutputStream openOutFile(File file) {
+    try {
+      return new FileOutputStream(file);
+    } catch (FileNotFoundException e) {
+      System.err.println("File cannot be found: " + e.getMessage());
+      System.exit(-1);
+      return null;
+    }
+  }
+  
+  public static void handleIOExceptionDuringModelWriting(IOException e) {
+    System.err.println("Error during writing model file: " + e.getMessage());
+    System.exit(-1);
+  }
   /**
    * Retrieves the specified parameters from the given arguments.
    * 

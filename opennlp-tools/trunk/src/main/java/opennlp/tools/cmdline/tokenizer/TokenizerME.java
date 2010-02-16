@@ -42,7 +42,7 @@ public class TokenizerME implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
-  public static TokenizerModel loadModel(File modelFile) {
+  static TokenizerModel loadModel(File modelFile) {
     CmdLineUtil.checkInputFile("Tokenizer model", modelFile);
 
     System.err.print("Loading model ... ");

@@ -32,6 +32,9 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.PlainTextByLineStream;
 
 public class POSTagger implements CmdLineTool {
 
@@ -49,7 +52,7 @@ public class POSTagger implements CmdLineTool {
 
   static POSModel loadModel(File modelFile) {
     
-    CmdLineUtil.checkInputFile("Tokenizer model", modelFile);
+    CmdLineUtil.checkInputFile("POS model", modelFile);
 
     System.err.print("Loading model ... ");
     
@@ -88,9 +91,12 @@ public class POSTagger implements CmdLineTool {
     
     POSTaggerME tagger = new POSTaggerME(model);
     
+    ObjectStream<String> lineStream =
+      new PlainTextByLineStream(new InputStreamReader(System.in));
+    
     try {
-      BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
-      for (String line = inReader.readLine(); line != null; line = inReader.readLine()) {
+      String line;
+      while ((line = lineStream.read()) != null) {
         
         String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
         String[] tags = tagger.tag(whitespaceTokenizerLine);
@@ -99,9 +105,8 @@ public class POSTagger implements CmdLineTool {
         System.out.println(sample.toString());
       }
     } 
-    catch (Exception e) {
+    catch (ObjectStreamException e) {
       e.printStackTrace();
     }    
-    
   }
 }

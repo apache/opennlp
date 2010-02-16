@@ -18,6 +18,7 @@
 package opennlp.tools.tokenize;
 
 import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -194,10 +195,12 @@ public class TokenizerME extends AbstractTokenizer {
    *
    * @throws IOException it throws an {@link IOException} if an {@link IOException}
    * is thrown during IO operations on a temp file which is
+   * 
+   * @throws ObjectStreamException if reading from the {@link ObjectStream} fails
    * created during training.
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
-      boolean useAlphaNumericOptimization) throws IOException {
+      boolean useAlphaNumericOptimization) throws IOException, ObjectStreamException {
 
     EventStream eventStream = new TokSpanEventStream(samples,
         useAlphaNumericOptimization);

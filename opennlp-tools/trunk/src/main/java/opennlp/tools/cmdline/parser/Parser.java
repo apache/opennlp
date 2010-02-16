@@ -37,6 +37,9 @@ import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 public class Parser implements CmdLineTool {
@@ -77,7 +80,7 @@ public class Parser implements CmdLineTool {
 
   static ParserModel loadModel(File modelFile) {
     
-    CmdLineUtil.checkInputFile("Tokenizer model", modelFile);
+    CmdLineUtil.checkInputFile("Parser model", modelFile);
 
     System.err.print("Loading model ... ");
     
@@ -99,6 +102,8 @@ public class Parser implements CmdLineTool {
       System.exit(-1);
       model = null;
     }
+    
+    System.err.println("done");
     
     return model;
   }
@@ -135,7 +140,7 @@ public class Parser implements CmdLineTool {
   
   public void run(String[] args) {
     
-    if (args.length  > 0) {
+    if (args.length < 1) {
       System.out.println(getHelp());
       System.exit(1);
     }
@@ -161,10 +166,12 @@ public class Parser implements CmdLineTool {
     opennlp.tools.parser.Parser parser = 
         ParserFactory.create(model); 
 
+    ObjectStream<String> lineStream =
+      new PlainTextByLineStream(new InputStreamReader(System.in));
+    
     try {
-      BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
-      for (String line = inReader.readLine(); line != null; line = inReader.readLine()) {
-        
+      String line;
+      while ((line = lineStream.read()) != null) {
         if (line.length() == 0) {
           System.out.println();
         }
@@ -179,7 +186,7 @@ public class Parser implements CmdLineTool {
         }
       }
     } 
-    catch (Exception e) {
+    catch (ObjectStreamException e) {
       e.printStackTrace();
     }   
   }

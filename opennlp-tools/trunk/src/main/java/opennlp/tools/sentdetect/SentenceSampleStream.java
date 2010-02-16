@@ -18,7 +18,6 @@
 
 package opennlp.tools.sentdetect;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class SentenceSampleStream implements ObjectStream<SentenceSample> {
 
   private ObjectStream<String> sentences;
 
-  public SentenceSampleStream(ObjectStream<String> sentences) throws IOException {
+  public SentenceSampleStream(ObjectStream<String> sentences) {
 
     if (sentences == null)
       throw new IllegalArgumentException("sentences must not be null!");

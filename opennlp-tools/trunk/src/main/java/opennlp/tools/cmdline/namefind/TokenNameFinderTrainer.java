@@ -19,7 +19,7 @@ package opennlp.tools.cmdline.namefind;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 
@@ -30,7 +30,9 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class TokenNameFinderTrainer implements CmdLineTool {
@@ -48,6 +50,18 @@ public class TokenNameFinderTrainer implements CmdLineTool {
         BasicTrainingParameters.getParameterUsage() + " trainingData model";
   }
 
+  static ObjectStream<NameSample> openSampleData(String sampleDataName,
+      File sampleDataFile, String encoding) {
+    CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
+
+    FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
+
+    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn
+        .getChannel(), encoding);
+
+    return new NameSampleDataStream(lineStream);
+  }
+  
   public void run(String[] args) {
     
     if (args.length < 6) {
@@ -63,28 +77,46 @@ public class TokenNameFinderTrainer implements CmdLineTool {
     }
     
     File trainingDataInFile = new File(args[args.length - 2]);
-    CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
-    
+    ObjectStream<NameSample> sampleStream = openSampleData("Training", trainingDataInFile,
+        parameters.getEncoding());
+
+    TokenNameFinderModel model;
     try {
-      FileInputStream trainingDataIn = new FileInputStream(trainingDataInFile);
-      ObjectStream<String> lineStream = new PlainTextByLineStream(trainingDataIn.getChannel(),
-          parameters.getEncoding());
-      
-      ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream);
-      
-      TokenNameFinderModel model = 
-           opennlp.tools.namefind.NameFinderME.train(parameters.getLanguage(),
+      model = opennlp.tools.namefind.NameFinderME.train(parameters.getLanguage(),
            sampleStream, parameters.getNumberOfIterations(), parameters.getCutoff(), 
            Collections.<String, Object>emptyMap());
-      
-      sampleStream.close();
-      
-      File modelOutFile = new File(args[args.length - 1]);
-      OutputStream modelOut = new FileOutputStream(modelOutFile);
-      model.serialize(modelOut);
-      modelOut.close();
-    } catch (Exception e) {
+    } 
+    catch (IOException e) {
       e.printStackTrace();
+      System.exit(-1);
+      model = null;
+    }
+    catch (InvalidFormatException e) {
+      System.err.println("A resource is invalid: " + e.getMessage());
+      model = null;
+    }
+    finally {
+      try {
+        sampleStream.close();
+      } catch (ObjectStreamException e) {
+        // sorry that this can fail
+      }
+    }
+    
+    File modelOutFile = new File(args[args.length - 1]);
+    OutputStream modelOut = CmdLineUtil.openOutFile(modelOutFile);
+    
+    try {
+      model.serialize(modelOut);
+    } catch (IOException e) {
+      CmdLineUtil.handleIOExceptionDuringModelWriting(e);
+    }
+    finally {
+      try {
+        modelOut.close();
+      } catch (IOException e) {
+        // sorry that this can fail
+      }
     }
   }
 }

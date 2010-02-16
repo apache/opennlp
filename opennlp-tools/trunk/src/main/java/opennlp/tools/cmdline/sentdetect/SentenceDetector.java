@@ -17,7 +17,6 @@
 
 package opennlp.tools.cmdline.sentdetect;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -30,6 +29,9 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * A sentence detector which uses a maxent model to predict the sentences.
@@ -94,9 +96,12 @@ public class SentenceDetector implements CmdLineTool {
 
     StringBuilder para = new StringBuilder();
 
+    ObjectStream<String> lineStream =
+      new PlainTextByLineStream(new InputStreamReader(System.in));
+    
     try {
-      BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
-      for (String line = inReader.readLine(); line != null; line = inReader.readLine()) {
+      String line;
+      while ((line = lineStream.read()) != null) {
         if (line.equals("")) {
           if (para.length() != 0) {
             String[] sents = sdetector.sentDetect(para.toString());
@@ -112,15 +117,8 @@ public class SentenceDetector implements CmdLineTool {
         }
       }
     } 
-    catch (Exception e) {
+    catch (ObjectStreamException e) {
       e.printStackTrace();
-    }
-  
-    if (para.length() != 0) {
-      String[] sents = sdetector.sentDetect(para.toString());
-      for (int si = 0, sn = sents.length; si < sn; si++) {
-        System.out.println(sents[si]);
-      }
     }
   }
 }
