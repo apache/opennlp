@@ -18,7 +18,6 @@
 package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -47,9 +46,10 @@ public class TokenizerME implements CmdLineTool {
 
     System.err.print("Loading model ... ");
     
+    InputStream modelIn = CmdLineUtil.openInFile(modelFile);
+    
     TokenizerModel model;
     try {
-      InputStream modelIn = new FileInputStream(modelFile);
       model = new TokenizerModel(modelIn);
       modelIn.close();
     }
@@ -78,7 +78,6 @@ public class TokenizerME implements CmdLineTool {
     }
     
     TokenizerModel model = loadModel(new File(args[0]));
-    
     
     CommandLineTokenizer tokenizer = 
       new CommandLineTokenizer(new opennlp.tools.tokenize.TokenizerME(model));

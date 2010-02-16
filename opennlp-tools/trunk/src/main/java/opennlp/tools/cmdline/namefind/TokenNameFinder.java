@@ -55,9 +55,10 @@ public class TokenNameFinder implements CmdLineTool {
 
     System.err.print("Loading model ... ");
     
+    InputStream modelIn = CmdLineUtil.openInFile(modelFile);
+    
     TokenNameFinderModel model;
     try {
-      InputStream modelIn = new FileInputStream(modelFile);
       model = new TokenNameFinderModel(modelIn);
       modelIn.close();
     }

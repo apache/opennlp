@@ -17,9 +17,7 @@
 
 package opennlp.tools.cmdline.postag;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -56,9 +54,10 @@ public class POSTagger implements CmdLineTool {
 
     System.err.print("Loading model ... ");
     
+    InputStream modelIn = CmdLineUtil.openInFile(modelFile);
+    
     POSModel model;
     try {
-      InputStream modelIn = new FileInputStream(modelFile);
       model = new POSModel(modelIn);
       modelIn.close();
     }

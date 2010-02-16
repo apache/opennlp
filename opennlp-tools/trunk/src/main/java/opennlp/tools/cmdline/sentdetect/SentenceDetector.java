@@ -18,7 +18,6 @@
 package opennlp.tools.cmdline.sentdetect;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -55,9 +54,10 @@ public class SentenceDetector implements CmdLineTool {
     
     System.err.print("Loading model ... ");
     
+    InputStream modelIn = CmdLineUtil.openInFile(modelFile);
+    
     SentenceModel model;
     try {
-      InputStream modelIn = new FileInputStream(modelFile);
       model = new SentenceModel(modelIn);
       modelIn.close();
     }
