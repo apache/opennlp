@@ -21,13 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.model.Event;
-import opennlp.model.EventStream;
 
 /**
  * Allows individual pos-tag events to be created and then accessed via the event stream interface.
  * One should use this generator by adding a small number of events (perhaps a sentence worth) and
  * then removing them or the storage of events will require a large amount of memory.
  */
+@Deprecated
 public class POSEventGenerator extends opennlp.model.AbstractEventStream {
 
   private List<Event> events;
