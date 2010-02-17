@@ -18,7 +18,6 @@
 package opennlp.tools.cmdline.namefind;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,6 +31,7 @@ import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -106,8 +106,8 @@ public class TokenNameFinder implements CmdLineTool {
         System.out.println(nameSample.toString());
       }
     }
-    catch (Exception e) {
-      e.printStackTrace();
+    catch (ObjectStreamException e) {
+      System.err.println("Failed to read from stdin: " + e.getMessage());
     }
   }
 }

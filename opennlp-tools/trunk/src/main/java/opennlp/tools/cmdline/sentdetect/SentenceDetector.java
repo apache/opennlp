@@ -118,7 +118,7 @@ public class SentenceDetector implements CmdLineTool {
       }
     } 
     catch (ObjectStreamException e) {
-      e.printStackTrace();
+      System.err.println("Failed to read from stdin: " + e.getMessage());
     }
   }
 }
