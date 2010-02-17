@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.FeatureGeneratorFactory;
 
+@Deprecated
 public class FeatureGeneratorFactorySerializer 
     implements ArtifactSerializer<FeatureGeneratorFactory>{
 
@@ -37,10 +38,10 @@ public class FeatureGeneratorFactorySerializer
   public FeatureGeneratorFactory create(InputStream in) throws IOException,
       InvalidFormatException {
     
-    Class<FeatureGeneratorFactory> generatorFactoryClass = classSerializer.create(in);
+    Class<?> generatorFactoryClass = classSerializer.create(in);
     
     try {
-      return generatorFactoryClass.newInstance();
+      return (FeatureGeneratorFactory) generatorFactoryClass.newInstance();
     } catch (InstantiationException e) {
       throw new InvalidFormatException(e);
     } catch (IllegalAccessException e) {

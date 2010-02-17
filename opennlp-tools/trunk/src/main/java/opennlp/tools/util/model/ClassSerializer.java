@@ -25,13 +25,14 @@ import java.io.OutputStream;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ModelUtil;
 
-public class ClassSerializer implements ArtifactSerializer<Class> {
+@Deprecated
+public class ClassSerializer implements ArtifactSerializer<Class<?>> {
 
   private static final String CLASS_SEARCH_NAME = "ClassSearchName";
   
   private byte[] classBytes;
   
-  private static Class loadClass(final byte[] classBytes)
+  private static Class<?> loadClass(final byte[] classBytes)
       throws InvalidFormatException {
 
     ClassLoader loader = new ClassLoader() {
@@ -51,16 +52,16 @@ public class ClassSerializer implements ArtifactSerializer<Class> {
     }
   }
 
-  public Class create(InputStream in) throws IOException,
+  public Class<?> create(InputStream in) throws IOException,
       InvalidFormatException {
     classBytes = ModelUtil.read(in);
 
-    Class factoryClass = loadClass(classBytes);
+    Class<?> factoryClass = loadClass(classBytes);
 
     return factoryClass;
   }
 
-  public void serialize(Class artifact, OutputStream out) throws IOException {
+  public void serialize(Class<?> artifact, OutputStream out) throws IOException {
     out.write(classBytes);
   }
 }
