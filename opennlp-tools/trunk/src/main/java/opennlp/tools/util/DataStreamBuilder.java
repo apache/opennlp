@@ -29,6 +29,7 @@ import opennlp.maxent.DataStream;
 /**
  * This is a DataStream of elements contained in a collection.
  */
+@Deprecated
 public final class DataStreamBuilder implements DataStream {
 
   private final Collection mData;
