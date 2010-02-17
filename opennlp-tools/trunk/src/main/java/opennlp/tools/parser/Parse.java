@@ -1013,6 +1013,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    *
    * @throws IOException If the head rules file can not be opened and read.
    */
+  @Deprecated
   public static void main(String[] args) throws java.io.IOException {
     if (args.length == 0) {
       System.err.println("Usage: Parse -fun -pos head_rules < train_parses");
