@@ -36,6 +36,7 @@ import opennlp.tools.util.ObjectStreamException;
  * @see POSTaggerME
  * @see POSEvaluator
  */
+@Deprecated
 public class POSEvaluator {
 
   public static void main(String[] args) throws InvalidFormatException, IOException, ObjectStreamException {

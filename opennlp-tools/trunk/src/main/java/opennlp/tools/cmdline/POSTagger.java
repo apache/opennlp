@@ -31,6 +31,7 @@ import opennlp.tools.util.InvalidFormatException;
  *
  * @see POSTaggerME
  */
+@Deprecated
 public class POSTagger {
 
   /**

@@ -38,6 +38,7 @@ import opennlp.tools.util.Span;
 /**
  * Class for performing full parsing on English text.
  */
+@Deprecated
 public class TreebankParser {
 
   private static Pattern untokenizedParenPattern1 = Pattern.compile("([^ ])([({)}])");

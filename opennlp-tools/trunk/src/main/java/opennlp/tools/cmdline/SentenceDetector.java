@@ -29,6 +29,7 @@ import opennlp.tools.util.InvalidFormatException;
 /**
  * A sentence detector which uses a maxent model to predict the sentences.
  */
+@Deprecated
 public class SentenceDetector{
 
   /**

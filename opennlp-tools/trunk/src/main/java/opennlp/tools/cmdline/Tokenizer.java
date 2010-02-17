@@ -31,6 +31,7 @@ import opennlp.tools.util.InvalidFormatException;
  *
  * @see TokenizerME
  */
+@Deprecated
 public class Tokenizer {
 
   public static void main(String[] args) throws IOException, InvalidFormatException {
