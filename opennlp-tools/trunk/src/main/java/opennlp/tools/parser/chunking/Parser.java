@@ -50,7 +50,6 @@ import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
-import opennlp.tools.postag.POSTaggerTrainer;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ModelType;
 import opennlp.tools.util.ObjectStream;
@@ -395,6 +394,7 @@ public class Parser extends AbstractBottomUpParser {
     return mdict.toDictionary(true);
   }
 
+  @Deprecated
   public static void main(String[] args) throws java.io.IOException, InvalidFormatException, 
       ObjectStreamException {
     if (args.length < 2) {
