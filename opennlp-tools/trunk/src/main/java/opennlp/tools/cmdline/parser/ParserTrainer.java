@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.CLI;
@@ -107,7 +108,9 @@ public class ParserTrainer implements CmdLineTool {
     ParserModel model;
     try {
       
-      HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[args.length - 3]);
+      HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(
+          new InputStreamReader(new FileInputStream(new File(args[args.length - 3])), 
+          parameters.getEncoding()));
       
       model = Parser.train(parameters.getLanguage(), sampleStream, rules, parameters.getNumberOfIterations(), 
           parameters.getCutoff());
