@@ -24,11 +24,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Iterator;
 
 import opennlp.maxent.DataStream;
 import opennlp.maxent.GISModel;
-import opennlp.maxent.PlainTextByLineDataStream;
 import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
@@ -44,6 +42,7 @@ import opennlp.tools.util.StringList;
 
 public class POSTaggerTrainer {
 
+  @Deprecated
   private static void usage() {
     System.err.println("Usage: POSTaggerTrainer [-encoding encoding] [-dict dict_file] -model [perceptron,maxnet] training_data model_file_name [cutoff] [iterations]");
     System.err.println("This trains a new model on the specified training file and writes the trained model to the model file.");
@@ -116,6 +115,7 @@ public class POSTaggerTrainer {
     return new SimplePerceptronSequenceTrainer().trainModel(iterations, ss, cut,useAverage);
   }
 
+  @Deprecated
   public static void test(AbstractModel model) throws IOException {
     POSTaggerME tagger = new POSTaggerME(model, (TagDictionary) null);
 
@@ -126,6 +126,7 @@ public class POSTaggerTrainer {
     }
   }
 
+  @Deprecated
   public static void main(String[] args) throws IOException, ObjectStreamException {
     if (args.length == 0){
       usage();
