@@ -18,13 +18,11 @@
 package opennlp.tools.cmdline.parser;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 
 import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.util.ObjectStream;
@@ -61,23 +59,6 @@ abstract class ModelUpdater implements CmdLineTool {
     ParserModel updatedParserModel = trainAndUpdate(originalParserModel,
         parseSamples, parameters);
     
-    OutputStream modelOut = null;
-    try {
-      modelOut = new FileOutputStream(modelFile);
-      updatedParserModel.serialize(modelOut);
-    }
-    catch (IOException e) {
-      // TODO: Try to give more precise error message
-      e.printStackTrace();
-      System.exit(-1);
-    }
-    finally {
-      try {
-        if (modelOut != null)
-          modelOut.close();
-      } catch (IOException e) {
-        // sorry that this can fail
-      }
-    }
+    CmdLineUtil.writeModel("parser", modelFile, updatedParserModel);
   }
 }

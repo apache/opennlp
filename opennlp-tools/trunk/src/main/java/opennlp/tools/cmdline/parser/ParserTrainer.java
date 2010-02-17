@@ -21,8 +21,7 @@ package opennlp.tools.cmdline.parser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.IOException;
 
 import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.CLI;
@@ -104,22 +103,32 @@ public class ParserTrainer implements CmdLineTool {
       System.exit(1);
     } 
     
+    ObjectStream<Parse> sampleStream = openTrainingData(new File(args[args.length - 2]), parameters.getEncoding());
+    ParserModel model;
     try {
-      ObjectStream<Parse> sampleStream = openTrainingData(new File(args[args.length - 2]), parameters.getEncoding());
       
       HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[args.length - 3]);
       
-      ParserModel model = Parser.train(parameters.getLanguage(), sampleStream, rules, parameters.getNumberOfIterations(), 
+      model = Parser.train(parameters.getLanguage(), sampleStream, rules, parameters.getNumberOfIterations(), 
           parameters.getCutoff());
-      
-      sampleStream.close();
-      
-      File modelOutFile = new File(args[args.length - 1]);
-      OutputStream modelOut = new FileOutputStream(modelOutFile);
-      model.serialize(modelOut);
-      modelOut.close();
-    } catch (Exception e) {
-      e.printStackTrace();
+    } catch (IOException e) {
+      System.err.println("Training io error: " + e.getMessage());
+      System.exit(-1);      
+      model = null;
     }
+    catch (ObjectStreamException e) {
+      System.err.println("Training io error: " + e.getMessage());
+      System.exit(-1);
+      model = null;
+    }
+    finally {
+      try {
+        sampleStream.close();
+      } catch (ObjectStreamException e) {
+        // sorry that this can fail
+      }
+    }
+    
+    CmdLineUtil.writeModel("parser", new File(args[args.length - 1]), model);
   }
 }

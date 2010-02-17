@@ -24,6 +24,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import opennlp.tools.util.model.BaseModel;
+
 public class CmdLineUtil {
 
   /**
@@ -108,6 +110,30 @@ public class CmdLineUtil {
       System.exit(-1);
       return null;
     }
+  }
+  
+  public static void writeModel(String modelName, File modelFile, BaseModel model) {
+
+    CmdLineUtil.checkOutputFile(modelName + " model", modelFile);
+
+    OutputStream modelOut = null;
+    try {
+      modelOut = new FileOutputStream(modelFile);
+      model.serialize(modelOut);
+    } catch (IOException e) {
+      CmdLineUtil.handleIOExceptionDuringModelWriting(e);
+    } finally {
+      if (modelOut != null) {
+        try {
+          modelOut.close();
+        } catch (IOException e) {
+          // sorry that this can fail
+        }
+      }
+    }
+    
+    System.out.println("Wrote " + modelName + " model.");
+    System.out.println("Path: " + modelFile.getAbsolutePath());
   }
   
   public static void handleIOExceptionDuringModelWriting(IOException e) {

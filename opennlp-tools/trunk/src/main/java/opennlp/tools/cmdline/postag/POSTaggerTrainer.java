@@ -20,7 +20,6 @@ package opennlp.tools.cmdline.postag;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
@@ -101,22 +100,6 @@ public class POSTaggerTrainer implements CmdLineTool {
       }
     }
     
-    File modelOutFile = new File(args[args.length - 1]);
-    OutputStream modelOut = CmdLineUtil.openOutFile(modelOutFile);
-    try {
-      model.serialize(modelOut);
-    } catch (IOException e) {
-      CmdLineUtil.handleIOExceptionDuringModelWriting(e);
-    }
-    finally {
-      try {
-        modelOut.close();
-      } catch (IOException e) {
-        // sorry that this can fail
-      }
-    }
-    
-    System.out.println("Wrote POS Tagger model.");
-    System.out.println("Path: " + modelOutFile.getAbsolutePath());
+    CmdLineUtil.writeModel("pos tagger", new File(args[args.length - 1]), model);
   }
 }

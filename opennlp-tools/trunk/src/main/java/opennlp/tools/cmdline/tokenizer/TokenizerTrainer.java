@@ -19,9 +19,7 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
@@ -95,27 +93,6 @@ public class TokenizerTrainer implements CmdLineTool {
       }
     }
 
-    File modelOutFile = new File(args[args.length - 1]);
-
-    CmdLineUtil.checkOutputFile("tokenizer model", modelOutFile);
-
-    OutputStream modelOut = null;
-    try {
-      modelOut = new FileOutputStream(modelOutFile);
-      model.serialize(modelOut);
-    } catch (IOException e) {
-      CmdLineUtil.handleIOExceptionDuringModelWriting(e);
-    } finally {
-      if (modelOut != null) {
-        try {
-          modelOut.close();
-        } catch (IOException e) {
-          // sorry that this can fail
-        }
-      }
-    }
-    
-    System.out.println("Wrote tokenizer model.");
-    System.out.println("Path: " + modelOutFile.getAbsolutePath());
+    CmdLineUtil.writeModel("tokenizer", new File(args[args.length - 1]), model);
   }
 }

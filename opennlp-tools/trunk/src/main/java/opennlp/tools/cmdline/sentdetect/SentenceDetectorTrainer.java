@@ -19,8 +19,6 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
@@ -93,25 +91,6 @@ public class SentenceDetectorTrainer implements CmdLineTool {
       }
     }
     
-    File modelOutFile = new File(args[args.length - 1]);
-    OutputStream modelOut = CmdLineUtil.openOutFile(modelOutFile);
-    
-    try {
-      model.serialize(modelOut);
-    } catch (IOException e) {
-      CmdLineUtil.handleIOExceptionDuringModelWriting(e);
-    }
-    finally {
-      if (modelOut != null) {
-        try {
-          modelOut.close();
-        } catch (IOException e) {
-          // sorry that this can fail
-        }
-      }
-    }
-    
-    System.out.println("Wrote sentence detector model.");
-    System.out.println("Path: " + modelOutFile.getAbsolutePath());
+    CmdLineUtil.writeModel("sentence detector", new File(args[args.length - 1]), model);
   }
 }

@@ -20,7 +20,6 @@ package opennlp.tools.cmdline.namefind;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Collections;
 
 import opennlp.tools.cmdline.BasicTrainingParameters;
@@ -103,20 +102,6 @@ public class TokenNameFinderTrainer implements CmdLineTool {
       }
     }
     
-    File modelOutFile = new File(args[args.length - 1]);
-    OutputStream modelOut = CmdLineUtil.openOutFile(modelOutFile);
-    
-    try {
-      model.serialize(modelOut);
-    } catch (IOException e) {
-      CmdLineUtil.handleIOExceptionDuringModelWriting(e);
-    }
-    finally {
-      try {
-        modelOut.close();
-      } catch (IOException e) {
-        // sorry that this can fail
-      }
-    }
+    CmdLineUtil.writeModel("name finder", new File(args[args.length - 1]), model);
   }
 }
