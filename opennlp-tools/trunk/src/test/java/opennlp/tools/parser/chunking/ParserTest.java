@@ -17,10 +17,15 @@
 
 package opennlp.tools.parser.chunking;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
 import org.junit.Test;
 
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
+import opennlp.tools.parser.ParserFactory;
+import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserTestUtil;
 import opennlp.tools.util.ObjectStream;
 import junit.framework.TestCase;
@@ -37,8 +42,19 @@ public class ParserTest extends TestCase {
     ObjectStream<Parse> parseSamples = ParserTestUtil.openTestTrainingData();
     HeadRules headRules = ParserTestUtil.createTestHeadRules();
     
-    Parser.train("en", parseSamples, headRules, 100, 0);
+    ParserModel model = Parser.train("en", parseSamples, headRules, 100, 0);
     
-    // TODO: test if parser works kind of ...
+    opennlp.tools.parser.Parser parser = ParserFactory.create(model);
+    
+    // TODO: test parsing
+    
+    // Test serializing and de-serializing model
+    ByteArrayOutputStream outArray = new ByteArrayOutputStream();
+    model.serialize(outArray);
+    outArray.close();
+    
+    new ParserModel(new ByteArrayInputStream(outArray.toByteArray()));
+    
+    // TODO: compare both models
   }
 }
