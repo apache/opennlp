@@ -21,6 +21,7 @@ package opennlp.tools.parser.lang.en;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,8 +77,9 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
    *
    * @throws IOException if the head rules reader can not be read.
    */
-  public HeadRules(BufferedReader rulesReader) throws IOException {
-    readHeadRules(rulesReader);
+  public HeadRules(Reader rulesReader) throws IOException {
+    BufferedReader in = new BufferedReader(rulesReader);
+    readHeadRules(in);
 
     punctSet = new HashSet<String>();
     punctSet.add(".");
