@@ -146,6 +146,7 @@ public final class POSModel extends BaseModel {
     System.err.println("POSModel packageName modelName [tagDictionary] [ngramDictionary]");
   }
 
+  @Deprecated
   public static void main(String[] args) throws IOException, InvalidFormatException {
     if (args.length == 0){
       usage();
