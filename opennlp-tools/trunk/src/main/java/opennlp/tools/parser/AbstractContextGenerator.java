@@ -42,10 +42,10 @@ public abstract class AbstractContextGenerator {
    * @return Punctuation feature for the specified parse and the specified punctuation at the specfied index.
    */
   protected String punct(Parse punct, int i) {
-    StringBuffer feat = new StringBuffer(5);
+    StringBuilder feat = new StringBuilder(5);
     feat.append(i).append("=");
     feat.append(punct.toString());
-    return (feat.toString());
+    return feat.toString();
   }
 
   /**
@@ -124,13 +124,8 @@ public abstract class AbstractContextGenerator {
     if (punct1s != null) {
       for (Iterator<Parse> pi = punct1s.iterator();pi.hasNext();) {
         Parse p = pi.next();
-        String punct = punct(p,c1.index);
+//        String punct = punct(p,c1.index);
         String punctbo = punctbo(p,c1.index <= 0 ? c1.index -1 : c1.index);
-        //punct(1)
-        //TODO consider changing
-        if (false && !punct.equals(punctbo)) {
-          features.add(punct);
-        }
 
         //punctbo(1);
         features.add(punctbo);
@@ -180,7 +175,7 @@ public abstract class AbstractContextGenerator {
       if (c0.index == -2) {
         for (Iterator<Parse> pi=punct1s.iterator();pi.hasNext();) {
           Parse p = pi.next();
-          String punct = punct(p,c1.index);
+//          String punct = punct(p,c1.index);
           String punctbo = punctbo(p,c1.index <= 0 ? c1.index -1 : c1.index);
           //punct(-2)
           //TODO consider changing
@@ -195,7 +190,7 @@ public abstract class AbstractContextGenerator {
       if (c2.index == 2) {
         for (Iterator<Parse> pi=punct2s.iterator();pi.hasNext();) {
           Parse p = pi.next();
-          String punct = punct(p,c2.index);
+//          String punct = punct(p,c2.index);
           String punctbo = punctbo(p,c2.index <= 0 ? c2.index -1 : c2.index);
           //punct(2)
           //TODO consider changing
