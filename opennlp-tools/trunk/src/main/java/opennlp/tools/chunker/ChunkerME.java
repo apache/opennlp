@@ -33,6 +33,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
+import opennlp.tools.util.SequenceValidator;
 
 /**
  * The class represents a maximum-entropy-based chunker.  Such a chunker can be used to
@@ -40,7 +41,7 @@ import opennlp.tools.util.Sequence;
  */
 public class ChunkerME implements Chunker {
 
-  private static final int DEFAULT_BEAM_SIZE = 10;
+  public static final int DEFAULT_BEAM_SIZE = 10;
 
   /**
    * The beam used to search for sequences of chunk tag assignments.
@@ -68,12 +69,27 @@ public class ChunkerME implements Chunker {
    * Initializes the current instance with the specified model and
    * the specified beam size.
    *
-   * @param model
-   * @param beamSize
+   * @param model The model for this chunker.
+   * @param beamSize The size of the beam that should be used when decoding sequences.
    */
   public ChunkerME(ChunkerModel model, int beamSize) {
+    this(model, beamSize, null);
+  }
+  
+  /**
+   * Initializes the current instance with the specified model and
+   * the specified beam size.
+   *
+   * @param model The model for this chunker.
+   * @param beamSize The size of the beam that should be used when decoding sequences.
+   * @param sequenceValidator  The {@link SequenceValidator} to determines whether the outcome 
+   *        is valid for the preceding sequence. This can be used to implement constraints 
+   *        on what sequences are valid.
+   */
+  public ChunkerME(ChunkerModel model, int beamSize, SequenceValidator<String> sequenceValidator) {
     this.model = model.getChunkerModel();
-    beam = new ChunkBeamSearch(beamSize, new DefaultChunkerContextGenerator(), this.model);
+    // TODO: Tom which cache size should we use here ?
+    beam = new BeamSearch<String>(beamSize, new DefaultChunkerContextGenerator(), this.model, sequenceValidator, 0);
   }
 
   /**
@@ -107,7 +123,7 @@ public class ChunkerME implements Chunker {
    */
   @Deprecated
   public ChunkerME(MaxentModel mod, ChunkerContextGenerator cg, int beamSize) {
-    beam = new ChunkBeamSearch(beamSize, cg, mod);
+    beam = new BeamSearch<String>(beamSize, cg, mod);
     this.model = mod;
   }
 
@@ -129,35 +145,6 @@ public class ChunkerME implements Chunker {
 
   public Sequence[] topKSequences(String[] sentence, String[] tags, double minSequenceScore) {
     return beam.bestSequences(DEFAULT_BEAM_SIZE, sentence, new Object[] { tags },minSequenceScore);
-  }
-
-  /**
-    * This method determines whether the outcome is valid for the preceding sequence.
-    * This can be used to implement constraints on what sequences are valid.
-    *
-    * @param outcome The outcome.
-    * @param sequence The preceding sequence of outcome assignments.
-    * @return true is the outcome is valid for the sequence, false otherwise.
-    *
-    */
-  protected boolean validOutcome(String outcome, String[] sequence) {
-    return true;
-  }
-
-  /**
-   * This class implements the abstract BeamSearch class to allow for the chunker to use
-   * the common beam search code.
-   *
-   */
-  class ChunkBeamSearch extends BeamSearch<String> {
-
-    ChunkBeamSearch(int size, ChunkerContextGenerator cg, MaxentModel model) {
-      super(size, cg, model);
-    }
-
-    protected boolean validSequence(int i, String[] sequence, String[] s, String outcome) {
-      return validOutcome(outcome, s);
-    }
   }
 
   /**
@@ -199,6 +186,7 @@ public class ChunkerME implements Chunker {
     return new ChunkerModel("en", maxentModel);
   }
 
+  @Deprecated
   private static void usage() {
     System.err.println("Usage: ChunkerME [-encoding charset] trainingFile modelFile");
     System.err.println();
@@ -215,6 +203,7 @@ public class ChunkerME implements Chunker {
    * @param args The training file and the model file.
    * @throws IOException When the specified files can not be read.
    */
+  @Deprecated
   public static void main(String[] args) throws IOException, ObjectStreamException {
     if (args.length == 0) {
       usage();

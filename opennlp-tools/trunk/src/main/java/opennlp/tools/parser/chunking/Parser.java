@@ -43,6 +43,7 @@ import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParseSampleStream;
+import opennlp.tools.parser.ParserChunkerSequenceValidator;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.PosSampleStream;
@@ -83,8 +84,12 @@ public class Parser extends AbstractBottomUpParser {
   public Parser(ParserModel model) {
     this(model.getBuildModel(), model.getCheckModel(),
         new POSTaggerME(model.getParserTaggerModel()),
-        new ChunkerME(model.getParserChunkerModel()),
+        new ChunkerME(model.getParserChunkerModel(), ChunkerME.DEFAULT_BEAM_SIZE, 
+        new ParserChunkerSequenceValidator(model.getParserChunkerModel())),
         model.getHeadRules());
+    
+    
+    
   }
 
   /**
