@@ -171,6 +171,16 @@ public class ParserModel extends BaseModel {
         getParserChunkerModel(), getHeadRules());
   }
   
+  public ParserModel updateTaggerModel(POSModel taggerModel) {
+    return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), 
+        taggerModel, getParserChunkerModel(), getHeadRules());
+  }
+
+  public ParserModel updateChunkerModel(ChunkerModel chunkModel) {
+    return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), 
+        getParserTaggerModel(), chunkModel, getHeadRules());
+  }
+  
   private static AbstractModel readModel(String fileName) throws FileNotFoundException, IOException {
     return new GenericModelReader(new BinaryFileDataReader(new FileInputStream(fileName))).
         getModel();
