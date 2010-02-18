@@ -31,19 +31,19 @@ import opennlp.tools.util.Span;
 
 /**
  * Abstract class which contains code to tag and chunk parses for bottom up parsing and
- * leaves implmentation of advancing parses and completing parses to extend class.
+ * leaves implementation of advancing parses and completing parses to extend class.
  * <b>Note:</b> The nodes within
  * the returned parses are shared with other parses and therefore their parent node references will not be consistent
  * with their child node reference.  {@link #setParents setParents} can be used to make the parents consistent
- * with a partuicular parse, but subsequent calls to <code>setParents</code> can invalidate the results of earlier
+ * with a particular parse, but subsequent calls to <code>setParents</code> can invalidate the results of earlier
  * calls.<br>
  *
  */
 public abstract class AbstractBottomUpParser implements Parser {
 
-  /** The maximum number of parses advanced from all preceeding parses at each derivation step. */
+  /** The maximum number of parses advanced from all preceding parses at each derivation step. */
   protected int M;
-  /** The maximum number of parses to advance from a single preceeding parse. */
+  /** The maximum number of parses to advance from a single preceding parse. */
   protected int K;
   /** The minimum total probability mass of advanced outcomes.*/
   protected double Q;
@@ -178,7 +178,7 @@ public abstract class AbstractBottomUpParser implements Parser {
 
 
   /** Advances the specified parse and returns the an array advanced parses whose probability accounts for
-   * more than the speicficed amount of probability mass.
+   * more than the specified amount of probability mass.
    * @param p The parse to advance.
    * @param probMass The amount of probability mass that should be accounted for by the advanced parses.
    */
@@ -294,9 +294,9 @@ public abstract class AbstractBottomUpParser implements Parser {
   }
 
   /**
-   * Reutrns the top chunk sequences for the specified parse.
+   * Returns the top chunk sequences for the specified parse.
    * @param p A pos-tag assigned parse.
-   * @param minChunkScore A minimum score below whihc chunks should not be advanced.
+   * @param minChunkScore A minimum score below which chunks should not be advanced.
    * @return The top chunk assignments to the specified parse.
    */
   protected Parse[] advanceChunks(final Parse p, double minChunkScore) {
@@ -405,11 +405,11 @@ public abstract class AbstractBottomUpParser implements Parser {
 
   /**
    * Determines the mapping between the specified index into the specified parses without punctuation to
-   * the coresponding index into the specified parses.
+   * the corresponding index into the specified parses.
    * @param index An index into the parses without punctuation.
    * @param nonPunctParses The parses without punctuation.
    * @param parses The parses wit punctuation.
-   * @return An index into the specified parses which coresponds to the same node the specified index
+   * @return An index into the specified parses which corresponds to the same node the specified index
    * into the parses with punctuation.
    */
   protected int mapParseIndex(int index, Parse[] nonPunctParses, Parse[] parses) {
