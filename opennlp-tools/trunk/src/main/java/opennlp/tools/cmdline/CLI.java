@@ -31,6 +31,7 @@ import opennlp.tools.cmdline.parser.BuildModelUpdater;
 import opennlp.tools.cmdline.parser.CheckModelUpdater;
 import opennlp.tools.cmdline.parser.Parser;
 import opennlp.tools.cmdline.parser.ParserTrainer;
+import opennlp.tools.cmdline.parser.TaggerModelReplacer;
 import opennlp.tools.cmdline.postag.POSTaggerEvaluator;
 import opennlp.tools.cmdline.postag.POSTaggerTrainer;
 import opennlp.tools.cmdline.sentdetect.SentenceDetector;
@@ -90,6 +91,7 @@ public class CLI {
     tools.add(new ParserTrainer()); // trains everything
     tools.add(new BuildModelUpdater()); // re-trains  build model
     tools.add(new CheckModelUpdater()); // re-trains  build model
+    tools.add(new TaggerModelReplacer());
     
     // Coref
     // Add util to use coref ...
