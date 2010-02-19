@@ -88,8 +88,7 @@ public abstract class BaseModel {
 
     Map<String, Object> artifactMap = new HashMap<String, Object>();
 
-    Map<String, ArtifactSerializer> factories = new HashMap<String, ArtifactSerializer>();
-    createArtifactSerializers(factories);
+    createArtifactSerializers(artifactSerializers);
 
     final ZipInputStream zip = new ZipInputStream(in);
 
@@ -98,7 +97,7 @@ public abstract class BaseModel {
 
       String extension = getEntryExtension(entry.getName());
 
-      ArtifactSerializer factory = factories.get(extension);
+      ArtifactSerializer factory = artifactSerializers.get(extension);
 
       if (factory == null) {
         throw new InvalidFormatException("Unkown artifact format: " + extension);
