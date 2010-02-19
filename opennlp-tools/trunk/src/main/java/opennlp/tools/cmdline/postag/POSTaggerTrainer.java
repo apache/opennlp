@@ -24,6 +24,7 @@ import java.io.IOException;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.postag.POSDictionary;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.WordTagSampleStream;
@@ -43,7 +44,7 @@ public class POSTaggerTrainer implements CmdLineTool {
   
   public String getHelp() {
     // TODO: specify all parameters
-    return "Usage: " + CLI.CMD + " " + getName() + " trainingData model";
+    return "Usage: " + CLI.CMD + " " + getName() + "[-dict dict] trainingData model ";
   }
 
   static ObjectStream<POSSample> openSampleData(String sampleDataName,
@@ -78,9 +79,16 @@ public class POSTaggerTrainer implements CmdLineTool {
     
     POSModel model;
     try {
+      
+      // TODO: Move to util method ...
+      POSDictionary tagdict = null;
+      if (parameters.getDictionaryPath() != null) {
+        tagdict = new POSDictionary(parameters.getDictionaryPath());
+      }
+      
       // depending on model and sequence choose training method
       model = opennlp.tools.postag.POSTaggerME.train(parameters.getLanguage(),
-           sampleStream, parameters.getModel(), null, null, parameters.getCutoff(), parameters.getNumberOfIterations());
+           sampleStream, parameters.getModel(), tagdict, null, parameters.getCutoff(), parameters.getNumberOfIterations());
     }
     catch (IOException e) {
       System.err.println("Training io error: " + e.getMessage());
