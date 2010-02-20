@@ -39,6 +39,14 @@ public class TokenizerModelTest extends TestCase {
     arrayOut.close();
 
     new TokenizerModel(new ByteArrayInputStream(arrayOut.toByteArray()));
+    // TODO: check that both maxent models are equal
+
+    // Also test serialization after building model from an inputstream 
+    arrayOut = new ByteArrayOutputStream();
+    model.serialize(arrayOut);
+    arrayOut.close();
+
+    new TokenizerModel(new ByteArrayInputStream(arrayOut.toByteArray()));
 
     // TODO: check that both maxent models are equal
   }
