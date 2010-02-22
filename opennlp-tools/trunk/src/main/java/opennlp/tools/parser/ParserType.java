@@ -17,22 +17,21 @@
 
 package opennlp.tools.parser;
 
-public class ParserFactory {
-
-  private ParserFactory() {
-  }
+public enum ParserType {
+  CHUNKING,
+  TREEINSERT;
   
-  public static Parser create(ParserModel model) {
-    
-    if (model.getParserType().equals(ParserType.CHUNKING)) {
-      return new opennlp.tools.parser.chunking.Parser(model);
+  public static ParserType parse(String type) {
+    if (ParserType.CHUNKING.name().equals(type)) {
+      return ParserType.CHUNKING;
     }
-    else if (model.getParserType().equals(ParserType.TREEINSERT)) {
-      return new opennlp.tools.parser.treeinsert.Parser(model);
+    else if (ParserType.CHUNKING.name().equals(type)) {
+      return ParserType.TREEINSERT;
     }
     else {
-      throw new IllegalStateException("Unexpected ParserType: " + 
-          model.getParserType().name());
+      // TODO: What should be done if cannot be parsed ???
+      // maybe throw an exception, what is defautl behaviro ??
+      return null;
     }
   }
 }

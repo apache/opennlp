@@ -15,24 +15,27 @@
  * limitations under the License.
  */
 
-package opennlp.tools.parser;
+package opennlp.tools.cmdline.parser;
 
-public class ParserFactory {
+import opennlp.tools.cmdline.BasicTrainingParameters;
+import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.parser.ParserType;
 
-  private ParserFactory() {
+public class TrainingParameters extends BasicTrainingParameters {
+
+  private ParserType parserType = ParserType.CHUNKING;
+  
+  TrainingParameters(String args[]) {
+    super(args);
+    
+    String typeString = CmdLineUtil.getParameter("-parserType", args);
+    
+    if (typeString != null) {
+      parserType = parserType.parse(typeString);
+    }
   }
   
-  public static Parser create(ParserModel model) {
-    
-    if (model.getParserType().equals(ParserType.CHUNKING)) {
-      return new opennlp.tools.parser.chunking.Parser(model);
-    }
-    else if (model.getParserType().equals(ParserType.TREEINSERT)) {
-      return new opennlp.tools.parser.treeinsert.Parser(model);
-    }
-    else {
-      throw new IllegalStateException("Unexpected ParserType: " + 
-          model.getParserType().name());
-    }
+  ParserType getParserType() {
+    return parserType;
   }
 }

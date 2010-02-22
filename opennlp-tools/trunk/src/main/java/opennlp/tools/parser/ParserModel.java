@@ -42,6 +42,7 @@ import opennlp.tools.util.model.BaseModel;
 /**
  * This is an abstract base class for {@link ParserModel} implementations.
  */
+// TODO: Model should validate the artifact map
 public class ParserModel extends BaseModel {
 
   private static class POSModelSerializer implements ArtifactSerializer<POSModel> {
@@ -86,17 +87,24 @@ public class ParserModel extends BaseModel {
   private static final String BUILD_MODEL_ENTRY_NAME = "build.model";
 
   private static final String CHECK_MODEL_ENTRY_NAME = "check.model";
+  
+  private static final String ATTACH_MODEL_ENTRY_NAME = "attach.model";
 
   private static final String PARSER_TAGGER_MODEL_ENTRY_NAME = "parsertager.postagger";
 
   private static final String CHUNKER_TAGGER_MODEL_ENTRY_NAME = "parserchunker.chunker";
 
   private static final String HEAD_RULES_MODEL_ENTRY_NAME = "head-rules.headrules";
-
-  public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, POSModel parserTagger,
-      ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules) {
+  
+  private static final String PARSER_TYPE = "parser-type";
+  public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, 
+      AbstractModel attachModel, POSModel parserTagger,
+      ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules,
+      ParserType modelType) {
 
     super(languageCode);
+    
+    setManifestProperty(PARSER_TYPE, modelType.name());
     
     if (buildModel == null) {
       throw new IllegalArgumentException("buildModel must not be null!");
@@ -124,6 +132,13 @@ public class ParserModel extends BaseModel {
     artifactMap.put(HEAD_RULES_MODEL_ENTRY_NAME, headRules);
   }
 
+  public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, 
+      POSModel parserTagger, ChunkerModel chunkerTagger, 
+      opennlp.tools.parser.lang.en.HeadRules headRules, ParserType type) {
+    this (languageCode, buildModel, checkModel, null, parserTagger, 
+        chunkerTagger, headRules, type);
+  }
+  
   public ParserModel(InputStream in) throws IOException, InvalidFormatException {
     super(in);
   }
@@ -140,6 +155,10 @@ public class ParserModel extends BaseModel {
     
   }
   
+  public ParserType getParserType () {
+    return ParserType.parse(getManifestProperty("type"));
+  }
+  
   public AbstractModel getBuildModel() {
     return (AbstractModel) artifactMap.get(BUILD_MODEL_ENTRY_NAME);
   }
@@ -148,6 +167,10 @@ public class ParserModel extends BaseModel {
     return (AbstractModel) artifactMap.get(CHECK_MODEL_ENTRY_NAME);
   }
 
+  public AbstractModel getAttachModel() {
+    return (AbstractModel) artifactMap.get(ATTACH_MODEL_ENTRY_NAME);
+  }
+  
   public POSModel getParserTaggerModel() {
     return (POSModel) artifactMap.get(PARSER_TAGGER_MODEL_ENTRY_NAME);
   }
@@ -163,22 +186,22 @@ public class ParserModel extends BaseModel {
 
   public ParserModel updateBuildModel(AbstractModel buildModel) {
     return new ParserModel(getLanguage(), buildModel, getCheckModel(), getParserTaggerModel(),
-        getParserChunkerModel(), getHeadRules());
+        getParserChunkerModel(), getHeadRules(), getParserType());
   }
 
   public ParserModel updateCheckModel(AbstractModel checkModel) {
     return new ParserModel(getLanguage(), getBuildModel(), checkModel, getParserTaggerModel(),
-        getParserChunkerModel(), getHeadRules());
+        getParserChunkerModel(), getHeadRules(), getParserType());
   }
   
   public ParserModel updateTaggerModel(POSModel taggerModel) {
     return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), 
-        taggerModel, getParserChunkerModel(), getHeadRules());
+        taggerModel, getParserChunkerModel(), getHeadRules(), getParserType());
   }
 
   public ParserModel updateChunkerModel(ChunkerModel chunkModel) {
     return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), 
-        getParserTaggerModel(), chunkModel, getHeadRules());
+        getParserTaggerModel(), chunkModel, getHeadRules(), getParserType());
   }
   
   private static AbstractModel readModel(String fileName) throws FileNotFoundException, IOException {
@@ -186,6 +209,7 @@ public class ParserModel extends BaseModel {
         getModel();
   }
 
+  @Deprecated
   public static void main(String[] args) throws FileNotFoundException, IOException, InvalidFormatException {
     if (args.length != 6){
       System.err.println("ParserModel packageName buildModel checkModel headRules chunkerModel posModel");
@@ -204,7 +228,7 @@ public class ParserModel extends BaseModel {
     POSModel posModel = new POSModel(new FileInputStream(args[5]));
 
     ParserModel packageModel = new ParserModel("en", buildModel, checkModel, posModel,
-        chunkerModel, headRules);
+        chunkerModel, headRules, ParserType.CHUNKING);
 
     packageModel.serialize(new FileOutputStream(args[0]));
   }

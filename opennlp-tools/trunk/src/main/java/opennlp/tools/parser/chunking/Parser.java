@@ -46,6 +46,7 @@ import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserChunkerSequenceValidator;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
+import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.PosSampleStream;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
@@ -304,12 +305,8 @@ public class Parser extends AbstractBottomUpParser {
     
     // TODO: Remove cast for HeadRules
     return new ParserModel(languageCode, buildModel, checkModel,
-        posModel, chunkModel, (opennlp.tools.parser.lang.en.HeadRules) rules);
-  }
-  
-  private static boolean lastChild(Parse child, Parse parent, Set<String> punctSet) {
-    Parse[] kids = collapsePunctuation(parent.getChildren(), punctSet);
-    return (kids[kids.length - 1] == child);
+        posModel, chunkModel, (opennlp.tools.parser.lang.en.HeadRules) rules,
+        ParserType.CHUNKING);
   }
 
   private static void usage() {
@@ -324,80 +321,7 @@ public class Parser extends AbstractBottomUpParser {
     System.err.println("-fun Predict function tags");
   }
 
-  /**
-   * Creates a n-gram dictionary from the specified data stream using the specified head rule and specified cut-off.
-   * 
-   * @param data The data stream of parses.
-   * @param rules The head rules for the parses.
-   * @param cutoff The minimum number of entries required for the n-gram to be saved as part of the dictionary.
-   * @return A dictionary object.
-   */
-  public static Dictionary buildDictionary(ObjectStream<Parse> data, HeadRules rules, int cutoff)
-      throws ObjectStreamException {
-    NGramModel mdict = new NGramModel();
-    Parse p;
-    while((p = data.read()) != null) {
-      p.updateHeads(rules);
-      Parse[] pwords = p.getTagNodes();
-      String[] words = new String[pwords.length];
-      //add all uni-grams
-      for (int wi=0;wi<words.length;wi++) {
-        words[wi] = pwords[wi].toString();
-      }
 
-      mdict.add(new StringList(words), 1, 1);
-      //add tri-grams and bi-grams for inital sequence
-      Parse[] chunks = collapsePunctuation(ParserEventStream.getInitialChunks(p),rules.getPunctuationTags());
-      String[] cwords = new String[chunks.length];
-      for (int wi=0;wi<cwords.length;wi++) {
-        cwords[wi] = chunks[wi].getHead().toString();
-      }
-      mdict.add(new StringList(cwords), 2, 3);
-
-      //emulate reductions to produce additional n-grams
-      int ci = 0;
-      while (ci < chunks.length) {
-        //System.err.println("chunks["+ci+"]="+chunks[ci].getHead().toString()+" chunks.length="+chunks.length);
-        if (lastChild(chunks[ci], chunks[ci].getParent(),rules.getPunctuationTags())) {
-          //perform reduce
-          int reduceStart = ci;
-          while (reduceStart >=0 && chunks[reduceStart].getParent() == chunks[ci].getParent()) {
-            reduceStart--;
-          }
-          reduceStart++;
-          chunks = ParserEventStream.reduceChunks(chunks,ci,chunks[ci].getParent());
-          ci = reduceStart;
-          if (chunks.length != 0) {
-            String[] window = new String[5];
-            int wi = 0;
-            if (ci-2 >= 0) window[wi++] = chunks[ci-2].getHead().toString();
-            if (ci-1 >= 0) window[wi++] = chunks[ci-1].getHead().toString();
-            window[wi++] = chunks[ci].getHead().toString();
-            if (ci+1 < chunks.length) window[wi++] = chunks[ci+1].getHead().toString();
-            if (ci+2 < chunks.length) window[wi++] = chunks[ci+2].getHead().toString();
-            if (wi < 5) {
-              String[] subWindow = new String[wi];
-              for (int swi=0;swi<wi;swi++) {
-                subWindow[swi]=window[swi];
-              }
-              window = subWindow;
-            }
-            if (window.length >=3) {
-              mdict.add(new StringList(window), 2, 3);
-            }
-            else if (window.length == 2) {
-              mdict.add(new StringList(window), 2, 2);
-            }
-          }
-          ci=reduceStart-1; //ci will be incremented at end of loop
-        }
-        ci++;
-      }
-    }
-    //System.err.println("gas,and="+mdict.getCount((new TokenList(new String[] {"gas","and"}))));
-    mdict.cutoff(cutoff, Integer.MAX_VALUE);
-    return mdict.toDictionary(true);
-  }
 
   @Deprecated
   public static void main(String[] args) throws java.io.IOException, InvalidFormatException, 

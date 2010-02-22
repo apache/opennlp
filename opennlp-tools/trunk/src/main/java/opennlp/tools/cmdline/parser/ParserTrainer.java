@@ -33,6 +33,7 @@ import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserModel;
+import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
@@ -90,6 +91,7 @@ public class ParserTrainer implements CmdLineTool {
     return mdict;
   }
   
+  // TODO: Add param to train tree insert parser
   public void run(String[] args) {
     
     if (args.length < 7) {
@@ -97,7 +99,7 @@ public class ParserTrainer implements CmdLineTool {
       System.exit(1);
     }
 
-    BasicTrainingParameters parameters = new BasicTrainingParameters(args);
+    TrainingParameters parameters = new TrainingParameters(args);
     
     if(!parameters.isValid()) {
       System.out.println(getHelp());
@@ -112,8 +114,19 @@ public class ParserTrainer implements CmdLineTool {
           new InputStreamReader(new FileInputStream(new File(args[args.length - 3])), 
           parameters.getEncoding()));
       
-      model = Parser.train(parameters.getLanguage(), sampleStream, rules, parameters.getNumberOfIterations(), 
-          parameters.getCutoff());
+      if (parameters.getParserType().equals(ParserType.CHUNKING)) {
+        model = opennlp.tools.parser.chunking.Parser.train(
+            parameters.getLanguage(), sampleStream, rules, 
+            parameters.getNumberOfIterations(), parameters.getCutoff());
+      }
+      else if (parameters.getParserType().equals(ParserType.TREEINSERT)) {
+        model = Parser.train(parameters.getLanguage(), sampleStream, rules, parameters.getNumberOfIterations(), 
+            parameters.getCutoff());
+      }
+      else {
+        throw new IllegalStateException();
+      }
+      
     } catch (IOException e) {
       System.err.println("Training io error: " + e.getMessage());
       System.exit(-1);      

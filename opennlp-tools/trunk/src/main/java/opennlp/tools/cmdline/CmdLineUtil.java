@@ -70,7 +70,7 @@ public class CmdLineUtil {
     }
   }
   
-  public static void checkOutputFile(String name, File outFile) {
+  private static void checkOutputFile(String name, File outFile) {
     
     boolean isFailure;
     
@@ -102,16 +102,14 @@ public class CmdLineUtil {
     }
   }
   
-  public static OutputStream openOutFile(File file) {
-    try {
-      return new FileOutputStream(file);
-    } catch (FileNotFoundException e) {
-      System.err.println("File cannot be found: " + e.getMessage());
-      System.exit(-1);
-      return null;
-    }
-  }
-  
+  /**
+   * Writes a {@link BaseModel} to disk. Occurring errors are printed to the console
+   * to inform the user.
+   * 
+   * @param modelName type of the model, name is used in error messages.
+   * @param modelFile output file of the model
+   * @param model the model itself which should be written to disk
+   */
   public static void writeModel(String modelName, File modelFile, BaseModel model) {
 
     CmdLineUtil.checkOutputFile(modelName + " model", modelFile);
@@ -121,13 +119,15 @@ public class CmdLineUtil {
       modelOut = new FileOutputStream(modelFile);
       model.serialize(modelOut);
     } catch (IOException e) {
-      CmdLineUtil.handleIOExceptionDuringModelWriting(e);
+      System.err.println("Error during writing model file: " + e.getMessage());
+      System.exit(-1);
     } finally {
       if (modelOut != null) {
         try {
           modelOut.close();
         } catch (IOException e) {
-          // sorry that this can fail
+          System.err.println("Failed to properly close model file: " + 
+              e.getMessage());
         }
       }
     }
@@ -136,10 +136,6 @@ public class CmdLineUtil {
     System.out.println("Path: " + modelFile.getAbsolutePath());
   }
   
-  public static void handleIOExceptionDuringModelWriting(IOException e) {
-    System.err.println("Error during writing model file: " + e.getMessage());
-    System.exit(-1);
-  }
   /**
    * Retrieves the specified parameters from the given arguments.
    * 

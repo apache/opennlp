@@ -17,6 +17,7 @@
 
 package opennlp.tools.parser.treeinsert;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,13 +26,26 @@ import java.util.Set;
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
+import opennlp.tools.chunker.Chunker;
+import opennlp.tools.chunker.ChunkerME;
+import opennlp.tools.chunker.ChunkerModel;
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.AbstractBottomUpParser;
+import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParseSampleStream;
-import opennlp.tools.parser.ParserChunker;
 import opennlp.tools.parser.ParserEventTypeEnum;
+import opennlp.tools.parser.ParserModel;
+import opennlp.tools.parser.ParserType;
+import opennlp.tools.parser.PosSampleStream;
+import opennlp.tools.parser.chunking.ParserEventStream;
+import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
+import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.util.ModelType;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
@@ -82,7 +96,16 @@ public class Parser extends AbstractBottomUpParser {
 
   private int[] attachments;
 
-  public Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, POSTagger tagger, ParserChunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
+  public Parser(ParserModel model) {
+    // TODO: Make sure an illegal argument exception is thrown
+    // when model does not contain the attach model
+    this(model.getBuildModel(), model.getAttachModel(), model.getCheckModel(), 
+        new POSTaggerME(model.getParserTaggerModel()), 
+        new ChunkerME(model.getParserChunkerModel()), model.getHeadRules());
+  }
+  
+  @Deprecated
+  public Parser(AbstractModel buildModel, AbstractModel attachModel, AbstractModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
     super(tagger,chunker,headRules,beamSize,advancePercentage);
     this.buildModel = buildModel;
     this.attachModel = attachModel;
@@ -104,7 +127,8 @@ public class Parser extends AbstractBottomUpParser {
     this.completeIndex = checkModel.getIndex(Parser.COMPLETE);
   }
 
-  public Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, POSTagger tagger, ParserChunker chunker, HeadRules headRules) {
+  @Deprecated
+  public Parser(AbstractModel buildModel, AbstractModel attachModel, AbstractModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules) {
     this(buildModel,attachModel,checkModel, tagger,chunker,headRules,defaultBeamSize,defaultAdvancePercentage);
   }
 
@@ -402,10 +426,60 @@ public class Parser extends AbstractBottomUpParser {
     p.setType(TOP_NODE);
   }
 
+
+  public static ParserModel train(String languageCode,
+      ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
+      throws IOException, ObjectStreamException {
+    
+    // TODO: training code should be shared between two parsers
+    System.err.println("Building dictionary");
+    Dictionary mdict = buildDictionary(parseSamples, rules, cut);
+
+    parseSamples.reset();
+
+    // tag
+    POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(
+        parseSamples), ModelType.MAXENT, null, null, cut, iterations);
+
+    parseSamples.reset();
+
+    // chunk
+    ChunkerModel chunkModel = ChunkerME.train(new ChunkSampleStream(
+        parseSamples), iterations, cut);
+
+    parseSamples.reset();
+
+    // build
+    System.err.println("Training builder");
+    opennlp.model.EventStream bes = new ParserEventStream(parseSamples, rules,
+        ParserEventTypeEnum.BUILD, mdict);
+    AbstractModel buildModel = train(bes, iterations, cut);
+
+    parseSamples.reset();
+
+    // check
+    System.err.println("Training checker");
+    opennlp.model.EventStream kes = new ParserEventStream(parseSamples, rules,
+        ParserEventTypeEnum.CHECK);
+    AbstractModel checkModel = train(kes, iterations, cut);
+
+    // attach 
+    System.err.println("Training attacher");
+    opennlp.model.EventStream attachEvents = new ParserEventStream(parseSamples, rules,
+        ParserEventTypeEnum.ATTACH);
+    AbstractModel attachModel = train(attachEvents, iterations, cut);
+    
+    // TODO: Remove cast for HeadRules
+    return new ParserModel(languageCode, buildModel, checkModel,
+        attachModel, posModel, chunkModel, 
+        (opennlp.tools.parser.lang.en.HeadRules) rules, ParserType.TREEINSERT);
+  }
+  
   public static AbstractModel train(opennlp.model.EventStream es, int iterations, int cut) throws java.io.IOException {
     return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 
+  @Deprecated
   private static void usage() {
     System.err.println("Usage: ParserME -[dict|tag|chunk|build|attach|fun] trainingFile parserModelDirectory [iterations cutoff]");
     System.err.println();
@@ -417,6 +491,7 @@ public class Parser extends AbstractBottomUpParser {
     System.err.println("-fun Predict function tags");
   }
 
+  @Deprecated
   public static void main(String[] args) throws java.io.IOException {
     if (args.length < 3) {
       usage();
