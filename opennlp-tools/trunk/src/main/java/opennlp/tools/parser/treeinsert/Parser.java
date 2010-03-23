@@ -39,7 +39,6 @@ import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.PosSampleStream;
-import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
@@ -426,7 +425,6 @@ public class Parser extends AbstractBottomUpParser {
     p.setType(TOP_NODE);
   }
 
-
   public static ParserModel train(String languageCode,
       ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
       throws IOException, ObjectStreamException {
@@ -463,6 +461,8 @@ public class Parser extends AbstractBottomUpParser {
         ParserEventTypeEnum.CHECK);
     AbstractModel checkModel = train(kes, iterations, cut);
 
+    parseSamples.reset();
+    
     // attach 
     System.err.println("Training attacher");
     opennlp.model.EventStream attachEvents = new ParserEventStream(parseSamples, rules,
