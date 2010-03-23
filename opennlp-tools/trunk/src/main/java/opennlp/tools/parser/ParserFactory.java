@@ -24,10 +24,10 @@ public class ParserFactory {
   
   public static Parser create(ParserModel model) {
     
-    if (model.getParserType().equals(ParserType.CHUNKING)) {
+    if (ParserType.CHUNKING.equals(model.getParserType())) {
       return new opennlp.tools.parser.chunking.Parser(model);
     }
-    else if (model.getParserType().equals(ParserType.TREEINSERT)) {
+    else if (ParserType.TREEINSERT.equals(model.getParserType())) {
       return new opennlp.tools.parser.treeinsert.Parser(model);
     }
     else {
