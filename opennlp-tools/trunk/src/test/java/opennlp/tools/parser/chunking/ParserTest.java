@@ -20,24 +20,27 @@ package opennlp.tools.parser.chunking;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-import org.junit.Test;
-
+import junit.framework.TestCase;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserTestUtil;
 import opennlp.tools.util.ObjectStream;
-import junit.framework.TestCase;
 
+import org.junit.Test;
+
+/**
+ * Tests for the {@link Parser} class.
+ */
 public class ParserTest extends TestCase {
   
   /**
-   * Verify that training the parser does not fails cause
-   * of any runtime problems.
+   * Verify that training and tagging does not cause
+   * runtime problems.
    */
   @Test
-  public void testParserTraining() throws Exception {
+  public void testChunkingParserTraining() throws Exception {
     
     ObjectStream<Parse> parseSamples = ParserTestUtil.openTestTrainingData();
     HeadRules headRules = ParserTestUtil.createTestHeadRules();
@@ -46,7 +49,10 @@ public class ParserTest extends TestCase {
     
     opennlp.tools.parser.Parser parser = ParserFactory.create(model);
     
-    // TODO: test parsing
+    // Tests parsing to make sure the code does not has
+    // a bug which fails always with a runtime exception
+//    parser.parse(Parse.parseParse("She was just another freighter from the " +
+//    		"States and she seemed as commonplace as her name ."));
     
     // Test serializing and de-serializing model
     ByteArrayOutputStream outArray = new ByteArrayOutputStream();
