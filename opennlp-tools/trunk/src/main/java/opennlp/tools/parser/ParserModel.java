@@ -156,7 +156,7 @@ public class ParserModel extends BaseModel {
   }
   
   public ParserType getParserType () {
-    return ParserType.parse(getManifestProperty("type"));
+    return ParserType.parse(getManifestProperty(PARSER_TYPE));
   }
   
   public AbstractModel getBuildModel() {
