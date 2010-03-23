@@ -25,7 +25,7 @@ public enum ParserType {
     if (ParserType.CHUNKING.name().equals(type)) {
       return ParserType.CHUNKING;
     }
-    else if (ParserType.CHUNKING.name().equals(type)) {
+    else if (ParserType.TREEINSERT.name().equals(type)) {
       return ParserType.TREEINSERT;
     }
     else {

@@ -115,6 +115,8 @@ public class ParserModel extends BaseModel {
       throw new IllegalArgumentException("checkModel must not be null!");
     }
     artifactMap.put(CHECK_MODEL_ENTRY_NAME, checkModel);
+
+    artifactMap.put(ATTACH_MODEL_ENTRY_NAME, attachModel);
     
     if (parserTagger == null) {
       throw new IllegalArgumentException("parserTagger must not be null!");

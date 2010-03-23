@@ -946,7 +946,9 @@ public class Parse implements Cloneable, Comparable<Parse> {
   public int hashCode() {
     int result = 17;
     result = 37*result + span.hashCode();
-    result = 37*result + label.hashCode();
+
+    // TODO: This might lead to a performance regression
+//    result = 37*result + label.hashCode();
     result = 37*result + text.hashCode();
     return result;
   }

@@ -27,7 +27,25 @@ import org.junit.Test;
  */
 public class ParseTest {
 
-  static final String PARSE_STRING = "(TOP  (S (S (NP-SBJ (PRP She)  )(VP (VBD was)  (ADVP (RB just)  )(NP-PRD (NP (DT another)  (NN freighter)  )(PP (IN from)  (NP (DT the)  (NNPS States)  )))))(, ,)  (CC and) (S (NP-SBJ (PRP she)  )(VP (VBD seemed)  (ADJP-PRD (ADJP (RB as)  (JJ commonplace)  )(PP (IN as)  (NP (PRP$ her)  (NN name)  )))))(. .)  ))";
+  public static final String PARSE_STRING = "(TOP  (S (S (NP-SBJ (PRP She)  )(VP (VBD was)  (ADVP (RB just)  )(NP-PRD (NP (DT another)  (NN freighter)  )(PP (IN from)  (NP (DT the)  (NNPS States)  )))))(, ,)  (CC and) (S (NP-SBJ (PRP she)  )(VP (VBD seemed)  (ADJP-PRD (ADJP (RB as)  (JJ commonplace)  )(PP (IN as)  (NP (PRP$ her)  (NN name)  )))))(. .)  ))";
+  
+  @Test
+  public void testToHashCode() {
+    Parse p1 = Parse.parseParse(PARSE_STRING);
+    p1.hashCode();
+  }
+  
+  @Test
+  public void testToString() {
+    Parse p1 = Parse.parseParse(PARSE_STRING);
+    p1.toString();
+  }
+  
+  @Test
+  public void testEquals() {
+    Parse p1 = Parse.parseParse(PARSE_STRING);
+    assertTrue(p1.equals(p1));
+  }
   
   @Test
   public void testParseClone() {

@@ -38,8 +38,8 @@ public class ParserTest {
    * Verify that training and tagging does not cause
    * runtime problems.
    */
-//  @Test
-  public void testChunkingParserTraining() throws Exception {
+  @Test
+  public void testTreeInsertParserTraining() throws Exception {
     
     ObjectStream<Parse> parseSamples = ParserTestUtil.openTestTrainingData();
     HeadRules headRules = ParserTestUtil.createTestHeadRules();
