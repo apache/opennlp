@@ -78,10 +78,13 @@ public class CmdLineUtil {
       System.err.println("The " + name + " file is a directory!");
       isFailure = true;
     }
-    else if (!outFile.canWrite()) {
-      System.err.println("No permissions to write the " + name + " file!");
-      isFailure = true;
-    }
+// Note: only return true in case the file exists
+//    else if (!outFile.canWrite()) {
+//      System.err.println("No permissions to write the " + name + " file!");
+//      isFailure = true;
+//    }
+    
+    // TODO: handle case when file exist and will be overwritten 
     else {
       isFailure = false;
     }
