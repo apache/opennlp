@@ -120,7 +120,7 @@ public class ParserTrainer implements CmdLineTool {
             parameters.getNumberOfIterations(), parameters.getCutoff());
       }
       else if (parameters.getParserType().equals(ParserType.TREEINSERT)) {
-        model = Parser.train(parameters.getLanguage(), sampleStream, rules, parameters.getNumberOfIterations(), 
+        model = opennlp.tools.parser.treeinsert.Parser.train(parameters.getLanguage(), sampleStream, rules, parameters.getNumberOfIterations(), 
             parameters.getCutoff());
       }
       else {
