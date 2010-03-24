@@ -44,12 +44,21 @@ public final class ModelUtil {
    *
    * This methods does not closes the provided stream.
    *
-   * @param model
-   *
+   * @param model the model to be written
+   * @param out the stream the model should be written to
+   * 
    * @throws IOException
+   * @throws {@link IllegalArgumentException} in case one of the parameters is null
    */
   public static void writeModel(AbstractModel model, final OutputStream out) throws IOException {
-    GenericModelWriter modelWriter = new GenericModelWriter(model,new DataOutputStream(new OutputStream() {
+    
+    if (model == null)
+      throw new IllegalArgumentException("model parameter must not be null!");
+    
+    if (out == null)
+      throw new IllegalArgumentException("out parameter must not be null!");
+    
+    GenericModelWriter modelWriter = new GenericModelWriter(model, new DataOutputStream(new OutputStream() {
       public void write(int b) throws IOException {
         out.write(b);
       }
