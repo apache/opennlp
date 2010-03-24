@@ -116,8 +116,9 @@ public class ParserModel extends BaseModel {
     }
     artifactMap.put(CHECK_MODEL_ENTRY_NAME, checkModel);
 
-    if (ParserType.CHUNKING.equals(modelType) && attachModel != null) {
-      throw new IllegalArgumentException("attachModel must be null for chunking parser!");
+    if (ParserType.CHUNKING.equals(modelType)) {
+      if (attachModel != null)
+          throw new IllegalArgumentException("attachModel must be null for chunking parser!");
     }
     else if (ParserType.TREEINSERT.equals(modelType)) {
       if (attachModel == null)
@@ -126,7 +127,7 @@ public class ParserModel extends BaseModel {
       artifactMap.put(ATTACH_MODEL_ENTRY_NAME, attachModel);
     }
     else {
-      throw new IllegalStateException();
+      throw new IllegalStateException("Unkown ParserType!");
     }
     
     if (parserTagger == null) {
