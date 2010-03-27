@@ -22,6 +22,7 @@ import java.util.List;
 
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.CachedFeatureGenerator;
+import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
 import opennlp.tools.util.featuregen.FeatureGeneratorUtil;
 import opennlp.tools.util.featuregen.OutcomePriorFeatureGenerator;
 import opennlp.tools.util.featuregen.PreviousMapFeatureGenerator;
@@ -33,7 +34,7 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  * Class for determining contextual features for a tag/chunk style
  * named-entity recognizer.
  *
- * @version $Revision: 1.3 $, $Date: 2009-03-09 03:10:51 $
+ * @version $Revision: 1.4 $, $Date: 2010-03-27 18:24:37 $
  */
 public class DefaultNameContextGenerator implements NameContextGenerator {
 
@@ -43,7 +44,9 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
       new AdaptiveFeatureGenerator[]{
       new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
       new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
-      new OutcomePriorFeatureGenerator()
+      new OutcomePriorFeatureGenerator(),
+      new PreviousMapFeatureGenerator(),
+      new BigramNameFeatureGenerator()
       });
 
   /**
@@ -135,4 +138,22 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
     return features.toArray(new String[features.size()]);
   }
+}
+
+class BigramNameFeatureGenerator extends FeatureGeneratorAdapter {
+
+  public void createFeatures(List features, String[] tokens, int index, String[] previousOutcomes) {
+    String wc = FeatureGeneratorUtil.tokenFeature(tokens[index]);
+    //bi-gram features 
+    if (index > 0) {
+      features.add("pw,w="+tokens[index-1]+","+tokens[index]);
+      String pwc = FeatureGeneratorUtil.tokenFeature(tokens[index-1]);
+      features.add("pwc,wc="+pwc+","+wc);
+    }
+    if (index+1 < tokens.length) {
+      features.add("w,nw="+tokens[index]+","+tokens[index+1]);
+      String nwc = FeatureGeneratorUtil.tokenFeature(tokens[index+1]); 
+      features.add("wc,nc="+wc+","+nwc);
+    }
+  } 
 }
