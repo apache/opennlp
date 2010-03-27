@@ -46,6 +46,7 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.CachedFeatureGenerator;
 import opennlp.tools.util.featuregen.OutcomePriorFeatureGenerator;
+import opennlp.tools.util.featuregen.PreviousMapFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
@@ -170,7 +171,9 @@ public class NameFinderME implements TokenNameFinder {
          new AdaptiveFeatureGenerator[]{
            new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
            new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
-           new OutcomePriorFeatureGenerator()
+           new OutcomePriorFeatureGenerator(),
+           new PreviousMapFeatureGenerator(),
+           new BigramNameFeatureGenerator()
            });
   }
   
