@@ -36,6 +36,13 @@ public class TokenSample {
    * @param tokenSpans the spans which mark the begin and end of the tokens.
    */
   public TokenSample(String text, Span tokenSpans[]) {
+    
+    if (text == null)
+      throw new IllegalArgumentException("text must not be null!");
+    
+    if (tokenSpans == null)
+      throw new IllegalArgumentException("tokenSpans must not be null! ");
+    
     this.text = text;
     this.tokenSpans = tokenSpans;
 
