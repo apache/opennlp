@@ -72,8 +72,8 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
   /* (non-Javadoc)
    * @see opennlp.tools.sentdetect.SDContextGenerator#getContext(java.lang.StringBuffer, int)
    */
-  public String[] getContext(String sb, int position) {
-
+  public String[] getContext(CharSequence sb, int position) {
+    
     /**
      * String preceding the eos character in the eos token.
      */
@@ -115,10 +115,10 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
           }
         }
       }
-      prefix = sb.substring(prefixStart, position).trim();
+      prefix = new StringBuffer(sb.subSequence(prefixStart, position)).toString().trim();
     }
     int prevStart = previousSpaceIndex(sb, prefixStart);
-    previous = sb.substring(prevStart, prefixStart).trim();
+    previous = new StringBuffer(sb.subSequence(prevStart, prefixStart)).toString().trim();
 
     int suffixEnd = nextSpaceIndex(sb, position, lastIndex);
     {
@@ -139,8 +139,8 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
       next = "";
     }
     else {
-      suffix = sb.substring(position + 1, suffixEnd).trim();
-      next = sb.substring(suffixEnd + 1, nextEnd).trim();
+      suffix = new StringBuilder(sb.subSequence(position + 1, suffixEnd)).toString().trim();
+      next = new StringBuilder(sb.subSequence(suffixEnd + 1, nextEnd)).toString().trim();
     }
 
     collectFeatures(prefix,suffix,previous,next);

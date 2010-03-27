@@ -155,7 +155,7 @@ public class SentenceDetectorME implements SentenceDetector {
         continue;
       }
 
-      double[] probs = model.eval(cgen.getContext(sb.toString(), cint));
+      double[] probs = model.eval(cgen.getContext(sb, cint));
       String bestOutcome = model.getBestOutcome(probs);
       sentProb *= probs[model.getIndex(bestOutcome)];
 
