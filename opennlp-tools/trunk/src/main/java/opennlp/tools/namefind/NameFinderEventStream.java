@@ -102,11 +102,8 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
     try {
     NameSample sample = null;
     if ((sample = nameSampleStream.read()) != null) {
-      while (sample.isClearAdaptiveDataSet()) {
+      if (sample.isClearAdaptiveDataSet()) {
         contextGenerator.clearAdaptiveData();
-        if ((sample = nameSampleStream.read()) == null) {
-          return;
-        }
       }
       //System.err.println(sample);
       String outcomes[] = generateOutcomes(sample.getNames(), sample.getSentence().length);
