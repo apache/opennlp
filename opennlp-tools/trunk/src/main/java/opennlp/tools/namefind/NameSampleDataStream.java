@@ -52,9 +52,20 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
   public NameSample read() throws ObjectStreamException {
       String token = in.read();
       
+      boolean isClearAdaptiveData = false;
+
+      // An empty line indicates the begin of a new article
+      // for which the adaptive data in the feature generators
+      // must be cleared
       if (token != null) {
-        // TODO: clear adaptive data for every empty line
-        return createNameSample(token);
+        if (token.trim().length() == 0) {
+          isClearAdaptiveData = true;
+          token = in.read();
+        }
+      }
+      
+      if (token != null) {
+        return NameSample.parse(token, isClearAdaptiveData);
       }
       else {
         return null;
@@ -68,53 +79,5 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
   
   public void close() throws ObjectStreamException {
     in.close();
-  }
-  
-  private NameSample createNameSample(String taggedTokens) throws ObjectStreamException {
-    String[] parts = taggedTokens.split(" ");
-
-    List<String> tokenList = new ArrayList<String>(parts.length);
-    List<Span> nameList = new ArrayList<Span>();
-
-    String nameType = null;
-    int startIndex = -1;
-    int wordIndex = 0;
-    
-    // we check if at least one name has the a type. If no one has, we will
-    // leave the NameType property of NameSample null.
-    boolean catchingName = false;
-    
-    for (int pi = 0; pi < parts.length; pi++) {
-      Matcher startMatcher = this.startTagPattern.matcher(parts[pi]);
-      if (startMatcher.matches()) {
-        if(catchingName) {
-          throw new ObjectStreamException("Found unexpected annotation " + parts[pi] + " while handling a name sequence.");
-        }
-        catchingName = true;
-        startIndex = wordIndex;
-        nameType = startMatcher.group(2);
-        if(nameType != null && nameType.length() == 0) {
-          throw new ObjectStreamException("Missing a name type: " + parts[pi]);
-        }
-          
-      }
-      else if (parts[pi].equals(END_TAG)) {
-        if(catchingName == false) {
-          throw new ObjectStreamException("Found unexpected annotation " + parts[pi] + ".");
-        }
-        catchingName = false;
-        // create name
-        nameList.add(new Span(startIndex, wordIndex, nameType));
-        
-      }
-      else {
-        tokenList.add(parts[pi]);
-        wordIndex++;
-      }
-    }
-    String[] sentence = tokenList.toArray(new String[tokenList.size()]);
-    Span[] names = nameList.toArray(new Span[nameList.size()]);
-    
-    return new NameSample(sentence, names, sentence.length==0 );
   }
 }

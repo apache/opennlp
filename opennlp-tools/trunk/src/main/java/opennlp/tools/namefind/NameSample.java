@@ -17,6 +17,13 @@
 
 package opennlp.tools.namefind;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.Span;
 
 /**
@@ -101,7 +108,8 @@ public class NameSample {
       result.append(sentence[tokenIndex] + ' ');
     }
 
-    result.setLength(result.length() - 1);
+    if (sentence.length > 1)
+      result.setLength(result.length() - 1);
     
     for (int nameIndex = 0; nameIndex < names.length; nameIndex++) {
       if (names[nameIndex].getEnd() == sentence.length) {
@@ -110,5 +118,56 @@ public class NameSample {
     }
 
     return result.toString();
+  }
+  
+  public static NameSample parse(String taggedTokens, boolean isClearAdaptiveData) 
+    throws ObjectStreamException {
+    String[] parts = WhitespaceTokenizer.INSTANCE.tokenize(taggedTokens);
+
+    List<String> tokenList = new ArrayList<String>(parts.length);
+    List<Span> nameList = new ArrayList<Span>();
+
+    String nameType = null;
+    int startIndex = -1;
+    int wordIndex = 0;
+    
+    // we check if at least one name has the a type. If no one has, we will
+    // leave the NameType property of NameSample null.
+    boolean catchingName = false;
+    
+    Pattern startTagPattern = Pattern.compile("<START(:(\\w*))?>");
+    
+    for (int pi = 0; pi < parts.length; pi++) {
+      Matcher startMatcher = startTagPattern.matcher(parts[pi]);
+      if (startMatcher.matches()) {
+        if(catchingName) {
+          throw new ObjectStreamException("Found unexpected annotation " + parts[pi] + " while handling a name sequence.");
+        }
+        catchingName = true;
+        startIndex = wordIndex;
+        nameType = startMatcher.group(2);
+        if(nameType != null && nameType.length() == 0) {
+          throw new ObjectStreamException("Missing a name type: " + parts[pi]);
+        }
+          
+      }
+      else if (parts[pi].equals(NameSampleDataStream.END_TAG)) {
+        if(catchingName == false) {
+          throw new ObjectStreamException("Found unexpected annotation " + parts[pi] + ".");
+        }
+        catchingName = false;
+        // create name
+        nameList.add(new Span(startIndex, wordIndex, nameType));
+        
+      }
+      else {
+        tokenList.add(parts[pi]);
+        wordIndex++;
+      }
+    }
+    String[] sentence = tokenList.toArray(new String[tokenList.size()]);
+    Span[] names = nameList.toArray(new Span[nameList.size()]);
+    
+    return new NameSample(sentence, names, isClearAdaptiveData);
   }
 }
