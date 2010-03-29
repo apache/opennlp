@@ -57,11 +57,9 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
       // An empty line indicates the begin of a new article
       // for which the adaptive data in the feature generators
       // must be cleared
-      if (token != null) {
-        if (token.trim().length() == 0) {
+      while (token != null && token.trim().length() == 0) {
           isClearAdaptiveData = true;
           token = in.read();
-        }
       }
       
       if (token != null) {
