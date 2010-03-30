@@ -34,7 +34,7 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  * Class for determining contextual features for a tag/chunk style
  * named-entity recognizer.
  *
- * @version $Revision: 1.4 $, $Date: 2010-03-27 18:24:37 $
+ * @version $Revision: 1.5 $, $Date: 2010-03-30 16:33:03 $
  */
 public class DefaultNameContextGenerator implements NameContextGenerator {
 
@@ -114,10 +114,6 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
     for (int i = 0; i < featureGenerators.length; i++) {
       featureGenerators[i].createFeatures(features, tokens, index, preds);
-    }
-
-    if (index == 0) {
-      features.add("fwis"); //first word in sentence
     }
 
     //previous outcome features

@@ -24,14 +24,23 @@ import java.util.List;
  */
 public class SentenceFeatureGenerator extends FeatureGeneratorAdapter {
 
+  private final boolean isGenerateFirstWordFeature;
+  private final boolean isGenerateLastWordFeature;
+  
+  public SentenceFeatureGenerator(boolean isGenerateFirstWordFeature,
+      boolean isGenerateLastWordFeature) {
+    this.isGenerateFirstWordFeature = isGenerateFirstWordFeature;
+    this.isGenerateLastWordFeature = isGenerateLastWordFeature;
+  }
+  
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 
-    if (index == 0) {
+    if (isGenerateFirstWordFeature && index == 0) {
       features.add("S=begin");
     }
 
-    if (tokens.length == index + 1) {
+    if (isGenerateLastWordFeature && tokens.length == index + 1) {
       features.add("S=end");
     }
   }
