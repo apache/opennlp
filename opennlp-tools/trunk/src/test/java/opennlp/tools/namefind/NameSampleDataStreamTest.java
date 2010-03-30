@@ -19,12 +19,16 @@ package opennlp.tools.namefind;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Test;
+
 import junit.framework.TestCase;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -296,4 +300,26 @@ public class NameSampleDataStreamTest extends TestCase {
     } catch (ObjectStreamException e) {
     }
   }
+  
+  @Test
+  public void testClearAdaptiveData() throws ObjectStreamException {
+    StringBuilder trainingData = new StringBuilder();
+    trainingData.append("a\n");
+    trainingData.append("b\n");
+    trainingData.append("c\n");
+    trainingData.append("\n");
+    trainingData.append("d\n");
+    
+    ObjectStream<String> untokenizedLineStream =
+      new PlainTextByLineStream(new StringReader(trainingData.toString()));
+    
+    ObjectStream<NameSample> trainingStream = new NameSampleDataStream(untokenizedLineStream);
+    
+    assertFalse(trainingStream.read().isClearAdaptiveDataSet());
+    assertFalse(trainingStream.read().isClearAdaptiveDataSet());
+    assertFalse(trainingStream.read().isClearAdaptiveDataSet());
+    assertTrue(trainingStream.read().isClearAdaptiveDataSet());
+    assertNull(trainingStream.read());
+  }
+  
 }

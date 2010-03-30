@@ -96,4 +96,17 @@ public class NameSampleTest extends TestCase {
     
     assertEquals("My name is <START> Anna <END>", sample.toString());
   }
+  
+  /**
+   * Tests if an additional space is correctly treated as one space.
+   * 
+   * @throws Exception
+   */
+  public void testParseWithAdditionalSpace() throws Exception {
+    String line = "<START> M . K . <END> <START> Schwitters <END> ?  <START> Heartfield <END> ?";
+
+    NameSample test = NameSample.parse(line, false);
+    
+    assertEquals(8, test.getSentence().length);
+  }
 }
