@@ -66,6 +66,7 @@ public class NameSampleTest extends TestCase {
    */
   public void testNoTypesToString() {
     String nameSampleStr = createSimpleNameSample(false).toString();
+    
     assertEquals("<START> U . S . <END> President <START> Barack Obama <END> is considering " +
     		"sending additional American forces to <START> Afghanistan <END> .", nameSampleStr);
   }
@@ -74,9 +75,16 @@ public class NameSampleTest extends TestCase {
    * Checks if could create a NameSample with NameTypes, generate the
    * string representation and validate it.
    */
-  public void testWithTypesToString() {
+  public void testWithTypesToString() throws Exception {
     String nameSampleStr = createSimpleNameSample(true).toString();
     assertEquals("<START:Location> U . S . <END> President <START:Person> Barack Obama <END> is considering sending additional American forces to <START:Location> Afghanistan <END> .", nameSampleStr);
+  
+    NameSample parsedSample = NameSample.parse("<START:Location> U . S . <END> " +
+    		"President <START:Person> Barack Obama <END> is considering sending " +
+    		"additional American forces to <START:Location> Afghanistan <END> .", 
+    		false);
+    
+    assertEquals(createSimpleNameSample(true), parsedSample);
   }
   
   /**

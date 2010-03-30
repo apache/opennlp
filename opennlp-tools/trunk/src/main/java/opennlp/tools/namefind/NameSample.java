@@ -18,6 +18,7 @@
 package opennlp.tools.namefind;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,6 +83,26 @@ public class NameSample {
     return isClearAdaptiveData;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    
+    if (this == obj) {
+      return true;
+    }
+    else if (obj instanceof NameSample) {
+      NameSample a = (NameSample) obj;
+      
+      return Arrays.equals(getSentence(), a.getSentence()) &&
+          Arrays.equals(getNames(), a.getNames()) &&
+          Arrays.equals(getAdditionalContext(), a.getAdditionalContext()) &&
+          isClearAdaptiveDataSet() == a.isClearAdaptiveDataSet();
+    }
+    else {
+      return true;
+    }
+    
+  }
+  
   public String toString() {
     StringBuilder result = new StringBuilder();
 
