@@ -99,6 +99,9 @@ public class TokenNameFinder implements CmdLineTool {
       while((line = untokenizedLineStream.read()) != null) {
         String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
         
+        if (whitespaceTokenizerLine.length == 0)
+            nameFinder.clearAdaptiveData();
+        
         Span names[] = nameFinder.find(whitespaceTokenizerLine);
         
         NameSample nameSample = new NameSample(whitespaceTokenizerLine, names, false);
