@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class OutcomePriorFeatureGenerator extends FeatureGeneratorAdapter {
 
-  public static final String OUTCOME_PRIOR_FEATURE = "outcome-prior";
+  public static final String OUTCOME_PRIOR_FEATURE = "def";
 
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
