@@ -32,6 +32,9 @@ import org.junit.Test;
  */
 public class TokSpanEventStreamTest {
 
+  /**
+   * Tests the event stream for correctly generated outcomes.
+   */
   @Test
   public void testEventOutcomes() {
     
