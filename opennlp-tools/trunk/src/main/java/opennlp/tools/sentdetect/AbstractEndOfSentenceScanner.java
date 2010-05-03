@@ -25,7 +25,9 @@ import opennlp.maxent.IntegerPool;
 
 /**
  * Abstract class for common methods related to identifying potential ends of sentences.
+ * @deprecated use DefaultEndOfSentenceScanner instead
  */
+@Deprecated
 public abstract class AbstractEndOfSentenceScanner implements EndOfSentenceScanner {
 
   protected static final IntegerPool INT_POOL = new IntegerPool(500);
