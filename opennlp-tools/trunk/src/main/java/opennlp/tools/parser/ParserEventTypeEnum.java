@@ -26,7 +26,9 @@ public enum ParserEventTypeEnum {
   BUILD,
   CHECK,
 
+  @Deprecated
   CHUNK,
+  @Deprecated
   TAG,
 
   ATTACH
