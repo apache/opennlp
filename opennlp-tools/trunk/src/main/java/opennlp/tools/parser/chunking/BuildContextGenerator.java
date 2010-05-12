@@ -22,10 +22,10 @@ import java.util.Collection;
 import java.util.List;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.StringList;
 import opennlp.tools.parser.AbstractContextGenerator;
 import opennlp.tools.parser.Cons;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.util.StringList;
 
 /**
  * Class to generator predictive contexts for deciding how constituents should be combined together.
@@ -153,13 +153,13 @@ public class BuildContextGenerator extends AbstractContextGenerator {
         u_1 = dict.contains(new StringList(unigram));
 
         //extra check for 2==null case
-        b_2_1 = b_2_1 && u_1;
-        t_2_10 = t_2_10 && u_1;
-        t_101 = t_101 && u_1;
+        b_2_1 = b_2_1 && u_1 & u_2;
+        t_2_10 = t_2_10 && u_1 & u_2 & u0;
+        t_101 = t_101 && u_1 & u0 && u1;
 
         bigram[0] = p_1.getHead().toString();
         bigram[1] = p0.getHead().toString();
-        b_10 = dict.contains(new StringList(bigram));
+        b_10 = dict.contains(new StringList(bigram)) && u_1 && u0;
       }
       if (p1 != null && p2 != null) {
         bigram[0] = p1.getHead().toString();
@@ -175,14 +175,15 @@ public class BuildContextGenerator extends AbstractContextGenerator {
         unigram[0] = p1.getHead().toString();
         u1 = dict.contains(new StringList(unigram));
 
-        //extra check fpr 2==null case
-        b12 = b12 && u1;
-        t012 = t012 && u1;
-        t_101 = t_101 && u1;
+        //extra check for 2==null case
+        b12 = b12 && u1 && u2;
+        t012 = t012 && u1 && u2 && u0;
+        t_101 = t_101 && u0 && u_1 && u1;
 
         bigram[0] = p0.getHead().toString();
         bigram[1] = p1.getHead().toString();
         b01 = dict.contains(new StringList(bigram));
+        b01 = b01 && u0 && u1;
       }
     }
 
