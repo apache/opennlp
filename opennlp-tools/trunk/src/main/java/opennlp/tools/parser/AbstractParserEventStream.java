@@ -19,6 +19,7 @@
 package opennlp.tools.parser;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -29,19 +30,15 @@ import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.postag.DefaultPOSContextGenerator;
 import opennlp.tools.postag.POSContextGenerator;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 /**
  * Abstract class extended by parser event streams which perform tagging and chunking.
  * @author Tom Morton
  */
-public abstract class AbstractParserEventStream extends opennlp.model.AbstractEventStream {
+public abstract class AbstractParserEventStream extends opennlp.tools.util.AbstractEventStream<Parse> {
 
   private ChunkerContextGenerator chunkerContextGenerator;
   private POSContextGenerator tagContextGenerator;
-  private Event[] events;
-  private int ei;
-  private ObjectStream<Parse> data;
   protected HeadRules rules;
   protected Set<String> punctSet;
   
@@ -53,6 +50,7 @@ public abstract class AbstractParserEventStream extends opennlp.model.AbstractEv
   protected Dictionary dict;
 
   public AbstractParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
+    super(d);
     this.dict = dict;
     if (etype == ParserEventTypeEnum.CHUNK) {
       this.chunkerContextGenerator = new ChunkContextGenerator();
@@ -63,39 +61,39 @@ public abstract class AbstractParserEventStream extends opennlp.model.AbstractEv
     this.rules = rules;
     punctSet = rules.getPunctuationTags();
     this.etype = etype;
-    data = d;
-    ei = 0;
+
     init();
-    
-    // fill events
-    addNewEvents();
   }
 
+  @Override
+  protected Iterator<Event> createEvents(Parse sample) {
+    List<Event> newEvents = new ArrayList<Event>();
+    
+    Parse.pruneParse(sample);
+    if (fixPossesives) {
+      Parse.fixPossesives(sample);
+    }
+    sample.updateHeads(rules);
+    Parse[] chunks = getInitialChunks(sample);
+    if (etype == ParserEventTypeEnum.TAG) {
+      addTagEvents(newEvents, chunks);
+    }
+    else if (etype == ParserEventTypeEnum.CHUNK) {
+      addChunkEvents(newEvents, chunks);
+    }
+    else {
+      addParseEvents(newEvents, Parser.collapsePunctuation(chunks,punctSet));
+    }
+    
+    return newEvents.iterator();
+  }
+  
   protected void init() {
     fixPossesives = false;
   }
 
   public AbstractParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype) {
     this(d,rules,etype,null);
-  }
-
-  public Event next() {
-    hasNext();
-    return events[ei++];
-  }
-
-  public boolean hasNext() {
-    // TODO: This might cause problems if once zero events are added
-    // this problem exist in other places too ...
-    // For now I will let it like this and it should be refactored
-    // when the EventStream interface is updated
-      if (ei == events.length) {
-        // refill events
-        addNewEvents();
-        ei = 0;
-      }
-    
-    return ei < events.length;
   }
 
   public static Parse[] getInitialChunks(Parse p) {
@@ -126,40 +124,6 @@ public abstract class AbstractParserEventStream extends opennlp.model.AbstractEv
         }
       }
     }
-  }
-
-  private void addNewEvents() {
-    //System.err.println("ParserEventStream.addNewEvents: "+parseStr);
-    List<Event> newEvents = new ArrayList<Event>();
-    Parse p;
-    try {
-      p = data.read();
-    } catch (ObjectStreamException e) {
-      throw new RuntimeException(e);
-    }
-    
-    if (p != null) {
-      Parse.pruneParse(p);
-      if (fixPossesives) {
-        Parse.fixPossesives(p);
-      }
-      p.updateHeads(rules);
-      Parse[] chunks = getInitialChunks(p);
-      if (etype == ParserEventTypeEnum.TAG) {
-        addTagEvents(newEvents, chunks);
-      }
-      else if (etype == ParserEventTypeEnum.CHUNK) {
-        addChunkEvents(newEvents, chunks);
-      }
-      else {
-        addParseEvents(newEvents, Parser.collapsePunctuation(chunks,punctSet));
-      }
-    }
-    else {
-      this.events = new Event[0];
-    }
-    
-    this.events = newEvents.toArray(new Event[newEvents.size()]);
   }
 
   /**
