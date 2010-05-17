@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
@@ -37,7 +36,6 @@ import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
@@ -58,7 +56,6 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.StringList;
 
 /**
  * Class for a shift reduce style parser based on Adwait Ratnaparkhi's 1998 thesis.
@@ -82,15 +79,16 @@ public class Parser extends AbstractBottomUpParser {
   private int completeIndex;
   private int incompleteIndex;
 
-  public Parser(ParserModel model) {
+  public Parser(ParserModel model, int beamSize, double advancePercentage) {
     this(model.getBuildModel(), model.getCheckModel(),
         new POSTaggerME(model.getParserTaggerModel()),
         new ChunkerME(model.getParserChunkerModel(), ChunkerME.DEFAULT_BEAM_SIZE, 
-        new ParserChunkerSequenceValidator(model.getParserChunkerModel())),
-        model.getHeadRules());
-    
-    
-    
+            new ParserChunkerSequenceValidator(model.getParserChunkerModel())),
+            model.getHeadRules(), beamSize, advancePercentage);
+  }
+  
+  public Parser(ParserModel model) {
+    this(model, defaultBeamSize, defaultAdvancePercentage);
   }
 
   /**
@@ -309,6 +307,7 @@ public class Parser extends AbstractBottomUpParser {
         ParserType.CHUNKING);
   }
 
+  @Deprecated
   private static void usage() {
     System.err.println("Usage: Parser -[dict|tag|chunk|build|check|fun] trainingFile parserModelDirectory [iterations cutoff]");
     System.err.println();
