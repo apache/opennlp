@@ -62,7 +62,7 @@ public class ChunkerME implements Chunker {
    * @param model
    */
   public ChunkerME(ChunkerModel model) {
-    this(model, DEFAULT_BEAM_SIZE);
+    this(model, DEFAULT_BEAM_SIZE, DEFAULT_BEAM_SIZE);
   }
 
   /**
@@ -70,10 +70,11 @@ public class ChunkerME implements Chunker {
    * the specified beam size.
    *
    * @param model The model for this chunker.
+   * @param cacheSize
    * @param beamSize The size of the beam that should be used when decoding sequences.
    */
-  public ChunkerME(ChunkerModel model, int beamSize) {
-    this(model, beamSize, null);
+  public ChunkerME(ChunkerModel model, int cacheSize, int beamSize) {
+    this(model, cacheSize, beamSize, null);
   }
   
   /**
@@ -81,15 +82,16 @@ public class ChunkerME implements Chunker {
    * the specified beam size.
    *
    * @param model The model for this chunker.
+   * @param cacheSize
    * @param beamSize The size of the beam that should be used when decoding sequences.
    * @param sequenceValidator  The {@link SequenceValidator} to determines whether the outcome 
    *        is valid for the preceding sequence. This can be used to implement constraints 
    *        on what sequences are valid.
    */
-  public ChunkerME(ChunkerModel model, int beamSize, SequenceValidator<String> sequenceValidator) {
+  public ChunkerME(ChunkerModel model, int cacheSize, int beamSize, SequenceValidator<String> sequenceValidator) {
     this.model = model.getChunkerModel();
     // TODO: Tom which cache size should we use here ?
-    beam = new BeamSearch<String>(beamSize, new DefaultChunkerContextGenerator(), this.model, sequenceValidator, 0);
+    beam = new BeamSearch<String>(beamSize, new DefaultChunkerContextGenerator(), this.model, sequenceValidator, 10);
   }
 
   /**
