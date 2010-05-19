@@ -69,13 +69,15 @@ public class ParserTrainer implements CmdLineTool {
       trainingDataIn = null;
     }
     
+    System.err.println("done");
+    
     return new ParseSampleStream(
         new PlainTextByLineStream(trainingDataIn.getChannel(),
         encoding));
   }
   
   static Dictionary buildDictionary(ObjectStream<Parse> parseSamples, HeadRules headRules, int cutoff) {
-    System.out.print("Building dictionary ...");
+    System.err.print("Building dictionary ...");
     
     Dictionary mdict;
     try {
@@ -85,7 +87,7 @@ public class ParserTrainer implements CmdLineTool {
       System.err.println("Error while building dictionary: " + e.getMessage());
       mdict = null;
     }
-    System.out.println("done");
+    System.err.println("done");
     
     return mdict;
   }
