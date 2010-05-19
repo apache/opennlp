@@ -39,12 +39,13 @@ public class POSTaggerTrainer implements CmdLineTool {
   }
   
   public String getShortDescription() {
-    return "";
+    return "trains a model for the part-of-speech tagger";
   }
   
   public String getHelp() {
-    // TODO: specify all parameters
-    return "Usage: " + CLI.CMD + " " + getName() + "[-dict dict] trainingData model ";
+    // TODO: Move the generation of the description back to the TrainingParameters class ...
+    return "Usage: " + CLI.CMD + " " + getName() + TrainingParameters.getParameterUsage() 
+        + " [-dict tagdict] [-model maxent|perceptron|perceptron_sequence] trainingData model ";
   }
 
   static ObjectStream<POSSample> openSampleData(String sampleDataName,
