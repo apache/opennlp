@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.parser.ParserModel;
@@ -35,11 +36,11 @@ public class TaggerModelReplacer implements CmdLineTool {
   }
   
   public String getShortDescription() {
-    return "";
+    return "replaces the tagger model in a parser model";
   }
   
   public String getHelp() {
-    return "";
+    return "Usage: " + CLI.CMD + " " + getName() + " parser.model tagger.model";
   }
 
   public void run(String[] args) {
