@@ -178,6 +178,24 @@ public class CmdLineUtil {
   }
   
   /**
+   * Retrieves the specified parameters from the specified arguments.
+   * 
+   * @param param
+   * @param args
+   * @return
+   */
+  public static Double getDoubleParameter(String param, String args[]) {
+    String value = getParameter(param, args);
+    
+    try {
+      return Double.parseDouble(value);
+    }
+    catch (NumberFormatException e) {
+      return null;
+    }
+  }
+  
+  /**
    * Retrieves the "-encoding" parameter.
    *
    * @param param
