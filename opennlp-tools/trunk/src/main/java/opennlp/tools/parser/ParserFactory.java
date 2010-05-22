@@ -22,7 +22,7 @@ public class ParserFactory {
   private ParserFactory() {
   }
   
-  public static Parser create(ParserModel model) {
+  public static Parser create(ParserModel model, int beamSize, double advancePercentage) {
     
     if (ParserType.CHUNKING.equals(model.getParserType())) {
       return new opennlp.tools.parser.chunking.Parser(model);
@@ -34,5 +34,10 @@ public class ParserFactory {
       throw new IllegalStateException("Unexpected ParserType: " + 
           model.getParserType().name());
     }
+  }
+  
+  public static Parser create(ParserModel model) {
+    return create(model, AbstractBottomUpParser.defaultBeamSize, 
+        AbstractBottomUpParser.defaultAdvancePercentage);
   }
 }
