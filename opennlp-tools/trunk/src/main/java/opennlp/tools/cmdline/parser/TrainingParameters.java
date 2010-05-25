@@ -31,7 +31,7 @@ public class TrainingParameters extends BasicTrainingParameters {
     String typeString = CmdLineUtil.getParameter("-parserType", args);
     
     if (typeString != null) {
-      parserType = parserType.parse(typeString);
+      parserType = ParserType.parse(typeString);
     }
   }
   
