@@ -31,14 +31,7 @@ public class ChunkerEventStream extends opennlp.model.AbstractEventStream {
   private Event[] events;
   private int ei;
 
-  /**
-   * Creates a new event stream based on the specified data stream.
-   * @param d The data stream for this event stream.
-   */
-  public ChunkerEventStream(ObjectStream<ChunkSample> d) {
-    this(d, new DefaultChunkerContextGenerator());
-  }
-
+  
   /**
    * Creates a new event stream based on the specified data stream using the specified context generator.
    * @param d The data stream for this event stream.
@@ -49,6 +42,14 @@ public class ChunkerEventStream extends opennlp.model.AbstractEventStream {
     data = d;
     ei = 0;
     addNewEvents();
+  }
+  
+  /**
+   * Creates a new event stream based on the specified data stream.
+   * @param d The data stream for this event stream.
+   */
+  public ChunkerEventStream(ObjectStream<ChunkSample> d) {
+    this(d, new DefaultChunkerContextGenerator());
   }
 
   public Event next() {

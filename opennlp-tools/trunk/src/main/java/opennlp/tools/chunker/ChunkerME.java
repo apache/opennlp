@@ -19,6 +19,7 @@ package opennlp.tools.chunker;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -29,6 +30,7 @@ import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
+import opennlp.tools.util.EventTraceStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -56,13 +58,37 @@ public class ChunkerME implements Chunker {
   protected MaxentModel model;
 
   /**
-   * Initializes the current instance with the specified model.
-   * The default beam size is used.
+   * Initializes the current instance with the specified model and
+   * the specified beam size.
    *
-   * @param model
+   * @param model The model for this chunker.
+   * @param cacheSize
+   * @param beamSize The size of the beam that should be used when decoding sequences.
+   * @param sequenceValidator  The {@link SequenceValidator} to determines whether the outcome 
+   *        is valid for the preceding sequence. This can be used to implement constraints 
+   *        on what sequences are valid.
    */
-  public ChunkerME(ChunkerModel model) {
-    this(model, DEFAULT_BEAM_SIZE, DEFAULT_BEAM_SIZE);
+  public ChunkerME(ChunkerModel model, int cacheSize, int beamSize, SequenceValidator<String> sequenceValidator,
+      ChunkerContextGenerator contextGenerator) {
+    this.model = model.getChunkerModel();
+    beam = new BeamSearch<String>(beamSize, contextGenerator, this.model, sequenceValidator, beamSize);
+  }
+  
+  /**
+   * Initializes the current instance with the specified model and
+   * the specified beam size.
+   *
+   * @param model The model for this chunker.
+   * @param cacheSize
+   * @param beamSize The size of the beam that should be used when decoding sequences.
+   * @param sequenceValidator  The {@link SequenceValidator} to determines whether the outcome 
+   *        is valid for the preceding sequence. This can be used to implement constraints 
+   *        on what sequences are valid.
+   */
+  public ChunkerME(ChunkerModel model, int cacheSize, int beamSize,
+      SequenceValidator<String> sequenceValidator) {
+    this(model, cacheSize, beamSize, sequenceValidator,
+        new DefaultChunkerContextGenerator());
   }
 
   /**
@@ -78,20 +104,13 @@ public class ChunkerME implements Chunker {
   }
   
   /**
-   * Initializes the current instance with the specified model and
-   * the specified beam size.
+   * Initializes the current instance with the specified model.
+   * The default beam size is used.
    *
-   * @param model The model for this chunker.
-   * @param cacheSize
-   * @param beamSize The size of the beam that should be used when decoding sequences.
-   * @param sequenceValidator  The {@link SequenceValidator} to determines whether the outcome 
-   *        is valid for the preceding sequence. This can be used to implement constraints 
-   *        on what sequences are valid.
+   * @param model
    */
-  public ChunkerME(ChunkerModel model, int cacheSize, int beamSize, SequenceValidator<String> sequenceValidator) {
-    this.model = model.getChunkerModel();
-    // TODO: Tom which cache size should we use here ?
-    beam = new BeamSearch<String>(beamSize, new DefaultChunkerContextGenerator(), this.model, sequenceValidator, 10);
+  public ChunkerME(ChunkerModel model) {
+    this(model, DEFAULT_BEAM_SIZE, DEFAULT_BEAM_SIZE);
   }
 
   /**
@@ -170,6 +189,23 @@ public class ChunkerME implements Chunker {
     return bestSequence.getProbs();
   }
 
+  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, int iterations, int cut,
+      ChunkerContextGenerator contextGenerator)  throws IOException, ObjectStreamException {
+    
+    EventStream es = new ChunkerEventStream(in, contextGenerator);
+    
+    try {
+    FileWriter writer = new FileWriter("chunk.events");
+    EventStream ces = new EventTraceStream(es, writer);
+    
+    AbstractModel maxentModel = opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(ces, cut));
+    writer.close();
+    
+    // TODO: Make language configurable
+    return new ChunkerModel(lang, maxentModel);
+    } catch (Exception e) {e.printStackTrace(); return null;}
+  }
+  
   /**
    * Trains a new model for the {@link ChunkerME}.
    *
@@ -179,13 +215,9 @@ public class ChunkerME implements Chunker {
    * @return the new model
    * @throws IOException
    */
-  public static ChunkerModel train(ObjectStream<ChunkSample> in, int iterations, int cut) throws IOException, ObjectStreamException {
-    EventStream es = new ChunkerEventStream(in);
-    
-    AbstractModel maxentModel = opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
-
-    // TODO: Make language configurable
-    return new ChunkerModel("en", maxentModel);
+  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, int iterations, int cut)
+      throws IOException, ObjectStreamException {
+    return train(lang, in, iterations, cut, new DefaultChunkerContextGenerator());
   }
 
   @Deprecated
@@ -253,7 +285,7 @@ public class ChunkerME implements Chunker {
     else {
       es = new ChunkSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile)));
     }
-    mod = train(es, iterations, cutoff);
+    mod = train("en", es, iterations, cutoff);
     System.out.println("Saving the model as: " + args[1]);
     OutputStream out = new FileOutputStream(outFile);
     mod.serialize(out);
