@@ -170,11 +170,13 @@ public class CmdLineUtil {
     String value = getParameter(param, args);
     
     try {
-      return Integer.parseInt(value);
+      if (value != null)
+          return Integer.parseInt(value);
     }
     catch (NumberFormatException e) {
-      return null;
     }
+    
+    return null;
   }
   
   /**
@@ -188,11 +190,13 @@ public class CmdLineUtil {
     String value = getParameter(param, args);
     
     try {
-      return Double.parseDouble(value);
+      if (value != null)
+          return Double.parseDouble(value);
     }
     catch (NumberFormatException e) {
-      return null;
     }
+    
+    return null;
   }
   
   /**
