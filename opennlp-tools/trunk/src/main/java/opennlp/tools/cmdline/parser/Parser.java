@@ -61,6 +61,7 @@ public class Parser implements CmdLineTool {
   private static Pattern untokenizedParenPattern1 = Pattern.compile("([^ ])([({)}])");
   private static Pattern untokenizedParenPattern2 = Pattern.compile("([({)}])([^ ])");
 
+  // TODO: We should do this conversion on training time ... 
   private static String convertToken(String token) {
     if (token.equals("(")) {
       return "-LRB-";
@@ -148,7 +149,7 @@ public class Parser implements CmdLineTool {
     
     Integer beamSize = CmdLineUtil.getIntParameter("bs", args);
     if (beamSize == null)
-        beamSize = 20;
+        beamSize = AbstractBottomUpParser.defaultBeamSize;
     
     Integer numParses = CmdLineUtil.getIntParameter("k", args);
     boolean showTopK;
@@ -161,9 +162,13 @@ public class Parser implements CmdLineTool {
     }
     
     // TODO: Set advance percentage and beam size
+    Double advancePercentage = CmdLineUtil.getDoubleParameter("ap", args);
     
+    if (advancePercentage == null)
+      advancePercentage = AbstractBottomUpParser.defaultAdvancePercentage;
+      
     opennlp.tools.parser.Parser parser = 
-        ParserFactory.create(model); 
+        ParserFactory.create(model, beamSize, advancePercentage); 
 
     ObjectStream<String> lineStream =
       new PlainTextByLineStream(new InputStreamReader(System.in));
