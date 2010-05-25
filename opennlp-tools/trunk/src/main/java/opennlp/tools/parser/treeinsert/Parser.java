@@ -31,10 +31,12 @@ import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.AbstractBottomUpParser;
+import opennlp.tools.parser.ChunkContextGenerator;
 import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParseSampleStream;
+import opennlp.tools.parser.ParserChunkerSequenceValidator;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserType;
@@ -100,7 +102,10 @@ public class Parser extends AbstractBottomUpParser {
     // when model does not contain the attach model
     this(model.getBuildModel(), model.getAttachModel(), model.getCheckModel(), 
         new POSTaggerME(model.getParserTaggerModel()), 
-        new ChunkerME(model.getParserChunkerModel()), model.getHeadRules());
+        new ChunkerME(model.getParserChunkerModel(), 
+        ChunkerME.DEFAULT_BEAM_SIZE, ChunkerME.DEFAULT_BEAM_SIZE,
+        new ParserChunkerSequenceValidator(model.getParserChunkerModel()),
+        new ChunkContextGenerator()), model.getHeadRules());
   }
   
   @Deprecated
@@ -442,8 +447,8 @@ public class Parser extends AbstractBottomUpParser {
     parseSamples.reset();
 
     // chunk
-    ChunkerModel chunkModel = ChunkerME.train(new ChunkSampleStream(
-        parseSamples), iterations, cut);
+    ChunkerModel chunkModel = ChunkerME.train(languageCode, new ChunkSampleStream(
+        parseSamples), iterations, cut, new ChunkContextGenerator());
 
     parseSamples.reset();
 

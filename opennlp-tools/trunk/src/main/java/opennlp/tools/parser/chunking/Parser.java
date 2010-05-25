@@ -37,6 +37,7 @@ import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.AbstractBottomUpParser;
+import opennlp.tools.parser.ChunkContextGenerator;
 import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
@@ -84,7 +85,8 @@ public class Parser extends AbstractBottomUpParser {
         new POSTaggerME(model.getParserTaggerModel()),
         new ChunkerME(model.getParserChunkerModel(), ChunkerME.DEFAULT_BEAM_SIZE,
             ChunkerME.DEFAULT_BEAM_SIZE,
-            new ParserChunkerSequenceValidator(model.getParserChunkerModel())),
+            new ParserChunkerSequenceValidator(model.getParserChunkerModel()),
+            new ChunkContextGenerator()),
             model.getHeadRules(), beamSize, advancePercentage);
   }
   
@@ -286,7 +288,9 @@ public class Parser extends AbstractBottomUpParser {
     parseSamples.reset();
     
     // chunk
-    ChunkerModel chunkModel = ChunkerME.train(new ChunkSampleStream(parseSamples), iterations, cut);
+    ChunkerModel chunkModel = ChunkerME.train(languageCode, 
+        new ChunkSampleStream(parseSamples), iterations, cut,
+        new ChunkContextGenerator());
     
     parseSamples.reset();
     
@@ -383,6 +387,8 @@ public class Parser extends AbstractBottomUpParser {
       iterations = Integer.parseInt(args[argIndex++]);
       cutoff = Integer.parseInt(args[argIndex++]);
     }
+    // TODO: This option is missing in the current CLI tools,
+    // and it is not thread safe ...
     if (fun) {
       Parse.useFunctionTags(true);
     }
@@ -408,7 +414,8 @@ public class Parser extends AbstractBottomUpParser {
     if (chunk || all) {
       System.err.println("Training chunker");
       ObjectStream<ChunkSample> ces = new ChunkSampleStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile))));
-      ChunkerModel chunkModel = ChunkerME.train(ces, iterations, cutoff);
+      ChunkerModel chunkModel = ChunkerME.train("en", ces, iterations, cutoff, 
+          new ChunkContextGenerator());
       System.out.println("Saving the chunker model as: " + chunkFile);
       OutputStream chunkOutputStream = new FileOutputStream(chunkFile);
       chunkModel.serialize(chunkOutputStream);
