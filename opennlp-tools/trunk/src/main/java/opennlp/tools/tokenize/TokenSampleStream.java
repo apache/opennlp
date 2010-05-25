@@ -17,12 +17,8 @@
 
 package opennlp.tools.tokenize;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
-import opennlp.tools.util.Span;
 
 /**
  * This class is a stream filter which reads in string encoded samples and creates
