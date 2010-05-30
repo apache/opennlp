@@ -43,68 +43,131 @@ import opennlp.tools.util.StringList;
  * with their child node reference.  {@link #setParents setParents} can be used to make the parents consistent
  * with a particular parse, but subsequent calls to <code>setParents</code> can invalidate the results of earlier
  * calls.<br>
- *
  */
 public abstract class AbstractBottomUpParser implements Parser {
 
-  /** The maximum number of parses advanced from all preceding parses at each derivation step. */
+  /** 
+   * The maximum number of parses advanced from all preceding
+   * parses at each derivation step.
+   */
   protected int M;
-  /** The maximum number of parses to advance from a single preceding parse. */
+  
+  /** 
+   * The maximum number of parses to advance from a single preceding parse.
+   */
   protected int K;
-  /** The minimum total probability mass of advanced outcomes.*/
+  
+  /** 
+   * The minimum total probability mass of advanced outcomes.
+   */
   protected double Q;
-  /** The default beam size used if no beam size is given. */
+  
+  /**
+   * The default beam size used if no beam size is given.
+   */
   public static final int defaultBeamSize = 20;
-  /** The default amount of probability mass required of advanced outcomes. */
+  
+  /** 
+   * The default amount of probability mass required of advanced outcomes.
+   */
   public static final double defaultAdvancePercentage = 0.95;
-  /** Completed parses. */
+  
+  /** 
+   * Completed parses.
+   */
   protected Heap<Parse> completeParses;
-  /** Incomplete parses which will be advanced. */
+  
+  /** 
+   * Incomplete parses which will be advanced.
+   */
   protected Heap<Parse> odh;
-  /** Incomplete parses which have been advanced. */
+  
+  /** 
+   * Incomplete parses which have been advanced. 
+   */
   protected Heap<Parse> ndh;
 
-  /** The head rules for the parser. */
+  /** 
+   * The head rules for the parser.
+   */
   protected HeadRules headRules;
-  /** The set strings which are considered punctuation for the parser.
+  
+  /**
+   * The set strings which are considered punctuation for the parser.
    * Punctuation is not attached, but floats to the top of the parse as attachment
    * decisions are made about its non-punctuation sister nodes.
    */
   protected Set<String> punctSet;
 
-  /** The label for the top node. */
+  /** 
+   * The label for the top node. 
+   */
   public static final String TOP_NODE = "TOP";
-  /** The label for the top if an incomple node. */
+  
+  /** 
+   * The label for the top if an incomple node.
+   */
   public static final String INC_NODE = "INC";
-  /** The label for a token node. */
+  
+  /** 
+   * The label for a token node. 
+   */
   public static final String TOK_NODE = "TK";
-  /** The integer 0. */
+  
+  /** 
+   * The integer 0.
+   */
   public static final Integer ZERO = new Integer(0);
 
-  /** Prefix for outcomes starting a constituent. */
+  /** 
+   * Prefix for outcomes starting a constituent. 
+   */
   public static final String START = "S-";
-  /** Prefix for outcomes continuing a constituent. */
+  
+  /** 
+   * Prefix for outcomes continuing a constituent. 
+   */
   public static final String CONT = "C-";
-  /** Outcome for token which is not contained in a basal constituent. */
+  
+  /** 
+   * Outcome for token which is not contained in a basal constituent. 
+   */
   public static final String OTHER = "O";
-  /** Outcome used when a constituent is complete. */
+  
+  /** 
+   * Outcome used when a constituent is complete. 
+   */
   public static final String COMPLETE = "c";
-  /** Outcome used when a constituent is incomplete. */
+  
+  /** 
+   * Outcome used when a constituent is incomplete. 
+   */
   public static final String INCOMPLETE = "i";
 
-  /** The pos-tagger that the parser uses. */
+  /** 
+   * The pos-tagger that the parser uses. 
+   */
   protected POSTagger tagger;
 
-  /** The chunker that the parser uses to chunk non-recursive structures. */
+  /** 
+   * The chunker that the parser uses to chunk non-recursive structures. 
+   */
   protected Chunker chunker;
 
-  /** Specifies whether failed parses should be reported to standard error. */
+  /** 
+   * Specifies whether failed parses should be reported to standard error. 
+   */
   protected boolean reportFailedParse;
 
-  /** Specifies whether a derivation string should be created during parsing. This is useful for debuging. */
+  /** 
+   * Specifies whether a derivation string should be created during parsing. 
+   * This is useful for debugging. 
+   */
   protected boolean createDerivationString = false;
 
-  /** Turns debug print on or off. */
+  /** 
+   * Turns debug print on or off.
+   */
   protected boolean debugOn = false;
 
   public AbstractBottomUpParser(POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
@@ -183,7 +246,8 @@ public abstract class AbstractBottomUpParser implements Parser {
 
 
 
-  /** Advances the specified parse and returns the an array advanced parses whose probability accounts for
+  /** 
+   * Advances the specified parse and returns the an array advanced parses whose probability accounts for
    * more than the specified amount of probability mass.
    * @param p The parse to advance.
    * @param probMass The amount of probability mass that should be accounted for by the advanced parses.
