@@ -82,11 +82,11 @@ public class Parser extends AbstractBottomUpParser {
 
   public Parser(ParserModel model, int beamSize, double advancePercentage) {
     this(model.getBuildModel(), model.getCheckModel(),
-        new POSTaggerME(model.getParserTaggerModel()),
-        new ChunkerME(model.getParserChunkerModel(), ChunkerME.DEFAULT_BEAM_SIZE,
+        new POSTaggerME(model.getParserTaggerModel(), 10),
+        new ChunkerME(model.getParserChunkerModel(),
             ChunkerME.DEFAULT_BEAM_SIZE,
             new ParserChunkerSequenceValidator(model.getParserChunkerModel()),
-            new ChunkContextGenerator()),
+            new ChunkContextGenerator(ChunkerME.DEFAULT_BEAM_SIZE)),
             model.getHeadRules(), beamSize, advancePercentage);
   }
   
@@ -120,7 +120,7 @@ public class Parser extends AbstractBottomUpParser {
    */
   @Deprecated
   public Parser(MaxentModel buildModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
-    super(tagger,chunker,headRules,beamSize,advancePercentage);
+    super(tagger, chunker, headRules, beamSize, advancePercentage);
     this.buildModel = buildModel;
     this.checkModel = checkModel;
     bprobs = new double[buildModel.getNumOutcomes()];
