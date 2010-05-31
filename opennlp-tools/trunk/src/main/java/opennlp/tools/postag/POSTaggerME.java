@@ -118,7 +118,7 @@ public class POSTaggerME implements POSTagger {
    */
   public POSTaggerME(POSModel model, int beamSize) {
     posModel = model.getPosModel();
-    contextGen = new DefaultPOSContextGenerator(model.getNgramDictionary());
+    contextGen = new DefaultPOSContextGenerator(beamSize, model.getNgramDictionary());
     tagDictionary = model.getTagDictionary();
     size = beamSize;
     beam = new BeamSearch<String>(size, contextGen, posModel, new PosSequenceValidator(), 10);
