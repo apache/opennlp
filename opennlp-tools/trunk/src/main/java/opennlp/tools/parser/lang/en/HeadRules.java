@@ -200,6 +200,17 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
     }
   }
 
+  /**
+   * Writes the head rules to the writer in a format suitable for loading
+   * the head rules again with the constructor. The encoding must be
+   * taken into account while working with the writer and reader.
+   * <p> 
+   * After the entries have been written, the writer is flushed.
+   * The writer remains open after this method returns.
+   * 
+   * @param writer
+   * @throws IOException
+   */
   public void serialize(Writer writer) throws IOException {
 
     for (String type : headRules.keySet()) {
@@ -228,5 +239,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
 
       writer.write('\n');
     }
+    
+    writer.flush();
   }
 }
