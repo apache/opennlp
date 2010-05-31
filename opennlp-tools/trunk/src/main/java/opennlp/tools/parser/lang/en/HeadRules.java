@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -52,6 +53,22 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
       }
 
       this.tags = tags;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      else if (obj instanceof HeadRule) {
+        HeadRule rule = (HeadRule) obj;
+        
+        return (rule.leftToRight == leftToRight) && 
+            Arrays.equals(rule.tags, tags);
+      }
+      else {
+        return false;
+      }
     }
   }
 
@@ -241,5 +258,21 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
     }
     
     writer.flush();
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+    else if (obj instanceof HeadRules) {
+      HeadRules rules = (HeadRules) obj;
+      
+      return rules.headRules.equals(headRules) &&
+          rules.punctSet.equals(punctSet);
+    }
+    else {
+      return false;
+    }
   }
 }
