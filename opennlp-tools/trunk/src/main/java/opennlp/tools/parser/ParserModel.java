@@ -97,12 +97,13 @@ public class ParserModel extends BaseModel {
   private static final String HEAD_RULES_MODEL_ENTRY_NAME = "head-rules.headrules";
   
   private static final String PARSER_TYPE = "parser-type";
+  
   public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, 
       AbstractModel attachModel, POSModel parserTagger,
       ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules,
-      ParserType modelType) {
+      ParserType modelType, Map<String, String> manifestInfoEntries) {
 
-    super(languageCode);
+    super(languageCode, manifestInfoEntries);
     
     setManifestProperty(PARSER_TYPE, modelType.name());
     
@@ -147,10 +148,19 @@ public class ParserModel extends BaseModel {
   }
 
   public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, 
+      AbstractModel attachModel, POSModel parserTagger,
+      ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules,
+      ParserType modelType) {
+    this (languageCode, buildModel, checkModel, attachModel, parserTagger,
+        chunkerTagger, headRules, modelType, null);
+  }
+  
+  public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, 
       POSModel parserTagger, ChunkerModel chunkerTagger, 
-      opennlp.tools.parser.lang.en.HeadRules headRules, ParserType type) {
+      opennlp.tools.parser.lang.en.HeadRules headRules, ParserType type,
+      Map<String, String> manifestInfoEntries) {
     this (languageCode, buildModel, checkModel, null, parserTagger, 
-        chunkerTagger, headRules, type);
+        chunkerTagger, headRules, type, manifestInfoEntries);
   }
   
   public ParserModel(InputStream in) throws IOException, InvalidFormatException {
@@ -198,23 +208,26 @@ public class ParserModel extends BaseModel {
         artifactMap.get(HEAD_RULES_MODEL_ENTRY_NAME);
   }
 
+  // TODO: Update model methods should make sure properties are copied correctly ...
   public ParserModel updateBuildModel(AbstractModel buildModel) {
-    return new ParserModel(getLanguage(), buildModel, getCheckModel(), getParserTaggerModel(),
-        getParserChunkerModel(), getHeadRules(), getParserType());
+    return new ParserModel(getLanguage(), buildModel, getCheckModel(), getAttachModel(), 
+        getParserTaggerModel(), getParserChunkerModel(),
+        getHeadRules(), getParserType());
   }
 
   public ParserModel updateCheckModel(AbstractModel checkModel) {
-    return new ParserModel(getLanguage(), getBuildModel(), checkModel, getParserTaggerModel(),
+    return new ParserModel(getLanguage(), getBuildModel(), checkModel,
+        getAttachModel(), getParserTaggerModel(),
         getParserChunkerModel(), getHeadRules(), getParserType());
   }
   
   public ParserModel updateTaggerModel(POSModel taggerModel) {
-    return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), 
+    return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), getAttachModel(),
         taggerModel, getParserChunkerModel(), getHeadRules(), getParserType());
   }
 
   public ParserModel updateChunkerModel(ChunkerModel chunkModel) {
-    return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), 
+    return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), getAttachModel(),
         getParserTaggerModel(), chunkModel, getHeadRules(), getParserType());
   }
   
@@ -242,7 +255,7 @@ public class ParserModel extends BaseModel {
     POSModel posModel = new POSModel(new FileInputStream(args[5]));
 
     ParserModel packageModel = new ParserModel("en", buildModel, checkModel, posModel,
-        chunkerModel, headRules, ParserType.CHUNKING);
+        chunkerModel, headRules, ParserType.CHUNKING, null);
 
     packageModel.serialize(new FileOutputStream(args[0]));
   }

@@ -24,7 +24,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import opennlp.maxent.GIS;
 import opennlp.maxent.GISModel;
@@ -32,10 +34,13 @@ import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
+import opennlp.tools.util.HashSumEventStream;
+import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * A sentence detector for splitting up raw text into sentences.  A maximum
@@ -268,17 +273,23 @@ public class SentenceDetectorME implements SentenceDetector {
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) {
 
-
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+    
     Factory factory = new Factory();
 
     EventStream eventStream = new SDEventStream(samples,
         factory.createSentenceContextGenerator(languageCode),
         factory.createEndOfSentenceScanner(languageCode));
+    
+    HashSumEventStream hses = new HashSumEventStream(eventStream);
+    GISModel sentModel = GIS.trainModel(hses, iterations, cutoff);
 
-    GISModel sentModel = GIS.trainModel(eventStream, iterations, cutoff);
-
+    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
+        hses.calculateHashSum().toString(16));
+    
     return new SentenceModel(languageCode, sentModel,
-        useTokenEnd, abbreviations);
+        useTokenEnd, abbreviations, manifestInfoEntries);
   }
 
   private static void usage() {

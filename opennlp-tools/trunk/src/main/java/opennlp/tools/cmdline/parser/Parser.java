@@ -17,6 +17,7 @@
 
 package opennlp.tools.cmdline.parser;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -86,7 +87,8 @@ public class Parser implements CmdLineTool {
     
     ParserModel model;
     try {
-      InputStream modelIn = new FileInputStream(modelFile);
+      InputStream modelIn = new BufferedInputStream(new FileInputStream(modelFile), 
+          1000000);
       model = new ParserModel(modelIn);
       modelIn.close();
     }
@@ -145,13 +147,13 @@ public class Parser implements CmdLineTool {
       System.exit(1);
     }
     
-    ParserModel model = loadModel(new File(args[0]));
+    ParserModel model = loadModel(new File(args[args.length - 1]));
     
-    Integer beamSize = CmdLineUtil.getIntParameter("bs", args);
+    Integer beamSize = CmdLineUtil.getIntParameter("-bs", args);
     if (beamSize == null)
         beamSize = AbstractBottomUpParser.defaultBeamSize;
     
-    Integer numParses = CmdLineUtil.getIntParameter("k", args);
+    Integer numParses = CmdLineUtil.getIntParameter("-k", args);
     boolean showTopK;
     if (numParses == null) {
       numParses = 1;
@@ -162,7 +164,7 @@ public class Parser implements CmdLineTool {
     }
     
     // TODO: Set advance percentage and beam size
-    Double advancePercentage = CmdLineUtil.getDoubleParameter("ap", args);
+    Double advancePercentage = CmdLineUtil.getDoubleParameter("-ap", args);
     
     if (advancePercentage == null)
       advancePercentage = AbstractBottomUpParser.defaultAdvancePercentage;

@@ -41,9 +41,15 @@ import opennlp.tools.util.Version;
  */
 public abstract class BaseModel {
 
+  public static final String TRAINING_CUTOFF_PROPERTY = "Training-Cutoff";
+  public static final String TRAINING_ITERATIONS_PROPERTY = "Training-Iterations";
+  public static final String TRAINING_EVENTHASH_PROPERTY = "Training-Eventhash";
+  
   protected static final String MANIFEST_ENTRY = "manifest.properties";
   private static final String VERSION_PROPERTY = "version";
   private static final String LANGUAGE_PROPERTY = "language";
+  private static final String TIMESTAMP_PROPERTY = "Timstamp";
+  private static final String MANIFEST_VERSION_PROPERTY = "Manifest-Version";
   
   @SuppressWarnings("unchecked")
   private Map<String, ArtifactSerializer> artifactSerializers =
@@ -55,8 +61,9 @@ public abstract class BaseModel {
    * Initializes the current instance.
    *
    * @param languageCode
+   * @param manifestInfoEntries additional information in the manifest
    */
-  protected BaseModel(String languageCode) {
+  protected BaseModel(String languageCode, Map<String, String> manifestInfoEntries) {
 
     if (languageCode == null)
         throw new IllegalArgumentException("languageCode must not be null!");
@@ -66,9 +73,18 @@ public abstract class BaseModel {
     createArtifactSerializers(artifactSerializers);
     
     Properties manifest = new Properties();
+    manifest.setProperty(MANIFEST_VERSION_PROPERTY, "1.0");
     manifest.setProperty(LANGUAGE_PROPERTY, languageCode);
     manifest.setProperty(VERSION_PROPERTY, Version.currentVersion().toString());
-
+    manifest.setProperty(TIMESTAMP_PROPERTY, 
+        Long.toString(System.currentTimeMillis()));
+    
+    if (manifestInfoEntries != null) {
+      for (Map.Entry<String, String> entry : manifestInfoEntries.entrySet()) {
+        manifest.setProperty(entry.getKey(), entry.getValue());
+      }
+    }
+      
     artifactMap.put(MANIFEST_ENTRY, manifest);
   }
 
@@ -196,7 +212,7 @@ public abstract class BaseModel {
    *
    * @return
    */
-  protected String getManifestProperty(String key) {
+  public String getManifestProperty(String key) {
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
 
     return manifest.getProperty(key);
@@ -240,7 +256,7 @@ public abstract class BaseModel {
   /**
    * Serializes the model to the given {@link OutputStream}.
    *
-   * @param out
+   * @param out stream to write the model to
    * @throws IOException
    */
   @SuppressWarnings("unchecked")
@@ -261,5 +277,8 @@ public abstract class BaseModel {
 
       zip.closeEntry();
     }
+    
+    zip.finish();
+    zip.flush();
   }
 }

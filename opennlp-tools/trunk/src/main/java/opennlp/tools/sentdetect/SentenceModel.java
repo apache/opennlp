@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelReader;
@@ -46,9 +47,9 @@ public class SentenceModel extends BaseModel {
   private static final String TOKEN_END_PROPERTY = "useTokenEnd";
 
   public SentenceModel(String languageCode, AbstractModel sentModel,
-      boolean useTokenEnd, Dictionary abbreviations) {
+      boolean useTokenEnd, Dictionary abbreviations, Map<String, String> manifestInfoEntries) {
 
-    super(languageCode);
+    super(languageCode, manifestInfoEntries);
 
     if (sentModel == null)
         throw new IllegalArgumentException("sentModel param must not be null!");
@@ -65,6 +66,11 @@ public class SentenceModel extends BaseModel {
         artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviations);
   }
 
+  public SentenceModel(String languageCode, AbstractModel sentModel,
+      boolean useTokenEnd, Dictionary abbreviations) {
+    this (languageCode, sentModel, useTokenEnd, abbreviations, null);
+  }
+  
   public SentenceModel(InputStream in) throws IOException, InvalidFormatException {
     super(in);
   }

@@ -65,9 +65,9 @@ public final class POSModel extends BaseModel {
   private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram.dictionary";
 
   public POSModel(String languageCode, AbstractModel posModel,
-      POSDictionary tagDictionary, Dictionary ngramDict) {
+      POSDictionary tagDictionary, Dictionary ngramDict, Map<String, String> manifestInfoEntries) {
 
-    super(languageCode);
+    super(languageCode, manifestInfoEntries);
 
     if (posModel == null)
         throw new IllegalArgumentException("The maxentPosModel param must not be null!");
@@ -85,6 +85,11 @@ public final class POSModel extends BaseModel {
       artifactMap.put(NGRAM_DICTIONARY_ENTRY_NAME, ngramDict);
   }
 
+  public POSModel(String languageCode, AbstractModel posModel,
+      POSDictionary tagDictionary, Dictionary ngramDict) {
+    this (languageCode, posModel, tagDictionary, ngramDict, null);
+  }
+  
   public POSModel(InputStream in) throws IOException, InvalidFormatException {
     super(in);
   }

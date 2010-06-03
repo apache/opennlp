@@ -69,7 +69,7 @@ public class CorefModel extends BaseModel {
       "pluralPronounResolver.model";
 
   public CorefModel(String languageCode, String project) throws IOException {
-    super(languageCode);
+    super(languageCode, null);
 
     artifactMap.put(MALE_NAMES_DICTIONARY_ENTRY_NAME,
         readNames(project + File.separator + "gen.mas"));

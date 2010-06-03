@@ -51,12 +51,16 @@ import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.util.EventTraceStream;
+import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ModelType;
+import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * Class for a shift reduce style parser based on Adwait Ratnaparkhi's 1998 thesis.
@@ -281,6 +285,19 @@ public class Parser extends AbstractBottomUpParser {
     
     parseSamples.reset();
     
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cut, iterations);
+    
+    // build
+    System.err.println("Training builder");
+    opennlp.model.EventStream bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
+    HashSumEventStream hsbes = new HashSumEventStream(bes);
+    AbstractModel buildModel = train(hsbes, iterations, cut);
+    manifestInfoEntries.put("Training-Builder-Eventhash", 
+        hsbes.calculateHashSum().toString(16));
+    
+    parseSamples.reset();
+    
     // tag
     POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(parseSamples), 
         ModelType.MAXENT, null, null, cut, iterations);
@@ -294,22 +311,18 @@ public class Parser extends AbstractBottomUpParser {
     
     parseSamples.reset();
     
-    // build
-    System.err.println("Training builder");
-    opennlp.model.EventStream bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
-    AbstractModel buildModel = train(bes, iterations, cut);
-    
-    parseSamples.reset();
-    
     // check
     System.err.println("Training checker");
     opennlp.model.EventStream kes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.CHECK);
-    AbstractModel checkModel = train(kes, iterations, cut);
+    HashSumEventStream hskes = new HashSumEventStream(kes);
+    AbstractModel checkModel = train(hskes, iterations, cut);
+    manifestInfoEntries.put("Training-Checker-Eventhash", 
+        hskes.calculateHashSum().toString(16));
     
     // TODO: Remove cast for HeadRules
     return new ParserModel(languageCode, buildModel, checkModel,
         posModel, chunkModel, (opennlp.tools.parser.lang.en.HeadRules) rules,
-        ParserType.CHUNKING);
+        ParserType.CHUNKING, manifestInfoEntries);
   }
 
   @Deprecated

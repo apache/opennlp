@@ -36,7 +36,9 @@ import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
+import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
@@ -51,6 +53,7 @@ import opennlp.tools.util.featuregen.SentenceFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * Class for creating a maximum-entropy-based name finder.
@@ -296,23 +299,32 @@ public class NameFinderME implements TokenNameFinder {
      return sprobs;
    }
 
-   public static TokenNameFinderModel train(String languageCode, ObjectStream<NameSample> samples,
-       final Map<String, Object> resources) throws IOException, InvalidFormatException {
-     return NameFinderME.train(languageCode, samples, 100, 5, resources);
-   }
+
    
    public static TokenNameFinderModel train(String languageCode, ObjectStream<NameSample> samples, 
        int iterations, int cutoff,
        final Map<String, Object> resources) throws IOException, InvalidFormatException {
      
+     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+     ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+     
      EventStream eventStream = new NameFinderEventStream(samples,
          new DefaultNameContextGenerator(createFeatureGenerator()));
+     HashSumEventStream hses = new HashSumEventStream(eventStream);
+     AbstractModel nameFinderModel = GIS.trainModel(iterations, new TwoPassDataIndexer(hses, cutoff));
      
-     AbstractModel nameFinderModel = GIS.trainModel(iterations, new TwoPassDataIndexer(eventStream, cutoff));
+     manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
+         hses.calculateHashSum().toString(16));
      
-     return new TokenNameFinderModel(languageCode, nameFinderModel, resources);
+     return new TokenNameFinderModel(languageCode, nameFinderModel,
+         resources, manifestInfoEntries);
    }
 
+   public static TokenNameFinderModel train(String languageCode, ObjectStream<NameSample> samples,
+       final Map<String, Object> resources) throws IOException, InvalidFormatException {
+     return NameFinderME.train(languageCode, samples, 100, 5, resources);
+   }
+   
   @Deprecated
   public static GISModel train(EventStream es, int iterations, int cut) throws IOException {
     return GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));

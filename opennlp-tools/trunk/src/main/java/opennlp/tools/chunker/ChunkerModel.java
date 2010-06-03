@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.BinaryFileDataReader;
@@ -40,16 +41,20 @@ public class ChunkerModel extends BaseModel {
 
   private static final String CHUNKER_MODEL_ENTRY_NAME = "chunker.model";
 
-  public ChunkerModel(String languageCode, AbstractModel chunkerModel) {
+  public ChunkerModel(String languageCode, AbstractModel chunkerModel, Map<String, String> manifestInfoEntries) {
 
-    super(languageCode);
+    super(languageCode, manifestInfoEntries);
 
     if (chunkerModel == null)
         throw new IllegalArgumentException("chunkerModel must not be null!");
 
     artifactMap.put(CHUNKER_MODEL_ENTRY_NAME, chunkerModel);
   }
-
+  
+  public ChunkerModel(String languageCode, AbstractModel chunkerModel) {
+    this(languageCode, chunkerModel, null);
+  }
+  
   public ChunkerModel(InputStream in) throws IOException, InvalidFormatException {
     super(in);
   }

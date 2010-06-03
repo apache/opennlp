@@ -20,8 +20,10 @@ package opennlp.tools.tokenize;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import opennlp.maxent.GIS;
@@ -29,8 +31,11 @@ import opennlp.maxent.GISModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
+import opennlp.tools.util.HashSumEventStream;
+import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * A Tokenizer for converting raw text into separated tokens.  It uses
@@ -202,13 +207,22 @@ public class TokenizerME extends AbstractTokenizer {
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization) throws IOException, ObjectStreamException {
 
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    // TODO: Make iterations and cutoff configurable
+    ModelUtil.addCutoffAndIterations(manifestInfoEntries, 5, 100);
+    
     EventStream eventStream = new TokSpanEventStream(samples,
         useAlphaNumericOptimization);
 
+    HashSumEventStream hses = new HashSumEventStream(eventStream);
     GISModel maxentModel =
         GIS.trainModel(100, new TwoPassDataIndexer(eventStream, 5));
 
-    return new TokenizerModel(languageCode, maxentModel, useAlphaNumericOptimization);
+    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
+        hses.calculateHashSum().toString(16));
+    
+    return new TokenizerModel(languageCode, maxentModel, 
+        useAlphaNumericOptimization, manifestInfoEntries);
   }
 
   /**

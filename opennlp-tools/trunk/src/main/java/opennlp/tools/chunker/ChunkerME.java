@@ -23,19 +23,23 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
-import opennlp.tools.util.EventTraceStream;
+import opennlp.tools.util.HashSumEventStream;
+import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * The class represents a maximum-entropy-based chunker.  Such a chunker can be used to
@@ -188,21 +192,23 @@ public class ChunkerME implements Chunker {
     return bestSequence.getProbs();
   }
 
-  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, int iterations, int cut,
-      ChunkerContextGenerator contextGenerator)  throws IOException, ObjectStreamException {
+  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, 
+      int iterations, int cutoff, ChunkerContextGenerator contextGenerator)
+      throws IOException, ObjectStreamException {
+    
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
     
     EventStream es = new ChunkerEventStream(in, contextGenerator);
+    HashSumEventStream hses = new HashSumEventStream(es);
     
-    try {
-    FileWriter writer = new FileWriter("chunk.events");
-    EventStream ces = new EventTraceStream(es, writer);
+    AbstractModel maxentModel = opennlp.maxent.GIS.trainModel(iterations, 
+        new TwoPassDataIndexer(hses, cutoff));
     
-    AbstractModel maxentModel = opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(ces, cut));
-    writer.close();
+    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
+        hses.calculateHashSum().toString(16));
     
-    // TODO: Make language configurable
-    return new ChunkerModel(lang, maxentModel);
-    } catch (Exception e) {e.printStackTrace(); return null;}
+    return new ChunkerModel(lang, maxentModel, manifestInfoEntries);
   }
   
   /**

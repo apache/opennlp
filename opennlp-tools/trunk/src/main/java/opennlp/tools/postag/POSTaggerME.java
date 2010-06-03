@@ -21,19 +21,25 @@ package opennlp.tools.postag;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import opennlp.model.AbstractModel;
+import opennlp.model.EventStream;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BeamSearch;
+import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ModelType;
+import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * A part-of-speech tagger that uses maximum entropy.  Tries to predict whether
@@ -309,17 +315,31 @@ public class POSTaggerME implements POSTagger {
     
     AbstractModel posModel = null;
     
-    if (modelType.equals(ModelType.MAXENT)) {
-      posModel = opennlp.maxent.GIS.trainModel(iterations,
-          new TwoPassDataIndexer(new POSSampleEventStream(samples, contextGenerator), cutoff));
-  
-    }
-    else if (modelType.equals(ModelType.PERCEPTRON)) {
-      boolean useAverage = true;
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+    
+    if (modelType.equals(ModelType.MAXENT) ||
+        modelType.equals(ModelType.PERCEPTRON)) {
+      EventStream es = new POSSampleEventStream(samples, contextGenerator);
+      HashSumEventStream hses = new HashSumEventStream(es);
       
-      posModel = new opennlp.perceptron.PerceptronTrainer().trainModel(
-          iterations, new TwoPassDataIndexer(new POSSampleEventStream(samples, contextGenerator),
-          cutoff, false), cutoff, useAverage);
+      if (modelType.equals(ModelType.MAXENT)) {
+        posModel = opennlp.maxent.GIS.trainModel(iterations,
+            new TwoPassDataIndexer(hses, cutoff));
+      }
+      else if (modelType.equals(ModelType.PERCEPTRON)) {
+        boolean useAverage = true;
+
+        posModel = new opennlp.perceptron.PerceptronTrainer().trainModel(
+            iterations, new TwoPassDataIndexer(hses,
+            cutoff, false), cutoff, useAverage);
+      }
+      else {
+        throw new IllegalStateException();
+      }
+      
+      manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
+          hses.calculateHashSum().toString(16));
     }
     else if (modelType.equals(ModelType.PERCEPTRON_SEQUENCE)) {
       
@@ -328,7 +348,11 @@ public class POSTaggerME implements POSTagger {
       
       posModel = new SimplePerceptronSequenceTrainer().trainModel(iterations, ss, cutoff,useAverage);
     }
+    else {
+      throw new IllegalStateException();
+    }
     
-    return new POSModel(languageCode, posModel, tagDictionary, ngramDictionary);
+    return new POSModel(languageCode, posModel, tagDictionary,
+        ngramDictionary, manifestInfoEntries);
   }
 }

@@ -25,11 +25,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelWriter;
 import opennlp.model.MaxentModel;
+import opennlp.tools.util.model.BaseModel;
 
 /**
  * Utility class for handling of {@link MaxentModel}s.
@@ -118,5 +120,11 @@ public final class ModelUtil {
     byteArrayOut.close();
 
     return byteArrayOut.toByteArray();
+  }
+  
+  public static void addCutoffAndIterations(Map<String, String> manifestInfoEntries,
+      int cutoff, int iterations) {
+    manifestInfoEntries.put(BaseModel.TRAINING_CUTOFF_PROPERTY, Integer.toString(cutoff));
+    manifestInfoEntries.put(BaseModel.TRAINING_ITERATIONS_PROPERTY, Integer.toString(iterations));
   }
 }

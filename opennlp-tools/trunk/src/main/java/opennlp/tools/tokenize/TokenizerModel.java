@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 
 import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
@@ -52,8 +53,8 @@ public final class TokenizerModel extends BaseModel {
    * @param useAlphaNumericOptimization
    */
   public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
-      boolean useAlphaNumericOptimization) {
-    super(language);
+      boolean useAlphaNumericOptimization, Map<String, String> manifestInfoEntries) {
+    super(language, manifestInfoEntries);
 
     if (tokenizerMaxentModel == null)
         throw new IllegalArgumentException("tokenizerMaxentModel param must not bet null!");
@@ -67,6 +68,17 @@ public final class TokenizerModel extends BaseModel {
         Boolean.toString(useAlphaNumericOptimization));
   }
 
+  /**
+   * Initializes the current instance.
+   *
+   * @param tokenizerMaxentModel
+   * @param useAlphaNumericOptimization
+   */
+  public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
+      boolean useAlphaNumericOptimization) {
+    this(language, tokenizerMaxentModel, useAlphaNumericOptimization, null);
+  }
+  
   /**
    * Initializes the current instance.
    *
