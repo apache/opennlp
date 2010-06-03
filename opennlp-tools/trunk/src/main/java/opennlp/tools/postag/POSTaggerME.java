@@ -112,7 +112,7 @@ public class POSTaggerME implements POSTagger {
    * @param model
    */
   public POSTaggerME(POSModel model) {
-    this(model, DEFAULT_BEAM_SIZE);
+    this(model, DEFAULT_BEAM_SIZE, DEFAULT_BEAM_SIZE);
   }
 
   /**
@@ -122,12 +122,12 @@ public class POSTaggerME implements POSTagger {
    * @param model
    * @param beamSize
    */
-  public POSTaggerME(POSModel model, int beamSize) {
+  public POSTaggerME(POSModel model, int beamSize, int cacheSize) {
     posModel = model.getPosModel();
     contextGen = new DefaultPOSContextGenerator(beamSize, model.getNgramDictionary());
     tagDictionary = model.getTagDictionary();
     size = beamSize;
-    beam = new BeamSearch<String>(size, contextGen, posModel, new PosSequenceValidator(), 10);
+    beam = new BeamSearch<String>(size, contextGen, posModel, new PosSequenceValidator(), cacheSize);
   }
 
   /**

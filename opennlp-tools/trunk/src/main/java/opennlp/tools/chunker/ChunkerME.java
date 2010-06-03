@@ -19,7 +19,6 @@ package opennlp.tools.chunker;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -75,7 +74,7 @@ public class ChunkerME implements Chunker {
   public ChunkerME(ChunkerModel model, int beamSize, SequenceValidator<String> sequenceValidator,
       ChunkerContextGenerator contextGenerator) {
     this.model = model.getChunkerModel();
-    beam = new BeamSearch<String>(beamSize, contextGenerator, this.model, sequenceValidator, beamSize);
+    beam = new BeamSearch<String>(beamSize, contextGenerator, this.model, sequenceValidator, 0);
   }
   
   /**
