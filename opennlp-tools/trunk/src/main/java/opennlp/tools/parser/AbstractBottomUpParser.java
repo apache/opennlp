@@ -291,7 +291,7 @@ public abstract class AbstractBottomUpParser implements Parser {
           tp.show();
           System.out.println();
         }
-        Parse[] nd = null;
+        Parse[] nd;
         if (0 == derivationStage) {
           nd = advanceTags(tp);
         }
