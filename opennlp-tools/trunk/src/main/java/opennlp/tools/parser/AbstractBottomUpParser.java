@@ -105,7 +105,7 @@ public abstract class AbstractBottomUpParser implements Parser {
   public static final String TOP_NODE = "TOP";
   
   /** 
-   * The label for the top if an incomple node.
+   * The label for the top if an incomplete node.
    */
   public static final String INC_NODE = "INC";
   
