@@ -86,7 +86,7 @@ public class Parser extends AbstractBottomUpParser {
 
   public Parser(ParserModel model, int beamSize, double advancePercentage) {
     this(model.getBuildModel(), model.getCheckModel(),
-        new POSTaggerME(model.getParserTaggerModel(), 10),
+        new POSTaggerME(model.getParserTaggerModel(), 10, 0),
         new ChunkerME(model.getParserChunkerModel(),
             ChunkerME.DEFAULT_BEAM_SIZE,
             new ParserChunkerSequenceValidator(model.getParserChunkerModel()),
