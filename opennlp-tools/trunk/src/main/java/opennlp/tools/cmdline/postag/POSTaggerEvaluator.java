@@ -76,7 +76,7 @@ public class POSTaggerEvaluator implements CmdLineTool {
       
       System.out.println();
       
-      System.out.println("Accuarcy: " + evaluator.getWordAccuracy());
+      System.out.println("Accuracy: " + evaluator.getWordAccuracy());
     }
     catch (Exception e) {
       e.printStackTrace();
