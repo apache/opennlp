@@ -1,3 +1,3 @@
 #!/bin/sh
 . opennlp-env
-$JAVA_CMD opennlp.tools.postag.POSTaggerME $@
+$JAVA_CMD opennlp.tools.postag.POSTaggerTrainer $@
