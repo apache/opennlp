@@ -271,13 +271,14 @@ public class SentenceDetectorME implements SentenceDetector {
   }
   
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
-      boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) {
+      boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) throws ObjectStreamException {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
     ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
     
     Factory factory = new Factory();
 
+    // TODO: Fix the EventStream to throw exceptions when training goes wrong
     EventStream eventStream = new SDEventStream(samples,
         factory.createSentenceContextGenerator(languageCode),
         factory.createEndOfSentenceScanner(languageCode));

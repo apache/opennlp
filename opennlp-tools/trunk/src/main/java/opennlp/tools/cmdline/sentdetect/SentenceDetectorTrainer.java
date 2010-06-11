@@ -77,7 +77,8 @@ public class SentenceDetectorTrainer implements CmdLineTool {
     
     SentenceModel model;
     try {
-      model = SentenceDetectorME.train(parameters.getLanguage(), sampleStream, true, null);
+      model = SentenceDetectorME.train(parameters.getLanguage(), sampleStream, true, null, 
+          parameters.getCutoff(), parameters.getNumberOfIterations());
     } catch (ObjectStreamException e) {
       System.err.println("Error while reading training data: " + e.getMessage());
       System.exit(-1);

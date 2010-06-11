@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import junit.framework.TestCase;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -31,7 +32,7 @@ import opennlp.tools.util.Span;
  */
 public class SentenceDetectorMETest extends TestCase {
   
-  public void testSentenceDetector() throws IOException {
+  public void testSentenceDetector() throws IOException, ObjectStreamException {
 
     InputStream in = getClass().getResourceAsStream(
         "/opennlp/tools/sentdetect/Sentences.txt");
