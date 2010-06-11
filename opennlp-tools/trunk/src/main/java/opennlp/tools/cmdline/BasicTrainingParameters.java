@@ -21,18 +21,24 @@ public class BasicTrainingParameters {
 
   private final String language;
   private final String encoding;
-  private final int numberOfIterations;
-  private final int cutoff = 5;
+  private final int iterations;
+  private final int cutoff;
   
   public BasicTrainingParameters(String args[]) {
     encoding = CmdLineUtil.getEncodingParameter(args);
     language = CmdLineUtil.getParameter("-lang", args);
     
-    Integer numberOfIterations = CmdLineUtil.getIntParameter("-iterations", args); 
-    if (numberOfIterations != null)
-      this.numberOfIterations = numberOfIterations;
+    Integer iterationsParameter = CmdLineUtil.getIntParameter("-iterations", args); 
+    if (iterationsParameter != null)
+      this.iterations = iterationsParameter;
     else
-      this.numberOfIterations = 100;
+      this.iterations = 100;
+    
+    Integer cutoffParameter = CmdLineUtil.getIntParameter("-cutoff", args);
+    if (cutoffParameter != null)
+      this.cutoff = cutoffParameter;
+    else
+      this.cutoff = 5;
   }
   
   /**
@@ -54,7 +60,7 @@ public class BasicTrainingParameters {
    * @return specified number or 100 (default)
    */
   public int getNumberOfIterations() {
-    return numberOfIterations;
+    return iterations;
   }
   
   public int getCutoff() {
