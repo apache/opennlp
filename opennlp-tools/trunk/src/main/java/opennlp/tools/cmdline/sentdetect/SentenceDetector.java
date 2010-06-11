@@ -86,7 +86,7 @@ public class SentenceDetector implements CmdLineTool {
   public void run(String[] args) {
     
     if (args.length != 1) {
-      System.out.print(getHelp());
+      System.out.println(getHelp());
       System.exit(1);
     }
 
