@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.management.InstanceNotFoundException;
+
 import opennlp.tools.util.Span;
 
 /**
@@ -30,7 +32,20 @@ import opennlp.tools.util.Span;
  *
  */
 public class SimpleTokenizer extends AbstractTokenizer {
-
+  
+  public static final SimpleTokenizer INSTANCE;
+  
+  static {
+    INSTANCE = new SimpleTokenizer();
+  }
+  
+  /**
+   * Use INSTANCE field instead to obtain an instance.
+   */
+  @Deprecated
+  public SimpleTokenizer() {
+  }
+  
   public Span[] tokenizePos(String s) {
     CharacterEnum charType = CharacterEnum.WHITESPACE;
     CharacterEnum state = charType;
@@ -80,6 +95,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
    *
    * @throws IOException
    */
+  @Deprecated
   public static void main(String[] args) throws IOException {
     if (args.length != 0) {
       System.err.println("Usage:  java opennlp.tools.tokenize.SimpleTokenizer < sentences");
