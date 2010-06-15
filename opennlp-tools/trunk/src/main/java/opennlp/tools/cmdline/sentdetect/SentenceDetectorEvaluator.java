@@ -57,9 +57,9 @@ public class SentenceDetectorEvaluator implements CmdLineTool {
       System.exit(1);
     }
     
-    SentenceModel model = SentenceDetector.loadModel(new File(args[args.length - 1]));
+    SentenceModel model = SentenceDetector.loadModel(new File(args[args.length - 2]));
     
-    File trainingDataInFile = new File(args[args.length - 2]);
+    File trainingDataInFile = new File(args[args.length - 1]);
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
     opennlp.tools.sentdetect.SentenceDetectorEvaluator evaluator = 
