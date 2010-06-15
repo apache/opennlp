@@ -20,7 +20,7 @@ package opennlp.tools.util;
 
 /**
  * Class for storing start and end integer offsets.
-**/
+ **/
 public class Span implements Comparable<Span> {
 
   private final int start;
@@ -33,24 +33,42 @@ public class Span implements Comparable<Span> {
    *
    * @param s start of span.
    * @param e end of span.
+   * @param type the type of the span
+   */
+  public Span(int s, int e, String type) {
+    
+    if (s < 0 || e <0)
+      throw new IllegalArgumentException("start and end index must be zero or greater!");
+    
+    if (s > e) 
+      throw new IllegalArgumentException("start index must not be larger than end index!");
+    
+    start = s;
+    end = e;
+    this.type = type;
+  }
+  
+  /**
+   * Initializes a new Span Object.
+   *
+   * @param s start of span.
+   * @param e end of span.
    */
   public Span(int s, int e) {
     this(s, e, null);
   }
 
   /**
-   * Initializes a new Span Object.
-   *
-   * @param s start of span.
-   * @param e end of span.
-   * @param type the type of the span
+   * Initializes a new Span object with an existing Span
+   * which is shifted by an offset.
+   * 
+   * @param span
+   * @param offset
    */
-  public Span(int s, int e, String type) {
-    start = s;
-    end = e;
-    this.type = type;
+  public Span(Span span, int offset) {
+    this(span.start + offset, span.end + offset, span.getType());
   }
-
+  
   /**
    * Return the start of a span.
    *
