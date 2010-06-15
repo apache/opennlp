@@ -196,10 +196,8 @@ public class SentenceDetectorME implements SentenceDetector {
         while (end > 0 && Character.isWhitespace(s.charAt(end - 1)))
           end--;
         
-        Span span = new Span(start, end);
-        
-        if (span.length() > 0)
-          return new Span[] {span};
+        if ((end - start) > 0)
+          return new Span[] {new Span(start, end)};
         else 
           return new Span[0];
     }
@@ -294,11 +292,15 @@ public class SentenceDetectorME implements SentenceDetector {
   }
 
   private static void usage() {
-    System.err.println("Usage: SentenceDetectorME -encoding charset -lang language trainData modelName");
+    System.err.println("Usage: SentenceDetectorME -encoding charset -lang language trainData modelName [cutoff iterations]");
     System.err.println("-encoding charset specifies the encoding which should be used ");
     System.err.println("                  for reading and writing text.");
     System.err.println("-lang language    specifies the language which ");
     System.err.println("                  is being processed.");
+    System.err.println("trainData         specifies the name of the input training file");
+    System.err.println("                  to train the resulting model.");
+    System.err.println("modelName         specifies the resulting saved model after");
+    System.err.println("                  training.");
     System.exit(1);
   }
 
