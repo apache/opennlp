@@ -55,7 +55,7 @@ public class TokenizerMEEvaluator implements CmdLineTool {
       System.exit(1);
     }
 
-    TokenizerModel model = TokenizerME.loadModel(new File(args[0]));
+    TokenizerModel model = TokenizerME.loadModel(new File(args[2]));
 
     TokenizerEvaluator evaluator = new TokenizerEvaluator(
         new opennlp.tools.tokenize.TokenizerME(model));
@@ -63,7 +63,7 @@ public class TokenizerMEEvaluator implements CmdLineTool {
     System.out.print("Evaluating ... ");
 
     ObjectStream<TokenSample> sampleStream = TokenizerTrainer.openSampleData(
-        "Test", new File(args[1]), encoding);
+        "Test", new File(args[3]), encoding);
 
     try {
       evaluator.evaluate(sampleStream);
