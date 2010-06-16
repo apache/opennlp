@@ -24,6 +24,8 @@ import junit.framework.TestCase;
  */
 public class FMeasureTest extends TestCase {
 
+  private static final double DELTA = 1.0E-9d;
+  
   private Span gold[] = {
       new Span(8, 9),
       new Span(9, 10),
@@ -40,11 +42,22 @@ public class FMeasureTest extends TestCase {
       new Span(210, 220),
       new Span(220, 230)
   };
+  
+  private Span predictedCompletelyDistinct[] = {
+      new Span(100, 120),
+      new Span(210, 220),
+      new Span(211, 220),
+      new Span(212, 220),
+      new Span(220, 230)
+  };
 
   /**
    * Test for the {@link EvaluatorUtil#countTruePositives(Span[], Span[])} method.
    */
   public void testCountTruePositives() {
+    assertEquals(0, FMeasure.countTruePositives(new Object[]{}, new Object[]{}));
+    assertEquals(gold.length, FMeasure.countTruePositives(gold, gold));
+    assertEquals(0, FMeasure.countTruePositives(gold, predictedCompletelyDistinct));
     assertEquals(2, FMeasure.countTruePositives(gold, predicted));
   }
 
@@ -52,13 +65,21 @@ public class FMeasureTest extends TestCase {
    * Test for the {@link EvaluatorUtil#precision(Span[], Span[])} method.
    */
   public void testPrecision() {
-    assertEquals(2d / predicted.length, FMeasure.precision(gold, predicted));
+    assertEquals(1.0d, FMeasure.precision(gold, gold), DELTA);
+    assertEquals(0, FMeasure.precision(gold, predictedCompletelyDistinct), DELTA);
+    assertEquals(Double.NaN, FMeasure.precision(gold, new Object[]{}), DELTA);
+    assertEquals(0, FMeasure.precision(new Object[]{}, gold), DELTA);
+    assertEquals(2d / predicted.length, FMeasure.precision(gold, predicted), DELTA);
   }
 
   /**
    * Test for the {@link EvaluatorUtil#recall(Span[], Span[])} method.
    */
   public void testRecall() {
-    assertEquals(2d / gold.length, FMeasure.recall(gold, predicted));
+    assertEquals(1.0d, FMeasure.recall(gold, gold), DELTA);
+    assertEquals(0, FMeasure.recall(gold, predictedCompletelyDistinct), DELTA);
+    assertEquals(0, FMeasure.recall(gold, new Object[]{}), DELTA);
+    assertEquals(Double.NaN, FMeasure.recall(new Object[]{}, gold), DELTA);
+    assertEquals(2d / gold.length, FMeasure.recall(gold, predicted), DELTA);
   }
 }
