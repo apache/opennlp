@@ -18,16 +18,15 @@
 
 package opennlp.tools.postag;
 
+import opennlp.tools.util.Evaluator;
 import opennlp.tools.util.Mean;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 /**
  * The {@link POSEvaluator} measures the performance of
  * the given {@link POSTagger} with the provided reference
  * {@link POSSamplee}s.
  */
-public class POSEvaluator {
+public class POSEvaluator extends Evaluator<POSSample> {
 
   private POSTagger tagger;
 
@@ -62,21 +61,6 @@ public class POSEvaluator {
       else {
         wordAccuracy.add(0);
       }
-    }
-  }
-
-  /**
-   * Reads all {@link POSSample} objects from the stream
-   * and evaluates each {@link POSSample} object with
-   * {@link #evaluateSample(POSSample)} method.
-   *
-   * @param samples the stream of reference {@link POSSample} which
-   * should be evaluated.
-   */
-  public void evaluate(ObjectStream<POSSample> samples) throws ObjectStreamException {
-    POSSample sample;
-    while ((sample = samples.read()) != null) {
-      evaluateSample(sample);
     }
   }
 
