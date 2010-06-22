@@ -115,7 +115,7 @@ public class SentenceDetectorME implements SentenceDetector {
       sentences = new String[spans.length];
 
       for (int si = 0; si < spans.length; si++) {
-        sentences[si] = spans[si].getCoveredText(s);
+        sentences[si] = spans[si].getCoveredText(s).toString();
       }
     }
     else {

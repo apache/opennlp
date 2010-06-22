@@ -50,7 +50,7 @@ public class SDEventStream extends AbstractEventStream<SentenceSample> {
     Collection<Event> events = new ArrayList<Event>();
 
     for (Span sentenceSpan : sample.getSentences()) {
-      String sentenceString = sentenceSpan.getCoveredText(sample.getDocument());
+      String sentenceString = sentenceSpan.getCoveredText(sample.getDocument()).toString();
       
       for (Iterator<Integer> it = scanner.getPositions(
           sentenceString).iterator(); it.hasNext();) {

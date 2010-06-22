@@ -102,7 +102,7 @@ public class TokenSample {
     StringBuilder untaggedSampleString = new StringBuilder();
     
     for (Span whiteSpaceTokenSpan : whitespaceTokenSpans) {
-      String whitespaceToken = whiteSpaceTokenSpan.getCoveredText(sampleString);
+      String whitespaceToken = whiteSpaceTokenSpan.getCoveredText(sampleString).toString();
       
       boolean wasTokenReplaced = false;
       

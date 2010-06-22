@@ -173,13 +173,13 @@ public class Span implements Comparable<Span> {
    *
    * @return the substring covered by the current span
    */
-  public String getCoveredText(CharSequence text) {
+  public CharSequence getCoveredText(CharSequence text) {
     if (getEnd() > text.length()) {
       throw new IllegalArgumentException("The span " + toString() +
           " is outside the given text!");
     }
 
-    return text.subSequence(getStart(), getEnd()).toString();
+    return text.subSequence(getStart(), getEnd());
   }
 
   /**
@@ -259,7 +259,7 @@ public class Span implements Comparable<Span> {
     String[] tokens = new String[spans.length];
 
     for (int si = 0, sl = spans.length; si < sl; si++) {
-      tokens[si] = spans[si].getCoveredText(s);
+      tokens[si] = spans[si].getCoveredText(s).toString();
     }
 
     return tokens;
