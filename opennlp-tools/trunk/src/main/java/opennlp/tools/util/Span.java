@@ -255,7 +255,7 @@ public class Span implements Comparable<Span> {
    * @param s
    * @return the strings
    */
-  public static String[] spansToStrings(Span[] spans, String s) {
+  public static String[] spansToStrings(Span[] spans, CharSequence s) {
     String[] tokens = new String[spans.length];
 
     for (int si = 0, sl = spans.length; si < sl; si++) {
