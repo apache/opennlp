@@ -81,13 +81,16 @@ public class IndexHashTable<T> {
 	
 	private int searchKey(int startIndex, Object key, boolean insert) {
 		
-		for (int index = startIndex; index < startIndex ? 
-				index < startIndex : true; index = (index+1) % keys.length) {
+		
+		for (int index = startIndex; true; index = (index+1) % keys.length) {
+			
+			// The keys array contains at least one null element, which guarantees
+			// termination of the loop
 			if (keys[index] == null) {
 				if (insert)
-				return index;
-			else
-				return -1;
+					return index;
+				else
+					return -1;
 			}
 			
 			if (keys[index].equals(key)) {
@@ -97,8 +100,6 @@ public class IndexHashTable<T> {
 					return -1;
 			}
 		}
-		
-		return -1;
 	}
 	
 	/**
