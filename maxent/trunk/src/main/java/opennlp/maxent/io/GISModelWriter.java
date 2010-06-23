@@ -27,6 +27,7 @@ import opennlp.model.AbstractModel;
 import opennlp.model.AbstractModelWriter;
 import opennlp.model.ComparablePredicate;
 import opennlp.model.Context;
+import opennlp.model.IndexHashTable;
 
 /**
  * Abstract parent class for GISModel writers.  It provides the persist method
@@ -34,7 +35,7 @@ import opennlp.model.Context;
  * extending class to define precisely how the data should be stored.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.1 $, $Date: 2009-01-22 23:23:33 $
+ * @version     $Revision: 1.2 $, $Date: 2010-06-23 08:34:02 $
  */
 public abstract class GISModelWriter extends AbstractModelWriter {
     protected Context[] PARAMS;
@@ -48,15 +49,13 @@ public abstract class GISModelWriter extends AbstractModelWriter {
       Object[] data = model.getDataStructures();
       
       PARAMS = (Context[]) data[0];
-      Map<String,Integer> pmap = (Map<String,Integer>)data[1];
-      OUTCOME_LABELS = (String[])data[2];
-      CORRECTION_CONSTANT = ((Integer)data[3]).intValue();
-      CORRECTION_PARAM = ((Double)data[4]).doubleValue();
+      IndexHashTable<String> pmap = (IndexHashTable<String>) data[1];
+      OUTCOME_LABELS = (String[]) data[2];
+      CORRECTION_CONSTANT = ((Integer) data[3]).intValue();
+      CORRECTION_PARAM = ((Double) data[4]).doubleValue();
       
       PRED_LABELS = new String[pmap.size()];
-      for (String pred : pmap.keySet()) {
-        PRED_LABELS[pmap.get(pred)] = pred;
-      }
+      pmap.toArray(PRED_LABELS);
     }
 
 

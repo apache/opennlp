@@ -18,13 +18,11 @@
 package opennlp.model;
 
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
 
 public abstract class AbstractModel implements MaxentModel {
 
   /** Mapping between predicates/contexts and an integer representing them. */
-  protected Map<String,Integer> pmap;
+  protected IndexHashTable<String> pmap;
   /** The names of the outcomes. */
   protected String[] outcomeNames;
   /** Parameters for the model. */
@@ -37,7 +35,7 @@ public abstract class AbstractModel implements MaxentModel {
   /** The type of the model. */
   protected ModelType modelType;
   
-  public AbstractModel(Context[] params, String[] predLabels, Map<String,Integer> pmap, String[] outcomeNames) {
+  public AbstractModel(Context[] params, String[] predLabels, IndexHashTable<String> pmap, String[] outcomeNames) {
     this.pmap = pmap;
     this.outcomeNames =  outcomeNames;
     this.evalParams = new EvalParameters(params,outcomeNames.length);
@@ -54,10 +52,7 @@ public abstract class AbstractModel implements MaxentModel {
   }
   
   private void init(String[] predLabels, String[] outcomeNames){
-    this.pmap = new HashMap<String,Integer>(predLabels.length);
-    for (int i=0; i<predLabels.length; i++) {
-      pmap.put(predLabels[i], i);
-    }
+    this.pmap = new IndexHashTable<String>(predLabels, 0.7d);
     this.outcomeNames =  outcomeNames;
   }
 
