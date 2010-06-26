@@ -19,6 +19,7 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
@@ -50,7 +51,7 @@ public class SentenceDetectorEvaluator implements CmdLineTool {
       System.exit(1);
     }
     
-    String encoding = CmdLineUtil.getEncodingParameter(args);
+    Charset encoding = CmdLineUtil.getEncodingParameter(args);
     
     if (encoding == null) {
       System.out.println(getHelp());

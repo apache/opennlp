@@ -18,6 +18,7 @@
 package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
+import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
@@ -48,7 +49,7 @@ public class TokenizerMEEvaluator implements CmdLineTool {
       System.exit(1);
     }
 
-    String encoding = CmdLineUtil.getEncodingParameter(args);
+    Charset encoding = CmdLineUtil.getEncodingParameter(args);
 
     if (encoding == null) {
       System.out.println(getHelp());

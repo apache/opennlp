@@ -17,10 +17,12 @@
 
 package opennlp.tools.cmdline;
 
+import java.nio.charset.Charset;
+
 public class BasicTrainingParameters {
 
   private final String language;
-  private final String encoding;
+  private final Charset encoding;
   private final int iterations;
   private final int cutoff;
   
@@ -50,7 +52,7 @@ public class BasicTrainingParameters {
     return language;
   }
   
-  public String getEncoding() {
+  public Charset getEncoding() {
     return encoding;
   }
   

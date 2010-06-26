@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.postag;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
@@ -49,7 +50,7 @@ public class POSTaggerTrainer implements CmdLineTool {
   }
 
   static ObjectStream<POSSample> openSampleData(String sampleDataName,
-      File sampleDataFile, String encoding) {
+      File sampleDataFile, Charset encoding) {
     CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
 
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);

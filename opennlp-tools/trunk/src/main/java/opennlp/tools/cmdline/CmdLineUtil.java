@@ -23,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 
 import opennlp.tools.util.model.BaseModel;
 
@@ -207,15 +209,26 @@ public class CmdLineUtil {
    * 
    * @return the encoding or if invalid the VM is killed.
    */
-  public static String getEncodingParameter(String args[]) {
-    String value = getParameter("-encoding", args);
+  public static Charset getEncodingParameter(String args[]) {
+    String charsetName = getParameter("-encoding", args);
+
+    try {
+      if (charsetName != null) {
+        if (Charset.isSupported(charsetName)) {
+          return Charset.forName(charsetName);
+        } else {
+          System.out.println("Error: Unsuppoted encoding " + charsetName + ".");
+          System.exit(-1);
+        }
+      }
+    } catch (IllegalCharsetNameException e) {
+      System.out.println("Error: encoding name(" + e.getCharsetName()
+          + ") is invalid.");
+      System.exit(-1);
+    }
     
-    // TODO:
-    // check if encoding is valid
-    // what to do if not ???
-    // print error message ?
-    
-    return value;
+    // TODO: Can still return null if encoding is not specified at all ...
+    return null;
   }
   
   public static boolean containsParam(String param, String args[]) {

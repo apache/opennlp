@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
@@ -52,7 +53,7 @@ public class ParserTrainer implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " head_rules trainingData model";
   }
 
-  static ObjectStream<Parse> openTrainingData(File trainingDataFile, String encoding) {
+  static ObjectStream<Parse> openTrainingData(File trainingDataFile, Charset encoding) {
     
     CmdLineUtil.checkInputFile("Training data", trainingDataFile);
 

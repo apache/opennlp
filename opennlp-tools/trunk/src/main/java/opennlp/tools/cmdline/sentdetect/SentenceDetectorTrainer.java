@@ -19,6 +19,7 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
@@ -47,7 +48,7 @@ public class SentenceDetectorTrainer implements CmdLineTool {
   }
 
   static ObjectStream<SentenceSample> openSampleData(String sampleDataName,
-      File sampleDataFile, String encoding) {
+      File sampleDataFile, Charset encoding) {
     CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
 
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);

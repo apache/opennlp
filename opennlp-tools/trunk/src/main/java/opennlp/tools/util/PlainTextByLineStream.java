@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 
 /**
  * Reads a plain text file and return each line as a <code>String</code> object.
@@ -48,6 +49,10 @@ public class PlainTextByLineStream implements ObjectStream<String> {
     this.channel = channel;
     
     in = new BufferedReader(Channels.newReader(channel, encoding));
+  }
+  
+  public PlainTextByLineStream(FileChannel channel, Charset encoding) {
+    this(channel, encoding.name());
   }
   
   public String read() throws ObjectStreamException {

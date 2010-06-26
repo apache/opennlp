@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.namefind;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Collections;
 
 import opennlp.tools.cmdline.BasicTrainingParameters;
@@ -50,7 +51,7 @@ public class TokenNameFinderTrainer implements CmdLineTool {
   }
 
   static ObjectStream<NameSample> openSampleData(String sampleDataName,
-      File sampleDataFile, String encoding) {
+      File sampleDataFile, Charset encoding) {
     CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
 
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
