@@ -41,7 +41,7 @@ public class SimpleTokenizer implements CmdLineTool {
     }
     
     CommandLineTokenizer tokenizer = 
-      new CommandLineTokenizer(new opennlp.tools.tokenize.SimpleTokenizer());
+      new CommandLineTokenizer(opennlp.tools.tokenize.SimpleTokenizer.INSTANCE);
     
     tokenizer.process();
   }
