@@ -75,7 +75,7 @@ public class SentenceDetectorTrainer implements CmdLineTool {
     File trainingDataInFile = new File(args[args.length - 2]);
     File modelOutFile = new File(args[args.length - 1]);
 
-    CmdLineUtil.checkOutputFile("sentence detector", modelOutFile);
+    CmdLineUtil.checkOutputFile("sentence detector model", modelOutFile);
     ObjectStream<SentenceSample> sampleStream = 
         openSampleData("Training", trainingDataInFile, parameters.getEncoding());
     

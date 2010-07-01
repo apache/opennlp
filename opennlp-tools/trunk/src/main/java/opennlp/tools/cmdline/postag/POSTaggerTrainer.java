@@ -77,7 +77,7 @@ public class POSTaggerTrainer implements CmdLineTool {
     File trainingDataInFile = new File(args[args.length - 2]);
     File modelOutFile = new File(args[args.length - 1]);
     
-    CmdLineUtil.checkOutputFile("pos tagger", modelOutFile);
+    CmdLineUtil.checkOutputFile("pos tagger model", modelOutFile);
     ObjectStream<POSSample> sampleStream = openSampleData("Training", trainingDataInFile, 
         parameters.getEncoding());
     

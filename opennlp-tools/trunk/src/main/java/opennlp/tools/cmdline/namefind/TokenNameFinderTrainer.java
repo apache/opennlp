@@ -79,7 +79,7 @@ public class TokenNameFinderTrainer implements CmdLineTool {
     File trainingDataInFile = new File(args[args.length - 2]);
     File modelOutFile = new File(args[args.length - 1]);
 
-    CmdLineUtil.checkOutputFile("name finder", modelOutFile);
+    CmdLineUtil.checkOutputFile("name finder model", modelOutFile);
     ObjectStream<NameSample> sampleStream = openSampleData("Training", trainingDataInFile,
         parameters.getEncoding());
 
