@@ -72,7 +72,7 @@ public class CmdLineUtil {
     }
   }
   
-  private static void checkOutputFile(String name, File outFile) {
+  public static void checkOutputFile(String name, File outFile) {
     
     boolean isFailure;
     
