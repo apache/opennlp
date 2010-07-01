@@ -72,23 +72,67 @@ public class CmdLineUtil {
     }
   }
   
+  /**
+   * Tries to ensure that it is possible to write to an output file. 
+   * <p>
+   * The method does nothing if it is possible to write otherwise
+   * it prints an appropriate error message and terminates the Java Virtual Machine
+   * with an error code of -1.
+   * <p>
+   * Computing the contents of an output file (e.g. ME model) can be very time consuming.
+   * Prior to this computation it should be checked once that writing this output file is
+   * possible to be able to fail fast if not. If this validation is only done after a time
+   * consuming computation it could frustrate the user.
+   * 
+   * @param name
+   * @param outFile
+   */
   public static void checkOutputFile(String name, File outFile) {
     
-    boolean isFailure;
+    boolean isFailure = true;
     
-    if (outFile.isDirectory()) {
-      System.err.println("The " + name + " file is a directory!");
-      isFailure = true;
+    if (outFile.exists()) {
+      
+      // The file already exists, ensure that it is a normal file and that it is
+      // possible to write into it
+      
+      if (outFile.isDirectory()) {
+        System.err.println("The " + name + " file is a directory!");
+      }
+      else if (outFile.isFile()) {
+        if (outFile.canWrite()) {
+          isFailure = false;
+        }
+        else {
+          System.err.println("No permissions to write the " + name + " file!");
+        }
+      }
+      else {
+        System.err.println("The " + name + " file is not a normal file!");
+      }
     }
-// Note: only return true in case the file exists
-//    else if (!outFile.canWrite()) {
-//      System.err.println("No permissions to write the " + name + " file!");
-//      isFailure = true;
-//    }
-    
-    // TODO: handle case when file exist and will be overwritten 
     else {
-      isFailure = false;
+      
+      // The file does not exist ensure its parent
+      // directory exists and has write permissions to create
+      // a new file in it
+      
+      File parentDir = outFile.getAbsoluteFile().getParentFile();
+      
+      if (parentDir != null && parentDir.exists()) {
+        
+        if (parentDir.canWrite()) {
+          isFailure = false;
+        }
+        else {
+          System.err.println("No permissions to create the " + name + " file!");
+        }
+      }
+      else {
+        System.err.println("The parent directory of the " + name + " file does not exist," +
+        		"please create it first!");
+      }
+      
     }
     
     if (isFailure) {
