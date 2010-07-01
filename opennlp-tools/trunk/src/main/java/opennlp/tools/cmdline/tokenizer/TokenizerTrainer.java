@@ -73,7 +73,9 @@ public class TokenizerTrainer implements CmdLineTool {
     }
 
     File trainingDataInFile = new File(args[args.length - 2]);
+    File modelOutFile = new File(args[args.length - 1]);
 
+    CmdLineUtil.checkOutputFile("tokenizer", modelOutFile);
     ObjectStream<TokenSample> sampleStream = openSampleData("Training",
         trainingDataInFile, parameters.getEncoding());
 
@@ -94,6 +96,6 @@ public class TokenizerTrainer implements CmdLineTool {
       }
     }
 
-    CmdLineUtil.writeModel("tokenizer", new File(args[args.length - 1]), model);
+    CmdLineUtil.writeModel("tokenizer", modelOutFile, model);
   }
 }

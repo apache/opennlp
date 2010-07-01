@@ -73,6 +73,9 @@ public class SentenceDetectorTrainer implements CmdLineTool {
     }
     
     File trainingDataInFile = new File(args[args.length - 2]);
+    File modelOutFile = new File(args[args.length - 1]);
+
+    CmdLineUtil.checkOutputFile("sentence detector", modelOutFile);
     ObjectStream<SentenceSample> sampleStream = 
         openSampleData("Training", trainingDataInFile, parameters.getEncoding());
     
@@ -93,6 +96,6 @@ public class SentenceDetectorTrainer implements CmdLineTool {
       }
     }
     
-    CmdLineUtil.writeModel("sentence detector", new File(args[args.length - 1]), model);
+    CmdLineUtil.writeModel("sentence detector", modelOutFile, model);
   }
 }
