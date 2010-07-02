@@ -42,7 +42,8 @@ public class SentenceDetectorCrossValidatorTool implements CmdLineTool {
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() +
-        " trainData";
+        " trainData\n" +
+        TrainingParameters.getDescription();
   }
 
   public void run(String[] args) {

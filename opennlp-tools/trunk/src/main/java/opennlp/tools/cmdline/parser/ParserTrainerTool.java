@@ -50,7 +50,8 @@ public class ParserTrainerTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " head_rules trainingData model";
+    return "Usage: " + CLI.CMD + " " + getName() + " head_rules trainingData model\n" +
+        TrainingParameters.getDescription();
   }
 
   static ObjectStream<Parse> openTrainingData(File trainingDataFile, Charset encoding) {

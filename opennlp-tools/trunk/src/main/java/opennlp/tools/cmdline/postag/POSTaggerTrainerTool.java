@@ -46,7 +46,8 @@ public class POSTaggerTrainerTool implements CmdLineTool {
   public String getHelp() {
     // TODO: Move the generation of the description back to the TrainingParameters class ...
     return "Usage: " + CLI.CMD + " " + getName() + TrainingParameters.getParameterUsage() 
-        + " [-dict tagdict] [-model maxent|perceptron|perceptron_sequence] trainingData model ";
+        + " [-dict tagdict] [-model maxent|perceptron|perceptron_sequence] trainingData model\n" +
+        TrainingParameters.getDescription();
   }
 
   static ObjectStream<POSSample> openSampleData(String sampleDataName,

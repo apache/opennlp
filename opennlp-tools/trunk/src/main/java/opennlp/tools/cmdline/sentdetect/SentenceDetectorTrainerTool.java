@@ -44,7 +44,8 @@ public class SentenceDetectorTrainerTool implements CmdLineTool {
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() +
-        " trainingData model";
+        " trainingData model\n" +
+        TrainingParameters.getDescription();
   }
 
   static ObjectStream<SentenceSample> openSampleData(String sampleDataName,

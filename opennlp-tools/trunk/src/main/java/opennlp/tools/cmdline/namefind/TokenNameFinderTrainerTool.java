@@ -47,7 +47,8 @@ public class TokenNameFinderTrainerTool implements CmdLineTool {
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " " + 
-        BasicTrainingParameters.getParameterUsage() + " trainingData model";
+        BasicTrainingParameters.getParameterUsage() + " trainingData model\n" +
+        BasicTrainingParameters.getDescription();
   }
 
   static ObjectStream<NameSample> openSampleData(String sampleDataName,
