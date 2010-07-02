@@ -39,6 +39,7 @@ import opennlp.tools.util.model.BaseModel;
 public final class ModelUtil {
 
   private ModelUtil() {
+    // not intended to be instantiated
   }
 
   /**
