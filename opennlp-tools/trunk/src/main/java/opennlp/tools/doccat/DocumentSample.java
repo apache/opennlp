@@ -29,7 +29,7 @@ public class DocumentSample {
   private String text[];
 
   public DocumentSample(String category, String text) {
-    this(category, new SimpleTokenizer().tokenize(text));
+    this(category, SimpleTokenizer.INSTANCE.tokenize(text));
   }
 
   public DocumentSample(String category, String text[]) {

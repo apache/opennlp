@@ -69,7 +69,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   }
 
   public double[] categorize(String documentText) {
-    Tokenizer tokenizer = new SimpleTokenizer();
+    Tokenizer tokenizer = SimpleTokenizer.INSTANCE;
     return categorize(tokenizer.tokenize(documentText));
   }
 
