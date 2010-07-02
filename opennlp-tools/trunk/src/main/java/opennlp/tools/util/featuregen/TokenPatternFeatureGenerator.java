@@ -38,7 +38,7 @@ public class TokenPatternFeatureGenerator extends FeatureGeneratorAdapter {
      * For tokinization the {@link SimpleTokenizer} is used.
      */
     public TokenPatternFeatureGenerator() {
-        this(new SimpleTokenizer());
+        this(SimpleTokenizer.INSTANCE);
     }
 
     /**
