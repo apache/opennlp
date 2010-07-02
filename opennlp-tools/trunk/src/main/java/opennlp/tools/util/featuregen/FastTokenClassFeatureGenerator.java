@@ -20,7 +20,6 @@ package opennlp.tools.util.featuregen;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import opennlp.tools.util.StringPattern;
 
 
 /**
