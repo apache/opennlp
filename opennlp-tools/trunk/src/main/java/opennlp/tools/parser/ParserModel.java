@@ -35,9 +35,9 @@ import opennlp.model.GenericModelReader;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.UncloseableInputStream;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
  * This is an abstract base class for {@link ParserModel} implementations.

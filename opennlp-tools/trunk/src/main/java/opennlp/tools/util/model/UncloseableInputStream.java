@@ -16,7 +16,7 @@
  */
 
 
-package opennlp.tools.util;
+package opennlp.tools.util.model;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
