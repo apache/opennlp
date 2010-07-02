@@ -18,8 +18,8 @@
 
 package opennlp.tools.postag;
 
-import opennlp.tools.util.Evaluator;
-import opennlp.tools.util.Mean;
+import opennlp.tools.util.eval.Evaluator;
+import opennlp.tools.util.eval.Mean;
 
 /**
  * The {@link POSEvaluator} measures the performance of

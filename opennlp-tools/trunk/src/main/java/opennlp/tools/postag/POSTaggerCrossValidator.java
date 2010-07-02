@@ -20,10 +20,10 @@ package opennlp.tools.postag;
 import java.io.IOException;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.CrossValidationPartitioner;
-import opennlp.tools.util.Mean;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.eval.CrossValidationPartitioner;
+import opennlp.tools.util.eval.Mean;
 
 public class POSTaggerCrossValidator {
 

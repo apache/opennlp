@@ -16,7 +16,7 @@
  */
  
 
-package opennlp.tools.util;
+package opennlp.tools.util.eval;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +24,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import opennlp.tools.util.CrossValidationPartitioner.TrainingSampleStream;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.eval.CrossValidationPartitioner;
+import opennlp.tools.util.eval.CrossValidationPartitioner.TrainingSampleStream;
 
 import junit.framework.TestCase;
 

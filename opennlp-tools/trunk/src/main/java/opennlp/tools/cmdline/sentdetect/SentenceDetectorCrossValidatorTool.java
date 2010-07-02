@@ -26,9 +26,9 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.sentdetect.SDCrossValidator;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.SentenceSampleStream;
-import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.eval.FMeasure;
 
 public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
 

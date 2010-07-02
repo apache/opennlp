@@ -18,9 +18,9 @@
 
 package opennlp.tools.tokenize;
 
-import opennlp.tools.util.Evaluator;
-import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.eval.Evaluator;
+import opennlp.tools.util.eval.FMeasure;
 
 /**
  * The {@link TokenizerEvaluator} measures the performance of

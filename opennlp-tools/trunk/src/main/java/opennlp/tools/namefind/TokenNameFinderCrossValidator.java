@@ -21,11 +21,11 @@ package opennlp.tools.namefind;
 import java.io.IOException;
 import java.util.Collections;
 
-import opennlp.tools.util.CrossValidationPartitioner;
-import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.eval.CrossValidationPartitioner;
+import opennlp.tools.util.eval.FMeasure;
 
 public class TokenNameFinderCrossValidator {
 

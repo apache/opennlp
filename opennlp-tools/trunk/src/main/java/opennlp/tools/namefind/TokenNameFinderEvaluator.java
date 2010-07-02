@@ -23,14 +23,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import opennlp.tools.util.Evaluator;
-import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
-import opennlp.tools.util.PerformanceMonitor;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.eval.Evaluator;
+import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.eval.PerformanceMonitor;
 
 /**
  * The {@link TokenNameFinderEvaluator} measures the performance

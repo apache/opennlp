@@ -25,9 +25,9 @@ import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenSampleStream;
-import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.eval.FMeasure;
 
 public final class TokenizerCrossValidatorTool implements CmdLineTool {
 

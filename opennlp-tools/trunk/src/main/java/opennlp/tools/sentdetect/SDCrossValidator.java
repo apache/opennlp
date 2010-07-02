@@ -19,11 +19,11 @@ package opennlp.tools.sentdetect;
 
 import java.io.FileInputStream;
 
-import opennlp.tools.util.CrossValidationPartitioner;
-import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.eval.CrossValidationPartitioner;
+import opennlp.tools.util.eval.FMeasure;
 
 /**
  * 

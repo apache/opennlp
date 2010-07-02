@@ -22,7 +22,7 @@ import java.util.Iterator;
 
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.tokenize.TokenSample;
-import opennlp.tools.util.Mean;
+import opennlp.tools.util.eval.Mean;
 
 /**
  * The {@link DocumentCategorizerEvaluator} measures the performance of

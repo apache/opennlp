@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-package opennlp.tools.util;
+package opennlp.tools.util.eval;
 
 import static org.junit.Assert.assertEquals;
+
+import opennlp.tools.util.eval.Mean;
 
 import org.junit.Test;
 

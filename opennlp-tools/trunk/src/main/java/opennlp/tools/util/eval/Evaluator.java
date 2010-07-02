@@ -16,7 +16,10 @@
  */
 
 
-package opennlp.tools.util;
+package opennlp.tools.util.eval;
+
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 
 /**
  * The {@link Evaluator} is an abstract base class for evaluators.

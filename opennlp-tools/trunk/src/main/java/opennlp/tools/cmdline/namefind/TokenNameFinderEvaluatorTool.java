@@ -31,8 +31,8 @@ import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
-import opennlp.tools.util.PerformanceMonitor;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.eval.PerformanceMonitor;
 
 public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 

@@ -21,11 +21,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import opennlp.tools.util.CrossValidationPartitioner;
-import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.eval.CrossValidationPartitioner;
+import opennlp.tools.util.eval.FMeasure;
 
 public class TokenizerCrossValidator {
   

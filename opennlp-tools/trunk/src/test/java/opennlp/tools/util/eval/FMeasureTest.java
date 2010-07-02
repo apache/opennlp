@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
-package opennlp.tools.util;
+package opennlp.tools.util.eval;
 
+import opennlp.tools.util.Span;
+import opennlp.tools.util.eval.FMeasure;
 import junit.framework.TestCase;
 
 /**

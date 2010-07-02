@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-package opennlp.tools.util;
+package opennlp.tools.util.eval;
+
 
 /**
  * The {@link FMeasure} is an utility class for evaluators

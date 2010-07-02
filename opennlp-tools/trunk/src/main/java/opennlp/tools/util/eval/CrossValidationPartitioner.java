@@ -16,10 +16,14 @@
  */
 
 
-package opennlp.tools.util;
+package opennlp.tools.util.eval;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
+
+import opennlp.tools.util.CollectionObjectStream;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 
 /**
  * Provides access to training and test partitions for n-fold cross validation.

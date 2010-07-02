@@ -16,7 +16,7 @@
  */
 
 
-package opennlp.tools.util;
+package opennlp.tools.util.eval;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

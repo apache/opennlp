@@ -17,9 +17,9 @@
 
 package opennlp.tools.sentdetect;
 
-import opennlp.tools.util.Evaluator;
-import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.eval.Evaluator;
+import opennlp.tools.util.eval.FMeasure;
 
 /**
  * The {@link SentenceDetectorEvaluator} measures the performance of
