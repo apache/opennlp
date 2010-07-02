@@ -19,7 +19,7 @@ package opennlp.tools.cmdline.postag;
 
 import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.util.ModelType;
+import opennlp.tools.util.model.ModelType;
 
 class TrainingParameters extends BasicTrainingParameters {
 

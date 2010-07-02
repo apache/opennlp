@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.util;
+package opennlp.tools.util.model;
 
 public enum ModelType {
   MAXENT,

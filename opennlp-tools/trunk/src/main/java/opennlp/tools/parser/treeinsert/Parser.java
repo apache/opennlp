@@ -44,10 +44,10 @@ import opennlp.tools.parser.PosSampleStream;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
-import opennlp.tools.util.ModelType;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.model.ModelType;
 
 /**
  * Built/attach parser.  Nodes are built when their left-most
