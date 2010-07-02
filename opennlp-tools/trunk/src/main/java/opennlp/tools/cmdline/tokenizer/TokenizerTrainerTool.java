@@ -44,7 +44,8 @@ public class TokenizerTrainerTool implements CmdLineTool {
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName()
-        + TrainingParameters.getParameterUsage() + " trainingData model";
+        + TrainingParameters.getParameterUsage() + " trainingData model\n" +
+        TrainingParameters.getDescription();
   }
 
   static ObjectStream<TokenSample> openSampleData(String sampleDataName,

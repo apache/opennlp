@@ -25,12 +25,14 @@ import opennlp.tools.cmdline.CmdLineUtil;
  */
 class TrainingParameters extends BasicTrainingParameters {
 
+  private static final String ALPHA_NUM_OPT_PARAM = "-alphaNumOpt";
+  
   private boolean isAlphaNumOpt = false;
   
   TrainingParameters(String args[]) {
     super(args);
     
-    isAlphaNumOpt = CmdLineUtil.containsParam("-alphaNumOpt", args);
+    isAlphaNumOpt = CmdLineUtil.containsParam(ALPHA_NUM_OPT_PARAM, args);
   }
   
   /**
@@ -43,11 +45,11 @@ class TrainingParameters extends BasicTrainingParameters {
   }
   
   public static String getParameterUsage() {
-    return BasicTrainingParameters.getParameterUsage() + " [-alphaNumOpt]";
+    return BasicTrainingParameters.getParameterUsage() + " [" + ALPHA_NUM_OPT_PARAM +"]";
   }
   
   public static String getDescription() {
-    return BasicTrainingParameters.getDescription();
-    // TODO: add alphaNumOpt description
+    return BasicTrainingParameters.getDescription() + "\n" +
+        ALPHA_NUM_OPT_PARAM + " Optimization flag to skip alpha numeric tokens for further tokenization";
   }
 }
