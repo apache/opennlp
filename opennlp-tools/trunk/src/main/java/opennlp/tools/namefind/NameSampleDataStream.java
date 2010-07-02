@@ -17,15 +17,9 @@
 
 package opennlp.tools.namefind;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import opennlp.maxent.DataStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
-import opennlp.tools.util.Span;
 
 /**
  * The {@link NameSampleDataStream} class converts tagged {@link String}s
@@ -34,9 +28,6 @@ import opennlp.tools.util.Span;
  * with names identified by <code>&lt;START&gt;</code> and <code>&lt;END&gt;</code> tags.
  */
 public class NameSampleDataStream implements ObjectStream<NameSample> {
-
-  // pattern to match the start/end tags with optional nameType.
-  private Pattern startTagPattern = Pattern.compile("<START(:(\\w*))?>");
 
   public static final String START_TAG_PREFIX = "<START:";
   public static final String START_TAG = "<START>";
