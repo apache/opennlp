@@ -32,10 +32,10 @@ import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.HashSumEventStream;
-import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * A Tokenizer for converting raw text into separated tokens.  It uses

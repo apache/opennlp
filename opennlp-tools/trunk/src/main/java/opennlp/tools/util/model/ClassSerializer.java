@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ModelUtil;
 
 @Deprecated
 public class ClassSerializer implements ArtifactSerializer<Class<?>> {

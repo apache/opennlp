@@ -38,7 +38,6 @@ import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
@@ -54,6 +53,7 @@ import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * Class for creating a maximum-entropy-based name finder.

@@ -16,7 +16,7 @@
  */
 
 
-package opennlp.tools.util;
+package opennlp.tools.util.model;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -31,7 +31,6 @@ import java.util.Set;
 import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelWriter;
 import opennlp.model.MaxentModel;
-import opennlp.tools.util.model.BaseModel;
 
 /**
  * Utility class for handling of {@link MaxentModel}s.

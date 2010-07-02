@@ -35,12 +35,12 @@ import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.HashSumEventStream;
-import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * A sentence detector for splitting up raw text into sentences.  A maximum

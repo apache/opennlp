@@ -30,8 +30,8 @@ import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ModelUtil;
 import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * The {@link TokenizerModel} is the model used
