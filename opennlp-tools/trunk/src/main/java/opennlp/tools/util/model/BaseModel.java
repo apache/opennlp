@@ -212,7 +212,7 @@ public abstract class BaseModel {
    *
    * @return
    */
-  public String getManifestProperty(String key) {
+  public final String getManifestProperty(String key) {
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
 
     return manifest.getProperty(key);
@@ -224,7 +224,7 @@ public abstract class BaseModel {
    * @param key
    * @param value
    */
-  protected void setManifestProperty(String key, String value) {
+  protected final void setManifestProperty(String key, String value) {
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
 
     manifest.setProperty(key, value);
@@ -237,7 +237,7 @@ public abstract class BaseModel {
    *
    * @return the language code of this model
    */
-  public String getLanguage() {
+  public final String getLanguage() {
     return getManifestProperty(LANGUAGE_PROPERTY);
   }
 
@@ -247,7 +247,7 @@ public abstract class BaseModel {
    *
    * @return
    */
-  public Version getVersion() {
+  public final Version getVersion() {
     String version = getManifestProperty(VERSION_PROPERTY);
 
     return Version.parse(version);
@@ -260,7 +260,7 @@ public abstract class BaseModel {
    * @throws IOException
    */
   @SuppressWarnings("unchecked")
-  public void serialize(OutputStream out) throws IOException {
+  public final void serialize(OutputStream out) throws IOException {
     ZipOutputStream zip = new ZipOutputStream(out);
 
     for (String name : artifactMap.keySet()) {
