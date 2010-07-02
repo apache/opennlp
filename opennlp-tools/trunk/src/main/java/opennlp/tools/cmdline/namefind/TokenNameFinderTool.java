@@ -15,42 +15,51 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.tokenizer;
+package opennlp.tools.cmdline.namefind;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.Span;
 
-public class TokenizerME implements CmdLineTool {
+public class TokenNameFinderTool implements CmdLineTool {
 
   public String getName() {
-    return "TokenizerME";
+    return "TokenNameFinder";
   }
   
   public String getShortDescription() {
-    return "learnable tokenizer";
+    return "";
   }
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
-
-  static TokenizerModel loadModel(File modelFile) {
-    CmdLineUtil.checkInputFile("Tokenizer model", modelFile);
+  
+  static TokenNameFinderModel loadModel(File modelFile) {
+    
+    CmdLineUtil.checkInputFile("Token Name Finder model", modelFile);
 
     System.err.print("Loading model ... ");
     
     InputStream modelIn = CmdLineUtil.openInFile(modelFile);
     
-    TokenizerModel model;
+    TokenNameFinderModel model;
     try {
-      model = new TokenizerModel(modelIn);
+      model = new TokenNameFinderModel(modelIn);
       modelIn.close();
     }
     catch (IOException e) {
@@ -67,21 +76,41 @@ public class TokenizerME implements CmdLineTool {
     }
     
     System.err.println("done");
-   
+    
     return model;
   }
   
   public void run(String[] args) {
+    
     if (args.length != 1) {
       System.out.println(getHelp());
       System.exit(1);
     }
     
-    TokenizerModel model = loadModel(new File(args[0]));
+    TokenNameFinderModel model = loadModel(new File(args[0]));
+
+    NameFinderME nameFinder = new NameFinderME(model);
     
-    CommandLineTokenizer tokenizer = 
-      new CommandLineTokenizer(new opennlp.tools.tokenize.TokenizerME(model));
+    ObjectStream<String> untokenizedLineStream =
+        new PlainTextByLineStream(new InputStreamReader(System.in));
     
-    tokenizer.process();
+    try {
+      String line;
+      while((line = untokenizedLineStream.read()) != null) {
+        String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
+        
+        if (whitespaceTokenizerLine.length == 0)
+            nameFinder.clearAdaptiveData();
+        
+        Span names[] = nameFinder.find(whitespaceTokenizerLine);
+        
+        NameSample nameSample = new NameSample(whitespaceTokenizerLine, names, false);
+        
+        System.out.println(nameSample.toString());
+      }
+    }
+    catch (ObjectStreamException e) {
+      System.err.println("Failed to read from stdin: " + e.getMessage());
+    }
   }
 }

@@ -30,7 +30,7 @@ import opennlp.tools.util.ObjectStream;
 /** 
  * Abstract base class for tools which update the parser model.
  */
-abstract class ModelUpdater implements CmdLineTool {
+abstract class ModelUpdaterTool implements CmdLineTool {
 
   protected abstract ParserModel trainAndUpdate(ParserModel originalModel,
       ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters);
@@ -50,10 +50,10 @@ abstract class ModelUpdater implements CmdLineTool {
     
     // Load model to be updated
     File modelFile = new File(args[args.length - 1]);
-    ParserModel originalParserModel = opennlp.tools.cmdline.parser.Parser
+    ParserModel originalParserModel = opennlp.tools.cmdline.parser.ParserTool
         .loadModel(modelFile);
 
-    ObjectStream<Parse> parseSamples = ParserTrainer.openTrainingData(new File(args[args.length - 2]), 
+    ObjectStream<Parse> parseSamples = ParserTrainerTool.openTrainingData(new File(args[args.length - 2]), 
         parameters.getEncoding());
     
     ParserModel updatedParserModel = trainAndUpdate(originalParserModel,

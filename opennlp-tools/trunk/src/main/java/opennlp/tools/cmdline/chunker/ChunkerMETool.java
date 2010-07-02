@@ -31,7 +31,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
-public class ChunkerME implements CmdLineTool {
+public class ChunkerMETool implements CmdLineTool {
 
   public String getName() {
     return "ChunkerME";

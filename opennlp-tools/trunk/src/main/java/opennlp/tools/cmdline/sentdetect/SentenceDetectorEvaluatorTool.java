@@ -19,60 +19,67 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.sentdetect.SDCrossValidator;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.SentenceSampleStream;
-import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class SentenceDetectorCrossValidator implements CmdLineTool {
+public class SentenceDetectorEvaluatorTool implements CmdLineTool {
 
   public String getName() {
-    return "SentenceDetectorCrossValidator";
+    return "SentenceDetectorEvaluator";
   }
   
   public String getShortDescription() {
-    return "10-fold cross validator for the learnable sentence detector";
+    return "evaluator for the learnable sentence detector";
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() +
-        " trainData";
+    return "Usage: " + CLI.CMD + " " + getName() + " -encoding charset model testData";
   }
 
   public void run(String[] args) {
-    if (args.length < 5) {
+    if (args.length != 4) {
       System.out.println(getHelp());
       System.exit(1);
     }
     
-    TrainingParameters parameters = new TrainingParameters(args);
+    Charset encoding = CmdLineUtil.getEncodingParameter(args);
     
-    if(!parameters.isValid()) {
+    if (encoding == null) {
       System.out.println(getHelp());
       System.exit(1);
     }
+    
+    SentenceModel model = SentenceDetectorTool.loadModel(new File(args[args.length - 2]));
     
     File trainingDataInFile = new File(args[args.length - 1]);
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
+    opennlp.tools.sentdetect.SentenceDetectorEvaluator evaluator = 
+        new opennlp.tools.sentdetect.SentenceDetectorEvaluator(new SentenceDetectorME(model));
+    
     try {
+      System.out.print("Evaluating ... ");
       FileInputStream trainingDataIn = new FileInputStream(trainingDataInFile);
       ObjectStream<String> lineStream = new PlainTextByLineStream(trainingDataIn.getChannel(),
-          parameters.getEncoding());
+          encoding);
       ObjectStream<SentenceSample> sampleStream = new SentenceSampleStream(lineStream);
       
-      SDCrossValidator validator = new SDCrossValidator(parameters.getLanguage());
-      validator.evaluate(sampleStream, 10);
+      evaluator.evaluate(sampleStream);
+      sampleStream.close();
+      System.err.println("done");
       
-      FMeasure result = validator.getFMeasure();
+      System.out.println();
       
-      System.out.println(result.toString());
+      System.out.println(evaluator.getFMeasure());
     }
     catch (Exception e) {
       e.printStackTrace();

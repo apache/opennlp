@@ -34,7 +34,7 @@ import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PerformanceMonitor;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class TokenNameFinderEvaluator implements CmdLineTool {
+public class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
   public String getName() {
     return "TokenNameFinderEvaluator";
@@ -65,7 +65,7 @@ public class TokenNameFinderEvaluator implements CmdLineTool {
         System.exit(1);
       }
       
-      TokenNameFinderModel model = TokenNameFinder.loadModel(new File(args[2]));
+      TokenNameFinderModel model = TokenNameFinderTool.loadModel(new File(args[2]));
       
       opennlp.tools.namefind.TokenNameFinderEvaluator evaluator = 
           new opennlp.tools.namefind.TokenNameFinderEvaluator(new NameFinderME(model));

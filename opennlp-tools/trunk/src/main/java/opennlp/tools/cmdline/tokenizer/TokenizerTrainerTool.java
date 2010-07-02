@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.postag;
+package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,31 +25,29 @@ import java.nio.charset.Charset;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.postag.POSDictionary;
-import opennlp.tools.postag.POSModel;
-import opennlp.tools.postag.POSSample;
-import opennlp.tools.postag.WordTagSampleStream;
+import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.tokenize.TokenSampleStream;
+import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class POSTaggerTrainer implements CmdLineTool {
+public class TokenizerTrainerTool implements CmdLineTool {
 
   public String getName() {
-    return "POSTaggerTrainer";
-  }
-  
-  public String getShortDescription() {
-    return "trains a model for the part-of-speech tagger";
-  }
-  
-  public String getHelp() {
-    // TODO: Move the generation of the description back to the TrainingParameters class ...
-    return "Usage: " + CLI.CMD + " " + getName() + TrainingParameters.getParameterUsage() 
-        + " [-dict tagdict] [-model maxent|perceptron|perceptron_sequence] trainingData model ";
+    return "TokenizerTrainer";
   }
 
-  static ObjectStream<POSSample> openSampleData(String sampleDataName,
+  public String getShortDescription() {
+    return "trainer for the learnable tokenizer";
+  }
+
+  public String getHelp() {
+    return "Usage: " + CLI.CMD + " " + getName()
+        + TrainingParameters.getParameterUsage() + " trainingData model";
+  }
+
+  static ObjectStream<TokenSample> openSampleData(String sampleDataName,
       File sampleDataFile, Charset encoding) {
     CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
 
@@ -58,60 +56,46 @@ public class POSTaggerTrainer implements CmdLineTool {
     ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn
         .getChannel(), encoding);
 
-    return new WordTagSampleStream(lineStream);
+    return new TokenSampleStream(lineStream);
   }
-  
+
   public void run(String[] args) {
-    if (args.length < 6) {
+    if (args.length < 4) {
       System.out.println(getHelp());
       System.exit(1);
     }
-    
+
     TrainingParameters parameters = new TrainingParameters(args);
-    
-    if(!parameters.isValid()) {
+
+    if (!parameters.isValid()) {
       System.out.println(getHelp());
       System.exit(1);
-    }    
-    
+    }
+
     File trainingDataInFile = new File(args[args.length - 2]);
     File modelOutFile = new File(args[args.length - 1]);
-    
-    CmdLineUtil.checkOutputFile("pos tagger model", modelOutFile);
-    ObjectStream<POSSample> sampleStream = openSampleData("Training", trainingDataInFile, 
-        parameters.getEncoding());
-    
-    POSModel model;
+
+    CmdLineUtil.checkOutputFile("tokenizer model", modelOutFile);
+    ObjectStream<TokenSample> sampleStream = openSampleData("Training",
+        trainingDataInFile, parameters.getEncoding());
+
+    TokenizerModel model;
     try {
-      
-      // TODO: Move to util method ...
-      POSDictionary tagdict = null;
-      if (parameters.getDictionaryPath() != null) {
-        tagdict = new POSDictionary(parameters.getDictionaryPath());
-      }
-      
-      // depending on model and sequence choose training method
-      model = opennlp.tools.postag.POSTaggerME.train(parameters.getLanguage(),
-           sampleStream, parameters.getModel(), tagdict, null, parameters.getCutoff(), parameters.getNumberOfIterations());
-    }
-    catch (IOException e) {
+      model = opennlp.tools.tokenize.TokenizerME.train(
+          parameters.getLanguage(), sampleStream, parameters
+              .isAlphaNumericOptimizationEnabled());
+    } catch (IOException e) {
       System.err.println("Training io error: " + e.getMessage());
       System.exit(-1);
       model = null;
-    }
-    catch (ObjectStreamException e) {
-      System.err.println("Training io error: " + e.getMessage());
-      System.exit(-1);
-      model = null;
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (ObjectStreamException e) {
         // sorry that this can fail
       }
     }
-    
-    CmdLineUtil.writeModel("pos tagger", modelOutFile, model);
+
+    CmdLineUtil.writeModel("tokenizer", modelOutFile, model);
   }
 }

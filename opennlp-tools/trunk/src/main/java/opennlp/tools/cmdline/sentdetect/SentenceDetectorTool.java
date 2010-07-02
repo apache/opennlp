@@ -35,7 +35,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * A sentence detector which uses a maxent model to predict the sentences.
  */
-public class SentenceDetector implements CmdLineTool {
+public class SentenceDetectorTool implements CmdLineTool {
 
   public String getName() {
     return "SentenceDetector";

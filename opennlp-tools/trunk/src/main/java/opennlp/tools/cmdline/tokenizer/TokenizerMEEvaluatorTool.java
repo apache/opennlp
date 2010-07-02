@@ -29,7 +29,7 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 
-public class TokenizerMEEvaluator implements CmdLineTool {
+public class TokenizerMEEvaluatorTool implements CmdLineTool {
 
   public String getName() {
     return "TokenizerMEEvaluator";
@@ -56,14 +56,14 @@ public class TokenizerMEEvaluator implements CmdLineTool {
       System.exit(1);
     }
 
-    TokenizerModel model = TokenizerME.loadModel(new File(args[2]));
+    TokenizerModel model = TokenizerMETool.loadModel(new File(args[2]));
 
     TokenizerEvaluator evaluator = new TokenizerEvaluator(
         new opennlp.tools.tokenize.TokenizerME(model));
 
     System.out.print("Evaluating ... ");
 
-    ObjectStream<TokenSample> sampleStream = TokenizerTrainer.openSampleData(
+    ObjectStream<TokenSample> sampleStream = TokenizerTrainerTool.openSampleData(
         "Test", new File(args[3]), encoding);
 
     try {

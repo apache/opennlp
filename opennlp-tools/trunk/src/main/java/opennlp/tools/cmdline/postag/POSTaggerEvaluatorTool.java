@@ -31,7 +31,7 @@ import opennlp.tools.postag.WordTagSampleStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class POSTaggerEvaluator implements CmdLineTool {
+public class POSTaggerEvaluatorTool implements CmdLineTool {
 
   public String getName() {
     return "POSTaggerEvaluator";
@@ -62,7 +62,7 @@ public class POSTaggerEvaluator implements CmdLineTool {
         System.exit(1);
       }
       
-      POSModel model = POSTagger.loadModel(new File(args[args.length - 2]));
+      POSModel model = POSTaggerTool.loadModel(new File(args[args.length - 2]));
       
       POSEvaluator evaluator = 
           new POSEvaluator(new opennlp.tools.postag.POSTaggerME(model));

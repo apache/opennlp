@@ -32,7 +32,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class SentenceDetectorTrainer implements CmdLineTool {
+public class SentenceDetectorTrainerTool implements CmdLineTool {
 
   public String getName() {
     return "SentenceDetectorTrainer";

@@ -28,7 +28,7 @@ import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
 
 // trains a new check model ...
-public class CheckModelUpdater extends ModelUpdater {
+public class CheckModelUpdaterTool extends ModelUpdaterTool {
 
   public String getName() {
     return "CheckModelUpdater";
@@ -43,7 +43,7 @@ public class CheckModelUpdater extends ModelUpdater {
       ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters) {
     
     try {
-      Dictionary mdict = ParserTrainer.buildDictionary(parseSamples, originalModel.getHeadRules(), parameters.getCutoff());
+      Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), parameters.getCutoff());
       
       parseSamples.reset();
       

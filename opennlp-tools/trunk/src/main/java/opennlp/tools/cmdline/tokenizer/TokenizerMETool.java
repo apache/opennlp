@@ -15,50 +15,42 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.postag;
+package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.postag.POSModel;
-import opennlp.tools.postag.POSSample;
-import opennlp.tools.postag.POSTaggerME;
-import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
-import opennlp.tools.util.PlainTextByLineStream;
 
-public class POSTagger implements CmdLineTool {
+public class TokenizerMETool implements CmdLineTool {
 
   public String getName() {
-    return "POSTagger";
+    return "TokenizerME";
   }
   
   public String getShortDescription() {
-    return "";
+    return "learnable tokenizer";
   }
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
-  static POSModel loadModel(File modelFile) {
-    
-    CmdLineUtil.checkInputFile("POS model", modelFile);
+  static TokenizerModel loadModel(File modelFile) {
+    CmdLineUtil.checkInputFile("Tokenizer model", modelFile);
 
     System.err.print("Loading model ... ");
     
     InputStream modelIn = CmdLineUtil.openInFile(modelFile);
     
-    POSModel model;
+    TokenizerModel model;
     try {
-      model = new POSModel(modelIn);
+      model = new TokenizerModel(modelIn);
       modelIn.close();
     }
     catch (IOException e) {
@@ -75,37 +67,21 @@ public class POSTagger implements CmdLineTool {
     }
     
     System.err.println("done");
-    
+   
     return model;
   }
   
   public void run(String[] args) {
-    
     if (args.length != 1) {
       System.out.println(getHelp());
       System.exit(1);
     }
     
-    POSModel model = loadModel(new File(args[0]));
+    TokenizerModel model = loadModel(new File(args[0]));
     
-    POSTaggerME tagger = new POSTaggerME(model);
+    CommandLineTokenizer tokenizer = 
+      new CommandLineTokenizer(new opennlp.tools.tokenize.TokenizerME(model));
     
-    ObjectStream<String> lineStream =
-      new PlainTextByLineStream(new InputStreamReader(System.in));
-    
-    try {
-      String line;
-      while ((line = lineStream.read()) != null) {
-        
-        String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
-        String[] tags = tagger.tag(whitespaceTokenizerLine);
-        
-        POSSample sample = new POSSample(whitespaceTokenizerLine, tags);
-        System.out.println(sample.toString());
-      }
-    } 
-    catch (ObjectStreamException e) {
-      System.err.println("Failed to read from stdin: " + e.getMessage());
-    }    
+    tokenizer.process();
   }
 }

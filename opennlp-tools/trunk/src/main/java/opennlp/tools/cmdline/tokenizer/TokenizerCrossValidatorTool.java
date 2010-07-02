@@ -29,7 +29,7 @@ import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class TokenizerCrossValidator implements CmdLineTool {
+public class TokenizerCrossValidatorTool implements CmdLineTool {
 
   public String getName() {
     return "TokenizerCrossValidator";

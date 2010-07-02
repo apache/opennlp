@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.namefind;
+package opennlp.tools.cmdline.postag;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,20 +25,19 @@ import java.io.InputStreamReader;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.namefind.NameFinderME;
-import opennlp.tools.namefind.NameSample;
-import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
 
-public class TokenNameFinder implements CmdLineTool {
+public class POSTaggerTool implements CmdLineTool {
 
   public String getName() {
-    return "TokenNameFinder";
+    return "POSTagger";
   }
   
   public String getShortDescription() {
@@ -48,18 +47,18 @@ public class TokenNameFinder implements CmdLineTool {
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
-  
-  static TokenNameFinderModel loadModel(File modelFile) {
+
+  static POSModel loadModel(File modelFile) {
     
-    CmdLineUtil.checkInputFile("Token Name Finder model", modelFile);
+    CmdLineUtil.checkInputFile("POS model", modelFile);
 
     System.err.print("Loading model ... ");
     
     InputStream modelIn = CmdLineUtil.openInFile(modelFile);
     
-    TokenNameFinderModel model;
+    POSModel model;
     try {
-      model = new TokenNameFinderModel(modelIn);
+      model = new POSModel(modelIn);
       modelIn.close();
     }
     catch (IOException e) {
@@ -87,30 +86,26 @@ public class TokenNameFinder implements CmdLineTool {
       System.exit(1);
     }
     
-    TokenNameFinderModel model = loadModel(new File(args[0]));
-
-    NameFinderME nameFinder = new NameFinderME(model);
+    POSModel model = loadModel(new File(args[0]));
     
-    ObjectStream<String> untokenizedLineStream =
-        new PlainTextByLineStream(new InputStreamReader(System.in));
+    POSTaggerME tagger = new POSTaggerME(model);
+    
+    ObjectStream<String> lineStream =
+      new PlainTextByLineStream(new InputStreamReader(System.in));
     
     try {
       String line;
-      while((line = untokenizedLineStream.read()) != null) {
+      while ((line = lineStream.read()) != null) {
+        
         String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
+        String[] tags = tagger.tag(whitespaceTokenizerLine);
         
-        if (whitespaceTokenizerLine.length == 0)
-            nameFinder.clearAdaptiveData();
-        
-        Span names[] = nameFinder.find(whitespaceTokenizerLine);
-        
-        NameSample nameSample = new NameSample(whitespaceTokenizerLine, names, false);
-        
-        System.out.println(nameSample.toString());
+        POSSample sample = new POSSample(whitespaceTokenizerLine, tags);
+        System.out.println(sample.toString());
       }
-    }
+    } 
     catch (ObjectStreamException e) {
       System.err.println("Failed to read from stdin: " + e.getMessage());
-    }
+    }    
   }
 }

@@ -24,25 +24,25 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.cmdline.namefind.TokenNameFinder;
-import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluator;
-import opennlp.tools.cmdline.namefind.TokenNameFinderTrainer;
-import opennlp.tools.cmdline.parser.BuildModelUpdater;
-import opennlp.tools.cmdline.parser.CheckModelUpdater;
-import opennlp.tools.cmdline.parser.Parser;
-import opennlp.tools.cmdline.parser.ParserTrainer;
-import opennlp.tools.cmdline.parser.TaggerModelReplacer;
-import opennlp.tools.cmdline.postag.POSTaggerEvaluator;
-import opennlp.tools.cmdline.postag.POSTaggerTrainer;
-import opennlp.tools.cmdline.sentdetect.SentenceDetector;
-import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluator;
-import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainer;
-import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidator;
-import opennlp.tools.cmdline.tokenizer.SimpleTokenizer;
-import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidator;
-import opennlp.tools.cmdline.tokenizer.TokenizerME;
-import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluator;
-import opennlp.tools.cmdline.tokenizer.TokenizerTrainer;
+import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
+import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool;
+import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
+import opennlp.tools.cmdline.parser.BuildModelUpdaterTool;
+import opennlp.tools.cmdline.parser.CheckModelUpdaterTool;
+import opennlp.tools.cmdline.parser.ParserTool;
+import opennlp.tools.cmdline.parser.ParserTrainerTool;
+import opennlp.tools.cmdline.parser.TaggerModelReplacerTool;
+import opennlp.tools.cmdline.postag.POSTaggerEvaluatorTool;
+import opennlp.tools.cmdline.postag.POSTaggerTrainerTool;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorTool;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluatorTool;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainerTool;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidatorTool;
+import opennlp.tools.cmdline.tokenizer.SimpleTokenizerTool;
+import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool;
+import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
+import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool;
+import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool;
 
 public class CLI {
   
@@ -56,27 +56,27 @@ public class CLI {
     List<CmdLineTool> tools = new LinkedList<CmdLineTool>();
     
     // Tokenizer
-    tools.add(new SimpleTokenizer());
-    tools.add(new TokenizerME());
-    tools.add(new TokenizerTrainer());
-    tools.add(new TokenizerMEEvaluator());
-    tools.add(new TokenizerCrossValidator());
+    tools.add(new SimpleTokenizerTool());
+    tools.add(new TokenizerMETool());
+    tools.add(new TokenizerTrainerTool());
+    tools.add(new TokenizerMEEvaluatorTool());
+    tools.add(new TokenizerCrossValidatorTool());
     
     // Sentence detector
-    tools.add(new SentenceDetector());
-    tools.add(new SentenceDetectorTrainer());
-    tools.add(new SentenceDetectorEvaluator());
-    tools.add(new SentenceDetectorCrossValidator());
+    tools.add(new SentenceDetectorTool());
+    tools.add(new SentenceDetectorTrainerTool());
+    tools.add(new SentenceDetectorEvaluatorTool());
+    tools.add(new SentenceDetectorCrossValidatorTool());
     
     // Name Finder
-    tools.add(new TokenNameFinder());
-    tools.add(new TokenNameFinderTrainer());
-    tools.add(new TokenNameFinderEvaluator());
+    tools.add(new TokenNameFinderTool());
+    tools.add(new TokenNameFinderTrainerTool());
+    tools.add(new TokenNameFinderEvaluatorTool());
     
     // POS Tagger
-    tools.add(new opennlp.tools.cmdline.postag.POSTagger());
-    tools.add(new POSTaggerTrainer());
-    tools.add(new POSTaggerEvaluator());
+    tools.add(new opennlp.tools.cmdline.postag.POSTaggerTool());
+    tools.add(new POSTaggerTrainerTool());
+    tools.add(new POSTaggerEvaluatorTool());
     
     // add evaluator
     // add cv validator
@@ -87,11 +87,11 @@ public class CLI {
     // how to evaluate ???
     
     // Parser
-    tools.add(new Parser());
-    tools.add(new ParserTrainer()); // trains everything
-    tools.add(new BuildModelUpdater()); // re-trains  build model
-    tools.add(new CheckModelUpdater()); // re-trains  build model
-    tools.add(new TaggerModelReplacer());
+    tools.add(new ParserTool());
+    tools.add(new ParserTrainerTool()); // trains everything
+    tools.add(new BuildModelUpdaterTool()); // re-trains  build model
+    tools.add(new CheckModelUpdaterTool()); // re-trains  build model
+    tools.add(new TaggerModelReplacerTool());
     
     // Coref
     // Add util to use coref ...

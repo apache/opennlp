@@ -27,7 +27,7 @@ import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
 
-public class BuildModelUpdater extends ModelUpdater {
+public class BuildModelUpdaterTool extends ModelUpdaterTool {
 
   public String getName() {
     return "BuildModelUpdater";
@@ -42,7 +42,7 @@ public class BuildModelUpdater extends ModelUpdater {
       ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters) {
     
     try {
-      Dictionary mdict = ParserTrainer.buildDictionary(parseSamples, originalModel.getHeadRules(), parameters.getCutoff());
+      Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), parameters.getCutoff());
       
       parseSamples.reset();
       

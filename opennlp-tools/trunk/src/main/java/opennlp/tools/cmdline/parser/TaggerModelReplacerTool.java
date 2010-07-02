@@ -29,7 +29,7 @@ import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
 
 // user should train with the POS tool
-public class TaggerModelReplacer implements CmdLineTool {
+public class TaggerModelReplacerTool implements CmdLineTool {
 
   public String getName() {
     return "TaggerModelReplacer";
