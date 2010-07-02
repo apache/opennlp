@@ -20,7 +20,7 @@ package opennlp.tools.cmdline.tokenizer;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 
-public class SimpleTokenizerTool implements CmdLineTool {
+public final class SimpleTokenizerTool implements CmdLineTool {
 
   public String getName() {
     return "SimpleTokenizer";

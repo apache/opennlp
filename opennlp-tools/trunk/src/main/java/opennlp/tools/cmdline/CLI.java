@@ -44,7 +44,7 @@ import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool;
 
-public class CLI {
+public final class CLI {
   
   public static final String CMD = "opennlp";
   

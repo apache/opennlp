@@ -31,7 +31,7 @@ import opennlp.tools.sentdetect.SentenceSampleStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class SentenceDetectorEvaluatorTool implements CmdLineTool {
+public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
 
   public String getName() {
     return "SentenceDetectorEvaluator";

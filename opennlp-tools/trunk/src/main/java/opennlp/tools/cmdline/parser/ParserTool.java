@@ -42,7 +42,7 @@ import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
-public class ParserTool implements CmdLineTool {
+public final class ParserTool implements CmdLineTool {
 
   public String getName() {
     return "Parser";

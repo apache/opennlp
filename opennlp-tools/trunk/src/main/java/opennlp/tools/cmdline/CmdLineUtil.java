@@ -28,8 +28,12 @@ import java.nio.charset.IllegalCharsetNameException;
 
 import opennlp.tools.util.model.BaseModel;
 
-public class CmdLineUtil {
+public final class CmdLineUtil {
 
+  private CmdLineUtil() {
+    // not intended to be instantiated
+  }
+  
   /**
    * Check that the given input file is valid.
    * <p>

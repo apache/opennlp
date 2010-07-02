@@ -30,7 +30,7 @@ import opennlp.tools.util.FMeasure;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class SentenceDetectorCrossValidatorTool implements CmdLineTool {
+public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
 
   public String getName() {
     return "SentenceDetectorCrossValidator";

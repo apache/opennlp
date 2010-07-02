@@ -34,7 +34,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class POSTaggerTool implements CmdLineTool {
+public final class POSTaggerTool implements CmdLineTool {
 
   public String getName() {
     return "POSTagger";

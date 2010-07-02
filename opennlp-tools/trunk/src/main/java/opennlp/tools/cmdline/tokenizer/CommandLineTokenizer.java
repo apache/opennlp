@@ -26,7 +26,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
-class CommandLineTokenizer {
+final class CommandLineTokenizer {
 
   private Tokenizer tokenizer;
   

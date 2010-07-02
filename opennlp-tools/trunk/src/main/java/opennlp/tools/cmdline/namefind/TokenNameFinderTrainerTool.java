@@ -35,7 +35,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class TokenNameFinderTrainerTool implements CmdLineTool {
+public final class TokenNameFinderTrainerTool implements CmdLineTool {
 
   public String getName() {
     return "TokenNameFinderTrainer";

@@ -27,7 +27,7 @@ import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
 
-public class BuildModelUpdaterTool extends ModelUpdaterTool {
+public final class BuildModelUpdaterTool extends ModelUpdaterTool {
 
   public String getName() {
     return "BuildModelUpdater";

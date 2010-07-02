@@ -31,7 +31,7 @@ import opennlp.tools.postag.WordTagSampleStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class POSTaggerEvaluatorTool implements CmdLineTool {
+public final class POSTaggerEvaluatorTool implements CmdLineTool {
 
   public String getName() {
     return "POSTaggerEvaluator";

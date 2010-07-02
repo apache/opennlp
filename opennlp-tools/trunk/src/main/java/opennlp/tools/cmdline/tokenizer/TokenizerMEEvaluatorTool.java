@@ -29,7 +29,7 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 
-public class TokenizerMEEvaluatorTool implements CmdLineTool {
+public final class TokenizerMEEvaluatorTool implements CmdLineTool {
 
   public String getName() {
     return "TokenizerMEEvaluator";

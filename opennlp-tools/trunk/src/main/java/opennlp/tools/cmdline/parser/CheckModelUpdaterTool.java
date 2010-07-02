@@ -28,7 +28,7 @@ import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
 
 // trains a new check model ...
-public class CheckModelUpdaterTool extends ModelUpdaterTool {
+public final class CheckModelUpdaterTool extends ModelUpdaterTool {
 
   public String getName() {
     return "CheckModelUpdater";

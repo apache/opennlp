@@ -27,7 +27,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
 
-public class TokenizerMETool implements CmdLineTool {
+public final class TokenizerMETool implements CmdLineTool {
 
   public String getName() {
     return "TokenizerME";
