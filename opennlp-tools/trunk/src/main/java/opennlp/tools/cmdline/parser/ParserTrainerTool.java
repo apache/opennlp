@@ -110,6 +110,10 @@ public final class ParserTrainerTool implements CmdLineTool {
     } 
     
     ObjectStream<Parse> sampleStream = openTrainingData(new File(args[args.length - 2]), parameters.getEncoding());
+    
+    File modelOutFile = new File(args[args.length - 1]);
+    CmdLineUtil.checkOutputFile("parser model", modelOutFile);
+    
     ParserModel model;
     try {
       
@@ -148,6 +152,6 @@ public final class ParserTrainerTool implements CmdLineTool {
       }
     }
     
-    CmdLineUtil.writeModel("parser", new File(args[args.length - 1]), model);
+    CmdLineUtil.writeModel("parser", modelOutFile, model);
   }
 }
