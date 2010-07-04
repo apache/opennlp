@@ -163,7 +163,6 @@ public final class ParserTool implements CmdLineTool {
       showTopK = true;
     }
     
-    // TODO: Set advance percentage and beam size
     Double advancePercentage = CmdLineUtil.getDoubleParameter("-ap", args);
     
     if (advancePercentage == null)
@@ -193,7 +192,7 @@ public final class ParserTool implements CmdLineTool {
       }
     } 
     catch (ObjectStreamException e) {
-      e.printStackTrace();
+      System.err.println("Failed to read from stdin: " + e.getMessage());
     }   
   }
 }
