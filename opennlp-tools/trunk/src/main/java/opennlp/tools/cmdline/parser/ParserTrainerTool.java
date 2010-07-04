@@ -46,12 +46,12 @@ public final class ParserTrainerTool implements CmdLineTool {
   }
   
   public String getShortDescription() {
-    return "";
+    return "trains the learnable parser";
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " head_rules trainingData model\n" +
-        TrainingParameters.getDescription();
+    return "Usage: " + CLI.CMD + " " + getName() + TrainingParameters.getParameterUsage() + 
+        " head_rules trainingData model\n" + TrainingParameters.getDescription();
   }
 
   static ObjectStream<Parse> openTrainingData(File trainingDataFile, Charset encoding) {
@@ -65,7 +65,6 @@ public final class ParserTrainerTool implements CmdLineTool {
       trainingDataIn = new FileInputStream(trainingDataFile);
     } catch (FileNotFoundException e) {
       System.err.println("failed");
-      // TODO: Can that happen after checkInputFile ???
       System.err.println("File not found: " + e.getMessage());
       System.exit(-1);
       trainingDataIn = null;
