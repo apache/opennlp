@@ -42,7 +42,7 @@ public final class TokenNameFinderTool implements CmdLineTool {
   }
   
   public String getShortDescription() {
-    return "";
+    return "learnable name finder";
   }
   
   public String getHelp() {
