@@ -23,11 +23,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
+import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.ParseException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -38,38 +47,94 @@ public class ChunkerMETool implements CmdLineTool {
   }
   
   public String getShortDescription() {
-    return "";
+    return "learnable chunker";
   }
   
   public String getHelp() {
-    return "";
+    return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
+  static ChunkerModel loadModel(File modelFile) {
+    
+    CmdLineUtil.checkInputFile("Chunker model", modelFile);
+
+    System.err.print("Loading model ... ");
+    
+    InputStream modelIn = CmdLineUtil.openInFile(modelFile);
+    
+    ChunkerModel model;
+    try {
+      model = new ChunkerModel(modelIn);
+      modelIn.close();
+    }
+    catch (IOException e) {
+      System.err.println("failed");
+      System.err.println("IO error while loading model: " + e.getMessage());
+      System.exit(-1);
+      return null;
+    }
+    catch (InvalidFormatException e) {
+      System.err.println("failed");
+      System.err.println("Model has invalid format: " + e.getMessage());
+      System.exit(-1);
+      return null;
+    }
+    
+    System.err.println("done");
+    
+    return model;
+  }
+
+  
   public void run(String[] args) {
     if (args.length != 1) {
       System.out.println(getHelp());
       System.exit(1);
     }
     
-    try {
-      InputStream modelIn = new FileInputStream(args[0]);
-      ChunkerModel model = new ChunkerModel(modelIn);
-      modelIn.close();
-      
-      opennlp.tools.chunker.ChunkerME chunker = 
-          new opennlp.tools.chunker.ChunkerME(model);
-      
-      ObjectStream<String> untokenizedLineStream =
-        new PlainTextByLineStream(new InputStreamReader(System.in));
+    ChunkerModel model = loadModel(new File(args[0]));
     
+    ChunkerME chunker = new ChunkerME(model);
+    
+    ObjectStream<String> lineStream =
+      new PlainTextByLineStream(new InputStreamReader(System.in));
+    
+    try {
       String line;
-      while((line = untokenizedLineStream.read()) != null) {
-        String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
+      while ((line = lineStream.read()) != null) {
         
-//        Span names[] = chunker.
+        POSSample posSample;
+        try {
+          posSample = POSSample.parse(line);
+        } catch (ParseException e) {
+          System.err.println("Invalid format:");
+          System.err.println(line);
+          continue;
+        }
+        
+        String[] chunks = chunker.chunk(posSample.getSentence(),
+            posSample.getTags());
+        
+        for (int ci=0,cn=chunks.length;ci<cn;ci++) {
+          if (ci > 0 && !chunks[ci].startsWith("I-") && !chunks[ci-1].equals("O")) {
+            System.out.print(" ]");
+          }
+          if (chunks[ci].startsWith("B-")) {
+            System.out.print(" ["+chunks[ci].substring(2));
+          }
+
+          System.out.print(" "+posSample.getSentence()[ci]+"_"+posSample.getTags()[ci]);
+        }
+        
+        if (chunks.length > 0 && !chunks[chunks.length-1].equals("O")) {
+          System.out.print(" ]");
+        }
+        
+        System.out.println();
       }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    } 
+    catch (ObjectStreamException e) {
+      CmdLineUtil.handleStdinIoError(e);
+    } 
   }
 }

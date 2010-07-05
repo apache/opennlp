@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.cmdline.chunker.ChunkerMETool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
@@ -82,6 +83,8 @@ public final class CLI {
     // add cv validator
     
     // Chunker
+    tools.add(new ChunkerMETool());
+    
     // ChunkerME, needs ChunkerModel and input must contain POS tags ...
     // ChunkerTrainer, on which material can we train? which format ?
     // how to evaluate ???
