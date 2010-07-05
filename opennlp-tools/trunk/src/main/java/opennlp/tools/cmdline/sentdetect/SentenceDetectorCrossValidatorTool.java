@@ -18,17 +18,14 @@
 package opennlp.tools.cmdline.sentdetect;
 
 import java.io.File;
-import java.io.FileInputStream;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.sentdetect.SDCrossValidator;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.sentdetect.SentenceSampleStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
-import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.eval.FMeasure;
 
 public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
@@ -72,7 +69,14 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
       validator.evaluate(sampleStream, 10);
     }
     catch (ObjectStreamException e) {
-      CmdLineUtil.handleIoErrorWhileReadingTrainingData(e);
+      CmdLineUtil.handleTrainingIoError(e);
+    }
+    finally {
+      try {
+        sampleStream.close();
+      } catch (ObjectStreamException e) {
+        // sorry that this can fail
+      }
     }
     
     FMeasure result = validator.getFMeasure();
