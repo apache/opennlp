@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.model.BaseModel;
 
 public final class CmdLineUtil {
@@ -287,5 +288,10 @@ public final class CmdLineUtil {
     }
     
     return false;
+  }
+  
+  public static void handleIoErrorWhileReadingTrainingData(ObjectStreamException e) {
+    System.err.println("IO error while reading training data: " + e.getMessage());
+    System.exit(-1);
   }
 }
