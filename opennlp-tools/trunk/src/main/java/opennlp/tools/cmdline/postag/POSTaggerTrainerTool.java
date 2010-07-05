@@ -44,8 +44,7 @@ public final class POSTaggerTrainerTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    // TODO: Move the generation of the description back to the TrainingParameters class ...
-    return "Usage: " + CLI.CMD + " " + getName() + TrainingParameters.getParameterUsage() 
+    return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() 
         + " trainingData model\n" +
         TrainingParameters.getDescription();
   }
