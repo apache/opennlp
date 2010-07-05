@@ -41,7 +41,7 @@ public final class POSTaggerTool implements CmdLineTool {
   }
   
   public String getShortDescription() {
-    return "";
+    return "learnable part of speech tagger";
   }
   
   public String getHelp() {
