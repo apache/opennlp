@@ -71,20 +71,22 @@ public class ChunkerModel extends BaseModel {
   public AbstractModel getChunkerModel() {
     return (AbstractModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);
   }
-
+  
   public static void main(String[] args) throws FileNotFoundException, IOException {
-    if (args.length != 2){
-      System.err.println("ChunkerModel packageName modelName");
+    
+    if (args.length != 4){
+      System.err.println("ChunkerModel -lang code packageName modelName");
       System.exit(1);
     }
 
-    String packageName = args[0];
-    String modelName = args[1];
+    String lang = args[1];
+    String packageName = args[2];
+    String modelName = args[3];
 
     AbstractModel chunkerModel = new GenericModelReader(
         new BinaryFileDataReader(new FileInputStream(modelName))).getModel();
 
-    ChunkerModel packageModel = new ChunkerModel("en", chunkerModel);
+    ChunkerModel packageModel = new ChunkerModel(lang, chunkerModel);
     packageModel.serialize(new FileOutputStream(packageName));
   }
 }
