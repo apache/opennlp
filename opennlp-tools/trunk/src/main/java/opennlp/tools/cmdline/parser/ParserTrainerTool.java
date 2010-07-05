@@ -134,13 +134,11 @@ public final class ParserTrainerTool implements CmdLineTool {
       }
       
     } catch (IOException e) {
-      System.err.println("Training io error: " + e.getMessage());
-      System.exit(-1);      
+      CmdLineUtil.handleDataIndexerIoError(e);
       model = null;
     }
     catch (ObjectStreamException e) {
-      System.err.println("Training io error: " + e.getMessage());
-      System.exit(-1);
+      CmdLineUtil.handleTrainingIoError(e);
       model = null;
     }
     finally {

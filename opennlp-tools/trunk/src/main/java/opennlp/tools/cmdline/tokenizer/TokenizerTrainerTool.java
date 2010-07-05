@@ -85,9 +85,12 @@ public final class TokenizerTrainerTool implements CmdLineTool {
       model = opennlp.tools.tokenize.TokenizerME.train(
           parameters.getLanguage(), sampleStream, parameters
               .isAlphaNumericOptimizationEnabled());
-    } catch (IOException e) {
-      System.err.println("Training io error: " + e.getMessage());
-      System.exit(-1);
+    } catch (ObjectStreamException e) {
+      CmdLineUtil.handleTrainingIoError(e);
+      model = null;
+    }
+    catch (IOException e) {
+      CmdLineUtil.handleDataIndexerIoError(e);
       model = null;
     } finally {
       try {
