@@ -27,6 +27,7 @@ import opennlp.tools.sentdetect.SDCrossValidator;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.SentenceSampleStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -62,21 +63,20 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
     File trainingDataInFile = new File(args[args.length - 1]);
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
+    ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Training Data",
+        trainingDataInFile, parameters.getEncoding());
+    
+    SDCrossValidator validator = new SDCrossValidator(parameters.getLanguage());
+    
     try {
-      FileInputStream trainingDataIn = new FileInputStream(trainingDataInFile);
-      ObjectStream<String> lineStream = new PlainTextByLineStream(trainingDataIn.getChannel(),
-          parameters.getEncoding());
-      ObjectStream<SentenceSample> sampleStream = new SentenceSampleStream(lineStream);
-      
-      SDCrossValidator validator = new SDCrossValidator(parameters.getLanguage());
       validator.evaluate(sampleStream, 10);
-      
-      FMeasure result = validator.getFMeasure();
-      
-      System.out.println(result.toString());
     }
-    catch (Exception e) {
-      e.printStackTrace();
+    catch (ObjectStreamException e) {
+      CmdLineUtil.handleIoErrorWhileReadingTrainingData(e);
     }
+    
+    FMeasure result = validator.getFMeasure();
+    
+    System.out.println(result.toString());
   }
 }
