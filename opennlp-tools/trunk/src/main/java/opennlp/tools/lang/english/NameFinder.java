@@ -46,42 +46,6 @@ public class NameFinder {
     nameFinder = new NameFinderME(mod);
   }
 
-  private static void addNames(String tag, Span[] names, Parse[] tokens) {
-    for (int ni=0,nn=names.length;ni<nn;ni++) {
-      Span nameTokenSpan = names[ni];
-      Parse startToken = tokens[nameTokenSpan.getStart()];
-      Parse endToken = tokens[nameTokenSpan.getEnd()];
-      Parse commonParent = startToken.getCommonParent(endToken);
-      //System.err.println("addNames: "+startToken+" .. "+endToken+" commonParent = "+commonParent);
-      if (commonParent != null) {
-        Span nameSpan = new Span(startToken.getSpan().getStart(),endToken.getSpan().getEnd());
-        if (nameSpan.equals(commonParent.getSpan())) {
-          commonParent.insert(new Parse(commonParent.getText(),nameSpan,tag,1.0,endToken.getHeadIndex()));
-        }
-        else {
-          Parse[] kids = commonParent.getChildren();
-          boolean crossingKids = false;
-          for (int ki=0,kn=kids.length;ki<kn;ki++) {
-            if (nameSpan.crosses(kids[ki].getSpan())){
-              crossingKids = true;
-            }
-          }
-          if (!crossingKids) {
-            commonParent.insert(new Parse(commonParent.getText(),nameSpan,tag,1.0,endToken.getHeadIndex()));
-          }
-          else {
-            if (commonParent.getType().equals("NP")) {
-              Parse[] grandKids = kids[0].getChildren();
-              if (grandKids.length > 1 && nameSpan.contains(grandKids[grandKids.length-1].getSpan())) {
-                commonParent.insert(new Parse(commonParent.getText(),commonParent.getSpan(),tag,1.0,commonParent.getHeadIndex()));
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
   private static void clearPrevTokenMaps(NameFinder[] finders) {
     for (int mi = 0; mi < finders.length; mi++) {
       finders[mi].nameFinder.clearAdaptiveData();
@@ -110,7 +74,7 @@ public class NameFinder {
       }
 
       for (int fi = 0, fl = finders.length; fi < fl; fi++) {
-        addNames(tags[fi],nameSpans[fi],tagNodes);
+        Parse.addNames(tags[fi],nameSpans[fi],tagNodes);
       }
       p.show();
     }
