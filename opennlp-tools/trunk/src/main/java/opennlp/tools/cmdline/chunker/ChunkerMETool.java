@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
+import opennlp.tools.chunker.DefaultChunkerSequenceValidator;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -94,7 +95,8 @@ public class ChunkerMETool implements CmdLineTool {
     
     ChunkerModel model = loadModel(new File(args[0]));
     
-    ChunkerME chunker = new ChunkerME(model);
+    ChunkerME chunker = new ChunkerME(model, ChunkerME.DEFAULT_BEAM_SIZE,
+        new DefaultChunkerSequenceValidator());
     
     ObjectStream<String> lineStream =
       new PlainTextByLineStream(new InputStreamReader(System.in));
