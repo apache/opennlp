@@ -20,6 +20,8 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 
+import opennlp.tools.util.ObjectStreamException;
+
 import junit.framework.TestCase;
 
 /**
@@ -33,7 +35,7 @@ import junit.framework.TestCase;
  */
 public class TokenizerMETest extends TestCase {
 
-  public void testTokenizerSimpleModel() throws IOException {
+  public void testTokenizerSimpleModel() throws IOException, ObjectStreamException {
 
     TokenizerModel model = TokenizerTestUtil.createSimpleMaxentTokenModel();
 
@@ -46,7 +48,7 @@ public class TokenizerMETest extends TestCase {
     assertEquals(",", tokens[1]);
   }
   
-  public void testTokenizer() throws IOException {
+  public void testTokenizer() throws IOException, ObjectStreamException {
     TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
 
     TokenizerME tokenizer = new TokenizerME(model);

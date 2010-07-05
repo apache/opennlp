@@ -24,13 +24,14 @@ import java.io.IOException;
 
 import junit.framework.TestCase;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ObjectStreamException;
 
 /**
  * Tests for the {@link TokenizerModel} class.
  */
 public class TokenizerModelTest extends TestCase {
 
-  public void testSentenceModel() throws IOException, InvalidFormatException {
+  public void testSentenceModel() throws IOException, ObjectStreamException, InvalidFormatException {
 
     TokenizerModel model = TokenizerTestUtil.createSimpleMaxentTokenModel();
 
