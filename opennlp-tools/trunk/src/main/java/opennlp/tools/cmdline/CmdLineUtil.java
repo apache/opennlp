@@ -299,4 +299,9 @@ public final class CmdLineUtil {
     System.err.println("Data Indexer IO error: " + e.getMessage());
     System.exit(-1);
   }
+  
+  public static void handleStdinIoError(ObjectStreamException e) {
+    System.err.println("IO Error while reading from stdin: " + e.getMessage());
+    System.exit(-1);
+  }
 }
