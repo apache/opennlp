@@ -19,6 +19,7 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.InputStreamReader;
 
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerStream;
 import opennlp.tools.tokenize.WhitespaceTokenStream;
@@ -28,7 +29,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 final class CommandLineTokenizer {
 
-  private Tokenizer tokenizer;
+  private final Tokenizer tokenizer;
   
   CommandLineTokenizer(Tokenizer tokenizer) {
     this.tokenizer = tokenizer;
@@ -49,7 +50,7 @@ final class CommandLineTokenizer {
       }
     }
     catch (ObjectStreamException e) {
-      System.err.println("Error while reading fro stdin: " + e.getMessage());
+      CmdLineUtil.handleStdinIoError(e);
     }
   }
 }

@@ -192,7 +192,7 @@ public final class ParserTool implements CmdLineTool {
       }
     } 
     catch (ObjectStreamException e) {
-      System.err.println("Failed to read from stdin: " + e.getMessage());
+      CmdLineUtil.handleStdinIoError(e);
     }   
   }
 }
