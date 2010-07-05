@@ -25,7 +25,7 @@ import opennlp.tools.tokenize.SimpleTokenizer;
  */
 public class SimpleTokenizerTest extends TestCase {
 
-  private SimpleTokenizer mTokenizer = new SimpleTokenizer();
+  private SimpleTokenizer mTokenizer = SimpleTokenizer.INSTANCE;
 
   /**
    * Tests if it can tokenize whitespace separated tokens.
