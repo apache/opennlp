@@ -91,12 +91,11 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
            Collections.<String, Object>emptyMap());
     } 
     catch (IOException e) {
-      e.printStackTrace();
-      System.exit(-1);
+      CmdLineUtil.handleDataIndexerIoError(e);
       model = null;
     }
-    catch (InvalidFormatException e) {
-      System.err.println("A resource is invalid: " + e.getMessage());
+    catch (ObjectStreamException e) {
+      CmdLineUtil.handleTrainingIoError(e);
       model = null;
     }
     finally {

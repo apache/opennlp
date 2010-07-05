@@ -39,6 +39,7 @@ import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
@@ -303,7 +304,7 @@ public class NameFinderME implements TokenNameFinder {
    
    public static TokenNameFinderModel train(String languageCode, ObjectStream<NameSample> samples, 
        int iterations, int cutoff,
-       final Map<String, Object> resources) throws IOException, InvalidFormatException {
+       final Map<String, Object> resources) throws IOException, ObjectStreamException {
      
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
      ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
@@ -321,7 +322,7 @@ public class NameFinderME implements TokenNameFinder {
    }
 
    public static TokenNameFinderModel train(String languageCode, ObjectStream<NameSample> samples,
-       final Map<String, Object> resources) throws IOException, InvalidFormatException {
+       final Map<String, Object> resources) throws IOException, ObjectStreamException {
      return NameFinderME.train(languageCode, samples, 100, 5, resources);
    }
    
@@ -353,7 +354,7 @@ public class NameFinderME implements TokenNameFinder {
    * @throws java.io.IOException
    */
   @Deprecated
-  public static void main(String[] args) throws IOException, InvalidFormatException {
+  public static void main(String[] args) throws IOException, ObjectStreamException {
     
     // Encoding must be specified !!!
     // -encoding code train.file model.file

@@ -41,8 +41,7 @@ public class TokenNameFinderModel extends BaseModel {
   private static final String MAXENT_MODEL_ENTRY_NAME = "nameFinder.model";
   
   public TokenNameFinderModel(String languageCode, AbstractModel nameFinderModel,
-      Map<String, Object> resources, Map<String, String> manifestInfoEntries)
-      throws IOException, InvalidFormatException {
+      Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     
     super(languageCode, manifestInfoEntries);
     
