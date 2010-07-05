@@ -290,8 +290,13 @@ public final class CmdLineUtil {
     return false;
   }
   
-  public static void handleIoErrorWhileReadingTrainingData(ObjectStreamException e) {
+  public static void handleTrainingIoError(ObjectStreamException e) {
     System.err.println("IO error while reading training data: " + e.getMessage());
+    System.exit(-1);
+  }
+  
+  public static void handleDataIndexerIoError(IOException e) {
+    System.err.println("Data Indexer IO error: " + e.getMessage());
     System.exit(-1);
   }
 }
