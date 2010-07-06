@@ -192,9 +192,14 @@ public class BeamSearch<T> {
    * @param sequence The input sequence.
    * @param additionalContext An Object[] of additional context.  This is passed to the context generator blindly with the assumption that the context are appropiate.
    *
-   * @return The top ranked sequence of outcomes.
+   * @return The top ranked sequence of outcomes or null if no sequence could be found
    */
   public Sequence bestSequence(T[] sequence, Object[] additionalContext) {
-    return bestSequences(1, sequence, additionalContext,zeroLog)[0];
+    Sequence sequences[] =  bestSequences(1, sequence, additionalContext,zeroLog);
+    
+    if (sequences.length > 0)
+      return sequences[0];
+    else 
+      return null;
   }
 }
