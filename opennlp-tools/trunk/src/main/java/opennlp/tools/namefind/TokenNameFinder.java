@@ -30,4 +30,12 @@ public interface TokenNameFinder {
    * @return an array of spans for each of the names identified.
    */
   public Span[] find(String tokens[]);
+  
+  /**
+   * Forgets all adaptive data which was collected during previous
+   * calls to one of the find methods.
+   *
+   * This method is typical called at the end of a document.
+   */
+  public void clearAdaptiveData();
 }

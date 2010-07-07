@@ -31,7 +31,7 @@ import opennlp.tools.util.StringList;
  * for names inside a dictionary.
  *
  * @author <a href="mailto:kottmann@gmail.com">Joern Kottmann</a>
- * @version $Revision: 1.2 $, $Date: 2009-01-24 01:32:19 $
+ * @version $Revision: 1.3 $, $Date: 2010-07-07 09:18:16 $
  */
 public class DictionaryNameFinder implements TokenNameFinder {
 
@@ -87,5 +87,10 @@ public class DictionaryNameFinder implements TokenNameFinder {
     }
 
     return (Span[]) foundNames.toArray(new Span[foundNames.size()]);
+  }
+  
+  @Override
+  public void clearAdaptiveData() {
+    // nothing to clear
   }
 }
