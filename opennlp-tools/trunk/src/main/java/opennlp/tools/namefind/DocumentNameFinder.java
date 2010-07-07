@@ -23,7 +23,8 @@ import opennlp.tools.util.Span;
  * Name finding interface which processes an entire document allowing the name finder to use context
  * from the entire document.
  * 
- * @author tsmorton
+ * <strong>EXPERIMENTAL</strong>. 
+ * This interface has been added as part of a work in progress and might change without notice.
  */
 public interface DocumentNameFinder {
 
