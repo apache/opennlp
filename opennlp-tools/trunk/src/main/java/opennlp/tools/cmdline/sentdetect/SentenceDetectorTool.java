@@ -110,8 +110,8 @@ public final class SentenceDetectorTool implements CmdLineTool {
           if (para.length() > 0) {
             // process the paragraph data here
             String[] sents = sdetector.sentDetect(para.toString());
-            for (int si = 0, sn = sents.length; si < sn; si++) {
-              System.out.println(sents[si]);
+            for (String sentence : sents) {
+              System.out.println(sentence);
             }
           }
           System.out.println();
