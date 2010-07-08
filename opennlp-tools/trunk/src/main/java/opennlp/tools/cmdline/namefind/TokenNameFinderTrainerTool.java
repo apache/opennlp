@@ -30,7 +30,6 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.namefind.TokenNameFinderModel;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
