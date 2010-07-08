@@ -100,10 +100,15 @@ public final class SentenceDetectorTool implements CmdLineTool {
       new PlainTextByLineStream(new InputStreamReader(System.in));
     
     try {
-      String line;
-      while ((line = lineStream.read()) != null) {
-        if (line.equals("")) {
-          if (para.length() != 0) {
+      while (true) {
+        String line = lineStream.read();
+        
+        // The last paragraph in the input might not
+        // be terminated well with a new line at the end.
+        
+        if (line == null || line.equals("")) {
+          if (para.length() > 0) {
+            // process the paragraph data here
             String[] sents = sdetector.sentDetect(para.toString());
             for (int si = 0, sn = sents.length; si < sn; si++) {
               System.out.println(sents[si]);
@@ -115,6 +120,9 @@ public final class SentenceDetectorTool implements CmdLineTool {
         else {
           para.append(line).append(" ");
         }
+        
+        if (line == null)
+          break;
       }
     } 
     catch (ObjectStreamException e) {
