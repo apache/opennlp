@@ -18,7 +18,6 @@
 package opennlp.tools.cmdline.chunker;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,17 +28,12 @@ import opennlp.tools.chunker.DefaultChunkerSequenceValidator;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.namefind.NameSample;
-import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
-import opennlp.tools.postag.POSTaggerME;
-import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ParseException;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
 
 public class ChunkerMETool implements CmdLineTool {
 
