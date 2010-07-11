@@ -17,7 +17,6 @@
 
 package opennlp.tools.parser;
 
-import static org.junit.Assert.assertNull;
 import junit.framework.TestCase;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.util.ObjectStream;

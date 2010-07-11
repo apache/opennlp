@@ -366,13 +366,13 @@ public class Parse implements Cloneable, Comparable<Parse> {
       Span s = c.span;
       if (start < s.getStart()) {
         //System.out.println("pre "+start+" "+s.getStart());
-        sb.append(text.substring(start, s.getStart()));
+        sb.append(encodeToken(text.substring(start, s.getStart())));
       }
       c.show(sb);
       start = s.getEnd();
     }
     if (start < span.getEnd()) {
-      sb.append(text.substring(start, span.getEnd()));
+      sb.append(encodeToken(text.substring(start, span.getEnd())));
     }
     if (!type.equals(AbstractBottomUpParser.TOK_NODE)) {
       sb.append(")");
@@ -651,6 +651,40 @@ public class Parse implements Cloneable, Comparable<Parse> {
     return null;
   }
 
+  private static String encodeToken(String token) {
+    if ("(".equals(token)) {
+      return "-LRB-";
+    }
+    else if (")".equals(token)) {
+      return "-RRB-";
+    }
+    else if ("{".equals(token)) {
+      return "-LCB-";
+    }
+    else if ("}".equals(token)) {
+      return "-RCB-";
+    }
+    
+    return token;
+  }
+  
+  private static String decodeToken(String token) {
+    if ("-LRB-".equals(token)) {
+      return "(";
+    }
+    else if ("-RRB-".equals(token)) {
+      return ")";
+    }
+    else if ("-LCB-".equals(token)) {
+      return "{";
+    }
+    else if ("-RCB-".equals(token)) {
+      return "}";
+    }
+    
+    return token;
+  }
+  
   /**
    * Returns the string containing the token for the specified portion of the parse string or
    * null if the portion of the parse string does not represent a token.
@@ -663,7 +697,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   private static String getToken(String rest) {
     Matcher tokenMatcher = tokenPattern.matcher(rest);
     if (tokenMatcher.find()) {
-      return tokenMatcher.group(1);
+      return decodeToken(tokenMatcher.group(1));
     }
     return null;
   }

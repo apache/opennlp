@@ -76,6 +76,27 @@ public class ParseTest {
     
     assertEquals(p1, p2);
   }
+
+  @Test
+  public void testTokenReplacement() {
+    Parse p1 = Parse.parseParse("(TOP  (S-CLF (NP-SBJ (PRP It)  )(VP (VBD was) " +
+    		" (NP-PRD (NP (DT the)  (NN trial)  )(PP (IN of) " +
+    		" (NP (NP (NN oleomargarine)  (NN heir)  )(NP (NNP Minot) " +
+    		" (PRN (-LRB- -LRB-) (NNP Mickey) " +
+    		" (-RRB- -RRB-) )(NNP Jelke)  )))(PP (IN for) " +
+    		" (NP (JJ compulsory)  (NN prostitution) " +
+    		" ))(PP-LOC (IN in)  (NP (NNP New)  (NNP York) " +
+    		" )))(SBAR (WHNP-1 (WDT that)  )(S (VP (VBD put) " +
+    		" (NP (DT the)  (NN spotlight)  )(PP (IN on)  (NP (DT the) " +
+    		" (JJ international)  (NN play-girl)  ))))))(. .)  ))");
+    
+    StringBuffer parseString = new StringBuffer();
+    p1.show(parseString);
+    
+    Parse p2 = Parse.parseParse(parseString.toString());
+    
+    assertEquals(p1, p2);
+  }
   
   @Test
   public void testGetTagNodes() {

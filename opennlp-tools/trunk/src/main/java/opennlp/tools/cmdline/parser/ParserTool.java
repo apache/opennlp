@@ -62,23 +62,6 @@ public final class ParserTool implements CmdLineTool {
   private static Pattern untokenizedParenPattern1 = Pattern.compile("([^ ])([({)}])");
   private static Pattern untokenizedParenPattern2 = Pattern.compile("([({)}])([^ ])");
 
-  // TODO: We should do this conversion on training time ... 
-  private static String convertToken(String token) {
-    if (token.equals("(")) {
-      return "-LRB-";
-    }
-    else if (token.equals(")")) {
-      return "-RRB-";
-    }
-    else if (token.equals("{")) {
-      return "-LCB-";
-    }
-    else if (token.equals("}")) {
-      return "-RCB-";
-    }
-    return token;
-  }
-
   static ParserModel loadModel(File modelFile) {
     
     CmdLineUtil.checkInputFile("Parser model", modelFile);
@@ -117,7 +100,7 @@ public final class ParserTool implements CmdLineTool {
     StringBuffer sb = new StringBuffer();
     List<String> tokens = new ArrayList<String>();
     while (str.hasMoreTokens()) {
-      String tok = convertToken(str.nextToken());
+      String tok = str.nextToken();
       tokens.add(tok);
       sb.append(tok).append(" ");
     }
