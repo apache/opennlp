@@ -54,7 +54,7 @@ public class DictionaryNameFinderTetst extends TestCase {
 
     String sentence = "Max a b c d";
 
-    SimpleTokenizer tokenizer = new SimpleTokenizer();
+    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String tokens[] = tokenizer.tokenize(sentence);
 
     Span names[] = mNameFinder.find(tokens);
@@ -66,7 +66,7 @@ public class DictionaryNameFinderTetst extends TestCase {
   public void testSingleTokeNameInsideSentence() {
     String sentence = "a b  Max c d";
 
-    SimpleTokenizer tokenizer = new SimpleTokenizer();
+    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String tokens[] = tokenizer.tokenize(sentence);
 
     Span names[] = mNameFinder.find(tokens);
@@ -78,7 +78,7 @@ public class DictionaryNameFinderTetst extends TestCase {
   public void testSingleTokeNameAtSentenceEnd() {
     String sentence = "a b c Max";
 
-    SimpleTokenizer tokenizer = new SimpleTokenizer();
+    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String tokens[] = tokenizer.tokenize(sentence);
 
     Span names[] = mNameFinder.find(tokens);
