@@ -61,6 +61,8 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
    * @param file The file name for the tag dictionary.
    *
    * @throws IOException when the specified file can not be read.
+   * 
+   * @deprecated Use {@link POSDictionary#create(InputStream)} instead, old format might removed.
    */
   @Deprecated
   public POSDictionary(String file) throws IOException {
@@ -75,6 +77,8 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
    * @param caseSensitive Specifies whether the tag dictionary is case sensitive or not.
    *
    * @throws IOException when the specified file can not be read.
+   * 
+   * @deprecated Use {@link POSDictionary#create(InputStream)} instead, old format might removed.
    */
   @Deprecated
   public POSDictionary(String file, boolean caseSensitive) throws IOException {
@@ -90,6 +94,8 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
    * @param caseSensitive Specifies whether the tag dictionary is case sensitive or not.
    *
    * @throws IOException when the specified file can not be read.
+   * 
+   * @deprecated Use {@link POSDictionary#create(InputStream)} instead, old format might removed.
    */
   @Deprecated
   public POSDictionary(String file, String encoding, boolean caseSensitive) throws IOException {
@@ -103,6 +109,8 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
    * @param caseSensitive Specifies whether the tag dictionary is case sensitive or not.
    *
    * @throws IOException when the specified file can not be read.
+   * 
+   * @deprecated Use {@link POSDictionary#create(InputStream)} instead, old format might removed.
    */
   @Deprecated
   public POSDictionary(BufferedReader reader, boolean caseSensitive) throws IOException {
