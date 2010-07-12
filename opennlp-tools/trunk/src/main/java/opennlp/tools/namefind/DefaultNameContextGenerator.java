@@ -34,7 +34,7 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  * Class for determining contextual features for a tag/chunk style
  * named-entity recognizer.
  *
- * @version $Revision: 1.5 $, $Date: 2010-03-30 16:33:03 $
+ * @version $Revision: 1.6 $, $Date: 2010-07-12 15:42:01 $
  */
 public class DefaultNameContextGenerator implements NameContextGenerator {
 
@@ -138,7 +138,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
 class BigramNameFeatureGenerator extends FeatureGeneratorAdapter {
 
-  public void createFeatures(List features, String[] tokens, int index, String[] previousOutcomes) {
+  public void createFeatures(List<String> features, String[] tokens, int index, String[] previousOutcomes) {
     String wc = FeatureGeneratorUtil.tokenFeature(tokens[index]);
     //bi-gram features 
     if (index > 0) {
