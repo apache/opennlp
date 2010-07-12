@@ -202,6 +202,28 @@ public abstract class BaseModel {
     if (getManifestProperty(LANGUAGE_PROPERTY) == null)
       throw new InvalidFormatException("Missing " + LANGUAGE_PROPERTY + " property in " +
       		MANIFEST_ENTRY + "!");
+    
+    String versionString = getManifestProperty(VERSION_PROPERTY);
+    
+    if (versionString != null) {
+      Version version;
+      
+      try {
+        version = Version.parse(versionString);
+      }
+      catch (NumberFormatException e) {
+        throw new InvalidFormatException("Unable to parse model version!, e");
+      }
+      
+      if (!Version.currentVersion().equals(version)) {
+        throw new InvalidFormatException("Model version " + version + " is not supported by this (" 
+            + Version.currentVersion() +") version of OpenNLP!");
+      }
+    }
+    else {
+      throw new InvalidFormatException("Missing " + VERSION_PROPERTY + " property in " +
+            MANIFEST_ENTRY + "!");
+    }
   }
 
   /**
