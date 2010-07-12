@@ -37,7 +37,6 @@ import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.HashSumEventStream;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
