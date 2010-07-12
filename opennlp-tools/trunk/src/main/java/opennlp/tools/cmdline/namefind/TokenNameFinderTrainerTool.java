@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collections;
 
-import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -46,8 +45,8 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " " + 
-        BasicTrainingParameters.getParameterUsage() + " trainingData model\n" +
-        BasicTrainingParameters.getDescription();
+        TrainingParameters.getParameterUsage() + " trainingData model\n" +
+        TrainingParameters.getDescription();
   }
 
   static ObjectStream<NameSample> openSampleData(String sampleDataName,
@@ -64,12 +63,12 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
   
   public void run(String[] args) {
     
-    if (args.length < 6) {
+    if (args.length < 8) {
       System.out.println(getHelp());
       System.exit(1);
     }
     
-    BasicTrainingParameters parameters = new BasicTrainingParameters(args);
+    TrainingParameters parameters = new TrainingParameters(args);
     
     if(!parameters.isValid()) {
       System.out.println(getHelp());
@@ -85,7 +84,7 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
 
     TokenNameFinderModel model;
     try {
-      model = opennlp.tools.namefind.NameFinderME.train(parameters.getLanguage(),
+      model = opennlp.tools.namefind.NameFinderME.train(parameters.getLanguage(), parameters.getType(),
            sampleStream, parameters.getNumberOfIterations(), parameters.getCutoff(), 
            Collections.<String, Object>emptyMap());
     } 

@@ -46,8 +46,8 @@ public abstract class BaseModel {
   public static final String TRAINING_EVENTHASH_PROPERTY = "Training-Eventhash";
   
   protected static final String MANIFEST_ENTRY = "manifest.properties";
-  private static final String VERSION_PROPERTY = "version";
-  private static final String LANGUAGE_PROPERTY = "language";
+  private static final String VERSION_PROPERTY = "Version";
+  private static final String LANGUAGE_PROPERTY = "Language";
   private static final String TIMESTAMP_PROPERTY = "Timstamp";
   private static final String MANIFEST_VERSION_PROPERTY = "Manifest-Version";
   

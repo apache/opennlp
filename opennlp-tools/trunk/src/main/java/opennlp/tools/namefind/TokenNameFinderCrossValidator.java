@@ -46,7 +46,7 @@ public class TokenNameFinderCrossValidator {
       CrossValidationPartitioner.TrainingSampleStream<NameSample> trainingSampleStream =
           partitioner.next();
       
-      TokenNameFinderModel model = NameFinderME.train(language, trainingSampleStream,
+      TokenNameFinderModel model = NameFinderME.train(language, "default", trainingSampleStream,
           Collections.<String, Object>emptyMap());
        
        // do testing

@@ -301,7 +301,7 @@ public class NameFinderME implements TokenNameFinder {
 
 
    
-   public static TokenNameFinderModel train(String languageCode, ObjectStream<NameSample> samples, 
+   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
        int iterations, int cutoff,
        final Map<String, Object> resources) throws IOException, ObjectStreamException {
      
@@ -316,13 +316,13 @@ public class NameFinderME implements TokenNameFinder {
      manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
          hses.calculateHashSum().toString(16));
      
-     return new TokenNameFinderModel(languageCode, nameFinderModel,
+     return new TokenNameFinderModel(languageCode, type, nameFinderModel,
          resources, manifestInfoEntries);
    }
 
-   public static TokenNameFinderModel train(String languageCode, ObjectStream<NameSample> samples,
+   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        final Map<String, Object> resources) throws IOException, ObjectStreamException {
-     return NameFinderME.train(languageCode, samples, 100, 5, resources);
+     return NameFinderME.train(languageCode, type, samples, 100, 5, resources);
    }
    
   @Deprecated
@@ -364,7 +364,7 @@ public class NameFinderME implements TokenNameFinder {
           new PlainTextByLineStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
       
       TokenNameFinderModel model = 
-          NameFinderME.train("x-unspecified", sampleStream, new HashMap<String, Object>());
+          NameFinderME.train("x-unspecified", "default", sampleStream, new HashMap<String, Object>());
       
       model.serialize(new FileOutputStream(args[4]));
       
