@@ -26,6 +26,7 @@ import java.util.List;
 /**
  * Class which creates mapping between keys and a list of values.
  */
+@SuppressWarnings("unchecked")
 public class HashList extends HashMap {
 
   private static final long serialVersionUID = 1;
