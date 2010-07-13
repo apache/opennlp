@@ -134,7 +134,7 @@ public final class CmdLineUtil {
         }
       }
       else {
-        System.err.println("The parent directory of the " + name + " file does not exist," +
+        System.err.println("The parent directory of the " + name + " file does not exist, " +
         		"please create it first!");
       }
       
