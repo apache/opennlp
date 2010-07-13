@@ -79,9 +79,11 @@ public class BasicTrainingParameters {
   
   public static String getDescription() {
     return 
-        "-encoding charset specifies the encoding which should be used" +
-        " for reading and writing text.\n" + 
-        "-lang language    specifies the language which " +
-        "is being processed.";
+        "-lang language     specifies the language which " +
+        "is being processed.\n" +
+        "-encoding charset  specifies the encoding which should be used" +
+        " for reading and writing text.\n" +
+        "-iterations num    specified the number of training iterations\n" +
+        "-cutoff num        specifies the min number of times a feature must be seen"; 
   }
 }
