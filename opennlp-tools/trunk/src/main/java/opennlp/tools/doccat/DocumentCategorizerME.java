@@ -27,6 +27,7 @@ import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 
 /**
  * Maxent implementation of {@link DocumentCategorizer}.
@@ -150,7 +151,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @throws IOException
    */
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples, int cutoff, int iterations, FeatureGenerator... featureGenerators)
-      throws IOException {
+      throws ObjectStreamException, IOException {
     AbstractModel model = GIS.trainModel(iterations, new TwoPassDataIndexer(
         new DocumentCategorizerEventStream(samples, featureGenerators), cutoff));
     
@@ -164,8 +165,9 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @param samples
    * @return
    * @throws IOException
+   * @throws ObjectStreamException 
    */
-  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples) throws IOException {
+  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples) throws ObjectStreamException, IOException {
     return train(languageCode, samples, 5, 100, defaultFeatureGenerator);
   }
 }

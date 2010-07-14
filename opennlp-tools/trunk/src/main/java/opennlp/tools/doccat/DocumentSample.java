@@ -18,7 +18,7 @@
 
 package opennlp.tools.doccat;
 
-import opennlp.tools.tokenize.SimpleTokenizer;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 
 /**
  * Class which holds a classified document and its category.
@@ -29,7 +29,7 @@ public class DocumentSample {
   private String text[];
 
   public DocumentSample(String category, String text) {
-    this(category, SimpleTokenizer.INSTANCE.tokenize(text));
+    this(category, WhitespaceTokenizer.INSTANCE.tokenize(text));
   }
 
   public DocumentSample(String category, String text[]) {
@@ -47,5 +47,24 @@ public class DocumentSample {
 
   String[] getText() {
     return text;
+  }
+  
+  @Override
+  public String toString() {
+    
+    StringBuilder sampleString = new StringBuilder();
+    
+    sampleString.append(category).append('\t');
+        
+    for (int i = 0; i < text.length; i++) {
+      sampleString.append(text[i]).append(' ');
+    }
+    
+    if (sampleString.length() > 0) {
+      // remove last space
+      sampleString.setLength(sampleString.length() - 1);
+    }
+    
+    return sampleString.toString();
   }
 }

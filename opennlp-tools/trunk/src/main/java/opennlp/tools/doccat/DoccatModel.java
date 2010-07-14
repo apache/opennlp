@@ -43,7 +43,7 @@ public class DoccatModel extends BaseModel {
     this(languageCode, doccatModel, null);
   }
   
-  DoccatModel(InputStream in) throws IOException, InvalidFormatException {
+  public DoccatModel(InputStream in) throws IOException, InvalidFormatException {
     super(in);
   }
 
