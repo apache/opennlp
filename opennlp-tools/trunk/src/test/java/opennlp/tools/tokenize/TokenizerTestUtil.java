@@ -53,7 +53,8 @@ public class TokenizerTestUtil {
         new Span(0, 3),
         new Span(3, 4)}));
 
-    return TokenizerME.train("en", new CollectionObjectStream<TokenSample>(samples), true);
+    return TokenizerME.train("en", new CollectionObjectStream<TokenSample>(samples), true,
+                             5, 100);
   }
 
   static TokenizerModel createMaxentTokenModel() throws IOException, ObjectStreamException {
@@ -64,7 +65,7 @@ public class TokenizerTestUtil {
     ObjectStream<TokenSample> samples = new TokenSampleStream(
         new PlainTextByLineStream(new InputStreamReader(trainDataIn, "UTF-8")));
     
-    return TokenizerME.train("en", samples, true);
+    return TokenizerME.train("en", samples, true, 5, 100);
   }
   
 }

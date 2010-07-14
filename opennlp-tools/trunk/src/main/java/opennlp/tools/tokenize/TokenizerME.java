@@ -170,7 +170,6 @@ public class TokenizerME extends AbstractTokenizer {
           double[] probs =
             model.eval(cg.getContext(tok, j - origStart));
           String best = model.getBestOutcome(probs);
-          //System.err.println("TokenizerME: "+tok.substring(0,j-origStart)+"^"+tok.substring(j-origStart)+" "+best+" "+probs[model.getIndex(best)]);
           tokenProb *= probs[model.getIndex(best)];
           if (best.equals(TokenizerME.SPLIT)) {
             newTokens.add(new Span(start, j));
@@ -195,6 +194,44 @@ public class TokenizerME extends AbstractTokenizer {
    * @param languageCode the language of the natural text
    * @param samples the samples used for the training.
    * @param useAlphaNumericOptimization - if true alpha numerics are skipped
+   * @param cutoff number of times a feature must be seen to be considered
+   * @param iterations number of iterations to train the maxent model
+   * 
+   * @return the trained {@link TokenizerModel}
+   *
+   * @throws IOException it throws an {@link IOException} if an {@link IOException}
+   * is thrown during IO operations on a temp file which is
+   * 
+   * @throws ObjectStreamException if reading from the {@link ObjectStream} fails
+   * created during training.
+   */
+  public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
+      boolean useAlphaNumericOptimization, int cutoff, int iterations) throws IOException, ObjectStreamException {
+
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+    
+    EventStream eventStream = new TokSpanEventStream(samples,
+        useAlphaNumericOptimization);
+
+    HashSumEventStream hses = new HashSumEventStream(eventStream);
+    GISModel maxentModel =
+        GIS.trainModel(iterations, new TwoPassDataIndexer(eventStream, cutoff));
+
+    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
+        hses.calculateHashSum().toString(16));
+    
+    return new TokenizerModel(languageCode, maxentModel, 
+        useAlphaNumericOptimization, manifestInfoEntries);
+  }
+
+
+  /**
+   * Trains a model for the {@link TokenizerME} with a default cutoff of 5 and 100 iterations.
+   *
+   * @param languageCode the language of the natural text
+   * @param samples the samples used for the training.
+   * @param useAlphaNumericOptimization - if true alpha numerics are skipped
    *
    * @return the trained {@link TokenizerModel}
    *
@@ -206,29 +243,13 @@ public class TokenizerME extends AbstractTokenizer {
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization) throws IOException, ObjectStreamException {
-
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    // TODO: Make iterations and cutoff configurable
-    ModelUtil.addCutoffAndIterations(manifestInfoEntries, 5, 100);
-    
-    EventStream eventStream = new TokSpanEventStream(samples,
-        useAlphaNumericOptimization);
-
-    HashSumEventStream hses = new HashSumEventStream(eventStream);
-    GISModel maxentModel =
-        GIS.trainModel(100, new TwoPassDataIndexer(eventStream, 5));
-
-    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
-        hses.calculateHashSum().toString(16));
-    
-    return new TokenizerModel(languageCode, maxentModel, 
-        useAlphaNumericOptimization, manifestInfoEntries);
+    return train(languageCode, samples, useAlphaNumericOptimization, 5, 100);
   }
-
+  
   /**
    * Returns the value of the alpha-numeric optimization flag.
    *
-   * @return true if the tokenizer should use alpha-numeric optization, false otherwise.
+   * @return true if the tokenizer should use alpha-numeric optimization, false otherwise.
    */
   public boolean useAlphaNumericOptimization() {
     return useAlphaNumericOptimization;

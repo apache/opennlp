@@ -32,12 +32,22 @@ public class TokenizerCrossValidator {
   private final String language;
   private final boolean alphaNumericOptimization;
   
+  private final int cutoff;
+  private final int iterations;
+  
   private FMeasure fmeasure = new FMeasure();
   
-  public TokenizerCrossValidator(String language, boolean alphaNumericOptimization) {
+  
+  public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, int cutoff, int iterations) {
     this.language = language;
     this.alphaNumericOptimization = alphaNumericOptimization;
+    this.cutoff = cutoff;
+    this.iterations = iterations;
   }
+  
+  public TokenizerCrossValidator(String language, boolean alphaNumericOptimization) {
+    this(language, alphaNumericOptimization, 5, 100);
+  }  
   
   public void evaluate(ObjectStream<TokenSample> samples, int nFolds) 
       throws ObjectStreamException, IOException {
@@ -52,7 +62,7 @@ public class TokenizerCrossValidator {
        
        // Maybe throws IOException if temporary file handling fails ...
        TokenizerModel model = TokenizerME.train(language, trainingSampleStream, 
-           alphaNumericOptimization);
+           alphaNumericOptimization, cutoff, iterations);
        
        TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model));
        evaluator.evaluate(trainingSampleStream.getTestSampleStream());
@@ -73,6 +83,7 @@ public class TokenizerCrossValidator {
     System.exit(1);
   }
   
+  @Deprecated
   public static void main(String[] args) throws IOException, ObjectStreamException {
     int ai=0;
     String encoding = null;
