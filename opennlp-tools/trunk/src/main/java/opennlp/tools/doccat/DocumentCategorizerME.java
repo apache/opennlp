@@ -39,7 +39,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    */
   private static FeatureGenerator defaultFeatureGenerator = new BagOfWordsFeatureGenerator();
   
-  private AbstractModel model;
+  private MaxentModel model;
   private DocumentCategorizerContextGenerator mContextGenerator;
 
   /**
@@ -88,7 +88,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   public DocumentCategorizerME(MaxentModel model,
       FeatureGenerator... featureGenerators) {
 
-    model = model;
+    this.model = model;
     mContextGenerator =
         new DocumentCategorizerContextGenerator(featureGenerators);
   }
