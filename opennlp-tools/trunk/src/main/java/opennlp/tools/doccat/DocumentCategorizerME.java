@@ -26,20 +26,50 @@ import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.util.ObjectStream;
 
 /**
  * Maxent implementation of {@link DocumentCategorizer}.
  */
 public class DocumentCategorizerME implements DocumentCategorizer {
 
-  MaxentModel mModel;
+  /**
+   * Shared default thread safe feature generator.
+   */
+  private static FeatureGenerator defaultFeatureGenerator = new BagOfWordsFeatureGenerator();
+  
+  private AbstractModel model;
   private DocumentCategorizerContextGenerator mContextGenerator;
 
+  /**
+   * Initializes a the current instance with a doccat model and custom feature generation.
+   * The feature generation must be identical to the configuration at training time.
+   * 
+   * @param model
+   * @param featureGenerators
+   */
+  public DocumentCategorizerME(DoccatModel model, FeatureGenerator... featureGenerators) {
+    this.model = model.getChunkerModel();
+    this.mContextGenerator = new DocumentCategorizerContextGenerator(featureGenerators);
+  }
+  
+  /**
+   * Initializes the current instance with a doccat model. Default feature generation is used.
+   * 
+   * @param model
+   */
+  public DocumentCategorizerME(DoccatModel model) {
+    this(model, defaultFeatureGenerator);
+  }
+  
   /**
    * Initializes the current instance with the given {@link MaxentModel}.
    *
    * @param model
+   * 
+   * @deprecated Use {@link DocumentCategorizerME#DocumentCategorizerME(DoccatModel)} instead.
    */
+  @Deprecated
   public DocumentCategorizerME(MaxentModel model) {
     this(model, new FeatureGenerator[]{new BagOfWordsFeatureGenerator()});
   }
@@ -50,11 +80,14 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    *
    * @param model
    * @param featureGenerators
+   * 
+   * @deprecated Use {@link DocumentCategorizerME#DocumentCategorizerME(DoccatModel, FeatureGenerator...)} instead.
    */
+  @Deprecated
   public DocumentCategorizerME(MaxentModel model,
       FeatureGenerator... featureGenerators) {
 
-    mModel = model;
+    model = model;
     mContextGenerator =
         new DocumentCategorizerContextGenerator(featureGenerators);
   }
@@ -65,7 +98,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @param text
    */
   public double[] categorize(String text[]) {
-    return mModel.eval(mContextGenerator.getContext(text));
+    return model.eval(mContextGenerator.getContext(text));
   }
 
   public double[] categorize(String documentText) {
@@ -74,23 +107,23 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   }
 
   public String getBestCategory(double[] outcome) {
-    return mModel.getBestOutcome(outcome);
+    return model.getBestOutcome(outcome);
   }
 
   public int getIndex(String category) {
-    return mModel.getIndex(category);
+    return model.getIndex(category);
   }
 
   public String getCategory(int index) {
-    return mModel.getOutcome(index);
+    return model.getOutcome(index);
   }
 
   public int getNumberOfCategories() {
-    return mModel.getNumOutcomes();
+    return model.getNumOutcomes();
   }
 
   public String getAllResults(double results[]) {
-    return mModel.getAllOutcomes(results);
+    return model.getAllOutcomes(results);
   }
 
   /**
@@ -100,7 +133,39 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    *
    * @return the new model
    */
+   @Deprecated
   public static AbstractModel train(DocumentCategorizerEventStream eventStream) throws IOException {
     return GIS.trainModel(100, new TwoPassDataIndexer(eventStream, 5));
+  }
+  
+  /**
+   * Trains a doccat model with custom feature generation.
+   * 
+   * @param languageCode
+   * @param samples
+   * @param cutoff
+   * @param iterations
+   * @param featureGenerators
+   * @return
+   * @throws IOException
+   */
+  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples, int cutoff, int iterations, FeatureGenerator... featureGenerators)
+      throws IOException {
+    AbstractModel model = GIS.trainModel(iterations, new TwoPassDataIndexer(
+        new DocumentCategorizerEventStream(samples, featureGenerators), cutoff));
+    
+    return new DoccatModel(languageCode, model);
+  }
+  
+  /**
+   * Trains a doccat model with default feature generation.
+   * 
+   * @param languageCode
+   * @param samples
+   * @return
+   * @throws IOException
+   */
+  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples) throws IOException {
+    return train(languageCode, samples, 5, 100, defaultFeatureGenerator);
   }
 }
