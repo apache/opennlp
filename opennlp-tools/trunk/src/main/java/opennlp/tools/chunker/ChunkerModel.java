@@ -64,7 +64,7 @@ public class ChunkerModel extends BaseModel {
     super.validateArtifactMap();
 
     if (!(artifactMap.get(CHUNKER_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
-      throw new InvalidFormatException("Token model is incomplete!");
+      throw new InvalidFormatException("Chunker model is incomplete!");
     }
   }
 
