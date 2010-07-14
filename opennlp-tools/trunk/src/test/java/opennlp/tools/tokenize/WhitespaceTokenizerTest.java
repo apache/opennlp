@@ -25,6 +25,12 @@ import junit.framework.TestCase;
  */
 public class WhitespaceTokenizerTest extends TestCase {
 
+  public void testOneToken() {
+    assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one")[0]);
+    assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize(" one")[0]);
+    assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one ")[0]);
+  }
+  
   /**
    * Tests if it can tokenize whitespace separated tokens.
    */
@@ -42,5 +48,12 @@ public class WhitespaceTokenizerTest extends TestCase {
     assertTrue("f".equals(tokenizedText[5]));
 
     assertTrue(tokenizedText.length == 6);
+  }
+  
+  public void testTokenizationOfStringWithoutTokens() {
+    assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("").length); // empty
+    assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize(" ").length); // space
+    assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize(" ").length); // tab
+    assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("     ").length);
   }
 }
