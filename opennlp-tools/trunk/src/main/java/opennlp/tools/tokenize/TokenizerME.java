@@ -124,7 +124,7 @@ public class TokenizerME extends AbstractTokenizer {
 
   /**
    * Returns the probabilities associated with the most recent
-   * calls to tokenize() or tokenizePos().
+   * calls to {@link TokenizerME#tokenize(String)} or {@link TokenizerME#tokenizePos(String)}.
    *
    * @return probability for each token returned for the most recent
    * call to tokenize.  If not applicable an empty array is
