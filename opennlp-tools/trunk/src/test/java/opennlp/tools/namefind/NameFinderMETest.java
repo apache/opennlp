@@ -197,4 +197,11 @@ public class NameFinderMETest extends TestCase {
     assertEquals("person", names2[0].getType());
     assertEquals("organization", names2[1].getType());
   }
+  
+  public void testDropOverlappingSpans() {
+    Span spans[] = new Span[] {new Span(1, 10), new Span(1,11), new Span(1,11), new Span(5, 15)};
+    Span remainingSpan[] = NameFinderME.dropOverlappingSpans(spans);
+    
+    assertEquals(new Span(1, 11), remainingSpan[0]);
+  }
 }

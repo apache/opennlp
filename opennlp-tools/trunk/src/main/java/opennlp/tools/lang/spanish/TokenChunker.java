@@ -53,7 +53,7 @@ public class TokenChunker {
       else {
         String[] tokens = line.split(" ");
         Span[] spans = chunker.nameFinder.find(tokens);
-        String[] outcomes = NameFinderEventStream.generateOutcomes(spans, tokens.length);
+        String[] outcomes = NameFinderEventStream.generateOutcomes(spans, null, tokens.length);
         //System.err.println(java.util.Arrays.asList(chunks));
         for (int ci=0,cn=outcomes.length;ci<cn;ci++) {
           if (ci == 0) {

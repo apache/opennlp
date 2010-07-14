@@ -23,7 +23,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -300,7 +302,19 @@ public class NameFinderME implements TokenNameFinder {
    }
 
 
-   
+   /**
+    * Trains a name finder model.
+    * 
+    * @param languageCode the language of the training data
+    * @param type null or an override type for all types in the training data
+    * @param samples the training data
+    * @param iterations the number of iterations
+    * @param cutoff
+    * @param resources the resources for the name finder or null if none
+    * @return
+    * @throws IOException
+    * @throws ObjectStreamException
+    */
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
        int iterations, int cutoff,
        final Map<String, Object> resources) throws IOException, ObjectStreamException {
@@ -308,7 +322,7 @@ public class NameFinderME implements TokenNameFinder {
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
      ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
      
-     EventStream eventStream = new NameFinderEventStream(samples,
+     EventStream eventStream = new NameFinderEventStream(samples, type,
          new DefaultNameContextGenerator(createFeatureGenerator()));
      HashSumEventStream hses = new HashSumEventStream(eventStream);
      AbstractModel nameFinderModel = GIS.trainModel(iterations, new TwoPassDataIndexer(hses, cutoff));
@@ -316,7 +330,7 @@ public class NameFinderME implements TokenNameFinder {
      manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
          hses.calculateHashSum().toString(16));
      
-     return new TokenNameFinderModel(languageCode, type, nameFinderModel,
+     return new TokenNameFinderModel(languageCode, nameFinderModel,
          resources, manifestInfoEntries);
    }
 
@@ -335,7 +349,7 @@ public class NameFinderME implements TokenNameFinder {
    * @param outcome the outcome
    * @return the name type, or null if not set
    */
-  private static String extractNameType(String outcome) {
+  private static final String extractNameType(String outcome) {
     Matcher matcher = typedOutcomePattern.matcher(outcome);
     if(matcher.matches()) {
       String nameType = matcher.group(1);
@@ -345,6 +359,46 @@ public class NameFinderME implements TokenNameFinder {
     return null;
   }
 
+  /**
+   * Removes spans with are intersecting or crossing in anyway.
+   * 
+   * <p>
+   * The following rules are used to remove the spans:<br>
+   * Identical spans: The first span in the array after sorting it remains<br>
+   * Intersecting spans: The first span after sorting remains<br>
+   * Contained spans: All spans which are contained by another are removed<br>
+   * 
+   * @param spans
+   * 
+   * @return
+   */
+  public static Span[] dropOverlappingSpans(Span spans[]) {
+    
+    List<Span> sortedSpans = new ArrayList<Span>(spans.length);
+    Collections.addAll(sortedSpans, spans);
+    Collections.sort(sortedSpans);
+    
+    Iterator<Span> it = sortedSpans.iterator();
+    
+    
+    Span lastSpan = null;
+    
+    while (it.hasNext()) {
+      Span span = it.next();
+      
+      if (lastSpan != null) {
+        if (lastSpan.intersects(span)) {
+          it.remove();
+          span = lastSpan;
+        }
+      }
+      
+      lastSpan = span;
+    }
+    
+    return sortedSpans.toArray(new Span[sortedSpans.size()]);
+  }
+  
   /**
    * Trains a new named entity model on the specified training file using the specified encoding to read it in.
    * 

@@ -40,9 +40,7 @@ public class TokenNameFinderModel extends BaseModel {
 
   private static final String MAXENT_MODEL_ENTRY_NAME = "nameFinder.model";
   
-  private static final String MODEL_TYPE_PROPERTY = "Model-Type";
-  
-  public TokenNameFinderModel(String languageCode, String type, AbstractModel nameFinderModel,
+  public TokenNameFinderModel(String languageCode, AbstractModel nameFinderModel,
       Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     
     super(languageCode, manifestInfoEntries);
@@ -62,11 +60,6 @@ public class TokenNameFinderModel extends BaseModel {
     // TODO: Add checks to not put resources where no serializer exists,
     // make that case fail here, should be done in the BaseModel
     artifactMap.putAll(resources);
-    
-    if (type == null)
-      throw new IllegalArgumentException("type must not be null!");
-    
-    setManifestProperty(MODEL_TYPE_PROPERTY, type);
   }
 
   public TokenNameFinderModel(InputStream in) throws IOException, InvalidFormatException {
@@ -82,15 +75,12 @@ public class TokenNameFinderModel extends BaseModel {
     return (AbstractModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
   }
 
-  public String getModelType() {
-    return getManifestProperty(MODEL_TYPE_PROPERTY);
-  }
-  
-  private static boolean isModelValid(MaxentModel model) {
+  // TODO: Write test for this method
+  public static boolean isModelValid(MaxentModel model) {
     
     // We should have one outcome named "other", some named xyz-start and sometimes 
     // they have a pair xyz-cont. We should not have any other outcome
-    // To validate the model we check if we have  one outcome named "other", at least
+    // To validate the model we check if we have one outcome named "other", at least
     // one outcome with suffix start. After that we check if all outcomes that ends with
     // "cont" have a pair that ends with "start".
     boolean otherFounded = false;

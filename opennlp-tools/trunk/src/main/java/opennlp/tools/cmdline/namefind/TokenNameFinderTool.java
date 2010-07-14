@@ -21,12 +21,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
@@ -46,14 +50,14 @@ public final class TokenNameFinderTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
+    return "Usage: " + CLI.CMD + " " + getName() + " model1 model2 ... modelN < sentences";
   }
   
   static TokenNameFinderModel loadModel(File modelFile) {
     
     CmdLineUtil.checkInputFile("Token Name Finder model", modelFile);
 
-    System.err.print("Loading model ... ");
+    System.err.print("Loading model " + modelFile.getName() + " ... ");
     
     InputStream modelIn = CmdLineUtil.openInFile(modelFile);
     
@@ -82,14 +86,18 @@ public final class TokenNameFinderTool implements CmdLineTool {
   
   public void run(String[] args) {
     
-    if (args.length != 1) {
+    if (args.length == 0) {
       System.out.println(getHelp());
       System.exit(1);
     }
     
-    TokenNameFinderModel model = loadModel(new File(args[0]));
-
-    NameFinderME nameFinder = new NameFinderME(model);
+    
+    NameFinderME nameFinders[] = new NameFinderME[args.length];
+    
+    for (int i = 0; i < nameFinders.length; i++) {
+      TokenNameFinderModel model = loadModel(new File(args[i]));
+      nameFinders[i] = new NameFinderME(model);
+    }
     
     ObjectStream<String> untokenizedLineStream =
         new PlainTextByLineStream(new InputStreamReader(System.in));
@@ -99,12 +107,27 @@ public final class TokenNameFinderTool implements CmdLineTool {
       while((line = untokenizedLineStream.read()) != null) {
         String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
         
-        if (whitespaceTokenizerLine.length == 0)
-            nameFinder.clearAdaptiveData();
+        // A new line indicates a new document,
+        // adaptive data must be cleared for a new document
         
-        Span names[] = nameFinder.find(whitespaceTokenizerLine);
+        if (whitespaceTokenizerLine.length == 0) {
+          for (int i = 0; i < nameFinders.length; i++)  
+            nameFinders[i].clearAdaptiveData();
+        }
         
-        NameSample nameSample = new NameSample(whitespaceTokenizerLine, names, false);
+        List<Span> names = new ArrayList<Span>();
+        
+        for (TokenNameFinder nameFinder : nameFinders) {
+          Collections.addAll(names, nameFinder.find(whitespaceTokenizerLine));
+        }
+        
+        // Simple way to drop intersecting spans, otherwise the
+        // NameSample is invalid
+        Span reducedNames[] = NameFinderME.dropOverlappingSpans(
+            names.toArray(new Span[names.size()]));
+        
+        NameSample nameSample = new NameSample(whitespaceTokenizerLine,
+            reducedNames, false);
         
         System.out.println(nameSample.toString());
       }

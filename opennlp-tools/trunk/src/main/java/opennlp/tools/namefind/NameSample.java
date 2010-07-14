@@ -61,6 +61,8 @@ public class NameSample {
     this.names = names;
     this.additionalContext = additionalContext;
     isClearAdaptiveData = clearAdaptiveData;
+    
+    // TODO: Check that name spans are not overlapping, otherwise throw exception
   }
 
   public NameSample(String[] sentence, Span[] names, boolean clearAdaptiveData) {

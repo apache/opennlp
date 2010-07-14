@@ -46,29 +46,38 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
 
   private AdditionalContextFeatureGenerator additionalContextFeatureGenerator = new AdditionalContextFeatureGenerator();
 
+  private String type;
+  
   /**
    * Creates a new name finder event stream using the specified data stream and context generator.
    * @param dataStream The data stream of events.
+   * @param type null or overrides the type parameter in the provided samples
    * @param contextGenerator The context generator used to generate features for the event stream.
    */
-  public NameFinderEventStream(ObjectStream<NameSample> dataStream, NameContextGenerator contextGenerator) {
+  public NameFinderEventStream(ObjectStream<NameSample> dataStream, String type, NameContextGenerator contextGenerator) {
     this.nameSampleStream = dataStream;
     this.contextGenerator = contextGenerator;
     this.contextGenerator.addFeatureGenerator(new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
+    
+    if (type != null)
+      this.type = type;
+    else
+      this.type = "default";
   }
 
   public NameFinderEventStream(ObjectStream<NameSample> dataStream) {
-    this(dataStream, new DefaultNameContextGenerator());
+    this(dataStream, null, new DefaultNameContextGenerator());
   }
 
   /**
    * Generates the name tag outcomes (start, continue, other) for each token in a sentence
    * with the specified length using the specified name spans.
    * @param names Token spans for each of the names.
+   * @param type null or overrides the type parameter in the provided samples
    * @param length The length of the sentence.
    * @return An array of start, continue, other outcomes based on the specified names and sentence length.
    */
-  public static String[] generateOutcomes(Span[] names, int length) {
+  public static String[] generateOutcomes(Span[] names, String type, int length) {
     String[] outcomes = new String[length];
     for (int i = 0; i < outcomes.length; i++) {
       outcomes[i] = NameFinderME.OTHER;
@@ -76,7 +85,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
     for (int nameIndex = 0; nameIndex < names.length; nameIndex++) {
       Span name = names[nameIndex];
       if (name.getType() == null) {
-        outcomes[name.getStart()] = "default-" + NameFinderME.START;
+        outcomes[name.getStart()] = type + "-" + NameFinderME.START;
       }
       else {
         outcomes[name.getStart()] = name.getType() + "-" + NameFinderME.START;
@@ -84,7 +93,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
       // now iterate from begin + 1 till end
       for (int i = name.getStart() + 1; i < name.getEnd(); i++) {
         if (name.getType() == null) {
-          outcomes[i] = "default-" + NameFinderME.CONTINUE;
+          outcomes[i] = type + "-" + NameFinderME.CONTINUE;
         }
         else {
           outcomes[i] = name.getType() + "-" + NameFinderME.CONTINUE;
@@ -106,7 +115,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
         contextGenerator.clearAdaptiveData();
       }
       //System.err.println(sample);
-      String outcomes[] = generateOutcomes(sample.getNames(), sample.getSentence().length);
+      String outcomes[] = generateOutcomes(sample.getNames(), type, sample.getSentence().length);
       additionalContextFeatureGenerator.setCurrentContext(sample.getAdditionalContext());
       String[] tokens = new String[sample.getSentence().length];
       List<Event> events = new ArrayList<Event>(outcomes.length);
