@@ -39,11 +39,12 @@ import opennlp.tools.util.model.BaseModel;
  */
 public class ChunkerModel extends BaseModel {
 
+  private static final String COMPONENT_NAME = "ChunkerME";
   private static final String CHUNKER_MODEL_ENTRY_NAME = "chunker.model";
 
   public ChunkerModel(String languageCode, AbstractModel chunkerModel, Map<String, String> manifestInfoEntries) {
 
-    super(languageCode, manifestInfoEntries);
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
 
     if (chunkerModel == null)
         throw new IllegalArgumentException("chunkerModel must not be null!");
@@ -56,7 +57,7 @@ public class ChunkerModel extends BaseModel {
   }
   
   public ChunkerModel(InputStream in) throws IOException, InvalidFormatException {
-    super(in);
+    super(COMPONENT_NAME, in);
   }
 
   @Override

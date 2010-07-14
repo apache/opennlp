@@ -26,12 +26,13 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 
 public class DoccatModel extends BaseModel {
-
+  
+  private static final String COMPONENT_NAME = "DocumentCategorizerME";
   private static final String DOCCAT_MODEL_ENTRY_NAME = "doccat.model";
   
   protected DoccatModel(String languageCode, AbstractModel doccatModel,
       Map<String, String> manifestInfoEntries) {
-    super(languageCode, manifestInfoEntries);
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
     
     if (doccatModel == null)
       throw new IllegalArgumentException("doccatModel must not be null!");
@@ -44,7 +45,7 @@ public class DoccatModel extends BaseModel {
   }
   
   public DoccatModel(InputStream in) throws IOException, InvalidFormatException {
-    super(in);
+    super(COMPONENT_NAME, in);
   }
 
   @Override

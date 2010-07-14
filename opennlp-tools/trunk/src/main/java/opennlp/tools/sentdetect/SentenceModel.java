@@ -41,6 +41,8 @@ import opennlp.tools.util.model.BaseModel;
  */
 public class SentenceModel extends BaseModel {
 
+  private static final String COMPONENT_NAME = "SentenceDetectorME";
+  
   private static final String MAXENT_MODEL_ENTRY_NAME = "sent.model";
   private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
 
@@ -49,7 +51,7 @@ public class SentenceModel extends BaseModel {
   public SentenceModel(String languageCode, AbstractModel sentModel,
       boolean useTokenEnd, Dictionary abbreviations, Map<String, String> manifestInfoEntries) {
 
-    super(languageCode, manifestInfoEntries);
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
 
     if (sentModel == null)
         throw new IllegalArgumentException("sentModel param must not be null!");
@@ -72,7 +74,7 @@ public class SentenceModel extends BaseModel {
   }
   
   public SentenceModel(InputStream in) throws IOException, InvalidFormatException {
-    super(in);
+    super(COMPONENT_NAME, in);
   }
 
   private static boolean isModelCompatible(MaxentModel model) {

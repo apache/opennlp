@@ -41,15 +41,17 @@ import opennlp.tools.util.Version;
  */
 public abstract class BaseModel {
 
+  protected static final String MANIFEST_ENTRY = "manifest.properties";
+  
+  private static final String MANIFEST_VERSION_PROPERTY = "Manifest-Version";
+  private static final String COMPONENT_NAME_PROPERTY = "Component-Name";
+  private static final String VERSION_PROPERTY = "OpenNLP-Version";
+  private static final String TIMESTAMP_PROPERTY = "Timestamp";
+  private static final String LANGUAGE_PROPERTY = "Language";
+  
   public static final String TRAINING_CUTOFF_PROPERTY = "Training-Cutoff";
   public static final String TRAINING_ITERATIONS_PROPERTY = "Training-Iterations";
   public static final String TRAINING_EVENTHASH_PROPERTY = "Training-Eventhash";
-  
-  protected static final String MANIFEST_ENTRY = "manifest.properties";
-  private static final String VERSION_PROPERTY = "Version";
-  private static final String LANGUAGE_PROPERTY = "Language";
-  private static final String TIMESTAMP_PROPERTY = "Timstamp";
-  private static final String MANIFEST_VERSION_PROPERTY = "Manifest-Version";
   
   @SuppressWarnings("unchecked")
   private Map<String, ArtifactSerializer> artifactSerializers =
@@ -57,17 +59,24 @@ public abstract class BaseModel {
 
   protected final Map<String, Object> artifactMap;
 
+  private final String componentName;
+  
   /**
    * Initializes the current instance.
    *
    * @param languageCode
    * @param manifestInfoEntries additional information in the manifest
    */
-  protected BaseModel(String languageCode, Map<String, String> manifestInfoEntries) {
+  protected BaseModel(String componentName, String languageCode, Map<String, String> manifestInfoEntries) {
 
+    if (componentName == null)
+        throw new IllegalArgumentException("componentName must not be null!");
+    
     if (languageCode == null)
         throw new IllegalArgumentException("languageCode must not be null!");
 
+    this.componentName = componentName;
+    
     artifactMap = new HashMap<String, Object>();
     
     createArtifactSerializers(artifactSerializers);
@@ -78,6 +87,7 @@ public abstract class BaseModel {
     manifest.setProperty(VERSION_PROPERTY, Version.currentVersion().toString());
     manifest.setProperty(TIMESTAMP_PROPERTY, 
         Long.toString(System.currentTimeMillis()));
+    manifest.setProperty(COMPONENT_NAME_PROPERTY, componentName);
     
     if (manifestInfoEntries != null) {
       for (Map.Entry<String, String> entry : manifestInfoEntries.entrySet()) {
@@ -97,13 +107,18 @@ public abstract class BaseModel {
    * @throws InvalidFormatException
    */
   @SuppressWarnings("unchecked")
-  protected BaseModel(InputStream in) throws IOException, InvalidFormatException {
+  protected BaseModel(String componentName, InputStream in) throws IOException, InvalidFormatException {
 
+    if (componentName == null)
+      throw new IllegalArgumentException("componentName must not be null!");
+    
     if (in == null)
         throw new IllegalArgumentException("in must not be null!");
 
+    this.componentName = componentName;
+    
     Map<String, Object> artifactMap = new HashMap<String, Object>();
-
+    
     createArtifactSerializers(artifactSerializers);
 
     final ZipInputStream zip = new ZipInputStream(in);
@@ -199,10 +214,7 @@ public abstract class BaseModel {
     if (!(artifactMap.get(MANIFEST_ENTRY) instanceof Properties))
       throw new InvalidFormatException("Missing the " + MANIFEST_ENTRY + "!");
 
-    if (getManifestProperty(LANGUAGE_PROPERTY) == null)
-      throw new InvalidFormatException("Missing " + LANGUAGE_PROPERTY + " property in " +
-      		MANIFEST_ENTRY + "!");
-    
+    // First check version, everything else might change in the future
     String versionString = getManifestProperty(VERSION_PROPERTY);
     
     if (versionString != null) {
@@ -224,6 +236,18 @@ public abstract class BaseModel {
       throw new InvalidFormatException("Missing " + VERSION_PROPERTY + " property in " +
             MANIFEST_ENTRY + "!");
     }
+    
+    if (getManifestProperty(COMPONENT_NAME_PROPERTY) == null)
+      throw new InvalidFormatException("Missing " + COMPONENT_NAME_PROPERTY + " property in " +
+            MANIFEST_ENTRY + "!");
+   
+    if (!getManifestProperty(COMPONENT_NAME_PROPERTY).equals(componentName)) 
+        throw new InvalidFormatException("The " + componentName + " cannot load a model for the " + 
+            getManifestProperty(COMPONENT_NAME_PROPERTY) + "!");
+    
+    if (getManifestProperty(LANGUAGE_PROPERTY) == null)
+      throw new InvalidFormatException("Missing " + LANGUAGE_PROPERTY + " property in " +
+      		MANIFEST_ENTRY + "!");
   }
 
   /**
@@ -290,11 +314,12 @@ public abstract class BaseModel {
 
       ArtifactSerializer serializer = getArtifactSerializer(name);
 
-      if (serializer == null)
+      if (serializer == null) {
         // TODO: This should never happen
         // add a method to add entries to the artifactMap
         throw new RuntimeException("Missing serializer for " + name);
-        
+      }
+      
       serializer.serialize(artifactMap.get(name), zip);
 
       zip.closeEntry();

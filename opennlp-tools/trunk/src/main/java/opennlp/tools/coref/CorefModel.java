@@ -35,6 +35,8 @@ import opennlp.tools.util.model.BaseModel;
 
 public class CorefModel extends BaseModel {
 
+  private static final String COMPONENT_NAME = "Coref";
+  
   private static final String MALE_NAMES_DICTIONARY_ENTRY_NAME = "maleNames.dictionary";
 
   private static final String FEMALE_NAMES_DICTIONARY_ENTRY_NAME = "femaleNames.dictionary";
@@ -69,7 +71,7 @@ public class CorefModel extends BaseModel {
       "pluralPronounResolver.model";
 
   public CorefModel(String languageCode, String project) throws IOException {
-    super(languageCode, null);
+    super(COMPONENT_NAME, languageCode, null);
 
     artifactMap.put(MALE_NAMES_DICTIONARY_ENTRY_NAME,
         readNames(project + File.separator + "gen.mas"));

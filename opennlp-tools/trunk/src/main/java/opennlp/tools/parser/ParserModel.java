@@ -83,7 +83,9 @@ public class ParserModel extends BaseModel {
       artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
     }
   }
-    
+  
+  private static final String COMPONENT_NAME = "Parser";
+  
   private static final String BUILD_MODEL_ENTRY_NAME = "build.model";
 
   private static final String CHECK_MODEL_ENTRY_NAME = "check.model";
@@ -103,7 +105,7 @@ public class ParserModel extends BaseModel {
       ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules,
       ParserType modelType, Map<String, String> manifestInfoEntries) {
 
-    super(languageCode, manifestInfoEntries);
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
     
     setManifestProperty(PARSER_TYPE, modelType.name());
     
@@ -164,7 +166,7 @@ public class ParserModel extends BaseModel {
   }
   
   public ParserModel(InputStream in) throws IOException, InvalidFormatException {
-    super(in);
+    super(COMPONENT_NAME, in);
   }
   
   @Override

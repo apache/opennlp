@@ -60,6 +60,8 @@ public final class POSModel extends BaseModel {
     }
   }
 
+  private static final String COMPONENT_NAME = "POSTaggerME";
+  
   private static final String POS_MODEL_ENTRY_NAME = "pos.model";
   private static final String TAG_DICTIONARY_ENTRY_NAME = "tags.tagdict";
   private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram.dictionary";
@@ -67,7 +69,7 @@ public final class POSModel extends BaseModel {
   public POSModel(String languageCode, AbstractModel posModel,
       POSDictionary tagDictionary, Dictionary ngramDict, Map<String, String> manifestInfoEntries) {
 
-    super(languageCode, manifestInfoEntries);
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
 
     if (posModel == null)
         throw new IllegalArgumentException("The maxentPosModel param must not be null!");
@@ -91,7 +93,7 @@ public final class POSModel extends BaseModel {
   }
   
   public POSModel(InputStream in) throws IOException, InvalidFormatException {
-    super(in);
+    super(COMPONENT_NAME, in);
   }
 
   @Override

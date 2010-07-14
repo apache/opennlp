@@ -41,6 +41,8 @@ import opennlp.tools.util.model.ModelUtil;
  */
 public final class TokenizerModel extends BaseModel {
 
+  private static final String COMPONENT_NAME = "TokenizerME";
+  
   private static final String TOKENIZER_MODEL_ENTRY = "token.model";
 
   private static final String USE_ALPHA_NUMERIC_OPTIMIZATION =
@@ -54,7 +56,7 @@ public final class TokenizerModel extends BaseModel {
    */
   public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
       boolean useAlphaNumericOptimization, Map<String, String> manifestInfoEntries) {
-    super(language, manifestInfoEntries);
+    super(COMPONENT_NAME, language, manifestInfoEntries);
 
     if (tokenizerMaxentModel == null)
         throw new IllegalArgumentException("tokenizerMaxentModel param must not bet null!");
@@ -88,7 +90,7 @@ public final class TokenizerModel extends BaseModel {
    * @throws InvalidFormatException
    */
   public TokenizerModel(InputStream in) throws IOException, InvalidFormatException {
-    super(in);
+    super(COMPONENT_NAME, in);
   }
 
   /**

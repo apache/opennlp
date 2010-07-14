@@ -38,12 +38,13 @@ import opennlp.tools.util.model.BaseModel;
  */
 public class TokenNameFinderModel extends BaseModel {
 
+  private static final String COMPONENT_NAME = "NameFinderME";
   private static final String MAXENT_MODEL_ENTRY_NAME = "nameFinder.model";
   
   public TokenNameFinderModel(String languageCode, AbstractModel nameFinderModel,
       Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     
-    super(languageCode, manifestInfoEntries);
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
     
     if (!isModelValid(nameFinderModel)) {
       throw new IllegalArgumentException("Model not compatible with name finder!");
@@ -63,7 +64,7 @@ public class TokenNameFinderModel extends BaseModel {
   }
 
   public TokenNameFinderModel(InputStream in) throws IOException, InvalidFormatException {
-    super(in);
+    super(COMPONENT_NAME, in);
   }
   
   /**
