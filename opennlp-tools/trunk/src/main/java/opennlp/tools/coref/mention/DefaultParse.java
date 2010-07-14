@@ -24,7 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.lang.english.NameFinder;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.Span;
@@ -35,9 +34,11 @@ import opennlp.tools.util.Span;
  */
 public class DefaultParse extends AbstractParse {
 
+  public static String[] NAME_TYPES = {"person", "organization", "location", "date", "time", "percentage", "money"};
+  
   private Parse parse;
   private int sentenceNumber;
-  private static Set<String> entitySet = new HashSet<String>(Arrays.asList(NameFinder.NAME_TYPES));
+  private static Set<String> entitySet = new HashSet<String>(Arrays.asList(NAME_TYPES));
 
   /**
    * Initializes the current instance.
