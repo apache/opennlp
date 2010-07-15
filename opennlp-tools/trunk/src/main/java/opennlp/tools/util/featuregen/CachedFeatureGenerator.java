@@ -68,7 +68,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
     generator.createFeatures(cacheFeatures, tokens, index, previousOutcomes);
 
-    contextsCache.put(new Integer(index), cacheFeatures);
+    contextsCache.put(index, cacheFeatures);
     features.addAll(cacheFeatures);
   }
 

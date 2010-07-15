@@ -74,7 +74,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     Map<Parse, Integer> parents = new HashMap<Parse, Integer>();
     Parse parent = node.getParent();
     int index = indexOf(node,parent);
-    parents.put(parent,new Integer(index));
+    parents.put(parent, index);
     while(parent.getType().equals(node.getType())) {
       node = parent;
       parent = parent.getParent();
