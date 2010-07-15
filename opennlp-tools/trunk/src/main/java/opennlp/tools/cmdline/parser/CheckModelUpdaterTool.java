@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import opennlp.model.AbstractModel;
 import opennlp.tools.cmdline.BasicTrainingParameters;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserEventTypeEnum;

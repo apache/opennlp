@@ -18,8 +18,6 @@
 package opennlp.tools.cmdline.parser;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
@@ -28,7 +26,6 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.postag.POSTaggerTool;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.postag.POSModel;
-import opennlp.tools.util.InvalidFormatException;
 
 // user should train with the POS tool
 public final class TaggerModelReplacerTool implements CmdLineTool {
