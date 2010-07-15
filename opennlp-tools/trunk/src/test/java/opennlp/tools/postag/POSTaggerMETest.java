@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.model.ModelType;
+
 import junit.framework.TestCase;
 
 /**
@@ -36,15 +39,15 @@ public class POSTaggerMETest extends TestCase {
    * @throws IOException
    */
   // TODO: also use tag dictionary for training
-  static POSModel trainPOSModel() throws IOException {
+  static POSModel trainPOSModel() throws ObjectStreamException, IOException {
     InputStream in = POSTaggerMETest.class.getClassLoader().getResourceAsStream(
         "opennlp/tools/postag/AnnotatedSentences.txt");
 
-    return POSTaggerTrainer.train(new WordTagSampleStream((
-        new InputStreamReader(in))), null, null, 5);
+    return POSTaggerME.train("en", new WordTagSampleStream((
+        new InputStreamReader(in))), ModelType.MAXENT, null, null, 5, 100);
   }
 
-  public void testPOSTagger() throws IOException {
+  public void testPOSTagger() throws ObjectStreamException, IOException {
     POSModel posModel = trainPOSModel();
 
     POSTagger tagger = new POSTaggerME(posModel);

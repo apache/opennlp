@@ -40,6 +40,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.StringList;
 
+/**
+ * @deprecated Use {@link POSTaggerME#train(String, ObjectStream, opennlp.tools.util.model.ModelType, POSDictionary, Dictionary, int, int)} instead.
+ */
+@Deprecated
 public class POSTaggerTrainer {
 
   @Deprecated
@@ -64,16 +68,14 @@ public class POSTaggerTrainer {
    * @throws IOException  its throws if an {@link IOException} is thrown
    * during IO operations on a temp file which is created during training occur.
    */
-  public static POSModel train(ObjectStream<POSSample> samples, POSDictionary tagDictionary,
-      Dictionary ngramDictionary, int cutoff) throws IOException {
-
-   int iterations = 100;
+  public static POSModel train(String languageCode, ObjectStream<POSSample> samples, POSDictionary tagDictionary,
+      Dictionary ngramDictionary, int cutoff, int iterations) throws IOException {
 
     GISModel posModel = opennlp.maxent.GIS.trainModel(iterations,
         new TwoPassDataIndexer(new POSSampleEventStream(samples,
         new DefaultPOSContextGenerator(ngramDictionary)), cutoff));
 
-    return new POSModel("en", posModel, tagDictionary, ngramDictionary);
+    return new POSModel(languageCode, posModel, tagDictionary, ngramDictionary);
   }
 
   /**

@@ -30,12 +30,20 @@ import opennlp.tools.util.eval.FMeasure;
  */
 public class SDCrossValidator {
   
-  private final String language;
+  private final String languageCode;
+  private final int cutoff;
+  private final int iterations;
   
   private FMeasure fmeasure = new FMeasure();
   
-  public SDCrossValidator(String language) {
-    this.language = language;
+  public SDCrossValidator(String languageCode, int cutoff, int iterations) {
+    this.languageCode = languageCode;
+    this.cutoff = cutoff;
+    this.iterations = iterations;
+  }
+  
+  public SDCrossValidator(String languageCode) {
+    this(languageCode, 5, 100);
   }
   
   public void evaluate(ObjectStream<SentenceSample> samples, int nFolds) throws ObjectStreamException {
@@ -48,7 +56,7 @@ public class SDCrossValidator {
      CrossValidationPartitioner.TrainingSampleStream<SentenceSample> trainingSampleStream =
          partitioner.next();
      
-      SentenceModel model = SentenceDetectorME.train(language, trainingSampleStream, true, null);
+      SentenceModel model = SentenceDetectorME.train(languageCode, trainingSampleStream, true, null, cutoff, iterations);
       
       // do testing
       SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
@@ -64,6 +72,7 @@ public class SDCrossValidator {
     return fmeasure;
   }
   
+  @Deprecated
   public static void main(String[] args) throws Exception {
     
     SDCrossValidator cv = new SDCrossValidator("en");

@@ -19,6 +19,8 @@
 package opennlp.tools.doccat;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import opennlp.maxent.GIS;
 import opennlp.model.AbstractModel;
@@ -28,6 +30,7 @@ import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * Maxent implementation of {@link DocumentCategorizer}.
@@ -140,7 +143,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   }
   
   /**
-   * Trains a doccat model with custom feature generation.
+   * Trains a document categorizer model with custom feature generation.
    * 
    * @param languageCode
    * @param samples
@@ -152,10 +155,14 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    */
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples, int cutoff, int iterations, FeatureGenerator... featureGenerators)
       throws ObjectStreamException, IOException {
+    
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+    
     AbstractModel model = GIS.trainModel(iterations, new TwoPassDataIndexer(
         new DocumentCategorizerEventStream(samples, featureGenerators), cutoff));
     
-    return new DoccatModel(languageCode, model);
+    return new DoccatModel(languageCode, model, manifestInfoEntries);
   }
   
   /**

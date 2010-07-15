@@ -63,7 +63,7 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
     ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Training Data",
         trainingDataInFile, parameters.getEncoding());
     
-    SDCrossValidator validator = new SDCrossValidator(parameters.getLanguage());
+    SDCrossValidator validator = new SDCrossValidator(parameters.getLanguage(), parameters.getCutoff(), parameters.getNumberOfIterations());
     
     try {
       validator.evaluate(sampleStream, 10);

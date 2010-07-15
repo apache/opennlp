@@ -61,7 +61,7 @@ public class NameFinderMETest extends TestCase {
           new PlainTextByLineStream(new InputStreamReader(in, encoding)));
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", "default", sampleStream,
-        70, 1, Collections.<String, Object>emptyMap());
+        Collections.<String, Object>emptyMap(), 70, 1);
 
     TokenNameFinder nameFinder = new NameFinderME(nameFinderModel);
 
@@ -118,8 +118,8 @@ public class NameFinderMETest extends TestCase {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in, encoding)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", "default", sampleStream, 70, 1,
-        Collections.<String, Object>emptyMap());
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", "default", sampleStream,
+        Collections.<String, Object>emptyMap(), 70, 1);
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
@@ -162,7 +162,7 @@ public class NameFinderMETest extends TestCase {
         new PlainTextByLineStream(new InputStreamReader(in)));
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", "default", 
-        sampleStream, 70, 1, Collections.<String, Object>emptyMap());
+        sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 

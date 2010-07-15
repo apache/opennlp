@@ -24,20 +24,33 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.Mean;
+import opennlp.tools.util.model.ModelType;
 
 public class POSTaggerCrossValidator {
 
+  private final String languageCode;
+  private final ModelType modelType;
+  private final int cutoff;
+  private final int iterations;
+  
   private POSDictionary tagDictionary;
   private Dictionary ngramDictionary;
-  private int cutoff;
   
   private Mean wordAccuracy;
   
-  public POSTaggerCrossValidator(POSDictionary tagDictionary,
-      Dictionary ngramDictionary, int cutoff) {
+  public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
+      Dictionary ngramDictionary, int cutoff, int iterations) {
+    this.languageCode = languageCode;
+    this.modelType = modelType;
+    this.cutoff = cutoff;
+    this.iterations = iterations;
     this.tagDictionary = tagDictionary;
     this.ngramDictionary = ngramDictionary;
-    this.cutoff = cutoff;
+  }
+  
+  public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
+      Dictionary ngramDictionary) {
+    this(languageCode, modelType, tagDictionary, ngramDictionary, 5, 100);
   }
   
   public void evaluate(ObjectStream<POSSample> samples, int nFolds)
@@ -50,8 +63,8 @@ public class POSTaggerCrossValidator {
        CrossValidationPartitioner.TrainingSampleStream<POSSample> trainingSampleStream =
          partitioner.next();
        
-       POSModel model = POSTaggerTrainer.train(trainingSampleStream, tagDictionary,
-           ngramDictionary, cutoff);
+       POSModel model = POSTaggerME.train(languageCode, trainingSampleStream, modelType, tagDictionary,
+           ngramDictionary, cutoff, iterations);
        
        POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model));
        evaluator.evaluate(trainingSampleStream.getTestSampleStream());

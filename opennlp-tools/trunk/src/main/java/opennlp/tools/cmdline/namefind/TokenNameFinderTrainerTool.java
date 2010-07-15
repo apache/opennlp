@@ -85,8 +85,8 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
     TokenNameFinderModel model;
     try {
       model = opennlp.tools.namefind.NameFinderME.train(parameters.getLanguage(), parameters.getType(),
-           sampleStream, parameters.getNumberOfIterations(), parameters.getCutoff(), 
-           Collections.<String, Object>emptyMap());
+           sampleStream, Collections.<String, Object>emptyMap(),
+           parameters.getNumberOfIterations(), parameters.getCutoff());
     } 
     catch (IOException e) {
       CmdLineUtil.handleDataIndexerIoError(e);

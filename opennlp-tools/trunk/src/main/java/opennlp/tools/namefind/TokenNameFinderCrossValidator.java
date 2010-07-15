@@ -29,11 +29,15 @@ import opennlp.tools.util.eval.FMeasure;
 
 public class TokenNameFinderCrossValidator {
 
-  private final String language;
+  private final String languageCode;
+  private final int cutoff;
+  private final int iterations;
   private FMeasure fmeasure = new FMeasure();
   
-  public TokenNameFinderCrossValidator(String language) {
-    this.language = language;
+  public TokenNameFinderCrossValidator(String languageCode, int cutoff, int iterations) {
+    this.languageCode = languageCode;
+    this.cutoff = cutoff;
+    this.iterations = iterations;
   }
   
   public void evaluate(ObjectStream<NameSample> samples, int nFolds) throws ObjectStreamException,
@@ -46,8 +50,8 @@ public class TokenNameFinderCrossValidator {
       CrossValidationPartitioner.TrainingSampleStream<NameSample> trainingSampleStream =
           partitioner.next();
       
-      TokenNameFinderModel model = NameFinderME.train(language, null, trainingSampleStream,
-          Collections.<String, Object>emptyMap());
+      TokenNameFinderModel model = NameFinderME.train(languageCode, null, trainingSampleStream,
+          Collections.<String, Object>emptyMap(), cutoff, iterations);
        
        // do testing
        TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(

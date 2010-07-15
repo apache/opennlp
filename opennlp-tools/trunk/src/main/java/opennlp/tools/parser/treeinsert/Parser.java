@@ -484,6 +484,7 @@ public class Parser extends AbstractBottomUpParser {
         (opennlp.tools.parser.lang.en.HeadRules) rules, ParserType.TREEINSERT);
   }
   
+  @Deprecated
   public static AbstractModel train(opennlp.model.EventStream es, int iterations, int cut) throws java.io.IOException {
     return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }

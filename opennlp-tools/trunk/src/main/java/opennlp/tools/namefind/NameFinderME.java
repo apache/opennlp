@@ -316,8 +316,7 @@ public class NameFinderME implements TokenNameFinder {
     * @throws ObjectStreamException
     */
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
-       int iterations, int cutoff,
-       final Map<String, Object> resources) throws IOException, ObjectStreamException {
+       final Map<String, Object> resources, int iterations, int cutoff) throws IOException, ObjectStreamException {
      
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
      ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
@@ -336,7 +335,7 @@ public class NameFinderME implements TokenNameFinder {
 
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        final Map<String, Object> resources) throws IOException, ObjectStreamException {
-     return NameFinderME.train(languageCode, type, samples, 100, 5, resources);
+     return NameFinderME.train(languageCode, type, samples, resources, 100, 5);
    }
    
   @Deprecated
