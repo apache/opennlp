@@ -36,7 +36,7 @@ public class POSTaggerCrossValidator {
   private POSDictionary tagDictionary;
   private Dictionary ngramDictionary;
   
-  private Mean wordAccuracy;
+  private Mean wordAccuracy = new Mean();
   
   public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
       Dictionary ngramDictionary, int cutoff, int iterations) {
