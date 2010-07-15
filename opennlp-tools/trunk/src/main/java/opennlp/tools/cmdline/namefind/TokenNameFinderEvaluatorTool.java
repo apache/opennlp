@@ -18,8 +18,6 @@
 package opennlp.tools.cmdline.namefind;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
@@ -28,11 +26,9 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
-import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.eval.PerformanceMonitor;
 
 public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
@@ -40,75 +36,80 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
   public String getName() {
     return "TokenNameFinderEvaluator";
   }
-  
+
   public String getShortDescription() {
     return "";
   }
-  
+
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " -encoding charset model testData";
+    return "Usage: " + CLI.CMD + " " + getName()
+        + " -encoding charset model testData";
   }
 
   public void run(String[] args) {
-    try {
-      if (args.length != 4) {
-        System.out.println(getHelp());
-        throw new TerminateToolException(1);
-      }
-      
-      File testData = new File(args[3]);
-      CmdLineUtil.checkInputFile("Test data", testData);
-      
-      Charset encoding = CmdLineUtil.getEncodingParameter(args);
-      
-      if (encoding == null) {
-        System.out.println(getHelp());
-        throw new TerminateToolException(1);
-      }
-      
-      TokenNameFinderModel model = TokenNameFinderTool.loadModel(new File(args[2]));
-      
-      opennlp.tools.namefind.TokenNameFinderEvaluator evaluator = 
-          new opennlp.tools.namefind.TokenNameFinderEvaluator(new NameFinderME(model));
-      
-      ObjectStream<String> sampleStringStream = new PlainTextByLineStream(
-          new InputStreamReader(new FileInputStream(testData), encoding));
-      
-      final ObjectStream<NameSample> sampleStream = 
-          new NameSampleDataStream(sampleStringStream);
-      
-      final PerformanceMonitor monitor = new PerformanceMonitor("sent");
-      
-      ObjectStream<NameSample> measuredSampleStream = new ObjectStream<NameSample>() {
 
-        public NameSample read() throws ObjectStreamException {
-          monitor.incrementCounter();
-          return sampleStream.read();
-        }
-        
-        public void reset() throws ObjectStreamException {
-          sampleStream.reset();
-        }
-        
-        public void close() throws ObjectStreamException {
-          sampleStream.close();
-        }
-      };
-      
-      monitor.startPrinter();
-      
+    if (args.length != 4) {
+      System.out.println(getHelp());
+      throw new TerminateToolException(1);
+    }
+
+    File testData = new File(args[3]);
+    CmdLineUtil.checkInputFile("Test data", testData);
+
+    Charset encoding = CmdLineUtil.getEncodingParameter(args);
+
+    if (encoding == null) {
+      System.out.println(getHelp());
+      throw new TerminateToolException(1);
+    }
+
+    TokenNameFinderModel model = TokenNameFinderTool
+        .loadModel(new File(args[2]));
+
+    opennlp.tools.namefind.TokenNameFinderEvaluator evaluator = new opennlp.tools.namefind.TokenNameFinderEvaluator(
+        new NameFinderME(model));
+
+    final ObjectStream<NameSample> sampleStream = TokenNameFinderTrainerTool.openSampleData("Test",
+        testData, encoding);
+
+    final PerformanceMonitor monitor = new PerformanceMonitor("sent");
+
+    ObjectStream<NameSample> measuredSampleStream = new ObjectStream<NameSample>() {
+
+      public NameSample read() throws ObjectStreamException {
+        monitor.incrementCounter();
+        return sampleStream.read();
+      }
+
+      public void reset() throws ObjectStreamException {
+        sampleStream.reset();
+      }
+
+      public void close() throws ObjectStreamException {
+        sampleStream.close();
+      }
+    };
+
+    monitor.startPrinter();
+
+    try {
       evaluator.evaluate(measuredSampleStream);
-      
-      monitor.stopPrinterAndPrintFinalResult();
-      
-      sampleStringStream.close();
-      
-      System.out.println();
-      
-      System.out.println(evaluator.getFMeasure());
+    } catch (ObjectStreamException e) {
+      System.err.println("failed");
+      System.err.println("Reading test data error " + e.getMessage());
+      throw new TerminateToolException(-1);
+    } finally {
+      try {
+        measuredSampleStream.close();
+      } catch (ObjectStreamException e) {
+        // sorry that this can fail
+      }
     }
-    catch (Exception e) {
-      e.printStackTrace();
-    }
+
+    monitor.stopPrinterAndPrintFinalResult();
+
+    System.out.println();
+
+    System.out.println(evaluator.getFMeasure());
   }
 }

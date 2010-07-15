@@ -18,8 +18,6 @@
 package opennlp.tools.cmdline.postag;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
@@ -28,9 +26,9 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
-import opennlp.tools.postag.WordTagSampleStream;
+import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.ObjectStreamException;
 
 public final class POSTaggerEvaluatorTool implements CmdLineTool {
 
@@ -47,7 +45,6 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
   }
 
   public void run(String[] args) {
-    try {
       if (args.length != 4) {
         System.out.println(getHelp());
         throw new TerminateToolException(1);
@@ -69,19 +66,29 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
           new POSEvaluator(new opennlp.tools.postag.POSTaggerME(model));
       
       System.out.print("Evaluating ... ");
-      ObjectStream<String> sampleStringStream = new PlainTextByLineStream(
-          new InputStreamReader(new FileInputStream(testData), encoding));
       
-      evaluator.evaluate(new WordTagSampleStream(sampleStringStream));
-      sampleStringStream.close();
+      ObjectStream<POSSample> sampleStream =
+          POSTaggerTrainerTool.openSampleData("Test", testData, encoding);
+      
+      try {
+        evaluator.evaluate(sampleStream);
+      }
+      catch (ObjectStreamException e) {
+        System.err.println("failed");
+        System.err.println("Reading test data error " + e.getMessage());
+        throw new TerminateToolException(-1);
+      } finally {
+        try {
+          sampleStream.close();
+        } catch (ObjectStreamException e) {
+          // sorry that this can fail
+        }
+      }
+      
       System.out.println("done");
       
       System.out.println();
       
       System.out.println("Accuracy: " + evaluator.getWordAccuracy());
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 }

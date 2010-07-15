@@ -30,6 +30,7 @@ import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.SentenceSampleStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
@@ -67,23 +68,29 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
     opennlp.tools.sentdetect.SentenceDetectorEvaluator evaluator = 
         new opennlp.tools.sentdetect.SentenceDetectorEvaluator(new SentenceDetectorME(model));
     
-    try {
-      System.out.print("Evaluating ... ");
-      FileInputStream trainingDataIn = new FileInputStream(trainingDataInFile);
-      ObjectStream<String> lineStream = new PlainTextByLineStream(trainingDataIn.getChannel(),
-          encoding);
-      ObjectStream<SentenceSample> sampleStream = new SentenceSampleStream(lineStream);
+    System.out.print("Evaluating ... ");
+      ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Test",
+          trainingDataInFile, encoding);
       
+      try {
       evaluator.evaluate(sampleStream);
-      sampleStream.close();
+      }
+      catch (ObjectStreamException e) {
+        CmdLineUtil.handleTrainingIoError(e);
+        model = null;
+      }
+      finally {
+        try {
+          sampleStream.close();
+        } catch (ObjectStreamException e) {
+          // sorry that this can fail
+        }
+      }
+      
       System.err.println("done");
       
       System.out.println();
       
       System.out.println(evaluator.getFMeasure());
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 }
