@@ -144,7 +144,7 @@ class CorefParse {
         for (Iterator<MentionContext> mi = entities[ei].getMentions(); mi.hasNext();) {
           MentionContext mc = (MentionContext) mi.next();
           Parse mentionParse = ((DefaultParse) mc.getParse()).getParse();
-          parseMap.put(mentionParse,new Integer(ei+1));
+          parseMap.put(mentionParse,ei+1);
           //System.err.println("CorefParse: "+mc.getParse().hashCode()+" -> "+ (ei+1));
         }
       }

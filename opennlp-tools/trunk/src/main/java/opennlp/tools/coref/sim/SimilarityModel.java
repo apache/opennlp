@@ -289,7 +289,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
         singletons.add(ec);
       }
       else {
-        entities.put(new Integer(ec.getId()), ec);
+        entities.put(ec.getId(), ec);
       }
       allExtents.add(ec);
     }

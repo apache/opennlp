@@ -117,7 +117,7 @@ public class NumberModel implements TestNumberModel, TrainSimilarityModel {
       Context ec = extentContexts[ei];
       //System.err.println("NumberModel.setExtents: ec("+ec.getId()+") "+ec.toText());
       if (ec.getId() != -1) {
-        entities.put(new Integer(ec.getId()), ec);
+        entities.put(ec.getId(), ec);
       }
       else {
         singletons.add(ec);

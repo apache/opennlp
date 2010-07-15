@@ -179,7 +179,7 @@ public class GenderModel implements TestGenderModel, TrainSimilarityModel {
       Context ec = extentContexts[ei];
       //System.err.println("GenderModel.setExtents: ec("+ec.getId()+") "+ec.toText());
       if (ec.getId() != -1) {
-        entities.put(new Integer(ec.getId()), ec);
+        entities.put(ec.getId(), ec);
       }
       else {
         singletons.add(ec);

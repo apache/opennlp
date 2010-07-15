@@ -50,13 +50,13 @@ public final class RegexNameFinder implements TokenNameFinder {
     for (int i = 0; i < tokens.length; i++) {
 
       int startIndex = sentenceString.length();
-      sentencePosTokenMap.put(new Integer(startIndex),
+      sentencePosTokenMap.put(startIndex,
           new Integer(i));
 
       sentenceString.append(tokens[i]);
 
       int endIndex = sentenceString.length();
-      sentencePosTokenMap.put(new Integer(endIndex),
+      sentencePosTokenMap.put(endIndex,
           new Integer(i));
 
       if (i < tokens.length - 1) {
@@ -71,9 +71,9 @@ public final class RegexNameFinder implements TokenNameFinder {
 
       while (matcher.find()) {
         Integer tokenStartIndex =
-            (Integer) sentencePosTokenMap.get(new Integer(matcher.start()));
+            (Integer) sentencePosTokenMap.get(matcher.start());
         Integer tokenEndIndex =
-            (Integer) sentencePosTokenMap.get(new Integer(matcher.end()));
+            (Integer) sentencePosTokenMap.get(matcher.end());
 
         if (tokenStartIndex != null && tokenEndIndex != null) {
           Span annotation = new Span(tokenStartIndex.intValue(),

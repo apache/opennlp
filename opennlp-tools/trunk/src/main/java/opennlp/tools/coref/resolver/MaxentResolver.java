@@ -262,7 +262,7 @@ public abstract class MaxentResolver extends AbstractResolver {
               events.add(new Event(SAME, features.toArray(new String[features.size()])));
               de = cde;
               //System.err.println("MaxentResolver.retain: resolved at "+ei);
-              distances.add(new Integer(ei));
+              distances.add(ei);
             }
             else if (!pairedSampleSelection || (!nonReferentFound && useAsDifferentExample)) {
               nonReferentFound = true;

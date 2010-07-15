@@ -117,7 +117,7 @@ public abstract class AbstractBottomUpParser implements Parser {
   /** 
    * The integer 0.
    */
-  public static final Integer ZERO = new Integer(0);
+  public static final Integer ZERO = 0;
 
   /** 
    * Prefix for outcomes starting a constituent. 
