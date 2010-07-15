@@ -49,7 +49,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
     List<String> cacheFeatures;
 
     if (tokens == prevTokens) {
-      cacheFeatures = (List<String>) contextsCache.get(new Integer(index));
+      cacheFeatures = (List<String>) contextsCache.get(index);
 
       if (cacheFeatures != null) {
         numberOfCacheHits++;
