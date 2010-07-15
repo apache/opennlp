@@ -19,6 +19,7 @@ package opennlp.tools.namefind;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,8 +33,8 @@ import opennlp.tools.util.Span;
  */
 public class NameSample {
 
-  private final String[] sentence;
-  private final Span[] names;
+  private final List<String> sentence;
+  private final List<Span> names;
   private final String[][] additionalContext;
   private final boolean isClearAdaptiveData;
 
@@ -57,9 +58,20 @@ public class NameSample {
       names = new Span[0];
     }
 
-    this.sentence = sentence;
-    this.names = names;
-    this.additionalContext = additionalContext;
+    this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
+    this.names = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(names)));
+    
+    if (additionalContext != null) {
+      this.additionalContext = new String[additionalContext.length][];
+      
+      for (int i = 0; i < additionalContext.length; i++) {
+        this.additionalContext[i] = new String[additionalContext[i].length];
+        System.arraycopy(additionalContext[i], 0, this.additionalContext[i], 0, additionalContext[i].length);
+      }
+    }
+    else {
+      this.additionalContext = null;
+    }
     isClearAdaptiveData = clearAdaptiveData;
     
     // TODO: Check that name spans are not overlapping, otherwise throw exception
@@ -70,11 +82,11 @@ public class NameSample {
   }
   
   public String[] getSentence() {
-    return sentence;
+    return sentence.toArray(new String[sentence.size()]);
   }
 
   public Span[] getNames() {
-    return names;
+    return names.toArray(new Span[names.size()]);
   }
 
   public String[][] getAdditionalContext() {
@@ -108,34 +120,34 @@ public class NameSample {
   public String toString() {
     StringBuilder result = new StringBuilder();
 
-    for (int tokenIndex = 0; tokenIndex < sentence.length; tokenIndex++) {
+    for (int tokenIndex = 0; tokenIndex < sentence.size(); tokenIndex++) {
       // token
 
-      for (int nameIndex = 0; nameIndex < names.length; nameIndex++) {
-        if (names[nameIndex].getStart() == tokenIndex) {
+      for (int nameIndex = 0; nameIndex < names.size(); nameIndex++) {
+        if (names.get(nameIndex).getStart() == tokenIndex) {
           // check if nameTypes is null, or if the nameType for this specific
           // entity is empty. If it is, we leave the nameType blank.
-          if (names[nameIndex].getType() == null) {
+          if (names.get(nameIndex).getType() == null) {
             result.append(NameSampleDataStream.START_TAG).append(' ');
           }
           else {
-            result.append(NameSampleDataStream.START_TAG_PREFIX).append(names[nameIndex].getType()).append("> ");
+            result.append(NameSampleDataStream.START_TAG_PREFIX).append(names.get(nameIndex).getType()).append("> ");
           }
         }
 
-        if (names[nameIndex].getEnd() == tokenIndex) {
+        if (names.get(nameIndex).getEnd() == tokenIndex) {
           result.append(NameSampleDataStream.END_TAG).append(' ');
         }
       }
 
-      result.append(sentence[tokenIndex] + ' ');
+      result.append(sentence.get(tokenIndex) + ' ');
     }
 
-    if (sentence.length > 1)
+    if (sentence.size() > 1)
       result.setLength(result.length() - 1);
     
-    for (int nameIndex = 0; nameIndex < names.length; nameIndex++) {
-      if (names[nameIndex].getEnd() == sentence.length) {
+    for (int nameIndex = 0; nameIndex < names.size(); nameIndex++) {
+      if (names.get(nameIndex).getEnd() == sentence.size()) {
         result.append(' ').append(NameSampleDataStream.END_TAG);
       }
     }

@@ -17,6 +17,11 @@
 
 package opennlp.tools.sentdetect;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import opennlp.tools.util.Span;
 
 /**
@@ -25,9 +30,9 @@ import opennlp.tools.util.Span;
  */
 public class SentenceSample {
 
-  private String document;
+  private final String document;
 
-  private Span sentences[];
+  private final List<Span> sentences;
 
   /**
    * Initializes the current instance.
@@ -37,7 +42,7 @@ public class SentenceSample {
    */
   public SentenceSample(String document, Span... sentences) {
     this.document = document;
-    this.sentences = sentences;
+    this.sentences = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(sentences)));;
   }
 
   /**
@@ -56,6 +61,6 @@ public class SentenceSample {
    * in the document.
    */
   public Span[] getSentences() {
-    return sentences;
+    return sentences.toArray(new Span[sentences.size()]);
   }
 }

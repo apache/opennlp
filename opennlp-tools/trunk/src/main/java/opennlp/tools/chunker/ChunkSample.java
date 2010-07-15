@@ -17,28 +17,33 @@
 
 package opennlp.tools.chunker;
 
-public class ChunkSample {
-  private String sentence[];
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-  private String tags[];
+public class ChunkSample {
+  private final List<String> sentence;
+
+  private final List<String> tags;
   
-  private String preds[];
+  private final List<String> preds;
   
   public ChunkSample(String[] sentence, String[] tags, String[] preds) {
-    this.sentence = sentence;
-    this.tags = tags;
-    this.preds = preds;
+    this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
+    this.tags = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tags)));
+    this.preds = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(preds)));
   }
   
   public String[] getSentence() {
-    return sentence;
+    return sentence.toArray(new String[sentence.size()]);
   }
   
   public String[] getTags() {
-    return tags;
+    return tags.toArray(new String[tags.size()]);
   }
   
   public String[] getPreds() {
-    return preds;
+    return preds.toArray(new String[preds.size()]);
   }
 }

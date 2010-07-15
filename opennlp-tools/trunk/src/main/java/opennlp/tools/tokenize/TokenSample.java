@@ -19,6 +19,8 @@
 package opennlp.tools.tokenize;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import opennlp.tools.util.Span;
@@ -28,9 +30,9 @@ import opennlp.tools.util.Span;
  */
 public class TokenSample {
 
-  private String text;
+  private final String text;
 
-  private Span tokenSpans[];
+  private final List<Span> tokenSpans;
 
   /**
    * Initializes the current instance.
@@ -47,7 +49,7 @@ public class TokenSample {
       throw new IllegalArgumentException("tokenSpans must not be null! ");
     
     this.text = text;
-    this.tokenSpans = tokenSpans;
+    this.tokenSpans = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(tokenSpans)));
 
     for (int i = 0; i < tokenSpans.length; i++) {
       if (tokenSpans[i].getStart() < 0 || tokenSpans[i].getStart() > text.length() ||
@@ -69,7 +71,7 @@ public class TokenSample {
    * Retrieves the token spans.
    */
   public Span[] getTokenSpans() {
-    return tokenSpans;
+    return tokenSpans.toArray(new Span[tokenSpans.size()]);
   }
 
   @Override

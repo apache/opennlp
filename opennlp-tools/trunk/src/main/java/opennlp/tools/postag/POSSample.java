@@ -18,6 +18,11 @@
 
 package opennlp.tools.postag;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ParseException;
 
@@ -26,9 +31,9 @@ import opennlp.tools.util.ParseException;
  */
 public class POSSample {
 
-  private String sentence[];
+  private List<String> sentence;
 
-  private String tags[];
+  private List<String> tags;
 
   public POSSample(String sentence[], String tags[]) {
 
@@ -36,16 +41,16 @@ public class POSSample {
         throw new IllegalArgumentException(
         "There must be exactly one tag for each token!");
 
-    this.sentence = sentence;
-    this.tags = tags;
+    this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
+    this.tags = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tags)));
   }
 
   public String[] getSentence() {
-    return sentence;
+    return sentence.toArray(new String[sentence.size()]);
   }
 
   public String[] getTags() {
-    return tags;
+    return tags.toArray(new String[tags.size()]);
   }
 
   @Override

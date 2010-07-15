@@ -18,15 +18,21 @@
 
 package opennlp.tools.doccat;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.util.Span;
 
 /**
  * Class which holds a classified document and its category.
  */
 public class DocumentSample {
 
-  private String category;
-  private String text[];
+  private final String category;
+  private final List<String> text;
 
   public DocumentSample(String category, String text) {
     this(category, WhitespaceTokenizer.INSTANCE.tokenize(text));
@@ -38,7 +44,7 @@ public class DocumentSample {
     }
 
     this.category = category;
-    this.text = text;
+    this.text = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(text)));
   }
 
   String getCategory() {
@@ -46,7 +52,7 @@ public class DocumentSample {
   }
 
   String[] getText() {
-    return text;
+    return text.toArray(new String[text.size()]);
   }
   
   @Override
@@ -56,8 +62,8 @@ public class DocumentSample {
     
     sampleString.append(category).append('\t');
         
-    for (int i = 0; i < text.length; i++) {
-      sampleString.append(text[i]).append(' ');
+    for (int i = 0; i < text.size(); i++) {
+      sampleString.append(text.get(i)).append(' ');
     }
     
     if (sampleString.length() > 0) {
