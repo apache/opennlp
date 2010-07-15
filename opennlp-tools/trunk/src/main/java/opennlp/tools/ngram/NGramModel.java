@@ -111,7 +111,7 @@ public class NGramModel implements Iterable<StringList>{
    */
   public void setCount(StringList ngram, int count) {
 
-    Integer oldCount = (Integer) mNGrams.put(ngram, new Integer(count));
+    Integer oldCount = (Integer) mNGrams.put(ngram, count);
 
     if (oldCount == null) {
       mNGrams.remove(ngram);
@@ -129,7 +129,7 @@ public class NGramModel implements Iterable<StringList>{
       setCount(ngram, getCount(ngram) + 1);
     }
     else {
-      mNGrams.put(ngram, new Integer(1));
+      mNGrams.put(ngram, 1);
     }
   }
 

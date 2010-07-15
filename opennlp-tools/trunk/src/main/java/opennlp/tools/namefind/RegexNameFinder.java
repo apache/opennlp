@@ -50,8 +50,7 @@ public final class RegexNameFinder implements TokenNameFinder {
     for (int i = 0; i < tokens.length; i++) {
 
       int startIndex = sentenceString.length();
-      sentencePosTokenMap.put(startIndex,
-          new Integer(i));
+      sentencePosTokenMap.put(startIndex, i);
 
       sentenceString.append(tokens[i]);
 
