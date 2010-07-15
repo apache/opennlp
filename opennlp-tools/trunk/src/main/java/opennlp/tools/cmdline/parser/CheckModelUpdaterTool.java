@@ -17,6 +17,8 @@
 
 package opennlp.tools.cmdline.parser;
 
+import java.io.IOException;
+
 import opennlp.model.AbstractModel;
 import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -27,6 +29,7 @@ import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 
 // trains a new check model ...
 public final class CheckModelUpdaterTool extends ModelUpdaterTool {
@@ -41,9 +44,9 @@ public final class CheckModelUpdaterTool extends ModelUpdaterTool {
   
   @Override
   protected ParserModel trainAndUpdate(ParserModel originalModel,
-      ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters) {
+      ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters)
+      throws ObjectStreamException, IOException {
     
-    try {
       Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), parameters.getCutoff());
       
       parseSamples.reset();
@@ -59,10 +62,5 @@ public final class CheckModelUpdaterTool extends ModelUpdaterTool {
       parseSamples.close();
       
       return originalModel.updateCheckModel(checkModel);
-    } catch (Exception e) {
-      // TODO: Improve error handling ...
-      e.printStackTrace();
-      throw new TerminateToolException(-1);
-    }
   }
 }

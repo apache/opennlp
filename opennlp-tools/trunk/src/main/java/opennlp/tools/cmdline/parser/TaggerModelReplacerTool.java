@@ -25,6 +25,7 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.postag.POSTaggerTool;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
@@ -52,47 +53,10 @@ public final class TaggerModelReplacerTool implements CmdLineTool {
     }
     
     File parserModelInFile = new File(args[0]);
-    InputStream parserModelIn = CmdLineUtil.openInFile(parserModelInFile);
-    
-    ParserModel parserModel = null;
-    try {
-      parserModel = new ParserModel(parserModelIn);
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-    }
-    catch (InvalidFormatException e) {
-      e.printStackTrace(); 
-    }
-    finally {
-      try {
-        parserModelIn.close();
-      } catch (IOException e) {
-        // sorry that this can fail
-      }
-    }
+    ParserModel parserModel = ParserTool.loadModel(parserModelInFile);
     
     File taggerModelInFile = new File(args[1]);
-    
-    InputStream taggerModelIn = CmdLineUtil.openInFile(taggerModelInFile);
-    
-    POSModel taggerModel = null;
-    try {
-      taggerModel = new POSModel(taggerModelIn);
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-    }
-    catch (InvalidFormatException e) {
-      e.printStackTrace(); 
-    }
-    finally {
-      try {
-        taggerModelIn.close();
-      } catch (IOException e) {
-        // sorry that this can fail
-      }
-    }
+    POSModel taggerModel = POSTaggerTool.loadModel(taggerModelInFile);
     
     ParserModel updatedParserModel = parserModel.updateTaggerModel(taggerModel);
     

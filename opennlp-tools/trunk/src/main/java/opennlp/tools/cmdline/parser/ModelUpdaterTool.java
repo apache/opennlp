@@ -18,6 +18,7 @@
 package opennlp.tools.cmdline.parser;
 
 import java.io.File;
+import java.io.IOException;
 
 import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.CLI;
@@ -27,6 +28,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamException;
 
 /** 
  * Abstract base class for tools which update the parser model.
@@ -34,7 +36,8 @@ import opennlp.tools.util.ObjectStream;
 abstract class ModelUpdaterTool implements CmdLineTool {
 
   protected abstract ParserModel trainAndUpdate(ParserModel originalModel,
-      ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters);
+      ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters)
+      throws ObjectStreamException, IOException;
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " training.file parser.model";
@@ -57,8 +60,26 @@ abstract class ModelUpdaterTool implements CmdLineTool {
     ObjectStream<Parse> parseSamples = ParserTrainerTool.openTrainingData(new File(args[args.length - 2]), 
         parameters.getEncoding());
     
-    ParserModel updatedParserModel = trainAndUpdate(originalParserModel,
-        parseSamples, parameters);
+    ParserModel updatedParserModel;
+    try {
+      updatedParserModel = trainAndUpdate(originalParserModel,
+          parseSamples, parameters);
+    }
+    catch (IOException e) {
+      CmdLineUtil.handleDataIndexerIoError(e);
+      updatedParserModel = null;
+    }
+    catch (ObjectStreamException e) {
+      CmdLineUtil.handleTrainingIoError(e);
+      updatedParserModel = null;
+    }
+    finally {
+      try {
+        parseSamples.close();
+      } catch (ObjectStreamException e) {
+        // sorry that this can fail
+      }
+    }
     
     CmdLineUtil.writeModel("parser", modelFile, updatedParserModel);
   }

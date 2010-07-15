@@ -49,7 +49,15 @@ public final class POSTaggerTool implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
-  static POSModel loadModel(File modelFile) {
+  /**
+   * Loads a POSModel file.
+   * 
+   * Note: Do not use this method, internal use only!
+   * 
+   * @param modelFile
+   * @return
+   */
+  public static POSModel loadModel(File modelFile) {
     
     CmdLineUtil.checkInputFile("POS model", modelFile);
 
