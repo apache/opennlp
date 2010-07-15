@@ -89,12 +89,12 @@ public class DoccatTrainerTool implements CmdLineTool {
       model = DocumentCategorizerME.train(parameters.getLanguage(), sampleStream, 
           parameters.getCutoff(), parameters.getNumberOfIterations());
     } catch (ObjectStreamException e) {
-      CmdLineUtil.handleTrainingIoError(e);
-      model = null;
+      CmdLineUtil.printTrainingIoError(e);
+      throw new TerminateToolException(-1);
     }
     catch (IOException e) {
-      CmdLineUtil.handleDataIndexerIoError(e);
-      model = null;
+      CmdLineUtil.printDataIndexerIoError(e);
+      throw new TerminateToolException(-1);
     }
     finally {
       try {

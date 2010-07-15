@@ -86,8 +86,8 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
       model = SentenceDetectorME.train(parameters.getLanguage(), sampleStream, true, null, 
           parameters.getCutoff(), parameters.getNumberOfIterations());
     } catch (ObjectStreamException e) {
-      CmdLineUtil.handleTrainingIoError(e);
-      model = null;
+      CmdLineUtil.printTrainingIoError(e);
+      throw new TerminateToolException(-1);
     }
     finally {
       try {

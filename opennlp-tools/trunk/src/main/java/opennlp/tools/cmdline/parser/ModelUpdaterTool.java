@@ -66,12 +66,12 @@ abstract class ModelUpdaterTool implements CmdLineTool {
           parseSamples, parameters);
     }
     catch (IOException e) {
-      CmdLineUtil.handleDataIndexerIoError(e);
-      updatedParserModel = null;
+      CmdLineUtil.printDataIndexerIoError(e);
+      throw new TerminateToolException(-1);
     }
     catch (ObjectStreamException e) {
-      CmdLineUtil.handleTrainingIoError(e);
-      updatedParserModel = null;
+      CmdLineUtil.printTrainingIoError(e);
+      throw new TerminateToolException(-1);
     }
     finally {
       try {

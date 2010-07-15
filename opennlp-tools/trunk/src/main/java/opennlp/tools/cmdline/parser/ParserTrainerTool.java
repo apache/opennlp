@@ -134,12 +134,12 @@ public final class ParserTrainerTool implements CmdLineTool {
       }
       
     } catch (IOException e) {
-      CmdLineUtil.handleDataIndexerIoError(e);
-      model = null;
+      CmdLineUtil.printDataIndexerIoError(e);
+      throw new TerminateToolException(-1);
     }
     catch (ObjectStreamException e) {
-      CmdLineUtil.handleTrainingIoError(e);
-      model = null;
+      CmdLineUtil.printTrainingIoError(e);
+      throw new TerminateToolException(-1);
     }
     finally {
       try {

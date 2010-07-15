@@ -70,7 +70,8 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
       validator.evaluate(sampleStream, 10);
     }
     catch (ObjectStreamException e) {
-      CmdLineUtil.handleTrainingIoError(e);
+      CmdLineUtil.printTrainingIoError(e);
+      throw new TerminateToolException(-1);
     }
     finally {
       try {

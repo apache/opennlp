@@ -42,14 +42,14 @@ public final class CmdLineUtil {
    * - exist<br>
    * - not be a directory<br>
    * - accessibly<br>
-   * <p>
-   * If the test does not pass an error message is printed
-   * and the VM is killed with <code>System.exit(-1)</code>.
    * 
    * @param name the name which is used to refer to the file in an error message, it
    * should start with a capital letter.
    * 
    * @param inFile the particular file to check to qualify an input file
+   * 
+   * @throws TerminateToolException  if test does not pass this exception is
+   * thrown and an error message is printed to the console.
    */
   public static void checkInputFile(String name, File inFile) {
     
@@ -73,7 +73,7 @@ public final class CmdLineUtil {
     
     if (isFailure) {
       System.err.println("Path: " + inFile.getAbsolutePath());
-      System.exit(-1);
+      throw new TerminateToolException(-1);
     }
   }
   
@@ -81,8 +81,7 @@ public final class CmdLineUtil {
    * Tries to ensure that it is possible to write to an output file. 
    * <p>
    * The method does nothing if it is possible to write otherwise
-   * it prints an appropriate error message and terminates the Java Virtual Machine
-   * with an error code of -1.
+   * it prints an appropriate error message and a {@link TerminateToolException} is thrown.
    * <p>
    * Computing the contents of an output file (e.g. ME model) can be very time consuming.
    * Prior to this computation it should be checked once that writing this output file is
@@ -142,7 +141,7 @@ public final class CmdLineUtil {
     
     if (isFailure) {
       System.err.println("Path: " + outFile.getAbsolutePath());
-      System.exit(-1);
+      throw new TerminateToolException(-1);
     }
   }
   
@@ -151,8 +150,7 @@ public final class CmdLineUtil {
       return new FileInputStream(file);
     } catch (FileNotFoundException e) {
       System.err.println("File cannot be found: " + e.getMessage());
-      System.exit(-1);
-      return null;
+      throw new TerminateToolException(-1);
     }
   }
   
@@ -174,7 +172,7 @@ public final class CmdLineUtil {
       model.serialize(modelOut);
     } catch (IOException e) {
       System.err.println("Error during writing model file: " + e.getMessage());
-      System.exit(-1);
+      throw new TerminateToolException(-1);
     } finally {
       if (modelOut != null) {
         try {
@@ -267,13 +265,13 @@ public final class CmdLineUtil {
           return Charset.forName(charsetName);
         } else {
           System.out.println("Error: Unsuppoted encoding " + charsetName + ".");
-          System.exit(-1);
+          throw new TerminateToolException(-1);
         }
       }
     } catch (IllegalCharsetNameException e) {
       System.out.println("Error: encoding name(" + e.getCharsetName()
           + ") is invalid.");
-      System.exit(-1);
+      throw new TerminateToolException(-1);
     }
     
     // TODO: Can still return null if encoding is not specified at all ...
@@ -290,18 +288,16 @@ public final class CmdLineUtil {
     return false;
   }
   
-  public static void handleTrainingIoError(ObjectStreamException e) {
+  public static void printTrainingIoError(ObjectStreamException e) {
     System.err.println("IO error while reading training data: " + e.getMessage());
-    System.exit(-1);
   }
   
-  public static void handleDataIndexerIoError(IOException e) {
+  public static void printDataIndexerIoError(IOException e) {
     System.err.println("Data Indexer IO error: " + e.getMessage());
-    System.exit(-1);
   }
   
   public static void handleStdinIoError(ObjectStreamException e) {
     System.err.println("IO Error while reading from stdin: " + e.getMessage());
-    System.exit(-1);
+    throw new TerminateToolException(-1);
   }
 }

@@ -88,12 +88,12 @@ public final class TokenizerTrainerTool implements CmdLineTool {
           parameters.isAlphaNumericOptimizationEnabled(),
           parameters.getCutoff(), parameters.getNumberOfIterations());
     } catch (ObjectStreamException e) {
-      CmdLineUtil.handleTrainingIoError(e);
-      model = null;
+      CmdLineUtil.printTrainingIoError(e);
+      throw new TerminateToolException(-1);
     }
     catch (IOException e) {
-      CmdLineUtil.handleDataIndexerIoError(e);
-      model = null;
+      CmdLineUtil.printDataIndexerIoError(e);
+      throw new TerminateToolException(-1);
     } finally {
       try {
         sampleStream.close();

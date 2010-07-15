@@ -90,12 +90,12 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
            parameters.getNumberOfIterations(), parameters.getCutoff());
     } 
     catch (IOException e) {
-      CmdLineUtil.handleDataIndexerIoError(e);
-      model = null;
+      CmdLineUtil.printDataIndexerIoError(e);
+      throw new TerminateToolException(-1);
     }
     catch (ObjectStreamException e) {
-      CmdLineUtil.handleTrainingIoError(e);
-      model = null;
+      CmdLineUtil.printTrainingIoError(e);
+      throw new TerminateToolException(-1);
     }
     finally {
       try {

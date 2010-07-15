@@ -76,8 +76,8 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
       evaluator.evaluate(sampleStream);
       }
       catch (ObjectStreamException e) {
-        CmdLineUtil.handleTrainingIoError(e);
-        model = null;
+        CmdLineUtil.printTrainingIoError(e);
+        throw new TerminateToolException(-1);
       }
       finally {
         try {

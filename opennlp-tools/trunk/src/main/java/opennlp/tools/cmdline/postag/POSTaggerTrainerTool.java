@@ -96,12 +96,12 @@ public final class POSTaggerTrainerTool implements CmdLineTool {
            sampleStream, parameters.getModel(), tagdict, null, parameters.getCutoff(), parameters.getNumberOfIterations());
     }
     catch (IOException e) {
-      CmdLineUtil.handleDataIndexerIoError(e);
-      model = null;
+      CmdLineUtil.printDataIndexerIoError(e);
+      throw new TerminateToolException(-1);
     }
     catch (ObjectStreamException e) {
-      CmdLineUtil.handleTrainingIoError(e);
-      model = null;
+      CmdLineUtil.printTrainingIoError(e);
+      throw new TerminateToolException(-1);
     }
     finally {
       try {
