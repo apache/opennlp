@@ -28,6 +28,7 @@ import opennlp.tools.chunker.DefaultChunkerSequenceValidator;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
@@ -65,14 +66,12 @@ public class ChunkerMETool implements CmdLineTool {
     catch (IOException e) {
       System.err.println("failed");
       System.err.println("IO error while loading model: " + e.getMessage());
-      System.exit(-1);
-      return null;
+      throw new TerminateToolException(-1);
     }
     catch (InvalidFormatException e) {
       System.err.println("failed");
       System.err.println("Model has invalid format: " + e.getMessage());
-      System.exit(-1);
-      return null;
+      throw new TerminateToolException(-1);
     }
     
     System.err.println("done");
@@ -84,7 +83,7 @@ public class ChunkerMETool implements CmdLineTool {
   public void run(String[] args) {
     if (args.length != 1) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     ChunkerModel model = loadModel(new File(args[0]));

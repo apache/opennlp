@@ -26,6 +26,7 @@ import java.util.Collections;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -65,14 +66,14 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
     
     if (args.length < 8) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     TrainingParameters parameters = new TrainingParameters(args);
     
     if(!parameters.isValid()) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     File trainingDataInFile = new File(args[args.length - 2]);

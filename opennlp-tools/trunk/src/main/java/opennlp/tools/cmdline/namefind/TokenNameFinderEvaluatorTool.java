@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
@@ -52,7 +53,7 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
     try {
       if (args.length != 4) {
         System.out.println(getHelp());
-        System.exit(1);
+        throw new TerminateToolException(1);
       }
       
       File testData = new File(args[3]);
@@ -62,7 +63,7 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
       
       if (encoding == null) {
         System.out.println(getHelp());
-        System.exit(1);
+        throw new TerminateToolException(1);
       }
       
       TokenNameFinderModel model = TokenNameFinderTool.loadModel(new File(args[2]));

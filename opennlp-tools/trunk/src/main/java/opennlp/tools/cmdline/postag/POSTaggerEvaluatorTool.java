@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.WordTagSampleStream;
@@ -49,7 +50,7 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
     try {
       if (args.length != 4) {
         System.out.println(getHelp());
-        System.exit(1);
+        throw new TerminateToolException(1);
       }
       
       File testData = new File(args[args.length - 1]);
@@ -59,7 +60,7 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
       
       if (encoding == null) {
         System.out.println(getHelp());
-        System.exit(1);
+        throw new TerminateToolException(1);
       }
       
       POSModel model = POSTaggerTool.loadModel(new File(args[args.length - 2]));

@@ -22,6 +22,7 @@ import java.io.File;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.sentdetect.SDCrossValidator;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
@@ -47,14 +48,14 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
   public void run(String[] args) {
     if (args.length < 5) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     TrainingParameters parameters = new TrainingParameters(args);
     
     if(!parameters.isValid()) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     File trainingDataInFile = new File(args[args.length - 1]);

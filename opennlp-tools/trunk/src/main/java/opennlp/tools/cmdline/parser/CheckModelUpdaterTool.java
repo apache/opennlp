@@ -19,6 +19,7 @@ package opennlp.tools.cmdline.parser;
 
 import opennlp.model.AbstractModel;
 import opennlp.tools.cmdline.BasicTrainingParameters;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserEventTypeEnum;
@@ -61,8 +62,7 @@ public final class CheckModelUpdaterTool extends ModelUpdaterTool {
     } catch (Exception e) {
       // TODO: Improve error handling ...
       e.printStackTrace();
-      System.exit(-1);
-      return null;
+      throw new TerminateToolException(-1);
     }
   }
 }

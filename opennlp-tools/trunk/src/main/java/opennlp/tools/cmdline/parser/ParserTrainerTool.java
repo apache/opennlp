@@ -28,6 +28,7 @@ import java.nio.charset.Charset;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
@@ -66,8 +67,7 @@ public final class ParserTrainerTool implements CmdLineTool {
     } catch (FileNotFoundException e) {
       System.err.println("failed");
       System.err.println("File not found: " + e.getMessage());
-      System.exit(-1);
-      trainingDataIn = null;
+      throw new TerminateToolException(-1);
     }
     
     System.err.println("done");
@@ -98,14 +98,14 @@ public final class ParserTrainerTool implements CmdLineTool {
     
     if (args.length < 7) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
 
     TrainingParameters parameters = new TrainingParameters(args);
     
     if(!parameters.isValid()) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     } 
     
     ObjectStream<Parse> sampleStream = openTrainingData(new File(args[args.length - 2]), parameters.getEncoding());

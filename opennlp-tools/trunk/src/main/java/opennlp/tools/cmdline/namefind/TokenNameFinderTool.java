@@ -28,6 +28,7 @@ import java.util.List;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinder;
@@ -69,14 +70,12 @@ public final class TokenNameFinderTool implements CmdLineTool {
     catch (IOException e) {
       System.err.println("failed");
       System.err.println("IO error while loading model: " + e.getMessage());
-      System.exit(-1);
-      return null;
+      throw new TerminateToolException(-1);
     }
     catch (InvalidFormatException e) {
       System.err.println("failed");
       System.err.println("Model has invalid format: " + e.getMessage());
-      System.exit(-1);
-      return null;
+      throw new TerminateToolException(-1);
     }
     
     System.err.println("done");
@@ -88,7 +87,7 @@ public final class TokenNameFinderTool implements CmdLineTool {
     
     if (args.length == 0) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     

@@ -24,6 +24,7 @@ import java.io.InputStream;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
@@ -47,7 +48,7 @@ public final class TaggerModelReplacerTool implements CmdLineTool {
     
     if (args.length != 2) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     File parserModelInFile = new File(args[0]);

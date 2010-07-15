@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerEvaluator;
 import opennlp.tools.tokenize.TokenizerModel;
@@ -46,14 +47,14 @@ public final class TokenizerMEEvaluatorTool implements CmdLineTool {
   public void run(String[] args) {
     if (args.length != 4) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
 
     Charset encoding = CmdLineUtil.getEncodingParameter(args);
 
     if (encoding == null) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
 
     TokenizerModel model = TokenizerMETool.loadModel(new File(args[2]));
@@ -71,7 +72,7 @@ public final class TokenizerMEEvaluatorTool implements CmdLineTool {
     } catch (ObjectStreamException e) {
       System.err.println("failed");
       System.err.println("Reading test data error " + e.getMessage());
-      System.exit(-1);
+      throw new TerminateToolException(-1);
     } finally {
       try {
         sampleStream.close();

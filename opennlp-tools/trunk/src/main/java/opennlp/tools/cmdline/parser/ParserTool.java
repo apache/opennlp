@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserFactory;
@@ -127,7 +128,7 @@ public final class ParserTool implements CmdLineTool {
     
     if (args.length < 1) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     ParserModel model = loadModel(new File(args[args.length - 1]));

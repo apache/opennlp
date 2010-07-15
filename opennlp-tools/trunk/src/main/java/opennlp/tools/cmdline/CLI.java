@@ -150,7 +150,11 @@ public final class CLI {
       System.exit(1);
     }
     
-    tool.run(toolArguments);
+    try {
+      tool.run(toolArguments);
+    }
+    catch (TerminateToolException e) {
+      System.exit(e.getCode());
+    }
   }
-  
 }

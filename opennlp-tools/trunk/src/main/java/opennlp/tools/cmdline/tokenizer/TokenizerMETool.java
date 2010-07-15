@@ -24,6 +24,7 @@ import java.io.InputStream;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
 
@@ -56,14 +57,12 @@ public final class TokenizerMETool implements CmdLineTool {
     catch (IOException e) {
       System.err.println("failed");
       System.err.println("IO error while loading model: " + e.getMessage());
-      System.exit(-1);
-      return null;
+      throw new TerminateToolException(-1);
     }
     catch (InvalidFormatException e) {
       System.err.println("failed");
       System.err.println("Model has invalid format: " + e.getMessage());
-      System.exit(-1);
-      return null;
+      throw new TerminateToolException(-1);
     }
     
     System.err.println("done");
@@ -74,7 +73,7 @@ public final class TokenizerMETool implements CmdLineTool {
   public void run(String[] args) {
     if (args.length != 1) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     TokenizerModel model = loadModel(new File(args[0]));

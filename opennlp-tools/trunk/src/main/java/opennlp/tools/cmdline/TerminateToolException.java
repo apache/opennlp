@@ -15,35 +15,25 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.tokenizer;
+package opennlp.tools.cmdline;
 
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.TerminateToolException;
+/**
+ * Exception to terminate the execution of a command line tool.
+ * <p>
+ * The exception should be thrown to indicate that the VM should be terminated with
+ * the specified error code, instead of just calling {@link System#exit(int)}.
+ */
+public class TerminateToolException extends RuntimeException {
 
-public final class SimpleTokenizerTool implements CmdLineTool {
-
-  public String getName() {
-    return "SimpleTokenizer";
+  private static final long serialVersionUID = 1L;
+  
+  private final int code;
+  
+  public TerminateToolException(int code) {
+    this.code = code;
   }
   
-  public String getShortDescription() {
-    return "character class tokenizer";
-  }
-  
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " < sentences";
-  }
-
-  public void run(String[] args) {
-    if (args.length != 0) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-    
-    CommandLineTokenizer tokenizer = 
-      new CommandLineTokenizer(opennlp.tools.tokenize.SimpleTokenizer.INSTANCE);
-    
-    tokenizer.process();
+  public int getCode() {
+    return code;
   }
 }

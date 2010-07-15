@@ -23,6 +23,7 @@ import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.util.ObjectStream;
@@ -43,7 +44,7 @@ abstract class ModelUpdaterTool implements CmdLineTool {
 
     if (args.length < 6) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     BasicTrainingParameters parameters = new BasicTrainingParameters(args);

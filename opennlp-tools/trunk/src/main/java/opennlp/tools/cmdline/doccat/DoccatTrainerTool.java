@@ -26,6 +26,7 @@ import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
@@ -66,14 +67,14 @@ public class DoccatTrainerTool implements CmdLineTool {
   public void run(String[] args) {
     if (args.length < 6) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     BasicTrainingParameters parameters = new BasicTrainingParameters(args);
     
     if(!parameters.isValid()) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     File trainingDataInFile = new File(args[args.length - 2]);

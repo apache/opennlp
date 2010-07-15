@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
@@ -69,8 +70,7 @@ public class DoccatTool implements CmdLineTool {
     catch (InvalidFormatException e) {
       System.err.println("failed");
       System.err.println("Model has invalid format: " + e.getMessage());
-      System.exit(-1);
-      return null;
+      throw new TerminateToolException(-1);
     }
     System.err.println("done");
     
@@ -82,7 +82,7 @@ public class DoccatTool implements CmdLineTool {
     
     if (args.length != 1) {
       System.out.println(getHelp());
-      System.exit(1);
+      throw new TerminateToolException(1);
     }
     
     DoccatModel model = loadModel(new File(args[0]));
