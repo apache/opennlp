@@ -192,7 +192,7 @@ public class ChunkerME implements Chunker {
   }
 
   public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, 
-      int iterations, int cutoff, ChunkerContextGenerator contextGenerator)
+      int cutoff, int iterations, ChunkerContextGenerator contextGenerator)
       throws IOException, ObjectStreamException {
     
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
@@ -215,13 +215,15 @@ public class ChunkerME implements Chunker {
    *
    * @param es
    * @param iterations
-   * @param cut
+   * @param cutoff
+   * 
    * @return the new model
+   * 
    * @throws IOException
    */
-  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, int iterations, int cut)
+  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, int cutoff, int iterations)
       throws IOException, ObjectStreamException {
-    return train(lang, in, iterations, cut, new DefaultChunkerContextGenerator());
+    return train(lang, in, cutoff, iterations, new DefaultChunkerContextGenerator());
   }
 
   @Deprecated
@@ -289,7 +291,7 @@ public class ChunkerME implements Chunker {
     else {
       es = new ChunkSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile)));
     }
-    mod = train("en", es, iterations, cutoff);
+    mod = train("en", es, cutoff, iterations);
     System.out.println("Saving the model as: " + args[1]);
     OutputStream out = new FileOutputStream(outFile);
     mod.serialize(out);

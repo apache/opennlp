@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.cmdline.chunker.ChunkerMETool;
+import opennlp.tools.cmdline.chunker.ChunkerTrainerTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
@@ -84,10 +85,7 @@ public final class CLI {
     
     // Chunker
     tools.add(new ChunkerMETool());
-    
-    // ChunkerME, needs ChunkerModel and input must contain POS tags ...
-    // ChunkerTrainer, on which material can we train? which format ?
-    // how to evaluate ???
+    tools.add(new ChunkerTrainerTool());
     
     // Parser
     tools.add(new ParserTool());
@@ -95,10 +93,6 @@ public final class CLI {
     tools.add(new BuildModelUpdaterTool()); // re-trains  build model
     tools.add(new CheckModelUpdaterTool()); // re-trains  build model
     tools.add(new TaggerModelReplacerTool());
-    
-    // Coref
-    // Add util to use coref ...
-    // training form corpus not part of 1.5
     
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);

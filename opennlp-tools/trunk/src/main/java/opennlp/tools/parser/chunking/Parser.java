@@ -305,7 +305,7 @@ public class Parser extends AbstractBottomUpParser {
     
     // chunk
     ChunkerModel chunkModel = ChunkerME.train(languageCode, 
-        new ChunkSampleStream(parseSamples), iterations, cut,
+        new ChunkSampleStream(parseSamples), cut, iterations,
         new ChunkContextGenerator());
     
     parseSamples.reset();
@@ -426,7 +426,7 @@ public class Parser extends AbstractBottomUpParser {
     if (chunk || all) {
       System.err.println("Training chunker");
       ObjectStream<ChunkSample> ces = new ChunkSampleStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.FileReader(inFile))));
-      ChunkerModel chunkModel = ChunkerME.train("en", ces, iterations, cutoff, 
+      ChunkerModel chunkModel = ChunkerME.train("en", ces, cutoff, iterations, 
           new ChunkContextGenerator());
       System.out.println("Saving the chunker model as: " + chunkFile);
       OutputStream chunkOutputStream = new FileOutputStream(chunkFile);

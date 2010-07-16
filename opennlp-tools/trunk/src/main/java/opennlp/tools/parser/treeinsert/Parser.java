@@ -452,7 +452,7 @@ public class Parser extends AbstractBottomUpParser {
 
     // chunk
     ChunkerModel chunkModel = ChunkerME.train(languageCode, new ChunkSampleStream(
-        parseSamples), iterations, cut, new ChunkContextGenerator());
+        parseSamples), cut, iterations, new ChunkContextGenerator());
 
     parseSamples.reset();
 
