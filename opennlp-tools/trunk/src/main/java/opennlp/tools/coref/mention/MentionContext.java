@@ -24,49 +24,101 @@ import opennlp.tools.coref.sim.GenderEnum;
 import opennlp.tools.coref.sim.NumberEnum;
 import opennlp.tools.util.Span;
 
-/** Data strucure representation of a mention with additional contextual information.  The contextual
- * information is used in performing coreference resolution.
+/** 
+ * Data structure representation of a mention with additional contextual information. 
+ * The contextual information is used in performing coreference resolution.
  */
 public class MentionContext extends Context {
-  /** The index of first token which is not part of a descriptor.  This is 0 if no descriptor is present. */
+ 
+  /** 
+   * The index of first token which is not part of a descriptor.  This is 0 if no descriptor is present. 
+   */
   private int nonDescriptorStart;
-  /** The Parse of the head constituent of this mention. */
+  
+  /** 
+   * The Parse of the head constituent of this mention.
+   */
   private Parse head;
-  /** Sentence-token-based span whose end is the last token of the mention. */
+  
+  /** 
+   * Sentence-token-based span whose end is the last token of the mention.
+   */
   private Span indexSpan;
-  /** Position of the NP in the sentence. */
+  
+  /** 
+   * Position of the NP in the sentence.
+   */
   private int nounLocation;
-  /** Position of the NP in the document. */
+
+  /** 
+   * Position of the NP in the document.
+   */
   private  int nounNumber;
-  /** Number of noun phrases in the sentence which contains this mention. */
+  
+  /** 
+   * Number of noun phrases in the sentence which contains this mention.
+   */
   private int maxNounLocation;
-  /** Index of the sentece in the document which contains this mention. */
+  
+  /** 
+   * Index of the sentence in the document which contains this mention. 
+   */
   private int sentenceNumber;
-  /** The token preceeding this mention's maximal noun phrase.*/
+  
+  /** 
+   * The token preceding this mention's maximal noun phrase.
+   */
   private Parse prevToken;
-  /** The token following this mention's maximal noun phrase.*/
+  
+  /** 
+   * The token following this mention's maximal noun phrase.
+   */
   private Parse nextToken;
-  /** The token following this mention's basal noun phrase.*/
+  
+  /** 
+   * The token following this mention's basal noun phrase.
+   */
   private Parse basalNextToken;
 
-
-  /** The parse of the mention's head word. */
+  /** 
+   * The parse of the mention's head word. 
+   */
   private Parse headToken;
-  /** The parse of the first word in the mention. */
+  
+  /** 
+   * The parse of the first word in the mention. 
+   */
   private Parse firstToken;
-  /** The text of the first word in the mention. */
+  
+  /** 
+   * The text of the first word in the mention.
+   */
   private String firstTokenText;
-  /** The pos-tag of the first word in the mention. */
+  
+  /** 
+   * The pos-tag of the first word in the mention. 
+   */
   private String firstTokenTag;
-  /** The gender assigned to this mention. */
+  
+  /** 
+   * The gender assigned to this mention. 
+   */
   private GenderEnum gender;
-  /** The probability associated with the gender assignment. */
+  
+  /** 
+   * The probability associated with the gender assignment. 
+   */
   private double genderProb;
-  /** The number assigned to this mention. */
+  
+  /** 
+   * The number assigned to this mention.
+   */
   private NumberEnum number;
-  /** The robability associated with the number assignment. */
+  
+  /** 
+   * The probability associated with the number assignment. 
+   */
   private double numberProb;
-
 
   public MentionContext(Span span, Span headSpan, int entityId, Parse parse, String extentType, String nameType, int mentionIndex, int mentionsInSentence, int mentionIndexInDocument, int sentenceIndex, HeadFinder headFinder) {
     super(span,headSpan,entityId,parse,extentType,nameType,headFinder);
@@ -91,6 +143,7 @@ public class MentionContext extends Context {
   }
   /**
    * Constructs context information for the specified mention.
+   * 
    * @param mention The mention object on which this object is based.
    * @param mentionIndexInSentence The mention's position in the sentence.
    * @param mentionsInSentence The number of mentions in the sentence.
@@ -105,14 +158,15 @@ public class MentionContext extends Context {
 
   /**
    * Constructs context information for the specified mention.
+   * 
    * @param mentionParse Mention parse structure for which context is to be constructed.
-   *  @param mentionIndex mention position in sentence.
-   *  @param mentionsInSentence Number of mentions in the sentence.
-   *  @param mentionsInDocument Number of mentions in the document.
-   *  @param sentenceIndex Sentence number for this mention.
-   *  @param nameType The named-entity type for this mention.
-   *  @param headFinder Object which provides head information.
-   **/
+   * @param mentionIndex mention position in sentence.
+   * @param mentionsInSentence Number of mentions in the sentence.
+   * @param mentionsInDocument Number of mentions in the document.
+   * @param sentenceIndex Sentence number for this mention.
+   * @param nameType The named-entity type for this mention.
+   * @param headFinder Object which provides head information.
+   */
   /*
   public MentionContext(Parse mentionParse, int mentionIndex, int mentionsInSentence, int mentionsInDocument, int sentenceIndex, String nameType, HeadFinder headFinder) {
     nounLocation = mentionIndex;
@@ -157,6 +211,7 @@ public class MentionContext extends Context {
 
   /**
    * Returns the parse of the head token for this mention.
+   * 
    * @return the parse of the head token for this mention.
    */
   public Parse getHeadTokenParse() {
@@ -182,6 +237,7 @@ public class MentionContext extends Context {
   /**
    * Returns a sentence-based token span for this mention.  If this mention consist
    * of the third, fourth, and fifth token, then this span will be 2..4.
+   * 
    * @return a sentence-based token span for this mention.
    */
   public Span getIndexSpan() {
@@ -190,6 +246,7 @@ public class MentionContext extends Context {
 
   /**
    * Returns the index of the noun phrase for this mention in a sentence.
+   * 
    * @return the index of the noun phrase for this mention in a sentence.
    */
   public int getNounPhraseSentenceIndex() {
@@ -198,6 +255,7 @@ public class MentionContext extends Context {
 
   /**
    * Returns the index of the noun phrase for this mention in a document.
+   * 
    * @return the index of the noun phrase for this mention in a document.
    */
   public int getNounPhraseDocumentIndex() {
@@ -207,6 +265,7 @@ public class MentionContext extends Context {
   /**
    * Returns the index of the last noun phrase in the sentence containing this mention.
    * This is one less than the number of noun phrases in the sentence which contains this mention.
+   * 
    * @return the index of the last noun phrase in the sentence containing this mention.
    */
   public int getMaxNounPhraseSentenceIndex() {
@@ -227,20 +286,25 @@ public class MentionContext extends Context {
 
   /**
    * Returns the index of the sentence which contains this mention.
+   * 
    * @return the index of the sentence which contains this mention.
    */
   public int getSentenceNumber() {
     return sentenceNumber;
   }
 
-  /** Returns the parse for the first token in this mention.
+  /** 
+   * Returns the parse for the first token in this mention.
+   * 
    * @return The parse for the first token in this mention.
    */
   public Parse getFirstToken() {
     return firstToken;
   }
 
-  /** Returns the text for the first token of the mention.
+  /** 
+   * Returns the text for the first token of the mention.
+   * 
    * @return The text for the first token of the mention.
    */
   public String getFirstTokenText() {
@@ -249,6 +313,7 @@ public class MentionContext extends Context {
 
   /**
    * Returns the pos-tag of the first token of this mention.
+   * 
    * @return the pos-tag of the first token of this mention.
    */
   public String getFirstTokenTag() {
@@ -257,6 +322,7 @@ public class MentionContext extends Context {
 
   /**
    * Returns the parses for the tokens which are contained in this mention.
+   * 
    * @return An array of parses, in order, for each token contained in this mention.
    */
   public Parse[] getTokenParses() {
@@ -265,6 +331,7 @@ public class MentionContext extends Context {
 
   /**
    * Returns the text of this mention.
+   * 
    * @return A space-delimited string of the tokens of this mention.
    */
   public String toText() {
@@ -294,8 +361,9 @@ public class MentionContext extends Context {
 
   /**
    * Assigns the specified gender with the specified probability to this mention.
+   * 
    * @param gender The gender to be given to this mention.
-   * @param probability The probability assosicated with the gender assignment.
+   * @param probability The probability associated with the gender assignment.
    */
   public void setGender(GenderEnum gender, double probability) {
     this.gender = gender;
@@ -304,6 +372,7 @@ public class MentionContext extends Context {
 
   /**
    * Returns the gender of this mention.
+   * 
    * @return The gender of this mention.
    */
   public GenderEnum getGender() {
@@ -311,7 +380,8 @@ public class MentionContext extends Context {
   }
 
   /**
-   * Returns the probability associated with the gender assignment.a
+   * Returns the probability associated with the gender assignment.
+   * 
    * @return The probability associated with the gender assignment.
    */
   public double getGenderProb() {
@@ -320,8 +390,9 @@ public class MentionContext extends Context {
 
   /**
    * Assigns the specified number with the specified probability to this mention.
+   * 
    * @param number The number to be given to this mention.
-   * @param probability The probability assosicated with the number assignment.
+   * @param probability The probability associated with the number assignment.
    */
   public void setNumber(NumberEnum number, double probability) {
     this.number = number;
@@ -330,6 +401,7 @@ public class MentionContext extends Context {
 
   /**
    * Returns the number of this mention.
+   * 
    * @return The number of this mention.
    */
   public NumberEnum getNumber() {
@@ -338,6 +410,7 @@ public class MentionContext extends Context {
 
   /**
    * Returns the probability associated with the number assignment.
+   * 
    * @return The probability associated with the number assignment.
    */
   public double getNumberProb() {
