@@ -24,20 +24,20 @@ package opennlp.tools.coref;
 public enum LinkerMode {
 
   /**
-   * Testing mode, used to identify coreference relationships in un-annotatoed text.
+   * Testing mode, used to identify coreference relationships in un-annotated text.
    */
   TEST,
 
   /**
-   * Training mode, used to learn coreference relationships in annotatoed text.
+   * Training mode, used to learn coreference relationships in annotated text.
    */
   TRAIN,
 
-  /** Evaluation mode, used to evaluate identifed coreference relationships based on annotatoed text. */
+  /** Evaluation mode, used to evaluate identifed coreference relationships based on annotated text. */
   EVAL,
 
   /**
-   * Training mode, used to learn coreference relationships in annotatoed text.
+   * Training mode, used to learn coreference relationships in annotated text.
    */
   SIM
 }
