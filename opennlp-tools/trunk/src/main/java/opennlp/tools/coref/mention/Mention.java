@@ -20,14 +20,15 @@ package opennlp.tools.coref.mention;
 import opennlp.tools.util.Span;
 
 /**
- * Data strucure representation of a mention.
+ * Data structure representation of a mention.
  */
 public class Mention implements Comparable<Mention> {
 
   /** Represents the character offset for this extent. */
   private Span span;
 
-  /** A string representing the type of this extent.  This is helpfull for determining
+  /** 
+   * A string representing the type of this extent. This is helpful for determining
    * which piece of code created a particular extent.
    */
   protected String type;
