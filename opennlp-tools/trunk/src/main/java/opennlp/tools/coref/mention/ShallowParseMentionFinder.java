@@ -31,7 +31,7 @@ public class ShallowParseMentionFinder extends AbstractMentionFinder {
   }
 
   /**
-   * Retrives the one and only existing instance.
+   * Retrieves the one and only existing instance.
    *
    * @param hf
    * @return one and only existing instance

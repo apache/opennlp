@@ -196,7 +196,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
   /**
    * Constructs a mapping between the specified entities and their head set.
    *
-   * @param entities Mapping between a key and a list of meanions which compose an entity.
+   * @param entities Mapping between a key and a list of mentions which compose an entity.
    *
    * @return a mapping between the keys of the specified entity mapping and the head set
    * generated from the mentions associated with that key.
