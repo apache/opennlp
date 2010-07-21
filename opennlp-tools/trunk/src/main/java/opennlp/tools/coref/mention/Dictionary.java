@@ -17,13 +17,15 @@
 
 package opennlp.tools.coref.mention;
 
-/** Interface to provide dictionary information to the coreference modulue assuming a
- * heirarachly structured dictionary (such as WordNet) is avaliable.
+/** 
+ * Interface to provide dictionary information to the coreference module assuming a
+ * hierarchically structured dictionary (such as WordNet) is available.
  */
 public interface Dictionary {
 
   /**
    * Returns the lemmas of the specified word with the specified part-of-speech.
+   * 
    * @param word The word whose lemmas are desired.
    * @param pos The part-of-speech of the specified word.
    * @return The lemmas of the specified word given the specified part-of-speech.
@@ -33,6 +35,7 @@ public interface Dictionary {
   /**
    * Returns a key indicating the specified sense number of the specified
    * lemma with the specified part-of-speech.
+   * 
    * @param lemma The lemmas for which the key is desired.
    * @param pos The pos for which the key is desired.
    * @param senseNumber The sense number for which the key is desired.
@@ -42,19 +45,21 @@ public interface Dictionary {
  public  String getSenseKey(String lemma, String pos, int senseNumber);
 
   /**
-   * Returns the number of senses in the dictionry for the specified lemma.
+   * Returns the number of senses in the dictionary for the specified lemma.
+   * 
    * @param lemma A lemmatized form of the word to look up.
-   * @param pos The part-of-sppech for the lemma.
-   * @return the number of senses in the dictionry for the specified lemma.
+   * @param pos The part-of-speech for the lemma.
+   * @return the number of senses in the dictionary for the specified lemma.
    */
   public int getNumSenses(String lemma, String pos);
 
   /**
-   * Returns an array of keys for each parent of the specified sense nuber of the specified lemma with the specified part-of-speech.
+   * Returns an array of keys for each parent of the specified sense number of the specified lemma with the specified part-of-speech.
+   * 
    * @param lemma A lemmatized form of the word to look up.
-   * @param pos The part-of-sppech for the lemma.
+   * @param pos The part-of-speech for the lemma.
    * @param senseNumber The sense number for which the parent keys are desired.
-   * @return an array of keys for each parent of the specified sense nuber of the specified lemma with the specified part-of-speech.
+   * @return an array of keys for each parent of the specified sense number of the specified lemma with the specified part-of-speech.
    */
   public String[] getParentSenseKeys(String lemma, String pos, int senseNumber);
 }
