@@ -21,7 +21,10 @@ import java.util.List;
 
 import opennlp.tools.util.Span;
 
-/** Interface for syntactic and named-entity information to be used in coreference annotation. */
+/** 
+ * Interface for syntactic and named-entity information to be used in coreference
+ * annotation.
+ */
 public interface Parse extends Comparable<Parse> {
 
   /**
@@ -30,20 +33,23 @@ public interface Parse extends Comparable<Parse> {
    */
   public int getSentenceNumber();
 
-  /** Returns a list of the all noun phrases
+  /** 
+   * Returns a list of the all noun phrases
    * contained by this parse.  The noun phrases in this list should
    * also implement the {@link Parse} interface.
    * @return a list of all the noun phrases contained by this parse.
    */
   public List<Parse> getNounPhrases();
 
-  /** Returns a list of all the named entities
+  /** 
+   * Returns a list of all the named entities
    * contained by this parse.  The named entities in this list should
    * also implement the {@link Parse} interface.
    * @return a list of all the named entities contained by this parse. */
   public List<Parse> getNamedEntities();
 
-  /** Returns a list of the children to this object.  The
+  /** 
+   * Returns a list of the children to this object.  The
    * children should also implement the {@link Parse} interface.
    * @return a list of the children to this object.
    * */
@@ -53,34 +59,39 @@ public interface Parse extends Comparable<Parse> {
    * Returns a list of the children to this object which are constituents or tokens.  The
    * children should also implement the {@link Parse} interface.  This allows
    * implementations which contain addition nodes for things such as semantic categories to
-   * hide those nodes from the componets which only care about syntactic nodes.
+   * hide those nodes from the components which only care about syntactic nodes.
    * @return a list of the children to this object which are constituents or tokens.
    */
   public List<Parse> getSyntacticChildren();
 
-  /** Returns a list of the tokens contained by this object.  The tokens in this list should also
-   * implement the {@link Parse} inteface.
+  /** 
+   * Returns a list of the tokens contained by this object.  The tokens in this list should also
+   * implement the {@link Parse} interface.
    *
    * @return the tokens
    */
   public List<Parse> getTokens();
 
-  /** Returns the syntactic type of this node. Typically this is the part-of-speech or
+  /** 
+   * Returns the syntactic type of this node. Typically this is the part-of-speech or
    * constituent labeling.
    * @return the syntactic type.
    */
   public String getSyntacticType();
 
-  /** Returns the named-entity type of this node.
+  /** 
+   * Returns the named-entity type of this node.
    * @return the named-entity type. */
   public String getEntityType();
 
-  /** Determines whether this has an ancestor of type NAC.
+  /** 
+   * Determines whether this has an ancestor of type NAC.
    * @return true is this has an ancestor of type NAC, false otherwise.
-   * */
+   */
   public boolean isParentNAC();
 
-  /** Returns the parent parse of this parse node.
+  /**
+   * Returns the parent parse of this parse node.
    * @return the parent parse of this parse node.
    */
   public Parse getParent();
@@ -109,14 +120,16 @@ public interface Parse extends Comparable<Parse> {
    */
   public boolean isCoordinatedNounPhrase();
 
-  /** Specifies whether this parse is a token.
+  /** 
+   * Specifies whether this parse is a token.
    * @return True if this parse is a token; false otherwise.
    */
   public boolean isToken();
 
   public String toString();
 
-  /** Returns an entity id associated with this parse and coreferent parses.  This is only used for training on
+  /** 
+   * Returns an entity id associated with this parse and coreferent parses.  This is only used for training on
    * already annotated coreference annotation.
    * @return an entity id associated with this parse and coreferent parses.
    */
