@@ -34,7 +34,6 @@ public class DiscourseModel {
 
   /**
    * Creates a new discourse model.
-   *
    */
   public DiscourseModel() {
     entities = new ArrayList<DiscourseEntity>();
@@ -42,6 +41,7 @@ public class DiscourseModel {
 
   /**
    * Indicates that the specified entity has been mentioned.
+   * 
    * @param e The entity which has been mentioned.
    */
   public void mentionEntity(DiscourseEntity e) {
@@ -55,23 +55,26 @@ public class DiscourseModel {
 
   /**
    * Returns the number of entities in this discourse model.
+   * 
    * @return the number of entities in this discourse model.
    */
   public int getNumEntities() {
-    return(entities.size());
+    return entities.size();
   }
 
   /**
    * Returns the entity at the specified index.
+   * 
    * @param i The index of the entity to be returned.
    * @return the entity at the specified index.
    */
   public DiscourseEntity getEntity(int i) {
-    return(entities.get(i));
+    return entities.get(i);
   }
 
   /**
    * Adds the specified entity to this discourse model.
+   * 
    * @param e the entity to be added to the model.
    */
   public void addEntity(DiscourseEntity e) {
@@ -82,6 +85,7 @@ public class DiscourseModel {
 
   /**
    * Merges the specified entities into a single entity with the specified confidence.
+   * 
    * @param e1 The first entity.
    * @param e2 The second entity.
    * @param confidence The confidence.
@@ -96,12 +100,13 @@ public class DiscourseModel {
 
   /**
    * Returns the entities in the discourse model.
+   * 
    * @return the entities in the discourse model.
    */
   public DiscourseEntity[] getEntities() {
     DiscourseEntity[] des = new DiscourseEntity[entities.size()];
     entities.toArray(des);
-    return(des);
+    return des;
   }
 
   /**
