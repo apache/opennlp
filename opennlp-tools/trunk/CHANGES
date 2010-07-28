@@ -1,3 +1,18 @@
+1.4.3
+
+Summary
+=======
+Fixed thread safty issue in name finder by changing static feature generation 
+to be thread local.
+
+1.4.2
+
+Summary
+=======
+Fixed minor coreference bug for running on hand-annotated Treebank data.
+Added code to allow for easier tokenizer training.
+Updated maxent library to 2.5.2 for model-loading performance gain.
+
 1.4.1
 
 Summary
