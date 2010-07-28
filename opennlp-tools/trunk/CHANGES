@@ -1,3 +1,41 @@
+1.5.0
+
+Summary
+=======
+
+The 1.5 release focuses on making the usage of OpenNLP easier by various
+additions and simplifications. 
+
+Model packages now group all resources needed by a component in a zip package
+together with meta data. The components can be instantiate from this single zip package resource
+instead of loading multiple resources depending on the training setup. All important parameters
+known during training-time are stored in the model package.
+Model packages are used by all components expect coref.
+
+Command line interface has been rewritten and can now accessed through opennlp.tools.cmdline.CLI.
+
+Built in evaluation has been added to the Sentence Detector, Tokenizer,
+Name Finder, Pos Tagger and Document Categorizer.
+
+License was changed from LGPL to ASL.
+Trove dependencies was removed.
+The ant build system was replaced by maven.
+Java 1.5 is now the minimal supported version.
+Updated maxent library to 3.0.
+
+Tokenizer
+=========
+New training API and data format has been added to the tokenizer.
+
+Name Finder
+===========
+The name finder is now able to detect multiple name types. For this the tags
+used by the classifier to find the names now include the name type.
+
+Pos Tagger
+==========
+The Pos Tagger can now be also trained with a perceptron (sequence) model.
+
 1.4.3
 
 Summary
