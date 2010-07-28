@@ -28,9 +28,8 @@
     <fileSet>
       <includes>
         <include>docs/**</include>
-        <include>samples/**</include>
         <include>AUTHORS</include>
-        <include>CHANGESS</include>        
+        <include>CHANGES</include>        
         <include>LICENSE</include>
         <include>pom.xml</include>
         <include>README</include>
