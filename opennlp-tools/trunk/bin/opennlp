@@ -17,5 +17,15 @@
 #   specific language governing permissions and limitations
 #   under the License.
 
-. opennlp-env
-$JAVA_CMD opennlp.tools.cmdline.CLI $@
+if [ -z "$JAVACMD" ] ; then
+  if [ -n "$JAVA_HOME"  ] ; then
+    JAVACMD="$JAVA_HOME/bin/java"
+  else
+    JAVACMD="`which java`"
+  fi
+fi
+
+# Might fail if $0 is a link
+OPENNLP_HOME=`dirname "$0"`/..
+
+$JAVACMD -Xmx1024m -jar $OPENNLP_HOME/opennlp-tools-*.jar $@
