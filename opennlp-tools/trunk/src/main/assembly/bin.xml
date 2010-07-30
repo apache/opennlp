@@ -20,26 +20,46 @@
 -->
 
 <assembly>
-  <id>src</id>
+  <id>bin</id>
+
+  <!-- specify the output formats -->
   <formats>
     <format>zip</format>
     <format>tar.gz</format>
   </formats>
+
+  <!-- include all runtime libraries in the /lib folder of the output file -->
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>/lib</outputDirectory>
+      <scope>runtime</scope>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+  </dependencySets>
+
   <fileSets>
+    <!-- include all *.jar files in the target directory -->
     <fileSet>
+      <directory>target</directory>
+      <outputDirectory></outputDirectory>
+      <includes>
+        <include>*.jar</include>
+      </includes>
+    </fileSet>
+    
+    <fileSet>
+      <directory></directory>
+      <outputDirectory></outputDirectory>
       <includes>
         <include>bin/**</include>
         <include>docs/**</include>
         <include>lib/**</include>
-        <include>AUTHORS</include>
-        <include>CHANGES</include>        
-        <include>LICENSE</include>
-        <include>pom.xml</include>
         <include>README</include>
+        <include>AUTHORS</include>
+        <include>LICENSE</include>
+        <include>CHANGES</include>
       </includes>
     </fileSet>
-    <fileSet>
-      <directory>src</directory>
-    </fileSet>
   </fileSets>
+
 </assembly>
