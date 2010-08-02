@@ -132,10 +132,12 @@ public class IndexHashTable<T> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void toArray(T array[]) {
+	public T[] toArray(T array[]) {
 		for (int i = 0; i < keys.length; i++) {
 			if (keys[i] != null)
 				array[values[i]] = (T) keys[i];
 		}
+		
+		return array;
 	}
 }
