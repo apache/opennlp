@@ -112,7 +112,7 @@ public class POSTaggerME implements POSTagger {
    * @param model
    */
   public POSTaggerME(POSModel model) {
-    this(model, DEFAULT_BEAM_SIZE, DEFAULT_BEAM_SIZE);
+    this(model, DEFAULT_BEAM_SIZE, 0);
   }
 
   /**
