@@ -110,6 +110,8 @@ public class ChunkerMETool implements CmdLineTool {
         String[] chunks = chunker.chunk(posSample.getSentence(),
             posSample.getTags());
         
+        // TODO: Move this formating code to ChunkSample
+        
         for (int ci=0,cn=chunks.length;ci<cn;ci++) {
           if (ci > 0 && !chunks[ci].startsWith("I-") && !chunks[ci-1].equals("O")) {
             System.out.print(" ]");
