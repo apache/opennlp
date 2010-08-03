@@ -216,7 +216,7 @@ public class TokenizerME extends AbstractTokenizer {
 
     HashSumEventStream hses = new HashSumEventStream(eventStream);
     GISModel maxentModel =
-        GIS.trainModel(iterations, new TwoPassDataIndexer(eventStream, cutoff));
+        GIS.trainModel(iterations, new TwoPassDataIndexer(hses, cutoff));
 
     manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
         hses.calculateHashSum().toString(16));
