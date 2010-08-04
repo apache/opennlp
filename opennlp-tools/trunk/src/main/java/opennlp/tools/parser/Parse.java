@@ -37,6 +37,11 @@ import opennlp.tools.util.Span;
  */
 public class Parse implements Cloneable, Comparable<Parse> {
 
+  public static final String BRACKET_LRB = "(";
+  public static final String BRACKET_RRB = ")";
+  public static final String BRACKET_LCB = "{";
+  public static final String BRACKET_RCB = "}";
+  
   /**
    * The text string on which this parse is based.
    * This object is shared among all parses for the same sentence.
@@ -652,16 +657,16 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   private static String encodeToken(String token) {
-    if ("(".equals(token)) {
+    if (BRACKET_LRB.equals(token)) {
       return "-LRB-";
     }
-    else if (")".equals(token)) {
+    else if (BRACKET_RRB.equals(token)) {
       return "-RRB-";
     }
-    else if ("{".equals(token)) {
+    else if (BRACKET_LCB.equals(token)) {
       return "-LCB-";
     }
-    else if ("}".equals(token)) {
+    else if (BRACKET_RCB.equals(token)) {
       return "-RCB-";
     }
     
@@ -670,16 +675,16 @@ public class Parse implements Cloneable, Comparable<Parse> {
   
   private static String decodeToken(String token) {
     if ("-LRB-".equals(token)) {
-      return "(";
+      return BRACKET_LRB;
     }
     else if ("-RRB-".equals(token)) {
-      return ")";
+      return BRACKET_RRB;
     }
     else if ("-LCB-".equals(token)) {
-      return "{";
+      return BRACKET_LCB;
     }
     else if ("-RCB-".equals(token)) {
-      return "}";
+      return BRACKET_RCB;
     }
     
     return token;
