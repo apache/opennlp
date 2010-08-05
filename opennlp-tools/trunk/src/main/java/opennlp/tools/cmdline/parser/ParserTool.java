@@ -63,37 +63,6 @@ public final class ParserTool implements CmdLineTool {
   private static Pattern untokenizedParenPattern1 = Pattern.compile("([^ ])([({)}])");
   private static Pattern untokenizedParenPattern2 = Pattern.compile("([({)}])([^ ])");
 
-  static ParserModel loadModel(File modelFile) {
-    
-    CmdLineUtil.checkInputFile("Parser model", modelFile);
-
-    System.err.print("Loading model ... ");
-    
-    ParserModel model;
-    try {
-      InputStream modelIn = new BufferedInputStream(new FileInputStream(modelFile), 
-          1000000);
-      model = new ParserModel(modelIn);
-      modelIn.close();
-    }
-    catch (IOException e) {
-      System.err.println("failed");
-      System.err.println("IO error while loading model: " + e.getMessage());
-      System.exit(-1);
-      model = null;
-    }
-    catch (InvalidFormatException e) {
-      System.err.println("failed");
-      System.err.println("Model has invalid format: " + e.getMessage());
-      System.exit(-1);
-      model = null;
-    }
-    
-    System.err.println("done");
-    
-    return model;
-  }
-  
   public static Parse[] parseLine(String line, opennlp.tools.parser.Parser parser, int numParses) {
     line = untokenizedParenPattern1.matcher(line).replaceAll("$1 $2");
     line = untokenizedParenPattern2.matcher(line).replaceAll("$1 $2");
@@ -131,7 +100,7 @@ public final class ParserTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
     
-    ParserModel model = loadModel(new File(args[args.length - 1]));
+    ParserModel model = new ParserModelLoader().load(new File(args[args.length - 1]));
     
     Integer beamSize = CmdLineUtil.getIntParameter("-bs", args);
     if (beamSize == null)

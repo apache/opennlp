@@ -54,8 +54,7 @@ abstract class ModelUpdaterTool implements CmdLineTool {
     
     // Load model to be updated
     File modelFile = new File(args[args.length - 1]);
-    ParserModel originalParserModel = opennlp.tools.cmdline.parser.ParserTool
-        .loadModel(modelFile);
+    ParserModel originalParserModel = new ParserModelLoader().load(modelFile);
 
     ObjectStream<Parse> parseSamples = ParserTrainerTool.openTrainingData(new File(args[args.length - 2]), 
         parameters.getEncoding());

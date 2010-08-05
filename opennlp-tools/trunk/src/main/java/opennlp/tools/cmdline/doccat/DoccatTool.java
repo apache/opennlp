@@ -49,34 +49,6 @@ public class DoccatTool implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " model < documents";
   }
 
-  static DoccatModel loadModel(File modelFile) {
-    CmdLineUtil.checkInputFile("Document Categorizer model", modelFile);
-    
-    System.err.print("Loading model ... ");
-    
-    InputStream modelIn = CmdLineUtil.openInFile(modelFile);
-    
-    DoccatModel model;
-    try {
-      model = new DoccatModel(modelIn);
-      modelIn.close();
-    }
-    catch (IOException e) {
-      System.err.println("failed");
-      System.err.println("IO error while loading model: " + e.getMessage());
-      System.exit(-1);
-      return null;
-    }
-    catch (InvalidFormatException e) {
-      System.err.println("failed");
-      System.err.println("Model has invalid format: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-    System.err.println("done");
-    
-    return model;
-  }
-  
   @Override
   public void run(String[] args) {
     
@@ -85,7 +57,7 @@ public class DoccatTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
     
-    DoccatModel model = loadModel(new File(args[0]));
+    DoccatModel model = new DoccatModelLoader().load(new File(args[0]));
     
     DocumentCategorizerME doccat = new DocumentCategorizerME(model);
     

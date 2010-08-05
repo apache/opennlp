@@ -82,6 +82,7 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
     return fmeasure;
   }
   
+  @Deprecated
   public static void main(String[] args) throws IOException, ObjectStreamException, 
       InvalidFormatException {
     
@@ -102,7 +103,7 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
       
       final PerformanceMonitor monitor = new PerformanceMonitor("sent");
       
-      monitor.startPrinter();
+      monitor.startAndPrintThroughput();
       
       ObjectStream<NameSample> iterator = new ObjectStream<NameSample>() {
 
@@ -122,7 +123,7 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
       
       evaluator.evaluate(iterator);
       
-      monitor.stopPrinterAndPrintFinalResult();
+      monitor.stopAndPrintFinalResult();
       
       System.out.println();
       System.out.println("F-Measure: " + evaluator.getFMeasure().getFMeasure());

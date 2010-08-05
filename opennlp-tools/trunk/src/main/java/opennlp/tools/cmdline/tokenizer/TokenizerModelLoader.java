@@ -17,42 +17,27 @@
 
 package opennlp.tools.cmdline.tokenizer;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.ModelLoader;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
 
-public final class TokenizerMETool implements CmdLineTool {
+/**
+ * Loads a Tokenizer Model for the command line tools.
+ * 
+ *  Note: Do not use this class, internal use only!
+ */
+final class TokenizerModelLoader extends ModelLoader<TokenizerModel> {
 
-  public String getName() {
-    return "TokenizerME";
+  public TokenizerModelLoader() {
+    super("Tokenizer");
   }
   
-  public String getShortDescription() {
-    return "learnable tokenizer";
-  }
-  
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
-  }
-  
-  public void run(String[] args) {
-    if (args.length != 1) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-    
-    TokenizerModel model = new TokenizerModelLoader().load(new File(args[0]));
-    
-    CommandLineTokenizer tokenizer = 
-      new CommandLineTokenizer(new opennlp.tools.tokenize.TokenizerME(model));
-    
-    tokenizer.process();
+  @Override
+  protected TokenizerModel loadModel(InputStream modelIn) throws IOException,
+      InvalidFormatException {
+    return new TokenizerModel(modelIn);
   }
 }

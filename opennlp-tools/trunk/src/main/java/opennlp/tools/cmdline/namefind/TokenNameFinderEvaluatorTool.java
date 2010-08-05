@@ -63,8 +63,7 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
 
-    TokenNameFinderModel model = TokenNameFinderTool
-        .loadModel(new File(args[2]));
+    TokenNameFinderModel model = new TokenNameFinderModelLoader().load(new File(args[2]));
 
     opennlp.tools.namefind.TokenNameFinderEvaluator evaluator = new opennlp.tools.namefind.TokenNameFinderEvaluator(
         new NameFinderME(model));
@@ -90,7 +89,7 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
       }
     };
 
-    monitor.startPrinter();
+    monitor.startAndPrintThroughput();
 
     try {
       evaluator.evaluate(measuredSampleStream);
@@ -106,7 +105,7 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
       }
     }
 
-    monitor.stopPrinterAndPrintFinalResult();
+    monitor.stopAndPrintFinalResult();
 
     System.out.println();
 

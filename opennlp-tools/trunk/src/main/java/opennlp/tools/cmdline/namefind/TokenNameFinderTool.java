@@ -54,35 +54,6 @@ public final class TokenNameFinderTool implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " model1 model2 ... modelN < sentences";
   }
   
-  static TokenNameFinderModel loadModel(File modelFile) {
-    
-    CmdLineUtil.checkInputFile("Token Name Finder model", modelFile);
-
-    System.err.print("Loading model " + modelFile.getName() + " ... ");
-    
-    InputStream modelIn = CmdLineUtil.openInFile(modelFile);
-    
-    TokenNameFinderModel model;
-    try {
-      model = new TokenNameFinderModel(modelIn);
-      modelIn.close();
-    }
-    catch (IOException e) {
-      System.err.println("failed");
-      System.err.println("IO error while loading model: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-    catch (InvalidFormatException e) {
-      System.err.println("failed");
-      System.err.println("Model has invalid format: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-    
-    System.err.println("done");
-    
-    return model;
-  }
-  
   public void run(String[] args) {
     
     if (args.length == 0) {
@@ -90,11 +61,10 @@ public final class TokenNameFinderTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
     
-    
     NameFinderME nameFinders[] = new NameFinderME[args.length];
     
     for (int i = 0; i < nameFinders.length; i++) {
-      TokenNameFinderModel model = loadModel(new File(args[i]));
+      TokenNameFinderModel model = new TokenNameFinderModelLoader().load(new File(args[i]));
       nameFinders[i] = new NameFinderME(model);
     }
     

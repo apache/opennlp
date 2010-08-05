@@ -57,7 +57,7 @@ public final class TokenizerMEEvaluatorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
 
-    TokenizerModel model = TokenizerMETool.loadModel(new File(args[2]));
+    TokenizerModel model = new TokenizerModelLoader().load(new File(args[2]));
 
     TokenizerEvaluator evaluator = new TokenizerEvaluator(
         new opennlp.tools.tokenize.TokenizerME(model));

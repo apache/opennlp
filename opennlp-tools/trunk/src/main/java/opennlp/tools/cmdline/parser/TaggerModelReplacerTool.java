@@ -23,6 +23,7 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.postag.POSModelLoader;
 import opennlp.tools.cmdline.postag.POSTaggerTool;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.postag.POSModel;
@@ -50,10 +51,10 @@ public final class TaggerModelReplacerTool implements CmdLineTool {
     }
     
     File parserModelInFile = new File(args[0]);
-    ParserModel parserModel = ParserTool.loadModel(parserModelInFile);
+    ParserModel parserModel = new ParserModelLoader().load(parserModelInFile);
     
     File taggerModelInFile = new File(args[1]);
-    POSModel taggerModel = POSTaggerTool.loadModel(taggerModelInFile);
+    POSModel taggerModel = new POSModelLoader().load(taggerModelInFile);
     
     ParserModel updatedParserModel = parserModel.updateTaggerModel(taggerModel);
     

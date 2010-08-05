@@ -18,8 +18,6 @@
 package opennlp.tools.cmdline.chunker;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import opennlp.tools.chunker.ChunkerME;
@@ -30,7 +28,6 @@ import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSSample;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ParseException;
@@ -50,43 +47,13 @@ public class ChunkerMETool implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
-  static ChunkerModel loadModel(File modelFile) {
-    
-    CmdLineUtil.checkInputFile("Chunker model", modelFile);
-
-    System.err.print("Loading model ... ");
-    
-    InputStream modelIn = CmdLineUtil.openInFile(modelFile);
-    
-    ChunkerModel model;
-    try {
-      model = new ChunkerModel(modelIn);
-      modelIn.close();
-    }
-    catch (IOException e) {
-      System.err.println("failed");
-      System.err.println("IO error while loading model: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-    catch (InvalidFormatException e) {
-      System.err.println("failed");
-      System.err.println("Model has invalid format: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-    
-    System.err.println("done");
-    
-    return model;
-  }
-
-  
   public void run(String[] args) {
     if (args.length != 1) {
       System.out.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    ChunkerModel model = loadModel(new File(args[0]));
+    ChunkerModel model = new ChunkerModelLoader().load(new File(args[0]));
     
     ChunkerME chunker = new ChunkerME(model, ChunkerME.DEFAULT_BEAM_SIZE,
         new DefaultChunkerSequenceValidator());

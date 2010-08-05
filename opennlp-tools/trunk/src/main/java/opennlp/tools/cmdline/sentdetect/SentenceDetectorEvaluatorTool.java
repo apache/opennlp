@@ -57,7 +57,7 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
     
-    SentenceModel model = SentenceDetectorTool.loadModel(new File(args[args.length - 2]));
+    SentenceModel model = new SentenceModelLoader().load(new File(args[args.length - 2]));
     
     File trainingDataInFile = new File(args[args.length - 1]);
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);

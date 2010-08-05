@@ -60,7 +60,7 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
         throw new TerminateToolException(1);
       }
       
-      POSModel model = POSTaggerTool.loadModel(new File(args[args.length - 2]));
+      POSModel model = new POSModelLoader().load(new File(args[args.length - 2]));
       
       POSEvaluator evaluator = 
           new POSEvaluator(new opennlp.tools.postag.POSTaggerME(model));

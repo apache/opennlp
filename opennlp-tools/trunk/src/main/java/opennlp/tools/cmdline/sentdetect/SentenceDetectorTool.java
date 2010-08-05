@@ -50,33 +50,6 @@ public final class SentenceDetectorTool implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
-  static SentenceModel loadModel(File modelFile) {
-    CmdLineUtil.checkInputFile("Sentence Detector model", modelFile);
-    
-    System.err.print("Loading model ... ");
-    
-    InputStream modelIn = CmdLineUtil.openInFile(modelFile);
-    
-    SentenceModel model;
-    try {
-      model = new SentenceModel(modelIn);
-      modelIn.close();
-    }
-    catch (IOException e) {
-      System.err.println("failed");
-      System.err.println("IO error while loading model: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-    catch (InvalidFormatException e) {
-      System.err.println("failed");
-      System.err.println("Model has invalid format: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-    System.err.println("done");
-    
-    return model;
-  }
-  
   /**
    * Perform sentence detection the input stream.
    *
@@ -89,7 +62,7 @@ public final class SentenceDetectorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
 
-    SentenceModel model = loadModel(new File(args[0]));
+    SentenceModel model = new SentenceModelLoader().load(new File(args[0]));
     
     SentenceDetectorME sdetector = new SentenceDetectorME(model);
 

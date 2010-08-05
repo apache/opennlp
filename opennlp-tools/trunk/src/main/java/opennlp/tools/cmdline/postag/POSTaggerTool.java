@@ -49,43 +49,6 @@ public final class POSTaggerTool implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
-  /**
-   * Loads a POSModel file.
-   * 
-   * Note: Do not use this method, internal use only!
-   * 
-   * @param modelFile
-   * @return
-   */
-  public static POSModel loadModel(File modelFile) {
-    
-    CmdLineUtil.checkInputFile("POS model", modelFile);
-
-    System.err.print("Loading model ... ");
-    
-    InputStream modelIn = CmdLineUtil.openInFile(modelFile);
-    
-    POSModel model;
-    try {
-      model = new POSModel(modelIn);
-      modelIn.close();
-    }
-    catch (IOException e) {
-      System.err.println("failed");
-      System.err.println("IO error while loading model: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-    catch (InvalidFormatException e) {
-      System.err.println("failed");
-      System.err.println("Model has invalid format: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-    
-    System.err.println("done");
-    
-    return model;
-  }
-  
   public void run(String[] args) {
     
     if (args.length != 1) {
@@ -93,7 +56,7 @@ public final class POSTaggerTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
     
-    POSModel model = loadModel(new File(args[0]));
+    POSModel model = new POSModelLoader().load(new File(args[0]));
     
     POSTaggerME tagger = new POSTaggerME(model);
     
