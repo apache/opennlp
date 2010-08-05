@@ -19,6 +19,11 @@ package opennlp.tools.cmdline;
 
 import java.nio.charset.Charset;
 
+/**
+ * Parses common training parameters.
+ * 
+ * Note: Do not use this class, internal use only!
+ */
 public class BasicTrainingParameters {
 
   private final String language;

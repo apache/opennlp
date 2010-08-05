@@ -29,6 +29,11 @@ import java.nio.charset.IllegalCharsetNameException;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.model.BaseModel;
 
+/**
+ * Util class for the command line interface.
+ * 
+ * Note: Do not use this class, internal use only!
+ */
 public final class CmdLineUtil {
 
   private CmdLineUtil() {

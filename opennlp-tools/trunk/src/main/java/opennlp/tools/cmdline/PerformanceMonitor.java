@@ -31,7 +31,8 @@ import java.util.concurrent.TimeUnit;
  * report.
  * 
  * Note:
- * This class is not thread safe.
+ * This class is not thread safe. <br>
+ * Do not use this class, internal use only!
  */
 public class PerformanceMonitor {
 
