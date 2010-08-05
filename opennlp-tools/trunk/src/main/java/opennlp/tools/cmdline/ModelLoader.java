@@ -54,7 +54,7 @@ public abstract class ModelLoader<T> {
 
     System.err.print("Loading " + modelName + " model ... ");
     
-    InputStream modelIn = new BufferedInputStream(CmdLineUtil.openInFile(modelFile), 1024 * 1024);
+    InputStream modelIn = new BufferedInputStream(CmdLineUtil.openInFile(modelFile), CmdLineUtil.IO_BUFFER_SIZE);
     
     T model;
     
@@ -72,8 +72,8 @@ public abstract class ModelLoader<T> {
       throw new TerminateToolException(-1);
     }
     finally {
-      // never be null because openInFile would 
-      // terminate otherwise
+      // will not be null because openInFile would 
+      // terminate in this case
       try {
         modelIn.close();
       } catch (IOException e) {
