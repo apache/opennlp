@@ -75,6 +75,8 @@ public final class SentenceDetectorTool implements CmdLineTool {
     PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
     perfMon.start();
     
+    // TODO: update to use ParagraphStream
+    
     try {
       while (true) {
         String line = lineStream.read();
