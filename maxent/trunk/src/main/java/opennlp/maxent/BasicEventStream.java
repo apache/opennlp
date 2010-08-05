@@ -22,27 +22,40 @@ import opennlp.model.Event;
 
 /**
  * A object which can deliver a stream of training events assuming
- * that each event is represented as a space separated list containing
+ * that each event is represented as a separated list containing
  * all the contextual predicates, with the last item being the
- * outcome.
+ * outcome. The default separator is the space " ".
  * e.g.: 
  *
  * <p> cp_1 cp_2 ... cp_n outcome
+ * <p> cp_1,cp_2,...,cp_n,outcome
  *
  * @author      Jason Baldridge
- * @version $Revision: 1.2 $, $Date: 2009-03-15 03:24:00 $ 
+ * @version $Revision: 1.3 $, $Date: 2010-08-05 17:42:27 $ 
  */
 public class BasicEventStream extends AbstractEventStream {
-  ContextGenerator cg = new BasicContextGenerator();
+  ContextGenerator cg;
   DataStream ds;
   Event next;
+
+  String separator = " ";
   
   public BasicEventStream (DataStream ds) {
+    this.ds = ds;
+    cg = new BasicContextGenerator();
+    if (this.ds.hasNext())
+      next = createEvent((String)this.ds.nextToken());
+  }
+  
+  public BasicEventStream (DataStream ds, String sep) {
+    separator = sep;
+    cg = new BasicContextGenerator(separator);
     this.ds = ds;
     if (this.ds.hasNext())
       next = createEvent((String)this.ds.nextToken());
   }
   
+
   /**
    * Returns the next Event object held in this EventStream.  Each call to nextEvent advances the EventStream.
    *
@@ -74,7 +87,7 @@ public class BasicEventStream extends AbstractEventStream {
   }
   
   private Event createEvent(String obs) {
-    int lastSpace = obs.lastIndexOf(' ');
+    int lastSpace = obs.lastIndexOf(separator);
     if (lastSpace == -1) 
       return null;
     else

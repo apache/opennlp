@@ -29,16 +29,24 @@ import java.util.*;
  * </p>
  * 
  * @author      Jason Baldridge
- * @version     $Revision: 1.1 $, $Date: 2009-01-22 23:23:34 $
+ * @version     $Revision: 1.2 $, $Date: 2010-08-05 17:42:27 $
  */
 public class BasicContextGenerator implements ContextGenerator {
+
+  String separator = " ";
+
+  public BasicContextGenerator () {}
+  
+  public BasicContextGenerator (String sep) {
+    separator = sep;
+  }
 
   /**
    * Builds up the list of contextual predicates given a String.
    */
   public String[] getContext(Object o) {
     String s = (String) o;
-    return (String[]) s.split(" ");
+    return (String[]) s.split(separator);
   }
  
 }

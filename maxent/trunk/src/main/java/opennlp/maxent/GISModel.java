@@ -33,7 +33,7 @@ import opennlp.model.UniformPrior;
  * Iterative Scaling procedure (implemented in GIS.java).
  *
  * @author      Tom Morton and Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2009-03-19 13:04:31 $
+ * @version     $Revision: 1.3 $, $Date: 2010-08-05 17:42:27 $
  */
 public final class GISModel extends AbstractModel {
     /**
@@ -171,7 +171,7 @@ public final class GISModel extends AbstractModel {
           prior[oid] = Math.exp(prior[oid]*model.getConstantInverse()+((1.0 - ((double) numfeats[oid] / model.getCorrectionConstant())) * model.getCorrectionParam()));
         }
         else {
-          prior[oid] = Math.exp(prior[oid]*model.getConstantInverse());
+	  prior[oid] = Math.exp(prior[oid]);
         }
         normal += prior[oid];
       }

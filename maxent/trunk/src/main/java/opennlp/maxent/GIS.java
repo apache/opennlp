@@ -27,7 +27,7 @@ import opennlp.model.Prior;
  * GISModels.
  *
  * @author  Jason Baldridge
- * @version $Revision: 1.2 $, $Date: 2009-03-15 03:09:05 $
+ * @version $Revision: 1.3 $, $Date: 2010-08-05 17:42:27 $
  */
 public class GIS {
     /**
@@ -111,6 +111,27 @@ public class GIS {
       return trainer.trainModel(eventStream, iterations, cutoff);
     }
     
+     /**
+     * Train a model using the GIS algorithm.
+     * @param eventStream The EventStream holding the data on which this model
+     *                    will be trained.
+     * @param iterations  The number of GIS iterations to perform.
+     * @param cutoff      The number of times a feature must be seen in order
+     *                    to be relevant for training.
+     * @param sigma       The standard deviation for the gaussian smoother.
+     * @return The newly trained model, which can be used immediately or saved
+     *         to disk using an opennlp.maxent.io.GISModelWriter object.
+     */
+    public static GISModel trainModel(EventStream eventStream,
+				      int iterations,
+				      int cutoff,
+				      double sigma) {
+      GISTrainer trainer = new GISTrainer(PRINT_MESSAGES);
+      if (sigma > 0)
+	trainer.setGaussianSigma(sigma);
+      return trainer.trainModel(eventStream, iterations, cutoff);
+    }
+
     /**
      * Train a model using the GIS algorithm.
      * @param iterations The number of GIS iterations to perform.

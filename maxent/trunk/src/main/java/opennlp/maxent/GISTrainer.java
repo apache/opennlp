@@ -45,7 +45,7 @@ import opennlp.model.UniformPrior;
  *    
  * @author Tom Morton
  * @author  Jason Baldridge
- * @version $Revision: 1.2 $, $Date: 2009-03-15 03:09:47 $
+ * @version $Revision: 1.3 $, $Date: 2010-08-05 17:42:27 $
  */
 class GISTrainer {
 
@@ -178,6 +178,17 @@ class GISTrainer {
     _smoothingObservation = timesSeen;
   }
   
+  /**
+   * Sets whether this trainer will use smoothing while training the model.
+   * This can improve model accuracy, though training will potentially take
+   * longer and use more memory.  Model size will also be larger.
+   *
+   * @param smooth true if smoothing is desired, false if not
+   */
+  public void setGaussianSigma(double sigmaValue) {
+    useGaussianSmoothing = true;
+    sigma = sigmaValue;
+  }
 
   /**
    * Trains a GIS model on the event in the specified event stream, using the specified number
