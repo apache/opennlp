@@ -17,6 +17,7 @@
 
 package opennlp.tools.cmdline;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,6 +37,8 @@ import opennlp.tools.util.model.BaseModel;
  */
 public final class CmdLineUtil {
 
+ static final int IO_BUFFER_SIZE = 1024 * 1024;
+  
   private CmdLineUtil() {
     // not intended to be instantiated
   }
@@ -171,9 +174,13 @@ public final class CmdLineUtil {
 
     CmdLineUtil.checkOutputFile(modelName + " model", modelFile);
 
+    System.out.print("Writing " + modelName + " model ... ");
+    
+    long beginModelWritingTime = System.currentTimeMillis();
+    
     OutputStream modelOut = null;
     try {
-      modelOut = new FileOutputStream(modelFile);
+      modelOut = new BufferedOutputStream(new FileOutputStream(modelFile), IO_BUFFER_SIZE);
       model.serialize(modelOut);
     } catch (IOException e) {
       System.err.println("Error during writing model file: " + e.getMessage());
@@ -189,8 +196,16 @@ public final class CmdLineUtil {
       }
     }
     
-    System.out.println("Wrote " + modelName + " model.");
-    System.out.println("Path: " + modelFile.getAbsolutePath());
+    long modelWritingDuration = System.currentTimeMillis() - beginModelWritingTime;
+    
+    System.err.printf("done (%.3fs)\n", modelWritingDuration / 1000d);
+    
+    System.out.println();
+    
+    System.out.println("Wrote " + modelName + " model to");
+    System.out.println("path: " + modelFile.getAbsolutePath());
+    
+    System.out.println();
   }
   
   /**
