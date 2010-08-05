@@ -28,6 +28,7 @@ import java.util.List;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
@@ -71,6 +72,9 @@ public final class TokenNameFinderTool implements CmdLineTool {
     ObjectStream<String> untokenizedLineStream =
         new PlainTextByLineStream(new InputStreamReader(System.in));
     
+    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+    perfMon.start();
+    
     try {
       String line;
       while((line = untokenizedLineStream.read()) != null) {
@@ -99,10 +103,14 @@ public final class TokenNameFinderTool implements CmdLineTool {
             reducedNames, false);
         
         System.out.println(nameSample.toString());
+        
+        perfMon.incrementCounter();
       }
     }
     catch (ObjectStreamException e) {
       CmdLineUtil.handleStdinIoError(e);
     }
+    
+    perfMon.stopAndPrintFinalResult();
   }
 }

@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.Parse;
@@ -127,6 +128,9 @@ public final class ParserTool implements CmdLineTool {
     ObjectStream<String> lineStream =
       new PlainTextByLineStream(new InputStreamReader(System.in));
     
+    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+    perfMon.start();
+    
     try {
       String line;
       while ((line = lineStream.read()) != null) {
@@ -135,17 +139,23 @@ public final class ParserTool implements CmdLineTool {
         }
         else {
           Parse[] parses = parseLine(line, parser, numParses);
+          
           for (int pi=0,pn=parses.length;pi<pn;pi++) {
             if (showTopK) {
               System.out.print(pi+" "+parses[pi].getProb()+" ");
             }
+            
             parses[pi].show();
+            
+            perfMon.incrementCounter();
           }
         }
       }
     } 
     catch (ObjectStreamException e) {
       CmdLineUtil.handleStdinIoError(e);
-    }   
+    }
+    
+    perfMon.stopAndPrintFinalResult();
   }
 }

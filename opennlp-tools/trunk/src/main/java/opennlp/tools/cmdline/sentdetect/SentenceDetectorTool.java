@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
@@ -71,6 +72,9 @@ public final class SentenceDetectorTool implements CmdLineTool {
     ObjectStream<String> lineStream =
       new PlainTextByLineStream(new InputStreamReader(System.in));
     
+    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+    perfMon.start();
+    
     try {
       while (true) {
         String line = lineStream.read();
@@ -85,6 +89,8 @@ public final class SentenceDetectorTool implements CmdLineTool {
             for (String sentence : sents) {
               System.out.println(sentence);
             }
+            
+            perfMon.incrementCounter(sents.length);
           }
           System.out.println();
           para.setLength(0);
@@ -100,5 +106,7 @@ public final class SentenceDetectorTool implements CmdLineTool {
     catch (ObjectStreamException e) {
       CmdLineUtil.handleStdinIoError(e);
     }
+    
+    perfMon.stopAndPrintFinalResult();
   }
 }

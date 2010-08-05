@@ -16,8 +16,9 @@
  */
 
 
-package opennlp.tools.util.eval;
+package opennlp.tools.cmdline;
 
+import java.io.PrintStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -41,21 +42,52 @@ public class PerformanceMonitor {
   
   private ScheduledFuture<?> beeperHandle;
     
-  private volatile long startTime;
+  private volatile long startTime = -1;
   
   private volatile int counter;
   
-  public PerformanceMonitor(String unit) {
+  private final PrintStream out;
+  
+  public PerformanceMonitor(PrintStream out, String unit) {
+    this.out = out;
     this.unit = unit;
+  }
+
+  public PerformanceMonitor(String unit) {
+    this(System.out, unit);
+  }
+  
+  public boolean isStarted() {
+    return startTime != -1;
+  }
+  
+  public void incrementCounter(int increment) {
+    
+    if (!isStarted())
+      throw new IllegalStateException("Must be started first!");
+    
+    if (increment < 0) 
+      throw new IllegalArgumentException("increment must be zero or positive!");
+    
+    counter += increment;
   }
   
   public void incrementCounter() {
-    counter++;
+    incrementCounter(1);
   }
   
-  public void startPrinter() {
+  public void start() {
+    
+    if (isStarted()) 
+      throw new IllegalStateException("Already started!");
     
     startTime = System.currentTimeMillis();
+  }
+  
+  
+  public void startAndPrintThroughput() {
+    
+    start();
     
     final Runnable beeper = new Runnable() {
       
@@ -87,7 +119,7 @@ public class PerformanceMonitor {
           averageThroughput = 0;
         }
         
-        System.out.printf("current: %.1f " + unit + "/s avg: %.1f " + unit + "/s total: %d " + unit + "%n", currentThroughput,
+        out.printf("current: %.1f " + unit + "/s avg: %.1f " + unit + "/s total: %d " + unit + "%n", currentThroughput,
             averageThroughput, counter);
 
         lastTimeStamp = System.currentTimeMillis();
@@ -98,7 +130,11 @@ public class PerformanceMonitor {
    beeperHandle = scheduler.scheduleAtFixedRate(beeper, 1, 1, TimeUnit.SECONDS);
   }
   
-  public void stopPrinterAndPrintFinalResult() {
+  public void stopAndPrintFinalResult() {
+    
+    if (!isStarted())
+      throw new IllegalStateException("Must be started first!");
+    
     if (beeperHandle != null) {
       // yeah we have time to finish current
       // printing if there is one
@@ -117,11 +153,11 @@ public class PerformanceMonitor {
       average = 0;
     }
     
-    System.out.println();
-    System.out.println();
+    out.println();
+    out.println();
     
-    System.out.printf("Average: %.1f " + unit +"/s %n", average);
-    System.out.println("Total: " + counter + " " + unit);
-    System.out.println("Runtime: " + timePassed / 1000d + "s");
+    out.printf("Average: %.1f " + unit +"/s %n", average);
+    out.println("Total: " + counter + " " + unit);
+    out.println("Runtime: " + timePassed / 1000d + "s");
   }
 }

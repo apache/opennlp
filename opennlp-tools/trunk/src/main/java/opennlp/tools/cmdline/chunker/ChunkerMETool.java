@@ -26,6 +26,7 @@ import opennlp.tools.chunker.DefaultChunkerSequenceValidator;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
@@ -61,6 +62,9 @@ public class ChunkerMETool implements CmdLineTool {
     ObjectStream<String> lineStream =
       new PlainTextByLineStream(new InputStreamReader(System.in));
     
+    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+    perfMon.start();
+    
     try {
       String line;
       while ((line = lineStream.read()) != null) {
@@ -95,10 +99,14 @@ public class ChunkerMETool implements CmdLineTool {
         }
         
         System.out.println();
+        
+        perfMon.incrementCounter();
       }
     } 
     catch (ObjectStreamException e) {
       CmdLineUtil.handleStdinIoError(e);
-    } 
+    }
+    
+    perfMon.stopAndPrintFinalResult();
   }
 }

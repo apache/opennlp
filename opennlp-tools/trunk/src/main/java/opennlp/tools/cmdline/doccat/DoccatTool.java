@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
@@ -64,6 +65,9 @@ public class DoccatTool implements CmdLineTool {
     ObjectStream<String> documentStream = new ParagraphStream(
         new PlainTextByLineStream(new InputStreamReader(System.in)));
     
+    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "doc");
+    perfMon.start();
+    
     try {
       String document;
       while ((document = documentStream.read()) != null) {
@@ -72,10 +76,14 @@ public class DoccatTool implements CmdLineTool {
         
         DocumentSample sample = new DocumentSample(category, document);
         System.out.println(sample.toString());
+        
+        perfMon.incrementCounter();
       }
     }
     catch (ObjectStreamException e) {
       CmdLineUtil.handleStdinIoError(e);
     }
+    
+    perfMon.stopAndPrintFinalResult();
   }
 }

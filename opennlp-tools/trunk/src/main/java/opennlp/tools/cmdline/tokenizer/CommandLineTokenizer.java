@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.tokenizer;
 import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerStream;
 import opennlp.tools.tokenize.WhitespaceTokenStream;
@@ -43,14 +44,20 @@ final class CommandLineTokenizer {
     ObjectStream<String> tokenizedLineStream = new WhitespaceTokenStream(
         new TokenizerStream(tokenizer, untokenizedLineStream));
     
+    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+    perfMon.start();
+    
     try {
       String tokenizedLine;
       while ((tokenizedLine = tokenizedLineStream.read()) != null) {
         System.out.println(tokenizedLine);
+        perfMon.incrementCounter();
       }
     }
     catch (ObjectStreamException e) {
       CmdLineUtil.handleStdinIoError(e);
     }
+    
+    perfMon.stopAndPrintFinalResult();
   }
 }

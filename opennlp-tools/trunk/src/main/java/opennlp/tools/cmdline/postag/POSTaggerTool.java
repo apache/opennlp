@@ -18,19 +18,17 @@
 package opennlp.tools.cmdline.postag;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -63,6 +61,9 @@ public final class POSTaggerTool implements CmdLineTool {
     ObjectStream<String> lineStream =
       new PlainTextByLineStream(new InputStreamReader(System.in));
     
+    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+    perfMon.start();
+    
     try {
       String line;
       while ((line = lineStream.read()) != null) {
@@ -72,10 +73,14 @@ public final class POSTaggerTool implements CmdLineTool {
         
         POSSample sample = new POSSample(whitespaceTokenizerLine, tags);
         System.out.println(sample.toString());
+        
+        perfMon.incrementCounter();
       }
     } 
     catch (ObjectStreamException e) {
       CmdLineUtil.handleStdinIoError(e);
-    }    
+    }
+    
+    perfMon.stopAndPrintFinalResult();
   }
 }
