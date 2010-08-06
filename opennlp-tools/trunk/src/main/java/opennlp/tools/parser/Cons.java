@@ -23,10 +23,10 @@ package opennlp.tools.parser;
  */
 public class Cons {
 
-  String cons;
-  String consbo;
-  int index;
-  boolean unigram;
+  final String cons;
+  final String consbo;
+  final int index;
+  final boolean unigram;
 
   public Cons(String cons, String consbo, int index, boolean unigram) {
     this.cons = cons;
