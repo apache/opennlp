@@ -62,11 +62,11 @@ public class POSTaggerMETest extends TestCase {
 
     assertEquals(6, tags.length);
 
-    assertEquals(tags[0], "DT");
-    assertEquals(tags[1], "NN");
-    assertEquals(tags[2], "VBD");
-    assertEquals(tags[3], "RB");
-    assertEquals(tags[4], "VBN");
-    assertEquals(tags[5], ".");
+    assertEquals("DT", tags[0]);
+    assertEquals("NN", tags[1]);
+    assertEquals("VBD", tags[2]);
+    assertEquals("RB", tags[3]);
+    assertEquals("VBN", tags[4]);
+    assertEquals(".", tags[5]);
   }
 }
