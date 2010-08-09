@@ -31,23 +31,16 @@ import opennlp.model.Event;
  * <p> cp_1,cp_2,...,cp_n,outcome
  *
  * @author      Jason Baldridge
- * @version $Revision: 1.3 $, $Date: 2010-08-05 17:42:27 $ 
+ * @version $Revision: 1.4 $, $Date: 2010-08-09 18:44:23 $ 
  */
 public class BasicEventStream extends AbstractEventStream {
   ContextGenerator cg;
   DataStream ds;
   Event next;
 
-  String separator = " ";
+  private String separator = " ";
   
-  public BasicEventStream (DataStream ds) {
-    this.ds = ds;
-    cg = new BasicContextGenerator();
-    if (this.ds.hasNext())
-      next = createEvent((String)this.ds.nextToken());
-  }
-  
-  public BasicEventStream (DataStream ds, String sep) {
+   public BasicEventStream (DataStream ds, String sep) {
     separator = sep;
     cg = new BasicContextGenerator(separator);
     this.ds = ds;
@@ -55,7 +48,10 @@ public class BasicEventStream extends AbstractEventStream {
       next = createEvent((String)this.ds.nextToken());
   }
   
-
+ public BasicEventStream (DataStream ds) {
+    this(ds, " ");
+  }
+  
   /**
    * Returns the next Event object held in this EventStream.  Each call to nextEvent advances the EventStream.
    *
