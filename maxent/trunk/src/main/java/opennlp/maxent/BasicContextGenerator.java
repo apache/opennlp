@@ -29,11 +29,11 @@ import java.util.*;
  * </p>
  * 
  * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2010-08-05 17:42:27 $
+ * @version     $Revision: 1.3 $, $Date: 2010-08-09 18:43:17 $
  */
 public class BasicContextGenerator implements ContextGenerator {
 
-  String separator = " ";
+  private String separator = " ";
 
   public BasicContextGenerator () {}
   
