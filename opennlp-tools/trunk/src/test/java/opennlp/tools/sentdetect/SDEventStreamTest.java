@@ -20,6 +20,9 @@ package opennlp.tools.sentdetect;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+
 import opennlp.model.EventStream;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.ObjectStream;
@@ -34,7 +37,7 @@ import org.junit.Test;
 public class SDEventStreamTest {
   
   @Test
-  public void testEventOutcomes() {
+  public void testEventOutcomes() throws IOException {
     // Sample with two sentences
     SentenceSample sample = new SentenceSample("Test sent. one. Test sent. 2?", 
         new Span(0, 15), new Span(16, 29));

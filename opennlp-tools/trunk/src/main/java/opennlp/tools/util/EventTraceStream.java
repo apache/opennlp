@@ -33,11 +33,11 @@ public class EventTraceStream implements EventStream {
     this.writer = writer;
   }
   
-  public boolean hasNext() {
+  public boolean hasNext() throws IOException {
     return stream.hasNext();
   }
 
-  public Event next() {
+  public Event next() throws IOException {
     Event event = stream.next();
     
     try {

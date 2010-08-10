@@ -112,7 +112,7 @@ public class POSTaggerTrainer {
     return trainPerceptronModel(es,iterations,cut,true);
   }
   
-  public static AbstractModel trainPerceptronSequenceModel(SequenceStream ss, int iterations, int cut, boolean useAverage) {
+  public static AbstractModel trainPerceptronSequenceModel(SequenceStream ss, int iterations, int cut, boolean useAverage) throws IOException {
     return new SimplePerceptronSequenceTrainer().trainModel(iterations, ss, cut,useAverage);
   }
 

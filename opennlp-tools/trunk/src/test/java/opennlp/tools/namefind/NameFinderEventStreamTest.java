@@ -17,6 +17,8 @@
 
 package opennlp.tools.namefind;
 
+import java.io.IOException;
+
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import opennlp.model.EventStream;
@@ -31,7 +33,7 @@ public class NameFinderEventStreamTest extends TestCase {
   /**
    * Tests the correctly generated outcomes for a test sentence.
    */
-  public void testOutcomesForSingleTypeSentence() {
+  public void testOutcomesForSingleTypeSentence() throws IOException {
     String sentence[] = {"Elise",
         "Wendel",
         "appreciated",

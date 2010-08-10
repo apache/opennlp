@@ -21,6 +21,9 @@ package opennlp.tools.tokenize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+
 import opennlp.model.EventStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
@@ -36,7 +39,7 @@ public class TokSpanEventStreamTest {
    * Tests the event stream for correctly generated outcomes.
    */
   @Test
-  public void testEventOutcomes() {
+  public void testEventOutcomes() throws IOException {
     
     ObjectStream<String> sentenceStream = 
       ObjectStreamUtils.createObjectStream("\"<SPLIT>out<SPLIT>.<SPLIT>\"");

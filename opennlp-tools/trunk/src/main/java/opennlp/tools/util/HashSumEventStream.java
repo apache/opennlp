@@ -17,6 +17,7 @@
 
 package opennlp.tools.util;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -43,11 +44,11 @@ public class HashSumEventStream implements EventStream {
     }
   }
   
-  public boolean hasNext() {
+  public boolean hasNext() throws IOException {
     return eventStream.hasNext();
   }
 
-  public Event next() {
+  public Event next() throws IOException {
     
     Event event = eventStream.next();
     
@@ -70,8 +71,9 @@ public class HashSumEventStream implements EventStream {
    * completely means that hasNext() returns false
    */
   public BigInteger calculateHashSum() {
-    if (hasNext())
-      throw new IllegalStateException("stream must be consumed completely!");
+    
+//    if (hasNext())
+//      throw new IllegalStateException("stream must be consumed completely!");
     
     return new BigInteger(1, digest.digest());
   }
