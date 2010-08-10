@@ -317,7 +317,7 @@ public abstract class BaseModel {
       if (serializer == null) {
         // TODO: This should never happen
         // add a method to add entries to the artifactMap
-        throw new RuntimeException("Missing serializer for " + name);
+        throw new IllegalStateException("Missing serializer for " + name);
       }
       
       serializer.serialize(artifactMap.get(name), zip);
