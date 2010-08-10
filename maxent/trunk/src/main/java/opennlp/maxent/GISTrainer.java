@@ -45,7 +45,7 @@ import opennlp.model.UniformPrior;
  *    
  * @author Tom Morton
  * @author  Jason Baldridge
- * @version $Revision: 1.3 $, $Date: 2010-08-05 17:42:27 $
+ * @version $Revision: 1.4 $, $Date: 2010-08-10 03:25:06 $
  */
 class GISTrainer {
 
@@ -510,7 +510,8 @@ class GISTrainer {
           if (model[aoi] == 0) {
             System.err.println("Model expects == 0 for "+predLabels[pi]+" "+outcomeLabels[aoi]);
           }
-          params[pi].updateParameter(aoi,(Math.log(observed[aoi]) - Math.log(model[aoi])));
+          //params[pi].updateParameter(aoi,(Math.log(observed[aoi]) - Math.log(model[aoi])));
+          params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi]))/evalParams.getCorrectionConstant()));
         }
         modelExpects[pi].setParameter(aoi,0.0); // re-initialize to 0.0's
       }
