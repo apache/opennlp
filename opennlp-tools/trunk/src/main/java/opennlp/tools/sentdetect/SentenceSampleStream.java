@@ -18,11 +18,11 @@
 
 package opennlp.tools.sentdetect;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.Span;
 
 /**
@@ -41,7 +41,7 @@ public class SentenceSampleStream implements ObjectStream<SentenceSample> {
     this.sentences = sentences;
   }
 
-  public SentenceSample read() throws ObjectStreamException {
+  public SentenceSample read() throws IOException {
     
     StringBuilder sentencesString = new StringBuilder();
     List<Span> sentenceSpans = new LinkedList<Span>();
@@ -64,11 +64,11 @@ public class SentenceSampleStream implements ObjectStream<SentenceSample> {
     }
   }
   
-  public void reset() throws ObjectStreamException {
+  public void reset() throws IOException {
     sentences.reset();
   }
   
-  public void close() throws ObjectStreamException {
+  public void close() throws IOException {
     sentences.close();
   }
 }

@@ -28,7 +28,6 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 /** 
  * Abstract base class for tools which update the parser model.
@@ -37,7 +36,7 @@ abstract class ModelUpdaterTool implements CmdLineTool {
 
   protected abstract ParserModel trainAndUpdate(ParserModel originalModel,
       ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters)
-      throws ObjectStreamException, IOException;
+      throws IOException;
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " training.file parser.model";
@@ -65,17 +64,13 @@ abstract class ModelUpdaterTool implements CmdLineTool {
           parseSamples, parameters);
     }
     catch (IOException e) {
-      CmdLineUtil.printDataIndexerIoError(e);
-      throw new TerminateToolException(-1);
-    }
-    catch (ObjectStreamException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
     }
     finally {
       try {
         parseSamples.close();
-      } catch (ObjectStreamException e) {
+      } catch (IOException e) {
         // sorry that this can fail
       }
     }

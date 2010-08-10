@@ -18,19 +18,19 @@
 
 package opennlp.tools.postag;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import junit.framework.TestCase;
 import opennlp.tools.util.CollectionObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 /**
  * Tests for the {@link WordTagSampleStream} class.
  */
 public class WordTagSampleStreamTest extends TestCase {
   
-  public void testParseSimpleSample() throws ObjectStreamException {
+  public void testParseSimpleSample() throws IOException {
     
     Collection<String> sampleString = new ArrayList<String>(1);
     sampleString.add("This_x1 is_x2 a_x3 test_x4 sentence_x5 ._x6");

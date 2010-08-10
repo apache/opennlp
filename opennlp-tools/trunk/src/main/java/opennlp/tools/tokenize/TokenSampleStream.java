@@ -17,8 +17,9 @@
 
 package opennlp.tools.tokenize;
 
+import java.io.IOException;
+
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 /**
  * This class is a stream filter which reads in string encoded samples and creates
@@ -55,7 +56,7 @@ public class TokenSampleStream implements ObjectStream<TokenSample> {
     this(sentences, DEFAULT_SEPARATOR_CHARS);
   }
   
-  public TokenSample read() throws ObjectStreamException {
+  public TokenSample read() throws IOException {
     String sampleString = sampleStrings.read();
     
     if (sampleString != null) {
@@ -66,12 +67,12 @@ public class TokenSampleStream implements ObjectStream<TokenSample> {
     }
   }
 
-  public void reset() throws ObjectStreamException,
+  public void reset() throws IOException,
       UnsupportedOperationException {
     sampleStrings.reset();
   }
   
-  public void close() throws ObjectStreamException {
+  public void close() throws IOException {
     sampleStrings.close();
   }
 }

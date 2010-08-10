@@ -27,7 +27,7 @@ import junit.framework.TestCase;
  */
 public class PlainTextByLineStreamTest extends TestCase {
 
-  public void testLineSegmentation() throws IOException, ObjectStreamException {
+  public void testLineSegmentation() throws IOException {
     StringBuilder testString = new StringBuilder();
     testString.append("line1");
     testString.append('\n');

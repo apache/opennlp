@@ -36,7 +36,6 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.model.BaseModel;
@@ -264,12 +263,12 @@ public class SentenceDetectorME implements SentenceDetector {
   }
   
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
-      boolean useTokenEnd, Dictionary abbreviations) throws ObjectStreamException {
+      boolean useTokenEnd, Dictionary abbreviations) throws IOException {
     return train(languageCode, samples, useTokenEnd, abbreviations,5,100);
   }
   
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
-      boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) throws ObjectStreamException {
+      boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) throws IOException {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
     ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);

@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.Mean;
 import opennlp.tools.util.model.ModelType;
@@ -54,7 +53,7 @@ public class POSTaggerCrossValidator {
   }
   
   public void evaluate(ObjectStream<POSSample> samples, int nFolds)
-    throws ObjectStreamException, IOException {
+    throws IOException, IOException {
     CrossValidationPartitioner<POSSample> partitioner = 
       new CrossValidationPartitioner<POSSample>(samples, nFolds);
   

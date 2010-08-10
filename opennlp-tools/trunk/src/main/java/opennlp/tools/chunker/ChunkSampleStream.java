@@ -17,11 +17,11 @@
 
 package opennlp.tools.chunker;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 public class ChunkSampleStream implements ObjectStream<ChunkSample> {
 
@@ -35,7 +35,7 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
     this.in = in;
   }
   
-  public ChunkSample read() throws ObjectStreamException {
+  public ChunkSample read() throws IOException {
     
     List<String> toks = new ArrayList<String>();
     List<String> tags = new ArrayList<String>();
@@ -62,12 +62,12 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
     }
   }
 
-  public void reset() throws ObjectStreamException,
+  public void reset() throws IOException,
       UnsupportedOperationException {
     in.reset();
   }
   
-  public void close() throws ObjectStreamException {
+  public void close() throws IOException {
     in.close();
   }
 }

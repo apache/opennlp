@@ -30,8 +30,8 @@ import java.nio.charset.Charset;
  */
 public class PlainTextByLineStream implements ObjectStream<String> {
   
-  private FileChannel channel;
-  private String encoding;
+  private final FileChannel channel;
+  private final String encoding;
   
   private BufferedReader in;
   
@@ -42,12 +42,15 @@ public class PlainTextByLineStream implements ObjectStream<String> {
    */
   public PlainTextByLineStream(Reader in) {
     this.in = new BufferedReader(in);
+    this.channel = null;
+    this.encoding = null;
   }
   
   public PlainTextByLineStream(FileChannel channel, String encoding) {
     this.encoding = encoding;
     this.channel = channel;
     
+    // TODO: Why isn't reset called here ?
     in = new BufferedReader(Channels.newReader(channel, encoding));
   }
   
@@ -55,40 +58,27 @@ public class PlainTextByLineStream implements ObjectStream<String> {
     this(channel, encoding.name());
   }
   
-  public String read() throws ObjectStreamException {
-    try {
-      return in.readLine();
-    } catch (IOException e) {
-      throw new ObjectStreamException(e);
-    }
+  public String read() throws IOException {
+    return in.readLine();
   }
 
-  public void reset() throws ObjectStreamException {
+  public void reset() throws IOException {
     
-    try {
-      if (channel == null) {
-          in.reset();
-      }
-      else {
-        channel.position(0);
-        in = new BufferedReader(Channels.newReader(channel, encoding));
-      }
-    } catch (IOException e) {
-      throw new ObjectStreamException(e);
+    if (channel == null) {
+        in.reset();
+    }
+    else {
+      channel.position(0);
+      in = new BufferedReader(Channels.newReader(channel, encoding));
     }
   }
   
-  public void close() throws ObjectStreamException {
-    try {
+  public void close() throws IOException {
       if (channel == null) {
         in.close();
       }
       else {
        channel.close(); 
       }
-    }
-    catch (IOException e) {
-      throw new ObjectStreamException(e);
-    }
   }
 }

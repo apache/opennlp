@@ -24,11 +24,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.junit.Test;
-
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
+
+import org.junit.Test;
 
 public class ParseSampleStreamTest {
 
@@ -41,7 +40,7 @@ public class ParseSampleStreamTest {
   }
   
   @Test
-  public void testReadTestStream() throws IOException, ObjectStreamException {
+  public void testReadTestStream() throws IOException {
     ObjectStream<Parse> parseStream = createParseSampleStream();
     
     assertNotNull(parseStream.read());

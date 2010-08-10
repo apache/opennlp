@@ -18,6 +18,9 @@
 
 package opennlp.tools.util;
 
+import java.io.IOException;
+import java.io.ObjectStreamException;
+
 /**
  * Reads <code>Object</code>s from a stream.
  * 
@@ -31,7 +34,7 @@ public interface ObjectStream<T> {
    * 
    * @return the next object or null to signal that the stream is exhausted
    */
-  T read() throws ObjectStreamException;
+  T read() throws IOException;
   
   /**
    * Repositions the stream at the beginning and the previously seen object sequence
@@ -40,14 +43,14 @@ public interface ObjectStream<T> {
    * 
    * The implementation of this method is optional.
    */
-  void reset() throws ObjectStreamException, UnsupportedOperationException;
+  void reset() throws IOException, UnsupportedOperationException;
   
   /**
    * Closes the <code>ObjectStream</code> and releases all allocated
    * resources. After close was called its not allowed to call
    * read or reset.
    * 
-   * @throws ObjectStreamException
+   * @throws IOException
    */
-  void close() throws ObjectStreamException;
+  void close() throws IOException;
 }

@@ -18,12 +18,13 @@
 
 package opennlp.tools.util.eval;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
 import opennlp.tools.util.CollectionObjectStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
+import opennlp.tools.util.eval.CrossValidationPartitioner.TrainingSampleStream;
 
 /**
  * Provides access to training and test partitions for n-fold cross validation.
@@ -64,7 +65,7 @@ public class CrossValidationPartitioner<E> {
       this.testIndex = testIndex;
     }
     
-    public E read() throws ObjectStreamException {
+    public E read() throws IOException {
       if (isPoisened) {
         throw new IllegalStateException();
       }
@@ -87,7 +88,7 @@ public class CrossValidationPartitioner<E> {
       throw new UnsupportedOperationException();
     }
     
-    public void close() throws ObjectStreamException {
+    public void close() throws IOException {
       sampleStream.close();
       isPoisened = true;
     }
@@ -134,7 +135,7 @@ public class CrossValidationPartitioner<E> {
       this.testIndex = testIndex;
     }
 
-    public E read() throws ObjectStreamException {
+    public E read() throws IOException {
       
       if (testSampleStream != null || isPoisened) {
         throw new IllegalStateException();
@@ -159,7 +160,7 @@ public class CrossValidationPartitioner<E> {
       throw new UnsupportedOperationException();
     }
     
-    public void close() throws ObjectStreamException {
+    public void close() throws IOException {
       sampleStream.close();
       poison();
     }
@@ -178,7 +179,7 @@ public class CrossValidationPartitioner<E> {
      *  
      * @return
      */
-    public ObjectStream<E> getTestSampleStream() throws ObjectStreamException {
+    public ObjectStream<E> getTestSampleStream() throws IOException {
       
       if (isPoisened) {
         throw new IllegalStateException();
@@ -248,7 +249,7 @@ public class CrossValidationPartitioner<E> {
   /**
    * Retrieves the next training and test partitions.
    */
-  public TrainingSampleStream<E> next() throws ObjectStreamException {
+  public TrainingSampleStream<E> next() throws IOException {
     if (hasNext()) {
       if (lastTrainingSampleStream != null)
         lastTrainingSampleStream.poison();

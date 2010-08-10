@@ -17,13 +17,13 @@
 
 package opennlp.tools.parser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 public class ChunkSampleStream implements ObjectStream<ChunkSample> {
 
@@ -63,7 +63,7 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
     return chunks.toArray(new Parse[chunks.size()]);
   }
   
-  public ChunkSample read() throws ObjectStreamException {
+  public ChunkSample read() throws IOException {
     
     Parse parse = in.read();
     
@@ -107,12 +107,12 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
     }
   }
 
-  public void reset() throws ObjectStreamException,
+  public void reset() throws IOException,
       UnsupportedOperationException {
     in.reset();
   }
   
-  public void close() throws ObjectStreamException {
+  public void close() throws IOException {
     in.close();
   }
 }

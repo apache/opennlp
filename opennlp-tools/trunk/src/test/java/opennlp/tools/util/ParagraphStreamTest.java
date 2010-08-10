@@ -17,11 +17,13 @@
 
 package opennlp.tools.util;
 
+import java.io.IOException;
+
 import junit.framework.TestCase;
 
 public class ParagraphStreamTest extends TestCase {
 
-  public void testSimpleReading() throws ObjectStreamException {
+  public void testSimpleReading() throws IOException {
     
     String line1 = "1";
     String line2 = "2";

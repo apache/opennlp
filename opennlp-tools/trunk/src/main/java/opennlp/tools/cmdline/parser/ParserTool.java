@@ -17,11 +17,8 @@
 
 package opennlp.tools.cmdline.parser;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,9 +35,7 @@ import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.parser.ParserModel;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -152,7 +147,7 @@ public final class ParserTool implements CmdLineTool {
         }
       }
     } 
-    catch (ObjectStreamException e) {
+    catch (IOException e) {
       CmdLineUtil.handleStdinIoError(e);
     }
     

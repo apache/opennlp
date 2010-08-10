@@ -32,7 +32,6 @@ import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class ChunkerTrainerTool implements CmdLineTool {
@@ -89,18 +88,14 @@ public class ChunkerTrainerTool implements CmdLineTool {
     try {
       model = ChunkerME.train(parameters.getLanguage(), sampleStream, 
           parameters.getCutoff(), parameters.getNumberOfIterations());
-    } catch (ObjectStreamException e) {
+    } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
-    }
-    catch (IOException e) {
-      CmdLineUtil.printDataIndexerIoError(e);
       throw new TerminateToolException(-1);
     }
     finally {
       try {
         sampleStream.close();
-      } catch (ObjectStreamException e) {
+      } catch (IOException e) {
         // sorry that this can fail
       }
     }

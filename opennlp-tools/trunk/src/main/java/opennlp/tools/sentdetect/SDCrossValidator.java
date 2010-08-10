@@ -18,9 +18,9 @@
 package opennlp.tools.sentdetect;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
@@ -46,7 +46,7 @@ public class SDCrossValidator {
     this(languageCode, 5, 100);
   }
   
-  public void evaluate(ObjectStream<SentenceSample> samples, int nFolds) throws ObjectStreamException {
+  public void evaluate(ObjectStream<SentenceSample> samples, int nFolds) throws IOException {
     
     CrossValidationPartitioner<SentenceSample> partitioner = 
         new CrossValidationPartitioner<SentenceSample>(samples, nFolds);

@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,7 +41,6 @@ import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
@@ -316,7 +316,7 @@ public class NameFinderME implements TokenNameFinder {
     * @throws ObjectStreamException
     */
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
-       final Map<String, Object> resources, int iterations, int cutoff) throws IOException, ObjectStreamException {
+       final Map<String, Object> resources, int iterations, int cutoff) throws IOException {
      
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
      ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
@@ -334,7 +334,7 @@ public class NameFinderME implements TokenNameFinder {
    }
 
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
-       final Map<String, Object> resources) throws IOException, ObjectStreamException {
+       final Map<String, Object> resources) throws IOException {
      return NameFinderME.train(languageCode, type, samples, resources, 100, 5);
    }
    
@@ -406,7 +406,7 @@ public class NameFinderME implements TokenNameFinder {
    * @throws java.io.IOException
    */
   @Deprecated
-  public static void main(String[] args) throws IOException, ObjectStreamException {
+  public static void main(String[] args) throws IOException {
     
     // Encoding must be specified !!!
     // -encoding code train.file model.file

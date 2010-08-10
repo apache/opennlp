@@ -20,9 +20,9 @@ package opennlp.tools.tokenize;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectStreamException;
 
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
@@ -50,7 +50,7 @@ public class TokenizerCrossValidator {
   }  
   
   public void evaluate(ObjectStream<TokenSample> samples, int nFolds) 
-      throws ObjectStreamException, IOException {
+      throws IOException {
     
     CrossValidationPartitioner<TokenSample> partitioner = 
       new CrossValidationPartitioner<TokenSample>(samples, nFolds);

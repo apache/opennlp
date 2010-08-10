@@ -17,6 +17,7 @@
  
  package opennlp.tools.postag;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -26,19 +27,18 @@ import opennlp.model.Event;
 import opennlp.model.Sequence;
 import opennlp.model.SequenceStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 public class POSSampleSequenceStream implements SequenceStream {
 
   private POSContextGenerator pcg;
   private List<POSSample> samples;
   
-  public POSSampleSequenceStream(ObjectStream<POSSample> psi) throws ObjectStreamException {
+  public POSSampleSequenceStream(ObjectStream<POSSample> psi) throws IOException {
     this(psi, new DefaultPOSContextGenerator(null));
   }
   
   public POSSampleSequenceStream(ObjectStream<POSSample> psi, POSContextGenerator pcg) 
-      throws ObjectStreamException {
+      throws IOException {
     samples = new ArrayList<POSSample>();
     
     POSSample sample;

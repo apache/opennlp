@@ -18,6 +18,7 @@
 
 package opennlp.tools.util;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 
@@ -71,7 +72,7 @@ public abstract class AbstractEventStream<T> extends opennlp.model.AbstractEvent
         while (!events.hasNext() && (sample = samples.read()) != null) {
           events = createEvents(sample);
         }
-      } catch (ObjectStreamException e) {
+      } catch (IOException e) {
         // TODO: Exception be handled by maxent
         throw new RuntimeException(e);
       }

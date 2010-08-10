@@ -30,7 +30,6 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenSampleStream;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public final class TokenizerTrainerTool implements CmdLineTool {
@@ -87,17 +86,14 @@ public final class TokenizerTrainerTool implements CmdLineTool {
           parameters.getLanguage(), sampleStream, 
           parameters.isAlphaNumericOptimizationEnabled(),
           parameters.getCutoff(), parameters.getNumberOfIterations());
-    } catch (ObjectStreamException e) {
+    } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
     }
-    catch (IOException e) {
-      CmdLineUtil.printDataIndexerIoError(e);
-      throw new TerminateToolException(-1);
-    } finally {
+    finally {
       try {
         sampleStream.close();
-      } catch (ObjectStreamException e) {
+      } catch (IOException e) {
         // sorry that this can fail
       }
     }

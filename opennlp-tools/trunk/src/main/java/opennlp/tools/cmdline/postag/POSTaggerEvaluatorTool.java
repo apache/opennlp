@@ -18,6 +18,7 @@
 package opennlp.tools.cmdline.postag;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
@@ -28,7 +29,6 @@ import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 public final class POSTaggerEvaluatorTool implements CmdLineTool {
 
@@ -73,14 +73,14 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
       try {
         evaluator.evaluate(sampleStream);
       }
-      catch (ObjectStreamException e) {
+      catch (IOException e) {
         System.err.println("failed");
         System.err.println("Reading test data error " + e.getMessage());
         throw new TerminateToolException(-1);
       } finally {
         try {
           sampleStream.close();
-        } catch (ObjectStreamException e) {
+        } catch (IOException e) {
           // sorry that this can fail
         }
       }

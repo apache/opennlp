@@ -18,6 +18,7 @@
 package opennlp.tools.cmdline.sentdetect;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
@@ -28,7 +29,6 @@ import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
 
@@ -72,14 +72,14 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
       try {
       evaluator.evaluate(sampleStream);
       }
-      catch (ObjectStreamException e) {
+      catch (IOException e) {
         CmdLineUtil.printTrainingIoError(e);
         throw new TerminateToolException(-1);
       }
       finally {
         try {
           sampleStream.close();
-        } catch (ObjectStreamException e) {
+        } catch (IOException e) {
           // sorry that this can fail
         }
       }

@@ -17,9 +17,10 @@
 
 package opennlp.tools.chunker;
 
+import java.io.IOException;
+
 import opennlp.model.Event;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 /**
  * Class for creating an event stream out of data files for training a chunker.
@@ -72,7 +73,7 @@ public class ChunkerEventStream extends opennlp.model.AbstractEventStream {
     ChunkSample sample;
     try {
       sample = data.read();
-    } catch (ObjectStreamException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
     

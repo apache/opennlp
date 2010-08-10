@@ -19,12 +19,14 @@ package opennlp.tools.tokenize;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
+import java.io.IOException;
+import java.io.ObjectStreamException;
 
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Span;
+
+import org.junit.Test;
 
 /**
  * Tests for the {@link TokenSampleStream} class.
@@ -38,7 +40,7 @@ public class TokenSampleStreamTest {
    * @throws ObjectStreamException
    */
   @Test
-  public void testParsingWhitespaceSeparatedTokens() throws ObjectStreamException {
+  public void testParsingWhitespaceSeparatedTokens() throws IOException {
     String sampleTokens = "Slave to the wage";
     
     ObjectStream<TokenSample> sampleTokenStream = new TokenSampleStream(
@@ -63,7 +65,7 @@ public class TokenSampleStreamTest {
    * @throws ObjectStreamException
    */
   @Test
-  public void testParsingSeparatedString() throws ObjectStreamException {
+  public void testParsingSeparatedString() throws IOException {
     String sampleTokens = "a<SPLIT>b<SPLIT>c<SPLIT>d";
     
     ObjectStream<TokenSample> sampleTokenStream = new TokenSampleStream(
@@ -96,7 +98,7 @@ public class TokenSampleStreamTest {
    * @throws ObjectStreamException
    */
   @Test
-  public void testParsingWhitespaceAndSeparatedString() throws ObjectStreamException {
+  public void testParsingWhitespaceAndSeparatedString() throws IOException {
     String sampleTokens = "a b<SPLIT>c d<SPLIT>e";
     
     ObjectStream<TokenSample> sampleTokenStream = new TokenSampleStream(

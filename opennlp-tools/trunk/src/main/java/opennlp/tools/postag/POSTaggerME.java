@@ -34,7 +34,6 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.model.BaseModel;
@@ -309,7 +308,7 @@ public class POSTaggerME implements POSTagger {
   }
 
   public static POSModel train(String languageCode, ObjectStream<POSSample> samples, ModelType modelType, POSDictionary tagDictionary,
-      Dictionary ngramDictionary, int cutoff, int iterations) throws IOException, ObjectStreamException {
+      Dictionary ngramDictionary, int cutoff, int iterations) throws IOException {
 
     POSContextGenerator contextGenerator = new DefaultPOSContextGenerator(ngramDictionary);
     

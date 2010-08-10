@@ -24,7 +24,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ParseException;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -68,7 +67,7 @@ public class WordTagSampleStream implements ObjectStream<POSSample> {
    * 
    * TODO: An exception in error case should be thrown.
    */
-  public POSSample read() throws ObjectStreamException {
+  public POSSample read() throws IOException {
 
     String sentence = sentences.read();
 
@@ -93,11 +92,11 @@ public class WordTagSampleStream implements ObjectStream<POSSample> {
     }
   }
 
-  public void reset() throws ObjectStreamException {
+  public void reset() throws IOException {
     sentences.reset();
   }
   
-  public void close() throws ObjectStreamException {
+  public void close() throws IOException {
     sentences.close();
   }
 }

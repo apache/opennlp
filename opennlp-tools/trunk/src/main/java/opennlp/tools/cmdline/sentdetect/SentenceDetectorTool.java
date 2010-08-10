@@ -19,7 +19,6 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CLI;
@@ -29,9 +28,7 @@ import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
@@ -105,7 +102,7 @@ public final class SentenceDetectorTool implements CmdLineTool {
           break;
       }
     } 
-    catch (ObjectStreamException e) {
+    catch (IOException e) {
       CmdLineUtil.handleStdinIoError(e);
     }
     

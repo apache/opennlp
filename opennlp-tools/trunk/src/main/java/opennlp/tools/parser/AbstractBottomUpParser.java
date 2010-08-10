@@ -17,6 +17,7 @@
 
 package opennlp.tools.parser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +31,6 @@ import opennlp.tools.postag.POSTagger;
 import opennlp.tools.util.Heap;
 import opennlp.tools.util.ListHeap;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
@@ -504,7 +504,7 @@ public abstract class AbstractBottomUpParser implements Parser {
    * @return A dictionary object.
    */
   public static Dictionary buildDictionary(ObjectStream<Parse> data, HeadRules rules, int cutoff)
-      throws ObjectStreamException {
+      throws IOException {
     NGramModel mdict = new NGramModel();
     Parse p;
     while((p = data.read()) != null) {

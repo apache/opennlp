@@ -27,7 +27,6 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerCrossValidator;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.eval.FMeasure;
 
 public final class TokenizerCrossValidatorTool implements CmdLineTool {
@@ -74,18 +73,14 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
     try {
       validator.evaluate(sampleStream, 10);
     }
-    catch (ObjectStreamException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
-    }
     catch (IOException e) {
-      CmdLineUtil.printDataIndexerIoError(e);
+      CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
     }
     finally {
       try {
         sampleStream.close();
-      } catch (ObjectStreamException e) {
+      } catch (IOException e) {
         // sorry that this can fail
       }
     }

@@ -31,7 +31,7 @@ public class CollectionObjectStream<E> implements ObjectStream<E> {
     reset();
   }
 
-  public E read() throws ObjectStreamException {
+  public E read() {
     if (iterator.hasNext())
       return iterator.next();
     else
@@ -42,6 +42,6 @@ public class CollectionObjectStream<E> implements ObjectStream<E> {
     this.iterator = collection.iterator();
   }
   
-  public void close() throws ObjectStreamException {
+  public void close() {
   }
 }

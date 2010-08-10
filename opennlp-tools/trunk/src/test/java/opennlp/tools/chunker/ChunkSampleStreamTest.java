@@ -20,14 +20,13 @@ package opennlp.tools.chunker;
 import java.io.IOException;
 import java.io.StringReader;
 
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
-import opennlp.tools.util.PlainTextByLineStream;
 import junit.framework.TestCase;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 
 public class ChunkSampleStreamTest extends TestCase {
 
-  public void testReadingEvents() throws ObjectStreamException, IOException {
+  public void testReadingEvents() throws IOException {
     
     StringBuilder sample = new StringBuilder();
     

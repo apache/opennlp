@@ -18,6 +18,7 @@
 package opennlp.tools.cmdline.chunker;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import opennlp.tools.chunker.ChunkerME;
@@ -30,7 +31,6 @@ import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ParseException;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -103,7 +103,7 @@ public class ChunkerMETool implements CmdLineTool {
         perfMon.incrementCounter();
       }
     } 
-    catch (ObjectStreamException e) {
+    catch (IOException e) {
       CmdLineUtil.handleStdinIoError(e);
     }
     

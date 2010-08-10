@@ -21,12 +21,11 @@ import java.io.IOException;
 
 import junit.framework.TestCase;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ObjectStreamUtils;
 
 public class DocumentCategorizerMETest extends TestCase {
 
-  public void testSimpleTraining() throws ObjectStreamException, IOException {
+  public void testSimpleTraining() throws IOException {
    
     ObjectStream<DocumentSample> samples = ObjectStreamUtils.createObjectStream(new DocumentSample[]{
         new DocumentSample("1", new String[]{"a", "b", "c"}),

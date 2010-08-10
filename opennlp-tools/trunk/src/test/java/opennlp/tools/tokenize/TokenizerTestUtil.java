@@ -26,7 +26,6 @@ import java.util.List;
 
 import opennlp.tools.util.CollectionObjectStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -35,7 +34,7 @@ import opennlp.tools.util.Span;
  */
 public class TokenizerTestUtil {
 
-  static TokenizerModel createSimpleMaxentTokenModel() throws IOException, ObjectStreamException {
+  static TokenizerModel createSimpleMaxentTokenModel() throws IOException {
     List<TokenSample> samples = new ArrayList<TokenSample>();
 
     samples.add(new TokenSample("year", new Span[]{new Span(0, 4)}));
@@ -57,7 +56,7 @@ public class TokenizerTestUtil {
                              5, 100);
   }
 
-  static TokenizerModel createMaxentTokenModel() throws IOException, ObjectStreamException {
+  static TokenizerModel createMaxentTokenModel() throws IOException {
     
     InputStream trainDataIn = TokenizerTestUtil.class.getResourceAsStream(
         "/opennlp/tools/tokenize/token.train");

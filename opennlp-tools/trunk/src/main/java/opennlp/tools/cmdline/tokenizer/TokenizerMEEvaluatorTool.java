@@ -18,6 +18,7 @@
 package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
@@ -28,7 +29,6 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerEvaluator;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 public final class TokenizerMEEvaluatorTool implements CmdLineTool {
 
@@ -69,14 +69,14 @@ public final class TokenizerMEEvaluatorTool implements CmdLineTool {
 
     try {
       evaluator.evaluate(sampleStream);
-    } catch (ObjectStreamException e) {
+    } catch (IOException e) {
       System.err.println("failed");
       System.err.println("Reading test data error " + e.getMessage());
       throw new TerminateToolException(-1);
     } finally {
       try {
         sampleStream.close();
-      } catch (ObjectStreamException e) {
+      } catch (IOException e) {
         // sorry that this can fail
       }
     }

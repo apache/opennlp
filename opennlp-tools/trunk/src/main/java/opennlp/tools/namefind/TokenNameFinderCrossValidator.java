@@ -23,7 +23,6 @@ import java.util.Collections;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -40,7 +39,7 @@ public class TokenNameFinderCrossValidator {
     this.iterations = iterations;
   }
   
-  public void evaluate(ObjectStream<NameSample> samples, int nFolds) throws ObjectStreamException,
+  public void evaluate(ObjectStream<NameSample> samples, int nFolds) throws IOException,
       InvalidFormatException, IOException {
     CrossValidationPartitioner<NameSample> partitioner = 
         new CrossValidationPartitioner<NameSample>(samples, nFolds);

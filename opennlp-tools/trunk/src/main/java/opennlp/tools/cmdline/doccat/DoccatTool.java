@@ -19,7 +19,6 @@ package opennlp.tools.cmdline.doccat;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CLI;
@@ -30,9 +29,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -80,7 +77,7 @@ public class DoccatTool implements CmdLineTool {
         perfMon.incrementCounter();
       }
     }
-    catch (ObjectStreamException e) {
+    catch (IOException e) {
       CmdLineUtil.handleStdinIoError(e);
     }
     

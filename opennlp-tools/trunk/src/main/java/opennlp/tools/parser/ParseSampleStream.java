@@ -17,8 +17,9 @@
 
 package opennlp.tools.parser;
 
+import java.io.IOException;
+
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 public class ParseSampleStream implements ObjectStream<Parse> {
 
@@ -28,7 +29,7 @@ public class ParseSampleStream implements ObjectStream<Parse> {
     this.in = in;
   }
 
-  public Parse read() throws ObjectStreamException {
+  public Parse read() throws IOException {
     
     String parse = in.read();
     
@@ -40,12 +41,12 @@ public class ParseSampleStream implements ObjectStream<Parse> {
     }
   }
   
-  public void reset() throws ObjectStreamException,
+  public void reset() throws IOException,
       UnsupportedOperationException {
     in.reset();
   }
   
-  public void close() throws ObjectStreamException {
+  public void close() throws IOException {
     in.close();
   }
 }

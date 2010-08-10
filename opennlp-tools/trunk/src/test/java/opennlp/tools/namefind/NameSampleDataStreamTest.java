@@ -17,8 +17,10 @@
 
 package opennlp.tools.namefind;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectStreamException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +29,6 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -127,7 +128,7 @@ public class NameSampleDataStreamTest extends TestCase {
     try {
       smapleStream.read();
       fail();
-    } catch (ObjectStreamException e) {
+    } catch (IOException e) {
     }
     
     smapleStream = new NameSampleDataStream(
@@ -136,7 +137,7 @@ public class NameSampleDataStreamTest extends TestCase {
     try {
       smapleStream.read();
       fail();
-    } catch (ObjectStreamException e) {
+    } catch (IOException e) {
     }
     
     smapleStream = new NameSampleDataStream(
@@ -145,7 +146,7 @@ public class NameSampleDataStreamTest extends TestCase {
     try {
       smapleStream.read();
       fail();
-    } catch (ObjectStreamException e) {
+    } catch (IOException e) {
     }
   }
   
@@ -288,7 +289,7 @@ public class NameSampleDataStreamTest extends TestCase {
     try {
       smapleStream.read();
       fail();
-    } catch (ObjectStreamException e) {
+    } catch (IOException e) {
     }
     
     smapleStream = new NameSampleDataStream(
@@ -297,12 +298,12 @@ public class NameSampleDataStreamTest extends TestCase {
     try {
       smapleStream.read();
       fail();
-    } catch (ObjectStreamException e) {
+    } catch (IOException e) {
     }
   }
   
   @Test
-  public void testClearAdaptiveData() throws ObjectStreamException {
+  public void testClearAdaptiveData() throws IOException {
     StringBuilder trainingData = new StringBuilder();
     trainingData.append("a\n");
     trainingData.append("b\n");

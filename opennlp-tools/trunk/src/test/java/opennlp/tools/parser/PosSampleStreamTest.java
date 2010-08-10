@@ -20,17 +20,18 @@ package opennlp.tools.parser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import org.junit.Test;
+import java.io.IOException;
 
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ObjectStreamUtils;
+
+import org.junit.Test;
 
 public class PosSampleStreamTest {
   
   @Test
-  public void testConvertParseToPosSample() throws ObjectStreamException {
+  public void testConvertParseToPosSample() throws IOException {
     
     ObjectStream<POSSample> posSampleStream = new PosSampleStream(new ParseSampleStream(
         ObjectStreamUtils.createObjectStream(ParseTest.PARSE_STRING)));

@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.model.BaseModel;
 
 /**
@@ -308,15 +307,11 @@ public final class CmdLineUtil {
     return false;
   }
   
-  public static void printTrainingIoError(ObjectStreamException e) {
-    System.err.println("IO error while reading training data: " + e.getMessage());
+  public static void printTrainingIoError(IOException e) {
+    System.err.println("IO error while reading training data or indexing data: " + e.getMessage());
   }
   
-  public static void printDataIndexerIoError(IOException e) {
-    System.err.println("Data Indexer IO error: " + e.getMessage());
-  }
-  
-  public static void handleStdinIoError(ObjectStreamException e) {
+  public static void handleStdinIoError(IOException e) {
     System.err.println("IO Error while reading from stdin: " + e.getMessage());
     throw new TerminateToolException(-1);
   }

@@ -37,7 +37,6 @@ import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public final class ParserTrainerTool implements CmdLineTool {
@@ -84,7 +83,7 @@ public final class ParserTrainerTool implements CmdLineTool {
     try {
       mdict = Parser.
           buildDictionary(parseSamples, headRules, cutoff);
-    } catch (ObjectStreamException e) {
+    } catch (IOException e) {
       System.err.println("Error while building dictionary: " + e.getMessage());
       mdict = null;
     }
@@ -133,18 +132,15 @@ public final class ParserTrainerTool implements CmdLineTool {
         throw new IllegalStateException();
       }
       
-    } catch (IOException e) {
-      CmdLineUtil.printDataIndexerIoError(e);
-      throw new TerminateToolException(-1);
     }
-    catch (ObjectStreamException e) {
+    catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
     }
     finally {
       try {
         sampleStream.close();
-      } catch (ObjectStreamException e) {
+      } catch (IOException e) {
         // sorry that this can fail
       }
     }

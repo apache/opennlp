@@ -18,6 +18,7 @@
 package opennlp.tools.tokenize;
 
 import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,7 +33,6 @@ import opennlp.model.MaxentModel;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
@@ -200,13 +200,12 @@ public class TokenizerME extends AbstractTokenizer {
    * @return the trained {@link TokenizerModel}
    *
    * @throws IOException it throws an {@link IOException} if an {@link IOException}
-   * is thrown during IO operations on a temp file which is
+   * is thrown during IO operations on a temp file which is created during training.
+   * Or if reading from the {@link ObjectStream} fails.
    * 
-   * @throws ObjectStreamException if reading from the {@link ObjectStream} fails
-   * created during training.
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
-      boolean useAlphaNumericOptimization, int cutoff, int iterations) throws IOException, ObjectStreamException {
+      boolean useAlphaNumericOptimization, int cutoff, int iterations) throws IOException {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
     ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);

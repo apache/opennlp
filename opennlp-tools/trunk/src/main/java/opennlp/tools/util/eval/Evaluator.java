@@ -18,8 +18,9 @@
 
 package opennlp.tools.util.eval;
 
+import java.io.IOException;
+
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 /**
  * The {@link Evaluator} is an abstract base class for evaluators.
@@ -46,7 +47,7 @@ public abstract class Evaluator<T> {
    * @param samples the stream of reference which
    * should be evaluated.
    */
-  public void evaluate(ObjectStream<T> samples) throws ObjectStreamException {
+  public void evaluate(ObjectStream<T> samples) throws IOException {
     T sample;
     while ((sample = samples.read()) != null) {
       evaluateSample(sample);

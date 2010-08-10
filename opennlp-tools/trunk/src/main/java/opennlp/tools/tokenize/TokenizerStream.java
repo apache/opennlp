@@ -18,8 +18,9 @@
 
 package opennlp.tools.tokenize;
 
+import java.io.IOException;
+
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.Span;
 
 /**
@@ -36,7 +37,7 @@ public class TokenizerStream implements ObjectStream<TokenSample> {
     this.input = input;
   }
 
-  public TokenSample read() throws ObjectStreamException {
+  public TokenSample read() throws IOException {
     String inputString = input.read();
     
     if (inputString != null) {
@@ -48,11 +49,11 @@ public class TokenizerStream implements ObjectStream<TokenSample> {
     return null;
   }
   
-  public void close() throws ObjectStreamException {
+  public void close() throws IOException {
     input.close();
   }
 
-  public void reset() throws ObjectStreamException,
+  public void reset() throws IOException,
       UnsupportedOperationException {
     input.reset();
   }

@@ -17,6 +17,8 @@
 
 package opennlp.tools.util;
 
+import java.io.IOException;
+
 /**
  * Stream filter which merges text lines into paragraphs. The boundary of paragraph is defined
  * by an empty text line. If the last paragraph in the stream is not terminated by an empty line
@@ -32,12 +34,12 @@ public class ParagraphStream implements ObjectStream<String> {
   }
   
   @Override
-  public void close() throws ObjectStreamException {
+  public void close() throws IOException {
     lineStream.close();
   }
 
   @Override
-  public String read() throws ObjectStreamException {
+  public String read() throws IOException {
     
     StringBuilder paragraph = new StringBuilder();
     
@@ -62,7 +64,7 @@ public class ParagraphStream implements ObjectStream<String> {
   }
 
   @Override
-  public void reset() throws ObjectStreamException,
+  public void reset() throws IOException,
       UnsupportedOperationException {
     lineStream.reset();
   }

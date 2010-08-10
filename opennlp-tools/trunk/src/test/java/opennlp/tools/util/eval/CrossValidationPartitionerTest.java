@@ -18,25 +18,23 @@
 
 package opennlp.tools.util.eval;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
-import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.CrossValidationPartitioner.TrainingSampleStream;
-
 import junit.framework.TestCase;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.eval.CrossValidationPartitioner.TrainingSampleStream;
 
 /**
  * Test for the {@link CrossValidationPartitioner} class.
  */
 public class CrossValidationPartitionerTest extends TestCase {
 
-  public void testEmptyDataSet() throws ObjectStreamException {
+  public void testEmptyDataSet() throws IOException {
     Collection<String> emptyCollection = Collections.emptySet();
     
     CrossValidationPartitioner<String> partitioner = 
@@ -65,7 +63,7 @@ public class CrossValidationPartitionerTest extends TestCase {
   /**
    * Test 3-fold cross validation on a small sample data set.
    */
-  public void test3FoldCV() throws ObjectStreamException {
+  public void test3FoldCV() throws IOException {
     List<String> data = new LinkedList<String>();
     data.add("01");
     data.add("02");
@@ -144,7 +142,7 @@ public class CrossValidationPartitionerTest extends TestCase {
     assertFalse(partitioner.hasNext());
   }
 
-  public void testFailSafty() throws ObjectStreamException {
+  public void testFailSafty() throws IOException {
     List<String> data = new LinkedList<String>();
     data.add("01");
     data.add("02");

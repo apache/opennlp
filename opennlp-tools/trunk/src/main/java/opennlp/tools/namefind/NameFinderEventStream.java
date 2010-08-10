@@ -17,6 +17,7 @@
 
 package opennlp.tools.namefind;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -129,7 +130,7 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
       contextGenerator.updateAdaptiveData(tokens, outcomes);
     }
     
-    } catch (opennlp.tools.util.ObjectStreamException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }

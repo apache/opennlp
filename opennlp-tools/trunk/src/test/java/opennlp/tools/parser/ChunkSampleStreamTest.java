@@ -17,15 +17,16 @@
 
 package opennlp.tools.parser;
 
+import java.io.IOException;
+
 import junit.framework.TestCase;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ObjectStreamUtils;
 
 public class ChunkSampleStreamTest extends TestCase {
 
-  public void testConvertParseToPosSample() throws ObjectStreamException {
+  public void testConvertParseToPosSample() throws IOException {
     ObjectStream<ChunkSample> chunkSampleStream = new ChunkSampleStream(new ParseSampleStream(
         ObjectStreamUtils.createObjectStream(ParseTest.PARSE_STRING)));
     

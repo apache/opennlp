@@ -18,6 +18,7 @@
 package opennlp.tools.cmdline.postag;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CLI;
@@ -30,7 +31,6 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public final class POSTaggerTool implements CmdLineTool {
@@ -77,7 +77,7 @@ public final class POSTaggerTool implements CmdLineTool {
         perfMon.incrementCounter();
       }
     } 
-    catch (ObjectStreamException e) {
+    catch (IOException e) {
       CmdLineUtil.handleStdinIoError(e);
     }
     

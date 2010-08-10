@@ -37,7 +37,6 @@ import opennlp.perceptron.SuffixSensitivePerceptronModelWriter;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.StringList;
 
 /**
@@ -129,7 +128,7 @@ public class POSTaggerTrainer {
   }
 
   @Deprecated
-  public static void main(String[] args) throws IOException, ObjectStreamException {
+  public static void main(String[] args) throws IOException {
     if (args.length == 0){
       usage();
     }

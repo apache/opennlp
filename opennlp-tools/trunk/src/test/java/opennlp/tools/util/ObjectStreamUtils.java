@@ -17,6 +17,8 @@
 
 package opennlp.tools.util;
 
+import java.io.IOException;
+
 public class ObjectStreamUtils {
 
   /**
@@ -32,14 +34,14 @@ public class ObjectStreamUtils {
 
       private int index = 0;
       
-      public T read() throws ObjectStreamException {
+      public T read() throws IOException {
         if (index < array.length) 
           return array[index++];
         else 
           return null;
       }
 
-      public void reset() throws ObjectStreamException,
+      public void reset() throws IOException,
           UnsupportedOperationException {
         index = 0;
       }

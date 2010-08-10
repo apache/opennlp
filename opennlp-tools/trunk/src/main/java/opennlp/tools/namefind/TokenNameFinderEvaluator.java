@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.eval.Evaluator;
@@ -83,7 +82,7 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
   }
   
   @Deprecated
-  public static void main(String[] args) throws IOException, ObjectStreamException, 
+  public static void main(String[] args) throws IOException, 
       InvalidFormatException {
     
     if (args.length == 4) {
@@ -107,16 +106,16 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
       
       ObjectStream<NameSample> iterator = new ObjectStream<NameSample>() {
 
-        public NameSample read() throws ObjectStreamException {
+        public NameSample read() throws IOException {
           monitor.incrementCounter();
           return sampleStream.read();
         }
         
-        public void reset() throws ObjectStreamException {
+        public void reset() throws IOException {
           sampleStream.reset();
         }
         
-        public void close() throws ObjectStreamException {
+        public void close() throws IOException {
           sampleStream.close();
         }
       };

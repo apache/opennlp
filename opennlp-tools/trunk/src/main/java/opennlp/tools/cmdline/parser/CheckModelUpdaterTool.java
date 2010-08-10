@@ -28,7 +28,6 @@ import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 // trains a new check model ...
 public final class CheckModelUpdaterTool extends ModelUpdaterTool {
@@ -44,7 +43,7 @@ public final class CheckModelUpdaterTool extends ModelUpdaterTool {
   @Override
   protected ParserModel trainAndUpdate(ParserModel originalModel,
       ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters)
-      throws ObjectStreamException, IOException {
+      throws IOException {
     
       Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), parameters.getCutoff());
       

@@ -31,7 +31,6 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public final class TokenNameFinderTrainerTool implements CmdLineTool {
@@ -90,17 +89,13 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
            parameters.getNumberOfIterations(), parameters.getCutoff());
     } 
     catch (IOException e) {
-      CmdLineUtil.printDataIndexerIoError(e);
-      throw new TerminateToolException(-1);
-    }
-    catch (ObjectStreamException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
     }
     finally {
       try {
         sampleStream.close();
-      } catch (ObjectStreamException e) {
+      } catch (IOException e) {
         // sorry that this can fail
       }
     }

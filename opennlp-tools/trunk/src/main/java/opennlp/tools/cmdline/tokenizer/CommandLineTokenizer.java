@@ -17,6 +17,7 @@
 
 package opennlp.tools.cmdline.tokenizer;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -25,7 +26,6 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerStream;
 import opennlp.tools.tokenize.WhitespaceTokenStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 final class CommandLineTokenizer {
@@ -54,7 +54,7 @@ final class CommandLineTokenizer {
         perfMon.incrementCounter();
       }
     }
-    catch (ObjectStreamException e) {
+    catch (IOException e) {
       CmdLineUtil.handleStdinIoError(e);
     }
     

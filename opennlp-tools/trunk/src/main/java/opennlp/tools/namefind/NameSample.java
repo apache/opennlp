@@ -17,6 +17,7 @@
 
 package opennlp.tools.namefind;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,7 +26,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.Span;
 
 /**
@@ -155,8 +155,9 @@ public class NameSample {
     return result.toString();
   }
   
-  public static NameSample parse(String taggedTokens, boolean isClearAdaptiveData) 
-    throws ObjectStreamException {
+  public static NameSample parse(String taggedTokens, boolean isClearAdaptiveData)
+    // TODO: Should throw another exception, and then convert it into an IOException in the stream
+    throws IOException {
     String[] parts = WhitespaceTokenizer.INSTANCE.tokenize(taggedTokens);
 
     List<String> tokenList = new ArrayList<String>(parts.length);
@@ -176,19 +177,19 @@ public class NameSample {
       Matcher startMatcher = startTagPattern.matcher(parts[pi]);
       if (startMatcher.matches()) {
         if(catchingName) {
-          throw new ObjectStreamException("Found unexpected annotation " + parts[pi] + " while handling a name sequence.");
+          throw new IOException("Found unexpected annotation " + parts[pi] + " while handling a name sequence.");
         }
         catchingName = true;
         startIndex = wordIndex;
         nameType = startMatcher.group(2);
         if(nameType != null && nameType.length() == 0) {
-          throw new ObjectStreamException("Missing a name type: " + parts[pi]);
+          throw new IOException("Missing a name type: " + parts[pi]);
         }
           
       }
       else if (parts[pi].equals(NameSampleDataStream.END_TAG)) {
         if(catchingName == false) {
-          throw new ObjectStreamException("Found unexpected annotation " + parts[pi] + ".");
+          throw new IOException("Found unexpected annotation " + parts[pi] + ".");
         }
         catchingName = false;
         // create name

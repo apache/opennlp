@@ -17,9 +17,10 @@
 
 package opennlp.tools.doccat;
 
+import java.io.IOException;
+
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 /**
  * This class reads in string encoded training samples, parses them and outputs {@link DocumentSample} objects.
@@ -38,12 +39,12 @@ public class DocumentSampleStream implements ObjectStream<DocumentSample> {
   }
   
   @Override
-  public void close() throws ObjectStreamException {
+  public void close() throws IOException {
     samples.close();
   }
 
   @Override
-  public DocumentSample read() throws ObjectStreamException {
+  public DocumentSample read() throws IOException {
     String sampleString = samples.read();
     
     if (sampleString != null) {
@@ -61,7 +62,7 @@ public class DocumentSampleStream implements ObjectStream<DocumentSample> {
         sample = new DocumentSample(category, docTokens);
       }
       else {
-        throw new ObjectStreamException("Empty lines, or lines with only a category string are not allowed!");
+        throw new IOException("Empty lines, or lines with only a category string are not allowed!");
       }
       
       return sample;
@@ -72,7 +73,7 @@ public class DocumentSampleStream implements ObjectStream<DocumentSample> {
   }
 
   @Override
-  public void reset() throws ObjectStreamException,
+  public void reset() throws IOException,
       UnsupportedOperationException {
     samples.reset();
   }

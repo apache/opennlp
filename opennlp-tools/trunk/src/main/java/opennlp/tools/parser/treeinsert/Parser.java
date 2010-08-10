@@ -45,7 +45,6 @@ import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.model.ModelType;
 
@@ -436,7 +435,7 @@ public class Parser extends AbstractBottomUpParser {
 
   public static ParserModel train(String languageCode,
       ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
-      throws IOException, ObjectStreamException {
+      throws IOException {
     
     // TODO: training code should be shared between two parsers
     System.err.println("Building dictionary");

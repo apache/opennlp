@@ -19,6 +19,7 @@
 package opennlp.tools.doccat;
 
 import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +30,6 @@ import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.model.ModelUtil;
 
 /**
@@ -154,7 +154,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @throws IOException
    */
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples, int cutoff, int iterations, FeatureGenerator... featureGenerators)
-      throws ObjectStreamException, IOException {
+      throws IOException {
     
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
     ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
@@ -174,7 +174,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @throws IOException
    * @throws ObjectStreamException 
    */
-  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples) throws ObjectStreamException, IOException {
+  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples) throws IOException {
     return train(languageCode, samples, 5, 100, defaultFeatureGenerator);
   }
 }

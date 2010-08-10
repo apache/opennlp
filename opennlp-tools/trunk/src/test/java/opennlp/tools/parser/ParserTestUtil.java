@@ -24,10 +24,8 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 import junit.framework.Assert;
-
 import opennlp.tools.parser.lang.en.HeadRules;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class ParserTestUtil {
@@ -45,21 +43,21 @@ public class ParserTestUtil {
    }
    
    public static ObjectStream<Parse> openTestTrainingData() 
-       throws ObjectStreamException {
+       throws IOException {
      
      ObjectStream<Parse> resetableSampleStream = new ObjectStream<Parse> () {
        
        private ObjectStream<Parse> samples;
        
-       public void close() throws ObjectStreamException {
+       public void close() throws IOException {
          samples.close();
        }
 
-       public Parse read() throws ObjectStreamException {
+       public Parse read() throws IOException {
          return samples.read();
        }
 
-       public void reset() throws ObjectStreamException {
+       public void reset() throws IOException {
          try {
            if (samples != null)
              samples.close();

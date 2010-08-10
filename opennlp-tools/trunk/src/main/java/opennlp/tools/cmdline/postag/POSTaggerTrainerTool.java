@@ -31,7 +31,6 @@ import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.WordTagSampleStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public final class POSTaggerTrainerTool implements CmdLineTool {
@@ -96,17 +95,13 @@ public final class POSTaggerTrainerTool implements CmdLineTool {
            sampleStream, parameters.getModel(), tagdict, null, parameters.getCutoff(), parameters.getNumberOfIterations());
     }
     catch (IOException e) {
-      CmdLineUtil.printDataIndexerIoError(e);
-      throw new TerminateToolException(-1);
-    }
-    catch (ObjectStreamException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
     }
     finally {
       try {
         sampleStream.close();
-      } catch (ObjectStreamException e) {
+      } catch (IOException e) {
         // sorry that this can fail
       }
     }

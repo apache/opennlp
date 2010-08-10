@@ -18,6 +18,7 @@
 package opennlp.tools.cmdline.namefind;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.CLI;
@@ -29,7 +30,6 @@ import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
@@ -75,16 +75,16 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
     ObjectStream<NameSample> measuredSampleStream = new ObjectStream<NameSample>() {
 
-      public NameSample read() throws ObjectStreamException {
+      public NameSample read() throws IOException {
         monitor.incrementCounter();
         return sampleStream.read();
       }
 
-      public void reset() throws ObjectStreamException {
+      public void reset() throws IOException {
         sampleStream.reset();
       }
 
-      public void close() throws ObjectStreamException {
+      public void close() throws IOException {
         sampleStream.close();
       }
     };
@@ -93,14 +93,14 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
     try {
       evaluator.evaluate(measuredSampleStream);
-    } catch (ObjectStreamException e) {
+    } catch (IOException e) {
       System.err.println("failed");
       System.err.println("Reading test data error " + e.getMessage());
       throw new TerminateToolException(-1);
     } finally {
       try {
         measuredSampleStream.close();
-      } catch (ObjectStreamException e) {
+      } catch (IOException e) {
         // sorry that this can fail
       }
     }

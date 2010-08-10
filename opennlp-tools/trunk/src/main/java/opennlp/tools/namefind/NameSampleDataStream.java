@@ -17,9 +17,10 @@
 
 package opennlp.tools.namefind;
 
+import java.io.IOException;
+
 import opennlp.maxent.DataStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 
 /**
  * The {@link NameSampleDataStream} class converts tagged {@link String}s
@@ -40,7 +41,7 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
     this.in = in;
   }
 
-  public NameSample read() throws ObjectStreamException {
+  public NameSample read() throws IOException {
       String token = in.read();
       
       boolean isClearAdaptiveData = false;
@@ -61,12 +62,12 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
       }
   }
 
-  public void reset() throws ObjectStreamException,
+  public void reset() throws IOException,
       UnsupportedOperationException {
     throw new UnsupportedOperationException();
   }
   
-  public void close() throws ObjectStreamException {
+  public void close() throws IOException {
     in.close();
   }
 }

@@ -54,7 +54,6 @@ import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.model.ModelType;
@@ -277,7 +276,7 @@ public class Parser extends AbstractBottomUpParser {
   }
 
   public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
-      throws IOException, ObjectStreamException {
+      throws IOException {
     
     System.err.println("Building dictionary");
     Dictionary mdict = buildDictionary(parseSamples, rules, cut);
@@ -340,8 +339,7 @@ public class Parser extends AbstractBottomUpParser {
 
 
   @Deprecated
-  public static void main(String[] args) throws java.io.IOException, InvalidFormatException, 
-      ObjectStreamException {
+  public static void main(String[] args) throws IOException, InvalidFormatException {
     if (args.length < 2) {
       usage();
       System.exit(1);
