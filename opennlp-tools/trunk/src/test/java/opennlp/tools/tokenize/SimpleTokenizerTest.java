@@ -18,13 +18,13 @@
 package opennlp.tools.tokenize;
 
 import junit.framework.TestCase;
-import opennlp.tools.tokenize.SimpleTokenizer;
 
 /**
  * Tests for the {@link SimpleTokenizer} class.
  */
 public class SimpleTokenizerTest extends TestCase {
 
+  // The SimpleTokenizer is thread safe
   private SimpleTokenizer mTokenizer = SimpleTokenizer.INSTANCE;
 
   /**
