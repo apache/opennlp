@@ -60,23 +60,17 @@ public abstract class AbstractEventStream<T> extends opennlp.model.AbstractEvent
    * Checks if there are more training events available.
    *
    */
-  public final boolean hasNext() {
+  public final boolean hasNext() throws IOException {
 
     if (events.hasNext()) {
       return true;
     } else {
-
       // search next event iterator which is not empty
-      try {
-        T sample = null;
-        while (!events.hasNext() && (sample = samples.read()) != null) {
-          events = createEvents(sample);
-        }
-      } catch (IOException e) {
-        // TODO: Exception be handled by maxent
-        throw new RuntimeException(e);
+      T sample = null;
+      while (!events.hasNext() && (sample = samples.read()) != null) {
+        events = createEvents(sample);
       }
-
+  
       return events.hasNext();
     }
   }

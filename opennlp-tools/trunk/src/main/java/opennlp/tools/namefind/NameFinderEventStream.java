@@ -104,12 +104,11 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
     return outcomes;
   }
 
-  private void createNewEvents() {
+  private void createNewEvents() throws IOException {
 
     // TODO: the iterator of the new events can be empty
     // create as long new events as there are events
     // or the name sample stream is empty
-    try {
     NameSample sample = null;
     if ((sample = nameSampleStream.read()) != null) {
       if (sample.isClearAdaptiveDataSet()) {
@@ -129,13 +128,9 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
       this.events = events.iterator();
       contextGenerator.updateAdaptiveData(tokens, outcomes);
     }
-    
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
-  public boolean hasNext() {
+  public boolean hasNext() throws IOException {
 
     // check if iterator has next event
     if (events.hasNext()) {

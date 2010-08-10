@@ -17,6 +17,7 @@
 
 package opennlp.tools.util;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -86,7 +87,7 @@ public class AbstractEventStreamTest extends TestCase {
    * if the {@link AbstractEventStream#createEvents(Object)} method
    * return iterators with events and empty iterators.
    */
-  public void testStandardCase() {
+  public void testStandardCase() throws IOException {
 
     List<RESULT> samples = new ArrayList<RESULT>();
     samples.add(RESULT.EVENTS);
@@ -109,7 +110,7 @@ public class AbstractEventStreamTest extends TestCase {
    * if the {@link AbstractEventStream#createEvents(Object)} method
    * only returns empty iterators.
    */
-  public void testEmtpyEventStream() {
+  public void testEmtpyEventStream() throws IOException {
     List<RESULT> samples = new ArrayList<RESULT>();
     samples.add(RESULT.EMPTY);
 
