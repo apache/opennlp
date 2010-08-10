@@ -17,34 +17,32 @@
 
 package opennlp.model;
 
-import java.util.Iterator;
+import java.io.IOException;
 
 /**
- * A object which can deliver a stream of training events for the GIS
- * procedure (or others such as IIS if and when they are implemented).
- * EventStreams don't need to use opennlp.maxent.DataStreams, but doing so
- * would provide greater flexibility for producing events from data stored in
- * different formats.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.1 $, $Date: 2009-01-22 23:23:33 $
- *
+ * A object which can deliver a stream of training events for the GIS procedure
+ * (or others such as IIS if and when they are implemented). EventStreams don't
+ * need to use opennlp.maxent.DataStreams, but doing so would provide greater
+ * flexibility for producing events from data stored in different formats.
+ * 
+ * @author Jason Baldridge
+ * @version $Revision: 1.2 $, $Date: 2010-08-10 14:33:22 $
+ * 
  */
-public interface EventStream extends Iterator<Event>{
+public interface EventStream {
 
-    /**
-     * Returns the next Event object held in this EventStream.
-     *
-     * @return the Event object which is next in this EventStream
-     */
-    public Event next ();
- 
-    /**
-     * Test whether there are any Events remaining in this EventStream.
-     *
-     * @return true if this EventStream has more Events
-     */
-    public boolean hasNext ();
-    
+  /**
+   * Returns the next Event object held in this EventStream.
+   * 
+   * @return the Event object which is next in this EventStream
+   */
+  public Event next() throws IOException;
+
+  /**
+   * Test whether there are any Events remaining in this EventStream.
+   * 
+   * @return true if this EventStream has more Events
+   */
+  public boolean hasNext() throws IOException;
+
 }
-

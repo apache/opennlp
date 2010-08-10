@@ -17,6 +17,8 @@
 
 package opennlp.maxent;
 
+import java.io.IOException;
+
 import opennlp.model.DataIndexer;
 import opennlp.model.EvalParameters;
 import opennlp.model.EventStream;
@@ -45,7 +47,7 @@ import opennlp.model.UniformPrior;
  *    
  * @author Tom Morton
  * @author  Jason Baldridge
- * @version $Revision: 1.4 $, $Date: 2010-08-10 03:25:06 $
+ * @version $Revision: 1.5 $, $Date: 2010-08-10 14:33:22 $
  */
 class GISTrainer {
 
@@ -198,7 +200,7 @@ class GISTrainer {
    * @param cutoff The number of times a feature must occur to be included.
    * @return A GIS model trained with specified 
    */
-  public GISModel trainModel(EventStream eventStream, int iterations, int cutoff) {
+  public GISModel trainModel(EventStream eventStream, int iterations, int cutoff) throws IOException {
     return trainModel(iterations, new OnePassDataIndexer(eventStream,cutoff),cutoff);
   }
   

@@ -17,6 +17,7 @@
 
 package opennlp.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 
   float[][] values;
   
-  public OnePassRealValueDataIndexer(EventStream eventStream, int cutoff, boolean sort) {
+  public OnePassRealValueDataIndexer(EventStream eventStream, int cutoff, boolean sort) throws IOException {
     super(eventStream,cutoff,sort);
   }
   
@@ -46,7 +47,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
    * @param cutoff The minimum number of times a predicate must have been
    *               observed in order to be included in the model.
    */
-  public OnePassRealValueDataIndexer(EventStream eventStream, int cutoff) {
+  public OnePassRealValueDataIndexer(EventStream eventStream, int cutoff) throws IOException {
     super(eventStream,cutoff);
   }
   

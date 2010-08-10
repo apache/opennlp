@@ -17,7 +17,8 @@
 
 package opennlp.maxent;
 
-import opennlp.model.AbstractModel;
+import java.io.IOException;
+
 import opennlp.model.DataIndexer;
 import opennlp.model.EventStream;
 import opennlp.model.Prior;
@@ -27,7 +28,7 @@ import opennlp.model.Prior;
  * GISModels.
  *
  * @author  Jason Baldridge
- * @version $Revision: 1.3 $, $Date: 2010-08-05 17:42:27 $
+ * @version $Revision: 1.4 $, $Date: 2010-08-10 14:33:22 $
  */
 public class GIS {
     /**
@@ -52,7 +53,7 @@ public class GIS {
      * @return The newly trained model, which can be used immediately or saved
      *         to disk using an opennlp.maxent.io.GISModelWriter object.
      */
-    public static GISModel trainModel(EventStream eventStream) {
+    public static GISModel trainModel(EventStream eventStream) throws IOException {
         return trainModel(eventStream, 100, 0, false, PRINT_MESSAGES);
     }
     
@@ -67,7 +68,7 @@ public class GIS {
      * @return The newly trained model, which can be used immediately or saved
      *         to disk using an opennlp.maxent.io.GISModelWriter object.
      */
-    public static GISModel trainModel(EventStream eventStream, boolean smoothing) {
+    public static GISModel trainModel(EventStream eventStream, boolean smoothing) throws IOException {
       return trainModel(eventStream, 100, 0, smoothing,PRINT_MESSAGES);
   }
 
@@ -84,7 +85,7 @@ public class GIS {
      */
     public static GISModel trainModel(EventStream eventStream,
                                       int iterations,
-                                      int cutoff) {
+                                      int cutoff) throws IOException {
         return trainModel(eventStream, iterations, cutoff, false,PRINT_MESSAGES);
     }
     
@@ -104,7 +105,7 @@ public class GIS {
     public static GISModel trainModel(EventStream eventStream,
         int iterations,
         int cutoff,
-        boolean smoothing,boolean printMessagesWhileTraining) {
+        boolean smoothing,boolean printMessagesWhileTraining) throws IOException {
       GISTrainer trainer = new GISTrainer(printMessagesWhileTraining);
       trainer.setSmoothing(smoothing);
       trainer.setSmoothingObservation(SMOOTHING_OBSERVATION);
@@ -125,7 +126,7 @@ public class GIS {
     public static GISModel trainModel(EventStream eventStream,
 				      int iterations,
 				      int cutoff,
-				      double sigma) {
+				      double sigma) throws IOException {
       GISTrainer trainer = new GISTrainer(PRINT_MESSAGES);
       if (sigma > 0)
 	trainer.setGaussianSigma(sigma);

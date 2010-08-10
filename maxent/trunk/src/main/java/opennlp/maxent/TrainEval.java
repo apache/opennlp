@@ -17,16 +17,10 @@
 
 package opennlp.maxent;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 
-import opennlp.maxent.io.SuffixSensitiveGISModelReader;
-import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
-import opennlp.model.AbstractModel;
 import opennlp.model.Event;
-import opennlp.model.EventCollectorAsStream;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 
@@ -35,7 +29,7 @@ import opennlp.model.MaxentModel;
  * interface.
  *
  * @author      Gann Bierner
- * @version     $Revision: 1.1 $, $Date: 2009-01-22 23:23:34 $
+ * @version     $Revision: 1.2 $, $Date: 2010-08-10 14:33:22 $
  */
 public class TrainEval {
     
@@ -68,7 +62,7 @@ public class TrainEval {
 	
     }
 
-    public static MaxentModel train(EventStream events, int cutoff) {
+    public static MaxentModel train(EventStream events, int cutoff) throws IOException {
 	return GIS.trainModel(events, 100, cutoff);
     }
 

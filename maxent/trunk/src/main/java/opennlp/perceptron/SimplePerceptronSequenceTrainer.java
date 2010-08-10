@@ -17,6 +17,7 @@
 
 package opennlp.perceptron;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,7 +78,7 @@ public class SimplePerceptronSequenceTrainer {
   private String[] predLabels;
   int numSequences;
 
-  public AbstractModel trainModel(int iterations, SequenceStream sequenceStream, int cutoff, boolean useAverage) {
+  public AbstractModel trainModel(int iterations, SequenceStream sequenceStream, int cutoff, boolean useAverage) throws IOException {
     this.iterations = iterations;
     this.sequenceStream = sequenceStream;
     DataIndexer di = new OnePassDataIndexer(new SequenceStreamEventStream(sequenceStream),cutoff,false);

@@ -17,6 +17,7 @@
 
 package opennlp.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ import java.util.Set;
  * predicates. 
  *
  * @author      Jason Baldridge
- * @version $Revision: 1.1 $, $Date: 2009-01-22 23:23:33 $
+ * @version $Revision: 1.2 $, $Date: 2010-08-10 14:33:22 $
  */
 public class OnePassDataIndexer extends AbstractDataIndexer  {
 
@@ -45,11 +46,11 @@ public class OnePassDataIndexer extends AbstractDataIndexer  {
      * @param eventStream An Event[] which contains the a list of all the Events
      *               seen in the training data.
      */     
-    public OnePassDataIndexer(EventStream eventStream) {
+    public OnePassDataIndexer(EventStream eventStream) throws IOException {
         this(eventStream, 0);
     }
 
-    public OnePassDataIndexer(EventStream eventStream, int cutoff) {
+    public OnePassDataIndexer(EventStream eventStream, int cutoff) throws IOException {
       this(eventStream,cutoff,true);
     }
     /**
@@ -60,7 +61,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer  {
      * @param cutoff The minimum number of times a predicate must have been
      *               observed in order to be included in the model.
      */
-    public OnePassDataIndexer(EventStream eventStream, int cutoff, boolean sort) {
+    public OnePassDataIndexer(EventStream eventStream, int cutoff, boolean sort) throws IOException {
         Map<String,Integer> predicateIndex = new HashMap<String,Integer>();
         LinkedList<Event> events;
         List eventsToCompare;
@@ -99,7 +100,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer  {
      * @return a <code>TLinkedList</code> value
      */
     private LinkedList<Event> computeEventCounts(EventStream eventStream,Map<String,Integer> predicatesInOut,
-        int cutoff) {
+        int cutoff) throws IOException {
       Set predicateSet = new HashSet();
       Map<String,Integer> counter = new HashMap<String,Integer>();
       LinkedList<Event> events = new LinkedList<Event>();
