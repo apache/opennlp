@@ -17,17 +17,19 @@
 
 package opennlp.maxent.io;
 
-import opennlp.maxent.*;
-import opennlp.model.AbstractModel;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.zip.GZIPOutputStream;
 
-import java.io.*;
-import java.util.zip.*;
+import opennlp.model.AbstractModel;
 
 /**
  * Model writer that saves models in binary format.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.1 $, $Date: 2009-01-22 23:23:33 $
+ * @version     $Revision: 1.2 $, $Date: 2010-08-10 09:26:55 $
  */
 public class BinaryGISModelWriter extends GISModelWriter {
     DataOutputStream output;
