@@ -30,7 +30,7 @@ import opennlp.model.Event;
  */
 public class AbstractEventStreamTest extends TestCase {
 
-  enum RESULT {
+  private enum RESULT {
     EVENTS,
     EMPTY
   };
