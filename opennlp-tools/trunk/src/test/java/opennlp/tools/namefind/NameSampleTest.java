@@ -34,7 +34,7 @@ public class NameSampleTest extends TestCase {
    * @param useTypes if to use nametypes
    * @return the NameSample
    */
-  private NameSample createSimpleNameSample(boolean useTypes) {
+  private static NameSample createSimpleNameSample(boolean useTypes) {
     
     String[] sentence = {"U", ".", "S", ".", "President", "Barack", "Obama", "is",
         "considering", "sending", "additional", "American", "forces",

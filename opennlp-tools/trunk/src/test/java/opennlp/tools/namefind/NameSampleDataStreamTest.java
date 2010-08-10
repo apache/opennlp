@@ -25,14 +25,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-
 import junit.framework.TestCase;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamException;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+
+import org.junit.Test;
 
 /**
  * This is the test class for {@link NameSampleDataStream}..
@@ -48,7 +48,7 @@ public class NameSampleDataStreamTest extends TestCase {
    * @param nameSpan the section
    * @return the string
    */
-  private String sublistToString(String[] tokens, Span nameSpan) {
+  private static String sublistToString(String[] tokens, Span nameSpan) {
     StringBuilder sb = new StringBuilder();
     for (int i = nameSpan.getStart(); i < nameSpan.getEnd(); i++) {
       sb.append(tokens[i] + " ");
