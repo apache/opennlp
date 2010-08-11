@@ -173,7 +173,7 @@ public final class CmdLineUtil {
 
     CmdLineUtil.checkOutputFile(modelName + " model", modelFile);
 
-    System.out.print("Writing " + modelName + " model ... ");
+    System.err.print("Writing " + modelName + " model ... ");
     
     long beginModelWritingTime = System.currentTimeMillis();
     
@@ -182,6 +182,7 @@ public final class CmdLineUtil {
       modelOut = new BufferedOutputStream(new FileOutputStream(modelFile), IO_BUFFER_SIZE);
       model.serialize(modelOut);
     } catch (IOException e) {
+      System.err.println("failed");
       System.err.println("Error during writing model file: " + e.getMessage());
       throw new TerminateToolException(-1);
     } finally {
@@ -201,10 +202,10 @@ public final class CmdLineUtil {
     
     System.out.println();
     
-    System.out.println("Wrote " + modelName + " model to");
-    System.out.println("path: " + modelFile.getAbsolutePath());
+    System.err.println("Wrote " + modelName + " model to");
+    System.err.println("path: " + modelFile.getAbsolutePath());
     
-    System.out.println();
+    System.err.println();
   }
   
   /**
