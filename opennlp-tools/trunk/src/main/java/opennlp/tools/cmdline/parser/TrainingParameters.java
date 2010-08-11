@@ -38,4 +38,9 @@ public class TrainingParameters extends BasicTrainingParameters {
   ParserType getParserType() {
     return parserType;
   }
+  
+  @Override
+  public boolean isValid() {
+    return super.isValid() && getParserType() != null;
+  }
 }
