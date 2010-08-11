@@ -200,7 +200,7 @@ public final class CmdLineUtil {
     
     System.err.printf("done (%.3fs)\n", modelWritingDuration / 1000d);
     
-    System.out.println();
+    System.err.println();
     
     System.err.println("Wrote " + modelName + " model to");
     System.err.println("path: " + modelFile.getAbsolutePath());
