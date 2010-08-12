@@ -61,14 +61,14 @@ public abstract class ModelLoader<T> {
     try {
       model = loadModel(modelIn);
     }
-    catch (IOException e) {
-      System.err.println("failed");
-      System.err.println("IO error while loading model: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
     catch (InvalidFormatException e) {
       System.err.println("failed");
       System.err.println("Model has invalid format: " + e.getMessage());
+      throw new TerminateToolException(-1);
+    }
+    catch (IOException e) {
+      System.err.println("failed");
+      System.err.println("IO error while loading model: " + e.getMessage());
       throw new TerminateToolException(-1);
     }
     finally {

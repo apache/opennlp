@@ -18,11 +18,12 @@
 
 package opennlp.tools.util;
 
+import java.io.IOException;
+
 /**
- * This exception is thrown if the profile data stream has
- * an invalid format e.g. non valid xml.
+ * This exception indicates that a resource violates the expected data format.
  */
-public class InvalidFormatException extends Exception {
+public class InvalidFormatException extends IOException {
 
   private static final long serialVersionUID = 0;
 
