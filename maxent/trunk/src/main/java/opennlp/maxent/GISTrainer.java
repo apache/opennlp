@@ -47,7 +47,7 @@ import opennlp.model.UniformPrior;
  *    
  * @author Tom Morton
  * @author  Jason Baldridge
- * @version $Revision: 1.5 $, $Date: 2010-08-10 14:33:22 $
+ * @version $Revision: 1.6 $, $Date: 2010-08-12 07:56:43 $
  */
 class GISTrainer {
 
@@ -299,7 +299,12 @@ class GISTrainer {
     params = new MutableContext[numPreds];
     modelExpects = new MutableContext[numPreds];
     observedExpects = new MutableContext[numPreds];
-    evalParams = new EvalParameters(params,0,correctionConstant,numOutcomes);
+    
+    // The model does need the correction constant and the correction feature. The correction constant
+    // is only needed during training, and the correction feature is not necessary.
+    // For compatibility reasons the model contains form now on a correction constant of 1, 
+    // and a correction param 0.
+    evalParams = new EvalParameters(params,0,1,numOutcomes);
     int[] activeOutcomes = new int[numOutcomes];
     int[] outcomePattern;
     int[] allOutcomesPattern= new int[numOutcomes];
@@ -374,15 +379,16 @@ class GISTrainer {
 
     /***************** Find the parameters ************************/
     display("Computing model parameters...\n");
-    findParameters(iterations);
+    findParameters(iterations, correctionConstant);
 
     /*************** Create and return the model ******************/
-    return new GISModel(params, predLabels, outcomeLabels, correctionConstant, evalParams.getCorrectionParam());
+    // To be compatible with old models the correction constant is always 1
+    return new GISModel(params, predLabels, outcomeLabels, 1, evalParams.getCorrectionParam());
 
   }
 
   /* Estimate and return the model parameters. */
-  private void findParameters(int iterations) {
+  private void findParameters(int iterations, int correctionConstant) {
     double prevLL = 0.0;
     double currLL = 0.0;
     display("Performing " + iterations + " iterations.\n");
@@ -393,7 +399,7 @@ class GISTrainer {
         display(" " + i + ":  ");
       else
         display(i + ":  ");
-      currLL = nextIteration();
+      currLL = nextIteration(correctionConstant);
       if (i > 1) {
         if (prevLL > currLL) {
           System.err.println("Model Diverging: loglikelihood decreased");
@@ -441,7 +447,7 @@ class GISTrainer {
   }
   
   /* Compute one iteration of GIS and retutn log-likelihood.*/
-  private double nextIteration() {
+  private double nextIteration(int correctionConstant) {
     // compute contribution of p(a|b_i) for each feature and the new
     // correction parameter
     double loglikelihood = 0.0;
@@ -480,7 +486,7 @@ class GISTrainer {
         }
       }
       if (useSlackParameter)
-        CFMOD += (evalParams.getCorrectionConstant() - contexts[ei].length) * numTimesEventsSeen[ei];
+        CFMOD += (correctionConstant - contexts[ei].length) * numTimesEventsSeen[ei];
       
       loglikelihood += Math.log(modelDistribution[outcomeList[ei]]) * numTimesEventsSeen[ei];
       numEvents += numTimesEventsSeen[ei];
@@ -506,14 +512,14 @@ class GISTrainer {
       int[] activeOutcomes = params[pi].getOutcomes();
       for (int aoi=0;aoi<activeOutcomes.length;aoi++) {
         if (useGaussianSmoothing) {
-          params[pi].updateParameter(aoi,gaussianUpdate(pi,aoi,numEvents,evalParams.getCorrectionConstant()));
+          params[pi].updateParameter(aoi,gaussianUpdate(pi,aoi,numEvents,correctionConstant));
         }
         else {
           if (model[aoi] == 0) {
             System.err.println("Model expects == 0 for "+predLabels[pi]+" "+outcomeLabels[aoi]);
           }
           //params[pi].updateParameter(aoi,(Math.log(observed[aoi]) - Math.log(model[aoi])));
-          params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi]))/evalParams.getCorrectionConstant()));
+          params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi]))/correctionConstant));
         }
         modelExpects[pi].setParameter(aoi,0.0); // re-initialize to 0.0's
       }
