@@ -31,7 +31,7 @@ import opennlp.tools.util.InvalidFormatException;
  */
 final class TokenizerModelLoader extends ModelLoader<TokenizerModel> {
 
-  public TokenizerModelLoader() {
+  TokenizerModelLoader() {
     super("Tokenizer");
   }
   
