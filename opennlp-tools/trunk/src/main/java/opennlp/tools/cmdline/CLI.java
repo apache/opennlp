@@ -26,8 +26,8 @@ import java.util.Map;
 
 import opennlp.tools.cmdline.chunker.ChunkerMETool;
 import opennlp.tools.cmdline.chunker.ChunkerTrainerTool;
-import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool;
+import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.cmdline.parser.BuildModelUpdaterTool;
 import opennlp.tools.cmdline.parser.CheckModelUpdaterTool;
@@ -36,14 +36,15 @@ import opennlp.tools.cmdline.parser.ParserTrainerTool;
 import opennlp.tools.cmdline.parser.TaggerModelReplacerTool;
 import opennlp.tools.cmdline.postag.POSTaggerEvaluatorTool;
 import opennlp.tools.cmdline.postag.POSTaggerTrainerTool;
-import opennlp.tools.cmdline.sentdetect.SentenceDetectorTool;
-import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluatorTool;
-import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainerTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidatorTool;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluatorTool;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorTool;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainerTool;
+import opennlp.tools.cmdline.tokenizer.DictionaryDetokenizerTool;
 import opennlp.tools.cmdline.tokenizer.SimpleTokenizerTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool;
-import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool;
+import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool;
 
 public final class CLI {
@@ -63,6 +64,7 @@ public final class CLI {
     tools.add(new TokenizerTrainerTool());
     tools.add(new TokenizerMEEvaluatorTool());
     tools.add(new TokenizerCrossValidatorTool());
+    tools.add(new DictionaryDetokenizerTool());
     
     // Sentence detector
     tools.add(new SentenceDetectorTool());
