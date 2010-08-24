@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.training.integration;
+package opennlp.tools.formats;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,12 +36,13 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.StringList;
 
 /**
- * This tool helps create a loadable dictionary for the namefinder.
+ * This tool helps create a loadable dictionary for the namefinder, from
+ * data collected from US Census data.
  * 
  * @author <a href="mailto:james.kosin.04@cnu.edu">James Kosin</a>
- * @version $Revision: 1.1 $, $Date: 2010-08-21 02:33:10 $
+ * @version $Revision: 1.1 $, $Date: 2010-08-24 00:42:22 $
  */
-public class TokenNameFinderDictionaryCreatorTool implements CmdLineTool {
+public class CensusToDictionaryCreatorTool implements CmdLineTool {
 
     public String getName() {
         return "TokenNameFinderDictionaryCreator";
@@ -141,7 +142,7 @@ public class TokenNameFinderDictionaryCreatorTool implements CmdLineTool {
         try {
             mDictionary.serialize(new FileOutputStream(dictOutFile));
         } catch (IOException ex) {
-            Logger.getLogger(TokenNameFinderDictionaryCreatorTool.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CensusToDictionaryCreatorTool.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

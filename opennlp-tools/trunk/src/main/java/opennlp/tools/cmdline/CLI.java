@@ -46,7 +46,7 @@ import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool;
-import opennlp.tools.cmdline.training.integration.TokenNameFinderDictionaryCreatorTool;
+import opennlp.tools.formats.CensusToDictionaryCreatorTool;
 
 public final class CLI {
   
@@ -77,7 +77,7 @@ public final class CLI {
     tools.add(new TokenNameFinderTool());
     tools.add(new TokenNameFinderTrainerTool());
     tools.add(new TokenNameFinderEvaluatorTool());
-    tools.add(new TokenNameFinderDictionaryCreatorTool());
+    tools.add(new CensusToDictionaryCreatorTool());
     
     // POS Tagger
     tools.add(new opennlp.tools.cmdline.postag.POSTaggerTool());
