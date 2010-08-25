@@ -97,7 +97,7 @@ public class Conll02NameSampleStreamTest {
   
   @Test
   public void testParsingDutchSample() throws IOException {
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NE, "conll2002-ne.sample");
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NL, "conll2002-nl.sample");
     
     NameSample personName = sampleStream.read();
     
