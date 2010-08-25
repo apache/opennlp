@@ -26,6 +26,7 @@ import java.util.Map;
 
 import opennlp.tools.cmdline.chunker.ChunkerMETool;
 import opennlp.tools.cmdline.chunker.ChunkerTrainerTool;
+import opennlp.tools.cmdline.namefind.TokenNameFinderConverterTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
@@ -77,7 +78,9 @@ public final class CLI {
     tools.add(new TokenNameFinderTool());
     tools.add(new TokenNameFinderTrainerTool());
     tools.add(new TokenNameFinderEvaluatorTool());
+    tools.add(new TokenNameFinderConverterTool());
     tools.add(new CensusToDictionaryCreatorTool());
+    
     
     // POS Tagger
     tools.add(new opennlp.tools.cmdline.postag.POSTaggerTool());

@@ -23,12 +23,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.zip.GZIPOutputStream;
 
 import opennlp.tools.formats.Conll02NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
@@ -44,31 +40,8 @@ import org.junit.Test;
  */
 public class Conll02NameSampleStreamTest {
   
-  /**
-   * 
-   * @param in
-   * @return
-   */
-  private static final InputStream compress(InputStream in) throws IOException {
-    
-    ByteArrayOutputStream compressedBytes = new ByteArrayOutputStream();
-    
-    OutputStream out = new GZIPOutputStream(compressedBytes);
-    
-    byte buffer[] = new byte[1024];
-    
-    int length;
-    while ((length =in.read(buffer, 0, buffer.length)) > 0) {
-      out.write(buffer, 0, length);
-    }
-    
-    out.close();
-    
-    return new ByteArrayInputStream(compressedBytes.toByteArray());
-  }
-  
   private static ObjectStream<NameSample> openData(LANGUAGE lang, String name) throws IOException {
-    InputStream in = compress(Conll02NameSampleStreamTest.class.getResourceAsStream("/opennlp/tools/formats/" + name));
+    InputStream in = Conll02NameSampleStreamTest.class.getResourceAsStream("/opennlp/tools/formats/" + name);
     
     return new Conll02NameSampleStream(lang, in, Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
   }
