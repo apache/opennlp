@@ -13,6 +13,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * --------------------------------------------------------------------------
+ * Data for the US Census and names can be found here for the 1990 Census:
+ * http://www.census.gov/genealogy/names/names_files.html
  */
 
 package opennlp.tools.formats;
@@ -23,8 +27,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -40,12 +42,12 @@ import opennlp.tools.util.StringList;
  * data collected from US Census data.
  * 
  * @author <a href="mailto:james.kosin.04@cnu.edu">James Kosin</a>
- * @version $Revision: 1.1 $, $Date: 2010-08-24 00:42:22 $
+ * @version $Revision: 1.2 $, $Date: 2010-08-25 23:25:05 $
  */
 public class CensusToDictionaryCreatorTool implements CmdLineTool {
 
     public String getName() {
-        return "TokenNameFinderDictionaryCreator";
+        return "CensusToDictionaryCreator";
     }
 
     public String getShortDescription() {
@@ -68,6 +70,7 @@ public class CensusToDictionaryCreatorTool implements CmdLineTool {
   }
 
   public void run(String[] args) {
+      // expecting arguments -lang en -encoding utf8 namefile dictionary
         if (args.length < 6) {
             System.out.println(getHelp());
             throw new TerminateToolException(1);
@@ -98,8 +101,8 @@ public class CensusToDictionaryCreatorTool implements CmdLineTool {
                    !line.isEmpty()) {
                 // the data is in ALL CAPS and needs to be stripped from
                 // other data on the line.
-                String[] parse = line.split(" ");
-                String name = parse[0].toLowerCase(loc);
+                int pos = line.indexOf(' ');
+                String name = line.substring(0, pos);
                 String name2;
                 // now we need to re-introduce caps back into the name
                 // no-one ever has a lower case name.  However, there are a few
@@ -108,15 +111,16 @@ public class CensusToDictionaryCreatorTool implements CmdLineTool {
                 // we test for a length of greater than 2 because there is one
                 // name that is Mc in the data.
                 if ((name.length() > 2) &&
-                    name.startsWith("mc")) {
+                    name.startsWith("MC")) {
                     // this tranlates the case for McDonald, etc.
                     name2 = name.substring(0,1).toUpperCase(loc) +
-                            name.substring(1,2) +
+                            name.substring(1,2).toLowerCase(loc) +
                             name.substring(2,3).toUpperCase(loc) +
-                            name.substring(3);
+                            name.substring(3).toLowerCase(loc);
                 } else {
                     // this keeps the first letter of the name capital
-                    name2 = name.substring(0,1).toUpperCase(loc) + name.substring(1);
+                    name2 = name.substring(0,1).toUpperCase(loc) + 
+                            name.substring(1).toLowerCase(loc);
                 }
 
                 StringList entry = new StringList(new String[]{name2});
@@ -142,7 +146,8 @@ public class CensusToDictionaryCreatorTool implements CmdLineTool {
         try {
             mDictionary.serialize(new FileOutputStream(dictOutFile));
         } catch (IOException ex) {
-            Logger.getLogger(CensusToDictionaryCreatorTool.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error during write to dictionary file: " + ex.getMessage());
+            throw new TerminateToolException(-1);
         }
     }
 
