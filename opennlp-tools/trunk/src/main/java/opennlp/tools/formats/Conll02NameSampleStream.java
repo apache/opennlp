@@ -45,7 +45,7 @@ import opennlp.tools.util.Span;
 public class Conll02NameSampleStream implements ObjectStream<NameSample>{
 
   public enum LANGUAGE {
-    NE,
+    NL,
     ES
   }
   
@@ -71,7 +71,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
    * @throws IOException 
    */
   // make it possible to configure which name types should be generated
-  Conll02NameSampleStream(LANGUAGE lang, InputStream in, int types) throws IOException {
+  public Conll02NameSampleStream(LANGUAGE lang, InputStream in, int types) throws IOException {
     
     // Might throw an Unsupported Encoding Exception, but that should never happen 
     // because UTF-8 is supported by every JVM 
@@ -115,7 +115,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
     String line;
     while ((line = lineStream.read()) != null && !line.isEmpty()) {
       
-      if (LANGUAGE.NE.equals(lang) && line.startsWith("-DOCSTART-")) {
+      if (LANGUAGE.NL.equals(lang) && line.startsWith("-DOCSTART-")) {
         isClearAdaptiveData = true;
         continue;
       }
