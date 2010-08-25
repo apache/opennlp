@@ -120,6 +120,11 @@ public class NameSample {
   public String toString() {
     StringBuilder result = new StringBuilder();
 
+    // If adaptive data must be cleared insert an empty line
+    // before the sample sentence line
+    if (isClearAdaptiveDataSet())
+      result.append("\n");
+    
     for (int tokenIndex = 0; tokenIndex < sentence.size(); tokenIndex++) {
       // token
 
