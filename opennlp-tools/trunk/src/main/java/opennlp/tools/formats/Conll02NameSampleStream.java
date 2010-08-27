@@ -19,9 +19,9 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InvalidFormatException;
@@ -67,15 +67,19 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
   
   /**
    * @param lang
-   * @param in an Input Stream to read the gziped data.
+   * @param in an Input Stream to read data.
    * @throws IOException 
    */
-  // make it possible to configure which name types should be generated
-  public Conll02NameSampleStream(LANGUAGE lang, InputStream in, int types) throws IOException {
+  public Conll02NameSampleStream(LANGUAGE lang, InputStream in, int types) {
     
-    // Might throw an Unsupported Encoding Exception, but that should never happen 
-    // because UTF-8 is supported by every JVM 
-    this(lang, new PlainTextByLineStream(new GZIPInputStream(in), "UTF-8"), types);
+    this.lang = lang;
+    try {
+      this.lineStream = new PlainTextByLineStream(in, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      // UTF-8 is available on all JVMs, will never happen
+      throw new IllegalStateException(e);
+    } 
+    this.types = types;
   }
   
   private static final Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
