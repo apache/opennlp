@@ -42,7 +42,7 @@ import opennlp.tools.util.StringList;
  * data collected from US Census data.
  * 
  * @author <a href="mailto:james.kosin.04@cnu.edu">James Kosin</a>
- * @version $Revision: 1.2 $, $Date: 2010-08-25 23:25:05 $
+ * @version $Revision: 1.3 $, $Date: 2010-08-27 22:47:24 $
  */
 public class CensusToDictionaryCreatorTool implements CmdLineTool {
 
@@ -72,14 +72,14 @@ public class CensusToDictionaryCreatorTool implements CmdLineTool {
   public void run(String[] args) {
       // expecting arguments -lang en -encoding utf8 namefile dictionary
         if (args.length < 6) {
-            System.out.println(getHelp());
+            System.err.println(getHelp());
             throw new TerminateToolException(1);
         }
 
         BasicTrainingParameters parameters = new BasicTrainingParameters(args);
 
         if(!parameters.isValid()) {
-          System.out.println(getHelp());
+          System.err.println(getHelp());
           throw new TerminateToolException(1);
         }
 
@@ -101,34 +101,39 @@ public class CensusToDictionaryCreatorTool implements CmdLineTool {
                    !line.isEmpty()) {
                 // the data is in ALL CAPS and needs to be stripped from
                 // other data on the line.
+                // search for the expected space separator after the name.
                 int pos = line.indexOf(' ');
-                String name = line.substring(0, pos);
-                String name2;
-                // now we need to re-introduce caps back into the name
-                // no-one ever has a lower case name.  However, there are a few
-                // subtle exceptions to every rule.  Mc is a common exception
-                // where the name will have two caps letters.  McDonald, McLee
-                // we test for a length of greater than 2 because there is one
-                // name that is Mc in the data.
-                if ((name.length() > 2) &&
-                    name.startsWith("MC")) {
-                    // this tranlates the case for McDonald, etc.
-                    name2 = name.substring(0,1).toUpperCase(loc) +
-                            name.substring(1,2).toLowerCase(loc) +
-                            name.substring(2,3).toUpperCase(loc) +
-                            name.substring(3).toLowerCase(loc);
-                } else {
-                    // this keeps the first letter of the name capital
-                    name2 = name.substring(0,1).toUpperCase(loc) + 
-                            name.substring(1).toLowerCase(loc);
-                }
+                // validate we have a valid line the format is:
+                // <name> <freqency> <comulitive.frequency> <rank>
+                if ((pos != -1)) {
+                    String name = line.substring(0, pos);
+                    String name2;
+                    // now we need to re-introduce case back into the name
+                    // the census data is all CAPITAL.  However, there are a few
+                    // subtle exceptions to every rule.  Mc is a common exception
+                    // where the name will have two caps letters.  McDonald, McLee
+                    // we test for a length of greater than 2 because there is one
+                    // name that is Mc in the data, with no characters after.
+                    if ((name.length() > 2) &&
+                        name.startsWith("MC")) {
+                        // this tranlates the case for McDonald, etc.
+                        name2 = name.substring(0,1).toUpperCase(loc) +
+                                name.substring(1,2).toLowerCase(loc) +
+                                name.substring(2,3).toUpperCase(loc) +
+                                name.substring(3).toLowerCase(loc);
+                    } else {
+                        // this keeps the first letter of the name capital
+                        name2 = name.substring(0,1).toUpperCase(loc) +
+                                name.substring(1).toLowerCase(loc);
+                    }
 
-                StringList entry = new StringList(new String[]{name2});
+                    StringList entry = new StringList(new String[]{name2});
 
-                if (!mDictionary.contains(entry)) {
-                    // todo: remove debug output statement
-                    System.out.println(entry);
-                    mDictionary.put(entry);
+                    if (!mDictionary.contains(entry)) {
+                        // todo: remove debug output statement
+                        System.out.println(entry);
+                        mDictionary.put(entry);
+                    }
                 }
                 line = sampleStream.read();
             }
