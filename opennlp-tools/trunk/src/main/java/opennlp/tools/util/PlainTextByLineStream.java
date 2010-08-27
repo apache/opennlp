@@ -53,8 +53,8 @@ public class PlainTextByLineStream implements ObjectStream<String> {
     this(new InputStreamReader(in, charsetName));
   }
   
-  public PlainTextByLineStream(FileChannel channel, String encoding) {
-    this.encoding = encoding;
+  public PlainTextByLineStream(FileChannel channel, String charsetName) {
+    this.encoding = charsetName;
     this.channel = channel;
     
     // TODO: Why isn't reset called here ?
