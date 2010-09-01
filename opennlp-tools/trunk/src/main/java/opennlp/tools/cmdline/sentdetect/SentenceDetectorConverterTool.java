@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.namefind;
+package opennlp.tools.cmdline.sentdetect;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,38 +23,34 @@ import java.util.Map;
 
 import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.formats.Conll02NameSampleStreamFactory;
-import opennlp.tools.namefind.NameSample;
+import opennlp.tools.formats.ConllXSentenceSampleStreamFactory;
+import opennlp.tools.sentdetect.SentenceSample;
 
-/**
- * Tool to convert multiple data formats into native opennlp name finder training
- * format.
- */
-public class TokenNameFinderConverterTool extends AbstractConverterTool<NameSample> {
+public class SentenceDetectorConverterTool extends AbstractConverterTool<SentenceSample> {
 
-  private static final Map<String, ObjectStreamFactory<NameSample>> streamFactories;
+  private static final Map<String, ObjectStreamFactory<SentenceSample>> streamFactories;
   
   static {
-    Map<String, ObjectStreamFactory<NameSample>> mutableStreamFactories =
-      new HashMap<String, ObjectStreamFactory<NameSample>>();
+    Map<String, ObjectStreamFactory<SentenceSample>> mutableStreamFactories =
+      new HashMap<String, ObjectStreamFactory<SentenceSample>>();
     
-    mutableStreamFactories.put("conll02", new Conll02NameSampleStreamFactory());
+    mutableStreamFactories.put("conllx", new ConllXSentenceSampleStreamFactory());
     
     streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
   }
   
   @Override
   public String getName() {
-    return "TokenNameFinderConverter";
+    return "SentenceDetectorConverter";
   }
 
   @Override
   public String getShortDescription() {
-    return "converts foreign data formats to native format";
+    return "";
   }
-  
+
   @Override
-  protected ObjectStreamFactory<NameSample> createStreamFactory(String format) {
+  protected ObjectStreamFactory<SentenceSample> createStreamFactory(String format) {
     return streamFactories.get(format);
   }
 }

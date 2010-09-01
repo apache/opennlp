@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.namefind;
+package opennlp.tools.cmdline.tokenizer;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,38 +23,36 @@ import java.util.Map;
 
 import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.formats.Conll02NameSampleStreamFactory;
-import opennlp.tools.namefind.NameSample;
+import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
+import opennlp.tools.tokenize.TokenSample;
 
-/**
- * Tool to convert multiple data formats into native opennlp name finder training
- * format.
- */
-public class TokenNameFinderConverterTool extends AbstractConverterTool<NameSample> {
+public class TokenizerConverterTool extends AbstractConverterTool<TokenSample> {
 
-  private static final Map<String, ObjectStreamFactory<NameSample>> streamFactories;
+  private static final Map<String, ObjectStreamFactory<TokenSample>> streamFactories;
   
   static {
-    Map<String, ObjectStreamFactory<NameSample>> mutableStreamFactories =
-      new HashMap<String, ObjectStreamFactory<NameSample>>();
+    Map<String, ObjectStreamFactory<TokenSample>> mutableStreamFactories =
+      new HashMap<String, ObjectStreamFactory<TokenSample>>();
     
-    mutableStreamFactories.put("conll02", new Conll02NameSampleStreamFactory());
+    mutableStreamFactories.put("conllx", new ConllXTokenSampleStreamFactory());
     
     streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
   }
   
+  
   @Override
   public String getName() {
-    return "TokenNameFinderConverter";
+    return "TokenizerConverter";
   }
 
   @Override
   public String getShortDescription() {
-    return "converts foreign data formats to native format";
+    return "";
   }
-  
+
   @Override
-  protected ObjectStreamFactory<NameSample> createStreamFactory(String format) {
+  protected ObjectStreamFactory<TokenSample> createStreamFactory(String format) {
     return streamFactories.get(format);
   }
+
 }
