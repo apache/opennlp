@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
-import opennlp.tools.util.Span;
 
 /**
  * Class which holds a classified document and its category.
