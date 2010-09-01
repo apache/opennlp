@@ -36,8 +36,6 @@ import opennlp.tools.util.ObjectStream;
  */
 public class TokenSampleStream implements ObjectStream<TokenSample> {
   
-  public static final String DEFAULT_SEPARATOR_CHARS = "<SPLIT>";
-  
   private final String separatorChars;
   
   private ObjectStream<String> sampleStrings;
@@ -53,7 +51,7 @@ public class TokenSampleStream implements ObjectStream<TokenSample> {
   }
   
   public TokenSampleStream(ObjectStream<String> sentences) {
-    this(sentences, DEFAULT_SEPARATOR_CHARS);
+    this(sentences, TokenSample.DEFAULT_SEPARATOR_CHARS);
   }
   
   public TokenSample read() throws IOException {
