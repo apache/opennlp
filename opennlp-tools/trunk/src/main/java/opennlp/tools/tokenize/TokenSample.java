@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
 import opennlp.tools.util.Span;
 
 /**
@@ -30,6 +31,10 @@ import opennlp.tools.util.Span;
  */
 public class TokenSample {
 
+  public static final String DEFAULT_SEPARATOR_CHARS = "<SPLIT>";
+  
+  private final String separatorChars = DEFAULT_SEPARATOR_CHARS;
+  
   private final String text;
 
   private final List<Span> tokenSpans;
@@ -60,6 +65,33 @@ public class TokenSample {
     }
   }
 
+  public TokenSample(Detokenizer detokenizer, String tokens[]) {
+    
+    StringBuilder sentence = new StringBuilder();
+    
+    DetokenizationOperation[] operations = detokenizer.detokenize(tokens);
+    
+    List<Span> mergedTokenSpans = new ArrayList<Span>();
+    
+    for (int i = 0; i < operations.length; i++) {
+      
+      boolean isSeparateFromPreviousToken = i > 0 && 
+          !DetokenizationOperation.MERGE_TO_RIGHT.equals(operations[i - 1]) && 
+          !DetokenizationOperation.MERGE_TO_LEFT.equals(operations[i]);
+      
+      if (isSeparateFromPreviousToken) {
+        sentence.append(' ');
+      }
+      
+      int beginIndex = sentence.length();
+      sentence.append(tokens[i]);
+      mergedTokenSpans.add(new Span(beginIndex, sentence.length()));
+    }
+    
+    text = sentence.toString();
+    tokenSpans = Collections.unmodifiableList(mergedTokenSpans);
+  }
+  
   /**
    * Retrieves the text.
    */
@@ -76,7 +108,33 @@ public class TokenSample {
 
   @Override
   public String toString() {
-    return getText();
+    
+    StringBuilder sentence = new StringBuilder();
+    
+    int lastEndIndex = -1;
+    for (Span token : tokenSpans) {
+      
+      if (lastEndIndex != -1) {
+
+        // If there are no chars between last token
+        // and this token insert the separator chars
+        // otherwise insert a space
+        
+        String separator = "";
+        if (lastEndIndex == token.getStart())
+          separator = separatorChars;
+        else
+          separator = " ";
+        
+        sentence.append(separator);
+      }
+      
+      sentence.append(token.getCoveredText(text));
+      
+      lastEndIndex = token.getEnd();
+    }
+    
+    return sentence.toString();
   }
   
   private static void addToken(StringBuilder sample, List<Span> tokenSpans, String token, boolean isNextMerged) {
