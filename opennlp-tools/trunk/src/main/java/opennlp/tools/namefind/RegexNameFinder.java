@@ -87,7 +87,6 @@ public final class RegexNameFinder implements TokenNameFinder {
         new Span[annotations.size()]);
   }
   
-  @Override
   public void clearAdaptiveData() {
     // nothing to clear
   }

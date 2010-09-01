@@ -35,17 +35,14 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public final class DictionaryDetokenizerTool implements CmdLineTool {
 
-  @Override
   public String getName() {
     return "DictionaryDetokenizer";
   }
 
-  @Override
   public String getShortDescription() {
     return "";
   }
 
-  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " detokenizerDictionary";
   }
@@ -89,7 +86,6 @@ public final class DictionaryDetokenizerTool implements CmdLineTool {
     return untokenizedString.toString();
   }
   
-  @Override
   public void run(String[] args) {
     
     

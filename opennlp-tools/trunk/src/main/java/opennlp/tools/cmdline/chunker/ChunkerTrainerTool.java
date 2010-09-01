@@ -62,7 +62,6 @@ public class ChunkerTrainerTool implements CmdLineTool {
     return new ChunkSampleStream(lineStream);
   }
   
-  @Override
   public void run(String[] args) {
     
     if (args.length < 6) {

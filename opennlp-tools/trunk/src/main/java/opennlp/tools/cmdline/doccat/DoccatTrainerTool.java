@@ -62,7 +62,6 @@ public class DoccatTrainerTool implements CmdLineTool {
     return new DocumentSampleStream(lineStream);
   }
   
-  @Override
   public void run(String[] args) {
     if (args.length < 6) {
       System.out.println(getHelp());

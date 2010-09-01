@@ -106,7 +106,6 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
   }
 
   
-  @Override
   public NameSample read() throws IOException {
 
     List<String> sentence = new ArrayList<String>();
@@ -204,12 +203,10 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
     }
   }
 
-  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     lineStream.reset();
   }
 
-  @Override
   public void close() throws IOException {
     lineStream.close();
   }

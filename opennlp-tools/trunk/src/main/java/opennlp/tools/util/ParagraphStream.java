@@ -33,12 +33,10 @@ public class ParagraphStream implements ObjectStream<String> {
     this.lineStream = lineStream;
   }
   
-  @Override
   public void close() throws IOException {
     lineStream.close();
   }
 
-  @Override
   public String read() throws IOException {
     
     StringBuilder paragraph = new StringBuilder();
@@ -63,7 +61,6 @@ public class ParagraphStream implements ObjectStream<String> {
     }
   }
 
-  @Override
   public void reset() throws IOException,
       UnsupportedOperationException {
     lineStream.reset();

@@ -31,7 +31,6 @@ public class ConllXPOSSampleStream implements ObjectStream<POSSample> {
     paragraphStream = new ParagraphStream(new PlainTextByLineStream(in));
   }
 
-  @Override
   public POSSample read() throws IOException {
 
     // The CONLL-X data has a word per line and each line is tab separated
@@ -80,12 +79,10 @@ public class ConllXPOSSampleStream implements ObjectStream<POSSample> {
    return sample;
   }
 
-  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     paragraphStream.reset();
   }
 
-  @Override
   public void close() throws IOException {
     paragraphStream.close();
   }

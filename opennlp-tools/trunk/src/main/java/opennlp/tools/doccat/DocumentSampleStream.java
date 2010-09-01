@@ -38,12 +38,10 @@ public class DocumentSampleStream implements ObjectStream<DocumentSample> {
     this.samples = samples;
   }
   
-  @Override
   public void close() throws IOException {
     samples.close();
   }
 
-  @Override
   public DocumentSample read() throws IOException {
     String sampleString = samples.read();
     
@@ -72,7 +70,6 @@ public class DocumentSampleStream implements ObjectStream<DocumentSample> {
     }
   }
 
-  @Override
   public void reset() throws IOException,
       UnsupportedOperationException {
     samples.reset();

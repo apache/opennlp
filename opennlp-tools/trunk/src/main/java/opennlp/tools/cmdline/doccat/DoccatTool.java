@@ -47,7 +47,6 @@ public class DoccatTool implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " model < documents";
   }
 
-  @Override
   public void run(String[] args) {
     
     if (args.length != 1) {
