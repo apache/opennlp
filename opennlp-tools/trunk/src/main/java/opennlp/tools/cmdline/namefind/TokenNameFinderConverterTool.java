@@ -36,22 +36,18 @@ import opennlp.tools.util.ObjectStream;
  */
 public class TokenNameFinderConverterTool implements CmdLineTool {
 
-  @Override
   public String getName() {
     return "TokenNameFinderConverter";
   }
 
-  @Override
   public String getShortDescription() {
     return "converts foreign data formats to native format";
   }
 
-  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " -format conll02 -lang es|nl -types per,loc,org,misc -data sampleData";
   }
   
-  @Override
   public void run(String[] args) {
     
     if (args.length != 8) {
@@ -106,12 +102,7 @@ public class TokenNameFinderConverterTool implements CmdLineTool {
         
         InputStream in = CmdLineUtil.openInFile(sampleData);
         
-        try {
-          sampleStream = new Conll02NameSampleStream(lang, in, typesToGenerate);
-        } catch (IOException e) {
-          System.err.println("Failed to read from sampleData: " + e.getMessage());
-          throw new TerminateToolException(-1);
-        }
+        sampleStream = new Conll02NameSampleStream(lang, in, typesToGenerate);
       }
       else {
         System.err.println("Unkown format: " + formatType);
