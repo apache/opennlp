@@ -35,14 +35,17 @@ import opennlp.tools.cmdline.parser.CheckModelUpdaterTool;
 import opennlp.tools.cmdline.parser.ParserTool;
 import opennlp.tools.cmdline.parser.ParserTrainerTool;
 import opennlp.tools.cmdline.parser.TaggerModelReplacerTool;
+import opennlp.tools.cmdline.postag.POSTaggerConverter;
 import opennlp.tools.cmdline.postag.POSTaggerEvaluatorTool;
 import opennlp.tools.cmdline.postag.POSTaggerTrainerTool;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorConverterTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidatorTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluatorTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainerTool;
 import opennlp.tools.cmdline.tokenizer.DictionaryDetokenizerTool;
 import opennlp.tools.cmdline.tokenizer.SimpleTokenizerTool;
+import opennlp.tools.cmdline.tokenizer.TokenizerConverterTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
@@ -66,6 +69,7 @@ public final class CLI {
     tools.add(new TokenizerTrainerTool());
     tools.add(new TokenizerMEEvaluatorTool());
     tools.add(new TokenizerCrossValidatorTool());
+    tools.add(new TokenizerConverterTool());
     tools.add(new DictionaryDetokenizerTool());
     
     // Sentence detector
@@ -73,6 +77,7 @@ public final class CLI {
     tools.add(new SentenceDetectorTrainerTool());
     tools.add(new SentenceDetectorEvaluatorTool());
     tools.add(new SentenceDetectorCrossValidatorTool());
+    tools.add(new SentenceDetectorConverterTool());
     
     // Name Finder
     tools.add(new TokenNameFinderTool());
@@ -86,6 +91,7 @@ public final class CLI {
     tools.add(new opennlp.tools.cmdline.postag.POSTaggerTool());
     tools.add(new POSTaggerTrainerTool());
     tools.add(new POSTaggerEvaluatorTool());
+    tools.add(new POSTaggerConverter());
     
     // add evaluator
     // add cv validator
