@@ -50,22 +50,26 @@ public class DictionaryDetokenizerTest extends TestCase {
     assertEquals(DetokenizationOperation.MERGE_TO_LEFT, detokenizeOperations[2]);
   }
   
+  static Detokenizer createLatinDetokenizer() throws IOException {
+    InputStream dictIn = DictionaryDetokenizerTest.class.getResourceAsStream(
+    "/opennlp/tools/tokenize/latin-detokenizer.xml");
+    
+    DetokenizationDictionary dict = new DetokenizationDictionary(dictIn);
+    
+    dictIn.close();
+    
+    return new DictionaryDetokenizer(dict);
+  }
+  
   public void testDetokenizeToString() throws IOException {
     
-    InputStream dictIn = DictionaryDetokenizerTest.class.getResourceAsStream(
-        "/opennlp/tools/tokenize/latin-detokenizer.xml");
+    Detokenizer detokenizer = createLatinDetokenizer();
+    
+    String tokens[] = new String[]{"A", "test", ",", "(", "string", ")", "."};
+    DetokenizationOperation operations[] = detokenizer.detokenize(tokens);
       
-      DetokenizationDictionary dict = new DetokenizationDictionary(dictIn);
+    String sentence = DictionaryDetokenizerTool.detokenize(tokens, operations);
       
-      dictIn.close();
-      
-      Detokenizer detokenizer = new DictionaryDetokenizer(dict);
-      
-      String tokens[] = new String[]{"A", "test", ",", "(", "string", ")", "."};
-      DetokenizationOperation operations[] = detokenizer.detokenize(tokens);
-      
-      String sentence = DictionaryDetokenizerTool.detokenize(tokens, operations);
-      
-      assertEquals("A test, (string).", sentence);
+    assertEquals("A test, (string).", sentence);
   }
 }
