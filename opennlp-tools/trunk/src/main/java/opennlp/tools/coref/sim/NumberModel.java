@@ -110,6 +110,7 @@ public class NumberModel implements TestNumberModel, TrainSimilarityModel {
     return NumberEnum.UNKNOWN;
   }
 
+  @SuppressWarnings("unchecked")
   public void setExtents(Context[] extentContexts) {
     HashList entities = new HashList();
     List<Context> singletons = new ArrayList<Context>();

@@ -146,6 +146,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
    * @return A set of mentions for all the entities which might be semantically compatible
    * with entity indicated by the specified key.
    */
+  @SuppressWarnings("unchecked")
   private Set<Context> constructExclusionSet(Integer entityKey, HashList entities, Map<Integer, Set<String>> headSets, Map<Integer, Set<String>> nameSets, List<Context> singletons) {
     Set<Context> exclusionSet = new HashSet<Context>();
     Set<String> entityHeadSet = headSets.get(entityKey);
@@ -201,6 +202,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
    * @return a mapping between the keys of the specified entity mapping and the head set
    * generated from the mentions associated with that key.
    */
+  @SuppressWarnings("unchecked")
   private Map<Integer, Set<String>> constructHeadSets(HashList entities) {
     Map<Integer, Set<String>> headSets = new HashMap<Integer, Set<String>>();
     for (Iterator<Integer> ei = entities.keySet().iterator(); ei.hasNext();) {
@@ -236,6 +238,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
    *
    * @return a mapping between each key in the specified entity map and the name types associated with the each mention of that entity.
    */
+  @SuppressWarnings("unchecked")
   private Map<Integer, Set<String>> constructNameSets(HashList entities) {
     Map<Integer, Set<String>> nameSets = new HashMap<Integer, Set<String>>();
     for (Iterator<Integer> ei = entities.keySet().iterator(); ei.hasNext();) {
@@ -276,6 +279,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
   }
   */
 
+  @SuppressWarnings("unchecked")
   public void setExtents(Context[] extentContexts) {
     HashList entities = new HashList();
     /** Extents which are not in a coreference chain. */

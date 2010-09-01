@@ -172,6 +172,7 @@ public class GenderModel implements TestGenderModel, TrainSimilarityModel {
     return GenderEnum.UNKNOWN;
   }
 
+  @SuppressWarnings("unchecked")
   public void setExtents(Context[] extentContexts) {
     HashList entities = new HashList();
     List<Context> singletons = new ArrayList<Context>();
