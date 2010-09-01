@@ -41,17 +41,14 @@ public class Conll02NameSampleStreamFactory implements ObjectStreamFactory<NameS
     String getTypes();
   }
   
-  @Override
   public String getUsage() {
     return ArgumentParser.createUsage(Parameters.class);
   }
   
-  @Override
   public boolean validateArguments(String[] args) {
     return ArgumentParser.validateArguments(args, Parameters.class);
   }
   
-  @Override
   public ObjectStream<NameSample> create(String[] args) {
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);

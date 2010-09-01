@@ -40,12 +40,10 @@ public class ConllXPOSSampleStreamFactory implements ObjectStreamFactory<POSSamp
     String getEncoding();
   }
   
-  @Override
   public String getUsage() {
     return ArgumentParser.createUsage(Parameters.class);
   }
 
-  @Override
   public boolean validateArguments(String[] args) {
     return ArgumentParser.validateArguments(args, Parameters.class);
   }
@@ -63,7 +61,6 @@ public class ConllXPOSSampleStreamFactory implements ObjectStreamFactory<POSSamp
     }
   }
   
-  @Override
   public ObjectStream<POSSample> create(String[] args) {
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);

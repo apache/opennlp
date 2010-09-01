@@ -39,12 +39,10 @@ public class POSTaggerConverter extends AbstractConverterTool<POSSample> {
     streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
   }
   
-  @Override
   public String getName() {
     return "POSTaggerConverter";
   }
 
-  @Override
   public String getShortDescription() {
     return "";
   }

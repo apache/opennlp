@@ -45,17 +45,14 @@ public class ConllXSentenceSampleStreamFactory implements ObjectStreamFactory<Se
     String getDetokenizer();
   }
   
-  @Override
   public String getUsage() {
     return ArgumentParser.createUsage(Parameters.class);
   }
 
-  @Override
   public boolean validateArguments(String[] args) {
     return ArgumentParser.validateArguments(args, Parameters.class);
   }
 
-  @Override
   public ObjectStream<SentenceSample> create(String[] args) {
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);

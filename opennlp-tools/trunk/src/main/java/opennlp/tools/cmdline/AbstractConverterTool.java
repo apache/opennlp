@@ -27,14 +27,12 @@ public abstract class AbstractConverterTool<T> implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " " + format + " " + usage;
   }
   
-  @Override
   public String getHelp() {
     return createHelpString("format", "...");
   }
   
   protected abstract ObjectStreamFactory<T> createStreamFactory(String format);
   
-  @Override
   public void run(String[] args) {
     
     String format = null;

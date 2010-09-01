@@ -43,12 +43,10 @@ public class TokenNameFinderConverterTool extends AbstractConverterTool<NameSamp
     streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
   }
   
-  @Override
   public String getName() {
     return "TokenNameFinderConverter";
   }
 
-  @Override
   public String getShortDescription() {
     return "converts foreign data formats to native format";
   }

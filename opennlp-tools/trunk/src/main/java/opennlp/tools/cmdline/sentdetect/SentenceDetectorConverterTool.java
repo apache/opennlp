@@ -39,12 +39,10 @@ public class SentenceDetectorConverterTool extends AbstractConverterTool<Sentenc
     streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
   }
   
-  @Override
   public String getName() {
     return "SentenceDetectorConverter";
   }
 
-  @Override
   public String getShortDescription() {
     return "";
   }

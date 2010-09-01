@@ -40,12 +40,10 @@ public class TokenizerConverterTool extends AbstractConverterTool<TokenSample> {
   }
   
   
-  @Override
   public String getName() {
     return "TokenizerConverter";
   }
 
-  @Override
   public String getShortDescription() {
     return "";
   }
