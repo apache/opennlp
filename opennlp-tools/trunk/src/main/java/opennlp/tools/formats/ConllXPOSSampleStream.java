@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
@@ -19,16 +20,14 @@ import opennlp.tools.util.PlainTextByLineStream;
  * More information about the data format can be found here:
  * http://www.cnts.ua.ac.be/conll2006/
  */
-public class ConllXPOSSampleStream implements ObjectStream<POSSample> {
-
-  private final ObjectStream<String> paragraphStream;
+public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample> {
 
   public ConllXPOSSampleStream(ObjectStream<String> lineStream) {
-    paragraphStream = new ParagraphStream(lineStream);
+    super(new ParagraphStream(lineStream));
   }
   
   ConllXPOSSampleStream(Reader in) throws IOException {
-    paragraphStream = new ParagraphStream(new PlainTextByLineStream(in));
+    super(new ParagraphStream(new PlainTextByLineStream(in)));
   }
 
   public POSSample read() throws IOException {
@@ -40,7 +39,7 @@ public class ConllXPOSSampleStream implements ObjectStream<POSSample> {
     // One paragraph contains a whole sentence and, the token
     // and tag will be read from the FORM and POSTAG field.
     
-   String paragraph = paragraphStream.read();
+   String paragraph = samples.read();
    
    POSSample sample = null;
    
@@ -77,13 +76,5 @@ public class ConllXPOSSampleStream implements ObjectStream<POSSample> {
    }
    
    return sample;
-  }
-
-  public void reset() throws IOException, UnsupportedOperationException {
-    paragraphStream.reset();
-  }
-
-  public void close() throws IOException {
-    paragraphStream.close();
   }
 }

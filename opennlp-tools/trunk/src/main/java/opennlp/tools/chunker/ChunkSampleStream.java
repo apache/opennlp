@@ -21,18 +21,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
-public class ChunkSampleStream implements ObjectStream<ChunkSample> {
+public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
 
-  private final ObjectStream<String> in;
-  
-  public ChunkSampleStream(ObjectStream<String> in) {
-    
-    if (in == null)
-        throw new IllegalArgumentException("in must not be null!");
-    
-    this.in = in;
+  public ChunkSampleStream(ObjectStream<String> samples) {
+    super(samples);
   }
   
   public ChunkSample read() throws IOException {
@@ -41,7 +36,7 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
     List<String> tags = new ArrayList<String>();
     List<String> preds = new ArrayList<String>();
     
-    for (String line = in.read(); line !=null && !line.equals(""); line = in.read()) {
+    for (String line = samples.read(); line !=null && !line.equals(""); line = samples.read()) {
       String[] parts = line.split(" ");
       if (parts.length != 3) {
         System.err.println("Skipping corrupt line: "+line);
@@ -60,14 +55,5 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
     else {
       return null;
     }
-  }
-
-  public void reset() throws IOException,
-      UnsupportedOperationException {
-    in.reset();
-  }
-  
-  public void close() throws IOException {
-    in.close();
   }
 }

@@ -20,6 +20,7 @@ package opennlp.tools.doccat;
 import java.io.IOException;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
@@ -30,16 +31,10 @@ import opennlp.tools.util.ObjectStream;
  * The category is the first string in the line followed by a tab and whitespace separated document tokens.<br>
  * Sample line: category-string tab-char whitespace-separated-tokens line-break-char(s)<br>
  */
-public class DocumentSampleStream implements ObjectStream<DocumentSample> {
+public class DocumentSampleStream extends FilterObjectStream<String, DocumentSample> {
 
-  private final ObjectStream<String> samples;
-  
   public DocumentSampleStream(ObjectStream<String> samples) {
-    this.samples = samples;
-  }
-  
-  public void close() throws IOException {
-    samples.close();
+    super(samples);
   }
 
   public DocumentSample read() throws IOException {
@@ -68,10 +63,5 @@ public class DocumentSampleStream implements ObjectStream<DocumentSample> {
     else {
       return null;
     }
-  }
-
-  public void reset() throws IOException,
-      UnsupportedOperationException {
-    samples.reset();
   }
 }

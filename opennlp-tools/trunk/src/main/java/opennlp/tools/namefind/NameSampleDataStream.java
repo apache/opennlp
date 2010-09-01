@@ -20,6 +20,7 @@ package opennlp.tools.namefind;
 import java.io.IOException;
 
 import opennlp.maxent.DataStream;
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
@@ -28,21 +29,18 @@ import opennlp.tools.util.ObjectStream;
  * It uses text that is is one-sentence per line and tokenized
  * with names identified by <code>&lt;START&gt;</code> and <code>&lt;END&gt;</code> tags.
  */
-public class NameSampleDataStream implements ObjectStream<NameSample> {
+public class NameSampleDataStream extends FilterObjectStream<String, NameSample> {
 
   public static final String START_TAG_PREFIX = "<START:";
   public static final String START_TAG = "<START>";
   public static final String END_TAG = "<END>";
 
-
-  private final ObjectStream<String> in;
-
   public NameSampleDataStream(ObjectStream<String> in) {
-    this.in = in;
+    super(in);
   }
 
   public NameSample read() throws IOException {
-      String token = in.read();
+      String token = samples.read();
       
       boolean isClearAdaptiveData = false;
 
@@ -51,7 +49,7 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
       // must be cleared
       while (token != null && token.trim().length() == 0) {
           isClearAdaptiveData = true;
-          token = in.read();
+          token = samples.read();
       }
       
       if (token != null) {
@@ -60,14 +58,5 @@ public class NameSampleDataStream implements ObjectStream<NameSample> {
       else {
         return null;
       }
-  }
-
-  public void reset() throws IOException,
-      UnsupportedOperationException {
-    throw new UnsupportedOperationException();
-  }
-  
-  public void close() throws IOException {
-    in.close();
   }
 }

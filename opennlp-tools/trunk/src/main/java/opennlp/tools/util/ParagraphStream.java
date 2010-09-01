@@ -24,17 +24,10 @@ import java.io.IOException;
  * by an empty text line. If the last paragraph in the stream is not terminated by an empty line
  * the left over is assumed to be a paragraph.
  */
-public class ParagraphStream implements ObjectStream<String> {
+public class ParagraphStream extends FilterObjectStream<String, String> {
 
-  
-  private final ObjectStream<String> lineStream;
-  
   public ParagraphStream(ObjectStream<String> lineStream) {
-    this.lineStream = lineStream;
-  }
-  
-  public void close() throws IOException {
-    lineStream.close();
+    super(lineStream);
   }
 
   public String read() throws IOException {
@@ -42,7 +35,7 @@ public class ParagraphStream implements ObjectStream<String> {
     StringBuilder paragraph = new StringBuilder();
     
     while (true) {
-      String line = lineStream.read();
+      String line = samples.read();
       
       // The last paragraph in the input might not
       // be terminated well with a new line at the end.
@@ -59,10 +52,5 @@ public class ParagraphStream implements ObjectStream<String> {
       if (line == null)
         return null;
     }
-  }
-
-  public void reset() throws IOException,
-      UnsupportedOperationException {
-    lineStream.reset();
   }
 }

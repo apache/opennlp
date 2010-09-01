@@ -22,17 +22,21 @@ import java.io.IOException;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
-public class POSToTokenSampleStream implements ObjectStream<TokenSample> {
+public class POSToTokenSampleStream extends FilterObjectStream<POSSample, TokenSample> {
 
   private final Detokenizer detokenizer;
   
-  private final ObjectStream<POSSample> samples;
-  
   public POSToTokenSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples) {
+    
+    super(samples);
+    
+    if (detokenizer == null)
+      throw new IllegalArgumentException("detokenizer must not be null!");
+    
     this.detokenizer = detokenizer;
-    this.samples = samples;
   }
   
   public TokenSample read() throws IOException {
@@ -46,13 +50,5 @@ public class POSToTokenSampleStream implements ObjectStream<TokenSample> {
     }
     
     return tokenSample;
-  }
-
-  public void reset() throws IOException, UnsupportedOperationException {
-    samples.reset();
-  }
-
-  public void close() throws IOException {
-    samples.close();
   }
 }

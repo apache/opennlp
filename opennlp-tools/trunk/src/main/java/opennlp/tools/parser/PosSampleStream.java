@@ -20,22 +20,18 @@ package opennlp.tools.parser;
 import java.io.IOException;
 
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
-public class PosSampleStream implements ObjectStream<POSSample> {
+public class PosSampleStream extends FilterObjectStream<Parse, POSSample> {
 
-  private ObjectStream<Parse> in;
-  
   public PosSampleStream(ObjectStream<Parse> in) {
-    if (in == null)
-        throw new IllegalArgumentException("in must not be null!");
-    
-    this.in = in;
+    super(in);
   }
 
   public POSSample read() throws IOException {
     
-    Parse parse = in.read();
+    Parse parse = samples.read();
     
     if (parse != null) {
       
@@ -55,14 +51,5 @@ public class PosSampleStream implements ObjectStream<POSSample> {
     else {
       return null;
     }
-  }
-
-  public void reset() throws IOException,
-      UnsupportedOperationException {
-    in.reset();
-  }
-  
-  public void close() throws IOException {
-    in.close();
   }
 }

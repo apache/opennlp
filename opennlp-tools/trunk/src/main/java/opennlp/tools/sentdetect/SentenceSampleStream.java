@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
@@ -29,16 +30,10 @@ import opennlp.tools.util.Span;
  * This class is a stream filter which reads a sentence by line samples from
  * a <code>Reader</code> and converts them into {@link SentenceSample} objects.
  */
-public class SentenceSampleStream implements ObjectStream<SentenceSample> {
-
-  private ObjectStream<String> sentences;
+public class SentenceSampleStream extends FilterObjectStream<String, SentenceSample> {
 
   public SentenceSampleStream(ObjectStream<String> sentences) {
-
-    if (sentences == null)
-      throw new IllegalArgumentException("sentences must not be null!");
-
-    this.sentences = sentences;
+    super(sentences);
   }
 
   public SentenceSample read() throws IOException {
@@ -47,7 +42,7 @@ public class SentenceSampleStream implements ObjectStream<SentenceSample> {
     List<Span> sentenceSpans = new LinkedList<Span>();
     
     String sentence; 
-    while ((sentence = sentences.read()) != null && !sentence.equals("")) {
+    while ((sentence = samples.read()) != null && !sentence.equals("")) {
 
       int begin = sentencesString.length();
       sentencesString.append(sentence.trim());
@@ -62,13 +57,5 @@ public class SentenceSampleStream implements ObjectStream<SentenceSample> {
     else {
       return null;
     }
-  }
-  
-  public void reset() throws IOException {
-    sentences.reset();
-  }
-  
-  public void close() throws IOException {
-    sentences.close();
   }
 }

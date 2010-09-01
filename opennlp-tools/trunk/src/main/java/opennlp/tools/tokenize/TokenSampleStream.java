@@ -19,6 +19,7 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
@@ -34,19 +35,19 @@ import opennlp.tools.util.ObjectStream;
  * 
  * The sequence must be unique in the input string and is not escaped.
  */
-public class TokenSampleStream implements ObjectStream<TokenSample> {
+public class TokenSampleStream extends FilterObjectStream<String, TokenSample> {
   
   private final String separatorChars;
   
-  private ObjectStream<String> sampleStrings;
   
   public TokenSampleStream(ObjectStream<String> sampleStrings, String separatorChars) {
+    
+    super(sampleStrings);
     
     if (sampleStrings == null || separatorChars == null) {
       throw new IllegalArgumentException("parameters must not be null!");
     }
     
-    this.sampleStrings = sampleStrings;
     this.separatorChars= separatorChars;
   }
   
@@ -55,7 +56,7 @@ public class TokenSampleStream implements ObjectStream<TokenSample> {
   }
   
   public TokenSample read() throws IOException {
-    String sampleString = sampleStrings.read();
+    String sampleString = samples.read();
     
     if (sampleString != null) {
       return TokenSample.parse(sampleString, separatorChars);
@@ -63,14 +64,5 @@ public class TokenSampleStream implements ObjectStream<TokenSample> {
     else {
       return null;
     }
-  }
-
-  public void reset() throws IOException,
-      UnsupportedOperationException {
-    sampleStrings.reset();
-  }
-  
-  public void close() throws IOException {
-    sampleStrings.close();
   }
 }

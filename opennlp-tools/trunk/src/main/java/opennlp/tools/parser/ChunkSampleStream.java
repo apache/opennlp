@@ -23,14 +23,13 @@ import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.parser.chunking.Parser;
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
-public class ChunkSampleStream implements ObjectStream<ChunkSample> {
-
-  private ObjectStream<Parse> in;
+public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
   
   public ChunkSampleStream(ObjectStream<Parse> in) {
-    this.in = in;
+    super(in);
   }
 
   private static void getInitialChunks(Parse p, List<Parse> ichunks) {
@@ -65,7 +64,7 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
   
   public ChunkSample read() throws IOException {
     
-    Parse parse = in.read();
+    Parse parse = samples.read();
     
     if (parse != null) {
       Parse[] chunks = getInitialChunks(parse);
@@ -105,14 +104,5 @@ public class ChunkSampleStream implements ObjectStream<ChunkSample> {
     else {
       return null;
     }
-  }
-
-  public void reset() throws IOException,
-      UnsupportedOperationException {
-    in.reset();
-  }
-  
-  public void close() throws IOException {
-    in.close();
   }
 }

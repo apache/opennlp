@@ -24,18 +24,18 @@ import java.util.List;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.tokenize.Detokenizer;
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
-public class POSToSentenceSampleStream implements ObjectStream<SentenceSample> {
+public class POSToSentenceSampleStream extends FilterObjectStream<POSSample, SentenceSample> {
   
   private final Detokenizer detokenizer;
   
-  private final ObjectStream<POSSample> samples;
   private final int chunkSize;
   
   POSToSentenceSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples, int chunkSize) {
     
-    this.samples = samples;
+    super(samples);
     
     if (detokenizer == null)
       throw new IllegalArgumentException("detokenizer must not be null!");
@@ -71,13 +71,4 @@ public class POSToSentenceSampleStream implements ObjectStream<SentenceSample> {
       return null; // last sample was read
     }
   }
-
-  public void reset() throws IOException, UnsupportedOperationException {
-    samples.reset();
-  }
-
-  public void close() throws IOException {
-    samples.close();
-  }
-
 }

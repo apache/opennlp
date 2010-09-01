@@ -23,6 +23,7 @@ import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParseException;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -31,11 +32,9 @@ import opennlp.tools.util.PlainTextByLineStream;
  * A stream filter which reads a sentence per line which contains
  * words and tags in word_tag format and outputs a {@link POSSample} objects.
  */
-public class WordTagSampleStream implements ObjectStream<POSSample> {
+public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
 
   private static Logger logger = Logger.getLogger(WordTagSampleStream.class.getName());
-
-  private ObjectStream<String> sentences;
 
   /**
    * Initializes the current instance.
@@ -43,18 +42,11 @@ public class WordTagSampleStream implements ObjectStream<POSSample> {
    * @param sentences
    */
   public WordTagSampleStream(Reader sentences) throws IOException {
-
-    if (sentences == null)
-      throw new IllegalArgumentException("sentences must not be null!");
-
-    this.sentences = new PlainTextByLineStream(sentences);
+    super(new PlainTextByLineStream(sentences));
   }
 
   public WordTagSampleStream(ObjectStream<String> sentences) {
-    if (sentences == null)
-      throw new IllegalArgumentException("sentences must not be null!");
-
-    this.sentences = sentences;
+    super(sentences);
   }
   
   /**
@@ -69,7 +61,7 @@ public class WordTagSampleStream implements ObjectStream<POSSample> {
    */
   public POSSample read() throws IOException {
 
-    String sentence = sentences.read();
+    String sentence = samples.read();
 
     if (sentence != null) {
       POSSample sample;
@@ -90,13 +82,5 @@ public class WordTagSampleStream implements ObjectStream<POSSample> {
       // sentences stream is exhausted
       return null;
     }
-  }
-
-  public void reset() throws IOException {
-    sentences.reset();
-  }
-  
-  public void close() throws IOException {
-    sentences.close();
   }
 }

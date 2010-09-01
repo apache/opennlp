@@ -19,6 +19,7 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
@@ -26,16 +27,14 @@ import opennlp.tools.util.Span;
  * This stream formats a {@link TokenSample}s into whitespace
  * separated token strings.
  */
-public class WhitespaceTokenStream implements ObjectStream<String> {
-
-  private ObjectStream<TokenSample> tokens;
+public class WhitespaceTokenStream extends FilterObjectStream<TokenSample, String> {
   
   public WhitespaceTokenStream(ObjectStream<TokenSample> tokens) {
-    this.tokens = tokens;
+    super(tokens);
   }
 
   public String read() throws IOException {
-    TokenSample tokenSample = tokens.read();
+    TokenSample tokenSample = samples.read();
     
     if (tokenSample != null) {
       StringBuilder whitespaceSeparatedTokenString = new StringBuilder();
@@ -56,14 +55,5 @@ public class WhitespaceTokenStream implements ObjectStream<String> {
     }
     
     return null;
-  }
-  
-  public void close() throws IOException {
-    tokens.close();
-  }
-
-  public void reset() throws IOException,
-      UnsupportedOperationException {
-    tokens.reset();
   }
 }
