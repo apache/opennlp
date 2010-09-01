@@ -22,6 +22,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import opennlp.tools.cmdline.tokenizer.DictionaryDetokenizerTool;
+import opennlp.tools.tokenize.Detokenizer;
+import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
 import opennlp.tools.util.Span;
 
 /**
@@ -45,6 +48,28 @@ public class SentenceSample {
     this.sentences = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(sentences)));;
   }
 
+  public SentenceSample(Detokenizer detokenizer, String[][] sentences) {
+    
+    List<Span> spans = new ArrayList<Span>(sentences.length);
+    
+    StringBuilder documentBuilder = new StringBuilder();
+    
+    for (String sentenceTokens[] : sentences) {
+      
+      DetokenizationOperation operations[] = detokenizer.detokenize(sentenceTokens);
+      
+      String sampleSentence = DictionaryDetokenizerTool.detokenize(sentenceTokens, operations);
+      
+      int beginIndex = documentBuilder.length();
+      documentBuilder.append(sampleSentence);
+      
+      spans.add(new Span(beginIndex, documentBuilder.length()));
+    }
+    
+    document = documentBuilder.toString();
+    this.sentences = Collections.unmodifiableList(spans);
+  }
+  
   /**
    * Retrieves the document.
    *
@@ -62,5 +87,18 @@ public class SentenceSample {
    */
   public Span[] getSentences() {
     return sentences.toArray(new Span[sentences.size()]);
+  }
+  
+  @Override
+  public String toString() {
+    
+    StringBuilder documentBuilder = new StringBuilder();
+    
+    for (Span sentSpan : sentences) {
+      documentBuilder.append(sentSpan.getCoveredText(document));
+      documentBuilder.append("\n");
+    }
+    
+    return documentBuilder.toString();
   }
 }
