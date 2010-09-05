@@ -2,7 +2,8 @@
 -----
 Removed trove dependency.
 Changed license to ASL.
-Re-organized package structure to support upcomming work.
+Re-organized package structure to support up coming work.
+Added perceptron classifier.
 
 2.5.1
 -----
