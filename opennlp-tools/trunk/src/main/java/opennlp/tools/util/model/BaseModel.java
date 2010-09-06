@@ -227,7 +227,9 @@ public abstract class BaseModel {
         throw new InvalidFormatException("Unable to parse model version!, e");
       }
       
-      if (!Version.currentVersion().equals(version)) {
+      // Major and minor version must match, revision might be 
+      if (Version.currentVersion().getMajor() != version.getMajor() ||
+          Version.currentVersion().getMinor() != version.getMinor()) {
         throw new InvalidFormatException("Model version " + version + " is not supported by this (" 
             + Version.currentVersion() +") version of OpenNLP!");
       }
