@@ -32,6 +32,7 @@
         <include>lib/**</include>
         <include>build.sh</include>
         <include>build.xml</include>
+        <include>AUTHORS</include>        
         <include>CHANGES</include>        
         <include>COMMANDLINE</include>
         <include>LICENSE</include>
