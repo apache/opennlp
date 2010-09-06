@@ -17,6 +17,14 @@ Command line interface has been rewritten and can now accessed through opennlp.t
 Built in evaluation has been added to the Sentence Detector, Tokenizer,
 Name Finder, Pos Tagger and Document Categorizer.
 
+Added native support to train opennlp name finders on conll02 data.
+Conll02 includes training data for Dutch and Spanish. 
+
+Added native support to train tokenizer, sentence detector and pos tagger on conll06 data,
+conll06 includes data for Portuguese, Dutch, Swedish and Danish.
+
+Added a dictionary based detokenizer.
+
 License was changed from LGPL to ASL.
 Trove dependencies was removed.
 The ant build system was replaced by maven.
