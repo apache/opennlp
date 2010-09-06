@@ -28,6 +28,11 @@
 	<version>3.0.0-SNAPSHOT</version>
 	<name>OpenNLP Maxent</name>
 	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
