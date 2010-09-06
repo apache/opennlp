@@ -88,3 +88,26 @@ font-family: Bookman,Lucida, Helvetica,arial, times;
 font-size: 12pt;
 background: #52A0EF;
 }
+
+table#model-download {
+	color: black;
+	border: 2px solid #006699;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+
+table#model-download td {
+	color: black;
+	border: 1px solid #006699;
+	border-collapse: collapse;
+	padding: .3em;
+}
+
+table#model-download th {
+font-family: Bookman,Lucida, Helvetica,arial, times;
+font-size: 14pt;
+padding: .3em;
+border: 1px solid #006699;
+background: white;
+color: #006699;
+}
