@@ -1,0 +1,44 @@
+This HOWTO describes how the opennlp website
+can be updated.
+
+The web site is in the "doc" directory. After modifying
+the html files they must be pushed to the project web server
+at sourceforge. All files in the doc directory
+will be pushed, make sure there are only files which
+should be part of the web site. 
+
+The files will be deployed with maven. The login
+credentials to the sourceforge server must be added
+to the local settings.xml file in the maven .m2 folder.
+Note, that is not inside the project folder and must
+not be checked in!
+Add the user and password to your local settings.xml file:
+
+<settings>
+  ...
+  <servers>
+        <server>
+            <id>opennlp.sf.net</id>
+            <username>testuser</username>
+            <password>mysecretpwd</password>
+            <filePermissions>775</filePermissions>
+            <directoryPermissions>775</directoryPermissions>
+        </server>
+    </servers>
+</settings>
+
+If you are doing this the first time, the settings.xml file must
+be created inside the maven .m2 folder.
+See this link for further information:
+http://maven.apache.org/settings.html
+
+Now follow these steps to actually update and deploy
+the web site:
+- Update the web site
+- Verify the modifications with a browser
+- Before deploying the site, commit the changes
+  to the repository
+- Create active shell with "ssh -t USER,PROJECT@shell.sourceforge.net create"
+  and logout with "exit"
+- Deploy the site with mvn site:deploy
+
