@@ -3,8 +3,29 @@ Introduction
 
 See the web site http://maxent.sf.net
 
+The maxent package can be build with ant and maven. 
 
-Installing the build tools
+Building with maven
+==========================
+To build the package make sure maven is installed
+on your system.
+The current version and installation instructions
+can be found here:
+http://maven.apache.org/download.html
+
+Go into the maxent source directory
+and type:
+mvn install
+
+The maxent jar file will then be installed into your
+local maven repository.
+
+To build the source distribution from the source
+type:
+mvn assembly:assembly
+
+
+Building with ant
 ==========================
 
 The Maxent build system is based on Jakarta Ant, which is a Java
@@ -28,12 +49,6 @@ or on Unix:
   (csh)
 > JAVA_HOME=/usr/java; export JAVA_HOME
   (ksh, bash)
-
-That's it!
-
-
-Building instructions
-=====================
 
 Ok, let's build the code. First, make sure your current working
 directory is where the build.xml file is located. Then type
