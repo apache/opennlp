@@ -13,15 +13,3 @@ License: Apache Software License
 
 A Java based build tool. It is supported by crimson.jar and jaxp.jar,
 and license information for those is included in this directory.
-
-
-------------------------------------------------------------------------
-java-getopt.jar
-
-The GNU Java Getopt Package, version 1.0.8
-Homepage: http://www.urbanophile.com/arenn/hacking/download.html
-License: LGPL
-
-A Java command line option parser.
-
-------------------------------------------------------------------------
