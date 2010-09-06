@@ -1,0 +1,94 @@
+<!--
+	Licensed to the Apache Software Foundation (ASF) under one
+	or more contributor license agreements.  See the NOTICE file
+	distributed with this work for additional information
+	regarding copyright ownership.  The ASF licenses this file
+	to you under the Apache License, Version 2.0 (the
+	"License"); you may not use this file except in compliance
+	with the License.  You may obtain a copy of the License at
+	
+	http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing,
+	software distributed under the License is distributed on an
+	"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+	KIND, either express or implied.  See the License for the
+	specific language governing permissions and limitations
+	under the License.    
+-->
+
+<html>
+<head>
+
+<!-- Language related information -->
+<meta http-equiv=Content-Language content=EN>
+<meta http-equiv=Content-Type content="text/html; charset=iso-8859-1">
+<meta name=language content=EN>
+<meta name=keywords content="OpenNLP, Natural Language, NLP, AI, maxent">
+
+<Link rel="stylesheet" href="../style.css" type="text/css">
+
+<title>OpenNLP Tools Models</title>
+
+</head>
+<body bgcolor="#FFFFFF">
+
+<table width=100% border=0 cellPadding=0 cellSpacing=0>
+<tr>
+<!--  <td width=18%>&nbsp;</td>-->
+ <td width=40% valign="top"><img src="../onlplogo.jpg"></td>
+  <td width=47% align="right" valign="bottom"><h2>Models for 1.5 series</h2></td>
+  <td width=13%>&nbsp;</td> 
+</tr>
+</table>
+
+<table width=100% height=100% border=0 cellPadding=0 cellSpacing=0>
+<tr> 
+<!--  <td width=18%>&nbsp;</td> -->
+<td width=12%>&nbsp;</td>  
+<td width=75% valign="top">
+
+<HR WIDTH="100%">
+<p>
+Use the links in the table below to download the pre-trained
+models for the OpenNLP 1.5 series. 
+</p>
+<p>
+The models are language dependent and only perform well
+if the model language matches the language of the input text. Also make sure the input
+text is decoded correctly, depending on the input file encoding this can only be done
+by explicitly specifing the character encoding.
+See this <a href="http://download.oracle.com/javase/tutorial/i18n/text/convertintro.html">Java Tutorial</a>
+section for further details.
+</p>
+
+<p>
+Note: All models are zip compressed (like a jar file), they <b>must not</b> be uncompressed.
+</p>
+
+<table id="model-download">
+	<tr>
+		<th>Language</th>
+		<th>Component</th>
+		<th>Description</th>
+		<th>Download</th>
+	</tr>
+	<tr>
+		<td>en</td>
+		<td>Tokenizer</td>
+		<td>Trained on opennlp training data.</td>
+		<td><a href="en-token.bin">en-token.bin</a></td>
+	</tr>
+	<!-- tr>
+		<td>en</td>
+		<td>Sentence Detector</td>
+		<td>Trained on opennlp training data.</td>
+		<td><a href="en-sent.bin">en-sent.bin</a></td>
+	</tr -->
+</table>
+
+</td>
+<td width=13%>&nbsp;</td>
+</tr>
+</table>
+</html>
