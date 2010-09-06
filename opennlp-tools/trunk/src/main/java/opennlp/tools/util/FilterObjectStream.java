@@ -39,12 +39,10 @@ public abstract class FilterObjectStream<S, T> implements ObjectStream<T> {
     this.samples = samples;
   }
   
-  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     samples.reset();
   }
 
-  @Override
   public void close() throws IOException {
     samples.close();
   }
