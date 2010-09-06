@@ -29,8 +29,10 @@
       <includes>
         <include>docs/**</include>
         <include>samples/**</include>
-        <include>AUTHORS</include>
-        <include>CHANGESS</include>        
+        <include>lib/**</include>
+        <include>build.sh</include>
+        <include>build.xml</include>
+        <include>CHANGES</include>        
         <include>COMMANDLINE</include>
         <include>LICENSE</include>
         <include>pom.xml</include>
