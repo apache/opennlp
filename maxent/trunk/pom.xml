@@ -36,6 +36,7 @@
 		</license>
 	</licenses>
 	<scm>
+		<connection>scm:cvs:pserver:anonymous:@maxent.cvs.sourceforge.net:/cvsroot/maxent:maxent</connection>
 		<url>http://maxent.cvs.sourceforge.net/viewvc/maxent/</url>
 	</scm>
 	<dependencies>
@@ -52,6 +53,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.1</version>
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
