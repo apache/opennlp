@@ -38,7 +38,7 @@ the web site:
 - Verify the modifications with a browser
 - Before deploying the site, commit the changes
   to the repository
-- Create active shell with "ssh -t USER,PROJECT@shell.sourceforge.net create"
+- Create active shell with "ssh -t USER,opennlp@shell.sourceforge.net create"
   and logout with "exit"
 - Deploy the site with mvn site:deploy
 
@@ -47,3 +47,7 @@ If you need to delete a file please use the unix shell,
 the web site files can be found in this directory:
 /home/groups/o/op/opennlp/htdocs
 
+Model should be copied with scp.
+First create an active shell, with the command from above
+and then:
+scp local.file USER,opennlp@shell.sourceforge.net:/home/groups/o/op/opennlp/htdocs
