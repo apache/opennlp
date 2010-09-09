@@ -1,0 +1,341 @@
+3.0.0
+-----
+Removed trove dependency.
+Changed license to ASL.
+Re-organized package structure to support up coming work.
+Added perceptron classifier.
+
+2.5.3
+-----
+Fixed bug in GIS class, a cutoff value was not passed on to the GISTrainer
+Fixed bug in GISTrainer, a cutoff value compare was incorrect 
+
+2.5.2
+-----
+Wrapped model reading input streams with BufferedInputStream for performance gain.
+
+2.5.1
+-----
+Fixed bugs with real-valued feature support.
+Added unit tests for these bugs.
+
+2.5.0
+-----
+Added support for real-valued features with RealBasicEventStream, 
+RealValueFileEventStream, OnePassRealValueDataIndexer, and
+TwoPassRealValueDataIndexer classes.
+
+Added support for priors with the Prior interface.  By default the
+package has been using a uniform prior when no other information is
+known, now you can create other priors.
+
+Set TwoPassDataIndexer to use UTF8 encoding.
+
+Made GISModel thread safe for calls to the eval() method.
+
+Refactored GISModel and GISTrainer to use common eval() method.
+
+2.4.0
+-----
+Updated parameter datatype to re-use data structure storing which outcomes
+are found with that predicate/context in GISModel.  (Per suggestion by
+Richard Northedge).
+
+Made changes to support above change in GISTrainer, GISModelReader,
+GISModelWriter, and OldFormatGISModelReader.
+
+Changed smoothing boolean to be parameter instead of static variable in GIS.
+
+Update sample code to reflect above change.
+
+Extracted FileEventStream from TwoPassDataIndexer.
+
+Improved javadoc.
+
+2.3.0
+-----
+Added and updated javadoc including package descriptions.  
+Made new trove type to improve efficiency.  
+
+2.2.0
+-----
+Added TwoPassDataIndexer to use a temorpy file for storing the events.  This
+allows much larger models to be trained in a smaller amount of memory with no
+noticible decrease in performance for large models.
+
+Made minor additions to interface to allow more flexible access to model 
+outcomes.
+
+2.1.0 (Major bug fixes) 
+-----
+
+Fixed some bugs with the updating off the corrections paramater.
+Namely the expected value needed to check if a particular context was
+avalable with the outcome seen in training and if not add a term to
+the expected value of the correction constant. (Tom)
+
+Smoothing initial value wasn't in the log domain. (Tom)
+
+Loglikelihood update as returned by nextIteration wasn't in the right
+place so the loglikelihood value it returned was incorrect. (Tom)
+
+Added cast to integer division in model update. (Tom, fixing bug
+pointed out by Zhang Le)
+
+
+2.0 (Major improvements)
+---
+Fixed bug where singleton events are dropped. (Tom)
+
+Added eval method so distribution could be passed in rathar then
+allocated durring each call.  Left old interface in place but modified
+it to use the new eval method.  Also made numfeats a class level
+variable. (Tom)
+
+Fixed cases where parameters which only occured with a single output
+weren't getting updated.  Ended up getting rid of pabi and cfvals
+structures.  These have been replaced with the data for a single event,
+double[] modelDistribution, and this is used to update the modifiers
+for a single event and then updated for each additional event.  This
+change made it easier to initialize the modleDistribution to the
+uniform distribution which was necessary to fix teh above problem.
+Also moved the computation of modelDistribution into it's own routine
+which is name eval and is almost exactly the same as GISModel.eval w/o
+doing the context string to integer mappings. (Tom)
+
+Made correction constant non-optional.  When the events all have the same
+number of contexts then the model tries to make the expected value of the
+correction constant nearly 0.  This is needed because while the number of
+contexts may be same it is very unlikly that all context occur with all
+outcomes. (Tom)
+
+Made nextIteration return a double which is the log-likelihood from
+the previous itteration.  At some point there isn't enough accuracy in
+a double to make further iterations useful so the routine may stop
+prematurly when the decrease in log-likelihood is too small. (Tom)
+
+
+1.2.10
+------
+Fixed minor bug (found by Arno Erpenbeck) in BasicContextGenerator: it
+was retaining whitespace in the contextual predicates. (Jason)
+
+Added error message to TrainEval's eval() method. (Jason)
+
+
+1.2.9 (Bug fix release)
+_____
+
+Modified the cutoff loop in DataIndexer to use the increment() method
+of TObjectIntHashMap. (Jason)
+
+Fixed a bug (found by Chieu Hai Leong) in which the correctionConstant
+of GISModel was an int that was used in division.  Now,
+correctionConstant is a double. (Jason)
+
+
+1.2.8
+_____
+
+Modified GISTrainer to use the new increment() and adjustValue()
+methods available in Trove 0.1.4 hashmaps. (Jason)
+
+Set up the GISTrainer to use an initial capacity and load factor for
+the big hashmaps it uses.  The initial capacity is half the number of
+outcomes, and the load factor is 0.9. (Jason)
+
+(opennlp.maxent.DataIndexer)  Do not index events with 0 active features.
+(Eric)
+
+Upgraded trove dependency to 0.1.1 (includes TIntArrayList, with reset()) 
+(Eric)
+
+(opennlp.maxent.DataIndexer)
+Refactored event count computation so that the cutoff can be applied while
+events are read.  This obviates the need for a separate pass over the
+predicates between event count computation and indexing.  It also saves
+memory by reducing the amount of temporary data needed and by avoiding
+creation of instances of the Counter class.  the applyCutoff() method
+was no longer needed and so is gone. (Eric)
+
+(opennlp.maxent.DataIndexer)
+Made the event count computation + cutoff application also handle the
+assignment of unique indexes to predicates that "make the cut."  This
+saves a fair amount of time in the indexing process. (Eric)
+
+(opennlp.maxent.DataIndexer)
+Refactored the indexing implementation so that TIntArrayLists are 
+(re-)used for constructing the array of predicate references associated
+with each ComparableEvent.  Using the TIntArrayList instead of an
+ArrayList of Integers dramatically reduces the amount of garbage
+produced during indexing; it's also smaller. (Eric)
+
+(opennlp.maxent.DataIndexer)
+removed toIntArray() method, since TIntArrayList provides the same
+behavior without the cost of a loop over a List of Integers (Eric)
+
+(opennlp.maxent.DataIndexer)
+changed indexing Maps to TObjectIntHashMaps to save space in several
+places. (Eric)
+
+1.2.6
+-----
+Summary: efficiency improvements for model training.
+
+Removed Colt dependency in favor of GNU Trove. (Eric)
+
+Refactored index() method in DataIndexer so that only one pass over the
+list of events is needed.  This saves time (of course) and also space,
+since it's no longer necessary to allocate temporary data structures to
+share data between two loops. (Eric)
+
+Refactored sorting/merging algorithm for ComparableEvents so that
+merging can be done in place.  This makes it possible to merge without
+copying duplicate events into sublists and so improves the indexer's
+ability to work on large data sets with a reasonable amount of memory.
+There is still more to be done in this department, however. (Eric)
+
+The output directory of the build structure is now "output" instead of
+"build". (Jason)
+
+1.2.4
+-----
+Added options for doing *very* simple smoothing, in which we 'observe'
+features that we didn't actually see in the training data.  Seems to
+improve performance for models with small data sets and only a few
+outcomes, though it conversely appears to degrade those with lots of
+data and lots of outcomes.
+
+Added BasicEventStream and BasicContextGenerator classes which assume
+that the contextual predicates and outcomes are just sitting pretty in
+lines.  This allows the events to be stored in a file and then read in
+for training without scanning around producing the events everytime.
+
+Added sample application "sports" to help with testing model behavior
+and to act as an example to help newbies use the toolkit and build
+their own maxent applications.
+
+Fixed bug in TrainEval in which the number of iterations and the
+cutoff were swapped in the call to train the model.
+
+PerlHelp and BasicEnglishAffixes classes were moved out of Maxent so
+that gnu-regexp.jar is no longer needed.
+
+
+1.2.2
+-----
+Added "exe" to build.xml to create stand alone jar files. Also added
+structure and "homepage" target so that it is easier to keep homepage
+up-to-date.
+
+Added IntegerPool, which manages a pool of shareable, read-only Integer 
+objects in a fixed range. This is used in several places where Integer 
+objects were previously created and then GCed.
+
+In various places, used Collections API features to speed things up. 
+For example, java.util.List.toArray() will do a System.arraycopy, if 
+given a big enough array to copy into. This is, therefore, much
+faster.
+
+Added getAllOutcomes() method in GISModel to show the String names of
+all outcomes matched up with their normalized probabilities.
+
+
+1.2.0
+-----
+Changed license to LGPL.
+
+Added build.xml file to be used with the build tool Jakarta Ant.
+
+Work sponsored by Electric Knowledge:
+    Added BasicEnglishAffixes class to perform basic morphological
+    stemming for English.
+
+Fixed a bug pointed out by Chieu Hai Leong in which the model would
+not train properly in situations where the number of features was
+constant (and therefore, no correction features need to be computed).
+
+The top level package name has changed from quipu to opennlp.  Thus,
+what was "quipu.maxent" is now "opennlp.maxent".  See
+http://www.opennlp.com for more details.
+
+Lots of little tweaks to reduce memory consumption.
+
+Several changes sponsored by eTranslate Inc:
+
+  * The new opennlp.maxent.io subpackage.  The input/output system for
+    models is now designed to facilitate storing and retrieving of
+    models in different formats.  At present, GISModelReaders and
+    GISModelWriters have been supplied for reading and writing plain
+    text and binary files and either can be gzipped or
+    uncompressed. The OldFormatGISModelReader can be used to read old
+    models (from Maxent 1.0), and also provides command line
+    functionality to convert old models to a new format.  Also,
+    SuffixSensitiveGISModelReader and SuffixSensitiveGISModelWriter
+    have been provided to allow models to be stored and retrieved
+    appropriated based on the suffixes on their file names.
+
+  * Model training no longer automatically persists the new model to
+    disk.  Instead it returns a GISModel object which can then be
+    persisted using an object from one of the GISModelWriter classes.
+
+  * Model training now relies on EventStreams rather than
+    EventCollectors.  An EventStream is fed to the DataIndexer
+    directly without the developer needing to invoke the DataIndex
+    class explicitly.  A good way to feed an EventStream the data it
+    needs to form events is to use a DataStream that can return
+    Objects from a data source in a format and os-independent
+    manner. An implementation of the DataStream interface for reading
+    plain text files line by line is provide in the
+    opennlp.maxent.PlainTextByLineDataStream class.
+
+    In order to retain backwards compatability, the
+    EventCollectorAsStream class is provided as a wrapper over the
+    EventCollectors used in Maxent 1.0.  
+
+  * GISModel is now thread-safe.  Thus, one maxent application can
+    service multiple evaluations in parallel with a single model.
+
+  * The opennlp.maxent.ModelReplacementManager class has been added to
+    allow a maxent application to replace its current maxent model
+    with a newly trained one in a thread-safe manner without stopping
+    the servicing of requests.
+
+    An alternative to the ModelReplacementManager is to use a
+    DomainToModelMap object to record the mapping between different
+    data domains to models which are optimized for them.  This class
+    allows models to be swapped in a thread-safe manner as well.
+
+  * The GIS class now is a factory which invokes a new GISTrainer
+    whenever a new model is being trained.  Since GISTrainer has only
+    local variables and methods, multiple models can be trained
+    simultaneously on different threads.  With the previous
+    implementation, requests to train new models were forced to queue
+    up.
+
+1.0
+_____
+Reworked the GIS algorithm to use efficient data structures
+   * Tables matching things like predicates, probabilities, correction
+     values to their outcomes now use OpenIntDoubleHashMaps.
+   * Several functions over OpenIntDoubleHashMaps are now defined,
+     and most of the work of the iteration loop is in fact done by
+     these.
+
+Events with the same outcome and contextual predicates are collapsed
+to reduce the number of tokens which must be iterated through in
+several loops.  The number of times each event "type" is seen is then
+stored in an array (numTimesEventSeen) to provide the proper values.
+
+GISModel uses less memory for models with many outcomes, and is much
+faster on them as well.  Performance is roughly the same for models
+with only two outcomes.
+
+More code documentation.
+
+Fully compatible with models built using version 0.2.0.
+
+
+0.2.0
+_____
+Initial release of fully functional maxent package.
