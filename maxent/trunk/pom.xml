@@ -40,10 +40,24 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+	
 	<scm>
 		<connection>scm:cvs:pserver:anonymous:@maxent.cvs.sourceforge.net:/cvsroot/maxent:maxent</connection>
 		<url>http://maxent.cvs.sourceforge.net/viewvc/maxent/</url>
 	</scm>
+	
+	<issueManagement>
+		<system>sourceforge</system>
+		<url>http://sourceforge.net/tracker/?group_id=5961</url>
+	</issueManagement>
+	
+	<distributionManagement>
+		<repository>
+			<id>opennlp.sf.net</id>
+			<url>scp://shell.sourceforge.net/home/groups/o/op/opennlp/htdocs/maven-test</url>
+		</repository>
+	</distributionManagement>
+	
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -75,5 +89,13 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>1.0-beta-6</version>
+			</extension>
+		</extensions>
 	</build>
 </project>
