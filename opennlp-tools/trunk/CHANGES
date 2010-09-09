@@ -29,7 +29,7 @@ License was changed from LGPL to ASL.
 Trove dependencies was removed.
 The ant build system was replaced by maven.
 Java 1.5 is now the minimal supported version.
-Updated maxent library to 3.0.
+Updated maxent library to 3.0.0
 
 Tokenizer
 =========
