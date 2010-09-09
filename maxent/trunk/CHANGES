@@ -5,6 +5,15 @@ Changed license to ASL.
 Re-organized package structure to support up coming work.
 Added perceptron classifier.
 
+2.5.3
+-----
+Fixed bug in GIS class, a cutoff value was not passed on to the GISTrainer
+Fixed bug in GISTrainer, a cutoff value compare was incorrect 
+
+2.5.2
+-----
+Wrapped model reading input streams with BufferedInputStream for performance gain.
+
 2.5.1
 -----
 Fixed bugs with real-valued feature support.
