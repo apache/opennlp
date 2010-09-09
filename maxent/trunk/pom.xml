@@ -54,7 +54,7 @@
 	<distributionManagement>
 		<repository>
 			<id>opennlp.sf.net</id>
-			<url>scp://shell.sourceforge.net/home/groups/o/op/opennlp/htdocs/maven-test</url>
+			<url>scp://shell.sourceforge.net/home/groups/o/op/opennlp/htdocs/maven2</url>
 		</repository>
 	</distributionManagement>
 	
