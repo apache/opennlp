@@ -49,8 +49,12 @@
 	<distributionManagement>
 		<site>
 			<id>opennlp.sf.net</id>
-			<url>scp://shell.sourceforge.net/home/groups/o/op/opennlp/htdocs</url>
+			<url>scp://shell.sourceforge.net/home/groups/o/op/opennlp/htdocs/maven2</url>
 		</site>
+		<repository>
+			<id>opennlp.sf.net</id>
+			<url>scp://shell.sourceforge.net/home/groups/o/op/opennlp/htdocs/maven2</url>
+		</repository>
 	</distributionManagement>
   
 	<properties>
@@ -59,7 +63,7 @@
 
 	<repositories>
 		<repository>
-			<id>OpenNLPRepository</id>
+			<id>opennlp.sf.net</id>
 			<url>
 				http://opennlp.sourceforge.net/maven2
 			</url>
@@ -70,7 +74,7 @@
 		<dependency>
 			<groupId>opennlp</groupId>
 			<artifactId>maxent</artifactId>
-			<version>3.0.0-SNAPSHOT</version>
+			<version>3.0.0</version>
 			<scope>compile</scope>
 		</dependency>
 
