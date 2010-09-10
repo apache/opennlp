@@ -26,17 +26,15 @@ import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.postag.POSSample;
-import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.tokenize.DetokenizationDictionary;
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
+import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
-public class ConllXSentenceSampleStreamFactory implements ObjectStreamFactory<SentenceSample> {
+public class POSToTokenSampleStreamFactory implements ObjectStreamFactory<TokenSample> {
 
-  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {    
-    // TODO:
-    // Make chunk size configurable
+  interface Parameters extends WordTagSampleStreamFactory.Parameters, DetokenizerParameter {
   }
   
   public String getUsage() {
@@ -47,23 +45,23 @@ public class ConllXSentenceSampleStreamFactory implements ObjectStreamFactory<Se
     return ArgumentParser.validateArguments(args, Parameters.class);
   }
 
-  public ObjectStream<SentenceSample> create(String[] args) {
-    
+  public ObjectStream<TokenSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    
-    // TODO: Compare code to ConllXTokenSampleStream, maybe it can be shared somehow
-    
-    ObjectStream<POSSample> posSampleStream = 
-        new ConllXPOSSampleStreamFactory().create(params);
-    
+
+    ObjectStream<POSSample> posSampleStream = new WordTagSampleStreamFactory()
+        .create(params);
+
+    // TODO: Move this to a factory method
     Detokenizer detokenizer;
     try {
-      detokenizer = new DictionaryDetokenizer(new DetokenizationDictionary(new FileInputStream(new File(params.getDetokenizer()))));
+      detokenizer = new DictionaryDetokenizer(new DetokenizationDictionary(
+          new FileInputStream(new File(params.getDetokenizer()))));
     } catch (IOException e) {
-      System.err.println("Error while loading detokenizer dict: " + e.getMessage());
+      System.err.println("Error while loading detokenizer dict: "
+          + e.getMessage());
       throw new TerminateToolException(-1);
     }
-    
-    return new POSToSentenceSampleStream(detokenizer, posSampleStream, 30);
+
+    return new POSToTokenSampleStream(detokenizer, posSampleStream);
   }
 }

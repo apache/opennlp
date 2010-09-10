@@ -24,6 +24,7 @@ import java.util.Map;
 import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
+import opennlp.tools.formats.POSToTokenSampleStreamFactory;
 import opennlp.tools.tokenize.TokenSample;
 
 public class TokenizerConverterTool extends AbstractConverterTool<TokenSample> {
@@ -35,6 +36,7 @@ public class TokenizerConverterTool extends AbstractConverterTool<TokenSample> {
       new HashMap<String, ObjectStreamFactory<TokenSample>>();
     
     mutableStreamFactories.put("conllx", new ConllXTokenSampleStreamFactory());
+    mutableStreamFactories.put("pos", new POSToTokenSampleStreamFactory());
     
     streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
   }

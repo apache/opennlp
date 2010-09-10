@@ -32,13 +32,12 @@ import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.util.ObjectStream;
 
-public class ConllXSentenceSampleStreamFactory implements ObjectStreamFactory<SentenceSample> {
+public class POSToSentenceSampleStreamFactory implements
+    ObjectStreamFactory<SentenceSample> {
 
-  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {    
-    // TODO:
-    // Make chunk size configurable
+  interface Parameters extends WordTagSampleStreamFactory.Parameters, DetokenizerParameter {
   }
-  
+
   public String getUsage() {
     return ArgumentParser.createUsage(Parameters.class);
   }
@@ -48,22 +47,21 @@ public class ConllXSentenceSampleStreamFactory implements ObjectStreamFactory<Se
   }
 
   public ObjectStream<SentenceSample> create(String[] args) {
-    
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    
-    // TODO: Compare code to ConllXTokenSampleStream, maybe it can be shared somehow
-    
-    ObjectStream<POSSample> posSampleStream = 
-        new ConllXPOSSampleStreamFactory().create(params);
-    
+
+    ObjectStream<POSSample> posSampleStream = new WordTagSampleStreamFactory()
+        .create(params);
+
     Detokenizer detokenizer;
     try {
-      detokenizer = new DictionaryDetokenizer(new DetokenizationDictionary(new FileInputStream(new File(params.getDetokenizer()))));
+      detokenizer = new DictionaryDetokenizer(new DetokenizationDictionary(
+          new FileInputStream(new File(params.getDetokenizer()))));
     } catch (IOException e) {
-      System.err.println("Error while loading detokenizer dict: " + e.getMessage());
+      System.err.println("Error while loading detokenizer dict: "
+          + e.getMessage());
       throw new TerminateToolException(-1);
     }
-    
+
     return new POSToSentenceSampleStream(detokenizer, posSampleStream, 30);
   }
 }

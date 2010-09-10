@@ -18,25 +18,28 @@
 package opennlp.tools.formats;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 
 import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.postag.POSSample;
-import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.tokenize.DetokenizationDictionary;
-import opennlp.tools.tokenize.Detokenizer;
-import opennlp.tools.tokenize.DictionaryDetokenizer;
+import opennlp.tools.postag.WordTagSampleStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 
-public class ConllXSentenceSampleStreamFactory implements ObjectStreamFactory<SentenceSample> {
+public class WordTagSampleStreamFactory implements ObjectStreamFactory<POSSample> {
 
-  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {    
-    // TODO:
-    // Make chunk size configurable
+  static interface Parameters {
+    
+    @ParameterDescription(valueName = "sampleData")
+    String getData();
+    
+    @ParameterDescription(valueName = "charsetName")
+    String getEncoding();
   }
   
   public String getUsage() {
@@ -47,23 +50,21 @@ public class ConllXSentenceSampleStreamFactory implements ObjectStreamFactory<Se
     return ArgumentParser.validateArguments(args, Parameters.class);
   }
 
-  public ObjectStream<SentenceSample> create(String[] args) {
-    
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-    
-    // TODO: Compare code to ConllXTokenSampleStream, maybe it can be shared somehow
-    
-    ObjectStream<POSSample> posSampleStream = 
-        new ConllXPOSSampleStreamFactory().create(params);
-    
-    Detokenizer detokenizer;
+  ObjectStream<POSSample> create(Parameters params) {
+    ObjectStream<String> lineStream;
     try {
-      detokenizer = new DictionaryDetokenizer(new DetokenizationDictionary(new FileInputStream(new File(params.getDetokenizer()))));
-    } catch (IOException e) {
-      System.err.println("Error while loading detokenizer dict: " + e.getMessage());
+      lineStream = new PlainTextByLineStream(new InputStreamReader(
+          CmdLineUtil.openInFile(new File(params.getData())), params.getEncoding()));
+      
+      return new WordTagSampleStream(lineStream);
+    } catch (UnsupportedEncodingException e) {
+      System.err.println("Encoding not supported: " + params.getEncoding());
       throw new TerminateToolException(-1);
     }
-    
-    return new POSToSentenceSampleStream(detokenizer, posSampleStream, 30);
+  }
+  
+  public ObjectStream<POSSample> create(String[] args) {
+    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    return create(params);
   }
 }

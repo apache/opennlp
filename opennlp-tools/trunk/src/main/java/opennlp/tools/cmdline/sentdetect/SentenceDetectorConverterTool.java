@@ -24,6 +24,7 @@ import java.util.Map;
 import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.formats.ConllXSentenceSampleStreamFactory;
+import opennlp.tools.formats.POSToSentenceSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 
 public class SentenceDetectorConverterTool extends AbstractConverterTool<SentenceSample> {
@@ -35,6 +36,7 @@ public class SentenceDetectorConverterTool extends AbstractConverterTool<Sentenc
       new HashMap<String, ObjectStreamFactory<SentenceSample>>();
     
     mutableStreamFactories.put("conllx", new ConllXSentenceSampleStreamFactory());
+    mutableStreamFactories.put("pos", new POSToSentenceSampleStreamFactory());
     
     streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
   }
