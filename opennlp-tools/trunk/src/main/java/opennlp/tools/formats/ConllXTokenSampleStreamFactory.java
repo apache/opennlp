@@ -22,9 +22,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.tokenize.DetokenizationDictionary;
 import opennlp.tools.tokenize.Detokenizer;
@@ -35,10 +35,7 @@ import opennlp.tools.util.ObjectStream;
 // needs a ConllXPOSSampleStream and detokenizer ...
 public class ConllXTokenSampleStreamFactory implements ObjectStreamFactory<TokenSample> {
   
-  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters {
-    
-    @ParameterDescription(valueName = "dictionary")
-    String getDetokenizer();
+  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {
   }
   
   public String getUsage() {

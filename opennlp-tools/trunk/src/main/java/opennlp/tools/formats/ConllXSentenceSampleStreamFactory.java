@@ -22,9 +22,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.tokenize.DetokenizationDictionary;
@@ -36,13 +36,9 @@ public class ConllXSentenceSampleStreamFactory implements ObjectStreamFactory<Se
 
   // which params do we need ?
   
-  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters {
-    
+  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {    
     // TODO:
     // Make chunk size configurable
-    
-    @ParameterDescription(valueName = "dictionary")
-    String getDetokenizer();
   }
   
   public String getUsage() {
