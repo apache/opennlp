@@ -49,7 +49,7 @@
 	<distributionManagement>
 		<site>
 			<id>opennlp.sf.net</id>
-			<url>scp://shell.sourceforge.net/home/groups/o/op/opennlp/htdocs/maven2</url>
+			<url>scp://shell.sourceforge.net/home/groups/o/op/opennlp/htdocs</url>
 		</site>
 		<repository>
 			<id>opennlp.sf.net</id>
