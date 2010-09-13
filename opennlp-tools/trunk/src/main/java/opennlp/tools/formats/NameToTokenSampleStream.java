@@ -17,19 +17,34 @@
 
 package opennlp.tools.formats;
 
-import opennlp.tools.postag.POSSample;
+import java.io.IOException;
+
+import opennlp.tools.namefind.NameSample;
 import opennlp.tools.tokenize.Detokenizer;
+import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
-public class POSToSentenceSampleStream extends AbstractToSentenceSampleStream<POSSample> {
+public class NameToTokenSampleStream extends FilterObjectStream<NameSample, TokenSample> {
+
+  private final Detokenizer detokenizer;
   
-  POSToSentenceSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples, int chunkSize) {
+  public NameToTokenSampleStream(Detokenizer detokenizer, ObjectStream<NameSample> samples) {
+    super(samples);
     
-    super(detokenizer, samples, chunkSize);
+    this.detokenizer = detokenizer;
   }
   
-  @Override
-  protected String[] toSentence(POSSample sample) {
-    return sample.getSentence();
+  public TokenSample read() throws IOException {
+    NameSample nameSample = samples.read();
+    
+    TokenSample tokenSample = null;
+    
+    if (nameSample != null ) {
+      tokenSample = new TokenSample(detokenizer, nameSample.getSentence());
+    }
+    
+    return tokenSample;
   }
+
 }

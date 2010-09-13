@@ -17,19 +17,18 @@
 
 package opennlp.tools.formats;
 
-import opennlp.tools.postag.POSSample;
+import opennlp.tools.namefind.NameSample;
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.util.ObjectStream;
 
-public class POSToSentenceSampleStream extends AbstractToSentenceSampleStream<POSSample> {
-  
-  POSToSentenceSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples, int chunkSize) {
-    
+public class NameToSentenceSampleStream extends AbstractToSentenceSampleStream<NameSample> {
+
+  public NameToSentenceSampleStream(Detokenizer detokenizer, ObjectStream<NameSample> samples, int chunkSize) {
     super(detokenizer, samples, chunkSize);
   }
   
   @Override
-  protected String[] toSentence(POSSample sample) {
+  protected String[] toSentence(NameSample sample) {
     return sample.getSentence();
   }
 }
