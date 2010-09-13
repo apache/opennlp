@@ -18,14 +18,17 @@
 
 package opennlp.tools.namefind;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collections;
 
-import junit.framework.TestCase;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+
+import org.junit.Test;
 
 /**
  * This is the test class for {@link NameFinderME}.
@@ -45,8 +48,9 @@ import opennlp.tools.util.Span;
  * computed model is used to predict sentences from the
  * training sentences.
  */
-public class NameFinderMETest extends TestCase {
+public class NameFinderMETest {
 
+  @Test
   public void testNameFinder() throws Exception {
 
     // train the name finder
@@ -106,6 +110,7 @@ public class NameFinderMETest extends TestCase {
    *  
    * @throws Exception
    */
+  @Test
   public void testNameFinderWithTypes() throws Exception {
 
     // train the name finder
@@ -151,6 +156,7 @@ public class NameFinderMETest extends TestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testNameFinderWithMultipleTypes() throws Exception {
 
     // train the name finder
@@ -198,6 +204,7 @@ public class NameFinderMETest extends TestCase {
     assertEquals("organization", names2[1].getType());
   }
   
+  @Test
   public void testDropOverlappingSpans() {
     Span spans[] = new Span[] {new Span(1, 10), new Span(1,11), new Span(1,11), new Span(5, 15)};
     Span remainingSpan[] = NameFinderME.dropOverlappingSpans(spans);

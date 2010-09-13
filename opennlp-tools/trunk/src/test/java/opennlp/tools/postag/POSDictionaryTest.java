@@ -17,6 +17,8 @@
 
 package opennlp.tools.postag;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,13 +26,14 @@ import java.io.InputStream;
 
 import opennlp.tools.util.InvalidFormatException;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Tests for the {@link POSDictionary} class.
  */
-public class POSDictionaryTest extends TestCase {
+public class POSDictionaryTest {
 
+  @Test
   public void testSerialization() throws IOException, InvalidFormatException {
     POSDictionary dictionary = new POSDictionary();
 

@@ -20,7 +20,6 @@ package opennlp.tools.parser.chunking;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-import junit.framework.TestCase;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserFactory;
@@ -33,7 +32,7 @@ import org.junit.Test;
 /**
  * Tests for the {@link Parser} class.
  */
-public class ParserTest extends TestCase {
+public class ParserTest {
   
   /**
    * Verify that training and tagging does not cause

@@ -18,15 +18,16 @@
 
 package opennlp.tools.postag;
 
+import junit.framework.Assert;
 import opennlp.model.EventStream;
 import opennlp.tools.util.ObjectStreamUtils;
-import junit.framework.Assert;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 /**
  * Tests for the {@link POSSampleEventStream} class.
  */
-public class POSSampleEventStreamTest extends TestCase {
+public class POSSampleEventStreamTest {
 
   /**
    * Tests that the outcomes for a single sentence match the 
@@ -34,6 +35,7 @@ public class POSSampleEventStreamTest extends TestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testOutcomesForSingleSentence() throws Exception {
     String sentence = "That_DT sounds_VBZ good_JJ ._.";
     

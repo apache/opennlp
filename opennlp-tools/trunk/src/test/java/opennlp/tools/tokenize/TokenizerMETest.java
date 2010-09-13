@@ -18,9 +18,11 @@
 
 package opennlp.tools.tokenize;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Tests for the {@link TokenizerME} class.
@@ -31,8 +33,9 @@ import junit.framework.TestCase;
  *
  * @see TokenizerME
  */
-public class TokenizerMETest extends TestCase {
+public class TokenizerMETest {
 
+  @Test
   public void testTokenizerSimpleModel() throws IOException {
 
     TokenizerModel model = TokenizerTestUtil.createSimpleMaxentTokenModel();
@@ -46,6 +49,7 @@ public class TokenizerMETest extends TestCase {
     assertEquals(",", tokens[1]);
   }
   
+  @Test
   public void testTokenizer() throws IOException {
     TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
 

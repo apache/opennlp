@@ -18,19 +18,23 @@
 
 package opennlp.tools.sentdetect;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import junit.framework.TestCase;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+
+import org.junit.Test;
 
 /**
  * Tests for the {@link SentenceDetectorME} class.
  */
-public class SentenceDetectorMETest extends TestCase {
+public class SentenceDetectorMETest {
   
+  @Test
   public void testSentenceDetector() throws IOException {
 
     InputStream in = getClass().getResourceAsStream(

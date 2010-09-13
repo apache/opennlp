@@ -18,17 +18,20 @@
 
 package opennlp.tools.namefind;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.regex.Pattern;
 
 import opennlp.tools.util.Span;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Tests for the {@link RegexNameFinder} class.
  */
-public class RegexNameFinderTest extends TestCase {
+public class RegexNameFinderTest {
 
+  @Test
   public void testFindSingleTokenPattern() {
     Pattern testPattern = Pattern.compile("test");
 
@@ -45,6 +48,7 @@ public class RegexNameFinderTest extends TestCase {
     assertTrue(result[0].getEnd() == 1);
   }
 
+  @Test
   public void testFindTokenizdPattern() {
     Pattern testPattern = Pattern.compile("[0-9]+ year");
 
@@ -61,6 +65,7 @@ public class RegexNameFinderTest extends TestCase {
     assertTrue(result[0].getEnd() == 2);
   }
 
+  @Test
   public void testFindMatchingPatternWithoutMatchingTokenBounds() {
     Pattern testPattern = Pattern.compile("[0-8] year"); // does match "0 year"
 

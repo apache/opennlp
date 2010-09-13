@@ -17,23 +17,26 @@
 
 package opennlp.tools.tokenize;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import junit.framework.TestCase;
 import opennlp.tools.tokenize.DetokenizationDictionary.Operation;
 import opennlp.tools.util.InvalidFormatException;
 
-public class DetokenizationDictionaryTest extends TestCase {
+import org.junit.Before;
+import org.junit.Test;
+
+public class DetokenizationDictionaryTest{
   
   private String tokens[];
   private Operation operations[];
   private DetokenizationDictionary dict;
   
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
     
     tokens = new String[]{"\"", "(", ")"};
     
@@ -49,10 +52,12 @@ public class DetokenizationDictionaryTest extends TestCase {
     assertEquals(Operation.MOVE_LEFT, dict.getOperation(")"));
   }
   
+  @Test
   public void testSimpleDict() {
     testEntries(dict);
   }
   
+  @Test
   public void testSerialization() throws IOException, InvalidFormatException {
     
     ByteArrayOutputStream out = new ByteArrayOutputStream();

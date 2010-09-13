@@ -17,12 +17,15 @@
 
 package opennlp.tools.tokenize;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
 
 /**
  * Tests for the {@link SimpleTokenizer} class.
  */
-public class SimpleTokenizerTest extends TestCase {
+public class SimpleTokenizerTest {
 
   // The SimpleTokenizer is thread safe
   private SimpleTokenizer mTokenizer = SimpleTokenizer.INSTANCE;
@@ -30,6 +33,7 @@ public class SimpleTokenizerTest extends TestCase {
   /**
    * Tests if it can tokenize whitespace separated tokens.
    */
+  @Test
   public void testWhitespaceTokenization() {
 
     String text = "a b c  d     e                f    ";
@@ -49,6 +53,7 @@ public class SimpleTokenizerTest extends TestCase {
   /**
    * Tests if it can tokenize a word and a dot.
    */
+  @Test
   public void testWordDotTokenization() {
     String text = "a.";
 
@@ -63,6 +68,7 @@ public class SimpleTokenizerTest extends TestCase {
   /**
    * Tests if it can tokenize a word and numeric.
    */
+  @Test
   public void testWordNumericTokeniztation() {
     String text = "305KW";
 
@@ -74,6 +80,7 @@ public class SimpleTokenizerTest extends TestCase {
     assertTrue(tokenizedText.length == 2);
   }
 
+  @Test
   public void testWordWithOtherTokenization() {
     String text = "rebecca.sleep()";
 

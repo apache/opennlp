@@ -18,16 +18,19 @@
 
 package opennlp.tools.namefind;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertTrue;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
 
+import org.junit.Before;
+import org.junit.Test;
+
 /**
   *Tests for the {@link DictionaryNameFinder} class.
   */
-public class DictionaryNameFinderTest extends TestCase {
+public class DictionaryNameFinderTest{
 
   private Dictionary mDictionary = new Dictionary();
   private TokenNameFinder mNameFinder;
@@ -46,10 +49,12 @@ public class DictionaryNameFinderTest extends TestCase {
     mDictionary.put(max);
   }
 
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     mNameFinder = new DictionaryNameFinder(mDictionary);
   }
 
+  @Test
   public void testSingleTokeNameAtSentenceStart() {
 
     String sentence = "Max a b c d";
@@ -63,6 +68,7 @@ public class DictionaryNameFinderTest extends TestCase {
     assertTrue(names[0].getStart() == 0 && names[0].getEnd() == 1);
   }
 
+  @Test
   public void testSingleTokeNameInsideSentence() {
     String sentence = "a b  Max c d";
 
@@ -75,6 +81,7 @@ public class DictionaryNameFinderTest extends TestCase {
     assertTrue(names[0].getStart() == 2 && names[0].getEnd() == 3);
   }
 
+  @Test
   public void testSingleTokeNameAtSentenceEnd() {
     String sentence = "a b c Max";
 
@@ -87,6 +94,7 @@ public class DictionaryNameFinderTest extends TestCase {
     assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
   }
 
+  @Test
   public void testLastMatchingTokenNameIsChoosen() {
     String sentence[] = {"a", "b", "c", "Vanessa"};
 
@@ -96,6 +104,7 @@ public class DictionaryNameFinderTest extends TestCase {
     assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
   }
 
+  @Test
   public void testLongerTokenNameIsPreferred() {
     String sentence[] = {"a", "b", "c", "Vanessa", "Williams"};
 

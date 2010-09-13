@@ -18,13 +18,17 @@
 
 package opennlp.tools.tokenize;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * Tests for the {@link WhitespaceTokenizer} class.
  */
-public class WhitespaceTokenizerTest extends TestCase {
+public class WhitespaceTokenizerTest {
 
+  @Test
   public void testOneToken() {
     assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one")[0]);
     assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize(" one")[0]);
@@ -34,6 +38,7 @@ public class WhitespaceTokenizerTest extends TestCase {
   /**
    * Tests if it can tokenize whitespace separated tokens.
    */
+  @Test
   public void testWhitespaceTokenization() {
 
     String text = "a b c  d     e                f    ";
@@ -50,6 +55,7 @@ public class WhitespaceTokenizerTest extends TestCase {
     assertTrue(tokenizedText.length == 6);
   }
   
+  @Test
   public void testTokenizationOfStringWithoutTokens() {
     assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("").length); // empty
     assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize(" ").length); // space

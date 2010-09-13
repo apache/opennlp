@@ -18,15 +18,17 @@
 
 package opennlp.tools.namefind;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 import opennlp.tools.util.Span;
+
+import org.junit.Test;
 
 /**
  * This is the test class for {@link NameSample}.
  * 
  * @author William Colen
  */
-public class NameSampleTest extends TestCase {
+public class NameSampleTest {
   
   /**
    * Create a NameSample from scratch and validate it.
@@ -64,6 +66,7 @@ public class NameSampleTest extends TestCase {
    * Checks if could create a NameSample without NameTypes, generate the
    * string representation and validate it.
    */
+  @Test
   public void testNoTypesToString() {
     String nameSampleStr = createSimpleNameSample(false).toString();
     
@@ -75,6 +78,7 @@ public class NameSampleTest extends TestCase {
    * Checks if could create a NameSample with NameTypes, generate the
    * string representation and validate it.
    */
+  @Test
   public void testWithTypesToString() throws Exception {
     String nameSampleStr = createSimpleNameSample(true).toString();
     assertEquals("<START:Location> U . S . <END> President <START:Person> Barack Obama <END> is considering sending additional American forces to <START:Location> Afghanistan <END> .", nameSampleStr);
@@ -91,6 +95,7 @@ public class NameSampleTest extends TestCase {
    * Checks that if the name is the last token in a sentence it is still outputed
    * correctly.
    */
+  @Test
   public void testNameAtEnd() {
     
     String sentence[] = new String[] {
@@ -110,6 +115,7 @@ public class NameSampleTest extends TestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testParseWithAdditionalSpace() throws Exception {
     String line = "<START> M . K . <END> <START> Schwitters <END> ?  <START> Heartfield <END> ?";
 

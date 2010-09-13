@@ -17,15 +17,20 @@
 
 package opennlp.tools.chunker;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.io.IOException;
 import java.io.StringReader;
 
-import junit.framework.TestCase;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class ChunkSampleStreamTest extends TestCase {
+import org.junit.Test;
 
+public class ChunkSampleStreamTest{
+
+  @Test
   public void testReadingEvents() throws IOException {
     
     StringBuilder sample = new StringBuilder();

@@ -18,25 +18,28 @@
 
 package opennlp.tools.dictionary;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
   * Tests for the {@link Dictionary} class.
   */
-public class DictionaryTest extends TestCase  {
+public class DictionaryTest {
 
   /**
    * Tests a basic lookup.
    */
+  @Test
   public void testLookup() {
 
     StringList entry1 = new StringList(new String[]{"1a", "1b"});
@@ -56,6 +59,7 @@ public class DictionaryTest extends TestCase  {
    * @throws IOException
    * @throws InvalidFormatException
    */
+  @Test
   public void testSerialization() throws IOException, InvalidFormatException {
     Dictionary reference = new Dictionary();
 
@@ -82,6 +86,7 @@ public class DictionaryTest extends TestCase  {
    *
    * @throws IOException
    */
+  @Test
   public void testParseOneEntryPerLine() throws IOException {
 
     String testDictionary = "1a 1b 1c 1d \n 2a 2b 2c \n 3a \n 4a    4b   ";
@@ -107,6 +112,7 @@ public class DictionaryTest extends TestCase  {
   /**
    * Tests for the {@link Dictionary#equals(Object)} method.
    */
+  @Test
   public void testEquals() {
     StringList entry1 = new StringList(new String[]{"1a", "1b"});
     StringList entry2 = new StringList(new String[]{"2a", "2b"});
@@ -125,6 +131,7 @@ public class DictionaryTest extends TestCase  {
   /**
    * Tests the {@link Dictionary#hashCode()} method.
    */
+  @Test
   public void testHashCode() {
     StringList entry1 = new StringList(new String[]{"1a", "1b"});
 
@@ -140,6 +147,7 @@ public class DictionaryTest extends TestCase  {
   /**
    * Tests for the {@link Dictionary#toString()} method.
    */
+  @Test
   public void testToString() {
     StringList entry1 = new StringList(new String[]{"1a", "1b"});
 
@@ -155,6 +163,7 @@ public class DictionaryTest extends TestCase  {
   /**
    * Tests the lookup of tokens of different case.
    */
+  @Test
   public void testDifferentCaseLookup() {
 
     StringList entry1 = new StringList(new String[]{"1a", "1b"});

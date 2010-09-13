@@ -18,19 +18,23 @@
 
 package opennlp.tools.postag;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import opennlp.tools.util.ParseException;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 /**
  * Tests for the {@link POSSample} class.
  */
-public class POSSampleTest extends TestCase {
+public class POSSampleTest {
 
   /**
    * Tests if it can parse a valid token_tag sentence.
    *
    * @throws ParseException
    */
+  @Test
   public void testParse() throws ParseException {
     String sentence = "the_DT stories_NNS about_IN well-heeled_JJ " +
     		"communities_NNS and_CC developers_NNS";
@@ -44,6 +48,7 @@ public class POSSampleTest extends TestCase {
    * Tests if it can parse an empty {@link String}.
    * @throws ParseException
    */
+  @Test
   public void testParseEmptyString() throws ParseException {
 
     String sentence = "";
@@ -61,6 +66,7 @@ public class POSSampleTest extends TestCase {
    *
    * @throws ParseException
    */
+  @Test
   public void testParseEmtpyToken() throws ParseException {
     String sentence = "the_DT _NNS";
 
@@ -74,6 +80,7 @@ public class POSSampleTest extends TestCase {
    *
    * @throws ParseException
    */
+  @Test
   public void testParseEmtpyTag() throws ParseException {
 
     String sentence = "the_DT stories_";
@@ -87,6 +94,7 @@ public class POSSampleTest extends TestCase {
    * Tests if an exception is thrown if there is only a token/tag
    * in the sentence.
    */
+  @Test
   public void testParseWithError() {
     String sentence = "the_DT stories";
 

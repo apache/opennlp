@@ -22,11 +22,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import junit.framework.TestCase;
 import opennlp.tools.util.InvalidFormatException;
 
-public class POSModelTest extends TestCase {
+import org.junit.Test;
 
+public class POSModelTest {
+
+  @Test
   public void testPOSModelSerialization() throws IOException, InvalidFormatException {
     POSModel posModel = POSTaggerMETest.trainPOSModel();
 

@@ -17,14 +17,18 @@
 
 package opennlp.tools.doccat;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 
-import junit.framework.TestCase;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 
-public class DocumentCategorizerMETest extends TestCase {
+import org.junit.Test;
 
+public class DocumentCategorizerMETest {
+
+  @Test
   public void testSimpleTraining() throws IOException {
    
     ObjectStream<DocumentSample> samples = ObjectStreamUtils.createObjectStream(new DocumentSample[]{

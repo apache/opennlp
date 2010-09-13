@@ -18,18 +18,24 @@
 
 package opennlp.tools.postag;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import junit.framework.TestCase;
 import opennlp.tools.util.CollectionObjectStream;
+
+import org.junit.Test;
 
 /**
  * Tests for the {@link WordTagSampleStream} class.
  */
-public class WordTagSampleStreamTest extends TestCase {
+public class WordTagSampleStreamTest {
   
+  @Test
   public void testParseSimpleSample() throws IOException {
     
     Collection<String> sampleString = new ArrayList<String>(1);

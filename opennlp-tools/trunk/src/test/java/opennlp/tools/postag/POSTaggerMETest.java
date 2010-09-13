@@ -18,17 +18,20 @@
 
 package opennlp.tools.postag;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import junit.framework.TestCase;
 import opennlp.tools.util.model.ModelType;
+
+import org.junit.Test;
 
 /**
  * Tests for the {@link POSTaggerME} class.
  */
-public class POSTaggerMETest extends TestCase {
+public class POSTaggerMETest {
 
   /**
    * Trains a POSModel from the annotated test data.
@@ -45,6 +48,7 @@ public class POSTaggerMETest extends TestCase {
         new InputStreamReader(in))), ModelType.MAXENT, null, null, 5, 100);
   }
 
+  @Test
   public void testPOSTagger() throws IOException {
     POSModel posModel = trainPOSModel();
 

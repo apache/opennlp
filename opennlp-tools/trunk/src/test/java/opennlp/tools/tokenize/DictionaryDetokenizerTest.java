@@ -17,16 +17,20 @@
 
 package opennlp.tools.tokenize;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.io.InputStream;
 
-import junit.framework.TestCase;
 import opennlp.tools.cmdline.tokenizer.DictionaryDetokenizerTool;
 import opennlp.tools.tokenize.DetokenizationDictionary.Operation;
 import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
 
-public class DictionaryDetokenizerTest extends TestCase {
+import org.junit.Test;
 
+public class DictionaryDetokenizerTest{
+
+  @Test
   public void testDetokenizer() {
     
     String tokens[] = new String[]{".", "!", "(", ")", "\""};
@@ -61,6 +65,7 @@ public class DictionaryDetokenizerTest extends TestCase {
     return new DictionaryDetokenizer(dict);
   }
   
+  @Test
   public void testDetokenizeToString() throws IOException {
     
     Detokenizer detokenizer = createLatinDetokenizer();

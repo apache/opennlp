@@ -17,6 +17,12 @@
 
 package opennlp.tools.namefind;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -40,7 +45,7 @@ import org.junit.Test;
  * 
  * @author William Colen
  */
-public class NameSampleDataStreamTest extends TestCase {
+public class NameSampleDataStreamTest {
 
   /**
    * Create a string from a array section.
@@ -64,6 +69,7 @@ public class NameSampleDataStreamTest extends TestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testWithoutNameTypes() throws Exception {
     InputStream in = getClass().getClassLoader().getResourceAsStream(
         "opennlp/tools/namefind/AnnotatedSentences.txt");
@@ -121,6 +127,7 @@ public class NameSampleDataStreamTest extends TestCase {
   /**
    * Checks that invalid spans cause an {@link ObjectStreamException} to be thrown.
    */
+  @Test
   public void testWithoutNameTypeAndInvalidData() {
     NameSampleDataStream smapleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START> <START> Name <END>"));
@@ -156,6 +163,7 @@ public class NameSampleDataStreamTest extends TestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testWithNameTypes() throws Exception {
     InputStream in = getClass().getClassLoader().getResourceAsStream(
         "opennlp/tools/namefind/voa1.train");
@@ -281,6 +289,7 @@ public class NameSampleDataStreamTest extends TestCase {
     
   }
   
+  @Test
   public void testWithNameTypeAndInvalidData() {
     
     NameSampleDataStream smapleStream = new NameSampleDataStream(

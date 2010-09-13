@@ -17,22 +17,28 @@
 
 package opennlp.tools.namefind;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
 import opennlp.model.EventStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Span;
 
+import org.junit.Test;
+
 /**
  * This is the test class for {@link NameFinderEventStream}.
  */
-public class NameFinderEventStreamTest extends TestCase {
+public class NameFinderEventStreamTest{
 
   /**
    * Tests the correctly generated outcomes for a test sentence.
    */
+  @Test
   public void testOutcomesForSingleTypeSentence() throws IOException {
     String sentence[] = {"Elise",
         "Wendel",
@@ -53,16 +59,16 @@ public class NameFinderEventStreamTest extends TestCase {
     EventStream eventStream = new NameFinderEventStream(
         ObjectStreamUtils.createObjectStream(nameSample));
     
-    Assert.assertTrue(eventStream.hasNext());
-    Assert.assertEquals("person-" + NameFinderME.START, eventStream.next().getOutcome());
-    Assert.assertTrue(eventStream.hasNext());
-    Assert.assertEquals("person-" + NameFinderME.CONTINUE, eventStream.next().getOutcome());
+    assertTrue(eventStream.hasNext());
+    assertEquals("person-" + NameFinderME.START, eventStream.next().getOutcome());
+    assertTrue(eventStream.hasNext());
+    assertEquals("person-" + NameFinderME.CONTINUE, eventStream.next().getOutcome());
     
     for (int i = 0; i < 10; i++) {
       Assert.assertTrue(eventStream.hasNext());
       Assert.assertEquals(NameFinderME.OTHER, eventStream.next().getOutcome());
     }
     
-    Assert.assertFalse(eventStream.hasNext());
+    assertFalse(eventStream.hasNext());
   }
 }
