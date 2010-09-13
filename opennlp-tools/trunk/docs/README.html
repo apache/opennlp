@@ -42,8 +42,9 @@ the final release of that project available on the main project page.  <p>
 
 What follows covers:
 <ol>
-<li> <a href="#buildtools"> Installing The Build Tools</a>
-<li> <a href="#buildinst"> Building Instructions</a>
+<li> <a href="#buildtools">Installing The Build Tools</a>
+<li> <a href="#buildinst">Building Instructions</a>
+<li> <a href="#maven">Maven Repository</a>
 <li> <a href="#models">Downloading Models</a>
 <li> <a href="#run">Running the Tools</a>
 <li> <a href="#train">Training the Tools</a>
@@ -52,81 +53,52 @@ What follows covers:
 
 <h1> <a name="buildtools">Installing The Build Tools</a></h1>
 
-The OpenNLP build system is based on Jakarta Ant, which is a Java
-building tool originally developed for the Jakarta Tomcat project but
-now used in many other Apache projects and extended by many
-developers.
+The OpenNLP build system is based on Maven.
 <p>
-Ant is a little but very handy tool that uses a build file written in
-XML (build.xml) as building instructions. For more information refer
-to <a href="http://jakarta.apache.org/ant/">jakarta.apache.org/ant</a>.
+The current version and installation instructions
+can be found here:<br>
+<a href="http://maven.apache.org/download.html">http://maven.apache.org/download.html</a>
+
+
+<h1> <a name="buildinst">Building Instructions</a></h1>
 <p>
-The only thing that you have to make sure of is that the "JAVA_HOME"
-environment property is set to match the top level directory
-containing the JVM you want to use. For example:
-
-<pre>
-C:\&gt; set JAVA_HOME=C:\jdk1.2.2
-
-or on Unix:
-
-% setenv JAVA_HOME /usr/local/java
-  (csh)
-&gt; JAVA_HOME=/usr/java; export JAVA_HOME
-  (ksh, bash)
-</pre>
-That's it!
-
-
-<h1> <a name="buildinst">Building Instructions </a></h1>
+The build instructions only work for the source distribution
+of OpenNLP, because the binary distribution does not contain 
+any source code.
 <p>
 Ok, let's build the code. First, make sure your current working
-directory is where the build.xml file is located.
-If you have ant installed then you can simply
-run "ant" from this directory.
+directory is where the pom.xml file is located.
+If you have maven installed then you can simply
+run "mvn install" from this directory.
 <p>
-Alturnatively you can run the following unix command to evoke ant via java:
-<pre>
-  ./build.sh (unix)
-</pre>
-<p>
-If everything is right and all the required packages are visible, this
-action will generate a file called "opennlp-tools-${version}.jar" in
-the "./output" directory. Note, that if you do further development,
-compilation time is reduced since Ant is able to detect which files
-have changed an to recompile them at need.
-<p>
-Also, you'll note that reusing a single JVM instance for each task, increases
-tremendously the performance of the whole build system, compared to other
-tools (i.e. make or shell scripts) where a new JVM is started for each task.
+If everything is right this command will compile, test and install
+OpenNLP into your local maven repository. The tests can take a few minutes, be patient.
+A copy of the jar file will also be placed in the newly created target folder.
 
-
-<h2> Build targets </h2>
+<h2> <a name="maven">Maven Repository </a> </h2>
 
 <p>
-The build system is not only responsible for compiling OpenNlp into a jar
-file, but is also responsible for creating the HTML documentation in
-the form of javadocs.
+OpenNLP is also distributed via a maven repository, if
+you want to use OpenNLP with maven you should
+add our repository to your pom.xml file.
 <p>
-These are the meaningful targets for this build file:
+OpenNLP Repository:<br>
+&lt;repository&gt;<br>
+	&lt;id&gt;opennlp.sf.net&lt;/id&gt;<br>
+	&lt;url&gt;http://opennlp.sourceforge.net/maven2&lt;/url&gt;<br>
+&lt;/repository&gt;<br>
+<p>
+In order to use OpenNLP in your project, you must define a dependency
+on opennlp.tools. The dependency to the opennlp.maxent
+project will be automatically resolved by maven.
 
-<ul>
- <li> package [default] -&gt; creates ./build/opennlp-common.jar
- <li> compile -&gt; compiles the source code
- <li> javadoc -&gt; generates the API documentation in ./build/javadocs
- <li> clean -&gt; restores the distribution to its original and clean state
-</ul>
-
-For example, to build the Java API documentation:
-<pre>
-ant javadoc
-</pre>
-or in Unix type:
-<pre>
-build.sh javadoc
-</pre>
-To learn the details of what each target does, read the build.xml file.
-It is quite understandable.
+<p>
+OpenNLP dependency:<br>
+&lt;dependency&gt;<br>
+	&lt;groupId&gt;opennlp&lt;/groupId&gt;<br>
+	&lt;artifactId&gt;tools&lt;/artifactId&gt;<br>
+	&lt;version&gt;1.5.0&lt;/version&gt;<br>
+&lt;/dependency&gt;<br>
 
 <h1><a name="models"> Downloading Models</a></h1>
 <p>
@@ -137,114 +109,75 @@ annotated data.  These models can be downloaded clicking
 link at <a href="opennlp.sourceforge.net/models.html">opennlp.sourceforge.net</a>.  
 The models are large (especially the ones for the parser).  
 You may want to just fetch specific ones.
-Models for the corresponding components can be found in the following
-directories:
 
-<ul>
-<li>english/chunker	   - English-Penn-Treebank-style phrase chunker models.
-<li>english/coref      - MUC-style coreference.
-<li>english/namefind   - MUC-style named entity finder models.
-<li>english/parser	   - English-Penn-Treebank-style parser and pos-tag models.
-<li>english/sentdetect - English sentence detector.
-<li>english/tokenize   - English-Penn-Treebank-style tokenizer.
-</ul>
-
-<ul>
-<li>spanish/postag     - Spanish part-of-speech tagger.
-<li>spanish/sentdetect - Spanish sentence detector.
-<li>spanish/tokenize   - Spanish tokenizer.
-</ul>
-
-<ul>
-<li>german/postag     - German part-of-speech tagger.
-<li>german/sentdetect - German sentence detector.
-<li>german/tokenize   - German tokenizer.
-</ul>
-
-<ul>
-<li>thai/sentdetect - Thai sentence detector.
-<li>thai/tokenize   - Thai tokenizer.
-<li>thai/postag     - Thai part-of-speech tagger.
-</ul>
 
 <h1> <a name="run">Running the Tools </a></h1>
 <p>
-To run any of these tools you need to have models.  Make sure you
-look at the previous step before you try this.  Each of these classes
-contains a main which will annotate text from standard in.  Some of
-them require processing by the previous component.  Most of these take a
-single argument which is the location of the model for this component.
-The exceptions are the parser which requires a  model directory, and
-the namefinder which takes a list of models.  Tools are separated into
-packages by language.  Currently only two languages are supported (English
-and Spanish), but we plan to support others in the future. 
-
-<h2>English:</h2>
-<ul>
-<li>sentence detector:  opennlp.tools.lang.english.SentenceDetector
-<li>tokenizer:          opennlp.tools.lang.english.Tokenizer
-<li>pos-tagger:         opennlp.tools.lang.english.PosTagger
-<li>chunker:            opennlp.tools.lang.english.TreebankChunker
-<li>name finder:        opennlp.tools.lang.english.NameFinder
-<li>parser:             opennlp.tools.lang.english.TreebankParser
-<li>coreference:        opennlp.tools.lang.english.TreebankLinker
-</ul>
-
-<h2>Spanish:</h2>
-<ul>
-<li>sentence detector:  opennlp.tools.lang.spanish.SentenceDetector
-<li>tokenizer:          opennlp.tools.lang.spanish.Tokenizer
-<li>token chunker:      opennlp.tools.lang.spanish.TokenChunker
-<li>pos-tagger:         opennlp.tools.lang.spanish.PosTagger
-</ul>
+To run any of these tools on UNIX
+just type<br>
+<br>bin/opennlp<br>
+<br>or on windows<br>
+<br>java -jar opennlp-tools-1.5.0.jar<br>
+<br>inside the opennlp directory of the binary distribution.
+The tools will then print out a list of possible commands
+for the various components.
+<p>
+Further instruction on howto to use these tools
+can be found in our <a href="https://sourceforge.net/apps/mediawiki/opennlp/index.php?title=Main_Page">wiki</a>.
+<p>
+Some of the components require processing by the previous component. 
+Most of these take a single argument which is the location of the model for this component.
+The exception is coref which requires a  model directory, and
+the namefinder which can also take a list of models. 
 <p>
 <b>Examples:</b> These example are simply that, examples, and are not a
 recommendation that you run the tools this way.  It's in fact very
 inefficient.  However, this should give you an idea of what the tools
 can do and the kind of input they assume.  Developers should know to
-look at the main's of these classes to see how to set up a particular
-component for use.
+look at the ComponentNameTool classes inside the opennlp.tools.cmdline package to see how
+to set up a particular component for use.
 <p>
-<b>Note:</b> All these example assume that your CLASSPATH has been set to
-include: opennlp-tools-1.4.0.jar, trove.jar, maxent-2.5.0.jar, and for
-coreference: jwnl-1.3.3.jar.  The opennlp jar is located in the output
-directory (once you've built it) and the others are located in the lib
-directory.  Information about the jars in the lib directory can be found
-in the lib/LIBNOTES file.  If you are un-certain about how to set your
-classpath please google: java classpath where you will find many pages
-on the subject.
+The examples below use the english models and assume that you downlaoded
+the models into a sub-directory called "models".
+<p>
 
-<h2>English Phrase Chunking:</h2>
+<h2>Sentence Detection and Tokenization:</h2>
 <pre>
-java opennlp.tools.lang.english.SentenceDetector \
-  opennlp.models/english/sentdetect/EnglishSD.bin.gz &lt; text |
-java opennlp.tools.lang.english.Tokenizer \
-  opennlp.models/english/tokenize/EnglishTok.bin.gz |
-java opennlp.tools.lang.english.PosTagger -d \
-  opennlp.models/english/parser/tagdict opennlp.models/english/parser/tag.bin.gz |
-java opennlp.tools.lang.english.TreebankChunker \
-  opennlp.models/english/chunker/EnglishChunk.bin.gz
+bin/opennlp SentenceDetector models/en-sent.bin &lt; text |
+bin/opennlp TokenizerME models/en-token.bin
 </pre>
 
-<h2>English Parsing:</h2>
+<h2>POS Tagging:</h2>
 <pre>
-java opennlp.tools.lang.english.SentenceDetector \
-  opennlp.models/english/sentdetect/EnglishSD.bin.gz &lt; text |
-java opennlp.tools.lang.english.Tokenizer \
-  opennlp.models/english/tokenize/EnglishTok.bin.gz |
-java -Xmx350m opennlp.tools.lang.english.TreebankParser -d \
-  opennlp.models/english/parser
+bin/opennlp SentenceDetector models/en-sent.bin &lt; text |
+bin/opennlp TokenizerME models/en-token.bin |
+bin/opennlp POSTagger models/en-pos-maxent.bin
+</pre>
+
+<h2>Phrase Chunking:</h2>
+<pre>
+bin/opennlp SentenceDetector models/en-sent.bin &lt; text |
+bin/opennlp TokenizerME models/en-token.bin |
+bin/opennlp POSTagger models/en-pos-maxent.bin |
+bin/opennlp Chunker models/en-chunker.bin
+</pre>
+
+<h2>Parsing:</h2>
+<pre>
+bin/opennlp SentenceDetector models/en-sent.bin &lt; text |
+bin/opennlp TokenizerME models/en-token.bin |
+bin/opennlp Parser models/en-parser.bin
 </pre>
 
 <h2>English Name Finding:</h2>
 <pre>
-java opennlp.tools.lang.english.SentenceDetector \
-  opennlp.models/english/sentdetect/EnglishSD.bin.gz &lt; text |
-java -Xmx200m opennlp.tools.lang.english.NameFinder  \
-  opennlp.models/english/namefind/*.bin.gz
+bin/opennlp SentenceDetector models/en-sent.bin &lt; text |
+bin/opennlp SimpleTokenizer |
+bin/opennlp TokenNameFinder models/en-ner-person.bin models/en-ner-location.bin
 </pre>
 
 <h2>English Coreference:</h2>
+Note for this sample the opennlp jar, the maxent jar and the jwnl jar must be on the classpath. 
 <pre>
 java opennlp.tools.lang.english.SentenceDetector \
   opennlp.models/english/sentdetect/EnglishSD.bin.gz &lt; text |
@@ -262,56 +195,20 @@ java -Xmx200m -DWNSEARCHDIR=$WNSEARCHDIR \
 In the example above $WNSEARCHDIR is the location of the "dict" directory for 
 your WordNet 3.0 installation.  WordNet can be obtained at <a href="http://wordnet.princeton.edu/obtain">here</a>.
 
-<h2> Spanish Part-Of-Speech Tagging:</h2>
-<pre>
-java opennlp.tools.lang.spanish.SentenceDetector \
-  opennlp.models/spanish/sentdetect/SpanishSent.bin.gz &lt; texto | 
-java opennlp.tools.lang.spanish.Tokenizer \
-  opennlp.models/spanish/tokenize/SpanishTok.bin.gz | 
-java opennlp.tools.lang.spanish.TokenChunker \
-  opennlp.models/spanish/tokenize/SpanishTokChunk.bin.gz | 
-java opennlp.tools.lang.spanish.PosTagger \
-  opennlp.models/spanish/postag/SpanishPOS.bin.gz
-</pre>
 
-<h2> German Part-Of-Speech Tagging:</h2>
-<pre>
-java opennlp.tools.lang.german.SentenceDetector \
-  opennlp.models/german/sentdetect/sentenceModel.bin.gz &lt; dertext | 
-java opennlp.tools.lang.german.Tokenizer \
-  opennlp.models/german/tokenize/tokenModel.bin.gz | 
-java -Xmx100m opennlp.tools.lang.german.PosTagger \
-  opennlp.models/german/postag/posModel.bin.gz
-</pre>
-<h2> Thai Part-Of-Speech Tagging:</h2>
-<pre>
-java opennlp.tools.lang.thai.SentenceDetector \
-  opennlp.models/thai/sentdetect/thai.sent.bin.gz &lt; thaitext | 
-java opennlp.tools.lang.thai.Tokenizer \
-  opennlp.models/thai/tokenize/thai.tok.bin.gz | 
-java -Xmx100m opennlp.tools.lang.thai.PosTagger \
-  opennlp.models/thai/postag/thai.tag.bin.gz
-</pre>
 <h1><a name="train"> Training the Tools</a></h1>
 <p>
-The main of the following classes can be used to train new models.
-Look at the usage messages for these classes you are interested in
-training new models.
-
-<ul>
-<li>sentence detector:  opennlp.tools.sentdetect.SentenceDetectorME
-<li>tokenizer:          opennlp.tools.tokenizer.TokenizerME
-<li>pos-tagger:         opennlp.tools.postag.POSTaggerME
-<li>chunker:            opennlp.tools.chunker.ChunkerME
-<li>name finder:        opennlp.tools.namefind.NameFinderME
-<li>parser:             opennlp.tools.parser.ParserME
-</ul>
+There are training tools for all components expect the
+coref component. Please consult the help message of the
+tool and the javadoc to figure out how to train the tools.
+<p>
+The tutorials in our <a href="https://sourceforge.net/apps/mediawiki/opennlp/index.php?title=Main_Page">wiki</a>
+might also be helpful.
 <p>
 The following modules currently support training via the WordFreak
 opennlp.plugin v1.4 (http://wordfreak.sourceforge.net/plugins.html).
 <ul>
-<li>tokenizer:          org.annotation.opennlp.OpenNlpTokenAnnotator
-<li>coreference:        org.annotation.opennlp.OpenNlpCoreferenceAnnotator
+<li>coreference:        org.annotation.opennlp.OpenNlpCoreferenceAnnotator (use opennlp 1.4.3 for training, models are compatible)
 </ul>
 <p>
 <b>Note:</b> In order to train a model you need all the training data.  There is
