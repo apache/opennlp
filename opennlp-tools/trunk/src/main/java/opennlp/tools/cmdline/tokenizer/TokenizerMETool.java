@@ -18,15 +18,11 @@
 package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.tokenize.TokenizerModel;
-import opennlp.tools.util.InvalidFormatException;
 
 public final class TokenizerMETool implements CmdLineTool {
 
