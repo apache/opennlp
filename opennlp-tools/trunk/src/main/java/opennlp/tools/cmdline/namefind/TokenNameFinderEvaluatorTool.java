@@ -43,17 +43,17 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName()
-        + " -encoding charset model testData";
+        + " -encoding charset -model model -data testData";
   }
 
   public void run(String[] args) {
 
-    if (args.length != 4) {
+    if (args.length != 6) {
       System.out.println(getHelp());
       throw new TerminateToolException(1);
     }
 
-    File testData = new File(args[3]);
+    File testData = new File(CmdLineUtil.getParameter("-data", args));
     CmdLineUtil.checkInputFile("Test data", testData);
 
     Charset encoding = CmdLineUtil.getEncodingParameter(args);
@@ -63,7 +63,7 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
 
-    TokenNameFinderModel model = new TokenNameFinderModelLoader().load(new File(args[2]));
+    TokenNameFinderModel model = new TokenNameFinderModelLoader().load(new File(CmdLineUtil.getParameter("-model", args)));
 
     opennlp.tools.namefind.TokenNameFinderEvaluator evaluator = new opennlp.tools.namefind.TokenNameFinderEvaluator(
         new NameFinderME(model));

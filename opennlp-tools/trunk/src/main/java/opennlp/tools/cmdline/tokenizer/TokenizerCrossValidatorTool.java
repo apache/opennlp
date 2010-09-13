@@ -41,13 +41,13 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() +
-        " trainData\n" + 
+        " -data trainData\n" + 
         TrainingParameters.getDescription() + "\n"+
-        "trainingData      training data used for cross validation";
+        "-data trainingData      training data used for cross validation";
   }
 
   public void run(String[] args) {
-    if (args.length < 5) {
+    if (args.length < 6) {
       System.out.println(getHelp());
       throw new TerminateToolException(1);
     }
@@ -59,7 +59,7 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
     
-    File trainingDataInFile = new File(args[args.length -1]);
+    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
     ObjectStream<TokenSample> sampleStream =

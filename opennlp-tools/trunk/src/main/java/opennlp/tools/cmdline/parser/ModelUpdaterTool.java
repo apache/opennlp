@@ -39,12 +39,12 @@ abstract class ModelUpdaterTool implements CmdLineTool {
       throws IOException;
 
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " training.file parser.model";
+    return "Usage: " + CLI.CMD + " " + getName() + " -data training.file -model parser.model";
   }
   
   public final void run(String[] args) {
 
-    if (args.length < 6) {
+    if (args.length < 8) {
       System.out.println(getHelp());
       throw new TerminateToolException(1);
     }
@@ -52,10 +52,10 @@ abstract class ModelUpdaterTool implements CmdLineTool {
     BasicTrainingParameters parameters = new BasicTrainingParameters(args);
     
     // Load model to be updated
-    File modelFile = new File(args[args.length - 1]);
+    File modelFile = new File(CmdLineUtil.getParameter("-model", args));
     ParserModel originalParserModel = new ParserModelLoader().load(modelFile);
 
-    ObjectStream<Parse> parseSamples = ParserTrainerTool.openTrainingData(new File(args[args.length - 2]), 
+    ObjectStream<Parse> parseSamples = ParserTrainerTool.openTrainingData(new File(CmdLineUtil.getParameter("-data", args)), 
         parameters.getEncoding());
     
     ParserModel updatedParserModel;

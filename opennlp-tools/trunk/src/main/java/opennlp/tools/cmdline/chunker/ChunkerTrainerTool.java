@@ -46,7 +46,7 @@ public class ChunkerTrainerTool implements CmdLineTool {
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName()
-        + BasicTrainingParameters.getParameterUsage() + " trainingData model\n" +
+        + BasicTrainingParameters.getParameterUsage() + " -data trainingData -model model\n" +
         BasicTrainingParameters.getDescription();
   }
 
@@ -64,7 +64,7 @@ public class ChunkerTrainerTool implements CmdLineTool {
   
   public void run(String[] args) {
     
-    if (args.length < 6) {
+    if (args.length < 8) {
       System.out.println(getHelp());
       throw new TerminateToolException(1);
     }
@@ -76,8 +76,8 @@ public class ChunkerTrainerTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
     
-    File trainingDataInFile = new File(args[args.length - 2]);
-    File modelOutFile = new File(args[args.length - 1]);
+    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
+    File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
 
     CmdLineUtil.checkOutputFile("sentence detector model", modelOutFile);
     ObjectStream<ChunkSample> sampleStream = 

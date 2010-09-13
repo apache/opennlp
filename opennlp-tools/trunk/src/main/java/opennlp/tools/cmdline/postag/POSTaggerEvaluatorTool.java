@@ -41,16 +41,16 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " -encoding charset model testData";
+    return "Usage: " + CLI.CMD + " " + getName() + " -encoding charset -model model -data testData";
   }
 
   public void run(String[] args) {
-      if (args.length != 4) {
+      if (args.length != 6) {
         System.out.println(getHelp());
         throw new TerminateToolException(1);
       }
       
-      File testData = new File(args[args.length - 1]);
+      File testData = new File(CmdLineUtil.getParameter("-data", args));
       CmdLineUtil.checkInputFile("Test data", testData);
       
       Charset encoding = CmdLineUtil.getEncodingParameter(args);
@@ -60,7 +60,7 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
         throw new TerminateToolException(1);
       }
       
-      POSModel model = new POSModelLoader().load(new File(args[args.length - 2]));
+      POSModel model = new POSModelLoader().load(new File(CmdLineUtil.getParameter("-model", args)));
       
       POSEvaluator evaluator = 
           new POSEvaluator(new opennlp.tools.postag.POSTaggerME(model));

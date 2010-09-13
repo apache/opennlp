@@ -51,7 +51,7 @@ public final class ParserTrainerTool implements CmdLineTool {
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + TrainingParameters.getParameterUsage() + 
-        " head_rules trainingData model\n" + TrainingParameters.getDescription();
+        " -head-rules head_rules -data trainingData -model model\n" + TrainingParameters.getDescription();
   }
 
   static ObjectStream<Parse> openTrainingData(File trainingDataFile, Charset encoding) {
@@ -95,7 +95,7 @@ public final class ParserTrainerTool implements CmdLineTool {
   // TODO: Add param to train tree insert parser
   public void run(String[] args) {
     
-    if (args.length < 7) {
+    if (args.length < 10) {
       System.out.println(getHelp());
       throw new TerminateToolException(1);
     }
@@ -107,16 +107,16 @@ public final class ParserTrainerTool implements CmdLineTool {
       throw new TerminateToolException(1);
     } 
     
-    ObjectStream<Parse> sampleStream = openTrainingData(new File(args[args.length - 2]), parameters.getEncoding());
+    ObjectStream<Parse> sampleStream = openTrainingData(new File(CmdLineUtil.getParameter("-data", args)), parameters.getEncoding());
     
-    File modelOutFile = new File(args[args.length - 1]);
+    File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
     CmdLineUtil.checkOutputFile("parser model", modelOutFile);
     
     ParserModel model;
     try {
       
       HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(
-          new InputStreamReader(new FileInputStream(new File(args[args.length - 3])), 
+          new InputStreamReader(new FileInputStream(new File(CmdLineUtil.getParameter("-head-rules", args))), 
           parameters.getEncoding()));
       
       if (ParserType.CHUNKING.equals(parameters.getParserType())) {

@@ -31,7 +31,7 @@ class TrainingParameters extends BasicTrainingParameters {
     super(args);
     
     dictPath = CmdLineUtil.getParameter("-dict", args);
-    String modelString = CmdLineUtil.getParameter("-model", args);
+    String modelString = CmdLineUtil.getParameter("-model-type", args);
     
     if (modelString == null)
       modelString = "maxent";

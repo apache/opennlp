@@ -41,7 +41,7 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " -encoding charset model testData";
+    return "Usage: " + CLI.CMD + " " + getName() + " -encoding charset -model model -data testData";
   }
 
   public void run(String[] args) {
@@ -57,9 +57,9 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
     
-    SentenceModel model = new SentenceModelLoader().load(new File(args[args.length - 2]));
+    SentenceModel model = new SentenceModelLoader().load(new File(CmdLineUtil.getParameter("-model", args)));
     
-    File trainingDataInFile = new File(args[args.length - 1]);
+    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
     opennlp.tools.sentdetect.SentenceDetectorEvaluator evaluator = 

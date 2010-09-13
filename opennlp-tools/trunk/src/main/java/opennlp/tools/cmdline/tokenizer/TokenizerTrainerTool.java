@@ -44,7 +44,7 @@ public final class TokenizerTrainerTool implements CmdLineTool {
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName()
-        + TrainingParameters.getParameterUsage() + " trainingData model\n" +
+        + TrainingParameters.getParameterUsage() + " -data trainingData -model model\n" +
         TrainingParameters.getDescription();
   }
 
@@ -61,7 +61,7 @@ public final class TokenizerTrainerTool implements CmdLineTool {
   }
 
   public void run(String[] args) {
-    if (args.length < 4) {
+    if (args.length < 6) {
       System.out.println(getHelp());
       throw new TerminateToolException(1);
     }
@@ -73,8 +73,8 @@ public final class TokenizerTrainerTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
 
-    File trainingDataInFile = new File(args[args.length - 2]);
-    File modelOutFile = new File(args[args.length - 1]);
+    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
+    File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
 
     CmdLineUtil.checkOutputFile("tokenizer model", modelOutFile);
     ObjectStream<TokenSample> sampleStream = openSampleData("Training",

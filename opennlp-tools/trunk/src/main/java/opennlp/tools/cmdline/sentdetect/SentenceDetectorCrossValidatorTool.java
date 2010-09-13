@@ -41,7 +41,7 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() +
-        " trainData\n" +
+        " -data trainData\n" +
         TrainingParameters.getDescription();
   }
 
@@ -58,7 +58,7 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
     
-    File trainingDataInFile = new File(args[args.length - 1]);
+    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
     ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Training Data",
