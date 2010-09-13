@@ -18,21 +18,21 @@
 
 package opennlp.tools.namefind;
 
+import junit.framework.TestCase;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
-import junit.framework.TestCase;
 
 /**
   *Tests for the {@link DictionaryNameFinder} class.
   */
-public class DictionaryNameFinderTetst extends TestCase {
+public class DictionaryNameFinderTest extends TestCase {
 
   private Dictionary mDictionary = new Dictionary();
   private TokenNameFinder mNameFinder;
 
-  public DictionaryNameFinderTetst() {
+  public DictionaryNameFinderTest() {
 
     StringList vanessa = new StringList(new String[]{"Vanessa"});
     mDictionary.put(vanessa);
