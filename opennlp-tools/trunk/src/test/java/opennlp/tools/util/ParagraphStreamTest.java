@@ -17,12 +17,15 @@
 
 package opennlp.tools.util;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public class ParagraphStreamTest extends TestCase {
+public class ParagraphStreamTest {
 
+  @Test
   public void testSimpleReading() throws IOException {
     
     String line1 = "1";

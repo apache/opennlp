@@ -17,19 +17,19 @@
 
 package opennlp.tools.util.featuregen;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
-import opennlp.tools.util.featuregen.CachedFeatureGenerator;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test for the {@link CachedFeatureGenerator} class.
  */
-public class CachedFeatureGeneratorTest extends TestCase {
+public class CachedFeatureGeneratorTest {
 
   private AdaptiveFeatureGenerator identityGenerator[] = new AdaptiveFeatureGenerator[] {
       new IdentityFeatureGenerator()};
@@ -40,7 +40,8 @@ public class CachedFeatureGeneratorTest extends TestCase {
 
   private List<String> features;
 
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
 
     testSentence1 = new String[] {"a1", "b1", "c1", "d1"};
 
@@ -52,6 +53,7 @@ public class CachedFeatureGeneratorTest extends TestCase {
   /**
    * Tests if cache works for one sentence and two different token indexes.
    */
+  @Test
   public void testCachingOfSentence() {
     CachedFeatureGenerator generator = new CachedFeatureGenerator(identityGenerator);
 
@@ -60,10 +62,10 @@ public class CachedFeatureGeneratorTest extends TestCase {
     // after this call features are cached for testIndex
     generator.createFeatures(features, testSentence1, testIndex, null);
 
-    Assert.assertEquals(1, generator.getNumberOfCacheMisses());
-    Assert.assertEquals(0, generator.getNumberOfCacheHits());
+    assertEquals(1, generator.getNumberOfCacheMisses());
+    assertEquals(0, generator.getNumberOfCacheHits());
 
-    Assert.assertTrue(features.contains(testSentence1[testIndex]));
+    assertTrue(features.contains(testSentence1[testIndex]));
 
     features.clear();
 
@@ -75,12 +77,12 @@ public class CachedFeatureGeneratorTest extends TestCase {
 
     generator.createFeatures(features, testSentence1, testIndex, null);
 
-    Assert.assertEquals(1, generator.getNumberOfCacheMisses());
-    Assert.assertEquals(1, generator.getNumberOfCacheHits());
+    assertEquals(1, generator.getNumberOfCacheMisses());
+    assertEquals(1, generator.getNumberOfCacheHits());
 
-    Assert.assertTrue(features.contains(expectedToken));
+    assertTrue(features.contains(expectedToken));
 
-    Assert.assertEquals(1, features.size());
+    assertEquals(1, features.size());
 
     features.clear();
 
@@ -90,10 +92,10 @@ public class CachedFeatureGeneratorTest extends TestCase {
 
     generator.createFeatures(features, testSentence1, testIndex2, null);
 
-    Assert.assertEquals(2, generator.getNumberOfCacheMisses());
-    Assert.assertEquals(1, generator.getNumberOfCacheHits());
+    assertEquals(2, generator.getNumberOfCacheMisses());
+    assertEquals(1, generator.getNumberOfCacheHits());
 
-    Assert.assertTrue(features.contains(testSentence1[testIndex2]));
+    assertTrue(features.contains(testSentence1[testIndex2]));
 
     features.clear();
 
@@ -101,12 +103,13 @@ public class CachedFeatureGeneratorTest extends TestCase {
 
     generator.createFeatures(features, testSentence1, testIndex, null);
 
-    Assert.assertTrue(features.contains(expectedToken));
+    assertTrue(features.contains(expectedToken));
   }
-
+  
   /**
    * Tests if the cache was cleared after the sentence changed.
    */
+  @Test
   public void testCacheClearAfterSentenceChange() {
     CachedFeatureGenerator generator = new CachedFeatureGenerator(identityGenerator);
 
@@ -120,12 +123,12 @@ public class CachedFeatureGeneratorTest extends TestCase {
     // use another sentence but same index
     generator.createFeatures(features, testSentence2, testIndex, null);
 
-    Assert.assertEquals(2, generator.getNumberOfCacheMisses());
-    Assert.assertEquals(0, generator.getNumberOfCacheHits());
+    assertEquals(2, generator.getNumberOfCacheMisses());
+    assertEquals(0, generator.getNumberOfCacheHits());
 
-    Assert.assertTrue(features.contains(testSentence2[testIndex]));
+    assertTrue(features.contains(testSentence2[testIndex]));
 
-    Assert.assertEquals(1, features.size());
+    assertEquals(1, features.size());
 
     features.clear();
 
@@ -136,8 +139,8 @@ public class CachedFeatureGeneratorTest extends TestCase {
 
     generator.createFeatures(features, testSentence2, testIndex, null);
 
-    Assert.assertTrue(features.contains(expectedToken));
+    assertTrue(features.contains(expectedToken));
 
-    Assert.assertEquals(1, features.size());
+    assertEquals(1, features.size());
   }
 }

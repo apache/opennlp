@@ -17,19 +17,23 @@
 
 package opennlp.tools.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.TestCase;
 import opennlp.model.Event;
+
+import org.junit.Test;
 
 /**
  * Tests for the {@link AbstractEventStream} class.
  */
-public class AbstractEventStreamTest extends TestCase {
+public class AbstractEventStreamTest {
 
   private enum RESULT {
     EVENTS,
@@ -87,6 +91,7 @@ public class AbstractEventStreamTest extends TestCase {
    * if the {@link AbstractEventStream#createEvents(Object)} method
    * return iterators with events and empty iterators.
    */
+  @Test
   public void testStandardCase() throws IOException {
 
     List<RESULT> samples = new ArrayList<RESULT>();
@@ -110,6 +115,7 @@ public class AbstractEventStreamTest extends TestCase {
    * if the {@link AbstractEventStream#createEvents(Object)} method
    * only returns empty iterators.
    */
+  @Test
   public void testEmtpyEventStream() throws IOException {
     List<RESULT> samples = new ArrayList<RESULT>();
     samples.add(RESULT.EMPTY);

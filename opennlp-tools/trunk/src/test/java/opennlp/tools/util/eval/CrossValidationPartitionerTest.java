@@ -18,6 +18,12 @@
 
 package opennlp.tools.util.eval;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,15 +31,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import junit.framework.TestCase;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.CrossValidationPartitioner.TrainingSampleStream;
+
+import org.junit.Test;
 
 /**
  * Test for the {@link CrossValidationPartitioner} class.
  */
-public class CrossValidationPartitionerTest extends TestCase {
+public class CrossValidationPartitionerTest {
 
+  @Test
   public void testEmptyDataSet() throws IOException {
     Collection<String> emptyCollection = Collections.emptySet();
     
@@ -63,6 +71,7 @@ public class CrossValidationPartitionerTest extends TestCase {
   /**
    * Test 3-fold cross validation on a small sample data set.
    */
+  @Test
   public void test3FoldCV() throws IOException {
     List<String> data = new LinkedList<String>();
     data.add("01");
@@ -142,6 +151,7 @@ public class CrossValidationPartitionerTest extends TestCase {
     assertFalse(partitioner.hasNext());
   }
 
+  @Test
   public void testFailSafty() throws IOException {
     List<String> data = new LinkedList<String>();
     data.add("01");
@@ -194,6 +204,7 @@ public class CrossValidationPartitionerTest extends TestCase {
     catch (IllegalStateException e) {}
   }
   
+  @Test
   public void testToString() {
     Collection<String> emptyCollection = Collections.emptySet();
     new CrossValidationPartitioner<String>(emptyCollection, 10).toString();

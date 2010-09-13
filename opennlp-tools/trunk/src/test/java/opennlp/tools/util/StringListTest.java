@@ -17,18 +17,23 @@
 
 package opennlp.tools.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Iterator;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Tests for the {@link StringList} class.
  */
-public class StringListTest extends TestCase {
+public class StringListTest {
 
   /**
    * Tests {@link StringList#getToken(int)}.
    */
+  @Test
   public void testGetToken() {
     StringList l = new StringList("a", "b");
 
@@ -41,6 +46,7 @@ public class StringListTest extends TestCase {
   /**
    * Tests {@link StringList#iterator()}.
    */
+  @Test
   public void testItertor() {
     StringList l = new StringList("a");
 
@@ -69,6 +75,7 @@ public class StringListTest extends TestCase {
   /**
    * Tests {@link StringList#compareToIgnoreCase(StringList)}.
    */
+  @Test
   public void testCompareToIgnoreCase() {
     assertTrue(new StringList("a", "b").compareToIgnoreCase(
         new StringList("A", "B")));
@@ -77,6 +84,7 @@ public class StringListTest extends TestCase {
   /**
    * Tests {@link StringList#equals(Object)}.
    */
+  @Test
   public void testEquals() {
     assertEquals(new StringList("a", "b"),
         new StringList("a", "b"));
@@ -88,6 +96,7 @@ public class StringListTest extends TestCase {
   /**
    * Tests {@link StringList#hashCode()}.
    */
+  @Test
   public void testHashCode() {
     assertEquals(new StringList("a", "b").hashCode(),
         new StringList("a", "b").hashCode());
@@ -96,6 +105,7 @@ public class StringListTest extends TestCase {
   /**
    * Tests {@link StringList#toString()}.
    */
+  @Test
   public void testToString() {
     new StringList("a", "b").toString();
   }

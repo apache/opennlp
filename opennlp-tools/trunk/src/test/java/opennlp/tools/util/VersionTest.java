@@ -17,18 +17,23 @@
 
 package opennlp.tools.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * Tests for the {@link Version} class.
  */
-public class VersionTest extends TestCase {
+public class VersionTest {
 
+  @Test
   public void testParse() {
     Version referenceVersion = Version.currentVersion();
     assertEquals(referenceVersion, Version.parse(referenceVersion.toString()));
   }
 
+  @Test
   public void testParseInvalidVersion() {
     try {
       Version.parse("1.5.");
@@ -40,6 +45,7 @@ public class VersionTest extends TestCase {
     assertTrue(false);
   }
 
+  @Test
   public void testParseInvalidVersion2() {
     try {
       Version.parse("1.5");

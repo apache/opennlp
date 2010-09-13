@@ -17,14 +17,15 @@
 
 package opennlp.tools.util.eval;
 
+import static org.junit.Assert.assertEquals;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.FMeasure;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 /**
  * Tests for the {@link FMeasure} class.
  */
-public class FMeasureTest extends TestCase {
+public class FMeasureTest {
 
   private static final double DELTA = 1.0E-9d;
   
@@ -56,6 +57,7 @@ public class FMeasureTest extends TestCase {
   /**
    * Test for the {@link EvaluatorUtil#countTruePositives(Span[], Span[])} method.
    */
+  @Test
   public void testCountTruePositives() {
     assertEquals(0, FMeasure.countTruePositives(new Object[]{}, new Object[]{}));
     assertEquals(gold.length, FMeasure.countTruePositives(gold, gold));
@@ -66,6 +68,7 @@ public class FMeasureTest extends TestCase {
   /**
    * Test for the {@link EvaluatorUtil#precision(Span[], Span[])} method.
    */
+  @Test
   public void testPrecision() {
     assertEquals(1.0d, FMeasure.precision(gold, gold), DELTA);
     assertEquals(0, FMeasure.precision(gold, predictedCompletelyDistinct), DELTA);
@@ -77,6 +80,7 @@ public class FMeasureTest extends TestCase {
   /**
    * Test for the {@link EvaluatorUtil#recall(Span[], Span[])} method.
    */
+  @Test
   public void testRecall() {
     assertEquals(1.0d, FMeasure.recall(gold, gold), DELTA);
     assertEquals(0, FMeasure.recall(gold, predictedCompletelyDistinct), DELTA);

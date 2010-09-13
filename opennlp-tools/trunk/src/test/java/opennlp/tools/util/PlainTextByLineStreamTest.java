@@ -17,16 +17,19 @@
 
 package opennlp.tools.util;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.io.StringReader;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Tests for the {@link PlainTextByLineStream} class.
  */
-public class PlainTextByLineStreamTest extends TestCase {
+public class PlainTextByLineStreamTest {
 
+  @Test
   public void testLineSegmentation() throws IOException {
     StringBuilder testString = new StringBuilder();
     testString.append("line1");

@@ -17,18 +17,22 @@
 
 package opennlp.tools.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Tests for the {@link Sequence} class.
  */
-public class SequenceTest extends TestCase {
+public class SequenceTest {
 
   /**
    * Tests the copy constructor {@link Sequence#Sequence(Sequence)}.
    */
+  @Test
   public void testCopyConstructor() {
     Sequence sequence = new Sequence();
     sequence.add("a", 10);
@@ -45,18 +49,20 @@ public class SequenceTest extends TestCase {
    * Tests {@link Sequence#add(String, double)}, also
    * tests {@link Sequence#getOutcomes()} and {@link Sequence#getProbs()}.
    */
+  @Test
   public void testAddMethod() {
     Sequence sequence = new Sequence();
-    sequence.add("a", 10);
+    sequence.add("a", 10d);
 
     // check if insert was successful
     assertEquals("a", sequence.getOutcomes().get(0));
-    assertEquals(10d, sequence.getProbs()[0]);
+    assertEquals(10d, sequence.getProbs()[0], 0d);
   }
 
   /**
    * Tests {@link Sequence#compareTo(Sequence)}.
    */
+  @Test
   public void testCompareTo() {
     Sequence lowScore = new Sequence();
     lowScore.add("A", 1d);
@@ -76,6 +82,7 @@ public class SequenceTest extends TestCase {
   /**
    * Checks that {@link Sequence#toString()} is executable.
    */
+  @Test
   public void testToString() {
     new Sequence().toString();
 

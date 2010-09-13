@@ -17,10 +17,13 @@
 
 package opennlp.tools.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
-public class ListHeapTest extends TestCase {
+import org.junit.Test;
 
+public class ListHeapTest {
+
+  @Test
   public void testSimple() {
     
     int size = 5;
