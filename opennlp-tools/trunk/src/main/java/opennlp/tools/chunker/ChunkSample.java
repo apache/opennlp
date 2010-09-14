@@ -30,6 +30,10 @@ public class ChunkSample {
   private final List<String> preds;
   
   public ChunkSample(String[] sentence, String[] tags, String[] preds) {
+    
+    if (sentence.length != tags.length || tags.length != preds.length)
+      throw new IllegalArgumentException("All arrays must have the same length!");
+    
     this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
     this.tags = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tags)));
     this.preds = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(preds)));
@@ -45,5 +49,24 @@ public class ChunkSample {
   
   public String[] getPreds() {
     return preds.toArray(new String[preds.size()]);
+  }
+  
+  @Override
+  public String toString() {
+    
+    StringBuilder chunkString = new StringBuilder();
+    
+    for (int ci=0, cn = preds.size(); ci < cn; ci++) {
+      if (ci > 0 && !preds.get(ci).startsWith("I-") && !preds.get(ci - 1).equals("O")) {
+        chunkString.append(" ]");
+      }
+      if (preds.get(ci).startsWith("B-")) {
+        chunkString.append(" [" + preds.get(ci).substring(2));
+      }
+
+      chunkString.append(" " + getSentence()[ci] + "_" + getTags()[ci]);
+    }
+    
+    return chunkString.toString();
   }
 }
