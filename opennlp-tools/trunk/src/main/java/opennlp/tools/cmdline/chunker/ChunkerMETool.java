@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.chunker.DefaultChunkerSequenceValidator;
@@ -81,24 +82,8 @@ public class ChunkerMETool implements CmdLineTool {
         String[] chunks = chunker.chunk(posSample.getSentence(),
             posSample.getTags());
         
-        // TODO: Move this formating code to ChunkSample
-        
-        for (int ci=0,cn=chunks.length;ci<cn;ci++) {
-          if (ci > 0 && !chunks[ci].startsWith("I-") && !chunks[ci-1].equals("O")) {
-            System.out.print(" ]");
-          }
-          if (chunks[ci].startsWith("B-")) {
-            System.out.print(" ["+chunks[ci].substring(2));
-          }
-
-          System.out.print(" "+posSample.getSentence()[ci]+"_"+posSample.getTags()[ci]);
-        }
-        
-        if (chunks.length > 0 && !chunks[chunks.length-1].equals("O")) {
-          System.out.print(" ]");
-        }
-        
-        System.out.println();
+        System.out.println(new ChunkSample(posSample.getSentence(),
+            posSample.getTags(), chunks).toString());
         
         perfMon.incrementCounter();
       }
