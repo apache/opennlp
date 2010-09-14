@@ -39,8 +39,7 @@ public class HashSumEventStream implements EventStream {
       digest = MessageDigest.getInstance("MD5");
     } catch (NoSuchAlgorithmException e) {
       // should never happen, does all java runtimes have md5 ?!
-      // no, if nor throw a meaningful error
-      e.printStackTrace();
+     throw new IllegalStateException(e);
     }
   }
   
