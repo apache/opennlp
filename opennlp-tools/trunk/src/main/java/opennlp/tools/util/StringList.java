@@ -32,6 +32,9 @@ public class StringList implements Iterable<String> {
   /**
    * Initializes the current instance.
    *
+   * Note: <br>
+   * Token String will be replaced by identical internal String object.
+   *
    * @param singleToken one single token
    */
   public StringList(String singleToken) {
@@ -42,6 +45,9 @@ public class StringList implements Iterable<String> {
 
   /**
    * Initializes the current instance.
+   * 
+   * Note: <br>
+   * Token Strings will be replaced by identical internal String object.
    *
    * @param tokens the string parts of the new {@link StringList}, an empty
    * tokens array or null is not permitted.
