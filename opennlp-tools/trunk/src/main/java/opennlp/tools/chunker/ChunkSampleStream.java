@@ -24,8 +24,19 @@ import java.util.List;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * Parses the conll 2000 shared task shallow parser training data.
+ * 
+ * Data format is specified on the conll page:<br>
+ * http://www.cnts.ua.ac.be/conll2000/chunking/ 
+ */
 public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
 
+  /**
+   * Initializes the current instance.
+   * 
+   * @param samples a plain text line stream
+   */
   public ChunkSampleStream(ObjectStream<String> samples) {
     super(samples);
   }
