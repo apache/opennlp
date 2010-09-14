@@ -51,7 +51,7 @@ public class NameSample {
       String[][] additionalContext, boolean clearAdaptiveData) {
 
     if (sentence == null) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("sentence must not be null!");
     }
 
     if (names == null) {
