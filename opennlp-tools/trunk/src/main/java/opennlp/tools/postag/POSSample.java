@@ -41,6 +41,11 @@ public class POSSample {
         throw new IllegalArgumentException(
         "There must be exactly one tag for each token!");
 
+    for (int i = 0; i < sentence.length; i++) {
+      if (sentence[i] == null || tags[i] == null)
+        throw new IllegalArgumentException("null elements are not allowed!");
+    }
+    
     this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
     this.tags = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tags)));
   }
