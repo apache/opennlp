@@ -326,13 +326,21 @@ public class NameFinderME implements TokenNameFinder {
     * @throws ObjectStreamException
     */
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
-       final Map<String, Object> resources, int iterations, int cutoff) throws IOException {
+       AdaptiveFeatureGenerator generator, final Map<String, Object> resources, 
+       int iterations, int cutoff) throws IOException {
      
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
      ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
      
+     AdaptiveFeatureGenerator featureGenerator;
+     
+     if (generator != null)
+       featureGenerator = generator;
+     else 
+       featureGenerator = createFeatureGenerator();
+     
      EventStream eventStream = new NameFinderEventStream(samples, type,
-         new DefaultNameContextGenerator(createFeatureGenerator()));
+         new DefaultNameContextGenerator(featureGenerator));
      HashSumEventStream hses = new HashSumEventStream(eventStream);
      AbstractModel nameFinderModel = GIS.trainModel(iterations, new TwoPassDataIndexer(hses, cutoff));
      
@@ -343,6 +351,11 @@ public class NameFinderME implements TokenNameFinder {
          resources, manifestInfoEntries);
    }
 
+   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
+       final Map<String, Object> resources, int iterations, int cutoff) throws IOException  {
+     return train(languageCode, type, samples, null, resources, iterations, cutoff);
+   }
+   
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        final Map<String, Object> resources) throws IOException {
      return NameFinderME.train(languageCode, type, samples, resources, 100, 5);
