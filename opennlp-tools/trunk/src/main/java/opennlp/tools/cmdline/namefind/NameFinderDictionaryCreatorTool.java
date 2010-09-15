@@ -19,7 +19,7 @@
  * http://www.census.gov/genealogy/names/names_files.html
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.cmdline.namefind;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,8 +33,8 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.formats.NameFinderCensus90NameStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.StringList;
 
 /**
@@ -42,16 +42,16 @@ import opennlp.tools.util.StringList;
  * data collected from US Census data.
  * 
  * @author <a href="mailto:james.kosin.04@cnu.edu">James Kosin</a>
- * @version $Revision: 1.3 $, $Date: 2010-08-27 22:47:24 $
+ * @version $Revision: 1.1 $, $Date: 2010-09-15 01:42:56 $
  */
-public class CensusToDictionaryCreatorTool implements CmdLineTool {
+public class NameFinderDictionaryCreatorTool implements CmdLineTool {
 
     public String getName() {
-        return "CensusToDictionaryCreator";
+        return "NameFinderDictionaryCreator";
     }
 
     public String getShortDescription() {
-        return "";
+        return "Converts 1990 US Census names into a dictionary";
     }
 
     public String getHelp() {
@@ -60,13 +60,13 @@ public class CensusToDictionaryCreatorTool implements CmdLineTool {
             BasicTrainingParameters.getDescription();
     }
 
-  static ObjectStream<String> openSampleData(String sampleDataName,
-      File sampleDataFile, Charset encoding) {
+  static ObjectStream<StringList> openSampleData(String sampleDataName,
+      String language, File sampleDataFile, Charset encoding) {
         CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
 
         FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
 
-        return new PlainTextByLineStream(sampleDataIn.getChannel(), encoding);
+        return new NameFinderCensus90NameStream(language, sampleDataIn, encoding.toString());
   }
 
   public void run(String[] args) {
@@ -89,53 +89,21 @@ public class CensusToDictionaryCreatorTool implements CmdLineTool {
         CmdLineUtil.checkInputFile("Name data", testData);
         CmdLineUtil.checkOutputFile("Dictionary file", dictOutFile);
 
-        ObjectStream<String> sampleStream =
-            openSampleData("Name", testData, parameters.getEncoding());
+        ObjectStream<StringList> sampleStream =
+            openSampleData("Name", parameters.getLanguage(), testData, parameters.getEncoding());
         Dictionary mDictionary = new Dictionary(true);
         Locale loc = new Locale(parameters.getLanguage());
 
         try {
-            String line = sampleStream.read();
+            StringList name = sampleStream.read();
             System.out.println("Creating Dictionary...");
-            while ((line != null) &&
-                   !line.isEmpty()) {
-                // the data is in ALL CAPS and needs to be stripped from
-                // other data on the line.
-                // search for the expected space separator after the name.
-                int pos = line.indexOf(' ');
-                // validate we have a valid line the format is:
-                // <name> <freqency> <comulitive.frequency> <rank>
-                if ((pos != -1)) {
-                    String name = line.substring(0, pos);
-                    String name2;
-                    // now we need to re-introduce case back into the name
-                    // the census data is all CAPITAL.  However, there are a few
-                    // subtle exceptions to every rule.  Mc is a common exception
-                    // where the name will have two caps letters.  McDonald, McLee
-                    // we test for a length of greater than 2 because there is one
-                    // name that is Mc in the data, with no characters after.
-                    if ((name.length() > 2) &&
-                        name.startsWith("MC")) {
-                        // this tranlates the case for McDonald, etc.
-                        name2 = name.substring(0,1).toUpperCase(loc) +
-                                name.substring(1,2).toLowerCase(loc) +
-                                name.substring(2,3).toUpperCase(loc) +
-                                name.substring(3).toLowerCase(loc);
-                    } else {
-                        // this keeps the first letter of the name capital
-                        name2 = name.substring(0,1).toUpperCase(loc) +
-                                name.substring(1).toLowerCase(loc);
-                    }
-
-                    StringList entry = new StringList(new String[]{name2});
-
-                    if (!mDictionary.contains(entry)) {
-                        // todo: remove debug output statement
-                        System.out.println(entry);
-                        mDictionary.put(entry);
-                    }
+            while ((name != null)) {
+                if (!mDictionary.contains(name)) {
+                    // todo: remove debug output statement
+                    System.out.println(name);
+                    mDictionary.put(name);
                 }
-                line = sampleStream.read();
+                name = sampleStream.read();
             }
         } catch (IOException e) {
             CmdLineUtil.printTrainingIoError(e);
