@@ -90,7 +90,7 @@ public class POSTaggerME implements POSTagger {
    */
   protected boolean useClosedClassTagsFilter = false;
 
-  private static final int DEFAULT_BEAM_SIZE =3;
+  public static final int DEFAULT_BEAM_SIZE = 3;
 
   /**
    * The size of the beam to be used in determining the best sequence of pos tags.
