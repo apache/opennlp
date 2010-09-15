@@ -38,6 +38,13 @@ public class ChunkSample {
     this.tags = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tags)));
     this.preds = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(preds)));
   }
+
+  public ChunkSample(List<String> sentence, List<String> tags, List<String> preds) {
+    // TODO: Add validation of params ...
+    this.sentence = Collections.unmodifiableList(new ArrayList<String>((sentence)));
+    this.tags = Collections.unmodifiableList(new ArrayList<String>((tags)));
+    this.preds = Collections.unmodifiableList(new ArrayList<String>((preds)));
+  }
   
   public String[] getSentence() {
     return sentence.toArray(new String[sentence.size()]);
