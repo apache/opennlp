@@ -63,7 +63,7 @@ import opennlp.tools.util.model.ModelUtil;
 public class NameFinderME implements TokenNameFinder {
 
   private static String[][] EMPTY = new String[0][0];
-  private static final int DEFAULT_BEAM_SIZE = 3;
+  public static final int DEFAULT_BEAM_SIZE = 3;
   private static final Pattern typedOutcomePattern = Pattern.compile("(.+)-\\w+");
 
   private static class NameFinderSequenceValidator implements
