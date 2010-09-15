@@ -17,7 +17,8 @@
 
 package opennlp.tools.util;
 
-import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
 
 public class ObjectStreamUtils {
 
@@ -34,16 +35,44 @@ public class ObjectStreamUtils {
 
       private int index = 0;
       
-      public T read() throws IOException {
+      public T read() {
         if (index < array.length) 
           return array[index++];
         else 
           return null;
       }
 
-      public void reset() throws IOException,
-          UnsupportedOperationException {
+      public void reset() {
         index = 0;
+      }
+      
+      public void close() {
+      }
+    };
+  }
+  
+  /**
+   * Creates an {@link ObjectStream} form a collection.
+   * 
+   * @param <T>
+   * @param collection
+   * @return
+   */
+  public static <T> ObjectStream<T> createObjectStream(final Collection<T> collection) {
+    
+    return new ObjectStream<T>() {
+      
+      private Iterator<T> iterator = collection.iterator();
+      
+      public T read() {
+        if (iterator.hasNext())
+          return iterator.next();
+        else
+          return null;
+      }
+      
+      public void reset() {
+        iterator = collection.iterator();
       }
       
       public void close() {
