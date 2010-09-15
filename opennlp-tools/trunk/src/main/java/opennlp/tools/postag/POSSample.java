@@ -36,20 +36,28 @@ public class POSSample {
   private List<String> tags;
 
   public POSSample(String sentence[], String tags[]) {
-
-    if (sentence.length != tags.length)
-        throw new IllegalArgumentException(
-        "There must be exactly one tag for each token!");
-
-    for (int i = 0; i < sentence.length; i++) {
-      if (sentence[i] == null || tags[i] == null)
-        throw new IllegalArgumentException("null elements are not allowed!");
-    }
-    
     this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
     this.tags = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tags)));
+    
+    checkArguments();
   }
-
+  
+  public POSSample(List<String> sentence, List<String> tags) {
+    this.sentence = Collections.unmodifiableList(new ArrayList<String>(sentence));
+    this.tags = Collections.unmodifiableList(new ArrayList<String>(tags));
+    
+    checkArguments();
+  }
+  
+  private void checkArguments() {
+    if (sentence.size() != tags.size())
+      throw new IllegalArgumentException(
+      "There must be exactly one tag for each token!");
+    
+      if (sentence.contains(null) || tags.contains(null))
+        throw new IllegalArgumentException("null elements are not allowed!");
+  }
+  
   public String[] getSentence() {
     return sentence.toArray(new String[sentence.size()]);
   }
