@@ -17,9 +17,9 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Locale;
+
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.StringList;
@@ -44,11 +44,7 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
   public NameFinderCensus90NameStream(String lang, InputStream in, String encoding) {
       this.locale = new Locale(lang);
       this.encoding = Charset.forName(encoding);
-      try {
-          this.lineStream = new PlainTextByLineStream(in, this.encoding.name());
-      } catch (UnsupportedEncodingException e) {
-          throw new IllegalStateException(e);
-      }
+      this.lineStream = new PlainTextByLineStream(in, this.encoding);
   }
 
   public StringList read() throws IOException {

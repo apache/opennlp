@@ -53,6 +53,10 @@ public class PlainTextByLineStream implements ObjectStream<String> {
     this(new InputStreamReader(in, charsetName));
   }
   
+  public PlainTextByLineStream(InputStream in, Charset charset) {
+    this(new InputStreamReader(in, charset));
+  }
+  
   public PlainTextByLineStream(FileChannel channel, String charsetName) {
     this.encoding = charsetName;
     this.channel = channel;
