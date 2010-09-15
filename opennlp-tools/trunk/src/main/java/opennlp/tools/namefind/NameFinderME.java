@@ -122,11 +122,16 @@ public class NameFinderME implements TokenNameFinder {
    * @param model
    * @param beamSize
    */
-  public NameFinderME(TokenNameFinderModel model, int beamSize) {
+  public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize) {
     this.model = model.getNameFinderModel();
 
-    contextGenerator = new DefaultNameContextGenerator(createFeatureGenerator());
+    contextGenerator = new DefaultNameContextGenerator();
 
+    if (generator != null) 
+      contextGenerator.addFeatureGenerator(generator);
+    else
+      contextGenerator.addFeatureGenerator(createFeatureGenerator());
+    
     contextGenerator.addFeatureGenerator(
           new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
     
@@ -134,6 +139,11 @@ public class NameFinderME implements TokenNameFinder {
         new NameFinderSequenceValidator(), beamSize);
   }
 
+  public NameFinderME(TokenNameFinderModel model, int beamSize) {
+    this(model, null, beamSize);
+  }
+  
+  
   /**
    * Creates a new name finder with the specified model.
    * 
