@@ -53,6 +53,10 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
     this.generators = Collections.unmodifiableCollection(this.generators);
   }
 
+  public AggregatedFeatureGenerator(Collection<AdaptiveFeatureGenerator> generators) {
+    this(generators.toArray(new AdaptiveFeatureGenerator[generators.size()]));
+  }
+  
   /**
    * Calls the {@link AdaptiveFeatureGenerator#clearAdaptiveData()} method
    * on all aggregated {@link AdaptiveFeatureGenerator}s.
