@@ -26,12 +26,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Locale;
+
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.formats.NameFinderCensus90NameStream;
 import opennlp.tools.util.ObjectStream;
@@ -42,10 +44,27 @@ import opennlp.tools.util.StringList;
  * data collected from US Census data.
  * 
  * @author <a href="mailto:james.kosin.04@cnu.edu">James Kosin</a>
- * @version $Revision: 1.2 $, $Date: 2010-09-16 03:08:38 $
+ * @version $Revision: 1.3 $, $Date: 2010-09-16 07:56:38 $
  */
 public class CensusDictionaryCreatorTool implements CmdLineTool {
 
+  interface Parameters {
+    
+    @ParameterDescription(valueName = "code")
+    @OptionalParameter(defaultValue = "en")
+    String getLang();
+    
+    @ParameterDescription(valueName = "charsetName")
+    @OptionalParameter(defaultValue="UTF-8")
+    String getEncoding();
+    
+    @ParameterDescription(valueName = "censusDict")
+    String getCensusData();
+    
+    @ParameterDescription(valueName = "dict")
+    String getDict();
+  }
+  
     public String getName() {
         return "CensusDictionaryCreator";
     }
@@ -55,9 +74,7 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
     }
 
     public String getHelp() {
-        return "Usage: " + CLI.CMD + " " + getName() + " " +
-            BasicTrainingParameters.getParameterUsage() + " nameData dictionary\n" +
-            BasicTrainingParameters.getDescription();
+        return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(Parameters.class);
     }
 
   static ObjectStream<StringList> openSampleData(String sampleDataName,
@@ -91,21 +108,16 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
   }
 
   public void run(String[] args) {
-      // expecting arguments -lang en -encoding utf8 namefile dictionary
-        if (args.length < 6) {
-            System.err.println(getHelp());
-            throw new TerminateToolException(1);
-        }
+    
+    if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+      System.err.println(getHelp());
+      throw new TerminateToolException(1);
+    }
 
-        BasicTrainingParameters parameters = new BasicTrainingParameters(args);
-
-        if(!parameters.isValid()) {
-          System.err.println(getHelp());
-          throw new TerminateToolException(1);
-        }
-
-        File testData = new File(args[(args.length - 2)]);
-        File dictOutFile = new File(args[(args.length - 1)]);
+    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    
+        File testData = new File(params.getCensusData());
+        File dictOutFile = new File(params.getDict());
 
         CmdLineUtil.checkInputFile("Name data", testData);
         CmdLineUtil.checkOutputFile("Dictionary file", dictOutFile);
@@ -113,7 +125,7 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
 
         try {
             mDictionary = createDictionary(openSampleData("Name", testData,
-                                                          parameters.getEncoding()));
+                                                          Charset.forName(params.getEncoding())));
         } catch (IOException e) {
             CmdLineUtil.printTrainingIoError(e);
             throw new TerminateToolException(-1);
