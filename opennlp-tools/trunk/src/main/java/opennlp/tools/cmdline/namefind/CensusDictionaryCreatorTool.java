@@ -42,7 +42,7 @@ import opennlp.tools.util.StringList;
  * data collected from US Census data.
  * 
  * @author <a href="mailto:james.kosin.04@cnu.edu">James Kosin</a>
- * @version $Revision: 1.1 $, $Date: 2010-09-16 00:35:46 $
+ * @version $Revision: 1.2 $, $Date: 2010-09-16 03:08:38 $
  */
 public class CensusDictionaryCreatorTool implements CmdLineTool {
 
@@ -61,12 +61,33 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
     }
 
   static ObjectStream<StringList> openSampleData(String sampleDataName,
-      String language, File sampleDataFile, Charset encoding) {
+                                                 File sampleDataFile, Charset encoding) {
         CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
 
         FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
 
-        return new NameFinderCensus90NameStream(language, sampleDataIn, encoding.toString());
+        return new NameFinderCensus90NameStream(sampleDataIn, encoding.toString());
+  }
+
+  protected Dictionary createDictionary(ObjectStream<StringList> sampleStream) throws IOException {
+      Dictionary mNameDictionary = new Dictionary(true);
+      StringList entry;
+
+      System.out.println("Creating Dictionary...");
+      entry = sampleStream.read();
+      while (entry != null) {
+          if (!mNameDictionary.contains(entry)) {
+              mNameDictionary.put(entry);
+          }
+          entry = sampleStream.read();
+      }
+      try {
+          sampleStream.close();
+      } catch(IOException e) {
+          // sorry this can happen.
+      }
+
+      return mNameDictionary;
   }
 
   public void run(String[] args) {
@@ -88,32 +109,14 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
 
         CmdLineUtil.checkInputFile("Name data", testData);
         CmdLineUtil.checkOutputFile("Dictionary file", dictOutFile);
-
-        ObjectStream<StringList> sampleStream =
-            openSampleData("Name", parameters.getLanguage(), testData, parameters.getEncoding());
-        Dictionary mDictionary = new Dictionary(true);
-        Locale loc = new Locale(parameters.getLanguage());
+        Dictionary mDictionary;
 
         try {
-            StringList name = sampleStream.read();
-            System.out.println("Creating Dictionary...");
-            while ((name != null)) {
-                if (!mDictionary.contains(name)) {
-                    // todo: remove debug output statement
-                    System.out.println(name);
-                    mDictionary.put(name);
-                }
-                name = sampleStream.read();
-            }
+            mDictionary = createDictionary(openSampleData("Name", testData,
+                                                          parameters.getEncoding()));
         } catch (IOException e) {
             CmdLineUtil.printTrainingIoError(e);
             throw new TerminateToolException(-1);
-        } finally {
-            try {
-                sampleStream.close();
-            } catch (IOException e) {
-                // sorry this can fail.
-            }
         }
         System.out.println("Saving Dictionary...");
         try {

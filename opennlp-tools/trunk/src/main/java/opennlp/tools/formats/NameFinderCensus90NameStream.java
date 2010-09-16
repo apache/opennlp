@@ -11,6 +11,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *  under the License.
+ *
+ * --------------------------------------------------------------------------
+ * Data for the US Census and names can be found here for the 1990 Census:
+ * http://www.census.gov/genealogy/names/names_files.html
  */
 
 package opennlp.tools.formats;
@@ -25,6 +29,16 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.StringList;
 
 /**
+ * This class helps to read the US Census data from the files to build a
+ * StringList for each dictionary entry in the name-finder dictionary.
+ * The entries in the source file are as follows:
+ * 
+ *      SMITH          1.006  1.006      1
+ *
+ * The first field is the name (in ALL CAPS).
+ * The next field is a frequency in percent.
+ * The next is a cumulative frequency in percent.
+ * The last is a ranking.
  *
  * @author James Kosin
  */
@@ -34,15 +48,15 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
   private final Charset encoding;
   private final ObjectStream<String> lineStream;
 
-  public NameFinderCensus90NameStream(String lang, ObjectStream<String> lineStream) {
-      this.locale = new Locale(lang);
+  public NameFinderCensus90NameStream(ObjectStream<String> lineStream) {
+      this.locale = new Locale("en");   // locale is English
       this.encoding = Charset.defaultCharset();
       // todo how do we find the encoding for an already open ObjectStream() ?
-      this.lineStream = null;
+      this.lineStream = lineStream;
   }
 
-  public NameFinderCensus90NameStream(String lang, InputStream in, String encoding) {
-      this.locale = new Locale(lang);
+  public NameFinderCensus90NameStream(InputStream in, String encoding) {
+      this.locale = new Locale("en");   // locale is English
       this.encoding = Charset.forName(encoding);
       this.lineStream = new PlainTextByLineStream(in, this.encoding);
   }

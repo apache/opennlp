@@ -33,7 +33,7 @@ public class NameFinderCensus90NameStreamTest {
   private static ObjectStream<StringList> openData(String name) throws IOException {
     InputStream in = NameFinderCensus90NameStreamTest.class.getResourceAsStream("/opennlp/tools/formats/" + name);
 
-    return new NameFinderCensus90NameStream("en", in, "utf-8");
+    return new NameFinderCensus90NameStream(in, "utf-8");
   }
 
   @Test
