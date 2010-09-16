@@ -50,7 +50,7 @@ import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool;
-import opennlp.tools.cmdline.namefind.NameFinderDictionaryCreatorTool;
+import opennlp.tools.cmdline.namefind.CensusDictionaryCreatorTool;
 
 public final class CLI {
   
@@ -84,7 +84,7 @@ public final class CLI {
     tools.add(new TokenNameFinderTrainerTool());
     tools.add(new TokenNameFinderEvaluatorTool());
     tools.add(new TokenNameFinderConverterTool());
-    tools.add(new NameFinderDictionaryCreatorTool());
+    tools.add(new CensusDictionaryCreatorTool());
     
     
     // POS Tagger
