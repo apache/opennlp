@@ -17,6 +17,7 @@
 
 package opennlp.tools.chunker;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -29,10 +30,8 @@ public class ChunkSampleTest {
         new String[]{"test", "one element to much"});
   }
   
-  @Test
-  public void testToString() {
-    
-    String sentence[] = new String[] {
+  private String[] createSentence() {
+    return new String[] {
         "Forecasts",
         "for",
         "the",
@@ -42,8 +41,11 @@ public class ChunkSampleTest {
         "widely",
         "."
     };
+  }
+  
+  private String[] createTags() {
     
-    String tags[] = new String[]{
+    return new String[]{
         "NNS",
         "IN",
         "DT",
@@ -53,8 +55,10 @@ public class ChunkSampleTest {
         "RB",
         "."
     };
-    
-    String chunks[] = new String[]{
+  }
+  
+  private String[] createChunks() {
+    return new String[]{
         "B-NP",
         "B-PP",
         "B-NP",
@@ -64,11 +68,23 @@ public class ChunkSampleTest {
         "B-ADVP"
         ,"O"
     };
+  }
+  
+  @Test
+  public void testRetrievingContent() {
+    ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
     
-    ChunkSample sample = new ChunkSample(sentence, tags, chunks);
+    assertArrayEquals(createSentence(), sample.getSentence());
+    assertArrayEquals(createTags(), sample.getTags());
+    assertArrayEquals(createChunks(), sample.getPreds());
+  }
+  
+  @Test
+  public void testToString() {
+    
+    ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
     
     assertEquals(" [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] " +
     		"[VP range_VBP ] [ADVP widely_RB ] ._.", sample.toString());
-    
   }
 }
