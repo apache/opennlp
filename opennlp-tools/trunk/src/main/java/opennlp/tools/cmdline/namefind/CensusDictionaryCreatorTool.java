@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.ArgumentParser;
@@ -38,7 +39,7 @@ import opennlp.tools.util.StringList;
 /**
  * This tool helps create a loadable dictionary for the namefinder, from
  * data collected from US Census data.
- * 
+ *
  *
  * --------------------------------------------------------------------------
  * Data for the US Census and names can be found here for the 1990 Census:
@@ -46,7 +47,7 @@ import opennlp.tools.util.StringList;
  * --------------------------------------------------------------------------
  * 
  * @author <a href="mailto:james.kosin.04@cnu.edu">James Kosin</a>
- * @version $Revision: 1.4 $, $Date: 2010-09-17 03:07:44 $
+ * @version $Revision: 1.5 $, $Date: 2010-09-17 09:27:20 $
  */
 public class CensusDictionaryCreatorTool implements CmdLineTool {
 
@@ -139,12 +140,26 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
     }
 
     System.out.println("Saving Dictionary...");
+    
+    OutputStream out = null;
+    
     try {
-      mDictionary.serialize(new FileOutputStream(dictOutFile));
+      out = new FileOutputStream(dictOutFile);
+      mDictionary.serialize(out);
     } catch (IOException ex) {
       System.err.println("Error during write to dictionary file: " + ex.getMessage());
       throw new TerminateToolException(-1);
     }
+    finally {
+      if (out != null)
+        try {
+          out.close();
+        } catch (IOException e) {
+          // file might be damaged
+          System.err.println("Attention: Failed to correctly write dictionary:");
+          System.err.println(e.getMessage());
+          throw new TerminateToolException(-1);
+        }
+    }
   }
-
 }
