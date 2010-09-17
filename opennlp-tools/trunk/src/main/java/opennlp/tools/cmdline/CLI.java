@@ -23,9 +23,11 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import opennlp.tools.cmdline.chunker.ChunkerMETool;
 import opennlp.tools.cmdline.chunker.ChunkerTrainerTool;
+import opennlp.tools.cmdline.namefind.CensusDictionaryCreatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderConverterTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
@@ -50,7 +52,6 @@ import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool;
-import opennlp.tools.cmdline.namefind.CensusDictionaryCreatorTool;
 
 public final class CLI {
   
@@ -112,6 +113,13 @@ public final class CLI {
     }
     
     toolLookupMap = Collections.unmodifiableMap(toolLookupMap);
+  }
+  
+  /**
+   * @return a set which contains all tool names
+   */
+  public static Set<String> getToolNames() {
+    return toolLookupMap.keySet();
   }
   
   private static void usage() {
