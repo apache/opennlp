@@ -47,7 +47,7 @@ import opennlp.tools.util.StringList;
  * --------------------------------------------------------------------------
  * 
  * @author <a href="mailto:james.kosin.04@cnu.edu">James Kosin</a>
- * @version $Revision: 1.5 $, $Date: 2010-09-17 09:27:20 $
+ * @version $Revision: 1.6 $, $Date: 2010-09-17 09:44:02 $
  */
 public class CensusDictionaryCreatorTool implements CmdLineTool {
 
@@ -83,14 +83,6 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(Parameters.class);
   }
 
-  static ObjectStream<StringList> openSampleData(String sampleDataName,
-                                               File sampleDataFile, Charset encoding) {
-
-    CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
-    FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
-    return new NameFinderCensus90NameStream(sampleDataIn, encoding);
-  }
-
   public static Dictionary createDictionary(ObjectStream<StringList> sampleStream) throws IOException {
 
     Dictionary mNameDictionary = new Dictionary(true);
@@ -121,10 +113,12 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
 
     CmdLineUtil.checkInputFile("Name data", testData);
     CmdLineUtil.checkOutputFile("Dictionary file", dictOutFile);
-    Dictionary mDictionary;
-    ObjectStream<StringList> sampleStream = openSampleData("Name", testData,
-            Charset.forName(params.getEncoding()));
 
+    FileInputStream sampleDataIn = CmdLineUtil.openInFile(testData);
+    ObjectStream<StringList> sampleStream = new NameFinderCensus90NameStream(sampleDataIn, 
+        Charset.forName(params.getEncoding()));
+    
+    Dictionary mDictionary;
     try {
       System.out.println("Creating Dictionary...");
       mDictionary = createDictionary(sampleStream);
