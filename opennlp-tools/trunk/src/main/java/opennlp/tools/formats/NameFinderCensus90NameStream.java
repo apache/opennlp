@@ -11,10 +11,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *  under the License.
- *
- * --------------------------------------------------------------------------
- * Data for the US Census and names can be found here for the 1990 Census:
- * http://www.census.gov/genealogy/names/names_files.html
  */
 
 package opennlp.tools.formats;
@@ -49,54 +45,54 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
   private final ObjectStream<String> lineStream;
 
   public NameFinderCensus90NameStream(ObjectStream<String> lineStream) {
-      this.locale = new Locale("en");   // locale is English
-      this.encoding = Charset.defaultCharset();
-      // todo how do we find the encoding for an already open ObjectStream() ?
-      this.lineStream = lineStream;
+    this.locale = new Locale("en");   // locale is English
+    this.encoding = Charset.defaultCharset();
+    // todo how do we find the encoding for an already open ObjectStream() ?
+    this.lineStream = lineStream;
   }
 
-  public NameFinderCensus90NameStream(InputStream in, String encoding) {
-      this.locale = new Locale("en");   // locale is English
-      this.encoding = Charset.forName(encoding);
-      this.lineStream = new PlainTextByLineStream(in, this.encoding);
+  public NameFinderCensus90NameStream(InputStream in, Charset encoding) {
+    this.locale = new Locale("en");   // locale is English
+    this.encoding = encoding;
+    this.lineStream = new PlainTextByLineStream(in, this.encoding);
   }
 
   public StringList read() throws IOException {
-      String line = lineStream.read();
-      StringList name = null;
+    String line = lineStream.read();
+    StringList name = null;
 
-      if ((line != null) &&
-          (!line.isEmpty())) {
-          String name2;
-          // find the location of the name separator in the line of data.
-          int pos = line.indexOf(' ');
-          if ((pos != -1)) {
-              String parsed = line.substring(0, pos);
-              // the data is in ALL CAPS ... so the easiest way is to convert
-              // back to standard mixed case.
-              if ((parsed.length() > 2) &&
-                  (parsed.startsWith("MC"))) {
-                  name2 = parsed.substring(0,1).toUpperCase(locale) +
-                          parsed.substring(1,2).toLowerCase(locale) +
-                          parsed.substring(2,3).toUpperCase(locale) +
-                          parsed.substring(3).toLowerCase(locale);
-              } else {
-                  name2 = parsed.substring(0,1).toUpperCase(locale) +
-                          parsed.substring(1).toLowerCase(locale);
-              }
-              name = new StringList(new String[]{name2});
-          }
+    if ((line != null) &&
+        (!line.isEmpty())) {
+      String name2;
+      // find the location of the name separator in the line of data.
+      int pos = line.indexOf(' ');
+      if ((pos != -1)) {
+        String parsed = line.substring(0, pos);
+        // the data is in ALL CAPS ... so the easiest way is to convert
+        // back to standard mixed case.
+        if ((parsed.length() > 2) &&
+            (parsed.startsWith("MC"))) {
+          name2 = parsed.substring(0,1).toUpperCase(locale) +
+                  parsed.substring(1,2).toLowerCase(locale) +
+                  parsed.substring(2,3).toUpperCase(locale) +
+                  parsed.substring(3).toLowerCase(locale);
+        } else {
+          name2 = parsed.substring(0,1).toUpperCase(locale) +
+                  parsed.substring(1).toLowerCase(locale);
+        }
+        name = new StringList(new String[]{name2});
       }
+    }
 
-      return name;
+    return name;
   }
 
   public void reset() throws IOException, UnsupportedOperationException {
-      lineStream.reset();
+    lineStream.reset();
   }
 
   public void close() throws IOException {
-      lineStream.close();
+    lineStream.close();
   }
 
 }

@@ -17,6 +17,7 @@
 
 package opennlp.tools.formats;
 
+import java.nio.charset.Charset;
 import java.io.InputStream;
 import opennlp.tools.util.ObjectStream;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class NameFinderCensus90NameStreamTest {
   private static ObjectStream<StringList> openData(String name) throws IOException {
     InputStream in = NameFinderCensus90NameStreamTest.class.getResourceAsStream("/opennlp/tools/formats/" + name);
 
-    return new NameFinderCensus90NameStream(in, "utf-8");
+    return new NameFinderCensus90NameStream(in, Charset.forName("utf-8"));
   }
 
   @Test
@@ -43,6 +44,7 @@ public class NameFinderCensus90NameStreamTest {
 
     StringList personName = sampleStream.read();
 
+    // verify the first 5 taken from the Surname data
     assertNotNull(personName);
     assertEquals("Smith", personName.getToken(0));
     personName = sampleStream.read();
@@ -58,6 +60,7 @@ public class NameFinderCensus90NameStreamTest {
     assertNotNull(personName);
     assertEquals("Brown", personName.getToken(0));
 
+    // verify the next 5 taken from the female names
     personName = sampleStream.read();
     assertNotNull(personName);
     assertEquals("Mary", personName.getToken(0));
@@ -74,6 +77,7 @@ public class NameFinderCensus90NameStreamTest {
     assertNotNull(personName);
     assertEquals("Elizabeth", personName.getToken(0));
 
+    // verify the last 5 taken from the male names
     personName = sampleStream.read();
     assertNotNull(personName);
     assertEquals("James", personName.getToken(0));
@@ -90,6 +94,7 @@ public class NameFinderCensus90NameStreamTest {
     assertNotNull(personName);
     assertEquals("William", personName.getToken(0));
 
+    // verify the end of the file.
     personName = sampleStream.read();
     assertNull(personName);
   }

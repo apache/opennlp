@@ -13,10 +13,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * --------------------------------------------------------------------------
- * Data for the US Census and names can be found here for the 1990 Census:
- * http://www.census.gov/genealogy/names/names_files.html
  */
 
 package opennlp.tools.cmdline.namefind;
@@ -43,8 +39,14 @@ import opennlp.tools.util.StringList;
  * This tool helps create a loadable dictionary for the namefinder, from
  * data collected from US Census data.
  * 
+ *
+ * --------------------------------------------------------------------------
+ * Data for the US Census and names can be found here for the 1990 Census:
+ * http://www.census.gov/genealogy/names/names_files.html
+ * --------------------------------------------------------------------------
+ * 
  * @author <a href="mailto:james.kosin.04@cnu.edu">James Kosin</a>
- * @version $Revision: 1.3 $, $Date: 2010-09-16 07:56:38 $
+ * @version $Revision: 1.4 $, $Date: 2010-09-17 03:07:44 $
  */
 public class CensusDictionaryCreatorTool implements CmdLineTool {
 
@@ -65,78 +67,84 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
     String getDict();
   }
   
-    public String getName() {
-        return "CensusDictionaryCreator";
-    }
+  public String getName() {
 
-    public String getShortDescription() {
-        return "Converts 1990 US Census names into a dictionary";
-    }
-
-    public String getHelp() {
-        return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(Parameters.class);
-    }
-
-  static ObjectStream<StringList> openSampleData(String sampleDataName,
-                                                 File sampleDataFile, Charset encoding) {
-        CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
-
-        FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
-
-        return new NameFinderCensus90NameStream(sampleDataIn, encoding.toString());
+    return "CensusDictionaryCreator";
   }
 
-  protected Dictionary createDictionary(ObjectStream<StringList> sampleStream) throws IOException {
-      Dictionary mNameDictionary = new Dictionary(true);
-      StringList entry;
+  public String getShortDescription() {
 
-      System.out.println("Creating Dictionary...");
+    return "Converts 1990 US Census names into a dictionary";
+  }
+
+  public String getHelp() {
+
+    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(Parameters.class);
+  }
+
+  static ObjectStream<StringList> openSampleData(String sampleDataName,
+                                               File sampleDataFile, Charset encoding) {
+
+    CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
+    FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
+    return new NameFinderCensus90NameStream(sampleDataIn, encoding);
+  }
+
+  public static Dictionary createDictionary(ObjectStream<StringList> sampleStream) throws IOException {
+
+    Dictionary mNameDictionary = new Dictionary(true);
+    StringList entry;
+
+    entry = sampleStream.read();
+    while (entry != null) {
+      if (!mNameDictionary.contains(entry)) {
+        mNameDictionary.put(entry);
+      }
       entry = sampleStream.read();
-      while (entry != null) {
-          if (!mNameDictionary.contains(entry)) {
-              mNameDictionary.put(entry);
-          }
-          entry = sampleStream.read();
-      }
-      try {
-          sampleStream.close();
-      } catch(IOException e) {
-          // sorry this can happen.
-      }
+    }
 
-      return mNameDictionary;
+    return mNameDictionary;
   }
 
   public void run(String[] args) {
-    
+
     if (!ArgumentParser.validateArguments(args, Parameters.class)) {
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    
-        File testData = new File(params.getCensusData());
-        File dictOutFile = new File(params.getDict());
 
-        CmdLineUtil.checkInputFile("Name data", testData);
-        CmdLineUtil.checkOutputFile("Dictionary file", dictOutFile);
-        Dictionary mDictionary;
+    File testData = new File(params.getCensusData());
+    File dictOutFile = new File(params.getDict());
 
-        try {
-            mDictionary = createDictionary(openSampleData("Name", testData,
-                                                          Charset.forName(params.getEncoding())));
-        } catch (IOException e) {
-            CmdLineUtil.printTrainingIoError(e);
-            throw new TerminateToolException(-1);
-        }
-        System.out.println("Saving Dictionary...");
-        try {
-            mDictionary.serialize(new FileOutputStream(dictOutFile));
-        } catch (IOException ex) {
-            System.err.println("Error during write to dictionary file: " + ex.getMessage());
-            throw new TerminateToolException(-1);
-        }
+    CmdLineUtil.checkInputFile("Name data", testData);
+    CmdLineUtil.checkOutputFile("Dictionary file", dictOutFile);
+    Dictionary mDictionary;
+    ObjectStream<StringList> sampleStream = openSampleData("Name", testData,
+            Charset.forName(params.getEncoding()));
+
+    try {
+      System.out.println("Creating Dictionary...");
+      mDictionary = createDictionary(sampleStream);
+    } catch (IOException e) {
+      CmdLineUtil.printTrainingIoError(e);
+      throw new TerminateToolException(-1);
+    } finally {
+      try {
+        sampleStream.close();
+      } catch(IOException e) {
+        // sorry this can fail..
+      }
     }
+
+    System.out.println("Saving Dictionary...");
+    try {
+      mDictionary.serialize(new FileOutputStream(dictOutFile));
+    } catch (IOException ex) {
+      System.err.println("Error during write to dictionary file: " + ex.getMessage());
+      throw new TerminateToolException(-1);
+    }
+  }
 
 }
