@@ -37,20 +37,25 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.StringList;
 
 /**
- * This tool helps create a loadable dictionary for the namefinder, from
- * data collected from US Census data.
- *
- *
+ * This tool helps create a loadable dictionary for the {@code NameFinder},
+ * from data collected from US Census data.
+ * <p>
  * --------------------------------------------------------------------------
+ * <br>
  * Data for the US Census and names can be found here for the 1990 Census:
- * http://www.census.gov/genealogy/names/names_files.html
+ * <br>
+ * <a href="http://www.census.gov/genealogy/names/names_files.html">www.census.gov</a>
+ * <br>
  * --------------------------------------------------------------------------
  * 
  * @author <a href="mailto:james.kosin.04@cnu.edu">James Kosin</a>
- * @version $Revision: 1.6 $, $Date: 2010-09-17 09:44:02 $
+ * @version $Revision: 1.7 $, $Date: 2010-09-18 02:37:06 $
  */
 public class CensusDictionaryCreatorTool implements CmdLineTool {
 
+  /**
+   * Create a list of expected parameters.
+   */
   interface Parameters {
     
     @ParameterDescription(valueName = "code")
@@ -67,22 +72,46 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
     @ParameterDescription(valueName = "dict")
     String getDict();
   }
-  
+
+  /**
+   * Gets the name for the tool.
+   *
+   * @return {@code String}  a name to be used to call this class.
+   */
   public String getName() {
 
     return "CensusDictionaryCreator";
   }
 
+  /**
+   * Gets a short description for the tool.
+   *
+   * @return {@code String}  a short description describing the purpose of
+   *    the tool to the user.
+   */
   public String getShortDescription() {
 
     return "Converts 1990 US Census names into a dictionary";
   }
 
+  /**
+   * Gets the expected usage of the tool as an example.
+   *
+   * @return {@code String}  a descriptive example on how to properly call
+   *    the tool from the command line.
+   */
   public String getHelp() {
 
     return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(Parameters.class);
   }
 
+  /**
+   * 
+   * @param sampleStream
+   * @return a {@code Dictionary} class containing the name dictionary
+   *    built from the input file.
+   * @throws IOException
+   */
   public static Dictionary createDictionary(ObjectStream<StringList> sampleStream) throws IOException {
 
     Dictionary mNameDictionary = new Dictionary(true);
@@ -99,6 +128,13 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
     return mNameDictionary;
   }
 
+  /**
+   * This method is much like the old main() method used in prior class
+   * construction, and allows another main class to run() this classes method
+   * to perform the operations.
+   *
+   * @param args  a String[] array of arguments passed to the run method
+   */
   public void run(String[] args) {
 
     if (!ArgumentParser.validateArguments(args, Parameters.class)) {
