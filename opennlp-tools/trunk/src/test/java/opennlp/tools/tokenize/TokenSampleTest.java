@@ -28,6 +28,20 @@ import org.junit.Test;
 public class TokenSampleTest {
 
   @Test
+  public void testRetrievingContent() {
+    
+    String sentence = "A test";
+    
+    TokenSample sample = new TokenSample(sentence, new Span[]{new Span(0, 1),
+        new Span(2, 6)});
+   
+    assertEquals("A test", sample.getText());
+    
+    assertEquals(new Span(0, 1), sample.getTokenSpans()[0]);
+    assertEquals(new Span(2, 6), sample.getTokenSpans()[1]);
+  }
+  
+  @Test
   public void testCreationWithDetokenizer() throws IOException {
     
     Detokenizer detokenizer = DictionaryDetokenizerTest.createLatinDetokenizer();
