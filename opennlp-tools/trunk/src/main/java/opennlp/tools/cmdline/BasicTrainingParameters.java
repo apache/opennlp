@@ -35,6 +35,8 @@ public class BasicTrainingParameters {
     encoding = CmdLineUtil.getEncodingParameter(args);
     language = CmdLineUtil.getParameter("-lang", args);
     
+    CmdLineUtil.checkLanguageCode(language);
+    
     Integer iterationsParameter = CmdLineUtil.getIntParameter("-iterations", args); 
     if (iterationsParameter != null)
       this.iterations = iterationsParameter;

@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
 import opennlp.tools.util.model.BaseModel;
 
@@ -296,6 +299,15 @@ public final class CmdLineUtil {
     
     // TODO: Can still return null if encoding is not specified at all ...
     return null;
+  }
+  
+  public static void checkLanguageCode(String code) {
+    List<String> languageCodes = Arrays.asList(Locale.getISOLanguages());
+    
+    if (!languageCodes.contains(code)) {
+      System.err.println("Unkown language code, must be an ISO 639 code!");
+      throw new TerminateToolException(-1);
+    }
   }
   
   public static boolean containsParam(String param, String args[]) {
