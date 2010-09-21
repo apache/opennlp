@@ -34,8 +34,8 @@ import opennlp.tools.util.model.BaseModel;
 
 /**
  * Util class for the command line interface.
- * 
- * Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
 public final class CmdLineUtil {
 

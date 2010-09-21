@@ -20,8 +20,8 @@ package opennlp.tools.cmdline;
 
 /**
  * A tool which can be executed from the command line.
- * 
- * Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
 public interface CmdLineTool {
   

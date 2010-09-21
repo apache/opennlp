@@ -38,7 +38,8 @@ import opennlp.tools.util.StringList;
 /**
  * Abstract class which contains code to tag and chunk parses for bottom up parsing and
  * leaves implementation of advancing parses and completing parses to extend class.
- * <b>Note:</b> The nodes within
+ * <p>
+ * <b>Note:</b> <br> The nodes within
  * the returned parses are shared with other parses and therefore their parent node references will not be consistent
  * with their child node reference.  {@link #setParents setParents} can be used to make the parents consistent
  * with a particular parse, but subsequent calls to <code>setParents</code> can invalidate the results of earlier

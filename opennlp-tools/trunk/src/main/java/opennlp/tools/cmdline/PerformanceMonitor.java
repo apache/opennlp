@@ -29,8 +29,8 @@ import java.util.concurrent.TimeUnit;
  * During the computation it prints out current and average throughput
  * per second. After the computation is done it prints a final performance
  * report.
- * 
- * Note:
+ * <p>
+ * <b>Note:</b>
  * This class is not thread safe. <br>
  * Do not use this class, internal use only!
  */

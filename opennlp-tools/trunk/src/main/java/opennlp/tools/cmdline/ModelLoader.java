@@ -26,8 +26,8 @@ import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Loads a model and does all the error handling for the command line tools.
- * 
- * Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  * 
  * @param <T>
  */

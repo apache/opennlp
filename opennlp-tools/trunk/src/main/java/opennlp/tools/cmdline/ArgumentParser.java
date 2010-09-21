@@ -36,10 +36,8 @@ import java.util.Set;
  * - Methods do not define arguments<br>
  * - Method names must start with get<br>
  * - Allowed return types are Integer, Boolean and String<br>
- * 
  * <p>
- * 
- * Note: Do not use this class, internal use only!
+ * <b>Note:</b> Do not use this class, internal use only!
  */
 public class ArgumentParser implements InvocationHandler {
 

@@ -23,11 +23,11 @@ import java.util.List;
 /**
  * An interface for generating features for name entity identification and for
  * updating document level contexts.
- * 
+ * <p>
  * Most implementors do not need the adaptive functionality of this
  * interface, they should extend the {@link FeatureGeneratorAdapter} class instead.
- * 
- * Note:
+ * <p>
+ * <b>Note:</b><br>
  * Feature generation is not thread safe and a instance of a feature generator
  * must only be called from one thread. The resources used by a feature
  * generator are typically shared between man instances of features generators
