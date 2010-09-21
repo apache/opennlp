@@ -17,16 +17,37 @@
 
 package opennlp.tools.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * Tests for the {@link StringUtil} class.
  */
-public class StringUtilTest extends TestCase {
+public class StringUtilTest {
 
+  @Test
   public void testNoBreakSpace() {
     assertTrue(StringUtil.isWhitespace(0x00A0));
     assertTrue(StringUtil.isWhitespace(0x2007));
     assertTrue(StringUtil.isWhitespace(0x202F));
+    
+    assertTrue(StringUtil.isWhitespace((char) 0x00A0));
+    assertTrue(StringUtil.isWhitespace((char) 0x2007));
+    assertTrue(StringUtil.isWhitespace((char) 0x202F));
   }
+  
+  @Test
+  public void testToLowerCase() {
+    assertEquals("test", StringUtil.toLowerCase("TEST"));
+    assertEquals("simple", StringUtil.toLowerCase("SIMPLE"));
+  }
+
+  @Test
+  public void testToUpperCase() {
+    assertEquals("TEST", StringUtil.toUpperCase("test"));
+    assertEquals("SIMPLE", StringUtil.toUpperCase("simple"));
+  }
+
 }
