@@ -53,7 +53,6 @@ public abstract class BaseModel {
   public static final String TRAINING_ITERATIONS_PROPERTY = "Training-Iterations";
   public static final String TRAINING_EVENTHASH_PROPERTY = "Training-Eventhash";
   
-  @SuppressWarnings("unchecked")
   private Map<String, ArtifactSerializer> artifactSerializers =
       new HashMap<String, ArtifactSerializer>();
 
@@ -106,7 +105,6 @@ public abstract class BaseModel {
    * @throws IOException
    * @throws InvalidFormatException
    */
-  @SuppressWarnings("unchecked")
   protected BaseModel(String componentName, InputStream in) throws IOException, InvalidFormatException {
 
     if (componentName == null)
@@ -162,7 +160,6 @@ public abstract class BaseModel {
     return entry.substring(extensionIndex);
   }
 
-  @SuppressWarnings("unchecked")
   protected ArtifactSerializer getArtifactSerializer(String resoruceName) {
     String extension = null;
     try {
@@ -192,7 +189,6 @@ public abstract class BaseModel {
    * @param serializers the key of the map is the file extension used to lookup
    *     the {@link ArtifactSerializer}.
    */
-  @SuppressWarnings("unchecked")
   protected void createArtifactSerializers(
       Map<String, ArtifactSerializer> serializers) {
     GenericModelSerializer.register(serializers);
