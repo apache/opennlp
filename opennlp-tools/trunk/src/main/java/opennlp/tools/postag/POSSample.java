@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
-import opennlp.tools.util.ParseException;
+import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Represents an pos-tagged sentence.
@@ -86,7 +86,7 @@ public class POSSample {
     return result.toString();
   }
 
-  public static POSSample parse(String sentenceString) throws ParseException {
+  public static POSSample parse(String sentenceString) throws InvalidFormatException {
 
     String tokenTags[] = WhitespaceTokenizer.INSTANCE.tokenize(sentenceString);
 
@@ -97,7 +97,7 @@ public class POSSample {
       int split = tokenTags[i].lastIndexOf("_");
 
       if (split == -1) {
-        throw new ParseException("Cannot find \"_\" inside token!");
+        throw new InvalidFormatException("Cannot find \"_\" inside token!");
       }
 
       sentence[i] = tokenTags[i].substring(0, split);

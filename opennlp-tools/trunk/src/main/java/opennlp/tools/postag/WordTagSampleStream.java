@@ -24,8 +24,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import opennlp.tools.util.FilterObjectStream;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ParseException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
@@ -67,7 +67,7 @@ public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
       POSSample sample;
       try {
         sample = POSSample.parse(sentence);
-      } catch (ParseException e) {
+      } catch (InvalidFormatException e) {
   
         if (logger.isLoggable(Level.WARNING)) {
           logger.warning("Error during parsing, ignoring sentence: " + sentence);

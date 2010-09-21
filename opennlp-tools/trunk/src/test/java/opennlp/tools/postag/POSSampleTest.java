@@ -20,7 +20,7 @@ package opennlp.tools.postag;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import opennlp.tools.util.ParseException;
+import opennlp.tools.util.InvalidFormatException;
 
 import org.junit.Test;
 
@@ -35,7 +35,7 @@ public class POSSampleTest {
    * @throws ParseException
    */
   @Test
-  public void testParse() throws ParseException {
+  public void testParse() throws InvalidFormatException {
     String sentence = "the_DT stories_NNS about_IN well-heeled_JJ " +
     		"communities_NNS and_CC developers_NNS";
 
@@ -49,7 +49,7 @@ public class POSSampleTest {
    * @throws ParseException
    */
   @Test
-  public void testParseEmptyString() throws ParseException {
+  public void testParseEmptyString() throws InvalidFormatException {
 
     String sentence = "";
 
@@ -67,7 +67,7 @@ public class POSSampleTest {
    * @throws ParseException
    */
   @Test
-  public void testParseEmtpyToken() throws ParseException {
+  public void testParseEmtpyToken() throws InvalidFormatException {
     String sentence = "the_DT _NNS";
 
     POSSample sample = POSSample.parse(sentence);
@@ -81,7 +81,7 @@ public class POSSampleTest {
    * @throws ParseException
    */
   @Test
-  public void testParseEmtpyTag() throws ParseException {
+  public void testParseEmtpyTag() throws InvalidFormatException {
 
     String sentence = "the_DT stories_";
 
@@ -100,7 +100,7 @@ public class POSSampleTest {
 
     try {
       POSSample.parse(sentence);
-    } catch (ParseException e) {
+    } catch (InvalidFormatException e) {
       return;
     }
 

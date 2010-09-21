@@ -31,8 +31,8 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ParseException;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class ChunkerMETool implements CmdLineTool {
@@ -73,7 +73,7 @@ public class ChunkerMETool implements CmdLineTool {
         POSSample posSample;
         try {
           posSample = POSSample.parse(line);
-        } catch (ParseException e) {
+        } catch (InvalidFormatException e) {
           System.err.println("Invalid format:");
           System.err.println(line);
           continue;
