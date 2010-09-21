@@ -62,4 +62,42 @@ public class StringUtil {
     return Character.isWhitespace(charCode)  || 
         Character.getType(charCode) == Character.SPACE_SEPARATOR;
   }
+  
+  
+  /**
+   * Converts to lower case independent of the current locale via 
+   * {@link Character#toLowerCase(char)} which uses mapping information
+   * from the UnicodeData file.
+   * 
+   * @param string
+   * @return
+   */
+  public static String toLowerCase(CharSequence string) {
+    
+    char lowerCaseChars[] = new char[string.length()];
+    
+    for (int i = 0; i < string.length(); i++) {
+      lowerCaseChars[i] = Character.toLowerCase(string.charAt(i));
+    }
+    
+    return new String(lowerCaseChars);
+  }
+  
+  /**
+   * Converts to upper case independent of the current locale via 
+   * {@link Character#toUpperCase(char)} which uses mapping information
+   * from the UnicodeData file.
+   * 
+   * @param string
+   * @return
+   */
+  public static String toUpperCase(CharSequence string) {
+    char upperCaseChars[] = new char[string.length()];
+    
+    for (int i = 0; i < string.length(); i++) {
+      upperCaseChars[i] = Character.toUpperCase(string.charAt(i));
+    }
+    
+    return new String(upperCaseChars);
+  }
 }
