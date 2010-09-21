@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Performs tokenization using character classes.
@@ -38,7 +39,8 @@ public class SimpleTokenizer extends AbstractTokenizer {
   }
   
   /**
-   * Use INSTANCE field instead to obtain an instance.
+   * @deprecated Use INSTANCE field instead to obtain an instance, constructor
+   * will be made private in the future.
    */
   @Deprecated
   public SimpleTokenizer() {
@@ -54,7 +56,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
     char pc = 0;
     for (int ci = 0; ci < sl; ci++) {
       char c = s.charAt(ci);
-      if (Character.isWhitespace(c)) {
+      if (StringUtil.isWhitespace(c)) {
         charType = CharacterEnum.WHITESPACE;
       }
       else if (Character.isLetter(c)) {

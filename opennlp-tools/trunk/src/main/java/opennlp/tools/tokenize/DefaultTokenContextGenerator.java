@@ -21,11 +21,13 @@ package opennlp.tools.tokenize;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * Generate events for maxent decisions for tokenization.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.3 $, $Date: 2010-09-21 08:19:21 $
+ * @version     $Revision: 1.4 $, $Date: 2010-09-21 09:09:36 $
  */
 public class DefaultTokenContextGenerator implements TokenContextGenerator {
 
@@ -82,7 +84,7 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
     else if (Character.isDigit(c)) {
       preds.add(key + "_num");
     }
-    else if (Character.isWhitespace(c)) {
+    else if (StringUtil.isWhitespace(c)) {
       preds.add(key + "_ws");
     }
     else {
