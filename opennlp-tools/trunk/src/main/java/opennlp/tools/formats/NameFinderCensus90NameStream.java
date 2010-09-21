@@ -28,13 +28,15 @@ import opennlp.tools.util.StringList;
  * This class helps to read the US Census data from the files to build a
  * StringList for each dictionary entry in the name-finder dictionary.
  * The entries in the source file are as follows:
- * 
+ * <p>
  *      SMITH          1.006  1.006      1
- *
- * The first field is the name (in ALL CAPS).
- * The next field is a frequency in percent.
- * The next is a cumulative frequency in percent.
- * The last is a ranking.
+ * <p>
+ * <ul>
+ * <li>The first field is the name (in ALL CAPS).
+ * <li>The next field is a frequency in percent.
+ * <li>The next is a cumulative frequency in percent.
+ * <li>The last is a ranking.
+ * </ul>
  *
  * @author James Kosin
  */
@@ -44,6 +46,13 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
   private final Charset encoding;
   private final ObjectStream<String> lineStream;
 
+  /**
+   * This constructor takes an ObjectStream and initializes the class to handle
+   * the stream.
+   *
+   * @param lineStream  an <code>ObjectSteam<String></code> that represents the
+   *                    input file to be attached to this class.
+   */
   public NameFinderCensus90NameStream(ObjectStream<String> lineStream) {
     this.locale = new Locale("en");   // locale is English
     this.encoding = Charset.defaultCharset();
@@ -51,6 +60,13 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
     this.lineStream = lineStream;
   }
 
+  /**
+   * This constructor takes an <code>InputStream</code> and a <code>Charset</code>
+   * and opens an associated stream object with the specified encoding specified.
+   *
+   * @param in  an <code>InputStream</code> for the input file.
+   * @param encoding  the <code>Charset</code> to apply to the input stream.
+   */
   public NameFinderCensus90NameStream(InputStream in, Charset encoding) {
     this.locale = new Locale("en");   // locale is English
     this.encoding = encoding;
