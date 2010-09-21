@@ -117,7 +117,6 @@ public class TokenNameFinderModel extends BaseModel {
     return true;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   protected void createArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
     super.createArtifactSerializers(serializers);
