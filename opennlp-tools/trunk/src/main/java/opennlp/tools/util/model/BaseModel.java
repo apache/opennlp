@@ -165,9 +165,7 @@ public abstract class BaseModel {
     try {
       extension = getEntryExtension(resoruceName);
     } catch (InvalidFormatException e) {
-      // TODO: throw runtime exception, error in model code
-      // sorry, will not fail, because the name was validated prior
-      e.printStackTrace();
+      throw new IllegalStateException(e);
     }
 
     return artifactSerializers.get(extension);  
