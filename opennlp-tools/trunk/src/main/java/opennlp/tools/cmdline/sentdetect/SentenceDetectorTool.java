@@ -29,6 +29,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
@@ -64,42 +65,31 @@ public final class SentenceDetectorTool implements CmdLineTool {
     
     SentenceDetectorME sdetector = new SentenceDetectorME(model);
 
-    StringBuilder para = new StringBuilder();
-
     ObjectStream<String> lineStream =
-      new PlainTextByLineStream(new InputStreamReader(System.in));
+      new ParagraphStream(new PlainTextByLineStream(new InputStreamReader(System.in)));
     
     PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
     perfMon.start();
     
-    // TODO: update to use ParagraphStream
-    
     try {
       while (true) {
-        String line = lineStream.read();
+        String para = lineStream.read();
         
         // The last paragraph in the input might not
         // be terminated well with a new line at the end.
         
-        if (line == null || line.equals("")) {
-          if (para.length() > 0) {
-            // process the paragraph data here
-            String[] sents = sdetector.sentDetect(para.toString());
-            for (String sentence : sents) {
-              System.out.println(sentence);
-            }
-            
-            perfMon.incrementCounter(sents.length);
+        if ((para != null) && (para.length() > 0)) {
+          // process the paragraph data here
+          String[] sents = sdetector.sentDetect(para);
+          for (String sentence : sents) {
+            System.out.println(sentence);
           }
-          System.out.println();
-          para.setLength(0);
+
+          perfMon.incrementCounter(sents.length);
         }
-        else {
-          para.append(line).append(" ");
-        }
-        
-        if (line == null)
+        if (para == null)
           break;
+        System.out.println();
       }
     } 
     catch (IOException e) {
