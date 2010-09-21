@@ -25,7 +25,7 @@ import java.util.List;
  * Generate events for maxent decisions for tokenization.
  *
  * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2009-01-24 01:32:19 $
+ * @version     $Revision: 1.3 $, $Date: 2010-09-21 08:19:21 $
  */
 public class DefaultTokenContextGenerator implements TokenContextGenerator {
 
@@ -34,31 +34,31 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
    */
   public String[] getContext(String sentence, int index) {
     List<String> preds = new ArrayList<String>();
-    preds.add("p="+sentence.substring(0,index));
-    preds.add("s="+sentence.substring(index));
-    if (index>0) {
-      addCharPreds("p1", sentence.charAt(index-1), preds);
-      if (index>1) {
-        addCharPreds("p2", sentence.charAt(index-2), preds);
-        preds.add("p21="+sentence.charAt(index-2)+sentence.charAt(index-1));
+    preds.add("p=" + sentence.substring(0, index));
+    preds.add("s=" + sentence.substring(index));
+    if (index > 0) {
+      addCharPreds("p1", sentence.charAt(index - 1), preds);
+      if (index > 1) {
+        addCharPreds("p2", sentence.charAt(index - 2), preds);
+        preds.add("p21=" + sentence.charAt(index - 2) + sentence.charAt(index - 1));
       }
       else {
         preds.add("p2=bok");
       }
-      preds.add("p1f1="+sentence.charAt(index-1)+sentence.charAt(index));
+      preds.add("p1f1=" + sentence.charAt(index - 1) + sentence.charAt(index));
     }
     else {
       preds.add("p1=bok");
     }
-    addCharPreds("f1",sentence.charAt(index), preds);
+    addCharPreds("f1", sentence.charAt(index), preds);
     if (index+1 < sentence.length()) {
-      addCharPreds("f2", sentence.charAt(index+1), preds);
-      preds.add("f12="+sentence.charAt(index)+sentence.charAt(index+1));
+      addCharPreds("f2", sentence.charAt(index + 1), preds);
+      preds.add("f12=" + sentence.charAt(index) + sentence.charAt(index + 1));
     }
     else {
       preds.add("f2=bok");
     }
-    if (sentence.charAt(0) == '&' && sentence.charAt(sentence.length()-1) == ';') {
+    if (sentence.charAt(0) == '&' && sentence.charAt(sentence.length() - 1) == ';') {
       preds.add("cc");//character code
     }
 
@@ -74,29 +74,29 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
   private void addCharPreds(String key, char c, List<String> preds) {
     preds.add(key + "=" + c);
     if (Character.isLetter(c)) {
-      preds.add(key+"_alpha");
+      preds.add(key + "_alpha");
       if (Character.isUpperCase(c)) {
-        preds.add(key+"_caps");
+        preds.add(key + "_caps");
       }
     }
     else if (Character.isDigit(c)) {
-      preds.add(key+"_num");
+      preds.add(key + "_num");
     }
     else if (Character.isWhitespace(c)) {
-      preds.add(key+"_ws");
+      preds.add(key + "_ws");
     }
     else {
       if (c=='.' || c=='?' || c=='!') {
-        preds.add(key+"_eos");
+        preds.add(key + "_eos");
       }
       else if (c=='`' || c=='"' || c=='\'') {
-        preds.add(key+"_quote");
+        preds.add(key + "_quote");
       }
       else if (c=='[' || c=='{' || c=='(') {
-        preds.add(key+"_lp");
+        preds.add(key + "_lp");
       }
       else if (c==']' || c=='}' || c==')') {
-        preds.add(key+"_rp");
+        preds.add(key + "_rp");
       }
     }
   }
