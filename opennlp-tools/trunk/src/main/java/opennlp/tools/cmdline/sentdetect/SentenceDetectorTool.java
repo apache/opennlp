@@ -65,30 +65,23 @@ public final class SentenceDetectorTool implements CmdLineTool {
     
     SentenceDetectorME sdetector = new SentenceDetectorME(model);
 
-    ObjectStream<String> lineStream =
+    ObjectStream<String> paraStream =
       new ParagraphStream(new PlainTextByLineStream(new InputStreamReader(System.in)));
     
     PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
     perfMon.start();
     
     try {
-      while (true) {
-        String para = lineStream.read();
+      String para;
+      while ((para = paraStream.read()) != null) {
         
-        // The last paragraph in the input might not
-        // be terminated well with a new line at the end.
-        
-        if ((para != null) && (para.length() > 0)) {
-          // process the paragraph data here
-          String[] sents = sdetector.sentDetect(para);
-          for (String sentence : sents) {
-            System.out.println(sentence);
-          }
-
-          perfMon.incrementCounter(sents.length);
+        String[] sents = sdetector.sentDetect(para);
+        for (String sentence : sents) {
+          System.out.println(sentence);
         }
-        if (para == null)
-          break;
+        
+        perfMon.incrementCounter(sents.length);
+                
         System.out.println();
       }
     } 
