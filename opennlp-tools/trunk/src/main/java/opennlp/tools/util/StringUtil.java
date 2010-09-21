@@ -34,7 +34,7 @@ public class StringUtil {
    * In OpenNLP no-break spaces are also considered as white spaces.
    * 
    * @param charCode
-   * @return
+   * @return true if white space otherwise false
    */
   public static boolean isWhitespace(char charCode) {
     return Character.isWhitespace(charCode)  || 
@@ -56,7 +56,7 @@ public class StringUtil {
    * In OpenNLP no-break spaces are also considered as white spaces.
    * 
    * @param charCode
-   * @return
+   * @return true if white space otherwise false
    */
   public static boolean isWhitespace(int charCode) {
     return Character.isWhitespace(charCode)  || 
@@ -70,7 +70,7 @@ public class StringUtil {
    * from the UnicodeData file.
    * 
    * @param string
-   * @return
+   * @return lower cased String
    */
   public static String toLowerCase(CharSequence string) {
     
@@ -89,7 +89,7 @@ public class StringUtil {
    * from the UnicodeData file.
    * 
    * @param string
-   * @return
+   * @return upper cased String
    */
   public static String toUpperCase(CharSequence string) {
     char upperCaseChars[] = new char[string.length()];
