@@ -313,8 +313,6 @@ public abstract class BaseModel {
       ArtifactSerializer serializer = getArtifactSerializer(name);
 
       if (serializer == null) {
-        // TODO: This should never happen
-        // add a method to add entries to the artifactMap
         throw new IllegalStateException("Missing serializer for " + name);
       }
       
