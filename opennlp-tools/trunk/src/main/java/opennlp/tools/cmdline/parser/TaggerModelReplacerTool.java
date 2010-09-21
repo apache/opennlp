@@ -24,7 +24,6 @@ import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.postag.POSModelLoader;
-import opennlp.tools.cmdline.postag.POSTaggerTool;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.postag.POSModel;
 
