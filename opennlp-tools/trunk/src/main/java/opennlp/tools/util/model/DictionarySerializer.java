@@ -39,7 +39,6 @@ class DictionarySerializer implements ArtifactSerializer<Dictionary> {
     dictionary.serialize(out);
   }
 
-  @SuppressWarnings("unchecked")
   static void register(Map<String, ArtifactSerializer> factories) {
     factories.put("dictionary", new DictionarySerializer());
    }

@@ -39,7 +39,6 @@ public class GenericModelSerializer implements ArtifactSerializer<AbstractModel>
     ModelUtil.writeModel(artifact, out);
   }
 
-  @SuppressWarnings("unchecked")
   public static void register(Map<String, ArtifactSerializer> factories) {
    factories.put("model", new GenericModelSerializer());
   }
