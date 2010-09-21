@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * This tokenizer uses white spaces to tokenize the input text.
@@ -50,7 +51,7 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     //gather up potential tokens
     int end = d.length();
     for (int i = 0; i < end; i++) {
-      if (Character.isWhitespace(d.charAt(i))) {
+      if (StringUtil.isWhitespace(d.charAt(i))) {
         if (inTok) {
           tokens.add(new Span(tokStart, i));
           inTok = false;

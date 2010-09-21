@@ -38,6 +38,7 @@ import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -124,13 +125,13 @@ public class SentenceDetectorME implements SentenceDetector {
   }
 
   private int getFirstWS(String s, int pos) {
-    while (pos < s.length() && !Character.isWhitespace(s.charAt(pos)))
+    while (pos < s.length() && !StringUtil.isWhitespace(s.charAt(pos)))
       pos++;
     return pos;
   }
 
   private int getFirstNonWS(String s, int pos) {
-    while (pos < s.length() && Character.isWhitespace(s.charAt(pos)))
+    while (pos < s.length() && StringUtil.isWhitespace(s.charAt(pos)))
       pos++;
     return pos;
   }
