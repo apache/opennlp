@@ -22,9 +22,9 @@ package opennlp.tools.util.featuregen;
  * The {@link FeatureGeneratorResourceProvider} provides access to the resources
  * provided in the model. Inside the model resources are identified by a
  * name.
- * 
- * Note:
- * This class is not be intended to be implemented by users.
+ * <p>
+ * <b>Note:</b><br>
+ * This class is not be intended to be implemented by users.<br>
  * All implementing classes must be thread safe.
  */
 public interface FeatureGeneratorResourceProvider {
