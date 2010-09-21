@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 
 import opennlp.tools.util.CollectionObjectStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.CrossValidationPartitioner.TrainingSampleStream;
 
 /**
  * Provides access to training and test partitions for n-fold cross validation.
@@ -35,7 +34,7 @@ import opennlp.tools.util.eval.CrossValidationPartitioner.TrainingSampleStream;
  * The training partition always consists of n -1 parts and one part is used for testing.
  * <p>
  * To use the <code>CrossValidationPartioner</code> a client iterates over the n
- * {@link TrainingSampleStream}s. Each </code>TrainingSampleStream</code> represents
+ * <code>TrainingSampleStream</code>s. Each </code>TrainingSampleStream</code> represents
  * one partition and is used first for training and afterwards for testing.
  * The <code>TestSampleStream</code> can be obtained from the <code>TrainingSampleStream</code>
  * with the <code>getTestSampleStream</code> method.
