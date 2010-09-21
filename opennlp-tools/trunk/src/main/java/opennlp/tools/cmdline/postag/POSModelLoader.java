@@ -26,8 +26,8 @@ import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Loads a POS Tagger Model for the command line tools.
- * 
- *  Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
 public final class POSModelLoader extends ModelLoader<POSModel>{
 

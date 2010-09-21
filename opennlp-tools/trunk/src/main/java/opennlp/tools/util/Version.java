@@ -20,16 +20,15 @@ package opennlp.tools.util;
 
 /**
  * The {@link Version} class represents the OpenNlp Tools library version.
- *
+ * <p>
  * The version has three parts:
- *
- * Major: OpenNlp Tools libraries with a different major version are not interchangeable.
- *
- * Minor: OpenNlp Tools libraries with an identical major version, but different
- *     minor version may be interchangeable. See release notes for further details.
- *
- * Revision: OpenNlp Tools libraries with same major and minor version, but a different
- *     revision, are fully interchangeable.
+ * <ul>
+ * <li>Major: OpenNlp Tools libraries with a different major version are not interchangeable.</li>
+ * <li>Minor: OpenNlp Tools libraries with an identical major version, but different
+ *     minor version may be interchangeable. See release notes for further details.</li>
+ * <li>Revision: OpenNlp Tools libraries with same major and minor version, but a different
+ *     revision, are fully interchangeable.</li>
+ * </ul>
  */
 public class Version {
 

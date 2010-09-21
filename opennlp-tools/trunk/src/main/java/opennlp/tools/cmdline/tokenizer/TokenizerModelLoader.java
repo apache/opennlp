@@ -26,8 +26,8 @@ import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Loads a Tokenizer Model for the command line tools.
- * 
- *  Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
 final class TokenizerModelLoader extends ModelLoader<TokenizerModel> {
 

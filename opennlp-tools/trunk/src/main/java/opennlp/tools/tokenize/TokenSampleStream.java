@@ -27,12 +27,12 @@ import opennlp.tools.util.ObjectStream;
  * {@link TokenSample}s out of them. The input string sample is tokenized if a
  * whitespace or the special separator chars occur.
  * <p>
- * Sample:<b>
- * "token1 token2 token3<SPLIT>token4"
+ * Sample:<br>
+ * "token1 token2 token3<SPLIT>token4"<br>
  * The tokens token1 and token2 are separated by a whitespace, token3 and token3
  * are separated by the special character sequence, in this case the default
  * split sequence.
- * 
+ * <p>
  * The sequence must be unique in the input string and is not escaped.
  */
 public class TokenSampleStream extends FilterObjectStream<String, TokenSample> {

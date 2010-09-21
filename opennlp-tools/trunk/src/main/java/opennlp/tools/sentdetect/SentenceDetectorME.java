@@ -43,10 +43,10 @@ import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
 
 /**
- * A sentence detector for splitting up raw text into sentences.  A maximum
- * entropy model is used to evaluate the characters ".", "!", and "?" in a
+ * A sentence detector for splitting up raw text into sentences.
+ * <p>
+ * A maximum entropy model is used to evaluate the characters ".", "!", and "?" in a
  * string to determine if they signify the end of a sentence.
- *
  */
 public class SentenceDetectorME implements SentenceDetector {
 

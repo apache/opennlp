@@ -28,12 +28,12 @@ import opennlp.tools.util.eval.CrossValidationPartitioner.TrainingSampleStream;
 
 /**
  * Provides access to training and test partitions for n-fold cross validation.
- * 
+ * <p>
  * Cross validation is used to evaluate the performance of a classifier when only
  * training data is available. The training set is split into n parts
  * and the training / evaluation is performed n times on these parts. 
  * The training partition always consists of n -1 parts and one part is used for testing.
- * 
+ * <p>
  * To use the <code>CrossValidationPartioner</code> a client iterates over the n
  * {@link TrainingSampleStream}s. Each </code>TrainingSampleStream</code> represents
  * one partition and is used first for training and afterwards for testing.

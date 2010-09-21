@@ -43,29 +43,30 @@ import opennlp.tools.util.model.ModelUtil;
  * based off of Jeff Reynar's UPenn thesis "Topic Segmentation:
  * Algorithms and Applications.", which is available from his
  * homepage: <http://www.cis.upenn.edu/~jcreynar>.
- *
+ * <p>
  * This tokenizer needs a statistical model to tokenize a text which reproduces
  * the tokenization observed in the training data used to create the model.
  * The {@link TokenizerModel} class encapsulates the model and provides
  * methods to create it from the binary representation. 
- * 
+ * <p>
  * A tokenizer instance is not thread safe. For each thread one tokenizer
  * must be instantiated which can share one <code>TokenizerModel</code> instance
  * to safe memory.
- * 
+ * <p>
  * To train a new model {{@link #train(String, Iterator, boolean)} method
  * can be used.
- * 
+ * <p>
  * Sample usage:
+ * <p>
  * <code>
- * InputStream modelIn;
- * 
- * ...
- * 
- * TokenizerModel model = TokenizerModel(modelIn);
- * 
- * Tokenizer tokenizer = new TokenizerME(model);
- * 
+ * InputStream modelIn;<br>
+ * <br>
+ * ...<br>
+ * <br>
+ * TokenizerModel model = TokenizerModel(modelIn);<br>
+ * <br>
+ * Tokenizer tokenizer = new TokenizerME(model);<br>
+ * <br>
  * String tokens[] = tokenizer.tokenize("A sentence to be tokenized.");
  * </code>
  * 

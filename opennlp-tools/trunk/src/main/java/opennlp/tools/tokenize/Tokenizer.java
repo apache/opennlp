@@ -22,25 +22,25 @@ import opennlp.tools.util.Span;
 
 /**
  * The interface for tokenizers, which segment a string into its tokens.
- * 
+ * <p>
  * Tokenization is a necessary step before more complex NLP tasks can be applied,
  * these usually process text on a token level. The quality of tokenization is
  * important because it influences the performance of high-level task applied to it.
- * 
+ * <p>
  * In segmented languages like English most words are segmented by white spaces
  * expect for punctuations, etc. which is directly attached to the word without a white space
  * in between, it is not possible to just split at all punctuations because in abbreviations dots
  * are a part of the token itself. A tokenizer is now responsible to split these tokens
  * correctly.
- * 
+ * <p>
  * In non-segmented languages like Chinese tokenization is more difficult since words
  * are not segmented by a whitespace.
- *  
+ * <p>
  * Tokenizers can also be used to segment already identified tokens further into more
  * atomic parts to get a deeper understanding. This approach helps more complex task
  * to gain insight into tokens which do not represent words like numbers, units or tokens
  * which are part of a special notation.
- * 
+ * <p>
  * For most further task it is desirable to over tokenize rather than under tokenize.
  */
 public interface Tokenizer {
