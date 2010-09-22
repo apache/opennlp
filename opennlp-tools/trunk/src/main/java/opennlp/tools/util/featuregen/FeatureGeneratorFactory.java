@@ -32,7 +32,7 @@ public interface FeatureGeneratorFactory {
   /**
    * Constructs a new {@link AdaptiveFeatureGenerator}.
    * <p>
-   * Note:
+   * <b>Note:</b><br>
    * It is assumed that all resource objects are thread safe and can be shared
    * between multiple instances of feature generators. If that is not the
    * case the implementor should make a copy of the resource object.
