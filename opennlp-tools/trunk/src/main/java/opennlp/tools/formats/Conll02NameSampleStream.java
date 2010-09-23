@@ -41,6 +41,8 @@ import opennlp.tools.util.Span;
  * <p>
  * Data can be found on this web site:<br>
  * http://www.cnts.ua.ac.be/conll2002/ner/
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
 public class Conll02NameSampleStream implements ObjectStream<NameSample>{
 
