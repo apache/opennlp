@@ -21,6 +21,9 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ */
 public class POSToSentenceSampleStream extends AbstractToSentenceSampleStream<POSSample> {
   
   POSToSentenceSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples, int chunkSize) {

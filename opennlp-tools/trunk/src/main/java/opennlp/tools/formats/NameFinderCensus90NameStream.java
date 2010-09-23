@@ -37,7 +37,9 @@ import opennlp.tools.util.StringList;
  * <li>The next is a cumulative frequency in percent.
  * <li>The last is a ranking.
  * </ul>
- *
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
+ * 
  * @author James Kosin
  */
 public class NameFinderCensus90NameStream implements ObjectStream<StringList> {

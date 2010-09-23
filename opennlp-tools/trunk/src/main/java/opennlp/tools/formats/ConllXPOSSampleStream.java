@@ -16,9 +16,11 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Parses the data from the CONLL 06 shared task into POS Samples.
- * 
- * More information about the data format can be found here:
+ * <p>
+ * More information about the data format can be found here:<br>
  * http://www.cnts.ua.ac.be/conll2006/
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
 public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample> {
 
