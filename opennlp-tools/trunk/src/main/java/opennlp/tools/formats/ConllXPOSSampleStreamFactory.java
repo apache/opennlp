@@ -30,6 +30,9 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ */
 public class ConllXPOSSampleStreamFactory implements ObjectStreamFactory<POSSample> {
   
   interface Parameters {

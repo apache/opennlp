@@ -31,6 +31,9 @@ import opennlp.tools.postag.WordTagSampleStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ */
 public class WordTagSampleStreamFactory implements ObjectStreamFactory<POSSample> {
 
   static interface Parameters {

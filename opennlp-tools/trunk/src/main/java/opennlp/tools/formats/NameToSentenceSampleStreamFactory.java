@@ -32,6 +32,9 @@ import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ */
 public class NameToSentenceSampleStreamFactory implements
     ObjectStreamFactory<SentenceSample> {
 

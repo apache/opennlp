@@ -32,7 +32,9 @@ import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
-// needs a ConllXPOSSampleStream and detokenizer ...
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ */
 public class ConllXTokenSampleStreamFactory implements ObjectStreamFactory<TokenSample> {
   
   interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {

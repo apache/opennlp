@@ -28,6 +28,9 @@ import opennlp.tools.formats.Conll02NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ */
 public class Conll02NameSampleStreamFactory implements ObjectStreamFactory<NameSample> {
   
   interface Parameters {
