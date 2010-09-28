@@ -23,12 +23,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.AbstractModelWriter;
 import opennlp.model.ComparablePredicate;
 import opennlp.model.Context;
+import opennlp.model.IndexHashTable;
 
 /**
  * Abstract parent class for Perceptron writers.  It provides the persist method
@@ -47,13 +47,11 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
       Object[] data = model.getDataStructures();
       this.numOutcomes = model.getNumOutcomes();
       PARAMS = (Context[]) data[0];
-      Map<String,Integer> pmap = (Map<String,Integer>)data[1];
+      IndexHashTable<String> pmap = (IndexHashTable<String>) data[1];
       OUTCOME_LABELS = (String[])data[2];
       
       PRED_LABELS = new String[pmap.size()];
-      for (String pred : pmap.keySet()) {
-        PRED_LABELS[pmap.get(pred)] = pred;
-      }
+      pmap.toArray(PRED_LABELS);
     }
 
     protected ComparablePredicate[] sortValues () {
