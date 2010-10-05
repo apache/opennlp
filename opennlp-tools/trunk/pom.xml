@@ -74,7 +74,7 @@
 		<dependency>
 			<groupId>opennlp</groupId>
 			<artifactId>maxent</artifactId>
-			<version>3.0.0</version>
+			<version>3.0.1-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 

@@ -40,17 +40,17 @@ public class POSTaggerMETest {
    * @throws IOException
    */
   // TODO: also use tag dictionary for training
-  static POSModel trainPOSModel() throws IOException {
+  static POSModel trainPOSModel(ModelType type) throws IOException {
     InputStream in = POSTaggerMETest.class.getClassLoader().getResourceAsStream(
         "opennlp/tools/postag/AnnotatedSentences.txt");
 
     return POSTaggerME.train("en", new WordTagSampleStream((
-        new InputStreamReader(in))), ModelType.MAXENT, null, null, 5, 100);
+        new InputStreamReader(in))), type, null, null, 5, 100);
   }
 
   @Test
   public void testPOSTagger() throws IOException {
-    POSModel posModel = trainPOSModel();
+    POSModel posModel = trainPOSModel(ModelType.MAXENT);
 
     POSTagger tagger = new POSTaggerME(posModel);
 

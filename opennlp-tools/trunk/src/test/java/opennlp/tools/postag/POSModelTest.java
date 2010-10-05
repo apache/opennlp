@@ -23,14 +23,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.model.ModelType;
 
 import org.junit.Test;
 
 public class POSModelTest {
 
   @Test
-  public void testPOSModelSerialization() throws IOException, InvalidFormatException {
-    POSModel posModel = POSTaggerMETest.trainPOSModel();
+  public void testPOSModelSerializationMaxent() throws IOException, InvalidFormatException {
+    POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.MAXENT);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -43,6 +44,24 @@ public class POSModelTest {
 
     POSModel recreatedPosModel = new POSModel(new ByteArrayInputStream(out.toByteArray()));
 
+    // TODO: add equals to pos model
+  }
+  
+  @Test
+  public void testPOSModelSerializationPerceptron() throws IOException, InvalidFormatException {
+    POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.PERCEPTRON);
+    
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    
+    try {
+      posModel.serialize(out);
+    }
+    finally {
+      out.close();
+    }
+    
+    POSModel recreatedPosModel = new POSModel(new ByteArrayInputStream(out.toByteArray()));
+    
     // TODO: add equals to pos model
   }
 }
