@@ -1,5 +1,8 @@
 1.5.1
 
+Added native support to train opennlp name finders on conll03 data.
+Conll03 includes training data for English and German.  Currnetly only English is supported.
+
 Added support for Portuguese Name Finder training
 
 1.5.0
