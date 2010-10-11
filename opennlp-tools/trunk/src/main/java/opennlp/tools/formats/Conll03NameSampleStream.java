@@ -154,14 +154,25 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
           tag = "O";
 
         if (tag.equals("O")) {
+          // O means we don't have anything this round.
           if (beginIndex != -1) {
             names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
             beginIndex = -1;
             endIndex = -1;
           }
         }
+        else if (tag.startsWith("B-")) {
+          // B- prefix means we have two same entities next to each other
+          if (beginIndex != -1) {
+            names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
+          }
+          beginIndex = i;
+          endIndex = i + 1;
+        }
         else if(tag.startsWith("I-")) {
-
+          // I- starts or continues a current name entity
+          // TODO: if we are parsing for multiple types this needs to be fixed
+          //       to check the type is either the same or has changed.
           if (beginIndex == -1) {
             beginIndex = i;
             endIndex = i + 1;
