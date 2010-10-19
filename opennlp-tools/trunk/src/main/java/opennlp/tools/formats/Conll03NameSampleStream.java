@@ -36,7 +36,8 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
 
   // todo: the CoNLL03 supports more than english.
   public enum LANGUAGE {
-    EN
+    EN,
+    DE
   }
 
   public static final int GENERATE_PERSON_ENTITIES = 0x01;
@@ -121,6 +122,10 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
 
       String fields[] = line.split(" ");
 
+      // English lines are:
+      //  WORD  POS-TAG SC-TAG NE-TAG
+      // we are after the WORD and NE-TAGs.
+      // todo: German data is 5 fields per line...
       if (fields.length == 4) {
         sentence.add(fields[0]);
         tags.add(fields[3]);
@@ -169,11 +174,16 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
           beginIndex = i;
           endIndex = i + 1;
         }
-        else if(tag.startsWith("I-")) {
+        else if (tag.startsWith("I-")) {
           // I- starts or continues a current name entity
-          // TODO: if we are parsing for multiple types this needs to be fixed
-          //       to check the type is either the same or has changed.
           if (beginIndex == -1) {
+            beginIndex = i;
+            endIndex = i + 1;
+          }
+          else if (!tag.endsWith(tags.get(beginIndex).substring(1))) {
+            // we have a new tag type following a tagged word series
+            // also may not have the same I- starting the previous!
+            names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
             beginIndex = i;
             endIndex = i + 1;
           }
