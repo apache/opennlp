@@ -34,7 +34,7 @@ import opennlp.tools.util.ObjectStream;
 public class Conll03NameSampleStreamFactory implements ObjectStreamFactory<NameSample> {
 
   interface Parameters {
-    @ParameterDescription(valueName = "en")
+    @ParameterDescription(valueName = "en|de")
     String getLang();
 
     @ParameterDescription(valueName = "sampleData")
@@ -60,6 +60,9 @@ public class Conll03NameSampleStreamFactory implements ObjectStreamFactory<NameS
     LANGUAGE lang;
     if ("en".equals(params.getLang())) {
       lang = LANGUAGE.EN;
+    }
+    else if ("de".equals(params.getLang())) {
+      lang = LANGUAGE.DE;
     }
     else {
       System.err.println("Unsupported language: " + params.getLang());
