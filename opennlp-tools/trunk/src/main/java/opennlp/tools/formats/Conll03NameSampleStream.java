@@ -125,13 +125,19 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
       // English lines are:
       //  WORD  POS-TAG SC-TAG NE-TAG
       // we are after the WORD and NE-TAGs.
-      // todo: German data is 5 fields per line...
-      if (fields.length == 4) {
+      if (LANGUAGE.EN.equals(lang) && (fields.length == 4)) {
         sentence.add(fields[0]);
         tags.add(fields[3]);
       }
+      // German lines are:
+      //  WORD  LEMA-TAG POS-TAG SC-TAG NE-TAG
+      else if (LANGUAGE.DE.equals(lang) && (fields.length == 5)) {
+        // todo: someone please verify the Gernam data.
+        sentence.add(fields[0]);
+        tags.add(fields[4]);
+      }
       else {
-        throw new IOException("Expected three fields per line in english data!");
+        throw new IOException("Incorrect number of fields per line for language!");
       }
     }
 
