@@ -17,6 +17,7 @@
 
 package opennlp.tools.util;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -78,5 +79,46 @@ public class ObjectStreamUtils {
       public void close() {
       }
     };
+  }
+  
+  public static <T> ObjectStream<T> createObjectStream(final ObjectStream<T>... streams) {
+    
+    for (ObjectStream<T> stream : streams) {
+      if (stream == null)
+        throw new NullPointerException();
+    }
+    
+    return new ObjectStream<T>() {
+      
+      private int streamIndex = 0;
+      
+      public T read() throws IOException {
+        
+        T object = null;
+        
+        while (streamIndex < streams.length && object == null) {
+          object = streams[streamIndex].read();
+          
+          if (object == null)
+              streamIndex++;
+        }
+        
+        return object;
+      }
+
+      public void reset() throws IOException, UnsupportedOperationException {
+        streamIndex = 0;
+        
+        for (ObjectStream<T> stream : streams) {
+          stream.reset();
+        }
+      }
+
+      public void close() throws IOException {
+        
+        for (ObjectStream<T> stream : streams) {
+          stream.close();
+        }
+      }};
   }
 }
