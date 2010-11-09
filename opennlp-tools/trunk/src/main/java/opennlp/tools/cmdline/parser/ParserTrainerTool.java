@@ -50,7 +50,7 @@ public final class ParserTrainerTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + TrainingParameters.getParameterUsage() + 
+    return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() + 
         " -head-rules head_rules -data trainingData -model model\n" + TrainingParameters.getDescription();
   }
 
