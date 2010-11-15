@@ -24,16 +24,17 @@ import java.util.Arrays;
 /**
  * Class used to store parameters or expected values associated with this context which
  * can be updated or assigned. 
+ * 
  * @author Tom Morton
- *
  */
 public class MutableContext extends Context {
 
   /**
-   * Creates a new parametes object with the specifed parameters associated with the specified
+   * Creates a new parameters object with the specified parameters associated with the specified
    * outcome pattern.
+   * 
    * @param outcomePattern Array of outcomes for which parameters exists for this context.
-   * @param parameters Paramaters for the outcomes specified.
+   * @param parameters Parameters for the outcomes specified.
    */
   public MutableContext(int[] outcomePattern, double[] parameters) {
     super(outcomePattern, parameters);
@@ -41,6 +42,7 @@ public class MutableContext extends Context {
   
   /**
    * Assigns the parameter or expected value at the specified outcomeIndex the specified value. 
+   * 
    * @param outcomeIndex The index of the parameter or expected value to be updated. 
    * @param value The value to be assigned.
    */
@@ -50,6 +52,7 @@ public class MutableContext extends Context {
   
   /**
    * Updated the parameter or expected value at the specified outcomeIndex by adding the specified value to its current value.
+   * 
    * @param outcomeIndex The index of the parameter or expected value to be updated.
    * @param value The value to be added.
    */
