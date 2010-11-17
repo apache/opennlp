@@ -49,7 +49,7 @@ import opennlp.model.UniformPrior;
  *    
  * @author Tom Morton
  * @author  Jason Baldridge
- * @version $Revision: 1.7 $, $Date: 2010-09-06 08:02:18 $
+ * @version $Revision: 1.8 $, $Date: 2010-11-17 11:15:54 $
  */
 class GISTrainer {
 
@@ -131,9 +131,6 @@ class GISTrainer {
   private final double NEAR_ZERO = 0.01;
   private final double LLThreshold = 0.0001;
 
-  /** Stores the output of the current model on a single event durring
-   *  training.  This we be reset for every event for every itteration.  */
-  double[] modelDistribution;
   /** Stores the number of features that get fired per event. */
   int[] numfeats;
   /** Initial probability for all outcomes. */
@@ -376,7 +373,6 @@ class GISTrainer {
 
     display("...done.\n");
 
-    modelDistribution = new double[numOutcomes];
     numfeats = new int[numOutcomes];
 
     /***************** Find the parameters ************************/
@@ -452,6 +448,7 @@ class GISTrainer {
   private double nextIteration(int correctionConstant) {
     // compute contribution of p(a|b_i) for each feature and the new
     // correction parameter
+    double[] modelDistribution = new double[numOutcomes];
     double loglikelihood = 0.0;
     CFMOD = 0.0;
     int numEvents = 0;
@@ -465,6 +462,7 @@ class GISTrainer {
         prior.logPrior(modelDistribution,contexts[ei]);
         GISModel.eval(contexts[ei], modelDistribution, evalParams);
       }
+      
       for (int j = 0; j < contexts[ei].length; j++) {
         int pi = contexts[ei][j];
         if (predicateCounts[pi] >= cutoff) {
