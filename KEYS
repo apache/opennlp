@@ -1,0 +1,74 @@
+g 3        302DA568 2005-07-21  Rodent of Unusual Size (DSA) <coar@Apache.Org>
+This file contains the PGP keys of various developers.
+Please don't use them for email unless you have to. Their main
+purpose is code signing.
+
+Examples of importing this file in your keystore:
+ gpg --import KEYS.txt
+ (need pgp and other examples here)
+
+Examples of adding your key to this file:
+ pgp -kxa <your name> and append it to this file.
+ (pgpk -ll <your name> && pgpk -xa <your name>) >> this file.
+ (gpg --list-sigs <your name>
+     && gpg --armor --export <your name>) >> this file.
+
+-----------------------------------------------------------------------------------
+pub   4096R/FE045966 2009-10-13
+      Key fingerprint = A46D 8682 A850 E44E 4FEC  20EB 8A8A 771F FE04 5966
+uid                  Grant Ingersoll (CODE SIGNING KEY) <gsingers@apache.org>
+sub   4096R/72F9E0C0 2009-10-13
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.4.7 (Darwin)
+
+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
+=GLHu
+-----END PGP PUBLIC KEY BLOCK-----
