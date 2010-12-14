@@ -1,0 +1,18 @@
+Format for the GIS maxent info (.mei) files.
+
+GIS (model type identifier)
+1. # of parameters (int)
+
+2. the correction constant (int)
+
+3. the correction constant parameter (double)
+
+4. # of outcomes (int)
+   * list of outcome names (String)
+
+5. # of different types of outcome patterns (int)
+   * list of (int int[])
+    [# of predicates for which outcome pattern is true] [outcome pattern]
+
+6. # of predicates (int)
+   * list of predicate names (String)
