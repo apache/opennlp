@@ -1,0 +1,15 @@
+This file briefly describes some of the libraries which are used by
+Maxent. For libraries which are distributed under the terms of the
+LGPL, please see the file LGPL in this directory for details. For
+those distributed under the Apache Software License, please see the
+file ASL.
+
+------------------------------------------------------------------------
+ant.jar 
+
+The Jakarta Ant Build System, version 1.4
+Homepage: http://jakarta.apache.org/ant/
+License: Apache Software License
+
+A Java based build tool. It is supported by crimson.jar and jaxp.jar,
+and license information for those is included in this directory.
