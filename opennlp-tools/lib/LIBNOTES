@@ -1,0 +1,22 @@
+This file briefly describes some of the libraries which are used by
+OpenNLP and their licenses.  For non-ASL libraries the licenses 
+associated with these libraries can be found in the referenced
+licenses file.
+
+------------------------------------------------------------------------
+jwnl-1.3.3.jar
+
+Java WordNet Library 1.3.3 
+Homepage: http://jwordnet.sourceforge.net/
+License: BSD License (JWNL)
+
+Provides a Java API to the WordNet database.
+
+------------------------------------------------------------------------
+maxent-3.0.0.jar
+
+Maxent, version 3.0
+Homepage: http://maxent.sourceforge.net/
+License: ASL
+
+Package for training and using maximum entropy models. 
