@@ -1,2 +1,0 @@
-C goodbye=1.0
-C goodbye
