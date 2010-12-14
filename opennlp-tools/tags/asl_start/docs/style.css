@@ -1,0 +1,71 @@
+body{
+font-family: arial, times, Helvetica, sans-serif;
+size: 11pt;
+background: white;
+color: black;
+}
+
+h1{
+font-family: Verdana, Arial, Helvetica, sans-serif;
+font-size: 18pt;
+color: #006699;
+font-weight: italic;
+}
+
+h2{
+font-family: Verdana, Arial, Helvetica, sans-serif;
+font-size: 16pt;
+font-weight: bold;
+color: #006699;
+}
+
+h3{
+font-family: Verdana, Arial, Helvetica, sans-serif;
+font-size: 10pt;
+color: #006699;
+text-align: right;
+}
+
+h4{
+font-family: arial, times, Helvetica, sans-serif;
+size: 10pt;
+color: black;
+}
+
+a{
+font-family: arial,times;
+}
+
+p{
+font-family: Verdana, Arial, Helvetica, sans-serif;
+color: #000000;
+font-size: 12pt;
+}
+
+table{
+border: 0;
+margin: 0;
+}
+
+td{
+font-family: Bookman,Lucida, Helvetica,arial, times;
+font-size: 12pt;
+}
+
+td.header1{
+font-family: Bookman,Lucida, Helvetica,arial, times;
+font-size: 12pt;
+background: #52A0EF;
+}
+
+td.banner{
+font-family: Bookman,Lucida, Helvetica,arial, times;
+font-size: 12pt;
+background: white;
+}
+
+td.header2{
+font-family: Bookman,Lucida, Helvetica,arial, times;
+font-size: 12pt;
+background: #52A0EF;
+}
