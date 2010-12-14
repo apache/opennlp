@@ -1,0 +1,545 @@
+<html>
+<head>
+<title> OpenNLP Documentation </title>
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="#FFFFFF">
+
+<center><h1>OpenNLP Tools UIMA Integration Documentation</h1></center>
+<h1>Introduction</h1>
+<p>
+The opennlp project is now the home of a set of java-based NLP tools 
+which perform sentence detection, tokenization, pos-tagging, chunking and
+parsing, named-entity detection, and coreference.  
+
+<p>
+
+The sentence detector, tokenizer, name-entity detector and pos tagger are
+integrated into the UIMA Framework. The integration supports tagging
+and training of these tools.
+
+<p>
+The OpenNLP Tools UIMA Integration binary distribution contains all annotators in a jar file, 
+sample descriptors with a type system and a sample PEAR. The sample PEAR is intended
+for demonstration and includes all annotators with models for english.
+The annotators are intended for inclusion into a custom analysis engine packaged
+by the user. To ease the inclusion all types used by the tools annotators can be mapped to the
+user type system inside the descriptors.
+<p>
+
+What follows covers:
+<ol>
+<li> <a href="#cvd">Running the pear sample in CVD</a>
+<li> <a href="#models">Downloading Models</a>
+<li> <a href="#SentenceDetector">Sentence Detector</a>
+<li> <a href="#Tokenizer">Tokenizer</a>
+<li> <a href="#NameFinder">Name Finder</a>
+<li> <a href="#PosTagger">Part of Speech Tagger</a>
+<li> <a href="#Chunker">Chunker</a>
+<li> <a href="#parser">Docat and Parser</a>
+<li> <a href="#bug">Bug Reports</a>
+</ol>
+
+<h1><a name="cvd">Running the pear sample in CVD</a></h1>
+The Cas Visual Debugger is a tool shipped with UIMA which can run the opennlp.uima annotators
+and display their analysis results. The binary distribution comes with a sample UIMA application which
+includes the sentence detector, tokenizer, pos tagger, chunker and name finders for English.
+This sample application is packaged in the pear format and must be installed with the
+pear installer before it can be run by CVD. Please consult the UIMA documentation for further
+information about the pear installer.
+<p>
+After the pear is installed start the Cas Visual Debugger shipped with the UIMA framework.
+And click on Tools -> Load AE. Then select the opennlp.uima.OpenNlpTextAnalyzer_pear.xml 
+file in the file dialog. Now enter some text and start the analysis engine with 
+"Run -> Run OpenNLPTextAnalyzer". Afterwards the results will be displayed. You should see 
+sentences, tokens, chunks, pos tags and maybe some names. 
+Remember the input text must be written in English.
+
+<h1><a name="models"> Downloading Models</a></h1>
+<p>
+Models have been trained for various of the components and are required
+unless one wishes to create their own models exclusively from their own
+annotated data.  These models can be downloaded clicking 
+<a href="http://opennlp.sourceforge.net/models.html">here</a> or the "Models" 
+link at <a href="opennlp.sourceforge.net/models.html">opennlp.sourceforge.net</a>.  
+The models are large.  You may want to just fetch specific ones.
+Models for the corresponding components can be found in the following
+directories:
+
+<ul>
+<li>english/namefind   - MUC-style named entity finder models.
+<li>english/parser	   - English-Penn-Treebank-style pos-tag models.
+<li>english/sentdetect - English sentence detector.
+<li>english/tokenize   - English-Penn-Treebank-style tokenizer.
+</ul>
+
+<ul>
+<li>spanish/postag     - Spanish part-of-speech tagger.
+<li>spanish/sentdetect - Spanish sentence detector.
+<li>spanish/tokenize   - Spanish tokenizer.
+</ul>
+
+<ul>
+<li>german/postag     - German part-of-speech tagger.
+<li>german/sentdetect - German sentence detector.
+<li>german/tokenize   - German tokenizer.
+</ul>
+
+<ul>
+<li>thai/sentdetect - Thai sentence detector.
+<li>thai/tokenize   - Thai tokenizer.
+<li>thai/postag     - Thai part-of-speech tagger.
+</ul>
+
+<h1> <a name="SentenceDetector">Sentence Detector</a></h1>
+<p>
+The Sentence Detector segments the documents into sentences. It takes
+the document text as the only input and outputs sentence annotations. The pre-trained
+OpenNLP sentence detector models assume that sentence detection is the first analysis step.
+
+<ul>
+  <li>Inputs
+    <ul>
+      <li>none - The analysis engine operates directly on the document in the
+        CAS</li>
+    </ul>
+  </li>
+  <li>Outputs
+    <ul>
+      <li>Sentence - one sentence annotation for each detected sentence in the
+        document.</li>
+    </ul>
+  </li>
+  <li>General parameters
+    <table border="2" width="800">
+      <tr>
+        <th width="300">Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr>
+        <td>opennlp.uima.ModelName</td>
+        <td>String</td>
+        <td>Path to the OpenNLP sentence detector model file</td>
+        <td>yes</td>
+      </tr>
+      <tr>
+        <td>opennlp.uima.SentenceType</td>
+        <td>String</td>
+        <td>The full name of the sentence type</td>
+        <td>yes</td>
+      </tr> 
+    </table>
+  </li>
+    <li>Sentence Annotator only parameters
+    <table border="2" width="800">
+      <tr>
+        <th width="300">Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr>
+        <td>opennlp.uima.ProbabilityFeature</td>
+        <td>String</td>
+        <td>The name of the double probability feature (not set by default)</td>
+        <td>no</td>
+      </tr>
+    </table>
+  </li>
+</ul>
+
+
+<h1> <a name="Tokenizer">Tokenizer</a></h1>
+<p>
+The Tokenizer segments text into tokens. Tokenization is performed
+sentence wise and the Tokenizer outputs annotation of the token type. The pre trained
+OpenNLP tokenizer models assume that sentence detection is already done, but tokenization
+will also work satisfying without sentences on a document level.
+
+<ul>
+  <li>Inputs
+    <ul>
+      <li>Sentence - The analysis engine requires Sentence annotations in the CAS.
+      It is possible to set the sentence annotation to the DocumentAnnotation,
+      if no sentences are available.</li>
+    </ul>
+  </li>
+  <li>Outputs
+    <ul>
+      <li>Token - one token annotation for each detected token.</li>
+    </ul>
+  </li>
+  <li>General parameters
+    <table border="2" width="800">
+      <tr>
+        <th width="300">Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr>
+        <td>opennlp.uima.ModelName</td>
+        <td>String</td>
+        <td>Path to the OpenNLP token model file</td>
+        <td>yes</td>
+      </tr>
+      <tr>
+        <td>opennlp.uima.SentenceType</td>
+        <td>String</td>
+        <td>The full name of the sentence type</td>
+        <td>yes</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.TokenType</td>
+        <td>String</td>
+        <td>The full name of the token type</td>
+        <td>yes</td>
+      </tr> 
+    </table>
+  </li>
+    <li>Tokenizer Annotator only parameters
+    <table border="2" width="800">
+      <tr>
+        <th width="300">Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr>
+        <td>opennlp.uima.ProbabilityFeature</td>
+        <td>String</td>
+        <td>The name of the double probability feature (not set by default)</td>
+        <td>no</td>
+      </tr>
+      <tr>
+        <td>opennlp.uima.tokenizer.IsAlphaNumericOptimization</td>
+        <td>Boolean</td>
+        <td>If true use alpha numeric optimization. Default setting is false.</td>
+        <td>no</td>
+      </tr>
+    </table>
+  </li>
+</ul>
+
+<h1> <a name="NameFinder">Name Finder</a></h1>
+
+The named-entity detector can detect all kinds of entities. To detect
+the entities the Name Finder Annotator needs sentences and tokens.
+It outputs name annotations of the specified type.
+
+<ul>
+  <li>Inputs
+    <ul>
+      <li>Sentence - The analysis engine requires Sentence annotations in the CAS.
+      It is possible to set the Sentence annotation to the DocumentAnnotation,
+      if no sentences are available.</li>
+      <li>Token - The analysis engine requires token annotations in the CAS</li>
+    </ul>
+  </li>
+  <li>Outputs
+    <ul>
+      <li>Name - one name annotation for each recognized named entity.</li>
+    </ul>
+  </li>
+  <li>General parameters
+    <table border="2" width="800">
+      <tr>
+        <th width="300">Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr>
+        <td>opennlp.uima.ModelName</td>
+        <td>String</td>
+        <td>Path to the OpenNLP Name Finder model file</td>
+        <td>yes</td>
+      </tr>
+      <tr>
+        <td>opennlp.uima.SentenceType</td>
+        <td>String</td>
+        <td>The full name of the sentence type</td>
+        <td>yes</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.TokenType</td>
+        <td>String</td>
+        <td>The full name of the token type</td>
+        <td>yes</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.NameType</td>
+        <td>String</td>
+        <td>The full name of the name type</td>
+        <td>yes</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.Dictionary</td>
+        <td>String</td>
+        <td>Path to the dictionary file</td>
+        <td>no</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.TokenPatternOptimization</td>
+        <td>Boolean</td>
+        <td></td>
+        <td>no</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.namefinder.TokenFeature</td>
+        <td>Boolean</td>
+        <td>(default=true)</td>
+        <td>no</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.namefinder.TokenFeature.previousWindowSize</td>
+        <td>Integer</td>
+        <td>(default=3)</td>
+        <td>no</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.namefinder.TokenFeature.nextWindowSize</td>
+        <td>Integer</td>
+        <td>(default=3)</td>
+        <td>no</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.namefinder.TokenClassFeature</td>
+        <td>Boolean</td>
+        <td>(default=true)</td>
+        <td>no</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.namefinder.TokenClassFeature.previousWindowSize</td>
+        <td>Integer</td>
+        <td>(default=3)</td>
+        <td>no</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.namefinder.TokenClassFeature.nextWindowSize</td>
+        <td>Integer</td>
+        <td>(default=3)</td>
+        <td>no</td>
+      </tr> 
+    </table>
+  </li>
+    <li>Name Finder Annotator only parameters
+    <table border="2" width="800">
+      <tr>
+        <th width="300">Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr>
+        <td>opennlp.uima.ProbabilityFeature</td>
+        <td>String</td>
+        <td>The name of the double probability feature (not set by default)</td>
+        <td>no</td>
+      </tr>
+      <tr>
+        <td>opennlp.uima.BeamSize</td>
+        <td>Integer</td>
+        <td>Search beam size.</td>
+        <td>no</td>
+      </tr>
+    </table>
+  </li>
+</ul>
+
+<p>
+<h1> <a name="PosTagger">Part of Speech Tagger</a></h1>
+
+The pos tagger detects the part of speech of the individual tokens. It
+needs sentences and tokens as input and writes the pos tags to the
+pos feature of the input tokens.
+
+<p>
+
+<ul>
+  <li>Inputs
+    <ul>
+      <li>Sentence - The analysis engine requires Sentence annotations in the CAS.</li>
+    <li>Token - The analysis engine requires token annotations in the CAS</li>
+    </ul>
+  </li>
+  <li>Outputs
+    <ul>
+        <li>tag - the pos tag is written in to the tag field of each Token annotation
+        which is contained in an input Sentence</li>
+    </ul>
+  </li>
+  <li>General parameters
+    <table border="2" width="800">
+      <tr>
+        <th width="300">Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr>
+        <td>opennlp.uima.ModelName</td>
+        <td>String</td>
+        <td>Path to the OpenNLP POS Tagger model file</td>
+        <td>yes</td>
+      </tr>
+      <tr>
+        <td>opennlp.uima.SentenceType</td>
+        <td>String</td>
+        <td>The full name of the sentence type</td>
+        <td>yes</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.TokenType</td>
+        <td>String</td>
+        <td>The full name of the token type</td>
+        <td>yes</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.POSFeature</td>
+        <td>String</td>
+        <td>The name of the token pos feature, the feature must be of type String</td>
+        <td>yes</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.Dictionary</td>
+        <td>String</td>
+        <td>Path to the dictionary file</td>
+        <td>no</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.TagDictionaryName</td>
+        <td>String</td>
+        <td>Path to the tag dictionary file</td>
+        <td>no</td>
+      </tr> 
+    </table>
+  </li>
+    <li>Part of Speech Tagger Annotator only parameters
+    <table border="2" width="800">
+      <tr>
+        <th width="300">Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr>
+        <td>opennlp.uima.ProbabilityFeature</td>
+        <td>String</td>
+        <td>The name of the double probability feature (not set by default)</td>
+        <td>no</td>
+      </tr>
+      <tr>
+        <td>opennlp.uima.BeamSize</td>
+        <td>Integer</td>
+        <td>Search beam size.</td>
+        <td>no</td>
+      </tr>
+    </table>
+  </li>
+</ul>
+
+<p>
+<h1> <a name="Chunker">Chunker</a></h1>
+<p>
+<ul>
+  <li>Inputs
+    <ul>
+      <li>Sentence - The analysis engine requires Sentence annotations in the CAS.</li>
+      <li>Token - The analysis engine requires token annotations in the CAS</li>
+      <li>posTag - The analysis engine requires pos tags from the pos tag
+      fields of Token annotations in the CAS</li>
+    </ul>
+  </li>
+  <li>Outputs
+    <ul>
+      <li>Chunk - one Chunk annotation for each detected chunk.</li>
+      <li>chunkTag - the chunk tag is written into the chunk tag field of the
+      Chunk annotation</li>
+    </ul>
+  </li>
+  <li>General parameters
+    <table border="2" width="800">
+      <tr>
+        <th width="300">Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr>
+        <td>opennlp.uima.ModelName</td>
+        <td>String</td>
+        <td>Path to the OpenNLP Chunker model file</td>
+        <td>yes</td>
+      </tr>
+      <tr>
+        <td>opennlp.uima.SentenceType</td>
+        <td>String</td>
+        <td>The full name of the sentence type</td>
+        <td>yes</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.TokenType</td>
+        <td>String</td>
+        <td>The full name of the token type</td>
+        <td>yes</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.POSFeature</td>
+        <td>String</td>
+        <td>The name of the token pos feature, the feature must be of type String</td>
+        <td>yes</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.ChunkType</td>
+        <td>String</td>
+        <td>The full name of the chunk type</td>
+        <td>yes</td>
+      </tr> 
+      <tr>
+        <td>opennlp.uima.ChunkTagFeature</td>
+        <td>String</td>
+        <td>Name of the chunk feature</td>
+        <td>yes</td>
+      </tr> 
+    </table>
+  </li>
+    <li>Chunker Annotator only parameters
+    <table border="2" width="800">
+      <tr>
+        <th width="300">Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr>
+        <td>opennlp.uima.BeamSize</td>
+        <td>Integer</td>
+        <td>Search beam size.</td>
+        <td>no</td>
+      </tr>
+    </table>
+  </li>
+</ul>
+<p>
+<h1><a name="parser">Docat and Parser</a></h1>
+Both integrations are still experimental and it is not suggested to
+use them in a production environemnt. Please see the soruce code for
+further details.
+<p>
+<p>
+<h1><a name="bug">Bug Reports</a></h1>
+<p>
+Please report bugs at the bug section of the OpenNLP sourceforge site:
+<p>
+<a href="http://sourceforge.net/tracker/?group_id=3368&atid=103368">sourceforge.net/tracker/?group_id=3368&amp;atid=103368</a>
+<p>
+<b>Note:</b> Incorrect automatic-annotation on a specific piece of text does
+not constitute a bug.  The best way to address such errors is to provide
+annotated data on which the automatic-annotator/tagger can be trained
+so that it might learn to not make these mistakes in the future.
+
+</body>
+</html>
