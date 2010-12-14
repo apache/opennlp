@@ -1,0 +1,150 @@
+This is a simple example of a use of maximum entropy and the OpenNLP
+Maxent toolkit.  (It was designed to work with Maxent v2.5.0.)  There
+are two example data sets provided, one for whether a game should be
+played indoors or outdoors and another for whether Arsenal or
+Manchester United (two English football clubs) will win when they play
+each other, based on a few potentially salient features for either
+decision.
+
+The java classes should be helpful getting up and running with your
+own maxent implementation, though the context generator is about as
+simple as it gets.  For more complex examples, look at the classes in
+the opennlp.tools packages, available at http://opennlp.sourceforge.net.
+
+To play with this sample application, do the following:
+
+Be sure that maxent-2.5.0.jar and trove.jar (found in the lib directory)
+are in your classpath.
+
+Compile the java files: 
+   
+> javac *.java
+
+Note: the following will avoid the need to setup you classpath in your
+environment (be sure to fix the maxent jar for the correct version
+number):
+
+> javac -classpath .:../../lib/trove.jar:../../output/maxent-2.5.0.jar *.java
+
+Now, build the models:
+
+> java CreateModel gameLocation.dat
+> java CreateModel football.dat
+
+This will produce the two models "gameLocationModel.txt" and
+"footballModel.txt" in this directory. Again, to fix classpath issues
+on the command line, do the following instead:
+
+> java -cp .:../../lib/trove.jar:../../output/classes CreateModel football.dat
+
+You can then test the models on the data itself to see what sort of
+results they get on the data they were trained on:
+
+> java Predict gameLocation.dat
+> java Predict football.dat
+
+or, with command line classpath:
+
+> java -cp .:../../lib/trove.jar:../../output/classes Predict gameLocation.test
+
+You'll get output such as the following:
+
+--------------------------------------------------
+For context: Cloudy Happy Humid
+Outdoor[0.9255]  Indoor[0.0745]
+
+For context: Rainy Dry
+Outdoor[0.0133]  Indoor[0.9867]
+--------------------------------------------------
+
+For the first, the model has assigned a normalized probability of 77%
+to the Outdoor outcome, so given the context "Cloudy,Happy,Humid" it
+would choose to have the game outdoors.  For the second, the model
+appears to be almost entirely sure that the game should be indoors.
+
+The Arsenal vs. Manchester United decision is a bit more interesting
+because there are three possible outcomes: Arsenal wins, ManU wins, or
+they tie.  Here is some example output:
+
+--------------------------------------------------
+For context: home=arsenal Beckham=true Henry=false
+arsenal[0.3201]  man_united[0.6343]  tie[0.0456]
+
+For context: home=man_united Beckham=true Henry=true
+arsenal[0.1499]  man_united[0.2060]  tie[0.6441]
+--------------------------------------------------
+
+In the first case, ManU looks like the clear winner, but in the second
+it looks like it will be a tie, though ManU looks to have more of a
+chance at winning it than Arsenal.
+
+(For those who don't know, Beckham, Scholes, and Neville are/were ManU
+players and Ferguson is the coach, while Henry, Kanu, and Parlour are
+Arsenal players with Wengler as their coach.  By "Beckham=false" I
+mean that Beckham won't play this game.)
+
+Also, try this on the test files:
+
+> java Predict gameLocation.test
+> java Predict football.test
+
+Go ahead and modify the data to experiment with how the results can
+vary depending on the input to training.  There isn't much data, so
+its not a full-fledged example of maxent, but it should still give the
+general idea.  Also, add more contexts in the test files to see what
+the model will produce with different features active.
+
+In all the previous examples, the features we're binary values, meaning
+that the feature was either on or off.  You can also use features which
+have real values (like 0.07).  The features are formatted with the value
+specified after an equals sign such as the "pdiff" and "ptwins" features
+below.
+
+away pdiff=0.9375 ptwins=0.25 tie
+away pdiff=0.6875 ptwins=0.6666 lose
+home pdiff=1.0625 ptwins=0.3333 win
+
+Features which don't contains are not in this format are considered to 
+have a value of 1.  Note feature values MUST BE POSITIVE.  Using real-valued 
+features has some additional overhead so you'll need to let the model know
+that it should look for these features.  For these examples, you can use
+the "-real" option.
+
+> java CreateModel -real realTeam.dat
+
+You can then test the models on the test data:
+
+> java Predict -real realTeam.test
+
+You see output like:
+--------------------------------------------------
+For context: home pdiff=0.6875 ptwins=0.5
+lose[0.3279]  win[0.4311]  tie[0.2410]
+
+For context: home pdiff=1.0625 ptwins=0.5
+lose[0.3414]  win[0.4301]  tie[0.2284]
+
+For context: away pdiff=0.8125 ptwins=0.5
+lose[0.5590]  win[0.1864]  tie[0.2546]
+
+For context: away pdiff=0.6875 ptwins=0.6
+lose[0.5578]  win[0.1866]  tie[0.2556]
+--------------------------------------------------
+
+You can see that the values of the features as well as their presence or 
+absence (such as the home or away features) impact the probabilities assigned 
+to each outcome.
+
+The use of the "-real" option to indicate real-valued data.  In general you'll
+need to use the classes: RealBasicEventStream, RealValueFileEventStream, OnePassRealValueDataIndexer, and TwoPassRealValueDataIndexer.
+
+For all models, though the features appear in almost the same
+orderings in the data files, this is not important. You can list them
+in whatever order you like.
+
+If you have any suggestions, interesting modifications, or data sets
+for other examples to add to this sample maxent application, please
+post them to the maxent open discussion forum:
+
+  http://sourceforge.net/forum/forum.php?forum_id=18384
+

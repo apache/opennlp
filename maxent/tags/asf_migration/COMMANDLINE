@@ -1,0 +1,37 @@
+----------------------------------------------------------------------------
+To convert Maxent 1.0 models to a new format:
+
+java opennlp.maxent.io.OldFormatGISModelReader old_model_prefix new_model_name
+
+The new model name is case sensitive, so if you put something like
+"mymodel.bin.gz" it will save it as a gzipped binary file, whereas
+"mymodel.txt" will save it as a plain text file that you can inspect
+more easily (but of course take more disk space).
+
+An an example, I needed to convert the Maxent 1.0 model for part of
+speech tagging to a new single file format. The model was broken into
+two pieces, EnglishPOS.mei.gz and EnglishPOS.mep.gz.  I wanted to
+create a new file that was gzipped and binary, so this was the
+form of the command:
+
+java opennlp.maxent.io.OldFormatGISModelReader EnglishPOS EnglishPOS.bin.gz
+
+
+----------------------------------------------------------------------------
+To convert between different formats of the new style:
+
+java opennlp.maxent.io.SuffixSensitiveGISModelReader old_model_name new_model_name
+
+For example, to convert a model called "model.bin.gz" (which is thus
+saved in gzipped binary format) to one in (unzipped) text format:
+
+java opennlp.maxent.io.SuffixSensitiveGISModelReader model.bin.gz model.txt
+
+This particular example would of course be useful when you want to
+create models which take up less space (.bin.gz), but then need to
+inspect a few of them as plain text files.
+
+
+
+
+
