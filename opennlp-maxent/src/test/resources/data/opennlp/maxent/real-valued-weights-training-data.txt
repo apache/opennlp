@@ -1,0 +1,20 @@
+A feature1=4.0 feature3=10.0 feature4=2.0
+A feature1=2.0 feature2=4.0 feature4=3.0
+A feature2=5.0 feature3=12.0 feature4=4.0
+A feature1=1.0 feature3=11.0 feature4=3.0
+A feature1=4.0 feature2=5.0 feature4=2.0
+A feature1=3.0 feature2=4.0 feature3=9.0 
+A feature2=3.0 feature3=11.0 feature4=2.0
+A feature1=1.0 feature3=12.0 
+A feature2=6.0 feature3=12.0 feature4=3.0
+A feature1=3.0 feature2=7.0 feature3=11.0
+B feature5=4.0 feature2=1.0 feature4=10.0 
+B feature2=1.0 feature3=11.0 
+B feature5=3.0 feature4=12.0 
+B feature2=1.0 feature3=11.0 
+B feature5=4.0 feature4=10.0 
+B feature2=1.0 feature3=9.0 
+B feature5=2.0 feature4=11.0 
+B feature2=1.0 feature3=12.0 
+B feature5=4.0 feature4=12.0 
+B feature2=1.0 feature3=11.0 feature4=4.0
