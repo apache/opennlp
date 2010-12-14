@@ -1,0 +1,34 @@
+This file briefly describes some of the libraries which are used by
+OpenNLP and their liciences.  For non-LGPL libraries the licience 
+associated with these libraries can be found in the referenced
+licience file.
+------------------------------------------------------------------------
+ant.jar 
+
+The Jakarta Ant Build System, version 1.5
+Homepage: http://jakarta.apache.org/ant/
+License: Apache Software License (ASL)
+
+A Java based build tool. It is supported by xml-apis and license
+information for that is included in this directory.
+
+------------------------------------------------------------------------
+jwnl-1.3.3.jar
+
+Java WordNet Library 1.3.3 
+Homepage: http://jwordnet.sourceforge.net/
+Licience: BSD License (JWNL)
+
+Provides a Java API to the WordNet database.
+
+------------------------------------------------------------------------
+maxent-3.0.0.jar
+
+Maxent, version 3.0.0 
+Homepage: http://maxent.sourceforge.net/
+Licience: ASL
+
+Package for training and using maximum entropy models. 
+
+
+------------------------------------------------------------------------

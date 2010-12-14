@@ -1,0 +1,255 @@
+1.5.0
+
+Summary
+=======
+
+The 1.5 release focuses on making the usage of OpenNLP easier by various
+additions and simplifications. 
+
+Model packages now group all resources needed by a component in a zip package
+together with meta data. The components can be instantiate from this single zip package resource
+instead of loading multiple resources depending on the training setup. All important parameters
+known during training-time are stored in the model package.
+Model packages are used by all components expect coref.
+
+Command line interface has been rewritten and can now accessed through opennlp.tools.cmdline.CLI.
+
+Built in evaluation has been added to the Sentence Detector, Tokenizer,
+Name Finder, Pos Tagger and Document Categorizer.
+
+Added native support to train opennlp name finders on conll02 data.
+Conll02 includes training data for Dutch and Spanish. 
+
+Added native support to train tokenizer, sentence detector and pos tagger on conll06 data,
+conll06 includes data for Portuguese, Dutch, Swedish and Danish.
+
+Added a dictionary based detokenizer.
+
+License was changed from LGPL to ASL.
+Trove dependencies was removed.
+The ant build system was replaced by maven.
+Java 1.5 is now the minimal supported version.
+Updated maxent library to 3.0.0
+
+Tokenizer
+=========
+New training API and data format has been added to the tokenizer.
+
+Name Finder
+===========
+The name finder is now able to detect multiple name types. For this the tags
+used by the classifier to find the names now include the name type.
+
+Pos Tagger
+==========
+The Pos Tagger can now be also trained with a perceptron (sequence) model.
+
+1.4.3
+
+Summary
+=======
+Fixed thread safty issue in name finder by changing static feature generation 
+to be thread local.
+
+1.4.2
+
+Summary
+=======
+Fixed minor coreference bug for running on hand-annotated Treebank data.
+Added code to allow for easier tokenizer training.
+Updated maxent library to 2.5.2 for model-loading performance gain.
+
+1.4.1
+
+Summary
+=======
+Fixed coreference performance bug where NPs were being examined multiple times.
+Fixed bug where presence of UCP in basal NP could lead to corssing constituents
+in parse.
+Updated maxent library to 2.5.1 version.
+
+1.4.0
+
+Summary
+=======
+A number of updates to name finding with minor changes to a number of other components.
+Improvements in accuracy to name finding, pos-tagging, and coreference models.
+Addition of a document classification component.
+Extended support for muli-lingual processing.
+
+Additions
+=========
+Document categorization - Allows documents to be categorized into categories.
+
+POS Tagger
+==========
+Updated models with slightly better data.
+
+Name Finder
+===========
+Support for different types of feature generation.
+Support for dictionary and regex-based name finding.
+Improvement in speed in accuracy of default name finder.
+
+Parser
+======
+Restructures the parsing packages in support of work in upcoming releases.
+
+Coreference
+===========
+Minor changes to compuation of semantic similarity.
+
+Multi-lingual
+=============
+Adds processing for the Thai language and for German
+Adds support to specifcy the encoding for many types of processing.
+
+1.3.2
+
+Summary
+=======
+This minor release adds processing for the Thai language and restructures 
+the parsing packages in support of work in upcoming releases.
+
+1.3.0
+
+Summary
+=======
+This release improves the parser and coreference components, adds an
+n-gram package to improve training memory requirements for the parser,
+upgrades to the latest version of the maxent package, and adds preliminary
+support for Spanish.  The upgrade to maxent-2.4.0 improves speed and
+reduces memory requirements for most components.
+
+Coreference
+===========
+Refactored some code, and improved gender detection with addition of a
+name list.
+
+Lang
+====
+Added lang package for language specific code.  Added Spanish componets
+for sentence detection, tokenization, and pos-tagging.
+
+N-Gram
+======
+New package to store n-grams and same them to a file.  This allows the
+parser's build procedure to be training in a much smaller memory foot
+print by allowing n-gram based features (which don't occur often enough)
+to be pruned before they are generated as part of an event.
+
+Parser
+======
+Updated to not attempt to attach punctuation in parses.  This improves
+parsing performace.
+
+Tagger
+======
+Updated to all n-gram dictionary to be used to distinguish between rare
+and non-rare words.  This unfortunatly hurt performance so this option
+is not the default.
+
+Tokenizer
+=========
+Cleaned up mis-tokenized data with periods in the middle of sentences
+split from preceeding token.
+
+1.2.0
+
+Summary
+=======
+This release adds a coreference resolution package. There are also some
+other minor fixes.
+
+General
+=======
+Updated some javadoc that was missing.
+Fixed bug in beam seach data structure.
+
+Sentence Detection
+==================
+Fixed bug involving the last sentence in a document.
+
+Tokenizer
+=========
+Re-trained model on move varied data set.
+
+Parser
+======
+Changed numerous List return types to Parse arrays.
+
+
+1.1.0
+
+Summary
+=======
+This is mostly a parser performance release.  However there are some bug fixes as well.
+
+General
+=======
+Modified BeamSearch to be more efficient and take parameters to allow for early cut-off
+of pathes.
+Fixed bug where beam was larger than the number of outcomes.
+Fixed bug where the beam was being made larger because array was sorted the other way.
+Changed beam to alway advance some path to prevent pos-tagger from not returning a
+sequence if the tag dictionary only contains an unlikly tag.
+
+Parser
+======
+Fixed bug in chunker context generation.
+Change code to use specific context generator rather than most general interface.
+Changed chunking phase to stop chunk sequences which will never make the top K.
+Other general optimizations.
+
+1.0.0
+-----
+These changes represent what went into this release since many of these 
+components were part of the GROK project.
+
+Summary
+=======
+Moved sentence, tokenization, and pos tagging out of grok and into
+main opennlp package and retrained models.  Added parser, chunker, and named 
+entity detection.
+
+General
+=======
+Added Span class to util for token training.
+
+Remove Pipelink dependicies from above packages in order to minimize 
+dependicies
+
+Made "taggers" use common beam search code.
+
+Sentence Detection
+==================
+Retrained to create new data/EnglishSD.bin.gz
+Fixed context creation bug.
+
+Tokenization
+============
+Changed tokenization features.
+
+Removed possesive hack since trained model now correctly tokenizes
+these constructions.
+
+TokSpanEventStream allows tokenizer to be trained with offsets.
+
+Added ALPHA_NUMERIC_OPTIMAZATION flag so this can be turned off for
+other types of tokenization.
+
+Retrain to create new data/EnglishTok.bin.gz
+
+Part-Of-Speech Tagger
+=====================
+Create POSEventStream for training.
+Retrained to create new data/EnglishPOS.bin.gz
+Added tag dictionary
+
+Parser
+======
+Integrated full parser and trained.
+
+Named Finding
+=============
+Integrated name finder and trained models.

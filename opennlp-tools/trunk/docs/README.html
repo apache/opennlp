@@ -1,0 +1,230 @@
+<!--
+	Licensed to the Apache Software Foundation (ASF) under one
+	or more contributor license agreements.  See the NOTICE file
+	distributed with this work for additional information
+	regarding copyright ownership.  The ASF licenses this file
+	to you under the Apache License, Version 2.0 (the
+	"License"); you may not use this file except in compliance
+	with the License.  You may obtain a copy of the License at
+	
+	http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing,
+	software distributed under the License is distributed on an
+	"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+	KIND, either express or implied.  See the License for the
+	specific language governing permissions and limitations
+	under the License.    
+-->
+
+<html>
+<head>
+<title> OpenNLP Documentation </title>
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="#FFFFFF">
+
+<center><h1>OpenNLP Documentation</h1></center>
+<h1>Introduction</h1>
+<p>
+The opennlp project is now the home of a set of java-based NLP tools 
+which perform sentence detection, tokenization, pos-tagging, chunking and
+parsing, named-entity detection, and coreference.  
+<p>
+These tools are not inheriently useful by themselves, but can be
+integrated with other software to assist in the processing of text.
+As such, the intended audience of much of this documentation is software
+developers who are familar with software development in Java.
+<p>
+In its previous life, OpenNLP was used to hold a common infrastructure code
+for the opennlp.grok project.  The work previously done can be found in
+the final release of that project available on the main project page.  <p>
+
+What follows covers:
+<ol>
+<li> <a href="#buildtools">Installing The Build Tools</a>
+<li> <a href="#buildinst">Building Instructions</a>
+<li> <a href="#maven">Maven Repository</a>
+<li> <a href="#models">Downloading Models</a>
+<li> <a href="#run">Running the Tools</a>
+<li> <a href="#train">Training the Tools</a>
+<li> <a href="#bug">Bug Reports</a>
+</ol>
+
+<h1> <a name="buildtools">Installing The Build Tools</a></h1>
+
+The OpenNLP build system is based on Maven.
+<p>
+The current version and installation instructions
+can be found here:<br>
+<a href="http://maven.apache.org/download.html">http://maven.apache.org/download.html</a>
+
+
+<h1> <a name="buildinst">Building Instructions</a></h1>
+<p>
+The build instructions only work for the source distribution
+of OpenNLP, because the binary distribution does not contain 
+any source code.
+<p>
+Ok, let's build the code. First, make sure your current working
+directory is where the pom.xml file is located.
+If you have maven installed then you can simply
+run "mvn install" from this directory.
+<p>
+If everything is right this command will compile, test and install
+OpenNLP into your local maven repository. The tests can take a few minutes, be patient.
+A copy of the jar file will also be placed in the newly created target folder.
+
+<h2> <a name="maven">Maven Repository </a> </h2>
+
+<p>
+OpenNLP is also distributed via a maven repository, if
+you want to use OpenNLP with maven you should
+add our repository to your pom.xml file.
+<p>
+OpenNLP Repository:<br>
+&lt;repository&gt;<br>
+	&lt;id&gt;opennlp.sf.net&lt;/id&gt;<br>
+	&lt;url&gt;http://opennlp.sourceforge.net/maven2&lt;/url&gt;<br>
+&lt;/repository&gt;<br>
+<p>
+In order to use OpenNLP in your project, you must define a dependency
+on opennlp.tools. The dependency to the opennlp.maxent
+project will be automatically resolved by maven.
+
+<p>
+OpenNLP dependency:<br>
+&lt;dependency&gt;<br>
+	&lt;groupId&gt;opennlp&lt;/groupId&gt;<br>
+	&lt;artifactId&gt;tools&lt;/artifactId&gt;<br>
+	&lt;version&gt;1.5.0&lt;/version&gt;<br>
+&lt;/dependency&gt;<br>
+
+<h1><a name="models"> Downloading Models</a></h1>
+<p>
+Models have been trained for various of the component and are required
+unless one wishes to create their own models exclusivly from their own
+annotated data.  These models can be downloaded clicking 
+<a href="http://opennlp.sourceforge.net/models.html">here</a> or the "Models" 
+link at <a href="opennlp.sourceforge.net/models.html">opennlp.sourceforge.net</a>.  
+The models are large (especially the ones for the parser).  
+You may want to just fetch specific ones.
+
+
+<h1> <a name="run">Running the Tools </a></h1>
+<p>
+To run any of these tools on UNIX
+just type<br>
+<br>bin/opennlp<br>
+<br>or on windows<br>
+<br>java -jar opennlp-tools-1.5.0.jar<br>
+<br>inside the opennlp directory of the binary distribution.
+The tools will then print out a list of possible commands
+for the various components.
+<p>
+Further instruction on howto to use these tools
+can be found in our <a href="https://sourceforge.net/apps/mediawiki/opennlp/index.php?title=Main_Page">wiki</a>.
+<p>
+Some of the components require processing by the previous component. 
+Most of these take a single argument which is the location of the model for this component.
+The exception is coref which requires a  model directory, and
+the namefinder which can also take a list of models. 
+<p>
+<b>Examples:</b> These example are simply that, examples, and are not a
+recommendation that you run the tools this way.  It's in fact very
+inefficient.  However, this should give you an idea of what the tools
+can do and the kind of input they assume.  Developers should know to
+look at the ComponentNameTool classes inside the opennlp.tools.cmdline package to see how
+to set up a particular component for use.
+<p>
+The examples below use the english models and assume that you downlaoded
+the models into a sub-directory called "models".
+<p>
+
+<h2>Sentence Detection and Tokenization:</h2>
+<pre>
+bin/opennlp SentenceDetector models/en-sent.bin &lt; text |
+bin/opennlp TokenizerME models/en-token.bin
+</pre>
+
+<h2>POS Tagging:</h2>
+<pre>
+bin/opennlp SentenceDetector models/en-sent.bin &lt; text |
+bin/opennlp TokenizerME models/en-token.bin |
+bin/opennlp POSTagger models/en-pos-maxent.bin
+</pre>
+
+<h2>Phrase Chunking:</h2>
+<pre>
+bin/opennlp SentenceDetector models/en-sent.bin &lt; text |
+bin/opennlp TokenizerME models/en-token.bin |
+bin/opennlp POSTagger models/en-pos-maxent.bin |
+bin/opennlp Chunker models/en-chunker.bin
+</pre>
+
+<h2>Parsing:</h2>
+<pre>
+bin/opennlp SentenceDetector models/en-sent.bin &lt; text |
+bin/opennlp TokenizerME models/en-token.bin |
+bin/opennlp Parser models/en-parser.bin
+</pre>
+
+<h2>Name Finding:</h2>
+<pre>
+bin/opennlp SentenceDetector models/en-sent.bin &lt; text |
+bin/opennlp SimpleTokenizer |
+bin/opennlp TokenNameFinder models/en-ner-person.bin models/en-ner-location.bin
+</pre>
+
+<h2>English Coreference:</h2>
+Note for this sample the opennlp jar, the maxent jar and the jwnl jar must be on the classpath. 
+<pre>
+java opennlp.tools.lang.english.SentenceDetector \
+  opennlp.models/english/sentdetect/EnglishSD.bin.gz &lt; text |
+java opennlp.tools.lang.english.Tokenizer \
+  opennlp.models/english/tokenize/EnglishTok.bin.gz |
+java -Xmx350m opennlp.tools.lang.english.TreebankParser -d \
+  opennlp.models/english/parser |
+java -Xmx350m opennlp.tools.lang.english.NameFinder -parse \
+  opennlp.models/english/namefind/*.bin.gz |
+java -Xmx200m -DWNSEARCHDIR=$WNSEARCHDIR \
+  opennlp.tools.lang.english.TreebankLinker opennlp.models/english/coref
+</pre>
+
+<p>
+In the example above $WNSEARCHDIR is the location of the "dict" directory for 
+your WordNet 3.0 installation.  WordNet can be obtained at <a href="http://wordnet.princeton.edu/obtain">here</a>.
+
+
+<h1><a name="train"> Training the Tools</a></h1>
+<p>
+There are training tools for all components expect the
+coref component. Please consult the help message of the
+tool and the javadoc to figure out how to train the tools.
+<p>
+The tutorials in our <a href="https://sourceforge.net/apps/mediawiki/opennlp/index.php?title=Main_Page">wiki</a>
+might also be helpful.
+<p>
+The following modules currently support training via the WordFreak
+opennlp.plugin v1.4 (http://wordfreak.sourceforge.net/plugins.html).
+<ul>
+<li>coreference:        org.annotation.opennlp.OpenNlpCoreferenceAnnotator (use opennlp 1.4.3 for training, models are compatible)
+</ul>
+<p>
+<b>Note:</b> In order to train a model you need all the training data.  There is
+not currently a mechanism to update the models distributed with the project
+with additional data.
+
+<h1><a name="bug">Bug Reports</a></h1>
+<p>
+Please report bugs at the bug section of the OpenNLP sourceforge site:
+<p>
+<a href="http://sourceforge.net/tracker/?group_id=3368&atid=103368">sourceforge.net/tracker/?group_id=3368&amp;atid=103368</a>
+<p>
+<b>Note:</b> Incorrect automatic-annotation on a specific piece of text does
+not constitute a bug.  The best way to address such errors is to provide
+annotated data on which the automatic-annotator/tagger can be trained
+so that it might learn to not make these mistakes in the future.
+
+</body>
+</html>

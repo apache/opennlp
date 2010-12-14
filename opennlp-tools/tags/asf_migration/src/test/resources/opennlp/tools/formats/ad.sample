@@ -1,0 +1,199 @@
+<ext id="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=">
+
+<s id="63955" ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-2" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=">
+SOURCE: ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-2" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme="
+1001 Inicia no próximo dia 6 de outubro o Porto Poesia 2 no Shopping Total Av. Cristovão Colombo, 545 -- Porto Alegre -- RS.
+A1
+STA:fcl
+=P:v-fin("iniciar" <fmc> <mv> PR 3S IND VFIN)	Inicia
+=PIV:pp
+==H:prp("em" <sam-> <right>)	em
+==P<:np
+===>N:art("o" <artd> <-sam> DET M S)	o
+===>N:adj("próximo" M S)	próximo
+===H:n("dia" <np-def> <temp> M S)	dia
+===N<:num("6" <NER:date> <card> <np-close> M P)	6
+===N<:pp
+====H:prp("de" <NER2> <np-close>)	de
+====P<:n("outubro" <np-idf> <NER2> M S)	outubro
+=ACC:cu
+==CJT:np
+===>N:art("o" <artd> DET M S)	o
+===H:prop("Porto_Poesia" <cjt-head> <civ> <right> M S)	Porto_Poesia
+===N<:num("2" <card> <np-close> M/F P)	2
+===N<:pp
+====H:prp("em" <sam-> <np-long>)	em
+====P<:np
+=====>N:art("o" <artd> <-sam> DET M S)	o
+=====H:prop("Shopping_Total" <site> M S)	Shopping_Total
+==CJT:np
+===H:n("av." <np-idf> <cjt-acc> <right> M S)	Av.
+===N<:prop("Cristovão_Colombo" <hum> <np-close> M S)	Cristovão_Colombo
+==,
+==CJT:num("545" <cjt-acc> <NER:prednum> <card> <right> M/F P)	545
+==--
+=SUBJ:np
+==H:prop("Porto_Alegre" <civ> <right> M S)	Porto_Alegre
+==--
+==APP:prop("RS" <civ> <np-close> M S)	RS
+.
+
+</s>
+<s id="63959" ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-6" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=">
+SOURCE: ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-6" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme="
+1001 Com relação à parceria com o shopping o organizador diz que:
+A1
+STA:fcl
+=ADVL:pp
+==H:prp("com_relação_a" <sam-> <left>)	Com_relação_a
+==P<:np
+===>N:art("o" <-sam> <artd> DET F S)	a
+===H:n("parceria" <np-def> <com> <HH> F S)	parceria
+===N<:pp
+====H:prp("com" <np-close>)	com
+====P<:np
+=====>N:art("o" <artd> DET M S)	o
+=====H:n("shopping" <np-def> <Lh> M S)	shopping
+=SUBJ:np
+==>N:art("o" <artd> DET M S)	o
+==H:n("organizador" <np-def> <Hprof> <left> M S)	organizador
+=P:v-fin("dizer" <fmc> <mv> PR 3S IND VFIN)	diz
+SUB:conj-s("que" <clb-fs>)	que
+:
+
+</s>
+<s id="63964" ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-11" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=">
+SOURCE: ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-11" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme="
+1001 Até o momento, mais de 98 profissionais da área da cultura e poetas têm a presença confirmada, entre eles, Armindo Trevisan, Alcy Cheuiche, Donaldo Schüller, José Eduardo Degrazia, Lau Siqueira, Liana Timm, Luiz Coronel, Mário Pirata, Oliveira Silveira, Jane Tutikian, Paulo Custódio, entre outros.
+A1
+STA:fcl
+=ADVL:pp
+==H:prp("até" <left>)	Até
+==P<:np
+===>N:art("o" <artd> DET M S)	o
+===H:n("momento" <np-def> <f-q> M S)	momento
+=,
+=SUBJ:cu
+==CJT:np
+===>N:adjp
+====>A:adv("mais_de" <quant>)	mais_de
+====H:num("98" <card> M/F P)	98
+===H:n("profissional" <np-count> <np-def> <cjt-head> <Hprof> <left> M/F P)	profissionais
+===N<:pp
+====H:prp("de" <sam-> <np-close>)	de
+====P<:np
+=====>N:art("o" <artd> <-sam> DET F S)	a
+=====H:n("área" <np-def> <L> F S)	área
+=====N<:pp
+======H:prp("de" <sam-> <np-close>)	de
+======P<:np
+=======>N:art("o" <artd> <-sam> DET F S)	a
+=======H:n("cultura" <np-def> <ac> F S)	cultura
+==CO:conj-c("e" <co-subj>)	e
+==CJT:n("poeta" <np-idf> <cjt-subj> <Hprof> <left> M P)	poetas
+=P:v-fin("ter" <fmc> <mv> PR 3P IND VFIN)	têm
+=ACC:np
+==>N:art("o" <artd> DET F S)	a
+==H:n("presença" <np-def> <state> <per> <right> F S)	presença
+==N<:v-pcp("confirmar" <np-close> F S)	confirmada
+=,
+=ADVL:pp
+==H:prp("entre" <right>)	entre
+==P<:np
+===H:pron-pers("eles" M 3P NOM/PIV)	eles
+===,
+===APP:np
+====H:prop("Armindo_Trevisan" <hum> <np-close> M S)	Armindo_Trevisan
+====,
+====APP:np
+=====H:prop("Alcy_Cheuiche" <hum> <np-close> M/F S)	Alcy_Cheuiche
+=====,
+=====APP:np
+======H:prop("Donaldo_Schüller" <hum> <np-close> M S)	Donaldo_Schüller
+======,
+======APP:np
+=======H:prop("José_Eduardo_Degrazia" <hum> <np-close> M S)	José_Eduardo_Degrazia
+=======,
+=======APP:np
+========H:prop("Lau_Siqueira" <hum> <np-close> M/F S)	Lau_Siqueira
+========,
+========APP:np
+=========H:prop("Liana_Timm" <hum> <np-close> F S)	Liana_Timm
+=========,
+=========APP:np
+==========H:prop("Luiz_Coronel" <hum> <np-close> M S)	Luiz_Coronel
+==========,
+==========APP:np
+===========H:prop("Mário_Pirata" <hum> <np-close> M S)	Mário_Pirata
+===========,
+===========APP:np
+============H:prop("Oliveira_Silveira" <hum> <np-close> F S)	Oliveira_Silveira
+============,
+============APP:np
+=============H:prop("Jane_Tutikian" <hum> <np-close> F S)	Jane_Tutikian
+=============,
+=============APP:prop("Paulo_Custódio" <hum> <np-close> M S)	Paulo_Custódio
+=,
+=ADVL:pp
+==H:prp("entre" <right>)	entre
+==P<:pron-det("outro" <KOMP> <diff> DET M P)	outros
+.
+
+</s>
+<ext id="1002.pesquisa da usp mapeia cultura livre em são paulo">
+<s id="115136" ref="1003.cultura-ameacada=removeme=-5" source="SELVA 1003.cultura-ameacada=removeme=">
+SOURCE: ref="1003.cultura-ameacada=removeme=-5" source="SELVA 1003.cultura-ameacada=removeme="
+1003 Casas, galpão utilizado para os festejos e até mesmo a capela em que os Arturos celebram seus rituais religiosos tiveram telhas e vidros destruídos, num episódio sem precedentes na comunidade.
+A1
+ACC:fcl
+=TOP:n("casa" <np-idf> <NER:address> <build> F P)	Casas
+=,
+STA:fcl
+=SUBJ:cu
+==CJT:np
+===H:n("galpão" <np-idf> <cjt-head> <build> <left> M S)	galpão
+=====N<:v-pcp("utilizar" <np-close> M S)	utilizado
+=====N<:pp
+======H:prp("para" <np-long>)	para
+======P<:np
+=======>N:art("o" <artd> DET M P)	os
+=======H:n("festejo" <np-def> <occ> M P)	festejos
+====CO:conj-c("e" <co-subj>)	e
+===ADVL:adv("até_mesmo" <left>)	até_mesmo
+====CJT:np
+=====>N:art("o" <artd> DET F S)	a
+=====H:n("capela" <np-def> <cjt-subj> <build> <left> F S)	capela
+===ADVL:prp("em" <left>)	em
+=SUB:conj-s("que" <clb-fs>)	que
+=SUBJ:np
+==>N:art("o" <artd> DET M P)	os
+==H:prop("Arturos" <org> <left> M P)	Arturos
+=P:v-fin("celebrar" <fs-subst> <mv> <right> PR 3P IND VFIN)	celebram
+=ACC:np
+==>N:pron-det("seu" <si> <poss 3S> DET M P)	seus
+==H:n("ritual" <np-def> <occ> <right> M P)	rituais
+==N<:adj("religioso" <np-close> M P)	religiosos
+==P:v-fin("ter" <fmc> <mv> PS/MQP 3P IND VFIN)	tiveram
+==ACC:cu
+===CJT:n("telha" <np-idf> <cjt-head> <cc-stone> <right> F P)	telhas
+===CO:conj-c("e" <co-acc>)	e
+===CJT:np
+====H:n("vidro" <np-idf> <cjt-acc> <con> <right> M P)	vidros
+====N<:v-pcp("destruir" <np-close> M P)	destruídos
+==,
+==ADVL:pp
+===H:prp("em" <sam-> <right>)	em
+===P<:np
+====>N:art("um" <arti> <-sam> DET M S)	um
+====H:n("episódio" <np-idf> <event> M S)	episódio
+====N<:pp
+=====H:prp("sem" <np-close>)	sem
+=====P<:n("precedente" <np-idf> <event> M P)	precedentes
+==ADVL:pp
+===H:prp("em" <sam-> <right>)	em
+===P<:np
+====>N:art("o" <artd> <-sam> DET F S)	a
+====H:n("comunidade" <np-def> <HH> F S)	comunidade
+.
+
+</s>
