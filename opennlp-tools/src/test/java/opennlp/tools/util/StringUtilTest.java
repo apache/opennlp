@@ -49,5 +49,12 @@ public class StringUtilTest {
     assertEquals("TEST", StringUtil.toUpperCase("test"));
     assertEquals("SIMPLE", StringUtil.toUpperCase("simple"));
   }
+  
+  @Test
+  public void testIsEmpty() {
+    assertTrue(StringUtil.isEmpty(null));
+    assertTrue(StringUtil.isEmpty(""));
+    assertTrue(!StringUtil.isEmpty("a"));
+  }
 
 }
