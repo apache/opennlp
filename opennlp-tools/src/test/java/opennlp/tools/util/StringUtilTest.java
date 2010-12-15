@@ -52,9 +52,14 @@ public class StringUtilTest {
   
   @Test
   public void testIsEmpty() {
-    assertTrue(StringUtil.isEmpty(null));
     assertTrue(StringUtil.isEmpty(""));
     assertTrue(!StringUtil.isEmpty("a"));
+  }
+  
+  @Test(expected=NullPointerException.class)
+  public void testIsEmptyWithNullString() {
+	// should raise a NPE  
+    StringUtil.isEmpty(null);
   }
 
 }
