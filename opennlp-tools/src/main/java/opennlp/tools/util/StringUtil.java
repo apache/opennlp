@@ -111,6 +111,6 @@ public class StringUtil {
     * @since 1.5.1
     */
   public static boolean isEmpty(CharSequence theString) {
-	return theString == null || theString.length() == 0;
+	return theString.length() == 0;
   }
 }
