@@ -35,10 +35,12 @@ public class InvalidFormatException extends IOException {
   }
   
   public InvalidFormatException(Throwable t) {
-    super(t);
+    super();
+    initCause(t);
   }
   
   public InvalidFormatException(String message, Throwable t) {
-    super(message, t);
+    super(message);
+    initCause(t);
   }
 }
