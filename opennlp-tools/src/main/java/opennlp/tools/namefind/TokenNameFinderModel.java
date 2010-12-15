@@ -79,12 +79,11 @@ public class TokenNameFinderModel extends BaseModel {
   // TODO: Write test for this method
   public static boolean isModelValid(MaxentModel model) {
     
-    // We should have one outcome named "other", some named xyz-start and sometimes 
+    // We should have *optionally* one outcome named "other", some named xyz-start and sometimes 
     // they have a pair xyz-cont. We should not have any other outcome
     // To validate the model we check if we have one outcome named "other", at least
     // one outcome with suffix start. After that we check if all outcomes that ends with
     // "cont" have a pair that ends with "start".
-    boolean otherFounded = false;
     List<String> start = new ArrayList<String>();
     List<String> cont = new ArrayList<String>();
 
@@ -97,14 +96,14 @@ public class TokenNameFinderModel extends BaseModel {
         cont.add(outcome.substring(0, outcome.length()
             - NameFinderME.CONTINUE.length()));
       } else if (outcome.equals(NameFinderME.OTHER)) {
-        otherFounded = true;
+        // don't fail anymore if couldn't find outcome named OTHER
       } else {
         // got unexpected outcome
         return false;
       }
     }
 
-    if (!otherFounded || start.size() == 0) {
+    if (start.size() == 0) {
       return false;
     } else {
       for (String contPreffix : cont) {
