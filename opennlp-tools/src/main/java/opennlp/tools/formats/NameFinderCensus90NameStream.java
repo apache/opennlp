@@ -23,6 +23,7 @@ import java.util.Locale;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.StringUtil;
 
 /**
  * This class helps to read the US Census data from the files to build a
@@ -80,7 +81,7 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
     StringList name = null;
 
     if ((line != null) &&
-        (!line.isEmpty())) {
+        (!StringUtil.isEmpty(line))) {
       String name2;
       // find the location of the name separator in the line of data.
       int pos = line.indexOf(' ');

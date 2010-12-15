@@ -100,4 +100,17 @@ public class StringUtil {
     
     return new String(upperCaseChars);
   }
+  
+  /**
+    * Returns <tt>true</tt> if {@link CharSequence#length()} is
+    * <tt>0</tt> or <tt>null</tt>.
+    * 
+    * @return <tt>true</tt> if {@link CharSequence#length()} is <tt>0</tt>, otherwise
+    *         <tt>false</tt>
+    * 
+    * @since 1.5.1
+    */
+  public static boolean isEmpty(CharSequence theString) {
+	return theString == null || theString.length() == 0;
+  }
 }

@@ -27,6 +27,7 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  *
@@ -113,7 +114,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
     // Empty line indicates end of sentence
 
     String line;
-    while ((line = lineStream.read()) != null && !line.isEmpty()) {
+    while ((line = lineStream.read()) != null && !StringUtil.isEmpty(line)) {
 
       if (LANGUAGE.EN.equals(lang) && line.startsWith("-DOCSTART-")) {
         isClearAdaptiveData = true;
