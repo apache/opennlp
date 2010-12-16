@@ -25,9 +25,6 @@ import opennlp.tools.util.StringUtil;
 
 /**
  * Generate events for maxent decisions for tokenization.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.4 $, $Date: 2010-09-21 09:09:36 $
  */
 public class DefaultTokenContextGenerator implements TokenContextGenerator {
 
