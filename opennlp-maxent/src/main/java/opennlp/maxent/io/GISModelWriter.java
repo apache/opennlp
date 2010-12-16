@@ -34,9 +34,6 @@ import opennlp.model.IndexHashTable;
  * Abstract parent class for GISModel writers.  It provides the persist method
  * which takes care of the structure of a stored document, and requires an
  * extending class to define precisely how the data should be stored.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.3 $, $Date: 2010-09-06 08:02:18 $
  */
 public abstract class GISModelWriter extends AbstractModelWriter {
     protected Context[] PARAMS;
