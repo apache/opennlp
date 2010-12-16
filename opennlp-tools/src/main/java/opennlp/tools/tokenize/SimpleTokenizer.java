@@ -27,8 +27,6 @@ import opennlp.tools.util.StringUtil;
 
 /**
  * Performs tokenization using character classes.
- * @author tsmorton
- *
  */
 public class SimpleTokenizer extends AbstractTokenizer {
   
