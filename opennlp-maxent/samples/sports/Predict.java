@@ -29,9 +29,6 @@ import opennlp.model.RealValueFileEventStream;
 
 /**
  * Test the model on some input.
- *
- * @author  Jason Baldridge
- * @version $Revision: 1.4 $, $Date: 2008-11-06 20:00:34 $
  */
 public class Predict {
     MaxentModel _model;
