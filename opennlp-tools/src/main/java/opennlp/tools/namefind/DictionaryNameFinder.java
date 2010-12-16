@@ -29,9 +29,6 @@ import opennlp.tools.util.StringList;
 /**
  * This is a dictionary based name finder, it scans text
  * for names inside a dictionary.
- *
- * @author <a href="mailto:kottmann@gmail.com">Joern Kottmann</a>
- * @version $Revision: 1.4 $, $Date: 2010-09-01 07:36:25 $
  */
 public class DictionaryNameFinder implements TokenNameFinder {
 
