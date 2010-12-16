@@ -28,9 +28,6 @@ import opennlp.model.Prior;
 /**
  * A Factory class which uses instances of GISTrainer to create and train
  * GISModels.
- *
- * @author  Jason Baldridge
- * @version $Revision: 1.5 $, $Date: 2010-09-06 08:02:18 $
  */
 public class GIS {
     /**

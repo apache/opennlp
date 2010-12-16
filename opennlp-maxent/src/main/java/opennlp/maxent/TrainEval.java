@@ -29,9 +29,6 @@ import opennlp.model.MaxentModel;
 /**
  * Trains or evaluates maxent components which have implemented the Evalable
  * interface.
- *
- * @author      Gann Bierner
- * @version     $Revision: 1.3 $, $Date: 2010-09-06 08:02:18 $
  */
 public class TrainEval {
     

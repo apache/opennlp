@@ -24,9 +24,6 @@ package opennlp.maxent;
  * supplied to an EventStream. It is not necessary to use a DataStream in a
  * Maxent application, but it can be used to support a wider variety of formats
  * in which your training data can be held.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
 public interface DataStream {
 
