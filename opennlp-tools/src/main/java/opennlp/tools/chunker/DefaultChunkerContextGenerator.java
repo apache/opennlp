@@ -21,8 +21,7 @@ package opennlp.tools.chunker;
 /** Features based on chunking model described in Fei Sha and Fernando Pereira. Shallow
  *  parsing with conditional random fields. In Proceedings of HLT-NAACL 2003. Association
  *  for Computational Linguistics, 2003.
- * @author Tom Morton
-  */
+ */
 public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
 
   /**
