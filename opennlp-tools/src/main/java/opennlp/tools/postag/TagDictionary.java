@@ -21,8 +21,6 @@ package opennlp.tools.postag;
 /**
  * Interface to determine which tags are valid for a particular word
  * based on a tag dictionary.
- *
- * @author Tom Morton
  */
 public interface TagDictionary {
 

@@ -28,12 +28,7 @@ import opennlp.tools.util.StringList;
 
 /**
  * A context generator for the POS Tagger.
- *
- * @author      Gann Bierner
- * @author      Tom Morton
- * @version     $Revision: 1.2 $, $Date: 2009-01-24 01:32:19 $
  */
-
 public class DefaultPOSContextGenerator implements POSContextGenerator {
 
   protected final String SE = "*SE*";
