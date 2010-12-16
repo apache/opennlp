@@ -28,9 +28,6 @@ package opennlp.maxent;
  * <p>
  * cp_1 cp_2 ... cp_n
  * </p>
- * 
- * @author      Jason Baldridge
- * @version     $Revision: 1.4 $, $Date: 2010-09-06 08:02:18 $
  */
 public class BasicContextGenerator implements ContextGenerator {
 

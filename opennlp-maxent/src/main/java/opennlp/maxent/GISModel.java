@@ -33,9 +33,6 @@ import opennlp.model.UniformPrior;
 /**
  * A maximum entropy model which has been trained using the Generalized
  * Iterative Scaling procedure (implemented in GIS.java).
- *
- * @author      Tom Morton and Jason Baldridge
- * @version     $Revision: 1.6 $, $Date: 2010-09-06 08:02:18 $
  */
 public final class GISModel extends AbstractModel {
     /**

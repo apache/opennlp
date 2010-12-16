@@ -31,9 +31,6 @@ import opennlp.model.Event;
  *
  * <p> cp_1 cp_2 ... cp_n outcome
  * <p> cp_1,cp_2,...,cp_n,outcome
- *
- * @author      Jason Baldridge
- * @version $Revision: 1.5 $, $Date: 2010-09-06 08:02:18 $ 
  */
 public class BasicEventStream extends AbstractEventStream {
   ContextGenerator cg;
