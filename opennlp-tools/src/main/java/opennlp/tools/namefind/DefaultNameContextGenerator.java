@@ -33,8 +33,6 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 /**
  * Class for determining contextual features for a tag/chunk style
  * named-entity recognizer.
- *
- * @version $Revision: 1.6 $, $Date: 2010-07-12 15:42:01 $
  */
 public class DefaultNameContextGenerator implements NameContextGenerator {
 
