@@ -40,8 +40,6 @@ import opennlp.tools.util.StringUtil;
  * </ul>
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
- * 
- * @author James Kosin
  */
 public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
 

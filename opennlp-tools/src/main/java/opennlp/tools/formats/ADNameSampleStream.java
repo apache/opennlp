@@ -59,8 +59,6 @@ import opennlp.tools.util.Span;
  * http://beta.visl.sdu.dk/visl/pt/info/portsymbol.html#semtags_names
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
- * 
- * @author William Colen (CoGrOO)
  */
 public class ADNameSampleStream implements ObjectStream<NameSample> {
 

@@ -31,8 +31,6 @@ import java.util.Map;
  * 
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
- * 
- * @author William Colen (CoGrOO)
  */
 public class ContractionUtility {
 
