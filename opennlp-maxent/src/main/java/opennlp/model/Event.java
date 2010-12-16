@@ -23,9 +23,6 @@ package opennlp.model;
 /**
  * The context of a decision point during training.  This includes
  * contextual predicates and an outcome.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
 public class Event {
     private String outcome;

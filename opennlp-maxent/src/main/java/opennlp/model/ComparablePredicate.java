@@ -23,9 +23,6 @@ package opennlp.model;
  * A maxent predicate representation which we can use to sort based on the
  * outcomes. This allows us to make the mapping of features to their parameters
  * much more compact.
- *
- * @author      Jason Baldridge
- * @version $Revision: 1.3 $, $Date: 2010-09-06 08:02:18 $
  */
 public class ComparablePredicate implements Comparable<ComparablePredicate> {
   public String name;

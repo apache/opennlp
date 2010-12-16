@@ -26,10 +26,6 @@ import java.io.IOException;
  * (or others such as IIS if and when they are implemented). EventStreams don't
  * need to use opennlp.maxent.DataStreams, but doing so would provide greater
  * flexibility for producing events from data stored in different formats.
- * 
- * @author Jason Baldridge
- * @version $Revision: 1.3 $, $Date: 2010-09-06 08:02:18 $
- * 
  */
 public interface EventStream {
 

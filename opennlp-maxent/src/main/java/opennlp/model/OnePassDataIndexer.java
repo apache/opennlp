@@ -35,9 +35,6 @@ import java.util.Set;
  * An indexer for maxent model data which handles cutoffs for uncommon
  * contextual predicates and provides a unique integer index for each of the
  * predicates. 
- *
- * @author      Jason Baldridge
- * @version $Revision: 1.3 $, $Date: 2010-09-06 08:02:18 $
  */
 public class OnePassDataIndexer extends AbstractDataIndexer  {
 
