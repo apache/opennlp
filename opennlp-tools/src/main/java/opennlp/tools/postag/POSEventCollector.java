@@ -31,9 +31,6 @@ import opennlp.tools.util.Pair;
 
 /**
  * An event generator for the maxent POS Tagger.
- *
- * @author      Gann Bierner
- * @version     $Revision: 1.2 $, $Date: 2009-01-24 01:32:19 $
  */
 @Deprecated
 public class POSEventCollector implements EventCollector {

@@ -40,8 +40,6 @@ import opennlp.tools.util.StringList;
 /**
  * Provides a means of determining which tags are valid for a particular word
  * based on a tag dictionary read from a file.
- *
- * @author Tom Morton
  */
 public class POSDictionary implements Iterable<String>, TagDictionary {
 
