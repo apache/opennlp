@@ -79,10 +79,6 @@ import opennlp.model.MaxentModel;
  * serviced are completed before the new model is swapped in.  New requests
  * which are made while the models are being swapped are forced to wait for the
  * swap to finish.  These requests will then be serviced by the new model.
- * 
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
 public class ModelReplacementManager {
     private ModelSetter setter;

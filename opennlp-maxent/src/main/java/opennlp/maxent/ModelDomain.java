@@ -26,9 +26,6 @@ package opennlp.maxent;
  * children's stories.  This interface is used by the DomainToModelMap class
  * to allow an application to grab the models relevant for the different
  * domains.
- *
- * @author      Jason Baldridge
- * @version $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
 public interface ModelDomain {
 

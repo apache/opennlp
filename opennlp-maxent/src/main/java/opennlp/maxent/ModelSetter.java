@@ -44,11 +44,7 @@ import opennlp.model.MaxentModel;
  * <p>
  * Basically, this is just a clean way of giving a ModelReplacementManager
  * access to a private variable holding the model.  Nothing complex here.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
-
 public interface ModelSetter {
 
     /**

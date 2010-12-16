@@ -46,10 +46,6 @@ import opennlp.model.UniformPrior;
  * A prior can be used to train models which converge to the distribution which minimizes the
  * relative entropy between the distribution specified by the empirical constraints of the training
  * data and the specified prior.  By default, the uniform distribution is used as the prior.
- *    
- * @author Tom Morton
- * @author  Jason Baldridge
- * @version $Revision: 1.8 $, $Date: 2010-11-17 11:15:54 $
  */
 class GISTrainer {
 

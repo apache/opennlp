@@ -31,11 +31,7 @@ import java.util.zip.GZIPOutputStream;
 
 /**
  * A program to convert from java binary doubles to ascii
- *
- * @author      Jason Baldridge and Gann Bierner
- * @version     $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
-
 public class BinToAscii {
 
 	public static void main(String[] args) throws IOException {

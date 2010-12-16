@@ -33,9 +33,6 @@ import opennlp.model.MaxentModel;
  * newly trained one in a thread-safe manner.  By calling the getModel()
  * method, the application can create new instances of classes which use the
  * relevant models.
- *
- * @author  Jason Baldridge and Eric Friedman
- * @version $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
 public class DomainToModelMap {
 

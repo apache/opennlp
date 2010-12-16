@@ -27,11 +27,7 @@ import opennlp.model.MaxentModel;
 /**
  * Interface for components which use maximum entropy models and can evaluate
  * the performace of the models using the TrainEval class.
- *
- * @author      Gann Bierner
- * @version     $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
-
 public interface Evalable {
 
     /**
