@@ -1,6 +1,4 @@
 /*
- *  Copyright 2010 James Kosin.
- * 
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
@@ -24,7 +22,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
+import opennlp.tools.formats.Conll03NameSampleStreamTEST.LANGUAGE;
 import opennlp.tools.util.ObjectStream;
 
 public class Conll03NameSampleStreamFactory implements ObjectStreamFactory<NameSample> {
@@ -85,7 +83,7 @@ public class Conll03NameSampleStreamFactory implements ObjectStreamFactory<NameS
     }
 
 
-    return new Conll03NameSampleStream(lang,
+    return new Conll03NameSampleStreamTEST(lang,
         CmdLineUtil.openInFile(new File(params.getData())), typesToGenerate);
   }
 
