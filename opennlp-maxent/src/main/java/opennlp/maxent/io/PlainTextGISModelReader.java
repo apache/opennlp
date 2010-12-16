@@ -27,9 +27,6 @@ import opennlp.model.PlainTextFileDataReader;
 
 /**
  * A reader for GIS models stored in plain text format.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
 public class PlainTextGISModelReader extends GISModelReader {
 

@@ -33,9 +33,6 @@ import opennlp.model.Context;
  * extends the PlainTextGISModelReader to read in the info and then overrides
  * the getParameters method so that it can appropriately read the binary file
  * which stores the parameters.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
 public class OldFormatGISModelReader extends PlainTextGISModelReader {
     DataInputStream paramsInput;

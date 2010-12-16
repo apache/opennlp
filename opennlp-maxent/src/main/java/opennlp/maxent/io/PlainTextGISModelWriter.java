@@ -32,9 +32,6 @@ import opennlp.model.AbstractModel;
 
 /**
  * Model writer that saves models in plain text format.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
 public class PlainTextGISModelWriter extends GISModelWriter {
   BufferedWriter output;
