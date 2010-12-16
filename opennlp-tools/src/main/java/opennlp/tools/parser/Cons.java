@@ -18,8 +18,6 @@
 package opennlp.tools.parser;
 /**
  * Class to hold feature information about a specific parse node.
- * @author tsmorton
- *
  */
 public class Cons {
 

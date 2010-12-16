@@ -22,8 +22,6 @@ import java.util.Set;
 
 /**
  * Interface for encoding the head rules associated with parsing.
- *
- * @author Tom Morton
  */
 public interface HeadRules {
 

@@ -33,7 +33,6 @@ import opennlp.tools.util.ObjectStream;
 
 /**
  * Abstract class extended by parser event streams which perform tagging and chunking.
- * @author Tom Morton
  */
 public abstract class AbstractParserEventStream extends opennlp.tools.util.AbstractEventStream<Parse> {
 
