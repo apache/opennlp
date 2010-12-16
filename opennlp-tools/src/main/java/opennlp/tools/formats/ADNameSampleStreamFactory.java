@@ -33,7 +33,6 @@ import opennlp.tools.util.ObjectStream;
  * utility.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
- * @author William Colen (CoGrOO)
  */
 public class ADNameSampleStreamFactory implements
     ObjectStreamFactory<NameSample> {
