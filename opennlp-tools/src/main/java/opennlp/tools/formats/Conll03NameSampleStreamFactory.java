@@ -22,7 +22,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.formats.Conll03NameSampleStreamTEST.LANGUAGE;
+import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
 import opennlp.tools.util.ObjectStream;
 
 public class Conll03NameSampleStreamFactory implements ObjectStreamFactory<NameSample> {
@@ -83,7 +83,7 @@ public class Conll03NameSampleStreamFactory implements ObjectStreamFactory<NameS
     }
 
 
-    return new Conll03NameSampleStreamTEST(lang,
+    return new Conll03NameSampleStream(lang,
         CmdLineUtil.openInFile(new File(params.getData())), typesToGenerate);
   }
 
