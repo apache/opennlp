@@ -27,8 +27,6 @@ import opennlp.tools.parser.Parse;
 
 /**
  * Class for generating predictive context for deciding when a constituent is complete.
- * @author Tom Morton
- *
  */
 public class CheckContextGenerator extends AbstractContextGenerator {
 
