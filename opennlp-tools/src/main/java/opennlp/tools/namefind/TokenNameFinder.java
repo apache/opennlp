@@ -21,7 +21,6 @@ import opennlp.tools.util.Span;
 
 /**
  * The interface for name finders which provide name tags for a sequence of tokens.
- * @author      Thomas Morton
  */
 public interface TokenNameFinder {
 
