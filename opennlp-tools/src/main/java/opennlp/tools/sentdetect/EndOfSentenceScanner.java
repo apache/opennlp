@@ -28,11 +28,6 @@ import java.util.List;
  * <p>Implementations of this interface can use regular expressions,
  * hand-coded DFAs, and other scanning techniques to locate end of
  * sentence offsets.</p>
- *
- * Created: Sat Oct 27 11:42:07 2001
- *
- * @author Eric D. Friedman
- * @version $Id: EndOfSentenceScanner.java,v 1.3 2009-06-04 22:54:23 tsmorton Exp $
  */
 
 public interface EndOfSentenceScanner {
