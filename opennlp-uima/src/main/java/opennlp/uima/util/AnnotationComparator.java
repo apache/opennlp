@@ -25,9 +25,6 @@ import org.apache.uima.cas.text.AnnotationFS;
  * Checks two annotations for equality.
  * 
  * @param <T> 
- * 
- * @author <a href="mailto:kottmann@gmail.com">Joern Kottmann</a>
- * @version $Revision: 1.4 $, $Date: 2010/09/15 14:39:03 $
  */
 public class AnnotationComparator implements Comparator<AnnotationFS>
 {
