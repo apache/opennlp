@@ -39,9 +39,6 @@ import opennlp.model.AbstractModelWriter;
  *    <li>.gz  --> the file is gzipped (must be the last suffix)
  *    <li>.txt --> the file is plain text
  *    <li>.bin --> the file is binary
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.3 $, $Date: 2010-09-06 08:02:18 $
  */
 public class SuffixSensitivePerceptronModelWriter extends PerceptronModelWriter {
     private final AbstractModelWriter suffixAppropriateWriter;

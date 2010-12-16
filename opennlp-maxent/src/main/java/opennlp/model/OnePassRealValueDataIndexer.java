@@ -31,7 +31,6 @@ import java.util.Map;
  * An indexer for maxent model data which handles cutoffs for uncommon
  * contextual predicates and provides a unique integer index for each of the
  * predicates and maintains event values.  
- * @author Tom Morton
  */
 public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 

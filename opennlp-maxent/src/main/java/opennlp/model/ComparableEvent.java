@@ -24,9 +24,6 @@ import java.util.Arrays;
 /**
  * A maxent event representation which we can use to sort based on the
  * predicates indexes contained in the events.
- *
- * @author      Jason Baldridge
- * @version $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
 public class ComparableEvent implements Comparable {
     public int outcome;
