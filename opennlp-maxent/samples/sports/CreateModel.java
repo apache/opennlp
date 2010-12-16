@@ -34,9 +34,6 @@ import opennlp.perceptron.PerceptronTrainer;
 /**
  * Main class which calls the GIS procedure after building the EventStream
  * from the data.
- *
- * @author  Chieu Hai Leong and Jason Baldridge
- * @version $Revision: 1.7 $, $Date: 2008-11-06 20:00:34 $
  */
 public class CreateModel {
 

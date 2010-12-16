@@ -24,9 +24,6 @@ package opennlp.maxent;
  * the executable jar doesn't actually execute anything but the
  * message telling the user that the jar doesn't execute anything
  * but...
- *
- * @author      Jason Baldridge
- * @version $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $ 
 */
 public class Main {
 
