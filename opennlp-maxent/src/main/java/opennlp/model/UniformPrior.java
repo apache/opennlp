@@ -21,8 +21,6 @@ package opennlp.model;
 
 /**
  * Provide a maximum entropy model with a uniform prior.
- * @author Tom Morton
- *
  */
 public class UniformPrior implements Prior {
 

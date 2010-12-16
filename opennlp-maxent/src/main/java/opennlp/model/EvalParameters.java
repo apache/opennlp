@@ -22,8 +22,6 @@ package opennlp.model;
  /**
  * This class encapsulates the varibales used in producing probabilities from a model 
  * and facilitaes passing these variables to the eval method.
- * @author Tom Morton
- *
  */
 public class EvalParameters {
   

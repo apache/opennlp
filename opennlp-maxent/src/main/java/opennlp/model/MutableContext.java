@@ -24,8 +24,6 @@ import java.util.Arrays;
 /**
  * Class used to store parameters or expected values associated with this context which
  * can be updated or assigned. 
- * 
- * @author Tom Morton
  */
 public class MutableContext extends Context {
 

@@ -23,8 +23,6 @@ package opennlp.model;
  * Class which associates a real valued parameter or expected value with a particular contextual
  * predicate or feature.  This is used to store maxent model parameters as well as model and empirical
  * expected values.
- * @author Tom Morton
- *
  */
 public class Context {
 

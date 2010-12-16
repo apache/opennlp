@@ -21,9 +21,6 @@ package opennlp.model;
 
 /**
  * An interface for objects which read events during training.
- *
- * @author      Jason Baldridge
- * @version $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
 public interface EventCollector {
 

@@ -33,8 +33,6 @@ import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 /** 
  * Class for using a file of events as an event stream.  The format of the file is one event perline with
  * each line consisting of outcome followed by contexts (space delimited).
- * @author Tom Morton
- *
  */
 public class FileEventStream extends  AbstractEventStream {
 
