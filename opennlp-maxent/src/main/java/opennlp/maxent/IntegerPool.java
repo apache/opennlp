@@ -24,11 +24,6 @@ package opennlp.maxent;
  * A pool of read-only, unsigned Integer objects within a fixed,
  * non-sparse range.  Use this class for operations in which a large
  * number of Integer wrapper objects will be created.
- *
- * Created: Sat Oct 27 10:59:11 2001
- *
- * @author Eric Friedman
- * @version $Id: IntegerPool.java,v 1.2 2010-09-06 08:02:18 joernkottmann Exp $
  */
 
 public class IntegerPool {

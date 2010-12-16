@@ -40,16 +40,9 @@ import opennlp.tools.util.StringList;
  * This tool helps create a loadable dictionary for the {@code NameFinder},
  * from data collected from US Census data.
  * <p>
- * --------------------------------------------------------------------------
- * <br>
  * Data for the US Census and names can be found here for the 1990 Census:
  * <br>
  * <a href="http://www.census.gov/genealogy/names/names_files.html">www.census.gov</a>
- * <br>
- * --------------------------------------------------------------------------
- * 
- * @author <a href="mailto:james.kosin.04@cnu.edu">James Kosin</a>
- * @version $Revision: 1.7 $, $Date: 2010-09-18 02:37:06 $
  */
 public class CensusDictionaryCreatorTool implements CmdLineTool {
 

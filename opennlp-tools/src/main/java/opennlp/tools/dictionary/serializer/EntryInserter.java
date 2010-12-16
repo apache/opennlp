@@ -20,11 +20,6 @@ package opennlp.tools.dictionary.serializer;
 
 import opennlp.tools.util.InvalidFormatException;
 
-/**
- *
- * @author <a href="mailto:kottmann@gmail.com">Joern Kottmann</a>
- * @version $Revision: 1.2 $, $Date: 2009-01-24 01:34:54 $
- */
 public interface EntryInserter {
 
   /**
