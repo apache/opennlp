@@ -25,8 +25,6 @@ import org.junit.Test;
 
 /**
  * This is the test class for {@link NameSample}.
- * 
- * @author William Colen
  */
 public class NameSampleTest {
   

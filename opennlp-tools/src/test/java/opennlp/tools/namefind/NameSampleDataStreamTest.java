@@ -42,8 +42,6 @@ import org.junit.Test;
 
 /**
  * This is the test class for {@link NameSampleDataStream}..
- * 
- * @author William Colen
  */
 public class NameSampleDataStreamTest {
 
