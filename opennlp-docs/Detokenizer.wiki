@@ -1,0 +1,13 @@
+The page describes how to use the OpenNLP Detokenizer.
+
+= Detokenization =
+The Detokenizer undos the tokenization of a sentence.
+It assigns to every token an operation which describes how it should be attached to
+one long character sequence which represents the original sentence.  
+
+== Detokenizer Tool ==
+TBD
+== Detokenizer API ==
+TBD
+== Rule Dictionary ==
+TBD

@@ -1,0 +1,260 @@
+This page describes how to train and use OpenNLP models for sentence detection and tokenization. The goal is to take text that looks like this:
+
+<blockquote>
+''Pierre Vinken, 61 years old, will join the board as a nonexecutive director Nov. 29.  Mr. Vinken is chairman of Elsevier N.V., the Dutch publishing group.  Rudolph Agnew, 55 years old and former chairman of Consolidated Gold Fields PLC, was named a nonexecutive director of this British industrial conglomerate.  A form of asbestos once used to make Kent cigarette filters has caused a high percentage of cancer deaths among a group of workers exposed to it more than 30 years ago, researchers reported.''
+</blockquote>
+
+And turn it into text that looks like this:
+
+<blockquote>
+Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .<br>
+Mr. Vinken is chairman of Elsevier N.V. , the Dutch publishing group .<br>
+Rudolph Agnew , 55 years old and former chairman of Consolidated Gold Fields PLC , was named a nonexecutive director of this British industrial conglomerate .<br>
+A form of asbestos once used to make Kent cigarette filters has caused a high percentage of cancer deaths among a group of workers exposed to it more than 30 years ago , researchers reported .<br>
+</blockquote>
+
+Most part-of-speech taggers, parsers and so on, work with text tokenized in this manner. It is important to ensure that your tokenizer produces tokens of the type expected by your later text processing components.
+
+With OpenNLP (as with many systems), tokenization is a two-stage process: first, sentence boundaries are identified, then tokens within each sentence are identified. As such, this tutorial will deal with both.
+
+= Data Preparation =
+
+We'll use the portion of the Penn Treebank that is freely distributed with the NLTK datasets as an example. 
+Download the [http://www.nltk.org/data NLTK data] and go to the treebank directory. The content of the directory should look like this:
+
+<pre>
+$ ls
+chunked  parsed  raw  README
+</pre>
+
+We only need the ''raw'' file here. Here's what it looks like:
+
+<pre>
+$ more raw
+Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .
+
+Mr. Vinken is chairman of Elsevier N.V. , the Dutch publishing group .
+
+Rudolph Agnew , 55 years old and former chairman of Consolidated Gold Fields PLC , was na
+med a nonexecutive director of this British industrial conglomerate .
+
+A form of asbestos once used to make Kent cigarette filters has caused a high percentage 
+of cancer deaths among a group of workers exposed to it more than 30 years ago , research
+ers reported .
+</pre>
+
+Of course, this is actually tokenized, not raw. This is an artifact of the process of creating the treebank that seems to be pretty common with other treebank releases. This means we'll need to "reverse" the tokenization -- more on that later.
+
+== Create training and development sets ==
+
+First, we need to split the raw file into a train and dev set so that you can follow along and make sure your trained model gets the same result. We strip out the empty lines and use files with one sentence per line (spl). Then we use 3000 sentence for training and the remaining 896 for development to evaluate the model's performance.
+
+<pre>
+$ grep -v "^$" raw > raw_spl.txt
+$ wc raw_spl.txt 
+  3896  93427 513928 raw_spl.txt
+$ head -3000 raw_spl.txt > train_spl.txt
+$ tail -896 raw_spl.txt > dev_spl.txt
+</pre>
+
+== Create training and development files formatted for model training ==
+
+First, get the [[Detokenizing script]] set-up. After that, the contents of your ''treebank'' directory should look like this:
+
+<pre>
+$ ls
+chunked                   dev_spl.txt  raw          README
+createTokTrainingData.pl  parsed       raw_spl.txt  train_spl.txt
+</pre>
+
+Next, creating training material for sentence detection:
+
+<pre>
+$ ./createTokTrainingData.pl train_spl.txt > train_sentdetect.txt
+$ ./createTokTrainingData.pl dev_spl.txt > dev_sentdetect.txt 
+</pre>
+
+Finally, create training material for tokenization:
+
+<pre>
+$ ./createTokTrainingData.pl train_spl.txt -s > train_tokenize.txt 
+$ ./createTokTrainingData.pl dev_spl.txt -s > dev_tokenize.txt 
+</pre>
+
+Your directory should now look like this:
+
+<pre>
+$ ls
+chunked                   dev_tokenize.txt  raw_spl.txt           train_tokenize.txt
+createTokTrainingData.pl  foo               README
+dev_sentdetect.txt        parsed            train_sentdetect.txt
+dev_spl.txt               raw               train_spl.txt
+</pre>
+
+= Sentence detection =
+
+Train a model and save it as ''sentdetect.model''.
+
+<pre>
+$ opennlp SentenceDetectorTrainer -lang en -encoding UTF-8 -data train_sentdetect.txt -model sentdetect.model
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 4883 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 4883 events to 2945.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 2945
+	    Number of Outcomes: 2
+	  Number of Predicates: 467
+...done.
+Computing model parameters...
+Performing 100 iterations.
+  1:  .. loglikelihood=-3384.6376826743144	0.38951464263772273
+  2:  .. loglikelihood=-2191.9266688597672	0.9397911120212984
+  3:  .. loglikelihood=-1645.8640771555981	0.9643661683391358
+  4:  .. loglikelihood=-1340.386303774519	0.9739913987302887
+  5:  .. loglikelihood=-1148.4141548519624	0.9748105672742167
+
+ ...<skipping a bunch of iterations>...
+
+ 95:  .. loglikelihood=-288.25556805874436	0.9834118369854598
+ 96:  .. loglikelihood=-287.2283680343481	0.9834118369854598
+ 97:  .. loglikelihood=-286.2174830344526	0.9834118369854598
+ 98:  .. loglikelihood=-285.222486981048	0.9834118369854598
+ 99:  .. loglikelihood=-284.24296917223916	0.9834118369854598
+100:  .. loglikelihood=-283.2785335773966	0.9834118369854598
+Wrote sentence detector model.
+Path: <PATH-TO-TREEBANK>/sentdetect.model
+</pre>
+
+Finally, evaluate it on the development set:
+
+<pre>
+$ opennlp SentenceDetectorEvaluator -encoding UTF-8 -model sentdetect.model -data dev_sentdetect.txt 
+Loading model ... done
+Evaluating ... done
+
+Precision: 0.9465737514518002
+Recall: 0.9095982142857143
+F-Measure: 0.9277177006260672
+</pre>
+
+Of course, you'll likely want to use it on raw text to find sentence boundaries. If you have such text in a file called <code>my_raw_text_file.txt</code>, you need only do:
+
+<pre>
+$ opennlp SentenceDetector sentdetect.model < my_raw_text_file.txt | more
+</pre>
+
+To try it out right away, you can take away all of the breaks in the development file <code>dev_sentdetect.txt</code>:
+
+<pre>
+$ tr '\n' ' ' < dev_sentdetect.txt | perl -pe "s/$/\n\n/" > dev_no_breaks.txt
+</pre>
+
+(The perl call is to pad two newlines to the end of the file, since the SentenceDetector code doesn't seem to want to process something which has just a single line -- probably should be fixed.)
+
+Then, run the sentence detector model on it:
+
+<pre>
+$ opennlp SentenceDetector sentdetect.model < dev_no_breaks.txt | more
+Loading model ... done
+Showa Shell gained 20 to 1,570 and Mitsubishi Oil rose 50 to 1,500.
+Sumitomo Metal Mining fell five yen to 692 and Nippon Mining added 15 to 960.
+Among other winners Wednesday was Nippon Shokubai, which was up 80 at 2,410.
+Marubeni advanced 11 to 890.
+London share prices were bolstered largely by continued gains on Wall Street and technical factors affecting demand for London's blue-chip stocks.
+...etc...
+</pre>
+
+= Tokenization =
+
+Train a model and save it as ''tokenize.model'':
+
+<pre>
+$ opennlp TokenizerTrainer -lang en -encoding UTF-8 -data train_tokenize.txt -model tokenize.model
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 262271 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 262271 events to 59060.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 59060
+	    Number of Outcomes: 2
+	  Number of Predicates: 15695
+...done.
+Computing model parameters...
+Performing 100 iterations.
+  1:  .. loglikelihood=-181792.40419263614	0.9614292087192255
+  2:  .. loglikelihood=-34208.094253153664	0.9629238459456059
+  3:  .. loglikelihood=-18784.123872910015	0.9729211388220581
+  4:  .. loglikelihood=-13246.88162585859	0.9856103038460219
+  5:  .. loglikelihood=-10209.262670265718	0.9894422181636552
+
+ ...<skipping a bunch of iterations>...
+
+ 95:  .. loglikelihood=-769.2107474529454	0.999511955191386
+ 96:  .. loglikelihood=-763.8891914534009	0.999511955191386
+ 97:  .. loglikelihood=-758.6685383254891	0.9995157680414533
+ 98:  .. loglikelihood=-753.5458314695236	0.9995157680414533
+ 99:  .. loglikelihood=-748.5182305519613	0.9995157680414533
+100:  .. loglikelihood=-743.5830058068038	0.9995157680414533
+Wrote tokenizer model.
+Path: <PATH-TO-TREEBANK>/tokenize.model
+</pre>
+
+
+Evaluate it on the development set:
+
+<pre>
+$ opennlp TokenizerMEEvaluator -encoding UTF-8 -model tokenize.model -data dev_tokenize.txt 
+Loading model ... done
+Evaluating ... done
+
+Precision: 0.9961179896496408
+Recall: 0.9953222453222453
+F-Measure: 0.9957199585032571
+</pre>
+
+The model is now ready to deal with texts that have been split into sentences. Here's an easy way to get some text to play with:
+
+<pre>
+$ perl -pe "s/<SPLIT>//g" < dev_tokenize.txt > dev_no_splits.txt
+</pre>
+
+Now run the model on it:
+
+<pre>
+$ opennlp TokenizerME tokenize.model < dev_no_splits.txt | more
+Loading model ... done
+Showa Shell gained 20 to 1,570 and Mitsubishi Oil rose 50 to 1,500.
+Sumitomo Metal Mining fell five yen to 692 and Nippon Mining added 15 to 960 .
+Among other winners Wednesday was Nippon Shokubai , which was up 80 at 2,410 .
+Marubeni advanced 11 to 890 .
+London share prices were bolstered largely by continued gains on Wall Street and technica
+l factors affecting demand for London 's blue-chip stocks .
+...etc...
+</pre>
+
+= Sentence splitting and tokenization together =
+
+Since most text comes truly raw and doesn't have sentence boundaries and such, you can pipe the two models just created above together to go from raw texts to ones which have one-sentence per line and are tokenized. 
+
+Recall that we created such a raw file above, called <code>dev_no_breaks.txt</code>. The following will produce 
+
+<pre>
+$ opennlp SentenceDetector sentdetect.model < dev_no_breaks.txt | opennlp TokenizerME tokenize.model | more
+Loading model ... Loading model ... done
+done
+Showa Shell gained 20 to 1,570 and Mitsubishi Oil rose 50 to 1,500.
+Sumitomo Metal Mining fell five yen to 692 and Nippon Mining added 15 to 960 .
+Among other winners Wednesday was Nippon Shokubai , which was up 80 at 2,410 .
+Marubeni advanced 11 to 890 .
+London share prices were bolstered largely by continued gains on Wall Street and technical factors affecting demand for London 's blue-chip stocks .
+...etc...
+</pre>
+
+Of course this is all on the command line. Many people use the models directly in their Java code by creating SentenceDetector and Tokenizer objects and calling their methods as appropriate.

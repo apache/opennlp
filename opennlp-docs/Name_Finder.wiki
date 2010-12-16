@@ -1,0 +1,305 @@
+The page describes how to use the OpenNLP Name Finder.
+
+= Detecting Names =
+
+The Name Finder can detect named entities and numbers in text. 
+
+To be able to detect entities the Name Finder needs a model.
+The model is dependent on the language and entity type it was trained
+for. The OpenNLP projects offers a number of pre-trained name finder models
+which are trained on various freely available corpora. They can be downloaded
+at our  [http://opennlp.sourceforge.net/models-1.5/en-ner-person.bin model download page].
+
+To find names in raw text the text must be segmented into tokens
+and sentences. A detailed description is given in the sentence detector
+and tokenizer tutorial. Its important that the tokenization for the training
+data and the input text is identical.
+
+== Name Finder Tool ==
+The easiest way to try out the Name Finder is the command line tool. The tool
+is only intended for demonstration and testing.
+
+Download the [http://opennlp.sourceforge.net/models-1.5/en-ner-person.bin english person model] and start 
+the Name Finder Tool with this command:
+<pre>
+bin/opennlp TokenNameFinder en-ner-person.bin
+</pre>
+
+The name finder now reads a tokenized sentence per line from stdin,
+an empty line indicates a document boundary and resets the adaptive
+feature generators.
+
+Just copy this text to the terminal:
+<pre>
+Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .
+Mr . Vinken is chairman of Elsevier N.V. , the Dutch publishing group .
+Rudolph Agnew , 55 years old and former chairman of Consolidated Gold Fields PLC , was named a director of this British industrial conglomerate .
+
+</pre>
+
+the name finder will now output the text with markup for
+person names:
+<pre>
+<START:person> Pierre Vinken <END> , 61 years old , will join the board as a nonexecutive director Nov. 29 .
+Mr . <START:person> Vinken <END> is chairman of Elsevier N.V. , the Dutch publishing group .
+<START:person> Rudolph Agnew <END> , 55 years old and former chairman of Consolidated Gold Fields PLC , was named a director of this British industrial conglomerate .
+
+</pre>
+
+== Name Finder API ==
+To use the Name Finder in a production system its strongly recommended
+to embed it directly into the application instead of using the command line interface.
+
+First the name finder model must be loaded into memory from disk or an other source.
+In the sample below its loaded from disk.
+<pre>
+InputStream modelIn = new FileInputStream("en-ner-person.bin");
+
+try {
+  TokenNameFinder model = new TokenNameFinderModel(modelIn);
+}
+catch (IOException e) {
+  e.printStackTrace();
+}
+finally {
+  if (modelIn != null) {
+    try {
+      modelIn.close();
+    }
+    catch (IOException e) {
+    }
+  }
+}
+</pre>
+
+There is a number of reasons why the model loading can fail:
+* Issues with the underlying I/O
+* The version of the model is not compatible with the OpenNLP version
+* The model is loaded into the wrong component, for example a tokenizer model is loaded with TokenNameFinderModel class.
+* The model content is not valid for some other reason
+
+After the model is loaded the NameFinderME can be instantiated.
+
+<pre>
+NameFinderME nameFinder = new NameFinderME(model);
+</pre>
+
+The initialization is now finished and the Name Finder can be used.
+The NameFinderME class is not thread safe, it must only be called from one thread. To use multiple
+threads multiple NameFinderME instances sharing the same model instance can be created.
+
+The input text should be segmented into documents, sentences
+and tokens. 
+
+To perform entity detection an application calls the find method for every sentence in the document. 
+After every document clearAdaptiveData must be called to clear the adaptive data in the feature generators.
+Not calling clearAdaptiveData can lead to a sharp drop in the detection rate after a few documents.
+
+The following code illustrates that:
+<pre>
+for (String document[][] : documents) {
+
+  for (String[] sentence : document) {
+    Span nameSpans[] = find(sentence);
+    // do something with the names
+  }
+
+  nameFinder.clearAdaptiveData()
+}
+</pre>
+
+the following snippet shows a call to find
+<pre>
+String sentence = new String[]{
+    "Pierre",
+    "Vinken",
+    "is",
+    "61",
+    "years"
+    "old",
+    "."
+    };
+
+Span nameSpans[] = nameFinder.find(sentence);
+
+</pre>
+ 
+The nameSpans arrays contains now exactly one Span which marks the name Pierre Vinken. The elements
+between the begin and end offsets are the name tokens. In this case the begin offset is 0 and the end offset is 2.
+The Span object also knows the type of the entity. In this case its person (defined by the model). It can be retrieved
+with a call to Span.getType().
+
+Additionally to the statistical Name Finder, OpenNLP also offers a dictionary and a regular expression name finder implementation.
+
+TODO: Explain how to retrieve probs from the name finder for names and for non recognized names
+
+= Training =
+The pre-trained models might not be available for a desired language, can not
+detect important entities or the performance is not good enough outside the news domain.
+
+These are the typical reason to do custom training of the name finder on a new corpus
+or on a corpus which is extended by private training data taken from the data which
+should be analyzed.
+
+== Training Tool ==
+
+OpenNLP has a command line tool which is used to train the models available from
+the model download page on various corpora.
+
+The data must be converted to the OpenNLP name finder training format.
+Which is one sentence per line. The sentence must be tokenized and contain spans which mark the
+entities. Documents are separated by empty lines which trigger the reset of the adaptive feature
+generators. A training file can contain multiple types. If the training file contains multiple types
+the created model will also be able to detect these multiple types.
+For now its recommended to only train single type models, since multi type support is
+stil experimental.
+
+Sample sentence of the data:
+<pre>
+<START:person> Pierre Vinken <END> , 61 years old , will join the board as a nonexecutive director Nov. 29 .
+Mr . <START:person> Vinken <END> is chairman of Elsevier N.V. , the Dutch publishing group .
+</pre>
+
+The training data should contain at least 15000 sentences to create a model which performs well.
+
+Usage of the tool:
+<pre>
+$ bin/opennlp TokenNameFinderTrainer
+Usage: opennlp TokenNameFinderTrainer -lang language -encoding charset [-iterations num] [-cutoff num] [-type type] -data trainingData -model model
+-lang language     specifies the language which is being processed.
+-encoding charset  specifies the encoding which should be used for reading and writing text.
+-iterations num    specified the number of training iterations
+-cutoff num        specifies the min number of times a feature must be seen
+-type The type of the token name finder model
+</pre>
+
+Its now assumed that the english person name finder model should be trained from a file
+called en-ner-person.train which is encoded as UTF-8.
+The following command will train the name finder and write the model to en-ner-person.bin:
+<pre>
+bin/opennlp TokenNameFinderTrainer -encoding UTF-8 -lang en -data en-ner-person.train -model en-ner-person.bin
+</pre>
+
+Additionally its possible to specify the number of iterations, the cutoff and to overwrite all types in the training data with a single type.
+
+== Training API ==
+To train the name finder from within an application its recommended to use the training API instead
+of the command line tool.
+
+Basically three steps are necessary to train it:
+* The application must open a sample data stream
+* Call the NameFinderME.train method
+* Save the TokenNameFinderModel to a file or database
+
+The three steps are illustrated by the following sample code:
+<pre>
+ObjectStream<String> lineStream = new PlainTextByLineStream(new FileInputStream("en-ner-person.train"), "UTF-8");
+ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream);
+
+TokenNameFinderModel model = NameFinderME.train("en", "person", sampleStream, Collections.<String, Object>emptyMap(), 100, 5);
+
+try {
+  modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+  model.serialize(modelOut);
+} finally {
+  if (modelOut != null) 
+     modelOut.close();      
+}
+</pre>
+
+== Custom Feature Generation ==
+OpenNLP defines a default feature generation which is used when no custom feature generation is specified.
+Users which want to experiment with the feature generation can provide a custom feature generator.
+The custom generator must be used for training and for detecting the names. If the feature generation during
+training time and detection time is different the name finder might not be able to detect names.
+
+The following lines show how to construct a custom feature generator
+<pre>
+AdaptiveFeatureGenerator featureGenerator = new CachedFeatureGenerator(
+         new AdaptiveFeatureGenerator[]{
+           new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
+           new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
+           new OutcomePriorFeatureGenerator(),
+           new PreviousMapFeatureGenerator(),
+           new BigramNameFeatureGenerator(),
+           new SentenceFeatureGenerator(true, false)
+           });
+</pre>
+which is similar to the default feature generator.
+
+The javadoc of the feature generator classes explain what the individual feature generators do.
+To write a custom feature generator please implement the AdaptiveFeatureGenerator interface
+or if it must not be adaptive extend the FeatureGeneratorAdapter.
+
+The train method which should be used is defined as
+<pre>
+public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
+       AdaptiveFeatureGenerator generator, final Map<String, Object> resources, 
+       int iterations, int cutoff) throws IOException
+</pre>
+and can take feature generator as an argument.
+
+To detect names the model which was returned from the train method
+and the feature generator must be passed to the NameFinderME constructor.
+
+<pre>
+new NameFinderME(model, featureGenerator, NameFinderME.DEFAULT_BEAM_SIZE);
+</pre>
+
+== Named Entity Annotation Guidelines ==
+Annotation guidelines define what should be labeled as an entity. To build a private corpus
+its important to know these guidelines and maybe write a custom one. 
+
+Here is a list of publicly available annotation guidelines:
+* [http://cs.nyu.edu/cs/faculty/grishman/NEtask20.book_1.html MUC6]
+* [http://acl.ldc.upenn.edu/muc7/ne_task.html MUC7]
+* [http://projects.ldc.upenn.edu/ace/docs/English-Entities-Guidelines_v5.6.1.pdf ACE]
+* [http://www.cnts.ua.ac.be/conll2003/ner/annotation.txt CONLL-2003]
+
+= Evaluation =
+
+The built in evaluation can measure the named entity recognition performance of the name finder.
+The performance is either measured on a test dataset or via cross validation.
+
+== Evaluator Tool ==
+
+The following command shows how the tool can be run:
+<pre>
+bin/opennlp TokenNameFinderEvaluator -encoding UTF-8 -model en-ner-person.bin -data en-ner-person.test
+</pre>
+and here is a sample output:
+<pre>
+Precision: 0.8005071889818507
+Recall: 0.7450581122145297
+F-Measure: 0.7717879983140168
+</pre>
+
+Note: The command line interface does not support cross evaluation in the current version.
+
+== Evaluation API ==
+The evaluation can be performed on a pre-trained model and a test dataset or via cross validation.
+
+In the first case the model must be loaded and a NameSample ObjectStream must be created (see code samples above),
+assuming these two objects exist the following code shows how to perform the evaluation:
+
+<pre>
+TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(new NameFinderME(model));
+evaluator.evaluate(sampleStream);
+
+FMeasure result = evaluator.getFMeasure();
+
+System.out.println(result.toString());
+</pre>
+
+In the cross validation case all the training arguments must be provided (see the Training API section above).
+To perform cross validation the ObjectStream must be resettable.
+<pre>
+FileInputStream sampleDataIn = new FileInputStream("en-ner-person.train");
+ObjectStream<NameSample> sampleStream = new PlainTextByLineStream(sampleDataIn.getChannel(), "UTF-8"); 
+TokenNameFinderCrossValidator evaluator = new TokenNameFinderCrossValidator("en", 100, 5);
+evaluator.evaluate(sampleStream, 10);
+
+FMeasure result = evaluator.getFMeasure();
+
+System.out.println(result.toString());
+</pre>

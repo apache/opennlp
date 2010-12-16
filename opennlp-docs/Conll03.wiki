@@ -1,0 +1,88 @@
+This page describes how to create training data out of the Conll03 data.
+
+= CoNLL =
+== What is CoNLL? ==
+CoNLL stands for the Confernece on Computational Natural Language Learning and is not a single project but a consordium of developers attempting to broaden the computing environment.
+More information about the entire conference series can be obtained here for [http://www.cnts.ua.ac.be/conll2003/ CoNLL].
+
+== Data Collection ==
+The CoNLL group has a set of data available that provide the required tools and scripts to generate the training data for the project from the original sources.  This is required; because the sources for the training sets are copyrighted by the respected copyright holders.
+To better understand the data format and the required news articles at [http://www.cnts.ua.ac.be/conll2003/ner/ NER] (Name Entity Recognision) for details.
+<p>English corpus uses the Reuters Corpus released 2000-11-03 Volume I containing articles from 1996-08-20 to 1997-08-19 in the English language.</p>
+<p>German corpus uses (add additional information on this corpus)... </p>
+
+== Creating the Data ==
+Please follow the steps in the [http://www.cnts.ua.ac.be/conll2003/ner/000README README] for the CoNLL-03 data.  You may omit English or German if you do not have the original data for the set.  ''NOTE: German is not yet supported by OpenNLP converter [verification needed].'' 
+<p>Your task is not yet done.  This will generate data for the format for CoNLL-03; however, OpenNLP cannot directly use this data to train or validate the models.
+
+= Using The Collected Data =
+== OpenNLP Name Finder Converter ==
+To convert the information to the OpenNLP format:
+<pre>
+bin/opennlp TokenNameFinderConverter conll03 -data eng.train -lang en -types per > corpus_train.txt
+</pre>
+Optionally, you can convert the training test samples as well.
+<pre>
+bin/opennlp TokenNameFinderConverter conll03 -data eng.testa -lang en -types per > corpus_testa.txt
+bin/opennlp TokenNameFinderConverter conll03 -data eng.testb -lang en -types per > corpus_testb.txt
+</pre>
+
+== Name Finder Training ==
+To train the model for the name finder,
+<pre>
+bin/opennlp TokenNameFinderTrainer -lang en -encoding utf8 -iterations 500 -data corpus_train.txt -model en_ner_person.bin
+</pre>
+<pre>
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 203621 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 203621 events to 179409.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 179409
+	    Number of Outcomes: 3
+	  Number of Predicates: 58814
+...done.
+Computing model parameters...
+Performing 500 iterations.
+  1:  .. loglikelihood=-223700.5328318588	0.9453494482396216
+  2:  .. loglikelihood=-40525.939777363084	0.9467933071736215
+  3:  .. loglikelihood=-24893.98837874921	0.9598518816821447
+  4:  .. loglikelihood=-18420.3379471033	0.9712996203731442
+... cut lots of iterations ...
+498:  .. loglikelihood=-952.8501399442295	0.9988950059178572
+499:  .. loglikelihood=-952.0600155746948	0.9988950059178572
+500:  .. loglikelihood=-951.2722802086295	0.9988950059178572
+Writing name finder model ... done (1.638s)
+
+Wrote name finder model to
+path: .\en_ner_person.bin
+</pre>
+
+== Name Finder Evaluation ==
+Since we created the test A and B files above, we can use them to evaluate the model.
+<pre>
+bin/opennlp TokenNameFinderEvaluator -lang en -encoding utf8 -model en_ner_person.bin -data corpus_testa.txt
+</pre>
+<pre>
+Loading Token Name Finder model ... done (0.359s)
+current: 190.2 sent/s avg: 190.2 sent/s total: 199 sent
+current: 648.3 sent/s avg: 415.9 sent/s total: 850 sent
+current: 530.1 sent/s avg: 453.6 sent/s total: 1380 sent
+current: 793.8 sent/s avg: 539.0 sent/s total: 2178 sent
+current: 705.4 sent/s avg: 571.9 sent/s total: 2882 sent
+
+
+Average: 569.4 sent/s
+Total: 3251 sent
+Runtime: 5.71s
+
+Precision: 0.9366247297154147
+Recall: 0.739956568946797
+F-Measure: 0.8267557582133971
+</pre>
+
+= Important Notes =
+1) The scripts for CoNLL DO NOT work correctly in CYGWIN and will error out when converting the HTML/XML code into plain text.

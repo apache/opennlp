@@ -1,0 +1,235 @@
+The page describes how to use the OpenNLP Tokenizers.
+
+= Tokenization =
+
+The OpenNLP Tokenizers segment an input character sequence into tokens. Tokens are usually words, punctuation, numbers, etc.
+
+The following sample should be tokenized by the english learnable tokenizer.
+<blockquote>
+Pierre Vinken, 61 years old, will join the board as a nonexecutive director Nov. 29.<br>
+Mr. Vinken is chairman of Elsevier N.V., the Dutch publishing group.<br>
+Rudolph Agnew, 55 years old and former chairman of Consolidated Gold Fields PLC, was named a director of this British industrial conglomerate.<br>
+</blockquote>
+
+The following result shows the individual tokens in a whitespace separated representation. 
+<blockquote>
+Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .<br>
+Mr. Vinken is chairman of Elsevier N.V. , the Dutch publishing group .<br>
+Rudolph Agnew , 55 years old and former chairman of Consolidated Gold Fields PLC , was named a nonexecutive  director of this British industrial conglomerate . <br>
+A form of asbestos once used to make Kent cigarette filters has caused a high percentage of cancer deaths among a group of workers exposed to it more than 30 years ago , researchers reported . <br>
+</blockquote>
+
+OpenNLP offers multiple tokenizer implementations:
+* Whitespace Tokenizer - A whitespace tokenizer, non whitespace sequences are identified as tokens
+* Simple Tokenizer - A character class tokenizer, sequences of the same character class are tokens
+* Learnable Tokenizer - A maximum entropy tokenizer, detects token boundaries based on probability model
+
+Most part-of-speech taggers, parsers and so on, work with text tokenized in this manner. It is important to ensure that your tokenizer produces tokens of the type expected by your later text processing components.
+
+With OpenNLP (as with many systems), tokenization is a two-stage process: first, sentence boundaries are identified, then tokens within each sentence are identified.
+
+== Tokenizer Tools ==
+The easiest way to try out the tokenizers are the command line tools. The tools
+are only intended for demonstration and testing.
+
+There are two tools, one for the Simple Tokenizer and one for the learnable tokenizer. 
+A command line tool the for the Whitespace Tokenizer does not exist, because
+the whitespace separated output would be identical to the input.
+
+The following command shows how to use the Simple Tokenizer Tool.
+<pre>
+$ bin/opennlp SimpleTokenizer
+</pre>
+
+To use the learnable tokenizer download the [http://opennlp.sourceforge.net/models-1.5/en-token.bin english token model] from our website.
+<pre>
+$ bin/opennlp TokenizerME en-token.bin
+</pre>
+
+To test the tokenizer copy the sample from above to the console. The whitespace separated tokens will be written written back to the console.
+
+Usually the input is read from a file and written to a file.
+<pre>
+$ bin/opennlp TokenizerME en-token.bin < article.txt > article-tokenized.txt
+</pre>
+It can be done in the same way for the Simple Tokenizer.
+
+Since most text comes truly raw and doesn't have sentence boundaries and such, its possible to create a pipe which first performs sentence boundary detection and tokenization.  The following sample illustrates that.
+<pre>
+$ opennlp SentenceDetector sentdetect.model < article.txt | opennlp TokenizerME tokenize.model | more
+Loading model ... Loading model ... done
+done
+Showa Shell gained 20 to 1,570 and Mitsubishi Oil rose 50 to 1,500.
+Sumitomo Metal Mining fell five yen to 692 and Nippon Mining added 15 to 960 .
+Among other winners Wednesday was Nippon Shokubai , which was up 80 at 2,410 .
+Marubeni advanced 11 to 890 .
+London share prices were bolstered largely by continued gains on Wall Street and technical factors affecting demand for London 's blue-chip stocks .
+...etc...
+</pre>
+
+Of course this is all on the command line. Many people use the models directly in their Java code by creating SentenceDetector and Tokenizer objects and calling their methods as appropriate. The following section will explain how the Tokenizers can be used directly from java.
+
+== Tokenizer API ==
+The Tokenizers can be integrated into an application by the defined API.
+
+The shared instance of the WhitespaceTokenizer can be retrieved from a static
+field WhitespaceTokenizer.INSTANCE. The shared instance of the SimpleTokenizer
+can be retrieved in the same way from SimpleTokenizer.INSTANCE.
+
+To instantiate the TokenizerME (the learnable tokenizer) a Token Model must
+be created first.
+The following code sample shows how a model can be loaded.
+<pre> 
+InputStream modelIn = new FileInputStream("en-token.bin");
+
+try {
+  TokenizerModel model = new TokenizerModel(modelIn);
+}
+catch (IOException e) {
+  e.printStackTrace();
+}
+finally {
+  if (modelIn != null) {
+    try {
+      modelIn.close();
+    }
+    catch (IOException e) {
+    }
+  }
+}
+</pre>
+After the model is loaded the TokenizerME can be instantiated.
+<pre>
+Tokenizer tokenizer = new TokenizerME(model);
+</pre>
+
+The tokenizer offers two tokenize methods, both expect an input String object which contains
+the untokenized text. If possible it should be a sentence, but depending on the training of the
+learnable tokenizer this is not required. 
+The first returns an array of Strings, where each String is one token.
+<pre>
+String tokens[] = tokenizer.tokenize("An input sample sentence.");
+</pre>
+
+The output will be an array with these tokens.
+<pre>
+"An", "input", "sample", "sentence", "."
+</pre>
+
+The second method, tokenizePos returns an array of Spans, each
+Span contain the begin and end character offsets of the token in the
+input String.
+<pre>
+Span tokenSpans[] = tokenizer.tokenizePos("An input sample sentence.");
+</pre>
+The tokenSpans array now contain 5 elements. To get the text for one span
+call Span.getCoveredText which takes a span and the input text.
+
+The TokenizerME is able to output the probabilities for the detected tokens. The getTokenProbabilities
+method must be called directly after one of the tokenize methods was called.
+<pre>
+TokenizerME tokenizer = ...
+
+String tokens[] = tokenizer.tokenize(...);
+double tokenProbs[] = tokenizer.getTokenProbabilities();
+</pre>
+The tokenProbs array now contains one double value per token,
+the value is between 0 and 1, where 1 is the highest possible 
+probability and 0 the lowest possible probability.
+
+= Training =
+== Training Tool==
+OpenNLP has a command line tool which is used to train the models available from the model download page on various corpora. The data must be converted to the OpenNLP Tokenizer training format. Which is one sentence per line. Tokens are either separater by a whitespace or if by a special <SPLIT> tag.
+
+The following sample shows the sample from above in the correct format.
+<blockquote>
+Pierre Vinken<SPLIT>, 61 years old<SPLIT>, will join the board as a nonexecutive director Nov. 29<SPLIT>.<br>
+Mr. Vinken is chairman of Elsevier N.V.<SPLIT>, the Dutch publishing group<SPLIT>.<br>
+Rudolph Agnew<SPLIT>, 55 years old and former chairman of Consolidated Gold Fields PLC<SPLIT>, was named a nonexecutive  director of this British industrial conglomerate<SPLIT>. <br>
+</blockquote>
+
+Usage of the tool:
+<pre>
+$ bin/opennlp TokenizerTrainer
+Usage: opennlp TokenizerTrainer-lang language -encoding charset [-iterations num] [-cutoff num] [-alphaNumOpt] -data trainingData -model model
+-lang language     specifies the language which is being processed.
+-encoding charset  specifies the encoding which should be used for reading and writing text.
+-iterations num    specified the number of training iterations
+-cutoff num        specifies the min number of times a feature must be seen
+-alphaNumOpt Optimization flag to skip alpha numeric tokens for further tokenization
+</pre>
+
+To train the english tokenizer use the following command:
+<pre>
+$ bin/opennlp TokenizerTrainer -encoding UTF-8 -lang en -alphaNumOpt -data en-token.train -model en-token.bin
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 262271 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 262271 events to 59060.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 59060
+	    Number of Outcomes: 2
+	  Number of Predicates: 15695
+...done.
+Computing model parameters...
+Performing 100 iterations.
+  1:  .. loglikelihood=-181792.40419263614	0.9614292087192255
+  2:  .. loglikelihood=-34208.094253153664	0.9629238459456059
+  3:  .. loglikelihood=-18784.123872910015	0.9729211388220581
+  4:  .. loglikelihood=-13246.88162585859	0.9856103038460219
+  5:  .. loglikelihood=-10209.262670265718	0.9894422181636552
+
+ ...<skipping a bunch of iterations>...
+
+ 95:  .. loglikelihood=-769.2107474529454	0.999511955191386
+ 96:  .. loglikelihood=-763.8891914534009	0.999511955191386
+ 97:  .. loglikelihood=-758.6685383254891	0.9995157680414533
+ 98:  .. loglikelihood=-753.5458314695236	0.9995157680414533
+ 99:  .. loglikelihood=-748.5182305519613	0.9995157680414533
+100:  .. loglikelihood=-743.5830058068038	0.9995157680414533
+Wrote tokenizer model.
+Path: en-token.bin
+</pre>
+
+== Training API ==
+The TokenizerME also offers an API to train a new token model.
+Basically three steps are necessary to train it:
+* The application must open a token sample data stream
+* Call the TokenizerME.train method
+* Save the TokenizerModel to a file 
+
+The following sample code illustrates these steps:
+<pre>
+ObjectStream<String> lineStream = new PlainTextByLineStream(new FileInputStream("en-sent.train"), "UTF-8");
+ObjectStream<TokenSample> sampleStream = new TokenSampleStream(lineStream);
+
+TokenizerModel model = TokenizerME.train("en",sampleStream, true, 5, 100);
+
+try {
+  modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+  model.serialize(modelOut);
+} finally {
+  if (modelOut != null) 
+     modelOut.close();      
+}
+</pre>
+
+== Custom Feature Generation ==
+TBD
+
+=Evaluation=
+==Evaluator Tool==
+The command shows how the evaluator tool can be run:
+<pre>
+$ opennlp TokenizerMEEvaluator -encoding UTF-8 -model en-token.bin -data en-token.eval
+Loading model ... done
+Evaluating ... done
+
+Precision: 0.9961179896496408
+Recall: 0.9953222453222453
+F-Measure: 0.9957199585032571
+</pre>
+The en-token.eval file has the same format as the training data.

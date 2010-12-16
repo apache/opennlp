@@ -1,0 +1,65 @@
+The page describes how to use the OpenNLP Part of Speech Tagger.
+
+= Part of Speech Tagging =
+The Part of Speech Tagger marks tokens with their corresponding word type based on the token itself and the context of the token. A token can have multiple pos tags depending on the token and the context. The OpenNLP POS Tagger uses a probability model to guess the correct pos tag out of the tag set. 
+To limit the possible tags for a token a tag dictionary can be used which increases the tagging and runtime performance of the tagger.
+
+== POS Tagger Tool ==
+The easiest way to try out the POS Tagger is the command line tool. The tool is only intended for demonstration and testing.
+
+Download the [http://opennlp.sourceforge.net/models-1.5/en-pos-maxent.bin english maxent pos model] 
+and start the POS Tagger Tool with this command:
+
+<pre>
+bin/opennlp POSTagger en-pos-maxent.bin
+</pre>
+
+The POS Tagger now reads a tokenized sentence per line from stdin.
+
+Copy these two sentences to the console:
+<pre>
+Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .
+Mr. Vinken is chairman of Elsevier N.V. , the Dutch publishing group .
+</pre>
+
+the POS Tagger will now echo the sentences with pos tags to the console:
+<pre>
+Pierre_NNP Vinken_NNP ,_, 61_CD years_NNS old_JJ ,_, will_MD join_VB the_DT board_NN as_IN a_DT nonexecutive_JJ director_NN Nov._NNP 29_CD ._.
+Mr._NNP Vinken_NNP is_VBZ chairman_NN of_IN Elsevier_NNP N.V._NNP ,_, the_DT Dutch_NNP publishing_VBG group_NN
+</pre>
+
+The tag set used by the english pos model is the Penn Treebank tag set. See the link below for a description of the tags.
+
+== POS Tagger API ==
+
+== Public Tag Sets ==
+* [http://en.wikipedia.org/wiki/Brown_Corpus#Part-of-speech_tags_used Brown Corpus Tags]
+* [http://www.ims.uni-stuttgart.de/projekte/CorpusWorkbench/CQP-HTMLDemo/PennTreebankTS.html Penn Treebank Tags]
+
+TODO: Add more tag sets, also for non-english languages
+
+= Training =
+== Training Tool ==
+== Training API ==
+
+== Custom Feature Generation ==
+= Evaluation =
+
+The tagging performance is measured as an accuracy. The accuracy score is the ratio of the number of  correctly tagged tokens out
+of the totally tagged tokens. 
+
+<math>\mbox{Accurarcy} = \frac{\mbox{correctly tagged tokens}}{\mbox{total tokens}}</math>
+== Evaluator Tool ==
+This is also very easy, given that you have more annotated material available.
+
+<pre>
+$ opennlp POSTaggerEvaluator -encoding utf-8 -model english.postagger.model -data dev.pos 
+Loading model ... done
+Evaluating ... done
+
+Accuracy: 0.9657527774403002
+</pre>
+
+Which is pretty standard performance for this sort of tagger.
+
+== Evaluator API ==

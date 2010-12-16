@@ -1,0 +1,157 @@
+The page describes how to train and use a POS tagger with OpenNLP.
+
+= Get OpenNLP from CVS =
+
+
+This tutorial assumes you are working with the code in the CVS (a new release is in the works). Instructions to get it are available on [https://sourceforge.net/scm/?type=cvs&group_id=3368 the Sourceforge page for OpenNLP's CVS]. You want the 'OpenNLP' module.
+
+After you have done that, make sure to follow the instructions in the README.
+
+= Get data =
+
+You need a corpus of words that have each been labeled with a part-of-speech. In computational linguistics, the standard dataset for this is the Penn Treebank. Many people will not have access to this dataset due to the cost, but this tutorial will work an example with it that should apply to other datasets.
+
+You should have at least a training set and a test set, both of which contain words and their annotated tags. The training set will be used to teach the POS tagger, and the test set will be used to evaluate its accuracy on data it didn't get to learn on. Ideally, you'd also have a development set so you can try out different parameters and such, but that may not be possible in all cases and doesn't matter as much if you aren't publishing papers.
+
+The form of the annotated data is ''word1_tag1 word2_tag2 ... wordN_tagN'', with one sentence per line, e.g.: (Note: the word/tag separator will probably be made a configurable option soon.)
+
+<pre>
+Pierre_NNP Vinken_NNP ,_, 61_CD years_NNS old_JJ ,_, will_MD join_VB the_DT board_NN as_IN a_DT nonexecutive_JJ director_NN Nov._NNP 29_CD ._.
+Mr._NNP Vinken_NNP is_VBZ chairman_NN of_IN Elsevier_NNP N.V._NNP ,_, the_DT Dutch_NNP publishing_VBG group_NN ._.
+Rudolph_NNP Agnew_NNP ,_, 55_CD years_NNS old_JJ and_CC former_JJ chairman_NN of_IN Consolidated_NNP Gold_NNP Fields_NNP PLC_NNP ,_, was_VBD named_VBN a_DT nonexecutive_JJ director_NN of_IN this_DT British_JJ industrial_JJ conglomerate_NN ._.
+</pre>
+
+In what follows, we'll refer to the annotated files as <code>train.pos</code>, <code>dev.pos</code>, and <code>test.pos</code>.  The data being used below is the Wall Street Journal portion of the Penn Treebank, with:
+
+* train.pos: sections 00-18
+* dev.pos: sections 19-21
+* test.pos: sections 22-24
+
+These are standardly used sections in much published part-of-speech tagging research. 
+
+'''Tip''': Here's how to convert from the PTB *.pos format to this one, including creating the train, dev and test sets.
+
+Save the following as <code>/tmp/make_tagger_format.sh</code>:
+<pre>
+cat $1 | tr -s '[]\n' ' ' | perl -pe "s/==+/\n/g" | tr -s ' ' ' ' | perl -pe "s/_/UNDERSCORE/g" | perl -pe "s/(.\/\.)[^\n](\w)/\1\n\2/g" | perl -pe "s/([^\\\\])\//\1_/g" | perl -pe "s/^ //g" | perl -pe "s/\s+\n$/\n/g" | perl -pe "s/^\s+//g"
+</pre>
+
+Make it executable:
+<pre>
+$ cd /tmp
+$ chmod a+x make_tagger_format.sh
+</pre>
+
+Now go to your copy of the Penn Treebank and do the following commands.
+
+<pre>
+$ cd <PATH_TO_TREEBANK>/penn-treebank-rel3/tagged/pos/wsj/
+$ cat 0[0-9]/* > /tmp/wsj.train.pos
+$ cat 1[0-8]/* >> /tmp/wsj.train.pos
+$ cat 19/* > /tmp/wsj.dev.pos
+$ cat 2[01]/* >> /tmp/wsj.dev.pos
+$ cat 2[2-4]/* > /tmp/wsj.test.pos
+$ cd /tmp
+$ cat wsj.train.pos | ./make_tagger_format.sh > train.pos
+$ cat wsj.dev.pos | ./make_tagger_format.sh > dev.pos
+$ cat wsj.test.pos | ./make_tagger_format.sh > test.pos
+</pre>
+
+Some free datasets with POS tag annotations are available, see the links from the [http://alias-i.com/lingpipe/demos/tutorial/posTags/read-me.html LingPipe tutorial for part-of-speech tagging]. (This tutorial will probably be updated to use one or more of them.) 
+
+Datasets with part-of-speech tags for several other languages are available from [http://nextens.uvt.nl/~conll/free_data.html the CoNLL-X Shared Task site].
+
+The [http://code.google.com/p/copenhagen-dependency-treebank/wiki/CDT Copenhagen Dependency Treebank] promises to deliver even more freely available annotations, for English, Italian, Spanish and German -- expected delivery of Fall 2010.
+
+= Train a tagging model =
+
+Training a model is very simple. Assuming the <code>train.pos</code> annotated file is in your current working directory, the following should work:
+
+<pre>
+$ opennlp POSTaggerTrainer -lang en -encoding utf-8 -data train.pos -model english.postagger.model
+</pre>
+
+
+This trains a maxent model that makes the classification decisions in the tagger. You should see output like the following:
+
+<pre>
+$ opennlp POSTaggerTrainer -lang en -encoding utf-8 -data train.pos -model english.postagger.model 
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 969905 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 969905 events to 887620.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 887620
+	    Number of Outcomes: 77
+	  Number of Predicates: 78768
+...done.
+Computing model parameters...
+Performing 100 iterations.
+  1:  .. loglikelihood=-4213078.597772371	0.09687134306968208
+  2:  .. loglikelihood=-1755066.9973144585	0.9087023986885313
+  3:  .. loglikelihood=-956515.2443204354	0.9387342059273847
+  4:  .. loglikelihood=-642486.0984935976	0.9513024471468855
+  5:  .. loglikelihood=-485562.16818665236	0.9582453951675679
+
+...<skipping a bunch of iterations>...
+
+ 95:  .. loglikelihood=-59048.760230481486	0.9884617565637872
+ 96:  .. loglikelihood=-58728.33420953592	0.9885040287450833
+ 97:  .. loglikelihood=-58413.35118933447	0.9885566112145003
+ 98:  .. loglikelihood=-58103.66235651382	0.9886071316262933
+ 99:  .. loglikelihood=-57799.12447062581	0.9886545589516499
+100:  .. loglikelihood=-57499.599600066285	0.9886947690753218
+Wrote pos tagger model.
+Path: /tmp/english.postagger.model
+</pre>
+
+The log-likelihood is the log probability that the model at the current iteration assigns to the training data (bigger is better, corresponding to higher probability). The second value gives the classification accuracy on the training set on that iteration.
+
+One can also try a perceptron with the option <code>-model perceptron</code>. For a full list of options, do:
+
+<pre>
+$ opennlp POSTaggerTrainer help
+Usage: opennlp POSTaggerTrainer-lang language -encoding charset [-iterations num] [-cutoff num] [-dict tagdict] [-model maxent|perceptron|perceptron_sequence] -data trainingData -model model 
+</pre>
+
+= Evaluating the model =
+
+This is also very easy, given that you have more annotated material available.
+
+<pre>
+$ opennlp POSTaggerEvaluator -encoding utf-8 -model english.postagger.model -data dev.pos 
+Loading model ... done
+Evaluating ... done
+
+Accuracy: 0.9657527774403002
+</pre>
+
+Which is pretty standard performance for this sort of tagger.
+
+= Tagging raw text with the model =
+
+Of course, the ultimate reason for having a POS tagger is to use it to tag raw texts. If you are sitting there with only annotated texts with ''word_pos'' format as discussed above, here's an easy way to strip the ''_pos'' part of each ''word_pos'' pair (in Unix):
+
+<pre>
+$ cat dev.pos | perl -pe "s/([^ _]+)\_[^ \n]+/\1/g" > dev.txt
+</pre>
+
+Or, you can just pull in some raw text and tag it. Of course, you need to make sure that your raw text has been tokenized according to the same conventions as the text you trained your tagger on.((Doing sentence detection and tokenization will be another tutorial.))
+
+Once you have raw text, you can tag it:
+
+<pre>
+$ opennlp POSTagger english.postagger.model < dev.txt  > dev.tagged.pos
+Loading model ... done
+$ more dev.tagged.pos 
+The_DT Arizona_NNP Corporations_NNP Commission_NNP authorized_VBD an_DT 11.5_CD %_NN rate_NN increase_NN at_IN Tucson_NNP Electric_NNP Power_NNP Co._NNP ,_, substantially_RB lower_JJR than_IN recommended_VBN last_JJ month_NN by_IN a_DT commission_NN hearing_NN officer_NN and_CC barely_RB half_NN the_DT rise_NN sought_VBN by_IN the_DT utility_NN ._.
+The_DT ruling_NN follows_VBZ a_DT host_NN of_IN problems_NNS at_IN Tucson_NNP Electric_NNP ,_, including_VBG major_JJ write-downs_NNS ,_, a_DT 60_CD %_NN slash_NN in_IN the_DT common_JJ stock_NN dividend_NN and_CC the_DT departure_NN of_IN former_JJ Chairman_NNP Einar_NNP Greve_NNP during_IN a_DT company_NN investigation_NN of_IN his_PRP$ stock_NN sales_NNS ._.
+The_DT Arizona_NNP regulatory_JJ ruling_NN calls_VBZ for_IN $_$ 42_CD million_CD in_IN added_JJ revenue_NN yearly_NN ,_, compared_VBN with_IN a_DT $_$ 57_CD million_CD boost_NN proposed_VBN by_IN the_DT commission_NN hearing_NN officer_NN ._.
+The_DT company_NN had_VBD sought_VBN increases_NNS totaling_VBG $_$ 80.3_CD million_CD ,_, or_CC 22_CD %_NN ._.
+The_DT decision_NN was_VBD announced_VBN after_IN trading_NN ended_VBD ._.
+Tucson_NNP Electric_NNP closed_VBD at_IN $_$ 20.875_CD a_DT share_NN ,_, down_RB 25_CD cents_NNS ,_, in_IN New_NNP York_NNP Stock_NNP Exchange_NNP composite_JJ trading_NN ._.
+...
+</pre>

@@ -1,0 +1,519 @@
+This page describes how to create training data out of the Conll06 data.
+
+= Overview =
+
+== Goal of tutorial ==
+
+The goal of this tutorial is to explain how to create models using OpenNLP for sentence detection, tokenization, and POS (part of speech) tagging for the following languages:
+* Danish
+* Dutch
+* Portuguese
+* Swedish
+
+For demonstration purposes, this tutorial will use Portuguese as the example language.
+
+== Creating models ==
+
+The basic steps for creating each OpenNLP model will be as follows:
+# Download and extract the data for the languages.
+# Convert the data to the OpenNLP format, which will provide us with a training file and testing file for each language.
+# Train a model using the training file.
+# Evaluate the model using the testing file.
+# Tag raw text with the model.
+
+= Getting OpenNLP =
+
+This tutorial was created for the OpenNLP Toolkit v1.5.0. See the instructions on the [[OpenNLP_Installation|installation]] page for help getting OpenNLP installed.
+
+= Language Data =
+
+== Download data ==
+
+The training and testing data for these languages can be downloaded from the following website: [http://nextens.uvt.nl/~conll/free_data.html]
+
+The following files will need to be downloaded and extracted to some location:
+* conll06_data_danish_ddt_train_v1.1.tar.bz2
+* conll06_data_dutch_alpino_train_v1.4.tar.bz2
+* conll06_data_portuguese_bosque_train_v1.2.tar.bz2
+* conll06_data_swedish_talbanken05_train_v1.1.tar.bz2
+* conll06_data_free_test.tar.bz2
+
+== Extract data ==
+
+Under Linux, the following commands can be used for each file (e.g. for the file "conll06_data_danish_ddt_train_v1.1.tar.bz2"):
+<pre>
+$ bunzip2 conll06_data_danish_ddt_train_v1.1.tar.bz2
+$ tar -xf conll06_data_danish_ddt_train_v1.1.tar
+</pre>
+
+Alternatively, you can use the following command to extract all the files at once:
+<pre>
+$ bunzip2 *.bz2 && for i in *.tar; do tar -xf $i; done
+</pre>
+
+This will create the following directories and files, which will be used as the data for training and testing new models:
+<pre>
+./data/danish/ddt/test/danish_ddt_test.conll
+./data/danish/ddt/train/danish_ddt_train.conll
+./data/dutch/alpino/test/dutch_alpino_test.conll
+./data/dutch/alpino/train/dutch_alpino_train.conll
+./data/portuguese/bosque/test/portuguese_bosque_test.conll
+./data/portuguese/bosque/treebank/portuguese_bosque_train.conll
+./data/swedish/talbanken05/test/swedish_talbanken05_test.conll
+./data/swedish/talbanken05/train/swedish_talbanken05_train.conll
+</pre>
+
+== Data format ==
+
+The provided data is annotated but needs to be reformatted to the OpenNLP format for each model we want to make. Here is an example of the provided Portuguese data:
+<pre>
+1	Um	um	art	art	<arti>|M|S	2	>N	_	_
+2	revivalismo	revivalismo	n	n	M|S	0	UTT	_	_
+3	refrescante	refrescante	adj	adj	M|S	2	N<	_	_
+
+1	O	o	art	art	<artd>|M|S	2	>N	_	_
+2	7_e_Meio	7_e_Meio	prop	prop	M|S	3	SUBJ	_	_
+3	é	ser	v	v-fin	PR|3S|IND	0	STA	_	_
+4	um	um	art	art	<arti>|M|S	5	>N	_	_
+5	ex-libris	ex-libris	n	n	M|P	3	SC	_	_
+6	de	de	prp	prp	<sam->	5	N<	_	_
+7	a	o	art	art	<-sam>|<artd>|S	8	>N	_	_
+8	noite	noite	n	n	F|S	6	P<	_	_
+9	algarvia	algarvio	adj	adj	F|S	8	N<	_	_
+10	.	.	punc	punc	_	3	PUNC	_	_
+
+</pre>
+
+The basic structure of the data is as follows:
+* There is one token per line
+* The token and all annotations are separated by tabs
+* Each sentence is separated by a blank line
+* There is a sentence token number before each token
+
+
+= Sentence Detector =
+
+== Format data ==
+
+=== Required format ===
+
+For sentence detection, OpenNLP requires the following format:
+<pre>
+Um revivalismo refrescante
+O 7_e_Meio é um ex-libris de a noite algarvia.
+É uma de as mais antigas discotecas de o Algarve, situada em Albufeira, que continua a manter os traços decorativos e as clientelas de sempre.
+</pre>
+
+To reformat the data, we need to remove the annotations, display one sentence per line, and remove the unnecessary spaces between tokens.
+
+=== Remove annotations ===
+
+Create a file called "formatSentence.sh" and make it executable using the command:
+<pre>
+$ chmod a+x formatSentence.sh
+</pre>
+
+Copy the following code into the file and save:
+<pre>
+#!/bin/bash
+
+SEP="\t";
+TAG="[^${SEP}]*";
+SENTENCESEP="<SENTENCE123456789SEP>";
+
+exec cat $1 | perl -pe "s/^${TAG}${SEP}(${TAG}).*$/\1/g" | perl -pe "s/^\s*$/\n/g" | perl -pe "s/^$/${SENTENCESEP}/g" | perl -pe "s/\n/ /g" | perl -pe "s/ ${SENTENCESEP} /\n/g" | grep "[[:punct:]]$"
+</pre>
+
+Run the script on the train and test files to create OpenNLP-formatted files:
+<pre>
+$ ./formatSentence.sh portuguese_bosque_train.conll > pt.sentdetect.train.tmp
+$ ./formatSentence.sh portuguese_bosque_test.conll > pt.sentdetect.test.tmp
+</pre>
+
+=== Reverse tokenization ===
+
+Remove the unnecessary spaces between tokens using the detokenization script, which can be found here: [[Detokenizing_script]]
+<pre>
+$ ./createTokTrainingData.pl pt.sentdetect.train.tmp > pt.sentdetect.train
+$ ./createTokTrainingData.pl pt.sentdetect.test.tmp > pt.sentdetect.test
+</pre>
+(You can delete the *.tmp files after this is done.)
+
+== Train a sentence detector model ==
+
+Train a sentence detector model with the following command:
+<pre>
+$ opennlp SentenceDetectorTrainer -lang pt -encoding UTF-8 -data pt.sentdetect.train -model pt.sentdetect.model
+</pre>
+
+This will display output like the following:
+<pre>
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 8448 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 8448 events to 1885.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 1885
+	    Number of Outcomes: 2
+	  Number of Predicates: 376
+...done.
+Computing model parameters...
+Performing 100 iterations.
+  1:  .. loglikelihood=-5855.707381370515	0.9269649621212122
+  2:  .. loglikelihood=-1192.584282377142	0.9473248106060606
+  3:  .. loglikelihood=-848.2674244670022	0.9636600378787878
+  4:  .. loglikelihood=-705.6746366897534	0.9717092803030303
+  5:  .. loglikelihood=-623.4294031335301	0.9739583333333334
+
+ ...<skipping a bunch of iterations>...
+
+ 95:  .. loglikelihood=-201.27908305083162	0.9921875
+ 96:  .. loglikelihood=-200.82000607403657	0.9921875
+ 97:  .. loglikelihood=-200.36869004527148	0.9923058712121212
+ 98:  .. loglikelihood=-199.9249099062947	0.9923058712121212
+ 99:  .. loglikelihood=-199.48844948519036	0.9923058712121212
+100:  .. loglikelihood=-199.059101060208	0.9923058712121212
+Wrote sentence detector model.
+Path: <YOUR_PATH>/pt.sentdetect.model
+</pre>
+
+== Evaluate the sentence detector model ==
+
+Evaluate the sentence detector model with the following command:
+<pre>
+$ opennlp SentenceDetectorEvaluator -encoding UTF-8 -model pt.sentdetect.model -data pt.sentdetect.test
+</pre>
+
+This will display the resulting scores, e.g.:
+<pre>
+Loading model ... done
+Evaluating ... done
+
+Precision: 0.9
+Recall: 0.8666666666666667
+F-Measure: 0.8830188679245283
+</pre>
+
+== Detect sentence boundaries on raw text using the sentence detector model ==
+
+=== Create raw text ===
+
+To create raw text from the provided data, you can run the following command:
+<pre>
+$ tr '\n' ' ' < pt.sentdetect.test | perl -pe "s/$/\n\n/" > pt.sentdetect.raw
+</pre>
+
+=== Process raw text ===
+
+You can run the sentence detector on raw text with the following command:
+<pre>
+$ opennlp SentenceDetector pt.sentdetect.model < pt.sentdetect.raw > pt.sentdetect.raw.processed
+</pre>
+
+= Tokenizer =
+
+== Format data ==
+
+=== Required format ===
+
+For tokenization, OpenNLP requires the following format:
+<pre>
+Um revivalismo refrescante
+O 7_e_Meio é um ex-libris de a noite algarvia<SPLIT>.
+É uma de as mais antigas discotecas de o Algarve<SPLIT>, situada em Albufeira<SPLIT>, que continua a manter os traços decorativos e as clientelas de sempre<SPLIT>.
+</pre>
+
+To reformat the data, we need to remove the annotations, display one sentence per line, and replace the unnecessary spaces between tokens with "<SPLIT>" (e.g. spaces between some words and punctuation marks).
+
+=== Remove annotations ===
+
+Create a file called "formatToken.sh" and make it executable using the command:
+<pre>
+$ chmod a+x formatToken.sh
+</pre>
+
+Copy the following code into the file and save:
+<pre>
+#!/bin/bash
+
+SEP="\t";
+TAG="[^${SEP}]*";
+SENTENCESEP="<SENTENCE123456789SEP>";
+
+exec cat $1 | perl -pe "s/^${TAG}${SEP}(${TAG}).*$/\1/g" | perl -pe "s/^\s*$/\n/g" | perl -pe "s/^$/${SENTENCESEP}/g" | perl -pe "s/\n/ /g" | perl -pe "s/ ${SENTENCESEP} /\n/g"
+</pre>
+
+Run the script on the train and test files to create OpenNLP-formatted files:
+<pre>
+$ ./formatToken.sh portuguese_bosque_train.conll > pt.tokenizer.train.tmp
+$ ./formatToken.sh portuguese_bosque_test.conll > pt.tokenizer.test.tmp
+</pre>
+
+=== Reverse tokenization ===
+
+Replace the unnecessary spaces between tokens using the detokenization script, which can be found here: [[Detokenizing_script]]
+<pre>
+$ ./createTokTrainingData.pl pt.tokenizer.train.tmp -s > pt.tokenizer.train
+$ ./createTokTrainingData.pl pt.tokenizer.test.tmp -s > pt.tokenizer.test
+</pre>
+(You can delete the *.tmp files after this is done.)
+
+== Train a tokenizer model ==
+
+Train a tokenizer model with the following command:
+<pre>
+$ opennlp TokenizerTrainer -lang pt -encoding UTF-8 -data pt.tokenizer.train -model pt.tokenizer.model
+</pre>
+
+This will display output like the following:
+<pre>
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 746798 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 746798 events to 169238.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 169238
+	    Number of Outcomes: 2
+	  Number of Predicates: 34986
+...done.
+Computing model parameters...
+Performing 100 iterations.
+  1:  .. loglikelihood=-517640.9281477159	0.970032056861427
+  2:  .. loglikelihood=-61083.857670207995	0.9813497090243948
+  3:  .. loglikelihood=-25584.140914434272	0.9946772755149318
+  4:  .. loglikelihood=-14884.343035303249	0.9978133310480211
+  5:  .. loglikelihood=-10044.208596832164	0.9983543073227299
+
+ ...<skipping a bunch of iterations>...
+
+ 95:  .. loglikelihood=-470.61068080912185	0.9999076055372403
+ 96:  .. loglikelihood=-467.8478678819583	0.9999076055372403
+ 97:  .. loglikelihood=-465.1374468311724	0.9999076055372403
+ 98:  .. loglikelihood=-462.47783490907756	0.9999076055372403
+ 99:  .. loglikelihood=-459.86751461783246	0.9999076055372403
+100:  .. loglikelihood=-457.30503034185386	0.9999076055372403
+Wrote tokenizer model.
+Path: <YOUR_PATH>/pt.tokenizer.model
+</pre>
+
+== Evaluate the tokenizer model ==
+
+Evaluate the tokenizer model with the following command:
+<pre>
+$ opennlp TokenizerMEEvaluator -encoding UTF-8 -model pt.tokenizer.model -data pt.tokenizer.test
+</pre>
+
+This will display the resulting scores, e.g.:
+<pre>
+Evaluating ... done
+
+Precision: 0.9978796931469459
+Recall: 0.9981251065280382
+F-Measure: 0.9980023847504222
+</pre>
+
+== Tokenize raw text with the tokenizer model ==
+
+=== Create raw text ===
+
+To create raw text from the provided data, you can run the following command:
+<pre>
+$ perl -pe "s/<SPLIT>//g" < pt.tokenizer.test > pt.tokenizer.raw
+</pre>
+
+=== Process raw text ===
+
+You can run the tokenizer on raw text with the following command:
+<pre>
+$ opennlp TokenizerME pt.tokenizer.model < pt.tokenizer.raw > pt.tokenizer.raw.processed
+</pre>
+
+= POS (Part of Speech) Tagger =
+
+== Format data ==
+
+=== Required format ===
+
+For POS tagging, OpenNLP requires the following format:
+<pre>
+Um_art revivalismo_n refrescante_adj
+O_art 7_e_Meio_prop é_v-fin um_art ex-libris_n de_prp a_art noite_n algarvia_adj ._punc
+</pre>
+
+To reformat the data, we need to extract <TOKEN>_<POS_TAG> pairs and display one sentence per line.
+
+=== Reformat data ===
+
+Create a file called "formatPOS.sh" and make it executable using the command:
+<pre>
+$ chmod a+x formatPOS.sh
+</pre>
+
+Copy the following code into the file and save:
+<pre>
+#!/bin/bash
+
+SEP="\t";
+TAG="[^${SEP}]*";
+SENTENCESEP="<SENTENCE123456789SEP>";
+
+exec cat $1 | perl -pe "s/^${TAG}${SEP}(${TAG})${SEP}${TAG}${SEP}${TAG}${SEP}(${TAG}).*$/\1_\2/g" | perl -pe "s/^\s*$/\n/g" | perl -pe "s/^$/${SENTENCESEP}/g" | perl -pe "s/\n/ /g" | perl -pe "s/ ${SENTENCESEP} /\n/g"
+</pre>
+
+Run the script on the train and test files to create OpenNLP-formatted files:
+<pre>
+$ ./formatPOS.sh portuguese_bosque_train.conll > pt.postagger.train
+$ ./formatPOS.sh portuguese_bosque_test.conll > pt.postagger.test
+</pre>
+
+== Train a POS tagger model ==
+
+Train a POS tagger model with the following command:
+<pre>
+$ opennlp POSTaggerTrainer -lang pt -encoding utf-8 -data pt.postagger.train -model pt.postagger.model
+</pre>
+
+This will display output like the following:
+<pre>
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 206678 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 206678 events to 193001.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 193001
+	    Number of Outcomes: 22
+	  Number of Predicates: 29155
+...done.
+Computing model parameters...
+Performing 100 iterations.
+  1:  .. loglikelihood=-638850.47217427	0.13807468622688432
+  2:  .. loglikelihood=-290753.190567394	0.8510291371118358
+  3:  .. loglikelihood=-185870.4166969049	0.912041920281791
+  4:  .. loglikelihood=-138215.2811448813	0.9380921046265205
+  5:  .. loglikelihood=-111406.56720261769	0.9499172626017283
+
+ ...<skipping a bunch of iterations>...
+
+ 95:  .. loglikelihood=-14247.47118606518	0.9899166819884071
+ 96:  .. loglikelihood=-14160.555866756104	0.9899892586535577
+ 97:  .. loglikelihood=-14075.142503355162	0.9900328046526481
+ 98:  .. loglikelihood=-13991.189602799803	0.9900811890960818
+ 99:  .. loglikelihood=-13908.657233947128	0.9901150582064855
+100:  .. loglikelihood=-13827.50695352086	0.9901537657612325
+Wrote pos tagger model.
+Path: <YOUR_PATH>/pt.postagger.model
+</pre>
+
+== Evaluate the POS tagger model ==
+
+Evaluate the POS tagger model with the following command:
+<pre>
+$ opennlp POSTaggerEvaluator -encoding utf-8 -model pt.postagger.model -data pt.postagger.test
+</pre>
+
+This will display the resulting scores, e.g.:
+<pre>
+Loading model ... done
+Evaluating ... done
+
+Accuracy: 0.9659110277825124
+</pre>
+
+== Tag raw text with the POS tagger model ==
+
+=== Create raw text ===
+
+To create raw text from the provided data, you can run the following command:
+<pre>
+$ cat pt.postagger.test | perl -pe "s/([^ ]+)\_[^ _\n]+/\1/g" > pt.postagger.raw
+</pre>
+
+Note that this will preserve the existing sentence detection and tokenization, e.g. there will be one sentence per line and tokens will be separated by spaces. If you want to tag completely unformatted raw text, you will need to run sentence detection and tokenization on the text first. Assuming an unprocessed raw text file called "pt.raw", this can be done with the following command:
+<pre>
+$ opennlp SentenceDetector pt.sentdetect.model < pt.raw | opennlp TokenizerME pt.tokenizer.model > pt.postagger.raw
+</pre>
+
+''(As a note, you can use the file "pt.sentdetect.raw" created earlier in the sentence detection tutorial as the "pt.raw" file in this command.)''
+
+=== Process raw text ===
+
+You can run the POS tagger on raw text that has been through tokenization and sentence detection with the following command:
+<pre>
+$ opennlp POSTagger pt.postagger.model < pt.postagger.raw  > pt.postagger.raw.processed
+</pre>
+
+= Scored evaluations of models =
+
+These are the scored evaluation results of the models created for Danish, Dutch, Portuguese, and Swedish:
+
+== Danish ==
+
+=== Sentence Detector ===
+* Precision: 0.862876254180602
+* Recall: 0.8543046357615894
+* F-Measure: 0.8585690515806988
+
+=== Tokenizer ===
+* Precision: 0.9946374862960629
+* Recall: 0.9947026657552973
+* F-Measure: 0.9946700749578983
+
+=== POS Tagger ===
+* Accuracy: 0.951298701298701
+
+
+== Dutch ==
+
+=== Sentence Detector ===
+* Precision: 0.9767441860465116
+* Recall: 0.9368029739776952
+* F-Measure: 0.9563567362428843
+
+=== Tokenizer ===
+* Precision: 0.9998071758143379
+* Recall: 0.9996418979409132
+* F-Measure: 0.9997245300465499
+
+=== POS Tagger ===
+* Accuracy: 0.9328558639212176
+
+
+== Portuguese ==
+
+=== Sentence Detector ===
+* Precision: 0.9
+* Recall: 0.8666666666666667
+* F-Measure: 0.8830188679245283
+
+=== Tokenizer ===
+* Precision: 0.9978796931469459
+* Recall: 0.9981251065280382
+* F-Measure: 0.9980023847504222
+
+=== POS Tagger ===
+* Accuracy: 0.9659110277825124
+
+
+== Swedish ==
+
+=== Sentence Detector ===
+* Precision: 0.9695121951219511
+* Recall: 0.9607250755287009
+* F-Measure: 0.9650986342943854
+
+=== Tokenizer ===
+* Precision: 0.9985453697962308
+* Recall: 0.9977015558698727
+* F-Measure: 0.9981232844929043
+
+=== POS Tagger ===
+* Accuracy: 0.9276874115983027

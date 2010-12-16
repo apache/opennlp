@@ -1,0 +1,139 @@
+The page describes how to use the OpenNLP Parser.
+
+= Parsing =
+TODO: Write an introduction for the parser.
+
+== Parser Tool ==
+
+The easiest way to try out the Parser is the command line tool. The tool is only intended for demonstration and testing.
+
+Download the  [http://opennlp.sourceforge.net/models-1.5/en-parser-chunking.bin english chunking parser model] from the our website and start
+the Parser Tool with the following command. 
+<pre>
+$ bin/opennlp Parser en-parser.bin en-parser-chunking.bin
+</pre>
+Loading the big parser model can take several seconds, be patient.
+
+Copy this sample sentence to the console.
+<pre>
+The quick brown fox jumps over the lazy dog .
+</pre>
+
+The parser should now print the following to the console.
+<pre>
+(TOP (NP (NP (DT The) (JJ quick) (JJ brown) (NN fox) (NNS jumps)) (PP (IN over) (NP (DT the) (JJ lazy) (NN dog))) (. .)))
+</pre>
+
+With the following command the input can be read from a file and be written
+to an output file.
+<pre>
+$ bin/opennlp Parser en-parser.bin en-parser-chunking.bin < article-tokenized.txt > article-parsed.txt.
+</pre>
+The article-tokenized.txt file must contain one sentence per line which is tokenized with the english
+tokenizer model from our website. See the Tokenizer documentation for further details.
+
+== Parser API ==
+The Parser can be easily integrated into an application via its API.
+
+To instantiate a Parser the parser model must be loaded first.
+<pre>
+InputStream modelIn = new FileInputStream("en-parser-chunking.bin");
+try {
+  ParserModel model = new ParserModel(modelIn);
+}
+catch (IOException e) {
+  e.printStackTrace();
+}
+finally {
+  if (modelIn != null) {
+    try {
+      modelIn.close();
+    }
+    catch (IOException e) {
+    }
+  }
+}
+</pre>
+
+Unlike the other components to instantiate the Parser a factory method
+should be used instead of creating the Parser via the new operator.
+The parser model is either trained for the chunking parser or the tree insert parser
+the parser implementation must be chosen correctly. The factory method
+will read a type parameter from the model and create an instance of
+the corresponding parser implementation.
+<pre>
+Parser parser = ParserFactory.create(model);
+</pre>
+Right now the tree insert parser is still experimental and there is no pre-trained model for it.
+
+The parser expect a whitespace tokenized sentence.
+A utility method from the command line tool can parse the sentence String.
+The following code shows how the parser can be called.
+<pre>
+String sentence = "The quick brown fox jumps over the lazy dog .";
+Parse topParses[] = ParserTool.parseLine(sentence, parser, 1);
+</pre>
+The topParses array only contains one parse because the number of parses is set to 1.
+The Parse object contains the parse tree.
+
+To display the parse tree call the show method. It either prints the parse to the console
+or into a provided StringBuffer. Similar to Exception.printStackTrace.
+
+TODO: Extend this section with more information about the Parse object
+
+= Training =
+The OpenNLP offers two different parser implementations, the chunking parser and the treeinsert parser. 
+The later one is still experimental and not recommended for production use.
+
+(TODO: Add a section which explains the two different approches)
+
+The training can either be done with the command line tool or the training API.
+In the first case the training data must be available in the OpenNLP format. 
+Which is the Penn Treebank format, but with the limitation of a sentence per line.
+
+<pre>
+(TOP (S (NP-SBJ (DT Some) )(VP (VBP say) (NP (NNP November) ))(. .) ))
+(TOP (S (NP-SBJ (PRP I) )(VP (VBP say) (NP (CD 1992) ))(. .) ('' '') ))
+</pre>
+
+(TODO: Insert link which explains the penn treebank format.)
+
+A parser model also contains a pos tagger model, depending on the amount of available
+training data it is recommend to switch the tagger model against a tagger model which 
+was trained on a larger corpus. The pre-trained parser model provided on the website is doing this to achieve
+a better performance. (TODO: On which data is the model on the website trained, and say on which data the tagger
+model is trained)
+
+== Training Tool ==
+
+OpenNLP has a command line tool which is used to train the models available from the model download page on various corpora.
+The data must be converted to the OpenNLP parser training format, which is shortly explained above.
+
+To train the parser a head rules file is also needed. (TODO: Add documentation about the head rules file)
+
+Usage of the tool:
+<pre>
+$ bin/opennlp ParserTrainer
+Usage: opennlp ParserTrainer-lang language -encoding charset [-iterations num] [-cutoff num] -head-rules head_rules -data trainingData -model model
+-lang language     specifies the language which is being processed.
+-encoding charset  specifies the encoding which should be used for reading and writing text.
+-iterations num    specified the number of training iterations
+-cutoff num        specifies the min number of times a feature must be seen
+</pre>
+
+The model on the website was trained with the following command:
+<pre>
+bin/opennlp ParserTrainer -encoding ISO-8859-1 -lang en -parserType CHUNKING -head-rules head_rules -data train.all -model en-parser-chunking.bin
+</pre>
+Its also possible to specify the cutoff and the number of iterations, these parameters are used for all trained models. <br>
+The -parserType parameter is an optional parameter, to use the tree insertion parser, specify TREEINSERT as type.
+
+The TaggerModelReplacer tool replaces the tagger model inside the parser model with a new one. <br>
+Note: The original parser model will be overwritten with the new parser model which contains the replaced
+tagger model.
+
+<pre>
+bin/opennlp TaggerModelReplacer  models/en-parser-chunking.bin models/en-pos-maxent.bin
+</pre>
+
+Additionally there are tools to just retrain the build or the check model.

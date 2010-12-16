@@ -1,0 +1,42 @@
+This page describes how to convert the Arvores Deitadas corpus
+into training data for the [[Name Finder]].
+
+= The Corpus =
+Floresta Sintá(c)tica (syntactic forest) is a publicly available treebank for Portuguese, created as a collaboration project between the [http://visl.sdu.dk VISL project], and [http://www.linguateca.pt Linguateca] (formerly the Computational Processing of Portuguese project). (from the project [http://www.linguateca.pt/floresta/info_floresta_English.html website])
+
+The Floresta Sintá(c)tica provides corpora in a variety of formats. For now, the OpenNLP only supports the Árvores Deitadas (AD) (lying trees). The documentation of AD format is available [http://www.linguateca.pt/documentos/Afonso2006ArvoresDeitadas.pdf here] (Portuguese only).
+
+To generate the NER models, we are using the Amazônia (Amazon) corpus, which contains 4.6 million words (about 275,000 sentences) from the Web collaborative Overmundo, a virtual collective that aims to express the Brazilian cultural production. Because it is collaborative, the site includes a large number of authors, from different parts of Brazil, which is also reflected in different writing styles. The text where extracted from "Overblog" and all non-fiction texts of the "Banco de Cultura" (culture bank) available on September 30, 2008, a total of 4070 texts (1303 and authors). Unlike other corpora of the Forest, the Amazon is not a balanced corpus from the Portuguese of Brazil and Portugal: all texts are Brazilians. (from the project [http://www.linguateca.pt/floresta/corpus.html website])
+
+= Getting the data =
+The Corpus can be downloaded from here:
+http://www.linguateca.pt/floresta/corpus.html
+
+The direct link to the corpus file:
+http://www.linguateca.pt/floresta/ficheiros/gz/amazonia.ad.gz
+
+= Converting the data =
+For now only the Token Name Finder is available:
+<pre>
+bin/opennlp TokenNameFinderConverter ad -encoding ISO-8859-1 -data ../corpus/amazonia.ad -lang pt -types per > corpus.txt
+</pre>
+
+= Evaluation = 
+
+To perform the evaluation the corpus was split into a training and a test part.
+
+<pre>
+sed '1,55172d' corpus.txt > corpus_train.txt
+sed '55172,100000000d' corpus.txt > corpus_test.txt
+</pre>
+
+<pre>
+
+bin/opennlp TokenNameFinderTrainer -lang PT -encoding UTF-8 -data corpus_train.txt -model pt-ner.bin -cutoff 20
+..
+bin/opennlp TokenNameFinderEvaluator -encoding UTF-8 -model ../model/pt-ner.bin -data corpus_test.txt
+
+Precision: 0.8005071889818507
+Recall: 0.7450581122145297
+F-Measure: 0.7717879983140168
+</pre>

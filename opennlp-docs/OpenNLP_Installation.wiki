@@ -1,0 +1,100 @@
+= Setting up OpenNLP =
+
+== Obtaining OpenNLP ==
+
+=== Download a released version ===
+
+Go to [https://sourceforge.net/projects/opennlp/files/ the download page] and choose the appropriate file to download. To get an already compiled system, choose opennlp-tools-version.bin.zip for Windows and opennlp-tools-version.tar.gz for other operating systems. 
+
+=== Get OpenNLP from CVS ===
+
+If you need to be on the bleeding edge, you can get the latest code from the CVS repository. (Yes, CVS is ancient---we will be moving to git or mercurial soon!) 
+
+Instructions to get it are available on [https://sourceforge.net/scm/?type=cvs&group_id=3368 the Sourceforge page for OpenNLP's CVS]. You want the 'OpenNLP' module:
+<pre>
+$ cvs -z3 -d:pserver:anonymous@opennlp.cvs.sourceforge.net:/cvsroot/opennlp co -P opennlp
+</pre>
+
+This will check-out the source code to the folder <code><YOUR_PATH>/opennlp</code>. After you have done that, you can follow the instructions in the README. 
+
+== Build OpenNLP ==
+
+In the "opennlp" directory, the following command will build the project:
+<pre>
+$ mvn install
+</pre>
+
+If the build is successful, you should see output similar to the following:
+<pre>
+[INFO] Scanning for projects...
+[INFO] artifact org.apache.maven.wagon:wagon-ssh: checking for updates from OpenNLPRepository
+[INFO] artifact org.apache.maven.wagon:wagon-ssh: checking for updates from central
+Downloading: http://repo1.maven.org/maven2/org/apache/maven/wagon/wagon-ssh/1.0-beta-6/wagon-ssh-1.0-beta-6.pom
+      
+Downloading: http://opennlp.sourceforge.net/maven2/org/apache/maven/wagon/wagon-providers/1.0-beta-6/wagon-providers-1.0-beta-6.pom
+[INFO] Unable to find resource 'org.apache.maven.wagon:wagon-providers:pom:1.0-beta-6' in repository OpenNLPRepository (http://opennlp.sourceforge.net/maven2)
+Downloading: http://repo1.maven.org/maven2/org/apache/maven/wagon/wagon-providers/1.0-beta-6/wagon-providers-1.0-beta-6.pom
+      
+...<skipping a bunch of output>...
+
+[INFO] [jar:jar {execution: default-jar}]
+[INFO] Building jar: <YOUR_PATH>/opennlp/target/opennlp-tools-1.5.0-SNAPSHOT.jar
+[INFO] [install:install {execution: default-install}]
+[INFO] Installing <YOUR_PATH>/opennlp/target/opennlp-tools-1.5.0-SNAPSHOT.jar to <YOUR_HOME_DIRECTORY>/.m2/repository/opennlp/tools/1.5.0-SNAPSHOT/tools-1.5.0-SNAPSHOT.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESSFUL
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 2 minutes 50 seconds
+[INFO] Finished at: Tue Aug 03 14:10:43 CDT 2010
+[INFO] Final Memory: 36M/386M
+[INFO] ------------------------------------------------------------------------
+</pre>
+
+This will create a new directory, <code><YOUR_PATH>/opennlp/target</code>
+
+== Get OpenNLP's Maximum Entropy Package from CVS ==
+
+You may also need to check-out the most recent MaxEnt project from CVS. Instructions to get it are available on [https://sourceforge.net/scm/?type=cvs&group_id=5961 the Sourceforge page for OpenNLP's Maximum Entropy Package CVS]. You want the 'maxent' module:
+<pre>
+$ cvs -z3 -d:pserver:anonymous@maxent.cvs.sourceforge.net:/cvsroot/maxent co -P maxent
+</pre>
+
+This will check-out the source code to the folder <code><YOUR_PATH>/maxent</code>.
+
+== Build OpenNLP's Maximum Entropy Package (Optional step) ==
+
+In the "maxent" directory, the following command will build the project:
+<pre>
+$ mvn install
+</pre>
+
+Again, you should see the "BUILD SUCCESSFUL" message in the output. This will produce the file <code><YOUR_PATH>/maxent/target/maxent-3.0-SNAPSHOT.jar</code>. Since creating the models in this tutorial require the latest MaxEnt package, you will need to copy this file to <code><YOUR_PATH>/opennlp/target/maxent-3.0-SNAPSHOT.jar</code>:
+<pre>
+$ cp <YOUR_PATH>/maxent/target/maxent-3.0.0.jar <YOUR_PATH>/opennlp/target/
+</pre>
+
+== Running OpenNLP ==
+
+=== opennlp script ===
+
+The OpenNLP package should include the executable file <code><YOUR_PATH>/opennlp/bin/opennlp</code>. The example commands in this tutorial call the "opennlp" script to run OpenNLP. You should add <code><YOUR_PATH>/opennlp/bin</code> to your PATH environment variable.
+
+If the opennlp script file is not working correctly, you may need to fix it by replacing it with the following code:
+<pre>
+#!/bin/sh
+
+if [ -z "$JAVACMD" ] ; then
+  if [ -n "$JAVA_HOME"  ] ; then
+    JAVACMD="$JAVA_HOME/bin/java"
+  else
+    JAVACMD="`which java`"
+  fi
+fi
+
+# sets OPENNLP environment variables
+JARS=`echo $OPENNLP_DIR/lib/*.jar $OPENNLP_DIR/target/*.jar | tr ' ' ':'`
+CP=$OPENNLP_DIR/target/classes:${JARS}
+JAVACMD="$JAVACMD -Xmx1024m -classpath $CP -Dopennlp.dir=$OPENNLP_DIR"
+
+$JAVACMD opennlp.tools.cmdline.CLI $@
+</pre>
