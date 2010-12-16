@@ -41,8 +41,6 @@ import opennlp.tools.util.HashList;
 
 /**
  * Class which models the gender of a particular mentions and entities made up of mentions.
- *
- * @author Tom Morton
  */
 public class GenderModel implements TestGenderModel, TrainSimilarityModel {
 
