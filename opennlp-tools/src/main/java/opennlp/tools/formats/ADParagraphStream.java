@@ -42,8 +42,6 @@ import opennlp.tools.util.ObjectStream;
  * http://www.linguateca.pt/documentos/Afonso2006ArvoresDeitadas.pdf 
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
- * 
- * @author William Colen (CoGrOO)
  */
 public class ADParagraphStream extends
     FilterObjectStream<String, ADParagraphStream.Paragraph> {
