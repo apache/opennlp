@@ -29,7 +29,6 @@ import opennlp.tools.parser.Parse;
 
 /**
  * Class to generator predictive contexts for deciding how constituents should be combined together.
- * @author Tom Morton
  */
 public class BuildContextGenerator extends AbstractContextGenerator {
 

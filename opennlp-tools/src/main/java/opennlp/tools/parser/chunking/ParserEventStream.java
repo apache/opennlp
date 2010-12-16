@@ -35,8 +35,6 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * Wrapper class for one of four parser event streams.  The particular event stream is specified
  * at construction.
- * @author Tom Morton
- *
  */
 public class ParserEventStream extends AbstractParserEventStream {
 
