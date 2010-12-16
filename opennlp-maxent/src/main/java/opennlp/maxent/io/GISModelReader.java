@@ -30,9 +30,6 @@ import opennlp.model.DataReader;
 
 /**
  * Abstract parent class for readers of GISModels.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.2 $, $Date: 2010-09-06 08:02:18 $
  */
 public class GISModelReader extends AbstractModelReader {
   

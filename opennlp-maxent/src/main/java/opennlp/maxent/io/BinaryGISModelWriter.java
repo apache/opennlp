@@ -29,9 +29,6 @@ import opennlp.model.AbstractModel;
 
 /**
  * Model writer that saves models in binary format.
- *
- * @author      Jason Baldridge
- * @version     $Revision: 1.3 $, $Date: 2010-09-06 08:02:18 $
  */
 public class BinaryGISModelWriter extends GISModelWriter {
     DataOutputStream output;
