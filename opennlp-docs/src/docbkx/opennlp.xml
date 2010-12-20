@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<book lang="en">
+	<bookinfo>
+		<releaseinfo>
+			Version <?eval ${project.version}?>
+		</releaseinfo>
+
+		<productname>OpenNLP</productname>
+
+		<authorgroup>
+			<corpauthor>Written and maintained by the Apache OpenNLP Development
+				Community</corpauthor>
+		</authorgroup>
+
+		<legalnotice>
+			<formalpara>
+				<title>License and Disclaimer</title>
+				<para>
+					The ASF licenses this documentation
+					to you under the Apache License,
+					Version 2.0 (the
+					"License"); you may not use this documentation
+					except in compliance
+					with the License. You may obtain a copy of the
+					License at
+
+					<blockquote>
+						<para>
+							<ulink url="http://www.apache.org/licenses/LICENSE-2.0" />
+						</para>
+					</blockquote>
+
+					Unless required by applicable law or agreed to in writing,
+					this documentation and its contents are distributed under the License
+					on an
+					"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+					KIND, either express or implied. See the License for the
+					specific language governing permissions and limitations
+					under the License.
+				</para>
+			</formalpara>
+		</legalnotice>
+
+		<copyright>
+			<year><?eval ${project.inceptionYear}?></year>
+			<year><?eval ${project.properties.buildYear}?></year>
+			<holder>The Apache Software Foundation</holder>
+		</copyright>
+		
+		<pubdate><?eval ${project.properties.buildMonth}?>
+			, <?eval ${project.properties.buildYear}?>
+		</pubdate>
+	</bookinfo>
+
+	<title>Apache OpenNLP Developer Documentation</title>
+	<toc/>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./sentdetect.xml"/>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./tokenizer.xml" />
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./namefinder.xml" />
+	<!--xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./doccat.xml" /-->
+	<!--xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./postagger.xml" /-->
+	<!--xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./chunker.xml" /-->
+	<!--xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./parser.xml" /-->
+</book>
