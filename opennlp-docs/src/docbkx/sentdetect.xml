@@ -54,7 +54,7 @@ Rudolph Agnew, 55 years old and former chairman of Consolidated Gold Fields PLC,
 		Most components in OpenNLP expect input which is segmented into sentences.
 		</para>
 		
-		<section id="tools.sentdetect.cmdline">
+		<section id="tools.sentdetect.detection.cmdline">
 		<title>Sentence Detection Tool</title>
 		<para>
 		The easiest way to try out the Sentence Detector is the command line tool. The tool is only intended for demonstration and testing.
@@ -72,7 +72,7 @@ $bin/opennlp SentenceDetector en-sent.bin < input.txt > output.txt]]>
 		For the english sentence model from the website the input text should not be tokenized.
 		</para>
 		</section>
-		<section id="tools.sentdetect.cmdline">
+		<section id="tools.sentdetect.detection.api">
 		<title>Sentence Detection API</title>
 		<para>
 		The Sentence Detector can be easily integrated into an application via its API.
@@ -177,7 +177,7 @@ Path: en-sent.bin
 		</programlisting>
 		</para>
 		</section>
-		<section id="tools.namefind.training.tool">
+		<section id="tools.sentdetect.training.tool">
 		<title>Training API</title>
 		<para>
 		The Sentence Detector also offers an API to train a new sentence detection model.
