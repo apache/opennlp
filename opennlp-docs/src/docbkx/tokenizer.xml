@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
+	license agreements. See the NOTICE file distributed with this work for additional 
+	information regarding copyright ownership. The ASF licenses this file to 
+	you under the Apache License, Version 2.0 (the "License"); you may not use 
+	this file except in compliance with the License. You may obtain a copy of 
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
+	language governing permissions and limitations under the License. -->
+
+<chapter id="tools.tokenizer">
+
+	<title>Tokenizer</title>
+
+	<section id="tools.tokenizer.introduction">
+		<title>Tokenization</title>
+		<para>
+			The OpenNLP Tokenizers segment an input character sequence into
+			tokens. Tokens are usually
+			words, punctuation, numbers, etc.
+
+			<literallayout>
+			<![CDATA[
+Pierre Vinken, 61 years old, will join the board as a nonexecutive director Nov. 29.
+Mr. Vinken is chairman of Elsevier N.V., the Dutch publishing group.
+Rudolph Agnew, 55 years old and former chairman of Consolidated Gold Fields PLC, was named a director of this British industrial conglomerate.
+			]]>
+		 </literallayout>
+
+			The following result shows the individual tokens in a whitespace
+			separated representation.
+
+			<literallayout>
+			<![CDATA[
+Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .
+Mr. Vinken is chairman of Elsevier N.V. , the Dutch publishing group .
+Rudolph Agnew , 55 years old and former chairman of Consolidated Gold Fields PLC , was named a nonexecutive director of this British industrial conglomerate . 
+A form of asbestos once used to make Kent cigarette filters has caused a high percentage of cancer deaths among a group of workers exposed to it more than 30 years ago , researchers reported . 
+			]]>
+		 	</literallayout>
+
+			OpenNLP offers multiple tokenizer implementations:
+			<itemizedlist>
+				<listitem>
+					<para>Whitespace Tokenizer - A whitespace tokenizer, non whitespace
+						sequences are identified as tokens</para>
+				</listitem>
+				<listitem>
+					<para>Simple Tokenizer - A character class tokenizer, sequences of
+						the same character class are tokens</para>
+				</listitem>
+				<listitem>
+					<para>Learnable Tokenizer - A maximum entropy tokenizer, detects
+						token boundaries based on probability model</para>
+				</listitem>
+			</itemizedlist>
+
+			Most part-of-speech taggers, parsers and so on, work with text
+			tokenized in this manner. It is important to ensure that your
+			tokenizer
+			produces tokens of the type expected by your later text
+			processing
+			components.
+		</para>
+
+		<para>
+			With OpenNLP (as with many systems), tokenization is a two-stage
+			process:
+			first, sentence boundaries are identified, then tokens within
+			each
+			sentence are identified.
+		</para>
+	</section>
+	<section id="tools.tokenizer.cmdline">
+		<title>Tokenizer Tools</title>
+		<para>The easiest way to try out the tokenizers are the command line
+			tools. The tools are only intended for demonstration and testing.
+		</para>
+		<para>There are two tools, one for the Simple Tokenizer and one for
+			the learnable tokenizer. A command line tool the for the Whitespace
+			Tokenizer does not exist, because the whitespace separated output
+			would be identical to the input.</para>
+		<para>
+			The following command shows how to use the Simple Tokenizer Tool.
+
+			<programlisting>
+			<![CDATA[
+$ bin/opennlp SimpleTokenizer
+			]]>
+		 </programlisting>
+			To use the learnable tokenizer download the english token model from
+			our website.
+			<programlisting>
+			<![CDATA[
+$ bin/opennlp TokenizerME en-token.bin
+			]]>
+		 </programlisting>
+			To test the tokenizer copy the sample from above to the console. The
+			whitespace separated tokens will be written written back to the
+			console.
+		</para>
+		<para>
+			Usually the input is read from a file and written to a file.
+			<programlisting>
+			<![CDATA[
+$ bin/opennlp TokenizerME en-token.bin < article.txt > article-tokenized.txt
+			]]>
+		 </programlisting>
+			It can be done in the same way for the Simple Tokenizer.
+		</para>
+		<para>
+			Since most text comes truly raw and doesn't have sentence boundaries
+			and such, its possible to create a pipe which first performs sentence
+			boundary detection and tokenization. The following sample illustrates
+			that.
+			<screen>
+			<![CDATA[
+$ opennlp SentenceDetector sentdetect.model < article.txt | opennlp TokenizerME tokenize.model | more
+Loading model ... Loading model ... done
+done
+Showa Shell gained 20 to 1,570 and Mitsubishi Oil rose 50 to 1,500.
+Sumitomo Metal Mining fell five yen to 692 and Nippon Mining added 15 to 960 .
+Among other winners Wednesday was Nippon Shokubai , which was up 80 at 2,410 .
+Marubeni advanced 11 to 890 .
+London share prices were bolstered largely by continued gains on Wall Street and technical factors affecting demand for London 's blue-chip stocks .
+...etc...]]>
+		 </screen>
+			Of course this is all on the command line. Many people use the models
+			directly in their Java code by creating SentenceDetector and
+			Tokenizer objects and calling their methods as appropriate. The
+			following section will explain how the Tokenizers can be used
+			directly from java.
+		</para>
+	</section>
+
+	<section id="tools.tokenizer.api">
+		<title>Tokenizer API</title>
+		<para>
+			The Tokenizers can be integrated into an application by the defined
+			API.
+			The shared instance of the WhitespaceTokenizer can be retrieved from a
+			static field WhitespaceTokenizer.INSTANCE. The shared instance of the
+			SimpleTokenizer can be retrieved in the same way from
+			SimpleTokenizer.INSTANCE.
+			To instantiate the TokenizerME (the learnable tokenizer) a Token Model
+			must be created first. The following code sample shows how a model
+			can be loaded.
+			<programlisting>
+			<![CDATA[
+InputStream modelIn = new FileInputStream("en-token.bin");
+
+try {
+  TokenizerModel model = new TokenizerModel(modelIn);
+}
+catch (IOException e) {
+  e.printStackTrace();
+}
+finally {
+  if (modelIn != null) {
+    try {
+      modelIn.close();
+    }
+    catch (IOException e) {
+    }
+  }
+}
+			]]>
+		 </programlisting>
+			After the model is loaded the TokenizerME can be instantiated.
+			<programlisting>
+			<![CDATA[
+Tokenizer tokenizer = new TokenizerME(model);]]>
+		 </programlisting>
+			The tokenizer offers two tokenize methods, both expect an input
+			String object which contains the untokenized text. If possible it
+			should be a sentence, but depending on the training of the learnable
+			tokenizer this is not required. The first returns an array of
+			Strings, where each String is one token.
+			<programlisting>
+			<![CDATA[
+String tokens[] = tokenizer.tokenize("An input sample sentence.");]]>
+		 </programlisting>
+			The output will be an array with these tokens.
+			<programlisting>
+			<![CDATA[
+"An", "input", "sample", "sentence", "."]]>
+		 </programlisting>
+			The second method, tokenizePos returns an array of Spans, each Span
+			contain the begin and end character offsets of the token in the input
+			String.
+			<programlisting>
+			<![CDATA[
+Span tokenSpans[] = tokenizer.tokenizePos("An input sample sentence.");]]>		
+			</programlisting>
+			The tokenSpans array now contain 5 elements. To get the text for one
+			span call Span.getCoveredText which takes a span and the input text.
+
+			The TokenizerME is able to output the probabilities for the detected
+			tokens. The getTokenProbabilities method must be called directly
+			after one of the tokenize methods was called.
+			<programlisting>
+			<![CDATA[
+TokenizerME tokenizer = ...
+
+String tokens[] = tokenizer.tokenize(...);
+double tokenProbs[] = tokenizer.getTokenProbabilities();
+			]]>		
+			</programlisting>
+			The tokenProbs array now contains one double value per token, the
+			value is between 0 and 1, where 1 is the highest possible probability
+			and 0 the lowest possible probability.
+		</para>
+	</section>
+	<section id="tools.tokenizer.cmdline.training">
+		<title>Training Tool</title>
+		<para>
+			OpenNLP has a command line tool which is used to train the models
+			available from the model download page on various corpora. The data
+			must be converted to the OpenNLP Tokenizer training format. Which is
+			one sentence per line. Tokens are either separater by a whitespace or
+			if by a special &lt;SPLIT&gt; tag.
+			
+			The following sample shows the sample from above in the correct format.
+						<programlisting>
+			<![CDATA[
+Pierre Vinken<SPLIT>, 61 years old<SPLIT>, will join the board as a nonexecutive director Nov. 29<SPLIT>.
+Mr. Vinken is chairman of Elsevier N.V.<SPLIT>, the Dutch publishing group<SPLIT>.
+Rudolph Agnew<SPLIT>, 55 years old and former chairman of Consolidated Gold Fields PLC<SPLIT>, was named a nonexecutive director of this British industrial conglomerate<SPLIT>. 
+			]]>		
+			</programlisting>
+			Usage of the tool:
+			<screen>
+			<![CDATA[
+$ bin/opennlp TokenizerTrainer
+Usage: opennlp TokenizerTrainer-lang language -encoding charset [-iterations num] [-cutoff num] [-alphaNumOpt] -data trainingData -model model
+-lang language     specifies the language which is being processed.
+-encoding charset  specifies the encoding which should be used for reading and writing text.
+-iterations num    specified the number of training iterations
+-cutoff num        specifies the min number of times a feature must be seen
+-alphaNumOpt Optimization flag to skip alpha numeric tokens for further tokenization
+			]]>		
+			</screen>
+			To train the english tokenizer use the following command:
+			<screen>
+			<![CDATA[
+$ bin/opennlp TokenizerTrainer -encoding UTF-8 -lang en -alphaNumOpt -data en-token.train -model en-token.bin
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 262271 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 262271 events to 59060.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 59060
+	    Number of Outcomes: 2
+	  Number of Predicates: 15695
+...done.
+Computing model parameters...
+Performing 100 iterations.
+  1:  .. loglikelihood=-181792.40419263614	0.9614292087192255
+  2:  .. loglikelihood=-34208.094253153664	0.9629238459456059
+  3:  .. loglikelihood=-18784.123872910015	0.9729211388220581
+  4:  .. loglikelihood=-13246.88162585859	0.9856103038460219
+  5:  .. loglikelihood=-10209.262670265718	0.9894422181636552
+
+ ...<skipping a bunch of iterations>...
+
+ 95:  .. loglikelihood=-769.2107474529454	0.999511955191386
+ 96:  .. loglikelihood=-763.8891914534009	0.999511955191386
+ 97:  .. loglikelihood=-758.6685383254891	0.9995157680414533
+ 98:  .. loglikelihood=-753.5458314695236	0.9995157680414533
+ 99:  .. loglikelihood=-748.5182305519613	0.9995157680414533
+100:  .. loglikelihood=-743.5830058068038	0.9995157680414533
+Wrote tokenizer model.
+Path: en-token.bin
+			]]>		
+			</screen>
+		</para>
+	</section>
+</chapter>
