@@ -42,7 +42,6 @@ import opennlp.uima.util.ContainingConstraint;
 import opennlp.uima.util.OpennlpUtil;
 import opennlp.uima.util.UimaUtil;
 
-import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.FSIndex;
 import org.apache.uima.cas.Type;
