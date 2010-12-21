@@ -17,20 +17,12 @@
 
 package opennlp.uima.namefind;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.eval.Mean;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
-import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
-import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
-import opennlp.tools.util.featuregen.TokenFeatureGenerator;
-import opennlp.tools.util.featuregen.TokenPatternFeatureGenerator;
-import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.UimaUtil;
 
