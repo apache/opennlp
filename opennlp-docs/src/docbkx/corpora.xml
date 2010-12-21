@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter id="tools.corpora">
+
+	<title>Corpora</title>
+	<para>
+	OpenNLP has built-in support to convert various corpora
+	into the native training format needed by the different
+	trainable components.
+	</para>
+	<section id="tools.corpora.conll">
+		<title>CONLL</title>
+		<para>
+		CoNLL stands for the Confernece on Computational Natural Language Learning and is not
+		a single project but a consortium of developers attempting to broaden the computing
+		environment. More information about the entire conference series can be obtained here
+		for CoNLL.
+		</para>
+		<section id="tools.corpora.conll.2003">
+		<title>CONLL 2003</title>
+		<para>
+		The shared task of CoNLL-2003 is language independent named entity recognition
+		for English and German.
+		</para>
+		<section id="tools.corpora.conll.2003.getting">
+		<title>Getting the data</title>
+		<para>
+		The English data is the Reuters Corpus, which is a collection of news wire articles.
+		The Reuters Corpus can be obtained free of charges from the NIST for research
+		purposes: http://trec.nist.gov/data/reuters/reuters.html
+		</para>
+		<para>
+		The German data is a collection of articles from the German newspaper Frankfurter
+		Rundschau. The articles are part of the ECI Multilingual Text Corpus which
+		can be obtained for 75$ (2010) from the Linguistic Data Consortium:
+		http://www.ldc.upenn.edu/Catalog/CatalogEntry.jsp?catalogId=LDC94T5 
+		</para>
+		<para>After one of the corpora is available the data must be
+		transformed as explained in the README file to the conll format.
+		The transformed data can be read by the OpenNLP CONLL03 converter.
+		</para>
+		</section>
+		<section id="tools.corpora.conll.2003.converting">
+		<title>Converting the data</title>
+		<para>
+		To convert the information to the OpenNLP format:
+		<programlisting>
+			<![CDATA[
+$ bin/opennlp TokenNameFinderConverter conll03 -data eng.train -lang en -types per > corpus_train.txt]]>
+		</programlisting>
+		Optionally, you can convert the training test samples as well.
+		<programlisting>
+			<![CDATA[
+bin/opennlp TokenNameFinderConverter conll03 -data eng.testa -lang en -types per > corpus_testa.txt
+bin/opennlp TokenNameFinderConverter conll03 -data eng.testb -lang en -types per > corpus_testb.txt]]>
+		</programlisting>
+		</para>
+		</section>
+		<section id="tools.corpora.conll.2003.training.english">
+		<title>Training with English data</title>
+		<para>
+		 To train the model for the name finder:
+		 <programlisting>
+			<![CDATA[
+$ bin/opennlp TokenNameFinderTrainer -lang en -encoding utf8 -iterations 500 \
+    -data corpus_train.txt -model en_ner_person.bin]]>
+		</programlisting>
+		<programlisting>
+			<![CDATA[
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 203621 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 203621 events to 179409.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 179409
+	    Number of Outcomes: 3
+	  Number of Predicates: 58814
+...done.
+Computing model parameters...
+Performing 500 iterations.
+  1:  .. loglikelihood=-223700.5328318588	0.9453494482396216
+  2:  .. loglikelihood=-40525.939777363084	0.9467933071736215
+  3:  .. loglikelihood=-24893.98837874921	0.9598518816821447
+  4:  .. loglikelihood=-18420.3379471033	0.9712996203731442
+... cut lots of iterations ...
+498:  .. loglikelihood=-952.8501399442295	0.9988950059178572
+499:  .. loglikelihood=-952.0600155746948	0.9988950059178572
+500:  .. loglikelihood=-951.2722802086295	0.9988950059178572
+Writing name finder model ... done (1.638s)
+
+Wrote name finder model to
+path: .\en_ner_person.bin]]>
+		</programlisting>
+		</para>
+		</section>
+		<section id="tools.corpora.conll.2003.evaluation.english">
+		<title>Evaluating with English data</title>
+		<para>
+		Since we created the test A and B files above, we can use them to evaluate the model.
+		<programlisting>
+			<![CDATA[
+$ bin/opennlp TokenNameFinderEvaluator -lang en -encoding utf8 -model en_ner_person.bin \
+    -data corpus_testa.txt]]>
+		</programlisting>
+		<programlisting>
+			<![CDATA[
+Loading Token Name Finder model ... done (0.359s)
+current: 190.2 sent/s avg: 190.2 sent/s total: 199 sent
+current: 648.3 sent/s avg: 415.9 sent/s total: 850 sent
+current: 530.1 sent/s avg: 453.6 sent/s total: 1380 sent
+current: 793.8 sent/s avg: 539.0 sent/s total: 2178 sent
+current: 705.4 sent/s avg: 571.9 sent/s total: 2882 sent
+
+
+Average: 569.4 sent/s
+Total: 3251 sent
+Runtime: 5.71s
+
+Precision: 0.9366247297154147
+Recall: 0.739956568946797
+F-Measure: 0.8267557582133971]]>
+		</programlisting>
+		</para>
+		</section>
+	</section>
+	</section>
+	<section id="tools.corpora.arvores-deitadas">
+		<title>Arvores Deitadas</title>
+		<para>
+		TODO: Insert description after discussion on ML is finished.
+		</para>
+		
+		<section id="tools.corpora.arvores-deitadas.getting">
+			<title>Getting the data</title>
+			<para>
+			The Corpus can be downloaded from here: http://www.linguateca.pt/floresta/corpus.html
+			</para>
+			<para>
+			The direct link to the corpus file: http://www.linguateca.pt/floresta/ficheiros/gz/amazonia.ad.gz
+			</para>
+		</section>
+		
+		<section id="tools.corpora.arvores-deitadas.converting">
+			<title>Converting the data</title>
+			<para>
+				For now only the Token Name Finder is available:
+			<programlisting>
+			<![CDATA[
+$ bin/opennlp TokenNameFinderConverter ad -encoding ISO-8859-1 -data ../corpus/amazonia.ad \
+    -lang pt -types per > corpus.txt]]>
+			</programlisting>
+			</para>
+		</section>
+		<section id="tools.corpora.arvores-deitadas.evaluation">
+			<title>Evaluation</title>
+			<para>
+			To perform the evaluation the corpus was split into a training and a test part.
+			<programlisting>
+			<![CDATA[
+$ sed '1,55172d' corpus.txt > corpus_train.txt
+$ sed '55172,100000000d' corpus.txt > corpus_test.txt]]>
+			</programlisting>
+			<programlisting>
+			<![CDATA[
+$ bin/opennlp TokenNameFinderTrainer -lang PT -encoding UTF-8 -data corpus_train.txt \
+    -model pt-ner.bin -cutoff 20
+..
+$ bin/opennlp TokenNameFinderEvaluator -encoding UTF-8 -model ../model/pt-ner.bin \
+    -data corpus_test.txt
+
+Precision: 0.8005071889818507
+Recall: 0.7450581122145297
+F-Measure: 0.7717879983140168]]>
+			</programlisting>
+			</para>
+		</section>
+	</section>
+</chapter>
