@@ -85,7 +85,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
     this.types = types;
   }
   
-  private static final Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
+  static final Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
     
     String type = beginTag.substring(2);
     
