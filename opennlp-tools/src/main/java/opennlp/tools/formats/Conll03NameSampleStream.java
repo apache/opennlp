@@ -33,17 +33,11 @@ import static opennlp.tools.formats.Conll02NameSampleStream.extract;
  */
 public class Conll03NameSampleStream implements ObjectStream<NameSample>{
 
-  // todo: the CoNLL03 supports more than english.
   public enum LANGUAGE {
     EN,
     DE
   }
-
-  public static final int GENERATE_PERSON_ENTITIES = 0x01;
-  public static final int GENERATE_ORGANIZATION_ENTITIES = 0x01 << 1;
-  public static final int GENERATE_LOCATION_ENTITIES = 0x01 << 2;
-  public static final int GENERATE_MISC_ENTITIES = 0x01 << 3;
-
+  
   private final LANGUAGE lang;
   private final ObjectStream<String> lineStream;
 
@@ -91,10 +85,10 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
     String line;
     while ((line = lineStream.read()) != null && !StringUtil.isEmpty(line)) {
 
-      if (LANGUAGE.EN.equals(lang) && line.startsWith("-DOCSTART-")) {
+      if (LANGUAGE.EN.equals(lang) && line.startsWith(Conll02NameSampleStream.DOCSTART)) {
         isClearAdaptiveData = true;
         // english data has a blank line after DOCSTART tag
-        lineStream.read();
+        lineStream.read(); // TODO: Why isn't that caught by isEmpty ?!
         continue;
       }
 
@@ -130,16 +124,20 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
 
         String tag = tags.get(i);
 
-        if (tag.endsWith("PER") && (types & GENERATE_PERSON_ENTITIES) == 0)
+        if (tag.endsWith("PER") && 
+        		(types & Conll02NameSampleStream.GENERATE_PERSON_ENTITIES) == 0)
           tag = "O";
 
-        if (tag.endsWith("ORG") && (types & GENERATE_ORGANIZATION_ENTITIES) == 0)
+        if (tag.endsWith("ORG") && 
+        		(types & Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES) == 0)
           tag = "O";
 
-        if (tag.endsWith("LOC") && (types & GENERATE_LOCATION_ENTITIES) == 0)
+        if (tag.endsWith("LOC") && 
+        		(types & Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES) == 0)
           tag = "O";
 
-        if (tag.endsWith("MISC") && (types & GENERATE_MISC_ENTITIES) == 0)
+        if (tag.endsWith("MISC") && 
+        		(types & Conll02NameSampleStream.GENERATE_MISC_ENTITIES) == 0)
           tag = "O";
 
         if (tag.equals("O")) {

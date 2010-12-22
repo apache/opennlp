@@ -57,6 +57,8 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
   public static final int GENERATE_LOCATION_ENTITIES = 0x01 << 2;
   public static final int GENERATE_MISC_ENTITIES = 0x01 << 3;
   
+  public static final String DOCSTART = "-DOCSTART-";
+	
   private final LANGUAGE lang;
   private final ObjectStream<String> lineStream;
   
@@ -121,7 +123,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
     String line;
     while ((line = lineStream.read()) != null && !StringUtil.isEmpty(line)) {
       
-      if (LANGUAGE.NL.equals(lang) && line.startsWith("-DOCSTART-")) {
+      if (LANGUAGE.NL.equals(lang) && line.startsWith(DOCSTART)) {
         isClearAdaptiveData = true;
         continue;
       }
