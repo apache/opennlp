@@ -1,0 +1,19 @@
+-DOCSTART- -X- -X- -X- O
+
+Ereignis Ereignis NN I-NC O
+und und KON O O
+Erzählung Erzählung NN I-NC O
+oder oder KON I-NC O
+: : $. O O
+
+Albrecht Albrecht NE I-NC I-PER
+Lehmann Lehmann NE I-NC I-PER
+versucht versuchen VVFIN I-VC O
+in in APPR I-PC O
+seinem sein PPOSAT I-NC O
+Buch Buch NN I-NC I-MISC
+Im im APPRART I-PC I-MISC
+Fremden Fremde NN I-NC I-MISC
+ungewollt ungewollt ADJD O O
+zuhaus <unknown> ADV O O
+
