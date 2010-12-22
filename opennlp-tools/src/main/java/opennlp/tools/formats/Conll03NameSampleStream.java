@@ -114,6 +114,8 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
 
       if (LANGUAGE.EN.equals(lang) && line.startsWith("-DOCSTART-")) {
         isClearAdaptiveData = true;
+        // english data has a blank line after DOCSTART tag
+        lineStream.read();
         continue;
       }
 
