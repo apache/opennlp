@@ -21,13 +21,15 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 
+import static opennlp.tools.formats.Conll02NameSampleStream.extract;
+
 /**
+ * An import stream which can parse the CONLL03 data.
  */
 public class Conll03NameSampleStream implements ObjectStream<NameSample>{
 
@@ -75,29 +77,6 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
       throw new IllegalStateException(e);
     }
     this.types = types;
-  }
-
-  private static final Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
-
-    String type = beginTag.substring(2);
-
-    if ("PER".equals(type)) {
-      type = "person";
-    }
-    else if ("LOC".equals(type)) {
-      type = "location";
-    }
-    else if ("MISC".equals(type)) {
-      type = "misc";
-    }
-    else if ("ORG".equals(type)) {
-      type = "organization";
-    }
-    else {
-      throw new InvalidFormatException("Unkonw type: " + type);
-    }
-
-    return new Span(begin, end, type);
   }
 
   public NameSample read() throws IOException {
