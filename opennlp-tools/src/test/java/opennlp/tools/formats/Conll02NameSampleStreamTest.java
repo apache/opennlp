@@ -62,6 +62,7 @@ public class Conll02NameSampleStreamTest {
     Span nameSpan = personName.getNames()[0];
     assertEquals(0, nameSpan.getStart());
     assertEquals(4, nameSpan.getEnd());
+    assertEquals(true, personName.isClearAdaptiveDataSet());
     
     assertEquals(0, sampleStream.read().getNames().length);
     
