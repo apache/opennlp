@@ -18,10 +18,8 @@
 package opennlp.tools.formats;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,17 +30,15 @@ import opennlp.tools.util.Span;
 import org.junit.Test;
 
 /**
- *
- * @author James Kosin
+ * Test for the {@link Conll03NameSampleStream} class.
  */
 public class Conll03NameSampleStreamTest {
 
   private static ObjectStream<NameSample> openData(LANGUAGE lang, String name) throws IOException {
     InputStream in = Conll03NameSampleStreamTest.class.getResourceAsStream("/opennlp/tools/formats/" + name);
 
-    return new Conll03NameSampleStream(lang, in, Conll03NameSampleStream.GENERATE_PERSON_ENTITIES);
+    return new Conll03NameSampleStream(lang, in, Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
   }
-
 
   @Test
   public void testParsingEnglishSample() throws IOException {
