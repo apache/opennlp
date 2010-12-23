@@ -85,28 +85,27 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
     String line;
     while ((line = lineStream.read()) != null && !StringUtil.isEmpty(line)) {
 
-      if (LANGUAGE.EN.equals(lang) && line.startsWith(Conll02NameSampleStream.DOCSTART)) {
+      if (line.startsWith(Conll02NameSampleStream.DOCSTART)) {
         isClearAdaptiveData = true;
-        // english data has a blank line after DOCSTART tag
-        lineStream.read(); // TODO: Why isn't that caught by isEmpty ?!
+        String emptyLine = lineStream.read();
+        
+        if (!StringUtil.isEmpty(emptyLine))
+          throw new IOException("Empty line after -DOCSTART- not empty!");
+        
         continue;
       }
 
       String fields[] = line.split(" ");
 
-      // English lines are:
-      //  WORD  POS-TAG SC-TAG NE-TAG
-      // we are after the WORD and NE-TAGs.
+      // For English: WORD  POS-TAG SC-TAG NE-TAG
       if (LANGUAGE.EN.equals(lang) && (fields.length == 4)) {
         sentence.add(fields[0]);
-        tags.add(fields[3]);
+        tags.add(fields[3]); // 3 is NE-TAG
       }
-      // German lines are:
-      //  WORD  LEMA-TAG POS-TAG SC-TAG NE-TAG
+      // For German: WORD  LEMA-TAG POS-TAG SC-TAG NE-TAG
       else if (LANGUAGE.DE.equals(lang) && (fields.length == 5)) {
-        // todo: someone please verify the Gernam data.
         sentence.add(fields[0]);
-        tags.add(fields[4]);
+        tags.add(fields[4]); // 4 is NE-TAG
       }
       else {
         throw new IOException("Incorrect number of fields per line for language!");
