@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.cmdline.chunker.ChunkerEvaluatorTool;
 import opennlp.tools.cmdline.chunker.ChunkerMETool;
 import opennlp.tools.cmdline.chunker.ChunkerTrainerTool;
 import opennlp.tools.cmdline.namefind.CensusDictionaryCreatorTool;
@@ -100,6 +101,7 @@ public final class CLI {
     // Chunker
     tools.add(new ChunkerMETool());
     tools.add(new ChunkerTrainerTool());
+    tools.add(new ChunkerEvaluatorTool());
     
     // Parser
     tools.add(new ParserTool());

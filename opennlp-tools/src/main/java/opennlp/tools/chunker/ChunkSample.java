@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import opennlp.tools.util.Span;
+
 public class ChunkSample {
   private final List<String> sentence;
 
@@ -56,6 +58,36 @@ public class ChunkSample {
   
   public String[] getPreds() {
     return preds.toArray(new String[preds.size()]);
+  }
+  
+  public Span[] getPhrasesAsSpanList() {
+	  List<Span> phrases =  new ArrayList<Span>();
+	  String startTag = "";
+	  int startIndex = 0;
+	  boolean foundPhrase = false;
+	    
+	    for (int ci=0, cn = preds.size(); ci < cn; ci++) {
+	    	String pred = preds.get(ci);
+	    	if( pred.startsWith("B-") || ( !pred.equals("I-" + startTag) && !pred.equals("O") )) { // start
+	    		if(foundPhrase) { // handle the last
+	    			phrases.add(new Span(startIndex, ci, startTag));
+	    		}
+	    		startIndex = ci;
+	    		startTag = pred.substring(2);
+	    		foundPhrase = true;
+	    	} else if(pred.equals("I-" + startTag)) { // middle 
+	    		// do nothing
+	    	} else if(foundPhrase) {// end
+	    		phrases.add(new Span(startIndex, ci, startTag));
+	    		foundPhrase = false;
+	    		startTag = "";
+	    	}
+	    }
+	    if(foundPhrase) { // leftover
+	    	phrases.add(new Span(startIndex, preds.size(), startTag));
+	    }
+	    
+	    return phrases.toArray(new Span[phrases.size()]);
   }
   
   @Override
