@@ -20,6 +20,13 @@ package opennlp.tools.chunker;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.Span;
+
 import org.junit.Test;
 
 public class ChunkSampleTest {
@@ -87,4 +94,49 @@ public class ChunkSampleTest {
     assertEquals(" [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] " +
     		"[VP range_VBP ] [ADVP widely_RB ] ._.", sample.toString());
   }
+	
+  @Test
+  public void testAsSpan() {
+	ChunkSample sample = new ChunkSample(createSentence(), createTags(),
+			createChunks());
+	Span[] spans = sample.getPhrasesAsSpanList();
+
+	assertEquals(5, spans.length);
+	assertEquals(new Span(0, 1, "NP"), spans[0]);
+	assertEquals(new Span(1, 2, "PP"), spans[1]);
+	assertEquals(new Span(2, 5, "NP"), spans[2]);
+	assertEquals(new Span(5, 6, "VP"), spans[3]);
+	assertEquals(new Span(6, 7, "ADVP"), spans[4]);
+  }
+
+  @Test
+  public void testRegions() throws IOException {
+	InputStream in = getClass().getClassLoader()
+			.getResourceAsStream("opennlp/tools/chunker/output.txt");
+
+	String encoding = "UTF-8";
+
+	DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
+			new PlainTextByLineStream(new InputStreamReader(in,
+					encoding)), false);
+
+	ChunkSample cs1 = predictedSample.read();
+	String[] g1 = Span.spansToStrings(cs1.getPhrasesAsSpanList(), cs1.getSentence());
+	assertEquals(15, g1.length);
+	
+	ChunkSample cs2 = predictedSample.read();
+	String[] g2 = Span.spansToStrings(cs2.getPhrasesAsSpanList(), cs2.getSentence());
+	assertEquals(10, g2.length);
+	
+	ChunkSample cs3 = predictedSample.read();
+	String[] g3 = Span.spansToStrings(cs3.getPhrasesAsSpanList(), cs3.getSentence());
+	assertEquals(7, g3.length);
+	assertEquals("United", g3[0]);
+	assertEquals("'s directors", g3[1]);
+	assertEquals("voted", g3[2]);
+	assertEquals("themselves", g3[3]);
+	assertEquals("their spouses", g3[4]);
+	assertEquals("lifetime access", g3[5]);
+	assertEquals("to", g3[6]);
+	}
 }
