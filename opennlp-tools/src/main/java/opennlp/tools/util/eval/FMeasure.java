@@ -29,15 +29,13 @@ package opennlp.tools.util.eval;
  */
 public final class FMeasure {
 
-  /**
-   * The mean of all calculated precision scores.
-   */
-  private Mean precisionScore = new Mean();
-  
-  /**
-   * The mean of all calculated recall scores.
-   */
-  private Mean recallScore = new Mean();
+	/** |selected| = tp + fp */
+	private long selected;
+	
+	/** |target| = tp + fp */
+	private long target;
+	
+	private long truePositive;
   
   /**
    * Retrieves the arithmetic mean of the precision scores
@@ -46,7 +44,7 @@ public final class FMeasure {
    * @return the arithmetic mean of all precision scores
    */
   public double getPrecisionScore() {
-    return precisionScore.mean();
+    return selected > 0 ? (double)truePositive / (double)selected : 0;
   }
 
   /**
@@ -56,7 +54,7 @@ public final class FMeasure {
    * @return the arithmetic mean of all recall scores
    */
   public double getRecallScore() {
-    return recallScore.mean();
+    return target > 0 ? (double)truePositive / (double)target : 0;
   }
   
   /**
@@ -79,19 +77,16 @@ public final class FMeasure {
   }
  
   public void updateScores(Object references[], Object predictions[]) {
-    
-    double precision = FMeasure.precision(references, predictions);
-    if (!Double.isNaN(precision))
-        precisionScore.add(precision, references.length);
-    
-    double recall = FMeasure.recall(references, predictions);
-    if (!Double.isNaN(recall))
-        recallScore.add(FMeasure.recall(references, predictions), references.length);
+	  
+	  truePositive += countTruePositives(references, predictions);
+	  selected += predictions.length;
+	  target += references.length;
   }
   
   public void mergeInto(FMeasure measure) {
-    precisionScore.add(measure.getPrecisionScore(), measure.precisionScore.count());
-    recallScore.add(measure.getRecallScore(), measure.recallScore.count());
+    this.selected += measure.selected;
+    this.target += measure.target;
+    this.truePositive += measure.truePositive;
   }
   
   /**
