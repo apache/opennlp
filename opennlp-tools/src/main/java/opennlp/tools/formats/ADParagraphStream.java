@@ -138,8 +138,28 @@ public class ADParagraphStream extends
           if( element.isLeaf() ) {
             if (nodeStack.isEmpty()) {
               root.addElement(element);
-            } else {
-              nodeStack.peek().addElement(element);
+						} else {
+							// look for the node with the correct level
+							Node peek = nodeStack.peek();
+							if (element.level == 0) { // add to the root
+								nodeStack.firstElement().addElement(element);
+							} else {
+								Node parent = null;
+								int index = nodeStack.size() - 1;
+								while(parent == null) {
+									if(peek.getLevel() < element.getLevel()) {
+										parent = peek;
+									} else {
+										index--;
+										if(index > -1) {
+											peek = nodeStack.get(index);
+										} else {
+											parent = nodeStack.firstElement();
+										}
+									}
+								}
+								parent.addElement(element);
+							}
             }
           } else {
             if (!nodeStack.isEmpty()) {
