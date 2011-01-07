@@ -83,7 +83,7 @@ public class ChunkerMETool implements CmdLineTool {
             posSample.getTags());
         
         System.out.println(new ChunkSample(posSample.getSentence(),
-            posSample.getTags(), chunks).toString());
+            posSample.getTags(), chunks).nicePrint());
         
         perfMon.incrementCounter();
       }
