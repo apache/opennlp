@@ -80,6 +80,8 @@ public class ADParagraphStream extends
         .compile("^([=-]*)([^:=]+:[^\\(\\s]+)(\\(([^\\)]+)\\))?\\s*$");
     private Pattern leafPattern = Pattern
         .compile("^([=-]*)([^:=]+:[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
+    private Pattern bizarreLeafPattern = Pattern
+    		.compile("^([=-]*)([^:=]+=[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
     private Pattern punctuationPattern = Pattern.compile("^(=*)(\\W+)$");
 
     /** 
@@ -129,45 +131,46 @@ public class ADParagraphStream extends
         //line = reader.readLine();
         while (line.length() != 0 && line.startsWith("</s>") == false) {
           TreeElement element = this.getElement(line);
-
-          // remove elements at same level or higher
-          while (!nodeStack.isEmpty()
-              && element.getLevel() > 0 && element.getLevel() <= nodeStack.peek().getLevel()) {
-            nodeStack.pop();
-          }
-          if( element.isLeaf() ) {
-            if (nodeStack.isEmpty()) {
-              root.addElement(element);
-						} else {
-							// look for the node with the correct level
-							Node peek = nodeStack.peek();
-							if (element.level == 0) { // add to the root
-								nodeStack.firstElement().addElement(element);
-							} else {
-								Node parent = null;
-								int index = nodeStack.size() - 1;
-								while(parent == null) {
-									if(peek.getLevel() < element.getLevel()) {
-										parent = peek;
-									} else {
-										index--;
-										if(index > -1) {
-											peek = nodeStack.get(index);
-										} else {
-											parent = nodeStack.firstElement();
-										}
-									}
-								}
-								parent.addElement(element);
-							}
+          
+          if(element != null) {
+            // remove elements at same level or higher
+            while (!nodeStack.isEmpty()
+                && element.getLevel() > 0 && element.getLevel() <= nodeStack.peek().getLevel()) {
+              nodeStack.pop();
             }
-          } else {
-            if (!nodeStack.isEmpty()) {
-              nodeStack.peek().addElement(element);
+            if( element.isLeaf() ) {
+              if (nodeStack.isEmpty()) {
+                root.addElement(element);
+  						} else {
+  							// look for the node with the correct level
+  							Node peek = nodeStack.peek();
+  							if (element.level == 0) { // add to the root
+  								nodeStack.firstElement().addElement(element);
+  							} else {
+  								Node parent = null;
+  								int index = nodeStack.size() - 1;
+  								while(parent == null) {
+  									if(peek.getLevel() < element.getLevel()) {
+  										parent = peek;
+  									} else {
+  										index--;
+  										if(index > -1) {
+  											peek = nodeStack.get(index);
+  										} else {
+  											parent = nodeStack.firstElement();
+  										}
+  									}
+  								}
+  								parent.addElement(element);
+  							}
+              }
+            } else {
+              if (!nodeStack.isEmpty()) {
+                nodeStack.peek().addElement(element);
+              }
+              nodeStack.push((Node) element);
             }
-            nodeStack.push((Node) element);
           }
-
           line = reader.readLine();
         }
 
@@ -234,6 +237,46 @@ public class ADParagraphStream extends
         return leaf;
       }
 
+      // process the bizarre cases
+      if(line.equals("_") || line.startsWith("<lixo") || line.startsWith("pause")) {
+      	return null;
+      }
+      
+      if(line.startsWith("=")) {
+      	Matcher bizarreLeafMatcher = bizarreLeafPattern.matcher(line);
+        if (bizarreLeafMatcher.matches()) {
+          int level = bizarreLeafMatcher.group(1).length();
+          String syntacticTag = bizarreLeafMatcher.group(2);
+          String lemma = bizarreLeafMatcher.group(3);
+          String morphologicalTag = bizarreLeafMatcher.group(4);
+          String lexeme = bizarreLeafMatcher.group(5);
+          Leaf leaf = new Leaf();
+          leaf.setLevel(level);
+          leaf.setSyntacticTag(syntacticTag);
+          leaf.setMorphologicalTag(morphologicalTag);
+          leaf.setLexeme(lexeme);
+          if (lemma != null) {
+            if (lemma.length() > 2) {
+              lemma = lemma.substring(1, lemma.length() - 1);
+            }
+            leaf.setLemma(lemma);
+          }
+
+          return leaf;
+        } else {
+        	int level = line.lastIndexOf("=");
+        	String lexeme = line.substring(level + 1);
+        	
+        	 Leaf leaf = new Leaf();
+           leaf.setLevel(level + 1);
+           leaf.setSyntacticTag("");
+           leaf.setMorphologicalTag("");
+           leaf.setLexeme(lexeme);
+           
+           return leaf;
+        }
+      }
+      
       System.err.println("Couldn't parse leaf: " + line);
       Leaf leaf = new Leaf();
       leaf.setLevel(0);
