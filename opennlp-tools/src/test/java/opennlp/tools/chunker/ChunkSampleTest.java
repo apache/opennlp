@@ -20,9 +20,11 @@ package opennlp.tools.chunker;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -87,12 +89,32 @@ public class ChunkSampleTest {
   }
   
   @Test
-  public void testToString() {
+  public void testToString() throws IOException {
+    
+    ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
+    String[] sentence = createSentence();
+    String[] tags = createTags();
+    String[] chunks = createChunks();
+    
+    StringReader sr = new StringReader(sample.toString());
+    BufferedReader reader = new BufferedReader(sr);
+    for (int i = 0; i < sentence.length; i++) {
+    	String line = reader.readLine();
+    	String[] parts = line.split("\\s+");
+    	assertEquals(3, parts.length);
+    	assertEquals(sentence[i], parts[0]);
+    	assertEquals(tags[i], parts[1]);
+    	assertEquals(chunks[i], parts[2]);
+		}
+  }
+  
+  @Test
+  public void testNicePrint() {
     
     ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
     
     assertEquals(" [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] " +
-    		"[VP range_VBP ] [ADVP widely_RB ] ._.", sample.toString());
+    		"[VP range_VBP ] [ADVP widely_RB ] ._.", sample.nicePrint());
   }
 	
   @Test

@@ -90,8 +90,8 @@ public class ChunkSample {
 	    return phrases.toArray(new Span[phrases.size()]);
   }
   
-  @Override
-  public String toString() {
+  
+  public String nicePrint() {
     
     StringBuilder chunkString = new StringBuilder();
     
@@ -108,4 +108,15 @@ public class ChunkSample {
     
     return chunkString.toString();
   }
+  
+  @Override
+  public String toString() {
+	    
+	    StringBuilder chunkString = new StringBuilder();
+	    
+	    for (int ci=0; ci < preds.size(); ci++) {
+	    	chunkString.append(sentence.get(ci) + " " + tags.get(ci) + " " + preds.get(ci) + "\n");
+	    }
+	    return chunkString.toString();
+	  }
 }
