@@ -92,21 +92,35 @@ public class ChunkSample {
   
   
   public String nicePrint() {
+  	
+  	Span[] spans = getPhrasesAsSpanList();
+ 	
+  	StringBuilder result = new StringBuilder(" ");
     
-    StringBuilder chunkString = new StringBuilder();
-    
-    for (int ci=0, cn = preds.size(); ci < cn; ci++) {
-      if (ci > 0 && !preds.get(ci).startsWith("I-") && !preds.get(ci - 1).equals("O")) {
-        chunkString.append(" ]");
-      }
-      if (preds.get(ci).startsWith("B-")) {
-        chunkString.append(" [" + preds.get(ci).substring(2));
+    for (int tokenIndex = 0; tokenIndex < sentence.size(); tokenIndex++) {
+      for (int nameIndex = 0; nameIndex < spans.length; nameIndex++) {
+        if (spans[nameIndex].getStart() == tokenIndex) {
+          result.append( "[" + spans[nameIndex].getType()).append(" ");
+        }
+
+        if (spans[nameIndex].getEnd() == tokenIndex) {
+          result.append("]").append(' ');
+        }
       }
 
-      chunkString.append(" " + getSentence()[ci] + "_" + getTags()[ci]);
+      result.append(sentence.get(tokenIndex) + "_" + tags.get(tokenIndex) + ' ');
     }
+
+    if (sentence.size() > 1)
+      result.setLength(result.length() - 1);
     
-    return chunkString.toString();
+    for (int nameIndex = 0; nameIndex < spans.length; nameIndex++) {
+      if (spans[nameIndex].getEnd() == sentence.size()) {
+        result.append(']');
+      }
+    }
+
+    return result.toString();
   }
   
   @Override
