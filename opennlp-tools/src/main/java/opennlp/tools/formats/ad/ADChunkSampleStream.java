@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,10 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
-import opennlp.tools.formats.ADParagraphStream.Paragraph;
-import opennlp.tools.formats.ADParagraphStream.ParagraphParser.Leaf;
-import opennlp.tools.formats.ADParagraphStream.ParagraphParser.Node;
-import opennlp.tools.formats.ADParagraphStream.ParagraphParser.TreeElement;
+import opennlp.tools.formats.ad.ADParagraphStream.Paragraph;
+import opennlp.tools.formats.ad.ADParagraphStream.ParagraphParser.Leaf;
+import opennlp.tools.formats.ad.ADParagraphStream.ParagraphParser.Node;
+import opennlp.tools.formats.ad.ADParagraphStream.ParagraphParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;

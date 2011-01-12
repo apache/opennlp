@@ -24,7 +24,7 @@ import java.util.Map;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.formats.ADChunkSampleStreamFactory;
+import opennlp.tools.formats.ad.ADChunkSampleStreamFactory;
 
 /**
  * Tool to convert multiple data formats into native opennlp chunler training

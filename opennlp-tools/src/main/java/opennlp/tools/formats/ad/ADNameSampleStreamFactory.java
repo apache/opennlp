@@ -15,28 +15,27 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.formats.ad;
 
 import java.io.File;
 import java.nio.charset.Charset;
 
-import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * A Factory to create a Arvores Deitadas ChunkStream from the command line
+ * A Factory to create a Arvores Deitadas NameSampleStream from the command line
  * utility.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ADChunkSampleStreamFactory implements
-    ObjectStreamFactory<ChunkSample> {
+public class ADNameSampleStreamFactory implements
+    ObjectStreamFactory<NameSample> {
 
   interface Parameters {
     @ParameterDescription(valueName = "encoding")
@@ -44,14 +43,6 @@ public class ADChunkSampleStreamFactory implements
 
     @ParameterDescription(valueName = "sampleData")
     String getData();
-    
-    @ParameterDescription(valueName = "start", description = "index of first sentence")
-    @OptionalParameter
-    Integer getStart();
-    
-    @ParameterDescription(valueName = "end", description = "index of last sentence")
-    @OptionalParameter
-    Integer getEnd();
   }
 
   public String getUsage() {
@@ -62,7 +53,7 @@ public class ADChunkSampleStreamFactory implements
     return ArgumentParser.validateArguments(args, Parameters.class);
   }
 
-  public ObjectStream<ChunkSample> create(String[] args) {
+  public ObjectStream<NameSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
@@ -71,18 +62,8 @@ public class ADChunkSampleStreamFactory implements
     if (encoding == null) {
       throw new TerminateToolException(1);
     }
-    
-    ADChunkSampleStream sampleStream = new ADChunkSampleStream(CmdLineUtil.openInFile(new File(params
-        .getData())), encoding.name());
 
-    if(params.getStart() != null && params.getStart() > -1) {
-      sampleStream.setStart(params.getStart());
-    }
-    
-    if(params.getEnd() != null && params.getEnd() > -1) {
-      sampleStream.setEnd(params.getEnd());
-    }
-    
-    return sampleStream;
+    return new ADNameSampleStream(CmdLineUtil.openInFile(new File(params
+        .getData())), encoding.name());
   }
 }
