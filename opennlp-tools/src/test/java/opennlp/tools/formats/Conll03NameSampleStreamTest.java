@@ -34,6 +34,10 @@ import org.junit.Test;
  */
 public class Conll03NameSampleStreamTest {
 
+  private static final String ENGLISH_SAMPLE = "conll2003-en.sample";
+  private static final String GERMAN_SAMPLE = "conll2003-de.sample";
+  
+	
   private static ObjectStream<NameSample> openData(LANGUAGE lang, String name) throws IOException {
     InputStream in = Conll03NameSampleStreamTest.class.getResourceAsStream("/opennlp/tools/formats/" + name);
 
@@ -43,10 +47,9 @@ public class Conll03NameSampleStreamTest {
   @Test
   public void testParsingEnglishSample() throws IOException {
 
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.EN, "conll2003-en.sample");
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.EN, ENGLISH_SAMPLE);
 
     NameSample personName = sampleStream.read();
-
     assertNotNull(personName);
 
     assertEquals(9, personName.getSentence().length);
@@ -67,5 +70,29 @@ public class Conll03NameSampleStreamTest {
 
     assertNull(sampleStream.read());
   }
+  
+  @Test(expected=IOException.class)
+  public void testParsingEnglishSampleWithGermanAsLanguage() throws IOException {
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, ENGLISH_SAMPLE);
+    sampleStream.read();
+  }
+  
+  @Test(expected=IOException.class)
+  public void testParsingGermanSampleWithEnglishAsLanguage() throws IOException {
+	  ObjectStream<NameSample> sampleStream = openData(LANGUAGE.EN, GERMAN_SAMPLE);
+	  sampleStream.read();
+  }
+  
+  @Test
+  public void testParsingGermanSample() throws IOException {
 
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, GERMAN_SAMPLE);
+    
+    NameSample personName = sampleStream.read();
+    assertNotNull(personName);
+    
+    assertEquals(5, personName.getSentence().length);
+    assertEquals(0, personName.getNames().length);
+    assertEquals(true, personName.isClearAdaptiveDataSet());
+  }
 }
