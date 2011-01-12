@@ -29,10 +29,12 @@ package opennlp.tools.util.eval;
  */
 public final class FMeasure {
 
-	/** |selected| = tp + fp */
+	/** |selected| = true positives + false positives <br>
+	 * the count of selected (or retrieved) items  */
 	private long selected;
 	
-	/** |target| = tp + fp */
+	/** |target| = true positives + false negatives <br>
+	 * the count of target (or correct) items */
 	private long target;
 	
 	private long truePositive;
