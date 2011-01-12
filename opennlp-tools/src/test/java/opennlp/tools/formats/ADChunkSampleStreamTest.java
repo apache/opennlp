@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.formats.ad.ADChunkSampleStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 import org.junit.Before;
