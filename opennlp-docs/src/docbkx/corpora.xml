@@ -151,27 +151,34 @@ F-Measure: 0.8267557582133971]]>
 	<section id="tools.corpora.arvores-deitadas">
 		<title>Arvores Deitadas</title>
 		<para>
-		TODO: Insert description after discussion on ML is finished.
-		</para>
-		
+		The Portuguese corpora available at <ulink url="Floresta Sintá(c)tica">http://www.linguateca.pt</ulink> project follow the Arvores Deitadas (AD) format. Apache OpenNLP includes tools to convert from AD format to native format.  
+		</para>		
 		<section id="tools.corpora.arvores-deitadas.getting">
 			<title>Getting the data</title>
 			<para>
 			The Corpus can be downloaded from here: http://www.linguateca.pt/floresta/corpus.html
 			</para>
 			<para>
-			The direct link to the corpus file: http://www.linguateca.pt/floresta/ficheiros/gz/amazonia.ad.gz
+			The Name Finder models were trained using the Amazonia corpus: <ulink url="http://www.linguateca.pt/floresta/ficheiros/gz/amazonia.ad.gz">amazonia.ad</ulink>.
+			The Chunker models were trained using the <ulink url="http://www.linguateca.pt/floresta/ficheiros/gz/Bosque_CF_8.0.ad.txt.gz">Bosque_CF_8.0.ad</ulink>.
 			</para>
 		</section>
 		
 		<section id="tools.corpora.arvores-deitadas.converting">
 			<title>Converting the data</title>
 			<para>
-				For now only the Token Name Finder is available:
+				To extract NameFinder training data from Amazonia corpus:
 			<programlisting>
 			<![CDATA[
-$ bin/opennlp TokenNameFinderConverter ad -encoding ISO-8859-1 -data ../corpus/amazonia.ad \
+$ bin/opennlp TokenNameFinderConverter ad -encoding ISO-8859-1 -data amazonia.ad \
     -lang pt -types per > corpus.txt]]>
+			</programlisting>
+			</para>
+			<para>
+				To extract Chunker training data from Bosque_CF_8.0.ad corpus:
+			<programlisting>
+			<![CDATA[
+$ bin/opennlp ChunkerConverter ad -encoding ISO-8859-1 -data Bosque_CF_8.0.ad.txt > bosque-chunk]]>
 			</programlisting>
 			</para>
 		</section>
