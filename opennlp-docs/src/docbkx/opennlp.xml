@@ -79,7 +79,7 @@ under the License.
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./tokenizer.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./namefinder.xml" />
 	<!--xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./doccat.xml" /-->
-	<!--xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./postagger.xml" /-->
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./postagger.xml" />
 	<!--xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./chunker.xml" /-->
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./parser.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./corpora.xml" />
