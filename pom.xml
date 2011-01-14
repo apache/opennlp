@@ -77,6 +77,21 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.rat</groupId>
+				<artifactId>apache-rat-plugin</artifactId>
+				<version>0.6</version>
+				<executions>
+					<execution>
+						<id>default-cli</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	
