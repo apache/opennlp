@@ -89,6 +89,34 @@
                    </archive>
                 </configuration>
             </plugin>
+            
+            	      <plugin>
+	        <groupId>org.apache.rat</groupId>
+	        <artifactId>apache-rat-plugin</artifactId>
+	        <executions>
+	          <execution>
+	            <id>default-cli</id>
+	            <configuration>
+	              <excludes>
+	                <exclude>CHANGES</exclude>
+	                <exclude>lib/JWNL</exclude>
+	                <exclude>lib/LIBNOTES</exclude>
+	                <exclude>src/test/resources/opennlp/tools/chunker/output.txt</exclude> <!-- test data -->
+	                <exclude>src/test/resources/opennlp/tools/formats/*.sample</exclude> <!-- test data -->
+	                <exclude>src/test/resources/opennlp/tools/namefind/*.txt</exclude> <!-- test data -->
+	                <exclude>src/test/resources/opennlp/tools/namefind/*.train</exclude> <!-- test data -->
+	                <exclude>src/test/resources/opennlp/tools/parser/en_head_rules</exclude> <!-- test data -->
+	                <exclude>src/test/resources/opennlp/tools/parser/en_head_rules</exclude> <!-- test data -->
+	                <exclude>src/test/resources/opennlp/tools/parser/parser.train</exclude> <!-- test data -->
+	                <exclude>src/test/resources/opennlp/tools/parser/test.parse</exclude> <!-- test data -->
+	                <exclude>src/test/resources/opennlp/tools/postag/AnnotatedSentences.txt</exclude> <!-- test data -->
+	                <exclude>src/test/resources/opennlp/tools/sentdetect/Sentences.txt</exclude> <!-- test data -->
+	                <exclude>src/test/resources/opennlp/tools/tokenize/token.train</exclude> <!-- test data -->
+	              </excludes>              
+	            </configuration>
+	          </execution>
+	        </executions>
+	      </plugin>	
 		</plugins>
 	</build>
 </project>

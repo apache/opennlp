@@ -60,6 +60,27 @@
 					</descriptors>
 				</configuration>
 			</plugin>
+	      <plugin>
+	        <groupId>org.apache.rat</groupId>
+	        <artifactId>apache-rat-plugin</artifactId>
+	        <executions>
+	          <execution>
+	            <id>default-cli</id>
+	            <configuration>
+	              <excludes>
+	                <exclude>CHANGES</exclude>
+	                <exclude>lib/ASL</exclude>
+	                <exclude>lib/LIBNOTES</exclude>
+	                <exclude>META-INF/MANIFEST.MF</exclude>
+	                <exclude>samples/sports/*.test</exclude> <!-- sample data -->
+	                <exclude>src/main/java/opennlp/maxent/AllEnglishAffixes.txt</exclude> <!-- test data -->
+	                <exclude>src/test/resources/data/opennlp/maxent/io/*.txt</exclude> <!-- test data -->
+	                <exclude>src/test/resources/data/opennlp/maxent/*.txt</exclude> <!-- test data -->
+	              </excludes>              
+	            </configuration>
+	          </execution>
+	        </executions>
+	      </plugin>		
 		</plugins>
 	</build>
 </project>
