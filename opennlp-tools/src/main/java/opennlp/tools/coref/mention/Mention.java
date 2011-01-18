@@ -24,7 +24,9 @@ import opennlp.tools.util.Span;
  */
 public class Mention implements Comparable<Mention> {
 
-  /** Represents the character offset for this extent. */
+  /** 
+   * Represents the character offset for this extent. 
+   */
   private Span span;
 
   /** 
@@ -32,20 +34,27 @@ public class Mention implements Comparable<Mention> {
    * which piece of code created a particular extent.
    */
   protected String type;
-  /** The entity id indicating which entity this extent belongs to.  This is only
+  
+  /** 
+   * The entity id indicating which entity this extent belongs to.  This is only
    * used when training a coreference classifier.
    */
   private int id;
 
-  /** Represents the character offsets of the the head of this extent. */
+  /** 
+   * Represents the character offsets of the the head of this extent.
+   */
   private Span headSpan;
 
-  /** The parse node that this extent is based on. */
+  /** 
+   * The parse node that this extent is based on.
+   */
   protected Parse parse;
 
-  /** A string representing the name type for this extent. */
+  /** 
+   * A string representing the name type for this extent. 
+   */
   protected String nameType;
-
 
   public Mention(Span span, Span headSpan, int entityId, Parse parse, String extentType) {
     this.span=span;
@@ -70,6 +79,7 @@ public class Mention implements Comparable<Mention> {
 
   /**
    * Returns the character offsets for this extent.
+   * 
    * @return The span representing the character offsets of this extent.
    */
   public Span getSpan() {
@@ -78,6 +88,7 @@ public class Mention implements Comparable<Mention> {
 
   /**
    * Returns the character offsets for the head of this extent.
+   * 
    * @return The span representing the character offsets for the head of this extent.
    */
   public Span getHeadSpan() {
@@ -86,6 +97,7 @@ public class Mention implements Comparable<Mention> {
 
   /**
    * Returns the parse node that this extent is based on.
+   * 
    * @return The parse node that this extent is based on or null if the extent is newly created.
    */
   public Parse getParse() {
@@ -106,6 +118,7 @@ public class Mention implements Comparable<Mention> {
 
   /**
    * Returns the named-entity category associated with this mention.
+   * 
    * @return the named-entity category associated with this mention.
    */
   public String getNameType() {
@@ -114,6 +127,7 @@ public class Mention implements Comparable<Mention> {
 
   /**
    * Specifies the named-entity category associated with this mention.
+   * 
    * @param nameType the named-entity category associated with this mention.
    */
   protected void setNameType(String nameType) {
@@ -122,6 +136,7 @@ public class Mention implements Comparable<Mention> {
 
   /**
    * Associates an id with this mention.
+   * 
    * @param i The id for this mention.
    */
   public void setId(int i) {
@@ -130,6 +145,7 @@ public class Mention implements Comparable<Mention> {
 
   /**
    * Returns the id associated with this mention.
+   * 
    * @return the id associated with this mention.
    */
   public int getId() {
