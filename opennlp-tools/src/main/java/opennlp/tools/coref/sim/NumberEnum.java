@@ -22,12 +22,21 @@ package opennlp.tools.coref.sim;
  */
 public class NumberEnum {
 
-  private String name;
-  /** Singular number type. */
+  private final String name;
+  
+  /** 
+   * Singular number type. 
+   */
   public static final NumberEnum SINGULAR = new NumberEnum("singular");
-  /** Plural number type. */
+  
+  /** 
+   * Plural number type. 
+   */
   public static final NumberEnum PLURAL = new NumberEnum("plural");
-  /** Unknown number type. */
+  
+  /** 
+   * Unknown number type. 
+   */
   public static final NumberEnum UNKNOWN = new NumberEnum("unknown");
 
   private NumberEnum(String name) {
