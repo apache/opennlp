@@ -586,7 +586,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
     return parts.indexOf(child);
   }
 
-  /** Returns the head constituent associated with this constituent.
+  /** 
+   * Returns the head constituent associated with this constituent.
    *
    * @return The head constituent associated with this constituent.
    */
