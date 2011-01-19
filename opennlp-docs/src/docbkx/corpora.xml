@@ -37,6 +37,105 @@ under the License.
 		environment. More information about the entire conference series can be obtained here
 		for CoNLL.
 		</para>
+		<section id="tools.corpora.conll.2000">
+		<title>CONLL 2000</title>
+		<para>
+		The shared task of CoNLL-2000 is Chunking .
+		</para>
+		<section id="tools.corpora.conll.2000.getting">
+		<title>Getting the data</title>
+		<para>
+		CoNLL-2000 made available training and test data for the Chunk task in English. 
+		The data consists of the same partitions of the Wall Street Journal corpus (WSJ) 
+		as the widely used data for noun phrase chunking: sections 15-18 as training data 
+		(211727 tokens) and section 20 as test data (47377 tokens). The annotation of the 
+		data has been derived from the WSJ corpus by a program written by Sabine Buchholz 
+		from Tilburg University, The Netherlands. Both training and test data can be
+		obtained from <ulink url="http://www.cnts.ua.ac.be/conll2000/chunking">http://www.cnts.ua.ac.be/conll2000/chunking</ulink>. 
+		</para>
+		</section>
+		<section id="tools.corpora.conll.2000.converting">
+		<title>Converting the data</title>
+		<para>
+		The data don't need to be transformed because Apache OpenNLP Chunker follows
+		the CONLL 2000 format for training. Check <link linkend="tools.chunker.training">Chunker Training</link> section to learn more.
+		</para>
+		</section>
+		<section id="tools.corpora.conll.2000.training">
+		<title>Training</title>
+		<para>
+		 We can train the model for the Chunker using the train.txt available at CONLL 2000:
+		 <programlisting>
+			<![CDATA[
+bin/opennlp ChunkerTrainerME -encoding UTF-8 -lang en -iterations 500 \
+-data train.txt -model en-chunker.bin]]>
+		</programlisting>
+		<programlisting>
+			<![CDATA[
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 211727 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 211727 events to 197252.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 197252
+	    Number of Outcomes: 22
+	  Number of Predicates: 107838
+...done.
+Computing model parameters...
+Performing 500 iterations.
+  1:  .. loglikelihood=-654457.1455212828	0.2601510435608118
+  2:  .. loglikelihood=-239513.5583724216	0.9260037690044255
+  3:  .. loglikelihood=-141313.1386347238	0.9443387003074715
+  4:  .. loglikelihood=-101083.50853437989	0.954375209585929
+... cut lots of iterations ...
+498:  .. loglikelihood=-1710.8874647317095	0.9995040783650645
+499:  .. loglikelihood=-1708.0908900815848	0.9995040783650645
+500:  .. loglikelihood=-1705.3045902366732	0.9995040783650645
+Writing chunker model ... done (4.019s)
+
+Wrote chunker model to path: .\en-chunker.bin]]>
+		</programlisting>
+		</para>
+		</section>
+		<section id="tools.corpora.conll.2000.evaluation">
+		<title>Evaluating</title>
+		<para>
+		We evaluate the model using the file test.txt  available at CONLL 2000:
+		<programlisting>
+			<![CDATA[
+$ bin/opennlp ChunkerEvaluator -encoding utf8 -model en-chunker.bin -data test.txt]]>
+		</programlisting>
+		<programlisting>
+			<![CDATA[
+Loading Chunker model ... done (0,665s)
+current: 85,8 sent/s avg: 85,8 sent/s total: 86 sent
+current: 88,1 sent/s avg: 87,0 sent/s total: 174 sent
+current: 156,2 sent/s avg: 110,0 sent/s total: 330 sent
+current: 192,2 sent/s avg: 130,5 sent/s total: 522 sent
+current: 167,2 sent/s avg: 137,8 sent/s total: 689 sent
+current: 179,2 sent/s avg: 144,6 sent/s total: 868 sent
+current: 183,2 sent/s avg: 150,3 sent/s total: 1052 sent
+current: 183,2 sent/s avg: 154,4 sent/s total: 1235 sent
+current: 169,2 sent/s avg: 156,0 sent/s total: 1404 sent
+current: 178,2 sent/s avg: 158,2 sent/s total: 1582 sent
+current: 172,2 sent/s avg: 159,4 sent/s total: 1754 sent
+current: 177,2 sent/s avg: 160,9 sent/s total: 1931 sent
+
+
+Average: 161,6 sent/s 
+Total: 2013 sent
+Runtime: 12.457s
+
+Precision: 0.9244354736974896
+Recall: 0.9216837162502096
+F-Measure: 0.9230575441395671]]>
+		</programlisting>
+		</para>
+		</section>
+	</section>
 		<section id="tools.corpora.conll.2003">
 		<title>CONLL 2003</title>
 		<para>
