@@ -25,13 +25,56 @@
     <format>tar.gz</format>
     <format>zip</format>
   </formats>
-  <fileSets>
-    <fileSet>
-      <directory>../</directory>
-      <includes>
-        <include>opennlp-maxent/samples/**</include>
-        <include>opennlp-maxent/lib/**</include>
-      </includes>
-    </fileSet>
-  </fileSets>
+	<dependencySets>
+		<dependencySet>
+			<includes>
+				<include>org.apache.opennlp:opennlp-maxent</include>
+				<include>org.apache.opennlp:opennlp-tools</include>
+				<include>jwnl:jwnl</include>
+			</includes>
+			<unpack>false</unpack>
+			<useProjectArtifact>false</useProjectArtifact>
+			<fileMode>644</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>lib</outputDirectory>
+		</dependencySet>
+	</dependencySets>
+	
+	<fileSets>
+		<fileSet>
+			<directory>../opennlp-tools/bin</directory>
+			<fileMode>755</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>bin</outputDirectory>
+		</fileSet>
+		
+		<fileSet>
+			<directory>../opennlp-docs/target/docbkx/html</directory>
+			<fileMode>644</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>docs/manual</outputDirectory>
+		</fileSet>
+		
+		<fileSet>
+			<directory>../opennlp-maxent/target/apidocs</directory>
+			<fileMode>644</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>docs/apidocs/opennlp-maxent</outputDirectory>
+		</fileSet>
+		
+		<fileSet>
+			<directory>../opennlp-tools/target/apidocs</directory>
+			<fileMode>644</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>docs/apidocs/opennlp-tools</outputDirectory>
+		</fileSet>
+		
+		<fileSet>
+			<directory>../opennlp-uima/target/apidocs</directory>
+			<fileMode>644</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>docs/apidocs/opennlp-uima</outputDirectory>
+		</fileSet>
+		
+	</fileSets>
 </assembly>
