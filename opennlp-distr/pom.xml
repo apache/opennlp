@@ -59,18 +59,11 @@
 						<goals>
 							<goal>single</goal>
 						</goals>
-						<!-- configuration>
-							<descriptors>
-								<descriptor>src/main/assembly/src.xml</descriptor>
-							</descriptors>
-						</configuration -->
 						<configuration>
-			              <descriptorRefs>
-			                <descriptorRef>
-			                  jar-with-dependencies
-			                </descriptorRef>
-			              </descriptorRefs>
-			            </configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/bin.xml</descriptor>
+							</descriptors>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
