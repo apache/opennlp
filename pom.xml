@@ -99,6 +99,7 @@
 		<module>../opennlp-maxent</module>
 		<module>../opennlp-tools</module>
 		<module>../opennlp-uima</module>
+		<module>../opennlp-docs</module>
 	</modules>
 
 </project>
