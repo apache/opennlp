@@ -30,7 +30,6 @@
 	    <relativePath>../opennlp/pom.xml</relativePath>
     </parent>
     
-	<groupId>org.apache.opennlp</groupId>
 	<artifactId>opennlp-tools</artifactId>
 	<packaging>jar</packaging>
 	<version>1.5.1-incubating-SNAPSHOT</version>
