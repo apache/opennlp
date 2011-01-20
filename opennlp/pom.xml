@@ -92,6 +92,44 @@
 					</execution>
 				</executions>
 			</plugin>
+			
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>create-javadoc-jar</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<javaApiLinks>
+								<property>
+									<name>api_1.5</name>
+									<value>http://download.oracle.com/javase/1.5.0/docs/api/</value>
+								</property>
+							</javaApiLinks>
+							<show>public</show>
+							<quiet>true</quiet>
+							<use>false</use> <!-- Speeds up the build of the javadocs -->
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>create-source-jar</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
+			</plugin>
+			
 		</plugins>
 	</build>
 	

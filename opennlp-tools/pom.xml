@@ -89,7 +89,19 @@
                 </configuration>
             </plugin>
             
-            	      <plugin>
+            <plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>create-javadoc-jar</id>
+						<configuration>
+							<excludePackageNames>opennlp.tools.cmdline</excludePackageNames>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+            <plugin>
 	        <groupId>org.apache.rat</groupId>
 	        <artifactId>apache-rat-plugin</artifactId>
 	        <executions>
