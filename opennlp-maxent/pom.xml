@@ -48,9 +48,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>${project.groupId}-${project.artifactId}-${project.version}</finalName>
 		<plugins>
-
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2-beta-2</version>
@@ -60,27 +58,57 @@
 					</descriptors>
 				</configuration>
 			</plugin>
-	      <plugin>
-	        <groupId>org.apache.rat</groupId>
-	        <artifactId>apache-rat-plugin</artifactId>
-	        <executions>
-	          <execution>
-	            <id>default-cli</id>
-	            <configuration>
-	              <excludes>
-	                <exclude>CHANGES</exclude>
-	                <exclude>lib/ASL</exclude>
-	                <exclude>lib/LIBNOTES</exclude>
-	                <exclude>META-INF/MANIFEST.MF</exclude>
-	                <exclude>samples/sports/*.test</exclude> <!-- sample data -->
-	                <exclude>src/main/java/opennlp/maxent/AllEnglishAffixes.txt</exclude> <!-- test data -->
-	                <exclude>src/test/resources/data/opennlp/maxent/io/*.txt</exclude> <!-- test data -->
-	                <exclude>src/test/resources/data/opennlp/maxent/*.txt</exclude> <!-- test data -->
-	              </excludes>              
-	            </configuration>
-	          </execution>
-	        </executions>
-	      </plugin>		
+
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>create-javadoc-jar</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<source>${maven.compile.source}</source>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>create-source-jar</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.rat</groupId>
+				<artifactId>apache-rat-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-cli</id>
+						<configuration>
+							<excludes>
+								<exclude>CHANGES</exclude>
+								<exclude>lib/ASL</exclude>
+								<exclude>lib/LIBNOTES</exclude>
+								<exclude>META-INF/MANIFEST.MF</exclude>
+								<exclude>samples/sports/*.test</exclude> <!-- sample data -->
+								<exclude>src/main/java/opennlp/maxent/AllEnglishAffixes.txt</exclude> <!-- test data -->
+								<exclude>src/test/resources/data/opennlp/maxent/io/*.txt</exclude> <!-- test data -->
+								<exclude>src/test/resources/data/opennlp/maxent/*.txt</exclude> <!-- test data -->
+							</excludes>              
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>		
 		</plugins>
 	</build>
 </project>
