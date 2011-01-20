@@ -54,7 +54,7 @@
 		<!-- Copy necessary jar files into pear -->
 		<copy tofile="${pearDir}/lib/opennlp-uima.jar" flatten="true">
 			<resources>
-				<file file="target/opennlp-uima-1.5.0-SNAPSHOT.jar" />
+				<file file="target/opennlp-uima-1.5.1-incubating-SNAPSHOT.jar" />
 			</resources>
 		</copy>
 
