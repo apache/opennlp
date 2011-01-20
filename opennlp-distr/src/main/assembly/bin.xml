@@ -41,12 +41,12 @@
 	</dependencySets>
 	
 	<fileSets>
-		<fileSet>
-			<directory>../opennlp-tools/bin</directory>
-			<fileMode>755</fileMode>
-			<directoryMode>755</directoryMode>
-			<outputDirectory>bin</outputDirectory>
-		</fileSet>
+	    <fileSet>
+	    	<directory>src/main/readme</directory>
+	    	<outputDirectory></outputDirectory>
+	    	<fileMode>644</fileMode>
+	    	<directoryMode>755</directoryMode>      
+	    </fileSet>
 		
 		<fileSet>
 			<directory>../opennlp-docs/target/docbkx/html</directory>
