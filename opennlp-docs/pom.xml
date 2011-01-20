@@ -21,15 +21,31 @@
 
 <project>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.apache.opennlp</groupId>
+  <parent>
+	<groupId>org.apache.opennlp</groupId>
+	<artifactId>opennlp-reactor</artifactId>
+	<version>1.5.1-incubating-SNAPSHOT</version>
+    <relativePath>../opennlp/pom.xml</relativePath>
+  </parent>
+  
   <artifactId>opennlp-docs</artifactId>
   <version>1.5.1-SNAPSHOT</version>
+  <name>OpenNLP Documentation</name>
+  
   <build>
     <plugins>
 	<plugin>
 		<groupId>com.agilejava.docbkx</groupId>
 		<artifactId>docbkx-maven-plugin</artifactId>
 		<version>2.0.9</version>
+		<executions>
+          <execution>
+            <goals>
+              <goal>generate-html</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
 		<dependencies>
 			<dependency>
 				<groupId>org.docbook</groupId>
