@@ -71,6 +71,8 @@
 							     Right now only javadoc files are too long.
 							 -->
 							 <tarLongFileMode>gnu</tarLongFileMode>
+							 
+							 <finalName>apache-opennlp-${project.version}</finalName>
 						</configuration>
 					</execution>
 				</executions>
