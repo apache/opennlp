@@ -42,7 +42,7 @@
 			<ACTION>set_env_variable</ACTION>
 			<PARAMETERS>
 				<COMMENTS>component classpath setting</COMMENTS>
-				<VAR_VALUE>$main_root/lib/jwnl.jar;$main_root/lib/maxent.jar;$main_root/bin;$main_root/lib/tools.jar;$main_root/lib/opennlp-uima.jar</VAR_VALUE>
+				<VAR_VALUE>$main_root/lib/jwnl.jar;$main_root/lib/opennlp-maxent.jar;$main_root/bin;$main_root/lib/opennlp-tools.jar;$main_root/lib/opennlp-uima.jar</VAR_VALUE>
 				<VAR_NAME>classpath</VAR_NAME>
 			</PARAMETERS>
 		</PROCESS>
