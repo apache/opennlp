@@ -21,4 +21,4 @@ REM # TODO: this section needs some work....
 IF "%JAVA_CMD%" == "" SET JAVA_CMD=java
 IF "%OPENNLP_HOME%" == "" SET OPENNLP_HOME=.
 
-%JAVA_CMD% -Xmx4096m -jar %OPENNLP_HOME%\opennlp-tools-*.jar %*
+%JAVA_CMD% -Xmx4096m -jar %OPENNLP_HOME%\lib\opennlp-tools-*.jar %*

@@ -25,6 +25,10 @@
     <format>tar.gz</format>
     <format>zip</format>
   </formats>
+  
+    <includeBaseDirectory>true</includeBaseDirectory>
+	<baseDirectory>/apache-opennlp</baseDirectory>
+  
 	<dependencySets>
 		<dependencySet>
 			<includes>
@@ -47,6 +51,13 @@
 	    	<fileMode>644</fileMode>
 	    	<directoryMode>755</directoryMode>      
 	    </fileSet>
+		
+		<fileSet>
+			<directory>../opennlp-tools/bin</directory>
+			<fileMode>755</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>bin</outputDirectory>
+		</fileSet>
 		
 		<fileSet>
 			<directory>../opennlp-docs/target/docbkx/html</directory>
