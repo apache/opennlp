@@ -20,6 +20,7 @@ package opennlp.tools.cmdline;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
@@ -94,7 +95,18 @@ public class ArgumentParserTest {
   @Test
   public void testSimpleArgumentsUsage() {
     
-    String usage = "-encoding charset [-iterations num] [-alphaNumOpt true|false]";
-    assertEquals(usage, ArgumentParser.createUsage(SimpleArguments.class));
+    String arguments[] = new String[] {"-encoding charset", 
+    		"[-iterations num]", 
+    		"[-alphaNumOpt true|false]"};
+    
+    String usage = ArgumentParser.createUsage(SimpleArguments.class);
+    
+    int expectedLength = 2;
+    for (String arg : arguments) {
+      assertTrue(usage.contains(arg));
+      expectedLength += arg.length();
+    }
+    
+    assertEquals(expectedLength, usage.length());
   }
 }
