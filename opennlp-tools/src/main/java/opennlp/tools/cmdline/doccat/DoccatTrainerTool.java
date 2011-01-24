@@ -37,7 +37,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 public class DoccatTrainerTool implements CmdLineTool {
 
   public String getName() {
-    return "DocumentCategorizerTrainer";
+    return "DoccatTrainer";
   }
   
   public String getShortDescription() {
