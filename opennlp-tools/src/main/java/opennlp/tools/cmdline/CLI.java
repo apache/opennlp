@@ -30,6 +30,9 @@ import opennlp.tools.cmdline.chunker.ChunkerCrossValidatorTool;
 import opennlp.tools.cmdline.chunker.ChunkerEvaluatorTool;
 import opennlp.tools.cmdline.chunker.ChunkerMETool;
 import opennlp.tools.cmdline.chunker.ChunkerTrainerTool;
+import opennlp.tools.cmdline.doccat.DoccatConverterTool;
+import opennlp.tools.cmdline.doccat.DoccatTool;
+import opennlp.tools.cmdline.doccat.DoccatTrainerTool;
 import opennlp.tools.cmdline.namefind.CensusDictionaryCreatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderConverterTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool;
@@ -66,6 +69,11 @@ public final class CLI {
     toolLookupMap = new LinkedHashMap<String, CmdLineTool>();
     
     List<CmdLineTool> tools = new LinkedList<CmdLineTool>();
+    
+    // Docoument Categorizer
+    tools.add(new DoccatTool());
+    tools.add(new DoccatTrainerTool());
+    tools.add(new DoccatConverterTool());
     
     // Tokenizer
     tools.add(new SimpleTokenizerTool());
