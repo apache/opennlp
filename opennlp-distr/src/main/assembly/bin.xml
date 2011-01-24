@@ -53,7 +53,7 @@
 	    </fileSet>
 		
 		<fileSet>
-			<directory>../opennlp-tools/bin</directory>
+			<directory>/src/main/bin</directory>
 			<fileMode>755</fileMode>
 			<directoryMode>755</directoryMode>
 			<outputDirectory>bin</outputDirectory>
