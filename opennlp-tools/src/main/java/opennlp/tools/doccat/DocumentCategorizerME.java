@@ -174,6 +174,19 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @throws IOException
    * @throws ObjectStreamException 
    */
+  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples, int cutoff, int iterations) throws IOException {
+    return train(languageCode, samples, cutoff, iterations, defaultFeatureGenerator);
+  }
+  
+  /**
+   * Trains a doccat model with default feature generation.
+   * 
+   * @param languageCode
+   * @param samples
+   * @return
+   * @throws IOException
+   * @throws ObjectStreamException 
+   */
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples) throws IOException {
     return train(languageCode, samples, 5, 100, defaultFeatureGenerator);
   }
