@@ -46,11 +46,11 @@ public class DocumentSample {
     this.text = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(text)));
   }
 
-  String getCategory() {
+  public String getCategory() {
     return category;
   }
 
-  String[] getText() {
+  public String[] getText() {
     return text.toArray(new String[text.size()]);
   }
   
