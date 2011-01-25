@@ -17,4 +17,4 @@
 #   specific language governing permissions and limitations
 #   under the License.
 
-mvn -q exec:java "-Dexec.mainClass=opennlp.tools.cmdline.CLI" "-Dexec.args=$*"
+mvn -e -q exec:java "-Dexec.mainClass=opennlp.tools.cmdline.CLI" "-Dexec.args=$*"
