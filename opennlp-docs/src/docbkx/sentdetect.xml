@@ -111,7 +111,7 @@ String sentences[] = sentenceDetector.sentDetect("  First sentence. Second sente
 		The API also offers a method which simply returns the span of the sentence in the input string.
 		<programlisting>
 				<![CDATA[
-Span sentences[] = sentenceDetector.sentDetect("  First sentence. Second sentence. ");]]>
+Span sentences[] = sentenceDetector.sentPosDetect("  First sentence. Second sentence. ");]]>
 		</programlisting>
 		The result array again contains two entires. The first span beings at index 2 and ends at 17. The second span begins at 18 and ends at 34. The utility method Span.getCoveredText can be used to create a substring which only covers the chars in the span.
 		</para>
