@@ -305,4 +305,95 @@ F-Measure: 0.7717879983140168]]>
 			</para>
 		</section>
 	</section>
+	<section id="tools.corpora.conll">
+	<title>Leipzig Corpora</title>
+	<para>
+	The Leiopzig Corpora collection presents corpora in different languages. The corpora is a collection of individual sentences collected
+	from the web and newspapers. The Corpora is available as plain text and as MySQL database tables. The OpenNLP integration can only
+	use the plain text version.
+	</para>
+	<para>
+	The corpora in the different languages can be used to train a document categorizer model which can detect the document language. 
+	The	individual plain text packages can be downlaoded here:
+	<ulink url="http://corpora.uni-leipzig.de/download.html">http://corpora.uni-leipzig.de/download.html</ulink>
+	</para>
+	
+	<para>
+	Afer all packages have been downloaded, unzip them and use the following commands to
+	produce a training file which can be processed by the Document Categorizer:
+	<programlisting>
+			<![CDATA[
+bin/opennlp DoccatConverter leipzig -lang cat -data Leipzig/cat100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang de -data Leipzig/de100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang dk -data Leipzig/dk100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang ee -data Leipzig/ee100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang en -data Leipzig/en100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang fi -data Leipzig/fi100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang fr -data Leipzig/fr100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang it -data Leipzig/it100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang jp -data Leipzig/jp100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang kr -data Leipzig/kr100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang nl -data Leipzig/nl100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang no -data Leipzig/no100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang se -data Leipzig/se100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang sorb -data Leipzig/sorb100k/sentences.txt >> lang.train
+bin/opennlp DoccatConverter leipzig -lang tr -data Leipzig/tr100k/sentences.txt >> lang.train]]>
+	</programlisting>
+	</para>
+	<para>
+	Depending on your platform local it might be problemmatic to output characters which are not supported by that encoding,
+	we suggest to run these command on a platform which has a unicode default encoding, e.g. Linux with UTF-8.
+	</para>
+	<para>
+	Afer the lang.train file is created the actual language detection document categorizer model
+	can be created with the following command.
+	<programlisting>
+			<![CDATA[
+bin/opennlp DoccatTrainer -lang x-unspecified -encoding MacRoman -data ../lang.train -model lang.model
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 10000 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 10000 events to 10000.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 10000
+	    Number of Outcomes: 2
+	  Number of Predicates: 42730
+...done.
+Computing model parameters...
+Performing 100 iterations.
+  1:  .. loglikelihood=-6931.471805600547	0.5
+  2:  .. loglikelihood=-2110.9654348555955	1.0
+... cut lots of iterations ...
+
+ 99:  .. loglikelihood=-0.449640418555347	1.0
+100:  .. loglikelihood=-0.443746359746235	1.0
+Writing document categorizer model ... done (1.210s)
+
+Wrote document categorizer model to
+path: /Users/joern/dev/opennlp-apache/opennlp/opennlp-tools/lang.model
+]]>
+	</programlisting>
+	In the sample above the language detection model was trained to distinguish two languages, danish and english.
+	</para>
+	
+	<para>
+	After the model is created it can be used to detect the two languages:
+	
+	<programlisting>
+			<![CDATA[
+$ bin/opennlp Doccat ../lang.
+lang.model  lang.train  
+karkand:opennlp-tools joern$ bin/opennlp Doccat ../lang.model
+Loading Document Categorizer model ... done (0.289s)
+The American Finance Association is pleased to announce the award of ...
+en	The American Finance Association is pleased to announce the award of ..
+.
+Danskerne skal betale for den økonomiske krise ved at blive længere på arbejdsmarkedet .
+dk	Danskerne skal betale for den økonomiske krise ved at blive længere på arbejdsmarkedet .]]>	
+	</programlisting>
+	</para>
+	</section>
 </chapter>
