@@ -40,7 +40,6 @@ public class ObjectGISModelWriter extends GISModelWriter {
     output = dos;
   }
 
-
   public void writeUTF(String s) throws IOException {
     output.writeUTF(s);
   }
@@ -57,5 +56,4 @@ public class ObjectGISModelWriter extends GISModelWriter {
     output.flush();
     output.close();
   }
-
 }
