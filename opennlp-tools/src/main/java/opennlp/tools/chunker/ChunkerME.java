@@ -169,7 +169,9 @@ public class ChunkerME implements Chunker {
   }
 
   public Sequence[] topKSequences(List<String> sentence, List<String> tags) {
-    return beam.bestSequences(DEFAULT_BEAM_SIZE, sentence.toArray(new String[sentence.size()]), new Object[] { tags });
+    return beam.bestSequences(DEFAULT_BEAM_SIZE,
+        sentence.toArray(new String[sentence.size()]),
+        new Object[] { tags.toArray(new String[tags.size()]) });
   }
 
   public Sequence[] topKSequences(String[] sentence, String[] tags, double minSequenceScore) {
