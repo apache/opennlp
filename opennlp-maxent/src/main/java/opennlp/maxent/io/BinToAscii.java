@@ -36,22 +36,20 @@ import java.util.zip.GZIPOutputStream;
  */
 public class BinToAscii {
 
-	public static void main(String[] args) throws IOException {
-		PrintWriter out =
-			new PrintWriter(new OutputStreamWriter(
-				new GZIPOutputStream(
-					new FileOutputStream(args[1]))));
-		DataInputStream in =
-			new DataInputStream(new GZIPInputStream(
-				new FileInputStream(args[0])));
+  public static void main(String[] args) throws IOException {
+    PrintWriter out = new PrintWriter(new OutputStreamWriter(
+        new GZIPOutputStream(new FileOutputStream(args[1]))));
+    DataInputStream in = new DataInputStream(new GZIPInputStream(
+        new FileInputStream(args[0])));
 
-		double d;
-		try {
-			while(true)
-				out.println(in.readDouble());
-		} catch (Exception E) {}
-		out.close();
-		in.close();
-	}
+    double d;
+    try {
+      while (true)
+        out.println(in.readDouble());
+    } catch (Exception E) {
+    }
+    out.close();
+    in.close();
+  }
 
 }
