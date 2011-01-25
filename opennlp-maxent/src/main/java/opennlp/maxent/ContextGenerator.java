@@ -24,10 +24,9 @@ package opennlp.maxent;
  */
 public interface ContextGenerator {
 
-    /**
-     * Builds up the list of contextual predicates given an Object.
-     */
-    public String[] getContext(Object o);   
- 
-}
+  /**
+   * Builds up the list of contextual predicates given an Object.
+   */
+  public String[] getContext(Object o);
 
+}

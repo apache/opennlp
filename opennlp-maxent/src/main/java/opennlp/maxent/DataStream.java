@@ -27,19 +27,18 @@ package opennlp.maxent;
  */
 public interface DataStream {
 
-    /**
-     * Returns the next slice of data held in this DataStream.
-     *
-     * @return the Object representing the data which is next in this
-     *         DataStream
-     */
-    public Object nextToken ();
+  /**
+   * Returns the next slice of data held in this DataStream.
+   * 
+   * @return the Object representing the data which is next in this DataStream
+   */
+  public Object nextToken();
 
-    /**
-     * Test whether there are any Events remaining in this EventStream.
-     *
-     * @return true if this DataStream has more data tokens
-     */
-    public boolean hasNext ();
+  /**
+   * Test whether there are any Events remaining in this EventStream.
+   * 
+   * @return true if this DataStream has more data tokens
+   */
+  public boolean hasNext();
 }
 

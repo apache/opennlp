@@ -25,35 +25,36 @@ package opennlp.maxent;
  * non-sparse range.  Use this class for operations in which a large
  * number of Integer wrapper objects will be created.
  */
-
 public class IntegerPool {
     private Integer[] _table;
-    
-    /**
-     * Creates an IntegerPool with 0..size Integer objects.
-     *
-     * @param size the size of the pool.
-     */
-    public IntegerPool (int size) {
-        _table = new Integer[size];
-        for (int i = 0; i < size; i++) {
-            _table[i] = new Integer(i);
-        } // end of for (int i = 0; i < size; i++)
-    }
 
-    /**
-     * Returns the shared Integer wrapper for <tt>value</tt> if it is
-     * inside the range managed by this pool.  if <tt>value</tt> is
-     * outside the range, a new Integer instance is returned.
-     *
-     * @param value an <code>int</code> value
-     * @return an <code>Integer</code> value
-     */
-    public Integer get(int value) {
-        if (value < _table.length && value >= 0) {
-            return _table[value];
-        } else {
-            return new Integer(value);
-        }
+  /**
+   * Creates an IntegerPool with 0..size Integer objects.
+   * 
+   * @param size
+   *          the size of the pool.
+   */
+  public IntegerPool(int size) {
+    _table = new Integer[size];
+    for (int i = 0; i < size; i++) {
+      _table[i] = new Integer(i);
+    } // end of for (int i = 0; i < size; i++)
+  }
+
+  /**
+   * Returns the shared Integer wrapper for <tt>value</tt> if it is inside the
+   * range managed by this pool. if <tt>value</tt> is outside the range, a new
+   * Integer instance is returned.
+   * 
+   * @param value
+   *          an <code>int</code> value
+   * @return an <code>Integer</code> value
+   */
+  public Integer get(int value) {
+    if (value < _table.length && value >= 0) {
+      return _table[value];
+    } else {
+      return new Integer(value);
     }
-}// IntegerPool
+  }
+}

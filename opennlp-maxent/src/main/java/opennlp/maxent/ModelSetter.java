@@ -47,10 +47,11 @@ import opennlp.model.MaxentModel;
  */
 public interface ModelSetter {
 
-    /**
-     * Assign a new MaxentModel value to a MaxentModel variable.
-     *
-     * @param m The new model.
-     */
-    public void setModel (MaxentModel m);
+  /**
+   * Assign a new MaxentModel value to a MaxentModel variable.
+   * 
+   * @param m
+   *          The new model.
+   */
+  public void setModel(MaxentModel m);
 }
