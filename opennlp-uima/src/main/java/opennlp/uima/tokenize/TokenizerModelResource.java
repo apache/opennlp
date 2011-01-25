@@ -27,10 +27,10 @@ import org.apache.uima.analysis_engine.AnalysisEngine;
  */
 public interface TokenizerModelResource {
 
-	/**
-	 * Retrieves the shared model instance.
-	 * 
-	 * @return
-	 */
-	TokenizerModel getModel();
+  /**
+   * Retrieves the shared model instance.
+   * 
+   * @return
+   */
+  TokenizerModel getModel();
 }
