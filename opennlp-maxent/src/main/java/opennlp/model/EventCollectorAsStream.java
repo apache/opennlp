@@ -26,21 +26,21 @@ package opennlp.model;
  * application to work with Maxent 1.2 with very little recoding.
  */
 public final class EventCollectorAsStream extends AbstractEventStream {
-    final Event[] events;
-    final int numEvents;
-    int index = 0;
-    
-    public EventCollectorAsStream (EventCollector ec) {
-	events = ec.getEvents(false);
-	numEvents = events.length;
-    }
-    
-    public Event next () {
-      return events[index++];
-    }
-    
-    public boolean hasNext () {
-      return (index < numEvents);
-    }
- 
+  final Event[] events;
+  final int numEvents;
+  int index = 0;
+
+  public EventCollectorAsStream(EventCollector ec) {
+    events = ec.getEvents(false);
+    numEvents = events.length;
+  }
+
+  public Event next() {
+    return events[index++];
+  }
+
+  public boolean hasNext() {
+    return (index < numEvents);
+  }
+
 }
