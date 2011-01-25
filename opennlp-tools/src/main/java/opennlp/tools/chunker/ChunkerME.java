@@ -37,6 +37,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.util.Span;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -160,6 +161,11 @@ public class ChunkerME implements Chunker {
     bestSequence = beam.bestSequence(toks, new Object[] {tags});
     List<String> c = bestSequence.getOutcomes();
     return c.toArray(new String[c.size()]);
+  }
+  
+  public Span[] chunkAsSpans(String[] toks, String[] tags) {
+    String[] preds = chunk(toks, tags);
+    return ChunkSample.phrasesAsSpanList(toks, tags, preds);
   }
 
   public Sequence[] topKSequences(List<String> sentence, List<String> tags) {

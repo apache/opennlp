@@ -20,6 +20,7 @@ package opennlp.tools.chunker;
 import java.util.List;
 
 import opennlp.tools.util.Sequence;
+import opennlp.tools.util.Span;
 
 /**
  * The interface for chunkers which provide chunk tags for a sequence of tokens.
@@ -48,6 +49,16 @@ public interface Chunker {
    * @return an array of chunk tags for each token in the sequence.
    */
   public String[] chunk(String[] toks, String tags[]);
+  
+  /**
+   * Generates tagged chunk spans for the given sequence returning the result in a span array.
+   *
+   * @param toks an array of the tokens or words of the sequence.
+   * @param tags an array of the pos tags of the sequence.
+   * 
+   * @return an array of spans with chunk tags for each chunk in the sequence.
+   */
+  public Span[] chunkAsSpans(String[] toks, String tags[]);
 
   /**
    * Returns the top k chunk sequences for the specified sentence with the specified pos-tags
