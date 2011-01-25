@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -302,7 +303,9 @@ public final class CmdLineUtil {
   }
   
   public static void checkLanguageCode(String code) {
-    List<String> languageCodes = Arrays.asList(Locale.getISOLanguages());
+    List<String> languageCodes  = new ArrayList<String>();
+    languageCodes.addAll(Arrays.asList(Locale.getISOLanguages()));
+    languageCodes.add("x-unspecified");
     
     if (!languageCodes.contains(code)) {
       System.err.println("Unkown language code, must be an ISO 639 code!");
