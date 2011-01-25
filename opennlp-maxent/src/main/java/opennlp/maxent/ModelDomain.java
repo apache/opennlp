@@ -29,11 +29,10 @@ package opennlp.maxent;
  */
 public interface ModelDomain {
 
-    /**
-     * Get the name of this domain.
-     *
-     * @return The name of this domain.
-     */
-    public String getName ();
-
+  /**
+   * Get the name of this domain.
+   * 
+   * @return The name of this domain.
+   */
+  public String getName();
 }

@@ -81,50 +81,55 @@ import opennlp.model.MaxentModel;
  * swap to finish.  These requests will then be serviced by the new model.
  */
 public class ModelReplacementManager {
-    private ModelSetter setter;
-    
-    private int users = 0;
-    private boolean replacementCanProceed = true;
-    private Thread replacementThread = null;
+  private ModelSetter setter;
 
-    public ModelReplacementManager (ModelSetter ms) {
-	setter = ms;
-    }
+  private int users = 0;
+  private boolean replacementCanProceed = true;
+  private Thread replacementThread = null;
 
-    /**
-     * Inform the manager that a thread is using the model.  If a replacement
-     * is underway, the thread is forced to join the replacement thread and thus
-     * wait until it is finished to begin using the model.
-     */
-    public void startUsingModel () {
-	if (replacementThread != null) {
-	    try { replacementThread.join(); }
-	    catch (InterruptedException e) {}
-	}
-	replacementCanProceed = false;
-	users++;
-    }
+  public ModelReplacementManager(ModelSetter ms) {
+    setter = ms;
+  }
 
-    /**
-     * Inform the manager that a thread is done using the model, and thus is
-     * not dependending on it being unchanged.
-     */
-    public void finishUsingModel () {
-	users--;
-	if (users<=0) replacementCanProceed = true;
+  /**
+   * Inform the manager that a thread is using the model. If a replacement is
+   * underway, the thread is forced to join the replacement thread and thus wait
+   * until it is finished to begin using the model.
+   */
+  public void startUsingModel() {
+    if (replacementThread != null) {
+      try {
+        replacementThread.join();
+      } catch (InterruptedException e) {
+      }
     }
+    replacementCanProceed = false;
+    users++;
+  }
 
-    /**
-     * Replace the old model with a new one, forcing the replacement to wait
-     * until all threads using the old model have finished using it.
-     *
-     * @param model The new model which is being swapped in.
-     */
-    public synchronized void replaceModel (MaxentModel model) {
-	replacementThread = Thread.currentThread();
-	while (!replacementCanProceed) Thread.yield();
-	setter.setModel(model);
-	replacementThread = null;
-    }
+  /**
+   * Inform the manager that a thread is done using the model, and thus is not
+   * dependending on it being unchanged.
+   */
+  public void finishUsingModel() {
+    users--;
+    if (users <= 0)
+      replacementCanProceed = true;
+  }
+
+  /**
+   * Replace the old model with a new one, forcing the replacement to wait until
+   * all threads using the old model have finished using it.
+   * 
+   * @param model
+   *          The new model which is being swapped in.
+   */
+  public synchronized void replaceModel(MaxentModel model) {
+    replacementThread = Thread.currentThread();
+    while (!replacementCanProceed)
+      Thread.yield();
+    setter.setModel(model);
+    replacementThread = null;
+  }
     
 }
