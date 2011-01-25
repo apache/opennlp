@@ -88,21 +88,21 @@ public class Parser extends CasAnnotator_ImplBase {
       String tokenList[] = new String[tokens.length];
       
       for (int i = 0; i < tokens.length; i++) {
-          String tokenString = tokens[i].getCoveredText(sentence).toString();
-          String escapedToken = escape(tokenString);
-          tokenList[i] = escapedToken;
-          
-          int escapedStart = sentenceStringBuilder.length();
-          int start = tokens[i].getStart();
-          mIndexMap.put(new Integer(escapedStart), new Integer(start));
-          
-          int escapedEnd = escapedStart + escapedToken.length();
-          int end = tokens[i].getEnd();
-          mIndexMap.put(new Integer(escapedEnd), new Integer(end));
-          
-          sentenceStringBuilder.append(tokenList[i]);
-          
-          sentenceStringBuilder.append(' '); 
+        String tokenString = tokens[i].getCoveredText(sentence).toString();
+        String escapedToken = escape(tokenString);
+        tokenList[i] = escapedToken;
+
+        int escapedStart = sentenceStringBuilder.length();
+        int start = tokens[i].getStart();
+        mIndexMap.put(new Integer(escapedStart), new Integer(start));
+
+        int escapedEnd = escapedStart + escapedToken.length();
+        int end = tokens[i].getEnd();
+        mIndexMap.put(new Integer(escapedEnd), new Integer(end));
+
+        sentenceStringBuilder.append(tokenList[i]);
+
+        sentenceStringBuilder.append(' ');
       }
       
       // remove last space
@@ -116,12 +116,12 @@ public class Parser extends CasAnnotator_ImplBase {
       int start = 0;
       
       for (int i = 0; i < tokenList.length; i++) {
-        
-        mParseForTagger.insert(new Parse(tokenizedSentence, new Span(start, 
-              start + tokenList[i].length()), 
-              opennlp.tools.parser.chunking.Parser.TOK_NODE, 0f, 0));
-          
-          start += tokenList[i].length() + 1;
+
+        mParseForTagger.insert(new Parse(tokenizedSentence, new Span(start,
+            start + tokenList[i].length()),
+            opennlp.tools.parser.chunking.Parser.TOK_NODE, 0f, 0));
+
+        start += tokenList[i].length() + 1;
       }
     }
     
@@ -210,27 +210,26 @@ public class Parser extends CasAnnotator_ImplBase {
       throws ResourceInitializationException {
 
     super.initialize(context);
-    
-	this.context = context;
-	  
+
+    this.context = context;
+
     mLogger = context.getLogger();
-    
+
     if (mLogger.isLoggable(Level.INFO)) {
       mLogger.log(Level.INFO, "Initializing the OpenNLP Parser.");
-    } 
-    
+    }
+
     ParserModel model;
-    
+
     try {
-      ParserModelResource modelResource = 
-            (ParserModelResource) context.getResourceObject(UimaUtil.MODEL_PARAMETER);
-        
-        model = modelResource.getModel();
+      ParserModelResource modelResource = (ParserModelResource) context
+          .getResourceObject(UimaUtil.MODEL_PARAMETER);
+
+      model = modelResource.getModel();
+    } catch (ResourceAccessException e) {
+      throw new ResourceInitializationException(e);
     }
-    catch (ResourceAccessException e) {
-        throw new ResourceInitializationException(e);
-    }
-    
+
     mParser = ParserFactory.create(model);
   }
   
@@ -239,18 +238,18 @@ public class Parser extends CasAnnotator_ImplBase {
    */
   public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
-    
-	  mSentenceType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
+
+    mSentenceType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         UimaUtil.SENTENCE_TYPE_PARAMETER);
 
-	  mTokenType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
+    mTokenType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         UimaUtil.TOKEN_TYPE_PARAMETER);
 
-	  mParseType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
+    mParseType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         PARSE_TYPE_PARAMETER);
 
-    mTypeFeature = AnnotatorUtil.getRequiredFeatureParameter(context, mParseType, TYPE_FEATURE_PARAMETER, 
-    		CAS.TYPE_NAME_STRING);
+    mTypeFeature = AnnotatorUtil.getRequiredFeatureParameter(context,
+        mParseType, TYPE_FEATURE_PARAMETER, CAS.TYPE_NAME_STRING);
   }
   
   /**
@@ -279,14 +278,13 @@ public class Parser extends CasAnnotator_ImplBase {
   
     StringBuilder sentenceStringBuilder = new StringBuilder();
     
-    while (containingTokens.hasNext())
-    {
-    	AnnotationFS token = (AnnotationFS) containingTokens.next();
-    	
-    	sentenceStringBuilder.append(token.getCoveredText());
-    	
-    	// attention the offsets moves inside the sentence...
-        sentenceStringBuilder.append(' '); 
+    while (containingTokens.hasNext()) {
+      AnnotationFS token = (AnnotationFS) containingTokens.next();
+
+      sentenceStringBuilder.append(token.getCoveredText());
+
+      // attention the offsets moves inside the sentence...
+      sentenceStringBuilder.append(' ');
     }
      
     String sentence = sentenceStringBuilder.toString();
@@ -338,7 +336,7 @@ public class Parser extends CasAnnotator_ImplBase {
     
     cas.getIndexRepository().addFS(parseAnnotation);
   }
-  
+
   /**
    * Releases allocated resources.
    */
