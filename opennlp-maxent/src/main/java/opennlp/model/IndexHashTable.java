@@ -36,110 +36,111 @@ package opennlp.model;
  */
 public class IndexHashTable<T> {
 
-	private final Object keys[];
-	private final int values[];
+  private final Object keys[];
+  private final int values[];
+
+  private final int size;
 	
-	private final int size;
-	
-	/**
-	 * Initializes the current instance. The specified array is copied
-	 * into the table and later changes to the array do not affect this
-	 * table in any way. 
-	 * 
-	 * @param mapping the values to be indexed, all values must be unique otherwise
-	 * a well-defined mapping of an entry to an index is not possible
-	 * @param loadfactor the load factor, usually 0.7
-	 * 
-	 * @throws IllegalArgumentException if the entries are not unique
-	 */
-	public IndexHashTable(T mapping[], double loadfactor) {
-		if (loadfactor <= 0 || loadfactor > 1)
-			throw new IllegalArgumentException("loadfactor must be larger than 0 " +
-					"and equal to or smaller than 1!");
+  /**
+   * Initializes the current instance. The specified array is copied into the
+   * table and later changes to the array do not affect this table in any way.
+   * 
+   * @param mapping
+   *          the values to be indexed, all values must be unique otherwise a
+   *          well-defined mapping of an entry to an index is not possible
+   * @param loadfactor
+   *          the load factor, usually 0.7
+   * 
+   * @throws IllegalArgumentException
+   *           if the entries are not unique
+   */
+  public IndexHashTable(T mapping[], double loadfactor) {
+    if (loadfactor <= 0 || loadfactor > 1)
+      throw new IllegalArgumentException("loadfactor must be larger than 0 "
+          + "and equal to or smaller than 1!");
+
+    int arraySize = (int) (mapping.length / loadfactor) + 1;
+
+    keys = new Object[arraySize];
+    values = new int[arraySize];
+
+    size = mapping.length;
+
+    for (int i = 0; i < mapping.length; i++) {
+      int startIndex = indexForHash(mapping[i].hashCode(), keys.length);
+
+      int index = searchKey(startIndex, null, true);
+
+      if (index == -1)
+        throw new IllegalArgumentException(
+            "Array must contain only unique keys!");
+
+      keys[index] = mapping[i];
+      values[index] = i;
+    }
+  }
+
+  private static int indexForHash(int h, int length) {
+    return (h & 0x7fffffff) % length;
+  }
+
+  private int searchKey(int startIndex, Object key, boolean insert) {
 		
-		int arraySize = (int) (mapping.length / loadfactor) + 1;
-		
-		keys = new Object[arraySize];
-		values = new int[arraySize];
-		
-		size = mapping.length;
-		
-		for (int i = 0; i < mapping.length; i++) {
-			int startIndex = indexForHash(mapping[i].hashCode(), keys.length);
-			
-			int index = searchKey(startIndex, null, true);
-			
-			if (index == -1)
-				throw new IllegalArgumentException("Array must contain only unique keys!");
-			
-			keys[index] = mapping[i];
-			values[index] = i;
-		}
-	}
-	
-	private static int indexForHash(int h, int length) {
-		return (h & 0x7fffffff) % length;
-	}
-	
-	private int searchKey(int startIndex, Object key, boolean insert) {
-		
-		
-		for (int index = startIndex; true; index = (index+1) % keys.length) {
-			
-			// The keys array contains at least one null element, which guarantees
-			// termination of the loop
-			if (keys[index] == null) {
-				if (insert)
-					return index;
-				else
-					return -1;
-			}
-			
-			if (keys[index].equals(key)) {
-				if (!insert)
-					return index;
-				else
-					return -1;
-			}
-		}
-	}
-	
-	/**
-	 * Retrieves the index for the specified key.
-	 * 
-	 * @param key 
-	 * @return the index or -1 if there is no entry to the keys
-	 */
-	public int get(T key) {
-		
-		int startIndex = indexForHash(key.hashCode(), keys.length);
-			
-		int index = searchKey(startIndex, key, false);
-		
-		if (index != -1) {
-			return values[index];
-		}
-		else {
-			return -1;
-		}
-	}
-	
-	/**
-	 * Retrieves the size.
-	 * 
-	 * @return the number of elements in this map.
-	 */
-	public int size() {
-		return size;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public T[] toArray(T array[]) {
-		for (int i = 0; i < keys.length; i++) {
-			if (keys[i] != null)
-				array[values[i]] = (T) keys[i];
-		}
-		
-		return array;
-	}
+    for (int index = startIndex; true; index = (index + 1) % keys.length) {
+
+      // The keys array contains at least one null element, which guarantees
+      // termination of the loop
+      if (keys[index] == null) {
+        if (insert)
+          return index;
+        else
+          return -1;
+      }
+
+      if (keys[index].equals(key)) {
+        if (!insert)
+          return index;
+        else
+          return -1;
+      }
+    }
+  }
+
+  /**
+   * Retrieves the index for the specified key.
+   * 
+   * @param key
+   * @return the index or -1 if there is no entry to the keys
+   */
+  public int get(T key) {
+
+    int startIndex = indexForHash(key.hashCode(), keys.length);
+
+    int index = searchKey(startIndex, key, false);
+
+    if (index != -1) {
+      return values[index];
+    } else {
+      return -1;
+    }
+  }
+
+  /**
+   * Retrieves the size.
+   * 
+   * @return the number of elements in this map.
+   */
+  public int size() {
+    return size;
+  }
+
+  @SuppressWarnings("unchecked")
+  public T[] toArray(T array[]) {
+    for (int i = 0; i < keys.length; i++) {
+      if (keys[i] != null)
+        array[values[i]] = (T) keys[i];
+    }
+
+    return array;
+  }
 }
