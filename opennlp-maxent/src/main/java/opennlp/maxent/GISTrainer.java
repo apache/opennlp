@@ -53,14 +53,18 @@ class GISTrainer {
    * Specifies whether unseen context/outcome pairs should be estimated as occur very infrequently.
    */
   private boolean useSimpleSmoothing = false;
+  
   /**
    * Specifies whether a slack parameter should be used in the model.
    */
   private boolean useSlackParameter = false;
-  /** Specified whether parameter updates should prefer a distribution of parameters which
+  
+  /** 
+   * Specified whether parameter updates should prefer a distribution of parameters which
    * is gaussian.
    */
   private boolean useGaussianSmoothing = false;
+  
   private double sigma = 2.0;
 
   // If we are using smoothing, this is used as the "number" of
@@ -70,72 +74,109 @@ class GISTrainer {
 
   private boolean printMessages = false;
 
-  /** Number of unique events which occured in the event set. */
-  private int numUniqueEvents; 
-  /** Number of predicates. */
-  private int numPreds; 
-  /** Number of outcomes. */
-  private int numOutcomes; 
+  /** 
+   * Number of unique events which occured in the event set. 
+   */
+  private int numUniqueEvents;
+  
+  /** 
+   * Number of predicates. 
+   */
+  private int numPreds;
+  
+  /** 
+   * Number of outcomes. 
+   */
+  private int numOutcomes;
 
-  /** Records the array of predicates seen in each event. */
+  /** 
+   * Records the array of predicates seen in each event.
+   */
   private int[][] contexts;
   
-  /** The value associated with each context. If null then context values are assumes to be 1. */
+  /** 
+   * The value associated with each context. If null then context values are assumes to be 1.
+   */
   private float[][] values;
   
-  /** List of outcomes for each event i, in context[i]. */
+  /** 
+   * List of outcomes for each event i, in context[i].
+   */
   private int[] outcomeList;
 
-  /** Records the num of times an event has been seen for each event i, in context[i]. */
+  /** 
+   * Records the num of times an event has been seen for each event i, in context[i].
+   */
   private int[] numTimesEventsSeen;
   
-  /** The number of times a predicate occured in the training data. */
+  /** 
+   * The number of times a predicate occured in the training data.
+   */
   private int[] predicateCounts;
   
   private int cutoff;
 
-  /** Stores the String names of the outcomes.  The GIS only tracks outcomes
-   as ints, and so this array is needed to save the model to disk and
-   thereby allow users to know what the outcome was in human
-   understandable terms. */
+  /**
+   * Stores the String names of the outcomes. The GIS only tracks outcomes as
+   * ints, and so this array is needed to save the model to disk and thereby
+   * allow users to know what the outcome was in human understandable terms.
+   */
   private String[] outcomeLabels;
 
-  /** Stores the String names of the predicates. The GIS only tracks
-   predicates as ints, and so this array is needed to save the model to
-   disk and thereby allow users to know what the outcome was in human
-   understandable terms. */
+  /**
+   * Stores the String names of the predicates. The GIS only tracks predicates
+   * as ints, and so this array is needed to save the model to disk and thereby
+   * allow users to know what the outcome was in human understandable terms.
+   */
   private String[] predLabels;
 
-  /** Stores the observed expected values of the features based on training data. */
+  /**
+   * Stores the observed expected values of the features based on training data.
+   */
   private MutableContext[] observedExpects;
 
-  /** Stores the estimated parameter value of each predicate during iteration */
+  /**
+   * Stores the estimated parameter value of each predicate during iteration
+   */
   private MutableContext[] params;
 
-  /** Stores the expected values of the features based on the current models */
+  /**
+   * Stores the expected values of the features based on the current models
+   */
   private MutableContext[] modelExpects;
-  
-  /** This is the prior distribution that the model uses for training. */
+
+  /**
+   * This is the prior distribution that the model uses for training.
+   */
   private Prior prior;
 
-
-  /** Observed expectation of correction feature. */
+  /** 
+   * Observed expectation of correction feature.
+   */
   private double cfObservedExpect;
-  /** A global variable for the models expected value of the correction feature. */
+
+  /**
+   * A global variable for the models expected value of the correction feature.
+   */
   private double CFMOD;
 
   private final double NEAR_ZERO = 0.01;
   private final double LLThreshold = 0.0001;
 
-  /** Stores the number of features that get fired per event. */
+  /** 
+   * Stores the number of features that get fired per event. 
+   */
   int[] numfeats;
-  /** Initial probability for all outcomes. */
   
-  EvalParameters evalParams;
   /**
-   * Creates a new <code>GISTrainer</code> instance which does
-   * not print progress messages about training to STDOUT.
-   *
+   * Initial probability for all outcomes.
+   */
+  EvalParameters evalParams;
+
+  /**
+   * Creates a new <code>GISTrainer</code> instance which does not print
+   * progress messages about training to STDOUT.
+   * 
    */
   GISTrainer() {
     super();

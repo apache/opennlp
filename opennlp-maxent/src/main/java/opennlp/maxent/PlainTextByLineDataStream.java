@@ -29,33 +29,30 @@ import java.io.Reader;
  * many Maxent applications need in order to create EventStreams.
  */
 public class PlainTextByLineDataStream implements DataStream {
-    BufferedReader dataReader;
-    String next;
-    
-    public PlainTextByLineDataStream (Reader dataSource) {
-	dataReader = new BufferedReader(dataSource);
-	try {
-	    next = dataReader.readLine();
-	}
-	catch (IOException e) {
-	    e.printStackTrace();
-	}
-    }
-    
-    public Object nextToken () {
-	String current = next;
-	try {
-	    next = dataReader.readLine();
-	}
-	catch (Exception e) {
-	    e.printStackTrace();
-	}
-	return current;
-    }
+  BufferedReader dataReader;
+  String next;
 
-    public boolean hasNext () {
-	return next != null;
+  public PlainTextByLineDataStream(Reader dataSource) {
+    dataReader = new BufferedReader(dataSource);
+    try {
+      next = dataReader.readLine();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
- 
+  }
+
+  public Object nextToken() {
+    String current = next;
+    try {
+      next = dataReader.readLine();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return current;
+  }
+
+  public boolean hasNext() {
+    return next != null;
+  }
 }
 
