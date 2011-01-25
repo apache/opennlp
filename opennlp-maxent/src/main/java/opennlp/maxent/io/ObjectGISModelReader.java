@@ -25,15 +25,16 @@ import opennlp.model.ObjectDataReader;
 
 public class ObjectGISModelReader extends GISModelReader {
 
-   protected ObjectInputStream input;
-  
+  protected ObjectInputStream input;
+
   /**
    * Constructor which directly instantiates the ObjectInputStream containing
    * the model contents.
-   *
-   * @param dis The DataInputStream containing the model information.
+   * 
+   * @param dis
+   *          The DataInputStream containing the model information.
    */
-  
+
   public ObjectGISModelReader(ObjectInputStream ois) {
     super(new ObjectDataReader(ois));
   }

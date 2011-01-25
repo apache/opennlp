@@ -33,54 +33,57 @@ import opennlp.model.AbstractModel;
 public class BinaryGISModelWriter extends GISModelWriter {
     DataOutputStream output;
 
-   /**
-     * Constructor which takes a GISModel and a File and prepares itself to
-     * write the model to that file. Detects whether the file is gzipped or not
-     * based on whether the suffix contains ".gz".
-     *
-     * @param model The GISModel which is to be persisted.
-     * @param f The File in which the model is to be persisted.
-     */
-    public BinaryGISModelWriter (AbstractModel model, File f) throws IOException {
+  /**
+   * Constructor which takes a GISModel and a File and prepares itself to write
+   * the model to that file. Detects whether the file is gzipped or not based on
+   * whether the suffix contains ".gz".
+   * 
+   * @param model
+   *          The GISModel which is to be persisted.
+   * @param f
+   *          The File in which the model is to be persisted.
+   */
+  public BinaryGISModelWriter(AbstractModel model, File f) throws IOException {
 
-	super(model);
-	
-	if (f.getName().endsWith(".gz")) {
-	    output = new DataOutputStream(
-		         new GZIPOutputStream(new FileOutputStream(f)));
-	}
-	else {
-	    output = new DataOutputStream(new FileOutputStream(f));
-	}
-    }
+    super(model);
 
-    /**
-     * Constructor which takes a GISModel and a DataOutputStream and prepares
-     * itself to write the model to that stream.
-     *
-     * @param model The GISModel which is to be persisted.
-     * @param dos The stream which will be used to persist the model.
-     */
-    public BinaryGISModelWriter (AbstractModel model, DataOutputStream dos) {
-      super(model);
-      output = dos;
+    if (f.getName().endsWith(".gz")) {
+      output = new DataOutputStream(new GZIPOutputStream(
+          new FileOutputStream(f)));
+    } else {
+      output = new DataOutputStream(new FileOutputStream(f));
     }
+  }
 
-    public void writeUTF (String s) throws java.io.IOException {
-      output.writeUTF(s);
-    }
+  /**
+   * Constructor which takes a GISModel and a DataOutputStream and prepares
+   * itself to write the model to that stream.
+   * 
+   * @param model
+   *          The GISModel which is to be persisted.
+   * @param dos
+   *          The stream which will be used to persist the model.
+   */
+  public BinaryGISModelWriter(AbstractModel model, DataOutputStream dos) {
+    super(model);
+    output = dos;
+  }
 
-    public void writeInt (int i) throws java.io.IOException {
-      output.writeInt(i);
-    }
+  public void writeUTF(String s) throws java.io.IOException {
+    output.writeUTF(s);
+  }
 
-    public void writeDouble (double d) throws java.io.IOException {
-      output.writeDouble(d);
-    }
+  public void writeInt(int i) throws java.io.IOException {
+    output.writeInt(i);
+  }
 
-    public void close () throws java.io.IOException {
-      output.flush();
-      output.close();
-    }
+  public void writeDouble(double d) throws java.io.IOException {
+    output.writeDouble(d);
+  }
+
+  public void close() throws java.io.IOException {
+    output.flush();
+    output.close();
+  }
 
 }
