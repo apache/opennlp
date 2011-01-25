@@ -130,6 +130,19 @@ public class ChunkSampleTest {
 	assertEquals(new Span(5, 6, "VP"), spans[3]);
 	assertEquals(new Span(6, 7, "ADVP"), spans[4]);
   }
+  
+	@Test
+	public void testPhraseAsSpan() {
+		Span[] spans = ChunkSample.phrasesAsSpanList(createSentence(),
+				createTags(), createChunks());
+
+		assertEquals(5, spans.length);
+		assertEquals(new Span(0, 1, "NP"), spans[0]);
+		assertEquals(new Span(1, 2, "PP"), spans[1]);
+		assertEquals(new Span(2, 5, "NP"), spans[2]);
+		assertEquals(new Span(5, 6, "VP"), spans[3]);
+		assertEquals(new Span(6, 7, "ADVP"), spans[4]);
+	}
 
   @Test
   public void testRegions() throws IOException {
