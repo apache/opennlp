@@ -330,4 +330,66 @@ public class NameSampleDataStreamTest {
     assertNull(trainingStream.read());
   }
   
+  @Test
+  public void testHtmlNameSampleParsing() throws IOException {
+    InputStream in = getClass().getClassLoader().getResourceAsStream(
+        "opennlp/tools/namefind/html1.train");
+    
+    NameSampleDataStream ds = new NameSampleDataStream(
+        new PlainTextByLineStream(new InputStreamReader(in, "UTF-8")));
+
+    NameSample ns = ds.read();
+    
+    assertEquals(1, ns.getSentence().length);
+    assertEquals("<html>", ns.getSentence()[0]);
+    
+    ns = ds.read();
+    assertEquals(1, ns.getSentence().length);
+    assertEquals("<head/>", ns.getSentence()[0]);
+    
+    ns = ds.read();
+    assertEquals(1, ns.getSentence().length);
+    assertEquals("<body>", ns.getSentence()[0]);
+
+    ns = ds.read();
+    assertEquals(1, ns.getSentence().length);
+    assertEquals("<ul>", ns.getSentence()[0]);
+    
+    // <li> <START:organization> Advanced Integrated Pest Management <END> </li>
+    ns = ds.read();
+    assertEquals(6, ns.getSentence().length);
+    assertEquals("<li>", ns.getSentence()[0]);
+    assertEquals("Advanced", ns.getSentence()[1]);
+    assertEquals("Integrated", ns.getSentence()[2]);
+    assertEquals("Pest", ns.getSentence()[3]);
+    assertEquals("Management", ns.getSentence()[4]);
+    assertEquals("</li>", ns.getSentence()[5]);
+    assertEquals(new Span(1, 5), ns.getNames()[0]);
+    
+    // <li> <START:organization> Bay Cities Produce Co., Inc. <END> </li>
+    ns = ds.read();
+    assertEquals(7, ns.getSentence().length);
+    assertEquals("<li>", ns.getSentence()[0]);
+    assertEquals("Bay", ns.getSentence()[1]);
+    assertEquals("Cities", ns.getSentence()[2]);
+    assertEquals("Produce", ns.getSentence()[3]);
+    assertEquals("Co.,", ns.getSentence()[4]);
+    assertEquals("Inc.", ns.getSentence()[5]);
+    assertEquals("</li>", ns.getSentence()[6]);
+    assertEquals(new Span(1, 6), ns.getNames()[0]);
+    
+    ns = ds.read();
+    assertEquals(1, ns.getSentence().length);
+    assertEquals("</ul>", ns.getSentence()[0]);
+    
+    ns = ds.read();
+    assertEquals(1, ns.getSentence().length);
+    assertEquals("</body>", ns.getSentence()[0]);
+    
+    ns = ds.read();
+    assertEquals(1, ns.getSentence().length);
+    assertEquals("</html>", ns.getSentence()[0]);
+    
+    assertNull(ds.read());
+  }
 }
