@@ -150,7 +150,7 @@ London share prices were bolstered largely by continued gains on Wall Street and
 			To instantiate the TokenizerME (the learnable tokenizer) a Token Model
 			must be created first. The following code sample shows how a model
 			can be loaded.
-			<programlisting>
+			<programlisting language="java">
 			<![CDATA[
 InputStream modelIn = new FileInputStream("en-token.bin");
 
@@ -172,7 +172,7 @@ finally {
 			]]>
 		 </programlisting>
 			After the model is loaded the TokenizerME can be instantiated.
-			<programlisting>
+			<programlisting language="java">
 			<![CDATA[
 Tokenizer tokenizer = new TokenizerME(model);]]>
 		 </programlisting>
@@ -181,7 +181,7 @@ Tokenizer tokenizer = new TokenizerME(model);]]>
 			should be a sentence, but depending on the training of the learnable
 			tokenizer this is not required. The first returns an array of
 			Strings, where each String is one token.
-			<programlisting>
+			<programlisting language="java">
 			<![CDATA[
 String tokens[] = tokenizer.tokenize("An input sample sentence.");]]>
 		 </programlisting>
@@ -193,7 +193,7 @@ String tokens[] = tokenizer.tokenize("An input sample sentence.");]]>
 			The second method, tokenizePos returns an array of Spans, each Span
 			contain the begin and end character offsets of the token in the input
 			String.
-			<programlisting>
+			<programlisting language="java">
 			<![CDATA[
 Span tokenSpans[] = tokenizer.tokenizePos("An input sample sentence.");]]>		
 			</programlisting>
@@ -203,7 +203,7 @@ Span tokenSpans[] = tokenizer.tokenizePos("An input sample sentence.");]]>
 			The TokenizerME is able to output the probabilities for the detected
 			tokens. The getTokenProbabilities method must be called directly
 			after one of the tokenize methods was called.
-			<programlisting>
+			<programlisting language="java">
 			<![CDATA[
 TokenizerME tokenizer = ...
 
