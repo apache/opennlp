@@ -83,7 +83,6 @@
                        <manifest>
                            <addClasspath>true</addClasspath>
                            <mainClass>opennlp.tools.cmdline.CLI</mainClass>
-                           <classpathPrefix>lib/</classpathPrefix>
                        </manifest>
                    </archive>
                 </configuration>
