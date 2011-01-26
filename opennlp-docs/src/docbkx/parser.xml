@@ -64,7 +64,7 @@ $ bin/opennlp Parser en-parser.bin en-parser-chunking.bin < article-tokenized.tx
 		<para>
 			The Parser can be easily integrated into an application via its API.
 			To instantiate a Parser the parser model must be loaded first.
-			<programlisting>
+			<programlisting language="java">
 				<![CDATA[
 InputStream modelIn = new FileInputStream("en-parser-chunking.bin");
 try {
@@ -89,13 +89,13 @@ finally {
 		insert parser the parser implementation must be chosen correctly.
 		The factory method will read a type parameter from the model and create
 		an instance of the corresponding parser implementation.
-		<programlisting>
+		<programlisting language="java">
 				<![CDATA[
 Parser parser = ParserFactory.create(model);]]>
 		</programlisting>
 		Right now the tree insert parser is still experimental and there is no pre-trained model for it.
 		The parser expect a whitespace tokenized sentence. A utility method from the command line tool can parse the sentence String. The following code shows how the parser can be called.
-				<programlisting>
+				<programlisting language="java">
 				<![CDATA[
 String sentence = "The quick brown fox jumps over the lazy dog .";
 Parse topParses[] = ParserTool.parseLine(sentence, parser, 1);]]>
