@@ -17,8 +17,15 @@ REM #   KIND, either express or implied.  See the License for the
 REM #   specific language governing permissions and limitations
 REM #   under the License.
 
-REM # TODO: this section needs some work....
-IF "%JAVA_CMD%" == "" SET JAVA_CMD=java
+IF "%JAVA_CMD%" == "" (
+	IF "%JAVA_HOME%" == "" (
+		SET JAVA_CMD=java 
+	) ELSE (
+		SET JAVA_CMD=%JAVA_HOME%\bin\java
+	)
+)
+
+REM #  TODO windows doesn't have an easy way to get the directory...
 IF "%OPENNLP_HOME%" == "" SET OPENNLP_HOME=.
 
 %JAVA_CMD% -Xmx4096m -jar %OPENNLP_HOME%\lib\opennlp-tools-*.jar %*
