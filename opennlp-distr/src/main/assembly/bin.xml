@@ -60,6 +60,15 @@
 	      <includes>
 	        <include>README</include>
 	        <include>RELEASE_NOTES.html</include>
+	      </includes>       
+	    </fileSet>
+	    
+	    <fileSet>
+	      <directory>target</directory>
+	      <outputDirectory></outputDirectory>
+	      <fileMode>644</fileMode>
+	      <directoryMode>755</directoryMode> 
+	      <includes>
 	        <include>issuesFixed/**</include>      
 	      </includes>       
 	    </fileSet>
