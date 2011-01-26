@@ -76,8 +76,8 @@ $bin/opennlp SentenceDetector en-sent.bin < input.txt > output.txt]]>
 		<title>Sentence Detection API</title>
 		<para>
 		The Sentence Detector can be easily integrated into an application via its API.
-To instantiate the Sentence Detector the sentence model must be loaded first.
-						<programlisting>
+		To instantiate the Sentence Detector the sentence model must be loaded first.
+		<programlisting language="java">
 				<![CDATA[
 InputStream modelIn = new FileInputStream("en-sent.bin");
 
@@ -98,18 +98,18 @@ finally {
 }]]>
 		</programlisting>
 		After the model is loaded the SentenceDetectorME can be instantiated.
-		<programlisting>
+		<programlisting language="java">
 				<![CDATA[
 SentenceDetectorME sentenceDetector = new SentenceDetectorME(model);]]>
 		</programlisting>
 		The Sentence Detector can output an array of Strings, where each String is one sentence.
-				<programlisting>
+				<programlisting language="java">
 				<![CDATA[
 String sentences[] = sentenceDetector.sentDetect("  First sentence. Second sentence. ");]]>
 		</programlisting>
 		The result array now contains two entires. The first String is "First sentence." and the second String is "Second sentence." The whitespace before, between and after the input String is removed.
 		The API also offers a method which simply returns the span of the sentence in the input string.
-		<programlisting>
+		<programlisting language="java">
 				<![CDATA[
 Span sentences[] = sentenceDetector.sentPosDetect("  First sentence. Second sentence. ");]]>
 		</programlisting>
@@ -194,7 +194,7 @@ Path: en-sent.bin
 				</listitem>
 			</itemizedlist>
 			The following sample code illustrates these steps:
-					<programlisting>
+					<programlisting language="java">
 				<![CDATA[
 ObjectStream<String> lineStream = new PlainTextByLineStream(new FileInputStream("en-sent.train"), "UTF-8");
 ObjectStream<SentenceSample> sampleStream = new SentenceSampleStream(lineStream);
@@ -220,7 +220,7 @@ try {
 			<title>Evaluation Tool</title>
 			<para>
 				The command shows how the evaluator tool can be run:
-					<programlisting>
+				<programlisting>
 				<![CDATA[
 $bin/opennlp SentenceDetectorEvaluator -encoding UTF-8 -model en-sent.bin -data en-sent.eval  
 
@@ -230,7 +230,7 @@ Evaluating ... done
 Precision: 0.9465737514518002
 Recall: 0.9095982142857143
 F-Measure: 0.9277177006260672]]>
-		</programlisting>
+				</programlisting>
 				The en-sent.eval file has the same format as the training data.
 			</para>
 		</section>
