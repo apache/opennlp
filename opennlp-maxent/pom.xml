@@ -56,9 +56,6 @@
 						<id>default-cli</id>
 						<configuration>
 							<excludes>
-								<exclude>CHANGES</exclude>
-								<exclude>lib/ASL</exclude>
-								<exclude>lib/LIBNOTES</exclude>
 								<exclude>META-INF/MANIFEST.MF</exclude>
 								<exclude>samples/sports/*.test</exclude> <!-- sample data -->
 								<exclude>src/main/java/opennlp/maxent/AllEnglishAffixes.txt</exclude> <!-- test data -->

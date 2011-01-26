@@ -108,9 +108,6 @@
 	            <id>default-cli</id>
 	            <configuration>
 	              <excludes>
-	                <exclude>CHANGES</exclude>
-	                <exclude>lib/JWNL</exclude>
-	                <exclude>lib/LIBNOTES</exclude>
 	                <exclude>src/test/resources/opennlp/tools/chunker/*.txt</exclude> <!-- test data -->
 	                <exclude>src/test/resources/opennlp/tools/formats/*.sample</exclude> <!-- test data -->
 	                <exclude>src/test/resources/opennlp/tools/namefind/*.txt</exclude> <!-- test data -->
