@@ -61,7 +61,7 @@
 			<includes>opennlp.xml</includes>
 			<htmlStylesheet>css/opennlp-docs.css</htmlStylesheet>
 			<highlightSource>1</highlightSource>
-			<htmlCustomization>src/main/resources/xsl/html.xsl</htmlCustomization> 
+			<htmlCustomization>${project.basedir}/src/main/resources/xsl/html.xsl</htmlCustomization> 
 			<postProcess>
 				<copy todir="${project.build.directory}/docbkx/html">
 					<fileset dir="${project.basedir}/src/docbkx">
