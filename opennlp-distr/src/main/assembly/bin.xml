@@ -65,7 +65,7 @@
 	    </fileSet>
 	    
 		<fileSet>
-			<directory>/src/main/bin</directory>
+			<directory>src/main/bin</directory>
 			<fileMode>755</fileMode>
 			<directoryMode>755</directoryMode>
 			<outputDirectory>bin</outputDirectory>
