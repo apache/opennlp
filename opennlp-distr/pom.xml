@@ -65,6 +65,7 @@
 						<configuration>
 							<descriptors>
 								<descriptor>src/main/assembly/bin.xml</descriptor>
+								<descriptor>src/main/assembly/src.xml</descriptor>
 							</descriptors>
 							<!-- Tar package is only compatible with gnu tar,
 							     many file have more than 100 chars.
