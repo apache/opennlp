@@ -1,0 +1,43 @@
+Apache OpenNLP 1.5.1-incubating
+===============================
+
+
+Building from the Source Distribution
+-------------------------------------
+
+At least Maven 3.0.0 is required for building.
+
+To build everything go into the opennlp directory and run the following command:
+    mvn clean install
+   
+The results of the build will be placed  in:
+    opennlp-distr/target/apache-opennlp-[version]-bin.tar-gz (or .zip)
+
+What is new in OpenNLP 1.5.1-incubating
+---------------------------------------
+
+It is the first Apache OpenNLP release and a major effort has been
+put into migrating the project over from SourceForge to Apache.
+
+There are only a few minor new features and a couple of bug fixes 
+in this release.
+
+- Added support for the CONLL03 shared task data to train the name finders
+  for various languages
+- Chunker refactoring and added built-in evaluation support
+- Documentation is extended and now included in the distribution
+- Added Document Categorizer to the command line interface
+- Added support for the Portuguese Arvores Deitadas Corpus
+- Addes support for the Leipzig Corpora
+
+Requirements
+------------
+Java 1.5 is required to run OpenNLP
+Maven 3.0.0 is required for building it
+
+
+Note
+----
+The current API contains many deprecated methods, these
+will be removed in one of our next releases, please
+migrate to our new API.
