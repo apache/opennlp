@@ -80,6 +80,7 @@
 	            <useReleaseProfile>false</useReleaseProfile>
 	            <goals>deploy</goals>
 	            <arguments>-Papache-release</arguments>
+                <mavenExecutorId>forked-path</mavenExecutorId> 
 	          </configuration>
 	        </plugin>
 	      </plugins>
