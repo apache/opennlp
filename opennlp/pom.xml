@@ -68,6 +68,22 @@
 	</dependencyManagement>
 	
 	<build>
+		<pluginManagement>
+		  <plugins>
+	        <!-- set release-plugin version to > than 2.0,
+	             needed for "flat" hierarchy support -->
+	        <plugin>
+	          <groupId>org.apache.maven.plugins</groupId>
+	          <artifactId>maven-release-plugin</artifactId>
+	          <version>2.1</version>         
+	          <configuration>
+	            <useReleaseProfile>false</useReleaseProfile>
+	            <goals>deploy</goals>
+	            <arguments>-Papache-release</arguments>
+	          </configuration>
+	        </plugin>
+	      </plugins>
+	    </pluginManagement>	
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
