@@ -32,7 +32,6 @@
     
 	<artifactId>opennlp-tools</artifactId>
 	<packaging>jar</packaging>
-	<version>1.5.1-incubating-SNAPSHOT</version>
 	<name>OpenNLP Tools</name>
 	<repositories>
 		<repository>
