@@ -82,7 +82,7 @@ Mr . <START:person> Vinken <END> is chairman of Elsevier N.V. , the Dutch publis
 InputStream modelIn = new FileInputStream("en-ner-person.bin");
 
 try {
-  TokenNameFinder model = new TokenNameFinderModel(modelIn);
+  TokenNameFinderModel model = new TokenNameFinderModel(modelIn);
 }
 catch (IOException e) {
   e.printStackTrace();
