@@ -31,7 +31,6 @@
 	</parent>
 
 	<artifactId>opennlp-distr</artifactId>
-	<version>1.5.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>OpenNLP Distribution</name>
 
