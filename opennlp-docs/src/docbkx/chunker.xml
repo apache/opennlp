@@ -129,9 +129,6 @@ bin/opennlp ChunkerTrainerME -encoding UTF-8 -lang en -data en-chunker.train -mo
 	<section id="tools.chunker.evaluation">
 		<title>Chunker Evaluation</title>
 		<para>
-		(only OpenNLP 1.5.1-SNAPSHOT or better)
-		</para>
-		<para>
 		The built in evaluation can measure the chunker performance. The performance is either measured on a test dataset or via cross validation. 
 		</para>
 		<section id="tools.chunker.evaluation.tool">
