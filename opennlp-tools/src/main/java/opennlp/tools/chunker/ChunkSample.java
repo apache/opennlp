@@ -45,8 +45,7 @@ public class ChunkSample {
    */
   public ChunkSample(String[] sentence, String[] tags, String[] preds) {
     
-    if (sentence.length != tags.length || tags.length != preds.length)
-      throw new IllegalArgumentException("All arrays must have the same length!");
+    validateArguments(sentence.length, tags.length, preds.length);
     
     this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
     this.tags = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tags)));
@@ -64,9 +63,9 @@ public class ChunkSample {
    *          Chunk tags in B-* I-* notation
    */
   public ChunkSample(List<String> sentence, List<String> tags, List<String> preds) {
-  	if (sentence.size() != tags.size()  || tags.size()  != preds.size() )
-      throw new IllegalArgumentException("All arrays must have the same length!");
-  	
+    
+    validateArguments(sentence.size(), tags.size(), preds.size());
+    
     this.sentence = Collections.unmodifiableList(new ArrayList<String>((sentence)));
     this.tags = Collections.unmodifiableList(new ArrayList<String>((tags)));
     this.preds = Collections.unmodifiableList(new ArrayList<String>((preds)));
@@ -107,11 +106,10 @@ public class ChunkSample {
   public static Span[] phrasesAsSpanList(String[] aSentence, String[] aTags,
       String[] aPreds) {
 
-    if (aSentence.length != aTags.length || aTags.length != aPreds.length)
-      throw new IllegalArgumentException(
-          "All arrays must have the same length!");
+    validateArguments(aSentence.length, aTags.length, aPreds.length);
 
-    List<Span> phrases = new ArrayList<Span>();
+    // initialize with the list maximum size
+    List<Span> phrases = new ArrayList<Span>(aSentence.length); 
     String startTag = "";
     int startIndex = 0;
     boolean foundPhrase = false;
@@ -139,6 +137,12 @@ public class ChunkSample {
     }
 
     return phrases.toArray(new Span[phrases.size()]);
+  }
+  
+  private static void validateArguments(int sentenceSize, int tagsSize, int predsSize) throws IllegalArgumentException {
+    if (sentenceSize != tagsSize || tagsSize != predsSize)
+      throw new IllegalArgumentException(
+          "All arrays must have the same length!");
   }
   
   /**
