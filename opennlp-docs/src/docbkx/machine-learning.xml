@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter id="opennlp.ml">
+<title>Machine Learning</title>
+	<section id="opennlp.ml.maxent">
+		<title>Maximum Entropy</title>
+		<para>
+		To explain what maximum entropy is, it will be simplest to quote from Manning and Schutze* (p. 589):
+		<quote>
+		Maximum entropy modeling is a framework for integrating information from many heterogeneous
+		information sources for classification.  The data for a  classification problem is described
+		as a (potentially large) number of features.  These features can be quite complex and allow
+		the experimenter to make use of prior knowledge about what types of informations are expected
+		to be important for classification. Each feature corresponds to a constraint on the model.
+		We then compute the maximum entropy model, the model with the maximum entropy of all the models
+		that satisfy the constraints.  This term may seem perverse, since we have spent most of the book
+		trying to minimize the (cross) entropy of models, but the idea is that we do not want to go beyond
+		the data.  If we chose a model with less entropy, we would add `information' constraints to the
+		model that are not justified by the empirical evidence available to us. Choosing the maximum
+		entropy model is motivated by the desire to preserve as much uncertainty as possible.
+		</quote>
+		</para>
+		<para>
+		So that gives a rough idea of what the maximum entropy framework is.
+		Don't assume anything about your probability distribution other than what you have observed. 
+		</para>
+		<para>
+		On the engineering level, using maxent is an excellent way of creating programs which perform
+		very difficult classification tasks very well.  For example,  precision and recall figures for
+		programs using maxent models have reached (or are) the state of the art on tasks like part of
+		speech tagging, sentence detection, prepositional phrase attachment, and named entity recognition.
+		On the engineering level, an added benefit is that the person creating a maxent model only needs
+		to inform the training procedure of the event space, and need not worry about independence between
+		features.
+		</para>
+		<para>
+		While the authors of this implementation of maximum entropy are generally interested using
+		maxent models in natural language processing, the framework is certainly quite general and
+		useful for a much wider variety of fields.  In fact, maximum entropy modeling was originally
+		developed for statistical physics.
+		</para>
+		<para>
+		For a very in-depth discussion of how maxent can be used in natural language processing,
+		try reading Adwait Ratnaparkhi's dissertation.   Also,  check out Berger, Della Pietra,
+		and Della Pietra's paper A Maximum Entropy Approach to Natural Language Processing, which
+		provides an excellent introduction and discussion of the framework.
+		</para>
+		<para>
+		*Foundations of statistical natural language processing . Christopher D. Manning, Hinrich Schutze. 
+		Cambridge, Mass. : MIT Press, c1999.
+		</para>
+			<section id="opennlp.ml.maxent.impl">
+		<title>Implementation</title>
+		<para>
+		We have tried to make the opennlp.maxent implementation easy to use.  To create a model, one
+		needs (of course) the training data, and then implementations of two interfaces in the
+		opennlp.maxent package, EventStream and ContextGenerator.  These have fairly simple specifications,
+		and example implementations can be found in the OpenNLP Tools preprocessing components.
+		</para>
+		<para>
+		We have also set in place some interfaces and code to make it easier to automate the training
+		and evaluation process (the Evalable interface and the TrainEval class).  It is not necessary
+		to use this functionality, but if you do you'll find it much easier to see how well your models
+		are doing.  The opennlp.grok.preprocess.namefind package is an example of a maximum entropy
+		component which uses this functionality.
+		</para>
+		<para>
+		We have managed to use several techniques to reduce the size of the models when writing them to
+		disk, which also means that reading in a model for use is much quicker than with less compact
+		encodings of the model.  This was especially important to us since we use many maxent models in
+		the Grok library, and we wanted the start up time and the physical size of the library to be as
+		minimal as possible. As of version 1.2.0, maxent has an io package which greatly simplifies the
+		process of loading and saving models in different formats.
+		</para>
+		</section>
+	</section>
+</chapter>
