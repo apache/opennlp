@@ -151,6 +151,7 @@ public class ChunkerME implements Chunker {
     this.model = mod;
   }
 
+  @Deprecated
   public List<String> chunk(List<String> toks, List<String> tags) {
     bestSequence =
         beam.bestSequence(toks.toArray(new String[toks.size()]), new Object[] { (String[]) tags.toArray(new String[tags.size()]) });
@@ -168,10 +169,15 @@ public class ChunkerME implements Chunker {
     return ChunkSample.phrasesAsSpanList(toks, tags, preds);
   }
 
+  @Deprecated
   public Sequence[] topKSequences(List<String> sentence, List<String> tags) {
-    return beam.bestSequences(DEFAULT_BEAM_SIZE,
-        sentence.toArray(new String[sentence.size()]),
-        new Object[] { tags.toArray(new String[tags.size()]) });
+    return topKSequences(sentence.toArray(new String[sentence.size()]),
+        tags.toArray(new String[tags.size()]));
+  }
+  
+  public Sequence[] topKSequences(String[] sentence, String[] tags) {
+    return beam.bestSequences(DEFAULT_BEAM_SIZE, sentence,
+        new Object[] { tags });
   }
 
   public Sequence[] topKSequences(String[] sentence, String[] tags, double minSequenceScore) {
