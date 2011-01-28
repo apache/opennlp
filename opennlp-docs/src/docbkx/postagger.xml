@@ -131,4 +131,44 @@ Sequence topSequences[] = tagger.topKSequences(sent);]]>
 	  		 </para>
 	</section>
 	</section>
+		<section id="tools.postagger.training">
+		<title>Training</title>
+		<para>
+			The POS Tagger can be trained on annotated training material. The training material
+			is a collection of tokenized sentences where each token has the assigned part-of-speech tag.
+			The native POS Tagger training material looks like this:
+						<programlisting>
+		  <![CDATA[
+About_IN 10_CD Euro_NNP ,_, I_PRP reckon_VBP ._.
+That_DT sounds_VBZ good_JJ ._.]]>
+			</programlisting>		
+			Each sentence must be in one line. The token/tag pairs are combined with "_".
+			The token/tag pairs are whitespace separated. The data format does not
+			define a document boundary. If a document boundary should be included in the
+			training material it is suggested to use an empty line.
+		</para>
+		<para>The Part-of-Speech Tagger can eihter be trained with a command line tool,
+		or via an trainng API.
+		</para>
+		<section id="tools.postagger.training.tool">
+		<title>Training Tool</title>
+		<para>
+			OpenNLP has a command line tool which is used to train the models available from the model
+			download page on various corpora.
+		</para>
+		<para>
+		 Usage of the tool:
+			<screen>
+				<![CDATA[
+$ bin/opennlp POSTaggerTrainer
+Usage: opennlp POSTaggerTrainer -lang language -encoding charset [-iterations num] [-cutoff num] \ 
+    [-dict tagdict] [-model maxent|perceptron|perceptron_sequence] -data trainingData -model model
+-lang language     specifies the language which is being processed.
+-encoding charset  specifies the encoding which should be used for reading and writing text.
+-iterations num    specified the number of training iterations
+-cutoff num        specifies the min number of times a feature must be seen]]>
+			 </screen>
+		</para>
+		</section>
+		</section>
 </chapter>
