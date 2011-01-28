@@ -120,8 +120,9 @@ public class ChunkerMETest {
   }
 
   @Test
-  public void testTokenProb() throws Exception {
+  public void testTokenProbList() throws Exception {
 
+    @SuppressWarnings("deprecation")
     Sequence[] preds = chunker.topKSequences(Arrays.asList(toks1),
         Arrays.asList(tags1));
 
@@ -130,9 +131,20 @@ public class ChunkerMETest {
     assertEquals(Arrays.asList(expect1), preds[0].getOutcomes());
     assertNotSame(Arrays.asList(expect1), preds[1].getOutcomes());
   }
-
+  
   @Test
   public void testTokenProbArray() throws Exception {
+
+    Sequence[] preds = chunker.topKSequences(toks1, tags1);
+
+    assertTrue(preds.length > 0);
+    assertEquals(expect1.length, preds[0].getProbs().length);
+    assertEquals(Arrays.asList(expect1), preds[0].getOutcomes());
+    assertNotSame(Arrays.asList(expect1), preds[1].getOutcomes());
+  }
+
+  @Test
+  public void testTokenProbMinScore() throws Exception {
 
     Sequence[] preds = chunker.topKSequences(toks1, tags1, -5.55);
 

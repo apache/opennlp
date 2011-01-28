@@ -81,4 +81,8 @@ public class DummyChunker implements Chunker {
 		return null;
 	}
 
+  public Sequence[] topKSequences(String[] sentence, String[] tags) {
+    return null;
+  }
+
 }
