@@ -66,13 +66,27 @@ public interface Chunker {
    * @param tags The pos-tags for the specified sentence.
    * 
    * @return the top k chunk sequences for the specified sentence.
+   * 
+   * @deprecated please use {@link #topKSequences(String[], String[])} instead.
    */
+  @Deprecated
   public Sequence[] topKSequences(List<String> sentence, List<String> tags);
+  
+  
+  /**
+   * Returns the top k chunk sequences for the specified sentence with the specified pos-tags
+   * @param sentence The tokens of the sentence.
+   * @param tags The pos-tags for the specified sentence.
+   * 
+   * @return the top k chunk sequences for the specified sentence.
+   */
+  public Sequence[] topKSequences(String[] sentence, String[] tags);
 
   /**
    * Returns the top k chunk sequences for the specified sentence with the specified pos-tags
    * @param sentence The tokens of the sentence.
    * @param tags The pos-tags for the specified sentence.
+   * @param minSequenceScore A lower bound on the score of a returned sequence.
    * 
    * @return the top k chunk sequences for the specified sentence.
    */
