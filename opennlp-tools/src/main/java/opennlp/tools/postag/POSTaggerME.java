@@ -212,6 +212,7 @@ public class POSTaggerME implements POSTagger {
     return posModel.getNumOutcomes();
   }
 
+  @Deprecated
   public List<String> tag(List<String> sentence) {
     bestSequence = beam.bestSequence(sentence.toArray(new String[sentence.size()]), null);
     return bestSequence.getOutcomes();
@@ -241,6 +242,7 @@ public class POSTaggerME implements POSTagger {
     return tags;
   }
 
+  @Deprecated
   public Sequence[] topKSequences(List<String> sentence) {
     return beam.bestSequences(size, sentence.toArray(new String[sentence.size()]), null);
   }
@@ -267,6 +269,7 @@ public class POSTaggerME implements POSTagger {
     return bestSequence.getProbs();
   }
 
+  @Deprecated
   public String tag(String sentence) {
     List<String> toks = new ArrayList<String>();
     StringTokenizer st = new StringTokenizer(sentence);
