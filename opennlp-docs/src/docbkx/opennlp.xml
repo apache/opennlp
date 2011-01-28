@@ -75,6 +75,7 @@ under the License.
 
 	<title>Apache OpenNLP Developer Documentation</title>
 	<toc/>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./introduction.xml"/>
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./sentdetect.xml"/>
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./tokenizer.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./namefinder.xml" />
