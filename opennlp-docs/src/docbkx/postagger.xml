@@ -27,9 +27,9 @@ under the License.
 		<title>Tagging</title>
 		<para>
 		The Part of Speech Tagger marks tokens with their corresponding word type
-		based on the token itself and the context of the token. A token can have
+		based on the token itself and the context of the token. A token might have
 		multiple pos tags depending on the token and the context. The OpenNLP POS Tagger
-		uses a probability model to guess the correct pos tag out of the tag set.
+		uses a probability model to predict the correct pos tag out of the tag set.
 		To limit the possible tags for a token a tag dictionary can be used which increases
 		the tagging and runtime performance of the tagger.
 		</para>
@@ -57,6 +57,78 @@ Mr._NNP Vinken_NNP is_VBZ chairman_NN of_IN Elsevier_NNP N.V._NNP ,_, the_DT Dut
 		 </programlisting> 
 		 The tag set used by the english pos model is the Penn Treebank tag set. See the link below for a description of the tags.
 		</para>
-		</section>
+      </section>
+      
+		<section id="tools.postagger.tagging.api">
+		<title>POS Tagger API</title>
+		<para>
+		    The POS Tagger can be embedded into an application via its API.
+			First the pos model must be loaded into memory from disk or an other source.
+			In the sample below its loaded from disk.
+			<programlisting language="java">
+				<![CDATA[
+InputStream modelIn = null;
+
+try {
+  modelIn = new FileInputStream("en-pos-maxent.bin");
+  POSModel model = new POSModel(modelIn);
+}
+catch (IOException e) {
+  // Model loading failed, handle the error
+  e.printStackTrace();
+}
+finally {
+  if (modelIn != null) {
+    try {
+      modelIn.close();
+    }
+    catch (IOException e) {
+    }
+  }
+}]]>
+			</programlisting>
+			After the model is loaded the POSTaggerME can be instantiated.
+			<programlisting language="java">
+				<![CDATA[
+POSTaggerME tagger = new POSTaggerME(model);]]>
+			</programlisting>
+			The POS Tagger instance is now ready to tag data. It expects a tokenized sentence
+			as input, which is represented as a String array, each String object in the array
+			is one token.
+	   </para>
+	   <para>
+	   The following code shows how to determine the most likely pos tag sequence for a sentence.
+	   	<programlisting language="java">
+		  <![CDATA[
+String sent[] = new String[]{"Most", "large", "cities", "in", "the", "US", "had",
+                             "morning", "and", "afternoon", "newspapers", "."};		  
+String tags[] = tagger.tag(sent);]]>
+			</programlisting>
+			The tags array contains one part-of-speech tag for each token in the input array. The corresponding
+			tag can be found at the same index as the token has in the input array.
+			The confidence scores for the returned tags can be easily retrieved from
+			a POSTaggerME with the following method call:
+				   	<programlisting language="java">
+		  <![CDATA[
+double probs[] = tagger.probs();]]>
+			</programlisting>
+			The call to probs is stateful and will always return the probabilities of the last
+			tagged sentence. The probs method should only be called when the tag method
+			was called before, otherwise the behavior is undefined.
+			</para>
+			<para>
+			Some applications need to retrieve the n-best pos tag sequences and not
+			only the best sequence.
+			The topKSequences method is capable of returning the top sequences.
+			It can be called in a similar way as tag.
+			<programlisting language="java">
+		  <![CDATA[
+Sequence topSequences[] = tagger.topKSequences(sent);]]>
+			</programlisting>	
+			Each Sequence object contains one sequence. The sequence can be retrieved
+			via Sequence.getOutcomes() which returns a tags array 
+			and Sequence.getProbs() returns the probability array for this sequence.
+	  		 </para>
+	</section>
 	</section>
 </chapter>
