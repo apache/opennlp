@@ -23,6 +23,23 @@ import java.io.ObjectStreamException;
 
 /**
  * Reads <code>Object</code>s from a stream.
+ * <p>
+ * Design Decision:<br>
+ * This interface provides a means for iterating over the
+ * objects in a stream, it does not implement {@link java.util.Iterator} or
+ * {@link Iterable} because:
+ * <ul>
+ * <li>{@link java.util.Iterator#next()} and
+ * {@link java.util.Iterator#hasNext()} are declared as throwing no checked
+ * exceptions. Thus the {@link IOException}s thrown by {@link #read()} would
+ * have to be wrapped in {@link RuntimeException}s, and the compiler would be
+ * unable to force users of this code to catch such exceptions.</li>
+ * <li>Implementing {@link Iterable} would mean either silently calling
+ * {@link #reset()} to guarantee that all items were always seen on each
+ * iteration, or documenting that the Iterable only iterates over the remaining
+ * elements of the ObjectStream. In either case, users not reading the
+ * documentation carefully might run into unexpected behavior.</li>
+ * </ul>
  * 
  * @see ObjectStreamException
  */
