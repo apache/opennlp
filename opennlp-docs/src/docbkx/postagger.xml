@@ -137,7 +137,7 @@ Sequence topSequences[] = tagger.topKSequences(sent);]]>
 			The POS Tagger can be trained on annotated training material. The training material
 			is a collection of tokenized sentences where each token has the assigned part-of-speech tag.
 			The native POS Tagger training material looks like this:
-						<programlisting>
+			<programlisting>
 		  <![CDATA[
 About_IN 10_CD Euro_NNP ,_, I_PRP reckon_VBP ._.
 That_DT sounds_VBZ good_JJ ._.]]>
@@ -147,9 +147,10 @@ That_DT sounds_VBZ good_JJ ._.]]>
 			define a document boundary. If a document boundary should be included in the
 			training material it is suggested to use an empty line.
 		</para>
-		<para>The Part-of-Speech Tagger can eihter be trained with a command line tool,
+		<para>The Part-of-Speech Tagger can either be trained with a command line tool,
 		or via an trainng API.
 		</para>
+		
 		<section id="tools.postagger.training.tool">
 		<title>Training Tool</title>
 		<para>
@@ -169,6 +170,133 @@ Usage: opennlp POSTaggerTrainer -lang language -encoding charset [-iterations nu
 -cutoff num        specifies the min number of times a feature must be seen]]>
 			 </screen>
 		</para>
+		<para>
+		The following command illustrates how an english part-of-speech model can be trained:
+		<screen>
+		  <![CDATA[
+$bin/opennlp POSTaggerTrainer -encoding UTF-8 -lang en -model-type maxent -data en-pos.train -model en-pos-maxent.bin]]>
+		 </screen>
+		</para>
+		</section>
+		<section id="tools.postagger.training.api">
+		<title>Training API</title>
+		<para>
+		The Part-of-Speech Tagger training API supports the programmatically training of a new pos model.
+		Basically three steps are necessary to train it:
+		<itemizedlist>
+			<listitem>
+				<para>The application must open a sample data stream</para>
+			</listitem>
+			<listitem>
+				<para>Call the POSTagger.train method</para>
+			</listitem>
+			<listitem>
+				<para>Save the POSModel to a file or database</para>
+			</listitem>
+		</itemizedlist>
+		The following code illustrates that:
+		<programlisting language="java">
+				<![CDATA[
+POSModel model = null;
+
+InputStream dataIn = null;
+try {
+  dataIn = new FileInputStream("en-pos.train");
+  ObjectStream<String> lineStream =
+		new PlainTextByLineStream(dataIn, "UTF-8");
+  ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
+
+  model = POSTaggerME.train("en", sampleStream, ModelType.MAXENT,
+      null, null, 100, 5);
+}
+catch (IOException e) {
+  // Failed to read or parse training data, training failed
+  e.printStackTrace();
+}
+finally {
+  if (dataIn != null) {
+    try {
+      dataIn.close();
+    }
+    catch (IOException e) {
+      // Not an issue, training already finished.
+      // The exception should be logged and investigated
+      // if part of a production system.
+      e.printStackTrace();
+    }
+  }
+}]]>
+	</programlisting>
+	The above code performs the first two steps, opening the data and training
+	the model. The trained model must still be saved into an OutputStream, in
+	the sample below it is written into a file.
+	<programlisting language="java">
+				<![CDATA[
+OutputStream modelOut = null;
+try {
+  modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+  model.serialize(modelOut);
+}
+catch (IOException e) {
+  // Failed to save model
+  e.printStackTrace();
+}
+finally {
+  if (modelOut != null) {
+  try {
+     modelOut.close();
+  }
+  catch (IOException e) {
+    // Failed to correctly save model.
+    // Written model might be invalid.
+    e.printStackTrace();
+  }
+}]]>
+		</programlisting>
+		</para>
+		</section>
+		<section id="tools.postagger.training.tagdict">
+		<title>Tag Dictionary</title>
+		<para>
+		The tag dicitionary is a word dictionary which specifies which tags a specific token can have. Using a tag
+		dictionary has two advantages, unappropriate tags can not been assigned to tokens in the dictionary and the
+		beam search algrotihm has to consider less possibilties and can search faster.
+		</para>
+		<para>
+		The dictionary is defined in a xml format and can be created and stored with the POSDictionary class.
+		Pleaes for now checkout the javadoc and source code of that class.
+		</para>
+		<para>Note: Contributions to extend this section are welcome. The format should be documented and
+		sample code should show how to use the dictionary.</para>
+		</section>
+		</section>
+		
+		<section id="tools.postagger.eval">
+		<title>Evaluation</title>
+		<para>
+		The built in evaluation can measure the accuracy of the pos tagger.
+		The accuracy can be measured on a test data set or via cross validation.
+		</para>
+		<section id="tools.postagger.eval.tool">
+		<title>Evaluation Tool</title>
+		<para>
+		There is a command line tool to evaluate a given model on a test data set.
+		The command line tool currently does not support the cross validation
+		evaluation (contribution welcome).
+		The following command shows how the tool can be run:
+		<screen>
+				<![CDATA[
+$bin/opennlp POSTaggerEvaluator -encoding utf-8 -model pt.postagger.model -data pt.postagger.test]]>
+			 </screen>
+			 This will display the resulting accuracy score, e.g.:
+			 <screen>
+				<![CDATA[
+Loading model ... done
+Evaluating ... done
+
+Accuracy: 0.9659110277825124]]>
+			 </screen>
+		</para> 
 		</section>
 		</section>
 </chapter>
