@@ -116,8 +116,7 @@ finally {
 			After the model is loaded the NameFinderME can be instantiated.
 			<programlisting language="java">
 				<![CDATA[
-NameFinderME nameFinder = new NameFinderME(model);
-				]]>
+NameFinderME nameFinder = new NameFinderME(model);]]>
 			</programlisting>
 			The initialization is now finished and the Name Finder can be used. The NameFinderME class is not thread safe, it must only be called from one thread. To use multiple threads multiple NameFinderME instances sharing the same model instance can be created.
 			The input text should be segmented into documents, sentences and tokens.
