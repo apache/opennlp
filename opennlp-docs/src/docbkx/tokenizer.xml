@@ -283,4 +283,65 @@ Path: en-token.bin
 			</screen>
 		</para>
 	</section>
+	<section id="tools.tokenizer.detokenizing">
+		<title>Detokenizing</title>
+		<para>
+		Detokenizing is simple the opposite of tokenization, the original non-tokenized string should
+		be constructed out of a token sequence. The OpenNLP implementation was created to undo the tokenization
+		of training data for the tokenizer. It can also be used to undo the tokenization of such a trained
+		tokenizer. The implementation is strictly rule based and defines how tokens should be attached
+		to a sentence wise character sequence.
+		</para>
+		<para>
+		The rule dictionary assign to every token an operation which describes how it should be attached
+		to one continous character sequence.
+		</para>
+		<para>
+		The following rules can be assigned to a token:
+		<itemizedlist>
+			<listitem>
+				<para>MERGE_TO_LEFT - Merges the token to the left side.</para>
+			</listitem>
+			<listitem>
+				<para>MERGE_TO_RIGHT - Merges the token to the righ side.</para>
+			</listitem>
+			<listitem>
+				<para>RIGHT_LEFT_MATCHING - Merges the token to the right side on first occurence
+				and to the left side on second occurence.</para>
+			</listitem>
+		</itemizedlist>
+		
+		The following sample will illustrate how the detokenizer with a small
+		rule dictionary (illustration format, not the xml data format):
+		<programlisting>
+			<![CDATA[
+. MERGE_TO_LEFT
+" RIGHT_LEFT_MATCHING]]>		
+		</programlisting>
+		The dictionary should be used to de-tokenize the following whitespace tokenized sentence:
+		<programlisting>
+			<![CDATA[
+He said " This is a test " .]]>		
+		</programlisting>	
+		The tokens would get these tags based on the dictionary:
+		<programlisting>
+			<![CDATA[
+He -> NO_OPERATION
+said -> NO_OPERATION
+" -> MERGE_TO_RIGHT
+This -> NO_OPERATION
+is -> NO_OPERATION
+a -> NO_OPERATION
+test -> NO_OPERATION
+" -> MERGE_TO_LEFT
+. -> MERGE_TO_LEFT]]>		
+			</programlisting>
+			That will result in the following character sequence:
+		<programlisting>
+			<![CDATA[
+He said "This is a test".]]>		
+		</programlisting>
+		TODO: Add documentation about the dictionary format and how to use the API. Contributions are welcome.	
+		</para>
+	</section>
 </chapter>
