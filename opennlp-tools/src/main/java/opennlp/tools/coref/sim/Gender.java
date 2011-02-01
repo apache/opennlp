@@ -18,7 +18,7 @@
 package opennlp.tools.coref.sim;
 
 /**
- * Class which models the gender of an enity and the confidence of that association.
+ * Class which models the gender of an entity and the confidence of that association.
  */
 public class Gender {
 
