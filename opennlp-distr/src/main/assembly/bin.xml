@@ -108,5 +108,12 @@
 			<outputDirectory>docs/apidocs/opennlp-uima</outputDirectory>
 		</fileSet>
 		
+		<fileSet>
+			<directory>../opennlp-uima/descriptors</directory>
+			<fileMode>644</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>docs/opennlp-uima-descriptors</outputDirectory>
+		</fileSet>
+		
 	</fileSets>
 </assembly>
