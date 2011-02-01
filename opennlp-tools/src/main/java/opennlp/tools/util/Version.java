@@ -139,6 +139,6 @@ public class Version {
    * @return the current version
    */
   public static Version currentVersion() {
-    return new Version(1, 5, 0);
+    return new Version(1, 5, 1);
   }
 }
