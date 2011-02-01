@@ -92,4 +92,16 @@ Total time: 3 minutes 20 seconds]]>
 			must be written in English.
 		</para>
 	</section>
+	<section id="org.apche.opennlp.further-help">
+		<title>Further Help</title>
+		<para>
+			For more information about how to use the integration please consult the javadoc of the individual
+			Analysis Engines and checkout the included xml descriptors.
+		</para>
+		<para>
+			TODO: Extend this documentation with information about the individual components.
+			If you want to contribute please contact us on the mailing list
+			or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-49">OPENNLP-49</ulink>.
+		</para>
+	</section>
 </chapter>
