@@ -25,7 +25,7 @@ IF "%JAVA_CMD%" == "" (
 	)
 )
 
-REM #  TODO windows doesn't have an easy way to get the directory...
-IF "%OPENNLP_HOME%" == "" SET OPENNLP_HOME=.
+REM #  Should work with Windows XP and greater.  If not, specify the path to where it is installed.
+IF "%OPENNLP_HOME%" == "" SET OPENNLP_HOME=%~sp0..
 
 %JAVA_CMD% -Xmx4096m -jar %OPENNLP_HOME%\lib\opennlp-tools-*.jar %*
