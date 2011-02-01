@@ -20,6 +20,9 @@
   <formats>
     <format>zip</format>
   </formats>
+  
+  <baseDirectory>/apache-opennlp-src</baseDirectory>
+  
   <fileSets>
     <fileSet>
       <directory>../</directory>
