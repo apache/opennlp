@@ -137,6 +137,15 @@ F-Measure: 0.9230575441395671]]>
 		</section>
 	</section>
 		<section id="tools.corpora.conll.2003">
+		<title>CONLL 2002</title>
+		<para>
+		TODO: Document how to use the converters for CONLL 2002. Any contributions
+		are very welcome. If you want to contribute please contact us on the mailing list
+		or comment on the jira issue 
+		<ulink url="https://issues.apache.org/jira/browse/OPENNLP-46">OPENNLP-46</ulink>.
+		</para>
+		</section>
+		<section id="tools.corpora.conll.2003">
 		<title>CONLL 2003</title>
 		<para>
 		The shared task of CoNLL-2003 is language independent named entity recognition
