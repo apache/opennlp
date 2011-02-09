@@ -92,6 +92,7 @@
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
+          			<compilerArgument>-Xlint</compilerArgument>
 				</configuration>
 			</plugin>
 
