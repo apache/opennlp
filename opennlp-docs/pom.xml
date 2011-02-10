@@ -47,13 +47,11 @@
           </execution>
         </executions>
 		<dependencies>
-         <dependency>
-                 <groupId>org.docbook</groupId>
-                 <artifactId>docbook-xml</artifactId>
-                 <version>5.0</version>
-                 <type>pom</type>
-                 <scope>runtime</scope>
-         </dependency>
+			<dependency>
+			  <groupId>org.docbook</groupId>
+			  <artifactId>docbook-xml</artifactId>
+			  <version>4.4</version>
+			</dependency>
        	</dependencies>
 		<configuration>
 			<xincludeSupported>true</xincludeSupported>
