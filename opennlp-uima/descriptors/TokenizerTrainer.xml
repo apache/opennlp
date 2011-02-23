@@ -27,8 +27,8 @@
 	<processingResourceMetaData>
 		<name>TokenizerTrainer</name>
 		<description></description>
-		<version>1.4.4</version>
-		<vendor>OpenNLP</vendor>
+		<version>1.5.1</version>
+		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>
 			<configurationParameter>
 				<name>opennlp.uima.ModelName</name>

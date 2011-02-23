@@ -27,8 +27,8 @@
 		a custom type system change the mapping in the descriptors to the
 		custom types and reference the custom type system.
 	</description>
-	<version>1.4.4</version>
-	<vendor>OpenNLP</vendor>
+	<version>1.5.1</version>
+	<vendor>Apache Software Foundation</vendor>
 	<types>
 		<typeDescription>
 			<name>opennlp.uima.Sentence</name>
