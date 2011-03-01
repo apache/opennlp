@@ -38,6 +38,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
   private AdaptiveFeatureGenerator featureGenerators[];
 
+  @Deprecated
   private static AdaptiveFeatureGenerator windowFeatures = new CachedFeatureGenerator(
       new AdaptiveFeatureGenerator[]{
       new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
@@ -49,7 +50,9 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
   /**
    * Creates a name context generator.
+   * @deprecated use the other constructor and always provide the feature generators
    */
+  @Deprecated
   public DefaultNameContextGenerator() {
     this((AdaptiveFeatureGenerator[]) null);
   }

@@ -125,12 +125,10 @@ public class NameFinderME implements TokenNameFinder {
   public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize) {
     this.model = model.getNameFinderModel();
 
-    contextGenerator = new DefaultNameContextGenerator();
-
     if (generator != null) 
-      contextGenerator.addFeatureGenerator(generator);
+      contextGenerator = new DefaultNameContextGenerator(generator);
     else
-      contextGenerator.addFeatureGenerator(createFeatureGenerator());
+      contextGenerator = new DefaultNameContextGenerator(createFeatureGenerator());
     
     contextGenerator.addFeatureGenerator(
           new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
@@ -148,6 +146,8 @@ public class NameFinderME implements TokenNameFinder {
    * Creates a new name finder with the specified model.
    * 
    * @param mod The model to be used to find names.
+   * 
+   * @deprecated Use the new model API! 
    */
   @Deprecated
   public NameFinderME(MaxentModel mod) {
