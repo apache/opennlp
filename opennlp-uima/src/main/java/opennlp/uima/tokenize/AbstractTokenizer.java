@@ -97,7 +97,7 @@ public abstract class AbstractTokenizer extends CasAnnotator_ImplBase {
       AnnotationFS tokenAnnotations[]) {
   }
 	
-	protected abstract Span[] tokenize(CAS cas, AnnotationFS sentence);
+  protected abstract Span[] tokenize(CAS cas, AnnotationFS sentence);
 
   @Override
   public void process(CAS cas) throws AnalysisEngineProcessException {
