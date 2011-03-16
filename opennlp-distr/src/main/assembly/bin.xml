@@ -27,7 +27,7 @@
   </formats>
   
     <includeBaseDirectory>true</includeBaseDirectory>
-	<baseDirectory>/apache-opennlp</baseDirectory>
+	<baseDirectory>/apache-opennlp-${project.version}</baseDirectory>
   
 	<dependencySets>
 		<dependencySet>
