@@ -51,12 +51,14 @@
 			</resources>
 		</copy>
 
-		<!-- Copy necessary jar files into pear -->
-		<copy tofile="${pearDir}/lib/opennlp-uima.jar" flatten="true">
-			<resources>
-				<file name="target/opennlp-uima-*.jar" />
-			</resources>
-		</copy>
+        <!-- Copy necessary jar files into pear -->
+        <copy tofile="${pearDir}/lib/opennlp-uima.jar">
+	        <fileset dir="target">
+                <include name="opennlp-uima-*.jar"/>
+                <exclude name="opennlp-uima-*-sources.jar"/>
+                <exclude name="opennlp-uima-*-javadoc.jar"/>
+	        </fileset>
+        </copy>
 
 		<copy todir="${pearDir}/lib">
 			<fileset dir="target/dependency" />
