@@ -21,7 +21,7 @@
     <format>zip</format>
   </formats>
   
-  <baseDirectory>/apache-opennlp-src</baseDirectory>
+  <baseDirectory>/apache-opennlp-${project.version}-src</baseDirectory>
   
   <fileSets>
     <fileSet>
