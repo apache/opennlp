@@ -19,7 +19,8 @@
    under the License.    
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -31,7 +32,7 @@
 
 	<groupId>org.apache.opennlp</groupId>
 	<artifactId>opennlp</artifactId>
-	<version>1.5.1-incubating</version>
+	<version>1.5.1-incubating-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>OpenNLP Reactor</name>
@@ -42,12 +43,12 @@
 	
 	<scm>
 		<connection>
-      		scm:svn:http://svn.apache.org/repos/asf/incubator/opennlp/tags/opennlp-1.5.1-incubating-rc3/opennlp
+      		scm:svn:http://svn.apache.org/repos/asf/incubator/opennlp/trunk/opennlp/
 	    </connection>
 		<developerConnection>
-	      	scm:svn:https://svn.apache.org/repos/asf/incubator/opennlp/tags/opennlp-1.5.1-incubating-rc3/opennlp
+	      	scm:svn:https://svn.apache.org/repos/asf/incubator/opennlp/trunk/opennlp/
 	    </developerConnection>
-		<url>http://svn.apache.org/viewvc/incubator/opennlp/tags/opennlp-1.5.1-incubating-rc3/opennlp</url>
+		<url>http://svn.apache.org/viewvc/incubator/opennlp/trunk/opennlp/</url>
 	</scm>
 	
 	<issueManagement>
