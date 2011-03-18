@@ -135,7 +135,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
         tags.add(fields[2]);
       }
       else {
-        throw new IOException("Expected two fields per line in spanish data!");
+        throw new IOException("Expected three fields per line in training data!");
       }
     }
     
