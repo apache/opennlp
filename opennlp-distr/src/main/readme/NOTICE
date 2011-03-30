@@ -3,3 +3,11 @@ Copyright 2010, 2011 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
+
+This product contains JWNL developed by the JWNL SourceForge project 
+(http://sourceforge.net/projects/jwordnet/), licensed under the 
+BSD license (see LICENSE file).
+
+This product depends on Apache UIMA developed at
+The Apache Software Foundation (http://www.apache.org/), licensed
+under the Apache License 2.0 (see LICENSE file).
