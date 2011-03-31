@@ -68,7 +68,7 @@ class TrainingParameters extends BasicTrainingParameters {
   }
   
   public static String getParameterUsage() {
-    return BasicTrainingParameters.getParameterUsage() + " [-dict tagdict] [-model maxent|perceptron|perceptron_sequence]";
+    return BasicTrainingParameters.getParameterUsage() + " [-dict tagdict] [-model-type maxent|perceptron|perceptron_sequence]";
   }
   
 }
