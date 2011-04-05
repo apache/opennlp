@@ -108,7 +108,7 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
     language = CasConsumerUtil.getRequiredStringParameter(mContext,
         UimaUtil.LANGUAGE_PARAMETER);
     
-    Boolean isSkipAlphaNumerics = 
+    isSkipAlphaNumerics = 
         CasConsumerUtil.getOptionalBooleanParameter(
         mContext, IS_ALPHA_NUMERIC_OPTIMIZATION);
     
