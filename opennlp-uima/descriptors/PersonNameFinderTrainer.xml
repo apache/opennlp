@@ -71,7 +71,14 @@
 				<mandatory>false</mandatory>
 			</configurationParameter>
 		</configurationParameters>
-		
+
+			<configurationParameter>
+				<name>opennlp.uima.Language</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>true</mandatory>
+			</configurationParameter>
+
 		<configurationParameterSettings>
 
 			<nameValuePair>
@@ -101,6 +108,14 @@
 					<string>opennlp.uima.Person</string>
 				</value>
 			</nameValuePair>
+
+			<nameValuePair>
+				<name>opennlp.uima.Language</name>
+				<value>
+					<string>en</string>
+				</value>
+			</nameValuePair>
+
 		</configurationParameterSettings>
 		<typeSystemDescription>
 			<imports>
