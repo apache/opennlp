@@ -56,6 +56,14 @@
 				<multiValued>false</multiValued>
 				<mandatory>true</mandatory>
 			</configurationParameter>
+
+			<configurationParameter>
+				<name>opennlp.uima.Language</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>true</mandatory>
+			</configurationParameter>
+
 		</configurationParameters>
 
 		<configurationParameterSettings>
@@ -86,6 +94,14 @@
 					<string>pos</string>
 				</value>
 			</nameValuePair>
+
+			<nameValuePair>
+				<name>opennlp.uima.Language</name>
+				<value>
+					<string>en</string>
+				</value>
+			</nameValuePair>
+
 		</configurationParameterSettings>
 		
 		<typeSystemDescription />
