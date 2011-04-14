@@ -50,7 +50,7 @@ public class ModelApplier {
 
   private void eval(Event event, boolean real) {
 
-    String outcome = event.getOutcome();
+    String outcome = event.getOutcome(); // Is ignored
     String[] context = event.getContext();
 
     double[] ocs;
@@ -61,20 +61,17 @@ public class ModelApplier {
       ocs = _model.eval(context, values);
     }
 
-    int best = 0;
-    for (int i = 1; i < ocs.length; i++)
-      if (ocs[i] > ocs[best])
-        best = i;
+    int numOutcomes = ocs.length;
+    DoubleStringPair[] result = new DoubleStringPair[numOutcomes];
+    for (int i=0; i<numOutcomes; i++)
+      result[i] = new DoubleStringPair(ocs[i], _model.getOutcome(i));
 
-    String predictedLabel = _model.getOutcome(best);
-    String madeError = "+";
-    if (predictedLabel.equals(outcome))
-      madeError = "";
+    java.util.Arrays.sort(result);
 
-    System.out.println(counter + "\t0:" + outcome + "\t0:"
-        + _model.getOutcome(best) + "\t" + madeError + "\t"
-        + ROUNDED_FORMAT.format(ocs[best]));
-    counter++;
+    // Print the most likely outcome first, down to the least likely.
+    for (int i=numOutcomes-1; i>=0; i--)
+      System.out.print(result[i].stringValue + " " + result[i].doubleValue + " ");
+    System.out.println();
 
   }
 
@@ -89,10 +86,16 @@ public class ModelApplier {
    * java ModelApplier modelFile dataFile
    */
   public static void main(String[] args) {
+
     String dataFileName, modelFileName;
     boolean real = false;
     String type = "maxent";
     int ai = 0;
+
+    if (args.length == 0) {
+      usage();
+    }
+
     if (args.length > 0) {
       while (args[ai].startsWith("-")) {
         if (args[ai].equals("-real")) {
@@ -104,28 +107,25 @@ public class ModelApplier {
         }
         ai++;
       }
+
       modelFileName = args[ai++];
       dataFileName = args[ai++];
 
       ModelApplier predictor = null;
       try {
-        MaxentModel m = new GenericModelReader(new File(modelFileName))
-            .getModel();
+        MaxentModel m = new GenericModelReader(new File(modelFileName)).getModel();
         predictor = new ModelApplier(m);
       } catch (Exception e) {
         e.printStackTrace();
         System.exit(0);
       }
 
-      System.out.println("=== Predictions on test data ===\n");
-      System.out.println(" inst#     actual  predicted error prediction");
       try {
         EventStream es = new BasicEventStream(new PlainTextByLineDataStream(
             new FileReader(new File(dataFileName))), ",");
 
-        while (es.hasNext()) {
+        while (es.hasNext())
           predictor.eval(es.next(), real);
-        }
 
         return;
       } catch (Exception e) {

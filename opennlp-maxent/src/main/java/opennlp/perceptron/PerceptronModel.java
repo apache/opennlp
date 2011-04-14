@@ -87,29 +87,16 @@ public class PerceptronModel extends AbstractModel {
       }
     }    
     if (normalize) {
+      int numOutcomes = model.getNumOutcomes();
+      for (int oid = 0; oid < numOutcomes; oid++)
+	prior[oid] = Math.exp(prior[oid]);
+
       double normal = 0.0;
-      double min = prior[0];
-      for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
-        if (prior[oid] < min) {
-          min = prior[oid];
-        }
-      }
-      for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
-        if (min < 0) {
-          prior[oid]+=(-1*min);
-        }
-        normal += prior[oid];
-      }
-      if (normal == 0.0) {
-        for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
-          prior[oid] = (double) 1/model.getNumOutcomes();
-        }
-      }
-      else {
-        for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
-          prior[oid] /= normal;
-        }
-      }
+      for (int oid = 0; oid < numOutcomes; oid++)
+	normal += prior[oid];
+
+      for (int oid = 0; oid < numOutcomes; oid++)
+	prior[oid] /= normal;
     }
     return prior;
   }

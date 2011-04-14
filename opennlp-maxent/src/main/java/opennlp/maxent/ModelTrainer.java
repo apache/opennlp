@@ -25,10 +25,12 @@ import java.io.FileReader;
 import opennlp.maxent.io.GISModelWriter;
 import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.AbstractModel;
+import opennlp.model.AbstractModelWriter;
 import opennlp.model.EventStream;
 import opennlp.model.OnePassDataIndexer;
 import opennlp.model.OnePassRealValueDataIndexer;
 import opennlp.perceptron.PerceptronTrainer;
+import opennlp.perceptron.SuffixSensitivePerceptronModelWriter;
 
 /**
  * Main class which calls the GIS procedure after building the EventStream from
@@ -93,29 +95,38 @@ public class ModelTrainer {
       } else {
         es = new RealBasicEventStream(new PlainTextByLineDataStream(datafr));
       }
-      GIS.SMOOTHING_OBSERVATION = SMOOTHING_OBSERVATION;
+
+      File outputFile = new File(modelFileName);
+
+      AbstractModelWriter writer;
+
       AbstractModel model;
       if (type.equals("maxent")) {
+	GIS.SMOOTHING_OBSERVATION = SMOOTHING_OBSERVATION;
 
         if (!real) {
           model = GIS.trainModel(es, maxit, cutoff, sigma);
         } else {
-          model = GIS.trainModel(maxit, new OnePassRealValueDataIndexer(es, 0),
-              USE_SMOOTHING);
+          model = GIS.trainModel(maxit, 
+				 new OnePassRealValueDataIndexer(es, cutoff),              
+				 USE_SMOOTHING);
         }
+
+	writer = new SuffixSensitiveGISModelWriter(model, outputFile);
+
       } else if (type.equals("perceptron")) {
-        System.err.println("Perceptron training");
-        model = new PerceptronTrainer().trainModel(10, new OnePassDataIndexer(
-            es, 0), 0);
+        //System.err.println("Perceptron training");
+        model = new PerceptronTrainer().trainModel(maxit, new OnePassDataIndexer(es, cutoff), cutoff);
+
+	writer = new SuffixSensitivePerceptronModelWriter(model, outputFile);
+
       } else {
-        System.err.println("Unknown model type: " + type);
-        model = null;
+        throw new RuntimeException("Unknown model type: " + type);
       }
 
-      File outputFile = new File(modelFileName);
-      GISModelWriter writer = new SuffixSensitiveGISModelWriter(model,
-          outputFile);
       writer.persist();
+
+
     } catch (Exception e) {
       System.out.print("Unable to create model due to exception: ");
       System.out.println(e);

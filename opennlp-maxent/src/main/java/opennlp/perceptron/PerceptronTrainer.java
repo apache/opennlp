@@ -128,10 +128,13 @@ public class PerceptronTrainer {
     
     for (int pi = 0; pi < numPreds; pi++) {
       params[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
-      if (useAverage) averageParams[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
+      if (useAverage) 
+	averageParams[pi] = 
+	  new MutableContext(allOutcomesPattern,new double[numOutcomes]);
       for (int aoi=0;aoi<numOutcomes;aoi++) {
         params[pi].setParameter(aoi, 0.0);
-        if (useAverage) averageParams[pi].setParameter(aoi, 0.0);
+        if (useAverage) 
+	  averageParams[pi].setParameter(aoi, 0.0);
       }
     }
     modelDistribution = new double[numOutcomes];
@@ -141,12 +144,10 @@ public class PerceptronTrainer {
     display("...done.\n");
 
     /*************** Create and return the model ******************/
-    if (useAverage) {
+    if (useAverage)
       return new PerceptronModel(averageParams, predLabels, outcomeLabels);
-    }
-    else {
+    else
       return new PerceptronModel(params, predLabels, outcomeLabels);
-    }
   }
 
   private void display(String s) {
@@ -155,7 +156,11 @@ public class PerceptronTrainer {
   }
   
   private void findParameters(int iterations) {
+
     display("Performing " + iterations + " iterations.\n");
+
+    int numTimesSameAccuracy = 0;
+    double prevAccuracy = 0.0;
     for (int i = 1; i <= iterations; i++) {
       if (i < 10)
         display("  " + i + ":  ");
@@ -164,140 +169,128 @@ public class PerceptronTrainer {
       else
         display(i + ":  ");
       nextIteration(i);
+
+      // Need to do this for the full set to get a representative
+      // accuracy -- doing it while training is biased because the
+      // events are ordered according to their outcomes.
+      double currAccuracy = trainingStats(averageParams);
+      
+      if (currAccuracy == prevAccuracy) {
+	numTimesSameAccuracy++;
+      } else {
+	prevAccuracy = currAccuracy;
+	numTimesSameAccuracy = 0;
+      }
+
+      // If the accuracy hasn't changed for four iterations, stop training.
+      if (numTimesSameAccuracy == 4) {
+	display("Accuracy repeated 4 times, stopping training.\n");
+	break;
+      }
     }
-    if (useAverage) {
+    if (useAverage)
       trainingStats(averageParams);
-    }
-    else {
+    else
       trainingStats(params);
-    }
+
     // kill a bunch of these big objects now that we don't need them
     numTimesEventsSeen = null;
     contexts = null;
   }
   
-  /* Compute one iteration of Perceptron and return log-likelihood.*/
+  /* Compute one iteration of Perceptron.*/
   private void nextIteration(int iteration) {
     iteration--; //move to 0-based index
-    int numCorrect = 0;
     int oei = 0;
-    for (int ei = 0; ei < numUniqueEvents; ei++,oei++) {
-      //Arrays.sort(contexts[ei]); only needed for debugging
+    for (int ei = 0; ei < numUniqueEvents; ei++, oei++) {
       for (int ni=0;ni<this.numTimesEventsSeen[ei];ni++) {
-        //System.err.print("contexts["+ei+"]=");for (int ci=0;ci<contexts[ei].length;ci++) { System.err.print(" "+contexts[ei][ci]+" ");} System.err.println();
-        for (int oi = 0; oi < numOutcomes; oi++) {
+
+        for (int oi = 0; oi < numOutcomes; oi++)
           modelDistribution[oi] = 0;
-        }
-        if (values != null) {
+
+        if (values != null)
           PerceptronModel.eval(contexts[ei], values[ei], modelDistribution, evalParams,false);
-        }
-        else {
+        else
           PerceptronModel.eval(contexts[ei], null, modelDistribution, evalParams, false);
-        }
+
         int max = 0;
-        for (int oi = 1; oi < numOutcomes; oi++) {
-          if (modelDistribution[oi] > modelDistribution[max]) {
+        for (int oi = 1; oi < numOutcomes; oi++) 
+          if (modelDistribution[oi] > modelDistribution[max]) 
             max = oi;
-          }
-        }
-        boolean correct = max == outcomeList[oei]; 
-        if (correct) {
-          numCorrect ++;
-        }
+
         for (int oi = 0;oi<numOutcomes;oi++) {
-          if (oi == outcomeList[oei]) {
-            if (modelDistribution[oi] <= 0) {
-              for (int ci = 0; ci < contexts[ei].length; ci++) {
-                int pi = contexts[ei][ci];
-                if (values == null) {
-                  params[pi].updateParameter(oi, 1);
-                }
-                else {
-                  params[pi].updateParameter(oi, values[ei][ci]);
-                }
-                if (useAverage) {
-                  if (updates[pi][oi][VALUE] != 0) {
-                    averageParams[pi].updateParameter(oi,updates[pi][oi][VALUE]*(numEvents*(iteration-updates[pi][oi][ITER])+(ei-updates[pi][oi][EVENT])));
-                    //System.err.println("p avp["+pi+"]."+oi+"="+averageParams[pi].getParameters()[oi]);
-                  }
-                  //System.err.println("p updates["+pi+"]["+oi+"]=("+updates[pi][oi][ITER]+","+updates[pi][oi][EVENT]+","+updates[pi][oi][VALUE]+") + ("+iteration+","+ei+","+params[pi].getParameters()[oi]+") -> "+averageParams[pi].getParameters()[oi]);
-                  updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
-                  updates[pi][oi][ITER] = iteration;
-                  updates[pi][oi][EVENT] = ei;
-                }
-              }
-            }
-          }
-          else {
-            if (modelDistribution[oi] > 0) {
-              for (int ci = 0; ci < contexts[ei].length; ci++) {
-                int pi = contexts[ei][ci];
-                if (values == null) {
-                  params[pi].updateParameter(oi, -1);
-                }
-                else {
-                  params[pi].updateParameter(oi, -1*values[ei][ci]);
-                }
-                if (useAverage) {
-                  if (updates[pi][oi][VALUE] != 0) {
-                    averageParams[pi].updateParameter(oi,updates[pi][oi][VALUE]*(numEvents*(iteration-updates[pi][oi][ITER])+(ei-updates[pi][oi][EVENT])));
-                    //System.err.println("d avp["+pi+"]."+oi+"="+averageParams[pi].getParameters()[oi]);
-                  }
-                  //System.err.println(ei+" d updates["+pi+"]["+oi+"]=("+updates[pi][oi][ITER]+","+updates[pi][oi][EVENT]+","+updates[pi][oi][VALUE]+") + ("+iteration+","+ei+","+params[pi].getParameters()[oi]+") -> "+averageParams[pi].getParameters()[oi]);
-                  updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
-                  updates[pi][oi][ITER] = iteration;
-                  updates[pi][oi][EVENT] = ei;
-                }
-              }
-            }
-          }
-        }
+	  int updateValue = -1;
+          if (oi == outcomeList[oei])
+	    updateValue = 1;
+
+	  if (modelDistribution[oi]*updateValue <= 0) {
+	    for (int ci = 0; ci < contexts[ei].length; ci++) {
+	      int pi = contexts[ei][ci];
+	      if (values == null)
+		params[pi].updateParameter(oi, updateValue);
+	      else
+		params[pi].updateParameter(oi, updateValue*values[ei][ci]);
+
+	      if (useAverage) {
+
+		if (updates[pi][oi][VALUE] != 0)
+		  averageParams[pi].updateParameter(oi,
+		     updates[pi][oi][VALUE] *
+		     (numEvents * (iteration-updates[pi][oi][ITER])
+		      + (ei-updates[pi][oi][EVENT])));
+
+		updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
+		updates[pi][oi][ITER] = iteration;
+		updates[pi][oi][EVENT] = ei;
+	      }
+	    }
+	  }
+	}
       }
     }
+
     //finish average computation
     double totIterations = (double) iterations*numEvents;
     if (useAverage && iteration == iterations-1) {
       for (int pi = 0; pi < numPreds; pi++) {
         double[] predParams = averageParams[pi].getParameters();
         for (int oi = 0;oi<numOutcomes;oi++) {
-          if (updates[pi][oi][VALUE] != 0) {
-            predParams[oi] +=  updates[pi][oi][VALUE]*(numEvents*(iterations-updates[pi][oi][ITER])-updates[pi][oi][EVENT]);
-          }
+          if (updates[pi][oi][VALUE] != 0) 
+            predParams[oi] +=  
+	      updates[pi][oi][VALUE] *
+	      (numEvents * (iterations-updates[pi][oi][ITER])
+	       - updates[pi][oi][EVENT]);
+
           if (predParams[oi] != 0) {
             predParams[oi] /=totIterations;  
             averageParams[pi].setParameter(oi, predParams[oi]);
-            //System.err.println("updates["+pi+"]["+oi+"]=("+updates[pi][oi][ITER]+","+updates[pi][oi][EVENT]+","+updates[pi][oi][VALUE]+") + ("+iterations+","+0+","+params[pi].getParameters()[oi]+") -> "+averageParams[pi].getParameters()[oi]);
           }
         }
       }
     }
-    display(". ("+numCorrect+"/"+numEvents+") "+((double) numCorrect / numEvents) + "\n");
   }  
   
-  private void trainingStats(MutableContext[] params) {
+  private double trainingStats(MutableContext[] params) {
     int numCorrect = 0;
-    for (int ei = 0; ei < numUniqueEvents; ei++) {
+    int oei = 0;
+    for (int ei = 0; ei < numUniqueEvents; ei++, oei++) {
       for (int ni=0;ni<this.numTimesEventsSeen[ei];ni++) {
-        for (int oi = 0; oi < numOutcomes; oi++) {
+        for (int oi = 0; oi < numOutcomes; oi++)
           modelDistribution[oi] = 0;
-        }
-        if (values != null) {
+        if (values != null)
           PerceptronModel.eval(contexts[ei], values[ei], modelDistribution, evalParams,false);
-        }
-        else {
+        else
           PerceptronModel.eval(contexts[ei], null, modelDistribution, evalParams, false);
-        }
         int max = 0;
-        for (int oi = 1; oi < numOutcomes; oi++) {
-          if (modelDistribution[oi] > modelDistribution[max]) {
+        for (int oi = 1; oi < numOutcomes; oi++)
+          if (modelDistribution[oi] > modelDistribution[max])
             max = oi;
-          }
-        }
-        if (max == outcomeList[ei]) {
+        if (max == outcomeList[oei])
           numCorrect ++;
-        }
       }
     }
-    display(". ("+numCorrect+"/"+numEvents+") "+((double) numCorrect / numEvents) + "\n");
+    double trainingAccuracy = (double) numCorrect / numEvents;
+    display(". ("+numCorrect+"/"+numEvents+") "+ trainingAccuracy + "\n");
+    return trainingAccuracy;
   }
 }
