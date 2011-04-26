@@ -129,13 +129,12 @@ public class PerceptronTrainer {
     for (int pi = 0; pi < numPreds; pi++) {
       params[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
       if (useAverage) 
-	averageParams[pi] = 
-	  new MutableContext(allOutcomesPattern,new double[numOutcomes]);
-      for (int aoi=0;aoi<numOutcomes;aoi++) {
-        params[pi].setParameter(aoi, 0.0);
-        if (useAverage) 
-	  averageParams[pi].setParameter(aoi, 0.0);
-      }
+        averageParams[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
+        for (int aoi=0;aoi<numOutcomes;aoi++) {
+          params[pi].setParameter(aoi, 0.0);
+          if (useAverage) 
+            averageParams[pi].setParameter(aoi, 0.0);
+        }
     }
     modelDistribution = new double[numOutcomes];
 
@@ -176,16 +175,16 @@ public class PerceptronTrainer {
       double currAccuracy = trainingStats(averageParams);
       
       if (currAccuracy == prevAccuracy) {
-	numTimesSameAccuracy++;
+        numTimesSameAccuracy++;
       } else {
-	prevAccuracy = currAccuracy;
-	numTimesSameAccuracy = 0;
+        prevAccuracy = currAccuracy;
+        numTimesSameAccuracy = 0;
       }
 
       // If the accuracy hasn't changed for four iterations, stop training.
       if (numTimesSameAccuracy == 4) {
-	display("Accuracy repeated 4 times, stopping training.\n");
-	break;
+        display("Accuracy repeated 4 times, stopping training.\n");
+        break;
       }
     }
     if (useAverage)
@@ -219,33 +218,32 @@ public class PerceptronTrainer {
             max = oi;
 
         for (int oi = 0;oi<numOutcomes;oi++) {
-	  int updateValue = -1;
+          int updateValue = -1;
           if (oi == outcomeList[oei])
-	    updateValue = 1;
+            updateValue = 1;
 
-	  if (modelDistribution[oi]*updateValue <= 0) {
-	    for (int ci = 0; ci < contexts[ei].length; ci++) {
-	      int pi = contexts[ei][ci];
-	      if (values == null)
-		params[pi].updateParameter(oi, updateValue);
-	      else
-		params[pi].updateParameter(oi, updateValue*values[ei][ci]);
-
-	      if (useAverage) {
-
-		if (updates[pi][oi][VALUE] != 0)
-		  averageParams[pi].updateParameter(oi,
-		     updates[pi][oi][VALUE] *
-		     (numEvents * (iteration-updates[pi][oi][ITER])
-		      + (ei-updates[pi][oi][EVENT])));
-
-		updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
-		updates[pi][oi][ITER] = iteration;
-		updates[pi][oi][EVENT] = ei;
-	      }
-	    }
-	  }
-	}
+    	  if (modelDistribution[oi]*updateValue <= 0) {
+    	    for (int ci = 0; ci < contexts[ei].length; ci++) {
+    	      int pi = contexts[ei][ci];
+    	      if (values == null)
+    	        params[pi].updateParameter(oi, updateValue);
+    	      else
+    	        params[pi].updateParameter(oi, updateValue*values[ei][ci]);
+    
+    	      if (useAverage) {
+    
+    	        if (updates[pi][oi][VALUE] != 0)
+    	          averageParams[pi].updateParameter(oi, updates[pi][oi][VALUE] *
+    	              (numEvents * (iteration-updates[pi][oi][ITER])
+    	              + (ei-updates[pi][oi][EVENT])));
+    	        
+    	        updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
+    	        updates[pi][oi][ITER] = iteration;
+    	        updates[pi][oi][EVENT] = ei;
+    	      }
+    	    }
+    	  }
+        }
       }
     }
 
@@ -256,10 +254,9 @@ public class PerceptronTrainer {
         double[] predParams = averageParams[pi].getParameters();
         for (int oi = 0;oi<numOutcomes;oi++) {
           if (updates[pi][oi][VALUE] != 0) 
-            predParams[oi] +=  
-	      updates[pi][oi][VALUE] *
-	      (numEvents * (iterations-updates[pi][oi][ITER])
-	       - updates[pi][oi][EVENT]);
+            predParams[oi] +=  updates[pi][oi][VALUE] *
+                (numEvents * (iterations-updates[pi][oi][ITER])
+                - updates[pi][oi][EVENT]);
 
           if (predParams[oi] != 0) {
             predParams[oi] /=totIterations;  
@@ -286,11 +283,11 @@ public class PerceptronTrainer {
           if (modelDistribution[oi] > modelDistribution[max])
             max = oi;
         if (max == outcomeList[oei])
-          numCorrect ++;
+          numCorrect++;
       }
     }
     double trainingAccuracy = (double) numCorrect / numEvents;
-    display(". ("+numCorrect+"/"+numEvents+") "+ trainingAccuracy + "\n");
+    display(". (" + numCorrect + "/" + numEvents+") " + trainingAccuracy + "\n");
     return trainingAccuracy;
   }
 }
