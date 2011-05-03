@@ -57,7 +57,7 @@ class GISTrainer {
   /**
    * Specifies whether a slack parameter should be used in the model.
    */
-  private boolean useSlackParameter = false;
+  private final boolean useSlackParameter = false;
   
   /** 
    * Specified whether parameter updates should prefer a distribution of parameters which
@@ -72,7 +72,7 @@ class GISTrainer {
   // actually didn't see.  Defaulted to 0.1.
   private double _smoothingObservation = 0.1;
 
-  private boolean printMessages = false;
+  private final boolean printMessages;
 
   /** 
    * Number of unique events which occured in the event set. 
@@ -155,23 +155,13 @@ class GISTrainer {
    */
   private double cfObservedExpect;
 
-  /**
-   * A global variable for the models expected value of the correction feature.
-   */
-  private double CFMOD;
+  private static final double NEAR_ZERO = 0.01;
+  private static final double LLThreshold = 0.0001;
 
-  private final double NEAR_ZERO = 0.01;
-  private final double LLThreshold = 0.0001;
-
-  /** 
-   * Stores the number of features that get fired per event. 
-   */
-  int[] numfeats;
-  
   /**
    * Initial probability for all outcomes.
    */
-  EvalParameters evalParams;
+  private EvalParameters evalParams;
 
   /**
    * Creates a new <code>GISTrainer</code> instance which does not print
@@ -179,7 +169,7 @@ class GISTrainer {
    * 
    */
   GISTrainer() {
-    super();
+    printMessages = false;
   }
 
   /**
@@ -189,7 +179,6 @@ class GISTrainer {
    *                      STDOUT when true; trains silently otherwise.
    */
   GISTrainer(boolean printMessages) {
-    this();
     this.printMessages = printMessages;
   }
 
@@ -410,8 +399,6 @@ class GISTrainer {
 
     display("...done.\n");
 
-    numfeats = new int[numOutcomes];
-
     /***************** Find the parameters ************************/
     display("Computing model parameters...\n");
     findParameters(iterations, correctionConstant);
@@ -487,7 +474,7 @@ class GISTrainer {
     // correction parameter
     double[] modelDistribution = new double[numOutcomes];
     double loglikelihood = 0.0;
-    CFMOD = 0.0;
+    double CFMOD = 0.0;
     int numEvents = 0;
     int numCorrect = 0;
     for (int ei = 0; ei < numUniqueEvents; ei++) {
@@ -565,7 +552,8 @@ class GISTrainer {
         evalParams.setCorrectionParam(evalParams.getCorrectionParam() + (cfObservedExpect - Math.log(CFMOD)));
 
     display(". loglikelihood=" + loglikelihood + "\t" + ((double) numCorrect / numEvents) + "\n");
-    return (loglikelihood);
+    
+    return loglikelihood;
   }
 
   private void display(String s) {
