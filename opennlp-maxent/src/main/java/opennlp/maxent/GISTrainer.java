@@ -54,11 +54,6 @@ class GISTrainer {
    */
   private boolean useSimpleSmoothing = false;
   
-  /**
-   * Specifies whether a slack parameter should be used in the model.
-   */
-  private final boolean useSlackParameter = false;
-  
   /** 
    * Specified whether parameter updates should prefer a distribution of parameters which
    * is gaussian.
@@ -150,12 +145,6 @@ class GISTrainer {
    */
   private Prior prior;
 
-  /** 
-   * Observed expectation of correction feature.
-   */
-  private double cfObservedExpect;
-
-  private static final double NEAR_ZERO = 0.01;
   private static final double LLThreshold = 0.0001;
 
   /**
@@ -376,25 +365,6 @@ class GISTrainer {
       }
     }
 
-    // compute the expected value of correction
-    if (useSlackParameter) {
-      int cfvalSum = 0;
-      for (int ti = 0; ti < numUniqueEvents; ti++) {
-        for (int j = 0; j < contexts[ti].length; j++) {
-          int pi = contexts[ti][j];
-          if (!modelExpects[pi].contains(outcomeList[ti])) {
-            cfvalSum += numTimesEventsSeen[ti];
-          }
-        }
-        cfvalSum += (correctionConstant - contexts[ti].length) * numTimesEventsSeen[ti];
-      }
-      if (cfvalSum == 0) {
-        cfObservedExpect = Math.log(NEAR_ZERO); //nearly zero so log is defined
-      }
-      else {
-        cfObservedExpect = Math.log(cfvalSum);
-      }
-    }
     predCount = null; // don't need it anymore
 
     display("...done.\n");
@@ -474,7 +444,6 @@ class GISTrainer {
     // correction parameter
     double[] modelDistribution = new double[numOutcomes];
     double loglikelihood = 0.0;
-    double CFMOD = 0.0;
     int numEvents = 0;
     int numCorrect = 0;
     for (int ei = 0; ei < numUniqueEvents; ei++) {
@@ -500,17 +469,8 @@ class GISTrainer {
               modelExpects[pi].updateParameter(aoi,modelDistribution[oi] * numTimesEventsSeen[ei]);
             }
           }
-          if (useSlackParameter) {
-            for (int oi = 0; oi < numOutcomes; oi++) {
-              if (!modelExpects[pi].contains(oi)) {
-                CFMOD += modelDistribution[oi] * numTimesEventsSeen[ei];
-              }
-            }
-          }
         }
       }
-      if (useSlackParameter)
-        CFMOD += (correctionConstant - contexts[ei].length) * numTimesEventsSeen[ei];
       
       loglikelihood += Math.log(modelDistribution[outcomeList[ei]]) * numTimesEventsSeen[ei];
       numEvents += numTimesEventsSeen[ei];
@@ -548,8 +508,6 @@ class GISTrainer {
         modelExpects[pi].setParameter(aoi,0.0); // re-initialize to 0.0's
       }
     }
-    if (CFMOD > 0.0 && useSlackParameter)
-        evalParams.setCorrectionParam(evalParams.getCorrectionParam() + (cfObservedExpect - Math.log(CFMOD)));
 
     display(". loglikelihood=" + loglikelihood + "\t" + ((double) numCorrect / numEvents) + "\n");
     
