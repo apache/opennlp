@@ -34,6 +34,7 @@
 			<includes>
 				<include>org.apache.opennlp:opennlp-maxent</include>
 				<include>org.apache.opennlp:opennlp-tools</include>
+				<include>org.apache.opennlp:opennlp-uima</include>
 				<include>jwnl:jwnl</include>
 			</includes>
 			<unpack>false</unpack>
