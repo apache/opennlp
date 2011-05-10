@@ -19,9 +19,12 @@ package opennlp.uima.namefind;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.util.Span;
+import opennlp.uima.util.AnnotationComboIterator;
+import opennlp.uima.util.AnnotationIteratorPair;
 import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.ContainingConstraint;
 import opennlp.uima.util.UimaUtil;
@@ -111,56 +114,56 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
   protected void documentDone(CAS cas) {
   }
   
-  protected abstract Span[] find(CAS cas, AnnotationFS sentence, List<AnnotationFS> tokenAnnotations, 
-      String[] tokens);
+  protected abstract Span[] find(CAS cas, String[] tokens);
   
   /**
    * Performs name finding on the given cas object.
    */
   public final void process(CAS cas) {
 
-    FSIndex<AnnotationFS> sentenceIndex = cas.getAnnotationIndex(mSentenceType);
-
-    for (Iterator<AnnotationFS> sentenceIterator = sentenceIndex.iterator(); 
-        sentenceIterator.hasNext();) {
-      AnnotationFS sentenceAnnotation = (AnnotationFS) sentenceIterator.next();
+    if (isRemoveExistingAnnotations) {
+      final AnnotationComboIterator sentenceNameCombo = new AnnotationComboIterator(cas,
+          mSentenceType, mNameType);
       
-      if (isRemoveExistingAnnotations)
-        UimaUtil.removeAnnotations(cas, sentenceAnnotation, mNameType);
-      
-      ContainingConstraint containingConstraint =
-          new ContainingConstraint(sentenceAnnotation);
-
-      Iterator<AnnotationFS> tokenIterator = cas.createFilteredIterator(
-          cas.getAnnotationIndex(mTokenType).iterator(), containingConstraint);
-      
-      List<AnnotationFS> tokenAnnotationList = new ArrayList<AnnotationFS>();
-      
-      List<String> tokenList = new ArrayList<String>();
-
-      while (tokenIterator.hasNext()) {
-        
-        AnnotationFS tokenAnnotation = (AnnotationFS) tokenIterator
-            .next();
-
-        tokenAnnotationList.add(tokenAnnotation);
-        
-        tokenList.add(tokenAnnotation.getCoveredText());
+      List<AnnotationFS> removeAnnotations = new LinkedList<AnnotationFS>();
+      for (AnnotationIteratorPair annotationIteratorPair : sentenceNameCombo) {
+        for (AnnotationFS nameAnnotation : annotationIteratorPair.getSubIterator()) {
+          removeAnnotations.add(nameAnnotation);
+        }
       }
-       
-      Span[] names  = find(cas, sentenceAnnotation, tokenAnnotationList, 
-          (String[]) tokenList.toArray(new String[tokenList.size()]));
       
-      // TODO: log names, maybe with NameSample class
+      for (AnnotationFS annotation : removeAnnotations) {
+        cas.removeFsFromIndexes(annotation);
+      }
+    }
+    
+    final AnnotationComboIterator sentenceTokenCombo = new AnnotationComboIterator(cas,
+        mSentenceType, mTokenType);
+	
+    for (AnnotationIteratorPair annotationIteratorPair : sentenceTokenCombo) {
       
+      final List<AnnotationFS> sentenceTokenAnnotationList = new LinkedList<AnnotationFS>();
+
+      final List<String> sentenceTokenList = new LinkedList<String>();
+
+      for (AnnotationFS tokenAnnotation : annotationIteratorPair.getSubIterator()) {
+
+        sentenceTokenAnnotationList.add(tokenAnnotation);
+
+        sentenceTokenList.add(tokenAnnotation.getCoveredText());
+      }
+      
+      Span[] names  = find(cas, 
+          (String[]) sentenceTokenList.toArray(new String[sentenceTokenList.size()]));
+    
       AnnotationFS nameAnnotations[] = new AnnotationFS[names.length];
       
       for (int i = 0; i < names.length; i++) {
         
-        int startIndex = ((AnnotationFS) tokenAnnotationList.get(
+        int startIndex = ((AnnotationFS) sentenceTokenAnnotationList.get(
             names[i].getStart())).getBegin();
 
-        int endIndex = ((AnnotationFS) tokenAnnotationList.get(
+        int endIndex = ((AnnotationFS) sentenceTokenAnnotationList.get(
             names[i].getEnd() - 1)).getEnd();
         
         nameAnnotations[i] = 
@@ -171,7 +174,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
       
       postProcessAnnotations(names, nameAnnotations);
     }
-    
+        
     documentDone(cas);
   }
 }

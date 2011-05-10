@@ -75,7 +75,7 @@ public class DictionaryNameFinder extends AbstractNameFinder {
         new opennlp.tools.namefind.DictionaryNameFinder(nameFinderDictionary);
   }
   
-  protected Span[] find(CAS cas, AnnotationFS sentence, List<AnnotationFS> tokenAnnotations, String[] tokens) {
+  protected Span[] find(CAS cas, String[] tokens) {
     return mNameFinder.find(tokens);
   }
   
