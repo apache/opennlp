@@ -28,7 +28,7 @@ import org.apache.uima.cas.Type;
 import org.apache.uima.cas.text.AnnotationFS;
 
 /**
- * UIMA Anotation iterator combination of super- and subiterator.
+ * UIMA Annotation iterator combination of super- and subiterator.
  * 
  * <p>
  * This class supports a common idiom in UIMA annotation iteration, where you need to iterate over
@@ -134,7 +134,7 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
   // this determines the boundaries for the lower iterator.
   private int upperBegin;
 
-  // End postion of current upper annotation.
+  // End position of current upper annotation.
   private int upperEnd;
 
   // Have we already checked that a next lower annotation is available? Premature optimization...
