@@ -159,8 +159,7 @@ public final class NameFinder extends AbstractNameFinder {
     }
   }
 
-  protected Span[] find(CAS cas, AnnotationFS sentence,
-      List<AnnotationFS> tokenAnnotations, String[] tokens) {
+  protected Span[] find(CAS cas, String[] tokens) {
 
     Span names[] = mNameFinder.find(tokens);
 
