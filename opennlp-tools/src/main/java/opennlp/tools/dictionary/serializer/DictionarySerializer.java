@@ -34,6 +34,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.model.UncloseableInputStream;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -200,7 +201,7 @@ public class DictionarySerializer {
     try {
       xmlReader = XMLReaderFactory.createXMLReader();
       xmlReader.setContentHandler(profileContentHandler);
-      xmlReader.parse(new InputSource(in));
+      xmlReader.parse(new InputSource(new UncloseableInputStream(in)));
     }
     catch (SAXException e) {
       throw new InvalidFormatException("The profile data stream has " +
