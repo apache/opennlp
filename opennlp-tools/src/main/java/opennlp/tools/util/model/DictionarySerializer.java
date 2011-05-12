@@ -30,7 +30,6 @@ class DictionarySerializer implements ArtifactSerializer<Dictionary> {
 
   public Dictionary create(InputStream in) throws IOException,
       InvalidFormatException {
-    // TODO: Attention stream is closed
     return new Dictionary(in);
   }
 
