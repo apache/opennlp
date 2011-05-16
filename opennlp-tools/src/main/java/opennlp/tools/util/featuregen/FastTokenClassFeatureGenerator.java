@@ -24,7 +24,10 @@ import java.util.regex.Pattern;
 
 /**
  * Generates features for different for the class of the token.
+ * 
+ * @deprecated Use {@link TokenClassFeatureGenerator} instead!
  */
+@Deprecated 
 public class FastTokenClassFeatureGenerator extends FeatureGeneratorAdapter {
 
   private static final String TOKEN_CLASS_PREFIX = "wc";
