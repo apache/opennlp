@@ -117,6 +117,7 @@
 	                <exclude>src/test/resources/opennlp/tools/postag/AnnotatedSentences.txt</exclude> <!-- test data -->
 	                <exclude>src/test/resources/opennlp/tools/sentdetect/Sentences.txt</exclude> <!-- test data -->
 	                <exclude>src/test/resources/opennlp/tools/tokenize/token.train</exclude> <!-- test data -->
+	                <exclude>lang/en/parser/en-head_rules</exclude> <!-- head rule file, format does not allow AL header -->
 	              </excludes>              
 	            </configuration>
 	          </execution>
