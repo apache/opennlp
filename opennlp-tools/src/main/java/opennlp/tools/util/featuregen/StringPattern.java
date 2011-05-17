@@ -45,6 +45,13 @@ public class StringPattern {
   }
 
   /**
+   * @return true if all characters are letters.
+   */
+  public boolean isAllLetter() {
+    return (pattern & ALL_LETTERS) > 0;
+  }
+  
+  /**
    * @return true if first letter is capital.
    */
   public boolean isInitialCapitalLetter() {
