@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import opennlp.model.TrainUtil;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -74,6 +75,14 @@ public final class POSTaggerTrainerTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }    
     
+    opennlp.tools.util.TrainingParameters mlParams = 
+      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args));
+    
+    if (mlParams != null && !TrainUtil.isValid(mlParams.getSettings())) {
+      System.err.println("Training parameters file is invalid!");
+      throw new TerminateToolException(-1);
+    }
+    
     File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
     File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
     
@@ -90,9 +99,15 @@ public final class POSTaggerTrainerTool implements CmdLineTool {
         tagdict = new POSDictionary(parameters.getDictionaryPath());
       }
       
-      // depending on model and sequence choose training method
-      model = opennlp.tools.postag.POSTaggerME.train(parameters.getLanguage(),
-           sampleStream, parameters.getModel(), tagdict, null, parameters.getCutoff(), parameters.getNumberOfIterations());
+      if (mlParams == null) {
+        // depending on model and sequence choose training method
+        model = opennlp.tools.postag.POSTaggerME.train(parameters.getLanguage(),
+             sampleStream, parameters.getModel(), tagdict, null, parameters.getCutoff(), parameters.getNumberOfIterations());
+      }
+      else {
+        model = opennlp.tools.postag.POSTaggerME.train(parameters.getLanguage(),
+            sampleStream, mlParams, tagdict, null);
+      }
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

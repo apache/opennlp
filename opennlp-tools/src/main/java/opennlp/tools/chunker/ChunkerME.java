@@ -30,6 +30,7 @@ import java.util.Map;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
+import opennlp.model.TrainUtil;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.HashSumEventStream;
@@ -38,6 +39,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -205,6 +207,24 @@ public class ChunkerME implements Chunker {
     return bestSequence.getProbs();
   }
 
+  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, 
+      ChunkerContextGenerator contextGenerator, TrainingParameters mlParams)
+  throws IOException {
+    
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+//    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+    
+    EventStream es = new ChunkerEventStream(in, contextGenerator);
+    HashSumEventStream hses = new HashSumEventStream(es);
+    
+    AbstractModel maxentModel = TrainUtil.train(hses, mlParams.getSettings());
+    
+    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
+        hses.calculateHashSum().toString(16));
+    
+    return new ChunkerModel(lang, maxentModel, manifestInfoEntries);
+  }
+  
   public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, 
       int cutoff, int iterations, ChunkerContextGenerator contextGenerator)
       throws IOException {

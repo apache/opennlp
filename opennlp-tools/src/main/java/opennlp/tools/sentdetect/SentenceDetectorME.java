@@ -30,8 +30,10 @@ import java.util.Map;
 
 import opennlp.maxent.GIS;
 import opennlp.maxent.GISModel;
+import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
+import opennlp.model.TrainUtil;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.HashSumEventStream;
@@ -39,6 +41,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -284,6 +287,29 @@ public class SentenceDetectorME implements SentenceDetector {
     HashSumEventStream hses = new HashSumEventStream(eventStream);
     GISModel sentModel = GIS.trainModel(hses, iterations, cutoff);
 
+    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
+        hses.calculateHashSum().toString(16));
+    
+    return new SentenceModel(languageCode, sentModel,
+        useTokenEnd, abbreviations, manifestInfoEntries);
+  }
+  
+  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
+      boolean useTokenEnd, Dictionary abbreviations, TrainingParameters mlParams) throws IOException {
+    
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+//    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+    
+    Factory factory = new Factory();
+    
+    // TODO: Fix the EventStream to throw exceptions when training goes wrong
+    EventStream eventStream = new SDEventStream(samples,
+        factory.createSentenceContextGenerator(languageCode),
+        factory.createEndOfSentenceScanner(languageCode));
+    
+    HashSumEventStream hses = new HashSumEventStream(eventStream);
+    AbstractModel sentModel = TrainUtil.train(hses, mlParams.getSettings());
+    
     manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
         hses.calculateHashSum().toString(16));
     

@@ -26,10 +26,12 @@ import java.util.Map;
 import opennlp.maxent.GIS;
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
+import opennlp.model.TrainUtil;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
 /**
@@ -142,6 +144,21 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     return GIS.trainModel(100, new TwoPassDataIndexer(eventStream, 5));
   }
   
+   
+   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
+       TrainingParameters mlParams, FeatureGenerator... featureGenerators)
+   throws IOException {
+     
+     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+//     ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+     
+     AbstractModel model = TrainUtil.train(
+         new DocumentCategorizerEventStream(samples, featureGenerators),
+         mlParams.getSettings());
+       
+     return new DoccatModel(languageCode, model, manifestInfoEntries);
+   }
+   
   /**
    * Trains a document categorizer model with custom feature generation.
    * 

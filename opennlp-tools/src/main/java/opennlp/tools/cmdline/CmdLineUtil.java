@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -31,6 +32,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import opennlp.model.TrainUtil;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 
 /**
@@ -330,5 +333,35 @@ public final class CmdLineUtil {
   public static void handleStdinIoError(IOException e) {
     System.err.println("IO Error while reading from stdin: " + e.getMessage());
     throw new TerminateToolException(-1);
+  }
+  
+  // its optional, passing null is allowed
+  public static TrainingParameters loadTrainingParameters(String paramFile) {
+    
+    TrainingParameters params = null;
+    
+    if (paramFile != null) {
+      
+      checkInputFile("Training Parameter", new File(paramFile));
+      
+      InputStream paramsIn = null;
+      try {
+        paramsIn = new FileInputStream(new File(paramFile));
+        
+        params = new opennlp.tools.util.TrainingParameters(paramsIn);
+      } catch (IOException e) {
+        // TODO: print error and exit
+        e.printStackTrace();
+      }
+      finally {
+        try {
+          if (paramsIn != null)
+            paramsIn.close();
+        } catch (IOException e) {
+        }
+      }
+    }
+    
+    return params;
   }
 }
