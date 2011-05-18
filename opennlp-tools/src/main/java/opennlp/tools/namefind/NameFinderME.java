@@ -37,6 +37,7 @@ import opennlp.maxent.GISModel;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
+import opennlp.model.TrainUtil;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.HashSumEventStream;
@@ -45,6 +46,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.CachedFeatureGenerator;
@@ -311,7 +313,38 @@ public class NameFinderME implements TokenNameFinder {
      return sprobs;
    }
 
-
+   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
+       TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources) throws IOException {
+     
+     if (TrainUtil.isSequenceTraining(trainParams.getSettings())) {
+       throw new IllegalArgumentException("Sequence training is not supported!");
+     }
+     
+     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+//     ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+     
+     AdaptiveFeatureGenerator featureGenerator;
+     
+     if (generator != null)
+       featureGenerator = generator;
+     else 
+       featureGenerator = createFeatureGenerator();
+     
+     EventStream eventStream = new NameFinderEventStream(samples, type,
+         new DefaultNameContextGenerator(featureGenerator));
+     HashSumEventStream hses = new HashSumEventStream(eventStream);
+     
+     AbstractModel nameFinderModel = TrainUtil.train(hses, trainParams.getSettings());
+     
+//     AbstractModel nameFinderModel = GIS.trainModel(iterations, new TwoPassDataIndexer(hses, cutoff));
+     
+     manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
+         hses.calculateHashSum().toString(16));
+     
+     return new TokenNameFinderModel(languageCode, nameFinderModel,
+         resources, manifestInfoEntries);
+   }
+   
    /**
     * Trains a name finder model.
     * 

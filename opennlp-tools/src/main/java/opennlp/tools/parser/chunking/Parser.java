@@ -30,6 +30,7 @@ import java.util.Map;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
+import opennlp.model.TrainUtil;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.Chunker;
@@ -56,6 +57,7 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -275,6 +277,56 @@ public class Parser extends AbstractBottomUpParser {
     return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 
+  public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, TrainingParameters mlParams)
+  throws IOException {
+    
+    System.err.println("Building dictionary");
+ // TODO: Discuss and make dict cutoff configurable
+    Dictionary mdict = buildDictionary(parseSamples, rules, 5); 
+    
+    parseSamples.reset();
+    
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    // TODO: Fix this, find a way to include train params in manifest ...
+//    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cut, iterations);
+    
+    // build
+    System.err.println("Training builder");
+    opennlp.model.EventStream bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
+    HashSumEventStream hsbes = new HashSumEventStream(bes);
+    AbstractModel buildModel = TrainUtil.train(hsbes, mlParams.getSettings("build"));
+    manifestInfoEntries.put("Training-Builder-Eventhash", 
+        hsbes.calculateHashSum().toString(16));
+    
+    parseSamples.reset();
+    
+    // tag
+    POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(parseSamples), 
+        mlParams.getParameters("tagger"), null, null); // <- pass on name space corrected TrainingParameters ...
+    
+    parseSamples.reset();
+    
+    // chunk
+    ChunkerModel chunkModel = ChunkerME.train(languageCode, 
+        new ChunkSampleStream(parseSamples), // <- pass on name space corrected TrainingParameters ...
+        new ChunkContextGenerator(), mlParams.getParameters("chunker"));
+    
+    parseSamples.reset();
+    
+    // check
+    System.err.println("Training checker");
+    opennlp.model.EventStream kes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.CHECK);
+    HashSumEventStream hskes = new HashSumEventStream(kes);
+    AbstractModel checkModel = TrainUtil.train(hskes, mlParams.getSettings("check"));
+    manifestInfoEntries.put("Training-Checker-Eventhash", 
+        hskes.calculateHashSum().toString(16));
+    
+    // TODO: Remove cast for HeadRules
+    return new ParserModel(languageCode, buildModel, checkModel,
+        posModel, chunkModel, (opennlp.tools.parser.lang.en.HeadRules) rules,
+        ParserType.CHUNKING, manifestInfoEntries);
+  }
+  
   public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
       throws IOException {
     

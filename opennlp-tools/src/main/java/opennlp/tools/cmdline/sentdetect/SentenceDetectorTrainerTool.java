@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import opennlp.model.TrainUtil;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -73,6 +74,21 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
       System.out.println(getHelp());
       throw new TerminateToolException(1);
     }
+
+    opennlp.tools.util.TrainingParameters mlParams = 
+      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args));
+    
+    if (mlParams != null) {
+      if (!TrainUtil.isValid(mlParams.getSettings())) {
+        System.err.println("Training parameters file is invalid!");
+        throw new TerminateToolException(-1);
+      }
+      
+      if (TrainUtil.isSequenceTraining(mlParams.getSettings())) {
+        System.err.println("Sequence training is not supported!");
+        throw new TerminateToolException(-1);
+      }
+    }
     
     File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
     File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
@@ -80,11 +96,17 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
     CmdLineUtil.checkOutputFile("sentence detector model", modelOutFile);
     ObjectStream<SentenceSample> sampleStream = 
         openSampleData("Training", trainingDataInFile, parameters.getEncoding());
-    
+
     SentenceModel model;
     try {
-      model = SentenceDetectorME.train(parameters.getLanguage(), sampleStream, true, null, 
-          parameters.getCutoff(), parameters.getNumberOfIterations());
+      if (mlParams == null) {
+        model = SentenceDetectorME.train(parameters.getLanguage(), sampleStream, true, null, 
+            parameters.getCutoff(), parameters.getNumberOfIterations());
+      }
+      else {
+        model = SentenceDetectorME.train(parameters.getLanguage(), sampleStream, true, null, 
+            mlParams);
+      }
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
