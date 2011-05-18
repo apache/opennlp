@@ -25,6 +25,7 @@ import java.util.Set;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
+import opennlp.model.TrainUtil;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
@@ -46,6 +47,7 @@ import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
 
 /**
@@ -433,6 +435,57 @@ public class Parser extends AbstractBottomUpParser {
     p.setType(TOP_NODE);
   }
 
+  public static ParserModel train(String languageCode,
+      ObjectStream<Parse> parseSamples, HeadRules rules, TrainingParameters mlParams)
+  throws IOException {
+    
+    // TODO: training code should be shared between two parsers
+    System.err.println("Building dictionary");
+    // TODO: Make cutoff configurable ... 
+    Dictionary mdict = buildDictionary(parseSamples, rules, 5);
+    
+    parseSamples.reset();
+    
+    // tag
+    POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(
+        parseSamples), mlParams.getParameters("tagger"), null, null);
+    
+    parseSamples.reset();
+    
+    // chunk
+    ChunkerModel chunkModel = ChunkerME.train(languageCode, new ChunkSampleStream(
+        parseSamples), new ChunkContextGenerator(), mlParams.getParameters("chunker"));
+    
+    parseSamples.reset();
+    
+    // build
+    System.err.println("Training builder");
+    opennlp.model.EventStream bes = new ParserEventStream(parseSamples, rules,
+        ParserEventTypeEnum.BUILD, mdict);
+    AbstractModel buildModel = TrainUtil.train(bes, mlParams.getSettings("build"));
+    
+    parseSamples.reset();
+    
+    // check
+    System.err.println("Training checker");
+    opennlp.model.EventStream kes = new ParserEventStream(parseSamples, rules,
+        ParserEventTypeEnum.CHECK);
+    AbstractModel checkModel = TrainUtil.train(kes, mlParams.getSettings("check"));
+    
+    parseSamples.reset();
+    
+    // attach 
+    System.err.println("Training attacher");
+    opennlp.model.EventStream attachEvents = new ParserEventStream(parseSamples, rules,
+        ParserEventTypeEnum.ATTACH);
+    AbstractModel attachModel = TrainUtil.train(attachEvents, mlParams.getSettings("attach"));
+    
+    // TODO: Remove cast for HeadRules
+    return new ParserModel(languageCode, buildModel, checkModel,
+        attachModel, posModel, chunkModel, 
+        (opennlp.tools.parser.lang.en.HeadRules) rules, ParserType.TREEINSERT);
+  }
+  
   public static ParserModel train(String languageCode,
       ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
       throws IOException {

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
+import opennlp.model.TrainUtil;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -107,6 +108,21 @@ public final class ParserTrainerTool implements CmdLineTool {
       throw new TerminateToolException(1);
     } 
     
+    opennlp.tools.util.TrainingParameters mlParams = 
+      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args));
+    
+    if (mlParams != null) {
+      if (!TrainUtil.isValid(mlParams.getSettings())) {
+        System.err.println("Training parameters file is invalid!");
+        throw new TerminateToolException(-1);
+      }
+      
+      if (TrainUtil.isSequenceTraining(mlParams.getSettings())) {
+        System.err.println("Sequence training is not supported!");
+        throw new TerminateToolException(-1);
+      }
+    }
+    
     ObjectStream<Parse> sampleStream = openTrainingData(new File(CmdLineUtil.getParameter("-data", args)), parameters.getEncoding());
     
     File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
@@ -119,19 +135,35 @@ public final class ParserTrainerTool implements CmdLineTool {
           new InputStreamReader(new FileInputStream(new File(CmdLineUtil.getParameter("-head-rules", args))), 
           parameters.getEncoding()));
       
-      if (ParserType.CHUNKING.equals(parameters.getParserType())) {
-        model = opennlp.tools.parser.chunking.Parser.train(
-            parameters.getLanguage(), sampleStream, rules, 
-            parameters.getNumberOfIterations(), parameters.getCutoff());
-      }
-      else if (ParserType.TREEINSERT.equals(parameters.getParserType())) {
-        model = opennlp.tools.parser.treeinsert.Parser.train(parameters.getLanguage(), sampleStream, rules, parameters.getNumberOfIterations(), 
-            parameters.getCutoff());
+      if (mlParams == null) {
+        if (ParserType.CHUNKING.equals(parameters.getParserType())) {
+          model = opennlp.tools.parser.chunking.Parser.train(
+              parameters.getLanguage(), sampleStream, rules, 
+              parameters.getNumberOfIterations(), parameters.getCutoff());
+        }
+        else if (ParserType.TREEINSERT.equals(parameters.getParserType())) {
+          model = opennlp.tools.parser.treeinsert.Parser.train(parameters.getLanguage(), sampleStream, rules, parameters.getNumberOfIterations(), 
+              parameters.getCutoff());
+        }
+        else {
+          throw new IllegalStateException();
+        }
       }
       else {
-        throw new IllegalStateException();
+        if (ParserType.CHUNKING.equals(parameters.getParserType())) {
+          model = opennlp.tools.parser.chunking.Parser.train(
+              parameters.getLanguage(), sampleStream, rules, 
+              mlParams);
+        }
+        else if (ParserType.TREEINSERT.equals(parameters.getParserType())) {
+          model = opennlp.tools.parser.treeinsert.Parser.train(parameters.getLanguage(), sampleStream, rules,
+              mlParams);
+        }
+        else {
+          throw new IllegalStateException();
+        }
+
       }
-      
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

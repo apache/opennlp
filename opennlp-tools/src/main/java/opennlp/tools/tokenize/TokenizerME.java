@@ -28,12 +28,15 @@ import java.util.regex.Pattern;
 
 import opennlp.maxent.GIS;
 import opennlp.maxent.GISModel;
+import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
+import opennlp.model.TrainUtil;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -189,6 +192,26 @@ public class TokenizerME extends AbstractTokenizer {
     return spans;
   }
 
+  public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
+      boolean useAlphaNumericOptimization, TrainingParameters mlParams) throws IOException {
+
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+//    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+    
+    EventStream eventStream = new TokSpanEventStream(samples,
+        useAlphaNumericOptimization);
+
+    HashSumEventStream hses = new HashSumEventStream(eventStream);
+    
+    AbstractModel maxentModel = TrainUtil.train(hses, mlParams.getSettings());
+
+    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
+        hses.calculateHashSum().toString(16));
+    
+    return new TokenizerModel(languageCode, maxentModel, 
+        useAlphaNumericOptimization, manifestInfoEntries);
+  }
+  
   /**
    * Trains a model for the {@link TokenizerME}.
    *

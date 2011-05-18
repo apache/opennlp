@@ -28,6 +28,7 @@ import java.util.StringTokenizer;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
+import opennlp.model.TrainUtil;
 import opennlp.model.TwoPassDataIndexer;
 import opennlp.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.dictionary.Dictionary;
@@ -36,6 +37,7 @@ import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelType;
 import opennlp.tools.util.model.ModelUtil;
@@ -310,51 +312,46 @@ public class POSTaggerME implements POSTagger {
     
   }
 
-  public static POSModel train(String languageCode, ObjectStream<POSSample> samples, ModelType modelType, POSDictionary tagDictionary,
-      Dictionary ngramDictionary, int cutoff, int iterations) throws IOException {
-
+  public static POSModel train(String languageCode, ObjectStream<POSSample> samples, TrainingParameters trainParams, 
+      POSDictionary tagDictionary, Dictionary ngramDictionary) throws IOException {
+    
     POSContextGenerator contextGenerator = new DefaultPOSContextGenerator(ngramDictionary);
     
-    AbstractModel posModel = null;
-    
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+    // TODO: Store train params in model ... 
+//    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
     
-    if (modelType.equals(ModelType.MAXENT) ||
-        modelType.equals(ModelType.PERCEPTRON)) {
+    AbstractModel posModel;
+    
+    if (!TrainUtil.isSequenceTraining(trainParams.getSettings())) {
+      
       EventStream es = new POSSampleEventStream(samples, contextGenerator);
       HashSumEventStream hses = new HashSumEventStream(es);
       
-      if (modelType.equals(ModelType.MAXENT)) {
-        posModel = opennlp.maxent.GIS.trainModel(iterations,
-            new TwoPassDataIndexer(hses, cutoff));
-      }
-      else if (modelType.equals(ModelType.PERCEPTRON)) {
-        boolean useAverage = true;
-
-        posModel = new opennlp.perceptron.PerceptronTrainer().trainModel(
-            iterations, new TwoPassDataIndexer(hses,
-            cutoff, false), cutoff, useAverage);
-      }
-      else {
-        throw new IllegalStateException();
-      }
+      posModel = TrainUtil.train(hses, trainParams.getSettings());
       
       manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
           hses.calculateHashSum().toString(16));
     }
-    else if (modelType.equals(ModelType.PERCEPTRON_SEQUENCE)) {
-      
-      POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
-      boolean useAverage = true;
-      
-      posModel = new SimplePerceptronSequenceTrainer().trainModel(iterations, ss, cutoff,useAverage);
-    }
     else {
-      throw new IllegalStateException();
+      POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
+
+      posModel = TrainUtil.train(ss, trainParams.getSettings());
     }
     
     return new POSModel(languageCode, posModel, tagDictionary,
         ngramDictionary, manifestInfoEntries);
+  }
+  
+  public static POSModel train(String languageCode, ObjectStream<POSSample> samples, ModelType modelType, POSDictionary tagDictionary,
+      Dictionary ngramDictionary, int cutoff, int iterations) throws IOException {
+
+    TrainingParameters params = new TrainingParameters(); 
+    
+    params.put(TrainingParameters.ALGORITHM_PARAM, modelType.toString());
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
+    
+    return train(languageCode, samples, params, tagDictionary, ngramDictionary);
   }
 }
