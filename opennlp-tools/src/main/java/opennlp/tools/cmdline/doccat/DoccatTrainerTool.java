@@ -77,19 +77,7 @@ public class DoccatTrainerTool implements CmdLineTool {
     }
     
     opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args));
-    
-    if (mlParams != null) {
-      if (!TrainUtil.isValid(mlParams.getSettings())) {
-        System.err.println("Training parameters file is invalid!");
-        throw new TerminateToolException(-1);
-      }
-      
-      if (TrainUtil.isSequenceTraining(mlParams.getSettings())) {
-        System.err.println("Sequence training is not supported!");
-        throw new TerminateToolException(-1);
-      }
-    }
+      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), false);
     
     File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
     File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));

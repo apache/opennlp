@@ -75,7 +75,7 @@ public final class TokenizerTrainerTool implements CmdLineTool {
     }
 
     opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args));
+      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), false);
     
     if (mlParams != null) {
       if (!TrainUtil.isValid(mlParams.getSettings())) {

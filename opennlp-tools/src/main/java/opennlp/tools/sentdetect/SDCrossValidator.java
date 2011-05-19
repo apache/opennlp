@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -31,15 +32,28 @@ import opennlp.tools.util.eval.FMeasure;
 public class SDCrossValidator {
   
   private final String languageCode;
+  
   private final int cutoff;
   private final int iterations;
+  
+  private final TrainingParameters params;
   
   private FMeasure fmeasure = new FMeasure();
   
   public SDCrossValidator(String languageCode, int cutoff, int iterations) {
+    
     this.languageCode = languageCode;
     this.cutoff = cutoff;
     this.iterations = iterations;
+    
+    params = null;
+  }
+  
+  public SDCrossValidator(String languageCode, TrainingParameters params) {
+    this.languageCode = languageCode;
+    this.params = params;
+    cutoff = -1;
+    iterations = -1;
   }
   
   public SDCrossValidator(String languageCode) {
@@ -56,7 +70,14 @@ public class SDCrossValidator {
      CrossValidationPartitioner.TrainingSampleStream<SentenceSample> trainingSampleStream =
          partitioner.next();
      
-      SentenceModel model = SentenceDetectorME.train(languageCode, trainingSampleStream, true, null, cutoff, iterations);
+      SentenceModel model; 
+      
+      if (params == null) {
+        model = SentenceDetectorME.train(languageCode, trainingSampleStream, true, null, cutoff, iterations);
+      }
+      else {
+        model = SentenceDetectorME.train(languageCode, trainingSampleStream, true, null, params);
+      }
       
       // do testing
       SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(

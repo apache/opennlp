@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -29,13 +30,27 @@ public class ChunkerCrossValidator {
 	private final String languageCode;
 	private final int cutoff;
 	private final int iterations;
+	
+	private final TrainingParameters params;
+	
 	private FMeasure fmeasure = new FMeasure();
 
 	public ChunkerCrossValidator(String languageCode, int cutoff, int iterations) {
+	    
 		this.languageCode = languageCode;
 		this.cutoff = cutoff;
 		this.iterations = iterations;
+		
+		params = null;
 	}
+	
+    public ChunkerCrossValidator(String languageCode, TrainingParameters params) {
+      this.languageCode = languageCode;
+      this.params = params;
+      
+      cutoff = -1;
+      iterations = -1;
+    }
 
 	public void evaluate(ObjectStream<ChunkSample> samples, int nFolds)
 			throws IOException, InvalidFormatException, IOException {
@@ -47,9 +62,17 @@ public class ChunkerCrossValidator {
 			CrossValidationPartitioner.TrainingSampleStream<ChunkSample> trainingSampleStream = partitioner
 					.next();
 
-			ChunkerModel model = ChunkerME.train(languageCode, trainingSampleStream,
-					cutoff, iterations);
-
+			ChunkerModel model;
+			
+			if (params == null) {
+              model = ChunkerME.train(languageCode, trainingSampleStream,
+    	      cutoff, iterations);
+			}
+			else {
+			  model = ChunkerME.train(languageCode, trainingSampleStream,
+			      new DefaultChunkerContextGenerator(), params);
+			}
+			
 			// do testing
 			ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model));
 
