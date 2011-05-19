@@ -225,21 +225,12 @@ public class TokenizerME extends AbstractTokenizer {
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization, int cutoff, int iterations) throws IOException {
 
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
     
-    EventStream eventStream = new TokSpanEventStream(samples,
-        useAlphaNumericOptimization);
-
-    HashSumEventStream hses = new HashSumEventStream(eventStream);
-    GISModel maxentModel =
-        GIS.trainModel(iterations, new TwoPassDataIndexer(hses, cutoff));
-
-    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
-        hses.calculateHashSum().toString(16));
-    
-    return new TokenizerModel(languageCode, maxentModel, 
-        useAlphaNumericOptimization, manifestInfoEntries);
+    return train(languageCode, samples, useAlphaNumericOptimization, mlParams);
   }
 
 

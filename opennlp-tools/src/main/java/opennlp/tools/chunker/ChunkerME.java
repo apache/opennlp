@@ -219,19 +219,12 @@ public class ChunkerME implements Chunker {
       int cutoff, int iterations, ChunkerContextGenerator contextGenerator)
       throws IOException {
     
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
     
-    EventStream es = new ChunkerEventStream(in, contextGenerator);
-    HashSumEventStream hses = new HashSumEventStream(es);
-    
-    AbstractModel maxentModel = opennlp.maxent.GIS.trainModel(iterations, 
-        new TwoPassDataIndexer(hses, cutoff));
-    
-    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
-        hses.calculateHashSum().toString(16));
-    
-    return new ChunkerModel(lang, maxentModel, manifestInfoEntries);
+    return train(lang, in, contextGenerator, mlParams);
   }
   
   /**
