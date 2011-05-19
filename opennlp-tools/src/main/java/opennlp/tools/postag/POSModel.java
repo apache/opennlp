@@ -148,32 +148,4 @@ public final class POSModel extends BaseModel {
   public Dictionary getNgramDictionary() {
     return (Dictionary) artifactMap.get(NGRAM_DICTIONARY_ENTRY_NAME);
   }
-
-  public static void usage() {
-    System.err.println("POSModel packageName modelName [tagDictionary] [ngramDictionary]");
-  }
-
-  @Deprecated
-  public static void main(String[] args) throws IOException, InvalidFormatException {
-    if (args.length == 0){
-      usage();
-      System.exit(1);
-    }
-    int ai=0;
-    String packageName = args[ai++];
-    String modelName = args[ai++];
-    AbstractModel model = new GenericModelReader(new File(modelName)).getModel();
-    POSDictionary tagDict = null;
-    Dictionary ngramDict = null;
-    if (ai < args.length) {
-      String tagDictName = args[ai++];
-      tagDict = new POSDictionary(tagDictName);
-      if (ai < args.length) {
-        String ngramName = args[ai++];
-        ngramDict = new Dictionary(new FileInputStream(ngramName));
-      }
-    }
-
-    new POSModel("en", model,tagDict,ngramDict).serialize(new FileOutputStream(new File(packageName)));
-  }
 }
