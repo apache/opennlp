@@ -172,13 +172,12 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples, int cutoff, int iterations, FeatureGenerator... featureGenerators)
       throws IOException {
     
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
     
-    AbstractModel model = GIS.trainModel(iterations, new TwoPassDataIndexer(
-        new DocumentCategorizerEventStream(samples, featureGenerators), cutoff));
-    
-    return new DoccatModel(languageCode, model, manifestInfoEntries);
+    return train(languageCode, samples, mlParams);
   }
   
   /**

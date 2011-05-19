@@ -29,18 +29,13 @@ import java.util.StringTokenizer;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.TrainUtil;
-import opennlp.model.TwoPassDataIndexer;
-import opennlp.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BeamSearch;
-import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelType;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * A part-of-speech tagger that uses maximum entropy.  Tries to predict whether
