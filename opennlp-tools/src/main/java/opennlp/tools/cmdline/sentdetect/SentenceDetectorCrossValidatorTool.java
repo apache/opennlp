@@ -58,13 +58,23 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
     
+    opennlp.tools.util.TrainingParameters mlParams = 
+      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), false);
+    
     File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
     ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Training Data",
         trainingDataInFile, parameters.getEncoding());
     
-    SDCrossValidator validator = new SDCrossValidator(parameters.getLanguage(), parameters.getCutoff(), parameters.getNumberOfIterations());
+    SDCrossValidator validator;
+
+    if (mlParams == null) {
+      validator = new SDCrossValidator(parameters.getLanguage(), parameters.getCutoff(), parameters.getNumberOfIterations());
+    }
+    else {
+      validator = new SDCrossValidator(parameters.getLanguage(), mlParams);
+    }
     
     try {
       validator.evaluate(sampleStream, 10);

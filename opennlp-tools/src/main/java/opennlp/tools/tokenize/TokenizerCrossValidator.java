@@ -24,6 +24,7 @@ import java.io.ObjectStreamException;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -31,6 +32,8 @@ public class TokenizerCrossValidator {
   
   private final String language;
   private final boolean alphaNumericOptimization;
+  
+  private final TrainingParameters params;
   
   private final int cutoff;
   private final int iterations;
@@ -43,11 +46,23 @@ public class TokenizerCrossValidator {
     this.alphaNumericOptimization = alphaNumericOptimization;
     this.cutoff = cutoff;
     this.iterations = iterations;
+    
+    params = null;
   }
   
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization) {
     this(language, alphaNumericOptimization, 5, 100);
   }  
+  
+  public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, TrainingParameters params) {
+    this.language = language;
+    this.alphaNumericOptimization = alphaNumericOptimization;
+    this.cutoff = -1;
+    this.iterations = -1;
+    
+    this.params = params;
+  }
+  
   
   public void evaluate(ObjectStream<TokenSample> samples, int nFolds) 
       throws IOException {
@@ -61,8 +76,16 @@ public class TokenizerCrossValidator {
          partitioner.next();
        
        // Maybe throws IOException if temporary file handling fails ...
-       TokenizerModel model = TokenizerME.train(language, trainingSampleStream, 
-           alphaNumericOptimization, cutoff, iterations);
+       TokenizerModel model;
+       
+       if (params == null) {
+         model = TokenizerME.train(language, trainingSampleStream, 
+             alphaNumericOptimization, cutoff, iterations);
+       }
+       else {
+         model = TokenizerME.train(language, trainingSampleStream, 
+             alphaNumericOptimization, params);
+       }
        
        TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model));
        evaluator.evaluate(trainingSampleStream.getTestSampleStream());

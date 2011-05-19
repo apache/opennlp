@@ -59,6 +59,9 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
     
+    opennlp.tools.util.TrainingParameters mlParams = 
+      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), false);
+    
     File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
@@ -66,9 +69,18 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
         TokenizerTrainerTool.openSampleData("Training Data",
         trainingDataInFile, parameters.getEncoding());
     
-    TokenizerCrossValidator validator =
-        new opennlp.tools.tokenize.TokenizerCrossValidator(
-        parameters.getLanguage(), parameters.isAlphaNumericOptimizationEnabled());
+    
+    TokenizerCrossValidator validator;
+
+    if (mlParams == null) {
+      validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
+          parameters.getLanguage(), parameters.isAlphaNumericOptimizationEnabled(),
+          parameters.getCutoff(), parameters.getNumberOfIterations());
+    }
+    else {
+      validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
+          parameters.getLanguage(), parameters.isAlphaNumericOptimizationEnabled(), mlParams);
+    }
       
     try {
       validator.evaluate(sampleStream, 10);

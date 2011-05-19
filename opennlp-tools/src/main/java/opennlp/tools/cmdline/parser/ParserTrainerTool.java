@@ -109,16 +109,13 @@ public final class ParserTrainerTool implements CmdLineTool {
     } 
     
     opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args));
+      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), true);
     
     if (mlParams != null) {
+      // TODO: Validation is more complex ... 
+      
       if (!TrainUtil.isValid(mlParams.getSettings())) {
         System.err.println("Training parameters file is invalid!");
-        throw new TerminateToolException(-1);
-      }
-      
-      if (TrainUtil.isSequenceTraining(mlParams.getSettings())) {
-        System.err.println("Sequence training is not supported!");
         throw new TerminateToolException(-1);
       }
     }
