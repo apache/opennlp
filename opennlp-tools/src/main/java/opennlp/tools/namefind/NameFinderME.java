@@ -453,33 +453,4 @@ public class NameFinderME implements TokenNameFinder {
     
     return sortedSpans.toArray(new Span[sortedSpans.size()]);
   }
-  
-  /**
-   * Trains a new named entity model on the specified training file using the specified encoding to read it in.
-   * 
-   * @param args [-encoding encoding] training_file model_file
-   * 
-   * @throws java.io.IOException
-   */
-  @Deprecated
-  public static void main(String[] args) throws IOException {
-    
-    // Encoding must be specified !!!
-    // -encoding code train.file model.file
-    
-    if (args.length == 4) {
-      
-      NameSampleDataStream sampleStream = new NameSampleDataStream(
-          new PlainTextByLineStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
-      
-      TokenNameFinderModel model = 
-          NameFinderME.train("x-unspecified", "default", sampleStream, new HashMap<String, Object>());
-      
-      model.serialize(new FileOutputStream(args[4]));
-      
-    }
-    else {
-      // TODO: Usage
-    }
-  }
 }

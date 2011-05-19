@@ -289,13 +289,4 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
 
     return newPosDict;
   }
-
-  public static void main(String[] args) throws IOException, InvalidFormatException  {
-    POSModel model = new POSModel(new FileInputStream(args[0]));
-    POSDictionary dict = model.getTagDictionary();
-    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-    for (String line = in.readLine();line != null;line = in.readLine()) {
-      System.out.println(Arrays.asList(dict.getTags(line)));
-    }
-  }
 }
