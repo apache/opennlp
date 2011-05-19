@@ -112,10 +112,28 @@ public final class ParserTrainerTool implements CmdLineTool {
       CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), true);
     
     if (mlParams != null) {
-      // TODO: Validation is more complex ... 
+      if (!TrainUtil.isValid(mlParams.getSettings("build"))) {
+        System.err.println("Build training parameters are invalid!");
+        throw new TerminateToolException(-1);
+      }
       
-      if (!TrainUtil.isValid(mlParams.getSettings())) {
-        System.err.println("Training parameters file is invalid!");
+      if (!TrainUtil.isValid(mlParams.getSettings("check"))) {
+        System.err.println("Check training parameters are invalid!");
+        throw new TerminateToolException(-1);
+      }
+      
+      if (!TrainUtil.isValid(mlParams.getSettings("attach"))) {
+        System.err.println("Attach training parameters are invalid!");
+        throw new TerminateToolException(-1);
+      }
+      
+      if (!TrainUtil.isValid(mlParams.getSettings("tagger"))) {
+        System.err.println("Tagger training parameters are invalid!");
+        throw new TerminateToolException(-1);
+      }
+      
+      if (!TrainUtil.isValid(mlParams.getSettings("chunker"))) {
+        System.err.println("Chunker training parameters are invalid!");
         throw new TerminateToolException(-1);
       }
     }
