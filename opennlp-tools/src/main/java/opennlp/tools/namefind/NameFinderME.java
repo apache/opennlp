@@ -321,7 +321,6 @@ public class NameFinderME implements TokenNameFinder {
      }
      
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-//     ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
      
      AdaptiveFeatureGenerator featureGenerator;
      
@@ -332,14 +331,8 @@ public class NameFinderME implements TokenNameFinder {
      
      EventStream eventStream = new NameFinderEventStream(samples, type,
          new DefaultNameContextGenerator(featureGenerator));
-     HashSumEventStream hses = new HashSumEventStream(eventStream);
      
-     AbstractModel nameFinderModel = TrainUtil.train(hses, trainParams.getSettings());
-     
-//     AbstractModel nameFinderModel = GIS.trainModel(iterations, new TwoPassDataIndexer(hses, cutoff));
-     
-     manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
-         hses.calculateHashSum().toString(16));
+     AbstractModel nameFinderModel = TrainUtil.train(eventStream, trainParams.getSettings(), manifestInfoEntries);
      
      return new TokenNameFinderModel(languageCode, nameFinderModel,
          resources, manifestInfoEntries);

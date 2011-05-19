@@ -18,11 +18,7 @@
 
 package opennlp.tools.parser.chunking;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +28,6 @@ import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
 import opennlp.model.TrainUtil;
 import opennlp.model.TwoPassDataIndexer;
-import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -42,20 +37,16 @@ import opennlp.tools.parser.ChunkContextGenerator;
 import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserChunkerSequenceValidator;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.PosSampleStream;
 import opennlp.tools.postag.POSModel;
-import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.HashSumEventStream;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
@@ -277,6 +268,14 @@ public class Parser extends AbstractBottomUpParser {
     return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 
+  public static void mergeReportIntoManifest(Map<String, String> manifest, 
+      Map<String, String> report, String namespace) {
+    
+    for (Map.Entry<String, String> entry : report.entrySet()) {
+      manifest.put(namespace + "." + entry.getKey(), entry.getValue());
+    }
+  }
+  
   public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, TrainingParameters mlParams)
   throws IOException {
     
@@ -287,16 +286,13 @@ public class Parser extends AbstractBottomUpParser {
     parseSamples.reset();
     
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    // TODO: Fix this, find a way to include train params in manifest ...
-//    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cut, iterations);
     
     // build
     System.err.println("Training builder");
     opennlp.model.EventStream bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
-    HashSumEventStream hsbes = new HashSumEventStream(bes);
-    AbstractModel buildModel = TrainUtil.train(hsbes, mlParams.getSettings("build"));
-    manifestInfoEntries.put("Training-Builder-Eventhash", 
-        hsbes.calculateHashSum().toString(16));
+    Map<String, String> buildReportMap = new HashMap<String, String>();
+    AbstractModel buildModel = TrainUtil.train(bes, mlParams.getSettings("build"), buildReportMap);
+    mergeReportIntoManifest(manifestInfoEntries, buildReportMap, "build");
     
     parseSamples.reset();
     
@@ -316,10 +312,9 @@ public class Parser extends AbstractBottomUpParser {
     // check
     System.err.println("Training checker");
     opennlp.model.EventStream kes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.CHECK);
-    HashSumEventStream hskes = new HashSumEventStream(kes);
-    AbstractModel checkModel = TrainUtil.train(hskes, mlParams.getSettings("check"));
-    manifestInfoEntries.put("Training-Checker-Eventhash", 
-        hskes.calculateHashSum().toString(16));
+    Map<String, String> checkReportMap = new HashMap<String, String>();
+    AbstractModel checkModel = TrainUtil.train(kes, mlParams.getSettings("check"), checkReportMap);
+    mergeReportIntoManifest(manifestInfoEntries, checkReportMap, "check");
     
     // TODO: Remove cast for HeadRules
     return new ParserModel(languageCode, buildModel, checkModel,
