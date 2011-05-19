@@ -266,29 +266,6 @@ public class SentenceDetectorME implements SentenceDetector {
     return true;
   }
   
-  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
-      boolean useTokenEnd, Dictionary abbreviations) throws IOException {
-    return train(languageCode, samples, useTokenEnd, abbreviations,5,100);
-  }
-  
-  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
-      boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) throws IOException {
-
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
-    
-    Factory factory = new Factory();
-
-    // TODO: Fix the EventStream to throw exceptions when training goes wrong
-    EventStream eventStream = new SDEventStream(samples,
-        factory.createSentenceContextGenerator(languageCode),
-        factory.createEndOfSentenceScanner(languageCode));
-    
-    GISModel sentModel = GIS.trainModel(eventStream, iterations, cutoff);
-
-    return new SentenceModel(languageCode, sentModel,
-        useTokenEnd, abbreviations, manifestInfoEntries);
-  }
   
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations, TrainingParameters mlParams) throws IOException {
@@ -302,13 +279,25 @@ public class SentenceDetectorME implements SentenceDetector {
         factory.createSentenceContextGenerator(languageCode),
         factory.createEndOfSentenceScanner(languageCode));
     
-    HashSumEventStream hses = new HashSumEventStream(eventStream);
-    AbstractModel sentModel = TrainUtil.train(hses, mlParams.getSettings(), manifestInfoEntries);
-    
-    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
-        hses.calculateHashSum().toString(16));
+    AbstractModel sentModel = TrainUtil.train(eventStream, mlParams.getSettings(), manifestInfoEntries);
     
     return new SentenceModel(languageCode, sentModel,
         useTokenEnd, abbreviations, manifestInfoEntries);
+  }
+  
+  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
+      boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) throws IOException {
+
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
+    
+    return train(languageCode, samples, useTokenEnd, abbreviations, mlParams);
+ }
+  
+  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
+      boolean useTokenEnd, Dictionary abbreviations) throws IOException {
+    return train(languageCode, samples, useTokenEnd, abbreviations,5,100);
   }
 }

@@ -355,26 +355,12 @@ public class NameFinderME implements TokenNameFinder {
        AdaptiveFeatureGenerator generator, final Map<String, Object> resources, 
        int iterations, int cutoff) throws IOException {
      
-     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-     ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
+     TrainingParameters mlParams = new TrainingParameters();
+     mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
      
-     AdaptiveFeatureGenerator featureGenerator;
-     
-     if (generator != null)
-       featureGenerator = generator;
-     else 
-       featureGenerator = createFeatureGenerator();
-     
-     EventStream eventStream = new NameFinderEventStream(samples, type,
-         new DefaultNameContextGenerator(featureGenerator));
-     HashSumEventStream hses = new HashSumEventStream(eventStream);
-     AbstractModel nameFinderModel = GIS.trainModel(iterations, new TwoPassDataIndexer(hses, cutoff));
-     
-     manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
-         hses.calculateHashSum().toString(16));
-     
-     return new TokenNameFinderModel(languageCode, nameFinderModel,
-         resources, manifestInfoEntries);
+     return train(languageCode, type, samples, mlParams, generator, resources);
    }
 
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
