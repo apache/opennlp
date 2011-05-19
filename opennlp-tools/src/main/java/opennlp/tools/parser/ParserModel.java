@@ -237,28 +237,4 @@ public class ParserModel extends BaseModel {
     return new GenericModelReader(new BinaryFileDataReader(new FileInputStream(fileName))).
         getModel();
   }
-
-  @Deprecated
-  public static void main(String[] args) throws FileNotFoundException, IOException, InvalidFormatException {
-    if (args.length != 6){
-      System.err.println("ParserModel packageName buildModel checkModel headRules chunkerModel posModel");
-      System.exit(1);
-    }
-
-    AbstractModel buildModel = readModel(args[1]);
-
-    AbstractModel checkModel = readModel(args[2]);
-
-    opennlp.tools.parser.lang.en.HeadRules headRules =
-        new opennlp.tools.parser.lang.en.HeadRules(args[3]);
-
-    ChunkerModel chunkerModel = new ChunkerModel(new FileInputStream(args[4]));
-
-    POSModel posModel = new POSModel(new FileInputStream(args[5]));
-
-    ParserModel packageModel = new ParserModel("en", buildModel, checkModel, posModel,
-        chunkerModel, headRules, ParserType.CHUNKING, null);
-
-    packageModel.serialize(new FileOutputStream(args[0]));
-  }
 }
