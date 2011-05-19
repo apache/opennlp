@@ -284,12 +284,8 @@ public class SentenceDetectorME implements SentenceDetector {
         factory.createSentenceContextGenerator(languageCode),
         factory.createEndOfSentenceScanner(languageCode));
     
-    HashSumEventStream hses = new HashSumEventStream(eventStream);
-    GISModel sentModel = GIS.trainModel(hses, iterations, cutoff);
+    GISModel sentModel = GIS.trainModel(eventStream, iterations, cutoff);
 
-    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
-        hses.calculateHashSum().toString(16));
-    
     return new SentenceModel(languageCode, sentModel,
         useTokenEnd, abbreviations, manifestInfoEntries);
   }
@@ -298,7 +294,6 @@ public class SentenceDetectorME implements SentenceDetector {
       boolean useTokenEnd, Dictionary abbreviations, TrainingParameters mlParams) throws IOException {
     
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-//    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
     
     Factory factory = new Factory();
     
@@ -308,7 +303,7 @@ public class SentenceDetectorME implements SentenceDetector {
         factory.createEndOfSentenceScanner(languageCode));
     
     HashSumEventStream hses = new HashSumEventStream(eventStream);
-    AbstractModel sentModel = TrainUtil.train(hses, mlParams.getSettings());
+    AbstractModel sentModel = TrainUtil.train(hses, mlParams.getSettings(), manifestInfoEntries);
     
     manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
         hses.calculateHashSum().toString(16));

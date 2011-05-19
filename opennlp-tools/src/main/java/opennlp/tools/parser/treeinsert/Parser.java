@@ -19,8 +19,10 @@ package opennlp.tools.parser.treeinsert;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import opennlp.model.AbstractModel;
@@ -439,9 +441,11 @@ public class Parser extends AbstractBottomUpParser {
       ObjectStream<Parse> parseSamples, HeadRules rules, TrainingParameters mlParams)
   throws IOException {
     
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    
     // TODO: training code should be shared between two parsers
     System.err.println("Building dictionary");
-    // TODO: Make cutoff configurable ... 
+    // TODO: Make cutoff configurable ... which cutoff should be used here?
     Dictionary mdict = buildDictionary(parseSamples, rules, 5);
     
     parseSamples.reset();
@@ -462,7 +466,9 @@ public class Parser extends AbstractBottomUpParser {
     System.err.println("Training builder");
     opennlp.model.EventStream bes = new ParserEventStream(parseSamples, rules,
         ParserEventTypeEnum.BUILD, mdict);
-    AbstractModel buildModel = TrainUtil.train(bes, mlParams.getSettings("build"));
+    Map<String, String> buildReportMap = new HashMap<String, String>();
+    AbstractModel buildModel = TrainUtil.train(bes, mlParams.getSettings("build"), buildReportMap);
+    opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(manifestInfoEntries, buildReportMap, "build");
     
     parseSamples.reset();
     
@@ -470,7 +476,9 @@ public class Parser extends AbstractBottomUpParser {
     System.err.println("Training checker");
     opennlp.model.EventStream kes = new ParserEventStream(parseSamples, rules,
         ParserEventTypeEnum.CHECK);
-    AbstractModel checkModel = TrainUtil.train(kes, mlParams.getSettings("check"));
+    Map<String, String> checkReportMap = new HashMap<String, String>();
+    AbstractModel checkModel = TrainUtil.train(kes, mlParams.getSettings("check"), checkReportMap);
+    opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(manifestInfoEntries, checkReportMap, "check");
     
     parseSamples.reset();
     
@@ -478,12 +486,14 @@ public class Parser extends AbstractBottomUpParser {
     System.err.println("Training attacher");
     opennlp.model.EventStream attachEvents = new ParserEventStream(parseSamples, rules,
         ParserEventTypeEnum.ATTACH);
-    AbstractModel attachModel = TrainUtil.train(attachEvents, mlParams.getSettings("attach"));
+    Map<String, String> attachReportMap = new HashMap<String, String>();
+    AbstractModel attachModel = TrainUtil.train(attachEvents, mlParams.getSettings("attach"), attachReportMap);
+    opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(manifestInfoEntries, attachReportMap, "attach");
     
     // TODO: Remove cast for HeadRules
     return new ParserModel(languageCode, buildModel, checkModel,
         attachModel, posModel, chunkModel, 
-        (opennlp.tools.parser.lang.en.HeadRules) rules, ParserType.TREEINSERT);
+        (opennlp.tools.parser.lang.en.HeadRules) rules, ParserType.TREEINSERT, manifestInfoEntries);
   }
   
   public static ParserModel train(String languageCode,

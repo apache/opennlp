@@ -207,15 +207,10 @@ public class ChunkerME implements Chunker {
   throws IOException {
     
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-//    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
     
     EventStream es = new ChunkerEventStream(in, contextGenerator);
-    HashSumEventStream hses = new HashSumEventStream(es);
     
-    AbstractModel maxentModel = TrainUtil.train(hses, mlParams.getSettings());
-    
-    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
-        hses.calculateHashSum().toString(16));
+    AbstractModel maxentModel = TrainUtil.train(es, mlParams.getSettings(), manifestInfoEntries);
     
     return new ChunkerModel(lang, maxentModel, manifestInfoEntries);
   }

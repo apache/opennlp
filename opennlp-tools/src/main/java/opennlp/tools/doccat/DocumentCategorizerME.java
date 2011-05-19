@@ -150,11 +150,10 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    throws IOException {
      
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-//     ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
      
      AbstractModel model = TrainUtil.train(
          new DocumentCategorizerEventStream(samples, featureGenerators),
-         mlParams.getSettings());
+         mlParams.getSettings(), manifestInfoEntries);
        
      return new DoccatModel(languageCode, model, manifestInfoEntries);
    }
