@@ -336,7 +336,8 @@ public final class CmdLineUtil {
   }
   
   // its optional, passing null is allowed
-  public static TrainingParameters loadTrainingParameters(String paramFile) {
+  public static TrainingParameters loadTrainingParameters(String paramFile,
+      boolean supportSequenceTraining) {
     
     TrainingParameters params = null;
     
@@ -359,6 +360,16 @@ public final class CmdLineUtil {
             paramsIn.close();
         } catch (IOException e) {
         }
+      }
+      
+      if (!TrainUtil.isValid(params.getSettings())) {
+        System.err.println("Training parameters file is invalid!");
+        throw new TerminateToolException(-1);
+      }
+      
+      if (!supportSequenceTraining && TrainUtil.isSequenceTraining(params.getSettings())) {
+        System.err.println("Sequence training is not supported!");
+        throw new TerminateToolException(-1);
       }
     }
     
