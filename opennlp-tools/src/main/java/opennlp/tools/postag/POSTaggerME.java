@@ -318,25 +318,19 @@ public class POSTaggerME implements POSTagger {
     POSContextGenerator contextGenerator = new DefaultPOSContextGenerator(ngramDictionary);
     
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    // TODO: Store train params in model ... 
-//    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
     
     AbstractModel posModel;
     
     if (!TrainUtil.isSequenceTraining(trainParams.getSettings())) {
       
       EventStream es = new POSSampleEventStream(samples, contextGenerator);
-      HashSumEventStream hses = new HashSumEventStream(es);
       
-      posModel = TrainUtil.train(hses, trainParams.getSettings());
-      
-      manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
-          hses.calculateHashSum().toString(16));
+      posModel = TrainUtil.train(es, trainParams.getSettings(), manifestInfoEntries);
     }
     else {
       POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
 
-      posModel = TrainUtil.train(ss, trainParams.getSettings());
+      posModel = TrainUtil.train(ss, trainParams.getSettings(), manifestInfoEntries);
     }
     
     return new POSModel(languageCode, posModel, tagDictionary,

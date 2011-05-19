@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import opennlp.model.Event;
 import opennlp.model.EventStream;
 
+@Deprecated
 public class HashSumEventStream implements EventStream {
 
   private final EventStream eventStream;

@@ -196,17 +196,11 @@ public class TokenizerME extends AbstractTokenizer {
       boolean useAlphaNumericOptimization, TrainingParameters mlParams) throws IOException {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-//    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cutoff, iterations);
     
     EventStream eventStream = new TokSpanEventStream(samples,
         useAlphaNumericOptimization);
 
-    HashSumEventStream hses = new HashSumEventStream(eventStream);
-    
-    AbstractModel maxentModel = TrainUtil.train(hses, mlParams.getSettings());
-
-    manifestInfoEntries.put(BaseModel.TRAINING_EVENTHASH_PROPERTY, 
-        hses.calculateHashSum().toString(16));
+    AbstractModel maxentModel = TrainUtil.train(eventStream, mlParams.getSettings(), manifestInfoEntries);
     
     return new TokenizerModel(languageCode, maxentModel, 
         useAlphaNumericOptimization, manifestInfoEntries);
