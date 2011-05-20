@@ -140,7 +140,7 @@ public class TrainUtil {
     
     if (MAXENT_VALUE.equals(algorithmName))
         sortAndMerge = true;
-    else if (MAXENT_VALUE.equals(algorithmName))
+    else if (PERCEPTRON_VALUE.equals(algorithmName))
       sortAndMerge = false;
     else
       throw new IllegalStateException("Unexpected algorihtm name: " + algorithmName);
