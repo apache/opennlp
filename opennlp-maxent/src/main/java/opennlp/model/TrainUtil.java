@@ -165,10 +165,10 @@ public class TrainUtil {
     AbstractModel model;
     if (MAXENT_VALUE.equals(algorithmName)) {
       
-      // TODO: Pass in number of threads
-//      int threads = getIntParam(trainParams, "Threads", 1, reportMap);
+      int threads = getIntParam(trainParams, "Threads", 1, reportMap);
       
-      model = opennlp.maxent.GIS.trainModel(iterations, indexer);
+      model = opennlp.maxent.GIS.trainModel(iterations, indexer,
+          true, false, null, 0, threads);
     }
     else if (PERCEPTRON_VALUE.equals(algorithmName)) {
       boolean useAverage = getBooleanParam(trainParams, "UseAverage", true, reportMap);
