@@ -32,7 +32,6 @@ import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * Maxent implementation of {@link DocumentCategorizer}.
@@ -177,7 +176,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
     
-    return train(languageCode, samples, mlParams);
+    return train(languageCode, samples, mlParams, featureGenerators);
   }
   
   /**
