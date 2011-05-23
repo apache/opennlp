@@ -123,7 +123,7 @@ $bin/opennlp DoccatTrainer -encoding UTF-8 -lang en -data en-doccat.train -model
 		text, or an array of tokens. By default, the raw text will be split into tokens by whitespace. So, let's say
 		your training data was contained in a text file, where the format is as described above.
 		Then you might want to write something like this to create a collection of DocumentSamples:
-		<programlisting>
+		<programlisting language="java">
 						<![CDATA[
 DoccatModel model = null;
 
@@ -159,7 +159,7 @@ finally {
 	but first we'll cover serialization. Feel free to skim.
 		</para>
 		<para>
-		<programlisting>
+		<programlisting language="java">
 						<![CDATA[
 OutputStream modelOut = null;
 try {
