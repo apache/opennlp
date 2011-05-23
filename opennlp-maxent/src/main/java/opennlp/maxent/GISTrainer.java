@@ -568,11 +568,16 @@ class GISTrainer {
       try {
         finishedTask = (ModelExpactationComputeTask) future.get();
       } catch (InterruptedException e) {
-        // In case we get interuppted, the exception should be rethrown
-        // and the executor services shutdownNow should be called, to stop any work
+        // TODO: We got interrupted, but that is currently not really supported!
+        // For now we just print the exception and fail hard. We hopefully soon
+        // handle this case properly!
         e.printStackTrace();
+        throw new IllegalStateException("Interruption is not supported!", e);
       } catch (ExecutionException e) {
-        e.printStackTrace();
+        // Only runtime exception can be thrown during training, if one was thrown
+        // it should be re-thrown. That could for example be a NullPointerException
+        // which is caused through a bug in our implementation.
+        throw new RuntimeException(e.getCause());
       }
       
       // When they are done, retrieve the results ...
