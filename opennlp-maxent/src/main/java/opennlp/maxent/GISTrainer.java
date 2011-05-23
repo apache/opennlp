@@ -430,20 +430,17 @@ class GISTrainer {
   //modeled on implementation in  Zhang Le's maxent kit
   private double gaussianUpdate(int predicate, int oid, int n, double correctionConstant) {
     double param = params[predicate].getParameters()[oid];
-    double x = 0.0;
     double x0 = 0.0;
-    double tmp;
-    double fp;
     double modelValue = modelExpects[0][predicate].getParameters()[oid];
     double observedValue = observedExpects[predicate].getParameters()[oid];
     for (int i = 0; i < 50; i++) {
-      tmp = modelValue * Math.exp(correctionConstant * x0);
+      double tmp = modelValue * Math.exp(correctionConstant * x0);
       double f = tmp + (param + x0) / sigma - observedValue;
-      fp = tmp * correctionConstant + 1 / sigma;
+      double fp = tmp * correctionConstant + 1 / sigma;
       if (fp == 0) {
         break;
       }
-      x = x0 - f / fp;
+      double x = x0 - f / fp;
       if (Math.abs(x - x0) < 0.000001) {
         x0 = x;
         break;
