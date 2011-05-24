@@ -54,7 +54,7 @@ public class DocumentCategorizerEvaluator {
    * {@link DocumentSample}. The detected category is then used
    * to calculate and update the score.
    *
-   * @param reference the reference {@link TokenSample}.
+   * @param sample the reference {@link TokenSample}.
    */
   public void evaluteSample(DocumentSample sample) {
 
@@ -75,7 +75,7 @@ public class DocumentCategorizerEvaluator {
   /**
    * Reads all {@link DocumentSample} objects from the stream
    * and evaluates each {@link DocumentSample} object with
-   * {@link #evaluateSample(POSSample)} method.
+   * {@link #evaluteSample(DocumentSample)} method.
    *
    * @param samples the stream of reference {@link POSSample} which
    * should be evaluated.
