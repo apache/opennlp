@@ -274,7 +274,7 @@ public class NGramModel implements Iterable<StringList>{
    *
    * Entries which are only different in the case are merged into one.
    *
-   * Calling this method is the same as calling {@link #toDictionary(true)}.
+   * Calling this method is the same as calling {@link #toDictionary(boolean)} with true.
    *
    * @return a dictionary of the ngrams
    */
