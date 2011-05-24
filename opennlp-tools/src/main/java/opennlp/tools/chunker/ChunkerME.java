@@ -27,7 +27,6 @@ import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TrainUtil;
-import opennlp.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
@@ -35,8 +34,6 @@ import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.BaseModel;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * The class represents a maximum-entropy-based chunker.  Such a chunker can be used to
@@ -63,7 +60,6 @@ public class ChunkerME implements Chunker {
    * the specified beam size.
    *
    * @param model The model for this chunker.
-   * @param cacheSize
    * @param beamSize The size of the beam that should be used when decoding sequences.
    * @param sequenceValidator  The {@link SequenceValidator} to determines whether the outcome 
    *        is valid for the preceding sequence. This can be used to implement constraints 
@@ -230,9 +226,9 @@ public class ChunkerME implements Chunker {
   /**
    * Trains a new model for the {@link ChunkerME}.
    *
-   * @param es
-   * @param iterations
+   * @param in
    * @param cutoff
+   * @param iterations
    * 
    * @return the new model
    * 
