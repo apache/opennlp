@@ -91,7 +91,6 @@ public class ChunkerME implements Chunker {
    * the specified beam size.
    *
    * @param model The model for this chunker.
-   * @param cacheSize
    * @param beamSize The size of the beam that should be used when decoding sequences.
    */
   public ChunkerME(ChunkerModel model, int beamSize) {
