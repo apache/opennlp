@@ -252,7 +252,7 @@ public abstract class BaseModel {
    *
    * @param key
    *
-   * @return
+   * @return the value
    */
   public final String getManifestProperty(String key) {
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
@@ -287,7 +287,7 @@ public abstract class BaseModel {
    * Retrieves the OpenNLP version which was used
    * to create the model.
    *
-   * @return
+   * @return the version
    */
   public final Version getVersion() {
     String version = getManifestProperty(VERSION_PROPERTY);
