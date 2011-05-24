@@ -86,7 +86,7 @@ public class StringList implements Iterable<String> {
   }
 
   /**
-   * Retrieves an {@link Iterator} over all {@link Token}s.
+   * Retrieves an {@link Iterator} over all tokens.
    *
    * @return iterator over tokens
    */
