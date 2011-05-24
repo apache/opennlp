@@ -165,7 +165,9 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @param cutoff
    * @param iterations
    * @param featureGenerators
-   * @return
+   * 
+   * @return the trained doccat model
+   * 
    * @throws IOException
    */
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples, int cutoff, int iterations, FeatureGenerator... featureGenerators)
@@ -184,7 +186,9 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * 
    * @param languageCode
    * @param samples
-   * @return
+   * 
+   * @return the trained doccat model
+   * 
    * @throws IOException
    * @throws ObjectStreamException 
    */
@@ -197,7 +201,9 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * 
    * @param languageCode
    * @param samples
-   * @return
+   * 
+   * @return the trained doccat model
+   * 
    * @throws IOException
    * @throws ObjectStreamException 
    */
