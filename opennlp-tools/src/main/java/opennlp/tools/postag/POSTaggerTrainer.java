@@ -60,9 +60,7 @@ public class POSTaggerTrainer {
    * @param samples
    * @param tagDictionary
    * @param ngramDictionary
-   * @param beamSize
    * @param cutoff
-   * @return
    *
    * @throws IOException  its throws if an {@link IOException} is thrown
    * during IO operations on a temp file which is created during training occur.
