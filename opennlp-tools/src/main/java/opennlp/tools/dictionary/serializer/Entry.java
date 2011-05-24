@@ -46,9 +46,9 @@ public class Entry {
   }
 
   /**
-   * Retrieves the {@link Token}s.
+   * Retrieves the tokens.
    *
-   * @return the {@link Token}s
+   * @return the tokens
    */
   public StringList getTokens() {
     return tokens;
