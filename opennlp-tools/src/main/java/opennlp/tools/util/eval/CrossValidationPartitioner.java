@@ -176,7 +176,7 @@ public class CrossValidationPartitioner<E> {
      * From now on calls to the hasNext and next methods are forbidden
      * and will raise an<code>IllegalArgumentException</code>.
      *  
-     * @return
+     * @return the test sample stream
      */
     public ObjectStream<E> getTestSampleStream() throws IOException {
       
