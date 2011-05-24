@@ -24,7 +24,7 @@ import opennlp.tools.util.eval.Mean;
 /**
  * The {@link POSEvaluator} measures the performance of
  * the given {@link POSTagger} with the provided reference
- * {@link POSSamplee}s.
+ * {@link POSSample}s.
  */
 public class POSEvaluator extends Evaluator<POSSample> {
 
