@@ -497,7 +497,6 @@ class GISTrainer {
             for (int aoi=0;aoi<activeOutcomes.length;aoi++) {
               int oi = activeOutcomes[aoi];
               
-              // TODO: Read and write to modelExpects must be thread safe ... 
               // numTimesEventsSeen must also be thread safe
               if (values != null && values[ei] != null) {
                 modelExpects[threadIndex][pi].updateParameter(aoi,modelDistribution[oi] * values[ei][j] * numTimesEventsSeen[ei]);
