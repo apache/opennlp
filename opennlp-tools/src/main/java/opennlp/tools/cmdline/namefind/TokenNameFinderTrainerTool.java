@@ -77,7 +77,7 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
     }
     
     opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), false);
+      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), true);
     
     File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
     File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));

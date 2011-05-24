@@ -24,6 +24,7 @@ import java.util.Map;
 
 import opennlp.model.Event;
 import opennlp.model.EventStream;
+import opennlp.tools.postag.POSContextGenerator;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -98,6 +99,17 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     return outcomes;
   }
 
+  public static List<Event> generateEvents(String[] sentence, String[] outcomes, NameContextGenerator cg) {
+    List<Event> events = new ArrayList<Event>(outcomes.length);
+    for (int i = 0; i < outcomes.length; i++) {
+      events.add(new Event((String) outcomes[i], cg.getContext(i, sentence, outcomes,null)));
+    }
+    
+    cg.updateAdaptiveData(sentence, outcomes);
+
+    return events;
+  }
+  
   @Override
   protected Iterator<Event> createEvents(NameSample sample) {
     
@@ -108,17 +120,12 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     String outcomes[] = generateOutcomes(sample.getNames(), type, sample.getSentence().length);
     additionalContextFeatureGenerator.setCurrentContext(sample.getAdditionalContext());
     String[] tokens = new String[sample.getSentence().length];
-    List<Event> events = new ArrayList<Event>(outcomes.length);
+    
     for (int i = 0; i < sample.getSentence().length; i++) {
       tokens[i] = sample.getSentence()[i];
     }
-    for (int i = 0; i < outcomes.length; i++) {
-      events.add(new Event((String) outcomes[i], contextGenerator.getContext(i, sample.getSentence(), outcomes,null)));
-    }
     
-    contextGenerator.updateAdaptiveData(tokens, outcomes);
-    
-    return events.iterator();
+    return generateEvents(tokens, outcomes, contextGenerator).iterator();
   }
 
 
