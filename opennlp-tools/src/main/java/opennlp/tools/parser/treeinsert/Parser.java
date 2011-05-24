@@ -443,10 +443,8 @@ public class Parser extends AbstractBottomUpParser {
     
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
     
-    // TODO: training code should be shared between two parsers
     System.err.println("Building dictionary");
-    // TODO: Make cutoff configurable ... which cutoff should be used here?
-    Dictionary mdict = buildDictionary(parseSamples, rules, 5);
+    Dictionary mdict = buildDictionary(parseSamples, rules, mlParams);
     
     parseSamples.reset();
     
@@ -500,50 +498,19 @@ public class Parser extends AbstractBottomUpParser {
       ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
       throws IOException {
     
-    // TODO: training code should be shared between two parsers
-    System.err.println("Building dictionary");
-    Dictionary mdict = buildDictionary(parseSamples, rules, cut);
+    TrainingParameters params = new TrainingParameters();
+    params.put("dict", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
 
-    parseSamples.reset();
-
-    // tag
-    POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(
-        parseSamples), ModelType.MAXENT, null, null, cut, iterations);
-
-    parseSamples.reset();
-
-    // chunk
-    ChunkerModel chunkModel = ChunkerME.train(languageCode, new ChunkSampleStream(
-        parseSamples), cut, iterations, new ChunkContextGenerator());
-
-    parseSamples.reset();
-
-    // build
-    System.err.println("Training builder");
-    opennlp.model.EventStream bes = new ParserEventStream(parseSamples, rules,
-        ParserEventTypeEnum.BUILD, mdict);
-    AbstractModel buildModel = train(bes, iterations, cut);
-
-    parseSamples.reset();
-
-    // check
-    System.err.println("Training checker");
-    opennlp.model.EventStream kes = new ParserEventStream(parseSamples, rules,
-        ParserEventTypeEnum.CHECK);
-    AbstractModel checkModel = train(kes, iterations, cut);
-
-    parseSamples.reset();
+    params.put("tagger", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
+    params.put("tagger", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    params.put("chunker", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
+    params.put("chunker", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    params.put("check", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
+    params.put("check", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    params.put("build", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
+    params.put("build", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
     
-    // attach 
-    System.err.println("Training attacher");
-    opennlp.model.EventStream attachEvents = new ParserEventStream(parseSamples, rules,
-        ParserEventTypeEnum.ATTACH);
-    AbstractModel attachModel = train(attachEvents, iterations, cut);
-    
-    // TODO: Remove cast for HeadRules
-    return new ParserModel(languageCode, buildModel, checkModel,
-        attachModel, posModel, chunkModel, 
-        (opennlp.tools.parser.lang.en.HeadRules) rules, ParserType.TREEINSERT);
+    return train(languageCode, parseSamples, rules, params);
   }
   
   @Deprecated
