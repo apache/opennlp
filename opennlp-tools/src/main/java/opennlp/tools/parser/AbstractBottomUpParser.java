@@ -34,6 +34,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Abstract class which contains code to tag and chunk parses for bottom up parsing and
@@ -504,8 +505,19 @@ public abstract class AbstractBottomUpParser implements Parser {
    * @param cutoff The minimum number of entries required for the n-gram to be saved as part of the dictionary.
    * @return A dictionary object.
    */
-  public static Dictionary buildDictionary(ObjectStream<Parse> data, HeadRules rules, int cutoff)
+  public static Dictionary buildDictionary(ObjectStream<Parse> data, HeadRules rules, TrainingParameters params)
       throws IOException {
+    
+    int cutoff = 5;
+    
+    String cutoffString = params.getSettings("dict").
+        get(TrainingParameters.CUTOFF_PARAM);
+    
+    if (cutoffString != null) {
+      // TODO: Maybe throw illegal argument exception if not parse able
+      cutoff = Integer.parseInt(cutoffString);
+    }
+    
     NGramModel mdict = new NGramModel();
     Parse p;
     while((p = data.read()) != null) {
@@ -569,5 +581,14 @@ public abstract class AbstractBottomUpParser implements Parser {
     //System.err.println("gas,and="+mdict.getCount((new TokenList(new String[] {"gas","and"}))));
     mdict.cutoff(cutoff, Integer.MAX_VALUE);
     return mdict.toDictionary(true);
+  }
+  
+  public static Dictionary buildDictionary(ObjectStream<Parse> data, HeadRules rules, int cutoff)
+      throws IOException {
+    
+    TrainingParameters params = new TrainingParameters();
+    params.put("dict", TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
+    
+    return buildDictionary(data, rules, params);
   }
 }

@@ -277,11 +277,11 @@ public class Parser extends AbstractBottomUpParser {
   }
   
   public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, TrainingParameters mlParams)
-  throws IOException {
+          throws IOException {
     
     System.err.println("Building dictionary");
- // TODO: Discuss and make dict cutoff configurable
-    Dictionary mdict = buildDictionary(parseSamples, rules, 5); 
+    
+    Dictionary mdict = buildDictionary(parseSamples, rules, mlParams);
     
     parseSamples.reset();
     
@@ -298,13 +298,13 @@ public class Parser extends AbstractBottomUpParser {
     
     // tag
     POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(parseSamples), 
-        mlParams.getParameters("tagger"), null, null); // <- pass on name space corrected TrainingParameters ...
+        mlParams.getParameters("tagger"), null, null);
     
     parseSamples.reset();
     
     // chunk
     ChunkerModel chunkModel = ChunkerME.train(languageCode, 
-        new ChunkSampleStream(parseSamples), // <- pass on name space corrected TrainingParameters ...
+        new ChunkSampleStream(parseSamples),
         new ChunkContextGenerator(), mlParams.getParameters("chunker"));
     
     parseSamples.reset();
@@ -315,58 +315,28 @@ public class Parser extends AbstractBottomUpParser {
     Map<String, String> checkReportMap = new HashMap<String, String>();
     AbstractModel checkModel = TrainUtil.train(kes, mlParams.getSettings("check"), checkReportMap);
     mergeReportIntoManifest(manifestInfoEntries, checkReportMap, "check");
-    
+
     // TODO: Remove cast for HeadRules
     return new ParserModel(languageCode, buildModel, checkModel,
         posModel, chunkModel, (opennlp.tools.parser.lang.en.HeadRules) rules,
         ParserType.CHUNKING, manifestInfoEntries);
   }
-  
+
   public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
       throws IOException {
     
-    System.err.println("Building dictionary");
-    Dictionary mdict = buildDictionary(parseSamples, rules, cut);
-    
-    parseSamples.reset();
-    
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    ModelUtil.addCutoffAndIterations(manifestInfoEntries, cut, iterations);
-    
-    // build
-    System.err.println("Training builder");
-    opennlp.model.EventStream bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
-    HashSumEventStream hsbes = new HashSumEventStream(bes);
-    AbstractModel buildModel = train(hsbes, iterations, cut);
-    manifestInfoEntries.put("Training-Builder-Eventhash", 
-        hsbes.calculateHashSum().toString(16));
-    
-    parseSamples.reset();
-    
-    // tag
-    POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(parseSamples), 
-        ModelType.MAXENT, null, null, cut, iterations);
-    
-    parseSamples.reset();
-    
-    // chunk
-    ChunkerModel chunkModel = ChunkerME.train(languageCode, 
-        new ChunkSampleStream(parseSamples), cut, iterations,
-        new ChunkContextGenerator());
-    
-    parseSamples.reset();
-    
-    // check
-    System.err.println("Training checker");
-    opennlp.model.EventStream kes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.CHECK);
-    HashSumEventStream hskes = new HashSumEventStream(kes);
-    AbstractModel checkModel = train(hskes, iterations, cut);
-    manifestInfoEntries.put("Training-Checker-Eventhash", 
-        hskes.calculateHashSum().toString(16));
-    
-    // TODO: Remove cast for HeadRules
-    return new ParserModel(languageCode, buildModel, checkModel,
-        posModel, chunkModel, (opennlp.tools.parser.lang.en.HeadRules) rules,
-        ParserType.CHUNKING, manifestInfoEntries);
+    TrainingParameters params = new TrainingParameters();
+    params.put("dict", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
+
+    params.put("tagger", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
+    params.put("tagger", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    params.put("chunker", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
+    params.put("chunker", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    params.put("check", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
+    params.put("check", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    params.put("build", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
+    params.put("build", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+
+    return train(languageCode, parseSamples, rules, params);
   }
 }
