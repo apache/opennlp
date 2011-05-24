@@ -25,7 +25,7 @@ import opennlp.tools.util.StringList;
 
 /**
  * This classes indexes {@link StringList}s. This makes it possible
- * to check if a certain {@link Token} is contained in at least one of the
+ * to check if a certain token is contained in at least one of the
  * {@link StringList}s.
  */
 public class Index {
@@ -52,11 +52,11 @@ public class Index {
 
   /**
    * Checks if at leat one {@link StringList} contains the
-   * given {@link Token}.
+   * given token.
    *
    * @param token
    *
-   * @return true if the {@link Token} is contained otherwise false.
+   * @return true if the token is contained otherwise false.
    */
   public boolean contains(String token) {
     return tokens.contains(token);
