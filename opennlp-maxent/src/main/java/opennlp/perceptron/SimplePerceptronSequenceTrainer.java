@@ -302,7 +302,7 @@ public class SimplePerceptronSequenceTrainer {
     int numCorrect = 0;
     int oei=0;
     for (Sequence sequence : sequenceStream) {
-      Event[] taggerEvents = sequenceStream.updateContext(sequence, new PerceptronModel(params,predLabels,outcomeLabels));
+      Event[] taggerEvents = sequenceStream.updateContext(sequence, new PerceptronModel(params,predLabels,pmap,outcomeLabels));
       for (int ei=0;ei<taggerEvents.length;ei++,oei++) {
         int max = omap.get(taggerEvents[ei].getOutcome());
         if (max == outcomeList[oei]) {
