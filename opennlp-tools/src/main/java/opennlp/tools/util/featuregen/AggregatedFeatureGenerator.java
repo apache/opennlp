@@ -95,7 +95,7 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
    * Retrieves a {@link Collections} of all aggregated
    * {@link AdaptiveFeatureGenerator}s.
    *
-   * @return
+   * @return all aggregated generators
    */
   public Collection<AdaptiveFeatureGenerator> getGenerators() {
     return generators;
