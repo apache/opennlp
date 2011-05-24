@@ -39,6 +39,7 @@ import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TrainUtil;
 import opennlp.model.TwoPassDataIndexer;
+import opennlp.tools.postag.POSSampleSequenceStream;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
@@ -214,6 +215,10 @@ public class NameFinderME implements TokenNameFinder {
   public Span[] find(String[] tokens, String[][] additionalContext) {
     additionalContextFeatureGenerator.setCurrentContext(additionalContext);
     bestSequence = beam.bestSequence(tokens, additionalContext);
+    
+    if (bestSequence == null) // TODO: Fix this in extra jira issue!!!
+      return new Span[0];
+    
     List<String> c = bestSequence.getOutcomes();
 
     contextGenerator.updateAdaptiveData(tokens, (String[]) c.toArray(new String[c.size()]));
@@ -316,10 +321,6 @@ public class NameFinderME implements TokenNameFinder {
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
        TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources) throws IOException {
      
-     if (TrainUtil.isSequenceTraining(trainParams.getSettings())) {
-       throw new IllegalArgumentException("Sequence training is not supported!");
-     }
-     
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
      
      AdaptiveFeatureGenerator featureGenerator;
@@ -329,10 +330,19 @@ public class NameFinderME implements TokenNameFinder {
      else 
        featureGenerator = createFeatureGenerator();
      
-     EventStream eventStream = new NameFinderEventStream(samples, type,
-         new DefaultNameContextGenerator(featureGenerator));
+     AbstractModel nameFinderModel;
      
-     AbstractModel nameFinderModel = TrainUtil.train(eventStream, trainParams.getSettings(), manifestInfoEntries);
+     if (!TrainUtil.isSequenceTraining(trainParams.getSettings())) {
+       EventStream eventStream = new NameFinderEventStream(samples, type,
+           new DefaultNameContextGenerator(featureGenerator));
+       
+       nameFinderModel = TrainUtil.train(eventStream, trainParams.getSettings(), manifestInfoEntries);
+     }
+     else {
+       NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, featureGenerator);
+
+       nameFinderModel = TrainUtil.train(ss, trainParams.getSettings(), manifestInfoEntries);
+     }
      
      return new TokenNameFinderModel(languageCode, nameFinderModel,
          resources, manifestInfoEntries);
