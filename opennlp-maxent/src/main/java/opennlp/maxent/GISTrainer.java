@@ -386,7 +386,11 @@ class GISTrainer {
     display("...done.\n");
 
     /***************** Find the parameters ************************/
-    display("Computing model parameters...\n");
+    if (threads == 1)
+      display("Computing model parameters ...\n");
+    else
+      display("Computing model parameters in " + threads +" threads...\n");
+    
     findParameters(iterations, correctionConstant);
 
     /*************** Create and return the model ******************/
