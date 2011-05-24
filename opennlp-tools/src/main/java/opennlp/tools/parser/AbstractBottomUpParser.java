@@ -502,7 +502,8 @@ public abstract class AbstractBottomUpParser implements Parser {
    * 
    * @param data The data stream of parses.
    * @param rules The head rules for the parses.
-   * @param cutoff The minimum number of entries required for the n-gram to be saved as part of the dictionary.
+   * @param params can contain a cutoff, the minimum number of entries required for the
+   *        n-gram to be saved as part of the dictionary.
    * @return A dictionary object.
    */
   public static Dictionary buildDictionary(ObjectStream<Parse> data, HeadRules rules, TrainingParameters params)
@@ -583,6 +584,14 @@ public abstract class AbstractBottomUpParser implements Parser {
     return mdict.toDictionary(true);
   }
   
+  /**
+   * Creates a n-gram dictionary from the specified data stream using the specified head rule and specified cut-off.
+   * 
+   * @param data The data stream of parses.
+   * @param rules The head rules for the parses.
+   * @param cutoff The minimum number of entries required for the n-gram to be saved as part of the dictionary.
+   * @return A dictionary object.
+   */
   public static Dictionary buildDictionary(ObjectStream<Parse> data, HeadRules rules, int cutoff)
       throws IOException {
     
