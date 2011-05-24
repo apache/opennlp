@@ -40,8 +40,8 @@ public class SentenceSample {
   /**
    * Initializes the current instance.
    *
+   * @param document
    * @param sentences
-   * @param sentenceSpans
    */
   public SentenceSample(String document, Span... sentences) {
     this.document = document;
@@ -73,7 +73,7 @@ public class SentenceSample {
   /**
    * Retrieves the document.
    *
-   * @return
+   * @return the document
    */
   public String getDocument() {
     return document;
