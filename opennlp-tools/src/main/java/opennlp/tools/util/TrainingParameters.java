@@ -100,7 +100,7 @@ public class TrainingParameters {
   /** 
    * Retrieves all parameters without a name space.
    * 
-   * @return
+   * @return the settings map
    */
   public Map<String, String> getSettings() {
     return getSettings(null);
