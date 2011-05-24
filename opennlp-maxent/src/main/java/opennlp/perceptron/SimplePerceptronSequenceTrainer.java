@@ -26,11 +26,13 @@ import java.util.Map;
 import opennlp.model.AbstractModel;
 import opennlp.model.DataIndexer;
 import opennlp.model.Event;
+import opennlp.model.IndexHashTable;
 import opennlp.model.MutableContext;
 import opennlp.model.OnePassDataIndexer;
 import opennlp.model.Sequence;
 import opennlp.model.SequenceStream;
 import opennlp.model.SequenceStreamEventStream;
+import opennlp.model.TwoPassDataIndexer;
 
 /**
  * Trains models for sequences using the perceptron algorithm.  Each outcome is represented as
@@ -64,7 +66,7 @@ public class SimplePerceptronSequenceTrainer {
   private MutableContext[] averageParams;
   
   /** Mapping between context and an integer */ 
-  private Map<String,Integer> pmap;
+  private IndexHashTable<String> pmap;
 
   private Map<String,Integer> omap;
   
@@ -90,10 +92,8 @@ public class SimplePerceptronSequenceTrainer {
     }
     outcomeList  = di.getOutcomeList();
     predLabels = di.getPredLabels();
-    pmap = new HashMap<String,Integer>();
-    for (int pli=0;pli<predLabels.length;pli++) {
-      pmap.put(predLabels[pli], pli);
-    }
+    pmap = new IndexHashTable<String>(predLabels, 0.7d);
+      
     display("Incorporating indexed data for training...  \n");
     this.useAverage = useAverage;
     numEvents = di.getNumEvents();
@@ -257,8 +257,8 @@ public class SimplePerceptronSequenceTrainer {
         }
         for (int oi=0;oi<numOutcomes;oi++) {
           for (String feature : featureCounts[oi].keySet()) {
-            Integer pi = pmap.get(feature);
-            if (pi != null) {
+            int pi = pmap.get(feature);
+            if (pi != -1) {
               //System.err.println(si+" "+outcomeLabels[oi]+" "+feature+" "+featureCounts[oi].get(feature));
               params[pi].updateParameter(oi, featureCounts[oi].get(feature));
               if (useAverage) {
