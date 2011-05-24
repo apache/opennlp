@@ -21,24 +21,17 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import opennlp.maxent.GIS;
-import opennlp.maxent.GISModel;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TrainUtil;
-import opennlp.model.TwoPassDataIndexer;
-import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.BaseModel;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * A Tokenizer for converting raw text into separated tokens.  It uses
@@ -56,7 +49,7 @@ import opennlp.tools.util.model.ModelUtil;
  * must be instantiated which can share one <code>TokenizerModel</code> instance
  * to safe memory.
  * <p>
- * To train a new model {{@link #train(String, Iterator, boolean)} method
+ * To train a new model {{@link #train(String, ObjectStream, boolean, TrainingParameters)} method
  * can be used.
  * <p>
  * Sample usage:
