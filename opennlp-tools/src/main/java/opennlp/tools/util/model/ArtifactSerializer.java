@@ -34,7 +34,7 @@ public interface ArtifactSerializer<T> {
    *
    * The {@link InputStream} remains open.
    *
-   * @return
+   * @return the artifact
    *
    * @throws IOException
    * @throws InvalidFormatException
