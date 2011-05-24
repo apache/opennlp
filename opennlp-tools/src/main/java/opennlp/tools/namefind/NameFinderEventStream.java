@@ -17,13 +17,10 @@
 
 package opennlp.tools.namefind;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import opennlp.model.Event;
 import opennlp.model.EventStream;
@@ -37,11 +34,7 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  * Class for creating an event stream out of data files for training an name
  * finder.
  */
-public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
-
-  private ObjectStream<NameSample> nameSampleStream;
-
-  private Iterator<Event> events = Collections.<Event>emptyList().iterator();
+public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStream<NameSample> {
 
   private NameContextGenerator contextGenerator;
 
@@ -56,7 +49,8 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
    * @param contextGenerator The context generator used to generate features for the event stream.
    */
   public NameFinderEventStream(ObjectStream<NameSample> dataStream, String type, NameContextGenerator contextGenerator) {
-    this.nameSampleStream = dataStream;
+    super(dataStream);
+    
     this.contextGenerator = contextGenerator;
     this.contextGenerator.addFeatureGenerator(new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
     
@@ -104,53 +98,29 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
     return outcomes;
   }
 
-  private void createNewEvents() throws IOException {
-
-    // TODO: the iterator of the new events can be empty
-    // create as long new events as there are events
-    // or the name sample stream is empty
-    NameSample sample = null;
-    if ((sample = nameSampleStream.read()) != null) {
-      if (sample.isClearAdaptiveDataSet()) {
-        contextGenerator.clearAdaptiveData();
-      }
-      //System.err.println(sample);
-      String outcomes[] = generateOutcomes(sample.getNames(), type, sample.getSentence().length);
-      additionalContextFeatureGenerator.setCurrentContext(sample.getAdditionalContext());
-      String[] tokens = new String[sample.getSentence().length];
-      List<Event> events = new ArrayList<Event>(outcomes.length);
-      for (int i = 0; i < sample.getSentence().length; i++) {
-        tokens[i] = sample.getSentence()[i];
-      }
-      for (int i = 0; i < outcomes.length; i++) {
-        events.add(new Event((String) outcomes[i], contextGenerator.getContext(i, sample.getSentence(), outcomes,null)));
-      }
-      this.events = events.iterator();
-      contextGenerator.updateAdaptiveData(tokens, outcomes);
+  @Override
+  protected Iterator<Event> createEvents(NameSample sample) {
+    
+    if (sample.isClearAdaptiveDataSet()) {
+      contextGenerator.clearAdaptiveData();
     }
+    
+    String outcomes[] = generateOutcomes(sample.getNames(), type, sample.getSentence().length);
+    additionalContextFeatureGenerator.setCurrentContext(sample.getAdditionalContext());
+    String[] tokens = new String[sample.getSentence().length];
+    List<Event> events = new ArrayList<Event>(outcomes.length);
+    for (int i = 0; i < sample.getSentence().length; i++) {
+      tokens[i] = sample.getSentence()[i];
+    }
+    for (int i = 0; i < outcomes.length; i++) {
+      events.add(new Event((String) outcomes[i], contextGenerator.getContext(i, sample.getSentence(), outcomes,null)));
+    }
+    
+    contextGenerator.updateAdaptiveData(tokens, outcomes);
+    
+    return events.iterator();
   }
 
-  public boolean hasNext() throws IOException {
-
-    // check if iterator has next event
-    if (events.hasNext()) {
-      return true;
-    } else {
-      createNewEvents();
-
-      return events.hasNext();
-    }
-  }
-
-  public Event next() {
-    // call to hasNext() is necessary for reloading elements
-    // if the events iterator was already consumed
-    if (!events.hasNext()) {
-      throw new NoSuchElementException();
-    }
-
-    return events.next();
-  }
 
   /**
    * Generated previous decision features for each token based on contents of the specified map.
@@ -168,12 +138,15 @@ public class NameFinderEventStream extends opennlp.model.AbstractEventStream {
 
   }
 
+  // Will be removed soon!
+  @Deprecated
   public static final void main(String[] args) throws java.io.IOException {
     if (args.length != 0) {
       System.err.println("Usage: NameFinderEventStream < training files");
       System.exit(1);
     }
-    EventStream es = new NameFinderEventStream(new NameSampleDataStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))));
+    EventStream es = new NameFinderEventStream(new NameSampleDataStream(
+        new PlainTextByLineStream(new java.io.InputStreamReader(System.in))));
     while (es.hasNext()) {
       System.out.println(es.next());
     }
