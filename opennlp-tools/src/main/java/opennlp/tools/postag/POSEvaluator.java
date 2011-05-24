@@ -80,7 +80,7 @@ public class POSEvaluator extends Evaluator<POSSample> {
    * Retrieves the total number of words considered
    * in the evaluation.
    * 
-   * @return
+   * @return the word count
    */
   public long getWordCount() {
     return wordAccuracy.count();

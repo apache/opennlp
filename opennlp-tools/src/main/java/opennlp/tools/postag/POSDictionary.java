@@ -263,7 +263,7 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
    *
    * @param in
    *
-   * @return
+   * @return the pos dictionary
    *
    * @throws IOException
    * @throws InvalidFormatException

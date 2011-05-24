@@ -75,7 +75,7 @@ public class POSTaggerCrossValidator {
   /**
    * Retrieves the accuracy for all iterations.
    * 
-   * @return
+   * @return the word accuracy
    */
   public double getWordAccuracy() {
     return wordAccuracy.mean();
@@ -86,7 +86,7 @@ public class POSTaggerCrossValidator {
    * over all iterations. The result is the amount of folds
    * multiplied by the total number of words.
    * 
-   * @return
+   * @return the word count
    */
   public long getWordCount() {
     return wordAccuracy.count();
