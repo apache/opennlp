@@ -26,8 +26,12 @@ import opennlp.tools.cmdline.CmdLineUtil;
 class TrainingParameters extends BasicTrainingParameters {
 
   private static final String TYPE_PARAM = "-type";
+  private static final String FEATURE_GEN_PARAM = "-featuregen";
   
   private String type;
+  
+  private String featureGeneratorDescription;
+  private String resourceDirectory;
   
   TrainingParameters(String args[]) {
     super(args);
@@ -36,14 +40,27 @@ class TrainingParameters extends BasicTrainingParameters {
     
     if (type == null)
       type = "default";
+    
+    featureGeneratorDescription = CmdLineUtil.getParameter(FEATURE_GEN_PARAM, args);
+    
+    resourceDirectory = CmdLineUtil.getParameter("-resources", args);
   }
   
   String getType() {
     return type;
   }
   
+  String getFeatureGenDescriptorFile() {
+    return featureGeneratorDescription;
+  }
+  
+  // TODO: Add parameter to description
+  String getResourceDirectory() {
+    return resourceDirectory;
+  }
+  
   public static String getParameterUsage() {
-    return BasicTrainingParameters.getParameterUsage() + " [" + TYPE_PARAM +" type]";
+    return BasicTrainingParameters.getParameterUsage() + " [" + TYPE_PARAM +" type]" + " [" + FEATURE_GEN_PARAM +" type]";
   }
   
   public static String getDescription() {
