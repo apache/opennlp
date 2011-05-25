@@ -406,6 +406,46 @@ public class GeneratorFactory {
     }
   }
 
+  static class CustomFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
+
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+        FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
+      
+      String featureGeneratorClassName = generatorElement.getAttribute("class");
+      
+      Class<?> featureGenClass;
+      try {
+        featureGenClass = Class.forName(featureGeneratorClassName);
+      } catch (ClassNotFoundException e) {
+        throw new NoClassDefFoundError(e.getMessage());
+      }
+      
+      // TODO: How to inject configuration?
+      // TODO: How to provide access to resources?
+      
+      // Special interface which defines configure method?!
+      // public interface CustomFeatureGenerator {
+      //   void initialize(Map<String, String>, FeatureGeneratoreResourceProvider)
+      //       throws InvalidFormatException;
+      // }
+      
+      AdaptiveFeatureGenerator generator = null;
+      try {
+        generator = (AdaptiveFeatureGenerator) featureGenClass.newInstance();
+      } catch (InstantiationException e) {
+        throw new InvalidFormatException("Failed to instantiate custom class!", e);
+      } catch (IllegalAccessException e) {
+        throw new InvalidFormatException("Failed to instantiate custom class!", e);
+      }
+      
+      return generator;
+    }
+
+    static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("custom", new CustomFeatureGeneratorFactory());
+    }
+  }
+  
   private static Map<String, XmlFeatureGeneratorFactory> factories =
       new HashMap<String, XmlFeatureGeneratorFactory>();
 
@@ -422,6 +462,7 @@ public class GeneratorFactory {
     BigramNameFeatureGeneratorFactory.register(factories);
     TokenPatternFeatureGeneratorFactory.register(factories);
     WindowFeatureGeneratorFactory.register(factories);
+    CustomFeatureGeneratorFactory.register(factories);
   }
 
   /**
