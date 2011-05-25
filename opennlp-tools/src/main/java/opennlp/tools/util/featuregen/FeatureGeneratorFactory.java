@@ -26,7 +26,11 @@ package opennlp.tools.util.featuregen;
  * 
  * @see AdaptiveFeatureGenerator
  * @see FeatureGeneratorResourceProvider
+ * 
+ * 
+ * @deprecated do not use this interface, will be removed!
  */
+@Deprecated
 public interface FeatureGeneratorFactory {
   
   /**
@@ -42,5 +46,6 @@ public interface FeatureGeneratorFactory {
    * 
    * @return the newly created feature generator
    */
+  @Deprecated
   AdaptiveFeatureGenerator createFeatureGenerator(FeatureGeneratorResourceProvider resourceProvider);
 }
