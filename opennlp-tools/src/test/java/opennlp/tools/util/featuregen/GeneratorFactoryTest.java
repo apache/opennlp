@@ -24,28 +24,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import opennlp.tools.util.InvalidFormatException;
 
 public class GeneratorFactoryTest {
 
-  private InputStream generatorDescriptorIn;
-
-  @Before
-  public void setUp() {
-
-    generatorDescriptorIn = getClass().getResourceAsStream(
+  @Test
+  public void testCreationWihtSimpleDescriptor() throws Exception {
+    InputStream generatorDescriptorIn = getClass().getResourceAsStream(
         "/opennlp/tools/util/featuregen/TestFeatureGeneratorConfig.xml");
-
+    
     // If this fails the generator descriptor could not be found
     // at the expected location
     Assert.assertNotNull(generatorDescriptorIn);
-  }
-
-  @Test
-  public void testCreation() throws Exception {
 
     Collection<String> expectedGenerators = new ArrayList<String>();
     expectedGenerators.add(OutcomePriorFeatureGenerator.class.getName());
@@ -66,6 +58,27 @@ public class GeneratorFactoryTest {
     // If this fails not all expected generators were found and
     // removed from the expected generators collection
     Assert.assertEquals(0, expectedGenerators.size());
+  }
+  
+  @Test
+  public void testCreationWithCustomGenerator() throws Exception {
+    InputStream generatorDescriptorIn = getClass().getResourceAsStream(
+        "/opennlp/tools/util/featuregen/CustomClassLoading.xml");
+    
+    // If this fails the generator descriptor could not be found
+    // at the expected location
+    Assert.assertNotNull(generatorDescriptorIn);
+    
+    AggregatedFeatureGenerator aggregatedGenerator =
+      (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
+    
+    Collection<AdaptiveFeatureGenerator> embeddedGenerator = aggregatedGenerator.getGenerators();
+    
+    Assert.assertEquals(1, embeddedGenerator.size());
+    
+    for (AdaptiveFeatureGenerator generator : embeddedGenerator) {
+      Assert.assertEquals(TokenFeatureGenerator.class.getName(), generator.getClass().getName());
+    }
   }
   
   /**
