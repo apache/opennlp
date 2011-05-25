@@ -56,15 +56,17 @@ import org.xml.sax.SAXException;
  *   </cache>
  * </generators>
  *
- * Each XML element is mapped to a {@link XmlFeatureGeneratorFactory} which
+ * Each XML element is mapped to a {@link GeneratorFactory.XmlFeatureGeneratorFactory} which
  * is responsible to process the element and create the specified
  * {@link AdaptiveFeatureGenerator}. Elements can contain other
  * elements in this case it is the responsibility of the mapped factory to process
  * the child elements correctly. In some factories this leads to recursive
- * calls the {@link #createGenerator(Element)} method.
+ * calls the 
+ * {@link GeneratorFactory.XmlFeatureGeneratorFactory#create(Element, FeatureGeneratorResourceProvider)}
+ * method.
  *
  * In the example above the generators element is mapped to the
- * {@link AggregatedFeatureGeneratorFactory} which then
+ * {@link GeneratorFactory.AggregatedFeatureGeneratorFactory} which then
  * creates all the aggregated {@link AdaptiveFeatureGenerator}s to
  * accomplish this it evaluates the mapping with the same mechanism
  * and gives the child element to the corresponding factories. All
@@ -460,7 +462,7 @@ public class GeneratorFactory {
    * @param resourceManager the resource manager which is used to resolve resources
    * referenced by a key in the descriptor
    *
-   * @return
+   * @return created feature generators
    *
    * @throws IOException if an error occurs during reading from the descriptor
    *     {@link InputStream}
