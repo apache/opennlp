@@ -216,9 +216,6 @@ public class NameFinderME implements TokenNameFinder {
     additionalContextFeatureGenerator.setCurrentContext(additionalContext);
     bestSequence = beam.bestSequence(tokens, additionalContext);
     
-    if (bestSequence == null) // TODO: Fix this in extra jira issue!!!
-      return new Span[0];
-    
     List<String> c = bestSequence.getOutcomes();
 
     contextGenerator.updateAdaptiveData(tokens, (String[]) c.toArray(new String[c.size()]));
