@@ -277,12 +277,12 @@ public class GeneratorFactory {
       String beginFeatureString = generatorElement.getAttribute("begin");
       
       boolean beginFeature = true;
-      if (!beginFeatureString.isEmpty())
+      if (beginFeatureString.length() != 0)
         beginFeature = Boolean.parseBoolean(beginFeatureString);
         
       String endFeatureString = generatorElement.getAttribute("end");
       boolean endFeature = true;
-      if (!endFeatureString.isEmpty())
+      if (endFeatureString.length() != 0)
         endFeature = Boolean.parseBoolean(endFeatureString);
       
       return new SentenceFeatureGenerator(beginFeature, endFeature);
