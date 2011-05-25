@@ -18,17 +18,24 @@
 
 package opennlp.tools.namefind;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
+import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
+import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * The {@link TokenNameFinderModel} is the model used
@@ -38,11 +45,32 @@ import opennlp.tools.util.model.BaseModel;
  */
 public class TokenNameFinderModel extends BaseModel {
 
+  public static class FeatureGeneratorCreationError extends RuntimeException {
+    FeatureGeneratorCreationError(Throwable t) {
+      super(t);
+    }
+  }
+  
+  private static class ByteArraySerializer implements ArtifactSerializer<byte[]> {
+
+    public byte[] create(InputStream in) throws IOException,
+        InvalidFormatException {
+      
+      return ModelUtil.read(in);
+    }
+
+    public void serialize(byte[] artifact, OutputStream out) throws IOException {
+      out.write(artifact);
+    }
+  }
+  
   private static final String COMPONENT_NAME = "NameFinderME";
   private static final String MAXENT_MODEL_ENTRY_NAME = "nameFinder.model";
-  
+ 
+  private static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
+ 
   public TokenNameFinderModel(String languageCode, AbstractModel nameFinderModel,
-      Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
+      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
     
@@ -52,9 +80,14 @@ public class TokenNameFinderModel extends BaseModel {
 
     artifactMap.put(MAXENT_MODEL_ENTRY_NAME, nameFinderModel);
     
+    // TODO: Null check ?!
+    if (generatorDescriptor != null && generatorDescriptor.length > 0)
+      artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, generatorDescriptor);
+    
     // The resource map must not contain key which are already taken
     // like the name finder maxent model name
-    if (resources.containsKey(MAXENT_MODEL_ENTRY_NAME)) {
+    if (resources.containsKey(MAXENT_MODEL_ENTRY_NAME) ||
+        resources.containsKey(GENERATOR_DESCRIPTOR_ENTRY_NAME)) {
       throw new IllegalArgumentException();
     }
     
@@ -63,6 +96,11 @@ public class TokenNameFinderModel extends BaseModel {
     artifactMap.putAll(resources);
   }
 
+  public TokenNameFinderModel(String languageCode, AbstractModel nameFinderModel,
+      Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
+    this(languageCode, nameFinderModel, null, resources, manifestInfoEntries);
+  }
+      
   public TokenNameFinderModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
@@ -76,6 +114,67 @@ public class TokenNameFinderModel extends BaseModel {
     return (AbstractModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
   }
 
+  /**
+   * Creates the {@link AdaptiveFeatureGenerator}. Usually this
+   * is a set of generators contained in the {@link AggregatedFeatureGenerator}.
+   *
+   * Note:
+   * The generators are created on every call to this method.
+   *
+   * @return the feature generator or null if there is no descriptor in the model
+   */
+  public AdaptiveFeatureGenerator createFeatureGenerators() {
+
+    byte descriptorBytes[] = (byte[]) artifactMap.get(GENERATOR_DESCRIPTOR_ENTRY_NAME);
+    
+    if (descriptorBytes != null) {
+      InputStream descriptorIn = new ByteArrayInputStream(descriptorBytes);
+  
+      AdaptiveFeatureGenerator generator = null;
+      try {
+        generator = GeneratorFactory.create(descriptorIn, new FeatureGeneratorResourceProvider() {
+  
+          public Object getResource(String key) {
+            return artifactMap.get(key);
+          }
+        });
+      } catch (InvalidFormatException e) {
+        // It is assumed that the creation of the feature generation does not
+        // fail after it succeeded once during model loading.
+        
+        // But it might still be possible that such an exception is thrown,
+        // in this case the caller should not be forced to handle the exception
+        // and a Runtime Exception is thrown instead.
+        
+        // If the re-creation of the feature generation fails it is assumed
+        // that this can only be caused by a programming mistake and therefore
+        // throwing a Runtime Exception is reasonable
+        
+        throw new FeatureGeneratorCreationError(e);
+      } catch (IOException e) {
+        throw new IllegalStateException("Reading from mem cannot result in an I/O error");
+      }
+  
+      return generator;
+    }
+    else {
+      return null;
+    }
+  }
+  
+  public TokenNameFinderModel updateFeatureGenerator(byte descriptor[]) {
+        
+    TokenNameFinderModel model = new TokenNameFinderModel(getLanguage(), getNameFinderModel(),
+        descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap());
+    
+    // TODO: Not so nice!
+    model.artifactMap.clear();
+    model.artifactMap.putAll(artifactMap);
+    model.artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, descriptor);
+    
+    return model;
+  }
+  
   // TODO: Write test for this method
   public static boolean isModelValid(MaxentModel model) {
     
@@ -119,6 +218,21 @@ public class TokenNameFinderModel extends BaseModel {
   @Override
   protected void createArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
     super.createArtifactSerializers(serializers);
+    
+    serializers.put("featuregen", new ByteArraySerializer());
+  }
+  
+  public static Map<String, ArtifactSerializer> createArtifactSerializers()  {
+    
+    // TODO: Not so nice, because code cannot really be reused by the other create serializer method
+    //       Has to be redesigned, we need static access to default serializers
+    //       and these should be able to extend during runtime ?! 
+    
+    Map<String, ArtifactSerializer> serializers = BaseModel.createArtifactSerializers();
+    
+    serializers.put("featuregen", new ByteArraySerializer());
+    
+    return serializers;
   }
   
   protected void validateArtifactMap() throws InvalidFormatException {
