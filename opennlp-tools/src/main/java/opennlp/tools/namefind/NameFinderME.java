@@ -18,6 +18,7 @@
 
 package opennlp.tools.namefind;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -52,6 +53,8 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.BigramNameFeatureGenerator;
 import opennlp.tools.util.featuregen.CachedFeatureGenerator;
+import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
+import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.featuregen.OutcomePriorFeatureGenerator;
 import opennlp.tools.util.featuregen.PreviousMapFeatureGenerator;
 import opennlp.tools.util.featuregen.SentenceFeatureGenerator;
@@ -128,11 +131,20 @@ public class NameFinderME implements TokenNameFinder {
    */
   public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize) {
     this.model = model.getNameFinderModel();
-
-    if (generator != null) 
+    
+    // If generator is provided always use that one
+    if (generator != null) {
       contextGenerator = new DefaultNameContextGenerator(generator);
-    else
-      contextGenerator = new DefaultNameContextGenerator(createFeatureGenerator());
+    }
+    else {
+      // If model has a generator use that one, otherwise create default 
+      AdaptiveFeatureGenerator featureGenerator = model.createFeatureGenerators();
+      
+      if (featureGenerator == null)
+        featureGenerator = createFeatureGenerator();
+      
+      contextGenerator = new DefaultNameContextGenerator(featureGenerator);
+    }
     
     contextGenerator.addFeatureGenerator(
           new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
@@ -355,7 +367,9 @@ public class NameFinderME implements TokenNameFinder {
     * @param iterations the number of iterations
     * @param cutoff
     * @param resources the resources for the name finder or null if none
+    * 
     * @return
+    * 
     * @throws IOException
     * @throws ObjectStreamException
     */
@@ -373,13 +387,46 @@ public class NameFinderME implements TokenNameFinder {
 
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
        final Map<String, Object> resources, int iterations, int cutoff) throws IOException  {
-     return train(languageCode, type, samples, null, resources, iterations, cutoff);
+     return train(languageCode, type, samples, (AdaptiveFeatureGenerator) null, resources, iterations, cutoff);
    }
    
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        final Map<String, Object> resources) throws IOException {
      return NameFinderME.train(languageCode, type, samples, resources, 100, 5);
    }
+  
+   // TODO: How can cmd line tool create the resources map ?!
+   // Needs access to derserializers ...
+   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
+       byte[] generatorDescriptor, final Map<String, Object> resources, 
+       int iterations, int cutoff) throws IOException {
+     
+     // TODO: Pass in resource manager ...
+     
+     AdaptiveFeatureGenerator featureGenerator;
+     
+     if (generatorDescriptor != null) {
+       featureGenerator = GeneratorFactory.create(new ByteArrayInputStream(generatorDescriptor), new FeatureGeneratorResourceProvider() {
+        
+        public Object getResource(String key) {
+          return resources.get(key);
+        }
+      });
+     }
+     else {
+       featureGenerator = null;
+     }
+     
+     TokenNameFinderModel model = train(languageCode, type, samples, featureGenerator,
+         resources, iterations, cutoff);
+     
+     if (generatorDescriptor != null) {
+       model = model.updateFeatureGenerator(generatorDescriptor);
+     }
+     
+     return model;
+   }
+   
    
   @Deprecated
   public static GISModel train(EventStream es, int iterations, int cut) throws IOException {
