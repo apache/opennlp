@@ -31,6 +31,7 @@ import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
+import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
 import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
 import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -108,7 +109,7 @@ public class TokenNameFinderModel extends BaseModel {
   /**
    * Retrieves the {@link TokenNameFinder} model.
    *
-   * @return
+   * @return the classification model
    */
   public AbstractModel getNameFinderModel() {
     return (AbstractModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
