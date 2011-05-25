@@ -171,6 +171,16 @@ public abstract class BaseModel {
     return artifactSerializers.get(extension);  
   }
   
+  protected static Map<String, ArtifactSerializer> createArtifactSerializers() {
+    Map<String, ArtifactSerializer> serializers = new HashMap<String, ArtifactSerializer>();
+    
+    GenericModelSerializer.register(serializers);
+    PropertiesSerializer.register(serializers);
+    DictionarySerializer.register(serializers);
+    
+    return serializers;
+  }
+  
   /**
    * Registers all {@link ArtifactSerializer} for their artifact file name extensions.
    * The registered {@link ArtifactSerializer} are used to create and serialize
@@ -189,9 +199,7 @@ public abstract class BaseModel {
    */
   protected void createArtifactSerializers(
       Map<String, ArtifactSerializer> serializers) {
-    GenericModelSerializer.register(serializers);
-    PropertiesSerializer.register(serializers);
-    DictionarySerializer.register(serializers);
+    serializers.putAll(createArtifactSerializers());
   }
 
   /**
