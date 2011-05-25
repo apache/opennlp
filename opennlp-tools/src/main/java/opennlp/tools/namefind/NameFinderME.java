@@ -368,7 +368,7 @@ public class NameFinderME implements TokenNameFinder {
     * @param cutoff
     * @param resources the resources for the name finder or null if none
     * 
-    * @return
+    * @return the newly trained model
     * 
     * @throws IOException
     * @throws ObjectStreamException
@@ -459,7 +459,7 @@ public class NameFinderME implements TokenNameFinder {
    * 
    * @param spans
    * 
-   * @return
+   * @return non-overlapping spans
    */
   public static Span[] dropOverlappingSpans(Span spans[]) {
     
