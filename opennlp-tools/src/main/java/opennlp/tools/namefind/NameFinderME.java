@@ -50,6 +50,7 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
+import opennlp.tools.util.featuregen.BigramNameFeatureGenerator;
 import opennlp.tools.util.featuregen.CachedFeatureGenerator;
 import opennlp.tools.util.featuregen.OutcomePriorFeatureGenerator;
 import opennlp.tools.util.featuregen.PreviousMapFeatureGenerator;
