@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.formats.ad;
 
 import static org.junit.Assert.assertEquals;
 
