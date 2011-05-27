@@ -29,11 +29,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import opennlp.tools.formats.ContractionUtility;
-import opennlp.tools.formats.ad.ADParagraphStream.Paragraph;
-import opennlp.tools.formats.ad.ADParagraphStream.ParagraphParser.Leaf;
-import opennlp.tools.formats.ad.ADParagraphStream.ParagraphParser.Node;
-import opennlp.tools.formats.ad.ADParagraphStream.ParagraphParser.TreeElement;
+import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
+import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
+import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
+import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -145,7 +144,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     HAREM = Collections.unmodifiableMap(harem);
   }
   
-  private final ObjectStream<ADParagraphStream.Paragraph> adSentenceStream;
+  private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
 
   /** 
    * To keep the last left contraction part
@@ -161,7 +160,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    *          a stream of lines as {@link String}
    */
   public ADNameSampleStream(ObjectStream<String> lineStream) {
-    this.adSentenceStream = new ADParagraphStream(lineStream);
+    this.adSentenceStream = new ADSentenceStream(lineStream);
   }
 
   /**
@@ -175,7 +174,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   public ADNameSampleStream(InputStream in, String charsetName) {
 
     try {
-      this.adSentenceStream = new ADParagraphStream(new PlainTextByLineStream(
+      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
           in, charsetName));
     } catch (UnsupportedEncodingException e) {
       // UTF-8 is available on all JVMs, will never happen
@@ -185,7 +184,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   public NameSample read() throws IOException {
 
-    Paragraph paragraph;
+    Sentence paragraph;
     while ((paragraph = this.adSentenceStream.read()) != null) {
       Node root = paragraph.getRoot();
       List<String> sentence = new ArrayList<String>();
@@ -301,7 +300,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       String right = leaf.getLexeme();
       if (tag != null && tag.contains("<-sam>")) {
         right = leaf.getLexeme();
-        String c = ContractionUtility.toContraction(leftContractionPart, right);
+        String c = PortugueseContractionUtility.toContraction(leftContractionPart, right);
 
         if (c != null) {
           sentence.add(c);

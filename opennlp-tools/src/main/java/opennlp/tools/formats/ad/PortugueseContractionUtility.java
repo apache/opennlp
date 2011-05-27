@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.formats.ad;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +32,7 @@ import java.util.Map;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ContractionUtility {
+public class PortugueseContractionUtility {
 
   private static final Map<String, String> CONTRACTIONS;
   static {

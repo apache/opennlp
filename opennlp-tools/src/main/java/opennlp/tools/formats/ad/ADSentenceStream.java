@@ -26,12 +26,12 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import opennlp.tools.formats.ad.ADParagraphStream.ParagraphParser.Node;
+import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * Stream filter which merges text lines into paragraphs, following the Arvores
+ * Stream filter which merges text lines into sentences, following the Arvores
  * Deitadas syntax.
  * <p>
  * Information about the format:<br>
@@ -43,13 +43,14 @@ import opennlp.tools.util.ObjectStream;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ADParagraphStream extends
-    FilterObjectStream<String, ADParagraphStream.Paragraph> {
+public class ADSentenceStream extends
+    FilterObjectStream<String, ADSentenceStream.Sentence> {
 
-  public static class Paragraph {
+  public static class Sentence {
 
     private String text;
     private Node root;
+    private String metadata;
 
     public String getText() {
       return text;
@@ -67,15 +68,25 @@ public class ADParagraphStream extends
       this.root = root;
     }
 
+	public void setMetadata(String metadata) {
+		this.metadata = metadata;
+	}
+
+	public String getMetadata() {
+		return metadata;
+	}
+
   }
 
   /**
    * Parses a sample of AD corpus. A sentence in AD corpus is represented by a
-   * Tree. In this class we declare some types to represent that tree.
+   * Tree. In this class we declare some types to represent that tree. Today we get only
+   * the first alternative (A1).
    */
-  public static class ParagraphParser {
+  public static class SentenceParser {
 
-    private Pattern rootPattern = Pattern.compile("^[^:=]+:[^(\\s]+$");
+    //private Pattern rootPattern = Pattern.compile("^[^:=]+:[^(\\s]+(\\(.*?\\))?$");
+	private Pattern rootPattern = Pattern.compile("^A\\d+$");
     private Pattern nodePattern = Pattern
         .compile("^([=-]*)([^:=]+:[^\\(\\s]+)(\\(([^\\)]+)\\))?\\s*$");
     private Pattern leafPattern = Pattern
@@ -83,53 +94,72 @@ public class ADParagraphStream extends
     private Pattern bizarreLeafPattern = Pattern
     		.compile("^([=-]*)([^:=]+=[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
     private Pattern punctuationPattern = Pattern.compile("^(=*)(\\W+)$");
+    
+    private String text,meta;
 
     /** 
-     * Parse the paragraph 
+     * Parse the sentence 
      */
-    public Paragraph parse(String paragraphString) {
+    public Sentence parse(String sentenceString, int para, boolean isTitle, boolean isBox) {
       BufferedReader reader = new BufferedReader(new StringReader(
-          paragraphString));
-      Paragraph sentence = new Paragraph();
+          sentenceString));
+      Sentence sentence = new Sentence();
       Node root = new Node();
       try {
         // first line is <s ...>
         String line = reader.readLine();
-        if (line.startsWith("<s")) {
-          // should finde the source source
+        
+        boolean useSameTextAndMeta = false; // to handle cases where there are diff sug of parse (&&)
+        
+          // should find the source source
           while (!line.startsWith("SOURCE")) {
+        	  if(line.equals("&&")) {
+        		  // same sentence again!
+        		  useSameTextAndMeta = true;
+        		  break;
+        	  }
             line = reader.readLine();
             if (line == null) {
-              return new Paragraph();
+              return null;
             }
           }
+        if(!useSameTextAndMeta) {
+            // got source, get the metadata
+	        String metaFromSource = line.substring(7);
+	        line = reader.readLine();
+	        // we should have the plain sentence
+	        // we remove the first token
+	        int start = line.indexOf(" ");
+	        text = line.substring(start + 1);
+	        String titleTag = "";
+	        if(isTitle) titleTag = " title";
+	        String boxTag = "";
+	        if(isBox) boxTag = " box";
+	        meta = line.substring(0, start) + " p=" + para + titleTag + boxTag + metaFromSource;
         }
-        line = reader.readLine();
-        // we should have the plain sentence
-        // we remove the first token
-        int start = line.indexOf(" ");
-        sentence.setText(line.substring(start + 1));
+        sentence.setText(text);
+        sentence.setMetadata(meta);
         // now we look for the root node
         line = reader.readLine();
 
         while (!rootPattern.matcher(line).matches()) {
           line = reader.readLine();
           if (line == null) {
-            return sentence;
+            return null;
           }
         }
         // got the root. Add it to the stack
         Stack<Node> nodeStack = new Stack<Node>();
         // we get the complete line
 
-        root.setSyntacticTag("ROOT");
+        root.setSyntacticTag(line);
         root.setLevel(0);
         nodeStack.add(root);
         // now we have to take care of the lastLevel. Every time it raises, we
         // will add the
         // leaf to the node at the top. If it decreases, we remove the top.
-        //line = reader.readLine();
-        while (line.length() != 0 && line.startsWith("</s>") == false) {
+        line = reader.readLine();
+        while (line != null && line.length() != 0 && line.startsWith("</s>") == false && !line.equals("&&")) {
           TreeElement element = this.getElement(line);
           
           if(element != null) {
@@ -175,7 +205,7 @@ public class ADParagraphStream extends
         }
 
       } catch (Exception e) {
-        System.err.println(paragraphString);
+        System.err.println(sentenceString);
         e.printStackTrace();
         return sentence;
       }
@@ -395,53 +425,102 @@ public class ADParagraphStream extends
   }
   
   /** 
-   * The start paragraph pattern 
+   * The start sentence pattern 
    */
-  private static final Pattern start = Pattern.compile("<s[^>]*>");
+  private static final Pattern sentStart = Pattern.compile("<s[^>]*>");
 
   /** 
-   * The end paragraph pattern 
+   * The end sentence pattern 
    */
-  private static final Pattern end = Pattern.compile("</s>");
+  private static final Pattern sentEnd = Pattern.compile("</s>");
+  
+  /** 
+   * The start sentence pattern 
+   */
+  private static final Pattern titleStart = Pattern.compile("<t[^>]*>");
 
-  private ParagraphParser parser;
+  /** 
+   * The end sentence pattern 
+   */
+  private static final Pattern titleEnd = Pattern.compile("</t>");
+  
+  /** 
+   * The start sentence pattern 
+   */
+  private static final Pattern boxStart = Pattern.compile("<caixa[^>]*>");
 
-  public ADParagraphStream(ObjectStream<String> lineStream) {
+  /** 
+   * The end sentence pattern 
+   */
+  private static final Pattern boxEnd = Pattern.compile("</caixa>");
+  
+  
+  /** 
+   * The start sentence pattern 
+   */
+  private static final Pattern paraStart = Pattern.compile("<p[^>]*>");
+
+  /** 
+   * The start sentence pattern 
+   */
+  private static final Pattern textStart = Pattern.compile("<ext[^>]*>");
+
+  private SentenceParser parser;
+
+  private int paraID = 0;
+  private boolean isTitle = false;
+  private boolean isBox = false;
+  
+  public ADSentenceStream(ObjectStream<String> lineStream) {
     super(lineStream);
-    parser = new ParagraphParser();
+    parser = new SentenceParser();
   }
+  
 
-  public Paragraph read() throws IOException {
+  public Sentence read() throws IOException {
 
-    StringBuilder paragraph = new StringBuilder();
-    boolean paragraphStarted = false;
+    StringBuilder sentence = new StringBuilder();
+    boolean sentenceStarted = false;
 
     while (true) {
       String line = samples.read();
 
       if (line != null) {
+    	  
+    	  if(sentenceStarted) {
+    		  if (sentEnd.matcher(line).matches()) {
+		          sentenceStarted = false;
+	          } else {
+	        	  sentence.append(line).append('\n');
+	          }
+    	  } else {
+    		  if (sentStart.matcher(line).matches()) {
+		          sentenceStarted = true;
+		        } else if(paraStart.matcher(line).matches()) {
+		        	paraID++;
+		        } else if(titleStart.matcher(line).matches()) {
+		        	isTitle = true;
+		        } else if(titleEnd.matcher(line).matches()) {
+		        	isTitle = false;
+		        } else if(textStart.matcher(line).matches()) {
+		        	paraID = 0;
+		        } else if(boxStart.matcher(line).matches()) {
+		        	isBox = true;
+		        } else if(boxEnd.matcher(line).matches()) {
+		        	isBox = false;
+		        }
+    	  }
 
-        if (start.matcher(line).matches()) {
-          paragraphStarted = true;
-        }
 
-        if (paragraphStarted) {
-          paragraph.append(line).append('\n');
-        }
-
-        if (end.matcher(line).matches()) {
-          paragraphStarted = false;
-        }
-
-        if (!paragraphStarted && paragraph.length() > 0) {
-          return parser.parse(paragraph.toString());
+        if (!sentenceStarted && sentence.length() > 0) {
+          return parser.parse(sentence.toString(), paraID, isTitle, isBox);
         }
 
       } else {
         // handle end of file
-        if (paragraphStarted) {
-          if (paragraph.length() > 0) {
-            return parser.parse(paragraph.toString());
+        if (sentenceStarted) {
+          if (sentence.length() > 0) {
+            return parser.parse(sentence.toString(), paraID, isTitle, isBox);
           }
         } else {
           return null;

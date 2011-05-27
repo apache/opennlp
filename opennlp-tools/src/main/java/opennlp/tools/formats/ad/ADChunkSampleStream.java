@@ -24,10 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
-import opennlp.tools.formats.ad.ADParagraphStream.Paragraph;
-import opennlp.tools.formats.ad.ADParagraphStream.ParagraphParser.Leaf;
-import opennlp.tools.formats.ad.ADParagraphStream.ParagraphParser.Node;
-import opennlp.tools.formats.ad.ADParagraphStream.ParagraphParser.TreeElement;
+import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
+import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
+import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
+import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -57,7 +57,7 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 
-	private final ObjectStream<ADParagraphStream.Paragraph> adSentenceStream;
+	private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
 
 	private int start = -1;
 	private int end = -1;
@@ -73,7 +73,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 	 *          a stream of lines as {@link String}
 	 */
 	public ADChunkSampleStream(ObjectStream<String> lineStream) {
-		this.adSentenceStream = new ADParagraphStream(lineStream);
+		this.adSentenceStream = new ADSentenceStream(lineStream);
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 	public ADChunkSampleStream(InputStream in, String charsetName) {
 
 		try {
-			this.adSentenceStream = new ADParagraphStream(new PlainTextByLineStream(
+			this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
 					in, charsetName));
 		} catch (UnsupportedEncodingException e) {
 			// UTF-8 is available on all JVMs, will never happen
@@ -97,7 +97,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 
 	public ChunkSample read() throws IOException {
 
-		Paragraph paragraph;
+		Sentence paragraph;
 		while ((paragraph = this.adSentenceStream.read()) != null) {
 
 			if (end > -1 && index >= end) {
@@ -201,14 +201,15 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 	private String getChunkTag(String tag) {
 		
 		String phraseTag = tag.substring(tag.lastIndexOf(":") + 1);
-		
-		if (phraseTag.equals("np") || phraseTag.equals("ap")
-				|| phraseTag.equals("advp") || phraseTag.equals("vp")
-				|| phraseTag.equals("pp")) {
-			phraseTag = phraseTag.toUpperCase();
-		} else {
-			phraseTag = "O";
-		}
+
+		// maybe we should use only np, vp and pp, but will keep ap and advp.
+    if (phraseTag.equals("np") || phraseTag.equals("vp")
+        || phraseTag.equals("pp") || phraseTag.equals("ap")
+        || phraseTag.equals("advp")) {
+      phraseTag = phraseTag.toUpperCase();
+    } else {
+      phraseTag = "O";
+    }
 		return phraseTag;
 	}
 
