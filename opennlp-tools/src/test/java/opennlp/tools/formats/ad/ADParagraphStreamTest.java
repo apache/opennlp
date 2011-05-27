@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.formats.ad;
 
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import opennlp.tools.formats.ad.ADParagraphStream;
+import opennlp.tools.formats.ad.ADSentenceStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 import org.junit.Test;
@@ -33,9 +33,9 @@ public class ADParagraphStreamTest {
   public void testSimpleReading() throws IOException {
     int count = 0;
     
-    ADParagraphStream stream = openData();
+    ADSentenceStream stream = openData();
     
-    ADParagraphStream.Paragraph paragraph = stream.read();
+    ADSentenceStream.Sentence paragraph = stream.read();
     while(paragraph != null) {
       count++;
       paragraph = stream.read();
@@ -48,9 +48,9 @@ public class ADParagraphStreamTest {
   public void testLeadingWithContraction() throws IOException {
     int count = 0;
     
-    ADParagraphStream stream = openData();
+    ADSentenceStream stream = openData();
     
-    ADParagraphStream.Paragraph paragraph = stream.read();
+    ADSentenceStream.Sentence paragraph = stream.read();
     while(paragraph != null) {
       
       count++;
@@ -60,9 +60,9 @@ public class ADParagraphStreamTest {
     assertEquals(4, count);
   }
   
-  private static ADParagraphStream openData() throws IOException {
+  private static ADSentenceStream openData() throws IOException {
     InputStream in = ADParagraphStreamTest.class.getResourceAsStream("/opennlp/tools/formats/ad.sample");
     
-    return new ADParagraphStream(new PlainTextByLineStream(in, "UTF-8"));
+    return new ADSentenceStream(new PlainTextByLineStream(in, "UTF-8"));
   }
 }
