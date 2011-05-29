@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.Mean;
 import opennlp.tools.util.model.ModelType;
@@ -32,10 +33,13 @@ public class POSTaggerCrossValidator {
   private final int cutoff;
   private final int iterations;
   
+  private final TrainingParameters params;
+  
   private POSDictionary tagDictionary;
   private Dictionary ngramDictionary;
   
   private Mean wordAccuracy = new Mean();
+  
   
   public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
       Dictionary ngramDictionary, int cutoff, int iterations) {
@@ -45,6 +49,8 @@ public class POSTaggerCrossValidator {
     this.iterations = iterations;
     this.tagDictionary = tagDictionary;
     this.ngramDictionary = ngramDictionary;
+    
+    params = null;
   }
   
   public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
@@ -52,24 +58,42 @@ public class POSTaggerCrossValidator {
     this(languageCode, modelType, tagDictionary, ngramDictionary, 5, 100);
   }
   
+  public POSTaggerCrossValidator(String languageCode,
+      TrainingParameters trainParam, POSDictionary tagDictionary,
+      Dictionary ngramDictionary) {
+    this.params = trainParam;
+    this.languageCode = languageCode;
+    cutoff = -1;
+    iterations = -1;
+    modelType = null;
+  }
+  
   public void evaluate(ObjectStream<POSSample> samples, int nFolds)
     throws IOException, IOException {
-    CrossValidationPartitioner<POSSample> partitioner = 
-      new CrossValidationPartitioner<POSSample>(samples, nFolds);
-  
-     while (partitioner.hasNext()) {
-       
-       CrossValidationPartitioner.TrainingSampleStream<POSSample> trainingSampleStream =
-         partitioner.next();
-       
-       POSModel model = POSTaggerME.train(languageCode, trainingSampleStream, modelType, tagDictionary,
-           ngramDictionary, cutoff, iterations);
-       
-       POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model));
-       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
-       
-       wordAccuracy.add(evaluator.getWordAccuracy(), evaluator.getWordCount());
-     }
+    
+    CrossValidationPartitioner<POSSample> partitioner = new CrossValidationPartitioner<POSSample>(
+        samples, nFolds);
+
+    while (partitioner.hasNext()) {
+
+      CrossValidationPartitioner.TrainingSampleStream<POSSample> trainingSampleStream = partitioner
+          .next();
+
+      POSModel model;
+
+      if (params == null) {
+        model = POSTaggerME.train(languageCode, trainingSampleStream,
+            modelType, tagDictionary, ngramDictionary, cutoff, iterations);
+      } else {
+        model = POSTaggerME.train(languageCode, trainingSampleStream, params,
+            this.tagDictionary, this.ngramDictionary);
+      }
+
+      POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model));
+      evaluator.evaluate(trainingSampleStream.getTestSampleStream());
+
+      wordAccuracy.add(evaluator.getWordAccuracy(), evaluator.getWordCount());
+    }
   }
   
   /**
