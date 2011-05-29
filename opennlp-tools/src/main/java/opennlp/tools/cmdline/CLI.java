@@ -44,6 +44,7 @@ import opennlp.tools.cmdline.parser.ParserTool;
 import opennlp.tools.cmdline.parser.ParserTrainerTool;
 import opennlp.tools.cmdline.parser.TaggerModelReplacerTool;
 import opennlp.tools.cmdline.postag.POSTaggerConverter;
+import opennlp.tools.cmdline.postag.POSTaggerCrossValidatorTool;
 import opennlp.tools.cmdline.postag.POSTaggerEvaluatorTool;
 import opennlp.tools.cmdline.postag.POSTaggerTrainerTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorConverterTool;
@@ -103,6 +104,7 @@ public final class CLI {
     tools.add(new opennlp.tools.cmdline.postag.POSTaggerTool());
     tools.add(new POSTaggerTrainerTool());
     tools.add(new POSTaggerEvaluatorTool());
+    tools.add(new POSTaggerCrossValidatorTool());
     tools.add(new POSTaggerConverter());
     
     // add evaluator
