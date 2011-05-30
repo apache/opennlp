@@ -24,7 +24,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelReader;
@@ -116,8 +119,32 @@ public final class POSModel extends BaseModel {
 
     Object tagdictEntry = artifactMap.get(TAG_DICTIONARY_ENTRY_NAME);
 
-    if (tagdictEntry != null && !(tagdictEntry instanceof POSDictionary)) {
-      throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
+    if (tagdictEntry != null) {
+      if (tagdictEntry instanceof POSDictionary) {
+        POSDictionary posDict = (POSDictionary) tagdictEntry;
+        
+        Set<String> dictTags = new HashSet<String>();
+        
+        for (String word : posDict) {
+          Collections.addAll(dictTags, posDict.getTags(word)); 
+        }
+        
+        Set<String> modelTags = new HashSet<String>();
+        
+        AbstractModel posModel = getPosModel();
+        
+        for  (int i = 0; i < posModel.getNumOutcomes(); i++) {
+          modelTags.add(posModel.getOutcome(i));
+        }
+        
+        if (!modelTags.containsAll(dictTags)) {
+          throw new InvalidFormatException("Tag dictioinary contains tags " +
+          		"which are unkown by the model!");
+        }
+      }
+      else {
+        throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
+      }
     }
 
     Object ngramDictEntry = artifactMap.get(NGRAM_DICTIONARY_ENTRY_NAME);
