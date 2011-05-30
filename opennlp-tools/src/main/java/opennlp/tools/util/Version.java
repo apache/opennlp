@@ -18,6 +18,10 @@
 
 package opennlp.tools.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 /**
  * The {@link Version} class represents the OpenNlp Tools library version.
  * <p>
@@ -32,12 +36,20 @@ package opennlp.tools.util;
  */
 public class Version {
 
+  private static final String DEV_VERSION_STRING = "0.0.0-SNAPSHOT";
+  
+  public static final Version DEV_VERSION = Version.parse(DEV_VERSION_STRING);
+  
+  private static final String SNAPSHOT_MARKER = "-SNAPSHOT";
+  
   private final int major;
 
   private final int minor;
 
   private final int revision;
 
+  private final boolean snapshot;
+  
   /**
    * Initializes the current instance with the provided
    * versions.
@@ -45,13 +57,28 @@ public class Version {
    * @param major
    * @param minor
    * @param revision
+   * @param snapshot
    */
-  public Version(int major, int minor, int revision) {
+  public Version(int major, int minor, int revision, boolean snapshot) {
     this.major = major;
     this.minor = minor;
     this.revision = revision;
+    this.snapshot = snapshot;
   }
 
+  /**
+   * Initializes the current instance with the provided
+   * versions. The version will not be a snapshot version.
+   *
+   * @param major
+   * @param minor
+   * @param revision
+   */
+  public Version(int major, int minor, int revision) {
+   this(major, minor, revision, false); 
+  }
+
+  
   /**
    * Retrieves the major version.
    *
@@ -79,6 +106,10 @@ public class Version {
     return revision;
   }
 
+  public boolean isSnapshot() {
+    return snapshot;
+  }
+  
   /**
    * Retrieves the version string.
    *
@@ -89,7 +120,7 @@ public class Version {
    */
   public String toString() {
     return Integer.toString(getMajor()) + "." + Integer.toString(getMinor()) +
-      "." + Integer.toString(getRevision());
+      "." + Integer.toString(getRevision()) + (isSnapshot() ? SNAPSHOT_MARKER : "");
   }
 
   @Override
@@ -101,7 +132,8 @@ public class Version {
 
       return getMajor() == version.getMajor()
           && getMinor() == version.getMinor()
-          && getRevision() == version.getRevision();
+          && getRevision() == version.getRevision()
+          && isSnapshot() == version.isSnapshot();
     }
     else {
       return false;
@@ -128,9 +160,21 @@ public class Version {
     if (indexFirstDot == -1 || indexSecondDot == -1)
         throw new NumberFormatException("Invalid version!");
 
+    int indexFirstDash = version.indexOf('-');
+    
+    int versionEnd;
+    if (indexFirstDash == -1) {
+      versionEnd = version.length();
+    }
+    else {
+      versionEnd = indexFirstDash;
+    }
+    
+    boolean snapshot = version.endsWith(SNAPSHOT_MARKER);
+    
     return new Version(Integer.parseInt(version.substring(0, indexFirstDot)),
         Integer.parseInt(version.substring(indexFirstDot + 1, indexSecondDot)),
-        Integer.parseInt(version.substring(indexSecondDot + 1)));
+        Integer.parseInt(version.substring(indexSecondDot + 1, versionEnd)), snapshot);
   }
 
   /**
@@ -139,6 +183,35 @@ public class Version {
    * @return the current version
    */
   public static Version currentVersion() {
-    return new Version(1, 5, 2);
+    
+    Properties manifest = new Properties();
+    
+    // Try to read the version from the version file if it is available,
+    // otherwise set the version to the development version
+    
+    InputStream versionIn = Version.class.getResourceAsStream("opennlp.version");
+    
+    if (versionIn != null) {
+      try {
+        manifest.load(versionIn);
+      } catch (IOException e) {
+        // ignore error
+      }
+      finally {
+        try {
+          versionIn.close();
+        } catch (IOException e) {
+          // ignore error
+        }
+      }
+    }
+    
+    String versionString = 
+      manifest.getProperty("OpenNLP-Version", DEV_VERSION_STRING);
+    
+    if (versionString.equals("${pom.version}"))
+      versionString = DEV_VERSION_STRING;
+    
+    return Version.parse(versionString);
   }
 }

@@ -235,6 +235,12 @@ public abstract class BaseModel {
         throw new InvalidFormatException("Model version " + version + " is not supported by this (" 
             + Version.currentVersion() +") version of OpenNLP!");
       }
+      
+      // Reject loading a snapshot model with a non-snapshot version
+      if (!Version.currentVersion().isSnapshot() && version.isSnapshot()) {
+        throw new InvalidFormatException("Model is a snapshot models are not" +
+        		"supported by release versions!");
+      }
     }
     else {
       throw new InvalidFormatException("Missing " + VERSION_PROPERTY + " property in " +
