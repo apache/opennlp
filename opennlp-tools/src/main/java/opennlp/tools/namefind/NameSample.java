@@ -160,6 +160,32 @@ public class NameSample {
     return result.toString();
   }
   
+  private static String errorTokenWithContext(String sentence[], int index) {
+    
+    StringBuilder errorString = new StringBuilder();
+    
+    // two token before
+    if (index > 1)
+      errorString.append(sentence[index -2]).append(" ");
+    
+    if (index > 0)
+      errorString.append(sentence[index -1]).append(" ");
+    
+    // token itself
+    errorString.append("###");
+    errorString.append(sentence[index]);
+    errorString.append("###").append(" ");
+    
+    // two token after
+    if (index + 1 < sentence.length)
+      errorString.append(sentence[index + 1]).append(" ");
+
+    if (index + 2 < sentence.length)
+      errorString.append(sentence[index + 2]);
+    
+    return errorString.toString();
+  }
+  
   public static NameSample parse(String taggedTokens, boolean isClearAdaptiveData)
     // TODO: Should throw another exception, and then convert it into an IOException in the stream
     throws IOException {
@@ -182,19 +208,20 @@ public class NameSample {
       Matcher startMatcher = startTagPattern.matcher(parts[pi]);
       if (startMatcher.matches()) {
         if(catchingName) {
-          throw new IOException("Found unexpected annotation " + parts[pi] + " while handling a name sequence.");
+          throw new IOException("Found unexpected annotation" + 
+              " while handling a name sequence: " + errorTokenWithContext(parts, pi));
         }
         catchingName = true;
         startIndex = wordIndex;
         nameType = startMatcher.group(2);
         if(nameType != null && nameType.length() == 0) {
-          throw new IOException("Missing a name type: " + parts[pi]);
+          throw new IOException("Missing a name type: " + errorTokenWithContext(parts, pi));
         }
           
       }
       else if (parts[pi].equals(NameSampleDataStream.END_TAG)) {
         if(catchingName == false) {
-          throw new IOException("Found unexpected annotation " + parts[pi] + ".");
+          throw new IOException("Found unexpected annotation: " + errorTokenWithContext(parts, pi));
         }
         catchingName = false;
         // create name
