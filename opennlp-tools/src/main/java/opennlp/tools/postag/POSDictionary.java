@@ -151,6 +151,9 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
     dictionary.put(word, tags);
   }
 
+  /**
+   * Retrieves an iterator over all words in the dictionary.
+   */
   public Iterator<String> iterator() {
     return dictionary.keySet().iterator();
   }
