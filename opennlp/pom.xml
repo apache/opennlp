@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
-		<version>8</version>
+		<version>9</version>
 		<relativePath />
 	</parent>
 
@@ -74,7 +74,6 @@
 	        <plugin>
 	          <groupId>org.apache.maven.plugins</groupId>
 	          <artifactId>maven-release-plugin</artifactId>
-	          <version>2.1</version>         
 	          <configuration>
 	            <useReleaseProfile>false</useReleaseProfile>
 	            <goals>deploy</goals>
@@ -98,7 +97,6 @@
 			<plugin>
 				<groupId>org.apache.rat</groupId>
 				<artifactId>apache-rat-plugin</artifactId>
-				<version>0.6</version>
 				<executions>
 					<execution>
 						<id>default-cli</id>
@@ -125,6 +123,8 @@
 							<goal>jar</goal>
 						</goals>
 						<phase>package</phase>
+						<!-- TODO: Looks like this config can be removed
+						           when we update to apache-10 parent pom -->
 						<configuration>
 							<javaApiLinks>
 								<property>
