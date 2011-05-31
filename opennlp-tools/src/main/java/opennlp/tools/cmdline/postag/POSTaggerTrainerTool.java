@@ -96,6 +96,7 @@ public final class POSTaggerTrainerTool implements CmdLineTool {
       // TODO: Move to util method ...
       POSDictionary tagdict = null;
       if (parameters.getDictionaryPath() != null) {
+        // TODO: Should re-factored as described in OPENNLP-193
         tagdict = new POSDictionary(parameters.getDictionaryPath());
       }
       
