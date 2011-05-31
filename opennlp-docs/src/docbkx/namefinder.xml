@@ -263,44 +263,168 @@ try {
 		
 		<section id="tools.namefind.training.featuregen">
 		<title>Custom Feature Generation</title>
-		<para>
-			OpenNLP defines a default feature generation which is used when no custom feature
-			generation is specified. Users which want to experiment with the feature generation
-			can provide a custom feature generator. The custom generator must be used for training
-			and for detecting the names. If the feature generation during training time and detection
-			time is different the name finder might not be able to detect names.
-			The following lines show how to construct a custom feature generator
-			<programlisting language="java">
-				<![CDATA[
-AdaptiveFeatureGenerator featureGenerator = new CachedFeatureGenerator(
-         new AdaptiveFeatureGenerator[]{
-           new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
-           new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
-           new OutcomePriorFeatureGenerator(),
-           new PreviousMapFeatureGenerator(),
-           new BigramNameFeatureGenerator(),
-           new SentenceFeatureGenerator(true, false)
-           });]]>
-			</programlisting>
-			which is similar to the default feature generator.
-			The javadoc of the feature generator classes explain what the individual feature generators do.
-			To write a custom feature generator please implement the AdaptiveFeatureGenerator interface or
-			if it must not be adaptive extend the FeatureGeneratorAdapter.
-			The train method which should be used is defined as
-			<programlisting language="java">
-				<![CDATA[
+			<para>
+				OpenNLP defines a default feature generation which is used when no custom feature
+				generation is specified. Users which want to experiment with the feature generation
+				can provide a custom feature generator. Either via API or via an xml descriptor file.
+			</para>
+			<section id="tools.namefind.training.featuregen.api">
+			<title>Feature Generation defined by API</title>
+			<para>
+				The custom generator must be used for training
+				and for detecting the names. If the feature generation during training time and detection
+				time is different the name finder might not be able to detect names.
+				The following lines show how to construct a custom feature generator
+				<programlisting language="java">
+					<![CDATA[
+	AdaptiveFeatureGenerator featureGenerator = new CachedFeatureGenerator(
+	         new AdaptiveFeatureGenerator[]{
+	           new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
+	           new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
+	           new OutcomePriorFeatureGenerator(),
+	           new PreviousMapFeatureGenerator(),
+	           new BigramNameFeatureGenerator(),
+	           new SentenceFeatureGenerator(true, false)
+	           });]]>
+				</programlisting>
+				which is similar to the default feature generator.
+				The javadoc of the feature generator classes explain what the individual feature generators do.
+				To write a custom feature generator please implement the AdaptiveFeatureGenerator interface or
+				if it must not be adaptive extend the FeatureGeneratorAdapter.
+				The train method which should be used is defined as
+				<programlisting language="java">
+					<![CDATA[
 public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
        AdaptiveFeatureGenerator generator, final Map<String, Object> resources, 
        int iterations, int cutoff) throws IOException]]>
-			</programlisting>
-			and can take feature generator as an argument.
-			To detect names the model which was returned from the train method and the
-			feature generator must be passed to the NameFinderME constructor.
-			<programlisting language="java">
-				<![CDATA[
+				</programlisting>
+				and can take feature generator as an argument.
+				To detect names the model which was returned from the train method and the
+				feature generator must be passed to the NameFinderME constructor.
+				<programlisting language="java">
+					<![CDATA[
 new NameFinderME(model, featureGenerator, NameFinderME.DEFAULT_BEAM_SIZE);]]>
-			 </programlisting>	 
-		</para>
+				 </programlisting>	 
+			</para>
+			</section>
+			<section id="tools.namefind.training.featuregen.xml">
+			<title>Feature Generation defined by XML Descriptor</title>
+			<para>
+			OpenNLP can also use a xml descritpor file to configure the featuer generation. The descriptor
+			file is stored inside the model after training and the feature generators are configured
+			correctly when the name finder is instantiated.
+			
+			The following sample shows a xml descriptor:
+				<programlisting language="xml">
+					<![CDATA[
+<generators>
+  <cache> 
+    <generators>
+      <window prevLength = "2" nextLength = "2">          
+        <tokenclass/>
+      </window>
+      <window prevLength = "2" nextLength = "2">                
+        <token/>
+      </window>
+      <definition/>
+      <prevmap/>
+      <bigram/>
+      <sentence begin="true" end="false"/>
+    </generators>
+  </cache> 
+</generators>]]>
+				 </programlisting>
+		    The root element must be generators, each sub-element adds a feature generator to the configuration.
+		    The sample xml is equivalent to the generators defined by the API above.
+			</para>
+			<para>
+			The following table shows the supported elements:
+			<table>
+			  <title>Genertor elements</title>
+			  <tgroup cols="2">
+			    <colspec colname="c1"/>
+			    <colspec colname="c2"/>
+			    <thead>
+			      <row>
+				<entry>Element</entry>
+				<entry>Aggregated</entry>
+				<entry>Attributes</entry>
+			      </row>
+			    </thead>
+			    <tbody>
+			      <row>
+					<entry>generators</entry>
+					<entry>yes</entry>
+					<entry>none</entry>
+			      </row>
+			      <row>
+					<entry>cache</entry>
+					<entry>yes</entry>
+					<entry>none</entry>
+			      </row>
+			      <row>
+					<entry>charngram</entry>
+					<entry>no</entry>
+					<entry><emphasis>min</emphasis> and <emphasis>max</emphasis> specify the length of the generated character ngrams</entry>
+			      </row>
+			      <row>
+					<entry>definition</entry>
+					<entry>no</entry>
+					<entry>none</entry>
+			      </row>
+			      <row>
+					<entry>dictionary</entry>
+					<entry>no</entry>
+					<entry><emphasis>dict</emphasis> is the key of the dictionary resource to use,
+					       and <emphasis>prefix</emphasis> is a feature prefix string</entry>
+			      </row>
+			      <row>
+					<entry>prevmap</entry>
+					<entry>no</entry>
+					<entry>none</entry>
+			      </row>
+			      <row>
+					<entry>sentence</entry>
+					<entry>no</entry>
+					<entry><emphasis>begin</emphasis> and <emphasis>end</emphasis> to generate begin or end features, both are optional and are boolean values</entry>
+			      </row>
+			      <row>
+					<entry>tokenclass</entry>
+					<entry>no</entry>
+					<entry>none</entry>
+			      </row>
+			      <row>
+					<entry>token</entry>
+					<entry>no</entry>
+					<entry>none</entry>
+			      </row>
+			      <row>
+					<entry>bigram</entry>
+					<entry>no</entry>
+					<entry>none</entry>
+			      </row>
+			      <row>
+					<entry>tokenpattern</entry>
+					<entry>no</entry>
+					<entry>none</entry>
+			      </row>
+			      <row>
+					<entry>window</entry>
+					<entry>yes</entry>
+					<entry><emphasis>prevLength</emphasis> and <emphasis>nextLength</emphasis> must be integers ans specify the window size</entry>
+			      </row>
+			      <row>
+					<entry>custom</entry>
+					<entry>no</entry>
+					<entry><emphasis>class</emphasis> is the name of the feature generator class whcih will be loaded</entry>
+			      </row>
+			    </tbody>
+			  </tgroup>
+			</table>
+			Aggregated feature generators can contain other generators, like the cache or the window feature
+			generator in the sample.
+			</para>
+			</section>
 		</section>
 	</section>
 	<section id="tools.namefind.eval">
