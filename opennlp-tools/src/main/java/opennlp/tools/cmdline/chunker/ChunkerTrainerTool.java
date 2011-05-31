@@ -22,7 +22,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import opennlp.model.TrainUtil;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkSampleStream;
 import opennlp.tools.chunker.ChunkerME;
