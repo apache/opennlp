@@ -33,8 +33,10 @@ under the License.
 		<section id="tools.parser.parsing.cmdline">
 		<title>Parser Tool</title>
 		<para>
-		The easiest way to try out the Parser is the command line tool. The tool is only intended for demonstration and testing.
-Download the english chunking parser model from the our website and start the Parser Tool with the following command.
+		The easiest way to try out the Parser is the command line tool.
+		The tool is only intended for demonstration and testing.
+		Download the english chunking parser model from the our website and start the Parse
+ 		Tool with the following command.
 				<programlisting>
 				<![CDATA[
 $bin/opennlp Parser en-parser.bin en-parser-chunking.bin]]>
@@ -48,14 +50,16 @@ The quick brown fox jumps over the lazy dog .]]>
 		The parser should now print the following to the console.
 				<programlisting>
 				<![CDATA[
-(TOP (NP (NP (DT The) (JJ quick) (JJ brown) (NN fox) (NNS jumps)) (PP (IN over) (NP (DT the) (JJ lazy) (NN dog))) (. .)))]]>
+(TOP (NP (NP (DT The) (JJ quick) (JJ brown) (NN fox) (NNS jumps)) (PP (IN over) (NP (DT the)
+    (JJ lazy) (NN dog))) (. .)))]]>
 		</programlisting>
 		With the following command the input can be read from a file and be written to an output file.
 				<programlisting>
 				<![CDATA[
 $ bin/opennlp Parser en-parser.bin en-parser-chunking.bin < article-tokenized.txt > article-parsed.txt.]]>
 		</programlisting>
-		The article-tokenized.txt file must contain one sentence per line which is tokenized with the english tokenizer model from our website.
+		The article-tokenized.txt file must contain one sentence per line which is
+		tokenized with the english tokenizer model from our website.
 		See the Tokenizer documentation for further details.
 		</para>
 		</section>
@@ -94,15 +98,20 @@ finally {
 Parser parser = ParserFactory.create(model);]]>
 		</programlisting>
 		Right now the tree insert parser is still experimental and there is no pre-trained model for it.
-		The parser expect a whitespace tokenized sentence. A utility method from the command line tool can parse the sentence String. The following code shows how the parser can be called.
+		The parser expect a whitespace tokenized sentence. A utility method from the command
+		line tool can parse the sentence String. The following code shows how the parser can be called.
 				<programlisting language="java">
 				<![CDATA[
 String sentence = "The quick brown fox jumps over the lazy dog .";
 Parse topParses[] = ParserTool.parseLine(sentence, parser, 1);]]>
 		</programlisting>
 		
-		The topParses array only contains one parse because the number of parses is set to 1. The Parse object contains the parse tree.
-		To display the parse tree call the show method. It either prints the parse to the console or into a provided StringBuffer. Similar to Exception.printStackTrace.
+		The topParses array only contains one parse because the number of parses is set to 1.
+		The Parse object contains the parse tree.
+		To display the parse tree call the show method. It either prints the parse to
+		the console or into a provided StringBuffer. Similar to Exception.printStackTrace.
+		</para>
+		<para>
 		TODO: Extend this section with more information about the Parse object.
 		</para>
 		</section>
@@ -131,13 +140,16 @@ Parse topParses[] = ParserTool.parseLine(sentence, parser, 1);]]>
 		<section id="tools.parser.training.tool">
 		<title>Training Tool</title>
 		<para>
-OpenNLP has a command line tool which is used to train the models available from the model download page on various corpora. The data must be converted to the OpenNLP parser training format, which is shortly explained above.
-To train the parser a head rules file is also needed. (TODO: Add documentation about the head rules file)
-Usage of the tool:
+		OpenNLP has a command line tool which is used to train the models available from the
+		model download page on various corpora. The data must be converted to the OpenNLP parser
+		training format, which is shortly explained above.
+		To train the parser a head rules file is also needed. (TODO: Add documentation about the head rules file)
+		Usage of the tool:
 				<programlisting>
 				<![CDATA[
 $ bin/opennlp ParserTrainer
-Usage: opennlp ParserTrainer-lang language -encoding charset [-iterations num] [-cutoff num] -head-rules head_rules -data trainingData -model model
+Usage: opennlp ParserTrainer-lang language -encoding charset [-iterations num] \ 
+[-cutoff num] -head-rules head_rules -data trainingData -model model
 -lang language     specifies the language which is being processed.
 -encoding charset  specifies the encoding which should be used for reading and writing text.
 -iterations num    specified the number of training iterations
@@ -149,10 +161,14 @@ Usage: opennlp ParserTrainer-lang language -encoding charset [-iterations num] [
 $bin/opennlp ParserTrainer -encoding ISO-8859-1 -lang en -parserType CHUNKING -head-rules head_rules \
     -data train.all -model en-parser-chunking.bin]]>
 		</programlisting>
-		Its also possible to specify the cutoff and the number of iterations, these parameters are used for all trained models. 
-The -parserType parameter is an optional parameter, to use the tree insertion parser, specify TREEINSERT as type.
-The TaggerModelReplacer tool replaces the tagger model inside the parser model with a new one. 
-Note: The original parser model will be overwritten with the new parser model which contains the replaced tagger model.
+		Its also possible to specify the cutoff and the number of iterations, these parameters
+		are used for all trained models. The -parserType parameter is an optional parameter,
+		to use the tree insertion parser, specify TREEINSERT as type. The TaggerModelReplacer
+		tool replaces the tagger model inside the parser model with a new one. 
+		</para>
+		<para>
+		Note: The original parser model will be overwritten with the new parser model which
+		contains the replaced tagger model.
 				<programlisting>
 		<![CDATA[
 $bin/opennlp TaggerModelReplacer  models/en-parser-chunking.bin models/en-pos-maxent.bin]]>
