@@ -36,7 +36,8 @@ under the License.
 			<section id="tools.postagger.tagging.cmdline">
 		<title>POS Tagger Tool</title>
 		<para>
-		The easiest way to try out the POS Tagger is the command line tool. The tool is only intended for demonstration and testing.
+		The easiest way to try out the POS Tagger is the command line tool. The tool is
+		only intended for demonstration and testing.
 		Download the english maxent pos model and start the POS Tagger Tool with this command:
 		<screen>
 			<![CDATA[
@@ -52,10 +53,12 @@ Mr. Vinken is chairman of Elsevier N.V. , the Dutch publishing group .]]>
 		 the POS Tagger will now echo the sentences with pos tags to the console:
 		<programlisting>
 			<![CDATA[
-Pierre_NNP Vinken_NNP ,_, 61_CD years_NNS old_JJ ,_, will_MD join_VB the_DT board_NN as_IN a_DT nonexecutive_JJ director_NN Nov._NNP 29_CD ._.
+Pierre_NNP Vinken_NNP ,_, 61_CD years_NNS old_JJ ,_, will_MD join_VB the_DT board_NN as_IN
+    a_DT nonexecutive_JJ director_NN Nov._NNP 29_CD ._.
 Mr._NNP Vinken_NNP is_VBZ chairman_NN of_IN Elsevier_NNP N.V._NNP ,_, the_DT Dutch_NNP publishing_VBG group_NN]]>
 		 </programlisting> 
-		 The tag set used by the english pos model is the Penn Treebank tag set. See the link below for a description of the tags.
+		 The tag set used by the english pos model is the Penn Treebank tag set.
+		 See the link below for a description of the tags.
 		</para>
       </section>
       
@@ -174,7 +177,8 @@ Usage: opennlp POSTaggerTrainer -lang language -encoding charset [-iterations nu
 		The following command illustrates how an english part-of-speech model can be trained:
 		<screen>
 		  <![CDATA[
-$bin/opennlp POSTaggerTrainer -encoding UTF-8 -lang en -model-type maxent -data en-pos.train -model en-pos-maxent.bin]]>
+$bin/opennlp POSTaggerTrainer -encoding UTF-8 -lang en -model-type maxent -data en-pos.train \ 
+-model en-pos-maxent.bin]]>
 		 </screen>
 		</para>
 		</section>
