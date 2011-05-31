@@ -27,9 +27,11 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.postag.POSDictionary;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.postag.WordTagSampleStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -90,6 +92,24 @@ public final class POSTaggerTrainerTool implements CmdLineTool {
     ObjectStream<POSSample> sampleStream = openSampleData("Training", trainingDataInFile, 
         parameters.getEncoding());
     
+    
+    Dictionary ngramDict = null;
+    
+    String ngramCutoffString = CmdLineUtil.getParameter("-ngram", args);
+    
+    if (ngramCutoffString != null) {
+      System.err.print("Building ngram dictionary ... ");
+      int ngramCutoff = Integer.parseInt(ngramCutoffString);
+      try {
+        ngramDict = POSTaggerME.buildNGramDictionary(sampleStream, ngramCutoff);
+        sampleStream.reset();
+      } catch (IOException e) {
+        CmdLineUtil.printTrainingIoError(e);
+        throw new TerminateToolException(-1);
+      }
+      System.err.println("done");
+    }
+    
     POSModel model;
     try {
       
@@ -103,11 +123,11 @@ public final class POSTaggerTrainerTool implements CmdLineTool {
       if (mlParams == null) {
         // depending on model and sequence choose training method
         model = opennlp.tools.postag.POSTaggerME.train(parameters.getLanguage(),
-             sampleStream, parameters.getModel(), tagdict, null, parameters.getCutoff(), parameters.getNumberOfIterations());
+             sampleStream, parameters.getModel(), tagdict, ngramDict, parameters.getCutoff(), parameters.getNumberOfIterations());
       }
       else {
         model = opennlp.tools.postag.POSTaggerME.train(parameters.getLanguage(),
-            sampleStream, mlParams, tagdict, null);
+            sampleStream, mlParams, tagdict, ngramDict);
       }
     }
     catch (IOException e) {
