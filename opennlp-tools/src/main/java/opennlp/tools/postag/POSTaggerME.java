@@ -30,10 +30,12 @@ import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.TrainUtil;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.util.StringList;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
 
@@ -342,5 +344,23 @@ public class POSTaggerME implements POSTagger {
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
     
     return train(languageCode, samples, params, tagDictionary, ngramDictionary);
+  }
+  
+  public static Dictionary buildNGramDictionary(ObjectStream<POSSample> samples, int cutoff)
+      throws IOException {
+    
+    NGramModel ngramModel = new NGramModel();
+    
+    POSSample sample;
+    while((sample = samples.read()) != null) {
+      String[] words = sample.getSentence();
+      
+      if (words.length > 0)
+        ngramModel.add(new StringList(words), 1, 1);
+    }
+    
+    ngramModel.cutoff(cutoff, Integer.MAX_VALUE);
+    
+    return ngramModel.toDictionary(true);
   }
 }

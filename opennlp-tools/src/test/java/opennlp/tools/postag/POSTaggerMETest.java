@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.model.ModelType;
 
 import org.junit.Test;
@@ -33,19 +34,22 @@ import org.junit.Test;
  */
 public class POSTaggerMETest {
 
+  private static ObjectStream<POSSample> createSampleStream() throws IOException {
+    InputStream in = POSTaggerMETest.class.getClassLoader().getResourceAsStream(
+        "opennlp/tools/postag/AnnotatedSentences.txt");
+    
+    return new WordTagSampleStream((new InputStreamReader(in)));
+  }
+  
   /**
    * Trains a POSModel from the annotated test data.
    *
    * @return
    * @throws IOException
    */
-  // TODO: also use tag dictionary for training
   static POSModel trainPOSModel(ModelType type) throws IOException {
-    InputStream in = POSTaggerMETest.class.getClassLoader().getResourceAsStream(
-        "opennlp/tools/postag/AnnotatedSentences.txt");
-
-    return POSTaggerME.train("en", new WordTagSampleStream((
-        new InputStreamReader(in))), type, null, null, 5, 100);
+    // TODO: also use tag dictionary for training
+    return POSTaggerME.train("en", createSampleStream(), type, null, null, 5, 100);
   }
 
   @Test
@@ -70,5 +74,12 @@ public class POSTaggerMETest {
     assertEquals("RB", tags[3]);
     assertEquals("VBN", tags[4]);
     assertEquals(".", tags[5]);
+  }
+  
+  @Test
+  public void testBuildNGramDictionary() throws IOException {
+    ObjectStream<POSSample> samples = createSampleStream();
+    
+    POSTaggerME.buildNGramDictionary(samples, 0);
   }
 }
