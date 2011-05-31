@@ -518,8 +518,7 @@ public class GeneratorFactory {
     try {
       documentBuilder = documentBuilderFacoty.newDocumentBuilder();
     } catch (ParserConfigurationException e) {
-      e.printStackTrace();
-      documentBuilder = null;
+      throw new IllegalStateException(e);
     }
 
     org.w3c.dom.Document xmlDescriptorDOM;
