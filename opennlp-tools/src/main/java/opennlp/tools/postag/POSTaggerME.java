@@ -47,8 +47,14 @@ import opennlp.tools.util.model.ModelType;
  */
 public class POSTaggerME implements POSTagger {
   
-  private class PosSequenceValidator implements SequenceValidator<String> {
-
+  private static class PosSequenceValidator implements SequenceValidator<String> {
+    
+    private POSDictionary tagDictionary;
+    
+    PosSequenceValidator(POSDictionary tagDictionary) {
+      this.tagDictionary = tagDictionary;
+    }
+    
     public boolean validSequence(int i, String[] inputSequence,
         String[] outcomesSequence, String outcome) {
       if (tagDictionary == null) {
@@ -103,16 +109,14 @@ public class POSTaggerME implements POSTagger {
    */
   protected BeamSearch<String> beam;
 
-  /**
-   * Initializes the current instance with the provided model
-   * and the default beam size of 3.
-   *
-   * @param model
-   */
-  public POSTaggerME(POSModel model) {
-    this(model, DEFAULT_BEAM_SIZE, 0);
+  public POSTaggerME(POSModel model, int beamSize, int cacheSize, SequenceValidator<String> sequenceValidator) {
+    posModel = model.getPosModel();
+    contextGen = new DefaultPOSContextGenerator(beamSize, model.getNgramDictionary());
+    tagDictionary = model.getTagDictionary();
+    size = beamSize;
+    beam = new BeamSearch<String>(size, contextGen, posModel, sequenceValidator, cacheSize);
   }
-
+  
   /**
    * Initializes the current instance with the provided
    * model and provided beam size.
@@ -121,11 +125,17 @@ public class POSTaggerME implements POSTagger {
    * @param beamSize
    */
   public POSTaggerME(POSModel model, int beamSize, int cacheSize) {
-    posModel = model.getPosModel();
-    contextGen = new DefaultPOSContextGenerator(beamSize, model.getNgramDictionary());
-    tagDictionary = model.getTagDictionary();
-    size = beamSize;
-    beam = new BeamSearch<String>(size, contextGen, posModel, new PosSequenceValidator(), cacheSize);
+    this(model, beamSize, cacheSize, new PosSequenceValidator(model.getTagDictionary()));
+  }
+  
+  /**
+   * Initializes the current instance with the provided model
+   * and the default beam size of 3.
+   *
+   * @param model
+   */
+  public POSTaggerME(POSModel model) {
+    this(model, DEFAULT_BEAM_SIZE, 0);
   }
 
   /**
