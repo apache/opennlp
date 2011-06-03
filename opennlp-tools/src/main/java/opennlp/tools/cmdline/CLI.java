@@ -35,6 +35,7 @@ import opennlp.tools.cmdline.doccat.DoccatTool;
 import opennlp.tools.cmdline.doccat.DoccatTrainerTool;
 import opennlp.tools.cmdline.namefind.CensusDictionaryCreatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderConverterTool;
+import opennlp.tools.cmdline.namefind.TokenNameFinderCrossValidatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
@@ -96,6 +97,7 @@ public final class CLI {
     tools.add(new TokenNameFinderTool());
     tools.add(new TokenNameFinderTrainerTool());
     tools.add(new TokenNameFinderEvaluatorTool());
+    tools.add(new TokenNameFinderCrossValidatorTool());
     tools.add(new TokenNameFinderConverterTool());
     tools.add(new CensusDictionaryCreatorTool());
     
