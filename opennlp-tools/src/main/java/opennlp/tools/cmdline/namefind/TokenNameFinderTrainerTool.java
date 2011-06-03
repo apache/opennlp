@@ -22,11 +22,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.model.TrainUtil;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -187,8 +185,9 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
            parameters.getCutoff());
       }
       else {
-        model = opennlp.tools.namefind.NameFinderME.train(parameters.getLanguage(), parameters.getType(), sampleStream, mlParams, null,
-            Collections.<String, Object>emptyMap());
+        model = opennlp.tools.namefind.NameFinderME.train(
+            parameters.getLanguage(), parameters.getType(), sampleStream,
+            mlParams, featureGeneratorBytes, resources);
       }
     } 
     catch (IOException e) {

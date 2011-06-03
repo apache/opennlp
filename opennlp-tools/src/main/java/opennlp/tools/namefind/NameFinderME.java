@@ -19,10 +19,7 @@
 package opennlp.tools.namefind;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,11 +37,8 @@ import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TrainUtil;
 import opennlp.model.TwoPassDataIndexer;
-import opennlp.tools.postag.POSSampleSequenceStream;
 import opennlp.tools.util.BeamSearch;
-import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
@@ -61,8 +55,6 @@ import opennlp.tools.util.featuregen.SentenceFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
-import opennlp.tools.util.model.BaseModel;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * Class for creating a maximum-entropy-based name finder.
@@ -210,6 +202,26 @@ public class NameFinderME implements TokenNameFinder {
            });
   }
   
+  private static AdaptiveFeatureGenerator createFeatureGenerator(
+      byte[] generatorDescriptor, final Map<String, Object> resources)
+      throws IOException {
+    AdaptiveFeatureGenerator featureGenerator;
+
+    if (generatorDescriptor != null) {
+      featureGenerator = GeneratorFactory.create(new ByteArrayInputStream(
+          generatorDescriptor), new FeatureGeneratorResourceProvider() {
+
+        public Object getResource(String key) {
+          return resources.get(key);
+        }
+      });
+    } else {
+      featureGenerator = null;
+    }
+
+    return featureGenerator;
+  }
+  
   public Span[] find(String[] tokens) {
     return find(tokens, EMPTY);
   }
@@ -328,6 +340,26 @@ public class NameFinderME implements TokenNameFinder {
      return sprobs;
    }
 
+   /**
+    * Trains a name finder model.
+    * 
+    * @param languageCode
+    *          the language of the training data
+    * @param type
+    *          null or an override type for all types in the training data
+    * @param samples
+    *          the training data
+    * @param trainParams
+    *          machine learning train parameters
+    * @param generator
+    *          null or the feature generator
+    * @param resources
+    *          the resources for the name finder or null if none
+    * 
+    * @return the newly trained model
+    * 
+    * @throws IOException
+    */
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
        TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources) throws IOException {
      
@@ -357,6 +389,34 @@ public class NameFinderME implements TokenNameFinder {
      return new TokenNameFinderModel(languageCode, nameFinderModel,
          resources, manifestInfoEntries);
    }
+   
+  /**
+   * Trains a name finder model.
+   * 
+   * @param languageCode
+   *          the language of the training data
+   * @param type
+   *          null or an override type for all types in the training data
+   * @param samples
+   *          the training data
+   * @param trainParams
+   *          machine learning train parameters
+   * @param featureGeneratorBytes
+   *          descriptor to configure the feature generation or null
+   * @param resources
+   *          the resources for the name finder or null if none
+   * 
+   * @return the newly trained model
+   * 
+   * @throws IOException
+   */
+  public static TokenNameFinderModel train(String languageCode, String type,
+      ObjectStream<NameSample> samples, TrainingParameters trainParams,
+      byte[] featureGeneratorBytes, final Map<String, Object> resources)
+      throws IOException {
+    return train(languageCode, type, samples, trainParams,
+        createFeatureGenerator(featureGeneratorBytes, resources), resources);
+  }
    
    /**
     * Trains a name finder model.
@@ -403,19 +463,7 @@ public class NameFinderME implements TokenNameFinder {
      
      // TODO: Pass in resource manager ...
      
-     AdaptiveFeatureGenerator featureGenerator;
-     
-     if (generatorDescriptor != null) {
-       featureGenerator = GeneratorFactory.create(new ByteArrayInputStream(generatorDescriptor), new FeatureGeneratorResourceProvider() {
-        
-        public Object getResource(String key) {
-          return resources.get(key);
-        }
-      });
-     }
-     else {
-       featureGenerator = null;
-     }
+     AdaptiveFeatureGenerator featureGenerator = createFeatureGenerator(generatorDescriptor, resources);
      
      TokenNameFinderModel model = train(languageCode, type, samples, featureGenerator,
          resources, iterations, cutoff);
@@ -426,7 +474,6 @@ public class NameFinderME implements TokenNameFinder {
      
      return model;
    }
-   
    
   @Deprecated
   public static GISModel train(EventStream es, int iterations, int cut) throws IOException {
