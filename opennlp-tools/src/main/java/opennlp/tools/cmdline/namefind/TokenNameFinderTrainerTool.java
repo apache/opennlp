@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,6 +67,87 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
     return new NameSampleDataStream(lineStream);
   }
   
+  static byte[] openFeatureGeneratorBytes(String featureGenDescriptorFile) {
+    byte featureGeneratorBytes[] = null;
+    // load descriptor file into memory
+    if (featureGenDescriptorFile != null) {
+      InputStream bytesIn = CmdLineUtil.openInFile(new File(
+          featureGenDescriptorFile));
+
+      try {
+        featureGeneratorBytes = ModelUtil.read(bytesIn);
+      } catch (IOException e) {
+        CmdLineUtil.printTrainingIoError(e);
+        throw new TerminateToolException(-1);
+      } finally {
+        try {
+          bytesIn.close();
+        } catch (IOException e) {
+          // sorry that this can fail
+        }
+      }
+    }
+    return featureGeneratorBytes;
+  }
+  
+  static Map<String, Object> loadResources(String resourceDirectory) {
+    Map<String, Object> resources = new HashMap<String, Object>();
+
+    if (resourceDirectory != null) {
+
+      Map<String, ArtifactSerializer> artifactSerializers = TokenNameFinderModel
+          .createArtifactSerializers();
+
+      File resourcePath = new File(resourceDirectory);
+
+      File resourceFiles[] = resourcePath.listFiles();
+
+      // TODO: Filter files, also files with start with a dot
+      for (File resourceFile : resourceFiles) {
+
+        // TODO: Move extension extracting code to method and
+        // write unit test for it
+
+        // extract file ending
+        String resourceName = resourceFile.getName();
+
+        int lastDot = resourceName.lastIndexOf('.');
+
+        if (lastDot == -1) {
+          continue;
+        }
+
+        String ending = resourceName.substring(lastDot + 1);
+
+        // lookup serializer from map
+        ArtifactSerializer serializer = artifactSerializers.get(ending);
+
+        // TODO: Do different? For now just ignore ....
+        if (serializer == null)
+          continue;
+
+        InputStream resoruceIn = CmdLineUtil.openInFile(resourceFile);
+
+        try {
+          resources.put(resourceName, serializer.create(resoruceIn));
+        } catch (InvalidFormatException e) {
+          // TODO: Fix exception handling
+          e.printStackTrace();
+        } catch (IOException e) {
+          // TODO: Fix exception handling
+          e.printStackTrace();
+        } finally {
+          try {
+            resoruceIn.close();
+          } catch (IOException e) {
+          }
+        }
+      }
+    }
+
+    return resources;
+  }
+  
   public void run(String[] args) {
     
     if (args.length < 8) {
@@ -87,92 +169,15 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
     File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
     
     
-    byte featureGeneratorBytes[] = null;
+    byte featureGeneratorBytes[] = openFeatureGeneratorBytes(parameters.getFeatureGenDescriptorFile());
     
-    // load descriptor file into memory
-    if (parameters.getFeatureGenDescriptorFile() != null) {
-      InputStream bytesIn = 
-          CmdLineUtil.openInFile(new File(parameters.getFeatureGenDescriptorFile()));
-      
-      try {
-        featureGeneratorBytes = ModelUtil.read(bytesIn);
-      } catch (IOException e) {
-        CmdLineUtil.printTrainingIoError(e);
-        throw new TerminateToolException(-1);
-      }
-      finally {
-        try {
-          bytesIn.close();
-        } catch (IOException e) {
-          // sorry that this can fail
-        }
-      }
-    }
     
     // TODO: Support Custom resources: 
     //       Must be loaded into memory, or written to tmp file until descriptor 
     //       is loaded which defines parses when model is loaded
     
-    String resourceDirectory = parameters.getResourceDirectory();
-    
-    Map<String, Object> resources = new HashMap<String, Object>();
-    
-    if (resourceDirectory != null) {
-      
-      Map<String, ArtifactSerializer> artifactSerializers = 
-          TokenNameFinderModel.createArtifactSerializers();
-      
-      File resourcePath = new File(resourceDirectory);
-      
-      File resourceFiles[] = resourcePath.listFiles();
-      
-      // TODO: Filter files, also files with start with a dot
-      for (File resourceFile : resourceFiles) {
+    Map<String, Object> resources = loadResources(parameters.getResourceDirectory());
         
-        // TODO: Move extension extracting code to method and
-        //       write unit test for it
-        
-        // extract file ending
-        String resourceName = resourceFile.getName();
-        
-        int lastDot = resourceName.lastIndexOf('.');
-        
-        if (lastDot == -1) {
-          continue;
-        }
-        
-        String ending = resourceName.substring(lastDot + 1);
-        
-        // lookup serializer from map
-        ArtifactSerializer serializer = artifactSerializers.get(ending);
-        
-        // TODO: Do different? For now just ignore ....
-        if (serializer == null)
-          continue;
-        
-        InputStream resoruceIn = CmdLineUtil.openInFile(resourceFile);
-        
-        try {
-          resources.put(resourceName, serializer.create(resoruceIn));
-        }
-        catch (InvalidFormatException e) {
-          // TODO: Fix exception handling
-          e.printStackTrace();
-        }
-        catch (IOException e) {
-          // TODO: Fix exception handling
-          e.printStackTrace();
-        }
-        finally {
-          try {
-            resoruceIn.close();
-          }
-          catch (IOException e) {
-          }
-        }
-      }
-    }
-    
     CmdLineUtil.checkOutputFile("name finder model", modelOutFile);
     ObjectStream<NameSample> sampleStream = openSampleData("Training", trainingDataInFile,
         parameters.getEncoding());
