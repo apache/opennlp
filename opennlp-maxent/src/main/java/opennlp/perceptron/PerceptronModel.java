@@ -112,13 +112,6 @@ public class PerceptronModel extends AbstractModel {
         normal += prior[oid];
       }
 
-      //for (int oid = 0; oid < numOutcomes; oid++)
-      //  prior[oid] = Math.exp(prior[oid]/maxPrior);
-      //
-      //double normal = 0.0;
-      //for (int oid = 0; oid < numOutcomes; oid++)
-      //  normal += prior[oid];
-
       for (int oid = 0; oid < numOutcomes; oid++)
         prior[oid] /= normal;
     }
