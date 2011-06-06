@@ -57,9 +57,7 @@ public class POSSampleSequenceStream implements SequenceStream {
     String[] sentence = pss.getSource().getSentence();
     String[] tags = tagger.tag(pss.getSource().getSentence());
     Event[] events = new Event[sentence.length];
-    for (int si=0;si<events.length;si++) {
-      POSSampleEventStream.generateEvents(sentence,tags,pcg).toArray(events);
-    }
+    POSSampleEventStream.generateEvents(sentence,tags,pcg).toArray(events);
     return events;
   }
   
