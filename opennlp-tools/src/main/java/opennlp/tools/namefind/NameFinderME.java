@@ -414,8 +414,16 @@ public class NameFinderME implements TokenNameFinder {
       ObjectStream<NameSample> samples, TrainingParameters trainParams,
       byte[] featureGeneratorBytes, final Map<String, Object> resources)
       throws IOException {
-    return train(languageCode, type, samples, trainParams,
+    
+    TokenNameFinderModel model = train(languageCode, type, samples, trainParams,
         createFeatureGenerator(featureGeneratorBytes, resources), resources);
+    
+    // place the descriptor in the model
+    if (featureGeneratorBytes != null) {
+      model = model.updateFeatureGenerator(featureGeneratorBytes);
+    }
+    
+    return model;
   }
    
    /**
