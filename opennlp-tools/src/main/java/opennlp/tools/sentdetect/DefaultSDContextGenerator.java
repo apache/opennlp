@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * Generate event contexts for maxent decisions for sentence detection.
  *
@@ -96,9 +98,9 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
 
     int lastIndex = sb.length() - 1;
     { // compute space previous and space next features.
-      if (position > 0 && sb.charAt(position - 1) == ' ')
+      if (position > 0 && StringUtil.isWhitespace(sb.charAt(position - 1)))
         collectFeats.add("sp");
-      if (position < lastIndex && sb.charAt(position + 1) == ' ')
+      if (position < lastIndex && StringUtil.isWhitespace(sb.charAt(position + 1)))
         collectFeats.add("sn");
       collectFeats.add("eos=" + sb.charAt(position));
     }
