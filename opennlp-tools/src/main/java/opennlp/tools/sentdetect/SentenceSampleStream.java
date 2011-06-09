@@ -33,7 +33,7 @@ import opennlp.tools.util.Span;
 public class SentenceSampleStream extends FilterObjectStream<String, SentenceSample> {
 
   public SentenceSampleStream(ObjectStream<String> sentences) {
-    super(sentences);
+    super(new EmptyLinePreprocessorStream(sentences));
   }
 
   public SentenceSample read() throws IOException {
