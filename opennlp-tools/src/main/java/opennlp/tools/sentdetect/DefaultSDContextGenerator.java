@@ -229,11 +229,11 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    */
   private static final int previousSpaceIndex(CharSequence sb, int seek) {
     seek--;
-    while (seek > 0 && sb.charAt(seek) != ' ') {
+    while (seek > 0 && !StringUtil.isWhitespace(sb.charAt(seek))) {
       seek--;
     }
-    if (seek > 0 && sb.charAt(seek) == ' ') {
-      while (seek > 0 && sb.charAt(seek - 1) == ' ')
+    if (seek > 0 && StringUtil.isWhitespace(sb.charAt(seek))) {
+      while (seek > 0 && StringUtil.isWhitespace(sb.charAt(seek - 1)))
         seek--;
       return seek;
     }
@@ -253,8 +253,8 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     char c;
     while (seek < lastIndex) {
       c = sb.charAt(seek);
-      if (c == ' ' || c == '\n') {
-        while (sb.length() > seek + 1 && sb.charAt(seek + 1) == ' ')
+      if (StringUtil.isWhitespace(c)) {
+        while (sb.length() > seek + 1 && StringUtil.isWhitespace(sb.charAt(seek + 1)))
           seek++;
         return seek;
       }
