@@ -57,7 +57,7 @@ public class PerceptronPrepAttachTest extends TestCase {
     double accuracy = correct/(double)total;
     System.out.println("Accuracy on PPA devset: (" + correct + "/" + total + ") " + accuracy);
 
-    assertEquals(accuracy, 0.7813815300817034);
+    assertEquals(accuracy, 0.7813815300817034, .00001);
   }
 
   private static List<Event> readPpaFile (String filename) throws IOException {
