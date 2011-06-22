@@ -135,7 +135,7 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
     GIS.PRINT_MESSAGES = false;
 
     SentenceModel sentenceModel = SentenceDetectorME.train(language,
-        ObjectStreamUtils.createObjectStream(sentenceSamples), false, null);
+        ObjectStreamUtils.createObjectStream(sentenceSamples), true, null);
     
     // dereference to allow garbage collection
     sentenceSamples = null;
