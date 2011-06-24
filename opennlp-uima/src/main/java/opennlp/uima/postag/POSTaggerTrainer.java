@@ -197,7 +197,7 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
       String tag = tokenAnnotation.getFeatureValueAsString(mPOSFeature);
       
       tokens.add(tokenAnnotation.getCoveredText().trim());
-      tokens.add(tag);
+      tags.add(tag);
     }
     
     mPOSSamples.add(new POSSample(tokens, tags));
