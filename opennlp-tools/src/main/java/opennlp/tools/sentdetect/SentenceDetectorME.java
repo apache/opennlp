@@ -183,10 +183,10 @@ public class SentenceDetectorME implements SentenceDetector {
         int start = 0;
         int end = s.length();
 
-        while (start < s.length() && Character.isWhitespace(s.charAt(start)))
+        while (start < s.length() && StringUtil.isWhitespace(s.charAt(start)))
           start++;
         
-        while (end > 0 && Character.isWhitespace(s.charAt(end - 1)))
+        while (end > 0 && StringUtil.isWhitespace(s.charAt(end - 1)))
           end--;
         
         if ((end - start) > 0)
@@ -203,14 +203,14 @@ public class SentenceDetectorME implements SentenceDetector {
       if (si==0) {
         start = 0;
         
-        while (si < starts.length && Character.isWhitespace(s.charAt(start)))
+        while (si < starts.length && StringUtil.isWhitespace(s.charAt(start)))
           start++;
       }
       else {
         start = starts[si-1];
       }
       end = starts[si];
-      while (end > 0 && Character.isWhitespace(s.charAt(end-1))) {
+      while (end > 0 && StringUtil.isWhitespace(s.charAt(end-1))) {
         end--;
       }
       spans[si]=new Span(start,end);
