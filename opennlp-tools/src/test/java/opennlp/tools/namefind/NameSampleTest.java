@@ -19,6 +19,9 @@
 package opennlp.tools.namefind;
 
 import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+
 import opennlp.tools.util.Span;
 
 import org.junit.Test;
@@ -120,5 +123,72 @@ public class NameSampleTest {
     NameSample test = NameSample.parse(line, false);
     
     assertEquals(8, test.getSentence().length);
+  }
+  
+  /**
+   * Checks if it accepts name type with some special characters
+   */
+  @Test
+  public void testTypeWithSpecialChars() throws Exception {
+    NameSample parsedSample = NameSample
+        .parse(
+            "<START:type-1> U . S . <END> "
+                + "President <START:type_2> Barack Obama <END> is considering sending "
+                + "additional American forces to <START:type_3-/;.,&%$> Afghanistan <END> .",
+            false);
+
+    assertEquals(3, parsedSample.getNames().length);
+    assertEquals("type-1", parsedSample.getNames()[0].getType());
+    assertEquals("type_2", parsedSample.getNames()[1].getType());
+    assertEquals("type_3-/;.,&%$", parsedSample.getNames()[2].getType());
+  }
+  
+  /**
+   * Test if it fails to parse empty type
+   */
+  @Test(expected=IOException.class)
+  public void testMissingType() throws Exception {
+    NameSample.parse("<START:> token <END>", 
+        false);
+  }
+  
+  /**
+   * Test if it fails to parse type with space
+   * @throws Exception
+   */
+  @Test(expected=IOException.class)
+  public void testTypeWithSpace() throws Exception {
+    NameSample.parse("<START:abc a> token <END>", 
+        false);
+  }
+
+  /**
+   * Test if it fails to parse type with new line
+   * @throws Exception
+   */
+  @Test(expected=IOException.class)
+  public void testTypeWithNewLine() throws Exception {
+    NameSample.parse("<START:abc\na> token <END>", 
+        false);
+  }
+
+  /**
+   * Test if it fails to parse type with :
+   * @throws Exception
+   */
+  @Test(expected=IOException.class)
+  public void testTypeWithInvalidChar1() throws Exception {
+    NameSample.parse("<START:abc:a> token <END>", 
+        false);
+  }
+  
+  /**
+   * Test if it fails to parse type with >
+   * @throws Exception
+   */
+  @Test(expected=IOException.class)
+  public void testTypeWithInvalidChar2() throws Exception {
+    NameSample.parse("<START:abc>a> token <END>", 
+        false);
   }
 }

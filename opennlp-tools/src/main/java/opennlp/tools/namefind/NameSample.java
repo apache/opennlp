@@ -186,6 +186,8 @@ public class NameSample {
     return errorString.toString();
   }
   
+  private static final Pattern START_TAG_PATTERN = Pattern.compile("<START(:([^:>\\s]*))?>");
+  
   public static NameSample parse(String taggedTokens, boolean isClearAdaptiveData)
     // TODO: Should throw another exception, and then convert it into an IOException in the stream
     throws IOException {
@@ -202,10 +204,8 @@ public class NameSample {
     // leave the NameType property of NameSample null.
     boolean catchingName = false;
     
-    Pattern startTagPattern = Pattern.compile("<START(:(\\w*))?>");
-    
     for (int pi = 0; pi < parts.length; pi++) {
-      Matcher startMatcher = startTagPattern.matcher(parts[pi]);
+      Matcher startMatcher = START_TAG_PATTERN.matcher(parts[pi]);
       if (startMatcher.matches()) {
         if(catchingName) {
           throw new IOException("Found unexpected annotation" + 
