@@ -67,9 +67,7 @@ public class NameSampleSequenceStream implements SequenceStream {
     String[] tags = NameFinderEventStream.generateOutcomes(tagger.find(sentence), null, sentence.length);
     Event[] events = new Event[sentence.length];
     
-    for (int si=0;si<events.length;si++) {
-      NameFinderEventStream.generateEvents(sentence,tags,pcg).toArray(events);
-    }
+    NameFinderEventStream.generateEvents(sentence,tags,pcg).toArray(events);
     
     return events;
   }
