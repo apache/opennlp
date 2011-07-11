@@ -199,8 +199,9 @@ Path: en-sent.bin
 			The following sample code illustrates these steps:
 					<programlisting language="java">
 				<![CDATA[
+Charset charset = Charset.forName("UTF-8");				
 ObjectStream<String> lineStream = new PlainTextByLineStream(new FileInputStream("en-sent.train"),
-    Charset.forName("UTF-8"));
+    charset);
 ObjectStream<SentenceSample> sampleStream = new SentenceSampleStream(lineStream);
 
 SentenceModel model;
