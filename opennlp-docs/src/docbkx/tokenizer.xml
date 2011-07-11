@@ -364,5 +364,11 @@ He said "This is a test".]]>
 		</programlisting>
 		TODO: Add documentation about the dictionary format and how to use the API. Contributions are welcome.	
 		</para>
+		<section id="tools.tokenizer.detokenizing.api">
+			<title>Detokenizing API</title>
+			<para>TODO: Write documentation about the detokenizer api. Any contributions
+are very welcome. If you want to contribute please contact us on the mailing list
+or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-216">OPENNLP-216</ulink>.</para>
+		</section>
 	</section>
 </chapter>
