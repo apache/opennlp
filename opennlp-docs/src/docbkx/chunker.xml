@@ -150,6 +150,13 @@ bin/opennlp ChunkerTrainerME -encoding UTF-8 -lang en -data en-chunker.train -mo
 		all types in the training data with a single type.
 		</para>
 		</section>
+				<section id="tools.chunker.training.api">
+		<title>Training API</title>
+		<para>TODO: Write documentation about the chunker training api. Any contributions
+			  are very welcome. If you want to contribute please contact us on the mailing list
+			  or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-218">OPENNLP-218</ulink>.
+		</para>
+		</section>
 	</section>
 	
 	<section id="tools.chunker.evaluation">
