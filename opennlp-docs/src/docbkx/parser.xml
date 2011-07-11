@@ -176,5 +176,12 @@ $bin/opennlp TaggerModelReplacer  models/en-parser-chunking.bin models/en-pos-ma
 		Additionally there are tools to just retrain the build or the check model.
 		</para>
 		</section>
+		<section id="tools.parser.training.api">
+		<title>Training API</title>
+		<para>TODO: Write documentation about the parser training api. Any contributions
+			  are very welcome. If you want to contribute please contact us on the mailing list
+			  or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-219">OPENNLP-219</ulink>.
+		</para>
+		</section>
 	</section>
 </chapter>
