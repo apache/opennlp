@@ -243,12 +243,20 @@ $bin/opennlp TokenNameFinderTrainer -encoding UTF-8 -lang en -data en-ner-person
 			The three steps are illustrated by the following sample code:
 			<programlisting language="java">
 				<![CDATA[
+Charset charset = Charset.forName("UTF-8");
 ObjectStream<String> lineStream =
-		new PlainTextByLineStream(new FileInputStream("en-ner-person.train"), "UTF-8");
+		new PlainTextByLineStream(new FileInputStream("en-ner-person.train"), charset);
 ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream);
 
-TokenNameFinderModel model = NameFinderME.train("en", "person", sampleStream,
-		Collections.<String, Object>emptyMap(), 100, 5);
+TokenNameFinderModel model;
+
+try {
+  model = NameFinderME.train("en", "person", sampleStream,
+      Collections.<String, Object>emptyMap(), 100, 5);
+}
+finally {
+  sampleStream.close();
+}
 
 try {
   modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
