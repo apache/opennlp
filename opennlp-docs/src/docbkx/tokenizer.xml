@@ -370,5 +370,11 @@ He said "This is a test".]]>
 are very welcome. If you want to contribute please contact us on the mailing list
 or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-216">OPENNLP-216</ulink>.</para>
 		</section>
+		<section id="tools.tokenizer.detokenizing.dict">
+			<title>Detokenizer Dictionary</title>
+			<para>TODO: Write documentation about the detokenizer dictionary. Any contributions
+are very welcome. If you want to contribute please contact us on the mailing list
+or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-217">OPENNLP-217</ulink>.</para>
+		</section>
 	</section>
 </chapter>
