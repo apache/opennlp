@@ -79,7 +79,7 @@ A form of asbestos once used to make Kent cigarette filters has caused a high
 			each
 			sentence are identified.
 		</para>
-	</section>
+	
 	<section id="tools.tokenizer.cmdline">
 		<title>Tokenizer Tools</title>
 		<para>The easiest way to try out the tokenizers are the command line
@@ -221,17 +221,22 @@ double tokenProbs[] = tokenizer.getTokenProbabilities();
 			and 0 the lowest possible probability.
 		</para>
 	</section>
-	<section id="tools.tokenizer.cmdline.training">
-		<title>Training Tool</title>
-		<para>
-			OpenNLP has a command line tool which is used to train the models
-			available from the model download page on various corpora. The data
-			must be converted to the OpenNLP Tokenizer training format. Which is
-			one sentence per line. Tokens are either separater by a whitespace or
-			if by a special &lt;SPLIT&gt; tag.
+	</section>
+	
+	<section id="tools.tokenizer.training">
+		<title>Tokenizer Training</title>
 			
-			The following sample shows the sample from above in the correct format.
-						<programlisting>
+		<section id="tools.tokenizer.training.tool">
+			<title>Training Tool</title>
+			<para>
+				OpenNLP has a command line tool which is used to train the models
+				available from the model download page on various corpora. The data
+				must be converted to the OpenNLP Tokenizer training format. Which is
+				one sentence per line. Tokens are either separater by a whitespace or
+				if by a special &lt;SPLIT&gt; tag.
+				
+				The following sample shows the sample from above in the correct format.
+				<programlisting>
 			<![CDATA[
 Pierre Vinken<SPLIT>, 61 years old<SPLIT>, will join the board as a nonexecutive director Nov. 29<SPLIT>.
 Mr. Vinken is chairman of Elsevier N.V.<SPLIT>, the Dutch publishing group<SPLIT>.
@@ -251,9 +256,9 @@ Usage: opennlp TokenizerTrainer-lang language -encoding charset [-iterations num
 -cutoff num        specifies the min number of times a feature must be seen
 -alphaNumOpt Optimization flag to skip alpha numeric tokens for further tokenization
 			]]>		
-			</screen>
-			To train the english tokenizer use the following command:
-			<screen>
+				</screen>
+				To train the english tokenizer use the following command:
+				<screen>
 			<![CDATA[
 $ bin/opennlp TokenizerTrainer -encoding UTF-8 -lang en -alphaNumOpt \ 
 +-data en-token.train -model en-token.bin
@@ -288,9 +293,17 @@ Performing 100 iterations.
 Wrote tokenizer model.
 Path: en-token.bin
 			]]>		
-			</screen>
-		</para>
+				</screen>
+			</para>
+		</section>
+		<section id="tools.tokenizer.training.api">
+			<title>Training API</title>
+			<para>TODO: Write documentation about the tokenizer training api. Any contributions
+are very welcome. If you want to contribute please contact us on the mailing list
+or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-215">OPENNLP-215</ulink>.</para>
+		</section>
 	</section>
+	
 	<section id="tools.tokenizer.detokenizing">
 		<title>Detokenizing</title>
 		<para>
