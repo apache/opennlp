@@ -114,7 +114,7 @@ $bin/opennlp DoccatTrainer -encoding UTF-8 -lang en -data en-doccat.train -model
 		Additionally it is possible to specify the number of iterations, and the cutoff.
 		</para>
 		</section>
-				<section id="tools.postagger.training.api">
+				<section id="tools.doccat.training.api">
 		<title>Training API</title>
 		<para>
 		So, naturally you will need some access to many pre-classified events to train your model.
