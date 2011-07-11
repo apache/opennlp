@@ -122,7 +122,7 @@ Span sentences[] = sentenceDetector.sentPosDetect("  First sentence. Second sent
 	<section id="tools.sentdetect.training">
 		<title>Sentence Detector Training</title>
 		<para></para>
-		<section id="tools.namefind.training.tool">
+		<section id="tools.sentdetect.training.tool">
 		<title>Training Tool</title>
 		<para>
 		OpenNLP has a command line tool which is used to train the models available from the model
