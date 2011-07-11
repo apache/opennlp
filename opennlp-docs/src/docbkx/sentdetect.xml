@@ -200,11 +200,19 @@ Path: en-sent.bin
 					<programlisting language="java">
 				<![CDATA[
 ObjectStream<String> lineStream = new PlainTextByLineStream(new FileInputStream("en-sent.train"),
-    "UTF-8");
+    Charset.forName("UTF-8"));
 ObjectStream<SentenceSample> sampleStream = new SentenceSampleStream(lineStream);
 
-SentenceModel model = SentenceDetectorME.train("en",sampleStream, true, null, 5, 100);
+SentenceModel model;
 
+try {
+  model = SentenceDetectorME.train("en", sampleStream, true, null, 5, 100);
+}
+finally {
+  sampleStream.close();
+}
+
+OutputStream modelOut = null;
 try {
   modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
   model.serialize(modelOut);
