@@ -21,9 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.BasicEvaluationParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameFinderME;
@@ -42,28 +43,27 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
   }
 
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName()
-        + " -encoding charset -model model -data testData";
+    return "Usage: " + CLI.CMD + " " + getName() + " "
+        + ArgumentParser.createUsage(BasicEvaluationParameters.class);
   }
 
   public void run(String[] args) {
 
-    if (args.length != 6) {
-      System.out.println(getHelp());
+    if (!ArgumentParser
+        .validateArguments(args, BasicEvaluationParameters.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
 
-    File testData = new File(CmdLineUtil.getParameter("-data", args));
-    CmdLineUtil.checkInputFile("Test data", testData);
+    BasicEvaluationParameters params = ArgumentParser.parse(args,
+        BasicEvaluationParameters.class);
 
-    Charset encoding = CmdLineUtil.getEncodingParameter(args);
+    File testData = params.getData();
 
-    if (encoding == null) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    Charset encoding = params.getEncoding();
 
-    TokenNameFinderModel model = new TokenNameFinderModelLoader().load(new File(CmdLineUtil.getParameter("-model", args)));
+    TokenNameFinderModel model = new TokenNameFinderModelLoader().load(params
+        .getModel());
 
     opennlp.tools.namefind.TokenNameFinderEvaluator evaluator = new opennlp.tools.namefind.TokenNameFinderEvaluator(
         new NameFinderME(model));
