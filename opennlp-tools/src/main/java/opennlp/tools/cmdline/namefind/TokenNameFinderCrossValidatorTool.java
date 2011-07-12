@@ -19,8 +19,11 @@ package opennlp.tools.cmdline.namefind;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Map;
 
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.BasicCrossValidatorParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -30,6 +33,10 @@ import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.util.ObjectStream;
 
 public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
+  
+  interface Parameters extends TrainingParametersI, BasicCrossValidatorParameters{
+    
+  }
 
   public String getName() {
     return "TokenNameFinderCrossValidator";
@@ -46,44 +53,39 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
   }
 
   public void run(String[] args) {
-    if (args.length < 6) {
-      System.out.println(getHelp());
+    if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
-
-    TrainingParameters parameters = new TrainingParameters(args);
-
-    if (!parameters.isValid()) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    
+    Parameters params = ArgumentParser.parse(args, Parameters.class);
 
     opennlp.tools.util.TrainingParameters mlParams = CmdLineUtil
-        .loadTrainingParameters(CmdLineUtil.getParameter("-params", args),
-            false);
+        .loadTrainingParameters(params.getParams(),false);
 
     byte featureGeneratorBytes[] = TokenNameFinderTrainerTool
-        .openFeatureGeneratorBytes(parameters.getFeatureGenDescriptorFile());
+        .openFeatureGeneratorBytes(params.getFeaturegen());
 
     Map<String, Object> resources = TokenNameFinderTrainerTool
-        .loadResources(parameters.getResourceDirectory());
+        .loadResources(params.getResources());
 
-    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
+    File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
+    
+    Charset encoding = params.getEncoding();
 
     ObjectStream<NameSample> sampleStream = TokenNameFinderTrainerTool
-        .openSampleData("Training Data", trainingDataInFile,
-            parameters.getEncoding());
+        .openSampleData("Training Data", trainingDataInFile, encoding);
 
     TokenNameFinderCrossValidator validator;
 
     try {
       if (mlParams == null) {
-        validator = new TokenNameFinderCrossValidator(parameters.getLanguage(), parameters.getType(),
-             featureGeneratorBytes, resources, parameters.getNumberOfIterations(),
-            parameters.getCutoff());
+        validator = new TokenNameFinderCrossValidator(params.getLang(), params.getType(),
+             featureGeneratorBytes, resources, params.getIterations(),
+            params.getCutoff());
       } else {
-        validator = new TokenNameFinderCrossValidator(parameters.getLanguage(), parameters.getType(), mlParams,
+        validator = new TokenNameFinderCrossValidator(params.getLang(), params.getType(), mlParams,
             featureGeneratorBytes, resources);
       }
       validator.evaluate(sampleStream, 10);

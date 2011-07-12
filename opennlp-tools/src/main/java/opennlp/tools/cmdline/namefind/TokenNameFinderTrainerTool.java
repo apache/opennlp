@@ -22,7 +22,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,11 +67,14 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
   }
   
   static byte[] openFeatureGeneratorBytes(String featureGenDescriptorFile) {
+    return openFeatureGeneratorBytes(featureGenDescriptorFile);
+  }
+  
+  static byte[] openFeatureGeneratorBytes(File featureGenDescriptorFile) {
     byte featureGeneratorBytes[] = null;
     // load descriptor file into memory
     if (featureGenDescriptorFile != null) {
-      InputStream bytesIn = CmdLineUtil.openInFile(new File(
-          featureGenDescriptorFile));
+      InputStream bytesIn = CmdLineUtil.openInFile(featureGenDescriptorFile);
 
       try {
         featureGeneratorBytes = ModelUtil.read(bytesIn);
@@ -90,15 +92,13 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
     return featureGeneratorBytes;
   }
   
-  static Map<String, Object> loadResources(String resourceDirectory) {
+  static Map<String, Object> loadResources(File resourcePath) {
     Map<String, Object> resources = new HashMap<String, Object>();
 
-    if (resourceDirectory != null) {
+    if (resourcePath != null) {
 
       Map<String, ArtifactSerializer> artifactSerializers = TokenNameFinderModel
           .createArtifactSerializers();
-
-      File resourcePath = new File(resourceDirectory);
 
       File resourceFiles[] = resourcePath.listFiles();
 
@@ -144,8 +144,17 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
         }
       }
     }
-
     return resources;
+  }
+  
+  static Map<String, Object> loadResources(String resourceDirectory) {
+
+    if (resourceDirectory != null) {
+      File resourcePath = new File(resourceDirectory);
+      return loadResources(resourcePath);
+    }
+
+    return new HashMap<String, Object>();
   }
   
   public void run(String[] args) {
