@@ -23,6 +23,7 @@ import java.util.Map;
 
 import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.cmdline.ObjectStreamFactory;
+import opennlp.tools.formats.BioNLP2004NameSampleStreamFactory;
 import opennlp.tools.formats.Conll02NameSampleStreamFactory;
 import opennlp.tools.formats.Conll03NameSampleStreamFactory;
 import opennlp.tools.formats.ad.ADNameSampleStreamFactory;
@@ -43,6 +44,7 @@ public class TokenNameFinderConverterTool extends AbstractConverterTool<NameSamp
     mutableStreamFactories.put("conll02", new Conll02NameSampleStreamFactory());
     mutableStreamFactories.put("conll03", new Conll03NameSampleStreamFactory());
     mutableStreamFactories.put("ad", new ADNameSampleStreamFactory());
+    mutableStreamFactories.put("bionlp2004", new BioNLP2004NameSampleStreamFactory());
     
     streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
   }
