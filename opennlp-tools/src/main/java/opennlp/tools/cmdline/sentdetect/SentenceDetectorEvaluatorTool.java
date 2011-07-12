@@ -42,10 +42,10 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
     
     @ParameterDescription(valueName = "charsetName", description = "specifies the encoding which should be used for reading and writing text")
     @OptionalParameter(defaultValue="UTF-8")
-    String getEncoding();
+    Charset getEncoding();
     
     @ParameterDescription(valueName = "model")
-    String getModel();
+    File getModel();
     
     @ParameterDescription(valueName = "data")
     String getData();
@@ -72,14 +72,14 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     
-    Charset encoding = Charset.forName(params.getEncoding());
+    Charset encoding = params.getEncoding();
     
     if (encoding == null) {
       System.out.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    SentenceModel model = new SentenceModelLoader().load(new File(params.getModel()));
+    SentenceModel model = new SentenceModelLoader().load(params.getModel());
     
     File trainingDataInFile = new File(params.getData());
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
