@@ -40,7 +40,19 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    * predicted tokens.
    */
   private Tokenizer tokenizer;
-
+  
+  /**
+   * Initializes the current instance with the
+   * given {@link Tokenizer}.
+   *
+   * @param tokenizer the {@link Tokenizer} to evaluate.
+   * @param printError should print detailed output
+   */
+  public TokenizerEvaluator(Tokenizer tokenizer, boolean printErrors) {
+    super(printErrors);
+    this.tokenizer = tokenizer;
+  }
+  
   /**
    * Initializes the current instance with the
    * given {@link Tokenizer}.
@@ -48,6 +60,7 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    * @param tokenizer the {@link Tokenizer} to evaluate.
    */
   public TokenizerEvaluator(Tokenizer tokenizer) {
+    super();
     this.tokenizer = tokenizer;
   }
 
@@ -61,9 +74,17 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    * @param reference the reference {@link TokenSample}.
    */
   public void evaluateSample(TokenSample reference) {
-    Span predictedSpans[] = tokenizer.tokenizePos(reference.getText());
+    Span predictions[] = tokenizer.tokenizePos(reference.getText());
 
-    fmeasure.updateScores(reference.getTokenSpans(), predictedSpans);
+    Span[] references = reference.getTokenSpans();
+
+    if (isPrintError()) {
+      String doc = reference.getText();
+      printErrors(references, predictions, reference, new TokenSample(doc,
+          predictions), doc);
+    }
+
+    fmeasure.updateScores(reference.getTokenSpans(), predictions);
   }
   
   public FMeasure getFMeasure() {

@@ -84,7 +84,7 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
     }
       
     try {
-      validator.evaluate(sampleStream, 10);
+      validator.evaluate(sampleStream, 10, params.getPrintErrors());
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
