@@ -19,7 +19,6 @@ package opennlp.tools.cmdline;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
@@ -84,12 +83,12 @@ public class ArgumentParserTest {
     assertEquals(false, args.getAlphaNumOpt());
   }
   
-  @Test
+  @Test(expected = IllegalArgumentException.class)
   public void testSimpleArgumentsMissingEncoding() {
     String argsString = "-alphaNumOpt false";
     
     assertFalse(ArgumentParser.validateArguments(argsString.split(" "), SimpleArguments.class));
-    assertNull(ArgumentParser.parse(argsString.split(" "), SimpleArguments.class));
+    ArgumentParser.parse(argsString.split(" "), SimpleArguments.class);
   }
   
   @Test

@@ -72,7 +72,7 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
     File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
-    Charset encoding = Charset.forName(params.getEncoding());
+    Charset encoding = params.getEncoding();
     
     ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Training Data",
         trainingDataInFile, encoding);

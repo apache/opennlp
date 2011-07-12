@@ -22,8 +22,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,7 +42,7 @@ import java.util.Set;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ArgumentParser implements InvocationHandler {
+public class ArgumentParser {
 
   public @Retention(RetentionPolicy.RUNTIME)
   @interface OptionalParameter {
@@ -53,20 +55,102 @@ public class ArgumentParser implements InvocationHandler {
     public String description() default "";
   }
   
+  private interface ArgumentFactory {
+    
+    static final String INVALID_ARG = "Invalid argument: %s %s \n";
+    
+    Object parseArgument(Method method, String argName, String argValue);
+  }
+ 
+  private static class IntegerArgumentFactory  implements ArgumentFactory {
+
+    public Object parseArgument(Method method, String argName, String argValue) {
+      
+      Object value = null;
+      
+      try {
+        value = Integer.parseInt(argValue);
+      }
+      catch (NumberFormatException e) {
+        throw new TerminateToolException(-1, String.format(INVALID_ARG, argName, argValue) +
+            "Value must be an integer!");
+      }
+      
+      return value;
+    }
+  }
+ 
+  private static class BooleanArgumentFactory implements ArgumentFactory {
+
+    public Object parseArgument(Method method, String argName, String argValue) {
+      return Boolean.parseBoolean(argValue);
+    }
+  } 
   
-  private final Map<String, Object> arguments;
+  private static class StringArgumentFactory implements ArgumentFactory {
+    
+    public Object parseArgument(Method method, String argName, String argValue) {
+      return argValue;
+    }
+  } 
   
-  private ArgumentParser(Map<String, Object> arguments) {
-    this.arguments = arguments;
+  private static class FileArgumentFactory implements ArgumentFactory {
+    
+    public Object parseArgument(Method method, String argName, String argValue) {
+      return new File(argValue);
+    }
+  } 
+  
+  private static class CharsetArgumentFactory implements ArgumentFactory {
+    
+    public Object parseArgument(Method method, String argName, String charsetName) {
+      
+      try {
+        if (Charset.isSupported(charsetName)) {
+          return Charset.forName(charsetName);
+        } else {
+          throw new TerminateToolException(-1,  String.format(INVALID_ARG, argName, charsetName) + 
+              "Encoding not supported on this platform.");
+        }
+      } catch (IllegalCharsetNameException e) {
+        throw new TerminateToolException(-1, String.format(INVALID_ARG, argName, charsetName) + 
+            "Illegal encoding name.");
+      }
+    }
+  } 
+  
+  private static class ArgumentProxy implements InvocationHandler {
+    
+    private final Map<String, Object> arguments;
+    
+    ArgumentProxy(Map<String, Object> arguments) {
+      this.arguments = arguments;
+    }
+    
+    public Object invoke(Object proxy, Method method, Object[] args)
+        throws Throwable {
+      
+      if (args != null)
+        throw new IllegalStateException();
+      
+      return arguments.get(method.getName());
+    }
   }
   
-  public Object invoke(Object proxy, Method method, Object[] args)
-      throws Throwable {
+  private static final Map<Class<?>, ArgumentFactory> argumentFactories;
+  
+  static {
+    Map<Class<?>, ArgumentFactory> factories = new HashMap<Class<?>, ArgumentParser.ArgumentFactory>();
+    factories.put(Integer.class, new IntegerArgumentFactory());
+    factories.put(Boolean.class, new BooleanArgumentFactory());
+    factories.put(String.class, new StringArgumentFactory());
+    factories.put(File.class, new FileArgumentFactory());
+    factories.put(Charset.class, new CharsetArgumentFactory());
     
-    if (args != null)
-      throw new IllegalStateException();
-    
-    return arguments.get(method.getName());
+    argumentFactories = Collections.unmodifiableMap(factories);
+  }
+  
+  private ArgumentParser() {
   }
   
   private static <T> void checkProxyInterface(Class<T> proxyInterface) {
@@ -93,11 +177,7 @@ public class ArgumentParser implements InvocationHandler {
       // check return types of interface
       Class<?> returnType = method.getReturnType();
       
-      Set<Class<?>> compatibleReturnTypes = new HashSet<Class<?>>();
-      compatibleReturnTypes.add(Integer.class);
-      compatibleReturnTypes.add(Boolean.class);
-      compatibleReturnTypes.add(String.class);
-      compatibleReturnTypes.add(File.class);
+      Set<Class<?>> compatibleReturnTypes = argumentFactories.keySet();
       
       if(!compatibleReturnTypes.contains(returnType))
          throw new IllegalArgumentException(method.getName() + " method must have compatible return type!");
@@ -150,20 +230,13 @@ public class ArgumentParser implements InvocationHandler {
     return usage.toString();
   }
   
-  /**
-   * Converts the options to their method names and maps
-   * the method names to their return value.
-   * 
-   * @return the mapping or null if arguments are invalid
-   */
-  private static <T> Map<String, Object> createArgumentMap(String args[], Class<T> argProxyInterface) {
+  public static <T> boolean validateArguments(String args[], Class<T> argProxyInterface) {
     
     // number of parameters must be at least 2 and always be even
     if (args.length < 2 || args.length % 2 != 0)
-      return null;
+      return false;
     
-    // create argument map
-    Map<String, Object> arguments = new HashMap<String, Object>();
+    int argumentCount = 0;
     
     for (Method method : argProxyInterface.getMethods()) {
       
@@ -175,7 +248,36 @@ public class ArgumentParser implements InvocationHandler {
         
         // missing mandatory parameter
         if (optionalParam == null)
-          return null;
+          return false;
+      }
+      else {
+        argumentCount++;
+      }
+    }
+    
+    if (args.length / 2 != argumentCount)
+      return false;
+    
+    return true;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public static <T> T parse(String args[], Class<T> argProxyInterface) {
+    
+    checkProxyInterface(argProxyInterface);
+    
+    if (!validateArguments(args, argProxyInterface))
+      throw new IllegalArgumentException("Passed args must be valid!");
+    
+    Map<String, Object> arguments = new HashMap<String, Object>();
+    
+    for (Method method : argProxyInterface.getMethods()) {
+      
+      String parameterName = methodNameToParameter(method.getName());
+      String valueString = CmdLineUtil.getParameter(parameterName, args);
+      
+      if (valueString == null) {
+        OptionalParameter optionalParam = method.getAnnotation(OptionalParameter.class);
         
         if (optionalParam.defaultValue().length() > 0)
           valueString = optionalParam.defaultValue();
@@ -188,27 +290,12 @@ public class ArgumentParser implements InvocationHandler {
       Object value;
       
       if (valueString != null) {
-        if (Integer.class.equals(returnType)) {
-          try {
-            value = Integer.parseInt(valueString);
-          }
-          catch (NumberFormatException e) {
-            // parameter is not a number
-            return null;
-          }
-        }
-        else if (Boolean.class.equals(returnType)) {
-          value = Boolean.parseBoolean(valueString);
-        }
-        else if (String.class.equals(returnType)) {
-          value = valueString;
-        }
-        else if (File.class.equals(returnType)) {
-          value = new File(valueString);
-        }
-        else {
+        ArgumentFactory factory = argumentFactories.get(returnType);
+        
+        if (factory == null)
           throw new IllegalStateException();
-        }
+        
+        value = factory.parseArgument(method, parameterName, valueString);
       }
       else
         value = null;
@@ -216,28 +303,9 @@ public class ArgumentParser implements InvocationHandler {
       arguments.put(method.getName(), value);
     }
     
-    return arguments;
-  }
-  
-  public static <T> boolean validateArguments(String args[], Class<T> argProxyInterface) {
-    return createArgumentMap(args, argProxyInterface) != null;
-  }
-  
-  @SuppressWarnings("unchecked")
-  public static <T> T parse(String args[], Class<T> argProxyInterface) {
-    
-    checkProxyInterface(argProxyInterface);
-    
-    Map<String, Object> argumentMap = createArgumentMap(args, argProxyInterface);
-    
-    if (argumentMap != null) {
-      return (T) java.lang.reflect.Proxy.newProxyInstance(
-          argProxyInterface.getClassLoader(),
-          new Class[]{argProxyInterface},
-          new ArgumentParser(argumentMap));
-    }
-    else {
-      return null;
-    }
+    return (T) java.lang.reflect.Proxy.newProxyInstance(
+        argProxyInterface.getClassLoader(),
+        new Class[]{argProxyInterface},
+        new ArgumentProxy(arguments));
   }
 }
