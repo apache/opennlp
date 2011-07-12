@@ -26,7 +26,7 @@ import opennlp.tools.cmdline.BasicTrainingParametersI;
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface TrainingParametersI extends BasicTrainingParametersI {
+interface TrainingParametersI extends BasicTrainingParametersI {
   @ParameterDescription(valueName = "isAlphaNumOpt", description = "Optimization flag to skip alpha numeric tokens for further tokenization")
   @OptionalParameter(defaultValue = "false")
   Boolean getAlphaNumOpt();
