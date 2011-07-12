@@ -38,7 +38,7 @@ import java.util.Set;
  * The command line argument proxy interface must follow these conventions:<br>
  * - Methods do not define arguments<br>
  * - Method names must start with get<br>
- * - Allowed return types are Integer, Boolean and String<br>
+ * - Allowed return types are Integer, Boolean, String, File and Charset.<br>
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
@@ -196,6 +196,15 @@ public class ArgumentParser {
     return parameterName;
   }
   
+  /**
+   * Creates a usage string which can be printed in case the user did specify the arguments
+   * incorrectly. Incorrectly is defined as {@link ArgumentParser#validateArguments(String[], Class)}
+   * returns false.
+   * 
+   * @param argProxyInterface
+   * 
+   * @return the help message usage string
+   */
   public static <T> String createUsage(Class<T> argProxyInterface) {
 
     checkProxyInterface(argProxyInterface);
@@ -230,6 +239,15 @@ public class ArgumentParser {
     return usage.toString();
   }
   
+  /**
+   * Tests if the argument are correct or incorrect. Incorrect means, that mandatory arguments are missing or
+   * there are unknown arguments. The argument value itself can also be incorrect, but this
+   * is checked by the {@link ArgumentParser#parse(String[], Class)} method and reported accordingly.
+   * 
+   * @param args
+   * @param argProxyInterface
+   * @return
+   */
   public static <T> boolean validateArguments(String args[], Class<T> argProxyInterface) {
     
     // number of parameters must be at least 2 and always be even
@@ -261,6 +279,20 @@ public class ArgumentParser {
     return true;
   }
   
+  /**
+   * Parses the passed arguments and creates an instance of the proxy interface.
+   * <p>
+   * In case an argument value cannot be parsed a {@link TerminateToolException} is
+   * thrown which contains an error message which explains the problems.
+   * 
+   * @param args
+   * @param argProxyInterface
+   * 
+   * @return
+   * 
+   * @throws TerminateToolException if an argument value cannot be parsed.
+   * @throws IllegalArgumentException if validateArguments returns false, if the proxy interface is not compatible.
+   */
   @SuppressWarnings("unchecked")
   public static <T> T parse(String args[], Class<T> argProxyInterface) {
     
