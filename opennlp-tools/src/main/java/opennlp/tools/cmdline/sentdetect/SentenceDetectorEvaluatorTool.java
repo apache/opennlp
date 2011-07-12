@@ -62,8 +62,8 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
     File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
-    opennlp.tools.sentdetect.SentenceDetectorEvaluator evaluator = 
-        new opennlp.tools.sentdetect.SentenceDetectorEvaluator(new SentenceDetectorME(model));
+    opennlp.tools.sentdetect.SentenceDetectorEvaluator evaluator = new opennlp.tools.sentdetect.SentenceDetectorEvaluator(
+        new SentenceDetectorME(model), params.getPrintErrors());
     
     System.out.print("Evaluating ... ");
       ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Test",
