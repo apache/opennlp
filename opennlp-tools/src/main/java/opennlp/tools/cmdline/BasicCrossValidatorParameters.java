@@ -19,6 +19,7 @@ package opennlp.tools.cmdline;
 
 import java.io.File;
 
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
@@ -30,5 +31,9 @@ public interface BasicCrossValidatorParameters extends BasicTrainingParametersI 
     
   @ParameterDescription(valueName = "testData", description = "the data to be used during evaluation")
   File getData();
+  
+  @ParameterDescription(valueName = "isPrintErrors", description = "if true will print false negatives and positives")
+  @OptionalParameter(defaultValue="false")
+  Boolean getPrintErrors();
   
 }
