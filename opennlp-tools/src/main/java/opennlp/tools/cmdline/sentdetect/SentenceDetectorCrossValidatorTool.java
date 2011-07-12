@@ -41,7 +41,7 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
   interface Parameters extends BasicTrainingParametersI {
 
     @ParameterDescription(valueName = "data")
-    String getData();
+    File getData();
     
   }
 
@@ -66,11 +66,10 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     
-    
     opennlp.tools.util.TrainingParameters mlParams = 
       CmdLineUtil.loadTrainingParameters(params.getParams(), false);
     
-    File trainingDataInFile = new File(params.getData());
+    File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
     Charset encoding = Charset.forName(params.getEncoding());
