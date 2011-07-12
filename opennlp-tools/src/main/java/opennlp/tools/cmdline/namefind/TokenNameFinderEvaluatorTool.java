@@ -68,7 +68,7 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
         .getModel());
 
     opennlp.tools.namefind.TokenNameFinderEvaluator evaluator = new opennlp.tools.namefind.TokenNameFinderEvaluator(
-        new NameFinderME(model));
+        new NameFinderME(model), params.getPrintErrors());
 
     final ObjectStream<NameSample> sampleStream = TokenNameFinderTrainerTool.openSampleData("Test",
         testData, encoding);

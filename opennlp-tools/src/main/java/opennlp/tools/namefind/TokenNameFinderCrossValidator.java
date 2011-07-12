@@ -131,16 +131,32 @@ public class TokenNameFinderCrossValidator {
 
     this.params = trainParams;
   }
+  
+  /**
+   * Starts the evaluation.
+   * 
+   * @param samples
+   *          the data to train and test
+   * @param nFolds
+   *          number of folds
+   * 
+   * @throws IOException
+   */
+  public void evaluate(ObjectStream<NameSample> samples, int nFolds)
+      throws IOException {
+    evaluate(samples, nFolds, false);
+  }
 
   /**
    * Starts the evaluation.
    * 
    * @param samples the data to train and test
    * @param nFolds number of folds
+   * @param printErrors if true will print errors
    * 
    * @throws IOException
    */
-  public void evaluate(ObjectStream<NameSample> samples, int nFolds)
+  public void evaluate(ObjectStream<NameSample> samples, int nFolds, boolean printErrors)
       throws IOException {
     CrossValidationPartitioner<NameSample> partitioner = new CrossValidationPartitioner<NameSample>(
         samples, nFolds);
@@ -161,7 +177,7 @@ public class TokenNameFinderCrossValidator {
 
       // do testing
       TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
-          new NameFinderME(model));
+          new NameFinderME(model), printErrors);
 
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 

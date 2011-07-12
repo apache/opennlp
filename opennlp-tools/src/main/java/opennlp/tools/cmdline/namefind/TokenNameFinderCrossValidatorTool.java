@@ -88,7 +88,7 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
         validator = new TokenNameFinderCrossValidator(params.getLang(), params.getType(), mlParams,
             featureGeneratorBytes, resources);
       }
-      validator.evaluate(sampleStream, 10);
+      validator.evaluate(sampleStream, 10, params.getPrintErrors());
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
