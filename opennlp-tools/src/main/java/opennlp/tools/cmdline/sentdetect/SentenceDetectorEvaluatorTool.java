@@ -48,7 +48,7 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
     File getModel();
     
     @ParameterDescription(valueName = "data")
-    String getData();
+    File getData();
   }
 
   public String getName() {
@@ -81,7 +81,7 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
     
     SentenceModel model = new SentenceModelLoader().load(params.getModel());
     
-    File trainingDataInFile = new File(params.getData());
+    File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
     opennlp.tools.sentdetect.SentenceDetectorEvaluator evaluator = 
