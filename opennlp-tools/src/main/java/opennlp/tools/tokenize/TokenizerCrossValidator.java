@@ -60,8 +60,35 @@ public class TokenizerCrossValidator {
   }
   
   
-  public void evaluate(ObjectStream<TokenSample> samples, int nFolds) 
+  /**
+   * Starts the evaluation.
+   * 
+   * @param samples
+   *          the data to train and test
+   * @param nFolds
+   *          number of folds
+   * 
+   * @throws IOException
+   */
+  public void evaluate(ObjectStream<TokenSample> samples, int nFolds)
       throws IOException {
+    evaluate(samples, nFolds, false);
+  }
+
+  /**
+   * Starts the evaluation.
+   * 
+   * @param samples
+   *          the data to train and test
+   * @param nFolds
+   *          number of folds
+   * @param printErrors
+   *          if true will print errors
+   * 
+   * @throws IOException
+   */
+  public void evaluate(ObjectStream<TokenSample> samples, int nFolds,
+      boolean printErrors) throws IOException {
     
     CrossValidationPartitioner<TokenSample> partitioner = 
       new CrossValidationPartitioner<TokenSample>(samples, nFolds);
@@ -83,7 +110,7 @@ public class TokenizerCrossValidator {
              alphaNumericOptimization, params);
        }
        
-       TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model));
+       TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model), printErrors);
        evaluator.evaluate(trainingSampleStream.getTestSampleStream());
        fmeasure.mergeInto(evaluator.getFMeasure());
      }
