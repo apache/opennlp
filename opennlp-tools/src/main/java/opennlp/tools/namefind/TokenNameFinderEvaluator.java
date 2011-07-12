@@ -56,7 +56,19 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    *
    * @param nameFinder the {@link TokenNameFinder} to evaluate.
    */
+  public TokenNameFinderEvaluator(TokenNameFinder nameFinder, boolean printErrors) {
+    super(printErrors);
+    this.nameFinder = nameFinder;
+  }
+  
+  /**
+   * Initializes the current instance with the given
+   * {@link TokenNameFinder}.
+   *
+   * @param nameFinder the {@link TokenNameFinder} to evaluate.
+   */
   public TokenNameFinderEvaluator(TokenNameFinder nameFinder) {
+    super();
     this.nameFinder = nameFinder;
   }
 
@@ -72,9 +84,16 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    */
   public void evaluateSample(NameSample reference) {
 
-    Span predictedNames[] = nameFinder.find(reference.getSentence());
+    Span predictedNames[] = nameFinder.find(reference.getSentence());    
+    Span references[] = reference.getNames();
     
-    fmeasure.updateScores(reference.getNames(), predictedNames);
+    if (isPrintError()) {
+      String[] sentence = reference.getSentence();
+      printErrors(references, predictedNames, reference, new NameSample(sentence,
+          predictedNames, true), sentence);
+    }
+    
+    fmeasure.updateScores(references, predictedNames);
   }
   
   public FMeasure getFMeasure() {
