@@ -22,8 +22,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.BasicEvaluationParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -34,22 +33,6 @@ import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
 public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
-  
-  /**
-   * Create a list of expected parameters.
-   */
-  interface Parameters {
-    
-    @ParameterDescription(valueName = "charsetName", description = "specifies the encoding which should be used for reading and writing text")
-    @OptionalParameter(defaultValue="UTF-8")
-    Charset getEncoding();
-    
-    @ParameterDescription(valueName = "model")
-    File getModel();
-    
-    @ParameterDescription(valueName = "data")
-    File getData();
-  }
 
   public String getName() {
     return "SentenceDetectorEvaluator";
@@ -60,24 +43,19 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(Parameters.class);
+    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(BasicEvaluationParameters.class);
   }
 
   public void run(String[] args) {
     
-    if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+    if (!ArgumentParser.validateArguments(args, BasicEvaluationParameters.class)) {
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    BasicEvaluationParameters params = ArgumentParser.parse(args, BasicEvaluationParameters.class);
     
     Charset encoding = params.getEncoding();
-    
-    if (encoding == null) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
     
     SentenceModel model = new SentenceModelLoader().load(params.getModel());
     

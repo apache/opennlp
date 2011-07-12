@@ -17,13 +17,13 @@
 
 package opennlp.tools.cmdline.tokenizer;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.BasicEvaluationParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerEvaluator;
@@ -41,32 +41,30 @@ public final class TokenizerMEEvaluatorTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + "-encoding charset -model model -data testData";
+    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(BasicEvaluationParameters.class);
   }
 
   public void run(String[] args) {
-    if (args.length != 6) {
-      System.out.println(getHelp());
+    if (!ArgumentParser
+        .validateArguments(args, BasicEvaluationParameters.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
 
-    Charset encoding = CmdLineUtil.getEncodingParameter(args);
+    BasicEvaluationParameters params = ArgumentParser.parse(args,
+        BasicEvaluationParameters.class);
 
-    if (encoding == null) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    Charset encoding = params.getEncoding();
 
-    TokenizerModel model = new TokenizerModelLoader().load(
-        new File(CmdLineUtil.getParameter("-model", args)));
+    TokenizerModel model = new TokenizerModelLoader().load(params.getModel());
 
     TokenizerEvaluator evaluator = new TokenizerEvaluator(
         new opennlp.tools.tokenize.TokenizerME(model));
 
     System.out.print("Evaluating ... ");
 
-    ObjectStream<TokenSample> sampleStream = TokenizerTrainerTool.openSampleData(
-        "Test", new File(CmdLineUtil.getParameter("-data", args)), encoding);
+    ObjectStream<TokenSample> sampleStream = TokenizerTrainerTool
+        .openSampleData("Test", params.getData(), encoding);
 
     try {
       evaluator.evaluate(sampleStream);
