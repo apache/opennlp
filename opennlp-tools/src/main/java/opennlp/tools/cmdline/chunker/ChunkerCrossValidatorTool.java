@@ -22,12 +22,12 @@ import java.io.IOException;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerCrossValidator;
-import opennlp.tools.cmdline.BasicTrainingParameters;
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.BasicCrossValidatorParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.parser.TrainingParameters;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -42,34 +42,28 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() + "\n"+
-        BasicTrainingParameters.getDescription() + "\n"+
-        "-data trainingData      training data used for cross validation";
+    return "Usage: " + CLI.CMD + " " + getName() + " "
+        + ArgumentParser.createUsage(BasicCrossValidatorParameters.class);
   }
 
   public void run(String[] args) {
-    if (args.length < 6) {
-      System.out.println(getHelp());
+    if (!ArgumentParser.validateArguments(args, BasicCrossValidatorParameters.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    BasicTrainingParameters parameters = new BasicTrainingParameters(args);
+    BasicCrossValidatorParameters params = ArgumentParser.parse(args,
+        BasicCrossValidatorParameters.class);
     
-    if(!parameters.isValid()) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-    
-    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
+    File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
     ObjectStream<ChunkSample> sampleStream =
         ChunkerTrainerTool.openSampleData("Training Data",
-        trainingDataInFile, parameters.getEncoding());
+        trainingDataInFile, params.getEncoding());
     
-    ChunkerCrossValidator validator =
-        new ChunkerCrossValidator(
-        		parameters.getLanguage(), parameters.getCutoff(), parameters.getNumberOfIterations());
+    ChunkerCrossValidator validator = new ChunkerCrossValidator(
+        params.getLang(), params.getCutoff(), params.getIterations());
       
     try {
       validator.evaluate(sampleStream, 10);
