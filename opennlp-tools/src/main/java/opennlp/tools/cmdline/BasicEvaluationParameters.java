@@ -18,9 +18,7 @@
 package opennlp.tools.cmdline;
 
 import java.io.File;
-import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 // TODO: remove the old BasicTrainingParameters and rename this class to BasicTrainingParameters
@@ -30,11 +28,7 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface BasicEvaluationParameters {
-
-  @ParameterDescription(valueName = "charsetName", description = "specifies the encoding which should be used for reading and writing text")
-  @OptionalParameter(defaultValue="UTF-8")
-  Charset getEncoding();
+public interface BasicEvaluationParameters extends EncodingParameter{
   
   @ParameterDescription(valueName = "model", description = "the model file to be evaluated")
   File getModel();

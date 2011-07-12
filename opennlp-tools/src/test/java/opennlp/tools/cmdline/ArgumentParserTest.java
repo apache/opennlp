@@ -20,6 +20,10 @@ package opennlp.tools.cmdline;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.nio.charset.Charset;
+import java.util.Collection;
+
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
@@ -107,5 +111,44 @@ public class ArgumentParserTest {
     }
     
     assertEquals(expectedLength, usage.length());
+  }
+  
+  interface ExtendsEncodingParameter extends EncodingParameter {
+    
+    @ParameterDescription(valueName = "value")
+    String getSomething();
+
+  }
+  
+  
+  @Test
+  public void testDefaultEncodingParameter() {
+    
+    String args[] = "-something aValue".split(" ");
+    assertTrue(ArgumentParser.validateArguments(args, ExtendsEncodingParameter.class));
+    
+    ExtendsEncodingParameter params = ArgumentParser.parse(args, ExtendsEncodingParameter.class);
+    assertEquals(Charset.defaultCharset(), params.getEncoding());
+    
+  }
+  
+  @Test
+  public void testSetEncodingParameter() {
+    
+    Collection<Charset> availableCharset = Charset.availableCharsets().values();
+    String notTheDefaultCharset = "UTF-8";
+    for (Charset charset : availableCharset) {
+      if(!charset.equals(Charset.defaultCharset())) {
+        notTheDefaultCharset = charset.name();
+        break;
+      }
+    }
+    
+    String args[] = ("-something aValue -encoding " + notTheDefaultCharset).split(" ");
+    assertTrue(ArgumentParser.validateArguments(args, ExtendsEncodingParameter.class));
+    
+    ExtendsEncodingParameter params = ArgumentParser.parse(args, ExtendsEncodingParameter.class);
+    assertEquals(Charset.forName(notTheDefaultCharset), params.getEncoding());
+    
   }
 }
