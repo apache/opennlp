@@ -25,6 +25,7 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.BasicEvaluationParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameFinderME;
@@ -59,6 +60,7 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
         BasicEvaluationParameters.class);
 
     File testData = params.getData();
+    CmdLineUtil.checkInputFile("Test data", testData);
 
     Charset encoding = params.getEncoding();
 
