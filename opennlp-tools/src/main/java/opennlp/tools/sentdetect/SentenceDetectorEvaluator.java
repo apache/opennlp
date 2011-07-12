@@ -43,16 +43,34 @@ public class SentenceDetectorEvaluator extends Evaluator<SentenceSample> {
    * Initializes the current instance.
    *
    * @param sentenceDetector
+   * @param isPrintErrors if should print false positives and negatives
+   */
+  public SentenceDetectorEvaluator(SentenceDetector sentenceDetector, boolean isPrintErrors) {
+    super(isPrintErrors);
+    this.sentenceDetector = sentenceDetector;
+  }
+  
+  /**
+   * Initializes the current instance.
+   *
+   * @param sentenceDetector
    */
   public SentenceDetectorEvaluator(SentenceDetector sentenceDetector) {
+    super();
     this.sentenceDetector = sentenceDetector;
   }
 
   public void evaluateSample(SentenceSample sample) {
 
-    Span starts[] = sentenceDetector.sentPosDetect(sample.getDocument());
+    Span predictions[] = sentenceDetector.sentPosDetect(sample.getDocument());
+    Span[] references = sample.getSentences();
+    if (isPrintError()) {
+      String doc = sample.getDocument();
+      printErrors(references, predictions, sample, new SentenceSample(doc,
+          predictions), doc);
+    }
 
-    fmeasure.updateScores(sample.getSentences(), starts);
+    fmeasure.updateScores(references, predictions);
   }
   
   public FMeasure getFMeasure() {

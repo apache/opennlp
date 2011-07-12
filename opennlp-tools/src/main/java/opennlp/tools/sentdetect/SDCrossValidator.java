@@ -58,8 +58,36 @@ public class SDCrossValidator {
     this(languageCode, 5, 100);
   }
   
-  public void evaluate(ObjectStream<SentenceSample> samples, int nFolds) throws IOException {
-    
+  /**
+   * Starts the evaluation.
+   * 
+   * @param samples
+   *          the data to train and test
+   * @param nFolds
+   *          number of folds
+   * 
+   * @throws IOException
+   */
+  public void evaluate(ObjectStream<SentenceSample> samples, int nFolds)
+      throws IOException {
+    evaluate(samples, nFolds, false);
+  }
+  
+  /**
+   * Starts the evaluation.
+   * 
+   * @param samples
+   *          the data to train and test
+   * @param nFolds
+   *          number of folds
+   * @param printErrors
+   *          if true will print errors
+   * 
+   * @throws IOException
+   */
+  public void evaluate(ObjectStream<SentenceSample> samples, int nFolds,
+      boolean printErrors) throws IOException {
+
     CrossValidationPartitioner<SentenceSample> partitioner = 
         new CrossValidationPartitioner<SentenceSample>(samples, nFolds);
     
@@ -79,7 +107,7 @@ public class SDCrossValidator {
       
       // do testing
       SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
-          new SentenceDetectorME(model));
+          new SentenceDetectorME(model), printErrors);
 
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
       
