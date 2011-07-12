@@ -17,6 +17,7 @@
 
 package opennlp.tools.cmdline;
 
+import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.InvocationHandler;
@@ -96,6 +97,7 @@ public class ArgumentParser implements InvocationHandler {
       compatibleReturnTypes.add(Integer.class);
       compatibleReturnTypes.add(Boolean.class);
       compatibleReturnTypes.add(String.class);
+      compatibleReturnTypes.add(File.class);
       
       if(!compatibleReturnTypes.contains(returnType))
          throw new IllegalArgumentException(method.getName() + " method must have compatible return type!");
@@ -188,7 +190,7 @@ public class ArgumentParser implements InvocationHandler {
       if (valueString != null) {
         if (Integer.class.equals(returnType)) {
           try {
-          value = Integer.parseInt(valueString);
+            value = Integer.parseInt(valueString);
           }
           catch (NumberFormatException e) {
             // parameter is not a number
@@ -200,6 +202,9 @@ public class ArgumentParser implements InvocationHandler {
         }
         else if (String.class.equals(returnType)) {
           value = valueString;
+        }
+        else if (File.class.equals(returnType)) {
+          value = new File(valueString);
         }
         else {
           throw new IllegalStateException();
