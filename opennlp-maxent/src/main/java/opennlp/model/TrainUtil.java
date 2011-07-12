@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.perceptron.PerceptronTrainer;
 import opennlp.perceptron.SimplePerceptronSequenceTrainer;
 
 public class TrainUtil {
@@ -66,6 +67,17 @@ public class TrainUtil {
 
     if (valueString != null)
       return Integer.parseInt(valueString);
+    else
+      return defaultValue;
+  }
+  
+  private static double getDoubleParam(Map<String, String> trainParams, String key,
+      double defaultValue, Map<String, String> reportMap) {
+    
+    String valueString = trainParams.get(key);
+    
+    if (valueString != null)
+      return Double.parseDouble(valueString);
     else
       return defaultValue;
   }
@@ -173,7 +185,25 @@ public class TrainUtil {
     else if (PERCEPTRON_VALUE.equals(algorithmName)) {
       boolean useAverage = getBooleanParam(trainParams, "UseAverage", true, reportMap);
       
-      model = new opennlp.perceptron.PerceptronTrainer().trainModel(
+      boolean useSkippedAveraging = getBooleanParam(trainParams, "UseSkippedAveraging", false, reportMap);
+      
+      // overwrite otherwise it might not work
+      if (useSkippedAveraging)
+        useAverage = true;
+      
+      double stepSizeDecrease = getDoubleParam(trainParams, "StepSizeDecrease", 0, reportMap);
+      
+      double tolerance = getDoubleParam(trainParams, "Tolerance", PerceptronTrainer.TOLERANCE_DEFAULT, reportMap);
+      
+      opennlp.perceptron.PerceptronTrainer perceptronTrainer = new opennlp.perceptron.PerceptronTrainer();
+      perceptronTrainer.setSkippedAveraging(useSkippedAveraging);
+      
+      if (stepSizeDecrease > 0)
+        perceptronTrainer.setStepSizeDecrease(stepSizeDecrease);
+      
+      perceptronTrainer.setTolerance(tolerance);
+      
+      model = perceptronTrainer.trainModel(
           iterations, indexer, cutoff, useAverage);
     }
     else {
