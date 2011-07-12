@@ -22,15 +22,12 @@ import java.io.File;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
- * Common evaluation parameters.
+ * Common cross validator parameters.
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface BasicEvaluationParameters extends EncodingParameter{
-  
-  @ParameterDescription(valueName = "model", description = "the model file to be evaluated")
-  File getModel();
-  
+public interface BasicCrossValidatorParameters extends BasicTrainingParametersI {
+    
   @ParameterDescription(valueName = "testData", description = "the data to be used during evaluation")
   File getData();
   
