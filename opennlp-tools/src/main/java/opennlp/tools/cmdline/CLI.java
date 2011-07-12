@@ -187,6 +187,10 @@ public final class CLI {
       tool.run(toolArguments);
     }
     catch (TerminateToolException e) {
+      
+      if (e.getMessage() != null)
+        System.err.println(e.getMessage());
+      
       System.exit(e.getCode());
     }
   }
