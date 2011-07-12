@@ -25,6 +25,7 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.BasicEvaluationParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
@@ -57,6 +58,7 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
         BasicEvaluationParameters.class);
 
     File testData = params.getData();
+    CmdLineUtil.checkInputFile("Test data", testData);
 
     Charset encoding = params.getEncoding();
 
