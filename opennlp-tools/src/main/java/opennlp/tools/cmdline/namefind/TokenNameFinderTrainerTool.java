@@ -67,7 +67,10 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
   }
   
   static byte[] openFeatureGeneratorBytes(String featureGenDescriptorFile) {
-    return openFeatureGeneratorBytes(new File(featureGenDescriptorFile));
+    if(featureGenDescriptorFile != null) {
+      return openFeatureGeneratorBytes(new File(featureGenDescriptorFile));
+    }
+    return null;
   }
   
   static byte[] openFeatureGeneratorBytes(File featureGenDescriptorFile) {
