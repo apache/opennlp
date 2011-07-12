@@ -38,6 +38,18 @@ public class POSEvaluator extends Evaluator<POSSample> {
    * @param tagger
    */
   public POSEvaluator(POSTagger tagger) {
+    super();
+    this.tagger = tagger;
+  }
+  
+  /**
+   * Initializes the current instance.
+   *
+   * @param tagger
+   * @param printErrors
+   */
+  public POSEvaluator(POSTagger tagger, boolean printErrors) {
+    super(printErrors);
     this.tagger = tagger;
   }
 
@@ -53,9 +65,16 @@ public class POSEvaluator extends Evaluator<POSSample> {
   public void evaluateSample(POSSample reference) {
 
     String predictedTags[] = tagger.tag(reference.getSentence());
+    String referenceTags[] = reference.getTags();
+    
+    if (isPrintError()) {
+      String[] sentence = reference.getSentence();
+      printErrors(referenceTags, predictedTags, reference, new POSSample(sentence,
+          predictedTags), sentence);
+    }
 
-    for (int i = 0; i < reference.getTags().length; i++) {
-      if (reference.getTags()[i].equals(predictedTags[i])) {
+    for (int i = 0; i < referenceTags.length; i++) {
+      if (referenceTags[i].equals(predictedTags[i])) {
         wordAccuracy.add(1);
       }
       else {

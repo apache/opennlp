@@ -37,7 +37,7 @@ public class POSTaggerCrossValidator {
   
   private POSDictionary tagDictionary;
   private Dictionary ngramDictionary;
-  
+
   private Mean wordAccuracy = new Mean();
   
   
@@ -68,8 +68,36 @@ public class POSTaggerCrossValidator {
     modelType = null;
   }
   
+  
+  /**
+   * Starts the evaluation.
+   * 
+   * @param samples
+   *          the data to train and test
+   * @param nFolds
+   *          number of folds
+   * 
+   * @throws IOException
+   */
   public void evaluate(ObjectStream<POSSample> samples, int nFolds)
-    throws IOException, IOException {
+      throws IOException, IOException {
+    evaluate(samples, nFolds, false);
+  }
+
+  /**
+   * Starts the evaluation.
+   * 
+   * @param samples
+   *          the data to train and test
+   * @param nFolds
+   *          number of folds
+   * @param printErrors
+   *          if true will print errors
+   * 
+   * @throws IOException
+   */
+  public void evaluate(ObjectStream<POSSample> samples, int nFolds,
+      boolean printErrors) throws IOException, IOException {
     
     CrossValidationPartitioner<POSSample> partitioner = new CrossValidationPartitioner<POSSample>(
         samples, nFolds);
@@ -89,7 +117,7 @@ public class POSTaggerCrossValidator {
             this.tagDictionary, this.ngramDictionary);
       }
 
-      POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model));
+      POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model), printErrors);
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 
       wordAccuracy.add(evaluator.getWordAccuracy(), evaluator.getWordCount());
