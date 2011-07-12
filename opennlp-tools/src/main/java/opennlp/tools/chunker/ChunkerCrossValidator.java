@@ -30,7 +30,6 @@ public class ChunkerCrossValidator {
 	private final String languageCode;
 	private final int cutoff;
 	private final int iterations;
-	
 	private final TrainingParameters params;
 	
 	private FMeasure fmeasure = new FMeasure();
@@ -51,9 +50,37 @@ public class ChunkerCrossValidator {
       cutoff = -1;
       iterations = -1;
     }
+   
+  /**
+   * Starts the evaluation.
+   * 
+   * @param samples
+   *          the data to train and test
+   * @param nFolds
+   *          number of folds
+   * 
+   * @throws IOException
+   */
+  public void evaluate(ObjectStream<ChunkSample> samples, int nFolds)
+      throws IOException, InvalidFormatException, IOException {
+    evaluate(samples, nFolds, false);
+  }
 
-	public void evaluate(ObjectStream<ChunkSample> samples, int nFolds)
-			throws IOException, InvalidFormatException, IOException {
+  /**
+   * Starts the evaluation.
+   * 
+   * @param samples
+   *          the data to train and test
+   * @param nFolds
+   *          number of folds
+   * @param printErrors
+   *          if true will print errors
+   * 
+   * @throws IOException
+   */
+  public void evaluate(ObjectStream<ChunkSample> samples, int nFolds,
+      boolean printErrors) throws IOException, InvalidFormatException,
+      IOException {
 		CrossValidationPartitioner<ChunkSample> partitioner = new CrossValidationPartitioner<ChunkSample>(
 				samples, nFolds);
 
@@ -74,7 +101,7 @@ public class ChunkerCrossValidator {
 			}
 			
 			// do testing
-			ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model));
+			ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model), printErrors);
 
 			evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 

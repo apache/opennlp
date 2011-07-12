@@ -47,6 +47,19 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
    * @param chunker the {@link Chunker} to evaluate.
    */
   public ChunkerEvaluator(Chunker chunker) {
+    super();
+    this.chunker = chunker;
+  }
+  
+  /**
+   * Initializes the current instance with the given
+   * {@link Chunker}.
+   *
+   * @param chunker the {@link Chunker} to evaluate.
+   * @param printError outputs errors
+   */
+  public ChunkerEvaluator(Chunker chunker, boolean printError) {
+    super(printError);
     this.chunker = chunker;
   }
 
@@ -65,6 +78,11 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
 	String[] preds = chunker.chunk(reference.getSentence(), reference.getTags());
 	ChunkSample result = new ChunkSample(reference.getSentence(), reference.getTags(), preds);
 
+    if (isPrintError()) {
+      String[] sentence = reference.getSentence();
+      printErrors(reference.getPreds(), preds, reference, result, sentence);
+    }
+	
     fmeasure.updateScores(reference.getPhrasesAsSpanList(), result.getPhrasesAsSpanList());
   }
   
