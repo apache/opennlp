@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.BasicCrossValidatorParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -29,8 +31,13 @@ import opennlp.tools.postag.POSDictionary;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerCrossValidator;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.model.ModelType;
 
 public final class POSTaggerCrossValidatorTool implements CmdLineTool {
+  
+  interface Parameters extends BasicCrossValidatorParameters, TrainingParametersI {
+    
+  }
 
   public String getName() {
     return "POSTaggerCrossValidator";
@@ -42,48 +49,40 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " "
-        + TrainingParameters.getParameterUsage() + " -data trainData\n"
-        + TrainingParameters.getDescription();
+        + ArgumentParser.createUsage(Parameters.class);
   }
 
   public void run(String[] args) {
-    if (args.length < 5) {
-      System.out.println(getHelp());
+    if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
-
-    TrainingParameters parameters = new TrainingParameters(args);
-
-    if (!parameters.isValid()) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    
+    Parameters params = ArgumentParser.parse(args, Parameters.class);
 
     opennlp.tools.util.TrainingParameters mlParams = CmdLineUtil
-        .loadTrainingParameters(CmdLineUtil.getParameter("-params", args),
-            false);
+        .loadTrainingParameters(params.getParams(), false);
 
-    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
+    File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
 
     ObjectStream<POSSample> sampleStream = POSTaggerTrainerTool.openSampleData(
-        "Training Data", trainingDataInFile, parameters.getEncoding());
+        "Training Data", trainingDataInFile, params.getEncoding());
 
     POSTaggerCrossValidator validator;
     try {
       // TODO: Move to util method ...
       POSDictionary tagdict = null;
-      if (parameters.getDictionaryPath() != null) {
-        tagdict = POSDictionary.create(new FileInputStream(parameters
-            .getDictionaryPath()));
+      if (params.getDict() != null) {
+        tagdict = POSDictionary.create(new FileInputStream(params.getDict()));
       }
 
       if (mlParams == null) {
-        validator = new POSTaggerCrossValidator(parameters.getLanguage(),
-            parameters.getModel(), tagdict, null, parameters.getCutoff(),
-            parameters.getNumberOfIterations());
+        validator = new POSTaggerCrossValidator(params.getLang(),
+            getModelType(params.getType()), tagdict, null, params.getCutoff(),
+            params.getIterations());
       } else {
-        validator = new POSTaggerCrossValidator(parameters.getLanguage(),
+        validator = new POSTaggerCrossValidator(params.getLang(),
             mlParams, tagdict, null);
       }
 
@@ -104,5 +103,25 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
     System.out.println();
 
     System.out.println("Accuracy: " + validator.getWordAccuracy());
+  }
+
+  private ModelType getModelType(String modelString) {
+    ModelType model;
+    if (modelString == null)
+      modelString = "maxent";
+    
+    if (modelString.equals("maxent")) {
+      model = ModelType.MAXENT; 
+    }
+    else if (modelString.equals("perceptron")) {
+      model = ModelType.PERCEPTRON; 
+    }
+    else if (modelString.equals("perceptron_sequence")) {
+      model = ModelType.PERCEPTRON_SEQUENCE; 
+    }
+    else {
+      model = null;
+    }
+    return model;
   }
 }
