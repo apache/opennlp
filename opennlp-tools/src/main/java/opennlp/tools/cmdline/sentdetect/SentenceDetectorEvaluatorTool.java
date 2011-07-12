@@ -21,6 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -31,6 +34,22 @@ import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
 public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
+  
+  /**
+   * Create a list of expected parameters.
+   */
+  interface Parameters {
+    
+    @ParameterDescription(valueName = "charsetName", description = "specifies the encoding which should be used for reading and writing text")
+    @OptionalParameter(defaultValue="UTF-8")
+    String getEncoding();
+    
+    @ParameterDescription(valueName = "model")
+    String getModel();
+    
+    @ParameterDescription(valueName = "data")
+    String getData();
+  }
 
   public String getName() {
     return "SentenceDetectorEvaluator";
@@ -41,25 +60,28 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " -encoding charset -model model -data testData";
+    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(Parameters.class);
   }
 
   public void run(String[] args) {
-    if (args.length != 6) {
-      System.out.println(getHelp());
+    
+    if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    Charset encoding = CmdLineUtil.getEncodingParameter(args);
+    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    
+    Charset encoding = Charset.forName(params.getEncoding());
     
     if (encoding == null) {
       System.out.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    SentenceModel model = new SentenceModelLoader().load(new File(CmdLineUtil.getParameter("-model", args)));
+    SentenceModel model = new SentenceModelLoader().load(new File(params.getModel()));
     
-    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
+    File trainingDataInFile = new File(params.getData());
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
     opennlp.tools.sentdetect.SentenceDetectorEvaluator evaluator = 
