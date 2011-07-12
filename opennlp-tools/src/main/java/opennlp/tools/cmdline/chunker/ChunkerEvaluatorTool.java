@@ -26,8 +26,7 @@ import opennlp.tools.chunker.ChunkerEvaluator;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.BasicEvaluationParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -36,22 +35,6 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.util.ObjectStream;
 
 public final class ChunkerEvaluatorTool implements CmdLineTool {
-	
-  /**
-   * Create a list of expected parameters.
-   */
-  interface Parameters {
-    
-    @ParameterDescription(valueName = "charsetName")
-    @OptionalParameter(defaultValue="UTF-8")
-    String getEncoding();
-    
-    @ParameterDescription(valueName = "model")
-    String getModel();
-    
-    @ParameterDescription(valueName = "data")
-    String getData();
-  }
 
   public String getName() {
     return "ChunkerEvaluator";
@@ -62,30 +45,25 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
   }
 
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(Parameters.class);
+    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(BasicEvaluationParameters.class);
   }
 
   public void run(String[] args) {
 
-  	if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+  	if (!ArgumentParser.validateArguments(args, BasicEvaluationParameters.class)) {
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
   	
-  	Parameters params = ArgumentParser.parse(args, Parameters.class);
+  	BasicEvaluationParameters params = ArgumentParser.parse(args, BasicEvaluationParameters.class);
   	
-  	File testData = new File(params.getData());
+  	File testData =params.getData();
 
     CmdLineUtil.checkInputFile("Test data", testData);
 
-    Charset encoding = Charset.forName(params.getEncoding());
+    Charset encoding = params.getEncoding();
 
-    if (encoding == null) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-
-    ChunkerModel model = new ChunkerModelLoader().load(new File(params.getModel()));
+    ChunkerModel model = new ChunkerModelLoader().load(params.getModel());
 
     ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model));
     
