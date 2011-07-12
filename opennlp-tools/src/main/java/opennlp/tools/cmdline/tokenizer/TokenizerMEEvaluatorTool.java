@@ -61,7 +61,7 @@ public final class TokenizerMEEvaluatorTool implements CmdLineTool {
     TokenizerModel model = new TokenizerModelLoader().load(params.getModel());
 
     TokenizerEvaluator evaluator = new TokenizerEvaluator(
-        new opennlp.tools.tokenize.TokenizerME(model));
+        new opennlp.tools.tokenize.TokenizerME(model), params.getPrintErrors());
 
     System.out.print("Evaluating ... ");
     
