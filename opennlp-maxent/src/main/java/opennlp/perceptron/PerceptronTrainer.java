@@ -34,6 +34,8 @@ import opennlp.model.MutableContext;
  */
 public class PerceptronTrainer {
 
+  public static final double TOLERANCE_DEFAULT = .00001;
+  
   /** Number of unique events which occurred in the event set. */
   private int numUniqueEvents;
   /** Number of events in the event set. */
@@ -68,7 +70,62 @@ public class PerceptronTrainer {
   private String[] predLabels;
 
   private boolean printMessages = true;
+  
+  private double tolerance = TOLERANCE_DEFAULT;
+  
+  private Double stepSizeDecrease;
+  
+  private boolean useSkippedlAveraging;
+  
+  /**
+   * Specifies the tolerance. If the change in training set accuracy
+   * is less than this, stop iterating.
+   * 
+   * @param tolerance
+   */
+  public void setTolerance(double tolerance) {
     
+    if (tolerance < 0)
+      throw new IllegalArgumentException("tolerance must be a positive number!");
+    
+    this.tolerance = tolerance;
+  }
+
+  /**
+   * Enables and sets step size decrease. The step size is
+   * decreased every iteration by the specified value.
+   * 
+   * @param decrease - step size decrease in percent
+   */
+  public void setStepSizeDecrease(double decrease) {
+    
+    if (decrease < 0 || decrease > 100)
+      throw new IllegalArgumentException("decrease must be between 0 and 100");
+    
+    stepSizeDecrease = decrease;
+  }
+  
+  /**
+   * Enables skipped averaging, this flag changes the standard
+   * averaging to special averaging instead.
+   * <p>
+   * If we are doing averaging, and the current iteration is one
+   * of the first 20 or it is a perfect square, then updated the
+   * summed parameters. 
+   * <p>
+   * The reason we don't take all of them is that the parameters change
+   * less toward the end of training, so they drown out the contributions
+   * of the more volatile early iterations. The use of perfect
+   * squares allows us to sample from successively farther apart iterations.
+   *  
+   * @param averaging
+   * 
+   * @return
+   */
+  public void setSkippedAveraging(boolean averaging) {
+    useSkippedlAveraging = averaging;
+  }
+  
   public AbstractModel trainModel(int iterations, DataIndexer di, int cutoff) {
     return trainModel(iterations,di,cutoff,true);
   }
@@ -132,9 +189,6 @@ public class PerceptronTrainer {
       }
     }
 
-    // If the change in training set accuracy is less than this, stop iterating.
-    double tolerance = .00001;
-
     // Keep track of the previous three accuracies. The difference of
     // the mean of these and the current training set accuracy is used
     // with tolerance to decide whether to stop.
@@ -145,16 +199,16 @@ public class PerceptronTrainer {
     // A counter for the denominator for averaging.
     int numTimesSummed = 0;
 
-    double stepsize = 1.05;
+    double stepsize = 1;
     for (int i = 1; i <= iterations; i++) {
 
       // Decrease the stepsize by a small amount.
-      stepsize /= 1.05;
+      if (stepSizeDecrease != null)
+        stepsize *= 1 - stepSizeDecrease;
       
       displayIteration(i);
 
       int numCorrect = 0;
-      int total = 0;
 
       for (int ei = 0; ei < numUniqueEvents; ei++) {
         int targetOutcome = outcomeList[ei];
@@ -188,7 +242,6 @@ public class PerceptronTrainer {
           }
 
           // Update the counts for accuracy.
-          total++;
           if (maxOutcome == targetOutcome) 
             numCorrect++;
         }
@@ -199,14 +252,21 @@ public class PerceptronTrainer {
       if (i < 10 || (i%10) == 0)
         display(". (" + numCorrect + "/" + numEvents+") " + trainingAccuracy + "\n");
           
-      // If we are doing averaging, and the current iteration is one
-      // of the first 20 or it is a perfect square, then updated the
-      // summed parameters. The reason we don't take all of them is
-      // that the parameters change less toward the end of training,
-      // so they drown out the contributions of the more volatile
-      // early iterations. The use of perfect squares allows us to
-      // sample from successively farther apart iterations.
-      if (useAverage && (i < 20 || isPerfectSquare(i))) {
+      // TODO: Make averaging configurable !!!
+      
+      boolean doAveraging;
+      
+      if (useAverage && useSkippedlAveraging && (i < 20 || isPerfectSquare(i))) {
+        doAveraging = true;
+      }
+      else if (useAverage) {
+        doAveraging = true;
+      }
+      else {
+        doAveraging = false;
+      }
+      
+      if (doAveraging) {
         numTimesSummed++;
         for (int pi = 0; pi < numPreds; pi++) 
           for (int aoi=0;aoi<numOutcomes;aoi++)
