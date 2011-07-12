@@ -19,7 +19,11 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.BasicTrainingParametersI;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -30,6 +34,16 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.FMeasure;
 
 public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
+  
+  /**
+   * Create a list of expected parameters.
+   */
+  interface Parameters extends BasicTrainingParametersI {
+
+    @ParameterDescription(valueName = "data")
+    String getData();
+    
+  }
 
   public String getName() {
     return "SentenceDetectorCrossValidator";
@@ -40,40 +54,37 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() +
-        " -data trainData\n" +
-        TrainingParameters.getDescription();
+    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(Parameters.class);
   }
 
   public void run(String[] args) {
-    if (args.length < 5) {
-      System.out.println(getHelp());
+    
+    if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    TrainingParameters parameters = new TrainingParameters(args);
+    Parameters params = ArgumentParser.parse(args, Parameters.class);
     
-    if(!parameters.isValid()) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
     
     opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), false);
+      CmdLineUtil.loadTrainingParameters(params.getParams(), false);
     
-    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
+    File trainingDataInFile = new File(params.getData());
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
+    Charset encoding = Charset.forName(params.getEncoding());
+    
     ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Training Data",
-        trainingDataInFile, parameters.getEncoding());
+        trainingDataInFile, encoding);
     
     SDCrossValidator validator;
 
     if (mlParams == null) {
-      validator = new SDCrossValidator(parameters.getLanguage(), parameters.getCutoff(), parameters.getNumberOfIterations());
+      validator = new SDCrossValidator(params.getLang(), params.getCutoff(), params.getIterations());
     }
     else {
-      validator = new SDCrossValidator(parameters.getLanguage(), mlParams);
+      validator = new SDCrossValidator(params.getLang(), mlParams);
     }
     
     try {
