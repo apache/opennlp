@@ -32,7 +32,7 @@ public interface EncodingParameter {
   @ParameterDescription(valueName = "charsetName", description = "specifies the "
       + "encoding which should be used for reading and writing text. If not specified "
       + "the system default will be used.")
-  @OptionalParameter(defaultValue = "DEFAULT_CHARSET")
+  @OptionalParameter(defaultValue = OptionalParameter.DEFAULT_CHARSET)
   Charset getEncoding();
 
 }

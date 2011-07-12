@@ -46,6 +46,7 @@ public class ArgumentParser {
 
   public @Retention(RetentionPolicy.RUNTIME)
   @interface OptionalParameter {
+    public static final String DEFAULT_CHARSET = "DEFAULT_CHARSET";
     public String defaultValue() default "";
   }
   
@@ -106,7 +107,9 @@ public class ArgumentParser {
     public Object parseArgument(Method method, String argName, String charsetName) {
       
       try {
-        if (Charset.isSupported(charsetName)) {
+        if(OptionalParameter.DEFAULT_CHARSET.equals(charsetName)) {
+          return Charset.defaultCharset();
+        } else if (Charset.isSupported(charsetName)) {
           return Charset.forName(charsetName);
         } else {
           throw new TerminateToolException(-1,  String.format(INVALID_ARG, argName, charsetName) + 
