@@ -19,7 +19,10 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.BasicCrossValidatorParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -30,6 +33,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.FMeasure;
 
 public final class TokenizerCrossValidatorTool implements CmdLineTool {
+  
+  interface Parameters extends BasicCrossValidatorParameters, TrainingParametersI {
+    
+  }
 
   public String getName() {
     return "TokenizerCrossValidator";
@@ -40,46 +47,40 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() +
-        " -data trainData\n" + 
-        TrainingParameters.getDescription() + "\n"+
-        "-data trainingData      training data used for cross validation";
+    return "Usage: " + CLI.CMD + " " + getName() + " "
+        + ArgumentParser.createUsage(Parameters.class);
   }
 
   public void run(String[] args) {
-    if (args.length < 6) {
-      System.out.println(getHelp());
+    if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    TrainingParameters parameters = new TrainingParameters(args);
+    Parameters params = ArgumentParser.parse(args, Parameters.class);
     
-    if(!parameters.isValid()) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    opennlp.tools.util.TrainingParameters mlParams = CmdLineUtil
+        .loadTrainingParameters(params.getParams(), false);
     
-    opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), false);
-    
-    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
+    File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
+    
+    Charset encoding = params.getEncoding(); 
     
     ObjectStream<TokenSample> sampleStream =
         TokenizerTrainerTool.openSampleData("Training Data",
-        trainingDataInFile, parameters.getEncoding());
+        trainingDataInFile, encoding);
     
     
     TokenizerCrossValidator validator;
 
     if (mlParams == null) {
       validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
-          parameters.getLanguage(), parameters.isAlphaNumericOptimizationEnabled(),
-          parameters.getCutoff(), parameters.getNumberOfIterations());
-    }
-    else {
+          params.getLang(), params.getAlphaNumOpt(), params.getCutoff(),
+          params.getIterations());
+    } else {
       validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
-          parameters.getLanguage(), parameters.isAlphaNumericOptimizationEnabled(), mlParams);
+          params.getLang(), params.getAlphaNumOpt(), mlParams);
     }
       
     try {
