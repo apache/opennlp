@@ -17,31 +17,22 @@
 
 package opennlp.tools.cmdline;
 
+import java.nio.charset.Charset;
+
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
-// TODO: remove the old BasicTrainingParameters and rename this class to BasicTrainingParameters
-
 /**
- * Common training parameters.
+ * Encoding parameter. The DEFAULT_CHARSET is handled by ArgumentParser.Parse().
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface BasicTrainingParametersI extends EncodingParameter{
+public interface EncodingParameter {
 
-  @ParameterDescription(valueName = "language", description = "specifies the language which is being processed.")
-  String getLang();
-  
-  @ParameterDescription(valueName = "num", description = "specifies the number of training iterations. It is ignored if a parameters file is passed.")
-  @OptionalParameter(defaultValue="100")
-  Integer getIterations();
-  
-  @ParameterDescription(valueName = "num", description = "specifies the min number of times a feature must be seen. It is ignored if a parameters file is passed.")
-  @OptionalParameter(defaultValue="5")
-  Integer getCutoff();
-  
-  @ParameterDescription(valueName = "paramsFile", description = "Training parameters file.")
-  @OptionalParameter()
-  String getParams();
-  
+  @ParameterDescription(valueName = "charsetName", description = "specifies the "
+      + "encoding which should be used for reading and writing text. If not specified "
+      + "the system default will be used.")
+  @OptionalParameter(defaultValue = "DEFAULT_CHARSET")
+  Charset getEncoding();
+
 }
