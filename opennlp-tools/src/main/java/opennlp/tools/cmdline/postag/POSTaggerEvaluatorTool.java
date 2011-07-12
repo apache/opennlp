@@ -21,9 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.BasicEvaluationParameters;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
@@ -41,26 +42,25 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " -encoding charset -model model -data testData";
+    return "Usage: " + CLI.CMD + " " + getName() + " "
+        + ArgumentParser.createUsage(BasicEvaluationParameters.class);
   }
 
   public void run(String[] args) {
-      if (args.length != 6) {
-        System.out.println(getHelp());
-        throw new TerminateToolException(1);
-      }
-      
-      File testData = new File(CmdLineUtil.getParameter("-data", args));
-      CmdLineUtil.checkInputFile("Test data", testData);
-      
-      Charset encoding = CmdLineUtil.getEncodingParameter(args);
-      
-      if (encoding == null) {
-        System.out.println(getHelp());
-        throw new TerminateToolException(1);
-      }
-      
-      POSModel model = new POSModelLoader().load(new File(CmdLineUtil.getParameter("-model", args)));
+    if (!ArgumentParser
+        .validateArguments(args, BasicEvaluationParameters.class)) {
+      System.err.println(getHelp());
+      throw new TerminateToolException(1);
+    }
+
+    BasicEvaluationParameters params = ArgumentParser.parse(args,
+        BasicEvaluationParameters.class);
+
+    File testData = params.getData();
+
+    Charset encoding = params.getEncoding();
+
+    POSModel model = new POSModelLoader().load(params.getModel());
       
       POSEvaluator evaluator = 
           new POSEvaluator(new opennlp.tools.postag.POSTaggerME(model));
