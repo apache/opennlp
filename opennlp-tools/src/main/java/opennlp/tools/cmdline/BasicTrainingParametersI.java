@@ -17,6 +17,8 @@
 
 package opennlp.tools.cmdline;
 
+import java.nio.charset.Charset;
+
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
@@ -33,7 +35,7 @@ public interface BasicTrainingParametersI {
   String getLang();
   
   @ParameterDescription(valueName = "charset", description = "specifies the encoding which should be used for reading and writing text.")
-  String getEncoding();
+  Charset getEncoding();
   
   @ParameterDescription(valueName = "num", description = "specifies the number of training iterations. It is ignored if a parameters file is passed.")
   @OptionalParameter(defaultValue="100")
