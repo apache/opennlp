@@ -1,4 +1,4 @@
-Apache OpenNLP 1.5.1-incubating
+Apache OpenNLP 1.5.2-incubating
 ===============================
 
 
@@ -13,22 +13,27 @@ To build everything go into the opennlp directory and run the following command:
 The results of the build will be placed  in:
     opennlp-distr/target/apache-opennlp-[version]-bin.tar-gz (or .zip)
 
-What is new in OpenNLP 1.5.1-incubating
+What is new in OpenNLP 1.5.2-incubating
 ---------------------------------------
 
-It is the first Apache OpenNLP release and a major effort has been
-put into migrating the project over from SourceForge to Apache.
+This release contains a couple of new features, improvements and bug fixes.
+The maxent trainer can now run in multiple threads to utilize
+multi-core CPUs, configurable feature generation was added to the name finder,
+the perceptron trainer was refactored and improved, machine learners
+can now be configured with much more options via a parameter file.
 
-There are only a few minor new features and a couple of bug fixes 
-in this release.
+Additionally the release contains the following noteworthy changes:
 
-- Added support for the CONLL03 shared task data to train the name finders
-  for various languages
-- Chunker refactoring and added built-in evaluation support
-- Documentation is extended and now included in the distribution
-- Added Document Categorizer to the command line interface
-- Added support for the Portuguese Arvores Deitadas Corpus
-- Addes support for the Leipzig Corpora
+- Improved the white space handling in the Sentence Detector and its training code
+- Added more cross validator command line tools
+- Command line handling code has been refactored
+- Fixed problems with the new build
+- Now uses fast token class feature generation code by default
+- Added support for BioNLP/NLPBA 2004 shared task data
+- Removal of old and deprecated code
+
+A detailed list of the issues related to this release can be found in the release
+notes.
 
 Requirements
 ------------
@@ -38,6 +43,6 @@ Maven 3.0.0 is required for building it
 
 Note
 ----
-The current API contains many deprecated methods, these
+The current API contains still many deprecated methods, these
 will be removed in one of our next releases, please
 migrate to our new API.
