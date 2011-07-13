@@ -65,7 +65,7 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
 
     ChunkerModel model = new ChunkerModelLoader().load(params.getModel());
 
-    ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model), params.getPrintErrors());
+    ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model), params.getMisclassified());
     
     final ObjectStream<ChunkSample> sampleStream = ChunkerTrainerTool.openSampleData("Test",
         testData, encoding);
