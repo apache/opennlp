@@ -47,7 +47,6 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
    * @param chunker the {@link Chunker} to evaluate.
    */
   public ChunkerEvaluator(Chunker chunker) {
-    super();
     this.chunker = chunker;
   }
   
