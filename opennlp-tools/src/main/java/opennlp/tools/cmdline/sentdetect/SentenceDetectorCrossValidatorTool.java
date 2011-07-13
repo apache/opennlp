@@ -76,7 +76,7 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
     }
     
     try {
-      validator.evaluate(sampleStream, 10, params.getPrintErrors());
+      validator.evaluate(sampleStream, 10, params.getMisclassified());
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

@@ -35,8 +35,8 @@ public interface BasicEvaluationParameters extends EncodingParameter{
   @ParameterDescription(valueName = "testData", description = "the data to be used during evaluation")
   File getData();
   
-  @ParameterDescription(valueName = "isPrintErrors", description = "if true will print false negatives and positives")
+  @ParameterDescription(valueName = "true|false", description = "if true will print false negatives and false positives")
   @OptionalParameter(defaultValue="false")
-  Boolean getPrintErrors();
+  Boolean getMisclassified();
   
 }
