@@ -65,7 +65,7 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
     POSModel model = new POSModelLoader().load(params.getModel());
       
       POSEvaluator evaluator = 
-          new POSEvaluator(new opennlp.tools.postag.POSTaggerME(model), params.getPrintErrors());
+          new POSEvaluator(new opennlp.tools.postag.POSTaggerME(model), params.getMisclassified());
       
       System.out.print("Evaluating ... ");
       

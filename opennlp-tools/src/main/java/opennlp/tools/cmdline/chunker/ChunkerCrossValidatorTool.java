@@ -66,7 +66,7 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
         params.getLang(), params.getCutoff(), params.getIterations());
       
     try {
-      validator.evaluate(sampleStream, 10, params.getPrintErrors());
+      validator.evaluate(sampleStream, 10, params.getMisclassified());
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

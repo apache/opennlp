@@ -86,7 +86,7 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
             mlParams, tagdict, null);
       }
 
-      validator.evaluate(sampleStream, 10, params.getPrintErrors());
+      validator.evaluate(sampleStream, 10, params.getMisclassified());
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
