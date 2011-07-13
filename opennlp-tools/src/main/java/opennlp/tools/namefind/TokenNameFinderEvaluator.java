@@ -68,7 +68,6 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    * @param nameFinder the {@link TokenNameFinder} to evaluate.
    */
   public TokenNameFinderEvaluator(TokenNameFinder nameFinder) {
-    super();
     this.nameFinder = nameFinder;
   }
 

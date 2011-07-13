@@ -60,7 +60,6 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    * @param tokenizer the {@link Tokenizer} to evaluate.
    */
   public TokenizerEvaluator(Tokenizer tokenizer) {
-    super();
     this.tokenizer = tokenizer;
   }
 

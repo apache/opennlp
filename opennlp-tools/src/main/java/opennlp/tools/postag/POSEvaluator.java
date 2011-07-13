@@ -38,7 +38,6 @@ public class POSEvaluator extends Evaluator<POSSample> {
    * @param tagger
    */
   public POSEvaluator(POSTagger tagger) {
-    super();
     this.tagger = tagger;
   }
   
