@@ -59,7 +59,7 @@ public class ArgumentParserTest {
   
   interface SimpleArguments {
     
-    @ParameterDescription(valueName = "charset")
+    @ParameterDescription(valueName = "charset", description = "a charset encoding")
     String getEncoding();
     
     @ParameterDescription(valueName = "num")
@@ -110,7 +110,9 @@ public class ArgumentParserTest {
       expectedLength += arg.length();
     }
     
-    assertEquals(expectedLength, usage.length());
+    assertTrue(usage.contains("a charset encoding"));
+    
+    assertTrue(expectedLength < usage.length());
   }
   
   interface ExtendsEncodingParameter extends EncodingParameter {

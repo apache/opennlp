@@ -213,6 +213,7 @@ public class ArgumentParser {
     checkProxyInterface(argProxyInterface);
     
     StringBuilder usage = new StringBuilder();
+    StringBuilder details = new StringBuilder();
     
     for (Method method : argProxyInterface.getMethods()) {
       
@@ -221,13 +222,16 @@ public class ArgumentParser {
       OptionalParameter optional = method.getAnnotation(OptionalParameter.class);
       
       if (desc != null) {
+        String paramName = methodNameToParameter(method.getName());
         
         if (optional != null)
           usage.append('[');
         
-        usage.append(methodNameToParameter(method.getName()));
-        usage.append(' ');
-        usage.append(desc.valueName());
+        usage.append(paramName).append(' ').append(desc.valueName());
+        details.append('\t').append(paramName).append(' ').append(desc.valueName()).append('\n');
+        if(desc.description() != null && desc.description().length() > 0) {
+          details.append("\t\t").append(desc.description()).append('\n');
+        }
         
         if (optional != null)
           usage.append(']');
@@ -238,6 +242,11 @@ public class ArgumentParser {
     
     if (usage.length() > 0)
       usage.setLength(usage.length() - 1);
+    
+    if(details.length() > 0) {
+      details.setLength(details.length() - 1);
+      usage.append("\n\nArguments description:\n").append(details.toString());
+    }
     
     return usage.toString();
   }
