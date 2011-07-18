@@ -26,10 +26,12 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 import opennlp.model.TrainUtil;
+import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.TrainingToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
@@ -41,6 +43,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public final class ParserTrainerTool implements CmdLineTool {
+  
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams{
+
+  }
 
   public String getName() {
     return "ParserTrainer";
@@ -51,8 +57,8 @@ public final class ParserTrainerTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() + 
-        " -head-rules head_rules -data trainingData -model model\n" + TrainingParameters.getDescription();
+    return "Usage: " + CLI.CMD + " " + getName() + " "
+      + ArgumentParser.createUsage(TrainerToolParams.class);
   }
 
   static ObjectStream<Parse> openTrainingData(File trainingDataFile, Charset encoding) {
@@ -93,23 +99,32 @@ public final class ParserTrainerTool implements CmdLineTool {
     return mdict;
   }
   
+  static ParserType parseParserType(String typeAsString) {
+    ParserType type = null;
+    if(typeAsString != null && typeAsString.length() > 0) {
+      type = ParserType.parse(typeAsString);
+      if(type == null) {
+        System.err.println("ParserType training parameter is invalid!");
+        throw new TerminateToolException(-1);
+      }
+    }
+    
+    return type;
+  }
+  
   // TODO: Add param to train tree insert parser
   public void run(String[] args) {
     
-    if (args.length < 10) {
-      System.out.println(getHelp());
+    if (!ArgumentParser.validateArguments(args, TrainerToolParams.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
-
-    TrainingParameters parameters = new TrainingParameters(args);
     
-    if(!parameters.isValid()) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    } 
+    TrainerToolParams params = ArgumentParser.parse(args,
+        TrainerToolParams.class); 
     
     opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), true);
+      CmdLineUtil.loadTrainingParameters(params.getParams(), true);
     
     if (mlParams != null) {
       if (!TrainUtil.isValid(mlParams.getSettings("build"))) {
@@ -138,40 +153,42 @@ public final class ParserTrainerTool implements CmdLineTool {
       }
     }
     
-    ObjectStream<Parse> sampleStream = openTrainingData(new File(CmdLineUtil.getParameter("-data", args)), parameters.getEncoding());
+    ObjectStream<Parse> sampleStream = openTrainingData(params.getData(), params.getEncoding());
     
-    File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
+    File modelOutFile = params.getModel();
     CmdLineUtil.checkOutputFile("parser model", modelOutFile);
     
     ParserModel model;
     try {
       
       HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(
-          new InputStreamReader(new FileInputStream(new File(CmdLineUtil.getParameter("-head-rules", args))), 
-          parameters.getEncoding()));
+          new InputStreamReader(new FileInputStream(params.getHeadRules()),
+              params.getEncoding()));
+      
+      ParserType type = parseParserType(params.getParserType());
       
       if (mlParams == null) {
-        if (ParserType.CHUNKING.equals(parameters.getParserType())) {
+        if (ParserType.CHUNKING.equals(type)) {
           model = opennlp.tools.parser.chunking.Parser.train(
-              parameters.getLanguage(), sampleStream, rules, 
-              parameters.getNumberOfIterations(), parameters.getCutoff());
+              params.getLang(), sampleStream, rules, 
+              params.getIterations(), params.getCutoff());
         }
-        else if (ParserType.TREEINSERT.equals(parameters.getParserType())) {
-          model = opennlp.tools.parser.treeinsert.Parser.train(parameters.getLanguage(), sampleStream, rules, parameters.getNumberOfIterations(), 
-              parameters.getCutoff());
+        else if (ParserType.TREEINSERT.equals(type)) {
+          model = opennlp.tools.parser.treeinsert.Parser.train(params.getLang(), sampleStream, rules, params.getIterations(), 
+              params.getCutoff());
         }
         else {
           throw new IllegalStateException();
         }
       }
       else {
-        if (ParserType.CHUNKING.equals(parameters.getParserType())) {
+        if (ParserType.CHUNKING.equals(type)) {
           model = opennlp.tools.parser.chunking.Parser.train(
-              parameters.getLanguage(), sampleStream, rules, 
+              params.getLang(), sampleStream, rules, 
               mlParams);
         }
-        else if (ParserType.TREEINSERT.equals(parameters.getParserType())) {
-          model = opennlp.tools.parser.treeinsert.Parser.train(parameters.getLanguage(), sampleStream, rules,
+        else if (ParserType.TREEINSERT.equals(type)) {
+          model = opennlp.tools.parser.treeinsert.Parser.train(params.getLang(), sampleStream, rules,
               mlParams);
         }
         else {
