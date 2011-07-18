@@ -22,11 +22,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.BasicTrainingParameters;
+import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.TrainingToolParams;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
@@ -35,6 +36,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class DoccatTrainerTool implements CmdLineTool {
+  
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams{
+
+  }
 
   public String getName() {
     return "DoccatTrainer";
@@ -45,9 +50,8 @@ public class DoccatTrainerTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + BasicTrainingParameters.getParameterUsage() +
-        " -data trainingData -model model\n" +
-        BasicTrainingParameters.getDescription();
+    return "Usage: " + CLI.CMD + " " + getName() + " "
+        + ArgumentParser.createUsage(TrainingToolParams.class);
   }
   
   static ObjectStream<DocumentSample> openSampleData(String sampleDataName,
@@ -63,36 +67,32 @@ public class DoccatTrainerTool implements CmdLineTool {
   }
   
   public void run(String[] args) {
-    if (args.length < 8) {
-      System.out.println(getHelp());
+    if (!ArgumentParser.validateArguments(args, TrainerToolParams.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    BasicTrainingParameters parameters = new BasicTrainingParameters(args);
-    
-    if(!parameters.isValid()) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    TrainerToolParams params = ArgumentParser.parse(args,
+        TrainerToolParams.class);
     
     opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), false);
+      CmdLineUtil.loadTrainingParameters(params.getParams(), false);
     
-    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
-    File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
+    File trainingDataInFile = params.getData();
+    File modelOutFile = params.getModel();
 
     CmdLineUtil.checkOutputFile("document categorizer model", modelOutFile);
     ObjectStream<DocumentSample> sampleStream = 
-        openSampleData("Training", trainingDataInFile, parameters.getEncoding());
+        openSampleData("Training", trainingDataInFile, params.getEncoding());
     
     DoccatModel model;
     try {
       if (mlParams == null) {
-       model = DocumentCategorizerME.train(parameters.getLanguage(), sampleStream, 
-          parameters.getCutoff(), parameters.getNumberOfIterations());
+       model = DocumentCategorizerME.train(params.getLang(), sampleStream, 
+           params.getCutoff(), params.getIterations());
       }
       else {
-        model = DocumentCategorizerME.train(parameters.getLanguage(), sampleStream, 
+        model = DocumentCategorizerME.train(params.getLang(), sampleStream, 
             mlParams);
       }
     } catch (IOException e) {
