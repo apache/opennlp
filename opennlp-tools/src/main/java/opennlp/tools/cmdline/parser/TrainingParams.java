@@ -17,30 +17,25 @@
 
 package opennlp.tools.cmdline.parser;
 
-import opennlp.tools.cmdline.BasicTrainingParameters;
-import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.parser.ParserType;
+import java.io.File;
 
-public class TrainingParameters extends BasicTrainingParameters {
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.BasicTrainingParams;
 
-  private ParserType parserType = ParserType.CHUNKING;
+/**
+ * TrainingParams for Parser.
+ * 
+ * Note: Do not use this class, internal use only!
+ */
+interface TrainingParams extends BasicTrainingParams {
   
-  TrainingParameters(String args[]) {
-    super(args);
-    
-    String typeString = CmdLineUtil.getParameter("-parserType", args);
-    
-    if (typeString != null) {
-      parserType = ParserType.parse(typeString);
-    }
-  }
+  @ParameterDescription(valueName = "CHUNKING|TREEINSERT", description = "One of CHUNKING or TREEINSERT. Default is CHUNKING.")
+  @OptionalParameter(defaultValue = "CHUNKING")
+  String getParserType();
   
-  ParserType getParserType() {
-    return parserType;
-  }
   
-  @Override
-  public boolean isValid() {
-    return super.isValid() && getParserType() != null;
-  }
+  @ParameterDescription(valueName = "headRulesFile", description = "the head rules file")
+  File getHeadRules();
+  
 }
