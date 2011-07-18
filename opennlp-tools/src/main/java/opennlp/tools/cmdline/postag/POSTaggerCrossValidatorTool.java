@@ -22,8 +22,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CLI;
+import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -31,11 +31,10 @@ import opennlp.tools.postag.POSDictionary;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerCrossValidator;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.model.ModelType;
 
 public final class POSTaggerCrossValidatorTool implements CmdLineTool {
   
-  interface Parameters extends CVParams, TrainingParametersI {
+  interface CVToolParams extends CVParams, TrainingParams {
     
   }
 
@@ -49,16 +48,16 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(Parameters.class);
+        + ArgumentParser.createUsage(CVToolParams.class);
   }
 
   public void run(String[] args) {
-    if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+    if (!ArgumentParser.validateArguments(args, CVToolParams.class)) {
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    CVToolParams params = ArgumentParser.parse(args, CVToolParams.class);
 
     opennlp.tools.util.TrainingParameters mlParams = CmdLineUtil
         .loadTrainingParameters(params.getParams(), false);
@@ -79,7 +78,7 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
 
       if (mlParams == null) {
         validator = new POSTaggerCrossValidator(params.getLang(),
-            getModelType(params.getType()), tagdict, null, params.getCutoff(),
+            POSTaggerTrainerTool.getModelType(params.getType()), tagdict, null, params.getCutoff(),
             params.getIterations());
       } else {
         validator = new POSTaggerCrossValidator(params.getLang(),
@@ -103,25 +102,5 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
     System.out.println();
 
     System.out.println("Accuracy: " + validator.getWordAccuracy());
-  }
-
-  private ModelType getModelType(String modelString) {
-    ModelType model;
-    if (modelString == null)
-      modelString = "maxent";
-    
-    if (modelString.equals("maxent")) {
-      model = ModelType.MAXENT; 
-    }
-    else if (modelString.equals("perceptron")) {
-      model = ModelType.PERCEPTRON; 
-    }
-    else if (modelString.equals("perceptron_sequence")) {
-      model = ModelType.PERCEPTRON_SEQUENCE; 
-    }
-    else {
-      model = null;
-    }
-    return model;
   }
 }
