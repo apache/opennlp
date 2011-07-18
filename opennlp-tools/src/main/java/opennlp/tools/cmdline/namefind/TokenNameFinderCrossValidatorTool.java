@@ -23,8 +23,8 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CLI;
+import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -34,7 +34,7 @@ import opennlp.tools.util.ObjectStream;
 
 public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
   
-  interface Parameters extends TrainingParametersI, CVParams{
+  interface CVToolParams extends TrainingParams, CVParams{
     
   }
 
@@ -48,17 +48,16 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " "
-        + TrainingParameters.getParameterUsage() + " -data trainData\n"
-        + TrainingParameters.getDescription();
+        + ArgumentParser.createUsage(CVToolParams.class);
   }
 
   public void run(String[] args) {
-    if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+    if (!ArgumentParser.validateArguments(args, CVToolParams.class)) {
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    CVToolParams params = ArgumentParser.parse(args, CVToolParams.class);
 
     opennlp.tools.util.TrainingParameters mlParams = CmdLineUtil
         .loadTrainingParameters(params.getParams(),false);

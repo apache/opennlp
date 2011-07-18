@@ -25,10 +25,12 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.TrainingToolParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -39,6 +41,10 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ModelUtil;
 
 public final class TokenNameFinderTrainerTool implements CmdLineTool {
+  
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams{
+
+  }
 
   public String getName() {
     return "TokenNameFinderTrainer";
@@ -49,9 +55,8 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + 
-        TrainingParameters.getParameterUsage() + " -data trainingData -model model\n" +
-        TrainingParameters.getDescription();
+    return "Usage: " + CLI.CMD + " " + getName() + " "
+      + ArgumentParser.createUsage(TrainerToolParams.class);
   }
 
   static ObjectStream<NameSample> openSampleData(String sampleDataName,
@@ -162,48 +167,44 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
   
   public void run(String[] args) {
     
-    if (args.length < 8) {
-      System.out.println(getHelp());
+    if (!ArgumentParser.validateArguments(args, TrainerToolParams.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    TrainingParameters parameters = new TrainingParameters(args);
-    
-    if(!parameters.isValid()) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    TrainerToolParams params = ArgumentParser.parse(args,
+        TrainerToolParams.class);
     
     opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), true);
+      CmdLineUtil.loadTrainingParameters(params.getParams(), true);
     
-    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
-    File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
+    File trainingDataInFile = params.getData();
+    File modelOutFile = params.getModel();
     
     
-    byte featureGeneratorBytes[] = openFeatureGeneratorBytes(parameters.getFeatureGenDescriptorFile());
+    byte featureGeneratorBytes[] = openFeatureGeneratorBytes(params.getFeaturegen());
     
     
     // TODO: Support Custom resources: 
     //       Must be loaded into memory, or written to tmp file until descriptor 
     //       is loaded which defines parses when model is loaded
     
-    Map<String, Object> resources = loadResources(parameters.getResourceDirectory());
+    Map<String, Object> resources = loadResources(params.getResources());
         
     CmdLineUtil.checkOutputFile("name finder model", modelOutFile);
     ObjectStream<NameSample> sampleStream = openSampleData("Training", trainingDataInFile,
-        parameters.getEncoding());
+        params.getEncoding());
 
     TokenNameFinderModel model;
     try {
       if (mlParams == null) {
-      model = opennlp.tools.namefind.NameFinderME.train(parameters.getLanguage(), parameters.getType(),
-           sampleStream, featureGeneratorBytes, resources, parameters.getNumberOfIterations(),
-           parameters.getCutoff());
+      model = opennlp.tools.namefind.NameFinderME.train(params.getLang(), params.getType(),
+           sampleStream, featureGeneratorBytes, resources, params.getIterations(),
+           params.getCutoff());
       }
       else {
         model = opennlp.tools.namefind.NameFinderME.train(
-            parameters.getLanguage(), parameters.getType(), sampleStream,
+            params.getLang(), params.getType(), sampleStream,
             mlParams, featureGeneratorBytes, resources);
       }
     } 
