@@ -20,7 +20,9 @@ package opennlp.tools.cmdline.parser;
 import java.io.File;
 import java.io.IOException;
 
-import opennlp.tools.cmdline.BasicTrainingParameters;
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.BasicTrainingParams;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -33,35 +35,44 @@ import opennlp.tools.util.ObjectStream;
  * Abstract base class for tools which update the parser model.
  */
 abstract class ModelUpdaterTool implements CmdLineTool {
+  
+  interface ModelUpdaterParams extends BasicTrainingParams {
+    
+    @ParameterDescription(valueName = "modelFile", description = "the model file to be updated")
+    File getModel();
+
+  }
 
   protected abstract ParserModel trainAndUpdate(ParserModel originalModel,
-      ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters)
+      ObjectStream<Parse> parseSamples, ModelUpdaterParams parameters)
       throws IOException;
 
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " -data training.file -model parser.model";
+    return "Usage: " + CLI.CMD + " " + getName() + " "
+      + ArgumentParser.createUsage(ModelUpdaterParams.class);
   }
   
   public final void run(String[] args) {
 
-    if (args.length < 8) {
-      System.out.println(getHelp());
+    if (!ArgumentParser.validateArguments(args, ModelUpdaterParams.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    BasicTrainingParameters parameters = new BasicTrainingParameters(args);
+    ModelUpdaterParams params = ArgumentParser.parse(args,
+        ModelUpdaterParams.class);
     
     // Load model to be updated
-    File modelFile = new File(CmdLineUtil.getParameter("-model", args));
+    File modelFile = params.getModel();
     ParserModel originalParserModel = new ParserModelLoader().load(modelFile);
 
-    ObjectStream<Parse> parseSamples = ParserTrainerTool.openTrainingData(new File(CmdLineUtil.getParameter("-data", args)), 
-        parameters.getEncoding());
+    ObjectStream<Parse> parseSamples = ParserTrainerTool.openTrainingData(params.getData(), 
+        params.getEncoding());
     
     ParserModel updatedParserModel;
     try {
       updatedParserModel = trainAndUpdate(originalParserModel,
-          parseSamples, parameters);
+          parseSamples, params);
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
