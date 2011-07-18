@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.BasicEvaluationParameters;
+import opennlp.tools.cmdline.EvaluatorParams;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -44,18 +44,18 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(BasicEvaluationParameters.class);
+        + ArgumentParser.createUsage(EvaluatorParams.class);
   }
 
   public void run(String[] args) {
     if (!ArgumentParser
-        .validateArguments(args, BasicEvaluationParameters.class)) {
+        .validateArguments(args, EvaluatorParams.class)) {
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
 
-    BasicEvaluationParameters params = ArgumentParser.parse(args,
-        BasicEvaluationParameters.class);
+    EvaluatorParams params = ArgumentParser.parse(args,
+        EvaluatorParams.class);
 
     File testData = params.getData();
     CmdLineUtil.checkInputFile("Test data", testData);

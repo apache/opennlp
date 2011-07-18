@@ -19,14 +19,14 @@ package opennlp.tools.cmdline.tokenizer;
 
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
-import opennlp.tools.cmdline.BasicTrainingParametersI;
+import opennlp.tools.cmdline.BasicTrainingParams;
 
 /**
  * TrainingParameters for Tokenizer.
  * 
  * Note: Do not use this class, internal use only!
  */
-interface TrainingParametersI extends BasicTrainingParametersI {
+interface TrainingParametersI extends BasicTrainingParams {
   @ParameterDescription(valueName = "isAlphaNumOpt", description = "Optimization flag to skip alpha numeric tokens for further tokenization")
   @OptionalParameter(defaultValue = "false")
   Boolean getAlphaNumOpt();

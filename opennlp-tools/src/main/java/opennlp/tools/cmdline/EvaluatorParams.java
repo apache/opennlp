@@ -27,7 +27,7 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface BasicEvaluationParameters extends EncodingParameter{
+public interface EvaluatorParams extends EncodingParameter{
   
   @ParameterDescription(valueName = "model", description = "the model file to be evaluated")
   File getModel();

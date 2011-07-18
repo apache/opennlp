@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.BasicCrossValidatorParameters;
+import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -43,17 +43,17 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(BasicCrossValidatorParameters.class);
+    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(CVParams.class);
   }
 
   public void run(String[] args) {
     
-    if (!ArgumentParser.validateArguments(args, BasicCrossValidatorParameters.class)) {
+    if (!ArgumentParser.validateArguments(args, CVParams.class)) {
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    BasicCrossValidatorParameters params = ArgumentParser.parse(args, BasicCrossValidatorParameters.class);
+    CVParams params = ArgumentParser.parse(args, CVParams.class);
     
     opennlp.tools.util.TrainingParameters mlParams = 
       CmdLineUtil.loadTrainingParameters(params.getParams(), false);

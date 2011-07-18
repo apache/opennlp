@@ -23,7 +23,7 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.BasicCrossValidatorParameters;
+import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -34,7 +34,7 @@ import opennlp.tools.util.ObjectStream;
 
 public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
   
-  interface Parameters extends TrainingParametersI, BasicCrossValidatorParameters{
+  interface Parameters extends TrainingParametersI, CVParams{
     
   }
 
