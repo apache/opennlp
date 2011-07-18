@@ -28,13 +28,17 @@ import opennlp.tools.cmdline.BasicTrainingParams;
  * 
  * Note: Do not use this class, internal use only!
  */
-interface TrainingParametersI extends BasicTrainingParams {
+interface TrainingParams extends BasicTrainingParams {
   
-  @ParameterDescription(valueName = "modelType", description = "The type of the token name finder model. One of axent|perceptron|perceptron_sequence.")
+  @ParameterDescription(valueName = "maxent|perceptron|perceptron_sequence", description = "The type of the token name finder model. One of maxent|perceptron|perceptron_sequence.")
   @OptionalParameter(defaultValue = "maxent")
   String getType();
   
   @ParameterDescription(valueName = "dictionaryPath", description = "The feature generator descriptor file")
   @OptionalParameter
-  File getDict();  
+  File getDict();
+  
+  @ParameterDescription(valueName = "cutoff", description = "NGram cutoff. If not specified will not create ngram dictionary.")
+  @OptionalParameter
+  Integer getNgram();
 }
