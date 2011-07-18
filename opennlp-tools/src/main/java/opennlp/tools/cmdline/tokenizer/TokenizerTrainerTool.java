@@ -23,10 +23,12 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import opennlp.model.TrainUtil;
+import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.TrainingToolParams;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenSampleStream;
 import opennlp.tools.tokenize.TokenizerModel;
@@ -34,6 +36,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public final class TokenizerTrainerTool implements CmdLineTool {
+  
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams{
+
+  }
 
   public String getName() {
     return "TokenizerTrainer";
@@ -44,9 +50,8 @@ public final class TokenizerTrainerTool implements CmdLineTool {
   }
 
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName()
-        + TrainingParameters.getParameterUsage() + " -data trainingData -model model\n" +
-        TrainingParameters.getDescription();
+    return "Usage: " + CLI.CMD + " " + getName() + " "
+      + ArgumentParser.createUsage(TrainerToolParams.class);
   }
 
   static ObjectStream<TokenSample> openSampleData(String sampleDataName,
@@ -62,20 +67,16 @@ public final class TokenizerTrainerTool implements CmdLineTool {
   }
 
   public void run(String[] args) {
-    if (args.length < 6) {
-      System.out.println(getHelp());
+    if (!ArgumentParser.validateArguments(args, TrainerToolParams.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
-
-    TrainingParameters parameters = new TrainingParameters(args);
-
-    if (!parameters.isValid()) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    
+    TrainerToolParams params = ArgumentParser.parse(args,
+        TrainerToolParams.class);
 
     opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), false);
+      CmdLineUtil.loadTrainingParameters(params.getParams(), false);
     
     if (mlParams != null) {
       if (!TrainUtil.isValid(mlParams.getSettings())) {
@@ -89,25 +90,25 @@ public final class TokenizerTrainerTool implements CmdLineTool {
       }
     }
     
-    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
-    File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
+    File trainingDataInFile = params.getData();
+    File modelOutFile = params.getModel();
     
     CmdLineUtil.checkOutputFile("tokenizer model", modelOutFile);
     ObjectStream<TokenSample> sampleStream = openSampleData("Training",
-        trainingDataInFile, parameters.getEncoding());
+        trainingDataInFile, params.getEncoding());
 
     TokenizerModel model;
     try {
       if (mlParams == null) {
         model = opennlp.tools.tokenize.TokenizerME.train(
-            parameters.getLanguage(), sampleStream, 
-            parameters.isAlphaNumericOptimizationEnabled(),
-            parameters.getCutoff(), parameters.getNumberOfIterations());
+            params.getLang(), sampleStream, 
+            params.getAlphaNumOpt(),
+            params.getCutoff(), params.getIterations());
       }
       else {
         model = opennlp.tools.tokenize.TokenizerME.train(
-            parameters.getLanguage(), sampleStream, 
-            parameters.isAlphaNumericOptimizationEnabled(),
+            params.getLang(), sampleStream, 
+            params.getAlphaNumOpt(),
             mlParams);
       }
     } catch (IOException e) {
