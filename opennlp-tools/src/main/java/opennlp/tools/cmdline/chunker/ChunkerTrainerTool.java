@@ -52,7 +52,7 @@ public class ChunkerTrainerTool implements CmdLineTool {
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(TrainingToolParams.class);
+        + ArgumentParser.createUsage(TrainerToolParams.class);
   }
 
   static ObjectStream<ChunkSample> openSampleData(String sampleDataName,
