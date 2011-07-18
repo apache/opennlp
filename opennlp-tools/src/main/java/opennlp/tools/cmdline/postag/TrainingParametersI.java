@@ -21,14 +21,14 @@ import java.io.File;
 
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
-import opennlp.tools.cmdline.BasicTrainingParametersI;
+import opennlp.tools.cmdline.BasicTrainingParams;
 
 /**
  * TrainingParameters for Name Finder.
  * 
  * Note: Do not use this class, internal use only!
  */
-interface TrainingParametersI extends BasicTrainingParametersI {
+interface TrainingParametersI extends BasicTrainingParams {
   
   @ParameterDescription(valueName = "modelType", description = "The type of the token name finder model. One of axent|perceptron|perceptron_sequence.")
   @OptionalParameter(defaultValue = "maxent")

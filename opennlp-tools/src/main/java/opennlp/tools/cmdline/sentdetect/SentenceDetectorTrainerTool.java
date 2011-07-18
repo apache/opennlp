@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import opennlp.model.TrainUtil;
+import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -45,9 +46,7 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + TrainingParameters.getParameterUsage() +
-        " -data trainingData -model model\n" +
-        TrainingParameters.getDescription();
+    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(TrainingParametersI.class);
   }
 
   static ObjectStream<SentenceSample> openSampleData(String sampleDataName,
@@ -70,28 +69,26 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
     
     TrainingParameters parameters = new TrainingParameters(args);
     
-    if(!parameters.isValid()) {
-      System.out.println(getHelp());
+    if (!ArgumentParser.validateArguments(args, TrainingParametersI.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
+    
+    TrainingParametersI params = ArgumentParser.parse(args, TrainingParametersI.class);
+ 
 
     opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), false);
+      CmdLineUtil.loadTrainingParameters(params.getParams(), false);
     
     if (mlParams != null) {
-      if (!TrainUtil.isValid(mlParams.getSettings())) {
-        System.err.println("Training parameters file is invalid!");
-        throw new TerminateToolException(-1);
-      }
-      
       if (TrainUtil.isSequenceTraining(mlParams.getSettings())) {
         System.err.println("Sequence training is not supported!");
         throw new TerminateToolException(-1);
       }
     }
     
-    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
-    File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
+    File trainingDataInFile = params.getData();
+    File modelOutFile = params.getData();// FIX IT
 
     CmdLineUtil.checkOutputFile("sentence detector model", modelOutFile);
     ObjectStream<SentenceSample> sampleStream = 

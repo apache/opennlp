@@ -17,31 +17,23 @@
 
 package opennlp.tools.cmdline;
 
+import java.io.File;
+
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
-// TODO: remove the old BasicTrainingParameters and rename this class to BasicTrainingParameters
-
 /**
- * Common training parameters.
+ * Common cross validator parameters.
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface BasicTrainingParametersI extends EncodingParameter{
-
-  @ParameterDescription(valueName = "language", description = "specifies the language which is being processed.")
-  String getLang();
+public interface CVParams extends BasicTrainingParams {
+    
+  @ParameterDescription(valueName = "testData", description = "the data to be used during evaluation")
+  File getData();
   
-  @ParameterDescription(valueName = "num", description = "specifies the number of training iterations. It is ignored if a parameters file is passed.")
-  @OptionalParameter(defaultValue="100")
-  Integer getIterations();
-  
-  @ParameterDescription(valueName = "num", description = "specifies the min number of times a feature must be seen. It is ignored if a parameters file is passed.")
-  @OptionalParameter(defaultValue="5")
-  Integer getCutoff();
-  
-  @ParameterDescription(valueName = "paramsFile", description = "Training parameters file.")
-  @OptionalParameter()
-  String getParams();
+  @ParameterDescription(valueName = "true|false", description = "if true will print false negatives and false positives")
+  @OptionalParameter(defaultValue="false")
+  Boolean getMisclassified();
   
 }
