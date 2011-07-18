@@ -34,7 +34,7 @@ import opennlp.tools.util.eval.FMeasure;
 
 public final class TokenizerCrossValidatorTool implements CmdLineTool {
   
-  interface Parameters extends CVParams, TrainingParametersI {
+  interface CVToolParams extends CVParams, TrainingParams {
     
   }
 
@@ -48,16 +48,16 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(Parameters.class);
+        + ArgumentParser.createUsage(CVToolParams.class);
   }
 
   public void run(String[] args) {
-    if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+    if (!ArgumentParser.validateArguments(args, CVToolParams.class)) {
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    CVToolParams params = ArgumentParser.parse(args, CVToolParams.class);
     
     opennlp.tools.util.TrainingParameters mlParams = CmdLineUtil
         .loadTrainingParameters(params.getParams(), false);
