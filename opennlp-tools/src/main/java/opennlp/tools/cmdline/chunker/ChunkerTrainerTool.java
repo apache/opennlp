@@ -27,15 +27,20 @@ import opennlp.tools.chunker.ChunkSampleStream;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.chunker.DefaultChunkerContextGenerator;
-import opennlp.tools.cmdline.BasicTrainingParameters;
+import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.TrainingToolParams;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class ChunkerTrainerTool implements CmdLineTool {
+  
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams{
+
+  }
 
   public String getName() {
     return "ChunkerTrainerME";
@@ -46,9 +51,8 @@ public class ChunkerTrainerTool implements CmdLineTool {
   }
 
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName()
-        + BasicTrainingParameters.getParameterUsage() + " -data trainingData -model model\n" +
-        BasicTrainingParameters.getDescription();
+    return "Usage: " + CLI.CMD + " " + getName() + " "
+        + ArgumentParser.createUsage(TrainingToolParams.class);
   }
 
   static ObjectStream<ChunkSample> openSampleData(String sampleDataName,
@@ -65,36 +69,32 @@ public class ChunkerTrainerTool implements CmdLineTool {
   
   public void run(String[] args) {
     
-    if (args.length < 8) {
-      System.out.println(getHelp());
+    if (!ArgumentParser.validateArguments(args, TrainerToolParams.class)) {
+      System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    BasicTrainingParameters parameters = new BasicTrainingParameters(args);
-    
-    if(!parameters.isValid()) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    TrainerToolParams params = ArgumentParser.parse(args,
+        TrainerToolParams.class);
     
     opennlp.tools.util.TrainingParameters mlParams = 
-      CmdLineUtil.loadTrainingParameters(CmdLineUtil.getParameter("-params", args), false);
+      CmdLineUtil.loadTrainingParameters(params.getParams(), false);
     
-    File trainingDataInFile = new File(CmdLineUtil.getParameter("-data", args));
-    File modelOutFile = new File(CmdLineUtil.getParameter("-model", args));
+    File trainingDataInFile = params.getData();
+    File modelOutFile = params.getModel();
 
     CmdLineUtil.checkOutputFile("sentence detector model", modelOutFile);
     ObjectStream<ChunkSample> sampleStream = 
-      openSampleData("Training", trainingDataInFile, parameters.getEncoding());
+      openSampleData("Training", trainingDataInFile, params.getEncoding());
     
     ChunkerModel model;
     try {
       if (mlParams == null) {
-        model = ChunkerME.train(parameters.getLanguage(), sampleStream, 
-            parameters.getCutoff(), parameters.getNumberOfIterations());
+        model = ChunkerME.train(params.getLang(), sampleStream, 
+            params.getCutoff(), params.getIterations());
       }
       else {
-        model = ChunkerME.train(parameters.getLanguage(), sampleStream, 
+        model = ChunkerME.train(params.getLang(), sampleStream, 
             new DefaultChunkerContextGenerator(), mlParams);
       }
     } catch (IOException e) {
