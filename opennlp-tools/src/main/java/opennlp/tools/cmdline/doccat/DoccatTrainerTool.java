@@ -51,7 +51,7 @@ public class DoccatTrainerTool implements CmdLineTool {
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(TrainingToolParams.class);
+        + ArgumentParser.createUsage(TrainerToolParams.class);
   }
   
   static ObjectStream<DocumentSample> openSampleData(String sampleDataName,
