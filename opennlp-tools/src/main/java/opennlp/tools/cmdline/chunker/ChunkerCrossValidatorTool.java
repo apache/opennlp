@@ -23,8 +23,8 @@ import java.io.IOException;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerCrossValidator;
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CLI;
+import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -32,6 +32,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.FMeasure;
 
 public final class ChunkerCrossValidatorTool implements CmdLineTool {
+  
+  interface CVToolParams extends TrainingParams, CVParams {
+    
+  }
 
   public String getName() {
     return "ChunkerCrossValidator";
@@ -43,17 +47,17 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
   
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(CVParams.class);
+        + ArgumentParser.createUsage(CVToolParams.class);
   }
 
   public void run(String[] args) {
-    if (!ArgumentParser.validateArguments(args, CVParams.class)) {
+    if (!ArgumentParser.validateArguments(args, CVToolParams.class)) {
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    CVParams params = ArgumentParser.parse(args,
-        CVParams.class);
+    CVToolParams params = ArgumentParser.parse(args,
+        CVToolParams.class);
     
     File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
