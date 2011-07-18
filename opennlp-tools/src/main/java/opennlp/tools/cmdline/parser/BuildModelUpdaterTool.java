@@ -20,7 +20,6 @@ package opennlp.tools.cmdline.parser;
 import java.io.IOException;
 
 import opennlp.model.AbstractModel;
-import opennlp.tools.cmdline.BasicTrainingParameters;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserEventTypeEnum;
@@ -41,7 +40,7 @@ public final class BuildModelUpdaterTool extends ModelUpdaterTool {
   
   @Override
   protected ParserModel trainAndUpdate(ParserModel originalModel,
-      ObjectStream<Parse> parseSamples, BasicTrainingParameters parameters)
+      ObjectStream<Parse> parseSamples, ModelUpdaterParams parameters)
       throws IOException {
     
       Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), parameters.getCutoff());
@@ -54,7 +53,7 @@ public final class BuildModelUpdaterTool extends ModelUpdaterTool {
       opennlp.model.EventStream bes = new ParserEventStream(parseSamples, 
           originalModel.getHeadRules(), ParserEventTypeEnum.BUILD, mdict);
       AbstractModel buildModel = Parser.train(bes, 
-          parameters.getNumberOfIterations(), parameters.getCutoff());
+          parameters.getIterations(), parameters.getCutoff());
       
       parseSamples.close();
       
