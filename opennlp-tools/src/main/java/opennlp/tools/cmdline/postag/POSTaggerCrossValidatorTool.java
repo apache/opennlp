@@ -22,7 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.BasicCrossValidatorParameters;
+import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -35,7 +35,7 @@ import opennlp.tools.util.model.ModelType;
 
 public final class POSTaggerCrossValidatorTool implements CmdLineTool {
   
-  interface Parameters extends BasicCrossValidatorParameters, TrainingParametersI {
+  interface Parameters extends CVParams, TrainingParametersI {
     
   }
 

@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.BasicCrossValidatorParameters;
+import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -34,7 +34,7 @@ import opennlp.tools.util.eval.FMeasure;
 
 public final class TokenizerCrossValidatorTool implements CmdLineTool {
   
-  interface Parameters extends BasicCrossValidatorParameters, TrainingParametersI {
+  interface Parameters extends CVParams, TrainingParametersI {
     
   }
 
