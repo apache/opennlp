@@ -28,7 +28,7 @@ import opennlp.tools.cmdline.BasicTrainingParams;
  * 
  * Note: Do not use this class, internal use only!
  */
-interface TrainingParametersI extends BasicTrainingParams {
+interface TrainingParams extends BasicTrainingParams {
   
   @ParameterDescription(valueName = "modelType", description = "The type of the token name finder model")
   @OptionalParameter(defaultValue = "default")
