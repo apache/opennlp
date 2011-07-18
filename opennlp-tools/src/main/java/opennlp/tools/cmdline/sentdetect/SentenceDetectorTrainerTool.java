@@ -28,6 +28,7 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.TrainingToolParams;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
@@ -36,6 +37,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public final class SentenceDetectorTrainerTool implements CmdLineTool {
+  
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams{
+
+  }
 
   public String getName() {
     return "SentenceDetectorTrainer";
@@ -46,7 +51,8 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
   }
   
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(TrainingParametersI.class);
+    return "Usage: " + CLI.CMD + " " + getName() + " "
+      + ArgumentParser.createUsage(TrainerToolParams.class);
   }
 
   static ObjectStream<SentenceSample> openSampleData(String sampleDataName,
@@ -62,19 +68,13 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
   }
   
   public void run(String[] args) {
-    if (args.length < 8) {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-    
-    TrainingParameters parameters = new TrainingParameters(args);
-    
-    if (!ArgumentParser.validateArguments(args, TrainingParametersI.class)) {
+    if (!ArgumentParser.validateArguments(args, TrainerToolParams.class)) {
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
-    TrainingParametersI params = ArgumentParser.parse(args, TrainingParametersI.class);
+    TrainerToolParams params = ArgumentParser.parse(args,
+        TrainerToolParams.class);
  
 
     opennlp.tools.util.TrainingParameters mlParams = 
@@ -88,20 +88,20 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
     }
     
     File trainingDataInFile = params.getData();
-    File modelOutFile = params.getData();// FIX IT
+    File modelOutFile = params.getModel();
 
     CmdLineUtil.checkOutputFile("sentence detector model", modelOutFile);
     ObjectStream<SentenceSample> sampleStream = 
-        openSampleData("Training", trainingDataInFile, parameters.getEncoding());
+        openSampleData("Training", trainingDataInFile, params.getEncoding());
 
     SentenceModel model;
     try {
       if (mlParams == null) {
-        model = SentenceDetectorME.train(parameters.getLanguage(), sampleStream, true, null, 
-            parameters.getCutoff(), parameters.getNumberOfIterations());
+        model = SentenceDetectorME.train(params.getLang(), sampleStream, true, null, 
+            params.getCutoff(), params.getIterations());
       }
       else {
-        model = SentenceDetectorME.train(parameters.getLanguage(), sampleStream, true, null, 
+        model = SentenceDetectorME.train(params.getLang(), sampleStream, true, null, 
             mlParams);
       }
     } catch (IOException e) {

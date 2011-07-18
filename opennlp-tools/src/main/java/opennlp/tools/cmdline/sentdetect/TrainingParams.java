@@ -17,19 +17,14 @@
 
 package opennlp.tools.cmdline.sentdetect;
 
-import opennlp.tools.cmdline.BasicTrainingParameters;
+import opennlp.tools.cmdline.BasicTrainingParams;
 
-class TrainingParameters extends BasicTrainingParameters {
-
-  TrainingParameters(String[] args) {
-    super(args);
-  }
+/**
+ * TrainingParams for Sentence Detector.
+ * 
+ * Note: Do not use this class, internal use only!
+ */
+interface TrainingParams extends BasicTrainingParams {
   
-  public static String getParameterUsage() {
-    return BasicTrainingParameters.getParameterUsage();
-  }
   
-  public static String getDescription() {
-    return BasicTrainingParameters.getDescription();
-  }
 }
