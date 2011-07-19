@@ -27,7 +27,7 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface CVParams extends BasicTrainingParams {
+public interface CVParams {
     
   @ParameterDescription(valueName = "testData", description = "the data to be used during evaluation")
   File getData();
