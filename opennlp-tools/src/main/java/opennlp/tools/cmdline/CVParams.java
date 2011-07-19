@@ -36,4 +36,8 @@ public interface CVParams extends BasicTrainingParams {
   @OptionalParameter(defaultValue="false")
   Boolean getMisclassified();
   
+  @ParameterDescription(valueName = "num", description = "The number of folds. Default is 10")
+  @OptionalParameter(defaultValue="10")
+  Integer getFolds();
+  
 }

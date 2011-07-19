@@ -43,7 +43,7 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
   }
 
   public String getShortDescription() {
-    return "10-fold cross validator for the learnable POS tagger";
+    return "K-fold cross validator for the learnable POS tagger";
   }
 
   public String getHelp() {
@@ -85,7 +85,7 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
             mlParams, tagdict, null);
       }
 
-      validator.evaluate(sampleStream, 10, params.getMisclassified());
+      validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);

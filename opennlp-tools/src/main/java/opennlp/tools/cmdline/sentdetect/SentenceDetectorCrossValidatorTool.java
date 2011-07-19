@@ -43,7 +43,7 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
   }
   
   public String getShortDescription() {
-    return "N-fold cross validator for the learnable sentence detector";
+    return "K-fold cross validator for the learnable sentence detector";
   }
   
   public String getHelp() {
@@ -80,7 +80,7 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
     }
     
     try {
-      validator.evaluate(sampleStream, 10, params.getMisclassified());
+      validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
