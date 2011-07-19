@@ -43,7 +43,7 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
   }
 
   public String getShortDescription() {
-    return "10-fold cross validator for the learnable Name Finder";
+    return "K-fold cross validator for the learnable Name Finder";
   }
 
   public String getHelp() {
@@ -87,7 +87,7 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
         validator = new TokenNameFinderCrossValidator(params.getLang(), params.getType(), mlParams,
             featureGeneratorBytes, resources);
       }
-      validator.evaluate(sampleStream, 10, params.getMisclassified());
+      validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);

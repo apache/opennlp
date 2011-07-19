@@ -43,7 +43,7 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
   }
   
   public String getShortDescription() {
-    return "10-fold cross validator for the learnable tokenizer";
+    return "K-fold cross validator for the learnable tokenizer";
   }
   
   public String getHelp() {
@@ -84,7 +84,7 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
     }
       
     try {
-      validator.evaluate(sampleStream, 10, params.getMisclassified());
+      validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

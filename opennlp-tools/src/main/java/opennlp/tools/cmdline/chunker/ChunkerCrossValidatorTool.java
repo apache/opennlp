@@ -42,7 +42,7 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
   }
   
   public String getShortDescription() {
-    return "10-fold cross validator for the chunker";
+    return "K-fold cross validator for the chunker";
   }
   
   public String getHelp() {
@@ -70,7 +70,7 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
         params.getLang(), params.getCutoff(), params.getIterations());
       
     try {
-      validator.evaluate(sampleStream, 10, params.getMisclassified());
+      validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
