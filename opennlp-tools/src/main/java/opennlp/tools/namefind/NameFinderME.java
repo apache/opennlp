@@ -290,8 +290,8 @@ public class NameFinderME implements TokenNameFinder {
    }
 
    /**
-    * Returns an array of probabilities for each of the specified spans which is the product
-    * the probabilities for each of the outcomes which make up the span.
+    * Returns an array of probabilities for each of the specified spans which is the arithmetic mean 
+    * of the probabilities for each of the outcomes which make up the span.
     * 
     * @param spans The spans of the names for which probabilities are desired.
     * 
@@ -302,13 +302,15 @@ public class NameFinderME implements TokenNameFinder {
      double[] sprobs = new double[spans.length];
      double[] probs = bestSequence.getProbs();
      
-     for (int si=0;si<spans.length;si++) {
+     for (int si=0; si<spans.length; si++) {
        
-       double p = 1;
+       double p = 0;
        
        for (int oi = spans[si].getStart(); oi < spans[si].getEnd(); oi++) {
-         p *= probs[oi];
+         p += probs[oi];
        }
+       
+       p /= spans[si].length(); 
        
        sprobs[si] = p;
      }
