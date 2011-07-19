@@ -65,39 +65,7 @@ public class NameFinderME implements TokenNameFinder {
   public static final int DEFAULT_BEAM_SIZE = 3;
   private static final Pattern typedOutcomePattern = Pattern.compile("(.+)-\\w+");
 
-  private static class NameFinderSequenceValidator implements
-      SequenceValidator<String> {
-    
-    public boolean validSequence(int i, String[] inputSequence,
-        String[] outcomesSequence, String outcome) {
-      
-      // outcome is formatted like "cont" or "sometype-cont", so we
-      // can check if it ends with "cont".
-      if (outcome.endsWith(CONTINUE)) {
-        
-        int li = outcomesSequence.length - 1;
-        
-        if (li == -1) {
-          return false;
-        } else if (outcomesSequence[li].endsWith(OTHER)) {
-          return false;
-        } else if (outcomesSequence[li].endsWith(CONTINUE)) {
-          // if it is continue, we have to check if previous match was of the same type 
-          String previousNameType = extractNameType(outcomesSequence[li]);
-          String nameType = extractNameType(outcome);
-          if( previousNameType != null || nameType != null ) {
-            if( nameType != null ) {
-              if( nameType.equals(previousNameType) ){
-                return true;
-              }
-            }
-            return false; // outcomes types are not equal
-          }
-        }
-      }
-      return true;
-    }
-  }
+
 
   public static final String START = "start";
   public static final String CONTINUE = "cont";
@@ -121,7 +89,8 @@ public class NameFinderME implements TokenNameFinder {
    * @param model
    * @param beamSize
    */
-  public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize) {
+  public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize,
+      SequenceValidator<String> sequenceValidator) {
     this.model = model.getNameFinderModel();
     
     // If generator is provided always use that one
@@ -141,10 +110,17 @@ public class NameFinderME implements TokenNameFinder {
     contextGenerator.addFeatureGenerator(
           new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
     
+    if (sequenceValidator == null)
+      sequenceValidator = new NameFinderSequenceValidator();
+    
     beam = new BeamSearch<String>(beamSize, contextGenerator, this.model,
-        new NameFinderSequenceValidator(), beamSize);
+        sequenceValidator, beamSize);
   }
 
+  public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize) {
+    this(model, generator, beamSize, null);
+  }
+  
   public NameFinderME(TokenNameFinderModel model, int beamSize) {
     this(model, null, beamSize);
   }
@@ -493,7 +469,7 @@ public class NameFinderME implements TokenNameFinder {
    * @param outcome the outcome
    * @return the name type, or null if not set
    */
-  private static final String extractNameType(String outcome) {
+  static final String extractNameType(String outcome) {
     Matcher matcher = typedOutcomePattern.matcher(outcome);
     if(matcher.matches()) {
       String nameType = matcher.group(1);
