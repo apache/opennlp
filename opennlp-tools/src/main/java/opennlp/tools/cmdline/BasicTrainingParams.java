@@ -17,8 +17,6 @@
 
 package opennlp.tools.cmdline;
 
-import java.io.File;
-
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
@@ -33,9 +31,6 @@ public interface BasicTrainingParams extends EncodingParameter{
 
   @ParameterDescription(valueName = "language", description = "specifies the language which is being processed.")
   String getLang();
-  
-  @ParameterDescription(valueName = "trainData", description = "the data to be used during training")
-  File getData();
   
   @ParameterDescription(valueName = "num", description = "specifies the number of training iterations. It is ignored if a parameters file is passed.")
   @OptionalParameter(defaultValue="100")
