@@ -21,12 +21,11 @@ import java.io.File;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
-import opennlp.tools.cmdline.BasicTrainingParams;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.TrainingToolParams;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.util.ObjectStream;
@@ -36,10 +35,7 @@ import opennlp.tools.util.ObjectStream;
  */
 abstract class ModelUpdaterTool implements CmdLineTool {
   
-  interface ModelUpdaterParams extends BasicTrainingParams {
-    
-    @ParameterDescription(valueName = "modelFile", description = "the model file to be updated")
-    File getModel();
+  interface ModelUpdaterParams extends TrainingToolParams {
 
   }
 
