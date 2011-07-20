@@ -30,6 +30,9 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
  */
 public interface TrainingToolParams extends BasicTrainingParams{
   
+  @ParameterDescription(valueName = "trainData", description = "the data to be used during training")
+  File getData();
+  
   @ParameterDescription(valueName = "modelFile", description = "the output model file")
   File getModel();
   
