@@ -29,7 +29,6 @@ import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.TrainingToolParams;
-import opennlp.tools.dictionary.AbbreviationDictionary;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
@@ -68,16 +67,6 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
     return new SentenceSampleStream(lineStream);
   }
   
-  static AbbreviationDictionary loadDict(File f, boolean caseSensitive)
-      throws IOException {
-    AbbreviationDictionary dict = null;
-    if (f != null) {
-      CmdLineUtil.checkInputFile("abb dict", f);
-      dict = new AbbreviationDictionary(new FileInputStream(f), caseSensitive);
-    }
-    return dict;
-  }
-  
   public void run(String[] args) {
     if (!ArgumentParser.validateArguments(args, TrainerToolParams.class)) {
       System.err.println(getHelp());
@@ -107,14 +96,13 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
 
     SentenceModel model;
     try {
-      AbbreviationDictionary dict = loadDict(params.getAbbDict(), params.getIsAbbdictCS());
-      
       if (mlParams == null) {
-        model = SentenceDetectorME.train(params.getLang(), sampleStream, true,
-            dict, params.getCutoff(), params.getIterations());
-      } else {
-        model = SentenceDetectorME.train(params.getLang(), sampleStream, true,
-            dict, mlParams);
+        model = SentenceDetectorME.train(params.getLang(), sampleStream, true, null, 
+            params.getCutoff(), params.getIterations());
+      }
+      else {
+        model = SentenceDetectorME.train(params.getLang(), sampleStream, true, null, 
+            mlParams);
       }
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
