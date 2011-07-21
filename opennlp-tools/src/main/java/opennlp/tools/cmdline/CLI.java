@@ -30,7 +30,6 @@ import opennlp.tools.cmdline.chunker.ChunkerCrossValidatorTool;
 import opennlp.tools.cmdline.chunker.ChunkerEvaluatorTool;
 import opennlp.tools.cmdline.chunker.ChunkerMETool;
 import opennlp.tools.cmdline.chunker.ChunkerTrainerTool;
-import opennlp.tools.cmdline.dictionary.AbbreviationDictionaryBuilderTool;
 import opennlp.tools.cmdline.doccat.DoccatConverterTool;
 import opennlp.tools.cmdline.doccat.DoccatTool;
 import opennlp.tools.cmdline.doccat.DoccatTrainerTool;
@@ -77,9 +76,6 @@ public final class CLI {
     tools.add(new DoccatTool());
     tools.add(new DoccatTrainerTool());
     tools.add(new DoccatConverterTool());
-    
-    // Abbreviation Dictionary
-    tools.add(new AbbreviationDictionaryBuilderTool());
     
     // Tokenizer
     tools.add(new SimpleTokenizerTool());
