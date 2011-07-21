@@ -27,6 +27,7 @@ import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.dictionary.AbbreviationDictionary;
 import opennlp.tools.sentdetect.SDCrossValidator;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
@@ -71,15 +72,16 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
         trainingDataInFile, encoding);
     
     SDCrossValidator validator;
-
-    if (mlParams == null) {
-      validator = new SDCrossValidator(params.getLang(), params.getCutoff(), params.getIterations());
-    }
-    else {
-      validator = new SDCrossValidator(params.getLang(), mlParams);
-    }
     
     try {
+      AbbreviationDictionary dict = SentenceDetectorTrainerTool.loadDict(params.getAbbDict(), params.getIsAbbdictCS());
+
+      if (mlParams == null) {
+        validator = new SDCrossValidator(params.getLang(), params.getCutoff(), params.getIterations(), dict);
+      }
+      else {
+        validator = new SDCrossValidator(params.getLang(), mlParams, dict);
+      }
       validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
     }
     catch (IOException e) {
