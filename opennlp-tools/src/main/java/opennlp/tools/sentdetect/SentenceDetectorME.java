@@ -28,6 +28,7 @@ import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TrainUtil;
+import opennlp.tools.dictionary.AbbreviationDictionary;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.ObjectStream;
@@ -88,7 +89,7 @@ public class SentenceDetectorME implements SentenceDetector {
 
   public SentenceDetectorME(SentenceModel model, Factory factory) {
     this.model = model.getMaxentModel();
-    cgen = factory.createSentenceContextGenerator(model.getLanguage());
+    cgen = factory.createSentenceContextGenerator(model.getLanguage(), model.getAbbreviationDictionary());
     scanner = factory.createEndOfSentenceScanner(model.getLanguage());
     useTokenEnd = model.useTokenEnd();
   }
@@ -256,7 +257,8 @@ public class SentenceDetectorME implements SentenceDetector {
     return true;
   }
   
-  
+
+  @Deprecated // should use AbbreviationDictionary (deprecated in 1.5.2)
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations, TrainingParameters mlParams) throws IOException {
     
@@ -275,6 +277,7 @@ public class SentenceDetectorME implements SentenceDetector {
         useTokenEnd, abbreviations, manifestInfoEntries);
   }
   
+  @Deprecated // should use AbbreviationDictionary
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) throws IOException {
 
@@ -286,8 +289,50 @@ public class SentenceDetectorME implements SentenceDetector {
     return train(languageCode, samples, useTokenEnd, abbreviations, mlParams);
  }
   
+  @Deprecated // should use AbbreviationDictionary
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations) throws IOException {
     return train(languageCode, samples, useTokenEnd, abbreviations,5,100);
+  }
+  
+  public static SentenceModel train(String languageCode,
+      ObjectStream<SentenceSample> samples, boolean useTokenEnd,
+      AbbreviationDictionary abbreviations, TrainingParameters mlParams)
+      throws IOException {
+
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+
+    Factory factory = new Factory();
+
+    // TODO: Fix the EventStream to throw exceptions when training goes wrong
+    EventStream eventStream = new SDEventStream(samples,
+        factory.createSentenceContextGenerator(languageCode, abbreviations),
+        factory.createEndOfSentenceScanner(languageCode));
+
+    AbstractModel sentModel = TrainUtil.train(eventStream,
+        mlParams.getSettings(), manifestInfoEntries);
+
+    return new SentenceModel(languageCode, sentModel, useTokenEnd,
+        abbreviations, manifestInfoEntries);
+  }
+
+  public static SentenceModel train(String languageCode,
+      ObjectStream<SentenceSample> samples, boolean useTokenEnd,
+      AbbreviationDictionary abbreviations, int cutoff, int iterations)
+      throws IOException {
+
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM,
+        Integer.toString(iterations));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
+
+    return train(languageCode, samples, useTokenEnd, abbreviations, mlParams);
+  }
+
+  public static SentenceModel train(String languageCode,
+      ObjectStream<SentenceSample> samples, boolean useTokenEnd,
+      AbbreviationDictionary abbreviations) throws IOException {
+    return train(languageCode, samples, useTokenEnd, abbreviations, 5, 100);
   }
 }

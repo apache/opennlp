@@ -65,7 +65,11 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    * @param eosCharacters
    */
   public DefaultSDContextGenerator(Set<String> inducedAbbreviations, char[] eosCharacters) {
-    this.inducedAbbreviations = inducedAbbreviations;
+    if(inducedAbbreviations != null) { // it can be null
+      this.inducedAbbreviations = inducedAbbreviations;
+    } else {
+      this.inducedAbbreviations = Collections.<String>emptySet();
+    }
     this.eosCharacters = eosCharacters;
     buf = new StringBuffer();
     collectFeats = new ArrayList<String>();

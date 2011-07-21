@@ -19,6 +19,7 @@ package opennlp.tools.sentdetect;
 
 import java.io.IOException;
 
+import opennlp.tools.dictionary.AbbreviationDictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
@@ -33,6 +34,7 @@ public class SDCrossValidator {
   
   private final int cutoff;
   private final int iterations;
+  private final AbbreviationDictionary abbDict;
   
   private final TrainingParameters params;
   
@@ -40,18 +42,29 @@ public class SDCrossValidator {
   
   public SDCrossValidator(String languageCode, int cutoff, int iterations) {
     
+    this(languageCode, cutoff, iterations, null);
+  }
+  
+  public SDCrossValidator(String languageCode, TrainingParameters params) {
+    this(languageCode, params, null);
+  }
+  
+  public SDCrossValidator(String languageCode, int cutoff, int iterations, AbbreviationDictionary dict) {
+    
     this.languageCode = languageCode;
     this.cutoff = cutoff;
     this.iterations = iterations;
+    this.abbDict = dict;
     
     params = null;
   }
   
-  public SDCrossValidator(String languageCode, TrainingParameters params) {
+  public SDCrossValidator(String languageCode, TrainingParameters params, AbbreviationDictionary dict) {
     this.languageCode = languageCode;
     this.params = params;
     cutoff = -1;
     iterations = -1;
+    this.abbDict = dict;
   }
   
   public SDCrossValidator(String languageCode) {
@@ -99,10 +112,10 @@ public class SDCrossValidator {
       SentenceModel model; 
       
       if (params == null) {
-        model = SentenceDetectorME.train(languageCode, trainingSampleStream, true, null, cutoff, iterations);
+        model = SentenceDetectorME.train(languageCode, trainingSampleStream, true, this.abbDict, cutoff, iterations);
       }
       else {
-        model = SentenceDetectorME.train(languageCode, trainingSampleStream, true, null, params);
+        model = SentenceDetectorME.train(languageCode, trainingSampleStream, true, this.abbDict, params);
       }
       
       // do testing
