@@ -47,11 +47,6 @@ public class Factory {
   }
   
   public SDContextGenerator createSentenceContextGenerator(String languageCode) {
-
-    if ("th".equals(languageCode)) {
-      return new SentenceContextGenerator();
-    }
-
-    return new DefaultSDContextGenerator(Collections.<String>emptySet(), new char[]{'.', '!', '?'});
+    return createSentenceContextGenerator(languageCode, Collections.<String>emptySet());
   }
 }
