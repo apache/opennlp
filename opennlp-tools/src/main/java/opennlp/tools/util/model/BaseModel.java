@@ -177,7 +177,6 @@ public abstract class BaseModel {
     GenericModelSerializer.register(serializers);
     PropertiesSerializer.register(serializers);
     DictionarySerializer.register(serializers);
-    AbbreviationDictionarySerializer.register(serializers);
     
     return serializers;
   }

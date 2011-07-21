@@ -18,9 +18,6 @@
 
 package opennlp.tools.sentdetect.lang;
 
-import java.util.Collections;
-
-import opennlp.tools.dictionary.AbbreviationDictionary;
 import opennlp.tools.sentdetect.DefaultEndOfSentenceScanner;
 import opennlp.tools.sentdetect.DefaultSDContextGenerator;
 import opennlp.tools.sentdetect.EndOfSentenceScanner;
@@ -28,27 +25,21 @@ import opennlp.tools.sentdetect.SDContextGenerator;
 import opennlp.tools.sentdetect.lang.th.SentenceContextGenerator;
 
 public class Factory {
-  
-  public static final char[] defaultEosCharacters = new char[] { '.', '!', '?' };
 
   public EndOfSentenceScanner createEndOfSentenceScanner(String languageCode) {
     if ("th".equals(languageCode)) {
       return new DefaultEndOfSentenceScanner(new char[]{' ','\n'});
     }
 
-    return new DefaultEndOfSentenceScanner(defaultEosCharacters);
+    return new DefaultEndOfSentenceScanner(new char[]{'.', '!', '?'});
   }
-  
-  public SDContextGenerator createSentenceContextGenerator(String languageCode, AbbreviationDictionary dict) {
+
+  public SDContextGenerator createSentenceContextGenerator(String languageCode) {
+
     if ("th".equals(languageCode)) {
       return new SentenceContextGenerator();
     }
 
-    return new DefaultSDContextGenerator(dict, defaultEosCharacters);
-  }
-
-  @Deprecated // always pass the abb dictionary, null is allowed.
-  public SDContextGenerator createSentenceContextGenerator(String languageCode) {
-    return new DefaultSDContextGenerator(Collections.<String>emptySet(), defaultEosCharacters);
+    return new DefaultSDContextGenerator(new char[]{'.', '!', '?'});
   }
 }

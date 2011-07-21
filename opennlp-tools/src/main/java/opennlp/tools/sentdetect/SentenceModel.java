@@ -29,7 +29,6 @@ import java.util.Map;
 import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelReader;
 import opennlp.model.MaxentModel;
-import opennlp.tools.dictionary.AbbreviationDictionary;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
@@ -45,40 +44,10 @@ public class SentenceModel extends BaseModel {
   private static final String COMPONENT_NAME = "SentenceDetectorME";
   
   private static final String MAXENT_MODEL_ENTRY_NAME = "sent.model";
-  
-  @Deprecated // should use abbdict (deprecated in 1.5.2)
   private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
-  
-  public static final String ABBDICT_ENTRY_NAME = "dict.abbdict";
 
   private static final String TOKEN_END_PROPERTY = "useTokenEnd";
 
-  public SentenceModel(String languageCode, AbstractModel sentModel,
-      boolean useTokenEnd, AbbreviationDictionary abbreviations, Map<String, String> manifestInfoEntries) {
-
-    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
-
-    if (sentModel == null)
-        throw new IllegalArgumentException("sentModel param must not be null!");
-
-    if (!isModelCompatible(sentModel))
-        throw new IllegalArgumentException("The maxent model is not compatible!");
-
-    artifactMap.put(MAXENT_MODEL_ENTRY_NAME, sentModel);
-
-    setManifestProperty(TOKEN_END_PROPERTY, Boolean.toString(useTokenEnd));
-
-    // Abbreviations are optional
-    if (abbreviations != null)
-        artifactMap.put(ABBDICT_ENTRY_NAME, abbreviations);
-  }
-
-  public SentenceModel(String languageCode, AbstractModel sentModel,
-      boolean useTokenEnd, AbbreviationDictionary abbreviations) {
-    this (languageCode, sentModel, useTokenEnd, abbreviations, null);
-  }
-  
-  @Deprecated //should use AbbreviationDictionary (1.5.2)
   public SentenceModel(String languageCode, AbstractModel sentModel,
       boolean useTokenEnd, Dictionary abbreviations, Map<String, String> manifestInfoEntries) {
 
@@ -99,7 +68,6 @@ public class SentenceModel extends BaseModel {
         artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviations);
   }
 
-  @Deprecated //should use Abbreviation
   public SentenceModel(String languageCode, AbstractModel sentModel,
       boolean useTokenEnd, Dictionary abbreviations) {
     this (languageCode, sentModel, useTokenEnd, abbreviations, null);
@@ -131,25 +99,14 @@ public class SentenceModel extends BaseModel {
     if (abbreviationsEntry != null && !(abbreviationsEntry instanceof Dictionary)) {
       throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
     }
-    
-    Object abbdictEntry = artifactMap.get(ABBDICT_ENTRY_NAME);
-
-    if (abbdictEntry != null && !(abbdictEntry instanceof AbbreviationDictionary)) {
-      throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
-    }
   }
 
   public AbstractModel getMaxentModel() {
     return (AbstractModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
   }
 
-  @Deprecated //should use Abbreviation
   public Dictionary getAbbreviations() {
     return (Dictionary) artifactMap.get(ABBREVIATIONS_ENTRY_NAME);
-  }
-  
-  public AbbreviationDictionary getAbbreviationDictionary() {
-    return (AbbreviationDictionary) artifactMap.get(ABBDICT_ENTRY_NAME);
   }
 
   public boolean useTokenEnd() {
