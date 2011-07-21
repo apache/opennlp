@@ -17,6 +17,10 @@
 
 package opennlp.tools.cmdline.sentdetect;
 
+import java.io.File;
+
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.BasicTrainingParams;
 
 /**
@@ -25,6 +29,13 @@ import opennlp.tools.cmdline.BasicTrainingParams;
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {
-  
-  
+
+  @ParameterDescription(valueName = "path", description = "The abbreviation dictionary in XML format.")
+  @OptionalParameter
+  File getAbbDict();
+
+  @ParameterDescription(valueName = "true|false", description = "True if the abbreviation dictionary is case sensitive. Default is true.")
+  @OptionalParameter(defaultValue = "true")
+  Boolean getIsAbbDictCS();
+
 }
