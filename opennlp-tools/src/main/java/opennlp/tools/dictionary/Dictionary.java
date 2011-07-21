@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.AbstractSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -277,5 +278,58 @@ public class Dictionary implements Iterable<StringList> {
     }
 
     return dictionary;
+  }
+
+  /**
+   * Gets this dictionary as a {@code Set<String>}. Only {@code iterator()},
+   * {@code size()} and {@code contains(Object)} methods are implemented.
+   * 
+   * If this dictionary entries are multi tokens only the first token of the
+   * entry will be part of the Set.
+   * 
+   * @return a Set containing the entries of this dictionary
+   */
+  public Set<String> asStringSet() {
+    return new AbstractSet<String>() {
+
+      public Iterator<String> iterator() {
+        final Iterator<StringListWrapper> entries = entrySet.iterator();
+
+        return new Iterator<String>() {
+
+          public boolean hasNext() {
+            return entries.hasNext();
+          }
+
+          public String next() {
+            return entries.next().getStringList().getToken(0);
+          }
+
+          public void remove() {
+            throw new UnsupportedOperationException();
+          }
+        };
+      }
+
+      @Override
+      public int size() {
+        return entrySet.size();
+      }
+
+      @Override
+      public boolean contains(Object obj) {
+        boolean result = false;
+
+        if (obj instanceof String) {
+          String str = (String) obj;
+
+          result = entrySet.contains(new StringListWrapper(new StringList(str),
+              caseSensitive));
+
+        }
+
+        return result;
+      }
+    };
   }
 }
