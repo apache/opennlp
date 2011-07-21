@@ -146,7 +146,7 @@ public class AbbreviationDictionaryTest {
     String entry1 = "1a";
     String entry2 = "1A";
 
-    AbbreviationDictionary dict = new AbbreviationDictionary();
+    AbbreviationDictionary dict = new AbbreviationDictionary(false);
 
     dict.add(entry1);
 
@@ -157,7 +157,7 @@ public class AbbreviationDictionaryTest {
    * Tests the lookup of tokens of different case.
    */
   @Test
-  public void testDifferentCaseLookupCaseInsensitive() {
+  public void testDifferentCaseLookupCaseSensitive() {
 
     String entry1 = "1a";
     String entry2 = "1A";

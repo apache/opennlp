@@ -93,10 +93,10 @@ public class AbbreviationDictionary extends AbstractSet<String> {
   private Set<StringWrapper> entrySet = new HashSet<StringWrapper>();
 
   /**
-   * Initializes an empty case insensitive {@link AbbreviationDictionary}.
+   * Initializes an empty case sensitive {@link AbbreviationDictionary}.
    */
   public AbbreviationDictionary() {
-    this(false);
+    this(true);
   }
 
   /**
@@ -110,7 +110,7 @@ public class AbbreviationDictionary extends AbstractSet<String> {
   }
 
   /**
-   * Initializes a case insensitive {@link AbbreviationDictionary} from an existing
+   * Initializes a case sensitive {@link AbbreviationDictionary} from an existing
    * dictionary resource.
    * 
    * @param in
@@ -120,11 +120,11 @@ public class AbbreviationDictionary extends AbstractSet<String> {
    */
   public AbbreviationDictionary(InputStream in) throws IOException,
       InvalidFormatException {
-    this(in, false);
+    this(in, true);
   }
 
   /**
-   * Initializes a case insensitive {@link AbbreviationDictionary} from an existing
+   * Initializes a {@link AbbreviationDictionary} from an existing
    * dictionary resource.
    * 
    * @param in
