@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import opennlp.tools.dictionary.AbbreviationDictionary;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -42,7 +41,7 @@ public class SentenceDetectorMETest {
         "/opennlp/tools/sentdetect/Sentences.txt");
 
     SentenceModel sentdetectModel = SentenceDetectorME.train(
-        "en", new SentenceSampleStream(new PlainTextByLineStream(new InputStreamReader(in))), true, createAbbDict(), 100, 0);
+        "en", new SentenceSampleStream(new PlainTextByLineStream(new InputStreamReader(in))), true, null, 100, 0);
     
     assertEquals("en", sentdetectModel.getLanguage());
     
@@ -115,10 +114,5 @@ public class SentenceDetectorMETest {
     assertEquals(probs.length,2);
     assertEquals(new Span(0, 15), pos[0]);
     assertEquals(new Span(16, 56), pos[1]);
-  }
-
-  private AbbreviationDictionary createAbbDict() {
-    AbbreviationDictionary reference = new AbbreviationDictionary();
-    return reference;
   }
 }
