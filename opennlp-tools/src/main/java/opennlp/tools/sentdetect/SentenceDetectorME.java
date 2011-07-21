@@ -20,9 +20,11 @@ package opennlp.tools.sentdetect;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
@@ -88,9 +90,16 @@ public class SentenceDetectorME implements SentenceDetector {
 
   public SentenceDetectorME(SentenceModel model, Factory factory) {
     this.model = model.getMaxentModel();
-    cgen = factory.createSentenceContextGenerator(model.getLanguage());
+    cgen = factory.createSentenceContextGenerator(model.getLanguage(), getAbbreviations(model.getAbbreviations()));
     scanner = factory.createEndOfSentenceScanner(model.getLanguage());
     useTokenEnd = model.useTokenEnd();
+  }
+
+  private static Set<String> getAbbreviations(Dictionary abbreviations) {
+    if(abbreviations == null) {
+      return Collections.<String>emptySet();
+    }
+    return abbreviations.asStringSet();
   }
 
   /**
@@ -266,7 +275,7 @@ public class SentenceDetectorME implements SentenceDetector {
     
     // TODO: Fix the EventStream to throw exceptions when training goes wrong
     EventStream eventStream = new SDEventStream(samples,
-        factory.createSentenceContextGenerator(languageCode),
+        factory.createSentenceContextGenerator(languageCode, getAbbreviations(abbreviations)),
         factory.createEndOfSentenceScanner(languageCode));
     
     AbstractModel sentModel = TrainUtil.train(eventStream, mlParams.getSettings(), manifestInfoEntries);

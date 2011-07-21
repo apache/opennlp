@@ -19,6 +19,7 @@ package opennlp.tools.sentdetect;
 
 import java.io.IOException;
 
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
@@ -31,27 +32,37 @@ public class SDCrossValidator {
   
   private final String languageCode;
   
-  private final int cutoff;
-  private final int iterations;
+  private final Dictionary abbreviations;
   
   private final TrainingParameters params;
   
   private FMeasure fmeasure = new FMeasure();
   
   public SDCrossValidator(String languageCode, int cutoff, int iterations) {
-    
-    this.languageCode = languageCode;
-    this.cutoff = cutoff;
-    this.iterations = iterations;
-    
-    params = null;
+    this(languageCode, createParams(cutoff, iterations));
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params) {
+    this(languageCode, params, null);
+  }
+  
+  public SDCrossValidator(String languageCode, int cutoff, int iterations, Dictionary abbreviations) {
+    this(languageCode, createParams(cutoff, iterations), abbreviations);
+  }
+  
+  public SDCrossValidator(String languageCode, TrainingParameters params, Dictionary abbreviations) {
     this.languageCode = languageCode;
     this.params = params;
-    cutoff = -1;
-    iterations = -1;
+    this.abbreviations = abbreviations;
+  }
+  
+  private static TrainingParameters createParams(int cutoff, int iterations) {
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM,
+        Integer.toString(iterations));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
+    return mlParams;
   }
   
   public SDCrossValidator(String languageCode) {
@@ -98,12 +109,8 @@ public class SDCrossValidator {
      
       SentenceModel model; 
       
-      if (params == null) {
-        model = SentenceDetectorME.train(languageCode, trainingSampleStream, true, null, cutoff, iterations);
-      }
-      else {
-        model = SentenceDetectorME.train(languageCode, trainingSampleStream, true, null, params);
-      }
+      model = SentenceDetectorME.train(languageCode, trainingSampleStream,
+          true, abbreviations, params);
       
       // do testing
       SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(

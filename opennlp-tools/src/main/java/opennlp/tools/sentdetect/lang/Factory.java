@@ -18,6 +18,9 @@
 
 package opennlp.tools.sentdetect.lang;
 
+import java.util.Collections;
+import java.util.Set;
+
 import opennlp.tools.sentdetect.DefaultEndOfSentenceScanner;
 import opennlp.tools.sentdetect.DefaultSDContextGenerator;
 import opennlp.tools.sentdetect.EndOfSentenceScanner;
@@ -34,12 +37,21 @@ public class Factory {
     return new DefaultEndOfSentenceScanner(new char[]{'.', '!', '?'});
   }
 
+  public SDContextGenerator createSentenceContextGenerator(String languageCode, Set<String> abbreviations) {
+
+    if ("th".equals(languageCode)) {
+      return new SentenceContextGenerator();
+    }
+
+    return new DefaultSDContextGenerator(abbreviations, new char[]{'.', '!', '?'});
+  }
+  
   public SDContextGenerator createSentenceContextGenerator(String languageCode) {
 
     if ("th".equals(languageCode)) {
       return new SentenceContextGenerator();
     }
 
-    return new DefaultSDContextGenerator(new char[]{'.', '!', '?'});
+    return new DefaultSDContextGenerator(Collections.<String>emptySet(), new char[]{'.', '!', '?'});
   }
 }
