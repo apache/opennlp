@@ -29,11 +29,13 @@ import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.TrainingToolParams;
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenSampleStream;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
 
 public final class TokenizerTrainerTool implements CmdLineTool {
   
@@ -64,6 +66,15 @@ public final class TokenizerTrainerTool implements CmdLineTool {
         .getChannel(), encoding);
 
     return new TokenSampleStream(lineStream);
+  }
+  
+  static Dictionary loadDict(File f, boolean caseSensitive) throws IOException {
+    Dictionary dict = null;
+    if (f != null) {
+      CmdLineUtil.checkInputFile("abb dict", f);
+      dict = new Dictionary(new FileInputStream(f), caseSensitive);
+    }
+    return dict;
   }
 
   public void run(String[] args) {
@@ -96,21 +107,15 @@ public final class TokenizerTrainerTool implements CmdLineTool {
     CmdLineUtil.checkOutputFile("tokenizer model", modelOutFile);
     ObjectStream<TokenSample> sampleStream = openSampleData("Training",
         trainingDataInFile, params.getEncoding());
+    
+    if(mlParams == null) 
+      mlParams = createTrainingParameters(params.getIterations(), params.getCutoff());
 
     TokenizerModel model;
     try {
-      if (mlParams == null) {
-        model = opennlp.tools.tokenize.TokenizerME.train(
-            params.getLang(), sampleStream, 
-            params.getAlphaNumOpt(),
-            params.getCutoff(), params.getIterations());
-      }
-      else {
-        model = opennlp.tools.tokenize.TokenizerME.train(
-            params.getLang(), sampleStream, 
-            params.getAlphaNumOpt(),
-            mlParams);
-      }
+      Dictionary dict = loadDict(params.getAbbDict(), params.getIsAbbDictCS());
+      model = opennlp.tools.tokenize.TokenizerME.train(params.getLang(),
+          sampleStream, dict, params.getAlphaNumOpt(), mlParams);
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
@@ -124,5 +129,14 @@ public final class TokenizerTrainerTool implements CmdLineTool {
     }
 
     CmdLineUtil.writeModel("tokenizer", modelOutFile, model);
+  }
+
+  public static TrainingParameters createTrainingParameters(Integer iterations, Integer cutoff) {
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM,
+        iterations.toString());
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, cutoff.toString());
+    return mlParams;
   }
 }

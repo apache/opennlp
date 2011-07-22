@@ -20,15 +20,19 @@ package opennlp.tools.tokenize;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.MaxentModel;
 import opennlp.model.TrainUtil;
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
@@ -84,8 +88,11 @@ public class TokenizerME extends AbstractTokenizer {
 
   /**
    * Alpha-Numeric Pattern
+   * @deprecated As of release 1.5.2, replaced by {@link Factory#getAlphanumericPattern(String)} 
    */
-  public static final Pattern alphaNumeric = Pattern.compile("^[A-Za-z0-9]+$");
+  public static final Pattern alphaNumeric = Pattern.compile(Factory.DEFAULT_ALPHANUMERIC);
+  
+  private final Pattern alphanumeric;
 
   /**
    * The maximum entropy model to use to evaluate contexts.
@@ -95,7 +102,7 @@ public class TokenizerME extends AbstractTokenizer {
   /**
    * The context generator.
    */
-  private final TokenContextGenerator cg = new DefaultTokenContextGenerator();
+  private final TokenContextGenerator cg;
 
   /**
    * Optimization flag to skip alpha numeric tokens for further
@@ -112,11 +119,28 @@ public class TokenizerME extends AbstractTokenizer {
   private List<Span> newTokens;
 
   public TokenizerME(TokenizerModel model) {
+    this(model, new Factory());
+  }
+  
+  public TokenizerME(TokenizerModel model, Factory factory) {
+    String languageCode = model.getLanguage();
+
+    this.alphanumeric = factory.getAlphanumeric(languageCode);
+    this.cg = factory.createTokenContextGenerator(languageCode,
+        getAbbreviations(model.getAbbreviations()));
+
     this.model = model.getMaxentModel();
     useAlphaNumericOptimization = model.useAlphaNumericOptimization();
 
     newTokens = new ArrayList<Span>();
     tokProbs = new ArrayList<Double>(50);
+  }
+  
+  private static Set<String> getAbbreviations(Dictionary abbreviations) {
+    if(abbreviations == null) {
+      return Collections.<String>emptySet();
+    }
+    return abbreviations.asStringSet();
   }
 
   /**
@@ -154,7 +178,7 @@ public class TokenizerME extends AbstractTokenizer {
         newTokens.add(s);
         tokProbs.add(1d);
       }
-      else if (useAlphaNumericOptimization() && alphaNumeric.matcher(tok).matches()) {
+      else if (useAlphaNumericOptimization() && alphanumeric.matcher(tok).matches()) {
         newTokens.add(s);
         tokProbs.add(1d);
       }
@@ -185,17 +209,60 @@ public class TokenizerME extends AbstractTokenizer {
     return spans;
   }
 
+  /**
+   * Trains a model for the {@link TokenizerME}.
+   *
+   * @param languageCode the language of the natural text
+   * @param samples the samples used for the training.
+   * @param useAlphaNumericOptimization - if true alpha numerics are skipped
+   * @param mlParams the machine learning train parameters
+   * 
+   * @return the trained {@link TokenizerModel}
+   *
+   * @throws IOException it throws an {@link IOException} if an {@link IOException}
+   * is thrown during IO operations on a temp file which is created during training.
+   * Or if reading from the {@link ObjectStream} fails.
+   * 
+   */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization, TrainingParameters mlParams) throws IOException {
+    return train(languageCode, samples, null, useAlphaNumericOptimization,
+        mlParams);
+  }
+  
+  /**
+   * Trains a model for the {@link TokenizerME}.
+   *
+   * @param languageCode the language of the natural text
+   * @param samples the samples used for the training.
+   * @param abbreviations an abbreviations dictionary
+   * @param useAlphaNumericOptimization - if true alpha numerics are skipped
+   * @param mlParams the machine learning train parameters
+   * 
+   * @return the trained {@link TokenizerModel}
+   *
+   * @throws IOException it throws an {@link IOException} if an {@link IOException}
+   * is thrown during IO operations on a temp file which is created during training.
+   * Or if reading from the {@link ObjectStream} fails.
+   * 
+   */
+  public static TokenizerModel train(String languageCode,
+      ObjectStream<TokenSample> samples, Dictionary abbreviations,
+      boolean useAlphaNumericOptimization, TrainingParameters mlParams)
+      throws IOException {
+    Factory factory = new Factory();
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    
-    EventStream eventStream = new TokSpanEventStream(samples,
-        useAlphaNumericOptimization);
 
-    AbstractModel maxentModel = TrainUtil.train(eventStream, mlParams.getSettings(), manifestInfoEntries);
-    
-    return new TokenizerModel(languageCode, maxentModel, 
+    EventStream eventStream = new TokSpanEventStream(samples,
+        useAlphaNumericOptimization, factory.getAlphanumeric(languageCode),
+        factory.createTokenContextGenerator(languageCode,
+            getAbbreviations(abbreviations)));
+
+    AbstractModel maxentModel = TrainUtil.train(eventStream,
+        mlParams.getSettings(), manifestInfoEntries);
+
+    return new TokenizerModel(languageCode, maxentModel, abbreviations,
         useAlphaNumericOptimization, manifestInfoEntries);
   }
   

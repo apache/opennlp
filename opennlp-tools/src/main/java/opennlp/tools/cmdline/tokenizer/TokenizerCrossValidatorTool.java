@@ -27,6 +27,7 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerCrossValidator;
 import opennlp.tools.util.ObjectStream;
@@ -73,17 +74,17 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
     
     
     TokenizerCrossValidator validator;
+    
+    if (mlParams == null)
+      mlParams = TokenizerTrainerTool.createTrainingParameters(
+          params.getIterations(), params.getCutoff());
 
-    if (mlParams == null) {
-      validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
-          params.getLang(), params.getAlphaNumOpt(), params.getCutoff(),
-          params.getIterations());
-    } else {
-      validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
-          params.getLang(), params.getAlphaNumOpt(), mlParams);
-    }
-      
     try {
+      Dictionary dict = TokenizerTrainerTool.loadDict(params.getAbbDict(), params.getIsAbbDictCS());
+
+      validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
+          params.getLang(), dict, params.getAlphaNumOpt(), mlParams);
+
       validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
     }
     catch (IOException e) {

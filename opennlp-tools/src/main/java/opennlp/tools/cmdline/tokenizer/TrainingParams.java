@@ -17,6 +17,8 @@
 
 package opennlp.tools.cmdline.tokenizer;
 
+import java.io.File;
+
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.BasicTrainingParams;
@@ -30,4 +32,12 @@ interface TrainingParams extends BasicTrainingParams {
   @ParameterDescription(valueName = "isAlphaNumOpt", description = "Optimization flag to skip alpha numeric tokens for further tokenization")
   @OptionalParameter(defaultValue = "false")
   Boolean getAlphaNumOpt();
+  
+  @ParameterDescription(valueName = "path", description = "The abbreviation dictionary in XML format.")
+  @OptionalParameter
+  File getAbbDict();
+
+  @ParameterDescription(valueName = "true|false", description = "True if the abbreviation dictionary is case sensitive. Default is true.")
+  @OptionalParameter(defaultValue = "true")
+  Boolean getIsAbbDictCS();
 }
