@@ -19,6 +19,7 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
@@ -31,32 +32,31 @@ public class TokenizerCrossValidator {
   
   private final TrainingParameters params;
   
-  private final int cutoff;
-  private final int iterations;
+  private final Dictionary abbreviations;
   
   private FMeasure fmeasure = new FMeasure();
   
   
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, int cutoff, int iterations) {
-    this.language = language;
-    this.alphaNumericOptimization = alphaNumericOptimization;
-    this.cutoff = cutoff;
-    this.iterations = iterations;
-    
-    params = null;
+    this(language, alphaNumericOptimization, createTrainingParameters(iterations, cutoff));
   }
   
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization) {
-    this(language, alphaNumericOptimization, 5, 100);
+    this(language, alphaNumericOptimization, createTrainingParameters(100, 5));
   }  
   
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, TrainingParameters params) {
+    this(language, null, alphaNumericOptimization, params);
+  }
+  
+  public TokenizerCrossValidator(String language, Dictionary abbreviations,
+      boolean alphaNumericOptimization, TrainingParameters params) {
+    
     this.language = language;
     this.alphaNumericOptimization = alphaNumericOptimization;
-    this.cutoff = -1;
-    this.iterations = -1;
-    
+    this.abbreviations = abbreviations;
     this.params = params;
+    
   }
   
   
@@ -101,14 +101,8 @@ public class TokenizerCrossValidator {
        // Maybe throws IOException if temporary file handling fails ...
        TokenizerModel model;
        
-       if (params == null) {
-         model = TokenizerME.train(language, trainingSampleStream, 
-             alphaNumericOptimization, cutoff, iterations);
-       }
-       else {
-         model = TokenizerME.train(language, trainingSampleStream, 
-             alphaNumericOptimization, params);
-       }
+      model = TokenizerME.train(language, trainingSampleStream, abbreviations,
+          alphaNumericOptimization, params);
        
        TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model), printErrors);
        evaluator.evaluate(trainingSampleStream.getTestSampleStream());
@@ -118,5 +112,15 @@ public class TokenizerCrossValidator {
   
   public FMeasure getFMeasure() {
     return fmeasure;
+  }
+  
+  //TODO: this could go to a common util method, maybe inside TrainingParameters class
+  static TrainingParameters createTrainingParameters(int iterations, int cutoff) {
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM,
+        Integer.toString(iterations));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
+    return mlParams;
   }
 }
