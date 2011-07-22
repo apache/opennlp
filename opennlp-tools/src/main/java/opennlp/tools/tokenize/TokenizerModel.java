@@ -29,6 +29,7 @@ import java.util.Map;
 import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
@@ -44,6 +45,7 @@ public final class TokenizerModel extends BaseModel {
   private static final String COMPONENT_NAME = "TokenizerME";
   
   private static final String TOKENIZER_MODEL_ENTRY = "token.model";
+  private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
 
   private static final String USE_ALPHA_NUMERIC_OPTIMIZATION =
       "useAlphaNumericOptimization";
@@ -55,24 +57,44 @@ public final class TokenizerModel extends BaseModel {
    * @param useAlphaNumericOptimization
    */
   public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
-      boolean useAlphaNumericOptimization, Map<String, String> manifestInfoEntries) {
+      Dictionary abbreviations, boolean useAlphaNumericOptimization,
+      Map<String, String> manifestInfoEntries) {
     super(COMPONENT_NAME, language, manifestInfoEntries);
 
     if (tokenizerMaxentModel == null)
-        throw new IllegalArgumentException("tokenizerMaxentModel param must not bet null!");
+      throw new IllegalArgumentException(
+          "tokenizerMaxentModel param must not bet null!");
 
     if (!isModelCompatible(tokenizerMaxentModel))
-        throw new IllegalArgumentException("The maxent model is not compatible!");
+      throw new IllegalArgumentException("The maxent model is not compatible!");
 
     artifactMap.put(TOKENIZER_MODEL_ENTRY, tokenizerMaxentModel);
 
     setManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION,
         Boolean.toString(useAlphaNumericOptimization));
+
+    // Abbreviations are optional
+    if (abbreviations != null)
+      artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviations);
   }
 
   /**
    * Initializes the current instance.
    *
+   * @param language
+   * @param tokenizerMaxentModel
+   * @param useAlphaNumericOptimization
+   * @param manifestInfoEntries
+   */
+  public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
+      boolean useAlphaNumericOptimization, Map<String, String> manifestInfoEntries) {
+    this(language, tokenizerMaxentModel, null, useAlphaNumericOptimization, manifestInfoEntries);
+  }
+
+  /**
+   * Initializes the current instance.
+   *
+   * @param language
    * @param tokenizerMaxentModel
    * @param useAlphaNumericOptimization
    */
@@ -119,10 +141,20 @@ public final class TokenizerModel extends BaseModel {
       throw new InvalidFormatException("The " + USE_ALPHA_NUMERIC_OPTIMIZATION + " parameter " +
           "cannot be found!");
     }
+    
+    Object abbreviationsEntry = artifactMap.get(ABBREVIATIONS_ENTRY_NAME);
+
+    if (abbreviationsEntry != null && !(abbreviationsEntry instanceof Dictionary)) {
+      throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
+    }
   }
 
   public AbstractModel getMaxentModel() {
     return (AbstractModel) artifactMap.get(TOKENIZER_MODEL_ENTRY);
+  }
+  
+  public Dictionary getAbbreviations() {
+    return (Dictionary) artifactMap.get(ABBREVIATIONS_ENTRY_NAME);
   }
 
   public boolean useAlphaNumericOptimization() {

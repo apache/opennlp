@@ -23,8 +23,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import opennlp.model.Event;
+import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
@@ -41,6 +43,23 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
   private TokenContextGenerator cg;
 
   private boolean skipAlphaNumerics;
+  
+  private final Pattern alphaNumeric;
+  
+  /**
+   * Initializes the current instance.
+   *
+   * @param tokenSamples
+   * @param skipAlphaNumerics
+   * @param cg
+   */
+  public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples,
+        boolean skipAlphaNumerics, Pattern alphaNumeric, TokenContextGenerator cg) {
+    super(tokenSamples);
+    this.alphaNumeric = alphaNumeric;
+    this.skipAlphaNumerics = skipAlphaNumerics;
+    this.cg = cg;
+  }
 
   /**
    * Initializes the current instance.
@@ -52,7 +71,8 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
   public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples,
         boolean skipAlphaNumerics, TokenContextGenerator cg) {
     super(tokenSamples);
-
+    Factory factory = new Factory();
+    this.alphaNumeric = factory.getAlphanumeric(null);
     this.skipAlphaNumerics = skipAlphaNumerics;
     this.cg = cg;
   }
@@ -99,7 +119,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
         cSpan = new Span(cSpan.getStart() + start, cSpan.getEnd() + start);
         //should we skip this token
         if (ctok.length() > 1
-          && (!skipAlphaNumerics || !TokenizerME.alphaNumeric.matcher(ctok).matches())) {
+          && (!skipAlphaNumerics || !alphaNumeric.matcher(ctok).matches())) {
 
           //find offsets of annotated tokens inside of candidate tokens
           boolean foundTrainingTokens = false;

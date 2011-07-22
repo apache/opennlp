@@ -19,7 +19,9 @@
 package opennlp.tools.tokenize;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import opennlp.tools.util.StringUtil;
 
@@ -27,14 +29,34 @@ import opennlp.tools.util.StringUtil;
  * Generate events for maxent decisions for tokenization.
  */
 public class DefaultTokenContextGenerator implements TokenContextGenerator {
+  
+  private final Set<String> inducedAbbreviations;
+  
+  /**
+   * Creates a default context generator for tokenizer.
+   */
+  public DefaultTokenContextGenerator() {
+    this(Collections.<String>emptySet());
+  }
+  
+  /**
+   * Creates a default context generator for tokenizer.
+   * 
+   * @param inducedAbbreviations the induced abbreviations
+   */
+  public DefaultTokenContextGenerator(Set<String> inducedAbbreviations) {
+    this.inducedAbbreviations = inducedAbbreviations;
+  }
 
   /* (non-Javadoc)
    * @see opennlp.tools.tokenize.TokenContextGenerator#getContext(java.lang.String, int)
    */
   public String[] getContext(String sentence, int index) {
     List<String> preds = new ArrayList<String>();
-    preds.add("p=" + sentence.substring(0, index));
-    preds.add("s=" + sentence.substring(index));
+    String prefix = sentence.substring(0, index);
+    String suffix = sentence.substring(index);
+    preds.add("p=" + prefix);
+    preds.add("s=" + suffix);
     if (index > 0) {
       addCharPreds("p1", sentence.charAt(index - 1), preds);
       if (index > 1) {
@@ -59,6 +81,14 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
     }
     if (sentence.charAt(0) == '&' && sentence.charAt(sentence.length() - 1) == ';') {
       preds.add("cc");//character code
+    }
+    
+    if(index == sentence.length() - 1 && inducedAbbreviations.contains(sentence)) {
+      preds.add("pabb");
+    }
+    
+    if(inducedAbbreviations.contains(sentence)) {
+      preds.add("abb");
     }
 
     String[] context = new String[preds.size()];
