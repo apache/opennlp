@@ -167,28 +167,6 @@ public class BeamSearch<T> {
             }
           }
         }
-        
-        if (next.size() == 0) {// no valid sequences yet, advance all first "size"
-          for (int p = 0; p < scores.length; p++) {
-            if (scores[p] < min)
-              continue; // only advance first "size" outcomes
-            String out = model.getOutcome(p);
-            Sequence ns = new Sequence(top, out, scores[p]);
-            if (ns.getScore() > minSequenceScore) {
-              next.add(ns);
-            }
-          }
-        }
-
-        if (next.size() == 0) {// no valid sequences yet, advance all
-          for (int p = 0; p < scores.length; p++) {
-            String out = model.getOutcome(p);
-            Sequence ns = new Sequence(top, out, scores[p]);
-            if (ns.getScore() > minSequenceScore) {
-              next.add(ns);
-            }
-          }
-        }
       }
 
       //    make prev = next; and re-init next (we reuse existing prev set once we clear it)
