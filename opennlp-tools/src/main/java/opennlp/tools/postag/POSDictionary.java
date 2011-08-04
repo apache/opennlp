@@ -211,7 +211,7 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
       }
     };
 
-    DictionarySerializer.serialize(out, entries);
+    DictionarySerializer.serialize(out, entries, caseSensitive);
   }
 
   @Override
@@ -275,6 +275,7 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
 
     final POSDictionary newPosDict = new POSDictionary();
 
+    /* TODO: FIXME really need to save the case sensitivity flag read */
     DictionarySerializer.create(in, new EntryInserter() {
       public void insert(Entry entry) throws InvalidFormatException {
 

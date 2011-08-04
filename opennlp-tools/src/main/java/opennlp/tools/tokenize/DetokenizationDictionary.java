@@ -146,6 +146,6 @@ public class DetokenizationDictionary {
       }
     };
     
-    DictionarySerializer.serialize(out, entries);
+    DictionarySerializer.serialize(out, entries, false);
   }
 }
