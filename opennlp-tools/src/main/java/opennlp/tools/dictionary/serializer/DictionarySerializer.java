@@ -90,8 +90,8 @@ public class DictionarySerializer {
            mAttributes.setValue(atts.getLocalName(i), atts.getValue(i));
          }
          /* get the attribute here ... */
-         if (mAttributes.getValue(ATTRIBUTE_CASE) != null) {
-           mIsCaseSensitiveDictionary = Boolean.valueOf(mAttributes.getValue(ATTRIBUTE_CASE));   
+         if (mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE) != null) {
+           mIsCaseSensitiveDictionary = Boolean.valueOf(mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE));   
          }
          mAttributes = null;
        } 
@@ -189,7 +189,7 @@ public class DictionarySerializer {
   private static final String DICTIONARY_ELEMENT = "dictionary";
   private static final String ENTRY_ELEMENT = "entry";
   private static final String TOKEN_ELEMENT = "token";
-  private static final String ATTRIBUTE_CASE = "case";
+  private static final String ATTRIBUTE_CASE_SENSITIVE = "case_sensitive";
 
   private static boolean mIsCaseSensitiveDictionary;
   
@@ -264,7 +264,7 @@ public class DictionarySerializer {
       AttributesImpl dictionaryAttributes = new AttributesImpl();
 
       if (casesensitive) {
-        dictionaryAttributes.addAttribute("", "", ATTRIBUTE_CASE,
+        dictionaryAttributes.addAttribute("", "", ATTRIBUTE_CASE_SENSITIVE,
                   "", String.valueOf(casesensitive));
       }
       hd.startElement("", "", DICTIONARY_ELEMENT, dictionaryAttributes);
