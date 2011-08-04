@@ -334,7 +334,7 @@ public class NGramModel implements Iterable<StringList>{
 
 	      };
 
-	    DictionarySerializer.serialize(out, entryIterator);
+	    DictionarySerializer.serialize(out, entryIterator, false);
   }
 
   public boolean equals(Object obj) {
