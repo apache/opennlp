@@ -57,7 +57,7 @@ public class DictionarySerializer {
 //    private boolean mIsInsideDictionaryElement;
 //    private boolean mIsInsideEntryElement;
     private boolean mIsInsideTokenElement;
-
+    
     private List<String> mTokenList = new LinkedList<String>();
 
     private StringBuilder token = new StringBuilder();
@@ -82,7 +82,20 @@ public class DictionarySerializer {
 
      public void startElement(String uri, String localName, String qName,
          org.xml.sax.Attributes atts) throws SAXException {
-       if (ENTRY_ELEMENT.equals(localName)) {
+       if (DICTIONARY_ELEMENT.equals(localName)) {
+
+         mAttributes = new Attributes();
+         
+         for (int i = 0; i < atts.getLength(); i++) {
+           mAttributes.setValue(atts.getLocalName(i), atts.getValue(i));
+         }
+         /* get the attribute here ... */
+         if (mAttributes.getValue(ATTRIBUTE_CASE) != null) {
+           mIsCaseSensitiveDictionary = Boolean.valueOf(mAttributes.getValue(ATTRIBUTE_CASE));   
+         }
+         mAttributes = null;
+       } 
+       else if (ENTRY_ELEMENT.equals(localName)) {
 
          mAttributes = new Attributes();
 
@@ -112,6 +125,7 @@ public class DictionarySerializer {
        if (TOKEN_ELEMENT.equals(localName)) {
          mTokenList.add(token.toString().trim());
          token.setLength(0);
+         mIsInsideTokenElement = false;
        }
        else if (ENTRY_ELEMENT.equals(localName)) {
 
@@ -128,9 +142,6 @@ public class DictionarySerializer {
 
          mTokenList.clear();
          mAttributes = null;
-       }
-       else if (TOKEN_ELEMENT.equals(localName)) {
-         mIsInsideTokenElement = false;
        }
      }
 
@@ -178,7 +189,10 @@ public class DictionarySerializer {
   private static final String DICTIONARY_ELEMENT = "dictionary";
   private static final String ENTRY_ELEMENT = "entry";
   private static final String TOKEN_ELEMENT = "token";
+  private static final String ATTRIBUTE_CASE = "case";
 
+  private static boolean mIsCaseSensitiveDictionary;
+  
   /**
    * Creates {@link Entry}s form the given {@link InputStream} and
    * forwards these {@link Entry}s to the {@link EntryInserter}.
@@ -191,9 +205,11 @@ public class DictionarySerializer {
    * @throws IOException
    * @throws InvalidFormatException
    */
-  public static void create(InputStream in, EntryInserter inserter)
+  public static boolean create(InputStream in, EntryInserter inserter)
       throws IOException, InvalidFormatException {
 
+    mIsCaseSensitiveDictionary = false;
+    
     DictionaryContenthandler profileContentHandler =
         new DictionaryContenthandler(inserter);
 
@@ -207,6 +223,7 @@ public class DictionarySerializer {
       throw new InvalidFormatException("The profile data stream has " +
             "an invalid format!", e);
     }
+    return mIsCaseSensitiveDictionary;
   }
 
   /**
@@ -220,7 +237,8 @@ public class DictionarySerializer {
    *
    * @throws IOException If an I/O error occurs
    */
-  public static void serialize(OutputStream out, Iterator<Entry> entries)
+  public static void serialize(OutputStream out, Iterator<Entry> entries, 
+          boolean casesensitive)
       throws IOException {
     StreamResult streamResult = new StreamResult(out);
     SAXTransformerFactory tf = (SAXTransformerFactory)
@@ -243,8 +261,13 @@ public class DictionarySerializer {
     try {
       hd.startDocument();
 
+      AttributesImpl dictionaryAttributes = new AttributesImpl();
 
-      hd.startElement("", "", DICTIONARY_ELEMENT, new AttributesImpl());
+      if (casesensitive) {
+        dictionaryAttributes.addAttribute("", "", ATTRIBUTE_CASE,
+                  "", String.valueOf(casesensitive));
+      }
+      hd.startElement("", "", DICTIONARY_ELEMENT, dictionaryAttributes);
 
       while (entries.hasNext()) {
         Entry entry = entries.next();
