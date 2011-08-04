@@ -41,16 +41,12 @@ import opennlp.tools.util.StringList;
  */
 public class Dictionary implements Iterable<StringList> {
 
-  private static final String ATTRIBUTE_CASE = "case";
-
-  private static class StringListWrapper {
+  private class StringListWrapper {
 
     private final StringList stringList;
-    private final boolean isCaseSensitive;
 
-    private StringListWrapper(StringList stringList, boolean isCaseSensitive) {
+    private StringListWrapper(StringList stringList) {
       this.stringList = stringList;
-      this.isCaseSensitive = isCaseSensitive;
     }
 
     private StringList getStringList() {
@@ -67,12 +63,11 @@ public class Dictionary implements Iterable<StringList> {
       else if (obj instanceof StringListWrapper) {
         StringListWrapper other = (StringListWrapper) obj;
 
-        /* TODO find out if we really want this default */
-        if (!isCaseSensitive || !other.isCaseSensitive) {
-          result = this.stringList.compareToIgnoreCase(other.getStringList());
+        if (isCaseSensitive) {
+          result = this.stringList.equals(other.getStringList());
         }
         else {
-          result = this.stringList.equals(other.getStringList());
+          result = this.stringList.compareToIgnoreCase(other.getStringList());
         }
        }
       else {
@@ -93,7 +88,8 @@ public class Dictionary implements Iterable<StringList> {
   }
 
   private Set<StringListWrapper> entrySet = new HashSet<StringListWrapper>();
-  private boolean caseSensitive;
+  private final boolean isCaseSensitive;
+
 
   /**
    * Initializes an empty {@link Dictionary}.
@@ -103,7 +99,7 @@ public class Dictionary implements Iterable<StringList> {
   }
 
   public Dictionary(boolean caseSensitive) {
-    this.caseSensitive = caseSensitive;
+    isCaseSensitive = caseSensitive;
   }
 
   /**
@@ -118,17 +114,12 @@ public class Dictionary implements Iterable<StringList> {
   }
 
   public Dictionary(InputStream in, boolean caseSensitive) throws IOException, InvalidFormatException {
-    this.caseSensitive = caseSensitive;
-    DictionarySerializer.create(in, new EntryInserter()
-    {
-      public void insert(Entry entry) {
-        if (entry.getAttributes().getValue(ATTRIBUTE_CASE) != null) {
-          put(entry.getTokens(), Boolean.parseBoolean(entry.getAttributes().getValue(ATTRIBUTE_CASE)));
-        } else {
+    isCaseSensitive = DictionarySerializer.create(in, new EntryInserter()
+      {
+        public void insert(Entry entry) {
           put(entry.getTokens());
         }
-      }
-    });
+      });
   }
 
   /**
@@ -137,19 +128,9 @@ public class Dictionary implements Iterable<StringList> {
    * @param tokens the new entry
    */
   public void put(StringList tokens) {
-      entrySet.add(new StringListWrapper(tokens, caseSensitive));
+      entrySet.add(new StringListWrapper(tokens));
   }
 
-  /**
-   * Add the token to the dictionary with the required attribute.
-   * 
-   * @param tokens the new entry
-   * @param cs the boolean case sensitivity for the entry
-   */
-  public void put(StringList tokens, boolean cs) {
-      entrySet.add(new StringListWrapper(tokens, cs));
-  }
-  
   /**
    * Checks if this dictionary has the given entry.
    *
@@ -158,7 +139,7 @@ public class Dictionary implements Iterable<StringList> {
    * @return true if it contains the entry otherwise false
    */
   public boolean contains(StringList tokens) {
-      return entrySet.contains(new StringListWrapper(tokens, caseSensitive));
+      return entrySet.contains(new StringListWrapper(tokens));
   }
 
   /**
@@ -167,7 +148,7 @@ public class Dictionary implements Iterable<StringList> {
    * @param tokens
    */
   public void remove(StringList tokens) {
-      entrySet.remove(new StringListWrapper(tokens, caseSensitive));
+      entrySet.remove(new StringListWrapper(tokens));
   }
 
   /**
@@ -213,7 +194,6 @@ public class Dictionary implements Iterable<StringList> {
     Iterator<Entry> entryIterator = new Iterator<Entry>()
       {
         private Iterator<StringList> dictionaryIterator = Dictionary.this.iterator();
-        private boolean c = Dictionary.this.caseSensitive;
 
         public boolean hasNext() {
           return dictionaryIterator.hasNext();
@@ -223,10 +203,8 @@ public class Dictionary implements Iterable<StringList> {
 
           StringList tokens = (StringList)
               dictionaryIterator.next();
-          Attributes att = new Attributes();
           
-          att.setValue(ATTRIBUTE_CASE, String.valueOf(c));
-          return new Entry(tokens, att);
+          return new Entry(tokens, new Attributes());
         }
 
         public void remove() {
@@ -235,7 +213,7 @@ public class Dictionary implements Iterable<StringList> {
 
       };
 
-    DictionarySerializer.serialize(out, entryIterator);
+    DictionarySerializer.serialize(out, entryIterator, isCaseSensitive);
   }
 
   public boolean equals(Object obj) {
@@ -343,8 +321,7 @@ public class Dictionary implements Iterable<StringList> {
         if (obj instanceof String) {
           String str = (String) obj;
 
-          result = entrySet.contains(new StringListWrapper(new StringList(str),
-              caseSensitive));
+          result = entrySet.contains(new StringListWrapper(new StringList(str)));
 
         }
 
