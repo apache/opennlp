@@ -45,8 +45,6 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
 
   private Map<String, String[]> dictionary;
 
-  // TODO: Fix workaround, does not work for the false case,
-  // because the map lookup fails
   private boolean caseSensitive = true;
 
   public POSDictionary() {
@@ -275,8 +273,7 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
 
     final POSDictionary newPosDict = new POSDictionary();
 
-    /* TODO: FIXME really need to save the case sensitivity flag read */
-    DictionarySerializer.create(in, new EntryInserter() {
+    boolean isCaseSensitive = DictionarySerializer.create(in, new EntryInserter() {
       public void insert(Entry entry) throws InvalidFormatException {
 
         String tagString = entry.getAttributes().getValue("tags");
@@ -291,6 +288,8 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
         newPosDict.dictionary.put(word.getToken(0), tags);
       }});
 
+    newPosDict.caseSensitive = isCaseSensitive;
+    
     return newPosDict;
   }
 }
