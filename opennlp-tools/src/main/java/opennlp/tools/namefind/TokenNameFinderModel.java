@@ -95,6 +95,8 @@ public class TokenNameFinderModel extends BaseModel {
     // TODO: Add checks to not put resources where no serializer exists,
     // make that case fail here, should be done in the BaseModel
     artifactMap.putAll(resources);
+    
+    checkArtifactMap();
   }
 
   public TokenNameFinderModel(String languageCode, AbstractModel nameFinderModel,
@@ -176,6 +178,26 @@ public class TokenNameFinderModel extends BaseModel {
     return model;
   }
   
+  @Override
+  protected void createArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
+    super.createArtifactSerializers(serializers);
+    
+    serializers.put("featuregen", new ByteArraySerializer());
+  }
+  
+  public static Map<String, ArtifactSerializer> createArtifactSerializers()  {
+    
+    // TODO: Not so nice, because code cannot really be reused by the other create serializer method
+    //       Has to be redesigned, we need static access to default serializers
+    //       and these should be able to extend during runtime ?! 
+    
+    Map<String, ArtifactSerializer> serializers = BaseModel.createArtifactSerializers();
+    
+    serializers.put("featuregen", new ByteArraySerializer());
+    
+    return serializers;
+  }
+  
   // TODO: Write test for this method
   public static boolean isModelValid(MaxentModel model) {
     
@@ -215,31 +237,15 @@ public class TokenNameFinderModel extends BaseModel {
 
     return true;
   }
-
-  @Override
-  protected void createArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
-    super.createArtifactSerializers(serializers);
-    
-    serializers.put("featuregen", new ByteArraySerializer());
-  }
-  
-  public static Map<String, ArtifactSerializer> createArtifactSerializers()  {
-    
-    // TODO: Not so nice, because code cannot really be reused by the other create serializer method
-    //       Has to be redesigned, we need static access to default serializers
-    //       and these should be able to extend during runtime ?! 
-    
-    Map<String, ArtifactSerializer> serializers = BaseModel.createArtifactSerializers();
-    
-    serializers.put("featuregen", new ByteArraySerializer());
-    
-    return serializers;
-  }
   
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
     
-    if (!(artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
+    if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof AbstractModel) {
+      AbstractModel model = (AbstractModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
+      isModelValid(model);
+    }
+    else {
       throw new InvalidFormatException("Token Name Finder model is incomplete!");
     }
   }

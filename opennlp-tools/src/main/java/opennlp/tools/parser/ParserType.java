@@ -29,8 +29,6 @@ public enum ParserType {
       return ParserType.TREEINSERT;
     }
     else {
-      // TODO: What should be done if cannot be parsed ???
-      // maybe throw an exception, what is defautl behaviro ??
       return null;
     }
   }

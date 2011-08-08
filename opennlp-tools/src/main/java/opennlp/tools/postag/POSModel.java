@@ -18,9 +18,6 @@
 
 package opennlp.tools.postag;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import opennlp.model.AbstractModel;
-import opennlp.model.GenericModelReader;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -77,10 +73,6 @@ public final class POSModel extends BaseModel {
     if (posModel == null)
         throw new IllegalArgumentException("The maxentPosModel param must not be null!");
 
-    // the model is always valid, because there
-    // is nothing that can be assumed about the used
-    // tags
-
     artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
 
     if (tagDictionary != null)
@@ -88,6 +80,8 @@ public final class POSModel extends BaseModel {
 
     if (ngramDict != null)
       artifactMap.put(NGRAM_DICTIONARY_ENTRY_NAME, ngramDict);
+    
+    checkArtifactMap();
   }
 
   public POSModel(String languageCode, AbstractModel posModel,
@@ -117,6 +111,7 @@ public final class POSModel extends BaseModel {
       throw new InvalidFormatException("POS model is incomplete!");
     }
 
+    // Ensure that the tag dictionary is compatible with the model
     Object tagdictEntry = artifactMap.get(TAG_DICTIONARY_ENTRY_NAME);
 
     if (tagdictEntry != null) {

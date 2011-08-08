@@ -34,10 +34,9 @@ public class DoccatModel extends BaseModel {
       Map<String, String> manifestInfoEntries) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
     
-    if (doccatModel == null)
-      throw new IllegalArgumentException("doccatModel must not be null!");
-
     artifactMap.put(DOCCAT_MODEL_ENTRY_NAME, doccatModel);
+    
+    checkArtifactMap();
   }
   
   public DoccatModel(String languageCode, AbstractModel doccatModel) {

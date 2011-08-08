@@ -30,8 +30,10 @@ import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelReader;
 import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * The {@link SentenceModel} is the model used
@@ -53,12 +55,6 @@ public class SentenceModel extends BaseModel {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
 
-    if (sentModel == null)
-        throw new IllegalArgumentException("sentModel param must not be null!");
-
-    if (!isModelCompatible(sentModel))
-        throw new IllegalArgumentException("The maxent model is not compatible!");
-
     artifactMap.put(MAXENT_MODEL_ENTRY_NAME, sentModel);
 
     setManifestProperty(TOKEN_END_PROPERTY, Boolean.toString(useTokenEnd));
@@ -66,6 +62,8 @@ public class SentenceModel extends BaseModel {
     // Abbreviations are optional
     if (abbreviations != null)
         artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviations);
+    
+    checkArtifactMap();
   }
 
   public SentenceModel(String languageCode, AbstractModel sentModel,
@@ -77,11 +75,6 @@ public class SentenceModel extends BaseModel {
     super(COMPONENT_NAME, in);
   }
 
-  private static boolean isModelCompatible(MaxentModel model) {
-    // TODO: add checks, what are the outcomes ?
-    return true;
-  }
-
   @Override
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
@@ -91,6 +84,12 @@ public class SentenceModel extends BaseModel {
           " maxent model!");
     }
 
+    if (!ModelUtil.validateOutcomes(getMaxentModel(), SentenceDetectorME.SPLIT,
+        SentenceDetectorME.NO_SPLIT)) {
+      throw new InvalidFormatException("The maxent model is not compatible " +
+      		"with the sentence detector!");
+    }
+    
     if (getManifestProperty(TOKEN_END_PROPERTY) == null)
       throw new InvalidFormatException(TOKEN_END_PROPERTY + " is a mandatory property!");
 

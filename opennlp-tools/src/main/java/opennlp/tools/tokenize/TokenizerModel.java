@@ -61,13 +61,6 @@ public final class TokenizerModel extends BaseModel {
       Map<String, String> manifestInfoEntries) {
     super(COMPONENT_NAME, language, manifestInfoEntries);
 
-    if (tokenizerMaxentModel == null)
-      throw new IllegalArgumentException(
-          "tokenizerMaxentModel param must not bet null!");
-
-    if (!isModelCompatible(tokenizerMaxentModel))
-      throw new IllegalArgumentException("The maxent model is not compatible!");
-
     artifactMap.put(TOKENIZER_MODEL_ENTRY, tokenizerMaxentModel);
 
     setManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION,
@@ -76,6 +69,8 @@ public final class TokenizerModel extends BaseModel {
     // Abbreviations are optional
     if (abbreviations != null)
       artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviations);
+    
+    checkArtifactMap();
   }
 
   /**
