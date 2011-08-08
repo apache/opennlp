@@ -19,9 +19,6 @@
 package opennlp.tools.parser;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,8 +27,6 @@ import java.io.OutputStreamWriter;
 import java.util.Map;
 
 import opennlp.model.AbstractModel;
-import opennlp.model.BinaryFileDataReader;
-import opennlp.model.GenericModelReader;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
@@ -109,14 +104,8 @@ public class ParserModel extends BaseModel {
     
     setManifestProperty(PARSER_TYPE, modelType.name());
     
-    if (buildModel == null) {
-      throw new IllegalArgumentException("buildModel must not be null!");
-    }
     artifactMap.put(BUILD_MODEL_ENTRY_NAME, buildModel);
     
-    if (checkModel == null) {
-      throw new IllegalArgumentException("checkModel must not be null!");
-    }
     artifactMap.put(CHECK_MODEL_ENTRY_NAME, checkModel);
 
     if (ParserType.CHUNKING.equals(modelType)) {
@@ -133,20 +122,13 @@ public class ParserModel extends BaseModel {
       throw new IllegalStateException("Unkown ParserType!");
     }
     
-    if (parserTagger == null) {
-      throw new IllegalArgumentException("parserTagger must not be null!");
-    }
     artifactMap.put(PARSER_TAGGER_MODEL_ENTRY_NAME, parserTagger);
     
-    if (chunkerTagger == null) {
-      throw new IllegalArgumentException("chunkerTagger must not be null!");
-    }
     artifactMap.put(CHUNKER_TAGGER_MODEL_ENTRY_NAME, chunkerTagger);
     
-    if (headRules == null) {
-        throw new IllegalArgumentException("headRules must not be null!");
-    }
     artifactMap.put(HEAD_RULES_MODEL_ENTRY_NAME, headRules);
+    
+    checkArtifactMap();
   }
 
   public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, 
@@ -233,8 +215,47 @@ public class ParserModel extends BaseModel {
         getParserTaggerModel(), chunkModel, getHeadRules(), getParserType());
   }
   
-  private static AbstractModel readModel(String fileName) throws FileNotFoundException, IOException {
-    return new GenericModelReader(new BinaryFileDataReader(new FileInputStream(fileName))).
-        getModel();
+  @Override
+  protected void validateArtifactMap() throws InvalidFormatException {
+    super.validateArtifactMap();
+    
+    if (!(artifactMap.get(BUILD_MODEL_ENTRY_NAME)  instanceof AbstractModel)) {
+      throw new InvalidFormatException("Missing the build model!");
+    }
+    
+    ParserType modelType = getParserType();
+    
+    if (modelType != null) {
+      if (ParserType.CHUNKING.equals(modelType)) {
+        if (artifactMap.get(ATTACH_MODEL_ENTRY_NAME) != null)
+            throw new InvalidFormatException("attachModel must be null for chunking parser!");
+      }
+      else if (ParserType.TREEINSERT.equals(modelType)) {
+        if (!(artifactMap.get(ATTACH_MODEL_ENTRY_NAME)  instanceof AbstractModel))
+          throw new InvalidFormatException("attachModel must not be null!");
+      }
+      else {
+        throw new InvalidFormatException("Unkown ParserType!");
+      }
+    }
+    else {
+      throw new InvalidFormatException("Missing the parser type property!");
+    }
+    
+    if (!(artifactMap.get(CHECK_MODEL_ENTRY_NAME)  instanceof AbstractModel)) {
+      throw new InvalidFormatException("Missing the check model!");
+    }
+    
+    if (!(artifactMap.get(PARSER_TAGGER_MODEL_ENTRY_NAME)  instanceof POSModel)) {
+      throw new InvalidFormatException("Missing the tagger model!");
+    }
+    
+    if (!(artifactMap.get(CHUNKER_TAGGER_MODEL_ENTRY_NAME)  instanceof ChunkerModel)) {
+      throw new InvalidFormatException("Missing the chunker model!");
+    }
+    
+    if (!(artifactMap.get(HEAD_RULES_MODEL_ENTRY_NAME)  instanceof HeadRules)) {
+      throw new InvalidFormatException("Missing the head rules!");
+    }
   }
 }

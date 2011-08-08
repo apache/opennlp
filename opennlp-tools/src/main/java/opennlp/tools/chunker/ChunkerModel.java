@@ -46,10 +46,9 @@ public class ChunkerModel extends BaseModel {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
 
-    if (chunkerModel == null)
-        throw new IllegalArgumentException("chunkerModel must not be null!");
-
     artifactMap.put(CHUNKER_MODEL_ENTRY_NAME, chunkerModel);
+    
+    checkArtifactMap();
   }
   
   public ChunkerModel(String languageCode, AbstractModel chunkerModel) {
