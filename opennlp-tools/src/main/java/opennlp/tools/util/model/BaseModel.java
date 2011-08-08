@@ -261,6 +261,22 @@ public abstract class BaseModel {
   }
 
   /**
+   * Checks the artifact map. 
+   * <p>
+   * A subclass should call this method from a constructor which accepts the individual
+   * artifact map items, to validate that these items form a valid model.
+   * <p>
+   * If the artifacts are not valid an IllegalArgumentException will be thrown.
+   */
+  protected void checkArtifactMap() {
+    try {
+      validateArtifactMap();
+    } catch (InvalidFormatException e) {
+      throw new IllegalArgumentException(e.getMessage());
+    }
+  }
+  
+  /**
    * Retrieves the value to the given key from the manifest.properties
    * entry.
    *
