@@ -57,6 +57,7 @@ public class DictionarySerializer {
 //    private boolean mIsInsideDictionaryElement;
 //    private boolean mIsInsideEntryElement;
     private boolean mIsInsideTokenElement;
+    private boolean mIsCaseSensitiveDictionary;
     
     private List<String> mTokenList = new LinkedList<String>();
 
@@ -66,6 +67,7 @@ public class DictionarySerializer {
 
     private DictionaryContenthandler(EntryInserter inserter) {
       mInserter = inserter;
+      mIsCaseSensitiveDictionary = true;
     }
     /**
      * Not implemented.
@@ -191,7 +193,6 @@ public class DictionarySerializer {
   private static final String TOKEN_ELEMENT = "token";
   private static final String ATTRIBUTE_CASE_SENSITIVE = "case_sensitive";
 
-  private static boolean mIsCaseSensitiveDictionary;
   
   /**
    * Creates {@link Entry}s form the given {@link InputStream} and
@@ -208,8 +209,6 @@ public class DictionarySerializer {
   public static boolean create(InputStream in, EntryInserter inserter)
       throws IOException, InvalidFormatException {
 
-    mIsCaseSensitiveDictionary = false;
-    
     DictionaryContenthandler profileContentHandler =
         new DictionaryContenthandler(inserter);
 
@@ -223,7 +222,7 @@ public class DictionarySerializer {
       throw new InvalidFormatException("The profile data stream has " +
             "an invalid format!", e);
     }
-    return mIsCaseSensitiveDictionary;
+    return profileContentHandler.mIsCaseSensitiveDictionary;
   }
 
   /**
@@ -263,7 +262,7 @@ public class DictionarySerializer {
 
       AttributesImpl dictionaryAttributes = new AttributesImpl();
 
-      if (casesensitive) {
+      if (!casesensitive) {
         dictionaryAttributes.addAttribute("", "", ATTRIBUTE_CASE_SENSITIVE,
                   "", String.valueOf(casesensitive));
       }
