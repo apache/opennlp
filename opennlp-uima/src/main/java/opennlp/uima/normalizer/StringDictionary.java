@@ -99,6 +99,6 @@ public class StringDictionary {
       }
     };
 
-    DictionarySerializer.serialize(out, entryIterator);
+    DictionarySerializer.serialize(out, entryIterator, true);
   }
 }
