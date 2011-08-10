@@ -236,6 +236,24 @@ public class DictionarySerializer {
    *
    * @throws IOException If an I/O error occurs
    */
+  @Deprecated
+  public static void serialize(OutputStream out, Iterator<Entry> entries) 
+          throws IOException {
+      DictionarySerializer.serialize(out, entries, true);
+  }
+  
+  /**
+   * Serializes the given entries to the given {@link OutputStream}.
+   *
+   * After the serialization is finished the provided
+   * {@link OutputStream} remains open.
+   *
+   * @param out
+   * @param entries
+   * #param case_sensitive
+   *
+   * @throws IOException If an I/O error occurs
+   */
   public static void serialize(OutputStream out, Iterator<Entry> entries, 
           boolean casesensitive)
       throws IOException {
@@ -262,10 +280,8 @@ public class DictionarySerializer {
 
       AttributesImpl dictionaryAttributes = new AttributesImpl();
 
-      if (!casesensitive) {
-        dictionaryAttributes.addAttribute("", "", ATTRIBUTE_CASE_SENSITIVE,
-                  "", String.valueOf(casesensitive));
-      }
+      dictionaryAttributes.addAttribute("", "", ATTRIBUTE_CASE_SENSITIVE,
+                "", String.valueOf(casesensitive));
       hd.startElement("", "", DICTIONARY_ELEMENT, dictionaryAttributes);
 
       while (entries.hasNext()) {
