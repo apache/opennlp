@@ -253,7 +253,8 @@ public class DictionarySerializer {
    *
    * @param out
    * @param entries
-   * @param case_sensitive
+   * @param casesensitive indicates if the written dictionary 
+   *        should be case sensitive or case insensitive.
    *
    * @throws IOException If an I/O error occurs
    */
