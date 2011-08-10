@@ -203,6 +203,8 @@ public class DictionarySerializer {
    * @param in
    * @param inserter
    *
+   * @return isCaseSensitive attribute for Dictionary
+   * 
    * @throws IOException
    * @throws InvalidFormatException
    */
@@ -235,6 +237,7 @@ public class DictionarySerializer {
    * @param entries
    *
    * @throws IOException If an I/O error occurs
+   * @deprecated Use {@link DictionarySerializer#serialize(java.io.OutputStream, java.util.Iterator, boolean) instead
    */
   @Deprecated
   public static void serialize(OutputStream out, Iterator<Entry> entries) 
@@ -250,7 +253,7 @@ public class DictionarySerializer {
    *
    * @param out
    * @param entries
-   * #param case_sensitive
+   * @param case_sensitive
    *
    * @throws IOException If an I/O error occurs
    */
