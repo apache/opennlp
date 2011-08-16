@@ -57,6 +57,7 @@ public class DictionaryTest {
   public void testLookup() {
 
     StringList entry1 = new StringList(new String[]{"1a", "1b"});
+    StringList entry1u = new StringList(new String[]{"1A", "1B"});
     StringList entry2 = new StringList(new String[]{"1A", "1C"});
 
     Dictionary dict = getCaseInsensitive();
@@ -64,9 +65,28 @@ public class DictionaryTest {
     dict.put(entry1);
 
     assertTrue(dict.contains(entry1));
+    assertTrue(dict.contains(entry1u));
     assertTrue(!dict.contains(entry2));
   }
 
+  /**
+   * Test lookup with case sensitive dictionary
+   */
+  @Test
+  public void testLookupCaseSensitive() {
+    StringList entry1 = new StringList(new String[]{"1a", "1b"});
+    StringList entry1u = new StringList(new String[]{"1A", "1B"});
+    StringList entry2 = new StringList(new String[]{"1A", "1C"});
+
+    Dictionary dict = getCaseSensitive();
+
+    dict.put(entry1);
+
+    assertTrue(dict.contains(entry1));
+    assertTrue(!dict.contains(entry1u));
+    assertTrue(!dict.contains(entry2));
+  }
+  
   /**
    * Tests serialization and deserailization of the {@link Dictionary}.
    *
@@ -154,14 +174,23 @@ public class DictionaryTest {
   @Test
   public void testHashCode() {
     StringList entry1 = new StringList(new String[]{"1a", "1b"});
+    StringList entry2 = new StringList(new String[]{"1A", "1B"});
 
     Dictionary dictA = getCaseInsensitive();
     dictA.put(entry1);
 
     Dictionary dictB = getCaseInsensitive();
-    dictB.put(entry1);
+    dictB.put(entry2);
+    
+    Dictionary dictC = getCaseSensitive();
+    dictC.put(entry1);
+    
+    Dictionary dictD = getCaseSensitive();
+    dictD.put(entry2);
 
     assertEquals(dictA.hashCode(), dictB.hashCode());
+    assertEquals(dictB.hashCode(), dictC.hashCode());
+    assertEquals(dictC.hashCode(), dictD.hashCode());
   }
 
   /**
@@ -195,4 +224,21 @@ public class DictionaryTest {
 
     assertTrue(dict.contains(entry2));
   }
+
+  /**
+   * Tests the lookup of tokens of different case.
+   */
+  @Test
+  public void testDifferentCaseLookupCaseSensitive() {
+
+    StringList entry1 = new StringList(new String[]{"1a", "1b"});
+    StringList entry2 = new StringList(new String[]{"1A", "1B"});
+
+    Dictionary dict = getCaseSensitive();
+
+    dict.put(entry1);
+
+    assertTrue(!dict.contains(entry2));
+  }
+
 }
