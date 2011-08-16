@@ -18,6 +18,8 @@
 package opennlp.tools.tokenize;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
@@ -67,5 +69,22 @@ public class TokenSampleTest {
     assertEquals(new Span(7, 8), a.getTokenSpans()[2]);
     assertEquals(new Span(9, 12), a.getTokenSpans()[3]);
     assertEquals(new Span(12, 13), a.getTokenSpans()[4]);
+  }
+  
+  @Test
+  public void testEquals() {
+    assertFalse(createGoldSample() == createGoldSample());
+    assertTrue(createGoldSample().equals(createGoldSample()));
+    assertFalse(createPredSample().equals(createGoldSample()));
+  }
+  
+  public static TokenSample createGoldSample() {
+    return new TokenSample("A test.", new Span[] { new Span(0, 1),
+        new Span(2, 6) });
+  }
+
+  public static TokenSample createPredSample() {
+    return new TokenSample("A test.", new Span[] { new Span(0, 3),
+        new Span(2, 6) });
   }
 }

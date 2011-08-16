@@ -106,4 +106,18 @@ public class POSSample {
 
     return new POSSample(sentence, tags);
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (obj instanceof POSSample) {
+      POSSample a = (POSSample) obj;
+
+      return Arrays.equals(getSentence(), a.getSentence())
+          && Arrays.equals(getTags(), a.getTags());
+    } else {
+      return true;
+    }
+  }
 }
