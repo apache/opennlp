@@ -37,6 +37,20 @@ import org.junit.Test;
 public class DictionaryTest {
 
   /**
+   * @return a case sensitive Dictionary
+   */
+  private Dictionary getCaseSensitive() {
+      return new Dictionary(true);
+  }
+  
+  /**
+   * @return a case insensitive Dictionary
+   */
+  private Dictionary getCaseInsensitive() {
+      return new Dictionary(false);
+  }
+  
+  /**
    * Tests a basic lookup.
    */
   @Test
@@ -45,7 +59,7 @@ public class DictionaryTest {
     StringList entry1 = new StringList(new String[]{"1a", "1b"});
     StringList entry2 = new StringList(new String[]{"1A", "1C"});
 
-    Dictionary dict = new Dictionary();
+    Dictionary dict = getCaseInsensitive();
 
     dict.put(entry1);
 
@@ -61,7 +75,7 @@ public class DictionaryTest {
    */
   @Test
   public void testSerialization() throws IOException, InvalidFormatException {
-    Dictionary reference = new Dictionary();
+    Dictionary reference = getCaseInsensitive();
 
     String a1 = "a1";
     String a2 = "a2";
@@ -117,15 +131,21 @@ public class DictionaryTest {
     StringList entry1 = new StringList(new String[]{"1a", "1b"});
     StringList entry2 = new StringList(new String[]{"2a", "2b"});
 
-    Dictionary dictA = new Dictionary();
+    Dictionary dictA = getCaseInsensitive();
     dictA.put(entry1);
     dictA.put(entry2);
 
-    Dictionary dictB = new Dictionary();
+    Dictionary dictB = getCaseInsensitive();
     dictB.put(entry1);
     dictB.put(entry2);
+    
+    Dictionary dictC = getCaseSensitive();
+    dictC.put(entry1);
+    dictC.put(entry2);
 
     assertTrue(dictA.equals(dictB));
+    assertTrue(dictC.equals(dictA));
+    assertTrue(dictB.equals(dictC));
   }
 
   /**
@@ -135,10 +155,10 @@ public class DictionaryTest {
   public void testHashCode() {
     StringList entry1 = new StringList(new String[]{"1a", "1b"});
 
-    Dictionary dictA = new Dictionary();
+    Dictionary dictA = getCaseInsensitive();
     dictA.put(entry1);
 
-    Dictionary dictB = new Dictionary();
+    Dictionary dictB = getCaseInsensitive();
     dictB.put(entry1);
 
     assertEquals(dictA.hashCode(), dictB.hashCode());
@@ -151,7 +171,7 @@ public class DictionaryTest {
   public void testToString() {
     StringList entry1 = new StringList(new String[]{"1a", "1b"});
 
-    Dictionary dictA = new Dictionary();
+    Dictionary dictA = getCaseInsensitive();
 
     dictA.toString();
 
@@ -169,7 +189,7 @@ public class DictionaryTest {
     StringList entry1 = new StringList(new String[]{"1a", "1b"});
     StringList entry2 = new StringList(new String[]{"1A", "1B"});
 
-    Dictionary dict = new Dictionary();
+    Dictionary dict = getCaseInsensitive();
 
     dict.put(entry1);
 
