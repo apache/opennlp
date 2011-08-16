@@ -101,4 +101,18 @@ public class SentenceSample {
     
     return documentBuilder.toString();
   }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (obj instanceof SentenceSample) {
+      SentenceSample a = (SentenceSample) obj;
+
+      return getDocument().equals(a.getDocument())
+          && Arrays.equals(getSentences(), a.getSentences());
+    } else {
+      return true;
+    }
+  }
 }

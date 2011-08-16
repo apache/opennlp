@@ -17,8 +17,7 @@
 
 package opennlp.tools.chunker;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,7 +39,7 @@ public class ChunkSampleTest {
         new String[]{"test", "one element to much"});
   }
   
-  private String[] createSentence() {
+  private static String[] createSentence() {
     return new String[] {
         "Forecasts",
         "for",
@@ -61,7 +60,7 @@ public class ChunkSampleTest {
     };
   }
   
-  private String[] createTags() {
+  private static String[] createTags() {
     
     return new String[]{
         "NNS",
@@ -83,7 +82,7 @@ public class ChunkSampleTest {
     };
   }
   
-  private String[] createChunks() {
+  private static String[] createChunks() {
     return new String[]{
         "B-NP",
         "B-PP",
@@ -239,6 +238,23 @@ public class ChunkSampleTest {
   public void testInvalidChunkSampleList() {
     new ChunkSample(Arrays.asList(new String[1]), Arrays.asList(new String[1]),
         Arrays.asList(new String[2]));
+  }
+  
+  @Test
+  public void testEquals() {
+    assertFalse(createGoldSample() == createGoldSample());
+    assertTrue(createGoldSample().equals(createGoldSample()));
+    assertFalse(createPredSample().equals(createGoldSample()));
+  }
+  
+  public static ChunkSample createGoldSample() {
+      return new ChunkSample(createSentence(), createTags(), createChunks());
+  }
+  
+  public static ChunkSample createPredSample() {
+      String[] chunks = createChunks();
+      chunks[5] = "B-NP";
+      return new ChunkSample(createSentence(), createTags(), chunks);
   }
   
 }

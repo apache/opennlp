@@ -195,4 +195,20 @@ public class ChunkSample {
 	    }
 	    return chunkString.toString();
 	  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (obj instanceof ChunkSample) {
+      ChunkSample a = (ChunkSample) obj;
+
+      return Arrays.equals(getSentence(), a.getSentence())
+          && Arrays.equals(getTags(), a.getTags())
+          && Arrays.equals(getPreds(), a.getPreds());
+    } else {
+      return true;
+    }
+  }
+  
 }
