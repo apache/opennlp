@@ -72,4 +72,18 @@ public class DocumentSample {
     
     return sampleString.toString();
   }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (obj instanceof DocumentSample) {
+      DocumentSample a = (DocumentSample) obj;
+
+      return getCategory().equals(a.getCategory())
+          && Arrays.equals(getText(), a.getText());
+    } else {
+      return true;
+    }
+  }
 }

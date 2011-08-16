@@ -196,4 +196,18 @@ public class TokenSample {
     return new TokenSample(untaggedSampleString.toString(), (Span[]) realTokenSpans.toArray(
         new Span[realTokenSpans.size()]));
   }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (obj instanceof TokenSample) {
+      TokenSample a = (TokenSample) obj;
+
+      return getText().equals(a.getText())
+          && Arrays.equals(getTokenSpans(), a.getTokenSpans());
+    } else {
+      return true;
+    }
+  }
 }

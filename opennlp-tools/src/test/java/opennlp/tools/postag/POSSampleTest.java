@@ -19,6 +19,8 @@
 package opennlp.tools.postag;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import opennlp.tools.util.InvalidFormatException;
 
@@ -28,6 +30,25 @@ import org.junit.Test;
  * Tests for the {@link POSSample} class.
  */
 public class POSSampleTest {
+  
+  @Test
+  public void testEquals() throws InvalidFormatException {
+    assertFalse(createGoldSample() == createGoldSample());
+    assertTrue(createGoldSample().equals(createGoldSample()));
+    assertFalse(createPredSample().equals(createGoldSample()));
+  }
+  
+  public static POSSample createGoldSample() throws InvalidFormatException {
+    String sentence = "the_DT stories_NNS about_IN well-heeled_JJ "
+        + "communities_NNS and_CC developers_NNS";
+    return POSSample.parse(sentence);
+  }
+
+  public static POSSample createPredSample() throws InvalidFormatException {
+    String sentence = "the_DT stories_NNS about_NNS well-heeled_JJ "
+        + "communities_NNS and_CC developers_CC";
+    return POSSample.parse(sentence);
+  }
 
   /**
    * Tests if it can parse a valid token_tag sentence.
