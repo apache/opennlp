@@ -134,7 +134,7 @@ NameFinderME nameFinder = new NameFinderME(model);]]>
 for (String document[][] : documents) {
 
   for (String[] sentence : document) {
-    Span nameSpans[] = find(sentence);
+    Span nameSpans[] = nameFinder.find(sentence);
     // do something with the names
   }
 
@@ -144,7 +144,7 @@ for (String document[][] : documents) {
 			 the following snippet shows a call to find
 			 <programlisting language="java">
 				<![CDATA[
-String sentence = new String[]{
+String sentence[] = new String[]{
     "Pierre",
     "Vinken",
     "is",
