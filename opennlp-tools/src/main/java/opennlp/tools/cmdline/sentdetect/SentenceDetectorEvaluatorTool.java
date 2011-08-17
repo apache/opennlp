@@ -22,15 +22,17 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.EvaluatorParams;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.EvaluatorParams;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.sentdetect.SentenceDetectorEvaluator;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
 
@@ -62,8 +64,13 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
     File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
-    opennlp.tools.sentdetect.SentenceDetectorEvaluator evaluator = new opennlp.tools.sentdetect.SentenceDetectorEvaluator(
-        new SentenceDetectorME(model), params.getMisclassified());
+    MissclassifiedSampleListener<SentenceSample> errorListener = null;
+    if (params.getMisclassified()) {
+      errorListener = new SentenceEvaluationErrorListener();
+    }
+    
+    SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
+        new SentenceDetectorME(model), errorListener);
     
     System.out.print("Evaluating ... ");
       ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Test",

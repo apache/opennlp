@@ -30,6 +30,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 public final class ChunkerCrossValidatorTool implements CmdLineTool {
   
@@ -68,9 +69,14 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
     
     ChunkerCrossValidator validator = new ChunkerCrossValidator(
         params.getLang(), params.getCutoff(), params.getIterations());
+    
+    MissclassifiedSampleListener<ChunkSample> errorListener = null;
+    if(params.getMisclassified()) {
+      errorListener = new ChunkEvaluationErrorListener();
+    }
       
     try {
-      validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
+      validator.evaluate(sampleStream, params.getFolds(), errorListener);
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

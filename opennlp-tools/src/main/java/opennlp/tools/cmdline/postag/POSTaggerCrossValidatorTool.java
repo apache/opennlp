@@ -31,6 +31,7 @@ import opennlp.tools.postag.POSDictionary;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerCrossValidator;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 public final class POSTaggerCrossValidatorTool implements CmdLineTool {
   
@@ -84,8 +85,13 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
         validator = new POSTaggerCrossValidator(params.getLang(),
             mlParams, tagdict, null);
       }
+      
+      MissclassifiedSampleListener<POSSample> missclassifiedListener = null;
+      if (params.getMisclassified()) {
+        missclassifiedListener = new POSEvaluationErrorListener();
+      }
 
-      validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
+      validator.evaluate(sampleStream, params.getFolds(), missclassifiedListener);
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);

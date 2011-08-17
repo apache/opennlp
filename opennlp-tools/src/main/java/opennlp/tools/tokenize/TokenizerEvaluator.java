@@ -21,6 +21,7 @@ package opennlp.tools.tokenize;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 /**
  * The {@link TokenizerEvaluator} measures the performance of
@@ -40,17 +41,21 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    * predicted tokens.
    */
   private Tokenizer tokenizer;
+
+  private MissclassifiedSampleListener<TokenSample> sampleListener;
   
   /**
    * Initializes the current instance with the
    * given {@link Tokenizer}.
    *
    * @param tokenizer the {@link Tokenizer} to evaluate.
-   * @param printError should print detailed output
+   * @param sampleListener
+   *          an optional {@link MissclassifiedSampleListener} listener to
+   *          notify errors
    */
-  public TokenizerEvaluator(Tokenizer tokenizer, boolean printErrors) {
-    super(printErrors);
+  public TokenizerEvaluator(Tokenizer tokenizer, MissclassifiedSampleListener<TokenSample> sampleListener) {
     this.tokenizer = tokenizer;
+    this.sampleListener = sampleListener;
   }
   
   /**
@@ -75,12 +80,11 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
   public void evaluateSample(TokenSample reference) {
     Span predictions[] = tokenizer.tokenizePos(reference.getText());
 
-    Span[] references = reference.getTokenSpans();
-
-    if (isPrintError()) {
-      String doc = reference.getText();
-      printErrors(references, predictions, reference, new TokenSample(doc,
-          predictions), doc);
+    if (this.sampleListener != null) {
+      TokenSample predicted = new TokenSample(reference.getText(), predictions);
+      if(!predicted.equals(reference)) {
+        this.sampleListener.missclassified(reference, predicted);
+      }
     }
 
     fmeasure.updateScores(reference.getTokenSpans(), predictions);

@@ -32,6 +32,7 @@ import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
@@ -66,9 +67,14 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
     TokenNameFinderModel model = new TokenNameFinderModelLoader().load(params
         .getModel());
+    
+    MissclassifiedSampleListener<NameSample> missclassifiedListener = null;
+    if (params.getMisclassified()) {
+      missclassifiedListener = new NameEvaluationErrorListener();
+    }
 
     opennlp.tools.namefind.TokenNameFinderEvaluator evaluator = new opennlp.tools.namefind.TokenNameFinderEvaluator(
-        new NameFinderME(model), params.getMisclassified());
+        new NameFinderME(model), missclassifiedListener);
 
     final ObjectStream<NameSample> sampleStream = TokenNameFinderTrainerTool.openSampleData("Test",
         testData, encoding);

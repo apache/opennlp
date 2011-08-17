@@ -25,6 +25,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 public class TokenNameFinderCrossValidator {
 
@@ -144,7 +145,7 @@ public class TokenNameFinderCrossValidator {
    */
   public void evaluate(ObjectStream<NameSample> samples, int nFolds)
       throws IOException {
-    evaluate(samples, nFolds, false);
+    evaluate(samples, nFolds, null);
   }
 
   /**
@@ -152,12 +153,12 @@ public class TokenNameFinderCrossValidator {
    * 
    * @param samples the data to train and test
    * @param nFolds number of folds
-   * @param printErrors if true will print errors
+   * @param listener an optional listener to print missclassified items
    * 
    * @throws IOException
    */
-  public void evaluate(ObjectStream<NameSample> samples, int nFolds, boolean printErrors)
-      throws IOException {
+  public void evaluate(ObjectStream<NameSample> samples, int nFolds,
+      MissclassifiedSampleListener<NameSample> listener) throws IOException {
     CrossValidationPartitioner<NameSample> partitioner = new CrossValidationPartitioner<NameSample>(
         samples, nFolds);
 
@@ -177,7 +178,7 @@ public class TokenNameFinderCrossValidator {
 
       // do testing
       TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
-          new NameFinderME(model), printErrors);
+          new NameFinderME(model), listener);
 
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 

@@ -31,6 +31,7 @@ import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 public final class POSTaggerEvaluatorTool implements CmdLineTool {
 
@@ -63,10 +64,15 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
     Charset encoding = params.getEncoding();
 
     POSModel model = new POSModelLoader().load(params.getModel());
-      
-      POSEvaluator evaluator = 
-          new POSEvaluator(new opennlp.tools.postag.POSTaggerME(model), params.getMisclassified());
-      
+    
+    MissclassifiedSampleListener<POSSample> missclassifiedListener = null;
+    if (params.getMisclassified()) {
+      missclassifiedListener = new POSEvaluationErrorListener();
+    }
+
+    POSEvaluator evaluator = new POSEvaluator(
+        new opennlp.tools.postag.POSTaggerME(model), missclassifiedListener);
+
       System.out.print("Evaluating ... ");
       
       ObjectStream<POSSample> sampleStream =
