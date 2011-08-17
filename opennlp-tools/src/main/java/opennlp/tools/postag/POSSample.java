@@ -117,7 +117,7 @@ public class POSSample {
       return Arrays.equals(getSentence(), a.getSentence())
           && Arrays.equals(getTags(), a.getTags());
     } else {
-      return true;
+      return false;
     }
   }
 }

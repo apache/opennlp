@@ -83,7 +83,7 @@ public class DocumentSample {
       return getCategory().equals(a.getCategory())
           && Arrays.equals(getText(), a.getText());
     } else {
-      return true;
+      return false;
     }
   }
 }
