@@ -30,6 +30,7 @@ public class DocumentSampleTest {
     assertFalse(createGoldSample() == createGoldSample());
     assertTrue(createGoldSample().equals(createGoldSample()));
     assertFalse(createPredSample().equals(createGoldSample()));
+    assertFalse(createPredSample().equals(new Object()));
   }
 
   public static DocumentSample createGoldSample() {

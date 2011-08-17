@@ -207,7 +207,7 @@ public class TokenSample {
       return getText().equals(a.getText())
           && Arrays.equals(getTokenSpans(), a.getTokenSpans());
     } else {
-      return true;
+      return false;
     }
   }
 }

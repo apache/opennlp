@@ -36,6 +36,7 @@ public class POSSampleTest {
     assertFalse(createGoldSample() == createGoldSample());
     assertTrue(createGoldSample().equals(createGoldSample()));
     assertFalse(createPredSample().equals(createGoldSample()));
+    assertFalse(createPredSample().equals(new Object()));
   }
   
   public static POSSample createGoldSample() throws InvalidFormatException {
