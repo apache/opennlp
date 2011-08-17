@@ -51,6 +51,8 @@ import org.junit.Test;
  * training sentences.
  */
 public class NameFinderMETest {
+  
+  private final String TYPE = "default";
 
   @Test
   public void testNameFinder() throws Exception {
@@ -65,8 +67,8 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = 
           new NameSampleDataStream(
           new PlainTextByLineStream(new InputStreamReader(in, encoding)));
-
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", "default", sampleStream,
+    
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
         Collections.<String, Object>emptyMap(), 70, 1);
 
     TokenNameFinder nameFinder = new NameFinderME(nameFinderModel);
@@ -87,7 +89,7 @@ public class NameFinderMETest {
     Span names[] = nameFinder.find(sentence);
 
     assertEquals(1, names.length);
-    assertEquals(new Span(0, 1), names[0]);
+    assertEquals(new Span(0, 1, TYPE), names[0]);
 
     sentence = new String[] {
         "Hi",
@@ -102,8 +104,8 @@ public class NameFinderMETest {
     names = nameFinder.find(sentence);
 
     assertEquals(2, names.length);
-    assertEquals(new Span(1, 2), names[0]);
-    assertEquals(new Span(4, 6), names[1]);
+    assertEquals(new Span(1, 2, TYPE), names[0]);
+    assertEquals(new Span(4, 6, TYPE), names[1]);
   }
   
   /**
@@ -125,7 +127,7 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in, encoding)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", "default", sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
         Collections.<String, Object>emptyMap(), 70, 1);
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -138,8 +140,8 @@ public class NameFinderMETest {
     Span[] names2 = nameFinder.find(sentence2);
 
     assertEquals(2, names2.length);
-    assertEquals(new Span(1, 2), names2[0]);
-    assertEquals(new Span(4, 6), names2[1]);
+    assertEquals(new Span(1, 2, "person"), names2[0]);
+    assertEquals(new Span(4, 6, "person"), names2[1]);
     assertEquals("person", names2[0].getType());
     assertEquals("person", names2[1].getType());
 
@@ -149,7 +151,7 @@ public class NameFinderMETest {
     Span names[] = nameFinder.find(sentence);
 
     assertEquals(1, names.length);
-    assertEquals(new Span(0, 1), names[0]);
+    assertEquals(new Span(0, 1, "person"), names[0]);
     assertTrue(hasOtherAsOutcome(nameFinderModel));
   }
 
@@ -170,7 +172,7 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", "default", 
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, 
         sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -182,9 +184,9 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    assertEquals(new Span(0, 2), names1[0]);
-    assertEquals(new Span(2, 4), names1[1]);
-    assertEquals(new Span(4, 6), names1[2]);
+    assertEquals(new Span(0, 2, TYPE), names1[0]);
+    assertEquals(new Span(2, 4, TYPE), names1[1]);
+    assertEquals(new Span(4, 6, TYPE), names1[2]);
     assertTrue(!hasOtherAsOutcome(nameFinderModel));
   }
   
@@ -205,7 +207,7 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", "default", 
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, 
         sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -242,7 +244,7 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", "default", 
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, 
         sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -253,8 +255,8 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    assertEquals(new Span(0, 1), names1[0]);
-    assertEquals(new Span(1, 3), names1[1]);
+    assertEquals(new Span(0, 1, "location"), names1[0]);
+    assertEquals(new Span(1, 3, "person"), names1[1]);
     assertEquals("person", names1[2].getType());
     assertTrue(!hasOtherAsOutcome(nameFinderModel));
   }
@@ -295,7 +297,7 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", "default", 
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, 
         sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);

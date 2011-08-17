@@ -44,6 +44,11 @@ import org.junit.Test;
  * This is the test class for {@link NameSampleDataStream}..
  */
 public class NameSampleDataStreamTest {
+  
+  final String person = "person";
+  final String date = "date";
+  final String location = "location";
+  final String organization = "organization";
 
   /**
    * Create a string from a array section.
@@ -172,11 +177,6 @@ public class NameSampleDataStreamTest {
     Map<String, List<String>> names = new HashMap<String, List<String>>();
     Map<String, List<Span>> spans = new HashMap<String, List<Span>>();
     
-    final String person = "person";
-    final String date = "date";
-    final String location = "location";
-    final String organization = "organization";
-
     NameSample ns;
     while ((ns = ds.read()) != null) {
       Span[] nameSpans = ns.getNames();
@@ -211,78 +211,78 @@ public class NameSampleDataStreamTest {
     assertEquals(expectedLocation.length, names.get(location).size());
     assertEquals(expectedOrganization.length, names.get(organization).size());
     
-    assertEquals(new Span(5,7), spans.get(person).get(0));
+    assertEquals(new Span(5,7, person), spans.get(person).get(0));
     assertEquals(expectedPerson[0], names.get(person).get(0));
-    assertEquals(new Span(10,11 ), spans.get(person).get(1));
+    assertEquals(new Span(10,11, person), spans.get(person).get(1));
     assertEquals(expectedPerson[1], names.get(person).get(1));
-    assertEquals(new Span(29,30), spans.get(person).get(2));
+    assertEquals(new Span(29,30, person), spans.get(person).get(2));
     assertEquals(expectedPerson[2], names.get(person).get(2));
-    assertEquals(new Span(23,27 ), spans.get(person).get(3));
+    assertEquals(new Span(23,27, person), spans.get(person).get(3));
     assertEquals(expectedPerson[3], names.get(person).get(3));
-    assertEquals(new Span(1,2 ), spans.get(person).get(4));
+    assertEquals(new Span(1,2, person), spans.get(person).get(4));
     assertEquals(expectedPerson[4], names.get(person).get(4));
-    assertEquals(new Span(8,9), spans.get(person).get(5));
+    assertEquals(new Span(8,9, person), spans.get(person).get(5));
     assertEquals(expectedPerson[5], names.get(person).get(5));
-    assertEquals(new Span(0,2), spans.get(person).get(6));
+    assertEquals(new Span(0,2, person), spans.get(person).get(6));
     assertEquals(expectedPerson[6], names.get(person).get(6));
-    assertEquals(new Span(25,26), spans.get(person).get(7));
+    assertEquals(new Span(25,26, person), spans.get(person).get(7));
     assertEquals(expectedPerson[7], names.get(person).get(7));
-    assertEquals(new Span(1,2), spans.get(person).get(8));
+    assertEquals(new Span(1,2, person), spans.get(person).get(8));
     assertEquals(expectedPerson[8], names.get(person).get(8));
-    assertEquals(new Span(6,7), spans.get(person).get(9));
+    assertEquals(new Span(6,7, person), spans.get(person).get(9));
     assertEquals(expectedPerson[9], names.get(person).get(9));
-    assertEquals(new Span(14,15), spans.get(person).get(10));
+    assertEquals(new Span(14,15, person), spans.get(person).get(10));
     assertEquals(expectedPerson[10], names.get(person).get(10));
-    assertEquals(new Span(0,2), spans.get(person).get(11));
+    assertEquals(new Span(0,2, person), spans.get(person).get(11));
     assertEquals(expectedPerson[11], names.get(person).get(11));
-    assertEquals(new Span(12,13), spans.get(person).get(12));
+    assertEquals(new Span(12,13, person), spans.get(person).get(12));
     assertEquals(expectedPerson[12], names.get(person).get(12));
-    assertEquals(new Span(12,13), spans.get(person).get(13));
+    assertEquals(new Span(12,13, person), spans.get(person).get(13));
     assertEquals(expectedPerson[13], names.get(person).get(13));
 
-    assertEquals(new Span(7,8), spans.get(date).get(0));
+    assertEquals(new Span(7,8, date), spans.get(date).get(0));
     assertEquals(expectedDate[0], names.get(date).get(0));
-    assertEquals(new Span(27,28), spans.get(date).get(1));
+    assertEquals(new Span(27,28, date), spans.get(date).get(1));
     assertEquals(expectedDate[1], names.get(date).get(1));
-    assertEquals(new Span(15,16), spans.get(date).get(2));
+    assertEquals(new Span(15,16, date), spans.get(date).get(2));
     assertEquals(expectedDate[2], names.get(date).get(2));
     
-    assertEquals(new Span(0, 4), spans.get(location).get(0));
+    assertEquals(new Span(0, 4, location), spans.get(location).get(0));
     assertEquals(expectedLocation[0], names.get(location).get(0));
-    assertEquals(new Span(10,12), spans.get(location).get(1));
+    assertEquals(new Span(10,12, location), spans.get(location).get(1));
     assertEquals(expectedLocation[1], names.get(location).get(1));
-    assertEquals(new Span(28,30), spans.get(location).get(2));
+    assertEquals(new Span(28,30, location), spans.get(location).get(2));
     assertEquals(expectedLocation[2], names.get(location).get(2));
-    assertEquals(new Span(3,4), spans.get(location).get(3));
+    assertEquals(new Span(3,4, location), spans.get(location).get(3));
     assertEquals(expectedLocation[3], names.get(location).get(3));
-    assertEquals(new Span(5,7), spans.get(location).get(4));
+    assertEquals(new Span(5,7, location), spans.get(location).get(4));
     assertEquals(expectedLocation[4], names.get(location).get(4));
-    assertEquals(new Span(16,18), spans.get(location).get(5));
+    assertEquals(new Span(16,18, location), spans.get(location).get(5));
     assertEquals(expectedLocation[5], names.get(location).get(5));
-    assertEquals(new Span(1,3), spans.get(location).get(6));
+    assertEquals(new Span(1,3, location), spans.get(location).get(6));
     assertEquals(expectedLocation[6], names.get(location).get(6));
-    assertEquals(new Span(5,9), spans.get(location).get(7));
+    assertEquals(new Span(5,9, location), spans.get(location).get(7));
     assertEquals(expectedLocation[7], names.get(location).get(7));
-    assertEquals(new Span(0,2), spans.get(location).get(8));
+    assertEquals(new Span(0,2, location), spans.get(location).get(8));
     assertEquals(expectedLocation[8], names.get(location).get(8));
-    assertEquals(new Span(4,6), spans.get(location).get(9));
+    assertEquals(new Span(4,6, location), spans.get(location).get(9));
     assertEquals(expectedLocation[9], names.get(location).get(9));
-    assertEquals(new Span(10,11), spans.get(location).get(10));
+    assertEquals(new Span(10,11, location), spans.get(location).get(10));
     assertEquals(expectedLocation[10], names.get(location).get(10));
-    assertEquals(new Span(6,8), spans.get(location).get(11));
+    assertEquals(new Span(6,8, location), spans.get(location).get(11));
     assertEquals(expectedLocation[11], names.get(location).get(11));
-    assertEquals(new Span(4,6), spans.get(location).get(12));
+    assertEquals(new Span(4,6, location), spans.get(location).get(12));
     assertEquals(expectedLocation[12], names.get(location).get(12));
-    assertEquals(new Span(10,11), spans.get(location).get(13));
+    assertEquals(new Span(10,11, location), spans.get(location).get(13));
     assertEquals(expectedLocation[13], names.get(location).get(13));
-    assertEquals(new Span(12,13), spans.get(location).get(14));
+    assertEquals(new Span(12,13, location), spans.get(location).get(14));
     assertEquals(expectedLocation[14], names.get(location).get(14));
-    assertEquals(new Span(5,9), spans.get(location).get(15));
+    assertEquals(new Span(5,9, location), spans.get(location).get(15));
     assertEquals(expectedLocation[15], names.get(location).get(15));
-    assertEquals(new Span(11,12), spans.get(location).get(16));
+    assertEquals(new Span(11,12, location), spans.get(location).get(16));
     assertEquals(expectedLocation[16], names.get(location).get(16));
     
-    assertEquals(new Span(7,15), spans.get(organization).get(0));
+    assertEquals(new Span(7,15, organization), spans.get(organization).get(0));
     assertEquals(expectedOrganization[0], names.get(organization).get(0));
     
   }
@@ -364,7 +364,7 @@ public class NameSampleDataStreamTest {
     assertEquals("Pest", ns.getSentence()[3]);
     assertEquals("Management", ns.getSentence()[4]);
     assertEquals("</li>", ns.getSentence()[5]);
-    assertEquals(new Span(1, 5), ns.getNames()[0]);
+    assertEquals(new Span(1, 5, organization), ns.getNames()[0]);
     
     // <li> <START:organization> Bay Cities Produce Co., Inc. <END> </li>
     ns = ds.read();
@@ -376,7 +376,7 @@ public class NameSampleDataStreamTest {
     assertEquals("Co.,", ns.getSentence()[4]);
     assertEquals("Inc.", ns.getSentence()[5]);
     assertEquals("</li>", ns.getSentence()[6]);
-    assertEquals(new Span(1, 6), ns.getNames()[0]);
+    assertEquals(new Span(1, 6, organization), ns.getNames()[0]);
     
     ns = ds.read();
     assertEquals(1, ns.getSentence().length);
