@@ -227,7 +227,8 @@ public class Span implements Comparable<Span> {
 
       result = (getStart() == s.getStart()) && 
           (getEnd() == s.getEnd()) &&
-          (getType() != null ? type.equals(s.getType()) : true);
+          (getType() != null ? type.equals(s.getType()) : true) &&
+          (s.getType() != null ? s.getType().equals(getType()) : true);
     }
     else {
       result = false;
