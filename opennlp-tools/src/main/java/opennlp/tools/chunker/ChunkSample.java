@@ -207,7 +207,7 @@ public class ChunkSample {
           && Arrays.equals(getTags(), a.getTags())
           && Arrays.equals(getPreds(), a.getPreds());
     } else {
-      return true;
+      return false;
     }
   }
   

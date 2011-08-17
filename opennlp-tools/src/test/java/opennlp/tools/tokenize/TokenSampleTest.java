@@ -76,6 +76,7 @@ public class TokenSampleTest {
     assertFalse(createGoldSample() == createGoldSample());
     assertTrue(createGoldSample().equals(createGoldSample()));
     assertFalse(createPredSample().equals(createGoldSample()));
+    assertFalse(createPredSample().equals(new Object()));
   }
   
   public static TokenSample createGoldSample() {

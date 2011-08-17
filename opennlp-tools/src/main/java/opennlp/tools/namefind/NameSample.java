@@ -112,7 +112,7 @@ public class NameSample {
           isClearAdaptiveDataSet() == a.isClearAdaptiveDataSet();
     }
     else {
-      return true;
+      return false;
     }
     
   }

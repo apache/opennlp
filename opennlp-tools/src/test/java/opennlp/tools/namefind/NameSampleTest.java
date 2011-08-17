@@ -19,6 +19,8 @@
 package opennlp.tools.namefind;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
@@ -190,5 +192,21 @@ public class NameSampleTest {
   public void testTypeWithInvalidChar2() throws Exception {
     NameSample.parse("<START:abc>a> token <END>", 
         false);
+  }
+  
+  @Test
+  public void testEquals() {
+    assertFalse(createGoldSample() == createGoldSample());
+    assertTrue(createGoldSample().equals(createGoldSample()));
+    assertFalse(createGoldSample().equals(createPredSample()));
+    assertFalse(createPredSample().equals(new Object()));
+  }
+
+  public static NameSample createGoldSample() {
+    return createSimpleNameSample(true);
+  }
+
+  public static NameSample createPredSample() {
+    return createSimpleNameSample(false);
   }
 }

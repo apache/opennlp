@@ -112,7 +112,7 @@ public class SentenceSample {
       return getDocument().equals(a.getDocument())
           && Arrays.equals(getSentences(), a.getSentences());
     } else {
-      return true;
+      return false;
     }
   }
 }
