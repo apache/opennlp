@@ -20,6 +20,7 @@ package opennlp.tools.postag;
 
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.Mean;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 /**
  * The {@link POSEvaluator} measures the performance of
@@ -31,6 +32,8 @@ public class POSEvaluator extends Evaluator<POSSample> {
   private POSTagger tagger;
 
   private Mean wordAccuracy = new Mean();
+
+  private MissclassifiedSampleListener<POSSample> sampleListener;
 
   /**
    * Initializes the current instance.
@@ -45,11 +48,13 @@ public class POSEvaluator extends Evaluator<POSSample> {
    * Initializes the current instance.
    *
    * @param tagger
-   * @param printErrors
+   * @param sampleListener
+   *          an optional {@link MissclassifiedSampleListener} listener to
+   *          notify errors
    */
-  public POSEvaluator(POSTagger tagger, boolean printErrors) {
-    super(printErrors);
+  public POSEvaluator(POSTagger tagger, MissclassifiedSampleListener<POSSample> sampleListener) {
     this.tagger = tagger;
+    this.sampleListener = sampleListener;
   }
 
   /**
@@ -66,10 +71,11 @@ public class POSEvaluator extends Evaluator<POSSample> {
     String predictedTags[] = tagger.tag(reference.getSentence());
     String referenceTags[] = reference.getTags();
     
-    if (isPrintError()) {
-      String[] sentence = reference.getSentence();
-      printErrors(referenceTags, predictedTags, reference, new POSSample(sentence,
-          predictedTags), sentence);
+    if (this.sampleListener != null) {
+      POSSample predicted = new POSSample(reference.getSentence(), predictedTags);
+      if(!predicted.equals(reference)) {
+        this.sampleListener.missclassified(reference, predicted);
+      }
     }
 
     for (int i = 0; i < referenceTags.length; i++) {

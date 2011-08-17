@@ -31,6 +31,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
   
@@ -77,6 +78,11 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
         .openSampleData("Training Data", trainingDataInFile, encoding);
 
     TokenNameFinderCrossValidator validator;
+    
+    MissclassifiedSampleListener<NameSample> errorListener = null;
+    if (params.getMisclassified()) {
+      errorListener = new NameEvaluationErrorListener();
+    }
 
     try {
       if (mlParams == null) {
@@ -87,7 +93,7 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
         validator = new TokenNameFinderCrossValidator(params.getLang(), params.getType(), mlParams,
             featureGeneratorBytes, resources);
       }
-      validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
+      validator.evaluate(sampleStream, params.getFolds(), errorListener);
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);

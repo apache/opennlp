@@ -32,6 +32,7 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerCrossValidator;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 public final class TokenizerCrossValidatorTool implements CmdLineTool {
   
@@ -78,6 +79,11 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
     if (mlParams == null)
       mlParams = TokenizerTrainerTool.createTrainingParameters(
           params.getIterations(), params.getCutoff());
+    
+    MissclassifiedSampleListener<TokenSample> missclassifiedListener = null;
+    if (params.getMisclassified()) {
+      missclassifiedListener = new TokenEvaluationErrorListener();
+    }
 
     try {
       Dictionary dict = TokenizerTrainerTool.loadDict(params.getAbbDict(), params.getIsAbbDictCS());
@@ -85,7 +91,7 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
       validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
           params.getLang(), dict, params.getAlphaNumOpt(), mlParams);
 
-      validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
+      validator.evaluate(sampleStream, params.getFolds(), missclassifiedListener);
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

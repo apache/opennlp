@@ -17,14 +17,19 @@
 
 package opennlp.tools.chunker;
 
+import static junit.framework.Assert.assertNotSame;
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 
+import opennlp.tools.cmdline.chunker.ChunkEvaluationErrorListener;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 import org.junit.Test;
 
@@ -60,7 +65,10 @@ public class ChunkerEvaluatorTest {
 				new PlainTextByLineStream(new InputStreamReader(inExpected)), false);
 		
 		Chunker dummyChunker = new DummyChunker(predictedSample);
-		ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker);
+		
+		OutputStream stream = new ByteArrayOutputStream();
+	    MissclassifiedSampleListener<ChunkSample> listener = new ChunkEvaluationErrorListener(stream);
+		ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, listener);
 		
 		evaluator.evaluate(expectedSample);
 		
@@ -68,6 +76,44 @@ public class ChunkerEvaluatorTest {
 		
 		assertEquals(0.8d, fm.getPrecisionScore(), DELTA);
 		assertEquals(0.875d, fm.getRecallScore(), DELTA);
+		
+		assertNotSame(stream.toString().length(), 0);
+		
 	}
+	
+  @Test
+  public void testEvaluatorNoError() throws IOException {
+    InputStream inPredicted = getClass().getClassLoader().getResourceAsStream(
+        "opennlp/tools/chunker/output.txt");
+    InputStream inExpected = getClass().getClassLoader().getResourceAsStream(
+        "opennlp/tools/chunker/output.txt");
+
+    String encoding = "UTF-8";
+
+    DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
+        new PlainTextByLineStream(new InputStreamReader(inPredicted, encoding)),
+        true);
+
+    DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
+        new PlainTextByLineStream(new InputStreamReader(inExpected, encoding)),
+        true);
+
+    Chunker dummyChunker = new DummyChunker(predictedSample);
+
+    OutputStream stream = new ByteArrayOutputStream();
+    MissclassifiedSampleListener<ChunkSample> listener = new ChunkEvaluationErrorListener(
+        stream);
+    ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, listener);
+
+    evaluator.evaluate(expectedSample);
+
+    FMeasure fm = evaluator.getFMeasure();
+
+    assertEquals(1d, fm.getPrecisionScore(), DELTA);
+    assertEquals(1d, fm.getRecallScore(), DELTA);
+
+    assertEquals(stream.toString().length(), 0);
+
+  }
 
 }
