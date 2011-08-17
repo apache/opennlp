@@ -32,6 +32,7 @@ import opennlp.tools.sentdetect.SDCrossValidator;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
   
@@ -72,6 +73,11 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
         trainingDataInFile, encoding);
     
     SDCrossValidator validator;
+    
+    MissclassifiedSampleListener<SentenceSample> errorListener = null;
+    if (params.getMisclassified()) {
+      errorListener = new SentenceEvaluationErrorListener();
+    }
 
     try {
       Dictionary abbreviations = SentenceDetectorTrainerTool.loadDict(
@@ -84,7 +90,7 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
             abbreviations);
       }
       
-      validator.evaluate(sampleStream, params.getFolds(), params.getMisclassified());
+      validator.evaluate(sampleStream, params.getFolds(), errorListener);
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
