@@ -20,7 +20,6 @@ package opennlp.tools.postag;
 
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.Mean;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 /**
  * The {@link POSEvaluator} measures the performance of
@@ -33,8 +32,6 @@ public class POSEvaluator extends Evaluator<POSSample> {
 
   private Mean wordAccuracy = new Mean();
 
-  private MissclassifiedSampleListener<POSSample> sampleListener;
-
   /**
    * Initializes the current instance.
    *
@@ -45,19 +42,6 @@ public class POSEvaluator extends Evaluator<POSSample> {
   }
   
   /**
-   * Initializes the current instance.
-   *
-   * @param tagger
-   * @param sampleListener
-   *          an optional {@link MissclassifiedSampleListener} listener to
-   *          notify errors
-   */
-  public POSEvaluator(POSTagger tagger, MissclassifiedSampleListener<POSSample> sampleListener) {
-    this.tagger = tagger;
-    this.sampleListener = sampleListener;
-  }
-
-  /**
    * Evaluates the given reference {@link POSSample} object.
    *
    * This is done by tagging the sentence from the reference
@@ -65,19 +49,15 @@ public class POSEvaluator extends Evaluator<POSSample> {
    * tags are then used to update the word accuracy score.
    *
    * @param reference the reference {@link POSSample}.
+   * 
+   * @return the predicted {@link POSSample}.
    */
-  public void evaluateSample(POSSample reference) {
-
+  @Override
+  public POSSample processSample(POSSample reference) {
+    
     String predictedTags[] = tagger.tag(reference.getSentence());
     String referenceTags[] = reference.getTags();
     
-    if (this.sampleListener != null) {
-      POSSample predicted = new POSSample(reference.getSentence(), predictedTags);
-      if(!predicted.equals(reference)) {
-        this.sampleListener.missclassified(reference, predicted);
-      }
-    }
-
     for (int i = 0; i < referenceTags.length; i++) {
       if (referenceTags[i].equals(predictedTags[i])) {
         wordAccuracy.add(1);
@@ -86,6 +66,8 @@ public class POSEvaluator extends Evaluator<POSSample> {
         wordAccuracy.add(0);
       }
     }
+    
+    return new POSSample(reference.getSentence(), predictedTags);
   }
 
   /**
@@ -117,4 +99,5 @@ public class POSEvaluator extends Evaluator<POSSample> {
     return "Accuracy:" + wordAccuracy.mean() +
         " Number of Samples: " + wordAccuracy.count();
   }
+
 }

@@ -21,16 +21,15 @@ import java.io.OutputStream;
 
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.tokenize.TokenSample;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 /**
- * A default implementation of {@link MissclassifiedSampleListener} that prints
+ * A default implementation of {@link EvaluationSampleListener} that prints
  * to an output stream.
  * 
  */
 public class TokenEvaluationErrorListener extends
-    EvaluationErrorPrinter<TokenSample> implements
-    MissclassifiedSampleListener<TokenSample> {
+    EvaluationErrorPrinter<TokenSample> {
 
   /**
    * Creates a listener that will print to System.err

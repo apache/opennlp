@@ -25,7 +25,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public class TokenNameFinderCrossValidator {
 
@@ -158,7 +158,7 @@ public class TokenNameFinderCrossValidator {
    * @throws IOException
    */
   public void evaluate(ObjectStream<NameSample> samples, int nFolds,
-      MissclassifiedSampleListener<NameSample> listener) throws IOException {
+      EvaluationSampleListener<NameSample> listener) throws IOException {
     CrossValidationPartitioner<NameSample> partitioner = new CrossValidationPartitioner<NameSample>(
         samples, nFolds);
 
@@ -178,7 +178,8 @@ public class TokenNameFinderCrossValidator {
 
       // do testing
       TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
-          new NameFinderME(model), listener);
+          new NameFinderME(model));
+      evaluator.addListener(listener);
 
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 

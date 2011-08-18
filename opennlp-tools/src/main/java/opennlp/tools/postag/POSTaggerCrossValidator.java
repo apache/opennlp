@@ -24,7 +24,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.Mean;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 import opennlp.tools.util.model.ModelType;
 
 public class POSTaggerCrossValidator {
@@ -98,7 +98,7 @@ public class POSTaggerCrossValidator {
    * @throws IOException
    */
   public void evaluate(ObjectStream<POSSample> samples, int nFolds,
-      MissclassifiedSampleListener<POSSample> listener) throws IOException, IOException {
+      EvaluationSampleListener<POSSample> listener) throws IOException, IOException {
     
     CrossValidationPartitioner<POSSample> partitioner = new CrossValidationPartitioner<POSSample>(
         samples, nFolds);
@@ -118,7 +118,9 @@ public class POSTaggerCrossValidator {
             this.tagDictionary, this.ngramDictionary);
       }
 
-      POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model), listener);
+      POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model));
+      evaluator.addListener(listener);
+      
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 
       wordAccuracy.add(evaluator.getWordAccuracy(), evaluator.getWordCount());

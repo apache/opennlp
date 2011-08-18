@@ -20,7 +20,6 @@ package opennlp.tools.chunker;
 
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 /**
  * The {@link ChunkerEvaluator} measures the performance
@@ -41,8 +40,6 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
    */
   private Chunker chunker;
 
-  private MissclassifiedSampleListener<ChunkSample> sampleListener;
-
   /**
    * Initializes the current instance with the given
    * {@link Chunker}.
@@ -54,20 +51,6 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
   }
   
   /**
-   * Initializes the current instance with the given
-   * {@link Chunker}.
-   *
-   * @param chunker the {@link Chunker} to evaluate.
-   * @param sampleListener
-   *          an optional {@link MissclassifiedSampleListener} listener to
-   *          notify errors
-   */
-  public ChunkerEvaluator(Chunker chunker, MissclassifiedSampleListener<ChunkSample> sampleListener) {
-    this.chunker = chunker;
-    this.sampleListener = sampleListener;
-  }
-
-  /**
    * Evaluates the given reference {@link ChunkSample} object.
    *
    * This is done by finding the phrases with the
@@ -76,21 +59,17 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
    * calculate and update the scores.
    *
    * @param reference the reference {@link ChunkSample}.
+   * 
+   * @return the predicted sample
    */
-  public void evaluateSample(ChunkSample reference) {
-	  
-	String[] preds = chunker.chunk(reference.getSentence(), reference.getTags());
-	ChunkSample result = new ChunkSample(reference.getSentence(), reference.getTags(), preds);
+  @Override
+  public ChunkSample processSample(ChunkSample reference) {
+    String[] preds = chunker.chunk(reference.getSentence(), reference.getTags());
+    ChunkSample result = new ChunkSample(reference.getSentence(), reference.getTags(), preds);
 
-    if (this.sampleListener != null) {
-      ChunkSample predicted = new ChunkSample(reference.getSentence(), reference.getTags(),
-          preds);
-      if (!predicted.equals(reference)) {
-        this.sampleListener.missclassified(reference, predicted);
-      }
-    }
-	
     fmeasure.updateScores(reference.getPhrasesAsSpanList(), result.getPhrasesAsSpanList());
+    
+    return result;
   }
   
   public FMeasure getFMeasure() {

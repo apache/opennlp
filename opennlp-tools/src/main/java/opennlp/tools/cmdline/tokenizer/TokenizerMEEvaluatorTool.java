@@ -31,7 +31,7 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerEvaluator;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public final class TokenizerMEEvaluatorTool implements CmdLineTool {
 
@@ -61,13 +61,14 @@ public final class TokenizerMEEvaluatorTool implements CmdLineTool {
 
     TokenizerModel model = new TokenizerModelLoader().load(params.getModel());
 
-    MissclassifiedSampleListener<TokenSample> missclassifiedListener = null;
+    EvaluationSampleListener<TokenSample> missclassifiedListener = null;
     if (params.getMisclassified()) {
       missclassifiedListener = new TokenEvaluationErrorListener();
     }
 
     TokenizerEvaluator evaluator = new TokenizerEvaluator(
-        new opennlp.tools.tokenize.TokenizerME(model), missclassifiedListener);
+        new opennlp.tools.tokenize.TokenizerME(model));
+    evaluator.addListener(missclassifiedListener);
 
     System.out.print("Evaluating ... ");
     

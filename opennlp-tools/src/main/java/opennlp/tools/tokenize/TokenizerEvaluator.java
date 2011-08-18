@@ -21,7 +21,6 @@ package opennlp.tools.tokenize;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 /**
  * The {@link TokenizerEvaluator} measures the performance of
@@ -42,22 +41,6 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    */
   private Tokenizer tokenizer;
 
-  private MissclassifiedSampleListener<TokenSample> sampleListener;
-  
-  /**
-   * Initializes the current instance with the
-   * given {@link Tokenizer}.
-   *
-   * @param tokenizer the {@link Tokenizer} to evaluate.
-   * @param sampleListener
-   *          an optional {@link MissclassifiedSampleListener} listener to
-   *          notify errors
-   */
-  public TokenizerEvaluator(Tokenizer tokenizer, MissclassifiedSampleListener<TokenSample> sampleListener) {
-    this.tokenizer = tokenizer;
-    this.sampleListener = sampleListener;
-  }
-  
   /**
    * Initializes the current instance with the
    * given {@link Tokenizer}.
@@ -68,26 +51,12 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
     this.tokenizer = tokenizer;
   }
 
-  /**
-   * Evaluates the given reference {@link TokenSample} object.
-   *
-   * This is done by detecting the token spans with the
-   * {@link Tokenizer}. The detected token spans are then
-   * used to calculate calculate and update the scores.
-   *
-   * @param reference the reference {@link TokenSample}.
-   */
-  public void evaluateSample(TokenSample reference) {
+  @Override
+  public TokenSample processSample(TokenSample reference) {
     Span predictions[] = tokenizer.tokenizePos(reference.getText());
-
-    if (this.sampleListener != null) {
-      TokenSample predicted = new TokenSample(reference.getText(), predictions);
-      if(!predicted.equals(reference)) {
-        this.sampleListener.missclassified(reference, predicted);
-      }
-    }
-
     fmeasure.updateScores(reference.getTokenSpans(), predictions);
+    
+    return new TokenSample(reference.getText(), predictions);
   }
   
   public FMeasure getFMeasure() {

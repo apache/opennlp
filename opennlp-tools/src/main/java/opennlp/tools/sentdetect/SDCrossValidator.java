@@ -24,7 +24,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 /**
  * 
@@ -98,7 +98,7 @@ public class SDCrossValidator {
    * @throws IOException
    */
   public void evaluate(ObjectStream<SentenceSample> samples, int nFolds,
-      MissclassifiedSampleListener<SentenceSample> listener) throws IOException {
+      EvaluationSampleListener<SentenceSample> listener) throws IOException {
 
     CrossValidationPartitioner<SentenceSample> partitioner = 
         new CrossValidationPartitioner<SentenceSample>(samples, nFolds);
@@ -115,7 +115,8 @@ public class SDCrossValidator {
       
       // do testing
       SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
-          new SentenceDetectorME(model), listener);
+          new SentenceDetectorME(model));
+      evaluator.addListener(listener);
 
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
       

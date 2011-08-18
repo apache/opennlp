@@ -24,8 +24,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import opennlp.tools.util.Span;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
-public class EvaluationErrorPrinter<T> {
+public abstract class EvaluationErrorPrinter<T> implements EvaluationSampleListener<T> {
 
   private PrintStream printStream;
 
@@ -213,5 +214,11 @@ public class EvaluationErrorPrinter<T> {
       }
     }
   }
+
+  public void correctlyClassified(T reference, T prediction) {
+    // do nothing
+  }
+
+  public abstract void missclassified(T reference, T prediction) ;
 
 }
