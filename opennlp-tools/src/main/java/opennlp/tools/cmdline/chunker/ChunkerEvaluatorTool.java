@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.chunker;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerEvaluator;
@@ -71,8 +72,8 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
       errorListener = new ChunkEvaluationErrorListener();
     }
 
-    ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model));
-    evaluator.addListener(errorListener);
+    ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model),
+        Collections.singletonList(errorListener));
     
     final ObjectStream<ChunkSample> sampleStream = ChunkerTrainerTool.openSampleData("Test",
         testData, encoding);

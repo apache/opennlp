@@ -20,16 +20,18 @@ package opennlp.tools.cmdline.namefind;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.EvaluatorParams;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.EvaluatorParams;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.TokenNameFinderEvaluator;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.EvaluationSampleListener;
@@ -73,9 +75,8 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
       missclassifiedListener = new NameEvaluationErrorListener();
     }
 
-    opennlp.tools.namefind.TokenNameFinderEvaluator evaluator = new opennlp.tools.namefind.TokenNameFinderEvaluator(
-        new NameFinderME(model));
-    evaluator.addListener(missclassifiedListener);
+    TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
+        new NameFinderME(model), Collections.singletonList(missclassifiedListener));
 
     final ObjectStream<NameSample> sampleStream = TokenNameFinderTrainerTool.openSampleData("Test",
         testData, encoding);

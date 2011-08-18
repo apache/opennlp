@@ -19,7 +19,6 @@
 package opennlp.tools.util.eval;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.util.ObjectStream;
@@ -32,7 +31,15 @@ import opennlp.tools.util.ObjectStream;
  */
 public abstract class Evaluator<T> {
 
-  private List<EvaluationSampleListener<T>> listeners = new LinkedList<EvaluationSampleListener<T>>();
+  private List<EvaluationSampleListener<T>> listeners;
+  
+  public Evaluator() {
+    this.listeners = null;
+  }
+  
+  public Evaluator(List<EvaluationSampleListener<T>> listeners) {
+    this.listeners = listeners;
+  }
   
   /**
    * Evaluates the given reference sample object.
@@ -64,10 +71,16 @@ public abstract class Evaluator<T> {
    */
   public void evaluateSample(T sample) {
     T predicted = processSample(sample);
-    if(sample.equals(predicted)) {
-      notifyCorrectlyClassified(sample, predicted);
-    } else {
-      notifyMissclassified(sample, predicted);
+    if(listeners != null) {
+      if(sample.equals(predicted)) {
+        for (EvaluationSampleListener<T> listener : listeners) {
+          listener.correctlyClassified(predicted, predicted);
+        }
+      } else {
+        for (EvaluationSampleListener<T> listener : listeners) {
+          listener.missclassified(sample, predicted);
+        } 
+      }
     }
   }
   
@@ -85,33 +98,5 @@ public abstract class Evaluator<T> {
     while ((sample = samples.read()) != null) {
       evaluateSample(sample);
     }
-  }
-  
-  /**
-   * Add a {@link EvaluationSampleListener} that will be notified when a sample is evaluated.
-   * @param listener the listener implementation to be added
-   */
-  public synchronized void addListener(EvaluationSampleListener<T> listener) {
-    this.listeners.add(listener);
-  }
-  
-  /**
-   * Removes a {@link EvaluationSampleListener}.
-   * @param listener the listener implementation to be removed
-   */
-  public synchronized void removeListener(EvaluationSampleListener<T> listener) {
-    this.listeners.remove(listener);
-  }
-  
-  private void notifyCorrectlyClassified(T reference, T prediction) {
-    for (EvaluationSampleListener<T> listener : listeners) {
-      listener.correctlyClassified(reference, prediction);
-    }
-  }
-  
-  private void notifyMissclassified(T reference, T prediction) {
-    for (EvaluationSampleListener<T> listener : listeners) {
-      listener.missclassified(reference, prediction);
-    }   
   }
 }

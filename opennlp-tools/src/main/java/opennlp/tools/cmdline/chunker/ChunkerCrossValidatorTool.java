@@ -19,6 +19,7 @@ package opennlp.tools.cmdline.chunker;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerCrossValidator;
@@ -76,7 +77,7 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
     }
       
     try {
-      validator.evaluate(sampleStream, params.getFolds(), errorListener);
+      validator.evaluate(sampleStream, params.getFolds(), Collections.singletonList(errorListener));
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

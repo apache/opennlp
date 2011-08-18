@@ -19,13 +19,14 @@ package opennlp.tools.namefind;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.FMeasure;
 
 public class TokenNameFinderCrossValidator {
 
@@ -158,7 +159,7 @@ public class TokenNameFinderCrossValidator {
    * @throws IOException
    */
   public void evaluate(ObjectStream<NameSample> samples, int nFolds,
-      EvaluationSampleListener<NameSample> listener) throws IOException {
+      List<EvaluationSampleListener<NameSample>> listeners) throws IOException {
     CrossValidationPartitioner<NameSample> partitioner = new CrossValidationPartitioner<NameSample>(
         samples, nFolds);
 
@@ -178,8 +179,7 @@ public class TokenNameFinderCrossValidator {
 
       // do testing
       TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
-          new NameFinderME(model));
-      evaluator.addListener(listener);
+          new NameFinderME(model), listeners);
 
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 

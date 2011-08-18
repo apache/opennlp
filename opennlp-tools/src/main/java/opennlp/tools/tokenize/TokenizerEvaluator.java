@@ -18,7 +18,10 @@
 
 package opennlp.tools.tokenize;
 
+import java.util.List;
+
 import opennlp.tools.util.Span;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -48,6 +51,18 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    * @param tokenizer the {@link Tokenizer} to evaluate.
    */
   public TokenizerEvaluator(Tokenizer tokenizer) {
+    this.tokenizer = tokenizer;
+  }
+  
+  /**
+   * Initializes the current instance with the
+   * given {@link Tokenizer}.
+   *
+   * @param tokenizer the {@link Tokenizer} to evaluate.
+   * @param listeners evaluation sample listeners
+   */
+  public TokenizerEvaluator(Tokenizer tokenizer, List<EvaluationSampleListener<TokenSample>> listeners) {
+    super(listeners);
     this.tokenizer = tokenizer;
   }
 

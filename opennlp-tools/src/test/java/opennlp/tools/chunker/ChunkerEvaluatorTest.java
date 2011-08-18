@@ -25,11 +25,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.Collections;
 
 import opennlp.tools.cmdline.chunker.ChunkEvaluationErrorListener;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.FMeasure;
 
 import org.junit.Test;
 
@@ -68,8 +69,7 @@ public class ChunkerEvaluatorTest {
 		
 		OutputStream stream = new ByteArrayOutputStream();
 	    EvaluationSampleListener<ChunkSample> listener = new ChunkEvaluationErrorListener(stream);
-		ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker);
-		evaluator.addListener(listener);
+		ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, Collections.singletonList(listener));
 		
 		evaluator.evaluate(expectedSample);
 		
@@ -104,8 +104,7 @@ public class ChunkerEvaluatorTest {
     OutputStream stream = new ByteArrayOutputStream();
     EvaluationSampleListener<ChunkSample> listener = new ChunkEvaluationErrorListener(
         stream);
-    ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker);
-    evaluator.addListener(listener);
+    ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, Collections.singletonList(listener));
 
     evaluator.evaluate(expectedSample);
 

@@ -22,12 +22,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -57,6 +59,18 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    * @param nameFinder the {@link TokenNameFinder} to evaluate.
    */
   public TokenNameFinderEvaluator(TokenNameFinder nameFinder) {
+    this.nameFinder = nameFinder;
+  }
+  
+  /**
+   * Initializes the current instance with the given
+   * {@link TokenNameFinder}.
+   *
+   * @param nameFinder the {@link TokenNameFinder} to evaluate.
+   * @param listeners evaluation sample listeners 
+   */
+  public TokenNameFinderEvaluator(TokenNameFinder nameFinder, List<EvaluationSampleListener<NameSample>> listeners) {
+    super(listeners);
     this.nameFinder = nameFinder;
   }
 

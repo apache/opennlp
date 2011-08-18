@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.tokenizer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CVParams;
@@ -91,7 +92,7 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
       validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
           params.getLang(), dict, params.getAlphaNumOpt(), mlParams);
 
-      validator.evaluate(sampleStream, params.getFolds(), missclassifiedListener);
+      validator.evaluate(sampleStream, params.getFolds(), Collections.singletonList(missclassifiedListener));
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

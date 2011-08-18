@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.namefind;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Map;
 
 import opennlp.tools.cmdline.ArgumentParser;
@@ -93,7 +94,7 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
         validator = new TokenNameFinderCrossValidator(params.getLang(), params.getType(), mlParams,
             featureGeneratorBytes, resources);
       }
-      validator.evaluate(sampleStream, params.getFolds(), errorListener);
+      validator.evaluate(sampleStream, params.getFolds(), Collections.singletonList(errorListener));
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
