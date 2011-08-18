@@ -18,13 +18,14 @@
 package opennlp.tools.tokenize;
 
 import java.io.IOException;
+import java.util.List;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.FMeasure;
 
 public class TokenizerCrossValidator {
   
@@ -89,7 +90,7 @@ public class TokenizerCrossValidator {
    * @throws IOException
    */
   public void evaluate(ObjectStream<TokenSample> samples, int nFolds,
-      EvaluationSampleListener<TokenSample> listener) throws IOException {
+      List<EvaluationSampleListener<TokenSample>> listeners) throws IOException {
     
     CrossValidationPartitioner<TokenSample> partitioner = 
       new CrossValidationPartitioner<TokenSample>(samples, nFolds);
@@ -105,8 +106,7 @@ public class TokenizerCrossValidator {
       model = TokenizerME.train(language, trainingSampleStream, abbreviations,
           alphaNumericOptimization, params);
        
-       TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model));
-       evaluator.addListener(listener);
+       TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model), listeners);
        
        evaluator.evaluate(trainingSampleStream.getTestSampleStream());
        fmeasure.mergeInto(evaluator.getFMeasure());

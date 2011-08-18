@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.tokenizer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
@@ -67,8 +68,7 @@ public final class TokenizerMEEvaluatorTool implements CmdLineTool {
     }
 
     TokenizerEvaluator evaluator = new TokenizerEvaluator(
-        new opennlp.tools.tokenize.TokenizerME(model));
-    evaluator.addListener(missclassifiedListener);
+        new opennlp.tools.tokenize.TokenizerME(model), Collections.singletonList(missclassifiedListener));
 
     System.out.print("Evaluating ... ");
     

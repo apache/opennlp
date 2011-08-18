@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.sentdetect;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
@@ -70,8 +71,7 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
     }
     
     SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
-        new SentenceDetectorME(model));
-    evaluator.addListener(errorListener);
+        new SentenceDetectorME(model), Collections.singletonList(errorListener));
     
     System.out.print("Evaluating ... ");
       ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Test",

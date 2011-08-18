@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.postag;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
@@ -91,7 +92,7 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
         missclassifiedListener = new POSEvaluationErrorListener();
       }
 
-      validator.evaluate(sampleStream, params.getFolds(), missclassifiedListener);
+      validator.evaluate(sampleStream, params.getFolds(), Collections.singletonList(missclassifiedListener));
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
