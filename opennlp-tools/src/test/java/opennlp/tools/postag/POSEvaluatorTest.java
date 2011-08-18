@@ -27,7 +27,7 @@ import java.util.List;
 import opennlp.tools.cmdline.postag.POSEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Sequence;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 import org.junit.Test;
 
@@ -38,9 +38,11 @@ public class POSEvaluatorTest {
   @Test
   public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    MissclassifiedSampleListener<POSSample> listener = new POSEvaluationErrorListener(stream);
+    EvaluationSampleListener<POSSample> listener = new POSEvaluationErrorListener(stream);
     
-    POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(POSSampleTest.createGoldSample()), listener);
+    POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(POSSampleTest.createGoldSample()));
+    eval.addListener(listener);
+    
     eval.evaluateSample(POSSampleTest.createGoldSample());
     
     assertEquals(1.0, eval.getWordAccuracy());
@@ -51,9 +53,11 @@ public class POSEvaluatorTest {
   @Test
   public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    MissclassifiedSampleListener<POSSample> listener = new POSEvaluationErrorListener(stream);
+    EvaluationSampleListener<POSSample> listener = new POSEvaluationErrorListener(stream);
     
-    POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(POSSampleTest.createGoldSample()), listener);
+    POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(POSSampleTest.createGoldSample()));
+    eval.addListener(listener);
+    
     eval.evaluateSample(POSSampleTest.createPredSample());
     
     assertEquals(.7, eval.getWordAccuracy(), .1d);

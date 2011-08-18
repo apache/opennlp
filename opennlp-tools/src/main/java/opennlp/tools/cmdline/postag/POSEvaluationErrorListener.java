@@ -21,16 +21,15 @@ import java.io.OutputStream;
 
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.postag.POSSample;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 /**
- * A default implementation of {@link MissclassifiedSampleListener} that prints
+ * A default implementation of {@link EvaluationSampleListener} that prints
  * to an output stream.
  * 
  */
 public class POSEvaluationErrorListener extends
-    EvaluationErrorPrinter<POSSample> implements
-    MissclassifiedSampleListener<POSSample> {
+    EvaluationErrorPrinter<POSSample> {
 
   /**
    * Creates a listener that will print to System.err

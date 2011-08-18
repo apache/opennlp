@@ -20,7 +20,6 @@ package opennlp.tools.sentdetect;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 /**
  * The {@link SentenceDetectorEvaluator} measures the performance of
@@ -40,22 +39,6 @@ public class SentenceDetectorEvaluator extends Evaluator<SentenceSample> {
    */
   private SentenceDetector sentenceDetector;
 
-  private MissclassifiedSampleListener<SentenceSample> sampleListener;
-
-  /**
-   * Initializes the current instance.
-   *
-   * @param sentenceDetector
-   * @param sampleListener
-   *          an optional {@link MissclassifiedSampleListener} listener to
-   *          notify errors
-   */
-  public SentenceDetectorEvaluator(SentenceDetector sentenceDetector,
-      MissclassifiedSampleListener<SentenceSample> sampleListener) {
-    this.sentenceDetector = sentenceDetector;
-    this.sampleListener = sampleListener;
-  }
-  
   /**
    * Initializes the current instance.
    *
@@ -65,18 +48,14 @@ public class SentenceDetectorEvaluator extends Evaluator<SentenceSample> {
     this.sentenceDetector = sentenceDetector;
   }
 
-  public void evaluateSample(SentenceSample sample) {
-
+  @Override
+  public SentenceSample processSample(SentenceSample sample) {
     Span predictions[] = sentenceDetector.sentPosDetect(sample.getDocument());
     Span[] references = sample.getSentences();
-    if (this.sampleListener != null) {
-      SentenceSample predicted = new SentenceSample(sample.getDocument(), predictions);
-      if(!predicted.equals(sample)) {
-        this.sampleListener.missclassified(sample, predicted);
-      }
-    }
 
     fmeasure.updateScores(references, predictions);
+    
+    return new SentenceSample(sample.getDocument(), predictions);
   }
   
   public FMeasure getFMeasure() {

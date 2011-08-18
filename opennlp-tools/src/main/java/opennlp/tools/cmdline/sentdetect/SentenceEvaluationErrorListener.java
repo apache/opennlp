@@ -21,16 +21,15 @@ import java.io.OutputStream;
 
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 /**
- * A default implementation of {@link MissclassifiedSampleListener} that prints
+ * A default implementation of {@link EvaluationSampleListener} that prints
  * to an output stream.
  * 
  */
 public class SentenceEvaluationErrorListener extends
-    EvaluationErrorPrinter<SentenceSample> implements
-    MissclassifiedSampleListener<SentenceSample> {
+    EvaluationErrorPrinter<SentenceSample> {
 
   /**
    * Creates a listener that will print to System.err
