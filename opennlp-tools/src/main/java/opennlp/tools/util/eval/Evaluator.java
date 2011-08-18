@@ -87,21 +87,29 @@ public abstract class Evaluator<T> {
     }
   }
   
+  /**
+   * Add a {@link EvaluationSampleListener} that will be notified when a sample is evaluated.
+   * @param listener the listener implementation to be added
+   */
   public synchronized void addListener(EvaluationSampleListener<T> listener) {
     this.listeners.add(listener);
   }
   
+  /**
+   * Removes a {@link EvaluationSampleListener}.
+   * @param listener the listener implementation to be removed
+   */
   public synchronized void removeListener(EvaluationSampleListener<T> listener) {
     this.listeners.remove(listener);
   }
   
-  protected void notifyCorrectlyClassified(T reference, T prediction) {
+  private void notifyCorrectlyClassified(T reference, T prediction) {
     for (EvaluationSampleListener<T> listener : listeners) {
       listener.correctlyClassified(reference, prediction);
     }
   }
   
-  protected void notifyMissclassified(T reference, T prediction) {
+  private void notifyMissclassified(T reference, T prediction) {
     for (EvaluationSampleListener<T> listener : listeners) {
       listener.missclassified(reference, prediction);
     }   
