@@ -18,13 +18,14 @@
 package opennlp.tools.sentdetect;
 
 import java.io.IOException;
+import java.util.List;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.FMeasure;
 
 /**
  * 
@@ -92,13 +93,13 @@ public class SDCrossValidator {
    *          the data to train and test
    * @param nFolds
    *          number of folds
-   * @param listener
+   * @param listeners
    *          an optional listener to print missclassified items
    * 
    * @throws IOException
    */
   public void evaluate(ObjectStream<SentenceSample> samples, int nFolds,
-      EvaluationSampleListener<SentenceSample> listener) throws IOException {
+      List<EvaluationSampleListener<SentenceSample>> listeners) throws IOException {
 
     CrossValidationPartitioner<SentenceSample> partitioner = 
         new CrossValidationPartitioner<SentenceSample>(samples, nFolds);
@@ -115,8 +116,7 @@ public class SDCrossValidator {
       
       // do testing
       SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
-          new SentenceDetectorME(model));
-      evaluator.addListener(listener);
+          new SentenceDetectorME(model), listeners);
 
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
       

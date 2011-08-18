@@ -22,6 +22,7 @@ import static junit.framework.Assert.assertNotSame;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 
 import opennlp.tools.cmdline.sentdetect.SentenceEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
@@ -38,8 +39,7 @@ public class SentenceDetectorEvaluatorTest {
     OutputStream stream = new ByteArrayOutputStream();
     EvaluationSampleListener<SentenceSample> listener = new SentenceEvaluationErrorListener(stream);
     
-    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(SentenceSampleTest.createGoldSample()));
-    eval.addListener(listener);
+    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(SentenceSampleTest.createGoldSample()), Collections.singletonList(listener));
     
     eval.evaluateSample(SentenceSampleTest.createGoldSample());
     
@@ -53,8 +53,7 @@ public class SentenceDetectorEvaluatorTest {
     OutputStream stream = new ByteArrayOutputStream();
     EvaluationSampleListener<SentenceSample> listener = new SentenceEvaluationErrorListener(stream);
     
-    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(SentenceSampleTest.createGoldSample()));
-    eval.addListener(listener);
+    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(SentenceSampleTest.createGoldSample()), Collections.singletonList(listener));
     
     eval.evaluateSample(SentenceSampleTest.createPredSample());
     

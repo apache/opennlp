@@ -18,6 +18,9 @@
 
 package opennlp.tools.chunker;
 
+import java.util.List;
+
+import opennlp.tools.util.eval.EvaluationSampleListener;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -39,7 +42,7 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
    * {@link ChunkSample} objects.
    */
   private Chunker chunker;
-
+  
   /**
    * Initializes the current instance with the given
    * {@link Chunker}.
@@ -47,6 +50,18 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
    * @param chunker the {@link Chunker} to evaluate.
    */
   public ChunkerEvaluator(Chunker chunker) {
+    this.chunker = chunker;
+  }
+
+  /**
+   * Initializes the current instance with the given
+   * {@link Chunker}.
+   *
+   * @param chunker the {@link Chunker} to evaluate.
+   * @param listeners an array of evaluation listeners
+   */
+  public ChunkerEvaluator(Chunker chunker, List<EvaluationSampleListener<ChunkSample>> listeners) {
+    super(listeners);
     this.chunker = chunker;
   }
   

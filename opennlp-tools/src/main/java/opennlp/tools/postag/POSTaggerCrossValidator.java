@@ -18,13 +18,14 @@
 package opennlp.tools.postag;
 
 import java.io.IOException;
+import java.util.List;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.Mean;
 import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.Mean;
 import opennlp.tools.util.model.ModelType;
 
 public class POSTaggerCrossValidator {
@@ -98,7 +99,7 @@ public class POSTaggerCrossValidator {
    * @throws IOException
    */
   public void evaluate(ObjectStream<POSSample> samples, int nFolds,
-      EvaluationSampleListener<POSSample> listener) throws IOException, IOException {
+      List<EvaluationSampleListener<POSSample>> listeners) throws IOException, IOException {
     
     CrossValidationPartitioner<POSSample> partitioner = new CrossValidationPartitioner<POSSample>(
         samples, nFolds);
@@ -118,8 +119,7 @@ public class POSTaggerCrossValidator {
             this.tagDictionary, this.ngramDictionary);
       }
 
-      POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model));
-      evaluator.addListener(listener);
+      POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model), listeners);
       
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 

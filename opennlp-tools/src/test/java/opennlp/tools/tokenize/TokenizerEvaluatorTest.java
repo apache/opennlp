@@ -22,6 +22,7 @@ import static junit.framework.Assert.assertNotSame;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 
 import opennlp.tools.cmdline.tokenizer.TokenEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
@@ -39,8 +40,7 @@ public class TokenizerEvaluatorTest {
         stream);
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
-        TokenSampleTest.createGoldSample()));
-    eval.addListener(listener);
+        TokenSampleTest.createGoldSample()), Collections.singletonList(listener));
     
     eval.evaluateSample(TokenSampleTest.createGoldSample());
 
@@ -56,8 +56,7 @@ public class TokenizerEvaluatorTest {
         stream);
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
-        TokenSampleTest.createGoldSample()));
-    eval.addListener(listener);
+        TokenSampleTest.createGoldSample()), Collections.singletonList(listener));
     
     eval.evaluateSample(TokenSampleTest.createPredSample());
 

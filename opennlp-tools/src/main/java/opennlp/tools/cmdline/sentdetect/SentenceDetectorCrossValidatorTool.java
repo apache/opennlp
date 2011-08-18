@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.sentdetect;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
@@ -90,7 +91,7 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
             abbreviations);
       }
       
-      validator.evaluate(sampleStream, params.getFolds(), errorListener);
+      validator.evaluate(sampleStream, params.getFolds(), Collections.singletonList(errorListener));
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
