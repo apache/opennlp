@@ -32,7 +32,7 @@ import opennlp.tools.sentdetect.SDCrossValidator;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
   
@@ -74,7 +74,7 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
     
     SDCrossValidator validator;
     
-    MissclassifiedSampleListener<SentenceSample> errorListener = null;
+    EvaluationSampleListener<SentenceSample> errorListener = null;
     if (params.getMisclassified()) {
       errorListener = new SentenceEvaluationErrorListener();
     }

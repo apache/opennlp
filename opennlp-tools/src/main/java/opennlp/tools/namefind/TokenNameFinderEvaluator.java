@@ -30,7 +30,6 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
 
 /**
  * The {@link TokenNameFinderEvaluator} measures the performance
@@ -51,8 +50,6 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    */
   private TokenNameFinder nameFinder;
 
-  private MissclassifiedSampleListener<NameSample> sampleListener;
-  
   /**
    * Initializes the current instance with the given
    * {@link TokenNameFinder}.
@@ -61,20 +58,6 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    */
   public TokenNameFinderEvaluator(TokenNameFinder nameFinder) {
     this.nameFinder = nameFinder;
-  }
-  
-  /**
-   * Initializes the current instance with the given {@link TokenNameFinder}.
-   * 
-   * @param nameFinder
-   *          the {@link TokenNameFinder} to evaluate.
-   * @param sampleListener
-   *          an optional {@link MissclassifiedSampleListener} listener to
-   *          notify errors
-   */
-  public TokenNameFinderEvaluator(TokenNameFinder nameFinder, MissclassifiedSampleListener<NameSample> sampleListener) {
-    this.nameFinder = nameFinder;
-    this.sampleListener = sampleListener;
   }
 
   /**
@@ -86,21 +69,17 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    * calculate and update the scores.
    *
    * @param reference the reference {@link NameSample}.
+   * 
+   * @return the predicted {@link NameSample}.
    */
-  public void evaluateSample(NameSample reference) {
-
+  @Override
+  public NameSample processSample(NameSample reference) {
     Span predictedNames[] = nameFinder.find(reference.getSentence());    
     Span references[] = reference.getNames();
 
-    if (this.sampleListener != null) {
-      NameSample predicted = new NameSample(reference.getSentence(), predictedNames,
-          reference.isClearAdaptiveDataSet());
-      if(!predicted.equals(reference)) {
-        this.sampleListener.missclassified(reference, predicted);
-      }
-    }
-    
     fmeasure.updateScores(references, predictedNames);
+    
+    return new NameSample(reference.getSentence(), predictedNames, reference.isClearAdaptiveDataSet());
   }
   
   public FMeasure getFMeasure() {

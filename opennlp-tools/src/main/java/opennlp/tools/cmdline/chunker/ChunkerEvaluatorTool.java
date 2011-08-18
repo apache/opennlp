@@ -33,7 +33,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public final class ChunkerEvaluatorTool implements CmdLineTool {
 
@@ -66,12 +66,13 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
 
     ChunkerModel model = new ChunkerModelLoader().load(params.getModel());
     
-    MissclassifiedSampleListener<ChunkSample> errorListener = null;
+    EvaluationSampleListener<ChunkSample> errorListener = null;
     if(params.getMisclassified()) {
       errorListener = new ChunkEvaluationErrorListener();
     }
 
-    ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model), errorListener);
+    ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model));
+    evaluator.addListener(errorListener);
     
     final ObjectStream<ChunkSample> sampleStream = ChunkerTrainerTool.openSampleData("Test",
         testData, encoding);

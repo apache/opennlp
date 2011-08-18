@@ -24,7 +24,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public class ChunkerCrossValidator {
 
@@ -80,7 +80,7 @@ public class ChunkerCrossValidator {
    * @throws IOException
    */
   public void evaluate(ObjectStream<ChunkSample> samples, int nFolds,
-      MissclassifiedSampleListener<ChunkSample> listener) throws IOException, InvalidFormatException,
+      EvaluationSampleListener<ChunkSample> listener) throws IOException, InvalidFormatException,
       IOException {
 		CrossValidationPartitioner<ChunkSample> partitioner = new CrossValidationPartitioner<ChunkSample>(
 				samples, nFolds);
@@ -102,7 +102,8 @@ public class ChunkerCrossValidator {
 			}
 			
 			// do testing
-			ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model), listener);
+			ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model));
+			evaluator.addListener(listener);
 
 			evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 

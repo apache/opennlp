@@ -26,7 +26,7 @@ import java.io.OutputStream;
 import opennlp.tools.cmdline.tokenizer.TokenEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 import org.junit.Test;
 
@@ -35,11 +35,13 @@ public class TokenizerEvaluatorTest {
   @Test
   public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    MissclassifiedSampleListener<TokenSample> listener = new TokenEvaluationErrorListener(
+    EvaluationSampleListener<TokenSample> listener = new TokenEvaluationErrorListener(
         stream);
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
-        TokenSampleTest.createGoldSample()), listener);
+        TokenSampleTest.createGoldSample()));
+    eval.addListener(listener);
+    
     eval.evaluateSample(TokenSampleTest.createGoldSample());
 
     assertEquals(1.0, eval.getFMeasure().getFMeasure());
@@ -50,11 +52,13 @@ public class TokenizerEvaluatorTest {
   @Test
   public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    MissclassifiedSampleListener<TokenSample> listener = new TokenEvaluationErrorListener(
+    EvaluationSampleListener<TokenSample> listener = new TokenEvaluationErrorListener(
         stream);
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
-        TokenSampleTest.createGoldSample()), listener);
+        TokenSampleTest.createGoldSample()));
+    eval.addListener(listener);
+    
     eval.evaluateSample(TokenSampleTest.createPredSample());
 
     assertEquals(.5d, eval.getFMeasure().getFMeasure(), .1d);

@@ -21,16 +21,15 @@ import java.io.OutputStream;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 /**
- * A default implementation of {@link MissclassifiedSampleListener} that prints
+ * A default implementation of {@link EvaluationSampleListener} that prints
  * to an output stream.
  * 
  */
 public class ChunkEvaluationErrorListener extends
-    EvaluationErrorPrinter<ChunkSample> implements
-    MissclassifiedSampleListener<ChunkSample> {
+    EvaluationErrorPrinter<ChunkSample> {
 
   /**
    * Creates a listener that will print to System.err

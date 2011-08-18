@@ -17,7 +17,9 @@
 
 package opennlp.tools.util.eval;
 
-public interface MissclassifiedSampleListener<T> {
+public interface EvaluationSampleListener<T> {
+  
+  void correctlyClassified(T reference, T prediction);
   
   void missclassified(T reference, T prediction);
 

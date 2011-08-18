@@ -26,7 +26,7 @@ import java.io.OutputStream;
 import opennlp.tools.cmdline.sentdetect.SentenceEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 import org.junit.Test;
 
@@ -36,9 +36,11 @@ public class SentenceDetectorEvaluatorTest {
   @Test
   public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    MissclassifiedSampleListener<SentenceSample> listener = new SentenceEvaluationErrorListener(stream);
+    EvaluationSampleListener<SentenceSample> listener = new SentenceEvaluationErrorListener(stream);
     
-    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(SentenceSampleTest.createGoldSample()), listener);
+    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(SentenceSampleTest.createGoldSample()));
+    eval.addListener(listener);
+    
     eval.evaluateSample(SentenceSampleTest.createGoldSample());
     
     assertEquals(1.0, eval.getFMeasure().getFMeasure());
@@ -49,9 +51,11 @@ public class SentenceDetectorEvaluatorTest {
   @Test
   public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    MissclassifiedSampleListener<SentenceSample> listener = new SentenceEvaluationErrorListener(stream);
+    EvaluationSampleListener<SentenceSample> listener = new SentenceEvaluationErrorListener(stream);
     
-    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(SentenceSampleTest.createGoldSample()), listener);
+    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(SentenceSampleTest.createGoldSample()));
+    eval.addListener(listener);
+    
     eval.evaluateSample(SentenceSampleTest.createPredSample());
     
     assertEquals(-1.0, eval.getFMeasure().getFMeasure(), .1d);

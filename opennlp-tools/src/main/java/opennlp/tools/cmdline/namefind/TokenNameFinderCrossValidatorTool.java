@@ -31,7 +31,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
   
@@ -79,7 +79,7 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
 
     TokenNameFinderCrossValidator validator;
     
-    MissclassifiedSampleListener<NameSample> errorListener = null;
+    EvaluationSampleListener<NameSample> errorListener = null;
     if (params.getMisclassified()) {
       errorListener = new NameEvaluationErrorListener();
     }

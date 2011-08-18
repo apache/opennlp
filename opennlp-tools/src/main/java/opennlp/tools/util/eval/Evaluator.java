@@ -19,6 +19,8 @@
 package opennlp.tools.util.eval;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import opennlp.tools.util.ObjectStream;
 
@@ -30,15 +32,45 @@ import opennlp.tools.util.ObjectStream;
  */
 public abstract class Evaluator<T> {
 
+  private List<EvaluationSampleListener<T>> listeners = new LinkedList<EvaluationSampleListener<T>>();
+  
   /**
-   * Evaluates the given reference object.
-   *
+   * Evaluates the given reference sample object.
+   * 
    * The implementation has to update the score after every invocation.
    *
-   * @param sample the sample to be evaluated
+   * @param reference the reference sample.
+   * 
+   * @return the predicted sample
    */
-  public abstract void evaluateSample(T sample);
+  public T processSample(T reference) {
+    // should be overridden by subclass... in the future we will make it abstract.
+    return null;
+  }
 
+  /**
+   * Evaluates the given reference object. The default implementation calls
+   * {@link Evaluator#processSample(T)}
+   * 
+   * <p>
+   * <b>note:</b> this method will be changed to private in the future.
+   * Implementations should override {@link Evaluator#processSample(T)} instead.
+   * If this method is override, the implementation has to update the score
+   * after every invocation.
+   * </p>
+   * 
+   * @param sample
+   *          the sample to be evaluated
+   */
+  public void evaluateSample(T sample) {
+    T predicted = processSample(sample);
+    if(sample.equals(predicted)) {
+      notifyCorrectlyClassified(sample, predicted);
+    } else {
+      notifyMissclassified(sample, predicted);
+    }
+  }
+  
   /**
    * Reads all sample objects from the stream
    * and evaluates each sample object with
@@ -46,11 +78,32 @@ public abstract class Evaluator<T> {
    *
    * @param samples the stream of reference which
    * should be evaluated.
+   * 
    */
   public void evaluate(ObjectStream<T> samples) throws IOException {
     T sample;
     while ((sample = samples.read()) != null) {
       evaluateSample(sample);
     }
+  }
+  
+  public synchronized void addListener(EvaluationSampleListener<T> listener) {
+    this.listeners.add(listener);
+  }
+  
+  public synchronized void removeListener(EvaluationSampleListener<T> listener) {
+    this.listeners.remove(listener);
+  }
+  
+  protected void notifyCorrectlyClassified(T reference, T prediction) {
+    for (EvaluationSampleListener<T> listener : listeners) {
+      listener.correctlyClassified(reference, prediction);
+    }
+  }
+  
+  protected void notifyMissclassified(T reference, T prediction) {
+    for (EvaluationSampleListener<T> listener : listeners) {
+      listener.missclassified(reference, prediction);
+    }   
   }
 }

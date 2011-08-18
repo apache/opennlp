@@ -24,7 +24,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.eval.MissclassifiedSampleListener;
+import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public class TokenizerCrossValidator {
   
@@ -89,7 +89,7 @@ public class TokenizerCrossValidator {
    * @throws IOException
    */
   public void evaluate(ObjectStream<TokenSample> samples, int nFolds,
-      MissclassifiedSampleListener<TokenSample> listener) throws IOException {
+      EvaluationSampleListener<TokenSample> listener) throws IOException {
     
     CrossValidationPartitioner<TokenSample> partitioner = 
       new CrossValidationPartitioner<TokenSample>(samples, nFolds);
@@ -105,7 +105,9 @@ public class TokenizerCrossValidator {
       model = TokenizerME.train(language, trainingSampleStream, abbreviations,
           alphaNumericOptimization, params);
        
-       TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model), listener);
+       TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model));
+       evaluator.addListener(listener);
+       
        evaluator.evaluate(trainingSampleStream.getTestSampleStream());
        fmeasure.mergeInto(evaluator.getFMeasure());
      }
