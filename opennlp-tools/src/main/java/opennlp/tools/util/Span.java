@@ -209,7 +209,17 @@ public class Span implements Comparable<Span> {
    * Generates a hash code of the current span.
    */
   public int hashCode() {
-    return this.start << 16 | 0x0000FFFF | this.end;
+    int res = 23;
+    res = res * 37 + getStart();
+    res = res * 37 + getEnd();
+    if ( getType() == null) {
+      res = res * 37;
+    }
+    else {
+      res = res * 37 + getType().hashCode();
+    }
+    
+    return res;
   }
 
   /**
