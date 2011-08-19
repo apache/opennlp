@@ -19,7 +19,8 @@ package opennlp.tools.cmdline.chunker;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerCrossValidator;
@@ -28,14 +29,15 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.FMeasure;
 
 public final class ChunkerCrossValidatorTool implements CmdLineTool {
   
-  interface CVToolParams extends TrainingParams, CVParams {
+  interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams {
     
   }
 
@@ -71,13 +73,16 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
     ChunkerCrossValidator validator = new ChunkerCrossValidator(
         params.getLang(), params.getCutoff(), params.getIterations());
     
-    EvaluationSampleListener<ChunkSample> errorListener = null;
-    if(params.getMisclassified()) {
-      errorListener = new ChunkEvaluationErrorListener();
+    List<EvaluationSampleListener<ChunkSample>> listeners = new LinkedList<EvaluationSampleListener<ChunkSample>>();
+    if (params.getMisclassified()) {
+      listeners.add(new ChunkEvaluationErrorListener());
+    }
+    if (params.getDetailedF()) {
+      listeners.add(new ChunkerDetailedFMeasureListener());
     }
       
     try {
-      validator.evaluate(sampleStream, params.getFolds(), Collections.singletonList(errorListener));
+      validator.evaluate(sampleStream, params.getFolds(), listeners);
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

@@ -20,23 +20,29 @@ package opennlp.tools.cmdline.chunker;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerEvaluator;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.EvaluatorParams;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.DetailedFMeasureEvaluatorParams;
+import opennlp.tools.cmdline.EvaluatorParams;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public final class ChunkerEvaluatorTool implements CmdLineTool {
+  
+  interface EvalToolParams extends EvaluatorParams, DetailedFMeasureEvaluatorParams {
+    
+  }
 
   public String getName() {
     return "ChunkerEvaluator";
@@ -57,7 +63,7 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
   	
-  	EvaluatorParams params = ArgumentParser.parse(args, EvaluatorParams.class);
+  	EvalToolParams params = ArgumentParser.parse(args, EvalToolParams.class);
   	
   	File testData =params.getData();
 
@@ -67,13 +73,16 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
 
     ChunkerModel model = new ChunkerModelLoader().load(params.getModel());
     
-    EvaluationSampleListener<ChunkSample> errorListener = null;
+    List<EvaluationSampleListener<ChunkSample>> listeners = new LinkedList<EvaluationSampleListener<ChunkSample>>();
     if(params.getMisclassified()) {
-      errorListener = new ChunkEvaluationErrorListener();
+      listeners.add(new ChunkEvaluationErrorListener());
+    }
+    if(params.getDetailedF()) {
+      listeners.add(new ChunkerDetailedFMeasureListener());
     }
 
     ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model),
-        Collections.singletonList(errorListener));
+        listeners);
     
     final ObjectStream<ChunkSample> sampleStream = ChunkerTrainerTool.openSampleData("Test",
         testData, encoding);
