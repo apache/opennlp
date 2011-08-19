@@ -19,6 +19,7 @@
 package opennlp.tools.util.eval;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import opennlp.tools.util.ObjectStream;
@@ -38,7 +39,9 @@ public abstract class Evaluator<T> {
   }
   
   public Evaluator(List<EvaluationSampleListener<T>> listeners) {
-    this.listeners = listeners;
+    if(listeners != null) {
+      this.listeners = Collections.unmodifiableList(listeners);
+    }
   }
   
   /**
