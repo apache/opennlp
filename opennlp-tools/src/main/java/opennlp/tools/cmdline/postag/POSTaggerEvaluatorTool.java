@@ -23,11 +23,11 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.EvaluatorParams;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;

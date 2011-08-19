@@ -15,21 +15,26 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline;
+package opennlp.tools.cmdline.params;
 
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
+import java.io.File;
+
+import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
+// TODO: remove the old BasicTrainingParameters and rename this class to BasicTrainingParameters
 
 /**
- * EvaluatorParams for Chunker.
+ * Common training parameters.
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface DetailedFMeasureEvaluatorParams {
+public interface TrainingToolParams extends BasicTrainingParams{
   
-  @ParameterDescription(valueName = "true|false", description = "if true will print detailed FMeasure results")
-  @OptionalParameter(defaultValue="false")
-  Boolean getDetailedF();
+  @ParameterDescription(valueName = "trainData", description = "the data to be used during training")
+  File getData();
+  
+  @ParameterDescription(valueName = "modelFile", description = "the output model file")
+  File getModel();
   
 }

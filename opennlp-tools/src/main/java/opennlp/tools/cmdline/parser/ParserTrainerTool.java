@@ -31,7 +31,7 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.TrainingToolParams;
+import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
