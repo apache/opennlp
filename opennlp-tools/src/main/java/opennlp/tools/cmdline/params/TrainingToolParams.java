@@ -19,7 +19,6 @@ package opennlp.tools.cmdline.params;
 
 import java.io.File;
 
-import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 // TODO: remove the old BasicTrainingParameters and rename this class to BasicTrainingParameters
