@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.params.EncodingParameter;
 
 import org.junit.Test;
 
