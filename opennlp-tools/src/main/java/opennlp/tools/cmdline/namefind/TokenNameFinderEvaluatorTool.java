@@ -80,8 +80,10 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
     }
+    TokenNameFinderDetailedFMeasureListener detailedFListener = null;
     if (params.getDetailedF()) {
-      listeners.add(new TokenNameFinderDetailedFMeasureListener());
+      detailedFListener = new TokenNameFinderDetailedFMeasureListener();
+      listeners.add(detailedFListener);
     }
 
     TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
@@ -128,6 +130,10 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
     System.out.println();
 
-    System.out.println(evaluator.getFMeasure());
+    if(detailedFListener == null) {
+      System.out.println(evaluator.getFMeasure());
+    } else {
+      System.out.println(detailedFListener.toString());
+    }
   }
 }
