@@ -20,7 +20,8 @@ package opennlp.tools.cmdline.namefind;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.cmdline.ArgumentParser;
@@ -28,6 +29,7 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
@@ -36,7 +38,7 @@ import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
   
-  interface CVToolParams extends TrainingParams, CVParams{
+  interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams{
     
   }
 
@@ -80,9 +82,12 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
 
     TokenNameFinderCrossValidator validator;
     
-    EvaluationSampleListener<NameSample> errorListener = null;
+    List<EvaluationSampleListener<NameSample>> listeners = new LinkedList<EvaluationSampleListener<NameSample>>();
     if (params.getMisclassified()) {
-      errorListener = new NameEvaluationErrorListener();
+      listeners.add(new NameEvaluationErrorListener());
+    }
+    if (params.getDetailedF()) {
+      listeners.add(new TokenNameFinderDetailedFMeasureListener());
     }
 
     try {
@@ -94,7 +99,7 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
         validator = new TokenNameFinderCrossValidator(params.getLang(), params.getType(), mlParams,
             featureGeneratorBytes, resources);
       }
-      validator.evaluate(sampleStream, params.getFolds(), Collections.singletonList(errorListener));
+      validator.evaluate(sampleStream, params.getFolds(), listeners);
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);

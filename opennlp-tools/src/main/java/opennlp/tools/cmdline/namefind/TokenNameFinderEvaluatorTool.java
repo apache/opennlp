@@ -20,12 +20,14 @@ package opennlp.tools.cmdline.namefind;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.EvaluatorParams;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -38,6 +40,10 @@ import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
+  interface EvalToolParams extends EvaluatorParams, DetailedFMeasureEvaluatorParams {
+    
+  }
+  
   public String getName() {
     return "TokenNameFinderEvaluator";
   }
@@ -59,8 +65,8 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
       throw new TerminateToolException(1);
     }
 
-    EvaluatorParams params = ArgumentParser.parse(args,
-        EvaluatorParams.class);
+    EvalToolParams params = ArgumentParser.parse(args,
+        EvalToolParams.class);
 
     File testData = params.getData();
     CmdLineUtil.checkInputFile("Test data", testData);
@@ -70,13 +76,16 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
     TokenNameFinderModel model = new TokenNameFinderModelLoader().load(params
         .getModel());
     
-    EvaluationSampleListener<NameSample> missclassifiedListener = null;
+    List<EvaluationSampleListener<NameSample>> listeners = new LinkedList<EvaluationSampleListener<NameSample>>();
     if (params.getMisclassified()) {
-      missclassifiedListener = new NameEvaluationErrorListener();
+      listeners.add(new NameEvaluationErrorListener());
+    }
+    if (params.getDetailedF()) {
+      listeners.add(new TokenNameFinderDetailedFMeasureListener());
     }
 
     TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
-        new NameFinderME(model), Collections.singletonList(missclassifiedListener));
+        new NameFinderME(model), listeners);
 
     final ObjectStream<NameSample> sampleStream = TokenNameFinderTrainerTool.openSampleData("Test",
         testData, encoding);
