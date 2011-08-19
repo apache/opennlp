@@ -60,7 +60,7 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
    * @param chunker the {@link Chunker} to evaluate.
    * @param listeners an array of evaluation listeners
    */
-  public ChunkerEvaluator(Chunker chunker, List<EvaluationSampleListener<ChunkSample>> listeners) {
+  public ChunkerEvaluator(Chunker chunker, List<? extends EvaluationSampleListener<ChunkSample>> listeners) {
     super(listeners);
     this.chunker = chunker;
   }

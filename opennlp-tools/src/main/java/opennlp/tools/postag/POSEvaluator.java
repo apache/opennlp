@@ -50,7 +50,7 @@ public class POSEvaluator extends Evaluator<POSSample> {
    * @param tagger
    * @param listeners an array of evaluation listeners
    */
-  public POSEvaluator(POSTagger tagger, List<EvaluationSampleListener<POSSample>> listeners) {
+  public POSEvaluator(POSTagger tagger, List<? extends EvaluationSampleListener<POSSample>> listeners) {
     super(listeners);
     this.tagger = tagger;
   }
