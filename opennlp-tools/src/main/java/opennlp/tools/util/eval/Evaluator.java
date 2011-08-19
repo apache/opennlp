@@ -38,7 +38,7 @@ public abstract class Evaluator<T> {
     this.listeners = null;
   }
   
-  public Evaluator(List<EvaluationSampleListener<T>> listeners) {
+  public Evaluator(List<? extends EvaluationSampleListener<T>> listeners) {
     if(listeners != null) {
       this.listeners = Collections.unmodifiableList(listeners);
     }
