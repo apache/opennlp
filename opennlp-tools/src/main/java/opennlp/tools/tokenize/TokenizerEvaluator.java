@@ -61,7 +61,7 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    * @param tokenizer the {@link Tokenizer} to evaluate.
    * @param listeners evaluation sample listeners
    */
-  public TokenizerEvaluator(Tokenizer tokenizer, List<EvaluationSampleListener<TokenSample>> listeners) {
+  public TokenizerEvaluator(Tokenizer tokenizer, List<? extends EvaluationSampleListener<TokenSample>> listeners) {
     super(listeners);
     this.tokenizer = tokenizer;
   }
