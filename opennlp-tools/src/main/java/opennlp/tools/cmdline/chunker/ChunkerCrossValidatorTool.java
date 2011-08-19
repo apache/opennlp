@@ -74,11 +74,13 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
         params.getLang(), params.getCutoff(), params.getIterations());
     
     List<EvaluationSampleListener<ChunkSample>> listeners = new LinkedList<EvaluationSampleListener<ChunkSample>>();
+    ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
     if (params.getMisclassified()) {
       listeners.add(new ChunkEvaluationErrorListener());
     }
     if (params.getDetailedF()) {
-      listeners.add(new ChunkerDetailedFMeasureListener());
+      detailedFMeasureListener = new ChunkerDetailedFMeasureListener();
+      listeners.add(detailedFMeasureListener);
     }
       
     try {
@@ -96,8 +98,11 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
       }
     }
     
-    FMeasure result = validator.getFMeasure();
-    
-    System.out.println(result.toString());
+    if (detailedFMeasureListener == null) {
+      FMeasure result = validator.getFMeasure();
+      System.out.println(result.toString());
+    } else {
+      System.out.println(detailedFMeasureListener.toString());
+    }
   }
 }

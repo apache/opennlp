@@ -86,8 +86,10 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
     }
+    TokenNameFinderDetailedFMeasureListener detailedFListener = null;
     if (params.getDetailedF()) {
-      listeners.add(new TokenNameFinderDetailedFMeasureListener());
+      detailedFListener = new TokenNameFinderDetailedFMeasureListener();
+      listeners.add(detailedFListener);
     }
 
     try {
@@ -114,7 +116,11 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
     System.out.println("done");
 
     System.out.println();
-
-    System.out.println(validator.getFMeasure());
+    
+    if(detailedFListener == null) {
+      System.out.println(validator.getFMeasure());
+    } else {
+      System.out.println(detailedFListener.toString());
+    }
   }
 }
