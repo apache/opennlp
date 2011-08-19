@@ -1,7 +1,6 @@
-processed 3 samples with 32 entities; found: 35 entities; correct: 28.
-   TOTAL: precision:   80,00%;  recall:   87,50%; F1:   83,58%.
-      NP: precision:   90,00%;  recall:   94,74%; F1:   92,31%. [target:  19; tp:  18; fp:   2]
-      VP: precision:   75,00%;  recall:   75,00%; F1:   75,00%. [target:   8; tp:   6; fp:   2]
-      PP: precision:   57,14%;  recall:  100,00%; F1:   72,73%. [target:   4; tp:   4; fp:   3]
-    SBAR: precision:    0,00%;  recall:    0,00%; F1:    0,00%. [target:   1; tp:   0; fp:   0]
-
+Evaluated 3 samples with 32 entities; found: 35 entities; correct: 28.
+       TOTAL: precision:   80,00%;  recall:   87,50%; F1:   83,58%.
+          NP: precision:   90,00%;  recall:   94,74%; F1:   92,31%. [target:  19; tp:  18; fp:   2]
+          VP: precision:   75,00%;  recall:   75,00%; F1:   75,00%. [target:   8; tp:   6; fp:   2]
+          PP: precision:   57,14%;  recall:  100,00%; F1:   72,73%. [target:   4; tp:   4; fp:   3]
+        SBAR: precision:    0,00%;  recall:    0,00%; F1:    0,00%. [target:   1; tp:   0; fp:   0]
