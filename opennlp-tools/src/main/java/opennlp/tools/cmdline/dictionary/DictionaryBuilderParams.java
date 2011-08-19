@@ -20,7 +20,7 @@ package opennlp.tools.cmdline.dictionary;
 import java.io.File;
 
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
-import opennlp.tools.cmdline.EncodingParameter;
+import opennlp.tools.cmdline.params.EncodingParameter;
 
 /**
  * Params for Dictionary tools.

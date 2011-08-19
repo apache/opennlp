@@ -26,11 +26,11 @@ import java.util.Map;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CVParams;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.params.CVParams;
+import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.util.ObjectStream;
