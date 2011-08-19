@@ -50,7 +50,7 @@ public abstract class Evaluator<T> {
    * 
    * @return the predicted sample
    */
-  public T processSample(T reference) {
+  protected T processSample(T reference) {
     // should be overridden by subclass... in the future we will make it abstract.
     return null;
   }

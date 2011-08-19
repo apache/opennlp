@@ -67,7 +67,7 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
   }
 
   @Override
-  public TokenSample processSample(TokenSample reference) {
+  protected TokenSample processSample(TokenSample reference) {
     Span predictions[] = tokenizer.tokenizePos(reference.getText());
     fmeasure.updateScores(reference.getTokenSpans(), predictions);
     
