@@ -87,7 +87,7 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    * @return the predicted {@link NameSample}.
    */
   @Override
-  public NameSample processSample(NameSample reference) {
+  protected NameSample processSample(NameSample reference) {
     Span predictedNames[] = nameFinder.find(reference.getSentence());    
     Span references[] = reference.getNames();
 
