@@ -87,7 +87,7 @@ public abstract class DetailedFMeasureListener<T> implements
   }
 
   private static final String PERCENT = "%\u00207.2f%%";
-  private static final String FORMAT = "%8s: precision: " + PERCENT
+  private static final String FORMAT = "%12s: precision: " + PERCENT
       + ";  recall: " + PERCENT + "; F1: " + PERCENT + ".";
   private static final String FORMAT_EXTRA = FORMAT
       + " [target: %3d; tp: %3d; fp: %3d]";
@@ -97,7 +97,7 @@ public abstract class DetailedFMeasureListener<T> implements
     StringBuilder ret = new StringBuilder();
     int tp = generalStats.getTruePositives();
     int found = generalStats.getFalsePositives() + tp;
-    ret.append("processed " + samples + " samples with "
+    ret.append("Evaluated " + samples + " samples with "
         + generalStats.getTarget() + " entities; found: " + found
         + " entities; correct: " + tp + ".\n");
 
