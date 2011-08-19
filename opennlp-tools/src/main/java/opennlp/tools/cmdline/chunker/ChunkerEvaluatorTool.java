@@ -74,11 +74,13 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
     ChunkerModel model = new ChunkerModelLoader().load(params.getModel());
     
     List<EvaluationSampleListener<ChunkSample>> listeners = new LinkedList<EvaluationSampleListener<ChunkSample>>();
+    ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
     if(params.getMisclassified()) {
       listeners.add(new ChunkEvaluationErrorListener());
     }
     if(params.getDetailedF()) {
-      listeners.add(new ChunkerDetailedFMeasureListener());
+      detailedFMeasureListener = new ChunkerDetailedFMeasureListener();
+      listeners.add(detailedFMeasureListener);
     }
 
     ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model),
@@ -125,6 +127,10 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
 
     System.out.println();
 
-    System.out.println(evaluator.getFMeasure());
+    if (detailedFMeasureListener == null) {
+      System.out.println(evaluator.getFMeasure());
+    } else {
+      System.out.println(detailedFMeasureListener.toString());
+    }
   }
 }
