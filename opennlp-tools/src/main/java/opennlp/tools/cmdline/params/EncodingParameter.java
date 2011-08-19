@@ -15,28 +15,25 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline;
+package opennlp.tools.cmdline.params;
 
-import java.io.File;
+import java.nio.charset.Charset;
 
+import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
- * Common evaluation parameters.
+ * Encoding parameter. The DEFAULT_CHARSET is handled by ArgumentParser.Parse().
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface EvaluatorParams extends EncodingParameter{
-  
-  @ParameterDescription(valueName = "model", description = "the model file to be evaluated")
-  File getModel();
-  
-  @ParameterDescription(valueName = "testData", description = "the data to be used during evaluation")
-  File getData();
-  
-  @ParameterDescription(valueName = "true|false", description = "if true will print false negatives and false positives")
-  @OptionalParameter(defaultValue="false")
-  Boolean getMisclassified();
-  
+public interface EncodingParameter {
+
+  @ParameterDescription(valueName = "charsetName", description = "specifies the "
+      + "encoding which should be used for reading and writing text. If not specified "
+      + "the system default will be used.")
+  @OptionalParameter(defaultValue = OptionalParameter.DEFAULT_CHARSET)
+  Charset getEncoding();
+
 }

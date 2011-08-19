@@ -15,29 +15,29 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline;
+package opennlp.tools.cmdline.params;
 
 import java.io.File;
 
+import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
- * Common cross validator parameters.
+ * Common evaluation parameters.
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface CVParams {
-    
+public interface EvaluatorParams extends EncodingParameter{
+  
+  @ParameterDescription(valueName = "model", description = "the model file to be evaluated")
+  File getModel();
+  
   @ParameterDescription(valueName = "testData", description = "the data to be used during evaluation")
   File getData();
   
   @ParameterDescription(valueName = "true|false", description = "if true will print false negatives and false positives")
   @OptionalParameter(defaultValue="false")
   Boolean getMisclassified();
-  
-  @ParameterDescription(valueName = "num", description = "The number of folds. Default is 10")
-  @OptionalParameter(defaultValue="10")
-  Integer getFolds();
   
 }

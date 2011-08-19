@@ -31,10 +31,10 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.DetailedFMeasureEvaluatorParams;
-import opennlp.tools.cmdline.EvaluatorParams;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
+import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.EvaluationSampleListener;
 

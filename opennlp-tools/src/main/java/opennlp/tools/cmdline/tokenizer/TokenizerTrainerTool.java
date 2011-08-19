@@ -28,7 +28,7 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.TrainingToolParams;
+import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenSampleStream;

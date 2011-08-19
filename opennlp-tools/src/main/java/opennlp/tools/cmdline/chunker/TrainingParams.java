@@ -17,7 +17,7 @@
 
 package opennlp.tools.cmdline.chunker;
 
-import opennlp.tools.cmdline.BasicTrainingParams;
+import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
  * TrainingParams for Chunker.

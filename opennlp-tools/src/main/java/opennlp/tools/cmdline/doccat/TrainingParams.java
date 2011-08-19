@@ -17,7 +17,7 @@
 
 package opennlp.tools.cmdline.doccat;
 
-import opennlp.tools.cmdline.BasicTrainingParams;
+import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
  * TrainingParams for DocCat.

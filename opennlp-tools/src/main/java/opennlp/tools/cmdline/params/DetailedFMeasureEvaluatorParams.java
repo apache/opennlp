@@ -15,24 +15,22 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline;
+package opennlp.tools.cmdline.params;
 
-import java.nio.charset.Charset;
-
+import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
+
 /**
- * Encoding parameter. The DEFAULT_CHARSET is handled by ArgumentParser.Parse().
+ * EvaluatorParams for Chunker.
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface EncodingParameter {
-
-  @ParameterDescription(valueName = "charsetName", description = "specifies the "
-      + "encoding which should be used for reading and writing text. If not specified "
-      + "the system default will be used.")
-  @OptionalParameter(defaultValue = OptionalParameter.DEFAULT_CHARSET)
-  Charset getEncoding();
-
+public interface DetailedFMeasureEvaluatorParams {
+  
+  @ParameterDescription(valueName = "true|false", description = "if true will print detailed FMeasure results")
+  @OptionalParameter(defaultValue="false")
+  Boolean getDetailedF();
+  
 }
