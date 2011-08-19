@@ -63,7 +63,7 @@ public class SentenceDetectorEvaluator extends Evaluator<SentenceSample> {
   }
 
   @Override
-  public SentenceSample processSample(SentenceSample sample) {
+  protected SentenceSample processSample(SentenceSample sample) {
     Span predictions[] = sentenceDetector.sentPosDetect(sample.getDocument());
     Span[] references = sample.getSentences();
 

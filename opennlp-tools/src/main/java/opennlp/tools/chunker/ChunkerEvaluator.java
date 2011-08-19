@@ -78,7 +78,7 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
    * @return the predicted sample
    */
   @Override
-  public ChunkSample processSample(ChunkSample reference) {
+  protected ChunkSample processSample(ChunkSample reference) {
     String[] preds = chunker.chunk(reference.getSentence(), reference.getTags());
     ChunkSample result = new ChunkSample(reference.getSentence(), reference.getTags(), preds);
 
