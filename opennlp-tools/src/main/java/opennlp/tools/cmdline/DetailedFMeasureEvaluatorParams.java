@@ -26,7 +26,7 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface DetailedFMeasureEvaluatorParams extends EvaluatorParams {
+public interface DetailedFMeasureEvaluatorParams {
   
   @ParameterDescription(valueName = "true|false", description = "if true will print detailed FMeasure results")
   @OptionalParameter(defaultValue="false")
