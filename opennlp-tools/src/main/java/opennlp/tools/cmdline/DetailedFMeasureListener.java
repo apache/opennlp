@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -108,9 +109,12 @@ public abstract class DetailedFMeasureListener<T> implements
       + ";  recall: " + PERCENT + "; F1: " + PERCENT + ".";
   private static final String FORMAT_EXTRA = FORMAT
       + " [target: %3d; tp: %3d; fp: %3d]";
-
-  @Override
-  public String toString() {
+  
+  public String createReport() {
+    return createReport(Locale.getDefault());
+  }
+  
+  public String createReport(Locale locale) {
     StringBuilder ret = new StringBuilder();
     int tp = generalStats.getTruePositives();
     int found = generalStats.getFalsePositives() + tp;
@@ -118,7 +122,7 @@ public abstract class DetailedFMeasureListener<T> implements
         + generalStats.getTarget() + " entities; found: " + found
         + " entities; correct: " + tp + ".\n");
 
-    ret.append(String.format(FORMAT, "TOTAL",
+    ret.append(String.format(locale, FORMAT, "TOTAL",
         zeroOrPositive(generalStats.getPrecisionScore() * 100),
         zeroOrPositive(generalStats.getRecallScore() * 100),
         zeroOrPositive(generalStats.getFMeasure() * 100)));
@@ -127,7 +131,7 @@ public abstract class DetailedFMeasureListener<T> implements
     set.addAll(statsForOutcome.keySet());
     for (String type : set) {
 
-      ret.append(String.format(FORMAT_EXTRA, type,
+      ret.append(String.format(locale, FORMAT_EXTRA, type,
           zeroOrPositive(statsForOutcome.get(type).getPrecisionScore() * 100),
           zeroOrPositive(statsForOutcome.get(type).getRecallScore() * 100),
           zeroOrPositive(statsForOutcome.get(type).getFMeasure() * 100),
@@ -138,7 +142,11 @@ public abstract class DetailedFMeasureListener<T> implements
     }
 
     return ret.toString();
+  }
 
+  @Override
+  public String toString() {
+    return createReport();
   }
 
   private double zeroOrPositive(double v) {
