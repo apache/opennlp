@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.List;
 
 import opennlp.tools.cmdline.PerformanceMonitor;
@@ -72,6 +73,19 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
   public TokenNameFinderEvaluator(TokenNameFinder nameFinder, List<? extends EvaluationSampleListener<NameSample>> listeners) {
     super(listeners);
     this.nameFinder = nameFinder;
+  }
+
+  /**
+   * Initializes the current instance with the given {@link TokenNameFinder}.
+   * 
+   * @param nameFinder
+   *          the {@link TokenNameFinder} to evaluate.
+   * @param listener
+   *          evaluation sample listener
+   */
+  public TokenNameFinderEvaluator(TokenNameFinder nameFinder,
+      EvaluationSampleListener<NameSample> listener) {
+    this(nameFinder, Collections.singletonList(listener));
   }
 
   /**
