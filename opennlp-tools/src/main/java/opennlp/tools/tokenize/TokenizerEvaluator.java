@@ -18,6 +18,7 @@
 
 package opennlp.tools.tokenize;
 
+import java.util.Collections;
 import java.util.List;
 
 import opennlp.tools.util.Span;
@@ -65,6 +66,19 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
     super(listeners);
     this.tokenizer = tokenizer;
   }
+  
+  /**
+   * Initializes the current instance with the given {@link Tokenizer}.
+   * 
+   * @param tokenizer
+   *          the {@link Tokenizer} to evaluate.
+   * @param listener
+   *          evaluation sample listener
+   */
+  public TokenizerEvaluator(Tokenizer tokenizer,
+      EvaluationSampleListener<TokenSample> listener) {
+    this(tokenizer, Collections.singletonList(listener));
+ }
 
   @Override
   protected TokenSample processSample(TokenSample reference) {
