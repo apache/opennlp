@@ -18,6 +18,8 @@
 package opennlp.tools.chunker;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.util.InvalidFormatException;
@@ -35,6 +37,7 @@ public class ChunkerCrossValidator {
 	private final TrainingParameters params;
 	
 	private FMeasure fmeasure = new FMeasure();
+    private List<? extends EvaluationSampleListener<ChunkSample>> listeners;
 
 	public ChunkerCrossValidator(String languageCode, int cutoff, int iterations) {
 	    
@@ -43,6 +46,7 @@ public class ChunkerCrossValidator {
 		this.iterations = iterations;
 		
 		params = null;
+		listeners = null;
 	}
 	
     public ChunkerCrossValidator(String languageCode, TrainingParameters params) {
@@ -51,8 +55,23 @@ public class ChunkerCrossValidator {
       
       cutoff = -1;
       iterations = -1;
+      listeners = null;
     }
-   
+
+  public ChunkerCrossValidator(String languageCode, TrainingParameters params,
+      List<? extends EvaluationSampleListener<ChunkSample>> listeners) {
+    this(languageCode, params);
+    if(listeners != null) {
+      this.listeners = new LinkedList<EvaluationSampleListener<ChunkSample>>(
+          listeners);
+    }
+  }
+
+  public ChunkerCrossValidator(String languageCode, TrainingParameters params,
+      EvaluationSampleListener<ChunkSample> listener) {
+    this(languageCode, params, Collections.singletonList(listener));
+  }
+
   /**
    * Starts the evaluation.
    * 
@@ -65,24 +84,6 @@ public class ChunkerCrossValidator {
    */
   public void evaluate(ObjectStream<ChunkSample> samples, int nFolds)
       throws IOException, InvalidFormatException, IOException {
-    evaluate(samples, nFolds, null);
-  }
-
-  /**
-   * Starts the evaluation.
-   * 
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
-   * @param listeners
-   *          an optional missclassified sample listener
-   * 
-   * @throws IOException
-   */
-  public void evaluate(ObjectStream<ChunkSample> samples, int nFolds,
-      List<EvaluationSampleListener<ChunkSample>> listeners) throws IOException, InvalidFormatException,
-      IOException {
 		CrossValidationPartitioner<ChunkSample> partitioner = new CrossValidationPartitioner<ChunkSample>(
 				samples, nFolds);
 

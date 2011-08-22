@@ -20,7 +20,6 @@ package opennlp.tools.cmdline.postag;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
@@ -32,6 +31,7 @@ import opennlp.tools.postag.POSDictionary;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerCrossValidator;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public final class POSTaggerCrossValidatorTool implements CmdLineTool {
@@ -71,6 +71,21 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
         "Training Data", trainingDataInFile, params.getEncoding());
 
     POSTaggerCrossValidator validator;
+    
+    EvaluationSampleListener<POSSample> missclassifiedListener = null;
+    if (params.getMisclassified()) {
+      missclassifiedListener = new POSEvaluationErrorListener();
+    }
+    
+    if (mlParams == null) {
+      mlParams = new TrainingParameters();
+      mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+      mlParams.put(TrainingParameters.ITERATIONS_PARAM,
+          Integer.toString(params.getIterations()));
+      mlParams.put(TrainingParameters.CUTOFF_PARAM,
+          Integer.toString(params.getCutoff()));
+    }
+    
     try {
       // TODO: Move to util method ...
       POSDictionary tagdict = null;
@@ -78,21 +93,10 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
         tagdict = POSDictionary.create(new FileInputStream(params.getDict()));
       }
 
-      if (mlParams == null) {
-        validator = new POSTaggerCrossValidator(params.getLang(),
-            POSTaggerTrainerTool.getModelType(params.getType()), tagdict, null, params.getCutoff(),
-            params.getIterations());
-      } else {
-        validator = new POSTaggerCrossValidator(params.getLang(),
-            mlParams, tagdict, null);
-      }
+      validator = new POSTaggerCrossValidator(params.getLang(), mlParams,
+          tagdict, null, missclassifiedListener);
       
-      EvaluationSampleListener<POSSample> missclassifiedListener = null;
-      if (params.getMisclassified()) {
-        missclassifiedListener = new POSEvaluationErrorListener();
-      }
-
-      validator.evaluate(sampleStream, params.getFolds(), Collections.singletonList(missclassifiedListener));
+      validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);

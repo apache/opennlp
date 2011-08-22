@@ -18,6 +18,8 @@
 package opennlp.tools.sentdetect;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.dictionary.Dictionary;
@@ -39,13 +41,15 @@ public class SDCrossValidator {
   private final TrainingParameters params;
   
   private FMeasure fmeasure = new FMeasure();
+
+  private LinkedList<EvaluationSampleListener<SentenceSample>> listeners;
   
   public SDCrossValidator(String languageCode, int cutoff, int iterations) {
     this(languageCode, createParams(cutoff, iterations));
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params) {
-    this(languageCode, params, null);
+    this(languageCode, params, (Dictionary)null);
   }
   
   public SDCrossValidator(String languageCode, int cutoff, int iterations, Dictionary abbreviations) {
@@ -56,6 +60,33 @@ public class SDCrossValidator {
     this.languageCode = languageCode;
     this.params = params;
     this.abbreviations = abbreviations;
+  }
+  
+  public SDCrossValidator(String languageCode, TrainingParameters params,
+      List<? extends EvaluationSampleListener<SentenceSample>> listeners) {
+    this(languageCode, params, null, listeners);
+  }
+  
+  public SDCrossValidator(String languageCode, TrainingParameters params,
+      Dictionary abbreviations,
+      List<? extends EvaluationSampleListener<SentenceSample>> listeners) {
+    this(languageCode, params, abbreviations);
+    if (listeners != null) {
+      this.listeners = new LinkedList<EvaluationSampleListener<SentenceSample>>(
+          listeners);
+    }
+  }
+  
+  public SDCrossValidator(String languageCode, TrainingParameters params,
+      EvaluationSampleListener<SentenceSample> listener) {
+    this(languageCode, params, null, listener);
+  }
+  
+  public SDCrossValidator(String languageCode, TrainingParameters params,
+      Dictionary abbreviations,
+      EvaluationSampleListener<SentenceSample> listener) {
+    this(languageCode, params, abbreviations, Collections
+        .singletonList(listener));
   }
   
   private static TrainingParameters createParams(int cutoff, int iterations) {
@@ -70,21 +101,6 @@ public class SDCrossValidator {
   public SDCrossValidator(String languageCode) {
     this(languageCode, 5, 100);
   }
-  
-  /**
-   * Starts the evaluation.
-   * 
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
-   * 
-   * @throws IOException
-   */
-  public void evaluate(ObjectStream<SentenceSample> samples, int nFolds)
-      throws IOException {
-    evaluate(samples, nFolds, null);
-  }
 
   /**
    * Starts the evaluation.
@@ -93,13 +109,10 @@ public class SDCrossValidator {
    *          the data to train and test
    * @param nFolds
    *          number of folds
-   * @param listeners
-   *          an optional listener to print missclassified items
    * 
    * @throws IOException
    */
-  public void evaluate(ObjectStream<SentenceSample> samples, int nFolds,
-      List<EvaluationSampleListener<SentenceSample>> listeners) throws IOException {
+  public void evaluate(ObjectStream<SentenceSample> samples, int nFolds) throws IOException {
 
     CrossValidationPartitioner<SentenceSample> partitioner = 
         new CrossValidationPartitioner<SentenceSample>(samples, nFolds);

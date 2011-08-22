@@ -18,6 +18,8 @@
 package opennlp.tools.postag;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.dictionary.Dictionary;
@@ -41,6 +43,7 @@ public class POSTaggerCrossValidator {
   private Dictionary ngramDictionary;
 
   private Mean wordAccuracy = new Mean();
+  private List<? extends EvaluationSampleListener<POSSample>> listeners;
   
   
   public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
@@ -70,6 +73,23 @@ public class POSTaggerCrossValidator {
     modelType = null;
   }
   
+  public POSTaggerCrossValidator(String languageCode,
+      TrainingParameters trainParam, POSDictionary tagDictionary,
+      Dictionary ngramDictionary,
+      List<? extends EvaluationSampleListener<POSSample>> listeners) {
+    this(languageCode, trainParam, tagDictionary, ngramDictionary);
+    if (listeners != null) {
+      this.listeners = new LinkedList<EvaluationSampleListener<POSSample>>(
+          listeners);
+    }
+  }
+
+  public POSTaggerCrossValidator(String languageCode,
+      TrainingParameters trainParam, POSDictionary tagDictionary,
+      Dictionary ngramDictionary, EvaluationSampleListener<POSSample> listener) {
+    this(languageCode, trainParam, tagDictionary, ngramDictionary, Collections
+        .singletonList(listener));
+  }
   
   /**
    * Starts the evaluation.
@@ -81,25 +101,7 @@ public class POSTaggerCrossValidator {
    * 
    * @throws IOException
    */
-  public void evaluate(ObjectStream<POSSample> samples, int nFolds)
-      throws IOException, IOException {
-    evaluate(samples, nFolds, null);
-  }
-
-  /**
-   * Starts the evaluation.
-   * 
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
-   * @param listener
-   *          an optional listener to print missclassified items
-   * 
-   * @throws IOException
-   */
-  public void evaluate(ObjectStream<POSSample> samples, int nFolds,
-      List<EvaluationSampleListener<POSSample>> listeners) throws IOException, IOException {
+  public void evaluate(ObjectStream<POSSample> samples, int nFolds) throws IOException, IOException {
     
     CrossValidationPartitioner<POSSample> partitioner = new CrossValidationPartitioner<POSSample>(
         samples, nFolds);
