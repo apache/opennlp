@@ -28,7 +28,7 @@ import java.util.List;
 import opennlp.tools.cmdline.postag.POSEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Sequence;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
 import org.junit.Test;
 
@@ -39,7 +39,7 @@ public class POSEvaluatorTest {
   @Test
   public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationSampleListener<POSSample> listener = new POSEvaluationErrorListener(stream);
+    EvaluationMonitor<POSSample> listener = new POSEvaluationErrorListener(stream);
     
     POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(POSSampleTest.createGoldSample()), Collections.singletonList(listener));
     
@@ -53,7 +53,7 @@ public class POSEvaluatorTest {
   @Test
   public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationSampleListener<POSSample> listener = new POSEvaluationErrorListener(stream);
+    EvaluationMonitor<POSSample> listener = new POSEvaluationErrorListener(stream);
     
     POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(POSSampleTest.createGoldSample()), Collections.singletonList(listener));
     

@@ -26,7 +26,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -43,7 +43,7 @@ public class SDCrossValidator {
   
   private FMeasure fmeasure = new FMeasure();
 
-  private LinkedList<EvaluationSampleListener<SentenceSample>> listeners;
+  private LinkedList<EvaluationMonitor<SentenceSample>> listeners;
   
   public SDCrossValidator(String languageCode, int cutoff, int iterations) {
     this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations));
@@ -64,28 +64,28 @@ public class SDCrossValidator {
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params,
-      List<? extends EvaluationSampleListener<SentenceSample>> listeners) {
+      List<? extends EvaluationMonitor<SentenceSample>> listeners) {
     this(languageCode, params, null, listeners);
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params,
       Dictionary abbreviations,
-      List<? extends EvaluationSampleListener<SentenceSample>> listeners) {
+      List<? extends EvaluationMonitor<SentenceSample>> listeners) {
     this(languageCode, params, abbreviations);
     if (listeners != null) {
-      this.listeners = new LinkedList<EvaluationSampleListener<SentenceSample>>(
+      this.listeners = new LinkedList<EvaluationMonitor<SentenceSample>>(
           listeners);
     }
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params,
-      EvaluationSampleListener<SentenceSample> listener) {
+      EvaluationMonitor<SentenceSample> listener) {
     this(languageCode, params, null, listener);
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params,
       Dictionary abbreviations,
-      EvaluationSampleListener<SentenceSample> listener) {
+      EvaluationMonitor<SentenceSample> listener) {
     this(languageCode, params, abbreviations, Collections
         .singletonList(listener));
   }

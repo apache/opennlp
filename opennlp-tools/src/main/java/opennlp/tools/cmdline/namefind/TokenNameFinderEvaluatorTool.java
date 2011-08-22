@@ -36,7 +36,7 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderEvaluator;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
 public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
@@ -76,7 +76,7 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
     TokenNameFinderModel model = new TokenNameFinderModelLoader().load(params
         .getModel());
     
-    List<EvaluationSampleListener<NameSample>> listeners = new LinkedList<EvaluationSampleListener<NameSample>>();
+    List<EvaluationMonitor<NameSample>> listeners = new LinkedList<EvaluationMonitor<NameSample>>();
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
     }

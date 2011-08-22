@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -62,7 +62,7 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    * @param tokenizer the {@link Tokenizer} to evaluate.
    * @param listeners evaluation sample listeners
    */
-  public TokenizerEvaluator(Tokenizer tokenizer, List<? extends EvaluationSampleListener<TokenSample>> listeners) {
+  public TokenizerEvaluator(Tokenizer tokenizer, List<? extends EvaluationMonitor<TokenSample>> listeners) {
     super(listeners);
     this.tokenizer = tokenizer;
   }
@@ -76,7 +76,7 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    *          evaluation sample listener
    */
   public TokenizerEvaluator(Tokenizer tokenizer,
-      EvaluationSampleListener<TokenSample> listener) {
+      EvaluationMonitor<TokenSample> listener) {
     this(tokenizer, Collections.singletonList(listener));
  }
 

@@ -26,7 +26,7 @@ import java.util.Map;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -37,7 +37,7 @@ public class TokenNameFinderCrossValidator {
   private final String type;
   private final byte[] featureGeneratorBytes;
   private final Map<String, Object> resources;
-  private List<? extends EvaluationSampleListener<NameSample>> listeners;
+  private List<? extends EvaluationMonitor<NameSample>> listeners;
   
 
   private FMeasure fmeasure = new FMeasure();
@@ -148,9 +148,9 @@ public class TokenNameFinderCrossValidator {
   public TokenNameFinderCrossValidator(String languageCode, String type,
       TrainingParameters trainParams, byte[] featureGeneratorBytes,
       Map<String, Object> resources,
-      List<? extends EvaluationSampleListener<NameSample>> listeners) {
+      List<? extends EvaluationMonitor<NameSample>> listeners) {
     this(languageCode, type, trainParams, featureGeneratorBytes, resources);
-    this.listeners = new LinkedList<EvaluationSampleListener<NameSample>>(
+    this.listeners = new LinkedList<EvaluationMonitor<NameSample>>(
         listeners);
   }
   
@@ -173,7 +173,7 @@ public class TokenNameFinderCrossValidator {
   public TokenNameFinderCrossValidator(String languageCode, String type,
       TrainingParameters trainParams, byte[] featureGeneratorBytes,
       Map<String, Object> resources,
-      EvaluationSampleListener<NameSample> listener) {
+      EvaluationMonitor<NameSample> listener) {
     this(languageCode, type, trainParams, featureGeneratorBytes, resources,
         Collections.singletonList(listener));
   }
