@@ -28,6 +28,7 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.EvaluationSampleListener;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.model.ModelUtil;
 
 public class TokenizerCrossValidator {
   
@@ -43,11 +44,11 @@ public class TokenizerCrossValidator {
   
   
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, int cutoff, int iterations) {
-    this(language, alphaNumericOptimization, createTrainingParameters(iterations, cutoff));
+    this(language, alphaNumericOptimization, ModelUtil.createTrainingParameters(iterations, cutoff));
   }
   
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization) {
-    this(language, alphaNumericOptimization, createTrainingParameters(100, 5));
+    this(language, alphaNumericOptimization, ModelUtil.createTrainingParameters(100, 5));
   }  
   
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, TrainingParameters params) {
@@ -130,15 +131,5 @@ public class TokenizerCrossValidator {
   
   public FMeasure getFMeasure() {
     return fmeasure;
-  }
-  
-  //TODO: this could go to a common util method, maybe inside TrainingParameters class
-  static TrainingParameters createTrainingParameters(int iterations, int cutoff) {
-    TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM,
-        Integer.toString(iterations));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
-    return mlParams;
   }
 }
