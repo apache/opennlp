@@ -32,6 +32,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.EvaluationSampleListener;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -63,15 +64,15 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
     CVToolParams params = ArgumentParser.parse(args,
         CVToolParams.class);
     
+    opennlp.tools.util.TrainingParameters mlParams = CmdLineUtil
+        .loadTrainingParameters(params.getParams(), false);
+    
     File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
     ObjectStream<ChunkSample> sampleStream =
         ChunkerTrainerTool.openSampleData("Training Data",
         trainingDataInFile, params.getEncoding());
-    
-    ChunkerCrossValidator validator = new ChunkerCrossValidator(
-        params.getLang(), params.getCutoff(), params.getIterations());
     
     List<EvaluationSampleListener<ChunkSample>> listeners = new LinkedList<EvaluationSampleListener<ChunkSample>>();
     ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
@@ -82,9 +83,21 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
       detailedFMeasureListener = new ChunkerDetailedFMeasureListener();
       listeners.add(detailedFMeasureListener);
     }
+    
+    if (mlParams == null) {
+      mlParams = new TrainingParameters();
+      mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+      mlParams.put(TrainingParameters.ITERATIONS_PARAM,
+          Integer.toString(params.getIterations()));
+      mlParams.put(TrainingParameters.CUTOFF_PARAM,
+          Integer.toString(params.getCutoff()));
+    }
+
+    ChunkerCrossValidator validator = new ChunkerCrossValidator(
+        params.getLang(), mlParams, listeners);
       
     try {
-      validator.evaluate(sampleStream, params.getFolds(), listeners);
+      validator.evaluate(sampleStream, params.getFolds());
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

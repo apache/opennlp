@@ -20,7 +20,6 @@ package opennlp.tools.cmdline.tokenizer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
@@ -32,8 +31,9 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerCrossValidator;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.FMeasure;
 
 public final class TokenizerCrossValidatorTool implements CmdLineTool {
   
@@ -81,18 +81,27 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
       mlParams = TokenizerTrainerTool.createTrainingParameters(
           params.getIterations(), params.getCutoff());
     
-    EvaluationSampleListener<TokenSample> missclassifiedListener = null;
+    EvaluationSampleListener<TokenSample> listener = null;
     if (params.getMisclassified()) {
-      missclassifiedListener = new TokenEvaluationErrorListener();
+      listener = new TokenEvaluationErrorListener();
+    }
+    
+    if (mlParams == null) {
+      mlParams = new TrainingParameters();
+      mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+      mlParams.put(TrainingParameters.ITERATIONS_PARAM,
+          Integer.toString(params.getIterations()));
+      mlParams.put(TrainingParameters.CUTOFF_PARAM,
+          Integer.toString(params.getCutoff()));
     }
 
     try {
       Dictionary dict = TokenizerTrainerTool.loadDict(params.getAbbDict(), params.getIsAbbDictCS());
 
       validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
-          params.getLang(), dict, params.getAlphaNumOpt(), mlParams);
+          params.getLang(), dict, params.getAlphaNumOpt(), mlParams, listener);
 
-      validator.evaluate(sampleStream, params.getFolds(), Collections.singletonList(missclassifiedListener));
+      validator.evaluate(sampleStream, params.getFolds());
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

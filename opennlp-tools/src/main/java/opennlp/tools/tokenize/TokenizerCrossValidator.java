@@ -18,6 +18,8 @@
 package opennlp.tools.tokenize;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.dictionary.Dictionary;
@@ -37,6 +39,7 @@ public class TokenizerCrossValidator {
   private final Dictionary abbreviations;
   
   private FMeasure fmeasure = new FMeasure();
+  private LinkedList<EvaluationSampleListener<TokenSample>> listeners;
   
   
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, int cutoff, int iterations) {
@@ -61,20 +64,35 @@ public class TokenizerCrossValidator {
     
   }
   
-  
-  /**
-   * Starts the evaluation.
-   * 
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
-   * 
-   * @throws IOException
-   */
-  public void evaluate(ObjectStream<TokenSample> samples, int nFolds)
-      throws IOException {
-    evaluate(samples, nFolds, null);
+  public TokenizerCrossValidator(String language,
+      boolean alphaNumericOptimization, TrainingParameters params,
+      List<? extends EvaluationSampleListener<TokenSample>> listeners) {
+    this(language, null, alphaNumericOptimization, params, listeners);
+  }
+
+  public TokenizerCrossValidator(String language, Dictionary abbreviations,
+      boolean alphaNumericOptimization, TrainingParameters params,
+      List<? extends EvaluationSampleListener<TokenSample>> listeners) {
+
+    this(language, abbreviations, alphaNumericOptimization, params);
+    if (listeners != null) {
+      this.listeners = new LinkedList<EvaluationSampleListener<TokenSample>>(
+          listeners);
+    }
+  }
+
+  public TokenizerCrossValidator(String language,
+      boolean alphaNumericOptimization, TrainingParameters params,
+      EvaluationSampleListener<TokenSample> listener) {
+    this(language, null, alphaNumericOptimization, params, Collections
+        .singletonList(listener));
+  }
+
+  public TokenizerCrossValidator(String language, Dictionary abbreviations,
+      boolean alphaNumericOptimization, TrainingParameters params,
+      EvaluationSampleListener<TokenSample> listener) {
+    this(language, abbreviations, alphaNumericOptimization, params, Collections
+        .singletonList(listener));
   }
 
   /**
@@ -84,13 +102,10 @@ public class TokenizerCrossValidator {
    *          the data to train and test
    * @param nFolds
    *          number of folds
-   * @param listener
-   *          an optional listener to print missclassified items
    * 
    * @throws IOException
    */
-  public void evaluate(ObjectStream<TokenSample> samples, int nFolds,
-      List<EvaluationSampleListener<TokenSample>> listeners) throws IOException {
+  public void evaluate(ObjectStream<TokenSample> samples, int nFolds) throws IOException {
     
     CrossValidationPartitioner<TokenSample> partitioner = 
       new CrossValidationPartitioner<TokenSample>(samples, nFolds);

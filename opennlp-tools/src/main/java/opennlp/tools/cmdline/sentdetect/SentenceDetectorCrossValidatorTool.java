@@ -20,7 +20,6 @@ package opennlp.tools.cmdline.sentdetect;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
@@ -32,8 +31,9 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.SDCrossValidator;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.FMeasure;
 
 public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
   
@@ -79,19 +79,23 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
     if (params.getMisclassified()) {
       errorListener = new SentenceEvaluationErrorListener();
     }
+    
+    if (mlParams == null) {
+      mlParams = new TrainingParameters();
+      mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+      mlParams.put(TrainingParameters.ITERATIONS_PARAM,
+          Integer.toString(params.getIterations()));
+      mlParams.put(TrainingParameters.CUTOFF_PARAM,
+          Integer.toString(params.getCutoff()));
+    }
 
     try {
       Dictionary abbreviations = SentenceDetectorTrainerTool.loadDict(
           params.getAbbDict(), params.getIsAbbDictCS());
-      if (mlParams == null) {
-        validator = new SDCrossValidator(params.getLang(), params.getCutoff(),
-            params.getIterations(), abbreviations);
-      } else {
-        validator = new SDCrossValidator(params.getLang(), mlParams,
-            abbreviations);
-      }
+      validator = new SDCrossValidator(params.getLang(), mlParams,
+          abbreviations, errorListener);
       
-      validator.evaluate(sampleStream, params.getFolds(), Collections.singletonList(errorListener));
+      validator.evaluate(sampleStream, params.getFolds());
     }
     catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
