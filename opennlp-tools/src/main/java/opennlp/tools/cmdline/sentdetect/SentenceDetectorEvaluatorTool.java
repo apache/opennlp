@@ -33,7 +33,7 @@ import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
 public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
 
@@ -65,7 +65,7 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
     File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
-    EvaluationSampleListener<SentenceSample> errorListener = null;
+    EvaluationMonitor<SentenceSample> errorListener = null;
     if (params.getMisclassified()) {
       errorListener = new SentenceEvaluationErrorListener();
     }

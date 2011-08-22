@@ -26,7 +26,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -40,7 +40,7 @@ public class TokenizerCrossValidator {
   private final Dictionary abbreviations;
   
   private FMeasure fmeasure = new FMeasure();
-  private LinkedList<EvaluationSampleListener<TokenSample>> listeners;
+  private LinkedList<EvaluationMonitor<TokenSample>> listeners;
   
   
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, int cutoff, int iterations) {
@@ -67,31 +67,31 @@ public class TokenizerCrossValidator {
   
   public TokenizerCrossValidator(String language,
       boolean alphaNumericOptimization, TrainingParameters params,
-      List<? extends EvaluationSampleListener<TokenSample>> listeners) {
+      List<? extends EvaluationMonitor<TokenSample>> listeners) {
     this(language, null, alphaNumericOptimization, params, listeners);
   }
 
   public TokenizerCrossValidator(String language, Dictionary abbreviations,
       boolean alphaNumericOptimization, TrainingParameters params,
-      List<? extends EvaluationSampleListener<TokenSample>> listeners) {
+      List<? extends EvaluationMonitor<TokenSample>> listeners) {
 
     this(language, abbreviations, alphaNumericOptimization, params);
     if (listeners != null) {
-      this.listeners = new LinkedList<EvaluationSampleListener<TokenSample>>(
+      this.listeners = new LinkedList<EvaluationMonitor<TokenSample>>(
           listeners);
     }
   }
 
   public TokenizerCrossValidator(String language,
       boolean alphaNumericOptimization, TrainingParameters params,
-      EvaluationSampleListener<TokenSample> listener) {
+      EvaluationMonitor<TokenSample> listener) {
     this(language, null, alphaNumericOptimization, params, Collections
         .singletonList(listener));
   }
 
   public TokenizerCrossValidator(String language, Dictionary abbreviations,
       boolean alphaNumericOptimization, TrainingParameters params,
-      EvaluationSampleListener<TokenSample> listener) {
+      EvaluationMonitor<TokenSample> listener) {
     this(language, abbreviations, alphaNumericOptimization, params, Collections
         .singletonList(listener));
   }

@@ -25,7 +25,7 @@ import java.util.Collections;
 
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ public class TokenNameFinderEvaluatorTest {
   @Test
   public void testPositive() {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationSampleListener<NameSample> listener = new NameEvaluationErrorListener(stream);
+    EvaluationMonitor<NameSample> listener = new NameEvaluationErrorListener(stream);
     
     Span[] pred = createSimpleNameSampleA().getNames();
     TokenNameFinderEvaluator eval = new TokenNameFinderEvaluator(new DummyNameFinder(pred), Collections.singletonList(listener));
@@ -53,7 +53,7 @@ public class TokenNameFinderEvaluatorTest {
   @Test
   public void testNegative() {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationSampleListener<NameSample> listener = new NameEvaluationErrorListener(stream);
+    EvaluationMonitor<NameSample> listener = new NameEvaluationErrorListener(stream);
     
     Span[] pred = createSimpleNameSampleB().getNames();
     TokenNameFinderEvaluator eval = new TokenNameFinderEvaluator(new DummyNameFinder(pred), Collections.singletonList(listener));

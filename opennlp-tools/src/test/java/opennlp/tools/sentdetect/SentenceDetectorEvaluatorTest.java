@@ -27,7 +27,7 @@ import java.util.Collections;
 import opennlp.tools.cmdline.sentdetect.SentenceEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
 import org.junit.Test;
 
@@ -37,7 +37,7 @@ public class SentenceDetectorEvaluatorTest {
   @Test
   public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationSampleListener<SentenceSample> listener = new SentenceEvaluationErrorListener(stream);
+    EvaluationMonitor<SentenceSample> listener = new SentenceEvaluationErrorListener(stream);
     
     SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(SentenceSampleTest.createGoldSample()), Collections.singletonList(listener));
     
@@ -51,7 +51,7 @@ public class SentenceDetectorEvaluatorTest {
   @Test
   public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationSampleListener<SentenceSample> listener = new SentenceEvaluationErrorListener(stream);
+    EvaluationMonitor<SentenceSample> listener = new SentenceEvaluationErrorListener(stream);
     
     SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(SentenceSampleTest.createGoldSample()), Collections.singletonList(listener));
     

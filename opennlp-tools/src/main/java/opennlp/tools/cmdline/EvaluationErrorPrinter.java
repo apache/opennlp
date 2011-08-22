@@ -24,9 +24,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
-public abstract class EvaluationErrorPrinter<T> implements EvaluationSampleListener<T> {
+public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> {
 
   private PrintStream printStream;
 

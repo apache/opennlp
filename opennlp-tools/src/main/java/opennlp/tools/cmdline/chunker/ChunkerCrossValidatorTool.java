@@ -33,7 +33,7 @@ import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
 
 public final class ChunkerCrossValidatorTool implements CmdLineTool {
@@ -74,7 +74,7 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
         ChunkerTrainerTool.openSampleData("Training Data",
         trainingDataInFile, params.getEncoding());
     
-    List<EvaluationSampleListener<ChunkSample>> listeners = new LinkedList<EvaluationSampleListener<ChunkSample>>();
+    List<EvaluationMonitor<ChunkSample>> listeners = new LinkedList<EvaluationMonitor<ChunkSample>>();
     ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
     if (params.getMisclassified()) {
       listeners.add(new ChunkEvaluationErrorListener());
