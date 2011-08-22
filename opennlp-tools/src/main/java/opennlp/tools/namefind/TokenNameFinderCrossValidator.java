@@ -19,6 +19,7 @@ package opennlp.tools.namefind;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +38,7 @@ public class TokenNameFinderCrossValidator {
   private final String type;
   private final byte[] featureGeneratorBytes;
   private final Map<String, Object> resources;
+  private List<? extends EvaluationSampleListener<NameSample>> listeners;
   
 
   private FMeasure fmeasure = new FMeasure();
@@ -135,31 +137,65 @@ public class TokenNameFinderCrossValidator {
   }
   
   /**
+   * Name finder cross validator
+   * 
+   * @param languageCode
+   *          the language of the training data
+   * @param type
+   *          null or an override type for all types in the training data
+   * @param trainParams
+   *          machine learning train parameters
+   * @param featureGeneratorBytes
+   *          descriptor to configure the feature generation or null
+   * @param listeners
+   *          a list of listeners
+   * @param resources
+   *          the resources for the name finder or null if none
+   */
+  public TokenNameFinderCrossValidator(String languageCode, String type,
+      TrainingParameters trainParams, byte[] featureGeneratorBytes,
+      Map<String, Object> resources,
+      List<? extends EvaluationSampleListener<NameSample>> listeners) {
+    this(languageCode, type, trainParams, featureGeneratorBytes, resources);
+    this.listeners = new LinkedList<EvaluationSampleListener<NameSample>>(
+        listeners);
+  }
+  
+  /**
+   * Name finder cross validator
+   * 
+   * @param languageCode
+   *          the language of the training data
+   * @param type
+   *          null or an override type for all types in the training data
+   * @param trainParams
+   *          machine learning train parameters
+   * @param featureGeneratorBytes
+   *          descriptor to configure the feature generation or null
+   * @param listener
+   *          a listener
+   * @param resources
+   *          the resources for the name finder or null if none
+   */
+  public TokenNameFinderCrossValidator(String languageCode, String type,
+      TrainingParameters trainParams, byte[] featureGeneratorBytes,
+      Map<String, Object> resources,
+      EvaluationSampleListener<NameSample> listener) {
+    this(languageCode, type, trainParams, featureGeneratorBytes, resources,
+        Collections.singletonList(listener));
+  }
+
+  /**
    * Starts the evaluation.
    * 
    * @param samples
    *          the data to train and test
    * @param nFolds
    *          number of folds
-   * 
    * @throws IOException
    */
   public void evaluate(ObjectStream<NameSample> samples, int nFolds)
       throws IOException {
-    evaluate(samples, nFolds, null);
-  }
-
-  /**
-   * Starts the evaluation.
-   * 
-   * @param samples the data to train and test
-   * @param nFolds number of folds
-   * @param listener an optional listener to print missclassified items
-   * 
-   * @throws IOException
-   */
-  public void evaluate(ObjectStream<NameSample> samples, int nFolds,
-      List<EvaluationSampleListener<NameSample>> listeners) throws IOException {
     CrossValidationPartitioner<NameSample> partitioner = new CrossValidationPartitioner<NameSample>(
         samples, nFolds);
 

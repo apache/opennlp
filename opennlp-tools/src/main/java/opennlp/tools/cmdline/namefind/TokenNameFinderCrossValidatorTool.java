@@ -34,6 +34,7 @@ import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.EvaluationSampleListener;
 
 public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
@@ -91,17 +92,20 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
       detailedFListener = new TokenNameFinderDetailedFMeasureListener();
       listeners.add(detailedFListener);
     }
+    
+    if (mlParams == null) {
+      mlParams = new TrainingParameters();
+      mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+      mlParams.put(TrainingParameters.ITERATIONS_PARAM,
+          Integer.toString(params.getIterations()));
+      mlParams.put(TrainingParameters.CUTOFF_PARAM,
+          Integer.toString(params.getCutoff()));
+    }
 
     try {
-      if (mlParams == null) {
-        validator = new TokenNameFinderCrossValidator(params.getLang(), params.getType(),
-             featureGeneratorBytes, resources, params.getIterations(),
-            params.getCutoff());
-      } else {
-        validator = new TokenNameFinderCrossValidator(params.getLang(), params.getType(), mlParams,
-            featureGeneratorBytes, resources);
-      }
-      validator.evaluate(sampleStream, params.getFolds(), listeners);
+      validator = new TokenNameFinderCrossValidator(params.getLang(),
+          params.getType(), mlParams, featureGeneratorBytes, resources, listeners);
+      validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);
       throw new TerminateToolException(-1);
