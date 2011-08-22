@@ -36,6 +36,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * A sentence detector for splitting up raw text into sentences.
@@ -286,13 +287,7 @@ public class SentenceDetectorME implements SentenceDetector {
   
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) throws IOException {
-
-    TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
-    
-    return train(languageCode, samples, useTokenEnd, abbreviations, mlParams);
+    return train(languageCode, samples, useTokenEnd, abbreviations, ModelUtil.createTrainingParameters(iterations, cutoff));
  }
   
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,

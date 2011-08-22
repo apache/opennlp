@@ -31,6 +31,7 @@ import java.util.Set;
 import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelWriter;
 import opennlp.model.MaxentModel;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Utility class for handling of {@link MaxentModel}s.
@@ -126,5 +127,22 @@ public final class ModelUtil {
       int cutoff, int iterations) {
     manifestInfoEntries.put(BaseModel.TRAINING_CUTOFF_PROPERTY, Integer.toString(cutoff));
     manifestInfoEntries.put(BaseModel.TRAINING_ITERATIONS_PROPERTY, Integer.toString(iterations));
+  }
+  
+  /**
+   * Note: Do not use this legacy support method, internal use only!
+   * 
+   * @param iterations
+   * @param cutoff
+   * 
+   * @return
+   */
+  public static TrainingParameters createTrainingParameters(int iterations, int cutoff) {
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
+    
+    return mlParams;
   }
 }

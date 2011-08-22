@@ -36,6 +36,7 @@ import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * A Tokenizer for converting raw text into separated tokens.  It uses
@@ -285,12 +286,7 @@ public class TokenizerME extends AbstractTokenizer {
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization, int cutoff, int iterations) throws IOException {
 
-    TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
-    
-    return train(languageCode, samples, useAlphaNumericOptimization, mlParams);
+    return train(languageCode, samples, useAlphaNumericOptimization, ModelUtil.createTrainingParameters(iterations, cutoff));
   }
 
 
