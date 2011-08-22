@@ -28,12 +28,11 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.EvaluationSampleListener;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.model.ModelUtil;
 
 public class TokenNameFinderCrossValidator {
 
   private final String languageCode;
-  private final int cutoff;
-  private final int iterations;
   private final TrainingParameters params;
   private final String type;
   private final byte[] featureGeneratorBytes;
@@ -71,11 +70,9 @@ public class TokenNameFinderCrossValidator {
   public TokenNameFinderCrossValidator(String languageCode, String type,
       int cutoff, int iterations) {
     this.languageCode = languageCode;
-    this.cutoff = cutoff;
-    this.iterations = iterations;
     this.type = type;
     
-    this.params = null;
+    this.params = ModelUtil.createTrainingParameters(iterations, cutoff);
     this.featureGeneratorBytes = null;
     this.resources = Collections.<String, Object>emptyMap(); 
   }
@@ -100,13 +97,11 @@ public class TokenNameFinderCrossValidator {
       byte[] featureGeneratorBytes,
       Map<String, Object> resources, int iterations, int cutoff) {
     this.languageCode = languageCode;
-    this.cutoff = cutoff;
-    this.iterations = iterations;
     this.type = type;
     this.featureGeneratorBytes = featureGeneratorBytes;
     this.resources = resources;
     
-    this.params = null;
+    this.params = ModelUtil.createTrainingParameters(iterations, cutoff);;
   }
 
   /**
@@ -127,8 +122,6 @@ public class TokenNameFinderCrossValidator {
       TrainingParameters trainParams, byte[] featureGeneratorBytes, Map<String, Object> resources) {
 
     this.languageCode = languageCode;
-    this.cutoff = -1;
-    this.iterations = -1;
     this.type = type;
     this.featureGeneratorBytes = featureGeneratorBytes;
     this.resources = resources;
@@ -204,14 +197,8 @@ public class TokenNameFinderCrossValidator {
       CrossValidationPartitioner.TrainingSampleStream<NameSample> trainingSampleStream = partitioner
           .next();
 
-      TokenNameFinderModel model;
-      if (params == null) {
-        model = NameFinderME.train(languageCode, type, trainingSampleStream,
-            featureGeneratorBytes, resources, iterations, cutoff);
-      } else {
-        model = opennlp.tools.namefind.NameFinderME.train(languageCode, type,
+      TokenNameFinderModel model  = opennlp.tools.namefind.NameFinderME.train(languageCode, type,
             trainingSampleStream, params, featureGeneratorBytes, resources);
-      }
 
       // do testing
       TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(

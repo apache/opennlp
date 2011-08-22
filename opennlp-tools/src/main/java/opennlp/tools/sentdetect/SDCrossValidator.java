@@ -28,6 +28,7 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.EvaluationSampleListener;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * 
@@ -45,7 +46,7 @@ public class SDCrossValidator {
   private LinkedList<EvaluationSampleListener<SentenceSample>> listeners;
   
   public SDCrossValidator(String languageCode, int cutoff, int iterations) {
-    this(languageCode, createParams(cutoff, iterations));
+    this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations));
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params) {
@@ -53,7 +54,7 @@ public class SDCrossValidator {
   }
   
   public SDCrossValidator(String languageCode, int cutoff, int iterations, Dictionary abbreviations) {
-    this(languageCode, createParams(cutoff, iterations), abbreviations);
+    this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations), abbreviations);
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params, Dictionary abbreviations) {
@@ -87,15 +88,6 @@ public class SDCrossValidator {
       EvaluationSampleListener<SentenceSample> listener) {
     this(languageCode, params, abbreviations, Collections
         .singletonList(listener));
-  }
-  
-  private static TrainingParameters createParams(int cutoff, int iterations) {
-    TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM,
-        Integer.toString(iterations));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
-    return mlParams;
   }
   
   public SDCrossValidator(String languageCode) {
