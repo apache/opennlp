@@ -33,6 +33,7 @@ import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * The class represents a maximum-entropy-based chunker.  Such a chunker can be used to
@@ -212,13 +213,7 @@ public class ChunkerME implements Chunker {
   public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, 
       int cutoff, int iterations, ChunkerContextGenerator contextGenerator)
       throws IOException {
-    
-    TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
-    
-    return train(lang, in, contextGenerator, mlParams);
+    return train(lang, in, contextGenerator, ModelUtil.createTrainingParameters(iterations, cutoff));
   }
   
   /**
