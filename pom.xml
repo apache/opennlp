@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
-		<version>9</version>
+		<version>10</version>
 		<relativePath />
 	</parent>
 
@@ -69,8 +69,6 @@
 	<build>
 		<pluginManagement>
 		  <plugins>
-	        <!-- set release-plugin version to > than 2.0,
-	             needed for "flat" hierarchy support -->
 	        <plugin>
 	          <groupId>org.apache.maven.plugins</groupId>
 	          <artifactId>maven-release-plugin</artifactId>
@@ -124,15 +122,7 @@
 							<goal>jar</goal>
 						</goals>
 						<phase>package</phase>
-						<!-- TODO: Looks like this config can be removed
-						           when we update to apache-10 parent pom -->
 						<configuration>
-							<javaApiLinks>
-								<property>
-									<name>api_1.5</name>
-									<value>http://download.oracle.com/javase/1.5.0/docs/api/</value>
-								</property>
-							</javaApiLinks>
 							<show>public</show>
 							<quiet>true</quiet>
 							<use>false</use> <!-- Speeds up the build of the javadocs -->
