@@ -55,6 +55,7 @@ import opennlp.tools.util.featuregen.SentenceFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
+import opennlp.tools.util.model.ModelUtil;
 
 /**
  * Class for creating a maximum-entropy-based name finder.
@@ -422,13 +423,8 @@ public class NameFinderME implements TokenNameFinder {
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
        AdaptiveFeatureGenerator generator, final Map<String, Object> resources, 
        int iterations, int cutoff) throws IOException {
-     
-     TrainingParameters mlParams = new TrainingParameters();
-     mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
-     
-     return train(languageCode, type, samples, mlParams, generator, resources);
+     return train(languageCode, type, samples, ModelUtil.createTrainingParameters(iterations, cutoff),
+         generator, resources);
    }
 
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
