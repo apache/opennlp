@@ -28,12 +28,11 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.EvaluationSampleListener;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.model.ModelUtil;
 
 public class ChunkerCrossValidator {
 
 	private final String languageCode;
-	private final int cutoff;
-	private final int iterations;
 	private final TrainingParameters params;
 	
 	private FMeasure fmeasure = new FMeasure();
@@ -42,10 +41,8 @@ public class ChunkerCrossValidator {
 	public ChunkerCrossValidator(String languageCode, int cutoff, int iterations) {
 	    
 		this.languageCode = languageCode;
-		this.cutoff = cutoff;
-		this.iterations = iterations;
 		
-		params = null;
+		params = ModelUtil.createTrainingParameters(iterations, cutoff);;
 		listeners = null;
 	}
 	
@@ -53,8 +50,6 @@ public class ChunkerCrossValidator {
       this.languageCode = languageCode;
       this.params = params;
       
-      cutoff = -1;
-      iterations = -1;
       listeners = null;
     }
 
@@ -92,16 +87,8 @@ public class ChunkerCrossValidator {
 			CrossValidationPartitioner.TrainingSampleStream<ChunkSample> trainingSampleStream = partitioner
 					.next();
 
-			ChunkerModel model;
-			
-			if (params == null) {
-              model = ChunkerME.train(languageCode, trainingSampleStream,
-    	      cutoff, iterations);
-			}
-			else {
-			  model = ChunkerME.train(languageCode, trainingSampleStream,
+			ChunkerModel model  = ChunkerME.train(languageCode, trainingSampleStream,
 			      new DefaultChunkerContextGenerator(), params);
-			}
 			
 			// do testing
 			ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model), listeners);
