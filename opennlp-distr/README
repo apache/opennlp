@@ -20,7 +20,8 @@ This release contains a couple of new features, improvements and bug fixes.
 The maxent trainer can now run in multiple threads to utilize
 multi-core CPUs, configurable feature generation was added to the name finder,
 the perceptron trainer was refactored and improved, machine learners
-can now be configured with much more options via a parameter file.
+can now be configured with much more options via a parameter file,
+evaluators can print out detailed evaluation information.
 
 Additionally the release contains the following noteworthy changes:
 
@@ -31,6 +32,7 @@ Additionally the release contains the following noteworthy changes:
 - Now uses fast token class feature generation code by default
 - Added support for BioNLP/NLPBA 2004 shared task data
 - Removal of old and deprecated code
+- Dictionary case sensitivity support is now done properly
 
 A detailed list of the issues related to this release can be found in the release
 notes.
