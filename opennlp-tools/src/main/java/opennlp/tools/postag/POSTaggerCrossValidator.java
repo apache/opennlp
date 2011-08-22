@@ -26,7 +26,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.Mean;
 import opennlp.tools.util.model.ModelType;
 import opennlp.tools.util.model.ModelUtil;
@@ -41,7 +41,7 @@ public class POSTaggerCrossValidator {
   private Dictionary ngramDictionary;
 
   private Mean wordAccuracy = new Mean();
-  private List<? extends EvaluationSampleListener<POSSample>> listeners;
+  private List<? extends EvaluationMonitor<POSSample>> listeners;
   
   
   public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
@@ -68,17 +68,17 @@ public class POSTaggerCrossValidator {
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSDictionary tagDictionary,
       Dictionary ngramDictionary,
-      List<? extends EvaluationSampleListener<POSSample>> listeners) {
+      List<? extends EvaluationMonitor<POSSample>> listeners) {
     this(languageCode, trainParam, tagDictionary, ngramDictionary);
     if (listeners != null) {
-      this.listeners = new LinkedList<EvaluationSampleListener<POSSample>>(
+      this.listeners = new LinkedList<EvaluationMonitor<POSSample>>(
           listeners);
     }
   }
 
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSDictionary tagDictionary,
-      Dictionary ngramDictionary, EvaluationSampleListener<POSSample> listener) {
+      Dictionary ngramDictionary, EvaluationMonitor<POSSample> listener) {
     this(languageCode, trainParam, tagDictionary, ngramDictionary, Collections
         .singletonList(listener));
   }

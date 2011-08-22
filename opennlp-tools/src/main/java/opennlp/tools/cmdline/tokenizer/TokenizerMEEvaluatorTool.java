@@ -32,7 +32,7 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerEvaluator;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
 public final class TokenizerMEEvaluatorTool implements CmdLineTool {
 
@@ -62,7 +62,7 @@ public final class TokenizerMEEvaluatorTool implements CmdLineTool {
 
     TokenizerModel model = new TokenizerModelLoader().load(params.getModel());
 
-    EvaluationSampleListener<TokenSample> missclassifiedListener = null;
+    EvaluationMonitor<TokenSample> missclassifiedListener = null;
     if (params.getMisclassified()) {
       missclassifiedListener = new TokenEvaluationErrorListener();
     }

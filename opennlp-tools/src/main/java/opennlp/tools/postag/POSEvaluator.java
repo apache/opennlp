@@ -21,7 +21,7 @@ package opennlp.tools.postag;
 import java.util.Collections;
 import java.util.List;
 
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.Mean;
 
@@ -51,7 +51,7 @@ public class POSEvaluator extends Evaluator<POSSample> {
    * @param tagger
    * @param listeners an array of evaluation listeners
    */
-  public POSEvaluator(POSTagger tagger, List<? extends EvaluationSampleListener<POSSample>> listeners) {
+  public POSEvaluator(POSTagger tagger, List<? extends EvaluationMonitor<POSSample>> listeners) {
     super(listeners);
     this.tagger = tagger;
   }
@@ -64,7 +64,7 @@ public class POSEvaluator extends Evaluator<POSSample> {
    *          a listener
    */
   public POSEvaluator(POSTagger tagger,
-      EvaluationSampleListener<POSSample> listener) {
+      EvaluationMonitor<POSSample> listener) {
     this(tagger, Collections.singletonList(listener));
   }
   

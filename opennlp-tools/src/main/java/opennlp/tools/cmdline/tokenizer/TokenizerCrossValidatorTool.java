@@ -32,7 +32,7 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerCrossValidator;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
 
 public final class TokenizerCrossValidatorTool implements CmdLineTool {
@@ -81,7 +81,7 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
       mlParams = TokenizerTrainerTool.createTrainingParameters(
           params.getIterations(), params.getCutoff());
     
-    EvaluationSampleListener<TokenSample> listener = null;
+    EvaluationMonitor<TokenSample> listener = null;
     if (params.getMisclassified()) {
       listener = new TokenEvaluationErrorListener();
     }

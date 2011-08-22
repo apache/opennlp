@@ -28,14 +28,14 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
  * This listener will gather detailed information about the sample under evaluation and will
  * allow detailed FMeasure for each outcome.
  */
 public abstract class DetailedFMeasureListener<T> implements
-    EvaluationSampleListener<T> {
+    EvaluationMonitor<T> {
 
   private int samples = 0;
   private Stats generalStats = new Stats();

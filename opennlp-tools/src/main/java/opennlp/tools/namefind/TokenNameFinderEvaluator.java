@@ -30,7 +30,7 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -70,7 +70,7 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    * @param nameFinder the {@link TokenNameFinder} to evaluate.
    * @param listeners evaluation sample listeners 
    */
-  public TokenNameFinderEvaluator(TokenNameFinder nameFinder, List<? extends EvaluationSampleListener<NameSample>> listeners) {
+  public TokenNameFinderEvaluator(TokenNameFinder nameFinder, List<? extends EvaluationMonitor<NameSample>> listeners) {
     super(listeners);
     this.nameFinder = nameFinder;
   }
@@ -84,7 +84,7 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    *          evaluation sample listener
    */
   public TokenNameFinderEvaluator(TokenNameFinder nameFinder,
-      EvaluationSampleListener<NameSample> listener) {
+      EvaluationMonitor<NameSample> listener) {
     this(nameFinder, Collections.singletonList(listener));
   }
 

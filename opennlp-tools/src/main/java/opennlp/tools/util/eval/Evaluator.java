@@ -32,15 +32,15 @@ import opennlp.tools.util.ObjectStream;
  */
 public abstract class Evaluator<T> {
 
-  private List<EvaluationSampleListener<T>> listeners;
+  private List<EvaluationMonitor<T>> listeners;
   
   public Evaluator() {
     this.listeners = null;
   }
   
-  public Evaluator(List<? extends EvaluationSampleListener<T>> listeners) {
+  public Evaluator(List<? extends EvaluationMonitor<T>> listeners) {
     if(listeners != null) {
-      this.listeners = new LinkedList<EvaluationSampleListener<T>>(listeners);
+      this.listeners = new LinkedList<EvaluationMonitor<T>>(listeners);
     }
   }
   
@@ -76,11 +76,11 @@ public abstract class Evaluator<T> {
     T predicted = processSample(sample);
     if(listeners != null) {
       if(sample.equals(predicted)) {
-        for (EvaluationSampleListener<T> listener : listeners) {
+        for (EvaluationMonitor<T> listener : listeners) {
           listener.correctlyClassified(predicted, predicted);
         }
       } else {
-        for (EvaluationSampleListener<T> listener : listeners) {
+        for (EvaluationMonitor<T> listener : listeners) {
           listener.missclassified(sample, predicted);
         } 
       }

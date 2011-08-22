@@ -17,7 +17,7 @@
 
 package opennlp.tools.util.eval;
 
-public interface EvaluationSampleListener<T> {
+public interface EvaluationMonitor<T> {
   
   void correctlyClassified(T reference, T prediction);
   

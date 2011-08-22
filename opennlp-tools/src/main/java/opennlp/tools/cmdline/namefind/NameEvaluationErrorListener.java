@@ -21,10 +21,10 @@ import java.io.OutputStream;
 
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
- * A default implementation of {@link EvaluationSampleListener} that prints
+ * A default implementation of {@link EvaluationMonitor} that prints
  * to an output stream.
  * 
  */

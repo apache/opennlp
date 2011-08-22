@@ -35,7 +35,7 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
 public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
   
@@ -83,7 +83,7 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
 
     TokenNameFinderCrossValidator validator;
     
-    List<EvaluationSampleListener<NameSample>> listeners = new LinkedList<EvaluationSampleListener<NameSample>>();
+    List<EvaluationMonitor<NameSample>> listeners = new LinkedList<EvaluationMonitor<NameSample>>();
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
     }

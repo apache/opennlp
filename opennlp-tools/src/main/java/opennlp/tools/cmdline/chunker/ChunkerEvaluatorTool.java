@@ -36,7 +36,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
 public final class ChunkerEvaluatorTool implements CmdLineTool {
   
@@ -73,7 +73,7 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
 
     ChunkerModel model = new ChunkerModelLoader().load(params.getModel());
     
-    List<EvaluationSampleListener<ChunkSample>> listeners = new LinkedList<EvaluationSampleListener<ChunkSample>>();
+    List<EvaluationMonitor<ChunkSample>> listeners = new LinkedList<EvaluationMonitor<ChunkSample>>();
     ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
     if(params.getMisclassified()) {
       listeners.add(new ChunkEvaluationErrorListener());

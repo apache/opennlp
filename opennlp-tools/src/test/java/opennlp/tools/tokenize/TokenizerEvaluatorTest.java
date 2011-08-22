@@ -27,7 +27,7 @@ import java.util.Collections;
 import opennlp.tools.cmdline.tokenizer.TokenEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.EvaluationSampleListener;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
 import org.junit.Test;
 
@@ -36,7 +36,7 @@ public class TokenizerEvaluatorTest {
   @Test
   public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationSampleListener<TokenSample> listener = new TokenEvaluationErrorListener(
+    EvaluationMonitor<TokenSample> listener = new TokenEvaluationErrorListener(
         stream);
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
@@ -52,7 +52,7 @@ public class TokenizerEvaluatorTest {
   @Test
   public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationSampleListener<TokenSample> listener = new TokenEvaluationErrorListener(
+    EvaluationMonitor<TokenSample> listener = new TokenEvaluationErrorListener(
         stream);
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
