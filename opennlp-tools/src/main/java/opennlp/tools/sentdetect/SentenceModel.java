@@ -28,9 +28,7 @@ import java.util.Map;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelReader;
-import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
