@@ -29,13 +29,11 @@ import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.EvaluationSampleListener;
 import opennlp.tools.util.eval.Mean;
 import opennlp.tools.util.model.ModelType;
+import opennlp.tools.util.model.ModelUtil;
 
 public class POSTaggerCrossValidator {
 
   private final String languageCode;
-  private final ModelType modelType;
-  private final int cutoff;
-  private final int iterations;
   
   private final TrainingParameters params;
   
@@ -49,13 +47,10 @@ public class POSTaggerCrossValidator {
   public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
       Dictionary ngramDictionary, int cutoff, int iterations) {
     this.languageCode = languageCode;
-    this.modelType = modelType;
-    this.cutoff = cutoff;
-    this.iterations = iterations;
+    this.params = ModelUtil.createTrainingParameters(iterations, cutoff);
+    this.params.put(TrainingParameters.ALGORITHM_PARAM, modelType.toString());
     this.tagDictionary = tagDictionary;
     this.ngramDictionary = ngramDictionary;
-    
-    params = null;
   }
   
   public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
@@ -68,9 +63,6 @@ public class POSTaggerCrossValidator {
       Dictionary ngramDictionary) {
     this.params = trainParam;
     this.languageCode = languageCode;
-    cutoff = -1;
-    iterations = -1;
-    modelType = null;
   }
   
   public POSTaggerCrossValidator(String languageCode,
@@ -111,15 +103,8 @@ public class POSTaggerCrossValidator {
       CrossValidationPartitioner.TrainingSampleStream<POSSample> trainingSampleStream = partitioner
           .next();
 
-      POSModel model;
-
-      if (params == null) {
-        model = POSTaggerME.train(languageCode, trainingSampleStream,
-            modelType, tagDictionary, ngramDictionary, cutoff, iterations);
-      } else {
-        model = POSTaggerME.train(languageCode, trainingSampleStream, params,
+      POSModel model = POSTaggerME.train(languageCode, trainingSampleStream, params,
             this.tagDictionary, this.ngramDictionary);
-      }
 
       POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model), listeners);
       
