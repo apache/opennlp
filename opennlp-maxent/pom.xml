@@ -30,7 +30,7 @@
     </parent>
   
 	<artifactId>opennlp-maxent</artifactId>
-	<packaging>jar</packaging>
+	<packaging>bundle</packaging>
 	<version>3.0.2-incubating-SNAPSHOT</version>
 	<name>OpenNLP Maxent</name>
 
@@ -47,6 +47,22 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+					<Export-Package>
+						opennlp.maxent,
+						opennlp.maxent.io,
+						opennlp.model,
+						opennlp.perceptron
+					</Export-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+      
 			<plugin>
 				<groupId>org.apache.rat</groupId>
 				<artifactId>apache-rat-plugin</artifactId>
