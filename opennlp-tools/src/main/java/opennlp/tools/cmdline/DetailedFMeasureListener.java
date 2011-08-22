@@ -33,6 +33,8 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 /**
  * This listener will gather detailed information about the sample under evaluation and will
  * allow detailed FMeasure for each outcome.
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
 public abstract class DetailedFMeasureListener<T> implements
     EvaluationMonitor<T> {

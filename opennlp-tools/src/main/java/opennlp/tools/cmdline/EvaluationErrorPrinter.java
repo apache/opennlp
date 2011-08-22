@@ -26,6 +26,9 @@ import java.util.List;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ */
 public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> {
 
   private PrintStream printStream;
