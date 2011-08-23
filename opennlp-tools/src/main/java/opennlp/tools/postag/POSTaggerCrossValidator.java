@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
@@ -39,6 +41,7 @@ public class POSTaggerCrossValidator {
   
   private POSDictionary tagDictionary;
   private Dictionary ngramDictionary;
+  private Integer ngramCutoff;
 
   private Mean wordAccuracy = new Mean();
   private List<? extends EvaluationMonitor<POSSample>> listeners;
@@ -63,6 +66,17 @@ public class POSTaggerCrossValidator {
       Dictionary ngramDictionary) {
     this.params = trainParam;
     this.languageCode = languageCode;
+  }
+
+  public POSTaggerCrossValidator(String languageCode,
+      TrainingParameters trainParam, POSDictionary tagDictionary,
+      Integer ngramCutoff, EvaluationMonitor<POSSample> listener) {
+    this(languageCode, trainParam, tagDictionary, null, Collections
+        .singletonList(listener));
+    this.ngramCutoff = ngramCutoff;
+    if (listeners != null) {
+      this.listeners = new LinkedList<EvaluationMonitor<POSSample>>(listeners);
+    }
   }
   
   public POSTaggerCrossValidator(String languageCode,
@@ -102,9 +116,27 @@ public class POSTaggerCrossValidator {
 
       CrossValidationPartitioner.TrainingSampleStream<POSSample> trainingSampleStream = partitioner
           .next();
+      
+      Dictionary ngramDict = null;
+      if (this.ngramDictionary == null) {
+        if(this.ngramCutoff != null) {
+          System.err.print("Building ngram dictionary ... ");
+          try {
+            ngramDict = POSTaggerME.buildNGramDictionary(trainingSampleStream,
+                this.ngramCutoff);
+            trainingSampleStream.reset();
+          } catch (IOException e) {
+            CmdLineUtil.printTrainingIoError(e);
+            throw new TerminateToolException(-1);
+          }
+          System.err.println("done");
+        }
+      } else {
+        ngramDict = this.ngramDictionary;
+      }
 
       POSModel model = POSTaggerME.train(languageCode, trainingSampleStream, params,
-            this.tagDictionary, this.ngramDictionary);
+            this.tagDictionary, ngramDict);
 
       POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model), listeners);
       

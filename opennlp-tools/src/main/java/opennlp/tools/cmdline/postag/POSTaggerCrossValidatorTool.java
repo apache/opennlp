@@ -94,7 +94,7 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
       }
 
       validator = new POSTaggerCrossValidator(params.getLang(), mlParams,
-          tagdict, null, missclassifiedListener);
+          tagdict, params.getNgram(), missclassifiedListener);
       
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
