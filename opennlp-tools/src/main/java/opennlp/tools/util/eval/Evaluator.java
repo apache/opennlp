@@ -19,6 +19,8 @@
 package opennlp.tools.util.eval;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import opennlp.tools.util.ObjectStream;
 
@@ -30,10 +32,12 @@ import opennlp.tools.util.ObjectStream;
  */
 public abstract class Evaluator<T> {
 
-  private EvaluationMonitor<T>[] listeners;
+  private List<EvaluationMonitor<T>> listeners;
   
   public Evaluator(EvaluationMonitor<T>... listeners) {
-    this.listeners = listeners;
+    if(listeners != null) {
+      this.listeners = Arrays.asList(listeners);
+    }
   }
   
   /**
