@@ -33,6 +33,7 @@ import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
+import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.EvaluationMonitor;
@@ -104,7 +105,7 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
 
     try {
       validator = new TokenNameFinderCrossValidator(params.getLang(),
-          params.getType(), mlParams, featureGeneratorBytes, resources, listeners);
+          params.getType(), mlParams, featureGeneratorBytes, resources, listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
       CmdLineUtil.printTrainingIoError(e);

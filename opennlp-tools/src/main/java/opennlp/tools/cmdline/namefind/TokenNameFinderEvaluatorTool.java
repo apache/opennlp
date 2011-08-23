@@ -33,6 +33,7 @@ import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.namefind.TokenNameFinderEvaluator;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
@@ -87,7 +88,8 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
     }
 
     TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
-        new NameFinderME(model), listeners);
+        new NameFinderME(model),
+        listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));
 
     final ObjectStream<NameSample> sampleStream = TokenNameFinderTrainerTool.openSampleData("Test",
         testData, encoding);

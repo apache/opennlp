@@ -19,14 +19,11 @@ package opennlp.tools.namefind;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -37,7 +34,7 @@ public class TokenNameFinderCrossValidator {
   private final String type;
   private final byte[] featureGeneratorBytes;
   private final Map<String, Object> resources;
-  private List<? extends EvaluationMonitor<NameSample>> listeners;
+  private TokenNameFinderEvaluationMonitor[] listeners;
   
 
   private FMeasure fmeasure = new FMeasure();
@@ -115,31 +112,6 @@ public class TokenNameFinderCrossValidator {
    *          machine learning train parameters
    * @param featureGeneratorBytes
    *          descriptor to configure the feature generation or null
-   * @param resources
-   *          the resources for the name finder or null if none
-   */
-  public TokenNameFinderCrossValidator(String languageCode, String type,
-      TrainingParameters trainParams, byte[] featureGeneratorBytes, Map<String, Object> resources) {
-
-    this.languageCode = languageCode;
-    this.type = type;
-    this.featureGeneratorBytes = featureGeneratorBytes;
-    this.resources = resources;
-
-    this.params = trainParams;
-  }
-  
-  /**
-   * Name finder cross validator
-   * 
-   * @param languageCode
-   *          the language of the training data
-   * @param type
-   *          null or an override type for all types in the training data
-   * @param trainParams
-   *          machine learning train parameters
-   * @param featureGeneratorBytes
-   *          descriptor to configure the feature generation or null
    * @param listeners
    *          a list of listeners
    * @param resources
@@ -148,34 +120,16 @@ public class TokenNameFinderCrossValidator {
   public TokenNameFinderCrossValidator(String languageCode, String type,
       TrainingParameters trainParams, byte[] featureGeneratorBytes,
       Map<String, Object> resources,
-      List<? extends EvaluationMonitor<NameSample>> listeners) {
-    this(languageCode, type, trainParams, featureGeneratorBytes, resources);
-    this.listeners = new LinkedList<EvaluationMonitor<NameSample>>(
-        listeners);
-  }
-  
-  /**
-   * Name finder cross validator
-   * 
-   * @param languageCode
-   *          the language of the training data
-   * @param type
-   *          null or an override type for all types in the training data
-   * @param trainParams
-   *          machine learning train parameters
-   * @param featureGeneratorBytes
-   *          descriptor to configure the feature generation or null
-   * @param listener
-   *          a listener
-   * @param resources
-   *          the resources for the name finder or null if none
-   */
-  public TokenNameFinderCrossValidator(String languageCode, String type,
-      TrainingParameters trainParams, byte[] featureGeneratorBytes,
-      Map<String, Object> resources,
-      EvaluationMonitor<NameSample> listener) {
-    this(languageCode, type, trainParams, featureGeneratorBytes, resources,
-        Collections.singletonList(listener));
+      TokenNameFinderEvaluationMonitor... listeners) {
+    
+    this.languageCode = languageCode;
+    this.type = type;
+    this.featureGeneratorBytes = featureGeneratorBytes;
+    this.resources = resources;
+
+    this.params = trainParams;
+    
+    this.listeners = listeners;
   }
 
   /**
