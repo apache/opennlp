@@ -38,6 +38,15 @@ public class TokenizerCrossValidator {
   private FMeasure fmeasure = new FMeasure();
   private TokenizerEvaluationMonitor[] listeners;
   
+  public TokenizerCrossValidator(String language, Dictionary abbreviations,
+      boolean alphaNumericOptimization, TrainingParameters params,
+      TokenizerEvaluationMonitor ... listeners) {
+    this.language = language;
+    this.alphaNumericOptimization = alphaNumericOptimization;
+    this.abbreviations = abbreviations;
+    this.params = params;
+    this.listeners = listeners;
+  }
   
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, int cutoff, int iterations) {
     this(language, alphaNumericOptimization, ModelUtil.createTrainingParameters(iterations, cutoff));
@@ -53,15 +62,6 @@ public class TokenizerCrossValidator {
     this(language, null, alphaNumericOptimization, params, listeners);
   }
 
-  public TokenizerCrossValidator(String language, Dictionary abbreviations,
-      boolean alphaNumericOptimization, TrainingParameters params,
-      TokenizerEvaluationMonitor ... listeners) {
-    this.language = language;
-    this.alphaNumericOptimization = alphaNumericOptimization;
-    this.abbreviations = abbreviations;
-    this.params = params;
-    this.listeners = listeners;
-  }
 
   /**
    * Starts the evaluation.
