@@ -41,6 +41,14 @@ public class SDCrossValidator {
 
   private SentenceDetectorEvaluationMonitor[] listeners;
   
+  public SDCrossValidator(String languageCode, TrainingParameters params,
+      Dictionary abbreviations, SentenceDetectorEvaluationMonitor... listeners) {
+    this.languageCode = languageCode;
+    this.params = params;
+    this.abbreviations = abbreviations;
+    this.listeners = listeners;
+  }
+  
   public SDCrossValidator(String languageCode, int cutoff, int iterations) {
     this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations));
   }
@@ -56,14 +64,6 @@ public class SDCrossValidator {
   public SDCrossValidator(String languageCode, TrainingParameters params,
       SentenceDetectorEvaluationMonitor... listeners) {
     this(languageCode, params, null, listeners);
-  }
-  
-  public SDCrossValidator(String languageCode, TrainingParameters params,
-      Dictionary abbreviations, SentenceDetectorEvaluationMonitor... listeners) {
-    this.languageCode = languageCode;
-    this.params = params;
-    this.abbreviations = abbreviations;
-    this.listeners = listeners;
   }
   
   public SDCrossValidator(String languageCode) {
