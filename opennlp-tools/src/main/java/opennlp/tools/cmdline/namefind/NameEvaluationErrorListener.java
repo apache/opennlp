@@ -21,6 +21,7 @@ import java.io.OutputStream;
 
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
@@ -29,7 +30,7 @@ import opennlp.tools.util.eval.EvaluationMonitor;
  * 
  */
 public class NameEvaluationErrorListener extends
-    EvaluationErrorPrinter<NameSample> {
+    EvaluationErrorPrinter<NameSample> implements TokenNameFinderEvaluationMonitor {
 
   /**
    * Creates a listener that will print to System.err
