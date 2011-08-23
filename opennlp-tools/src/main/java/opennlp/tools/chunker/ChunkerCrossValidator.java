@@ -28,19 +28,19 @@ import opennlp.tools.util.model.ModelUtil;
 
 public class ChunkerCrossValidator {
 
-	private final String languageCode;
-	private final TrainingParameters params;
-	
-	private FMeasure fmeasure = new FMeasure();
-    private ChunkerEvaluationMonitor[] listeners;
+  private final String languageCode;
+  private final TrainingParameters params;
 
-	public ChunkerCrossValidator(String languageCode, int cutoff, int iterations) {
-	    
-		this.languageCode = languageCode;
-		
-		params = ModelUtil.createTrainingParameters(iterations, cutoff);;
-		listeners = null;
-	}
+  private FMeasure fmeasure = new FMeasure();
+  private ChunkerEvaluationMonitor[] listeners;
+
+  public ChunkerCrossValidator(String languageCode, int cutoff, int iterations) {
+
+    this.languageCode = languageCode;
+
+    params = ModelUtil.createTrainingParameters(iterations, cutoff);
+    listeners = null;
+  }
 
   public ChunkerCrossValidator(String languageCode, TrainingParameters params,
       ChunkerEvaluationMonitor... listeners) {
@@ -62,29 +62,29 @@ public class ChunkerCrossValidator {
    */
   public void evaluate(ObjectStream<ChunkSample> samples, int nFolds)
       throws IOException, InvalidFormatException, IOException {
-		CrossValidationPartitioner<ChunkSample> partitioner = new CrossValidationPartitioner<ChunkSample>(
-				samples, nFolds);
+    CrossValidationPartitioner<ChunkSample> partitioner = new CrossValidationPartitioner<ChunkSample>(
+        samples, nFolds);
 
-		while (partitioner.hasNext()) {
+    while (partitioner.hasNext()) {
 
-			CrossValidationPartitioner.TrainingSampleStream<ChunkSample> trainingSampleStream = partitioner
-					.next();
+      CrossValidationPartitioner.TrainingSampleStream<ChunkSample> trainingSampleStream = partitioner
+          .next();
 
-			ChunkerModel model  = ChunkerME.train(languageCode, trainingSampleStream,
-			      new DefaultChunkerContextGenerator(), params);
-			
-			// do testing
-            ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model,
-                ChunkerME.DEFAULT_BEAM_SIZE, new DefaultChunkerSequenceValidator()),
-                listeners);
+      ChunkerModel model = ChunkerME.train(languageCode, trainingSampleStream,
+          new DefaultChunkerContextGenerator(), params);
 
-			evaluator.evaluate(trainingSampleStream.getTestSampleStream());
+      // do testing
+      ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model,
+          ChunkerME.DEFAULT_BEAM_SIZE, new DefaultChunkerSequenceValidator()),
+          listeners);
 
-			fmeasure.mergeInto(evaluator.getFMeasure());
-		}
-	}
+      evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 
-	public FMeasure getFMeasure() {
-		return fmeasure;
-	}
+      fmeasure.mergeInto(evaluator.getFMeasure());
+    }
+  }
+
+  public FMeasure getFMeasure() {
+    return fmeasure;
+  }
 }
