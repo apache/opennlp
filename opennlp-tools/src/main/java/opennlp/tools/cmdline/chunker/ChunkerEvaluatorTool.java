@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.chunker.ChunkerEvaluationMonitor;
 import opennlp.tools.chunker.ChunkerEvaluator;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -84,7 +85,7 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
     }
 
     ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model),
-        listeners);
+        listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
     
     final ObjectStream<ChunkSample> sampleStream = ChunkerTrainerTool.openSampleData("Test",
         testData, encoding);

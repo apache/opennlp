@@ -18,15 +18,11 @@
 package opennlp.tools.chunker;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -36,7 +32,7 @@ public class ChunkerCrossValidator {
 	private final TrainingParameters params;
 	
 	private FMeasure fmeasure = new FMeasure();
-    private List<? extends EvaluationMonitor<ChunkSample>> listeners;
+    private ChunkerEvaluationMonitor[] listeners;
 
 	public ChunkerCrossValidator(String languageCode, int cutoff, int iterations) {
 	    
@@ -45,26 +41,13 @@ public class ChunkerCrossValidator {
 		params = ModelUtil.createTrainingParameters(iterations, cutoff);;
 		listeners = null;
 	}
-	
-    public ChunkerCrossValidator(String languageCode, TrainingParameters params) {
-      this.languageCode = languageCode;
-      this.params = params;
-      
-      listeners = null;
-    }
 
   public ChunkerCrossValidator(String languageCode, TrainingParameters params,
-      List<? extends EvaluationMonitor<ChunkSample>> listeners) {
-    this(languageCode, params);
-    if(listeners != null) {
-      this.listeners = new LinkedList<EvaluationMonitor<ChunkSample>>(
-          listeners);
-    }
-  }
+      ChunkerEvaluationMonitor... listeners) {
 
-  public ChunkerCrossValidator(String languageCode, TrainingParameters params,
-      EvaluationMonitor<ChunkSample> listener) {
-    this(languageCode, params, Collections.singletonList(listener));
+    this.languageCode = languageCode;
+    this.params = params;
+    this.listeners = listeners;
   }
 
   /**

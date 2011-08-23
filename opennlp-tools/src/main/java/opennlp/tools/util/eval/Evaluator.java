@@ -19,6 +19,7 @@
 package opennlp.tools.util.eval;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,6 +42,12 @@ public abstract class Evaluator<T> {
   public Evaluator(List<? extends EvaluationMonitor<T>> listeners) {
     if(listeners != null) {
       this.listeners = new LinkedList<EvaluationMonitor<T>>(listeners);
+    }
+  }
+  
+  public Evaluator(EvaluationMonitor<T>... listeners) {
+    if(listeners != null) {
+      this.listeners = Arrays.asList(listeners);
     }
   }
   
