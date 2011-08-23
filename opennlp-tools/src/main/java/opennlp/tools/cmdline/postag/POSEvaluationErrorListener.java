@@ -21,6 +21,7 @@ import java.io.OutputStream;
 
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTaggerEvaluationMonitor;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
@@ -29,7 +30,7 @@ import opennlp.tools.util.eval.EvaluationMonitor;
  * 
  */
 public class POSEvaluationErrorListener extends
-    EvaluationErrorPrinter<POSSample> {
+    EvaluationErrorPrinter<POSSample> implements POSTaggerEvaluationMonitor {
 
   /**
    * Creates a listener that will print to System.err

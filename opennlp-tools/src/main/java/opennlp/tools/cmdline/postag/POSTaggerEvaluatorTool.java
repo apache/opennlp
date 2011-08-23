@@ -20,7 +20,6 @@ package opennlp.tools.cmdline.postag;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
@@ -31,8 +30,8 @@ import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTaggerEvaluationMonitor;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.EvaluationMonitor;
 
 public final class POSTaggerEvaluatorTool implements CmdLineTool {
 
@@ -66,13 +65,13 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
 
     POSModel model = new POSModelLoader().load(params.getModel());
     
-    EvaluationMonitor<POSSample> missclassifiedListener = null;
+    POSTaggerEvaluationMonitor missclassifiedListener = null;
     if (params.getMisclassified()) {
       missclassifiedListener = new POSEvaluationErrorListener();
     }
 
     POSEvaluator evaluator = new POSEvaluator(
-        new opennlp.tools.postag.POSTaggerME(model), Collections.singletonList(missclassifiedListener));
+        new opennlp.tools.postag.POSTaggerME(model), missclassifiedListener);
 
       System.out.print("Evaluating ... ");
       

@@ -17,18 +17,17 @@
 
 package opennlp.tools.postag;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotSame;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import opennlp.tools.cmdline.postag.POSEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Sequence;
-import opennlp.tools.util.eval.EvaluationMonitor;
 
 import org.junit.Test;
 
@@ -39,9 +38,10 @@ public class POSEvaluatorTest {
   @Test
   public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationMonitor<POSSample> listener = new POSEvaluationErrorListener(stream);
+    POSTaggerEvaluationMonitor listener = new POSEvaluationErrorListener(stream);
     
-    POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(POSSampleTest.createGoldSample()), Collections.singletonList(listener));
+    POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(
+        POSSampleTest.createGoldSample()), listener);
     
     eval.evaluateSample(POSSampleTest.createGoldSample());
     
@@ -53,9 +53,9 @@ public class POSEvaluatorTest {
   @Test
   public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationMonitor<POSSample> listener = new POSEvaluationErrorListener(stream);
+    POSTaggerEvaluationMonitor listener = new POSEvaluationErrorListener(stream);
     
-    POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(POSSampleTest.createGoldSample()), Collections.singletonList(listener));
+    POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(POSSampleTest.createGoldSample()), listener);
     
     eval.evaluateSample(POSSampleTest.createPredSample());
     
