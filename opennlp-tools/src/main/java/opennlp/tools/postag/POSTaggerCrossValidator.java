@@ -18,9 +18,6 @@
 package opennlp.tools.postag;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -28,7 +25,6 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.Mean;
 import opennlp.tools.util.model.ModelType;
 import opennlp.tools.util.model.ModelUtil;
@@ -44,7 +40,7 @@ public class POSTaggerCrossValidator {
   private Integer ngramCutoff;
 
   private Mean wordAccuracy = new Mean();
-  private List<? extends EvaluationMonitor<POSSample>> listeners;
+  private POSTaggerEvaluationMonitor[] listeners;
   
   
   public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
@@ -60,41 +56,38 @@ public class POSTaggerCrossValidator {
       Dictionary ngramDictionary) {
     this(languageCode, modelType, tagDictionary, ngramDictionary, 5, 100);
   }
-  
+
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSDictionary tagDictionary,
-      Dictionary ngramDictionary) {
-    this.params = trainParam;
+      POSTaggerEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
-  }
-
-  public POSTaggerCrossValidator(String languageCode,
-      TrainingParameters trainParam, POSDictionary tagDictionary,
-      Integer ngramCutoff, EvaluationMonitor<POSSample> listener) {
-    this(languageCode, trainParam, tagDictionary, null, Collections
-        .singletonList(listener));
-    this.ngramCutoff = ngramCutoff;
-    if (listeners != null) {
-      this.listeners = new LinkedList<EvaluationMonitor<POSSample>>(listeners);
-    }
+    this.params = trainParam;
+    this.tagDictionary = tagDictionary;
+    this.ngramDictionary = null;
+    this.ngramCutoff = null;
+    this.listeners = listeners;
   }
   
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSDictionary tagDictionary,
-      Dictionary ngramDictionary,
-      List<? extends EvaluationMonitor<POSSample>> listeners) {
-    this(languageCode, trainParam, tagDictionary, ngramDictionary);
-    if (listeners != null) {
-      this.listeners = new LinkedList<EvaluationMonitor<POSSample>>(
-          listeners);
-    }
+      Integer ngramCutoff, POSTaggerEvaluationMonitor... listeners) {
+    this.languageCode = languageCode;
+    this.params = trainParam;
+    this.tagDictionary = tagDictionary;
+    this.ngramDictionary = null;
+    this.ngramCutoff = ngramCutoff;
+    this.listeners = listeners;
   }
 
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSDictionary tagDictionary,
-      Dictionary ngramDictionary, EvaluationMonitor<POSSample> listener) {
-    this(languageCode, trainParam, tagDictionary, ngramDictionary, Collections
-        .singletonList(listener));
+      Dictionary ngramDictionary, POSTaggerEvaluationMonitor... listeners) {
+    this.languageCode = languageCode;
+    this.params = trainParam;
+    this.tagDictionary = tagDictionary;
+    this.ngramDictionary = ngramDictionary;
+    this.ngramCutoff = null;
+    this.listeners = listeners;
   }
   
   /**
