@@ -20,7 +20,6 @@ package opennlp.tools.cmdline.sentdetect;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
@@ -28,12 +27,12 @@ import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EvaluatorParams;
+import opennlp.tools.sentdetect.SentenceDetectorEvaluationMonitor;
 import opennlp.tools.sentdetect.SentenceDetectorEvaluator;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.EvaluationMonitor;
 
 public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
 
@@ -65,13 +64,13 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
     File trainingDataInFile = params.getData();
     CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
-    EvaluationMonitor<SentenceSample> errorListener = null;
+    SentenceDetectorEvaluationMonitor errorListener = null;
     if (params.getMisclassified()) {
       errorListener = new SentenceEvaluationErrorListener();
     }
     
     SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
-        new SentenceDetectorME(model), Collections.singletonList(errorListener));
+        new SentenceDetectorME(model), errorListener);
     
     System.out.print("Evaluating ... ");
       ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Test",

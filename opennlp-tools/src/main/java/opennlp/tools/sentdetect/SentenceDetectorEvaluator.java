@@ -17,11 +17,7 @@
 
 package opennlp.tools.sentdetect;
 
-import java.util.Collections;
-import java.util.List;
-
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -47,32 +43,12 @@ public class SentenceDetectorEvaluator extends Evaluator<SentenceSample> {
    * Initializes the current instance.
    *
    * @param sentenceDetector
-   */
-  public SentenceDetectorEvaluator(SentenceDetector sentenceDetector) {
-    this.sentenceDetector = sentenceDetector;
-  }
-  
-  /**
-   * Initializes the current instance.
-   *
-   * @param sentenceDetector
    * @param listeners evaluation sample listeners
    */
-  public SentenceDetectorEvaluator(SentenceDetector sentenceDetector, List<? extends EvaluationMonitor<SentenceSample>> listeners) {
+  public SentenceDetectorEvaluator(SentenceDetector sentenceDetector,
+      SentenceDetectorEvaluationMonitor... listeners) {
     super(listeners);
     this.sentenceDetector = sentenceDetector;
-  }
-  
-  /**
-   * Initializes the current instance.
-   * 
-   * @param sentenceDetector
-   * @param listener
-   *          evaluation sample listener
-   */
-  public SentenceDetectorEvaluator(SentenceDetector sentenceDetector,
-      EvaluationMonitor<SentenceSample> listener) {
-    this(sentenceDetector, Collections.singletonList(listener));
   }
 
   @Override
