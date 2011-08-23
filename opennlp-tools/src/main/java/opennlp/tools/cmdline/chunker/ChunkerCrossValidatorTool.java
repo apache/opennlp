@@ -24,6 +24,7 @@ import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerCrossValidator;
+import opennlp.tools.chunker.ChunkerEvaluationMonitor;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
@@ -94,7 +95,8 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
     }
 
     ChunkerCrossValidator validator = new ChunkerCrossValidator(
-        params.getLang(), mlParams, listeners);
+        params.getLang(), mlParams,
+        listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
       
     try {
       validator.evaluate(sampleStream, params.getFolds());

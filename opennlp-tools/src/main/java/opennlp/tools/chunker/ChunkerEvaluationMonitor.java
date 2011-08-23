@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
+ * contributor license agreemnets.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,20 +15,10 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.chunker;
+package opennlp.tools.chunker;
 
-import opennlp.tools.chunker.ChunkSample;
-import opennlp.tools.chunker.ChunkerEvaluationMonitor;
-import opennlp.tools.cmdline.DetailedFMeasureListener;
-import opennlp.tools.util.Span;
+import opennlp.tools.util.eval.EvaluationMonitor;
 
-public class ChunkerDetailedFMeasureListener extends
-    DetailedFMeasureListener<ChunkSample> implements ChunkerEvaluationMonitor{
-
-  @Override
-  protected Span[] asSpanArray(ChunkSample sample) {
-    return sample.getPhrasesAsSpanList();
-  }
-
+public interface ChunkerEvaluationMonitor extends EvaluationMonitor<ChunkSample> {
 
 }

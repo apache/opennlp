@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.chunker;
 import java.io.OutputStream;
 
 import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.chunker.ChunkerEvaluationMonitor;
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
@@ -29,7 +30,7 @@ import opennlp.tools.util.eval.EvaluationMonitor;
  * 
  */
 public class ChunkEvaluationErrorListener extends
-    EvaluationErrorPrinter<ChunkSample> {
+    EvaluationErrorPrinter<ChunkSample> implements ChunkerEvaluationMonitor {
 
   /**
    * Creates a listener that will print to System.err
