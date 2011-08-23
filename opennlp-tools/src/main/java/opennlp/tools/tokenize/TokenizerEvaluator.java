@@ -18,11 +18,7 @@
 
 package opennlp.tools.tokenize;
 
-import java.util.Collections;
-import java.util.List;
-
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -44,16 +40,6 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    * predicted tokens.
    */
   private Tokenizer tokenizer;
-
-  /**
-   * Initializes the current instance with the
-   * given {@link Tokenizer}.
-   *
-   * @param tokenizer the {@link Tokenizer} to evaluate.
-   */
-  public TokenizerEvaluator(Tokenizer tokenizer) {
-    this.tokenizer = tokenizer;
-  }
   
   /**
    * Initializes the current instance with the
@@ -62,23 +48,10 @@ public class TokenizerEvaluator extends Evaluator<TokenSample> {
    * @param tokenizer the {@link Tokenizer} to evaluate.
    * @param listeners evaluation sample listeners
    */
-  public TokenizerEvaluator(Tokenizer tokenizer, List<? extends EvaluationMonitor<TokenSample>> listeners) {
+  public TokenizerEvaluator(Tokenizer tokenizer, TokenizerEvaluationMonitor ... listeners) {
     super(listeners);
     this.tokenizer = tokenizer;
   }
-  
-  /**
-   * Initializes the current instance with the given {@link Tokenizer}.
-   * 
-   * @param tokenizer
-   *          the {@link Tokenizer} to evaluate.
-   * @param listener
-   *          evaluation sample listener
-   */
-  public TokenizerEvaluator(Tokenizer tokenizer,
-      EvaluationMonitor<TokenSample> listener) {
-    this(tokenizer, Collections.singletonList(listener));
- }
 
   @Override
   protected TokenSample processSample(TokenSample reference) {
