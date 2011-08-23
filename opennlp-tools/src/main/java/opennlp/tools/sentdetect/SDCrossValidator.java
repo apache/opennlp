@@ -18,15 +18,11 @@
 package opennlp.tools.sentdetect;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
-import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -43,7 +39,7 @@ public class SDCrossValidator {
   
   private FMeasure fmeasure = new FMeasure();
 
-  private LinkedList<EvaluationMonitor<SentenceSample>> listeners;
+  private SentenceDetectorEvaluationMonitor[] listeners;
   
   public SDCrossValidator(String languageCode, int cutoff, int iterations) {
     this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations));
@@ -57,37 +53,17 @@ public class SDCrossValidator {
     this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations), abbreviations);
   }
   
-  public SDCrossValidator(String languageCode, TrainingParameters params, Dictionary abbreviations) {
-    this.languageCode = languageCode;
-    this.params = params;
-    this.abbreviations = abbreviations;
-  }
-  
   public SDCrossValidator(String languageCode, TrainingParameters params,
-      List<? extends EvaluationMonitor<SentenceSample>> listeners) {
+      SentenceDetectorEvaluationMonitor... listeners) {
     this(languageCode, params, null, listeners);
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params,
-      Dictionary abbreviations,
-      List<? extends EvaluationMonitor<SentenceSample>> listeners) {
-    this(languageCode, params, abbreviations);
-    if (listeners != null) {
-      this.listeners = new LinkedList<EvaluationMonitor<SentenceSample>>(
-          listeners);
-    }
-  }
-  
-  public SDCrossValidator(String languageCode, TrainingParameters params,
-      EvaluationMonitor<SentenceSample> listener) {
-    this(languageCode, params, null, listener);
-  }
-  
-  public SDCrossValidator(String languageCode, TrainingParameters params,
-      Dictionary abbreviations,
-      EvaluationMonitor<SentenceSample> listener) {
-    this(languageCode, params, abbreviations, Collections
-        .singletonList(listener));
+      Dictionary abbreviations, SentenceDetectorEvaluationMonitor... listeners) {
+    this.languageCode = languageCode;
+    this.params = params;
+    this.abbreviations = abbreviations;
+    this.listeners = listeners;
   }
   
   public SDCrossValidator(String languageCode) {
