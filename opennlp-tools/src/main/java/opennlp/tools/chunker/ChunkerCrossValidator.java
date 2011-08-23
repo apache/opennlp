@@ -74,7 +74,9 @@ public class ChunkerCrossValidator {
 			      new DefaultChunkerContextGenerator(), params);
 			
 			// do testing
-			ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model), listeners);
+            ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model,
+                ChunkerME.DEFAULT_BEAM_SIZE, new DefaultChunkerSequenceValidator()),
+                listeners);
 
 			evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 

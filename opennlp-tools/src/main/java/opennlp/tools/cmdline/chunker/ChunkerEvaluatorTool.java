@@ -28,6 +28,7 @@ import opennlp.tools.chunker.ChunkerEvaluationMonitor;
 import opennlp.tools.chunker.ChunkerEvaluator;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
+import opennlp.tools.chunker.DefaultChunkerSequenceValidator;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineTool;
@@ -84,7 +85,8 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
       listeners.add(detailedFMeasureListener);
     }
 
-    ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model),
+    ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model,
+        ChunkerME.DEFAULT_BEAM_SIZE, new DefaultChunkerSequenceValidator()),
         listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
     
     final ObjectStream<ChunkSample> sampleStream = ChunkerTrainerTool.openSampleData("Test",
