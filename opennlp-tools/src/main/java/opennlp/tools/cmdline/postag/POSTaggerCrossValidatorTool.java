@@ -30,9 +30,9 @@ import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.postag.POSDictionary;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerCrossValidator;
+import opennlp.tools.postag.POSTaggerEvaluationMonitor;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.eval.EvaluationMonitor;
 
 public final class POSTaggerCrossValidatorTool implements CmdLineTool {
   
@@ -72,7 +72,7 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
 
     POSTaggerCrossValidator validator;
     
-    EvaluationMonitor<POSSample> missclassifiedListener = null;
+    POSTaggerEvaluationMonitor missclassifiedListener = null;
     if (params.getMisclassified()) {
       missclassifiedListener = new POSEvaluationErrorListener();
     }
