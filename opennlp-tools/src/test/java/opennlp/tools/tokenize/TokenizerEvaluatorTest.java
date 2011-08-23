@@ -22,12 +22,10 @@ import static junit.framework.Assert.assertNotSame;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.util.Collections;
 
 import opennlp.tools.cmdline.tokenizer.TokenEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.EvaluationMonitor;
 
 import org.junit.Test;
 
@@ -36,11 +34,11 @@ public class TokenizerEvaluatorTest {
   @Test
   public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationMonitor<TokenSample> listener = new TokenEvaluationErrorListener(
+    TokenizerEvaluationMonitor listener = new TokenEvaluationErrorListener(
         stream);
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
-        TokenSampleTest.createGoldSample()), Collections.singletonList(listener));
+        TokenSampleTest.createGoldSample()), listener);
     
     eval.evaluateSample(TokenSampleTest.createGoldSample());
 
@@ -52,11 +50,11 @@ public class TokenizerEvaluatorTest {
   @Test
   public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
-    EvaluationMonitor<TokenSample> listener = new TokenEvaluationErrorListener(
+    TokenizerEvaluationMonitor listener = new TokenEvaluationErrorListener(
         stream);
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
-        TokenSampleTest.createGoldSample()), Collections.singletonList(listener));
+        TokenSampleTest.createGoldSample()), listener);
     
     eval.evaluateSample(TokenSampleTest.createPredSample());
 
