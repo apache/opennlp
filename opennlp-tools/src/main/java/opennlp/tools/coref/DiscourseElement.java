@@ -109,6 +109,7 @@ public abstract class DiscourseElement {
     return(id);
   }
 
+  @Override
   public String toString() {
     Iterator<MentionContext> ei = extents.iterator();
     MentionContext ex = ei.next();

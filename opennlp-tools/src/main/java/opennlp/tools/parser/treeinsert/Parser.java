@@ -221,6 +221,7 @@ public class Parser extends AbstractBottomUpParser {
     }
   }
 
+  @Override
   protected Parse[] advanceChunks(Parse p, double minChunkScore) {
     Parse[] parses = super.advanceChunks(p, minChunkScore);
     for (int pi=0;pi<parses.length;pi++) {
@@ -232,6 +233,7 @@ public class Parser extends AbstractBottomUpParser {
     return parses;
   }
 
+  @Override
   protected Parse[] advanceParses(Parse p, double probMass) {
     double q = 1 - probMass;
     /** The index of the node which will be labeled in this iteration of advancing the parse. */
@@ -433,6 +435,7 @@ public class Parser extends AbstractBottomUpParser {
     return newParses;
   }
 
+  @Override
   protected void advanceTop(Parse p) {
     p.setType(TOP_NODE);
   }

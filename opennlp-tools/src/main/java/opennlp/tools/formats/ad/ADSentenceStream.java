@@ -388,6 +388,7 @@ public class ADSentenceStream extends
       private String word;
       private String lemma;
 
+      @Override
       public boolean isLeaf() {return true;}
       
       public void setLexeme(String lexeme) {

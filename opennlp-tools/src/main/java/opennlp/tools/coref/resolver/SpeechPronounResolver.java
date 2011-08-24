@@ -43,6 +43,7 @@ public class SpeechPronounResolver extends MaxentResolver {
   }
 
 
+  @Override
   protected List<String> getFeatures(MentionContext mention, DiscourseEntity entity) {
     List<String> features = new ArrayList<String>();
     features.addAll(super.getFeatures(mention, entity));
@@ -70,6 +71,7 @@ public class SpeechPronounResolver extends MaxentResolver {
     return (features);
   }
 
+  @Override
   protected boolean outOfRange(MentionContext mention, DiscourseEntity entity) {
     MentionContext cec = entity.getLastExtent();
     return (mention.getSentenceNumber() - cec.getSentenceNumber() > numSentencesBack);
@@ -82,6 +84,7 @@ public class SpeechPronounResolver extends MaxentResolver {
     return (fpp || pn);
   }
 
+  @Override
   protected boolean excluded(MentionContext mention, DiscourseEntity entity) {
     if (super.excluded(mention, entity)) {
       return true;

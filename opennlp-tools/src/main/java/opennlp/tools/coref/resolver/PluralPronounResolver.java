@@ -39,6 +39,7 @@ public class PluralPronounResolver extends MaxentResolver {
     super(projectName, "tmodel", m, 30,nrr);
   }
 
+  @Override
   protected List<String> getFeatures(MentionContext mention, DiscourseEntity entity) {
     List<String> features = new ArrayList<String>();
     features.addAll(super.getFeatures(mention,entity));
@@ -77,6 +78,7 @@ public class PluralPronounResolver extends MaxentResolver {
     return (features);
   }
 
+  @Override
   protected boolean outOfRange(MentionContext mention, DiscourseEntity entity) {
     MentionContext cec = entity.getLastExtent();
     //System.err.println("MaxentPluralPronounResolver.outOfRange: ["+ec.toText()+" ("+ec.id+")] ["+cec.toText()+" ("+cec.id+")] ec.sentenceNumber=("+ec.sentenceNumber+")-cec.sentenceNumber=("+cec.sentenceNumber+") > "+NUM_SENTS_BACK_PRONOUNS);

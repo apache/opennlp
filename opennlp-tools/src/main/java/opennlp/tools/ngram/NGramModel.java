@@ -337,6 +337,7 @@ public class NGramModel implements Iterable<StringList>{
 	    DictionarySerializer.serialize(out, entryIterator, false);
   }
 
+  @Override
   public boolean equals(Object obj) {
     boolean result;
 
@@ -355,10 +356,12 @@ public class NGramModel implements Iterable<StringList>{
     return result;
    }
 
+  @Override
   public String toString() {
     return "Size: " + size();
   }
 
+  @Override
   public int hashCode() {
     return mNGrams.hashCode();
   }

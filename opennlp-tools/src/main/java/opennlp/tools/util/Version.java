@@ -118,6 +118,7 @@ public class Version {
    *
    * @return the version value string
    */
+  @Override
   public String toString() {
     return Integer.toString(getMajor()) + "." + Integer.toString(getMinor()) +
       "." + Integer.toString(getRevision()) + (isSnapshot() ? SNAPSHOT_MARKER : "");

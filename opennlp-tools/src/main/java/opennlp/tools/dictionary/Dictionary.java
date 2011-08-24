@@ -53,6 +53,7 @@ public class Dictionary implements Iterable<StringList> {
       return stringList;
     }
 
+    @Override
     public boolean equals(Object obj) {
 
       boolean result;
@@ -77,11 +78,13 @@ public class Dictionary implements Iterable<StringList> {
       return result;
     }
 
+    @Override
     public int hashCode() {
       // if lookup is too slow optimize this
       return this.stringList.toString().toLowerCase().hashCode();
     }
 
+    @Override
     public String toString() {
       return this.stringList.toString();
     }
@@ -215,6 +218,7 @@ public class Dictionary implements Iterable<StringList> {
     DictionarySerializer.serialize(out, entryIterator, isCaseSensitive);
   }
 
+  @Override
   public boolean equals(Object obj) {
 
     boolean result;
@@ -234,10 +238,12 @@ public class Dictionary implements Iterable<StringList> {
     return result;
   }
 
+  @Override
   public int hashCode() {
     return entrySet.hashCode();
   }
 
+  @Override
   public String toString() {
     return entrySet.toString();
   }
@@ -289,6 +295,7 @@ public class Dictionary implements Iterable<StringList> {
   public Set<String> asStringSet() {
     return new AbstractSet<String>() {
 
+      @Override
       public Iterator<String> iterator() {
         final Iterator<StringListWrapper> entries = entrySet.iterator();
 

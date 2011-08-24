@@ -41,6 +41,7 @@ public class SingletonNonReferentialResolver extends DefaultNonReferentialResolv
   }
 
 
+  @Override
   public void train() throws IOException {
     if (!trained) {
       super.train();

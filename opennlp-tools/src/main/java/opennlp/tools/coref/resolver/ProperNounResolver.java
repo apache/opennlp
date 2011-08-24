@@ -115,6 +115,7 @@ public class ProperNounResolver extends MaxentResolver {
     return Collections.emptyList();
   }
 
+  @Override
   protected List<String> getFeatures(MentionContext mention, DiscourseEntity entity) {
     //System.err.println("ProperNounResolver.getFeatures: "+mention.toText()+" -> "+entity);
     List<String> features = new ArrayList<String>();
@@ -126,6 +127,7 @@ public class ProperNounResolver extends MaxentResolver {
     return features;
   }
 
+  @Override
   public boolean excluded(MentionContext mention, DiscourseEntity entity) {
     if (super.excluded(mention, entity)) {
       return true;

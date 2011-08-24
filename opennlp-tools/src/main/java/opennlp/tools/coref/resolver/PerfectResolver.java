@@ -34,6 +34,7 @@ public class PerfectResolver extends  AbstractResolver {
     return true;
   }
 
+  @Override
   protected boolean outOfRange(MentionContext ec, DiscourseEntity de) {
     return false;
   }

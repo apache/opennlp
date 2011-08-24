@@ -170,10 +170,12 @@ public class DefaultLinker extends AbstractLinker {
     mentionFinder = ShallowParseMentionFinder.getInstance(headFinder);
   }
 
+  @Override
   protected Gender computeGender(MentionContext mention) {
     return mcm.computeGender(mention);
   }
 
+  @Override
   protected Number computeNumber(MentionContext mention) {
     return mcm.computeNumber(mention);
   }

@@ -94,6 +94,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
    * @param tokens character offsets into the specified text.
    * @param text The text of the tokens.
    */
+  @Override
   protected Iterator<Event> createEvents(TokenSample tokenSample) {
 
     List<Event> events = new ArrayList<Event>(50);

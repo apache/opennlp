@@ -46,6 +46,7 @@ public class TokenEvaluationErrorListener extends
     super(outputStream);
   }
 
+  @Override
   public void missclassified(TokenSample reference, TokenSample prediction) {
     printError(reference.getTokenSpans(), prediction.getTokenSpans(),
         reference, prediction, reference.getText());

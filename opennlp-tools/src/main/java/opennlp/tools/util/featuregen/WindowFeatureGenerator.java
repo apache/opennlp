@@ -124,6 +124,7 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
       generator.clearAdaptiveData();
   }
 
+  @Override
   public String toString() {
     return super.toString()+": Prev windwow size: " + prevWindowSize +", Next window size: " + nextWindowSize;
   }

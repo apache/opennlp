@@ -41,6 +41,7 @@ public class CommonNounResolver extends MaxentResolver {
     preferFirstReferent = true;
   }
 
+  @Override
   protected List<String> getFeatures(MentionContext mention, DiscourseEntity entity) {
     List<String> features = new ArrayList<String>();
     features.addAll(super.getFeatures(mention, entity));
@@ -58,6 +59,7 @@ public class CommonNounResolver extends MaxentResolver {
     return rv;
   }
 
+  @Override
   protected boolean excluded(MentionContext ec, DiscourseEntity de) {
     if (super.excluded(ec, de)) {
       return true;

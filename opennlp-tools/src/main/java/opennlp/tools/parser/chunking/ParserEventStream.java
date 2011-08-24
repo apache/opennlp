@@ -52,6 +52,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     super(d,rules,etype,dict);
   }
 
+  @Override
   protected void init() {
     if (etype == ParserEventTypeEnum.BUILD) {
       this.bcg = new BuildContextGenerator(dict);
@@ -117,6 +118,7 @@ public class ParserEventStream extends AbstractParserEventStream {
    * @param parseEvents The events for the specified chunks.
    * @param chunks The incomplete parses to be parsed.
    */
+  @Override
   protected void addParseEvents(List<Event> parseEvents, Parse[] chunks) {
     int ci = 0;
     while (ci < chunks.length) {

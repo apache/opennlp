@@ -53,6 +53,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     super(d, rules, etype, dict);
   }
 
+  @Override
   public void init() {
     buildContextGenerator = new BuildContextGenerator();
     attachContextGenerator = new AttachContextGenerator(punctSet);
@@ -110,6 +111,7 @@ public class ParserEventStream extends AbstractParserEventStream {
   }
   */
 
+  @Override
   protected boolean lastChild(Parse child, Parse parent) {
     boolean lc = super.lastChild(child, parent);
     while(!lc) {
@@ -125,6 +127,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     return lc;
   }
 
+  @Override
   protected void addParseEvents(List<Event> parseEvents, Parse[] chunks) {
     /** Frontier nodes built from node in a completed parse.  Specifically,
      * they have all their children regardless of the stage of parsing.*/
