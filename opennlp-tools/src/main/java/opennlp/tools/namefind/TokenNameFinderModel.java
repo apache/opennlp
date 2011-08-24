@@ -238,6 +238,7 @@ public class TokenNameFinderModel extends BaseModel {
     return true;
   }
   
+  @Override
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
     

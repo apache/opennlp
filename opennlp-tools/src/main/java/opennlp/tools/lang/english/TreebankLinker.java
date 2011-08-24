@@ -61,6 +61,7 @@ public class TreebankLinker extends DefaultLinker {
     super(project,mode,useDiscourseModel,fixedNonReferentialProbability);
   }
 
+  @Override
   protected void initMentionFinder() {
     mentionFinder = PTBMentionFinder.getInstance(headFinder);
   }

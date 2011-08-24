@@ -51,6 +51,7 @@ public class DefiniteNounResolver extends MaxentResolver {
     return (rv);
   }
 
+  @Override
   protected List<String> getFeatures(MentionContext mention, DiscourseEntity entity) {
     List<String> features = new ArrayList<String>();
     features.addAll(super.getFeatures(mention, entity));

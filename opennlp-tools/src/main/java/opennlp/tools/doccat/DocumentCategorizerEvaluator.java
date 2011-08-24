@@ -101,6 +101,7 @@ public class DocumentCategorizerEvaluator {
   /**
    * Represents this objects as human readable {@link String}.
    */
+  @Override
   public String toString() {
     return "Accuracy: " + accuracy.mean() + "\n" +
         "Number of documents: " + accuracy.count();

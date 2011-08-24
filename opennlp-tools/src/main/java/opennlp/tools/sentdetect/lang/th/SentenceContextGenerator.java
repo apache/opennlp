@@ -31,6 +31,7 @@ public class SentenceContextGenerator extends DefaultSDContextGenerator {
     super(eosCharacters);
   }
 
+  @Override
   protected void collectFeatures(String prefix, String suffix, String previous, String next) {
     buf.append("p=");
     buf.append(prefix);

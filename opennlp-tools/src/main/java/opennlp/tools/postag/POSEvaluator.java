@@ -97,6 +97,7 @@ public class POSEvaluator extends Evaluator<POSSample> {
   /**
    * Represents this objects as human readable {@link String}.
    */
+  @Override
   public String toString() {
     return "Accuracy:" + wordAccuracy.mean() +
         " Number of Samples: " + wordAccuracy.count();

@@ -224,6 +224,7 @@ public abstract class MaxentResolver extends AbstractResolver {
     return (false);
   }
 
+  @Override
   public DiscourseEntity retain(MentionContext mention, DiscourseModel dm) {
     //System.err.println(this+".retain("+ec+") "+mode);
     if (ResolverMode.TRAIN == mode) {
@@ -301,6 +302,7 @@ public abstract class MaxentResolver extends AbstractResolver {
     return features;
   }
 
+  @Override
   public void train() throws IOException {
     if (ResolverMode.TRAIN == mode) {
       if (debugOn) {
@@ -321,6 +323,7 @@ public abstract class MaxentResolver extends AbstractResolver {
     simModel = sm;
   }
 
+  @Override
   protected boolean excluded(MentionContext ec, DiscourseEntity de) {
     if (super.excluded(ec, de)) {
       return true;

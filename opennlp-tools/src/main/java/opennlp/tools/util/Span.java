@@ -208,6 +208,7 @@ public class Span implements Comparable<Span> {
   /**
    * Generates a hash code of the current span.
    */
+  @Override
   public int hashCode() {
     int res = 23;
     res = res * 37 + getStart();
@@ -225,6 +226,7 @@ public class Span implements Comparable<Span> {
   /**
    * Checks if the specified span is equal to the current span.
    */
+  @Override
   public boolean equals(Object o) {
 
     boolean result;
@@ -250,6 +252,7 @@ public class Span implements Comparable<Span> {
   /**
    * Generates a human readable string.
    */
+  @Override
   public String toString() {
     StringBuffer toStringBuffer = new StringBuffer(15);
     toStringBuffer.append(getStart());

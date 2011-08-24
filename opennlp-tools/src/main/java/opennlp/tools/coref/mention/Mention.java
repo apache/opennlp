@@ -152,6 +152,7 @@ public class Mention implements Comparable<Mention> {
     return id;
   }
 
+  @Override
   public String toString() {
     return "mention(span="+span+",hs="+headSpan+", type="+type+", id="+id+" "+parse+" )";
   }

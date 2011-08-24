@@ -32,6 +32,7 @@ public class SemanticEnum {
     compatibility = g;
   }
 
+  @Override
   public String toString() {
     return compatibility;
   }

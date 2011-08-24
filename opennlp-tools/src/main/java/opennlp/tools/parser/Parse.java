@@ -956,6 +956,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     return null;
   }
   
+  @Override
   public boolean equals(Object o) {
     if (o instanceof Parse) {
       Parse p = (Parse) o;
@@ -983,6 +984,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     return false;
   }
   
+  @Override
   public int hashCode() {
     int result = 17;
     result = 37*result + span.hashCode();
