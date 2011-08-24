@@ -45,12 +45,9 @@ import opennlp.tools.parser.PosSampleStream;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
-import opennlp.tools.util.HashSumEventStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelType;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * Class for a shift reduce style parser based on Adwait Ratnaparkhi's 1998 thesis.

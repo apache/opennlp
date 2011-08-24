@@ -21,7 +21,6 @@ package opennlp.tools.util.featuregen;
 import java.util.List;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
 import opennlp.tools.namefind.DictionaryNameFinder;
 
 /**

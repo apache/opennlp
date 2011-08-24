@@ -24,7 +24,6 @@ import java.util.Map;
 
 import opennlp.model.Event;
 import opennlp.model.EventStream;
-import opennlp.tools.postag.POSContextGenerator;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
