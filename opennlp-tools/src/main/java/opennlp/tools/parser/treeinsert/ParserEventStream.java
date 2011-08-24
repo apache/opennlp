@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.maxent.DataStream;
 import opennlp.maxent.io.SuffixSensitiveGISModelReader;
 import opennlp.model.AbstractModel;
 import opennlp.model.Event;

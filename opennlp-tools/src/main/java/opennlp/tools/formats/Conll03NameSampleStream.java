@@ -15,18 +15,19 @@
 
 package opennlp.tools.formats;
 
+import static opennlp.tools.formats.Conll02NameSampleStream.extract;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
-
-import static opennlp.tools.formats.Conll02NameSampleStream.extract;
 
 /**
  * An import stream which can parse the CONLL03 data.

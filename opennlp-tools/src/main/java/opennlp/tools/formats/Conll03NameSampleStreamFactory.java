@@ -16,13 +16,14 @@
 package opennlp.tools.formats;
 
 import java.io.File;
+
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.namefind.NameSample;
 import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
+import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
 public class Conll03NameSampleStreamFactory implements ObjectStreamFactory<NameSample> {
