@@ -265,7 +265,7 @@ class GISTrainer {
     //printTable(contexts);
 
     // determine the correction constant and its inverse
-    double correctionConstant = 1;
+    double correctionConstant = 0;
     for (int ci = 0; ci < contexts.length; ci++) {
       if (values == null || values[ci] == null) {
         if (contexts[ci].length > correctionConstant) {
