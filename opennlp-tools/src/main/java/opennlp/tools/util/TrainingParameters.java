@@ -83,7 +83,6 @@ public class TrainingParameters {
         String prefix = namespace + ".";
         
         if (key.startsWith(prefix))  {
-          key.substring(prefix.length());
           trainingParams.put(key.substring(prefix.length()), entry.getValue());
         }
       }
