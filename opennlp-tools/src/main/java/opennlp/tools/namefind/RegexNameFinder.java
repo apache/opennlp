@@ -70,9 +70,9 @@ public final class RegexNameFinder implements TokenNameFinder {
 
       while (matcher.find()) {
         Integer tokenStartIndex =
-            (Integer) sentencePosTokenMap.get(matcher.start());
+            sentencePosTokenMap.get(matcher.start());
         Integer tokenEndIndex =
-            (Integer) sentencePosTokenMap.get(matcher.end());
+            sentencePosTokenMap.get(matcher.end());
 
         if (tokenStartIndex != null && tokenEndIndex != null) {
           Span annotation = new Span(tokenStartIndex.intValue(),
@@ -83,7 +83,7 @@ public final class RegexNameFinder implements TokenNameFinder {
       }
     }
 
-    return (Span[]) annotations.toArray(
+    return annotations.toArray(
         new Span[annotations.size()]);
   }
   

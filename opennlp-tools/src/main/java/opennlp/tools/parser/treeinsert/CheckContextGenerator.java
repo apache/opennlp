@@ -104,7 +104,7 @@ public class CheckContextGenerator extends AbstractContextGenerator {
     surround(p1, 1, type, p1s, features);
     surround(p2, 2, type, p2s, features);
 
-    return ((String[]) features.toArray(new String[features.size()]));
+    return features.toArray(new String[features.size()]);
   }
 
 }

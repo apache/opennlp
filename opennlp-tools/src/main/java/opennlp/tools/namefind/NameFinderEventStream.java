@@ -102,7 +102,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   public static List<Event> generateEvents(String[] sentence, String[] outcomes, NameContextGenerator cg) {
     List<Event> events = new ArrayList<Event>(outcomes.length);
     for (int i = 0; i < outcomes.length; i++) {
-      events.add(new Event((String) outcomes[i], cg.getContext(i, sentence, outcomes,null)));
+      events.add(new Event(outcomes[i], cg.getContext(i, sentence, outcomes,null)));
     }
     
     cg.updateAdaptiveData(sentence, outcomes);
@@ -138,7 +138,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   public static String[][] additionalContext(String[] tokens, Map<String, String> prevMap) {
     String[][] ac = new String[tokens.length][1];
     for (int ti=0;ti<tokens.length;ti++) {
-      String pt = (String) prevMap.get(tokens[ti]);
+      String pt = prevMap.get(tokens[ti]);
       ac[ti][0]="pd="+pt;
     }
     return ac;

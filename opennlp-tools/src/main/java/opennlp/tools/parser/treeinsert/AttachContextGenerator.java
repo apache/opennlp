@@ -43,7 +43,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
   private boolean containsPunct(Collection<Parse> puncts, String punct){
     if (puncts != null){
       for (Iterator<Parse> pi=puncts.iterator();pi.hasNext();) {
-        Parse p = (Parse) pi.next();
+        Parse p = pi.next();
         if (p.getType().equals(punct)) {
           return true;
         }
@@ -62,14 +62,14 @@ public class AttachContextGenerator extends AbstractContextGenerator {
   public String[] getContext(Parse[] constituents, int index, List<Parse> rightFrontier, int rfi) {
     List<String> features = new ArrayList<String>(100);
     int nodeDistance = rfi;
-    Parse fn = (Parse) rightFrontier.get(rfi);
+    Parse fn = rightFrontier.get(rfi);
     Parse fp = null;
     if (rfi+1 < rightFrontier.size()) {
-      fp = (Parse) rightFrontier.get(rfi+1);
+      fp = rightFrontier.get(rfi+1);
     }
     Parse p_1 = null;
     if (rightFrontier.size() > 0) {
-      p_1 = (Parse) rightFrontier.get(0);
+      p_1 = rightFrontier.get(0);
     }
     Parse p0 = constituents[index];
     Parse p1 = null;
@@ -165,6 +165,6 @@ public class AttachContextGenerator extends AbstractContextGenerator {
         //features.add("noquotematch");
       }
     }
-    return ((String[]) features.toArray(new String[features.size()]));
+    return features.toArray(new String[features.size()]);
   }
 }

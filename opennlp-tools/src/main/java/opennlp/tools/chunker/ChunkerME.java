@@ -146,7 +146,7 @@ public class ChunkerME implements Chunker {
   @Deprecated
   public List<String> chunk(List<String> toks, List<String> tags) {
     bestSequence =
-        beam.bestSequence(toks.toArray(new String[toks.size()]), new Object[] { (String[]) tags.toArray(new String[tags.size()]) });
+        beam.bestSequence(toks.toArray(new String[toks.size()]), new Object[] { tags.toArray(new String[tags.size()]) });
     return bestSequence.getOutcomes();
   }
 

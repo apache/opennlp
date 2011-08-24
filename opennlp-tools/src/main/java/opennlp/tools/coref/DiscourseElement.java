@@ -111,11 +111,11 @@ public abstract class DiscourseElement {
 
   public String toString() {
     Iterator<MentionContext> ei = extents.iterator();
-    MentionContext ex = (MentionContext) ei.next();
+    MentionContext ex = ei.next();
     StringBuffer de = new StringBuffer();
     de.append("[ ").append(ex.toText());//.append("<").append(ex.getHeadText()).append(">");
     while (ei.hasNext()) {
-      ex = (MentionContext) ei.next();
+      ex = ei.next();
       de.append(", ").append(ex.toText());//.append("<").append(ex.getHeadText()).append(">");
     }
     de.append(" ]");

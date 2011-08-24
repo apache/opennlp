@@ -75,7 +75,7 @@ public final class ParserTool implements CmdLineTool {
     int start = 0;
     int i=0;
     for (Iterator<String> ti = tokens.iterator(); ti.hasNext();i++) {
-      String tok = (String) ti.next();
+      String tok = ti.next();
       p.insert(new Parse(text, new Span(start, start + tok.length()), AbstractBottomUpParser.TOK_NODE, 0,i));
       start += tok.length() + 1;
     }

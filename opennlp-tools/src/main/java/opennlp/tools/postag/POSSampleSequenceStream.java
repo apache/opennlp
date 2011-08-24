@@ -52,7 +52,7 @@ public class POSSampleSequenceStream implements SequenceStream {
   
   @SuppressWarnings("unchecked")
   public Event[] updateContext(Sequence sequence, AbstractModel model) {
-    Sequence<POSSample> pss = (Sequence<POSSample>) sequence;
+    Sequence<POSSample> pss = sequence;
     POSTagger tagger = new POSTaggerME(new POSModel("x-unspecified", model, null, null));
     String[] sentence = pss.getSource().getSentence();
     String[] tags = tagger.tag(pss.getSource().getSentence());
@@ -83,7 +83,7 @@ class POSSampleSequenceIterator implements Iterator<Sequence> {
   }
 
   public Sequence<POSSample> next() {
-    POSSample sample = (POSSample) psi.next();
+    POSSample sample = psi.next();
     
     String sentence[] = sample.getSentence();
     String tags[] = sample.getTags();

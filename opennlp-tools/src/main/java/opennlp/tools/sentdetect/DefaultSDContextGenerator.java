@@ -148,7 +148,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     collectFeatures(prefix,suffix,previous,next);
 
     String[] context = new String[collectFeats.size()];
-    context = (String[]) collectFeats.toArray(context);
+    context = collectFeats.toArray(context);
     collectFeats.clear();
     return context;
   }

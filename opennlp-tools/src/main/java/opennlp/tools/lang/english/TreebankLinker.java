@@ -96,7 +96,7 @@ public class TreebankLinker extends DefaultLinker {
     List<Parse> parses = new ArrayList<Parse>();
     for (String line=in.readLine();null != line;line = in.readLine()) {
       if (line.equals("")) {
-        DiscourseEntity[] entities = treebankLinker.getEntities((Mention[]) document.toArray(new Mention[document.size()]));
+        DiscourseEntity[] entities = treebankLinker.getEntities(document.toArray(new Mention[document.size()]));
         //showEntities(entities);
         new CorefParse(parses,entities).show();
         sentenceNumber=0;
@@ -124,7 +124,7 @@ public class TreebankLinker extends DefaultLinker {
       }
     }
     if (document.size() > 0) {
-      DiscourseEntity[] entities = treebankLinker.getEntities((Mention[]) document.toArray(new Mention[document.size()]));
+      DiscourseEntity[] entities = treebankLinker.getEntities(document.toArray(new Mention[document.size()]));
       //showEntities(entities);
       (new CorefParse(parses,entities)).show();
     }
@@ -142,7 +142,7 @@ class CorefParse {
     for (int ei=0,en=entities.length;ei<en;ei++) {
       if (entities[ei].getNumMentions() > 1) {
         for (Iterator<MentionContext> mi = entities[ei].getMentions(); mi.hasNext();) {
-          MentionContext mc = (MentionContext) mi.next();
+          MentionContext mc = mi.next();
           Parse mentionParse = ((DefaultParse) mc.getParse()).getParse();
           parseMap.put(mentionParse,ei+1);
           //System.err.println("CorefParse: "+mc.getParse().hashCode()+" -> "+ (ei+1));
@@ -153,7 +153,7 @@ class CorefParse {
 
   public void show() {
     for (int pi=0,pn=parses.size();pi<pn;pi++) {
-      Parse p = (Parse) parses.get(pi);
+      Parse p = parses.get(pi);
       show(p);
       System.out.println();
     }
