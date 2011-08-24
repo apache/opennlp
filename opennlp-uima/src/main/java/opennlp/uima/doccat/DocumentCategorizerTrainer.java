@@ -19,6 +19,7 @@ package opennlp.uima.doccat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.maxent.GIS;
@@ -47,8 +48,7 @@ import org.apache.uima.util.ProcessTrace;
 /**
  * OpenNLP NameFinder trainer.
  * 
- * Mandatory parameters:
- *   
+ * Note: This class is still work in progress, and should not be used!   
  */
 public class DocumentCategorizerTrainer extends CasConsumer_ImplBase {
 
@@ -58,7 +58,7 @@ public class DocumentCategorizerTrainer extends CasConsumer_ImplBase {
   
   private String mModelName;
   
-  private List<DocumentSample> documentSamples;
+  private List<DocumentSample> documentSamples = new ArrayList<DocumentSample>();
   
   private Type mTokenType;
 
