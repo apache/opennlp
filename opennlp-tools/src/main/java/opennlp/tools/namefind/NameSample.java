@@ -117,6 +117,7 @@ public class NameSample {
     
   }
   
+  @Override
   public String toString() {
     StringBuilder result = new StringBuilder();
 

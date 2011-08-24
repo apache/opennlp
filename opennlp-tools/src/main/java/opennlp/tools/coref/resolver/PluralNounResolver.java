@@ -41,6 +41,7 @@ public class PluralNounResolver extends MaxentResolver {
   }
 
 
+  @Override
   protected List<String> getFeatures(MentionContext mention, DiscourseEntity entity) {
     List<String> features = new ArrayList<String>();
     features.addAll(super.getFeatures(mention, entity));
@@ -59,6 +60,7 @@ public class PluralNounResolver extends MaxentResolver {
     return rv;
   }
 
+  @Override
   protected boolean excluded(MentionContext mention, DiscourseEntity entity) {
     if (super.excluded(mention,entity)) {
       return true;

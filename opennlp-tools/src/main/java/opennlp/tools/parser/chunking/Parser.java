@@ -139,6 +139,7 @@ public class Parser extends AbstractBottomUpParser {
     incompleteIndex = checkModel.getIndex(INCOMPLETE);
   }
 
+  @Override
   protected void advanceTop(Parse p) {
     buildModel.eval(buildContextGenerator.getContext(p.getChildren(), 0), bprobs);
     p.addProb(Math.log(bprobs[topStartIndex]));
@@ -147,6 +148,7 @@ public class Parser extends AbstractBottomUpParser {
     p.setType(TOP_NODE);
   }
 
+  @Override
   protected Parse[] advanceParses(final Parse p, double probMass) {
     double q = 1 - probMass;
     /** The closest previous node which has been labeled as a start node. */

@@ -334,6 +334,7 @@ class DoubleLinkedList {
 	return current;
   }
 
+  @Override
   public String toString() {
 	DoubleLinkedListElement e = first;
 	String s = "[" + e.object.toString();

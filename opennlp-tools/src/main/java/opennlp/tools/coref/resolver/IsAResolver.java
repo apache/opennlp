@@ -54,6 +54,7 @@ public class IsAResolver extends MaxentResolver {
     return false;
   }
 
+  @Override
   protected boolean excluded(MentionContext ec, DiscourseEntity de) {
     MentionContext cec = de.getLastExtent();
     //System.err.println("IsAResolver.excluded?: ec.span="+ec.getSpan()+" cec.span="+cec.getSpan()+" cec="+cec.toText()+" lastToken="+ec.getNextToken());
@@ -80,15 +81,18 @@ public class IsAResolver extends MaxentResolver {
     return (true);
   }
 
+  @Override
   protected boolean outOfRange(MentionContext ec, DiscourseEntity de) {
     MentionContext cec = de.getLastExtent();
     return (cec.getSentenceNumber() != ec.getSentenceNumber());
   }
 
+  @Override
   protected boolean defaultReferent(DiscourseEntity de) {
     return (true);
   }
 
+  @Override
   protected List<String> getFeatures(MentionContext mention, DiscourseEntity entity) {
     List<String> features = new ArrayList<String>();
     features.addAll(super.getFeatures(mention, entity));

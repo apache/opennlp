@@ -109,6 +109,7 @@ public class Sequence implements Comparable<Sequence> {
     }
   }
 
+  @Override
   public String toString() {
     return score + " "+outcomes;
   }

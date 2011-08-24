@@ -59,6 +59,7 @@ public class HashList extends HashMap {
       return o;
   }
 
+  @Override
   public List put(Object key, Object value) {
     List o = (List) get(key);
 

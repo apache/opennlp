@@ -51,6 +51,7 @@ public class SingularPronounResolver extends MaxentResolver {
     return (tag != null && tag.startsWith("PRP") && ResolverUtils.singularThirdPersonPronounPattern.matcher(mention.getHeadTokenText()).matches());
   }
 
+  @Override
   protected List<String> getFeatures(MentionContext mention, DiscourseEntity entity) {
     List<String> features = new ArrayList<String>();
     features.addAll(super.getFeatures(mention, entity));
@@ -98,6 +99,7 @@ public class SingularPronounResolver extends MaxentResolver {
     return (features);
   }
 
+  @Override
   public boolean excluded(MentionContext mention, DiscourseEntity entity) {
     if (super.excluded(mention, entity)) {
       return (true);
@@ -120,6 +122,7 @@ public class SingularPronounResolver extends MaxentResolver {
     return (false);
   }
 
+  @Override
   protected boolean outOfRange(MentionContext mention, DiscourseEntity entity) {
     MentionContext cec = entity.getLastExtent();
     //System.err.println("MaxentSingularPronounresolve.outOfRange: ["+entity.getLastExtent().toText()+" ("+entity.getId()+")] ["+mention.toText()+" ("+mention.getId()+")] entity.sentenceNumber=("+entity.getLastExtent().getSentenceNumber()+")-mention.sentenceNumber=("+mention.getSentenceNumber()+") > "+numSentencesBack);

@@ -62,6 +62,7 @@ public final class ModelUtil {
       throw new IllegalArgumentException("out parameter must not be null!");
     
     GenericModelWriter modelWriter = new GenericModelWriter(model, new DataOutputStream(new OutputStream() {
+      @Override
       public void write(int b) throws IOException {
         out.write(b);
       }

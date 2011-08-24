@@ -43,6 +43,7 @@ public class NumberEnum {
     this.name = name;
   }
 
+  @Override
   public String toString(){
     return name;
   }

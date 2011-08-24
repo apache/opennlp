@@ -144,6 +144,7 @@ public class StringList implements Iterable<String> {
   }
 
 
+  @Override
   public boolean equals(Object obj) {
 
     boolean result;
@@ -163,6 +164,7 @@ public class StringList implements Iterable<String> {
     return result;
   }
 
+  @Override
   public int hashCode() {
     int numBitsRegular = 32 / size();
     int numExtra = 32 % size();
@@ -191,6 +193,7 @@ public class StringList implements Iterable<String> {
     return code;
   }
 
+  @Override
   public String toString() {
     StringBuffer string = new StringBuffer();
 
