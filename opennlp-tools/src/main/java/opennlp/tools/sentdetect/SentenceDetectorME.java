@@ -244,7 +244,7 @@ public class SentenceDetectorME implements SentenceDetector {
   public double[] getSentenceProbabilities() {
     double[] sentProbArray = new double[sentProbs.size()];
     for (int i = 0; i < sentProbArray.length; i++) {
-      sentProbArray[i] = ((Double) sentProbs.get(i)).doubleValue();
+      sentProbArray[i] = sentProbs.get(i).doubleValue();
     }
     return sentProbArray;
   }

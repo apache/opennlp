@@ -52,7 +52,7 @@ public class CharacterNgramFeatureGenerator extends FeatureGeneratorAdapter {
 
     for (Iterator<StringList> it = model.iterator(); it.hasNext();) {
 
-      StringList tokenList = (StringList) it.next();
+      StringList tokenList = it.next();
 
       if (tokenList.size() > 0) {
         features.add("ng=" + tokenList.getToken(0).toLowerCase());

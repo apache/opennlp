@@ -213,10 +213,10 @@ public class ParserEventStream extends AbstractParserEventStream {
         Map<Parse, Integer> parents = getNonAdjoinedParent(chunks[ci]);
         //try daughters first.
         for (int cfi=0;cfi<currentRightFrontier.size();cfi++) {
-          Parse frontierNode = (Parse) rightFrontier.get(cfi);
-          Parse cfn = (Parse) currentRightFrontier.get(cfi);
+          Parse frontierNode = rightFrontier.get(cfi);
+          Parse cfn = currentRightFrontier.get(cfi);
           if (!Parser.checkComplete || !Parser.COMPLETE.equals(cfn.getLabel())) {
-            Integer i = (Integer) parents.get(frontierNode);
+            Integer i = parents.get(frontierNode);
             if (debug) System.err.println("Looking at attachment site ("+cfi+"): "+cfn.getType()+" ci="+i+" cs="+nonPunctChildCount(cfn)+", "+cfn+" :for "+currentChunks[ci].getType()+" "+currentChunks[ci]+" -> "+parents);
             if (attachNode == null &&  i != null && i.intValue() == nonPunctChildCount(cfn)) {
               attachType = Parser.ATTACH_DAUGHTER;
@@ -239,8 +239,8 @@ public class ParserEventStream extends AbstractParserEventStream {
         }
         //try sisters, and generate non-attach events.
         for (int cfi=0;cfi<currentRightFrontier.size();cfi++) {
-          Parse frontierNode = (Parse) rightFrontier.get(cfi);
-          Parse cfn = (Parse) currentRightFrontier.get(cfi);
+          Parse frontierNode = rightFrontier.get(cfi);
+          Parse cfn = currentRightFrontier.get(cfi);
           if (attachNode == null && parents.containsKey(frontierNode.getParent())
               && frontierNode.getType().equals(frontierNode.getParent().getType())
               ){ //&& frontierNode.getParent().getLabel() == null) {
@@ -271,10 +271,10 @@ public class ParserEventStream extends AbstractParserEventStream {
         if (attachNode != null) {
           if (attachType == Parser.ATTACH_DAUGHTER) {
             Parse daughter = currentChunks[ci];
-            if (debug) System.err.println("daughter attach a="+attachNode.getType()+":"+attachNode+" d="+daughter+" com="+lastChild(chunks[ci], (Parse) rightFrontier.get(attachNodeIndex)));
+            if (debug) System.err.println("daughter attach a="+attachNode.getType()+":"+attachNode+" d="+daughter+" com="+lastChild(chunks[ci], rightFrontier.get(attachNodeIndex)));
             attachNode.add(daughter,rules);
             daughter.setParent(attachNode);
-            if (lastChild(chunks[ci], (Parse) rightFrontier.get(attachNodeIndex))) {
+            if (lastChild(chunks[ci], rightFrontier.get(attachNodeIndex))) {
               if (etype == ParserEventTypeEnum.CHECK) {
                 parseEvents.add(new Event(Parser.COMPLETE, checkContextGenerator.getContext(attachNode,currentChunks,ci,true)));
               }
@@ -287,10 +287,10 @@ public class ParserEventStream extends AbstractParserEventStream {
             }
           }
           else if (attachType == Parser.ATTACH_SISTER) {
-            Parse frontierNode = (Parse) rightFrontier.get(attachNodeIndex);
+            Parse frontierNode = rightFrontier.get(attachNodeIndex);
             rightFrontier.set(attachNodeIndex,frontierNode.getParent());
             Parse sister = currentChunks[ci];
-            if (debug) System.err.println("sister attach a="+attachNode.getType()+":"+attachNode+" s="+sister+" ap="+attachNode.getParent()+" com="+lastChild(chunks[ci], (Parse) rightFrontier.get(attachNodeIndex)));
+            if (debug) System.err.println("sister attach a="+attachNode.getType()+":"+attachNode+" s="+sister+" ap="+attachNode.getParent()+" com="+lastChild(chunks[ci], rightFrontier.get(attachNodeIndex)));
             Parse newParent = attachNode.getParent().adjoin(sister,rules);
 
             newParent.setParent(attachNode.getParent());
@@ -299,7 +299,7 @@ public class ParserEventStream extends AbstractParserEventStream {
             if (attachNode == currentChunks[0]) {
               currentChunks[0]= newParent;
             }
-            if (lastChild(chunks[ci], (Parse) rightFrontier.get(attachNodeIndex))) {
+            if (lastChild(chunks[ci], rightFrontier.get(attachNodeIndex))) {
               if (etype == ParserEventTypeEnum.CHECK) {
                 parseEvents.add(new Event(Parser.COMPLETE, checkContextGenerator.getContext(newParent,currentChunks,ci,true)));
               }

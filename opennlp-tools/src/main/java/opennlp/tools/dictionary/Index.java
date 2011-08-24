@@ -42,7 +42,7 @@ public class Index {
 
     while (tokenLists.hasNext()) {
 
-      StringList tokens = (StringList) tokenLists.next();
+      StringList tokens = tokenLists.next();
 
       for (int i = 0; i < tokens.size(); i++) {
         this.tokens.add(tokens.getToken(i));

@@ -55,7 +55,7 @@ public class CountedSet<E> implements Set<E> {
   }
 
   public boolean add(E o) {
-    Integer count = (Integer) cset.get(o);
+    Integer count = cset.get(o);
     if ( count == null ) {
       cset.put(o, 1);
       return true;
@@ -102,7 +102,7 @@ public class CountedSet<E> implements Set<E> {
    * @return the count of the specified object.
    */
   public int getCount(E o) {
-    Integer count = (Integer) cset.get(o);
+    Integer count = cset.get(o);
     if ( count == null ) {
       return 0;
     }
