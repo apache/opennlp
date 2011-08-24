@@ -83,7 +83,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
     if (charType != CharacterEnum.WHITESPACE) {
       tokens.add(new Span(start, sl));
     }
-    return (Span[]) tokens.toArray(new Span[tokens.size()]);
+    return tokens.toArray(new Span[tokens.size()]);
   }
 
 

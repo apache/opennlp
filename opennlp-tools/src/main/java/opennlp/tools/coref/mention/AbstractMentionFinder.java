@@ -141,7 +141,7 @@ public abstract class AbstractMentionFinder implements MentionFinder {
     //exclude nps with UCPs inside.
     List<Parse> sc = np.getSyntacticChildren();
     for (Iterator<Parse> sci = sc.iterator();sci.hasNext();) {
-      Parse scp = (Parse) sci.next();
+      Parse scp = sci.next();
       if (scp.getSyntacticType().equals("UCP") || scp.getSyntacticType().equals("NX")) {
         return;
       }

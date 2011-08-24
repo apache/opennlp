@@ -146,7 +146,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
       features.add(EOS+","+consbop0);
     }
 
-    return (String[]) features.toArray(new String[features.size()]);
+    return features.toArray(new String[features.size()]);
   }
 
 }

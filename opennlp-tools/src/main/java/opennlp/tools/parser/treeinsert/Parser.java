@@ -345,7 +345,7 @@ public class Parser extends AbstractBottomUpParser {
       else {
         List<Parse> rf = getRightFrontier(p,punctSet);
         for (int fi=0,fs=rf.size();fi<fs;fi++) {
-          Parse fn = (Parse) rf.get(fi);
+          Parse fn = rf.get(fi);
           attachModel.eval(attachContextGenerator.getContext(children, advanceNodeIndex,rf,fi), aprobs);
           if (debugOn) {
             //List cs = java.util.Arrays.asList(attachContextGenerator.getContext(children, advanceNodeIndex,rf,fi,punctSet));
@@ -371,13 +371,13 @@ public class Parser extends AbstractBottomUpParser {
               List<Parse> crf = getRightFrontier(newParse2,punctSet);
               Parse updatedNode;
               if (attachments[ai] == daughterAttachIndex) {//attach daughter
-                updatedNode = (Parse) crf.get(fi);
+                updatedNode = crf.get(fi);
                 updatedNode.add(advanceNode,headRules);
               }
               else { //attach sister
                 Parse psite;
                 if (fi+1 < crf.size()) {
-                  psite = (Parse) crf.get(fi+1);
+                  psite = crf.get(fi+1);
                   updatedNode = psite.adjoin(advanceNode,headRules);
                 }
                 else {
@@ -388,7 +388,7 @@ public class Parser extends AbstractBottomUpParser {
               }
               //update spans affected by attachment
               for (int ni=fi+1;ni<crf.size();ni++) {
-                Parse node = (Parse) crf.get(ni);
+                Parse node = crf.get(ni);
                 node.updateSpan();
               }
               //if (debugOn) {System.out.print(ai+"-result: ");newParse2.show();System.out.println();}

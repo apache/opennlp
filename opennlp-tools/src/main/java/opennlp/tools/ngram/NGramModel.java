@@ -94,7 +94,7 @@ public class NGramModel implements Iterable<StringList>{
    */
   public int getCount(StringList ngram) {
 
-    Integer count = (Integer) mNGrams.get(ngram);
+    Integer count = mNGrams.get(ngram);
 
     if (count == null) {
       return 0;
@@ -111,7 +111,7 @@ public class NGramModel implements Iterable<StringList>{
    */
   public void setCount(StringList ngram, int count) {
 
-    Integer oldCount = (Integer) mNGrams.put(ngram, count);
+    Integer oldCount = mNGrams.put(ngram, count);
 
     if (oldCount == null) {
       mNGrams.remove(ngram);
@@ -256,7 +256,7 @@ public class NGramModel implements Iterable<StringList>{
 
       for (Iterator<StringList> it = iterator(); it.hasNext();) {
 
-        StringList ngram = (StringList) it.next();
+        StringList ngram = it.next();
 
         int count = getCount(ngram);
 
@@ -295,7 +295,7 @@ public class NGramModel implements Iterable<StringList>{
     Dictionary dict = new Dictionary(caseSensitive);
 
     for (Iterator<StringList> it = iterator(); it.hasNext();) {
-      dict.put((StringList)it.next());
+      dict.put(it.next());
     }
 
     return dict;
@@ -319,7 +319,7 @@ public class NGramModel implements Iterable<StringList>{
 
 	        public Entry next() {
 
-	          StringList tokens = (StringList) mDictionaryIterator.next();
+	          StringList tokens = mDictionaryIterator.next();
 
 	          Attributes attributes = new Attributes();
 

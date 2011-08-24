@@ -29,7 +29,7 @@ public class PreviousMapFeatureGenerator implements AdaptiveFeatureGenerator {
   private Map<String, String> previousMap = new HashMap<String, String>();
 
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
-    features.add("pd=" + (String) previousMap.get(tokens[index]));
+    features.add("pd=" + previousMap.get(tokens[index]));
   }
 
   /**

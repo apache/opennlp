@@ -83,7 +83,7 @@ public class DictionaryNameFinder implements TokenNameFinder {
       }
     }
 
-    return (Span[]) foundNames.toArray(new Span[foundNames.size()]);
+    return foundNames.toArray(new Span[foundNames.size()]);
   }
   
   public void clearAdaptiveData() {

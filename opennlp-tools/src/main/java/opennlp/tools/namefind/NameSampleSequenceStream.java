@@ -61,7 +61,7 @@ public class NameSampleSequenceStream implements SequenceStream {
   
   @SuppressWarnings("unchecked")
   public Event[] updateContext(Sequence sequence, AbstractModel model) {
-    Sequence<NameSample> pss = (Sequence<NameSample>) sequence;
+    Sequence<NameSample> pss = sequence;
     TokenNameFinder tagger = new NameFinderME(new TokenNameFinderModel("x-unspecified", model, Collections.<String, Object>emptyMap(), null));
     String[] sentence = pss.getSource().getSentence();
     String[] tags = NameFinderEventStream.generateOutcomes(tagger.find(sentence), null, sentence.length);
@@ -94,7 +94,7 @@ class NameSampleSequenceIterator implements Iterator<Sequence> {
   }
 
   public Sequence<NameSample> next() {
-    NameSample sample = (NameSample) psi.next();
+    NameSample sample = psi.next();
     
     String sentence[] = sample.getSentence();
     String tags[] = NameFinderEventStream.generateOutcomes(sample.getNames(), null, sentence.length);

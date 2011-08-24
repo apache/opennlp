@@ -193,7 +193,7 @@ public class TokenSample {
       }
     }
     
-    return new TokenSample(untaggedSampleString.toString(), (Span[]) realTokenSpans.toArray(
+    return new TokenSample(untaggedSampleString.toString(), realTokenSpans.toArray(
         new Span[realTokenSpans.size()]));
   }
   

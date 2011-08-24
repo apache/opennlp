@@ -119,9 +119,9 @@ public class BeamSearch<T> {
       int sz = Math.min(size, prev.size());
 
       for (int sc = 0; prev.size() > 0 && sc < sz; sc++) {
-        Sequence top = (Sequence) prev.extract();
+        Sequence top = prev.extract();
         List<String> tmpOutcomes = top.getOutcomes();
-        String[] outcomes = (String[]) tmpOutcomes.toArray(new String[tmpOutcomes.size()]);
+        String[] outcomes = tmpOutcomes.toArray(new String[tmpOutcomes.size()]);
         String[] contexts = cg.getContext(i, sequence, outcomes, additionalContext);
         double[] scores;
         if (contextsCache != null) {
@@ -180,7 +180,7 @@ public class BeamSearch<T> {
     Sequence[] topSequences = new Sequence[numSeq];
 
     for (int seqIndex = 0; seqIndex < numSeq; seqIndex++) {
-      topSequences[seqIndex] = (Sequence) prev.extract();
+      topSequences[seqIndex] = prev.extract();
     }
 
     return topSequences;

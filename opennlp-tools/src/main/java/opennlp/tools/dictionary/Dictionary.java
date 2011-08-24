@@ -201,8 +201,7 @@ public class Dictionary implements Iterable<StringList> {
 
         public Entry next() {
 
-          StringList tokens = (StringList)
-              dictionaryIterator.next();
+          StringList tokens = dictionaryIterator.next();
           
           return new Entry(tokens, new Attributes());
         }

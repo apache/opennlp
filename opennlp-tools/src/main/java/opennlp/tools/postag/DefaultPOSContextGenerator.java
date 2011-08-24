@@ -190,7 +190,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
         e.add("nn=" + nextnext);
       }
     }
-    String[] contexts = (String[]) e.toArray(new String[e.size()]);
+    String[] contexts = e.toArray(new String[e.size()]);
     if (contextsCache != null) {
       contextsCache.put(cacheKey,contexts);
     }

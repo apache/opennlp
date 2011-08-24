@@ -147,7 +147,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
       }
       return constituents[constituents.length - 1].getHead();
     }
-    else if ((hr = (HeadRule) headRules.get(type)) != null) {
+    else if ((hr = headRules.get(type)) != null) {
       String[] tags = hr.tags;
       int cl = constituents.length;
       int tl = tags.length;
@@ -196,10 +196,10 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
   public void labelGaps(Stack<Constituent> stack) {
     if (stack.size() > 4) {
       //Constituent con0 = (Constituent) stack.get(stack.size()-1);
-      Constituent con1 = (Constituent) stack.get(stack.size()-2);
-      Constituent con2 = (Constituent) stack.get(stack.size()-3);
-      Constituent con3 = (Constituent) stack.get(stack.size()-4);
-      Constituent con4 = (Constituent) stack.get(stack.size()-5);
+      Constituent con1 = stack.get(stack.size()-2);
+      Constituent con2 = stack.get(stack.size()-3);
+      Constituent con3 = stack.get(stack.size()-4);
+      Constituent con4 = stack.get(stack.size()-5);
       //System.err.println("con0="+con0.label+" con1="+con1.label+" con2="+con2.label+" con3="+con3.label+" con4="+con4.label);
       //subject extraction
       if (con1.getLabel().equals("NP") && con2.getLabel().equals("S") && con3.getLabel().equals("SBAR")) {
