@@ -83,7 +83,9 @@
 	        <plugin>
 			  <groupId>org.apache.felix</groupId>
 			  <artifactId>maven-bundle-plugin</artifactId>
-			  <version>2.3.5</version>
+			  <!-- Version 2.3.5 breaks backward compatibility with java 5,
+			       but the build must run on java 5! -->
+			  <version>2.3.4</version>
 			</plugin>
 	      </plugins>
 	    </pluginManagement>
