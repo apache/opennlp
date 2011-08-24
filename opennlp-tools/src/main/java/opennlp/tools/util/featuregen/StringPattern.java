@@ -22,18 +22,18 @@ package opennlp.tools.util.featuregen;
  */
 public class StringPattern {
 
-  private static int INITAL_CAPITAL_LETTER = 0x1;
-  private static int ALL_CAPITAL_LETTER = 0x1 << 1;
-  private static int ALL_LOWERCASE_LETTER = 0x1 << 2;
-  private static int ALL_LETTERS = 0x1 << 3;
-  private static int ALL_DIGIT = 0x1 << 4;
-  private static int CONTAINS_PERIOD = 0x1 << 5;
-  private static int CONTAINS_COMMA = 0x1 << 6;
-  private static int CONTAINS_SLASH = 0x1 << 7;
-  private static int CONTAINS_DIGIT = 0x1 << 8;
-  private static int CONTAINS_HYPHEN = 0x1 << 9;
-  private static int CONTAINS_LETTERS = 0x1 << 10;
-  private static int CONTAINS_UPPERCASE = 0x1 << 11;
+  private static final int INITAL_CAPITAL_LETTER = 0x1;
+  private static final int ALL_CAPITAL_LETTER = 0x1 << 1;
+  private static final int ALL_LOWERCASE_LETTER = 0x1 << 2;
+  private static final int ALL_LETTERS = 0x1 << 3;
+  private static final int ALL_DIGIT = 0x1 << 4;
+  private static final int CONTAINS_PERIOD = 0x1 << 5;
+  private static final int CONTAINS_COMMA = 0x1 << 6;
+  private static final int CONTAINS_SLASH = 0x1 << 7;
+  private static final int CONTAINS_DIGIT = 0x1 << 8;
+  private static final int CONTAINS_HYPHEN = 0x1 << 9;
+  private static final int CONTAINS_LETTERS = 0x1 << 10;
+  private static final int CONTAINS_UPPERCASE = 0x1 << 11;
 
   private final int pattern;
 
