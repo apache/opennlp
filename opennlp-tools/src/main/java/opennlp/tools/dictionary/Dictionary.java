@@ -226,7 +226,7 @@ public class Dictionary implements Iterable<StringList> {
     if (obj == this) {
       result = true;
     }
-    else if (obj != null && obj instanceof Dictionary) {
+    else if (obj instanceof Dictionary) {
       Dictionary dictionary  = (Dictionary) obj;
 
       result = entrySet.equals(dictionary.entrySet);
