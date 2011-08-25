@@ -30,7 +30,7 @@
     </parent>
     
 	<artifactId>opennlp-tools</artifactId>
-	<packaging>jar</packaging>
+	<packaging>bundle</packaging>
 	<name>OpenNLP Tools</name>
 	<repositories>
 		<repository>
@@ -102,6 +102,25 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+					<Export-Package>
+						!opennlp.tools.cmdline.*,
+						!opennlp.tools.coref.*,
+						opennlp.tools.*
+					</Export-Package>
+					<Import-Package>
+						!net.didion.jwnl.*,
+						*
+					</Import-Package>
+					</instructions>
+				</configuration>
 			</plugin>
 			
             <plugin>
