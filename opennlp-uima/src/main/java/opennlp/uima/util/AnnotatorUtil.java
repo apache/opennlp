@@ -93,7 +93,7 @@ public final class AnnotatorUtil {
     if (feature == null) {
       throw new OpenNlpAnnotatorProcessException(
           ExceptionMessages.FEATURE_NOT_FOUND, new Object[] { type.getName(),
-              feature });
+              featureName});
     }
 
     return feature;
