@@ -86,13 +86,6 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
       listener = new TokenEvaluationErrorListener();
     }
     
-    mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM,
-        Integer.toString(params.getIterations()));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM,
-        Integer.toString(params.getCutoff()));
-
     try {
       Dictionary dict = TokenizerTrainerTool.loadDict(params.getAbbDict(), params.getIsAbbDictCS());
 
