@@ -25,6 +25,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.model.ModelUtil;
 
 public class TokenNameFinderCrossValidator {
@@ -43,10 +44,14 @@ public class TokenNameFinderCrossValidator {
    * Name finder cross validator
    *  
    * @param languageCode 
-    *          the language of the training data
+   *          the language of the training data
    * @param cutoff
    * @param iterations
+   * 
+   * @deprecated use {@link #TokenNameFinderCrossValidator(String, String, TrainingParameters, byte[], Map, TokenNameFinderEvaluationMonitor...)}
+   * instead and pass in a TrainingParameters object.
    */
+  @Deprecated  
   public TokenNameFinderCrossValidator(String languageCode, int cutoff,
       int iterations) {
     this(languageCode, null, cutoff, iterations);
@@ -63,7 +68,11 @@ public class TokenNameFinderCrossValidator {
    *          specifies the min number of times a feature must be seen
    * @param iterations
    *          the number of iterations
+   *          
+   * @deprecated use {@link #TokenNameFinderCrossValidator(String, String, TrainingParameters, byte[], Map, TokenNameFinderEvaluationMonitor...)}
+   * instead and pass in a TrainingParameters object.
    */
+  @Deprecated
   public TokenNameFinderCrossValidator(String languageCode, String type,
       int cutoff, int iterations) {
     this.languageCode = languageCode;
@@ -89,7 +98,11 @@ public class TokenNameFinderCrossValidator {
    *          specifies the min number of times a feature must be seen
    * @param iterations
    *          the number of iterations
+   *          
+   * @deprecated use {@link #TokenNameFinderCrossValidator(String, String, TrainingParameters, byte[], Map, TokenNameFinderEvaluationMonitor...)}
+   * instead and pass in a TrainingParameters object.
    */
+  @Deprecated
   public TokenNameFinderCrossValidator(String languageCode, String type,
       byte[] featureGeneratorBytes,
       Map<String, Object> resources, int iterations, int cutoff) {

@@ -427,6 +427,11 @@ public class NameFinderME implements TokenNameFinder {
          generator, resources);
    }
 
+   /**
+   * @deprecated use {@link #train(String, String, ObjectStream, TrainingParameters, AdaptiveFeatureGenerator, Map)}
+   * instead and pass in a TrainingParameters object.
+   */
+  @Deprecated
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
        final Map<String, Object> resources, int iterations, int cutoff) throws IOException  {
      return train(languageCode, type, samples, (AdaptiveFeatureGenerator) null, resources, iterations, cutoff);
@@ -437,8 +442,11 @@ public class NameFinderME implements TokenNameFinder {
      return NameFinderME.train(languageCode, type, samples, resources, 100, 5);
    }
   
-   // TODO: How can cmd line tool create the resources map ?!
-   // Needs access to derserializers ...
+   /**
+   * @deprecated use {@link #train(String, String, ObjectStream, TrainingParameters, byte[], Map)}
+   * instead and pass in a TrainingParameters object.
+   */
+  @Deprecated
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
        byte[] generatorDescriptor, final Map<String, Object> resources, 
        int iterations, int cutoff) throws IOException {

@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.TrainUtil;
+import opennlp.tools.chunker.ChunkerContextGenerator;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.BeamSearch;
@@ -344,6 +345,11 @@ public class POSTaggerME implements POSTagger {
         ngramDictionary, manifestInfoEntries);
   }
   
+  /**
+   * @deprecated use {@link #train(String, ObjectStream, TrainingParameters, POSDictionary, Dictionary)}
+   * instead and pass in a TrainingParameters object.
+   */
+  @Deprecated
   public static POSModel train(String languageCode, ObjectStream<POSSample> samples, ModelType modelType, POSDictionary tagDictionary,
       Dictionary ngramDictionary, int cutoff, int iterations) throws IOException {
 

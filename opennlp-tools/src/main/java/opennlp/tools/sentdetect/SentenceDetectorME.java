@@ -285,6 +285,11 @@ public class SentenceDetectorME implements SentenceDetector {
         useTokenEnd, abbreviations, manifestInfoEntries);
   }
   
+  /**
+   * @deprecated use {@link #train(String, ObjectStream, boolean, Dictionary, TrainingParameters)}
+   * instead and pass in a TrainingParameters object.
+   */
+  @Deprecated
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) throws IOException {
     return train(languageCode, samples, useTokenEnd, abbreviations, ModelUtil.createTrainingParameters(iterations, cutoff));

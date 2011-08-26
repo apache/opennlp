@@ -49,6 +49,10 @@ public class SDCrossValidator {
     this.listeners = listeners;
   }
   
+  /**
+   * @deprecated use {@link #SDCrossValidator(String, TrainingParameters)}
+   * instead and pass in a TrainingParameters object.
+   */
   public SDCrossValidator(String languageCode, int cutoff, int iterations) {
     this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations));
   }
@@ -57,6 +61,11 @@ public class SDCrossValidator {
     this(languageCode, params, (Dictionary)null);
   }
   
+  /**
+   * @deprecated use {@link #SDCrossValidator(String, TrainingParameters, Dictionary, SentenceDetectorEvaluationMonitor...)}
+   * instead and pass in a TrainingParameters object.
+   */
+  @Deprecated
   public SDCrossValidator(String languageCode, int cutoff, int iterations, Dictionary abbreviations) {
     this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations), abbreviations);
   }
