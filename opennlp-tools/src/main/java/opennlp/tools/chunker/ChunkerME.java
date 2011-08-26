@@ -210,6 +210,10 @@ public class ChunkerME implements Chunker {
     return new ChunkerModel(lang, maxentModel, manifestInfoEntries);
   }
   
+  /**
+   * @deprecated use {@link #train(String, ObjectStream, ChunkerContextGenerator, TrainingParameters)}
+   * instead and pass in a TrainingParameters object.
+   */
   public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, 
       int cutoff, int iterations, ChunkerContextGenerator contextGenerator)
       throws IOException {
@@ -226,7 +230,11 @@ public class ChunkerME implements Chunker {
    * @return the new model
    * 
    * @throws IOException
+   * 
+   * @deprecated use {@link #train(String, ObjectStream, ChunkerContextGenerator, TrainingParameters)}
+   * instead and pass in a TrainingParameters object.
    */
+  @Deprecated
   public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, int cutoff, int iterations)
       throws IOException, ObjectStreamException {
     return train(lang, in, cutoff, iterations, new DefaultChunkerContextGenerator());
