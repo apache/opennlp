@@ -32,6 +32,7 @@ import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.ChunkContextGenerator;
 import opennlp.tools.parser.ChunkSampleStream;
@@ -262,6 +263,10 @@ public class Parser extends AbstractBottomUpParser {
     return newParses;
   }
 
+  /**
+   * @deprecated Please do not use anymore, use the ObjectStream train methods instead! This method
+   * will be removed soon.
+   */
   @Deprecated
   public static AbstractModel train(opennlp.model.EventStream es, int iterations, int cut) throws java.io.IOException {
     return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
@@ -321,6 +326,11 @@ public class Parser extends AbstractBottomUpParser {
         ParserType.CHUNKING, manifestInfoEntries);
   }
 
+  /**
+  * @deprecated use {@link #train(String, ObjectStream, HeadRules, TrainingParameters)}
+  * instead and pass in a TrainingParameters object.
+  */
+  @Deprecated
   public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
       throws IOException {
     

@@ -34,6 +34,11 @@ public class ChunkerCrossValidator {
   private FMeasure fmeasure = new FMeasure();
   private ChunkerEvaluationMonitor[] listeners;
 
+  /**
+   * @deprecated use {@link ChunkerCrossValidator#ChunkerCrossValidator(String, TrainingParameters, ChunkerEvaluationMonitor...)}
+   * instead and pass in a TrainingParameters object.
+   */
+  @Deprecated
   public ChunkerCrossValidator(String languageCode, int cutoff, int iterations) {
 
     this.languageCode = languageCode;

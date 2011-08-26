@@ -48,6 +48,10 @@ public class TokenizerCrossValidator {
     this.listeners = listeners;
   }
   
+  /**
+   * @deprecated use {@link #TokenizerCrossValidator(String, boolean, TrainingParameters, TokenizerEvaluationMonitor...)}
+   * instead and pass in a TrainingParameters object.
+   */
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, int cutoff, int iterations) {
     this(language, alphaNumericOptimization, ModelUtil.createTrainingParameters(iterations, cutoff));
   }

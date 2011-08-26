@@ -42,7 +42,11 @@ public class POSTaggerCrossValidator {
   private Mean wordAccuracy = new Mean();
   private POSTaggerEvaluationMonitor[] listeners;
   
-  
+  /**
+   * @deprecated use {@link #POSTaggerCrossValidator(String, TrainingParameters, POSDictionary, Dictionary, POSTaggerEvaluationMonitor...)}
+   * instead and pass in a TrainingParameters object.
+   */
+  @Deprecated
   public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
       Dictionary ngramDictionary, int cutoff, int iterations) {
     this.languageCode = languageCode;

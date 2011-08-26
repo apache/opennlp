@@ -283,7 +283,10 @@ public class TokenizerME extends AbstractTokenizer {
    * is thrown during IO operations on a temp file which is created during training.
    * Or if reading from the {@link ObjectStream} fails.
    * 
+   * @deprecated use {@link #train(String, ObjectStream, boolean, TrainingParameters)}
+   * instead and pass in a TrainingParameters object.
    */
+  @Deprecated
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization, int cutoff, int iterations) throws IOException {
 
