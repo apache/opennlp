@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.perceptron;
+package opennlp.maxent;
 
 import static opennlp.PrepAttachDataUtil.createTrainingStream;
 import static opennlp.PrepAttachDataUtil.testModel;
@@ -24,20 +24,29 @@ import java.io.IOException;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.TwoPassDataIndexer;
+import opennlp.model.UniformPrior;
 
 import org.junit.Test;
 
-/**
- * Test for perceptron training and use with the ppa data.
- */
-public class PerceptronPrepAttachTest {
+public class MaxentPrepAttachTest {
 
   @Test
-  public void testPerceptronOnPrepAttachData() throws IOException {
+  public void testMaxentOnPrepAttachData() throws IOException {
     AbstractModel model = 
-        new PerceptronTrainer().trainModel(5000, 
+        new GISTrainer(true).trainModel(100, 
         new TwoPassDataIndexer(createTrainingStream(), 1, false), 1);
 
-    testModel(model, 0.7613270611537509);
+    testModel(model, 0.7997028967566229);
   }
+  
+  @Test
+  public void testMaxentOnPrepAttachData2Threads() throws IOException {
+    AbstractModel model = 
+        new GISTrainer(true).trainModel(100,
+            new TwoPassDataIndexer(createTrainingStream(), 1, false),
+            new UniformPrior(), 1, 2);
+    
+    testModel(model, 0.7997028967566229);
+  }
+  
 }
