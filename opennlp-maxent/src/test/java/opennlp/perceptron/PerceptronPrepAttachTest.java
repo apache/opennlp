@@ -17,15 +17,43 @@
 
 package opennlp.perceptron;
 
-import opennlp.model.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.io.*;
-import java.util.*;
 import junit.framework.TestCase;
+import opennlp.model.AbstractModel;
+import opennlp.model.Event;
+import opennlp.model.EventStream;
+import opennlp.model.ListEventStream;
+import opennlp.model.TwoPassDataIndexer;
 
-// Test for perceptron training and use.
+/**
+ * Test for perceptron training and use with the ppa data.
+ */
 public class PerceptronPrepAttachTest extends TestCase {
 
+  private static List<Event> readPpaFile(String filename) throws IOException {
+
+    List<Event> events = new ArrayList<Event>();
+
+    BufferedReader in = new BufferedReader(new FileReader(filename));
+    String line;
+
+    while ((line = in.readLine()) != null) {
+      String[] items = line.split("\\s+");
+      String label = items[5];
+      String[] context = { "verb=" + items[1], "noun=" + items[2],
+          "prep=" + items[3], "prep_obj=" + items[4] };
+      events.add(new Event(label, context));
+    }
+    in.close();
+    
+    return events;
+  }
+  
   public void testPerceptronOnPrepAttachData() throws IOException {
     List<Event> trainingEvents = readPpaFile("src/test/resources/data/ppa/training");
 
@@ -57,26 +85,6 @@ public class PerceptronPrepAttachTest extends TestCase {
     double accuracy = correct/(double)total;
     System.out.println("Accuracy on PPA devset: (" + correct + "/" + total + ") " + accuracy);
 
-    assertEquals(accuracy, 0.7813815300817034, .00001);
+    assertEquals(0.7613270611537509, accuracy, .00001);
   }
-
-  private static List<Event> readPpaFile (String filename) throws IOException {
-
-    List<Event> events = new ArrayList<Event>();
-
-    BufferedReader in = new BufferedReader(new FileReader(filename));
-    String line;
-    
-    while ( (line = in.readLine()) != null ) {
-      String[] items = line.split("\\s+");
-      String label = items[5];
-      String[] context = { "verb="+items[1], "noun="+items[2], "prep="+items[3], "prep_obj="+items[4] };
-      events.add(new Event(label, context));
-    }
-    in.close();
-    return events;
-  }
-
 }
-
-
