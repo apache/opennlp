@@ -20,6 +20,8 @@ package opennlp.perceptron;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,30 +41,36 @@ public class PerceptronPrepAttachTest extends TestCase {
 
     List<Event> events = new ArrayList<Event>();
 
-    BufferedReader in = new BufferedReader(new FileReader(filename));
-    String line;
-
-    while ((line = in.readLine()) != null) {
-      String[] items = line.split("\\s+");
-      String label = items[5];
-      String[] context = { "verb=" + items[1], "noun=" + items[2],
-          "prep=" + items[3], "prep_obj=" + items[4] };
-      events.add(new Event(label, context));
+    InputStream in = PerceptronPrepAttachTest.class.getResourceAsStream("/data/ppa/" +
+        filename);
+    
+    try {
+      BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+      String line;
+      while ((line = reader.readLine()) != null) {
+        String[] items = line.split("\\s+");
+        String label = items[5];
+        String[] context = { "verb=" + items[1], "noun=" + items[2],
+            "prep=" + items[3], "prep_obj=" + items[4] };
+        events.add(new Event(label, context));
+      }
     }
-    in.close();
+    finally {
+      in.close();
+    }
     
     return events;
   }
   
   public void testPerceptronOnPrepAttachData() throws IOException {
-    List<Event> trainingEvents = readPpaFile("src/test/resources/data/ppa/training");
+    List<Event> trainingEvents = readPpaFile("training");
 
     EventStream trainingStream = new ListEventStream(trainingEvents);
 
     AbstractModel model = 
       new PerceptronTrainer().trainModel(5000, new TwoPassDataIndexer(trainingStream, 1, false), 1);
 
-    List<Event> devEvents = readPpaFile("src/test/resources/data/ppa/devset");
+    List<Event> devEvents = readPpaFile("devset");
 
     int total = 0;
     int correct = 0;
