@@ -156,14 +156,13 @@ F-Measure: 0.9230575441395671]]>
 		<para>
 		The English data is the Reuters Corpus, which is a collection of news wire articles.
 		The Reuters Corpus can be obtained free of charges from the NIST for research
-		purposes: http://trec.nist.gov/data/reuters/reuters.html
+		purposes: <ulink url="http://trec.nist.gov/data/reuters/reuters.html">http://trec.nist.gov/data/reuters/reuters.html</ulink>
 		</para>
 		<para>
 		The German data is a collection of articles from the German newspaper Frankfurter
 		Rundschau. The articles are part of the ECI Multilingual Text Corpus which
 		can be obtained for 75$ (2010) from the Linguistic Data Consortium:
-		http://www.ldc.upenn.edu/Catalog/CatalogEntry.jsp?catalogId=LDC94T5 
-		</para>
+<ulink url="http://www.ldc.upenn.edu/Catalog/CatalogEntry.jsp?catalogId=LDC94T5">http://www.ldc.upenn.edu/Catalog/CatalogEntry.jsp?catalogId=LDC94T5</ulink>		</para>
 		<para>After one of the corpora is available the data must be
 		transformed as explained in the README file to the conll format.
 		The transformed data can be read by the OpenNLP CONLL03 converter.
@@ -259,12 +258,12 @@ F-Measure: 0.8267557582133971]]>
 	<section id="tools.corpora.arvores-deitadas">
 		<title>Arvores Deitadas</title>
 		<para>
-		The Portuguese corpora available at <ulink url="Floresta Sintá(c)tica">http://www.linguateca.pt</ulink> project follow the Arvores Deitadas (AD) format. Apache OpenNLP includes tools to convert from AD format to native format.  
+		The Portuguese corpora available at <ulink url="http://www.linguateca.pt">Floresta Sintá(c)tica</ulink> project follow the Arvores Deitadas (AD) format. Apache OpenNLP includes tools to convert from AD format to native format.  
 		</para>		
 		<section id="tools.corpora.arvores-deitadas.getting">
 			<title>Getting the data</title>
 			<para>
-			The Corpus can be downloaded from here: http://www.linguateca.pt/floresta/corpus.html
+			The Corpus can be downloaded from here: <ulink url="http://www.linguateca.pt/floresta/corpus.html">http://www.linguateca.pt/floresta/corpus.html</ulink>
 			</para>
 			<para>
 			The Name Finder models were trained using the Amazonia corpus: <ulink url="http://www.linguateca.pt/floresta/ficheiros/gz/amazonia.ad.gz">amazonia.ad</ulink>.
@@ -314,7 +313,7 @@ F-Measure: 0.7717879983140168]]>
 			</para>
 		</section>
 	</section>
-	<section id="tools.corpora.conll">
+	<section id="tools.corpora.leipzig">
 	<title>Leipzig Corpora</title>
 	<para>
 	The Leiopzig Corpora collection presents corpora in different languages. The corpora is a collection of individual sentences collected
