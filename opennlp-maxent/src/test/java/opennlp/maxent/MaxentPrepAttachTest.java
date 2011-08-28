@@ -74,7 +74,7 @@ public class MaxentPrepAttachTest {
     
     AbstractModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
     
-    testModel(model, 0.7997028967566229);
+    testModel(model, 0.8086159940579352 );
   }
   
 }
