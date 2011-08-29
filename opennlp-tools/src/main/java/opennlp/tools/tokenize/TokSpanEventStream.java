@@ -139,7 +139,6 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
               //keep looking
             }
             else {
-              System.err.println();
               if (logger.isLoggable(Level.WARNING)) {
                 logger.warning("Bad training token: " + tokens[ti] + " cand: " + cSpan +
                     " token="+text.substring(tokens[ti].getStart(), tokens[ti].getEnd()));
