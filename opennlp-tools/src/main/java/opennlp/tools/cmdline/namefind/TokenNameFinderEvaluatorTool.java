@@ -55,13 +55,13 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(EvaluatorParams.class);
+        + ArgumentParser.createUsage(EvalToolParams.class);
   }
 
   public void run(String[] args) {
 
     if (!ArgumentParser
-        .validateArguments(args, EvaluatorParams.class)) {
+        .validateArguments(args, EvalToolParams.class)) {
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
