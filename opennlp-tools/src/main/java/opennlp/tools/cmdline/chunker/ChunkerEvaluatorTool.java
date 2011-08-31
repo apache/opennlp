@@ -55,7 +55,7 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
   }
 
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(EvaluatorParams.class);
+    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(EvalToolParams.class);
   }
 
   public void run(String[] args) {
