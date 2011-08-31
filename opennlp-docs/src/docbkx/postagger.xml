@@ -270,8 +270,10 @@ finally {
 		The dictionary is defined in a xml format and can be created and stored with the POSDictionary class.
 		Pleaes for now checkout the javadoc and source code of that class.
 		</para>
-		<para>Note: Contributions to extend this section are welcome. The format should be documented and
-		sample code should show how to use the dictionary.</para>
+		<para>Note: The format should be documented and sample code should show how to use the dictionary.
+			  Any contributions are very welcome. If you want to contribute please contact us on the mailing list
+			  or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-287">OPENNLP-287</ulink>.
+		</para>
 		</section>
 		</section>
 		
