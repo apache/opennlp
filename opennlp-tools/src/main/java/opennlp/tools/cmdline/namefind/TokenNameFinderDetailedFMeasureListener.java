@@ -19,10 +19,12 @@ package opennlp.tools.cmdline.namefind;
 
 import opennlp.tools.cmdline.DetailedFMeasureListener;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.util.Span;
 
 public class TokenNameFinderDetailedFMeasureListener extends
-    DetailedFMeasureListener<NameSample> {
+    DetailedFMeasureListener<NameSample> implements
+    TokenNameFinderEvaluationMonitor {
 
   @Override
   protected Span[] asSpanArray(NameSample sample) {
