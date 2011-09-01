@@ -113,16 +113,30 @@ public class Dictionary implements Iterable<StringList> {
    * @throws InvalidFormatException
    */
   public Dictionary(InputStream in) throws IOException, InvalidFormatException {
-    this(in,false);
+    isCaseSensitive = DictionarySerializer.create(in, new EntryInserter() {
+      public void insert(Entry entry) {
+        put(entry.getTokens());
+      }
+    });
   }
 
+  /**
+   * Loads a Dictionary from a XML file.
+   * 
+   * @deprecated This constructor is deprecated. Passing the case sensitivity
+   *             flag has no effect. Use
+   *             {@link Dictionary#Dictionary(InputStream)} instead and set the
+   *             case sensitivity during the dictionary creation.
+   * 
+   * @param in
+   *          the dictionary in its XML format
+   * @param caseSensitive
+   *          has no effect
+   * @throws IOException
+   * @throws InvalidFormatException
+   */
   public Dictionary(InputStream in, boolean caseSensitive) throws IOException, InvalidFormatException {
-    isCaseSensitive = DictionarySerializer.create(in, new EntryInserter()
-      {
-        public void insert(Entry entry) {
-          put(entry.getTokens());
-        }
-      });
+    this(in);
   }
 
   /**
