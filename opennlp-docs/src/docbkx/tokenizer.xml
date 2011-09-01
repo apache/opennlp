@@ -248,13 +248,27 @@ Rudolph Agnew<SPLIT>, 55 years old and former chairman of Consolidated Gold Fiel
 			<screen>
 			<![CDATA[
 $ bin/opennlp TokenizerTrainer
-Usage: opennlp TokenizerTrainer-lang language -encoding charset [-iterations num] \ 
-[-cutoff num] [-alphaNumOpt] -data trainingData -model model
--lang language     specifies the language which is being processed.
--encoding charset  specifies the encoding which should be used for reading and writing text.
--iterations num    specified the number of training iterations
--cutoff num        specifies the min number of times a feature must be seen
--alphaNumOpt Optimization flag to skip alpha numeric tokens for further tokenization
+Usage: opennlp TokenizerTrainer [-abbDict path] [-alphaNumOpt isAlphaNumOpt] [-params paramsFile] -lang language [-cutoff num] [-iterations num] [-encoding charsetName] -data trainData -model modelFile
+
+Arguments description:
+	-abbDict path
+		The abbreviation dictionary in XML format.
+	-alphaNumOpt isAlphaNumOpt
+		Optimization flag to skip alpha numeric tokens for further tokenization
+	-params paramsFile
+		Training parameters file.
+	-lang language
+		specifies the language which is being processed.
+	-cutoff num
+		specifies the min number of times a feature must be seen. It is ignored if a parameters file is passed.
+	-iterations num
+		specifies the number of training iterations. It is ignored if a parameters file is passed.
+	-encoding charsetName
+		specifies the encoding which should be used for reading and writing text. If not specified the system default will be used.
+	-data trainData
+		the data to be used during training
+	-model modelFile
+		the output model file
 			]]>		
 				</screen>
 				To train the english tokenizer use the following command:
