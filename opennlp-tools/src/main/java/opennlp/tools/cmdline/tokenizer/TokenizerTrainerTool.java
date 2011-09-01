@@ -68,11 +68,11 @@ public final class TokenizerTrainerTool implements CmdLineTool {
     return new TokenSampleStream(lineStream);
   }
   
-  static Dictionary loadDict(File f, boolean caseSensitive) throws IOException {
+  static Dictionary loadDict(File f) throws IOException {
     Dictionary dict = null;
     if (f != null) {
       CmdLineUtil.checkInputFile("abb dict", f);
-      dict = new Dictionary(new FileInputStream(f), caseSensitive);
+      dict = new Dictionary(new FileInputStream(f));
     }
     return dict;
   }
@@ -113,7 +113,7 @@ public final class TokenizerTrainerTool implements CmdLineTool {
 
     TokenizerModel model;
     try {
-      Dictionary dict = loadDict(params.getAbbDict(), params.getIsAbbDictCS());
+      Dictionary dict = loadDict(params.getAbbDict());
       model = opennlp.tools.tokenize.TokenizerME.train(params.getLang(),
           sampleStream, dict, params.getAlphaNumOpt(), mlParams);
     } catch (IOException e) {
