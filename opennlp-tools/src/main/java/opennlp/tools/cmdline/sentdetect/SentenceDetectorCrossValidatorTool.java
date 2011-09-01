@@ -90,8 +90,8 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
     }
 
     try {
-      Dictionary abbreviations = SentenceDetectorTrainerTool.loadDict(
-          params.getAbbDict(), params.getIsAbbDictCS());
+      Dictionary abbreviations = SentenceDetectorTrainerTool.loadDict(params
+          .getAbbDict());
       validator = new SDCrossValidator(params.getLang(), mlParams,
           abbreviations, errorListener);
       

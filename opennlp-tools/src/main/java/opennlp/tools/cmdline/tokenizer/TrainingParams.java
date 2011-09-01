@@ -36,8 +36,4 @@ interface TrainingParams extends BasicTrainingParams {
   @ParameterDescription(valueName = "path", description = "The abbreviation dictionary in XML format.")
   @OptionalParameter
   File getAbbDict();
-
-  @ParameterDescription(valueName = "true|false", description = "True if the abbreviation dictionary is case sensitive. Default is true.")
-  @OptionalParameter(defaultValue = "true")
-  Boolean getIsAbbDictCS();
 }

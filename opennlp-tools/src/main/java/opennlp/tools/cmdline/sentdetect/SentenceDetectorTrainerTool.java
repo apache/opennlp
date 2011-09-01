@@ -68,11 +68,11 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
     return new SentenceSampleStream(lineStream);
   }
   
-  static Dictionary loadDict(File f, boolean caseSensitive) throws IOException {
+  static Dictionary loadDict(File f) throws IOException {
     Dictionary dict = null;
     if (f != null) {
       CmdLineUtil.checkInputFile("abb dict", f);
-      dict = new Dictionary(new FileInputStream(f), caseSensitive);
+      dict = new Dictionary(new FileInputStream(f));
     }
     return dict;
   }
@@ -106,7 +106,7 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
 
     SentenceModel model;
     try {
-      Dictionary dict = loadDict(params.getAbbDict(), params.getIsAbbDictCS());
+      Dictionary dict = loadDict(params.getAbbDict());
       if (mlParams == null) {
         model = SentenceDetectorME.train(params.getLang(), sampleStream, true, dict, 
             params.getCutoff(), params.getIterations());
