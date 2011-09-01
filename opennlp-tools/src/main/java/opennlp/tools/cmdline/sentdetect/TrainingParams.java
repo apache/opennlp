@@ -34,8 +34,4 @@ interface TrainingParams extends BasicTrainingParams {
   @OptionalParameter
   File getAbbDict();
 
-  @ParameterDescription(valueName = "true|false", description = "True if the abbreviation dictionary is case sensitive. Default is true.")
-  @OptionalParameter(defaultValue = "true")
-  Boolean getIsAbbDictCS();
-
 }

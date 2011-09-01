@@ -32,7 +32,6 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerCrossValidator;
 import opennlp.tools.tokenize.TokenizerEvaluationMonitor;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.FMeasure;
 
 public final class TokenizerCrossValidatorTool implements CmdLineTool {
@@ -87,7 +86,7 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
     }
     
     try {
-      Dictionary dict = TokenizerTrainerTool.loadDict(params.getAbbDict(), params.getIsAbbDictCS());
+      Dictionary dict = TokenizerTrainerTool.loadDict(params.getAbbDict());
 
       validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
           params.getLang(), dict, params.getAlphaNumOpt(), mlParams, listener);
