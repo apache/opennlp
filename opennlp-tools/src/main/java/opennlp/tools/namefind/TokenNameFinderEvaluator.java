@@ -76,6 +76,11 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    */
   @Override
   protected NameSample processSample(NameSample reference) {
+    
+    if (reference.isClearAdaptiveDataSet()) {
+      nameFinder.clearAdaptiveData();
+    }
+    
     Span predictedNames[] = nameFinder.find(reference.getSentence());    
     Span references[] = reference.getNames();
 
