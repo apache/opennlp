@@ -148,7 +148,6 @@ public class SentenceDetectorME implements SentenceDetector {
    *
    */
   public Span[] sentPosDetect(String s) {
-    double sentProb = 1;
     sentProbs.clear();
     StringBuffer sb = new StringBuffer(s);
     List<Integer> enders = scanner.getPositions(s);
@@ -165,7 +164,6 @@ public class SentenceDetectorME implements SentenceDetector {
 
       double[] probs = model.eval(cgen.getContext(sb, cint));
       String bestOutcome = model.getBestOutcome(probs);
-      sentProb *= probs[model.getIndex(bestOutcome)];
 
       if (bestOutcome.equals(SPLIT) && isAcceptableBreak(s, index, cint)) {
         if (index != cint) {
@@ -199,8 +197,10 @@ public class SentenceDetectorME implements SentenceDetector {
         while (end > 0 && StringUtil.isWhitespace(s.charAt(end - 1)))
           end--;
         
-        if ((end - start) > 0)
+        if ((end - start) > 0) {
+          sentProbs.add(1d);
           return new Span[] {new Span(start, end)};
+        }
         else 
           return new Span[0];
     }
@@ -225,6 +225,7 @@ public class SentenceDetectorME implements SentenceDetector {
       }
       spans[si]=new Span(start,end);
     }
+    
     if (leftover) {
       spans[spans.length-1] = new Span(starts[starts.length-1],s.length());
       sentProbs.add(ONE);
