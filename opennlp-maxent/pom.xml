@@ -76,6 +76,7 @@
 								<exclude>src/main/java/opennlp/maxent/AllEnglishAffixes.txt</exclude> <!-- test data -->
 								<exclude>src/test/resources/data/opennlp/maxent/io/*.txt</exclude> <!-- test data -->
 								<exclude>src/test/resources/data/opennlp/maxent/*.txt</exclude> <!-- test data -->
+								<exclude>src/test/resources/data/ppa/*</exclude> <!-- sample data -->
 							</excludes>              
 						</configuration>
 					</execution>
