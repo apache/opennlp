@@ -122,6 +122,15 @@ public class Span implements Comparable<Span> {
     return start <= s.getStart() && s.getEnd() <= end;
   }
 
+  /**
+   * Returns true if the specified index is contained inside this span.
+   * An index with the value of end is considered outside the span.
+   * 
+   * @param index the index to test with this span.
+   * 
+   * @return true if the span contains this specified index;
+   * false otherwise.
+   */
   public boolean contains(int index) {
     return start <= index && index < end;
   }
