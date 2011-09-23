@@ -102,11 +102,16 @@ public class SpanTest {
   public void testContainsInt() {
     Span a = new Span(10, 300);
 
+    /* NOTE: here the span does not contain the endpoint marked as the end
+     * for the span.  This is because the end should be placed one past the
+     * true end for the span.  The indexes used must observe the same
+     * requirements for the contains function.
+     */
     assertFalse(a.contains(9));
     assertTrue(a.contains(10));
     assertTrue(a.contains(200));
-    assertTrue(a.contains(300));
-    assertFalse(a.contains(301));
+    assertTrue(a.contains(299));
+    assertFalse(a.contains(300));
   }
 
   /**
