@@ -32,7 +32,7 @@ public class Span implements Comparable<Span> {
    * Initializes a new Span Object.
    *
    * @param s start of span.
-   * @param e end of span.
+   * @param e end of span, which is +1 more than the last element in the span.
    * @param type the type of the span
    */
   public Span(int s, int e, String type) {
@@ -80,6 +80,10 @@ public class Span implements Comparable<Span> {
 
   /**
    * Return the end of a span.
+   * 
+   * Note: that the returned index is one past the
+   * actual end of the span in the text, or the first
+   * element past the end of the span.
    *
    * @return the end of a span.
    **/
