@@ -119,7 +119,7 @@ public class Span implements Comparable<Span> {
   }
 
   public boolean contains(int index) {
-    return start <= index && index <= end;
+    return start <= index && index < end;
   }
 
   /**
