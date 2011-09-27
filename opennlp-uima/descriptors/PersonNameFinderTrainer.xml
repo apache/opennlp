@@ -19,7 +19,7 @@
    under the License.    
 -->
 
-<casConsumerDescription xmlns="http://uima.watson.ibm.com/resourceSpecifier">
+<casConsumerDescription xmlns="http://uima.apache.org/resourceSpecifier">
 	<frameworkImplementation>org.apache.uima.java
 	</frameworkImplementation>
 	<implementationName>opennlp.uima.namefind.NameFinderTrainer</implementationName>
@@ -70,14 +70,14 @@
 				<multiValued>false</multiValued>
 				<mandatory>false</mandatory>
 			</configurationParameter>
-		</configurationParameters>
-
+			
 			<configurationParameter>
 				<name>opennlp.uima.Language</name>
 				<type>String</type>
 				<multiValued>false</multiValued>
 				<mandatory>true</mandatory>
 			</configurationParameter>
+		</configurationParameters>
 
 		<configurationParameterSettings>
 
