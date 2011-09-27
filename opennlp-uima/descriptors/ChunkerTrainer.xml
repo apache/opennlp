@@ -19,7 +19,7 @@
    under the License.    
 -->
 
-<casConsumerDescription xmlns="http://uima.watson.ibm.com/resourceSpecifier">
+<casConsumerDescription xmlns="http://uima.apache.org/resourceSpecifier">
 	<frameworkImplementation>org.apache.uima.java</frameworkImplementation>
 	<implementationName>opennlp.uima.chunker.ChunkerTrainer</implementationName>
 	<processingResourceMetaData>

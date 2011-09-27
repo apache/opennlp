@@ -19,7 +19,7 @@
    under the License.    
 -->
 
-<typeSystemDescription xmlns="http://uima.watson.ibm.com/resourceSpecifier">
+<typeSystemDescription xmlns="http://uima.apache.org/resourceSpecifier">
 	<name>OpenNLP TypeSystem</name>
 	<description>
 		This is the default OpenNLP type system. All the sample
