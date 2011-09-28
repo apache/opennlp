@@ -118,7 +118,10 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
       for (int ti = 0, tl = parts.length - 1; ti < tl; ti++) {
         tags[ti] = parts[ti + 1];
       }
-      dictionary.put(parts[0], tags);
+      if (caseSensitive)
+        dictionary.put(parts[0], tags);
+      else
+        dictionary.put(parts[0].toLowerCase(), tags);
     }
   }
 
