@@ -36,6 +36,7 @@ import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.dictionary.serializer.EntryInserter;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Provides a means of determining which tags are valid for a particular word
@@ -118,10 +119,12 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
       for (int ti = 0, tl = parts.length - 1; ti < tl; ti++) {
         tags[ti] = parts[ti + 1];
       }
-      if (caseSensitive)
+      if (caseSensitive) {
         dictionary.put(parts[0], tags);
-      else
-        dictionary.put(parts[0].toLowerCase(), tags);
+      }
+      else {
+        dictionary.put(StringUtil.toLowerCase(parts[0]), tags);
+      }
     }
   }
 
@@ -292,6 +295,17 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
       }});
 
     newPosDict.caseSensitive = isCaseSensitive;
+    
+    // TODO: The dictionary API needs to be improved to do this better!
+    if (!isCaseSensitive) {
+      Map<String, String[]> lowerCasedDictionary = new HashMap<String, String[]>();
+      
+      for (Map.Entry<String, String[]> entry : newPosDict.dictionary.entrySet()) {
+        lowerCasedDictionary.put(StringUtil.toLowerCase(entry.getKey()), entry.getValue());
+      }
+      
+      newPosDict.dictionary = lowerCasedDictionary;
+    }
     
     return newPosDict;
   }
