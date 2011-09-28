@@ -26,7 +26,6 @@ import java.io.InputStream;
 
 import opennlp.tools.util.InvalidFormatException;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
