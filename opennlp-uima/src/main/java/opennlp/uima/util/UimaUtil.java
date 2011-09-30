@@ -74,6 +74,12 @@ public final class UimaUtil {
   public static final String IS_REMOVE_EXISTINGS_ANNOTAIONS =
 	  "opennlp.uima.IsRemoveExistingAnnotations";
   
+  public static final String ADDITIONAL_TRAINING_DATA_FILE =
+      "opennlp.uima.AdditionalTrainingDataFile";
+  
+  public static final String ADDITIONAL_TRAINING_DATA_ENCODING =
+      "opennlp.uima.AdditionalTrainingDataEncoding";
+  
   /**
    * Removes all annotations of type removeAnnotationType which are contained
    * by annotations of type containerAnnotationType.
