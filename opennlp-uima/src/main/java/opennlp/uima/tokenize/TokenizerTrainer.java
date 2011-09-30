@@ -18,7 +18,10 @@
 package opennlp.uima.tokenize;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -26,10 +29,15 @@ import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.maxent.GIS;
+import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.tokenize.TokenSampleStream;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.uima.util.CasConsumerUtil;
 import opennlp.uima.util.ContainingConstraint;
@@ -81,6 +89,10 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
 
   private String mModelName;
 
+  private String additionalTrainingDataFile;
+  
+  private String additionalTrainingDataEncoding;
+  
   private String language;
   
   private Boolean isSkipAlphaNumerics;
@@ -114,6 +126,15 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
     
     if (isSkipAlphaNumerics == null)
     	isSkipAlphaNumerics = false;
+    
+    additionalTrainingDataFile = CasConsumerUtil.getOptionalStringParameter(
+        getUimaContext(), UimaUtil.ADDITIONAL_TRAINING_DATA_FILE);
+    
+    // If the additional training data is specified, the encoding must be provided!
+    if (additionalTrainingDataFile != null) {
+      additionalTrainingDataEncoding = CasConsumerUtil.getRequiredStringParameter(
+          getUimaContext(), UimaUtil.ADDITIONAL_TRAINING_DATA_ENCODING);
+    }
   }
 
   /**
@@ -185,11 +206,40 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
   public void collectionProcessComplete(ProcessTrace arg0)
       throws ResourceProcessException, IOException {
     
+    if (mLogger.isLoggable(Level.INFO)) {
+      mLogger.log(Level.INFO, "Collected " + tokenSamples.size() + 
+          " token samples.");
+    }
+    
     GIS.PRINT_MESSAGES = false;
    
-    TokenizerModel tokenModel = TokenizerME.train(language,
-        ObjectStreamUtils.createObjectStream(tokenSamples), isSkipAlphaNumerics);
-
+    ObjectStream<TokenSample> samples = ObjectStreamUtils.createObjectStream(tokenSamples);
+    
+    InputStream additionalTrainingDataIn = null;
+    TokenizerModel tokenModel;
+    
+    try {
+      if (additionalTrainingDataFile != null) {
+        
+        if (mLogger.isLoggable(Level.INFO)) {
+          mLogger.log(Level.INFO, "Using addional training data file: " + additionalTrainingDataFile); 
+        }
+        
+        additionalTrainingDataIn = new FileInputStream(additionalTrainingDataFile);
+        
+        ObjectStream<TokenSample> additionalSamples = new TokenSampleStream(
+            new PlainTextByLineStream(new InputStreamReader(additionalTrainingDataIn, additionalTrainingDataEncoding)));
+        
+        samples = ObjectStreamUtils.createObjectStream(samples, additionalSamples);
+      }
+      
+      tokenModel = TokenizerME.train(language, samples, isSkipAlphaNumerics);
+    }
+    finally {
+      if (additionalTrainingDataIn != null)
+        additionalTrainingDataIn.close();
+    }
+    
     // dereference to allow garbage collection
     tokenSamples = null;
     
