@@ -130,12 +130,12 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
     iterations = CasConsumerUtil.getOptionalIntegerParameter(getUimaContext(), UimaUtil.ITERATIONS_PARAMETER, 100);
     
     additionalTrainingDataFile = CasConsumerUtil.getOptionalStringParameter(
-        getUimaContext(), "opennlp.uima.AdditionalTrainingDataFile");
+        getUimaContext(), UimaUtil.ADDITIONAL_TRAINING_DATA_FILE);
     
     // If the additional training data is specified, the encoding must be provided!
     if (additionalTrainingDataFile != null) {
       additionalTrainingDataEncoding = CasConsumerUtil.getRequiredStringParameter(
-          getUimaContext(), "opennlp.uima.AdditionalTrainingDataEncoding");
+          getUimaContext(), UimaUtil.ADDITIONAL_TRAINING_DATA_ENCODING);
     }
   }
 
