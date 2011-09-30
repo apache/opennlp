@@ -324,6 +324,10 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
     try {
       if (additionalTrainingDataFile != null) {
         
+        if (logger.isLoggable(Level.INFO)) {
+          logger.log(Level.INFO, "Using addional training data file: " + additionalTrainingDataFile); 
+        }
+        
         additionalTrainingDataIn = new FileInputStream(additionalTrainingDataFile);
         
         // TODO: Make encoding configurable, otherwise use UTF-8 as default!
