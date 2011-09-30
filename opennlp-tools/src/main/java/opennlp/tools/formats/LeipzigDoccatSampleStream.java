@@ -52,49 +52,9 @@ public class LeipzigDoccatSampleStream extends
    */
   LeipzigDoccatSampleStream(String language, int sentencesPerDocument, 
       InputStream in) throws IOException {
-    super(new PlainTextByLineStream(in, mapLanguageToEncoding(language)));
+    super(new PlainTextByLineStream(in, "UTF-8"));
     this.language = language;
     this.sentencesPerDocument = sentencesPerDocument;
-  }
-  
-  /**
-   * Maps the language to the file encoding, if the encoding
-   * cannot be specified an IOException is thrown.
-   * 
-   * @return
-   * @throws IOException
-   */
-  private static String mapLanguageToEncoding(String language) throws IOException {
-    
-    if (language == null)
-      throw new NullPointerException("language parameter must not be null!");
-    
-    
-    Map<String, String> encodingMap = new HashMap<String, String>();
-    encodingMap.put("cat", "ISO-8859-1");
-    encodingMap.put("de", "ISO-8859-1");
-    encodingMap.put("dk", "ISO-8859-1");
-    encodingMap.put("ee", "ISO-8859-4");
-    encodingMap.put("en", "ISO-8859-1");
-    encodingMap.put("fi", "ISO-8859-1");
-    encodingMap.put("fr", "ISO-8859-1");
-    encodingMap.put("it", "ISO-8859-1");
-    encodingMap.put("jp", "UTF-8");
-    encodingMap.put("kr", "UTF-8");
-    encodingMap.put("nl", "ISO-8859-1");
-    encodingMap.put("no", "ISO-8859-1");
-    encodingMap.put("se", "ISO-8859-1");
-    encodingMap.put("sorb", "ISO-8859-2");
-    encodingMap.put("tr", "ISO-8859-9");
-    
-    String encoding = encodingMap.get(language);
-    
-    if (encoding != null) {
-      return encoding;
-    }
-    else {
-      throw new IOException("Encoding for language " + language + " is not specified!");
-    }
   }
   
   public DocumentSample read() throws IOException {
