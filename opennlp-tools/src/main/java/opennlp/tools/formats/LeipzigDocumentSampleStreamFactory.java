@@ -34,7 +34,7 @@ import opennlp.tools.util.ObjectStream;
 public class LeipzigDocumentSampleStreamFactory implements ObjectStreamFactory<DocumentSample> {
 
   interface Parameters {
-    @ParameterDescription(valueName = "cat|de|dk|ee|en|fi|fr|it|jp|kr|nl|no|se|sorb|tr")
+    @ParameterDescription(valueName = "languageCode")
     String getLang();
     
     @ParameterDescription(valueName = "sampleData")
