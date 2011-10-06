@@ -27,7 +27,7 @@
 		a custom type system change the mapping in the descriptors to the
 		custom types and reference the custom type system.
 	</description>
-	<version>1.5.1</version>
+	<version>1.5.2-incubating</version>
 	<vendor>Apache Software Foundation</vendor>
 	<types>
 		<typeDescription>
