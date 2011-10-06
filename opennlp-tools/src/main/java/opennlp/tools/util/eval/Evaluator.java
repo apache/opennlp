@@ -19,7 +19,8 @@
 package opennlp.tools.util.eval;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import opennlp.tools.util.ObjectStream;
@@ -34,9 +35,18 @@ public abstract class Evaluator<T> {
 
   private List<EvaluationMonitor<T>> listeners;
   
-  public Evaluator(EvaluationMonitor<T>... listeners) {
-    if(listeners != null) {
-      this.listeners = Arrays.asList(listeners);
+  public Evaluator(EvaluationMonitor<T>... aListeners) {
+    if (aListeners != null) {
+      List<EvaluationMonitor<T>> listenersList = new ArrayList<EvaluationMonitor<T>>(
+          aListeners.length);
+      for (EvaluationMonitor<T> evaluationMonitor : aListeners) {
+        if (evaluationMonitor != null) {
+          listenersList.add(evaluationMonitor);
+        }
+      }
+      listeners = Collections.unmodifiableList(listenersList);
+    } else {
+      listeners = Collections.emptyList();
     }
   }
   
@@ -70,7 +80,7 @@ public abstract class Evaluator<T> {
    */
   public void evaluateSample(T sample) {
     T predicted = processSample(sample);
-    if(listeners != null) {
+    if(!listeners.isEmpty()) {
       if(sample.equals(predicted)) {
         for (EvaluationMonitor<T> listener : listeners) {
           listener.correctlyClassified(predicted, predicted);
