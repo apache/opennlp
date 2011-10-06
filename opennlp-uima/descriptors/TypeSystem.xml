@@ -53,7 +53,7 @@
 			<supertypeName>uima.tcas.Annotation</supertypeName>
 			<features>
 				<featureDescription>
-					<name>type</name>
+					<name>chunkType</name>
 					<description></description>
 					<rangeTypeName>uima.cas.String</rangeTypeName>
 				</featureDescription>

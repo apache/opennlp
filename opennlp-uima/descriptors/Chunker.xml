@@ -98,7 +98,7 @@
 			<nameValuePair>
 				<name>opennlp.uima.ChunkTagFeature</name>
 				<value>
-					<string>type</string>
+					<string>chunkType</string>
 				</value>
 			</nameValuePair>
 		</configurationParameterSettings>
