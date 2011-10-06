@@ -26,7 +26,7 @@
 	<processingResourceMetaData>
 		<name>Person Name Finder Trainer</name>
 		<description></description>
-		<version>1.5.1-incubating</version>
+		<version>1.5.2-incubating</version>
 		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>
 			<configurationParameter>
