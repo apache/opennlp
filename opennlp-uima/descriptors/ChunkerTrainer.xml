@@ -63,7 +63,20 @@
 				<multiValued>false</multiValued>
 				<mandatory>true</mandatory>
 			</configurationParameter>
-
+			
+			<configurationParameter>
+				<name>opennlp.uima.ChunkType</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>true</mandatory>
+			</configurationParameter>
+	
+			<configurationParameter>
+				<name>opennlp.uima.ChunkTagFeature</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>true</mandatory>
+			</configurationParameter>	
 		</configurationParameters>
 
 		<configurationParameterSettings>
@@ -102,6 +115,20 @@
 				</value>
 			</nameValuePair>
 
+			<nameValuePair>
+				<name>opennlp.uima.ChunkType</name>
+				<value>
+					<string>opennlp.uima.Chunk</string>
+				</value>
+			</nameValuePair>
+			
+			<nameValuePair>
+				<name>opennlp.uima.ChunkTagFeature</name>
+				<value>
+					<string>chunkType</string>
+				</value>
+			</nameValuePair>
+			
 		</configurationParameterSettings>
 		
 		<typeSystemDescription />
