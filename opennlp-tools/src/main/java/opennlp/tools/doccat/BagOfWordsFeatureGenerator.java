@@ -21,17 +21,37 @@ package opennlp.tools.doccat;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import opennlp.tools.util.featuregen.StringPattern;
+
 /**
  * Generates a feature for each word in a document.
  */
 public class BagOfWordsFeatureGenerator implements FeatureGenerator {
 
+  private boolean useOnlyAllLetterTokens = false;
+  
+  public BagOfWordsFeatureGenerator() {
+  }
+  
+  BagOfWordsFeatureGenerator(boolean useOnlyAllLetterTokens) {
+    this.useOnlyAllLetterTokens = useOnlyAllLetterTokens;
+  }
+  
   public Collection<String> extractFeatures(String[] text) {
 
     Collection<String> bagOfWords = new ArrayList<String>(text.length);
 
     for (int i = 0; i < text.length; i++) {
-      bagOfWords.add("bow=" + text[i]);
+      
+      if (useOnlyAllLetterTokens) {
+        StringPattern pattern = StringPattern.recognize(text[i]);
+        
+        if (pattern.isAllLetter())
+          bagOfWords.add("bow=" + text[i]);
+      }
+      else {
+        bagOfWords.add("bow=" + text[i]);
+      }
     }
 
     return bagOfWords;
