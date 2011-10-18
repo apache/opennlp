@@ -17,6 +17,10 @@
 #   specific language governing permissions and limitations
 #   under the License.
 
+# Note:  Do not output anything in this script file, any output
+#        may be inadvertantly placed in any output files if
+#        output redirection is used.
+
 if [ -z "$JAVACMD" ] ; then
   if [ -n "$JAVA_HOME"  ] ; then
     JAVACMD="$JAVA_HOME/bin/java"

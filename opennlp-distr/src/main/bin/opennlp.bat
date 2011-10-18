@@ -17,6 +17,10 @@ REM #   KIND, either express or implied.  See the License for the
 REM #   specific language governing permissions and limitations
 REM #   under the License.
 
+REM # Note:  Do not output anything in this script file, any output
+REM #        may be inadvertantly placed in any output files if
+REM #        output redirection is used.
+
 IF "%JAVA_CMD%" == "" (
 	IF "%JAVA_HOME%" == "" (
 		SET JAVA_CMD=java 
