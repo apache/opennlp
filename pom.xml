@@ -31,7 +31,7 @@
 
 	<groupId>org.apache.opennlp</groupId>
 	<artifactId>opennlp</artifactId>
-	<version>1.5.2-incubating-SNAPSHOT</version>
+	<version>1.5.2-incubating</version>
 	<packaging>pom</packaging>
 
 	<name>OpenNLP Reactor</name>
@@ -42,12 +42,12 @@
 	
 	<scm>
 		<connection>
-      		scm:svn:http://svn.apache.org/repos/asf/incubator/opennlp/trunk/opennlp/
+      		scm:svn:http://svn.apache.org/repos/asf/incubator/opennlp/tags/opennlp-1.5.2-incubating-rc3/opennlp
 	    </connection>
 		<developerConnection>
-	      	scm:svn:https://svn.apache.org/repos/asf/incubator/opennlp/trunk/opennlp/
+	      	scm:svn:https://svn.apache.org/repos/asf/incubator/opennlp/tags/opennlp-1.5.2-incubating-rc3/opennlp
 	    </developerConnection>
-		<url>http://svn.apache.org/viewvc/incubator/opennlp/trunk/opennlp/</url>
+		<url>http://svn.apache.org/viewvc/incubator/opennlp/tags/opennlp-1.5.2-incubating-rc3/opennlp</url>
 	</scm>
 	
 	<issueManagement>
