@@ -74,15 +74,15 @@ public class Conll02NameSampleStreamFactory implements ObjectStreamFactory<NameS
       typesToGenerate = typesToGenerate | 
           Conll02NameSampleStream.GENERATE_PERSON_ENTITIES;
     }
-    else if (params.getTypes().contains("org")) {
+    if (params.getTypes().contains("org")) {
       typesToGenerate = typesToGenerate | 
           Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES;
     }
-    else if (params.getTypes().contains("loc")) {
+    if (params.getTypes().contains("loc")) {
       typesToGenerate = typesToGenerate | 
           Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES;
     }
-    else if (params.getTypes().contains("misc")) {
+    if (params.getTypes().contains("misc")) {
       typesToGenerate = typesToGenerate | 
           Conll02NameSampleStream.GENERATE_MISC_ENTITIES;
     }
