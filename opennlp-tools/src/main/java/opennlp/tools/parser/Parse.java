@@ -975,6 +975,9 @@ public class Parse implements Cloneable, Comparable<Parse> {
       if (!this.text.equals(p.text)) {
         return false;
       }
+      if (this.parts.size() != p.parts.size()){
+      	return false;
+      }
       for (int ci=0;ci<parts.size();ci++) {
         if (!parts.get(ci).equals(p.parts.get(ci))) {
           return false;
