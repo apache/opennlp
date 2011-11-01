@@ -30,6 +30,8 @@
       <excludes>
         <exclude>**/target/**</exclude>
         <exclude>**/.*/**</exclude>
+        <exclude>**/pom.xml.releaseBackup</exclude>
+        <exclude>**/release.properties</exclude>
       </excludes>
     </fileSet>
   </fileSets>
