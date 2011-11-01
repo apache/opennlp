@@ -34,7 +34,7 @@ interface TrainingParams extends BasicTrainingParams {
   @OptionalParameter(defaultValue = "maxent")
   String getType();
   
-  @ParameterDescription(valueName = "dictionaryPath", description = "The feature generator descriptor file")
+  @ParameterDescription(valueName = "dictionaryPath", description = "The XML tag dictionary file")
   @OptionalParameter
   File getDict();
   
