@@ -74,8 +74,80 @@ Rockwell_NNP said_VBD the_DT agreement_NN calls_VBZ for_IN it_PRP to_TO supply_V
 		<section id="tools.parser.chunking.api">
 		<title>Chunking API</title>
 		<para>
-			TODO
-		</para>
+		    The Chunker can be embedded into an application via its API.
+			First the chunker model must be loaded into memory from disk or an other source.
+			In the sample below its loaded from disk.
+			<programlisting language="java">
+				<![CDATA[
+InputStream modelIn = null;
+ChunkerModel model = null;
+
+try {
+  modelIn = new FileInputStream("en-chunker.bin");
+  model = new ChunkerModel(modelIn);
+} catch (IOException e) {
+  // Model loading failed, handle the error
+  e.printStackTrace();
+} finally {
+  if (modelIn != null) {
+    try {
+      modelIn.close();
+    } catch (IOException e) {
+    }
+  }
+}]]>
+			</programlisting>
+			After the model is loaded a Chunker can be instantiated.
+			<programlisting language="java">
+				<![CDATA[
+ChunkerME chunker = new ChunkerME(model);]]>
+			</programlisting>
+			The Chunker instance is now ready to tag data. It expects a tokenized sentence
+			as input, which is represented as a String array, each String object in the array
+			is one token, and the POS tags associated with each token.
+	   </para>
+	   <para>
+	   The following code shows how to determine the most likely chunk tag sequence for a sentence.
+	   	<programlisting language="java">
+		  <![CDATA[
+String sent[] = new String[] { "Rockwell", "International", "Corp.", "'s",
+    "Tulsa", "unit", "said", "it", "signed", "a", "tentative", "agreement",
+    "extending", "its", "contract", "with", "Boeing", "Co.", "to",
+    "provide", "structural", "parts", "for", "Boeing", "'s", "747",
+    "jetliners", "." };
+
+String pos[] = new String[] { "NNP", "NNP", "NNP", "POS", "NNP", "NN",
+    "VBD", "PRP", "VBD", "DT", "JJ", "NN", "VBG", "PRP$", "NN", "IN",
+    "NNP", "NNP", "TO", "VB", "JJ", "NNS", "IN", "NNP", "POS", "CD", "NNS",
+    "." };
+
+String tag[] = chunker.chunk(sent, pos);]]>
+			</programlisting>
+			The tags array contains one chunk tag for each token in the input array. The corresponding
+			tag can be found at the same index as the token has in the input array.
+			The confidence scores for the returned tags can be easily retrieved from
+			a ChunkerME with the following method call:
+				   	<programlisting language="java">
+		  <![CDATA[
+double probs[] = chunker.probs();]]>
+			</programlisting>
+			The call to probs is stateful and will always return the probabilities of the last
+			tagged sentence. The probs method should only be called when the tag method
+			was called before, otherwise the behavior is undefined.
+			</para>
+			<para>
+			Some applications need to retrieve the n-best chunk tag sequences and not
+			only the best sequence.
+			The topKSequences method is capable of returning the top sequences.
+			It can be called in a similar way as chunk.
+			<programlisting language="java">
+		  <![CDATA[
+Sequence topSequences[] = chunk.topKSequences(sent, pos);]]>
+			</programlisting>	
+			Each Sequence object contains one sequence. The sequence can be retrieved
+			via Sequence.getOutcomes() which returns a tags array 
+			and Sequence.getProbs() returns the probability array for this sequence.
+	  		 </para>
 		</section>
 	</section>
 	<section id="tools.chunker.training">
