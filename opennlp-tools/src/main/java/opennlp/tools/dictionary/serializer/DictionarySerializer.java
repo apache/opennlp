@@ -195,13 +195,13 @@ public class DictionarySerializer {
 
   
   /**
-   * Creates {@link Entry}s form the given {@link InputStream} and
+   * Creates {@link Entry}s from the given {@link InputStream} and
    * forwards these {@link Entry}s to the {@link EntryInserter}.
    *
    * After creation is finished the provided {@link InputStream} is closed.
    *
-   * @param in
-   * @param inserter
+   * @param in stream to read entries from
+   * @param inserter inserter to forward entries to
    *
    * @return isCaseSensitive attribute for Dictionary
    * 
@@ -233,11 +233,11 @@ public class DictionarySerializer {
    * After the serialization is finished the provided
    * {@link OutputStream} remains open.
    *
-   * @param out
-   * @param entries
+   * @param out stream to serialize to
+   * @param entries entries to serialize
    *
    * @throws IOException If an I/O error occurs
-   * @deprecated Use {@link DictionarySerializer#serialize(java.io.OutputStream, java.util.Iterator, boolean) instead
+   * @deprecated Use {@link DictionarySerializer#serialize(java.io.OutputStream, java.util.Iterator, boolean)} instead
    */
   @Deprecated
   public static void serialize(OutputStream out, Iterator<Entry> entries) 
@@ -251,8 +251,8 @@ public class DictionarySerializer {
    * After the serialization is finished the provided
    * {@link OutputStream} remains open.
    *
-   * @param out
-   * @param entries
+   * @param out stream to serialize to
+   * @param entries entries to serialize
    * @param casesensitive indicates if the written dictionary 
    *        should be case sensitive or case insensitive.
    *

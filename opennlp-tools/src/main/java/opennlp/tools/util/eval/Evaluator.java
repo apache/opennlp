@@ -66,11 +66,11 @@ public abstract class Evaluator<T> {
 
   /**
    * Evaluates the given reference object. The default implementation calls
-   * {@link Evaluator#processSample(T)}
+   * {@link Evaluator#processSample(Object)}
    * 
    * <p>
    * <b>note:</b> this method will be changed to private in the future.
-   * Implementations should override {@link Evaluator#processSample(T)} instead.
+   * Implementations should override {@link Evaluator#processSample(Object)} instead.
    * If this method is override, the implementation has to update the score
    * after every invocation.
    * </p>
@@ -100,7 +100,8 @@ public abstract class Evaluator<T> {
    *
    * @param samples the stream of reference which
    * should be evaluated.
-   * 
+   *
+   * @throws IOException IOException
    */
   public void evaluate(ObjectStream<T> samples) throws IOException {
     T sample;

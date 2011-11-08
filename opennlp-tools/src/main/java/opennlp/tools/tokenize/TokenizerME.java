@@ -89,7 +89,7 @@ public class TokenizerME extends AbstractTokenizer {
 
   /**
    * Alpha-Numeric Pattern
-   * @deprecated As of release 1.5.2, replaced by {@link Factory#getAlphanumericPattern(String)} 
+   * @deprecated As of release 1.5.2, replaced by {@link Factory#getAlphanumeric(String)}
    */
   @Deprecated
   public static final Pattern alphaNumeric = Pattern.compile(Factory.DEFAULT_ALPHANUMERIC);

@@ -30,8 +30,8 @@ public final class NumberUtil {
   /**
    * Checks if the language is supported.
    * 
-   * @param languageCode
-   * @return
+   * @param languageCode language code, e.g. "en", "pt"
+   * @return true if the language is supported
    */
   public static boolean isLanguageSupported(String languageCode) {
     Locale locale = new Locale(languageCode);
@@ -73,10 +73,10 @@ public final class NumberUtil {
   /**
    * Gives its best to parse the provided number.
    * 
-   * @param number
-   * @param languageCode
-   * @return
-   * @throws ParseException
+   * @param number number to parse
+   * @param languageCode language code, e.g. "en", "pt"
+   * @return parsed number
+   * @throws ParseException ParseException
    */
   public static Number parse(String number, String languageCode)
       throws ParseException {
