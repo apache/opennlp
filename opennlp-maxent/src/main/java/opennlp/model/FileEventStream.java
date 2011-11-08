@@ -93,7 +93,7 @@ public class FileEventStream extends  AbstractEventStream {
    * @return A string representing the specified event.
    */
   public static String toLine(Event event) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(event.getOutcome());
     String[] context = event.getContext();
     for (int ci=0,cl=context.length;ci<cl;ci++) {

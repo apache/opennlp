@@ -185,7 +185,7 @@ public abstract class AbstractResolver implements Resolver {
    * @return the string of "_" delimited tokens for the specified mention.
    */
   protected String featureString(MentionContext mention){
-    StringBuffer fs = new StringBuffer();
+    StringBuilder fs = new StringBuilder();
     Object[] mtokens =mention.getTokens();
     fs.append(mtokens[0].toString());
     for (int ti=1,tl=mtokens.length;ti<tl;ti++) {

@@ -96,7 +96,7 @@ public abstract class AbstractModel implements MaxentModel {
       }
       else {
         DecimalFormat df =  new DecimalFormat("0.0000");
-        StringBuffer sb = new StringBuffer(ocs.length*2);
+        StringBuilder sb = new StringBuilder(ocs.length * 2);
         sb.append(outcomeNames[0]).append("[").append(df.format(ocs[0])).append("]");
         for (int i = 1; i<ocs.length; i++) {
           sb.append("  ").append(outcomeNames[i]).append("[").append(df.format(ocs[i])).append("]");

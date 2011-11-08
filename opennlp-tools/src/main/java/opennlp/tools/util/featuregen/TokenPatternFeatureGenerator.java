@@ -61,7 +61,7 @@ public class TokenPatternFeatureGenerator extends FeatureGeneratorAdapter {
 
       feats.add("stn=" + tokenized.length);
 
-      StringBuffer pattern = new StringBuffer();
+      StringBuilder pattern = new StringBuilder();
 
       for (int i = 0; i < tokenized.length; i++) {
 

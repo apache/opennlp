@@ -63,8 +63,8 @@ public class CheckContextGenerator extends AbstractContextGenerator {
     Parse pend = constituents[end];
     checkcons(pstart, "begin", type, features);
     checkcons(pend, "last", type, features);
-    StringBuffer production = new StringBuffer(20);
-    StringBuffer punctProduction = new StringBuffer(20);
+    StringBuilder production = new StringBuilder(20);
+    StringBuilder punctProduction = new StringBuilder(20);
     production.append("p=").append(type).append("->");
     punctProduction.append("pp=").append(type).append("->");
     for (int pi = start; pi < end; pi++) {

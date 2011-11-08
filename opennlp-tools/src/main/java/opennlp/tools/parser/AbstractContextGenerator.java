@@ -55,14 +55,14 @@ public abstract class AbstractContextGenerator {
    * @return Punctuation feature for the specified parse and the specified punctuation at the specfied index.
    */
   protected String punctbo(Parse punct, int i) {
-    StringBuffer feat = new StringBuffer(5);
+    StringBuilder feat = new StringBuilder(5);
     feat.append(i).append("=");
     feat.append(punct.getType());
     return (feat.toString());
   }
 
   protected String cons(Parse p, int i) {
-    StringBuffer feat = new StringBuffer(20);
+    StringBuilder feat = new StringBuilder(20);
     feat.append(i).append("=");
     if (p != null) {
       if (useLabel && i < 0) {
@@ -77,7 +77,7 @@ public abstract class AbstractContextGenerator {
   }
 
   protected String consbo(Parse p, int i) { //cons back-off
-    StringBuffer feat = new StringBuffer(20);
+    StringBuilder feat = new StringBuilder(20);
     feat.append(i).append("*=");
     if (p != null) {
       if (useLabel && i < 0) {
@@ -100,7 +100,7 @@ public abstract class AbstractContextGenerator {
    * is starting.
    */
   protected String production(Parse p, boolean includePunctuation) {
-    StringBuffer production = new StringBuffer(20);
+    StringBuilder production = new StringBuilder(20);
     production.append(p.getType()).append("->");
     Parse[] children = AbstractBottomUpParser.collapsePunctuation(p.getChildren(),punctSet);
     for (int ci = 0; ci < children.length; ci++) {
@@ -297,7 +297,7 @@ public abstract class AbstractContextGenerator {
    * @param features A list to which features are added.
    */
   protected void surround(Parse node, int i, String type, Collection<Parse> punctuation, List<String> features) {
-    StringBuffer feat = new StringBuffer(20);
+    StringBuilder feat = new StringBuilder(20);
     feat.append("s").append(i).append("=");
     if (punctuation !=null) {
       for (Iterator<Parse> pi=punctuation.iterator();pi.hasNext();) {
@@ -356,7 +356,7 @@ public abstract class AbstractContextGenerator {
    * @param features List to add features to.
    */
   protected void checkcons(Parse child, String i, String type, List<String> features) {
-    StringBuffer feat = new StringBuffer(20);
+    StringBuilder feat = new StringBuilder(20);
     feat.append("c").append(i).append("=").append(child.getType()).append("|").append(child.getHead().toString()).append("|").append(type);
     features.add(feat.toString());
     feat.setLength(0);
@@ -365,7 +365,7 @@ public abstract class AbstractContextGenerator {
   }
 
   protected void checkcons(Parse p1, Parse p2, String type, List<String> features) {
-    StringBuffer feat = new StringBuffer(20);
+    StringBuilder feat = new StringBuilder(20);
     feat.append("cil=").append(type).append(",").append(p1.getType()).append("|").append(p1.getHead().toString()).append(",").append(p2.getType()).append("|").append(p2.getHead().toString());
     features.add(feat.toString());
     feat.setLength(0);
