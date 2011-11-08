@@ -23,8 +23,6 @@ import org.apache.uima.cas.text.AnnotationFS;
 
 /**
  * Checks two annotations for equality.
- * 
- * @param <T> 
  */
 public class AnnotationComparator implements Comparator<AnnotationFS>
 {
@@ -32,7 +30,7 @@ public class AnnotationComparator implements Comparator<AnnotationFS>
   /**
    * Compares the begin indexes of the annotations.
    * 
-   * @param a - first anntoation
+   * @param a - first annotation
    * @param b - second annotation
    * 
    * @return 0 if equals,  < 0 if before and > 0 if after

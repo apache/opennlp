@@ -133,10 +133,10 @@ public final class ModelUtil {
   /**
    * Note: Do not use this legacy support method, internal use only!
    * 
-   * @param iterations
-   * @param cutoff
+   * @param iterations number of iterations
+   * @param cutoff cutoff threshold
    * 
-   * @return
+   * @return training parameters instance
    */
   public static TrainingParameters createTrainingParameters(int iterations, int cutoff) {
     TrainingParameters mlParams = new TrainingParameters();

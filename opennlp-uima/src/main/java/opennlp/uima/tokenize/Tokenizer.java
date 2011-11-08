@@ -49,7 +49,8 @@ import org.apache.uima.resource.ResourceInitializationException;
  *   <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double 
  *       probability feature (not set by default)</td>
  * </table>
- * @see {@link TokenizerME}
+ *
+ * @see TokenizerME
  */
 public final class Tokenizer extends AbstractTokenizer {
   

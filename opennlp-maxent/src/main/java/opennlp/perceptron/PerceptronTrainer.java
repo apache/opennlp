@@ -118,9 +118,7 @@ public class PerceptronTrainer {
    * of the more volatile early iterations. The use of perfect
    * squares allows us to sample from successively farther apart iterations.
    *  
-   * @param averaging
-   * 
-   * @return
+   * @param averaging averaging flag
    */
   public void setSkippedAveraging(boolean averaging) {
     useSkippedlAveraging = averaging;
