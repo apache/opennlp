@@ -31,8 +31,7 @@ public class ObjectGISModelReader extends GISModelReader {
    * Constructor which directly instantiates the ObjectInputStream containing
    * the model contents.
    * 
-   * @param dis
-   *          The DataInputStream containing the model information.
+   * @param ois The DataInputStream containing the model information.
    */
 
   public ObjectGISModelReader(ObjectInputStream ois) {

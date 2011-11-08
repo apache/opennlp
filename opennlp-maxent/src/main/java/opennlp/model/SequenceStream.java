@@ -27,8 +27,7 @@ public interface SequenceStream extends Iterable<Sequence> {
    * Creates a new event array based on the outcomes predicted by the specified parameters 
    * for the specified sequence.
    * @param sequence The sequence to be evaluated.
-   * @param ep The parameters of the current model.
-   * @return
+   * @return event array
    */
   public Event[] updateContext(Sequence sequence, AbstractModel model);
   

@@ -38,9 +38,8 @@ final public class OpennlpUtil {
    * Serializes a {@link GISModel} and writes it to the given
    * {@link OutputStream}.
    * 
-   * @param model
-   * @param out
-   * @throws IOException
+   * @param model model to serialize
+   * @throws IOException IOException
    */
   public static void serialize(BaseModel model, File modelFile)
       throws IOException {
