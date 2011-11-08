@@ -365,7 +365,7 @@ public class ADSentenceStream extends
 
       @Override
       public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         // print itself and its children
         for (int i = 0; i < this.getLevel(); i++) {
           sb.append("=");
@@ -401,7 +401,7 @@ public class ADSentenceStream extends
 
       @Override
       public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         // print itself and its children
         for (int i = 0; i < this.getLevel(); i++) {
           sb.append("=");

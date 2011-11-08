@@ -286,7 +286,7 @@ public class POSTaggerME implements POSTagger {
     while (st.hasMoreTokens())
       toks.add(st.nextToken());
     List<String> tags = tag(toks);
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int i = 0; i < tags.size(); i++)
       sb.append(toks.get(i) + "/" + tags.get(i) + " ");
     return sb.toString().trim();

@@ -195,7 +195,7 @@ public class StringList implements Iterable<String> {
 
   @Override
   public String toString() {
-    StringBuffer string = new StringBuffer();
+    StringBuilder string = new StringBuilder();
 
     string.append('[');
 

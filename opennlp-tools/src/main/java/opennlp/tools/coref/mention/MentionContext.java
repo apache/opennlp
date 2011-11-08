@@ -219,7 +219,7 @@ public class MentionContext extends Context {
   }
 
   public String getHeadText() {
-    StringBuffer headText = new StringBuffer();
+    StringBuilder headText = new StringBuilder();
     for (int hsi = 0; hsi < tokens.length; hsi++) {
       headText.append(" ").append(tokens[hsi].toString());
     }

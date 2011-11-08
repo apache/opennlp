@@ -805,7 +805,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * @return a Parse structure for the specified tree-bank style parse string.
    */
   public static Parse parseParse(String parse, GapLabeler gl) {
-    StringBuffer text = new StringBuffer();
+    StringBuilder text = new StringBuilder();
     int offset = 0;
     Stack<Constituent> stack = new Stack<Constituent>();
     List<Constituent> cons = new LinkedList<Constituent>();
@@ -1030,7 +1030,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   private void codeTree(Parse p,int[] levels) {
     Parse[] kids = p.getChildren();
-    StringBuffer levelsBuff = new StringBuffer();
+    StringBuilder levelsBuff = new StringBuilder();
     levelsBuff.append("[");
     int[] nlevels = new int[levels.length+1];
     for (int li=0;li<levels.length;li++) {

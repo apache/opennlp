@@ -296,7 +296,7 @@ public class Span implements Comparable<Span> {
 
   public static String[] spansToStrings(Span[] spans, String[] tokens) {
     String[] chunks = new String[spans.length];
-    StringBuffer cb = new StringBuffer();
+    StringBuilder cb = new StringBuilder();
     for (int si = 0, sl = spans.length; si < sl; si++) {
       cb.setLength(0);
       for (int ti=spans[si].getStart();ti<spans[si].getEnd();ti++) {
