@@ -63,7 +63,7 @@ public final class ParserTool implements CmdLineTool {
     line = untokenizedParenPattern1.matcher(line).replaceAll("$1 $2");
     line = untokenizedParenPattern2.matcher(line).replaceAll("$1 $2");
     StringTokenizer str = new StringTokenizer(line);
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     List<String> tokens = new ArrayList<String>();
     while (str.hasMoreTokens()) {
       String tok = str.nextToken();

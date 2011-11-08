@@ -90,7 +90,7 @@ public class ComparableEvent implements Comparable {
   }
 
   public String toString() {
-    StringBuffer s = new StringBuffer().append(outcome).append(":");
+    StringBuilder s = new StringBuilder().append(outcome).append(":");
     for (int i = 0; i < predIndexes.length; i++) {
       s.append(" ").append(predIndexes[i]);
       if (values != null) {

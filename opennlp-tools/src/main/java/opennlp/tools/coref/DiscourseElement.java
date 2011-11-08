@@ -113,7 +113,7 @@ public abstract class DiscourseElement {
   public String toString() {
     Iterator<MentionContext> ei = extents.iterator();
     MentionContext ex = ei.next();
-    StringBuffer de = new StringBuffer();
+    StringBuilder de = new StringBuilder();
     de.append("[ ").append(ex.toText());//.append("<").append(ex.getHeadText()).append(">");
     while (ei.hasNext()) {
       ex = ei.next();

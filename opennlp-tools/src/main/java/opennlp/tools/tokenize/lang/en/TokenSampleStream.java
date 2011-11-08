@@ -31,7 +31,7 @@ import opennlp.tools.util.Span;
 
 /**
  * Class which produces an Iterator<TokenSample> from a file of space delimited token.
- * This class uses a number of English-specific hueristics to un-separate tokens which
+ * This class uses a number of English-specific heuristics to un-separate tokens which
  * are typically found together in text.
  */
 public class TokenSampleStream implements Iterator<TokenSample> {
@@ -55,7 +55,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
     if (tokens.length == 0) {
       evenq =true;
     }
-    StringBuffer sb = new StringBuffer(line.length());
+    StringBuilder sb = new StringBuilder(line.length());
     List<Span> spans = new ArrayList<Span>();
     int length = 0;
     for (int ti=0;ti<tokens.length;ti++) {

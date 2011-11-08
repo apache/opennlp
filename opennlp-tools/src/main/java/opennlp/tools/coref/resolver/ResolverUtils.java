@@ -147,7 +147,7 @@ public class ResolverUtils {
   }
 
   public static String excludedDeterminerMentionString(MentionContext ec) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     boolean first = true;
     Parse[] mtokens = ec.getTokenParses();
     for (int ti = 0, tl = mtokens.length; ti < tl; ti++) {
@@ -165,7 +165,7 @@ public class ResolverUtils {
   }
 
   public static String excludedHonorificMentionString(MentionContext ec) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     boolean first = true;
     Object[] mtokens = ec.getTokens();
     for (int ti = 0, tl = mtokens.length; ti < tl; ti++) {
@@ -182,7 +182,7 @@ public class ResolverUtils {
   }
 
   public static String excludedTheMentionString(MentionContext ec) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     boolean first = true;
     Object[] mtokens = ec.getTokens();
     for (int ti = 0, tl = mtokens.length; ti < tl; ti++) {
@@ -320,7 +320,7 @@ public class ResolverUtils {
   }
 
   public static String mentionString(MentionContext ec) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Object[] mtokens = ec.getTokens();
     sb.append(mtokens[0].toString());
     for (int ti = 1, tl = mtokens.length; ti < tl; ti++) {

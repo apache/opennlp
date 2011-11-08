@@ -124,7 +124,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     features.add("pd="+prod+","+p0.getType());
     features.add("ps="+fn.getType()+"->"+fn.getType()+","+p0.getType());
     if (punct_1s != null) {
-      StringBuffer punctBuf = new StringBuffer(5);
+      StringBuilder punctBuf = new StringBuilder(5);
       for (Iterator<Parse> pi=punct_1s.iterator();pi.hasNext();) {
         Parse punct = pi.next();
         punctBuf.append(punct.getType()).append(",");

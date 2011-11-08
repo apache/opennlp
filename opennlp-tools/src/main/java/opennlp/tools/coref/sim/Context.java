@@ -89,7 +89,7 @@ public class Context extends Mention {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int ti=0,tl=tokens.length;ti<tl;ti++){
       sb.append(tokens[ti]).append(" ");
     }
