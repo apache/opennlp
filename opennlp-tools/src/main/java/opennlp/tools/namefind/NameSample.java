@@ -146,7 +146,7 @@ public class NameSample {
         }
       }
 
-      result.append(sentence.get(tokenIndex) + ' ');
+      result.append(sentence.get(tokenIndex)).append(' ');
     }
 
     if (sentence.size() > 1)

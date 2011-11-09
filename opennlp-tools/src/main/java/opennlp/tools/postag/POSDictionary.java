@@ -251,7 +251,7 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
     StringBuilder dictionaryString = new StringBuilder();
 
     for (String word : dictionary.keySet()) {
-      dictionaryString.append(word + " -> " + tagsToString(getTags(word)));
+      dictionaryString.append(word).append(" -> ").append(tagsToString(getTags(word)));
       dictionaryString.append("\n");
     }
 

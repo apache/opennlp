@@ -407,10 +407,9 @@ public class ADSentenceStream extends
           sb.append("=");
         }
         if (this.getSyntacticTag() != null) {
-          sb.append(this.getSyntacticTag() + "(" + this.getMorphologicalTag()
-              + ") ");
+          sb.append(this.getSyntacticTag()).append("(").append(this.getMorphologicalTag()).append(") ");
         }
-        sb.append(this.word + "\n");
+        sb.append(this.word).append("\n");
         return sb.toString();
       }
 
