@@ -25,7 +25,7 @@ IF "%JAVA_CMD%" == "" (
 	IF "%JAVA_HOME%" == "" (
 		SET JAVA_CMD=java 
 	) ELSE (
-		SET JAVA_CMD=%JAVA_HOME%\bin\java
+		SET JAVA_CMD="%JAVA_HOME%\bin\java"
 	)
 )
 
