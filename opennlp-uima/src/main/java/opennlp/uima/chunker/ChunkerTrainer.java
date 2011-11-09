@@ -148,10 +148,7 @@ public class ChunkerTrainer extends CasConsumer_ImplBase {
     
     FSIndex<AnnotationFS> sentenceIndex = cas.getAnnotationIndex(mSentenceType);
 
-    Iterator<AnnotationFS> sentenceIterator = sentenceIndex.iterator();
-    while (sentenceIterator.hasNext()) {
-      AnnotationFS sentenceAnnotation = (AnnotationFS) sentenceIterator.next();
-
+    for (AnnotationFS sentenceAnnotation : sentenceIndex) {
       processSentence(cas, sentenceAnnotation);
     }
   }

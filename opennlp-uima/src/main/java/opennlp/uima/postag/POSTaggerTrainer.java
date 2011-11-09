@@ -166,13 +166,7 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
 
     FSIndex<AnnotationFS> sentenceAnnotations = cas.getAnnotationIndex(mSentenceType);
 
-    Iterator<AnnotationFS> sentenceAnnotationsIterator = sentenceAnnotations.iterator();
-
-    while (sentenceAnnotationsIterator.hasNext()) {
-
-      AnnotationFS sentence = 
-        (AnnotationFS) sentenceAnnotationsIterator.next();
-
+    for (AnnotationFS sentence : sentenceAnnotations) {
       process(cas, sentence);
     }
   }

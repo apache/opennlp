@@ -37,7 +37,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
 
   public String[] getContext(Object o) {
     Object[] parts = (Object[]) o;
-    return getContext((Parse[]) parts[0],((Integer)parts[1]).intValue(),(List) parts[2],((Integer)parts[3]).intValue());
+    return getContext((Parse[]) parts[0], (Integer) parts[1],(List) parts[2], (Integer) parts[3]);
   }
 
   private boolean containsPunct(Collection<Parse> puncts, String punct){

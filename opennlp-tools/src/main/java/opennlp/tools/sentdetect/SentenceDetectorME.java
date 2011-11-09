@@ -56,6 +56,7 @@ public class SentenceDetectorME implements SentenceDetector {
    */
   public static final String NO_SPLIT ="n";
   
+  // Note: That should be inlined when doing a re-factoring!
   private static final Double ONE = new Double(1);
 
   /**
@@ -173,7 +174,7 @@ public class SentenceDetectorME implements SentenceDetector {
           else {
             positions.add(getFirstNonWS(s,cint));
           }
-          sentProbs.add(new Double(probs[model.getIndex(bestOutcome)]));
+          sentProbs.add(probs[model.getIndex(bestOutcome)]);
         }
         index = cint + 1;
       }
@@ -245,7 +246,7 @@ public class SentenceDetectorME implements SentenceDetector {
   public double[] getSentenceProbabilities() {
     double[] sentProbArray = new double[sentProbs.size()];
     for (int i = 0; i < sentProbArray.length; i++) {
-      sentProbArray[i] = sentProbs.get(i).doubleValue();
+      sentProbArray[i] = sentProbs.get(i);
     }
     return sentProbArray;
   }

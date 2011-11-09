@@ -100,7 +100,7 @@ public class NGramModel implements Iterable<StringList>{
       return 0;
     }
 
-    return count.intValue();
+    return count;
   }
 
   /**

@@ -160,8 +160,8 @@ public abstract class AbstractModel implements MaxentModel {
       data[0] = evalParams.getParams();
       data[1] = pmap;
       data[2] = outcomeNames;
-      data[3] = new Integer((int)evalParams.getCorrectionConstant());
-      data[4] = new Double(evalParams.getCorrectionParam());
+      data[3] = (int) evalParams.getCorrectionConstant();
+      data[4] = evalParams.getCorrectionParam();
       return data;
   }
 }
