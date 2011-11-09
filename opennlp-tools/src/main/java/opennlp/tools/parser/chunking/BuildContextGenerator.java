@@ -57,7 +57,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
 
   public String[] getContext(Object o) {
     Object[] params = (Object[]) o;
-    return getContext((Parse[]) params[0], ((Integer) params[1]).intValue());
+    return getContext((Parse[]) params[0], (Integer) params[1]);
   }
 
   /**

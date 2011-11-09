@@ -39,7 +39,7 @@ public class CheckContextGenerator extends AbstractContextGenerator {
 
   public String[] getContext(Object o) {
     Object[] params = (Object[]) o;
-    return getContext((Parse[]) params[0], (String) params[1], ((Integer) params[2]).intValue(), ((Integer) params[3]).intValue());
+    return getContext((Parse[]) params[0], (String) params[1], (Integer) params[2], (Integer) params[3]);
   }
 
   /**

@@ -169,7 +169,7 @@ public abstract class AbstractResolver implements Resolver {
       DiscourseEntity cde = dm.getEntity(ei);
       MentionContext cec = cde.getLastExtent(); // candidate extent context
       if (cec.getId() == mention.getId()) {
-        distances.add(new Integer(ei));
+        distances.add(ei);
         return cde;
       }
     }

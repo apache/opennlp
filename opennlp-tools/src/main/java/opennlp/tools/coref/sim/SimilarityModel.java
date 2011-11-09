@@ -328,7 +328,7 @@ public class SimilarityModel implements TestSimilarityModel, TrainSimilarityMode
             Context sec1 = allExtents.get(axi);
             axi = (axi + 1) % allExtents.size();
             if (!exclusionSet.contains(sec1)) {
-              if (debugOn) System.err.println(ec1.toString()+" "+entityNameSet+" "+sec1.toString()+" "+nameSets.get(new Integer(sec1.getId())));
+              if (debugOn) System.err.println(ec1.toString()+" "+entityNameSet+" "+sec1.toString()+" "+nameSets.get(sec1.getId()));
               addEvent(false, ec1, sec1);
               break;
             }

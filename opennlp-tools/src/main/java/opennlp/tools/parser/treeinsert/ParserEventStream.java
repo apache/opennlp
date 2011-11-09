@@ -79,7 +79,7 @@ public class ParserEventStream extends AbstractParserEventStream {
       node = parent;
       parent = parent.getParent();
       index = indexOf(node,parent);
-      parents.put(parent,new Integer(index));
+      parents.put(parent, index);
     }
     return parents;
   }
@@ -220,7 +220,7 @@ public class ParserEventStream extends AbstractParserEventStream {
           if (!Parser.checkComplete || !Parser.COMPLETE.equals(cfn.getLabel())) {
             Integer i = parents.get(frontierNode);
             if (debug) System.err.println("Looking at attachment site ("+cfi+"): "+cfn.getType()+" ci="+i+" cs="+nonPunctChildCount(cfn)+", "+cfn+" :for "+currentChunks[ci].getType()+" "+currentChunks[ci]+" -> "+parents);
-            if (attachNode == null &&  i != null && i.intValue() == nonPunctChildCount(cfn)) {
+            if (attachNode == null &&  i != null && i == nonPunctChildCount(cfn)) {
               attachType = Parser.ATTACH_DAUGHTER;
               attachNodeIndex = cfi;
               attachNode = cfn;

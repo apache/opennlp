@@ -55,8 +55,7 @@ public final class RegexNameFinder implements TokenNameFinder {
       sentenceString.append(tokens[i]);
 
       int endIndex = sentenceString.length();
-      sentencePosTokenMap.put(endIndex,
-          new Integer(i));
+      sentencePosTokenMap.put(endIndex, i);
 
       if (i < tokens.length - 1) {
         sentenceString.append(' ');
@@ -75,9 +74,7 @@ public final class RegexNameFinder implements TokenNameFinder {
             sentencePosTokenMap.get(matcher.end());
 
         if (tokenStartIndex != null && tokenEndIndex != null) {
-          Span annotation = new Span(tokenStartIndex.intValue(),
-              tokenEndIndex.intValue());
-
+          Span annotation = new Span(tokenStartIndex, tokenEndIndex);
           annotations.add(annotation);
         }
       }

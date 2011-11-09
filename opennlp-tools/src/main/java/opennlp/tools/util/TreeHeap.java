@@ -85,7 +85,7 @@ public class TreeHeap<E> implements Heap<E> {
   public static void main(String[] args) {
     Heap<Integer> heap = new TreeHeap<Integer>(5);
     for (int ai=0;ai<args.length;ai++){
-      heap.add(Integer.valueOf(Integer.parseInt(args[ai])));
+      heap.add(Integer.parseInt(args[ai]));
     }
     while (!heap.isEmpty()) {
       System.out.print(heap.extract()+" ");
