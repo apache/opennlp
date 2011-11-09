@@ -37,7 +37,7 @@ import opennlp.model.MaxentModel;
 public class DomainToModelMap {
 
   // the underlying object which stores the mapping
-  private Map map = Collections.synchronizedMap(new HashMap());
+  private Map<ModelDomain, MaxentModel> map = Collections.synchronizedMap(new HashMap<ModelDomain, MaxentModel>());
 
   /**
    * Sets the model for the given domain.
@@ -60,7 +60,7 @@ public class DomainToModelMap {
    */
   public MaxentModel getModel(ModelDomain domain) {
     if (map.containsKey(domain)) {
-      return (MaxentModel) map.get(domain);
+      return map.get(domain);
     } else {
       throw new NoSuchElementException("No model has been created for "
           + "domain: " + domain);

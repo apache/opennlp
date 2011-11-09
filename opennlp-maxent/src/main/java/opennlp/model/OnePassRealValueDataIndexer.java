@@ -55,7 +55,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     return values;
   }
 
-  protected int sortAndMerge(List eventsToCompare,boolean sort) {
+  protected int sortAndMerge(List<ComparableEvent> eventsToCompare,boolean sort) {
     int numUniqueEvents = super.sortAndMerge(eventsToCompare,sort);
     values = new float[numUniqueEvents][];
     int numEvents = eventsToCompare.size();
@@ -74,11 +74,11 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     
     int numEvents = events.size();
     int outcomeCount = 0;
-    List eventsToCompare = new ArrayList(numEvents);
+    List<ComparableEvent> eventsToCompare = new ArrayList<ComparableEvent>(numEvents);
     List<Integer> indexedContext = new ArrayList<Integer>();
     
     for (int eventIndex=0; eventIndex<numEvents; eventIndex++) {
-      Event ev = (Event)events.removeFirst();
+      Event ev = events.removeFirst();
       String[] econtext = ev.getContext();
       ComparableEvent ce;
       

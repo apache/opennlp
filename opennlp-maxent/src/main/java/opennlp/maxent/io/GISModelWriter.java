@@ -49,8 +49,8 @@ public abstract class GISModelWriter extends AbstractModelWriter {
     PARAMS = (Context[]) data[0];
     IndexHashTable<String> pmap = (IndexHashTable<String>) data[1];
     OUTCOME_LABELS = (String[]) data[2];
-    CORRECTION_CONSTANT = ((Integer) data[3]).intValue();
-    CORRECTION_PARAM = ((Double) data[4]).doubleValue();
+    CORRECTION_CONSTANT = (Integer) data[3];
+    CORRECTION_PARAM = (Double) data[4];
 
     PRED_LABELS = new String[pmap.size()];
     pmap.toArray(PRED_LABELS);
@@ -93,7 +93,7 @@ public abstract class GISModelWriter extends AbstractModelWriter {
 
     for (int i = 0; i < compressed.size(); i++) {
       List a = (List) compressed.get(i);
-      writeUTF(a.size() + ((ComparablePredicate) a.get(0)).toString());
+      writeUTF(a.size() + a.get(0).toString());
     }
 
     // the mapping from predicate names to their integer indexes
