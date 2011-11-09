@@ -69,7 +69,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
    */
   public TwoPassDataIndexer(EventStream eventStream, int cutoff, boolean sort) throws IOException {
     Map<String,Integer> predicateIndex = new HashMap<String,Integer>();
-    List eventsToCompare;
+    List<ComparableEvent> eventsToCompare;
 
     System.out.println("Indexing events using cutoff of " + cutoff + "\n");
 
@@ -117,7 +117,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
   private int computeEventCounts(EventStream eventStream, Writer eventStore, Map<String,Integer> predicatesInOut, int cutoff) throws IOException {
     Map<String,Integer> counter = new HashMap<String,Integer>();
     int eventCount = 0;
-    Set predicateSet = new HashSet();
+    Set<String> predicateSet = new HashSet<String>();
     while (eventStream.hasNext()) {
       Event ev = eventStream.next();
       eventCount++;
@@ -127,8 +127,8 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
     }
     predCounts = new int[predicateSet.size()];
     int index = 0;
-    for (Iterator pi=predicateSet.iterator();pi.hasNext();index++) {
-      String predicate = (String) pi.next();
+    for (Iterator<String> pi=predicateSet.iterator();pi.hasNext();index++) {
+      String predicate = pi.next();
       predCounts[index] = counter.get(predicate);
       predicatesInOut.put(predicate,index);
     }
@@ -136,10 +136,10 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
     return eventCount;
   }
 
-  private List index(int numEvents, EventStream es, Map<String,Integer> predicateIndex) throws IOException {
+  private List<ComparableEvent> index(int numEvents, EventStream es, Map<String,Integer> predicateIndex) throws IOException {
     Map<String,Integer> omap = new HashMap<String,Integer>();
     int outcomeCount = 0;
-    List eventsToCompare = new ArrayList(numEvents);
+    List<ComparableEvent> eventsToCompare = new ArrayList<ComparableEvent>(numEvents);
     List<Integer> indexedContext = new ArrayList<Integer>();
     while (es.hasNext()) {
       Event ev = es.next();

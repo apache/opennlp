@@ -68,7 +68,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
       throws IOException {
     Map<String, Integer> predicateIndex = new HashMap<String, Integer>();
     LinkedList<Event> events;
-    List eventsToCompare;
+    List<ComparableEvent> eventsToCompare;
 
     System.out.println("Indexing events using cutoff of " + cutoff + "\n");
 
@@ -106,7 +106,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
    */
   private LinkedList<Event> computeEventCounts(EventStream eventStream,
       Map<String, Integer> predicatesInOut, int cutoff) throws IOException {
-    Set predicateSet = new HashSet();
+    Set<String> predicateSet = new HashSet<String>();
     Map<String, Integer> counter = new HashMap<String, Integer>();
     LinkedList<Event> events = new LinkedList<Event>();
     while (eventStream.hasNext()) {
@@ -116,25 +116,25 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
     }
     predCounts = new int[predicateSet.size()];
     int index = 0;
-    for (Iterator pi = predicateSet.iterator(); pi.hasNext(); index++) {
-      String predicate = (String) pi.next();
+    for (Iterator<String> pi = predicateSet.iterator(); pi.hasNext(); index++) {
+      String predicate = pi.next();
       predCounts[index] = counter.get(predicate);
       predicatesInOut.put(predicate, index);
     }
     return events;
   }
 
-  protected List index(LinkedList<Event> events,
+  protected List<ComparableEvent> index(LinkedList<Event> events,
       Map<String, Integer> predicateIndex) {
     Map<String, Integer> omap = new HashMap<String, Integer>();
 
     int numEvents = events.size();
     int outcomeCount = 0;
-    List eventsToCompare = new ArrayList(numEvents);
+    List<ComparableEvent> eventsToCompare = new ArrayList<ComparableEvent>(numEvents);
     List<Integer> indexedContext = new ArrayList<Integer>();
 
     for (int eventIndex = 0; eventIndex < numEvents; eventIndex++) {
-      Event ev = (Event) events.removeFirst();
+      Event ev = events.removeFirst();
       String[] econtext = ev.getContext();
       ComparableEvent ce;
 

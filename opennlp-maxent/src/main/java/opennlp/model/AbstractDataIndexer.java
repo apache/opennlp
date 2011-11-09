@@ -80,7 +80,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
    * @return The number of unique events in the specified list.
    * @since maxent 1.2.6
    */
-  protected int sortAndMerge(List eventsToCompare, boolean sort) {
+  protected int sortAndMerge(List<ComparableEvent> eventsToCompare, boolean sort) {
     int numUniqueEvents = 1;
     numEvents = eventsToCompare.size();
     if (sort) {
@@ -89,9 +89,9 @@ public abstract class AbstractDataIndexer implements DataIndexer {
         return numUniqueEvents; // nothing to do; edge case (see assertion)
       }
 
-      ComparableEvent ce = (ComparableEvent) eventsToCompare.get(0);
+      ComparableEvent ce = eventsToCompare.get(0);
       for (int i = 1; i < numEvents; i++) {
-        ComparableEvent ce2 = (ComparableEvent) eventsToCompare.get(i);
+        ComparableEvent ce2 = eventsToCompare.get(i);
 
         if (ce.compareTo(ce2) == 0) { 
           ce.seen++; // increment the seen count
@@ -113,7 +113,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     numTimesEventsSeen = new int[numUniqueEvents];
 
     for (int i = 0, j = 0; i < numEvents; i++) {
-      ComparableEvent evt = (ComparableEvent) eventsToCompare.get(i);
+      ComparableEvent evt = eventsToCompare.get(i);
       if (null == evt) {
         continue; // this was a dupe, skip over it.
       }
@@ -137,7 +137,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
    * @param counter The predicate counters.
    * @param cutoff The cutoff which determines whether a predicate is included.
    */
-   protected static void update(String[] ec, Set predicateSet, Map<String,Integer> counter, int cutoff) {
+   protected static void update(String[] ec, Set<String> predicateSet, Map<String,Integer> counter, int cutoff) {
     for (int j=0; j<ec.length; j++) {
       Integer i = counter.get(ec[j]);
       if (i == null) {
