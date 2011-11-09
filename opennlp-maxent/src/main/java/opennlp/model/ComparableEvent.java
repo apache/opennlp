@@ -25,7 +25,7 @@ import java.util.Arrays;
  * A maxent event representation which we can use to sort based on the
  * predicates indexes contained in the events.
  */
-public class ComparableEvent implements Comparable {
+public class ComparableEvent implements Comparable<ComparableEvent> {
   public int outcome;
   public int[] predIndexes;
   public int seen = 1; // the number of times this event
@@ -48,8 +48,8 @@ public class ComparableEvent implements Comparable {
     this(oc, pids, null);
   }
 
-  public int compareTo(Object o) {
-    ComparableEvent ce = (ComparableEvent) o;
+  public int compareTo(ComparableEvent ce) {
+    
     if (outcome < ce.outcome)
       return -1;
     else if (outcome > ce.outcome)
