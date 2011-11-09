@@ -87,9 +87,7 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
       }
       System.err.println("Compressed "+PARAMS.length+" parameters to "+numPreds);
       sortPreds = new ComparablePredicate[numPreds];
-      for (int pid=0;pid<numPreds;pid++) {
-        sortPreds[pid] = tmpPreds[pid];
-      }
+      System.arraycopy(tmpPreds, 0, sortPreds, 0, numPreds);
       Arrays.sort(sortPreds);
       return sortPreds;
     }
