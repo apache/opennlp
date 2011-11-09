@@ -362,7 +362,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     start = span.getStart();
     if (!type.equals(AbstractBottomUpParser.TOK_NODE)) {
       sb.append("(");
-      sb.append(type +" ");
+      sb.append(type).append(" ");
       //System.out.print(label+" ");
       //System.out.print(head+" ");
       //System.out.print(df.format(prob)+" ");

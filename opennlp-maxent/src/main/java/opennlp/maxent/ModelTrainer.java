@@ -85,8 +85,8 @@ public class ModelTrainer {
       }
       ai++;
     }
-    String dataFileName = new String(args[ai++]);
-    String modelFileName = new String(args[ai]);
+    String dataFileName = args[ai++];
+    String modelFileName = args[ai];
     try {
       FileReader datafr = new FileReader(new File(dataFileName));
       EventStream es;
