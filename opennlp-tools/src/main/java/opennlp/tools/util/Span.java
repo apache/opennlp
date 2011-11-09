@@ -267,7 +267,7 @@ public class Span implements Comparable<Span> {
    */
   @Override
   public String toString() {
-    StringBuffer toStringBuffer = new StringBuffer(15);
+    StringBuilder toStringBuffer = new StringBuilder(15);
     toStringBuffer.append("[");
     toStringBuffer.append(getStart());
     toStringBuffer.append("..");
