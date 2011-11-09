@@ -244,9 +244,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
         if (leafTag.contains("<sam->")) {
           String[] lexemes = leaf.getLexeme().split("_");
           if(lexemes.length > 1) {
-            for (int i = 0; i < lexemes.length - 1; i++) {
-              sentence.add(lexemes[i]);
-            }
+             sentence.addAll(Arrays.asList(lexemes).subList(0, lexemes.length - 1));
           }
           leftContractionPart = lexemes[lexemes.length - 1];
           return;
