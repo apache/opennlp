@@ -116,10 +116,7 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
     Span[] sentSpans = new Span[sentenceIndex.size()];
 
     int i = 0;
-    Iterator<AnnotationFS> sentenceIterator = sentenceIndex.iterator();
-    while (sentenceIterator.hasNext()) {
-      AnnotationFS sentenceAnnotation = (AnnotationFS) sentenceIterator.next();
-
+    for (AnnotationFS sentenceAnnotation : sentenceIndex) {
       sentSpans[i++] = new Span(sentenceAnnotation.getBegin(), sentenceAnnotation.getEnd());
     }
 

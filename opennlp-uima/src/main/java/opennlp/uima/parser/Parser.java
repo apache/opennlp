@@ -94,11 +94,11 @@ public class Parser extends CasAnnotator_ImplBase {
 
         int escapedStart = sentenceStringBuilder.length();
         int start = tokens[i].getStart();
-        mIndexMap.put(new Integer(escapedStart), new Integer(start));
+        mIndexMap.put(escapedStart, start);
 
         int escapedEnd = escapedStart + escapedToken.length();
         int end = tokens[i].getEnd();
-        mIndexMap.put(new Integer(escapedEnd), new Integer(end));
+        mIndexMap.put(escapedEnd, end);
 
         sentenceStringBuilder.append(tokenList[i]);
 
@@ -149,9 +149,7 @@ public class Parser extends CasAnnotator_ImplBase {
       int end = parseFromTagger.getSpan().getEnd();
       
       
-      Parse transformedParse = new Parse(mSentence, 
-          new Span(((Integer) mIndexMap.get(new Integer(start))).intValue(), 
-          ((Integer) mIndexMap.get(new Integer(end))).intValue()), 
+      Parse transformedParse = new Parse(mSentence, new Span(mIndexMap.get(start), mIndexMap.get(end)),
           parseFromTagger.getType(), 
           parseFromTagger.getProb(), parseFromTagger.getHeadIndex());
       
@@ -258,11 +256,7 @@ public class Parser extends CasAnnotator_ImplBase {
   public void process(CAS cas) {
     FSIndex<AnnotationFS> sentences = cas.getAnnotationIndex(mSentenceType);
 
-    Iterator<AnnotationFS> sentencesIterator = sentences.iterator();
-
-    while (sentencesIterator.hasNext()) {
-      AnnotationFS sentence = (AnnotationFS) sentencesIterator.next();
-
+    for (AnnotationFS sentence : sentences) {
       process(cas, sentence);
     }
   }

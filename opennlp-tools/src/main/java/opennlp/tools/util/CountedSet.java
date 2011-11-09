@@ -61,7 +61,7 @@ public class CountedSet<E> implements Set<E> {
       return true;
     }
     else {
-      cset.put(o, Integer.valueOf(count.intValue()+1));
+      cset.put(o, count + 1);
       return false;
     }
   }
@@ -75,12 +75,12 @@ public class CountedSet<E> implements Set<E> {
   public void subtract(E o) {
     Integer count = cset.get(o);
     if ( count != null ) {
-      int c = count.intValue()-1;
+      int c = count -1;
       if (c == 0) {
         cset.remove(o);
       }
       else {
-        cset.put(o, Integer.valueOf(c));
+        cset.put(o, c);
       }
     }
   }
@@ -92,7 +92,7 @@ public class CountedSet<E> implements Set<E> {
    * @param c The count of the specified object.
    */
   public void setCount(E o, int c) {
-    cset.put(o, Integer.valueOf(c));
+    cset.put(o, c);
   }
 
   /**
@@ -107,7 +107,7 @@ public class CountedSet<E> implements Set<E> {
       return 0;
     }
     else {
-      return count.intValue();
+      return count;
     }
   }
 

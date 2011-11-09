@@ -37,7 +37,7 @@ public class IntegerPool {
   public IntegerPool(int size) {
     _table = new Integer[size];
     for (int i = 0; i < size; i++) {
-      _table[i] = new Integer(i);
+      _table[i] = i;
     } // end of for (int i = 0; i < size; i++)
   }
 
@@ -54,7 +54,7 @@ public class IntegerPool {
     if (value < _table.length && value >= 0) {
       return _table[value];
     } else {
-      return new Integer(value);
+      return value;
     }
   }
 }

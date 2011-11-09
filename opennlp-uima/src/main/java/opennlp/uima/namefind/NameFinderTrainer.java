@@ -259,45 +259,41 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
   public void processCas(CAS cas) {
     FSIndex<AnnotationFS> sentenceIndex = cas.getAnnotationIndex(sentenceType);
 
-    Iterator<AnnotationFS> sentenceIterator = sentenceIndex.iterator();
-    while (sentenceIterator.hasNext()) {
-      AnnotationFS sentenceAnnotation = sentenceIterator.next();
-
+    for (AnnotationFS sentenceAnnotation : sentenceIndex) {
       ContainingConstraint sentenceContainingConstraint = new ContainingConstraint(
           sentenceAnnotation);
-      
+
       FSIndex<AnnotationFS> tokenAnnotations = cas.getAnnotationIndex(tokenType);
-      
+
       Iterator<AnnotationFS> containingTokens = cas.createFilteredIterator(tokenAnnotations
           .iterator(), sentenceContainingConstraint);
-      
+
       FSIndex<AnnotationFS> allNames = cas.getAnnotationIndex(nameType);
-      
+
       Iterator<AnnotationFS> containingNames = cas.createFilteredIterator(allNames.iterator(),
           sentenceContainingConstraint);
-      
+
       List<AnnotationFS> tokenList = iteratorToList(containingTokens);
-      
+
       Span names[] = createNames(tokenList, iteratorToList(containingNames));
-      
+
       // create token array
       String tokenArray[] = new String[tokenList.size()];
-      
+
       for (int i = 0; i < tokenArray.length; i++) {
         tokenArray[i] = ((AnnotationFS) tokenList.get(i))
             .getCoveredText();
       }
-      
+
       NameSample traingSentence = new NameSample(tokenArray, names, null, false);
-      
+
       if (traingSentence.getSentence().length != 0) {
-      	nameFinderSamples.add(traingSentence);
-      }
-      else {
-      	if (logger.isLoggable(Level.INFO)) {
-      		logger.log(Level.INFO, "Sentence without tokens: " + 
-      				sentenceAnnotation.getCoveredText());
-      	}
+        nameFinderSamples.add(traingSentence);
+      } else {
+        if (logger.isLoggable(Level.INFO)) {
+          logger.log(Level.INFO, "Sentence without tokens: " +
+              sentenceAnnotation.getCoveredText());
+        }
       }
     }
   }

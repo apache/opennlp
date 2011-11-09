@@ -161,13 +161,7 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
     
     FSIndex<AnnotationFS> sentenceAnnotations = cas.getAnnotationIndex(mSentenceType);
 
-    Iterator<AnnotationFS> sentenceAnnotationsIterator = sentenceAnnotations.iterator();
-
-    while (sentenceAnnotationsIterator.hasNext()) {
-
-      AnnotationFS sentence = 
-        sentenceAnnotationsIterator.next();
-
+    for (AnnotationFS sentence : sentenceAnnotations) {
       process(cas, sentence);
     }
   }
@@ -184,8 +178,7 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
     List<Span> openNLPSpans = new LinkedList<Span>();
 
     while (containingTokens.hasNext()) {
-      AnnotationFS tokenAnnotation = 
-        (AnnotationFS) containingTokens .next();
+      AnnotationFS tokenAnnotation = containingTokens.next();
 
       openNLPSpans.add(new Span(tokenAnnotation.getBegin()
           - sentence.getBegin(), tokenAnnotation.getEnd()
