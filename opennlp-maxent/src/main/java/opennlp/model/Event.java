@@ -57,13 +57,13 @@ public class Event {
       if (context.length > 0) {
         sb.append(context[0]);
         if (values != null) {
-          sb.append("="+values[0]);
+          sb.append("=").append(values[0]);
         }
       }
       for (int ci=1;ci<context.length;ci++) {
         sb.append(" ").append(context[ci]);
         if (values != null) {
-          sb.append("="+values[ci]);
+          sb.append("=").append(values[ci]);
         }
       }
       sb.append("]");

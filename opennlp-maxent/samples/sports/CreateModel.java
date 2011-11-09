@@ -77,7 +77,7 @@ public class CreateModel {
         }
         ai++;
       }
-      String dataFileName = new String(args[ai]);
+      String dataFileName = args[ai];
       String modelFileName =
         dataFileName.substring(0,dataFileName.lastIndexOf('.'))
         + "Model.txt";

@@ -162,7 +162,7 @@ public class ChunkSample {
     for (int tokenIndex = 0; tokenIndex < sentence.size(); tokenIndex++) {
       for (int nameIndex = 0; nameIndex < spans.length; nameIndex++) {
         if (spans[nameIndex].getStart() == tokenIndex) {
-          result.append( "[" + spans[nameIndex].getType()).append(" ");
+          result.append("[").append(spans[nameIndex].getType()).append(" ");
         }
 
         if (spans[nameIndex].getEnd() == tokenIndex) {
@@ -170,7 +170,7 @@ public class ChunkSample {
         }
       }
 
-      result.append(sentence.get(tokenIndex) + "_" + tags.get(tokenIndex) + ' ');
+      result.append(sentence.get(tokenIndex)).append("_").append(tags.get(tokenIndex)).append(' ');
     }
 
     if (sentence.size() > 1)
@@ -191,7 +191,7 @@ public class ChunkSample {
 	    StringBuilder chunkString = new StringBuilder();
 	    
 	    for (int ci=0; ci < preds.size(); ci++) {
-	    	chunkString.append(sentence.get(ci) + " " + tags.get(ci) + " " + preds.get(ci) + "\n");
+        chunkString.append(sentence.get(ci)).append(" ").append(tags.get(ci)).append(" ").append(preds.get(ci)).append("\n");
 	    }
 	    return chunkString.toString();
 	  }

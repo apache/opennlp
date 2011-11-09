@@ -97,7 +97,7 @@ public class FileEventStream extends  AbstractEventStream {
     sb.append(event.getOutcome());
     String[] context = event.getContext();
     for (int ci=0,cl=context.length;ci<cl;ci++) {
-      sb.append(" "+context[ci]);
+      sb.append(" ").append(context[ci]);
     }
     sb.append(System.getProperty("line.separator"));
     return sb.toString();

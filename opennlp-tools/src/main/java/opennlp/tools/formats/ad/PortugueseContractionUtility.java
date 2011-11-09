@@ -165,7 +165,7 @@ public class PortugueseContractionUtility {
       StringBuilder sb = new StringBuilder();
       String[] parts = left.split("_");
       for (int i = 0; i < parts.length - 1; i++) {
-        sb.append(parts[i] + " ");
+        sb.append(parts[i]).append(" ");
       }
       key = parts[parts.length - 1] + "+" + right;
       if (CONTRACTIONS.containsKey(key)) {
@@ -178,10 +178,10 @@ public class PortugueseContractionUtility {
 
         key = left + "+" + parts[0];
         if (CONTRACTIONS.containsKey(key)) {
-          sb.append(CONTRACTIONS.get(key) + " ");
+          sb.append(CONTRACTIONS.get(key)).append(" ");
 
           for (int i = 1; i < parts.length; i++) {
-            sb.append(parts[i] + " ");
+            sb.append(parts[i]).append(" ");
           }
 
           return sb.toString();

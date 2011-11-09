@@ -69,7 +69,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     if (x_2 >= 0) {
       t_2=tags[x_2];
       p_2=preds[x_2];
-      w_2=words[x_2].toString();
+      w_2=words[x_2];
     }
     else {
       t_2=EOS;
@@ -81,7 +81,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     if (x_1 >= 0) {
       t_1=tags[x_1];
       p_1=preds[x_1];
-      w_1=words[x_1].toString();
+      w_1=words[x_1];
     }
     else {
       t_1=EOS;
@@ -91,12 +91,12 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
 
     // chunkandpostag(0)
     t0=tags[x0];
-    w0=words[x0].toString();
+    w0=words[x0];
 
     // chunkandpostag(1)
     if (x1 < tags.length) {
       t1=tags[x1];
-      w1=words[x1].toString();
+      w1=words[x1];
     }
     else {
       t1=EOS;
@@ -106,7 +106,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     // chunkandpostag(2)
     if (x2 < tags.length) {
       t2=tags[x2];
-      w2=words[x2].toString();
+      w2=words[x2];
     }
     else {
       t2=EOS;
