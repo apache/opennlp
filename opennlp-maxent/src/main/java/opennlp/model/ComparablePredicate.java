@@ -51,9 +51,11 @@ public class ComparablePredicate implements Comparable<ComparablePredicate> {
   }
 
   public String toString() {
-    String s = "";
-    for (int i=0; i<outcomes.length; i++) s+= " "+outcomes[i];
-    return s;
+    StringBuilder s = new StringBuilder();
+    for (int outcome : outcomes) {
+      s.append(" ").append(outcome);
+    }
+    return s.toString();
   }
 
 }
