@@ -41,16 +41,15 @@ public class BagOfWordsFeatureGenerator implements FeatureGenerator {
 
     Collection<String> bagOfWords = new ArrayList<String>(text.length);
 
-    for (int i = 0; i < text.length; i++) {
-      
+    for (String word : text) {
       if (useOnlyAllLetterTokens) {
-        StringPattern pattern = StringPattern.recognize(text[i]);
+        StringPattern pattern = StringPattern.recognize(word);
         
         if (pattern.isAllLetter())
-          bagOfWords.add("bow=" + text[i]);
+          bagOfWords.add("bow=" + word);
       }
       else {
-        bagOfWords.add("bow=" + text[i]);
+        bagOfWords.add("bow=" + word);
       }
     }
 
