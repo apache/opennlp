@@ -231,11 +231,11 @@ public class SimplePerceptronSequenceTrainer {
         }
         //evaluation feature count computation
         //System.err.print("test: ");for (int ei=0;ei<taggerEvents.length;ei++) {System.err.print(" "+taggerEvents[ei].getOutcome());} System.err.println();
-        for (int ei=0;ei<taggerEvents.length;ei++) {
-          String[] contextStrings = taggerEvents[ei].getContext();
-          float values[] =taggerEvents[ei].getValues();
-          int oi = omap.get(taggerEvents[ei].getOutcome());
-          for (int ci=0;ci<contextStrings.length;ci++) {
+        for (Event taggerEvent : taggerEvents) {
+          String[] contextStrings = taggerEvent.getContext();
+          float values[] = taggerEvent.getValues();
+          int oi = omap.get(taggerEvent.getOutcome());
+          for (int ci = 0; ci < contextStrings.length; ci++) {
             float value = 1;
             if (values != null) {
               value = values[ci];
