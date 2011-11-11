@@ -56,10 +56,10 @@ public class TokenSample {
     this.text = text;
     this.tokenSpans = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(tokenSpans)));
 
-    for (int i = 0; i < tokenSpans.length; i++) {
-      if (tokenSpans[i].getStart() < 0 || tokenSpans[i].getStart() > text.length() ||
-          tokenSpans[i].getEnd() > text.length() || tokenSpans[i].getEnd() < 0) {
-        throw new IllegalArgumentException("Span " + tokenSpans[i].toString() +
+    for (Span tokenSpan : tokenSpans) {
+      if (tokenSpan.getStart() < 0 || tokenSpan.getStart() > text.length() ||
+          tokenSpan.getEnd() > text.length() || tokenSpan.getEnd() < 0) {
+        throw new IllegalArgumentException("Span " + tokenSpan.toString() +
             " is out of bounds!");
       }
     }
