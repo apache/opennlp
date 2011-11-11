@@ -148,8 +148,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
         omap.put(oc, ocID);
       }
 
-      for (int i = 0; i < econtext.length; i++) {
-        String pred = econtext[i];
+      for (String pred : econtext) {
         if (predicateIndex.containsKey(pred)) {
           indexedContext.add(predicateIndex.get(pred));
         }
