@@ -77,8 +77,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     for (int i = 0; i < outcomes.length; i++) {
       outcomes[i] = NameFinderME.OTHER;
     }
-    for (int nameIndex = 0; nameIndex < names.length; nameIndex++) {
-      Span name = names[nameIndex];
+    for (Span name : names) {
       if (name.getType() == null) {
         outcomes[name.getStart()] = type + "-" + NameFinderME.START;
       }

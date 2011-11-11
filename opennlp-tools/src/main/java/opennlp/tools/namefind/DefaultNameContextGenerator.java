@@ -91,14 +91,14 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
             "The tokens and outcome arrays MUST have the same size!");
       }
 
-    for (int i = 0; i < featureGenerators.length; i++) {
-      featureGenerators[i].updateAdaptiveData(tokens, outcomes);
+    for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
+      featureGenerator.updateAdaptiveData(tokens, outcomes);
     }
   }
 
   public void clearAdaptiveData() {
-    for (int i = 0; i < featureGenerators.length; i++) {
-      featureGenerators[i].clearAdaptiveData();
+    for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
+      featureGenerator.clearAdaptiveData();
     }
   }
 
@@ -114,8 +114,8 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
   public String[] getContext(int index, String[] tokens, String[] preds, Object[] additionalContext) {
     List<String> features = new ArrayList<String>();
 
-    for (int i = 0; i < featureGenerators.length; i++) {
-      featureGenerators[i].createFeatures(features, tokens, index, preds);
+    for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
+      featureGenerator.createFeatures(features, tokens, index, preds);
     }
 
     //previous outcome features
