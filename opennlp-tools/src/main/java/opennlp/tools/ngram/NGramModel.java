@@ -233,10 +233,7 @@ public class NGramModel implements Iterable<StringList>{
   public int numberOfGrams() {
     int counter = 0;
 
-    for (Iterator<StringList> it = iterator(); it.hasNext();) {
-
-      StringList ngram = it.next();
-
+    for (StringList ngram : this) {
       counter += getCount(ngram);
     }
 
@@ -294,8 +291,8 @@ public class NGramModel implements Iterable<StringList>{
 
     Dictionary dict = new Dictionary(caseSensitive);
 
-    for (Iterator<StringList> it = iterator(); it.hasNext();) {
-      dict.put(it.next());
+    for (StringList stringList : this) {
+      dict.put(stringList);
     }
 
     return dict;
