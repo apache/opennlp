@@ -165,8 +165,8 @@ public final class NameFinder extends AbstractNameFinder {
 
     double probs[] = mNameFinder.probs();
 
-    for (int i = 0; i < probs.length; i++) {
-      documentConfidence.add(probs[i]);
+    for (double prob : probs) {
+      documentConfidence.add(prob);
     }
 
     return names;

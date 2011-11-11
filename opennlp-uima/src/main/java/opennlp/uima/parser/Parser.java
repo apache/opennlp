@@ -115,13 +115,12 @@ public class Parser extends CasAnnotator_ImplBase {
       
       int start = 0;
       
-      for (int i = 0; i < tokenList.length; i++) {
-
+      for (String token : tokenList) {
         mParseForTagger.insert(new Parse(tokenizedSentence, new Span(start,
-            start + tokenList[i].length()),
+            start + token.length()),
             opennlp.tools.parser.chunking.Parser.TOK_NODE, 0f, 0));
 
-        start += tokenList[i].length() + 1;
+        start += token.length() + 1;
       }
     }
     
@@ -157,15 +156,13 @@ public class Parser extends CasAnnotator_ImplBase {
       Parse[] parseFromTaggerChildrens = parseFromTagger.getChildren();
       
       // call this method for all childs ... 
-      for (int i = 0; i < parseFromTaggerChildrens.length; i++) {
-        
-        Parse child = parseFromTaggerChildrens[i];
-        
+      for (Parse child : parseFromTaggerChildrens) {
+
         if (!child.getType().equals(
             opennlp.tools.parser.chunking.Parser.TOK_NODE)) {
-        
+
           // only insert if it has childs
-          if (child.getChildCount() > 0 && 
+          if (child.getChildCount() > 0 &&
               !child.getChildren()[0].getType().equals(opennlp.tools.parser.chunking.Parser.TOK_NODE)) {
             transformedParse.insert(transformParseFromTagger(child));
           }
@@ -315,11 +312,10 @@ public class Parser extends CasAnnotator_ImplBase {
   
   protected void createAnnotation(CAS cas, int offset, Parse parse) {
     
-    Parse parseChildrens[] = parse.getChildren();
+    Parse parseChildren[] = parse.getChildren();
     
     // do this for all children
-    for (int i = 0; i < parseChildrens.length; i++) {
-      Parse child = parseChildrens[i];
+    for (Parse child : parseChildren) {
       createAnnotation(cas, offset, child);
     }
     

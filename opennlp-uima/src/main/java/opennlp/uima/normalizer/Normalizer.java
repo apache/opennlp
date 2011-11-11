@@ -176,11 +176,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
 
     FSIndex<AnnotationFS> sentenceIndex = tcas.getAnnotationIndex(mNameType);
 
-    for (Iterator<AnnotationFS> sentenceIterator = sentenceIndex.iterator(); sentenceIterator
-        .hasNext();) {
-
-      AnnotationFS nameAnnotation = (AnnotationFS) sentenceIterator.next();
-
+    for (AnnotationFS nameAnnotation : sentenceIndex) {
       // check if the document language is supported
       String language = tcas.getDocumentLanguage();
 
