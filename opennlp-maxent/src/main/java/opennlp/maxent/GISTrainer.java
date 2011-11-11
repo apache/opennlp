@@ -206,7 +206,6 @@ class GISTrainer {
    * This can improve model accuracy, though training will potentially take
    * longer and use more memory.  Model size will also be larger.
    *
-   * @param smooth true if smoothing is desired, false if not
    */
   public void setGaussianSigma(double sigmaValue) {
     useGaussianSmoothing = true;
@@ -370,8 +369,9 @@ class GISTrainer {
       for (int aoi=0;aoi<numActiveOutcomes;aoi++) {
         int oi = outcomePattern[aoi];
         params[pi].setParameter(aoi, 0.0);
-        for (int i = 0; i< modelExpects.length; i++)
-          modelExpects[i][pi].setParameter(aoi, 0.0);
+        for (MutableContext[] modelExpect : modelExpects) {
+          modelExpect[pi].setParameter(aoi, 0.0);
+        }
         if (predCount[pi][oi] > 0) {
             observedExpects[pi].setParameter(aoi, predCount[pi][oi]);
         }
@@ -622,9 +622,10 @@ class GISTrainer {
           //params[pi].updateParameter(aoi,(Math.log(observed[aoi]) - Math.log(model[aoi])));
           params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi]))/correctionConstant));
         }
-        
-        for (int i = 0; i< modelExpects.length; i++)
-          modelExpects[i][pi].setParameter(aoi,0.0); // re-initialize to 0.0's
+
+        for (MutableContext[] modelExpect : modelExpects) {
+          modelExpect[pi].setParameter(aoi, 0.0); // re-initialize to 0.0's
+        }
 
       }
     }
