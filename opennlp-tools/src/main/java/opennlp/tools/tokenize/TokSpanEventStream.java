@@ -113,8 +113,8 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
 
       int firstTrainingToken = -1;
       int lastTrainingToken = -1;
-      for (int ci = 0; ci < candTokens.length; ci++) {
-        Span cSpan = candTokens[ci];
+      for (Span candToken : candTokens) {
+        Span cSpan = candToken;
         String ctok = sent.substring(cSpan.getStart(), cSpan.getEnd());
         //adjust cSpan to text offsets
         cSpan = new Span(cSpan.getStart() + start, cSpan.getEnd() + start);
