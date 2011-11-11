@@ -181,15 +181,15 @@ public class NameSampleDataStreamTest {
     while ((ns = ds.read()) != null) {
       Span[] nameSpans = ns.getNames();
 
-      for (int i = 0; i < nameSpans.length; i++) {
-        if (!names.containsKey(nameSpans[i].getType())) {
-          names.put(nameSpans[i].getType(), new ArrayList<String>());
-          spans.put(nameSpans[i].getType(), new ArrayList<Span>());
+      for (Span nameSpan : nameSpans) {
+        if (!names.containsKey(nameSpan.getType())) {
+          names.put(nameSpan.getType(), new ArrayList<String>());
+          spans.put(nameSpan.getType(), new ArrayList<Span>());
         }
-        names.get(nameSpans[i].getType())
-            .add(sublistToString(ns.getSentence(), nameSpans[i]));
-        spans.get(nameSpans[i].getType())
-            .add(nameSpans[i]);
+        names.get(nameSpan.getType())
+            .add(sublistToString(ns.getSentence(), nameSpan));
+        spans.get(nameSpan.getType())
+            .add(nameSpan);
       }
     }
     
