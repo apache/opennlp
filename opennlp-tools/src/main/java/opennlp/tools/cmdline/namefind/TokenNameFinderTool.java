@@ -81,8 +81,9 @@ public final class TokenNameFinderTool implements CmdLineTool {
         // adaptive data must be cleared for a new document
         
         if (whitespaceTokenizerLine.length == 0) {
-          for (int i = 0; i < nameFinders.length; i++)  
-            nameFinders[i].clearAdaptiveData();
+          for (NameFinderME nameFinder : nameFinders) {
+            nameFinder.clearAdaptiveData();
+          }
         }
         
         List<Span> names = new ArrayList<Span>();
