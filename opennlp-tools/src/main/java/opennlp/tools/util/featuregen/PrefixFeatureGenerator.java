@@ -34,8 +34,8 @@ public class PrefixFeatureGenerator extends FeatureGeneratorAdapter {
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
     String[] prefs = PrefixFeatureGenerator.getPrefixes(tokens[index]);
-    for (int i = 0; i < prefs.length; i++) {
-      features.add("pre=" + prefs[i]);
+    for (String pref : prefs) {
+      features.add("pre=" + pref);
     }
   }
 }
