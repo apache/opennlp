@@ -43,18 +43,20 @@ public class TrainEval {
 	Event[] events = (e.getEventCollector(r)).getEvents(true);
 	//MaxentModel model = e.getModel(dir, name);
 	String negOutcome = e.getNegativeOutcome();
-	for(int i=0; i<events.length; i++) {
-	    String guess =
-		model.getBestOutcome(model.eval(events[i].getContext()));
-	    String ans = events[i].getOutcome();
-	    if(verbose)
-		System.out.println(ans + " " + guess);
-	    if(!ans.equals(negOutcome)) totPos++;
-	    if(!guess.equals(negOutcome) && !guess.equals(ans))
-		falsePos++;
-	    else if(ans.equals(guess))
-		truePos++;
-	}
+    for (Event event : events) {
+      String guess = model.getBestOutcome(model.eval(event.getContext()));
+      String ans = event.getOutcome();
+      if (verbose)
+        System.out.println(ans + " " + guess);
+      
+      if (!ans.equals(negOutcome))
+        totPos++;
+      
+      if (!guess.equals(negOutcome) && !guess.equals(ans))
+        falsePos++;
+      else if (ans.equals(guess))
+        truePos++;
+    }
 	
 	System.out.println("Precision: " + truePos/(truePos+falsePos));
 	System.out.println("Recall:    " + truePos/totPos);
