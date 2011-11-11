@@ -138,18 +138,18 @@ public abstract class AbstractDataIndexer implements DataIndexer {
    * @param cutoff The cutoff which determines whether a predicate is included.
    */
    protected static void update(String[] ec, Set<String> predicateSet, Map<String,Integer> counter, int cutoff) {
-    for (int j=0; j<ec.length; j++) {
-      Integer i = counter.get(ec[j]);
-      if (i == null) {
-        counter.put(ec[j], 1);
-      }
-      else {
-        counter.put(ec[j], i+1);
-      }
-      if (!predicateSet.contains(ec[j]) && counter.get(ec[j]) >= cutoff) {
-        predicateSet.add(ec[j]);
-      }
-    }
+     for (String s : ec) {
+       Integer i = counter.get(s);
+       if (i == null) {
+         counter.put(s, 1);
+       }
+       else {
+         counter.put(s, i + 1);
+       }
+       if (!predicateSet.contains(s) && counter.get(s) >= cutoff) {
+         predicateSet.add(s);
+       }
+     }
   }
 
   /**
@@ -173,6 +173,4 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   public float[][] getValues() {
     return null;
   }
-  
-  
 }
