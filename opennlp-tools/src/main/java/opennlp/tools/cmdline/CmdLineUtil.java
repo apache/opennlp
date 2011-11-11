@@ -317,8 +317,8 @@ public final class CmdLineUtil {
   }
   
   public static boolean containsParam(String param, String args[]) {
-    for (int i = 0; i < args.length; i++) {
-      if (args[i].equals(param)) {
+    for (String arg : args) {
+      if (arg.equals(param)) {
         return true;
       }
     }
