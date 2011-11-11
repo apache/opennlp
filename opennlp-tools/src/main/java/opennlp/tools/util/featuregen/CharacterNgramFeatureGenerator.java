@@ -17,7 +17,6 @@
 
 package opennlp.tools.util.featuregen;
 
-import java.util.Iterator;
 import java.util.List;
 
 import opennlp.tools.ngram.NGramModel;
@@ -50,9 +49,7 @@ public class CharacterNgramFeatureGenerator extends FeatureGeneratorAdapter {
     NGramModel model = new NGramModel();
     model.add(tokens[index], minLength, maxLength);
 
-    for (Iterator<StringList> it = model.iterator(); it.hasNext();) {
-
-      StringList tokenList = it.next();
+    for (StringList tokenList : model) {
 
       if (tokenList.size() > 0) {
         features.add("ng=" + tokenList.getToken(0).toLowerCase());

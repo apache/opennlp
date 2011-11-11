@@ -66,8 +66,8 @@ public class InSpanGenerator extends FeatureGeneratorAdapter {
     }
 
     // iterate over names and check if a span is contained
-    for (int i = 0; i < currentNames.length; i++) {
-      if (currentNames[i].contains(index)) {
+    for (Span currentName : currentNames) {
+      if (currentName.contains(index)) {
         // found a span for the current token
         features.add(prefix + ":w=dic");
         features.add(prefix + ":w=dic=" + tokens[index]);

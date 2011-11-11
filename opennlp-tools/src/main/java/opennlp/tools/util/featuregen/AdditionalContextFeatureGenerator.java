@@ -37,8 +37,8 @@ public class AdditionalContextFeatureGenerator extends FeatureGeneratorAdapter {
 
       String[] context = additionalContext[index];
 
-      for (int i = 0; i < context.length; i++) {
-        features.add("ne=" + context[i]);
+      for (String s : context) {
+        features.add("ne=" + s);
       }
     }
   }
