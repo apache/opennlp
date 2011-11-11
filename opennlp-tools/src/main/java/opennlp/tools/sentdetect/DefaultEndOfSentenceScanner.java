@@ -55,10 +55,10 @@ public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
     List<Integer> l = new ArrayList<Integer>();
     char[] eosCharacters = getEndOfSentenceCharacters();
     for (int i = 0; i < cbuf.length; i++) {
-      for (int ci=0;ci<eosCharacters.length;ci++) {
-        if (cbuf[i] == eosCharacters[ci]) {
-            l.add(INT_POOL.get(i));
-            break;
+      for (char eosCharacter : eosCharacters) {
+        if (cbuf[i] == eosCharacter) {
+          l.add(INT_POOL.get(i));
+          break;
         }
       }
     }

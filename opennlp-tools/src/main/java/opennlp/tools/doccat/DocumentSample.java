@@ -60,9 +60,9 @@ public class DocumentSample {
     StringBuilder sampleString = new StringBuilder();
     
     sampleString.append(category).append('\t');
-        
-    for (int i = 0; i < text.size(); i++) {
-      sampleString.append(text.get(i)).append(' ');
+
+    for (String s : text) {
+      sampleString.append(s).append(' ');
     }
     
     if (sampleString.length() > 0) {
