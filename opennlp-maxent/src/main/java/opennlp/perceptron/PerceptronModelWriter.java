@@ -97,15 +97,14 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
       ComparablePredicate cp = sorted[0];
       List<List<ComparablePredicate>> outcomePatterns = new ArrayList<List<ComparablePredicate>>();
       List<ComparablePredicate> newGroup = new ArrayList<ComparablePredicate>();
-      for (int i=0; i<sorted.length; i++) {
-        if (cp.compareTo(sorted[i]) == 0) {
-          newGroup.add(sorted[i]);
-        } 
-        else {	    
-          cp = sorted[i];
+      for (ComparablePredicate predicate : sorted) {
+        if (cp.compareTo(predicate) == 0) {
+          newGroup.add(predicate);
+        } else {
+          cp = predicate;
           outcomePatterns.add(newGroup);
           newGroup = new ArrayList<ComparablePredicate>();
-          newGroup.add(sorted[i]);
+          newGroup.add(predicate);
         }
       }
       outcomePatterns.add(newGroup);
@@ -128,9 +127,10 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
       
       // the mapping from outcomes to their integer indexes
       writeInt(OUTCOME_LABELS.length);
-      
-      for (int i=0; i<OUTCOME_LABELS.length; i++)
-        writeUTF(OUTCOME_LABELS[i]); 
+
+      for (String label : OUTCOME_LABELS) {
+        writeUTF(label);
+      }
       
       // the mapping from predicates to the outcomes they contributed to.
       // The sorting is done so that we actually can write this out more
@@ -139,17 +139,17 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
       List<List<ComparablePredicate>> compressed = computeOutcomePatterns(sorted);
       
       writeInt(compressed.size());
-      
-      for (int i=0; i<compressed.size(); i++) {
-        List<ComparablePredicate> a = compressed.get(i);
+
+      for (List<ComparablePredicate> a : compressed) {
         writeUTF(a.size() + a.get(0).toString());
       } 
       
       // the mapping from predicate names to their integer indexes
       writeInt(sorted.length);
       
-      for (int i=0; i<sorted.length; i++)
-        writeUTF(sorted[i].name); 
+      for (ComparablePredicate s : sorted) {
+        writeUTF(s.name);
+      }
       
       // write out the parameters
       for (int i=0; i<sorted.length; i++)
