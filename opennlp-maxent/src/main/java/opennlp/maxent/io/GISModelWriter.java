@@ -87,12 +87,12 @@ public abstract class GISModelWriter extends AbstractModelWriter {
     // The sorting is done so that we actually can write this out more
     // compactly than as the entire list.
     ComparablePredicate[] sorted = sortValues();
-    List compressed = compressOutcomes(sorted);
+    List<List<ComparablePredicate>> compressed = compressOutcomes(sorted);
 
     writeInt(compressed.size());
 
     for (int i = 0; i < compressed.size(); i++) {
-      List a = (List) compressed.get(i);
+      List a = compressed.get(i);
       writeUTF(a.size() + a.get(0).toString());
     }
 
@@ -138,17 +138,17 @@ public abstract class GISModelWriter extends AbstractModelWriter {
     return sortPreds;
   }
 
-  protected List compressOutcomes(ComparablePredicate[] sorted) {
+  protected List<List<ComparablePredicate>> compressOutcomes(ComparablePredicate[] sorted) {
     ComparablePredicate cp = sorted[0];
-    List outcomePatterns = new ArrayList();
-    List newGroup = new ArrayList();
+    List<List<ComparablePredicate>> outcomePatterns = new ArrayList<List<ComparablePredicate>>();
+    List<ComparablePredicate> newGroup = new ArrayList<ComparablePredicate>();
     for (int i = 0; i < sorted.length; i++) {
       if (cp.compareTo(sorted[i]) == 0) {
         newGroup.add(sorted[i]);
       } else {
         cp = sorted[i];
         outcomePatterns.add(newGroup);
-        newGroup = new ArrayList();
+        newGroup = new ArrayList<ComparablePredicate>();
         newGroup.add(sorted[i]);
       }
     }
