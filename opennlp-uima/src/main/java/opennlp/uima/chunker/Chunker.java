@@ -17,8 +17,6 @@
 
 package opennlp.uima.chunker;
 
-import java.util.Iterator;
-
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.uima.util.AnnotatorUtil;
@@ -175,10 +173,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
     int index = 0;
 
-    for (Iterator<AnnotationFS> tokenAnnotationIterator = tokenAnnotationIndex.iterator();
-        tokenAnnotationIterator.hasNext();) {
-      
-      AnnotationFS tokenAnnotation = tokenAnnotationIterator.next();
+    for (AnnotationFS tokenAnnotation : tokenAnnotationIndex) {
 
       tokenAnnotations[index] = tokenAnnotation;
 

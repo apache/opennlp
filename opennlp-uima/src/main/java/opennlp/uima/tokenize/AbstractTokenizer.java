@@ -103,10 +103,7 @@ public abstract class AbstractTokenizer extends CasAnnotator_ImplBase {
   public void process(CAS cas) throws AnalysisEngineProcessException {
     FSIndex<AnnotationFS> sentences = cas.getAnnotationIndex(sentenceType);
 
-    for (Iterator<AnnotationFS> sentencesIterator = sentences.iterator(); sentencesIterator
-        .hasNext();) {
-
-      AnnotationFS sentence = sentencesIterator.next();
+    for (AnnotationFS sentence : sentences) {
 
       if (isRemoveExistingAnnotations)
         UimaUtil.removeAnnotations(cas, sentence, tokenType);

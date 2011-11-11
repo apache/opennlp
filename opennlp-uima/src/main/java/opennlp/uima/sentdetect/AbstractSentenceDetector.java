@@ -98,11 +98,7 @@ public abstract class AbstractSentenceDetector extends CasAnnotator_ImplBase {
     FSIndex<AnnotationFS> containerAnnotations = cas
         .getAnnotationIndex(containerType);
 
-    for (Iterator<AnnotationFS> containerIterator = containerAnnotations
-        .iterator(); containerIterator.hasNext();) {
-
-      AnnotationFS containerAnnotation = (AnnotationFS) containerIterator
-          .next();
+    for (AnnotationFS containerAnnotation : containerAnnotations) {
 
       String text = containerAnnotation.getCoveredText();
 

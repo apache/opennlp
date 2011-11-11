@@ -60,8 +60,7 @@ public final class ContainingConstraint implements FSMatchConstraint {
 
     AnnotationFS annotation = (AnnotationFS) featureStructure;
 
-    for (Iterator<AnnotationFS> it = mContainingAnnotations.iterator(); it.hasNext(); ) {
-      AnnotationFS containingAnnotation = it.next(); 
+    for (AnnotationFS containingAnnotation : mContainingAnnotations) {
       if (isContaining(annotation, containingAnnotation)) {
         return true;
       }
