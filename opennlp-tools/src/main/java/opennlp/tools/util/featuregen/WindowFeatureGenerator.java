@@ -19,7 +19,6 @@
 package opennlp.tools.util.featuregen;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -68,16 +67,16 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
   /**
    * Initializes the current instance. The previous and next window size is 5.
    *
-   * @param generator
+   * @param generator feature generator
    */
   public WindowFeatureGenerator(AdaptiveFeatureGenerator generator) {
     this(generator, 5, 5);
   }
   
   /**
-   * Initializes the current isntance with the given parameters.
+   * Initializes the current instance with the given parameters.
    * 
-   * @param generators
+   * @param generators array of feature generators
    */
   public WindowFeatureGenerator(AdaptiveFeatureGenerator... generators) {
     this(new AggregatedFeatureGenerator(generators), 5, 5);
@@ -95,8 +94,8 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
 
         generator.createFeatures(prevFeatures, tokens, index - i, preds);
 
-        for (Iterator<String> it = prevFeatures.iterator(); it.hasNext();) {
-          features.add(PREV_PREFIX + i + it.next());
+        for (String prevFeature : prevFeatures) {
+          features.add(PREV_PREFIX + i + prevFeature);
         }
       }
     }
@@ -109,8 +108,8 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
 
         generator.createFeatures(nextFeatures, tokens, index + i, preds);
 
-        for (Iterator<String> it = nextFeatures.iterator(); it.hasNext();) {
-          features.add(NEXT_PREFIX + i + it.next());
+        for (String nextFeature : nextFeatures) {
+          features.add(NEXT_PREFIX + i + nextFeature);
         }
       }
     }
@@ -126,6 +125,6 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
 
   @Override
   public String toString() {
-    return super.toString()+": Prev windwow size: " + prevWindowSize +", Next window size: " + nextWindowSize;
+    return super.toString()+": Prev window size: " + prevWindowSize +", Next window size: " + nextWindowSize;
   }
 }
