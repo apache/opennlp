@@ -129,19 +129,19 @@ public class NameSample {
     for (int tokenIndex = 0; tokenIndex < sentence.size(); tokenIndex++) {
       // token
 
-      for (int nameIndex = 0; nameIndex < names.size(); nameIndex++) {
-        if (names.get(nameIndex).getStart() == tokenIndex) {
+      for (Span name : names) {
+        if (name.getStart() == tokenIndex) {
           // check if nameTypes is null, or if the nameType for this specific
           // entity is empty. If it is, we leave the nameType blank.
-          if (names.get(nameIndex).getType() == null) {
+          if (name.getType() == null) {
             result.append(NameSampleDataStream.START_TAG).append(' ');
           }
           else {
-            result.append(NameSampleDataStream.START_TAG_PREFIX).append(names.get(nameIndex).getType()).append("> ");
+            result.append(NameSampleDataStream.START_TAG_PREFIX).append(name.getType()).append("> ");
           }
         }
 
-        if (names.get(nameIndex).getEnd() == tokenIndex) {
+        if (name.getEnd() == tokenIndex) {
           result.append(NameSampleDataStream.END_TAG).append(' ');
         }
       }
@@ -151,9 +151,9 @@ public class NameSample {
 
     if (sentence.size() > 1)
       result.setLength(result.length() - 1);
-    
-    for (int nameIndex = 0; nameIndex < names.size(); nameIndex++) {
-      if (names.get(nameIndex).getEnd() == sentence.size()) {
+
+    for (Span name : names) {
+      if (name.getEnd() == sentence.size()) {
         result.append(' ').append(NameSampleDataStream.END_TAG);
       }
     }
