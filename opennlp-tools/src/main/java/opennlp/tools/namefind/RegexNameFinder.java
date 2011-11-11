@@ -64,8 +64,8 @@ public final class RegexNameFinder implements TokenNameFinder {
 
     Collection<Span> annotations = new LinkedList<Span>();
 
-    for (int i = 0; i < mPatterns.length; i++) {
-      Matcher matcher = mPatterns[i].matcher(sentenceString);
+    for (Pattern mPattern : mPatterns) {
+      Matcher matcher = mPattern.matcher(sentenceString);
 
       while (matcher.find()) {
         Integer tokenStartIndex =
