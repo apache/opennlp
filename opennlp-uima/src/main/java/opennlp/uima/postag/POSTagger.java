@@ -204,8 +204,7 @@ public final class POSTagger extends CasAnnotator_ImplBase {
 
         sentenceWithPos.append("\"");
 
-        for (final Iterator<AnnotationFS> it = sentenceTokenAnnotationList.iterator(); it.hasNext();) {
-          final AnnotationFS token = it.next();
+        for (final AnnotationFS token : sentenceTokenAnnotationList) {
           sentenceWithPos.append(token.getCoveredText());
           sentenceWithPos.append('\\');
           sentenceWithPos.append(token.getStringValue(this.posFeature));

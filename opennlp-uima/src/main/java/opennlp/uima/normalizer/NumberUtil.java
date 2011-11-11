@@ -40,9 +40,9 @@ public final class NumberUtil {
 
     boolean isLocaleSupported = false;
 
-    for (int i = 0; i < possibleLocales.length; i++) {
+    for (Locale possibleLocale : possibleLocales) {
       // search if local is contained
-      if (possibleLocales[i].equals(locale)) {
+      if (possibleLocale.equals(locale)) {
         isLocaleSupported = true;
         break;
       }
