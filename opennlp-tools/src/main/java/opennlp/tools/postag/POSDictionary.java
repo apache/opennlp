@@ -166,8 +166,8 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
 
     StringBuilder tagString = new StringBuilder();
 
-    for (int i = 0; i < tags.length; i++) {
-      tagString.append(tags[i]);
+    for (String tag : tags) {
+      tagString.append(tag);
       tagString.append(' ');
     }
 
