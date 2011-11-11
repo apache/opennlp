@@ -20,16 +20,25 @@ REM #   under the License.
 REM # Note:  Do not output anything in this script file, any output
 REM #        may be inadvertantly placed in any output files if
 REM #        output redirection is used.
+SETLOCAL
 
 IF "%JAVA_CMD%" == "" (
 	IF "%JAVA_HOME%" == "" (
 		SET JAVA_CMD=java 
 	) ELSE (
+		REM # Keep JAVA_HOME to short-name without spaces
 		FOR %%A IN ("%JAVA_HOME%") DO SET JAVA_CMD=%%~sfA\bin\java
 	)
 )
 
 REM #  Should work with Windows XP and greater.  If not, specify the path to where it is installed.
-IF "%OPENNLP_HOME%" == "" SET OPENNLP_HOME=%~sp0..
+IF "%OPENNLP_HOME%" == "" (
+	SET OPENNLP_HOME=%~sp0..
+) ELSE (
+	REM # Keep OPENNLP_HOME to short-name without spaces
+	FOR %%A IN ("%OPENNLP_HOME%") DO SET OPENNLP_HOME=%%~sfA
+)
 
 %JAVA_CMD% -Xmx4096m -jar %OPENNLP_HOME%\lib\opennlp-tools-*.jar %*
+
+ENDLOCAL
