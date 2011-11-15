@@ -56,6 +56,7 @@
 	    <fileSet>
 	      <directory>.</directory>
 	      <outputDirectory></outputDirectory>
+	      <filtered>true</filtered>
 	      <fileMode>644</fileMode>
 	      <directoryMode>755</directoryMode> 
 	      <includes>
