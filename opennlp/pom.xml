@@ -34,7 +34,7 @@
 	<version>1.5.2-incubating-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>OpenNLP Reactor</name>
+	<name>Apache OpenNLP Reactor</name>
 
 	<prerequisites>
 		<maven>3.0</maven>

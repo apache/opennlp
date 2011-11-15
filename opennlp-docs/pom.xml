@@ -30,7 +30,7 @@
   
   <artifactId>opennlp-docs</artifactId>
   <packaging>pom</packaging>
-  <name>OpenNLP Documentation</name>
+  <name>Apache OpenNLP Documentation</name>
   
   <build>
     <plugins>

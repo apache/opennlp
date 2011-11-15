@@ -32,7 +32,7 @@
 	<artifactId>opennlp-maxent</artifactId>
 	<packaging>bundle</packaging>
 	<version>3.0.2-incubating-SNAPSHOT</version>
-	<name>OpenNLP Maxent</name>
+	<name>Apache OpenNLP Maxent</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

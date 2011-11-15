@@ -31,7 +31,7 @@
     
 	<artifactId>opennlp-uima</artifactId>
 	<packaging>jar</packaging>
-	<name>OpenNLP UIMA Annotators</name>
+	<name>Apache OpenNLP UIMA Annotators</name>
 
 	<repositories>
 		<repository>
