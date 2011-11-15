@@ -1,4 +1,4 @@
-Apache OpenNLP 1.5.2-incubating
+Apache OpenNLP ${pom.version}
 ===============================
 
 
@@ -13,7 +13,7 @@ To build everything go into the opennlp directory and run the following command:
 The results of the build will be placed  in:
     opennlp-distr/target/apache-opennlp-[version]-bin.tar-gz (or .zip)
 
-What is new in OpenNLP 1.5.2-incubating
+What is new in Apache OpenNLP ${pom.version}
 ---------------------------------------
 
 This release contains a couple of new features, improvements and bug fixes.
