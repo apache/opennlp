@@ -25,13 +25,13 @@
 	<parent>
 	    <groupId>org.apache.opennlp</groupId>
 	    <artifactId>opennlp</artifactId>
-	    <version>1.5.2-incubating-SNAPSHOT</version>
+	    <version>1.5.2-incubating</version>
 	    <relativePath>../opennlp/pom.xml</relativePath>
     </parent>
   
 	<artifactId>opennlp-maxent</artifactId>
 	<packaging>bundle</packaging>
-	<version>3.0.2-incubating-SNAPSHOT</version>
+	<version>3.0.2-incubating</version>
 	<name>Apache OpenNLP Maxent</name>
 
 	<properties>
