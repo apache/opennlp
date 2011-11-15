@@ -20,14 +20,14 @@
 -->
 
 <typeSystemDescription xmlns="http://uima.apache.org/resourceSpecifier">
-	<name>OpenNLP TypeSystem</name>
+	<name>Apache OpenNLP TypeSystem</name>
 	<description>
 		This is the default OpenNLP type system. All the sample
 		descriptors reference the types in this type system. To replace it against
 		a custom type system change the mapping in the descriptors to the
 		custom types and reference the custom type system.
 	</description>
-	<version>1.5.2-incubating</version>
+	<version>${pom.version}</version>
 	<vendor>Apache Software Foundation</vendor>
 	<types>
 		<typeDescription>
