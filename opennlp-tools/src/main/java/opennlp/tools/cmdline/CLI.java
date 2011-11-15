@@ -61,6 +61,7 @@ import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool;
+import opennlp.tools.util.Version;
 
 public final class CLI {
   
@@ -145,6 +146,7 @@ public final class CLI {
   }
   
   private static void usage() {
+    System.out.print("OpenNLP " + Version.currentVersion().toString() + ". ");
     System.out.println("Usage: " + CMD + " TOOL");
     System.out.println("where TOOL is one of:");
     
