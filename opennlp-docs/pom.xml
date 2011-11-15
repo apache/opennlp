@@ -24,7 +24,7 @@
   <parent>
 	<groupId>org.apache.opennlp</groupId>
 	<artifactId>opennlp</artifactId>
-	<version>1.5.2-incubating</version>
+	<version>1.5.3-incubating-SNAPSHOT</version>
     <relativePath>../opennlp/pom.xml</relativePath>
   </parent>
   
