@@ -31,7 +31,7 @@
     
 	<artifactId>opennlp-tools</artifactId>
 	<packaging>bundle</packaging>
-	<name>OpenNLP Tools</name>
+	<name>Apache OpenNLP Tools</name>
 	<repositories>
 		<repository>
 			<id>opennlp.sf.net</id>
