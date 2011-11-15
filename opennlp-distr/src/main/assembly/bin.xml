@@ -111,6 +111,7 @@
 		
 		<fileSet>
 			<directory>../opennlp-uima/descriptors</directory>
+			<filtered>true</filtered>
 			<fileMode>644</fileMode>
 			<directoryMode>755</directoryMode>
 			<outputDirectory>docs/opennlp-uima-descriptors</outputDirectory>

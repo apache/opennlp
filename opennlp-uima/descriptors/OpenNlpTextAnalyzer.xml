@@ -73,8 +73,8 @@
 	<analysisEngineMetaData>
 		<name>OpenNlpTextAnalyzer</name>
 		<description />
-		<version>1.4.4</version>
-		<vendor>OpenNlp</vendor>
+		<version>${pom.version}</version>
+		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters />
 		<configurationParameterSettings />
 		<flowConstraints>

@@ -26,7 +26,7 @@
 	<processingResourceMetaData>
 		<name>Sentence Detector Trainer</name>
 		<description></description>
-		<version>1.5.2-incubating</version>
+		<version>${pom.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 
 		<configurationParameters>
