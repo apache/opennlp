@@ -31,7 +31,7 @@
 
 	<groupId>org.apache.opennlp</groupId>
 	<artifactId>opennlp</artifactId>
-	<version>1.5.2-incubating</version>
+	<version>1.5.2-incubating-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>OpenNLP Reactor</name>
