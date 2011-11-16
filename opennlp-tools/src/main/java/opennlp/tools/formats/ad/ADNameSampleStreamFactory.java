@@ -39,7 +39,7 @@ public class ADNameSampleStreamFactory implements
 
   interface Parameters {
     @ParameterDescription(valueName = "encoding")
-    String getEncoding();
+    Charset getEncoding();
 
     @ParameterDescription(valueName = "sampleData")
     String getData();

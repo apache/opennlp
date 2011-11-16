@@ -290,37 +290,7 @@ public final class CmdLineUtil {
     
     return null;
   }
-  
-  /**
-   * Retrieves the "-encoding" parameter.
-   *
-   * @param param
-   * @param args
-   * 
-   * @return the encoding or if invalid the VM is killed.
-   */
-  public static Charset getEncodingParameter(String args[]) {
-    String charsetName = getParameter("-encoding", args);
 
-    try {
-      if (charsetName != null) {
-        if (Charset.isSupported(charsetName)) {
-          return Charset.forName(charsetName);
-        } else {
-          System.out.println("Error: Unsuppoted encoding " + charsetName + ".");
-          throw new TerminateToolException(-1);
-        }
-      }
-    } catch (IllegalCharsetNameException e) {
-      System.out.println("Error: encoding name(" + e.getCharsetName()
-          + ") is invalid.");
-      throw new TerminateToolException(-1);
-    }
-    
-    // TODO: Can still return null if encoding is not specified at all ...
-    return null;
-  }
-  
   public static void checkLanguageCode(String code) {
     List<String> languageCodes  = new ArrayList<String>();
     languageCodes.addAll(Arrays.asList(Locale.getISOLanguages()));
