@@ -140,4 +140,13 @@ public class TrainingParameters {
     
     properties.store(out, null);
   }
+
+  public static final TrainingParameters defaultParams() {
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(5));
+
+    return mlParams;
+  }
 }
