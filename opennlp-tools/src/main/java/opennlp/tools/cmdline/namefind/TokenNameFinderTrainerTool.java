@@ -40,6 +40,9 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ModelUtil;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ */
 public final class TokenNameFinderTrainerTool implements CmdLineTool {
   
   interface TrainerToolParams extends TrainingParams, TrainingToolParams{
@@ -100,7 +103,7 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
     return featureGeneratorBytes;
   }
   
-  static Map<String, Object> loadResources(File resourcePath) {
+  public static Map<String, Object> loadResources(File resourcePath) {
     Map<String, Object> resources = new HashMap<String, Object>();
 
     if (resourcePath != null) {
