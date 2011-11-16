@@ -24,8 +24,11 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -255,40 +258,61 @@ public class ArgumentParser {
    * Tests if the argument are correct or incorrect. Incorrect means, that mandatory arguments are missing or
    * there are unknown arguments. The argument value itself can also be incorrect, but this
    * is checked by the {@link ArgumentParser#parse(String[], Class)} method and reported accordingly.
-   * 
-   * @param args
-   * @param argProxyInterface
-   * @return
+   *
+   * @param args command line arguments
+   * @param argProxyInterface interface with parameters description
+   * @return true, if arguments are valid
    */
   public static <T> boolean validateArguments(String args[], Class<T> argProxyInterface) {
+    return null == validateArgumentsLoudly(args, argProxyInterface);
+  }
+
+  /**
+   * Tests if the arguments are correct or incorrect.
+   * 
+   * @param args command line arguments
+   * @param argProxyInterface interface with parameters description
+   * @return null, if arguments are valid or error message otherwise
+   */
+  public static <T> String validateArgumentsLoudly(String args[], Class<T> argProxyInterface) {
     
     // number of parameters must be at least 2 and always be even
-    if (args.length < 2 || args.length % 2 != 0)
-      return false;
+    if (args.length < 2 || args.length % 2 != 0) {
+      return "Error: Number of parameters must be at least 2 and always be even";
+    }
     
     int argumentCount = 0;
-    
+
+    List<String> parameters = new ArrayList<String>(Arrays.asList(args));
     for (Method method : argProxyInterface.getMethods()) {
-      
-      String valueString = CmdLineUtil.getParameter(
-          methodNameToParameter(method.getName()), args);
-      
+      String paramName = methodNameToParameter(method.getName());
+      int paramIndex = CmdLineUtil.getParameterIndex(paramName, args);
+      String valueString = CmdLineUtil.getParameter(paramName, args);
       if (valueString == null) {
         OptionalParameter optionalParam = method.getAnnotation(OptionalParameter.class);
-        
-        // missing mandatory parameter
-        if (optionalParam == null)
-          return false;
+
+        if (optionalParam == null) {
+          if (-1 < paramIndex) {
+            return "Error: Missing mandatory parameter value: " + paramName;
+          } else {
+            return "Error: Missing mandatory parameter: " + paramName;
+          }
+        } else {
+          parameters.remove("-" + paramName);
+        }
       }
       else {
+        parameters.remove(paramName);
+        parameters.remove(valueString);
         argumentCount++;
       }
     }
     
-    if (args.length / 2 != argumentCount)
-      return false;
+    if (args.length / 2 > argumentCount) {
+      return "Error: Unrecognized parameters encountered: " + parameters.toString();
+    }
     
-    return true;
+    return null;
   }
   
   /**
@@ -297,10 +321,10 @@ public class ArgumentParser {
    * In case an argument value cannot be parsed a {@link TerminateToolException} is
    * thrown which contains an error message which explains the problems.
    * 
-   * @param args
-   * @param argProxyInterface
+   * @param args arguments
+   * @param argProxyInterface interface with parameters description
    * 
-   * @return
+   * @return parsed parameters
    * 
    * @throws TerminateToolException if an argument value cannot be parsed.
    * @throws IllegalArgumentException if validateArguments returns false, if the proxy interface is not compatible.

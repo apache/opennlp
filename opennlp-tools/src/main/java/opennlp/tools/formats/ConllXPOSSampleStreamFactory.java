@@ -47,8 +47,8 @@ public class ConllXPOSSampleStreamFactory implements ObjectStreamFactory<POSSamp
     return ArgumentParser.createUsage(Parameters.class);
   }
 
-  public boolean validateArguments(String[] args) {
-    return ArgumentParser.validateArguments(args, Parameters.class);
+  public String validateArguments(String[] args) {
+    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
   }
 
   ObjectStream<POSSample> create(Parameters params) {

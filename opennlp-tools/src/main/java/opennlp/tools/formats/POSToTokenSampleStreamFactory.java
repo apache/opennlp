@@ -44,8 +44,8 @@ public class POSToTokenSampleStreamFactory implements ObjectStreamFactory<TokenS
     return ArgumentParser.createUsage(Parameters.class);
   }
 
-  public boolean validateArguments(String[] args) {
-    return ArgumentParser.validateArguments(args, Parameters.class);
+  public String validateArguments(String[] args) {
+    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
   }
 
   public ObjectStream<TokenSample> create(String[] args) {

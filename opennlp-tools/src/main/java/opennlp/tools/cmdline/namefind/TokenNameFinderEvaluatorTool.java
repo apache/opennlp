@@ -60,8 +60,9 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
 
   public void run(String[] args) {
 
-    if (!ArgumentParser
-        .validateArguments(args, EvalToolParams.class)) {
+    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, EvalToolParams.class);
+    if (null != errorMessage) {
+      System.err.println(errorMessage);
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }

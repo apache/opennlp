@@ -214,33 +214,49 @@ public final class CmdLineUtil {
     
     System.err.println();
   }
-  
+
   /**
-   * Retrieves the specified parameters from the given arguments.
-   * 
-   * @param param
-   * @param args
-   * @return
+   * Returns the index of the parameter in the arguments, or -1 if the parameter is not found.
+   *
+   * @param param parameter name
+   * @param args arguments
+   * @return the index of the parameter in the arguments, or -1 if the parameter is not found
    */
-  public static String getParameter(String param, String args[]) {
+  public static int getParameterIndex(String param, String args[]) {
     for (int i = 0; i < args.length; i++) {
       if (args[i].startsWith("-") && args[i].equals(param)) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  /**
+   * Retrieves the specified parameter from the given arguments.
+   * 
+   * @param param parameter name
+   * @param args arguments
+   * @return parameter value
+   */
+  public static String getParameter(String param, String args[]) {
+    int i = getParameterIndex(param, args);
+      if (-1 < i) {
         i++;
         if (i < args.length) {
           return args[i];
         }
       }
-    }
-    
+
     return null;
   }
   
   /**
-   * Retrieves the specified parameters from the specified arguments.
+   * Retrieves the specified parameter from the specified arguments.
    * 
-   * @param param
-   * @param args
-   * @return
+   * @param param parameter name
+   * @param args arguments
+   * @return parameter value
    */
   public static Integer getIntParameter(String param, String args[]) {
     String value = getParameter(param, args);
@@ -256,11 +272,11 @@ public final class CmdLineUtil {
   }
   
   /**
-   * Retrieves the specified parameters from the specified arguments.
+   * Retrieves the specified parameter from the specified arguments.
    * 
-   * @param param
-   * @param args
-   * @return
+   * @param param parameter name
+   * @param args arguments
+   * @return parameter value
    */
   public static Double getDoubleParameter(String param, String args[]) {
     String value = getParameter(param, args);
