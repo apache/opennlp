@@ -21,15 +21,24 @@ import opennlp.tools.util.ObjectStream;
 
 public interface ObjectStreamFactory<T> {
 
+  /**
+   * Returns usage help message.
+   * @return help message
+   */
   String getUsage();
-  
-  boolean validateArguments(String args[]);
+
+  /**
+   * Validates arguments and returns null if they are valid or error message if they are not.
+   * @param args arguments
+   * @return returns null if arguments are valid or error message if they are not
+   */
+  String validateArguments(String args[]);
   
   /**
-   * Creates the <code>ObjectStream</code>
+   * Creates the <code>ObjectStream</code>.
    * 
-   * @param args
-   * @return
+   * @param args arguments
+   * @return ObjectStream instance
    */
   ObjectStream<T> create(String args[]);
 }

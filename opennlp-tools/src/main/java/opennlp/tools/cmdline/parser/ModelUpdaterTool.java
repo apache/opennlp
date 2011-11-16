@@ -50,7 +50,9 @@ abstract class ModelUpdaterTool implements CmdLineTool {
   
   public final void run(String[] args) {
 
-    if (!ArgumentParser.validateArguments(args, ModelUpdaterParams.class)) {
+    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, ModelUpdaterParams.class);
+    if (null != errorMessage) {
+      System.err.println(errorMessage);
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }

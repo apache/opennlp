@@ -48,14 +48,16 @@ public abstract class AbstractConverterTool<T> implements CmdLineTool {
     
     if (streamFactory == null) {
       // TODO: print list of available formats
-      System.err.println("Format is unkown: " + format);
+      System.err.println("Format is unknown: " + format);
       throw new TerminateToolException(-1);
     }
     
     String formatArgs[] = new String[args.length - 1];
     System.arraycopy(args, 1, formatArgs, 0, formatArgs.length);
-    
-    if (!streamFactory.validateArguments(formatArgs)) {
+
+    String errorMessage = streamFactory.validateArguments(formatArgs);
+    if (null != errorMessage) {
+      System.err.println(errorMessage);
       System.err.println(createHelpString(format, streamFactory.getUsage()));
       throw new TerminateToolException(-1);
     }
