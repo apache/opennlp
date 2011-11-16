@@ -78,7 +78,9 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
   }
   
   public void run(String[] args) {
-    if (!ArgumentParser.validateArguments(args, TrainerToolParams.class)) {
+    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, TrainerToolParams.class);
+    if (null != errorMessage) {
+      System.err.println(errorMessage);
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
@@ -87,7 +89,7 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
         TrainerToolParams.class);
  
 
-    opennlp.tools.util.TrainingParameters mlParams = 
+    opennlp.tools.util.TrainingParameters mlParams =
       CmdLineUtil.loadTrainingParameters(params.getParams(), false);
     
     if (mlParams != null) {

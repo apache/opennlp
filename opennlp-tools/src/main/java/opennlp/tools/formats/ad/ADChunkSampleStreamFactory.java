@@ -58,8 +58,8 @@ public class ADChunkSampleStreamFactory implements
     return ArgumentParser.createUsage(Parameters.class);
   }
 
-  public boolean validateArguments(String[] args) {
-    return ArgumentParser.validateArguments(args, Parameters.class);
+  public String validateArguments(String[] args) {
+    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
   }
 
   public ObjectStream<ChunkSample> create(String[] args) {

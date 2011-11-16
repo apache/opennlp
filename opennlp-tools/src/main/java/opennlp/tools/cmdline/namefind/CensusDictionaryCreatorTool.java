@@ -130,7 +130,9 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
    */
   public void run(String[] args) {
 
-    if (!ArgumentParser.validateArguments(args, Parameters.class)) {
+    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
+    if (null != errorMessage) {
+      System.err.println(errorMessage);
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }

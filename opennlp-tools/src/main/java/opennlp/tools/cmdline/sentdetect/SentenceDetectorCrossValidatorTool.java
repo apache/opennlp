@@ -55,14 +55,16 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
 
   public void run(String[] args) {
     
-    if (!ArgumentParser.validateArguments(args, CVToolParams.class)) {
+    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, CVToolParams.class);
+    if (null != errorMessage) {
+      System.err.println(errorMessage);
       System.err.println(getHelp());
       throw new TerminateToolException(1);
     }
     
     CVToolParams params = ArgumentParser.parse(args, CVToolParams.class);
     
-    opennlp.tools.util.TrainingParameters mlParams = 
+    TrainingParameters mlParams =
       CmdLineUtil.loadTrainingParameters(params.getParams(), false);
     
     File trainingDataInFile = params.getData();
