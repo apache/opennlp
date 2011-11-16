@@ -26,7 +26,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.uima.resource.ResourceInitializationException;
+
 import opennlp.maxent.GISModel;
+import opennlp.model.TrainUtil;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 
 /**
@@ -77,5 +81,41 @@ final public class OpennlpUtil {
     }
     
     return bytes.toByteArray();
+  }
+
+  public static final TrainingParameters loadTrainingParams(String inFileValue,
+      boolean isSequenceTrainingAllowed) throws ResourceInitializationException {
+
+    TrainingParameters params;
+    if (inFileValue != null) {
+      InputStream paramsIn = null;
+      try {
+        paramsIn = new FileInputStream(new File(inFileValue));
+
+        params = new opennlp.tools.util.TrainingParameters(paramsIn);
+      } catch (IOException e) {
+        throw new ResourceInitializationException(e);
+      }
+      finally {
+        try {
+          if (paramsIn != null)
+            paramsIn.close();
+        } catch (IOException e) {
+        }
+      }
+
+      if (!TrainUtil.isValid(params.getSettings())) {
+        throw new ResourceInitializationException(new Exception("Training parameters file is invalid!"));
+      }
+
+      if (!isSequenceTrainingAllowed && TrainUtil.isSequenceTraining(params.getSettings())) {
+        throw new ResourceInitializationException(new Exception("Sequence training is not supported!"));
+      }
+    }
+    else {
+      params = TrainingParameters.defaultParams();
+    }
+
+    return params;
   }
 }

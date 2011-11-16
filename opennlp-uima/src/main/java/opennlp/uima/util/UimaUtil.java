@@ -64,6 +64,8 @@ public final class UimaUtil {
 
   public static final String DICTIONARY_PARAMETER = "opennlp.uima.Dictionary";
 
+  public static final String TRAINING_PARAMS_FILE_PARAMETER = "opennlp.uima.TrainingParamsFile";
+
   public static final String CUTOFF_PARAMETER = "opennlp.uima.Cutoff";
   
   public static final String ITERATIONS_PARAMETER = "opennlp.uima.Iterations";
