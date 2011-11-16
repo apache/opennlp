@@ -57,7 +57,7 @@ public class ADNameSampleStreamFactory implements
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
-    Charset encoding = CmdLineUtil.getEncodingParameter(args);
+    Charset encoding = params.getEncoding();
 
     if (encoding == null) {
       throw new TerminateToolException(1);
