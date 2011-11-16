@@ -40,7 +40,7 @@ public class ADChunkSampleStreamFactory implements
 
   interface Parameters {
     @ParameterDescription(valueName = "encoding")
-    String getEncoding();
+    Charset getEncoding();
 
     @ParameterDescription(valueName = "sampleData")
     String getData();
@@ -66,7 +66,7 @@ public class ADChunkSampleStreamFactory implements
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
-    Charset encoding = CmdLineUtil.getEncodingParameter(args);
+    Charset encoding = params.getEncoding();
 
     if (encoding == null) {
       throw new TerminateToolException(1);
