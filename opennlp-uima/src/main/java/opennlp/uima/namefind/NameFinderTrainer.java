@@ -39,6 +39,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.uima.util.CasConsumerUtil;
 import opennlp.uima.util.ContainingConstraint;
 import opennlp.uima.util.OpennlpUtil;
@@ -106,10 +107,6 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
   
   private String language;
   
-  private int cutoff;
-  
-  private int iterations;
-  
   // TODO: Keeping all events in memory limits the size of the training corpus
   // Possible solutions:
   // - Write all events to disk
@@ -117,6 +114,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
   //   to disk or could store the events much more space efficient in memory
   
   private List<NameSample> nameFinderSamples = new ArrayList<NameSample>();
+  private TrainingParameters trainingParams;
   
   /**
    * Initializes the current instance.
@@ -137,9 +135,9 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
     language = CasConsumerUtil.getRequiredStringParameter(getUimaContext(),
         UimaUtil.LANGUAGE_PARAMETER);
     
-    cutoff = CasConsumerUtil.getOptionalIntegerParameter(getUimaContext(), UimaUtil.CUTOFF_PARAMETER, 5);
-    iterations = CasConsumerUtil.getOptionalIntegerParameter(getUimaContext(), UimaUtil.ITERATIONS_PARAMETER, 100);
-    
+    trainingParams = OpennlpUtil.loadTrainingParams(CasConsumerUtil.getOptionalStringParameter(
+        getUimaContext(), UimaUtil.TRAINING_PARAMS_FILE_PARAMETER), true);
+
     String featureGeneratorDefinitionFile = CasConsumerUtil.getOptionalStringParameter(
         getUimaContext(), FEATURE_GENERATOR_DEFINITION_FILE_PARAMETER);
     
@@ -356,8 +354,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
         
         samples = ObjectStreamUtils.createObjectStream(samples, additionalSamples);
       }
-      
-      
+
       Map<String, Object> resourceMap;
       
       if (featureGeneratorResourceDir != null) {
@@ -368,7 +365,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
       }
       
       nameModel = NameFinderME.train(language, null,
-          samples, featureGeneratorDefinition, resourceMap, iterations, cutoff);
+          samples, trainingParams, featureGeneratorDefinition, resourceMap);
     }
     finally {
       if (additionalTrainingDataIn != null)
