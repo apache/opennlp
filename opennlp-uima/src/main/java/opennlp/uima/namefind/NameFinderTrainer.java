@@ -27,8 +27,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import opennlp.maxent.GIS;
+import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
@@ -70,6 +72,8 @@ import org.apache.uima.util.ProcessTrace;
  * Optional parameters
  * <table border=1>
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.FeatureGeneratorFile</td> <td>Feature Generator definition file which contain the feature generator configuration</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.FeatureGeneratorResources</td> <td>Feature Generator resources dictionary</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.AdditionalTrainingDataFile</td> <td>Training file which contains additional data in the OpenNLP format</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.AdditionalTrainingDataEncoding</td> <td>Encoding of the additional training data</td></tr>
  *   <tr><td>Integer</td> <td>opennlp.uima.Cutoff</td> <td>(default=5)</td></tr>
@@ -79,9 +83,16 @@ import org.apache.uima.util.ProcessTrace;
  */
 public final class NameFinderTrainer extends CasConsumer_ImplBase {
     
+  private static final String FEATURE_GENERATOR_DEFINITION_FILE_PARAMETER = "opennlp.uima.FeatureGeneratorFile";
+  private static final String FEATURE_GENERATOR_RESOURCES_PARAMETER = "opennlp.uima.FeatureGeneratorResources";
+  
   private Logger logger;
   
   private String modelPath;
+  
+  private byte featureGeneratorDefinition[];
+  
+  private File featureGeneratorResourceDir;
   
   private String additionalTrainingDataFile;
   
@@ -128,6 +139,24 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
     
     cutoff = CasConsumerUtil.getOptionalIntegerParameter(getUimaContext(), UimaUtil.CUTOFF_PARAMETER, 5);
     iterations = CasConsumerUtil.getOptionalIntegerParameter(getUimaContext(), UimaUtil.ITERATIONS_PARAMETER, 100);
+    
+    String featureGeneratorDefinitionFile = CasConsumerUtil.getOptionalStringParameter(
+        getUimaContext(), FEATURE_GENERATOR_DEFINITION_FILE_PARAMETER);
+    
+    if (featureGeneratorDefinitionFile != null) {
+      try {
+        featureGeneratorDefinition = OpennlpUtil.loadBytes(new File(featureGeneratorDefinitionFile));
+      } catch (IOException e) {
+        throw new ResourceInitializationException(e);
+      }
+      
+      String featureGeneratorResourcesDirName = CasConsumerUtil.getOptionalStringParameter(
+          getUimaContext(), FEATURE_GENERATOR_RESOURCES_PARAMETER);
+      
+      if (featureGeneratorResourcesDirName != null) {
+        featureGeneratorResourceDir = new File(featureGeneratorResourcesDirName);
+      }
+    }
     
     additionalTrainingDataFile = CasConsumerUtil.getOptionalStringParameter(
         getUimaContext(), UimaUtil.ADDITIONAL_TRAINING_DATA_FILE);
@@ -214,12 +243,8 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
 
     int startIndex = -1;
     int index = 0;
-    for (Iterator<AnnotationFS> tokenIterator = tokenList.iterator(); tokenIterator.hasNext();) {
-      AnnotationFS token = (AnnotationFS) tokenIterator.next();
-
-      for (Iterator<AnnotationFS> it = entityAnnotations.iterator(); it.hasNext();) {
-
-        AnnotationFS entity = (AnnotationFS) it.next();
+    for (AnnotationFS token : tokenList) {
+      for (AnnotationFS entity : entityAnnotations) {
 
         if (!isContaining(entity, token)) {
           // ... end of an entity
@@ -281,14 +306,13 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
       String tokenArray[] = new String[tokenList.size()];
 
       for (int i = 0; i < tokenArray.length; i++) {
-        tokenArray[i] = ((AnnotationFS) tokenList.get(i))
-            .getCoveredText();
+        tokenArray[i] = tokenList.get(i).getCoveredText();
       }
 
-      NameSample traingSentence = new NameSample(tokenArray, names, null, false);
+      NameSample trainingSentence = new NameSample(tokenArray, names, null, false);
 
-      if (traingSentence.getSentence().length != 0) {
-        nameFinderSamples.add(traingSentence);
+      if (trainingSentence.getSentence().length != 0) {
+        nameFinderSamples.add(trainingSentence);
       } else {
         if (logger.isLoggable(Level.INFO)) {
           logger.log(Level.INFO, "Sentence without tokens: " +
@@ -321,7 +345,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
       if (additionalTrainingDataFile != null) {
         
         if (logger.isLoggable(Level.INFO)) {
-          logger.log(Level.INFO, "Using addional training data file: " + additionalTrainingDataFile); 
+          logger.log(Level.INFO, "Using additional training data file: " + additionalTrainingDataFile);
         }
         
         additionalTrainingDataIn = new FileInputStream(additionalTrainingDataFile);
@@ -333,11 +357,18 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
         samples = ObjectStreamUtils.createObjectStream(samples, additionalSamples);
       }
       
-      // TODO: Make sure its possible to pass custom feature generator
-      // User could subclass this trainer to provide a custom feature generator
-      nameModel = NameFinderME.train(language, null,
-          samples, Collections.EMPTY_MAP, iterations, cutoff);
       
+      Map<String, Object> resourceMap;
+      
+      if (featureGeneratorResourceDir != null) {
+        resourceMap = TokenNameFinderTrainerTool.loadResources(featureGeneratorResourceDir);
+      }
+      else {
+        resourceMap = Collections.emptyMap();
+      }
+      
+      nameModel = NameFinderME.train(language, null,
+          samples, featureGeneratorDefinition, resourceMap, iterations, cutoff);
     }
     finally {
       if (additionalTrainingDataIn != null)

@@ -18,9 +18,12 @@
 package opennlp.uima.util;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import opennlp.maxent.GISModel;
@@ -52,5 +55,27 @@ final public class OpennlpUtil {
       if (modelOut != null)
         modelOut.close();
     }
+  }
+  
+  public static final byte[] loadBytes(File inFile) throws IOException {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    
+    InputStream in = null;
+    try {
+      in = new FileInputStream(inFile);
+      
+      byte buffer[] = new byte[1024];
+      int len;
+      
+      while ((len = in.read(buffer)) > 0) {
+        bytes.write(buffer, 0, len);
+      }
+    }
+    finally {
+      if (in != null)
+        in.close();
+    }
+    
+    return bytes.toByteArray();
   }
 }
