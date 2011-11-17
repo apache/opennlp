@@ -19,6 +19,7 @@ package opennlp.tools.formats;
 
 import java.io.File;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
 import opennlp.tools.cmdline.ArgumentParser;
@@ -38,9 +39,6 @@ public class ConllXPOSSampleStreamFactory implements ObjectStreamFactory<POSSamp
   interface Parameters {
     @ParameterDescription(valueName = "sampleData")
     String getData();
-    
-    @ParameterDescription(valueName = "charsetName")
-    String getEncoding();
   }
   
   public String getUsage() {
@@ -55,11 +53,12 @@ public class ConllXPOSSampleStreamFactory implements ObjectStreamFactory<POSSamp
     ObjectStream<String> lineStream;
     try {
       lineStream = new PlainTextByLineStream(new InputStreamReader(
-          CmdLineUtil.openInFile(new File(params.getData())), params.getEncoding()));
+          CmdLineUtil.openInFile(new File(params.getData())), "UTF-8"));
+      System.setOut(new PrintStream(System.out, true, "UTF-8"));
       
       return new ConllXPOSSampleStream(lineStream);
     } catch (UnsupportedEncodingException e) {
-      System.err.println("Encoding not supported: " + params.getEncoding());
+      // this shouldn't happen
       throw new TerminateToolException(-1);
     }
   }

@@ -46,6 +46,7 @@ public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample>
   }
   
   ConllXPOSSampleStream(Reader in) throws IOException {
+    // encoding is handled by the factory...
     super(new ParagraphStream(new PlainTextByLineStream(in)));
   }
 
