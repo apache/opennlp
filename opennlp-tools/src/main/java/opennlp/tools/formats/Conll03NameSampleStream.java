@@ -19,6 +19,7 @@ import static opennlp.tools.formats.Conll02NameSampleStream.extract;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +68,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
     this.lang = lang;
     try {
       this.lineStream = new PlainTextByLineStream(in, "ISO-8859-1");
+      System.setOut(new PrintStream(System.out, true, "ISO-8859-1"));
     } catch (UnsupportedEncodingException e) {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
