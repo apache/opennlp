@@ -19,6 +19,7 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,6 +54,7 @@ public class LeipzigDoccatSampleStream extends
   LeipzigDoccatSampleStream(String language, int sentencesPerDocument, 
       InputStream in) throws IOException {
     super(new PlainTextByLineStream(in, "UTF-8"));
+    System.setOut(new PrintStream(System.out, true, "UTF-8"));
     this.language = language;
     this.sentencesPerDocument = sentencesPerDocument;
   }
