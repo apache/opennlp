@@ -19,9 +19,13 @@ package opennlp.uima.namefind;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -43,6 +47,7 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.uima.util.CasConsumerUtil;
 import opennlp.uima.util.ContainingConstraint;
 import opennlp.uima.util.OpennlpUtil;
+import opennlp.uima.util.SampleTraceStream;
 import opennlp.uima.util.UimaUtil;
 
 import org.apache.uima.cas.CAS;
@@ -78,6 +83,8 @@ import org.apache.uima.util.ProcessTrace;
  *   <tr><td>String</td> <td>opennlp.uima.FeatureGeneratorResources</td> <td>Feature Generator resources dictionary</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.AdditionalTrainingDataFile</td> <td>Training file which contains additional data in the OpenNLP format</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.AdditionalTrainingDataEncoding</td> <td>Encoding of the additional training data</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.SampleTraceFile</td> <td>All training samples are traced to this file</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.SampleTraceFileEncoding</td> <td>Encoding of the sample trace file</td></tr>
  * </table>
  * <p>
  */
@@ -97,6 +104,10 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
   private String additionalTrainingDataFile;
   
   private String additionalTrainingDataEncoding;
+  
+  private File sampleTraceFile = null;
+  
+  private String sampleTraceFileEncoding = null;
   
   private Type sentenceType;
 
@@ -162,6 +173,16 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
     if (additionalTrainingDataFile != null) {
       additionalTrainingDataEncoding = CasConsumerUtil.getRequiredStringParameter(
           getUimaContext(), UimaUtil.ADDITIONAL_TRAINING_DATA_ENCODING);
+    }
+    
+    String sampleTraceFileName = CasConsumerUtil.getOptionalStringParameter(
+        getUimaContext(), "opennlp.uima.SampleTraceFile");
+    
+    if (sampleTraceFileName != null) {
+      sampleTraceFile = new File(getUimaContextAdmin().getResourceManager()
+          .getDataPath() + File.separatorChar + sampleTraceFileName);
+      sampleTraceFileEncoding = CasConsumerUtil.getRequiredStringParameter(
+          getUimaContext(), "opennlp.uima.SampleTraceFileEncoding");
     }
   }
 
@@ -337,6 +358,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
     ObjectStream<NameSample> samples = ObjectStreamUtils.createObjectStream(nameFinderSamples);
     
     InputStream additionalTrainingDataIn = null;
+    Writer samplesOut = null;
     TokenNameFinderModel nameModel;
     try {
       if (additionalTrainingDataFile != null) {
@@ -347,13 +369,17 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
         
         additionalTrainingDataIn = new FileInputStream(additionalTrainingDataFile);
         
-        // TODO: Make encoding configurable, otherwise use UTF-8 as default!
         ObjectStream<NameSample> additionalSamples = new NameSampleDataStream(
             new PlainTextByLineStream(new InputStreamReader(additionalTrainingDataIn, additionalTrainingDataEncoding)));
         
         samples = ObjectStreamUtils.createObjectStream(samples, additionalSamples);
       }
 
+      if (sampleTraceFile != null) {
+        samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
+        samples = new SampleTraceStream<NameSample>(samples, samplesOut);
+      }
+      
       Map<String, Object> resourceMap;
       
       if (featureGeneratorResourceDir != null) {
@@ -367,8 +393,13 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
           samples, trainingParams, featureGeneratorDefinition, resourceMap);
     }
     finally {
-      if (additionalTrainingDataIn != null)
+      if (additionalTrainingDataIn != null) {
         additionalTrainingDataIn.close();
+      }
+      
+      if (samplesOut != null) {
+        samplesOut.close();
+      }
     }
     
     // dereference to allow garbage collection
