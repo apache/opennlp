@@ -299,9 +299,14 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
   /**
    * Process the given CAS object.
    */
+  /**
+   * Process the given CAS object.
+   */
   public void processCas(CAS cas) {
     FSIndex<AnnotationFS> sentenceIndex = cas.getAnnotationIndex(sentenceType);
-
+    
+    boolean isClearAdaptiveData = true;
+    
     for (AnnotationFS sentenceAnnotation : sentenceIndex) {
       ContainingConstraint sentenceContainingConstraint = new ContainingConstraint(
           sentenceAnnotation);
@@ -327,10 +332,14 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
         tokenArray[i] = tokenList.get(i).getCoveredText();
       }
 
-      NameSample trainingSentence = new NameSample(tokenArray, names, null, false);
+      NameSample trainingSentence = new NameSample(tokenArray, names, null, isClearAdaptiveData);
 
       if (trainingSentence.getSentence().length != 0) {
         nameFinderSamples.add(trainingSentence);
+        
+        if (isClearAdaptiveData) {
+          isClearAdaptiveData = false;
+        }
       } else {
         if (logger.isLoggable(Level.INFO)) {
           logger.log(Level.INFO, "Sentence without tokens: " +
