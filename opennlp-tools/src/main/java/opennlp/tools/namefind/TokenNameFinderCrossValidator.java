@@ -18,17 +18,122 @@
 package opennlp.tools.namefind;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.model.ModelUtil;
 
 public class TokenNameFinderCrossValidator {
+
+  private class DocumentSample {
+    
+    private NameSample samples[];
+    
+    DocumentSample(NameSample samples[]) {
+      this.samples = samples;
+    }
+    
+    private NameSample[] getSamples() {
+      return samples;
+    }
+  }
+  
+  /**
+   * Reads Name Samples to group them as a document based on the clear adaptive data flag.
+   */
+  private class NameToDocumentSampleStream extends FilterObjectStream<NameSample, DocumentSample> {
+
+    private NameSample beginSample;
+    
+    protected NameToDocumentSampleStream(ObjectStream<NameSample> samples) {
+      super(samples);
+    }
+
+    public DocumentSample read() throws IOException {
+      
+      List<NameSample> document = new ArrayList<NameSample>();
+      
+      if (beginSample == null) {
+        // Assume that the clear flag is set
+        beginSample = samples.read();
+      }
+      
+      // Underlying stream is exhausted! 
+      if (beginSample == null) {
+        return null;
+      }
+      
+      document.add(beginSample);
+      
+      NameSample sample;
+      while ((sample = samples.read()) != null) {
+        
+        if (sample.isClearAdaptiveDataSet()) {
+          beginSample = sample;
+          break;
+        }
+        
+        document.add(sample);
+      }
+      
+      // Underlying stream is exhausted,
+      // next call must return null
+      if (sample == null) {
+        beginSample = null;
+      }
+      
+      return new DocumentSample(document.toArray(new NameSample[document.size()]));
+    }
+    
+    @Override
+    public void reset() throws IOException, UnsupportedOperationException {
+      super.reset();
+      
+      beginSample = null;
+    }
+  }
+  
+  /**
+   * Splits DocumentSample into NameSamples. 
+   */
+  private class DocumentToNameSampleStream extends FilterObjectStream<DocumentSample, NameSample>{
+
+    protected DocumentToNameSampleStream(ObjectStream<DocumentSample> samples) {
+      super(samples);
+    }
+
+    private Iterator<NameSample> documentSamples = Collections.<NameSample>emptyList().iterator();
+
+    public NameSample read() throws IOException {
+
+      // Note: Empty document samples should be skipped
+
+      if (documentSamples.hasNext()) {
+        return documentSamples.next();
+      }
+      else {
+        DocumentSample docSample = samples.read();
+
+        if (docSample != null) {
+          documentSamples = Arrays.asList(docSample.getSamples()).iterator();
+
+          return read();
+        }
+        else {
+          return null;
+        }
+      }
+    }
+  }
 
   private final String languageCode;
   private final TrainingParameters params;
@@ -156,22 +261,25 @@ public class TokenNameFinderCrossValidator {
    */
   public void evaluate(ObjectStream<NameSample> samples, int nFolds)
       throws IOException {
-    CrossValidationPartitioner<NameSample> partitioner = new CrossValidationPartitioner<NameSample>(
-        samples, nFolds);
+
+    // Note: The name samples need to be grouped on a document basis.
+
+    CrossValidationPartitioner<DocumentSample> partitioner = new CrossValidationPartitioner<DocumentSample>(
+        new NameToDocumentSampleStream(samples), nFolds);
 
     while (partitioner.hasNext()) {
 
-      CrossValidationPartitioner.TrainingSampleStream<NameSample> trainingSampleStream = partitioner
+      CrossValidationPartitioner.TrainingSampleStream<DocumentSample> trainingSampleStream = partitioner
           .next();
 
       TokenNameFinderModel model  = opennlp.tools.namefind.NameFinderME.train(languageCode, type,
-            trainingSampleStream, params, featureGeneratorBytes, resources);
+            new DocumentToNameSampleStream(trainingSampleStream), params, featureGeneratorBytes, resources);
 
       // do testing
       TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
           new NameFinderME(model), listeners);
 
-      evaluator.evaluate(trainingSampleStream.getTestSampleStream());
+      evaluator.evaluate(new DocumentToNameSampleStream(trainingSampleStream.getTestSampleStream()));
 
       fmeasure.mergeInto(evaluator.getFMeasure());
     }
