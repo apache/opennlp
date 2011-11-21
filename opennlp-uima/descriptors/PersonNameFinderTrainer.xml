@@ -72,6 +72,34 @@
 			</configurationParameter>
 			
 			<configurationParameter>
+				<name>opennlp.uima.SampleTraceFile</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+			</configurationParameter>
+			
+			<configurationParameter>
+				<name>opennlp.uima.SampleTraceFileEncoding</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+			</configurationParameter>
+			
+			<configurationParameter>
+				<name>opennlp.uima.FeatureGeneratorFile</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+			</configurationParameter>
+			
+			<configurationParameter>
+				<name>opennlp.uima.FeatureGeneratorResources</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+			</configurationParameter>
+			
+			<configurationParameter>
 				<name>opennlp.uima.Language</name>
 				<type>String</type>
 				<multiValued>false</multiValued>
