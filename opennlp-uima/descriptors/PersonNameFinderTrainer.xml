@@ -58,6 +58,13 @@
 			</configurationParameter>
 
 			<configurationParameter>
+				<name>opennlp.uima.opennlp.uima.TrainingParamsFile</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+			</configurationParameter>
+			
+			<configurationParameter>
 				<name>opennlp.uima.AdditionalTrainingDataFile</name>
 				<type>String</type>
 				<multiValued>false</multiValued>
