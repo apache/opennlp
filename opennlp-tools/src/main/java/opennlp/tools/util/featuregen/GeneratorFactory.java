@@ -406,6 +406,36 @@ public class GeneratorFactory {
     }
   }
 
+  /**
+   * @see TokenPatternFeatureGenerator
+   */
+  static class PrefixFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
+
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+        FeatureGeneratorResourceProvider resourceManager) {
+      return new PrefixFeatureGenerator();
+    }
+
+    static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("prefix", new PrefixFeatureGeneratorFactory());
+    }
+  }
+  
+  /**
+   * @see TokenPatternFeatureGenerator
+   */
+  static class SuffixFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
+    
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+        FeatureGeneratorResourceProvider resourceManager) {
+      return new SuffixFeatureGenerator();
+    }
+    
+    static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("suffix", new SuffixFeatureGeneratorFactory());
+    }
+  }
+  
   static class CustomFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
@@ -461,6 +491,8 @@ public class GeneratorFactory {
     TokenFeatureGeneratorFactory.register(factories);
     BigramNameFeatureGeneratorFactory.register(factories);
     TokenPatternFeatureGeneratorFactory.register(factories);
+    PrefixFeatureGeneratorFactory.register(factories);
+    SuffixFeatureGeneratorFactory.register(factories);
     WindowFeatureGeneratorFactory.register(factories);
     CustomFeatureGeneratorFactory.register(factories);
   }
