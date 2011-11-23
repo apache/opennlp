@@ -318,7 +318,7 @@ public class GeneratorFactory {
     }
     
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
-      factoryMap.put("token", new TokenPatternFeatureGeneratorFactory());
+      factoryMap.put("token", new TokenFeatureGeneratorFactory());
     }
   }
   
