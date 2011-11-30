@@ -39,7 +39,8 @@ public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
   /**
    * Initializes the current instance.
    *
-   * @param sentences
+   * @param sentences reader with sentences
+   * @throws IOException IOException
    */
   public WordTagSampleStream(Reader sentences) throws IOException {
     super(new PlainTextByLineStream(sentences));
