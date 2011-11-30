@@ -23,17 +23,280 @@ under the License.
 
 <chapter id="opennlp">
 <title>Introduction</title>
-<para>
-The Apache OpenNLP library is a machine learning based toolkit for the processing of natural language text.
-It supports the most common NLP tasks, such as tokenization, sentence segmentation,
-part-of-speech tagging, named entity extraction, chunking, parsing, and coreference resolution.
-These tasks are usually required to build more advanced text processing services.
-OpenNLP also included maximum entropy and perceptron based machine learning.
-</para>
+    <section id="intro.description">
+        <title>Description</title>
+        <para>
+        The Apache OpenNLP library is a machine learning based toolkit for the processing of natural language text.
+        It supports the most common NLP tasks, such as tokenization, sentence segmentation,
+        part-of-speech tagging, named entity extraction, chunking, parsing, and coreference resolution.
+        These tasks are usually required to build more advanced text processing services.
+        OpenNLP also included maximum entropy and perceptron based machine learning.
+        </para>
 
-<para>
-The goal of the OpenNLP project will be to create a mature toolkit for the abovementioned tasks.
-An additional goal is to provide a large number of pre-built models for a variety of languages, as
-well as the annotated text resources that those models are derived from.
-</para>
+        <para>
+        The goal of the OpenNLP project will be to create a mature toolkit for the abovementioned tasks.
+        An additional goal is to provide a large number of pre-built models for a variety of languages, as
+        well as the annotated text resources that those models are derived from.
+        </para>
+    </section>
+
+    <section id="intro.general.library.structure">
+        <title>General Library Structure</title>
+        <para>The Apache OpenNLP library contains several components, enabling one to build
+            a full natural language processing pipeline. These components
+            include: sentence detector, tokenizer,
+            name finder, document categorizer, part-of-speech tagger, chunker, parser,
+            coreference resolution. Components contain parts which enable one to execute the
+            respective natural language processing task, to train a model and often also to evaluate a
+            model. Each of these facilities is accessible via its application program
+            interface (API). In addition, a command line interface (CLI) is provided for convenience
+            of experiments and training.
+        </para>
+    </section>
+
+    <section id="intro.api">
+        <title>Application Program Interface (API). Generic Example</title>
+        <para>
+            OpenNLP components have similar APIs. Normally, to execute a task,
+            one should provide a model and an input.
+        </para>
+        <para>
+            A model is usually loaded by providing a FileInputStream with a model to a
+            constructor of the model class:
+            <programlisting language="java">
+                    <![CDATA[
+InputStream modelIn = new FileInputStream("lang-model-name.bin");
+
+try {
+  SomeModel model = new SomeModel(modelIn);
+}
+catch (IOException e) {
+  //handle the exception
+}
+finally {
+  if (null != modelIn) {
+    try {
+      modelIn.close();
+    }
+    catch (IOException e) {
+    }
+  }
+}]]>
+            </programlisting>
+        </para>
+        After the model is loaded the tool itself can be instantiated.
+        <programlisting language="java">
+                <![CDATA[
+ToolName toolName = new ToolName(model);]]>
+        </programlisting>
+        After the tool is instantiated, the processing task can be executed. The input and the
+        output formats are specific to the tool, but often the output is an array of String,
+        and the input is a String or an array of String.
+        <programlisting language="java">
+                <![CDATA[
+String output[] = toolName.executeTask("This is a sample text.");]]>
+        </programlisting>
+    </section>
+
+    <section id="intro.cli">
+        <title>Command line interface (CLI)</title>
+        <section id="intro.cli.description">
+            <title>Description</title>
+            <para>
+                OpenNLP provides a command line script, serving as a unique entry point to all
+                included tools. The script is located in the bin directory of OpenNLP binary
+                distribution. Included are versions for Windows: opennlp.bat and Linux or
+                compatible systems: opennlp.
+            </para>
+        </section>
+
+        <section id="intro.cli.setup">
+            <title>Setting up</title>
+            <para>
+                OpenNLP script uses JAVA_CMD and JAVA_HOME variables to determine which command to
+                use to execute Java virtual machine.
+            </para>
+            <para>
+                OpenNLP script uses OPENNLP_HOME variable to determine the location of the binary
+                distribution of OpenNLP. It is recommended to point this variable to the binary
+                distribution of current OpenNLP version and update PATH variable to include
+                $OPENNLP_HOME/bin or %OPENNLP_HOME%\bin.
+            </para>
+            <para>
+                Such configuration allows calling OpenNLP conveniently. Examples below
+                suppose this configuration has been done.
+            </para>
+        </section>
+
+        <section id="intro.cli.generic">
+            <title>Generic Example</title>
+
+            <para>
+                Apache OpenNLP provides a common command line script to access all its tools:
+                <screen>
+                <![CDATA[
+$ opennlp]]>
+                 </screen>
+                This script prints current version of the library and lists all available tools:
+                <screen>
+                <![CDATA[
+OpenNLP <VERSION>. Usage: opennlp TOOL
+where TOOL is one of:
+  Doccat                            learnable document categorizer
+  DoccatTrainer                     trainer for the learnable document categorizer
+  DoccatConverter                   converts leipzig data format to native OpenNLP format
+  DictionaryBuilder                 builds a new dictionary
+  SimpleTokenizer                   character class tokenizer
+  TokenizerME                       learnable tokenizer
+  TokenizerTrainer                  trainer for the learnable tokenizer
+  TokenizerMEEvaluator              evaluator for the learnable tokenizer
+  TokenizerCrossValidator           K-fold cross validator for the learnable tokenizer
+  TokenizerConverter                converts foreign data formats (namefinder,conllx,pos) to native OpenNLP format
+  DictionaryDetokenizer
+  SentenceDetector                  learnable sentence detector
+  SentenceDetectorTrainer           trainer for the learnable sentence detector
+  SentenceDetectorEvaluator         evaluator for the learnable sentence detector
+  SentenceDetectorCrossValidator    K-fold cross validator for the learnable sentence detector
+  SentenceDetectorConverter         converts foreign data formats (namefinder,conllx,pos) to native OpenNLP format
+  TokenNameFinder                   learnable name finder
+  TokenNameFinderTrainer            trainer for the learnable name finder
+  TokenNameFinderEvaluator          Measures the performance of the NameFinder model with the reference data
+  TokenNameFinderCrossValidator     K-fold cross validator for the learnable Name Finder
+  TokenNameFinderConverter          converts foreign data formats (bionlp2004,conll03,conll02,ad) to native OpenNLP format
+  CensusDictionaryCreator           Converts 1990 US Census names into a dictionary
+  POSTagger                         learnable part of speech tagger
+  POSTaggerTrainer                  trains a model for the part-of-speech tagger
+  POSTaggerEvaluator                Measures the performance of the POS tagger model with the reference data
+  POSTaggerCrossValidator           K-fold cross validator for the learnable POS tagger
+  POSTaggerConverter                converts conllx data format to native OpenNLP format
+  ChunkerME                         learnable chunker
+  ChunkerTrainerME                  trainer for the learnable chunker
+  ChunkerEvaluator                  Measures the performance of the Chunker model with the reference data
+  ChunkerCrossValidator             K-fold cross validator for the chunker
+  ChunkerConverter                  converts ad data format to native OpenNLP format
+  Parser                            performs full syntactic parsing
+  ParserTrainer                     trains the learnable parser
+  BuildModelUpdater                 trains and updates the build model in a parser model
+  CheckModelUpdater                 trains and updates the check model in a parser model
+  TaggerModelReplacer               replaces the tagger model in a parser model
+All tools print help when invoked with help parameter
+Example: opennlp SimpleTokenizer help
+]]>
+                </screen>
+            </para>
+            <para>OpenNLP tools have similar command line structure and options. To discover tool
+                options, run it with no parameters:
+                <screen>
+                <![CDATA[
+$ opennlp ToolName]]>
+                 </screen>
+                The tool will output two blocks of help.
+            </para>
+            <para>
+                The first block describes the general structure of this tool command line:
+                <screen>
+                <![CDATA[
+Usage: opennlp TokenizerTrainer[.namefinder|.conllx|.pos] [-abbDict path] ...  -model modelFile ...]]>
+                </screen>
+                The general structure of this tool command line includes the obligatory tool name
+                (TokenizerTrainer), the optional format parameters ([.namefinder|.conllx|.pos]),
+                the optional parameters ([-abbDict path] ...), and the obligatory parameters
+                (-model modelFile ...).
+            </para>
+            <para>
+                The format parameters enable direct processing of non-native data without conversion.
+                Each format might have its own parameters, which are displayed if the tool is
+                executed without or with help parameter:
+                <screen>
+                <![CDATA[
+$ opennlp TokenizerTrainer.conllx help]]>
+                </screen>
+                <screen>
+                <![CDATA[
+Usage: opennlp TokenizerTrainer.conllx [-abbDict path] [-alphaNumOpt isAlphaNumOpt] ...
+
+Arguments description:
+        -abbDict path
+                abbreviation dictionary in XML format.
+        ...]]>
+                </screen>
+                To switch the tool to a specific format, add a dot and the format name after
+                the tool name:
+                <screen>
+                <![CDATA[
+$ opennlp TokenizerTrainer.conllx -model en-pos.bin ...]]>
+                </screen>
+            </para>
+            <para>
+                The second block of the help message describes the individual arguments:
+                <screen>
+                <![CDATA[
+Arguments description:
+        -type maxent|perceptron|perceptron_sequence
+                The type of the token name finder model. One of maxent|perceptron|perceptron_sequence.
+        -dict dictionaryPath
+                The XML tag dictionary file
+        ...]]>
+                </screen>
+            </para>
+            <para>
+                Most tools for processing need to be provided at least a model:
+                <screen>
+                <![CDATA[
+$ opennlp ToolName lang-model-name.bin]]>
+                 </screen>
+                When tool is executed this way, the model is loaded and the tool is waiting for
+                the input from standard input. This input is processed and printed to standard
+                output.
+            </para>
+            <para>Alternative, or one should say, most commonly used way is to use console input and
+                output redirection options to provide also an input and an output files:
+                <screen>
+            <![CDATA[
+$ opennlp ToolName lang-model-name.bin < input.txt > output.txt]]>
+                </screen>
+            </para>
+            <para>
+                Most tools for model training need to be provided first a model name,
+                optionally some training options (such as model type, number of iterations),
+                and then the data.
+            </para>
+            <para>
+                A model name is just a file name.
+            </para>
+            <para>
+                Training options often include number of iterations, cutoff,
+                abbreviations dictionary or something else. Sometimes it is possible to provide these
+                options via training options file. In this case these options are ignored and the
+                ones from the file are used.
+            </para>
+            <para>
+                For the data one has to specify the location of the data (filename) and often
+                language and encoding.
+            </para>
+            <para>
+                A generic example of a command line to launch a tool trainer might be:
+                <screen>
+                <![CDATA[
+$ opennlp ToolNameTrainer -model en-model-name.bin -lang en -data input.train -encoding UTF-8]]>
+                 </screen>
+                or with a format:
+                <screen>
+                <![CDATA[
+$ opennlp ToolNameTrainer.conll03 -model en-model-name.bin -lang en -data input.train \
+                                  -types per -encoding UTF-8]]>
+                 </screen>
+            </para>
+            <para>Most tools for model evaluation are similar to those for task execution, and
+                need to be provided fist a model name, optionally some evaluation options (such
+                as whether to print misclassified samples), and then the test data. A generic
+                example of a command line to launch an evaluation tool might be:
+                <screen>
+                <![CDATA[
+$ opennlp ToolNameEvaluator -model en-model-name.bin -lang en -data input.test -encoding UTF-8]]>
+                 </screen>
+            </para>
+        </section>
+    </section>
+
 </chapter>
