@@ -84,6 +84,7 @@ finally {
 }]]>
             </programlisting>
         </para>
+        <para>
         After the model is loaded the tool itself can be instantiated.
         <programlisting language="java">
                 <![CDATA[
@@ -96,6 +97,7 @@ ToolName toolName = new ToolName(model);]]>
                 <![CDATA[
 String output[] = toolName.executeTask("This is a sample text.");]]>
         </programlisting>
+        </para>
     </section>
 
     <section id="intro.cli">
