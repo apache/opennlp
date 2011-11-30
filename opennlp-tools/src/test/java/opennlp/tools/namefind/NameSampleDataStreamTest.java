@@ -132,29 +132,29 @@ public class NameSampleDataStreamTest {
    */
   @Test
   public void testWithoutNameTypeAndInvalidData() {
-    NameSampleDataStream smapleStream = new NameSampleDataStream(
+    NameSampleDataStream sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START> <START> Name <END>"));
     
     try {
-      smapleStream.read();
+      sampleStream.read();
       fail();
     } catch (IOException e) {
     }
     
-    smapleStream = new NameSampleDataStream(
+    sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START> Name <END> <END>"));
     
     try {
-      smapleStream.read();
+      sampleStream.read();
       fail();
     } catch (IOException e) {
     }
     
-    smapleStream = new NameSampleDataStream(
+    sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START> <START> Person <END> Street <END>"));
     
     try {
-      smapleStream.read();
+      sampleStream.read();
       fail();
     } catch (IOException e) {
     }
@@ -290,20 +290,20 @@ public class NameSampleDataStreamTest {
   @Test
   public void testWithNameTypeAndInvalidData() {
     
-    NameSampleDataStream smapleStream = new NameSampleDataStream(
+    NameSampleDataStream sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START:> Name <END>"));
     
     try {
-      smapleStream.read();
+      sampleStream.read();
       fail();
     } catch (IOException e) {
     }
     
-    smapleStream = new NameSampleDataStream(
+    sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START:street> <START:person> Name <END> <END>"));
     
     try {
-      smapleStream.read();
+      sampleStream.read();
       fail();
     } catch (IOException e) {
     }
