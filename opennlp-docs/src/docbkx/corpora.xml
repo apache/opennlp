@@ -272,7 +272,7 @@ Runtime: 5.71s
 Precision: 0.9366247297154147
 Recall: 0.739956568946797
 F-Measure: 0.8267557582133971]]>
-		</programlisting>
+		</screen>
 		</para>
 		</section>
 	</section>
@@ -403,7 +403,7 @@ Writing document categorizer model ... done (1.210s)
 Wrote document categorizer model to
 path: /Users/joern/dev/opennlp-apache/opennlp/opennlp-tools/lang.model
 ]]>
-	</programlisting>
+	</screen>
 	In the sample above the language detection model was trained to distinguish two languages, danish and english.
 	</para>
 	
