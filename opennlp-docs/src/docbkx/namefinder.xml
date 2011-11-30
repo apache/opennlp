@@ -47,29 +47,28 @@ under the License.
 			person model and start the Name Finder Tool with this command:
 			<screen>
 				<![CDATA[
-$bin/opennlp TokenNameFinder en-ner-person.bin]]>
+$ opennlp TokenNameFinder en-ner-person.bin]]>
 			 </screen>
 			 
 			The name finder now reads a tokenized sentence per line from stdin, an empty
 			line indicates a document boundary and resets the adaptive feature generators.
 			Just copy this text to the terminal:
 	
-			<programlisting>
+			<screen>
 				<![CDATA[
 Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .
 Mr . Vinken is chairman of Elsevier N.V. , the Dutch publishing group .
 Rudolph Agnew , 55 years old and former chairman of Consolidated Gold Fields PLC , was named
     a director of this British industrial conglomerate .]]>
-			 </programlisting>
+			 </screen>
 			 the name finder will now output the text with markup for person names:
-			<programlisting>
+			<screen>
 				<![CDATA[
 <START:person> Pierre Vinken <END> , 61 years old , will join the board as a nonexecutive director Nov. 29 .
 Mr . <START:person> Vinken <END> is chairman of Elsevier N.V. , the Dutch publishing group .
 <START:person> Rudolph Agnew <END> , 55 years old and former chairman of Consolidated Gold Fields PLC ,
-    was named a director of this British industrial conglomerate .
-				]]>
-			 </programlisting>		 
+    was named a director of this British industrial conglomerate .]]>
+			 </screen>
 		</para>
 	</section>
 		<section id="tools.namefind.recognition.api">
@@ -184,40 +183,59 @@ Span nameSpans[] = nameFinder.find(sentence);]]>
 			download page on various corpora.
 		</para>
 		<para>
-			The data must be converted to the OpenNLP name finder training format. Which is one sentence per line.
+			The data can be converted to the OpenNLP name finder training format. Which is one
+            sentence per line. Some other formats are available as well.
 			The sentence must be tokenized and contain spans which mark the entities. Documents are separated by
 			empty lines which trigger the reset of the adaptive feature generators. A training file can contain
 			multiple types. If the training file contains multiple types the created model will also be able to
 			detect these multiple types. For now its recommended to only train single type models, since multi
-			type support is stil experimental.
+			type support is still experimental.
 		</para>
 		<para>
 			Sample sentence of the data:
-			<programlisting>
+			<screen>
 				<![CDATA[
 <START:person> Pierre Vinken <END> , 61 years old , will join the board as a nonexecutive director Nov. 29 .
-Mr . <START:person> Vinken <END> is chairman of Elsevier N.V. , the Dutch publishing group .
-				]]>
-			 </programlisting>
+Mr . <START:person> Vinken <END> is chairman of Elsevier N.V. , the Dutch publishing group .]]>
+			 </screen>
 			 The training data should contain at least 15000 sentences to create a model which performs well.
 			 Usage of the tool:
 			<screen>
 				<![CDATA[
-$ bin/opennlp TokenNameFinderTrainer
-Usage: opennlp TokenNameFinderTrainer -lang language -encoding charset [-iterations num] \ 
-[-cutoff num] [-type type] -data trainingData -model model
--lang language     specifies the language which is being processed.
--encoding charset  specifies the encoding which should be used for reading and writing text.
--iterations num    specified the number of training iterations
--cutoff num        specifies the min number of times a feature must be seen
--type The type of the token name finder model]]>
+$ opennlp TokenNameFinderTrainer
+Usage: opennlp TokenNameFinderTrainer[.bionlp2004|.conll03|.conll02|.ad] [-resources resourcesDir] \
+               [-type modelType] [-featuregen featuregenFile] [-params paramsFile] \
+               [-iterations num] [-cutoff num] -model modelFile -lang language \
+               -data sampleData [-encoding charsetName]
+
+Arguments description:
+        -resources resourcesDir
+                The resources directory
+        -type modelType
+                The type of the token name finder model
+        -featuregen featuregenFile
+                The feature generator descriptor file
+        -params paramsFile
+                training parameters file.
+        -iterations num
+                number of training iterations, ignored if -params is used.
+        -cutoff num
+                minimal number of times a feature must be seen, ignored if -params is used.
+        -model modelFile
+                output model file.
+        -lang language
+                language which is being processed.
+        -data sampleData
+                data to be used, usually a file name.
+        -encoding charsetName
+                encoding for reading and writing text, if absent the system default is used.]]>
 			 </screen>
 			 Its now assumed that the english person name finder model should be trained from a file
 			 called en-ner-person.train which is encoded as UTF-8. The following command will train
 			 the name finder and write the model to en-ner-person.bin:
 			 <screen>
 				<![CDATA[
-$bin/opennlp TokenNameFinderTrainer -encoding UTF-8 -lang en -data en-ner-person.train -model en-ner-person.bin]]>
+$ opennlp TokenNameFinderTrainer -model en-ner-person.bin -lang en -data en-ner-person.train -encoding UTF-8]]>
 			 </screen>
 			 Additionally its possible to specify the number of iterations,
 			 the cutoff and to overwrite all types in the training data with a single type.
@@ -251,8 +269,8 @@ ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream);
 TokenNameFinderModel model;
 
 try {
-  model = NameFinderME.train("en", "person", sampleStream,
-      Collections.<String, Object>emptyMap(), 100, 5);
+  model = NameFinderME.train("en", "person", sampleStream, TrainingParameters.defaultParams(),
+            null, Collections.<String, Object>emptyMap());
 }
 finally {
   sampleStream.close();
@@ -285,15 +303,15 @@ try {
 				The following lines show how to construct a custom feature generator
 				<programlisting language="java">
 					<![CDATA[
-	AdaptiveFeatureGenerator featureGenerator = new CachedFeatureGenerator(
-	         new AdaptiveFeatureGenerator[]{
-	           new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
-	           new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
-	           new OutcomePriorFeatureGenerator(),
-	           new PreviousMapFeatureGenerator(),
-	           new BigramNameFeatureGenerator(),
-	           new SentenceFeatureGenerator(true, false)
-	           });]]>
+AdaptiveFeatureGenerator featureGenerator = new CachedFeatureGenerator(
+         new AdaptiveFeatureGenerator[]{
+           new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
+           new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
+           new OutcomePriorFeatureGenerator(),
+           new PreviousMapFeatureGenerator(),
+           new BigramNameFeatureGenerator(),
+           new SentenceFeatureGenerator(true, false)
+           });]]>
 				</programlisting>
 				which is similar to the default feature generator.
 				The javadoc of the feature generator classes explain what the individual feature generators do.
@@ -303,8 +321,7 @@ try {
 				<programlisting language="java">
 					<![CDATA[
 public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
-       AdaptiveFeatureGenerator generator, final Map<String, Object> resources, 
-       int iterations, int cutoff) throws IOException]]>
+       TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources) throws IOException]]>
 				</programlisting>
 				and can take feature generator as an argument.
 				To detect names the model which was returned from the train method and the
@@ -318,7 +335,8 @@ new NameFinderME(model, featureGenerator, NameFinderME.DEFAULT_BEAM_SIZE);]]>
 			<section id="tools.namefind.training.featuregen.xml">
 			<title>Feature Generation defined by XML Descriptor</title>
 			<para>
-			OpenNLP can also use a xml descritpor file to configure the featuer generation. The descriptor
+			OpenNLP can also use a xml descriptor file to configure the feature generation. The
+            descriptor
 			file is stored inside the model after training and the feature generators are configured
 			correctly when the name finder is instantiated.
 			
@@ -348,7 +366,7 @@ new NameFinderME(model, featureGenerator, NameFinderME.DEFAULT_BEAM_SIZE);]]>
 			<para>
 			The following table shows the supported elements:
 			<table>
-			  <title>Genertor elements</title>
+			  <title>Generator elements</title>
 			  <tgroup cols="2">
 			    <colspec colname="c1"/>
 			    <colspec colname="c2"/>
@@ -424,7 +442,7 @@ new NameFinderME(model, featureGenerator, NameFinderME.DEFAULT_BEAM_SIZE);]]>
 			      <row>
 					<entry>custom</entry>
 					<entry>no</entry>
-					<entry><emphasis>class</emphasis> is the name of the feature generator class whcih will be loaded</entry>
+					<entry><emphasis>class</emphasis> is the name of the feature generator class which will be loaded</entry>
 			      </row>
 			    </tbody>
 			  </tgroup>
@@ -446,17 +464,15 @@ new NameFinderME(model, featureGenerator, NameFinderME.DEFAULT_BEAM_SIZE);]]>
 		<para>
 		The following command shows how the tool can be run:
 		<screen>
-				<![CDATA[
-$bin/opennlp TokenNameFinderEvaluator -encoding UTF-8 -model en-ner-person.bin -data en-ner-person.test]]>
-			 </screen>
-			 <screen>
-				<![CDATA[
+            <![CDATA[
+$ opennlp TokenNameFinderEvaluator -model en-ner-person.bin -lang en -data en-ner-person.test -encoding UTF-8
+
 Precision: 0.8005071889818507
 Recall: 0.7450581122145297
 F-Measure: 0.7717879983140168]]>
-			 </screen>
-			 Note: The command line interface does not support cross evaluation in the current version. 
-		</para> 
+         </screen>
+			 Note: The command line interface does not support cross evaluation in the current version.
+		</para>
 		</section>
 		<section id="tools.namefind.eval.api">
 		<title>Evaluation API</title>
@@ -519,7 +535,13 @@ System.out.println(result.toString());]]>
 						</ulink>
 					</para>
 				</listitem>
-				<!-- TODO: Add CONLL 2002 link here ...-->
+                <listitem>
+                    <para>
+                        <ulink  url="http://www.cnts.ua.ac.be/conll2002/ner/">
+                            CONLL 2002
+                        </ulink>
+                    </para>
+                </listitem>
 				<listitem>
 					<para>
 						<ulink  url="http://www.cnts.ua.ac.be/conll2003/ner/annotation.txt">

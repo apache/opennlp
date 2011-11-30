@@ -41,24 +41,23 @@ under the License.
 		Download the english maxent pos model and start the POS Tagger Tool with this command:
 		<screen>
 			<![CDATA[
-$ bin/opennlp POSTagger en-pos-maxent.bin]]>
+$ opennlp POSTagger en-pos-maxent.bin]]>
 		 </screen>
 		The POS Tagger now reads a tokenized sentence per line from stdin.
 		Copy these two sentences to the console:
-		<programlisting>
+		<screen>
 			<![CDATA[
 Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .
 Mr. Vinken is chairman of Elsevier N.V. , the Dutch publishing group .]]>
-		 </programlisting>
+		 </screen>
 		 the POS Tagger will now echo the sentences with pos tags to the console:
-		<programlisting>
+		<screen>
 			<![CDATA[
 Pierre_NNP Vinken_NNP ,_, 61_CD years_NNS old_JJ ,_, will_MD join_VB the_DT board_NN as_IN
     a_DT nonexecutive_JJ director_NN Nov._NNP 29_CD ._.
 Mr._NNP Vinken_NNP is_VBZ chairman_NN of_IN Elsevier_NNP N.V._NNP ,_, the_DT Dutch_NNP publishing_VBG group_NN]]>
-		 </programlisting> 
-		 The tag set used by the english pos model is the Penn Treebank tag set.
-		 See the link below for a description of the tags.
+		 </screen>
+		 The tag set used by the english pos model is the <ulink url="http://www.cis.upenn.edu/~treebank/">Penn Treebank tag set</ulink>.
 		</para>
       </section>
       
@@ -140,18 +139,18 @@ Sequence topSequences[] = tagger.topKSequences(sent);]]>
 			The POS Tagger can be trained on annotated training material. The training material
 			is a collection of tokenized sentences where each token has the assigned part-of-speech tag.
 			The native POS Tagger training material looks like this:
-			<programlisting>
+			<screen>
 		  <![CDATA[
 About_IN 10_CD Euro_NNP ,_, I_PRP reckon_VBP ._.
 That_DT sounds_VBZ good_JJ ._.]]>
-			</programlisting>		
+			</screen>
 			Each sentence must be in one line. The token/tag pairs are combined with "_".
 			The token/tag pairs are whitespace separated. The data format does not
 			define a document boundary. If a document boundary should be included in the
 			training material it is suggested to use an empty line.
 		</para>
 		<para>The Part-of-Speech Tagger can either be trained with a command line tool,
-		or via an trainng API.
+		or via an training API.
 		</para>
 		
 		<section id="tools.postagger.training.tool">
@@ -161,31 +160,51 @@ That_DT sounds_VBZ good_JJ ._.]]>
 			download page on various corpora.
 		</para>
 		<para>
-		 Usage of the tool:
-			<screen>
+		    Usage of the tool:
+            <screen>
 				<![CDATA[
-$ bin/opennlp POSTaggerTrainer
-Usage: opennlp POSTaggerTrainer -lang language -encoding charset [-iterations num] [-cutoff num] \ 
-    [-dict tagdict] [-model maxent|perceptron|perceptron_sequence] -data trainingData -model model
--lang language     specifies the language which is being processed.
--encoding charset  specifies the encoding which should be used for reading and writing text.
--iterations num    specified the number of training iterations
--cutoff num        specifies the min number of times a feature must be seen]]>
+$ opennlp POSTaggerTrainer
+Usage: opennlp POSTaggerTrainer[.conllx] [-type maxent|perceptron|perceptron_sequence] \
+               [-dict dictionaryPath] [-ngram cutoff] [-params paramsFile] [-iterations num] \
+               [-cutoff num] -model modelFile -lang language -data sampleData \
+               [-encoding charsetName]
+
+Arguments description:
+        -type maxent|perceptron|perceptron_sequence
+                The type of the token name finder model. One of maxent|perceptron|perceptron_sequence.
+        -dict dictionaryPath
+                The XML tag dictionary file
+        -ngram cutoff
+                NGram cutoff. If not specified will not create ngram dictionary.
+        -params paramsFile
+                training parameters file.
+        -iterations num
+                number of training iterations, ignored if -params is used.
+        -cutoff num
+                minimal number of times a feature must be seen, ignored if -params is used.
+        -model modelFile
+                output model file.
+        -lang language
+                language which is being processed.
+        -data sampleData
+                data to be used, usually a file name.
+        -encoding charsetName
+                encoding for reading and writing text, if absent the system default is used.]]>
 			 </screen>
 		</para>
 		<para>
-		The following command illustrates how an english part-of-speech model can be trained:
-		<screen>
+		    The following command illustrates how an english part-of-speech model can be trained:
+		    <screen>
 		  <![CDATA[
-$bin/opennlp POSTaggerTrainer -encoding UTF-8 -lang en -model-type maxent -data en-pos.train \ 
--model en-pos-maxent.bin]]>
-		 </screen>
+$ opennlp POSTaggerTrainer -type maxent -model en-pos-maxent.bin \
+                           -lang en -data en-pos.train -encoding UTF-8]]>
+		    </screen>
 		</para>
 		</section>
 		<section id="tools.postagger.training.api">
 		<title>Training API</title>
 		<para>
-		The Part-of-Speech Tagger training API supports the programmatically training of a new pos model.
+		The Part-of-Speech Tagger training API supports the training of a new pos model.
 		Basically three steps are necessary to train it:
 		<itemizedlist>
 			<listitem>
@@ -206,12 +225,10 @@ POSModel model = null;
 InputStream dataIn = null;
 try {
   dataIn = new FileInputStream("en-pos.train");
-  ObjectStream<String> lineStream =
-		new PlainTextByLineStream(dataIn, "UTF-8");
+  ObjectStream<String> lineStream = new PlainTextByLineStream(dataIn, "UTF-8");
   ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
 
-  model = POSTaggerME.train("en", sampleStream, ModelType.MAXENT,
-      null, null, 100, 5);
+  model = POSTaggerME.train("en", sampleStream, TrainingParameters.defaultParams(), null, null);
 }
 catch (IOException e) {
   // Failed to read or parse training data, training failed
@@ -262,13 +279,13 @@ finally {
 		<section id="tools.postagger.training.tagdict">
 		<title>Tag Dictionary</title>
 		<para>
-		The tag dicitionary is a word dictionary which specifies which tags a specific token can have. Using a tag
-		dictionary has two advantages, unappropriate tags can not been assigned to tokens in the dictionary and the
-		beam search algrotihm has to consider less possibilties and can search faster.
+		The tag dictionary is a word dictionary which specifies which tags a specific token can have. Using a tag
+		dictionary has two advantages, inappropriate tags can not been assigned to tokens in the dictionary and the
+		beam search algorithm has to consider less possibilities and can search faster.
 		</para>
 		<para>
 		The dictionary is defined in a xml format and can be created and stored with the POSDictionary class.
-		Pleaes for now checkout the javadoc and source code of that class.
+		Please for now checkout the javadoc and source code of that class.
 		</para>
 		<para>Note: The format should be documented and sample code should show how to use the dictionary.
 			  Any contributions are very welcome. If you want to contribute please contact us on the mailing list
@@ -287,12 +304,10 @@ finally {
 		<title>Evaluation Tool</title>
 		<para>
 		There is a command line tool to evaluate a given model on a test data set.
-		The command line tool currently does not support the cross validation
-		evaluation (contribution welcome).
 		The following command shows how the tool can be run:
 		<screen>
 				<![CDATA[
-$bin/opennlp POSTaggerEvaluator -encoding utf-8 -model pt.postagger.model -data pt.postagger.test]]>
+$ opennlp POSTaggerEvaluator -model pt.postagger.bin -lang pt -data pt.postagger.test -encoding utf-8]]>
 			 </screen>
 			 This will display the resulting accuracy score, e.g.:
 			 <screen>
@@ -302,7 +317,21 @@ Evaluating ... done
 
 Accuracy: 0.9659110277825124]]>
 			 </screen>
-		</para> 
+		</para>
+            <para>
+            There is a command line tool to cross validate a test data set.
+            The following command shows how the tool can be run:
+            <screen>
+                    <![CDATA[
+$ opennlp POSTaggerCrossValidator -lang pt -data pt.postagger.test -encoding utf-8]]>
+                 </screen>
+                 This will display the resulting accuracy score, e.g.:
+                 <screen>
+                    <![CDATA[
+Accuracy: 0.9659110277825124]]>
+                 </screen>
+            </para>
+
 		</section>
 		</section>
 </chapter>
