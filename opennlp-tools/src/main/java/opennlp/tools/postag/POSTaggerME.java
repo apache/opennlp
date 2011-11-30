@@ -29,7 +29,6 @@ import java.util.StringTokenizer;
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
 import opennlp.model.TrainUtil;
-import opennlp.tools.chunker.ChunkerContextGenerator;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.BeamSearch;
@@ -62,7 +61,7 @@ public class POSTaggerME implements POSTagger {
         return true;
       }
       else {
-        String[] tags = tagDictionary.getTags(inputSequence[i].toString());
+        String[] tags = tagDictionary.getTags(inputSequence[i]);
         if (tags == null) {
           return true;
         }
