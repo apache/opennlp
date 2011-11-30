@@ -31,6 +31,7 @@ import java.util.Set;
 import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelWriter;
 import opennlp.model.MaxentModel;
+import opennlp.model.TrainUtil;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -140,7 +141,7 @@ public final class ModelUtil {
    */
   public static TrainingParameters createTrainingParameters(int iterations, int cutoff) {
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, TrainUtil.MAXENT_VALUE);
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
     
