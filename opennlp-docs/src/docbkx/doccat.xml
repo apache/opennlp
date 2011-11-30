@@ -29,18 +29,18 @@ under the License.
 		The OpenNLP Document Categorizer can classify text into pre-defined categories. 
 		It is based on maximum entropy framework. For someone interested in Gross Margin,
 		the sample text given below could be classified as GMDecrease
-				<programlisting>
+        <screen>
 			<![CDATA[
 Major acquisitions that have a lower gross margin than the existing network
 also had a negative impact on the overall gross margin, but it should improve
 following the implementation of its integration strategies.]]>
-		 </programlisting>
+		 </screen>
 and the text below could be classified as GMIncrease
-				<programlisting>
+        <screen>
 			<![CDATA[
 The upward movement of gross margin resulted from amounts pursuant to 
 adjustments to obligations towards dealers.]]>
-		 </programlisting>
+		 </screen>
 		 To be able to classify a text, the document categorizer needs a model. 
 		 The classifications are requirements-specific
 		 and hence there is no pre-built model for document categorizer under OpenNLP project.
@@ -53,7 +53,7 @@ adjustments to obligations towards dealers.]]>
 		intended for demonstration and testing. The following command shows how to use the document categorizer tool. 
 		  <screen>
 			<![CDATA[
-$ bin/opennlp Doccat model]]>
+$ opennlp Doccat model]]>
 		 </screen>
 		 The input is read from standard input and output is written to standard output, unless they are redirected
 		 or piped. As with most components in OpenNLP, document categorizer expects input which is segmented into sentences.
@@ -88,20 +88,21 @@ String category = myCategorizer.getBestOutcome();]]>
 	<title>Training</title>
 		<para>
 			The Document Categorizer can be trained on annotated training material. The data
-			must be in OpenNLP Document Categorizer training format. This is one document per line,
-			containing category and text separated by a whitespace.
+			can be in OpenNLP Document Categorizer training format. This is one document per line,
+			containing category and text separated by a whitespace. Other formats can also be
+            available.
 			The following sample shows the sample from above in the required format. Here GMDecrease and GMIncrease
 			are the categories.
-			<programlisting>
+			<screen>
 			<![CDATA[
 GMDecrease Major acquisitions that have a lower gross margin than the existing network also \ 
            had a negative impact on the overall gross margin, but it should improve following \ 
            the implementation of its integration strategies .
 GMIncrease The upward movement of gross margin resulted from amounts pursuant to adjustments \
            to obligations towards dealers .]]>
-			</programlisting>
+			</screen>
 			Note: The line breaks marked with a backslash are just inserted for formatting purposes and must not be
-			included in the training data. 
+			included in the training data.
 		</para>
 		<section id="tools.doccat.training.tool">
 		<title>Training Tool</title>
@@ -109,7 +110,7 @@ GMIncrease The upward movement of gross margin resulted from amounts pursuant to
 		The following command will train the document categorizer and write the model to en-doccat.bin:		
 		  <screen>
 			<![CDATA[			
-$bin/opennlp DoccatTrainer -encoding UTF-8 -lang en -data en-doccat.train -model en-doccat.bin]]>
+$ opennlp DoccatTrainer -model en-doccat.bin -lang en -data en-doccat.train -encoding UTF-8]]>
 		 </screen>
 		Additionally it is possible to specify the number of iterations, and the cutoff.
 		</para>
