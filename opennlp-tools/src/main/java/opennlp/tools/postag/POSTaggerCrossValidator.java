@@ -19,8 +19,6 @@ package opennlp.tools.postag;
 
 import java.io.IOException;
 
-import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
@@ -104,7 +102,7 @@ public class POSTaggerCrossValidator {
    * 
    * @throws IOException
    */
-  public void evaluate(ObjectStream<POSSample> samples, int nFolds) throws IOException, IOException {
+  public void evaluate(ObjectStream<POSSample> samples, int nFolds) throws IOException {
     
     CrossValidationPartitioner<POSSample> partitioner = new CrossValidationPartitioner<POSSample>(
         samples, nFolds);
@@ -118,14 +116,9 @@ public class POSTaggerCrossValidator {
       if (this.ngramDictionary == null) {
         if(this.ngramCutoff != null) {
           System.err.print("Building ngram dictionary ... ");
-          try {
-            ngramDict = POSTaggerME.buildNGramDictionary(trainingSampleStream,
-                this.ngramCutoff);
-            trainingSampleStream.reset();
-          } catch (IOException e) {
-            CmdLineUtil.printTrainingIoError(e);
-            throw new TerminateToolException(-1);
-          }
+          ngramDict = POSTaggerME.buildNGramDictionary(trainingSampleStream,
+              this.ngramCutoff);
+          trainingSampleStream.reset();
           System.err.println("done");
         }
       } else {
