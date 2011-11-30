@@ -23,6 +23,11 @@ package opennlp.tools.cmdline;
  * The exception should be thrown to indicate that the VM should be terminated with
  * the specified error code, instead of just calling {@link System#exit(int)}.
  * <p>
+ * The return code convention is to return:<br>
+ * 0 in case of graceful termination<br>
+ * -1 in case of runtime errors, such as IOException<br>
+ * 1 in case of invalid parameters.
+ * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
 public class TerminateToolException extends RuntimeException {
