@@ -25,14 +25,13 @@ under the License.
 
 	<title>Corpora</title>
 	<para>
-	OpenNLP has built-in support to convert various corpora
-	into the native training format needed by the different
-	trainable components.
+	    OpenNLP has built-in support to convert into the native training format or directly use
+        various corpora	needed by the different	trainable components.
 	</para>
 	<section id="tools.corpora.conll">
 		<title>CONLL</title>
 		<para>
-		CoNLL stands for the Confernece on Computational Natural Language Learning and is not
+		CoNLL stands for the Conference on Computational Natural Language Learning and is not
 		a single project but a consortium of developers attempting to broaden the computing
 		environment. More information about the entire conference series can be obtained here
 		for CoNLL.
@@ -40,7 +39,7 @@ under the License.
 		<section id="tools.corpora.conll.2000">
 		<title>CONLL 2000</title>
 		<para>
-		The shared task of CoNLL-2000 is Chunking .
+		The shared task of CoNLL-2000 is Chunking.
 		</para>
 		<section id="tools.corpora.conll.2000.getting">
 		<title>Getting the data</title>
@@ -65,12 +64,12 @@ under the License.
 		<title>Training</title>
 		<para>
 		 We can train the model for the Chunker using the train.txt available at CONLL 2000:
-		 <programlisting>
+		 <screen>
 			<![CDATA[
-bin/opennlp ChunkerTrainerME -encoding UTF-8 -lang en -iterations 500 \
--data train.txt -model en-chunker.bin]]>
-		</programlisting>
-		<programlisting>
+$ opennlp ChunkerTrainerME -model en-chunker.bin -iterations 500 \
+                           -lang en -data train.txt -encoding UTF-8]]>
+		</screen>
+		<screen>
 			<![CDATA[
 Indexing events using cutoff of 5
 
@@ -97,18 +96,18 @@ Performing 500 iterations.
 Writing chunker model ... done (4.019s)
 
 Wrote chunker model to path: .\en-chunker.bin]]>
-		</programlisting>
+		</screen>
 		</para>
 		</section>
 		<section id="tools.corpora.conll.2000.evaluation">
 		<title>Evaluating</title>
 		<para>
 		We evaluate the model using the file test.txt  available at CONLL 2000:
-		<programlisting>
+		<screen>
 			<![CDATA[
-$ bin/opennlp ChunkerEvaluator -encoding utf8 -model en-chunker.bin -data test.txt]]>
-		</programlisting>
-		<programlisting>
+$ opennlp ChunkerEvaluator -model en-chunker.bin -lang en -encoding utf8 -data test.txt]]>
+		</screen>
+		<screen>
 			<![CDATA[
 Loading Chunker model ... done (0,665s)
 current: 85,8 sent/s avg: 85,8 sent/s total: 86 sent
@@ -132,11 +131,11 @@ Runtime: 12.457s
 Precision: 0.9244354736974896
 Recall: 0.9216837162502096
 F-Measure: 0.9230575441395671]]>
-		</programlisting>
+		</screen>
 		</para>
 		</section>
 	</section>
-		<section id="tools.corpora.conll.2003">
+		<section id="tools.corpora.conll.2002">
 		<title>CONLL 2002</title>
 		<para>
 		TODO: Document how to use the converters for CONLL 2002. Any contributions
@@ -164,37 +163,48 @@ F-Measure: 0.9230575441395671]]>
 		can be obtained for 75$ (2010) from the Linguistic Data Consortium:
 <ulink url="http://www.ldc.upenn.edu/Catalog/CatalogEntry.jsp?catalogId=LDC94T5">http://www.ldc.upenn.edu/Catalog/CatalogEntry.jsp?catalogId=LDC94T5</ulink>		</para>
 		<para>After one of the corpora is available the data must be
-		transformed as explained in the README file to the conll format.
+		transformed as explained in the README file to the CONLL format.
 		The transformed data can be read by the OpenNLP CONLL03 converter.
 		</para>
 		</section>
 		<section id="tools.corpora.conll.2003.converting">
-		<title>Converting the data</title>
+		<title>Converting the data (optional)</title>
 		<para>
 		To convert the information to the OpenNLP format:
-		<programlisting>
+		<screen>
 			<![CDATA[
-$ bin/opennlp TokenNameFinderConverter conll03 -data eng.train -lang en -types per > corpus_train.txt]]>
-		</programlisting>
+$ opennlp TokenNameFinderConverter conll03 -lang en -types per -data eng.train > corpus_train.txt]]>
+		</screen>
 		Optionally, you can convert the training test samples as well.
-		<programlisting>
+		<screen>
 			<![CDATA[
-bin/opennlp TokenNameFinderConverter conll03 -data eng.testa -lang en -types per > corpus_testa.txt
-bin/opennlp TokenNameFinderConverter conll03 -data eng.testb -lang en -types per > corpus_testb.txt]]>
-		</programlisting>
+$ opennlp TokenNameFinderConverter conll03 -lang en -types per -data eng.testa > corpus_testa.txt
+$ opennlp TokenNameFinderConverter conll03 -lang en -types per -data eng.testb > corpus_testb.txt]]>
+		</screen>
 		</para>
 		</section>
 		<section id="tools.corpora.conll.2003.training.english">
 		<title>Training with English data</title>
-		<para>
-		 To train the model for the name finder:
-		 <programlisting>
-			<![CDATA[
-$ bin/opennlp TokenNameFinderTrainer -lang en -encoding utf8 -iterations 500 \
-    -data corpus_train.txt -model en_ner_person.bin]]>
-		</programlisting>
-		<programlisting>
-			<![CDATA[
+            <para>
+                You can train the model for the name finder this way:
+                <screen>
+                <![CDATA[
+$ opennlp TokenNameFinderTrainer.conll03 -model en_ner_person.bin -iterations 500 \
+                                 -lang en -types per -data eng.train -encoding utf8]]>
+                </screen>
+            </para>
+		    <para>
+                If you have converted the data, then you can train the model for the name finder this way:
+                <screen>
+                <![CDATA[
+$ opennlp TokenNameFinderTrainer -model en_ner_person.bin -iterations 500 \
+                                 -lang en -data corpus_train.txt -encoding utf8]]>
+		        </screen>
+            </para>
+            <para>
+                Either way you should see the following output during the training process:
+		        <screen>
+			    <![CDATA[
 Indexing events using cutoff of 5
 
 	Computing event counts...  done. 203621 events
@@ -221,19 +231,31 @@ Writing name finder model ... done (1.638s)
 
 Wrote name finder model to
 path: .\en_ner_person.bin]]>
-		</programlisting>
-		</para>
+		        </screen>
+		    </para>
 		</section>
 		<section id="tools.corpora.conll.2003.evaluation.english">
 		<title>Evaluating with English data</title>
-		<para>
-		Since we created the test A and B files above, we can use them to evaluate the model.
-		<programlisting>
+            <para>
+                You can evaluate the model for the name finder this way:
+                <screen>
+                <![CDATA[
+$ opennlp TokenNameFinderEvaluator.conll03 -model en_ner_person.bin \
+                                   -lang en -types per -data eng.testa -encoding utf8]]>
+                </screen>
+            </para>
+		    <para>
+		        If you converted the test A and B files above, you can use them to evaluate the
+                model.
+		        <screen>
 			<![CDATA[
-$ bin/opennlp TokenNameFinderEvaluator -lang en -encoding utf8 -model en_ner_person.bin \
-    -data corpus_testa.txt]]>
-		</programlisting>
-		<programlisting>
+$ opennlp TokenNameFinderEvaluator -model en_ner_person.bin -lang en -data corpus_testa.txt \
+                                   -encoding utf8]]>
+		        </screen>
+            </para>
+            <para>
+                Either way you should see the following output:
+		        <screen>
 			<![CDATA[
 Loading Token Name Finder model ... done (0.359s)
 current: 190.2 sent/s avg: 190.2 sent/s total: 199 sent
@@ -272,92 +294,90 @@ F-Measure: 0.8267557582133971]]>
 		</section>
 		
 		<section id="tools.corpora.arvores-deitadas.converting">
-			<title>Converting the data</title>
-			<para>
-				To extract NameFinder training data from Amazonia corpus:
-			<programlisting>
-			<![CDATA[
-$ bin/opennlp TokenNameFinderConverter ad -encoding ISO-8859-1 -data amazonia.ad \
-    -lang pt -types per > corpus.txt]]>
-			</programlisting>
+			<title>Converting the data (optional)</title>
+			    <para>
+				    To extract NameFinder training data from Amazonia corpus:
+			        <screen>
+			        <![CDATA[
+$ opennlp TokenNameFinderConverter ad -lang pt -encoding ISO-8859-1 -data amazonia.ad > corpus.txt]]>
+			        </screen>
 			</para>
 			<para>
 				To extract Chunker training data from Bosque_CF_8.0.ad corpus:
-			<programlisting>
-			<![CDATA[
-$ bin/opennlp ChunkerConverter ad -encoding ISO-8859-1 -data Bosque_CF_8.0.ad.txt > bosque-chunk]]>
-			</programlisting>
+			    <screen>
+			    <![CDATA[
+$ opennlp ChunkerConverter ad -lang pt -data Bosque_CF_8.0.ad.txt -encoding ISO-8859-1 > bosque-chunk]]>
+    			</screen>
 			</para>
 		</section>
 		<section id="tools.corpora.arvores-deitadas.evaluation">
-			<title>Evaluation</title>
-			<para>
-			To perform the evaluation the corpus was split into a training and a test part.
-			<programlisting>
-			<![CDATA[
+			<title>Training and Evaluation</title>
+			    <para>
+			        To perform the evaluation the corpus was split into a training and a test part.
+			        <screen>
+			        <![CDATA[
 $ sed '1,55172d' corpus.txt > corpus_train.txt
 $ sed '55172,100000000d' corpus.txt > corpus_test.txt]]>
-			</programlisting>
-			<programlisting>
-			<![CDATA[
-$ bin/opennlp TokenNameFinderTrainer -lang PT -encoding UTF-8 -data corpus_train.txt \
-    -model pt-ner.bin -cutoff 20
-..
-$ bin/opennlp TokenNameFinderEvaluator -encoding UTF-8 -model ../model/pt-ner.bin \
-    -data corpus_test.txt
+        			</screen>
+        			<screen>
+        			<![CDATA[
+$ opennlp TokenNameFinderTrainer -model pt-ner.bin -cutoff 20 -lang PT -data corpus_train.txt -encoding UTF-8
+...
+$ opennlp TokenNameFinderEvaluator -model pt-ner.bin -lang PT -data corpus_train.txt -encoding UTF-8
 
 Precision: 0.8005071889818507
 Recall: 0.7450581122145297
 F-Measure: 0.7717879983140168]]>
-			</programlisting>
+			</screen>
 			</para>
 		</section>
 	</section>
 	<section id="tools.corpora.leipzig">
 	<title>Leipzig Corpora</title>
 	<para>
-	The Leiopzig Corpora collection presents corpora in different languages. The corpora is a collection of individual sentences collected
+	The Leipzig Corpora collection presents corpora in different languages. The corpora is a collection of individual sentences collected
 	from the web and newspapers. The Corpora is available as plain text and as MySQL database tables. The OpenNLP integration can only
 	use the plain text version.
 	</para>
 	<para>
 	The corpora in the different languages can be used to train a document categorizer model which can detect the document language. 
-	The	individual plain text packages can be downlaoded here:
+	The	individual plain text packages can be downloaded here:
 	<ulink url="http://corpora.uni-leipzig.de/download.html">http://corpora.uni-leipzig.de/download.html</ulink>
 	</para>
 	
 	<para>
-	Afer all packages have been downloaded, unzip them and use the following commands to
+	After all packages have been downloaded, unzip them and use the following commands to
 	produce a training file which can be processed by the Document Categorizer:
-	<programlisting>
+	<screen>
 			<![CDATA[
-bin/opennlp DoccatConverter leipzig -lang cat -data Leipzig/cat100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang de -data Leipzig/de100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang dk -data Leipzig/dk100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang ee -data Leipzig/ee100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang en -data Leipzig/en100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang fi -data Leipzig/fi100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang fr -data Leipzig/fr100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang it -data Leipzig/it100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang jp -data Leipzig/jp100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang kr -data Leipzig/kr100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang nl -data Leipzig/nl100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang no -data Leipzig/no100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang se -data Leipzig/se100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang sorb -data Leipzig/sorb100k/sentences.txt >> lang.train
-bin/opennlp DoccatConverter leipzig -lang tr -data Leipzig/tr100k/sentences.txt >> lang.train]]>
-	</programlisting>
+$ opennlp DoccatConverter leipzig -lang cat -data Leipzig/cat100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang de -data Leipzig/de100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang dk -data Leipzig/dk100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang ee -data Leipzig/ee100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang en -data Leipzig/en100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang fi -data Leipzig/fi100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang fr -data Leipzig/fr100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang it -data Leipzig/it100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang jp -data Leipzig/jp100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang kr -data Leipzig/kr100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang nl -data Leipzig/nl100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang no -data Leipzig/no100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang se -data Leipzig/se100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang sorb -data Leipzig/sorb100k/sentences.txt >> lang.train
+$ opennlp DoccatConverter leipzig -lang tr -data Leipzig/tr100k/sentences.txt >> lang.train]]>
+	</screen>
 	</para>
 	<para>
-	Depending on your platform local it might be problemmatic to output characters which are not supported by that encoding,
+	Depending on your platform local it might be problematic to output characters which are not supported by that encoding,
 	we suggest to run these command on a platform which has a unicode default encoding, e.g. Linux with UTF-8.
 	</para>
 	<para>
-	Afer the lang.train file is created the actual language detection document categorizer model
+	After the lang.train file is created the actual language detection document categorizer model
 	can be created with the following command.
-	<programlisting>
+	<screen>
 			<![CDATA[
-bin/opennlp DoccatTrainer -lang x-unspecified -encoding MacRoman -data ../lang.train -model lang.model
+$ opennlp DoccatTrainer -model lang.model -lang x-unspecified -data lang.train -encoding MacRoman
+
 Indexing events using cutoff of 5
 
 	Computing event counts...  done. 10000 events
