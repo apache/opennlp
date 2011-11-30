@@ -37,27 +37,27 @@ under the License.
 		The tool is only intended for demonstration and testing.
 		Download the english chunking parser model from the our website and start the Parse
  		Tool with the following command.
-				<programlisting>
+				<screen>
 				<![CDATA[
-$bin/opennlp Parser en-parser.bin en-parser-chunking.bin]]>
-		</programlisting>
+$ opennlp Parser en-parser.bin en-parser-chunking.bin]]>
+		</screen>
 		Loading the big parser model can take several seconds, be patient.
 		Copy this sample sentence to the console.
-		<programlisting>
+		<screen>
 				<![CDATA[
 The quick brown fox jumps over the lazy dog .]]>
-		</programlisting>
+		</screen>
 		The parser should now print the following to the console.
-				<programlisting>
+				<screen>
 				<![CDATA[
 (TOP (NP (NP (DT The) (JJ quick) (JJ brown) (NN fox) (NNS jumps)) (PP (IN over) (NP (DT the)
     (JJ lazy) (NN dog))) (. .)))]]>
-		</programlisting>
+		</screen>
 		With the following command the input can be read from a file and be written to an output file.
-				<programlisting>
+				<screen>
 				<![CDATA[
-$ bin/opennlp Parser en-parser.bin en-parser-chunking.bin < article-tokenized.txt > article-parsed.txt.]]>
-		</programlisting>
+$ opennlp Parser en-parser.bin en-parser-chunking.bin < article-tokenized.txt > article-parsed.txt.]]>
+		</screen>
 		The article-tokenized.txt file must contain one sentence per line which is
 		tokenized with the english tokenizer model from our website.
 		See the Tokenizer documentation for further details.
@@ -121,7 +121,7 @@ Parse topParses[] = ParserTool.parseLine(sentence, parser, 1);]]>
 		<para>
 				The OpenNLP offers two different parser implementations, the chunking parser and the
 		treeinsert parser. The later one is still experimental and not recommended for production use.
-		(TODO: Add a section which explains the two different approches)
+		(TODO: Add a section which explains the two different approaches)
 		The training can either be done with the command line tool or the training API.
 		In the first case the training data must be available in the OpenNLP format. Which is
 		the Penn Treebank format, but with the limitation of a sentence per line.
@@ -130,7 +130,8 @@ Parse topParses[] = ParserTool.parseLine(sentence, parser, 1);]]>
 (TOP (S (NP-SBJ (DT Some) )(VP (VBP say) (NP (NNP November) ))(. .) ))
 (TOP (S (NP-SBJ (PRP I) )(VP (VBP say) (NP (CD 1992) ))(. .) ('' '') ))]]>
 		</programlisting>
-		(TODO: Insert link which explains the penn treebank format.)
+		Penn Treebank annotation guidelines can be found on the
+            <ulink url="http://www.cis.upenn.edu/~treebank/">Penn Treebank home page</ulink>.
 		A parser model also contains a pos tagger model, depending on the amount of available
 		training data it is recommend to switch the tagger model against a tagger model which
 		was trained on a larger corpus. The pre-trained parser model provided on the website
@@ -145,22 +146,46 @@ Parse topParses[] = ParserTool.parseLine(sentence, parser, 1);]]>
 		training format, which is shortly explained above.
 		To train the parser a head rules file is also needed. (TODO: Add documentation about the head rules file)
 		Usage of the tool:
-				<programlisting>
+            <screen>
 				<![CDATA[
-$ bin/opennlp ParserTrainer
-Usage: opennlp ParserTrainer-lang language -encoding charset [-iterations num] \ 
-[-cutoff num] -head-rules head_rules -data trainingData -model model
--lang language     specifies the language which is being processed.
--encoding charset  specifies the encoding which should be used for reading and writing text.
--iterations num    specified the number of training iterations
--cutoff num        specifies the min number of times a feature must be seen]]>
-		</programlisting>
+$ opennlp ParserTrainer
+Usage: opennlp ParserTrainer -headRules headRulesFile [-parserType CHUNKING|TREEINSERT] \
+                             [-params paramsFile] [-iterations num] [-cutoff num] \
+                             -model modelFile -lang language -data sampleData \
+                             [-encoding charsetName]
+
+Arguments description:
+	-headRules headRulesFile
+		head rules file.
+	-parserType CHUNKING|TREEINSERT
+		one of CHUNKING or TREEINSERT, default is CHUNKING.
+	-params paramsFile
+		training parameters file.
+	-iterations num
+		number of training iterations, ignored if -params is used.
+	-cutoff num
+		minimal number of times a feature must be seen, ignored if -params is used.
+	-model modelFile
+		output model file.
+	-format formatName
+		data format, might have its own parameters.
+	-encoding charsetName
+		encoding for reading and writing text, if absent the system default is used.
+	-lang language
+		language which is being processed.
+	-data sampleData
+		data to be used, usually a file name.
+	-encoding charsetName
+		encoding for reading and writing text, if absent the system default is used.]]>
+        </screen>
 		The model on the website was trained with the following command:
-		<programlisting>
+		<screen>
 		<![CDATA[
-$bin/opennlp ParserTrainer -encoding ISO-8859-1 -lang en -parserType CHUNKING -head-rules head_rules \
-    -data train.all -model en-parser-chunking.bin]]>
-		</programlisting>
+$ opennlp ParserTrainer -model en-parser-chunking.bin -parserType CHUNKING \
+                        -head-rules head_rules \
+                        -lang en -data train.all -encoding ISO-8859-1
+    ]]>
+		</screen>
 		Its also possible to specify the cutoff and the number of iterations, these parameters
 		are used for all trained models. The -parserType parameter is an optional parameter,
 		to use the tree insertion parser, specify TREEINSERT as type. The TaggerModelReplacer
@@ -169,10 +194,10 @@ $bin/opennlp ParserTrainer -encoding ISO-8859-1 -lang en -parserType CHUNKING -h
 		<para>
 		Note: The original parser model will be overwritten with the new parser model which
 		contains the replaced tagger model.
-				<programlisting>
+        <screen>
 		<![CDATA[
-$bin/opennlp TaggerModelReplacer  models/en-parser-chunking.bin models/en-pos-maxent.bin]]>
-		</programlisting>
+$ opennlp TaggerModelReplacer en-parser-chunking.bin en-pos-maxent.bin]]>
+		</screen>
 		Additionally there are tools to just retrain the build or the check model.
 		</para>
 		</section>
