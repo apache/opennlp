@@ -42,22 +42,22 @@ under the License.
 		Download the english maxent chunker model from the website and start the Chunker Tool with this command:
 		</para>
 		<para>
-				<programlisting>
+        <screen>
 				<![CDATA[
-bin/opennlp ChunkerME en-chunker.bin]]>
-		</programlisting>
+$ opennlp ChunkerME en-chunker.bin]]>
+		</screen>
 		The Chunker now reads a pos tagged sentence per line from stdin.
 		Copy these two sentences to the console: 
-		<programlisting>
+		<screen>
 				<![CDATA[
 Rockwell_NNP International_NNP Corp._NNP 's_POS Tulsa_NNP unit_NN said_VBD it_PRP signed_VBD 
     a_DT tentative_JJ agreement_NN extending_VBG its_PRP$ contract_NN with_IN Boeing_NNP Co._NNP
     to_TO provide_VB structural_JJ parts_NNS for_IN Boeing_NNP 's_POS 747_CD jetliners_NNS ._.
 Rockwell_NNP said_VBD the_DT agreement_NN calls_VBZ for_IN it_PRP to_TO supply_VB 200_CD
     additional_JJ so-called_JJ shipsets_NNS for_IN the_DT planes_NNS ._.]]>
-		</programlisting>
-		the Chunker will now echo the sentences grouped tokens to the console:
-				<programlisting>
+		</screen>
+		The Chunker will now echo the sentences grouped tokens to the console:
+				<screen>
 				<![CDATA[
 [NP Rockwell_NNP International_NNP Corp._NNP ] [NP 's_POS Tulsa_NNP unit_NN ] [VP said_VBD ]
     [NP it_PRP ] [VP signed_VBD ] [NP a_DT tentative_JJ agreement_NN ] [VP extending_VBG ]
@@ -66,9 +66,8 @@ Rockwell_NNP said_VBD the_DT agreement_NN calls_VBZ for_IN it_PRP to_TO supply_V
 [NP Rockwell_NNP ] [VP said_VBD ] [NP the_DT agreement_NN ] [VP calls_VBZ ] [SBAR for_IN ]
     [NP it_PRP ] [VP to_TO supply_VB ] [NP 200_CD additional_JJ so-called_JJ shipsets_NNS ]
     [PP for_IN ] [NP the_DT planes_NNS ] ._.]]>
-		</programlisting>
-		The tag set used by the english pos model is the Penn Treebank tag set. 
-		See the link below for a description of the tags.
+		</screen>
+		The tag set used by the english pos model is the <ulink url="http://www.cis.upenn.edu/~treebank/">Penn Treebank tag set</ulink>.
 		</para>
 		</section>
 		<section id="tools.parser.chunking.api">
@@ -161,8 +160,9 @@ Sequence topSequences[] = chunk.topKSequences(sent, pos);]]>
 	    corpus or on a corpus which is extended by private training data taken from the data which should be analyzed.
 		</para>
 		<para>
-		The training data must be converted to the OpenNLP chunker training format,
-		that is based on <ulink url="http://www.cnts.ua.ac.be/conll2000/chunking">CoNLL2000</ulink>:
+		The training data can be converted to the OpenNLP chunker training format,
+		that is based on <ulink url="http://www.cnts.ua.ac.be/conll2000/chunking">CoNLL2000</ulink>.
+        Other formats may also be available.
 		The train data consist of three columns separated by spaces. Each word has been put on a
 		separate line and there is an empty line after each sentence. The first column contains
 		the current word, the second its part-of-speech tag and the third its chunk tag. 
@@ -173,7 +173,7 @@ Sequence topSequences[] = chunk.topKSequences(sent, pos);]]>
 		</para>
 		<para>
 		Sample sentence of the training data: 
-		<programlisting>
+		<screen>
 				<![CDATA[
 He        PRP  B-NP
 reckons   VBZ  B-VP
@@ -191,7 +191,7 @@ billion   CD   I-NP
 in        IN   B-PP
 September NNP  B-NP
 .         .    O]]>
-		</programlisting>
+		</screen>
 		</para>
 		<section id="tools.chunker.training.tool">
 		<title>Training Tool</title>
@@ -200,34 +200,72 @@ September NNP  B-NP
 		model download page on various corpora.
 		</para> 
 		<para>
-		Usage of the tool:
-				<programlisting>
+		    Usage of the tool:
+            <screen>
 				<![CDATA[
-$ bin/opennlp ChunkerTrainerME
-Usage: opennlp ChunkerTrainerME-lang language -encoding charset [-iterations num] \
-[-cutoff num] -data trainingData -model model
--lang language     specifies the language which is being processed.
--encoding charset  specifies the encoding which should be used for reading and writing text.
--iterations num    specified the number of training iterations
--cutoff num        specifies the min number of times a feature must be seen]]>
-		</programlisting>
+$ opennlp ChunkerTrainerME
+Usage: opennlp ChunkerTrainerME[.ad] [-params paramsFile] [-iterations num] [-cutoff num] \
+               -model modelFile -lang language -data sampleData [-encoding charsetName]
+
+Arguments description:
+        -params paramsFile
+                training parameters file.
+        -iterations num
+                number of training iterations, ignored if -params is used.
+        -cutoff num
+                minimal number of times a feature must be seen, ignored if -params is used.
+        -model modelFile
+                output model file.
+        -lang language
+                language which is being processed.
+        -data sampleData
+                data to be used, usually a file name.
+        -encoding charsetName
+                encoding for reading and writing text, if absent the system default is used.]]>
+		</screen>
 		Its now assumed that the english chunker model should be trained from a file called
 		en-chunker.train which is encoded as UTF-8. The following command will train the
 		name finder and write the model to en-chunker.bin: 
-		<programlisting>
+		<screen>
 		<![CDATA[
-bin/opennlp ChunkerTrainerME -encoding UTF-8 -lang en -data en-chunker.train -model en-chunker.bin]]>
-		</programlisting>
+$ opennlp ChunkerTrainerME -model en-chunker.bin -lang en -data en-chunker.train -encoding UTF-8]]>
+		</screen>
 		Additionally its possible to specify the number of iterations, the cutoff and to overwrite
 		all types in the training data with a single type.
 		</para>
 		</section>
-				<section id="tools.chunker.training.api">
+        <section id="tools.chunker.training.api">
 		<title>Training API</title>
-		<para>TODO: Write documentation about the chunker training api. Any contributions
-			  are very welcome. If you want to contribute please contact us on the mailing list
-			  or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-218">OPENNLP-218</ulink>.
-		</para>
+            <para>
+                The Chunker offers an API to train a new chunker model. The following sample code
+                illustrates how to do it:
+                <programlisting language="java">
+                    <![CDATA[
+Charset charset = Charset.forName("UTF-8");
+ObjectStream<String> lineStream =
+    new PlainTextByLineStream(new FileInputStream("en-chunker.train"),charset);
+ObjectStream<ChunkSample> sampleStream = new ChunkSampleStream(lineStream);
+
+ChunkerModel model;
+
+try {
+  model = ChunkerME.train("en", sampleStream,
+      new DefaultChunkerContextGenerator(), TrainingParameters.defaultParams());
+}
+finally {
+  sampleStream.close();
+}
+
+OutputStream modelOut = null;
+try {
+  modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+  model.serialize(modelOut);
+} finally {
+  if (modelOut != null)
+     modelOut.close();
+}]]>
+                </programlisting>
+            </para>
 		</section>
 	</section>
 	
@@ -240,42 +278,60 @@ bin/opennlp ChunkerTrainerME -encoding UTF-8 -lang en -data en-chunker.train -mo
 		<section id="tools.chunker.evaluation.tool">
 		<title>Chunker Evaluation Tool</title>
 		<para>
-		The following command shows how the tool can be run:
-				<programlisting>
+		    The following command shows how the tool can be run:
+            <screen>
 				<![CDATA[
-bin/opennlp ChunkerEvaluator
-Usage: opennlp ChunkerEvaluator [-encoding charsetName] -data data -model model]]>
-		</programlisting>
+$ opennlp ChunkerEvaluator
+Usage: opennlp ChunkerEvaluator[.ad] -model model [-misclassified true|false] \
+               [-detailedF true|false] -lang language -data sampleData [-encoding charsetName]]]>
+		</screen>
 		A sample of the command considering you have a data sample named en-chunker.eval
-		and you trainned a model called en-chunker.bin:
-				<programlisting>
+		and you trained a model called en-chunker.bin:
+            <screen>
 				<![CDATA[
-bin/opennlp ChunkerEvaluator -lang en -encoding UTF-8 -data en-chunker.eval -model en-chunker.bin]]>
-		</programlisting>		
+$ opennlp ChunkerEvaluator -model en-chunker.bin -lang en -data en-chunker.eval -encoding UTF-8]]>
+		</screen>
 		and here is a sample output:  
-		<programlisting>
+		<screen>
 		<![CDATA[
 Precision: 0.9255923572240226
 Recall: 0.9220610430991112
 F-Measure: 0.9238233255623465]]>
-		</programlisting>
+		</screen>
 		You can also use the tool to perform 10-fold cross validation of the Chunker.
 he following command shows how the tool can be run:
-				<programlisting>
+        <screen>
 				<![CDATA[
-bin/opennlp ChunkerCrossValidator
-Usage: opennlp ChunkerCrossValidator -lang language -encoding charset [-iterations num] [-cutoff num]
--lang language     specifies the language which is being processed.
--encoding charset  specifies the encoding which should be used for reading and writing text.
--iterations num    specified the number of training iterations
--cutoff num        specifies the min number of times a feature must be seen
--data trainingData      training data used for cross validation]]>
-		</programlisting>
+$ opennlp ChunkerCrossValidator
+Usage: opennlp ChunkerCrossValidator[.ad] [-params paramsFile] [-iterations num] [-cutoff num] \
+               [-misclassified true|false] [-folds num] [-detailedF true|false] \
+               -lang language -data sampleData [-encoding charsetName]
+
+Arguments description:
+        -params paramsFile
+                training parameters file.
+        -iterations num
+                number of training iterations, ignored if -params is used.
+        -cutoff num
+                minimal number of times a feature must be seen, ignored if -params is used.
+        -misclassified true|false
+                if true will print false negatives and false positives.
+        -folds num
+                number of folds, default is 10.
+        -detailedF true|false
+                if true will print detailed FMeasure results.
+        -lang language
+                language which is being processed.
+        -data sampleData
+                data to be used, usually a file name.
+        -encoding charsetName
+                encoding for reading and writing text, if absent the system default is used.]]>
+		</screen>
 		It is not necessary to pass a model. The tool will automatically split the data to train and evaluate:
-				<programlisting>
-				<![CDATA[
-bin/opennlp ChunkerCrossValidator -lang pt -encoding UTF-8 -data en-chunker.cross]]>
-		</programlisting>
+        <screen>
+            <![CDATA[
+$ opennlp ChunkerCrossValidator -lang pt -data en-chunker.cross -encoding UTF-8]]>
+		</screen>
 		</para>
 		</section>
 	</section>
