@@ -18,28 +18,27 @@
 package opennlp.tools.cmdline.chunker;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import opennlp.tools.chunker.ChunkSample;
-import opennlp.tools.chunker.ChunkSampleStream;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.chunker.DefaultChunkerContextGenerator;
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.chunker.ChunkerTrainerTool.TrainerToolParams;
 import opennlp.tools.cmdline.params.TrainingToolParams;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.model.ModelUtil;
 
-public class ChunkerTrainerTool implements CmdLineTool {
+public class ChunkerTrainerTool
+    extends AbstractTrainerTool<ChunkSample, TrainerToolParams> {
   
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams{
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
+  }
 
+  public ChunkerTrainerTool() {
+    super(ChunkSample.class, TrainerToolParams.class);
   }
 
   public String getName() {
@@ -50,58 +49,24 @@ public class ChunkerTrainerTool implements CmdLineTool {
     return "trainer for the learnable chunker";
   }
 
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(TrainerToolParams.class);
-  }
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
-  static ObjectStream<ChunkSample> openSampleData(String sampleDataName,
-      File sampleDataFile, Charset encoding) {
-    CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
-
-    FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
-
-    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn
-        .getChannel(), encoding);
-
-    return new ChunkSampleStream(lineStream);
-  }
-  
-  public void run(String[] args) {
-    
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, TrainerToolParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
+    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+    if(mlParams == null) {
+      mlParams = ModelUtil.createTrainingParameters(params.getIterations(),
+          params.getCutoff());
     }
-    
-    TrainerToolParams params = ArgumentParser.parse(args,
-        TrainerToolParams.class);
-    
-    opennlp.tools.util.TrainingParameters mlParams =
-      CmdLineUtil.loadTrainingParameters(params.getParams(), false);
-    
-    File trainingDataInFile = params.getData();
-    File modelOutFile = params.getModel();
 
+    File modelOutFile = params.getModel();
     CmdLineUtil.checkOutputFile("sentence detector model", modelOutFile);
-    ObjectStream<ChunkSample> sampleStream = 
-      openSampleData("Training", trainingDataInFile, params.getEncoding());
-    
+
     ChunkerModel model;
     try {
-      if (mlParams == null) {
-        model = ChunkerME.train(params.getLang(), sampleStream, 
-            params.getCutoff(), params.getIterations());
-      }
-      else {
-        model = ChunkerME.train(params.getLang(), sampleStream, 
-            new DefaultChunkerContextGenerator(), mlParams);
-      }
+      model = ChunkerME.train(factory.getLang(), sampleStream,
+          new DefaultChunkerContextGenerator(), mlParams);
     } catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
     finally {
       try {

@@ -17,48 +17,43 @@
 
 package opennlp.tools.formats;
 
-import java.io.File;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.ObjectStreamFactory;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.params.LanguageFormatParams;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class LeipzigDocumentSampleStreamFactory implements ObjectStreamFactory<DocumentSample> {
+public class LeipzigDocumentSampleStreamFactory extends LanguageSampleStreamFactory<DocumentSample> {
 
-  interface Parameters {
-    @ParameterDescription(valueName = "languageCode")
-    String getLang();
-    
-    @ParameterDescription(valueName = "sampleData")
-    String getData();
+  interface Parameters extends LanguageFormatParams {
   }
-  
-  public String getUsage() {
-    return ArgumentParser.createUsage(Parameters.class);
+
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(DocumentSample.class,
+        "leipzig", new LeipzigDocumentSampleStreamFactory(Parameters.class));
   }
-  
-  public String validateArguments(String[] args) {
-    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
+
+  protected <P> LeipzigDocumentSampleStreamFactory(Class<P> params) {
+    super(params);
   }
-  
+
   public ObjectStream<DocumentSample> create(String[] args) {
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);
+    language = params.getLang();
 
     try {
       return new LeipzigDoccatSampleStream(params.getLang(), 20,
-          CmdLineUtil.openInFile(new File(params.getData())));
+          CmdLineUtil.openInFile(params.getData()));
     } catch (IOException e) {
-      System.err.println("Cannot open sample data: " + e.getMessage());
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while opening sample data: " + e.getMessage());
     }
   }
 }

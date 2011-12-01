@@ -30,10 +30,6 @@ import opennlp.tools.util.ObjectStream;
 
 public final class BuildModelUpdaterTool extends ModelUpdaterTool {
 
-  public String getName() {
-    return "BuildModelUpdater";
-  }
-  
   public String getShortDescription() {
     return "trains and updates the build model in a parser model";
   }

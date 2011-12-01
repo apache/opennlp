@@ -17,70 +17,43 @@
 
 package opennlp.tools.cmdline.tokenizer;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.CVParams;
+import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool.CVToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerCrossValidator;
 import opennlp.tools.tokenize.TokenizerEvaluationMonitor;
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.model.ModelUtil;
 
-public final class TokenizerCrossValidatorTool implements CmdLineTool {
+public final class TokenizerCrossValidatorTool
+    extends AbstractCrossValidatorTool<TokenSample, CVToolParams> {
   
   interface CVToolParams extends CVParams, TrainingParams {
-    
   }
 
-  public String getName() {
-    return "TokenizerCrossValidator";
+  public TokenizerCrossValidatorTool() {
+    super(TokenSample.class, CVToolParams.class);
   }
-  
+
   public String getShortDescription() {
     return "K-fold cross validator for the learnable tokenizer";
   }
   
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(CVToolParams.class);
-  }
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
-  public void run(String[] args) {
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, CVToolParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
+    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+    if (mlParams == null) {
+      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
     }
-    
-    CVToolParams params = ArgumentParser.parse(args, CVToolParams.class);
-    
-    opennlp.tools.util.TrainingParameters mlParams = CmdLineUtil
-        .loadTrainingParameters(params.getParams(), false);
-    
-    File trainingDataInFile = params.getData();
-    CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
-    
-    Charset encoding = params.getEncoding(); 
-    
-    ObjectStream<TokenSample> sampleStream =
-        TokenizerTrainerTool.openSampleData("Training Data",
-        trainingDataInFile, encoding);
-    
-    
+
     TokenizerCrossValidator validator;
-    
-    if (mlParams == null)
-      mlParams = TokenizerTrainerTool.createTrainingParameters(
-          params.getIterations(), params.getCutoff());
     
     TokenizerEvaluationMonitor listener = null;
     if (params.getMisclassified()) {
@@ -91,13 +64,12 @@ public final class TokenizerCrossValidatorTool implements CmdLineTool {
       Dictionary dict = TokenizerTrainerTool.loadDict(params.getAbbDict());
 
       validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
-          params.getLang(), dict, params.getAlphaNumOpt(), mlParams, listener);
+          factory.getLang(), dict, params.getAlphaNumOpt(), mlParams, listener);
 
       validator.evaluate(sampleStream, params.getFolds());
     }
     catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
     finally {
       try {

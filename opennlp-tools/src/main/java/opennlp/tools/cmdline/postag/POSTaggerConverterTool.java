@@ -17,39 +17,12 @@
 
 package opennlp.tools.cmdline.postag;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import opennlp.tools.cmdline.AbstractConverterTool;
-import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.formats.ConllXPOSSampleStreamFactory;
 import opennlp.tools.postag.POSSample;
 
-public class POSTaggerConverter extends AbstractConverterTool<POSSample> {
+public class POSTaggerConverterTool extends AbstractConverterTool<POSSample> {
 
-  private static final Map<String, ObjectStreamFactory<POSSample>> streamFactories;
-  
-  static {
-    Map<String, ObjectStreamFactory<POSSample>> mutableStreamFactories =
-      new HashMap<String, ObjectStreamFactory<POSSample>>();
-    
-    mutableStreamFactories.put("conllx", new ConllXPOSSampleStreamFactory());
-    
-    streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
+  public POSTaggerConverterTool() {
+    super(POSSample.class);
   }
-  
-  public String getName() {
-    return "POSTaggerConverter";
-  }
-
-  public String getShortDescription() {
-    return "";
-  }
-
-  @Override
-  protected ObjectStreamFactory<POSSample> createStreamFactory(String format) {
-    return streamFactories.get(format);
-  }
-
 }

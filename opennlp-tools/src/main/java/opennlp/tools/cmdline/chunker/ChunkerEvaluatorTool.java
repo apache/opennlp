@@ -17,9 +17,7 @@
 
 package opennlp.tools.cmdline.chunker;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,51 +27,31 @@ import opennlp.tools.chunker.ChunkerEvaluator;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.chunker.DefaultChunkerSequenceValidator;
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.chunker.ChunkerEvaluatorTool.EvalToolParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
-public final class ChunkerEvaluatorTool implements CmdLineTool {
+public final class ChunkerEvaluatorTool
+    extends AbstractEvaluatorTool<ChunkSample, EvalToolParams> {
   
   interface EvalToolParams extends EvaluatorParams, DetailedFMeasureEvaluatorParams {
-    
   }
 
-  public String getName() {
-    return "ChunkerEvaluator";
+  public ChunkerEvaluatorTool() {
+    super(ChunkSample.class, EvalToolParams.class);
   }
 
   public String getShortDescription() {
     return "Measures the performance of the Chunker model with the reference data";
   }
 
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(EvalToolParams.class);
-  }
-
-  public void run(String[] args) {
-
-  	String errorMessage = ArgumentParser.validateArgumentsLoudly(args, EvaluatorParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-  	
-  	EvalToolParams params = ArgumentParser.parse(args, EvalToolParams.class);
-  	
-  	File testData =params.getData();
-
-    CmdLineUtil.checkInputFile("Test data", testData);
-
-    Charset encoding = params.getEncoding();
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
     ChunkerModel model = new ChunkerModelLoader().load(params.getModel());
     
@@ -91,9 +69,6 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
         ChunkerME.DEFAULT_BEAM_SIZE, new DefaultChunkerSequenceValidator()),
         listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
     
-    final ObjectStream<ChunkSample> sampleStream = ChunkerTrainerTool.openSampleData("Test",
-        testData, encoding);
-
     final PerformanceMonitor monitor = new PerformanceMonitor("sent");
 
     ObjectStream<ChunkSample> measuredSampleStream = new ObjectStream<ChunkSample>() {
@@ -118,8 +93,7 @@ public final class ChunkerEvaluatorTool implements CmdLineTool {
       evaluator.evaluate(measuredSampleStream);
     } catch (IOException e) {
       System.err.println("failed");
-      System.err.println("Reading test data error " + e.getMessage());
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage());
     } finally {
       try {
         measuredSampleStream.close();

@@ -17,54 +17,37 @@
 
 package opennlp.tools.formats;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.tokenize.DetokenizationDictionary;
-import opennlp.tools.tokenize.Detokenizer;
-import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class POSToSentenceSampleStreamFactory implements
-    ObjectStreamFactory<SentenceSample> {
+public class POSToSentenceSampleStreamFactory extends DetokenizerSampleStreamFactory<SentenceSample> {
 
   interface Parameters extends WordTagSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 
-  public String getUsage() {
-    return ArgumentParser.createUsage(Parameters.class);
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(SentenceSample.class,
+        "pos", new POSToSentenceSampleStreamFactory(Parameters.class));
   }
 
-  public String validateArguments(String[] args) {
-    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
+  protected <P> POSToSentenceSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public ObjectStream<SentenceSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
+    language = params.getLang();
 
-    ObjectStream<POSSample> posSampleStream = new WordTagSampleStreamFactory()
-        .create(params);
-
-    Detokenizer detokenizer;
-    try {
-      detokenizer = new DictionaryDetokenizer(new DetokenizationDictionary(
-          new FileInputStream(new File(params.getDetokenizer()))));
-    } catch (IOException e) {
-      System.err.println("Error while loading detokenizer dict: "
-          + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-
-    return new POSToSentenceSampleStream(detokenizer, posSampleStream, 30);
+    ObjectStream<POSSample> posSampleStream = StreamFactoryRegistry.getFactory(POSSample.class,
+        StreamFactoryRegistry.DEFAULT_FORMAT).create(
+        ArgumentParser.filter(args, WordTagSampleStreamFactory.Parameters.class));
+    return new POSToSentenceSampleStream(createDetokenizer(params), posSampleStream, 30);
   }
 }

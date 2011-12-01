@@ -22,17 +22,18 @@ import opennlp.tools.util.ObjectStream;
 public interface ObjectStreamFactory<T> {
 
   /**
-   * Returns usage help message.
-   * @return help message
+   * Returns the language of the streams returned by the factory.
+   *
+   * @return the language of the streams returned by the factory
    */
-  String getUsage();
+  String getLang();
 
   /**
-   * Validates arguments and returns null if they are valid or error message if they are not.
-   * @param args arguments
-   * @return returns null if arguments are valid or error message if they are not
+   * Returns interface with parameters description.
+   *
+   * @return interface with parameters description
    */
-  String validateArguments(String args[]);
+  <P> Class<P> getParameters();
   
   /**
    * Creates the <code>ObjectStream</code>.

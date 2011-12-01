@@ -17,7 +17,6 @@
 
 package opennlp.tools.cmdline.chunker;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,58 +24,39 @@ import java.util.List;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerCrossValidator;
 import opennlp.tools.chunker.ChunkerEvaluationMonitor;
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.chunker.ChunkerCrossValidatorTool.CVToolParams;
 import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.model.ModelUtil;
 
-public final class ChunkerCrossValidatorTool implements CmdLineTool {
+public final class ChunkerCrossValidatorTool
+    extends AbstractCrossValidatorTool<ChunkSample, CVToolParams> {
   
   interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams {
-    
   }
 
-  public String getName() {
-    return "ChunkerCrossValidator";
+  public ChunkerCrossValidatorTool() {
+    super(ChunkSample.class, CVToolParams.class);
   }
-  
+
   public String getShortDescription() {
     return "K-fold cross validator for the chunker";
   }
   
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(CVToolParams.class);
-  }
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
-  public void run(String[] args) {
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, CVToolParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
+    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+    if (mlParams == null) {
+      mlParams = ModelUtil.createTrainingParameters(params.getIterations(),
+          params.getCutoff());
     }
-    
-    CVToolParams params = ArgumentParser.parse(args,
-        CVToolParams.class);
-    
-    TrainingParameters mlParams = CmdLineUtil
-        .loadTrainingParameters(params.getParams(), false);
-    
-    File trainingDataInFile = params.getData();
-    CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
-    
-    ObjectStream<ChunkSample> sampleStream =
-        ChunkerTrainerTool.openSampleData("Training Data",
-        trainingDataInFile, params.getEncoding());
-    
+
     List<EvaluationMonitor<ChunkSample>> listeners = new LinkedList<EvaluationMonitor<ChunkSample>>();
     ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
     if (params.getMisclassified()) {
@@ -86,26 +66,16 @@ public final class ChunkerCrossValidatorTool implements CmdLineTool {
       detailedFMeasureListener = new ChunkerDetailedFMeasureListener();
       listeners.add(detailedFMeasureListener);
     }
-    
-    if (mlParams == null) {
-      mlParams = new TrainingParameters();
-      mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-      mlParams.put(TrainingParameters.ITERATIONS_PARAM,
-          Integer.toString(params.getIterations()));
-      mlParams.put(TrainingParameters.CUTOFF_PARAM,
-          Integer.toString(params.getCutoff()));
-    }
 
     ChunkerCrossValidator validator = new ChunkerCrossValidator(
-        params.getLang(), mlParams,
+        factory.getLang(), mlParams,
         listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
       
     try {
       validator.evaluate(sampleStream, params.getFolds());
     }
     catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
     finally {
       try {

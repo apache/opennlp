@@ -17,13 +17,12 @@
 
 package opennlp.tools.formats;
 
-import java.io.File;
-
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.ObjectStreamFactory;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.formats.Conll02NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
@@ -31,27 +30,25 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class Conll02NameSampleStreamFactory implements ObjectStreamFactory<NameSample> {
+public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
   
-  interface Parameters {
+  interface Parameters extends BasicFormatParams {
     @ParameterDescription(valueName = "es|nl")
     String getLang();
-    
-    @ParameterDescription(valueName = "sampleData")
-    String getData();
     
     @ParameterDescription(valueName = "per,loc,org,misc")
     String getTypes();
   }
-  
-  public String getUsage() {
-    return ArgumentParser.createUsage(Parameters.class);
+
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(NameSample.class,
+        "conll02", new Conll02NameSampleStreamFactory(Parameters.class));
   }
-  
-  public String validateArguments(String[] args) {
-    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
+
+  protected <P> Conll02NameSampleStreamFactory(Class<P> params) {
+    super(params);
   }
-  
+
   public ObjectStream<NameSample> create(String[] args) {
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);
@@ -59,13 +56,14 @@ public class Conll02NameSampleStreamFactory implements ObjectStreamFactory<NameS
     LANGUAGE lang;
     if ("nl".equals(params.getLang())) {
       lang = LANGUAGE.NL;
+      language = params.getLang();
     }
     else if ("es".equals(params.getLang())) {
       lang = LANGUAGE.ES;
+      language = params.getLang();
     }
     else {
-      System.err.println("Unsupported language: " + params.getLang());
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(1, "Unsupported language: " + params.getLang());
     }
     
     int typesToGenerate = 0;
@@ -89,6 +87,6 @@ public class Conll02NameSampleStreamFactory implements ObjectStreamFactory<NameS
 
     
     return new Conll02NameSampleStream(lang,
-        CmdLineUtil.openInFile(new File(params.getData())), typesToGenerate);
+        CmdLineUtil.openInFile(params.getData()), typesToGenerate);
   }
 }

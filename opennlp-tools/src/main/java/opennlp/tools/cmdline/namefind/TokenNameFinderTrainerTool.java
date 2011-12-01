@@ -18,60 +18,34 @@
 package opennlp.tools.cmdline.namefind;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool.TrainerToolParams;
 import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ModelUtil;
 
-/**
- * <b>Note:</b> Do not use this class, internal use only!
- */
-public final class TokenNameFinderTrainerTool implements CmdLineTool {
+public final class TokenNameFinderTrainerTool
+    extends AbstractTrainerTool<NameSample, TrainerToolParams> {
   
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams{
-
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 
-  public String getName() {
-    return "TokenNameFinderTrainer";
+  public TokenNameFinderTrainerTool() {
+    super(NameSample.class, TrainerToolParams.class);
   }
-  
+
   public String getShortDescription() {
     return "trainer for the learnable name finder";
-  }
-  
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-      + ArgumentParser.createUsage(TrainerToolParams.class);
-  }
-
-  static ObjectStream<NameSample> openSampleData(String sampleDataName,
-      File sampleDataFile, Charset encoding) {
-    CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
-
-    FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
-
-    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn
-        .getChannel(), encoding);
-
-    return new NameSampleDataStream(lineStream);
   }
   
   static byte[] openFeatureGeneratorBytes(String featureGenDescriptorFile) {
@@ -90,8 +64,7 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
       try {
         featureGeneratorBytes = ModelUtil.read(bytesIn);
       } catch (IOException e) {
-        CmdLineUtil.printTrainingIoError(e);
-        throw new TerminateToolException(-1);
+        throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
       } finally {
         try {
           bytesIn.close();
@@ -168,54 +141,35 @@ public final class TokenNameFinderTrainerTool implements CmdLineTool {
     return new HashMap<String, Object>();
   }
   
-  public void run(String[] args) {
-    
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, TrainerToolParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
+  public void run(String format, String[] args) {
+    super.run(format, args);
+
+    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+    if(mlParams == null) {
+      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
     }
-    
-    TrainerToolParams params = ArgumentParser.parse(args,
-        TrainerToolParams.class);
-    
-    opennlp.tools.util.TrainingParameters mlParams =
-      CmdLineUtil.loadTrainingParameters(params.getParams(), true);
-    
-    File trainingDataInFile = params.getData();
+
     File modelOutFile = params.getModel();
-    
-    
+
     byte featureGeneratorBytes[] = openFeatureGeneratorBytes(params.getFeaturegen());
     
-    
-    // TODO: Support Custom resources: 
+
+    // TODO: Support Custom resources:
     //       Must be loaded into memory, or written to tmp file until descriptor 
     //       is loaded which defines parses when model is loaded
     
     Map<String, Object> resources = loadResources(params.getResources());
         
     CmdLineUtil.checkOutputFile("name finder model", modelOutFile);
-    ObjectStream<NameSample> sampleStream = openSampleData("Training", trainingDataInFile,
-        params.getEncoding());
 
     TokenNameFinderModel model;
     try {
-      if (mlParams == null) {
-      model = opennlp.tools.namefind.NameFinderME.train(params.getLang(), params.getType(),
-           sampleStream, featureGeneratorBytes, resources, params.getIterations(),
-           params.getCutoff());
-      }
-      else {
-        model = opennlp.tools.namefind.NameFinderME.train(
-            params.getLang(), params.getType(), sampleStream,
-            mlParams, featureGeneratorBytes, resources);
-      }
-    } 
+      model = opennlp.tools.namefind.NameFinderME.train(
+          factory.getLang(), params.getType(), sampleStream,
+          mlParams, featureGeneratorBytes, resources);
+    }
     catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
     finally {
       try {

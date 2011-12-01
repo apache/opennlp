@@ -25,21 +25,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.BaseCLITool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
 
-public class DictionaryBuilderTool implements CmdLineTool {
+public class DictionaryBuilderTool extends BaseCLITool {
 
   interface Params extends DictionaryBuilderParams {
-
-  }
-
-  public String getName() {
-    return "DictionaryBuilder";
   }
 
   public String getShortDescription() {
@@ -47,20 +40,11 @@ public class DictionaryBuilderTool implements CmdLineTool {
   }
 
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(Params.class);
-
+    return getBasicHelp(Params.class);
   }
 
   public void run(String[] args) {
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, Params.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-
-    Params params = ArgumentParser.parse(args, Params.class);
+    Params params = validateAndParseParams(args, Params.class);
 
     File dictInFile = params.getInputFile();
     File dictOutFile = params.getOutputFile();
@@ -79,8 +63,7 @@ public class DictionaryBuilderTool implements CmdLineTool {
       dict.serialize(out);
 
     } catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     } finally {
       try {
         in.close();

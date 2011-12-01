@@ -20,8 +20,6 @@ package opennlp.tools.formats;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.tokenize.SimpleTokenizer;
@@ -30,7 +28,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Stream filter to produce document samples out of a Leipzig sentences.txt file.
- * In the Leipzig corpus the encoding of the various senences.txt file is defined by
+ * In the Leipzig corpus the encoding of the various sentences.txt file is defined by
  * the language. The language must be specified to produce the category tags and is used
  * to determine the correct input encoding.
  * <p>
@@ -50,6 +48,7 @@ public class LeipzigDoccatSampleStream extends
    * @param language the Leipzig input sentences.txt file
    * @param sentencesPerDocument the number of sentences which should be grouped into once {@link DocumentSample}
    * @param in the InputStream pointing to the contents of the sentences.txt input file
+   * @throws IOException IOException
    */
   LeipzigDoccatSampleStream(String language, int sentencesPerDocument, 
       InputStream in) throws IOException {

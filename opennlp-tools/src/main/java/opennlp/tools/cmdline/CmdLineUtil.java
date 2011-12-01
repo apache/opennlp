@@ -25,8 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,27 +65,20 @@ public final class CmdLineUtil {
    */
   public static void checkInputFile(String name, File inFile) {
     
-    boolean isFailure;
-    
+    String isFailure = null;
+
     if (inFile.isDirectory()) {
-      System.err.println("The " + name + " file is a directory!");
-      isFailure = true;
+      isFailure = "The " + name + " file is a directory!";
     }
     else if (!inFile.exists()) {
-      System.err.println("The " + name + " file does not exist!");
-      isFailure = true;
+      isFailure = "The " + name + " file does not exist!";
     }
     else if (!inFile.canRead()) {
-      System.err.println("No permissions to read the " + name + " file!");
-      isFailure = true;
+      isFailure = "No permissions to read the " + name + " file!";
     }
-    else {
-      isFailure = false;
-    }
-    
-    if (isFailure) {
-      System.err.println("Path: " + inFile.getAbsolutePath());
-      throw new TerminateToolException(-1);
+
+    if (null != isFailure) {
+      throw new TerminateToolException(-1, isFailure + " Path: " + inFile.getAbsolutePath());
     }
   }
   
@@ -102,12 +93,12 @@ public final class CmdLineUtil {
    * possible to be able to fail fast if not. If this validation is only done after a time
    * consuming computation it could frustrate the user.
    * 
-   * @param name
-   * @param outFile
+   * @param name human-friendly file name. for example perceptron model
+   * @param outFile file
    */
   public static void checkOutputFile(String name, File outFile) {
     
-    boolean isFailure = true;
+    String isFailure = null;
     
     if (outFile.exists()) {
       
@@ -115,18 +106,15 @@ public final class CmdLineUtil {
       // possible to write into it
       
       if (outFile.isDirectory()) {
-        System.err.println("The " + name + " file is a directory!");
+        isFailure = "The " + name + " file is a directory!";
       }
       else if (outFile.isFile()) {
-        if (outFile.canWrite()) {
-          isFailure = false;
-        }
-        else {
-          System.err.println("No permissions to write the " + name + " file!");
+        if (!outFile.canWrite()) {
+          isFailure = "No permissions to write the " + name + " file!";
         }
       }
       else {
-        System.err.println("The " + name + " file is not a normal file!");
+        isFailure = "The " + name + " file is not a normal file!";
       }
     }
     else {
@@ -139,23 +127,19 @@ public final class CmdLineUtil {
       
       if (parentDir != null && parentDir.exists()) {
         
-        if (parentDir.canWrite()) {
-          isFailure = false;
-        }
-        else {
-          System.err.println("No permissions to create the " + name + " file!");
+        if (!parentDir.canWrite()) {
+          isFailure = "No permissions to create the " + name + " file!";
         }
       }
       else {
-        System.err.println("The parent directory of the " + name + " file does not exist, " +
-        		"please create it first!");
+        isFailure = "The parent directory of the " + name + " file does not exist, " +
+        		"please create it first!";
       }
       
     }
     
-    if (isFailure) {
-      System.err.println("Path: " + outFile.getAbsolutePath());
-      throw new TerminateToolException(-1);
+    if (null != isFailure) {
+      throw new TerminateToolException(-1, isFailure + " Path: " + outFile.getAbsolutePath());
     }
   }
   
@@ -163,8 +147,7 @@ public final class CmdLineUtil {
     try {
       return new FileInputStream(file);
     } catch (FileNotFoundException e) {
-      System.err.println("File cannot be found: " + e.getMessage());
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "File cannot be found: " + e.getMessage());
     }
   }
   
@@ -190,8 +173,7 @@ public final class CmdLineUtil {
       model.serialize(modelOut);
     } catch (IOException e) {
       System.err.println("failed");
-      System.err.println("Error during writing model file: " + e.getMessage());
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "Error during writing model file: " + e.getMessage());
     } finally {
       if (modelOut != null) {
         try {
@@ -297,8 +279,8 @@ public final class CmdLineUtil {
     languageCodes.add("x-unspecified");
     
     if (!languageCodes.contains(code)) {
-      System.err.println("Unkown language code, must be an ISO 639 code!");
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(1, "Unknown language code " + code + ", " +
+          "must be an ISO 639 code!");
     }
   }
   
@@ -311,14 +293,9 @@ public final class CmdLineUtil {
     
     return false;
   }
-  
-  public static void printTrainingIoError(IOException e) {
-    System.err.println("IO error while reading training data or indexing data: " + e.getMessage());
-  }
-  
+
   public static void handleStdinIoError(IOException e) {
-    System.err.println("IO Error while reading from stdin: " + e.getMessage());
-    throw new TerminateToolException(-1);
+    throw new TerminateToolException(-1, "IO Error while reading from stdin: " + e.getMessage());
   }
   
   // its optional, passing null is allowed
@@ -337,8 +314,7 @@ public final class CmdLineUtil {
         
         params = new opennlp.tools.util.TrainingParameters(paramsIn);
       } catch (IOException e) {
-        // TODO: print error and exit
-        e.printStackTrace();
+        throw new TerminateToolException(-1, "Error during parameters loading: " + e.getMessage());
       }
       finally {
         try {
@@ -349,13 +325,11 @@ public final class CmdLineUtil {
       }
       
       if (!TrainUtil.isValid(params.getSettings())) {
-        System.err.println("Training parameters file is invalid!");
-        throw new TerminateToolException(-1);
+        throw new TerminateToolException(1, "Training parameters file is invalid!");
       }
       
       if (!supportSequenceTraining && TrainUtil.isSequenceTraining(params.getSettings())) {
-        System.err.println("Sequence training is not supported!");
-        throw new TerminateToolException(-1);
+        throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }
     

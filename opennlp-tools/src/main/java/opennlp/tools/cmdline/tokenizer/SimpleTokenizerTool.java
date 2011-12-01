@@ -17,16 +17,11 @@
 
 package opennlp.tools.cmdline.tokenizer;
 
+import opennlp.tools.cmdline.BaseCLITool;
 import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.TerminateToolException;
 
-public final class SimpleTokenizerTool implements CmdLineTool {
+public final class SimpleTokenizerTool extends BaseCLITool {
 
-  public String getName() {
-    return "SimpleTokenizer";
-  }
-  
   public String getShortDescription() {
     return "character class tokenizer";
   }
@@ -38,12 +33,12 @@ public final class SimpleTokenizerTool implements CmdLineTool {
   public void run(String[] args) {
     if (args.length != 0) {
       System.out.println(getHelp());
-      throw new TerminateToolException(1);
+    } else {
+    
+      CommandLineTokenizer tokenizer =
+        new CommandLineTokenizer(opennlp.tools.tokenize.SimpleTokenizer.INSTANCE);
+
+      tokenizer.process();
     }
-    
-    CommandLineTokenizer tokenizer = 
-      new CommandLineTokenizer(opennlp.tools.tokenize.SimpleTokenizer.INSTANCE);
-    
-    tokenizer.process();
   }
 }

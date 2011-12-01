@@ -29,9 +29,8 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
  */
 public interface EncodingParameter {
 
-  @ParameterDescription(valueName = "charsetName", description = "specifies the "
-      + "encoding which should be used for reading and writing text. If not specified "
-      + "the system default will be used.")
+  @ParameterDescription(valueName = "charsetName",
+      description = "encoding for reading and writing text, if absent the system default is used.")
   @OptionalParameter(defaultValue = OptionalParameter.DEFAULT_CHARSET)
   Charset getEncoding();
 

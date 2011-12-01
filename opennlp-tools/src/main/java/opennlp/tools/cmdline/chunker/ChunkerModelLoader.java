@@ -22,7 +22,6 @@ import java.io.InputStream;
 
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.cmdline.ModelLoader;
-import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Loads a Chunker Model for the command line tools.
@@ -36,8 +35,7 @@ public class ChunkerModelLoader extends ModelLoader<ChunkerModel> {
   }
   
   @Override
-  protected ChunkerModel loadModel(InputStream modelIn) throws IOException,
-      InvalidFormatException {
+  protected ChunkerModel loadModel(InputStream modelIn) throws IOException {
     return new ChunkerModel(modelIn);
   }
 
