@@ -229,17 +229,20 @@ public abstract class BaseModel {
         throw new InvalidFormatException("Unable to parse model version!, e");
       }
       
-      // Major and minor version must match, revision might be 
-      if (Version.currentVersion().getMajor() != version.getMajor() ||
-          Version.currentVersion().getMinor() != version.getMinor()) {
-        throw new InvalidFormatException("Model version " + version + " is not supported by this (" 
-            + Version.currentVersion() +") version of OpenNLP!");
-      }
-      
-      // Reject loading a snapshot model with a non-snapshot version
-      if (!Version.currentVersion().isSnapshot() && version.isSnapshot()) {
-        throw new InvalidFormatException("Model is a snapshot models are not" +
-        		"supported by release versions!");
+      // Version check is only performed if current version is not the dev/debug version
+      if (!Version.currentVersion().equals(Version.DEV_VERSION)) {
+        // Major and minor version must match, revision might be 
+        if (Version.currentVersion().getMajor() != version.getMajor() ||
+            Version.currentVersion().getMinor() != version.getMinor()) {
+          throw new InvalidFormatException("Model version " + version + " is not supported by this (" 
+              + Version.currentVersion() +") version of OpenNLP!");
+        }
+        
+        // Reject loading a snapshot model with a non-snapshot version
+        if (!Version.currentVersion().isSnapshot() && version.isSnapshot()) {
+          throw new InvalidFormatException("Model is a snapshot models are not" +
+          		"supported by release versions!");
+        }
       }
     }
     else {
