@@ -23,47 +23,50 @@ import java.nio.charset.Charset;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * A Factory to create a Arvores Deitadas NameSampleStream from the command line
+ * A Factory to create a Arvores Deitadas NameSampleDataStream from the command line
  * utility.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ADNameSampleStreamFactory implements
-    ObjectStreamFactory<NameSample> {
+public class ADNameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
 
   interface Parameters {
-    @ParameterDescription(valueName = "encoding")
+    //all have to be repeated, because encoding is not optional,
+    //according to the check if (encoding == null) { below (now removed)
+    @ParameterDescription(valueName = "charsetName",
+        description = "encoding for reading and writing text, if absent the system default is used.")
     Charset getEncoding();
 
-    @ParameterDescription(valueName = "sampleData")
-    String getData();
+    @ParameterDescription(valueName = "sampleData", description = "data to be used, usually a file name.")
+    File getData();
+
+    @ParameterDescription(valueName = "language", description = "language which is being processed.")
+    String getLang();
   }
 
-  public String getUsage() {
-    return ArgumentParser.createUsage(Parameters.class);
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(NameSample.class,
+        "ad", new ADNameSampleStreamFactory(Parameters.class));
   }
 
-  public String validateArguments(String[] args) {
-    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
+  protected <P> ADNameSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public ObjectStream<NameSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
+    language = params.getLang();
+
     Charset encoding = params.getEncoding();
 
-    if (encoding == null) {
-      throw new TerminateToolException(1);
-    }
-
-    return new ADNameSampleStream(CmdLineUtil.openInFile(new File(params
-        .getData())), encoding.name());
+    return new ADNameSampleStream(CmdLineUtil.openInFile(params.getData()), encoding.name());
   }
 }

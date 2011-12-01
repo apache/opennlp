@@ -15,72 +15,40 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.cmdline.parser;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 
 import opennlp.model.TrainUtil;
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.params.EncodingParameter;
 import opennlp.tools.cmdline.params.TrainingToolParams;
+import opennlp.tools.cmdline.parser.ParserTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.model.ModelUtil;
 
-public final class ParserTrainerTool implements CmdLineTool {
+public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerToolParams> {
   
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams{
-
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams, EncodingParameter {
   }
 
-  public String getName() {
-    return "ParserTrainer";
+  public ParserTrainerTool() {
+    super(Parse.class, TrainerToolParams.class);
   }
-  
+
   public String getShortDescription() {
     return "trains the learnable parser";
-  }
-  
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-      + ArgumentParser.createUsage(TrainerToolParams.class);
-  }
-
-  static ObjectStream<Parse> openTrainingData(File trainingDataFile, Charset encoding) {
-    
-    CmdLineUtil.checkInputFile("Training data", trainingDataFile);
-
-    System.err.print("Opening training data ... ");
-    
-    FileInputStream trainingDataIn;
-    try {
-      trainingDataIn = new FileInputStream(trainingDataFile);
-    } catch (FileNotFoundException e) {
-      System.err.println("failed");
-      System.err.println("File not found: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-    
-    System.err.println("done");
-    
-    return new ParseSampleStream(
-        new PlainTextByLineStream(trainingDataIn.getChannel(),
-        encoding));
   }
   
   static Dictionary buildDictionary(ObjectStream<Parse> parseSamples, HeadRules headRules, int cutoff) {
@@ -104,8 +72,7 @@ public final class ParserTrainerTool implements CmdLineTool {
     if(typeAsString != null && typeAsString.length() > 0) {
       type = ParserType.parse(typeAsString);
       if(type == null) {
-        System.err.println("ParserType training parameter is invalid!");
-        throw new TerminateToolException(-1);
+        throw new TerminateToolException(1, "ParserType training parameter is invalid!");
       }
     }
     
@@ -113,95 +80,65 @@ public final class ParserTrainerTool implements CmdLineTool {
   }
   
   // TODO: Add param to train tree insert parser
-  public void run(String[] args) {
-    
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, TrainerToolParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-    
-    TrainerToolParams params = ArgumentParser.parse(args,
-        TrainerToolParams.class); 
-    
-    opennlp.tools.util.TrainingParameters mlParams =
-      CmdLineUtil.loadTrainingParameters(params.getParams(), true);
+  public void run(String format, String[] args) {
+    super.run(format, args);
+
+    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
     
     if (mlParams != null) {
       if (!TrainUtil.isValid(mlParams.getSettings("build"))) {
-        System.err.println("Build training parameters are invalid!");
-        throw new TerminateToolException(-1);
+        throw new TerminateToolException(1, "Build training parameters are invalid!");
       }
       
       if (!TrainUtil.isValid(mlParams.getSettings("check"))) {
-        System.err.println("Check training parameters are invalid!");
-        throw new TerminateToolException(-1);
+        throw new TerminateToolException(1, "Check training parameters are invalid!");
       }
       
       if (!TrainUtil.isValid(mlParams.getSettings("attach"))) {
-        System.err.println("Attach training parameters are invalid!");
-        throw new TerminateToolException(-1);
+        throw new TerminateToolException(1, "Attach training parameters are invalid!");
       }
       
       if (!TrainUtil.isValid(mlParams.getSettings("tagger"))) {
-        System.err.println("Tagger training parameters are invalid!");
-        throw new TerminateToolException(-1);
+        throw new TerminateToolException(1, "Tagger training parameters are invalid!");
       }
       
       if (!TrainUtil.isValid(mlParams.getSettings("chunker"))) {
-        System.err.println("Chunker training parameters are invalid!");
-        throw new TerminateToolException(-1);
+        throw new TerminateToolException(1, "Chunker training parameters are invalid!");
       }
     }
-    
-    ObjectStream<Parse> sampleStream = openTrainingData(params.getData(), params.getEncoding());
-    
+
+    if(mlParams == null) {
+      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
+    }
+
     File modelOutFile = params.getModel();
     CmdLineUtil.checkOutputFile("parser model", modelOutFile);
     
     ParserModel model;
     try {
-      
+
+      // TODO hard-coded language reference
       HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(
           new InputStreamReader(new FileInputStream(params.getHeadRules()),
               params.getEncoding()));
       
       ParserType type = parseParserType(params.getParserType());
       
-      if (mlParams == null) {
-        if (ParserType.CHUNKING.equals(type)) {
-          model = opennlp.tools.parser.chunking.Parser.train(
-              params.getLang(), sampleStream, rules, 
-              params.getIterations(), params.getCutoff());
-        }
-        else if (ParserType.TREEINSERT.equals(type)) {
-          model = opennlp.tools.parser.treeinsert.Parser.train(params.getLang(), sampleStream, rules, params.getIterations(), 
-              params.getCutoff());
-        }
-        else {
-          throw new IllegalStateException();
-        }
+      if (ParserType.CHUNKING.equals(type)) {
+        model = opennlp.tools.parser.chunking.Parser.train(
+            factory.getLang(), sampleStream, rules,
+            mlParams);
+      }
+      else if (ParserType.TREEINSERT.equals(type)) {
+        model = opennlp.tools.parser.treeinsert.Parser.train(factory.getLang(), sampleStream, rules,
+            mlParams);
       }
       else {
-        if (ParserType.CHUNKING.equals(type)) {
-          model = opennlp.tools.parser.chunking.Parser.train(
-              params.getLang(), sampleStream, rules, 
-              mlParams);
-        }
-        else if (ParserType.TREEINSERT.equals(type)) {
-          model = opennlp.tools.parser.treeinsert.Parser.train(params.getLang(), sampleStream, rules,
-              mlParams);
-        }
-        else {
-          throw new IllegalStateException();
-        }
-
+        throw new IllegalStateException();
       }
     }
     catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
     finally {
       try {

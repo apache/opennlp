@@ -30,12 +30,13 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
  */
 interface TrainingParams extends BasicTrainingParams {
   
-  @ParameterDescription(valueName = "CHUNKING|TREEINSERT", description = "One of CHUNKING or TREEINSERT. Default is CHUNKING.")
+  @ParameterDescription(valueName = "CHUNKING|TREEINSERT",
+      description = "one of CHUNKING or TREEINSERT, default is CHUNKING.")
   @OptionalParameter(defaultValue = "CHUNKING")
   String getParserType();
   
   
-  @ParameterDescription(valueName = "headRulesFile", description = "the head rules file")
+  @ParameterDescription(valueName = "headRulesFile", description = "head rules file.")
   File getHeadRules();
   
 }

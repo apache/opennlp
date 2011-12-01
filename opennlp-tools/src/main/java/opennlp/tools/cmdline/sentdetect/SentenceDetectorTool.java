@@ -21,11 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import opennlp.tools.cmdline.BaseCLITool;
 import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.ObjectStream;
@@ -35,12 +34,8 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * A sentence detector which uses a maxent model to predict the sentences.
  */
-public final class SentenceDetectorTool implements CmdLineTool {
+public final class SentenceDetectorTool extends BaseCLITool {
 
-  public String getName() {
-    return "SentenceDetector";
-  }
-  
   public String getShortDescription() {
     return "learnable sentence detector";
   }
@@ -58,37 +53,37 @@ public final class SentenceDetectorTool implements CmdLineTool {
     
     if (args.length != 1) {
       System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    } else {
 
-    SentenceModel model = new SentenceModelLoader().load(new File(args[0]));
-    
-    SentenceDetectorME sdetector = new SentenceDetectorME(model);
+      SentenceModel model = new SentenceModelLoader().load(new File(args[0]));
 
-    ObjectStream<String> paraStream =
-      new ParagraphStream(new PlainTextByLineStream(new InputStreamReader(System.in)));
-    
-    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
-    perfMon.start();
-    
-    try {
-      String para;
-      while ((para = paraStream.read()) != null) {
-        
-        String[] sents = sdetector.sentDetect(para);
-        for (String sentence : sents) {
-          System.out.println(sentence);
+      SentenceDetectorME sdetector = new SentenceDetectorME(model);
+
+      ObjectStream<String> paraStream =
+        new ParagraphStream(new PlainTextByLineStream(new InputStreamReader(System.in)));
+
+      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+      perfMon.start();
+
+      try {
+        String para;
+        while ((para = paraStream.read()) != null) {
+
+          String[] sents = sdetector.sentDetect(para);
+          for (String sentence : sents) {
+            System.out.println(sentence);
+          }
+
+          perfMon.incrementCounter(sents.length);
+
+          System.out.println();
         }
-        
-        perfMon.incrementCounter(sents.length);
-                
-        System.out.println();
       }
-    } 
-    catch (IOException e) {
-      CmdLineUtil.handleStdinIoError(e);
+      catch (IOException e) {
+        CmdLineUtil.handleStdinIoError(e);
+      }
+
+      perfMon.stopAndPrintFinalResult();
     }
-    
-    perfMon.stopAndPrintFinalResult();
   }
 }

@@ -17,55 +17,37 @@
 
 package opennlp.tools.formats;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.tokenize.DetokenizationDictionary;
-import opennlp.tools.tokenize.Detokenizer;
-import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class NameToSentenceSampleStreamFactory implements
-    ObjectStreamFactory<SentenceSample> {
+public class NameToSentenceSampleStreamFactory extends DetokenizerSampleStreamFactory<SentenceSample> {
 
-  interface Parameters extends NameSampleStreamFactory.Parameters, DetokenizerParameter {
-  }
-  
-  public String getUsage() {
-    return ArgumentParser.createUsage(Parameters.class);
+  interface Parameters extends NameSampleDataStreamFactory.Parameters, DetokenizerParameter {
   }
 
-  public String validateArguments(String[] args) {
-    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(SentenceSample.class,
+        "namefinder", new NameToSentenceSampleStreamFactory(Parameters.class));
+  }
+
+  protected <P> NameToSentenceSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public ObjectStream<SentenceSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
+    language = params.getLang();
 
-    ObjectStream<NameSample> nameSampleStream = new NameSampleStreamFactory()
-        .create(params);
-
-    // TODO: Move this to a factory method
-    Detokenizer detokenizer;
-    try {
-      detokenizer = new DictionaryDetokenizer(new DetokenizationDictionary(
-          new FileInputStream(new File(params.getDetokenizer()))));
-    } catch (IOException e) {
-      System.err.println("Error while loading detokenizer dict: "
-          + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-
-    return new NameToSentenceSampleStream(detokenizer, nameSampleStream, 30);
+    ObjectStream<NameSample> nameSampleStream = StreamFactoryRegistry.getFactory(
+        NameSample.class, StreamFactoryRegistry.DEFAULT_FORMAT).create(
+        ArgumentParser.filter(args, NameSampleDataStreamFactory.Parameters.class));
+    return new NameToSentenceSampleStream(createDetokenizer(params), nameSampleStream, 30);
   }
 }

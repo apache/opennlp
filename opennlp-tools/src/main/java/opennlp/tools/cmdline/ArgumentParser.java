@@ -70,13 +70,13 @@ public class ArgumentParser {
 
     public Object parseArgument(Method method, String argName, String argValue) {
       
-      Object value = null;
+      Object value;
       
       try {
         value = Integer.parseInt(argValue);
       }
       catch (NumberFormatException e) {
-        throw new TerminateToolException(-1, String.format(INVALID_ARG, argName, argValue) +
+        throw new TerminateToolException(1, String.format(INVALID_ARG, argName, argValue) +
             "Value must be an integer!");
       }
       
@@ -115,11 +115,11 @@ public class ArgumentParser {
         } else if (Charset.isSupported(charsetName)) {
           return Charset.forName(charsetName);
         } else {
-          throw new TerminateToolException(-1,  String.format(INVALID_ARG, argName, charsetName) + 
+          throw new TerminateToolException(1,  String.format(INVALID_ARG, argName, charsetName) +
               "Encoding not supported on this platform.");
         }
       } catch (IllegalCharsetNameException e) {
-        throw new TerminateToolException(-1, String.format(INVALID_ARG, argName, charsetName) + 
+        throw new TerminateToolException(1, String.format(INVALID_ARG, argName, charsetName) +
             "Illegal encoding name.");
       }
     }
@@ -159,34 +159,38 @@ public class ArgumentParser {
   private ArgumentParser() {
   }
   
-  private static <T> void checkProxyInterface(Class<T> proxyInterface) {
-    if (!proxyInterface.isInterface())
-      throw new IllegalArgumentException("proxy interface is not an interface!");
-    
-    // all checks should also be performed for super interfaces
-    
-    Method methods[] = proxyInterface.getMethods();
-    
-    if (methods.length == 0)
-      throw new IllegalArgumentException("proxy interface must at least declare one method!");
-    
-    for (Method method : methods) {
-      
-      // check that method names start with get
-      if (!method.getName().startsWith("get") && method.getName().length() > 3) 
-        throw new IllegalArgumentException(method.getName() + " method name does not start with get!");
-    
-      // check that method has zero arguments
-      if (method.getParameterTypes().length != 0)
-        throw new IllegalArgumentException(method.getName() + " method must have zero parameters!");
-      
-      // check return types of interface
-      Class<?> returnType = method.getReturnType();
-      
-      Set<Class<?>> compatibleReturnTypes = argumentFactories.keySet();
-      
-      if(!compatibleReturnTypes.contains(returnType))
-         throw new IllegalArgumentException(method.getName() + " method must have compatible return type!");
+  private static <T> void checkProxyInterfaces(Class<T>... proxyInterfaces) {
+    for (Class<T> proxyInterface : proxyInterfaces) {
+      if (null != proxyInterface) {
+        if (!proxyInterface.isInterface())
+          throw new IllegalArgumentException("proxy interface is not an interface!");
+
+        // all checks should also be performed for super interfaces
+
+        Method methods[] = proxyInterface.getMethods();
+
+        if (methods.length == 0)
+          throw new IllegalArgumentException("proxy interface must at least declare one method!");
+
+        for (Method method : methods) {
+
+          // check that method names start with get
+          if (!method.getName().startsWith("get") && method.getName().length() > 3)
+            throw new IllegalArgumentException(method.getName() + " method name does not start with get!");
+
+          // check that method has zero arguments
+          if (method.getParameterTypes().length != 0)
+            throw new IllegalArgumentException(method.getName() + " method must have zero parameters!");
+
+          // check return types of interface
+          Class<?> returnType = method.getReturnType();
+
+          Set<Class<?>> compatibleReturnTypes = argumentFactories.keySet();
+
+          if(!compatibleReturnTypes.contains(returnType))
+             throw new IllegalArgumentException(method.getName() + " method must have compatible return type!");
+        }
+      }
     }
   }
   
@@ -196,64 +200,80 @@ public class ArgumentParser {
     
     // name length is checked to be at least 4 prior
     parameterNameChars[3] = Character.toLowerCase(parameterNameChars[3]);
-    
+
     String parameterName = "-" + new String(parameterNameChars).substring(3);
-    
+
     return parameterName;
   }
-  
+
   /**
    * Creates a usage string which can be printed in case the user did specify the arguments
    * incorrectly. Incorrectly is defined as {@link ArgumentParser#validateArguments(String[], Class)}
    * returns false.
-   * 
-   * @param argProxyInterface
-   * 
+   *
+   * @param argProxyInterface interface with parameter descriptions
    * @return the help message usage string
    */
+  @SuppressWarnings({"unchecked"})
   public static <T> String createUsage(Class<T> argProxyInterface) {
+    return createUsage(new Class[]{argProxyInterface});
+  }
 
-    checkProxyInterface(argProxyInterface);
-    
+  
+  /**
+   * Creates a usage string which can be printed in case the user did specify the arguments
+   * incorrectly. Incorrectly is defined as {@link ArgumentParser#validateArguments(String[],
+   * Class[])}
+   * returns false.
+   * 
+   * @param argProxyInterfaces interfaces with parameter descriptions
+   * @return the help message usage string
+   */
+  public static <T> String createUsage(Class<T>... argProxyInterfaces) {
+    checkProxyInterfaces(argProxyInterfaces);
+
     StringBuilder usage = new StringBuilder();
     StringBuilder details = new StringBuilder();
-    
-    for (Method method : argProxyInterface.getMethods()) {
-      
-      ParameterDescription desc = method.getAnnotation(ParameterDescription.class);
-      
-      OptionalParameter optional = method.getAnnotation(OptionalParameter.class);
-      
-      if (desc != null) {
-        String paramName = methodNameToParameter(method.getName());
-        
-        if (optional != null)
-          usage.append('[');
-        
-        usage.append(paramName).append(' ').append(desc.valueName());
-        details.append('\t').append(paramName).append(' ').append(desc.valueName()).append('\n');
-        if(desc.description() != null && desc.description().length() > 0) {
-          details.append("\t\t").append(desc.description()).append('\n');
+    for (Class<T> argProxyInterface : argProxyInterfaces) {
+      if (null != argProxyInterface) {
+        for (Method method : argProxyInterface.getMethods()) {
+
+          ParameterDescription desc = method.getAnnotation(ParameterDescription.class);
+
+          OptionalParameter optional = method.getAnnotation(OptionalParameter.class);
+
+          if (desc != null) {
+            String paramName = methodNameToParameter(method.getName());
+
+            if (optional != null)
+              usage.append('[');
+
+            usage.append(paramName).append(' ').append(desc.valueName());
+            details.append('\t').append(paramName).append(' ').append(desc.valueName()).append('\n');
+            if(desc.description() != null && desc.description().length() > 0) {
+              details.append("\t\t").append(desc.description()).append('\n');
+            }
+
+            if (optional != null)
+              usage.append(']');
+
+            usage.append(' ');
+          }
         }
-        
-        if (optional != null)
-          usage.append(']');
-        
-        usage.append(' ');
       }
     }
-    
+
     if (usage.length() > 0)
       usage.setLength(usage.length() - 1);
-    
-    if(details.length() > 0) {
+
+    if (details.length() > 0) {
       details.setLength(details.length() - 1);
       usage.append("\n\nArguments description:\n").append(details.toString());
     }
-    
+
     return usage.toString();
   }
-  
+
   /**
    * Tests if the argument are correct or incorrect. Incorrect means, that mandatory arguments are missing or
    * there are unknown arguments. The argument value itself can also be incorrect, but this
@@ -263,55 +283,82 @@ public class ArgumentParser {
    * @param argProxyInterface interface with parameters description
    * @return true, if arguments are valid
    */
+  @SuppressWarnings({"unchecked"})
   public static <T> boolean validateArguments(String args[], Class<T> argProxyInterface) {
-    return null == validateArgumentsLoudly(args, argProxyInterface);
+    return validateArguments(args, new Class[]{argProxyInterface});
+  }
+
+  /**
+   * Tests if the argument are correct or incorrect. Incorrect means, that mandatory arguments are missing or
+   * there are unknown arguments. The argument value itself can also be incorrect, but this
+   * is checked by the {@link ArgumentParser#parse(String[], Class)} method and reported accordingly.
+   *
+   * @param args command line arguments
+   * @param argProxyInterfaces interfaces with parameters description
+   * @return true, if arguments are valid
+   */
+  public static <T> boolean validateArguments(String args[], Class<T>... argProxyInterfaces) {
+    return null == validateArgumentsLoudly(args, argProxyInterfaces);
+  }
+
+  /**
+   * Tests if the arguments are correct or incorrect.
+   *
+   * @param args command line arguments
+   * @param argProxyInterface interface with parameters description
+   * @return null, if arguments are valid or error message otherwise
+   */
+  @SuppressWarnings({"unchecked"})
+  public static <T> String validateArgumentsLoudly(String args[], Class<T> argProxyInterface) {
+    return validateArgumentsLoudly(args, new Class[]{argProxyInterface});
   }
 
   /**
    * Tests if the arguments are correct or incorrect.
    * 
    * @param args command line arguments
-   * @param argProxyInterface interface with parameters description
+   * @param argProxyInterfaces interfaces with parameters description
    * @return null, if arguments are valid or error message otherwise
    */
-  public static <T> String validateArgumentsLoudly(String args[], Class<T> argProxyInterface) {
-    
+  public static <T> String validateArgumentsLoudly(String args[], Class<T>... argProxyInterfaces) {
     // number of parameters must be at least 2 and always be even
     if (args.length < 2 || args.length % 2 != 0) {
-      return "Error: Number of parameters must be at least 2 and always be even";
+      return "Number of parameters must be at least 2 and always be even";
     }
-    
+
     int argumentCount = 0;
-
     List<String> parameters = new ArrayList<String>(Arrays.asList(args));
-    for (Method method : argProxyInterface.getMethods()) {
-      String paramName = methodNameToParameter(method.getName());
-      int paramIndex = CmdLineUtil.getParameterIndex(paramName, args);
-      String valueString = CmdLineUtil.getParameter(paramName, args);
-      if (valueString == null) {
-        OptionalParameter optionalParam = method.getAnnotation(OptionalParameter.class);
 
-        if (optionalParam == null) {
-          if (-1 < paramIndex) {
-            return "Error: Missing mandatory parameter value: " + paramName;
+    for (Class<T> argProxyInterface : argProxyInterfaces) {
+      for (Method method : argProxyInterface.getMethods()) {
+        String paramName = methodNameToParameter(method.getName());
+        int paramIndex = CmdLineUtil.getParameterIndex(paramName, args);
+        String valueString = CmdLineUtil.getParameter(paramName, args);
+        if (valueString == null) {
+          OptionalParameter optionalParam = method.getAnnotation(OptionalParameter.class);
+
+          if (optionalParam == null) {
+            if (-1 < paramIndex) {
+              return "Missing mandatory parameter value: " + paramName;
+            } else {
+              return "Missing mandatory parameter: " + paramName;
+            }
           } else {
-            return "Error: Missing mandatory parameter: " + paramName;
+            parameters.remove("-" + paramName);
           }
-        } else {
-          parameters.remove("-" + paramName);
+        }
+        else {
+          parameters.remove(paramName);
+          parameters.remove(valueString);
+          argumentCount++;
         }
       }
-      else {
-        parameters.remove(paramName);
-        parameters.remove(valueString);
-        argumentCount++;
-      }
     }
-    
+
     if (args.length / 2 > argumentCount) {
-      return "Error: Unrecognized parameters encountered: " + parameters.toString();
+      return "Unrecognized parameters encountered: " + parameters.toString();
     }
-    
+
     return null;
   }
   
@@ -332,7 +379,7 @@ public class ArgumentParser {
   @SuppressWarnings("unchecked")
   public static <T> T parse(String args[], Class<T> argProxyInterface) {
     
-    checkProxyInterface(argProxyInterface);
+    checkProxyInterfaces(argProxyInterface);
     
     if (!validateArguments(args, argProxyInterface))
       throw new IllegalArgumentException("Passed args must be valid!");
@@ -375,5 +422,32 @@ public class ArgumentParser {
         argProxyInterface.getClassLoader(),
         new Class[]{argProxyInterface},
         new ArgumentProxy(arguments));
+  }
+
+  /**
+   * Filters arguments leaving only those pertaining to argProxyInterface.
+   *
+   * @param args arguments
+   * @param argProxyInterface interface with parameters description
+   * @param <T> T
+   * @return arguments pertaining to argProxyInterface
+   */
+  public static <T> String[] filter(String args[], Class<T> argProxyInterface) {
+    ArrayList<String> parameters = new ArrayList<String>(args.length);
+
+    for (Method method : argProxyInterface.getMethods()) {
+
+      String parameterName = methodNameToParameter(method.getName());
+      int idx = CmdLineUtil.getParameterIndex(parameterName, args);
+      if (-1 < idx) {
+        parameters.add(parameterName);
+        String valueString = CmdLineUtil.getParameter(parameterName, args);
+        if (null != valueString) {
+          parameters.add(valueString);
+        }
+      }
+    }
+
+    return parameters.toArray(new String[parameters.size()]);
   }
 }

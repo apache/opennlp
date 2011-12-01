@@ -27,15 +27,13 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface EvaluatorParams extends EncodingParameter{
+public interface EvaluatorParams {
   
-  @ParameterDescription(valueName = "model", description = "the model file to be evaluated")
+  @ParameterDescription(valueName = "model", description = "the model file to be evaluated.")
   File getModel();
   
-  @ParameterDescription(valueName = "testData", description = "the data to be used during evaluation")
-  File getData();
-  
-  @ParameterDescription(valueName = "true|false", description = "if true will print false negatives and false positives")
+  @ParameterDescription(valueName = "true|false",
+      description = "if true will print false negatives and false positives.")
   @OptionalParameter(defaultValue="false")
   Boolean getMisclassified();
   

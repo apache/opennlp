@@ -20,52 +20,31 @@ package opennlp.tools.cmdline.sentdetect;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import opennlp.model.TrainUtil;
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.TrainingToolParams;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.sentdetect.SentenceSampleStream;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.model.ModelUtil;
 
-public final class SentenceDetectorTrainerTool implements CmdLineTool {
+public final class SentenceDetectorTrainerTool
+    extends AbstractTrainerTool<SentenceSample, TrainerToolParams> {
   
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams{
-
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 
-  public String getName() {
-    return "SentenceDetectorTrainer";
+  public SentenceDetectorTrainerTool() {
+    super(SentenceSample.class, TrainerToolParams.class);
   }
-  
+
   public String getShortDescription() {
     return "trainer for the learnable sentence detector";
-  }
-  
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-      + ArgumentParser.createUsage(TrainerToolParams.class);
-  }
-
-  static ObjectStream<SentenceSample> openSampleData(String sampleDataName,
-      File sampleDataFile, Charset encoding) {
-    CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
-
-    FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
-
-    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn
-        .getChannel(), encoding);
-
-    return new SentenceSampleStream(lineStream);
   }
   
   static Dictionary loadDict(File f) throws IOException {
@@ -77,49 +56,30 @@ public final class SentenceDetectorTrainerTool implements CmdLineTool {
     return dict;
   }
   
-  public void run(String[] args) {
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, TrainerToolParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-    
-    TrainerToolParams params = ArgumentParser.parse(args,
-        TrainerToolParams.class);
- 
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
-    opennlp.tools.util.TrainingParameters mlParams =
-      CmdLineUtil.loadTrainingParameters(params.getParams(), false);
-    
+    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+
     if (mlParams != null) {
       if (TrainUtil.isSequenceTraining(mlParams.getSettings())) {
-        System.err.println("Sequence training is not supported!");
-        throw new TerminateToolException(-1);
+        throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }
-    
-    File trainingDataInFile = params.getData();
-    File modelOutFile = params.getModel();
 
+    if(mlParams == null) {
+      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
+    }
+
+    File modelOutFile = params.getModel();
     CmdLineUtil.checkOutputFile("sentence detector model", modelOutFile);
-    ObjectStream<SentenceSample> sampleStream = 
-        openSampleData("Training", trainingDataInFile, params.getEncoding());
 
     SentenceModel model;
     try {
       Dictionary dict = loadDict(params.getAbbDict());
-      if (mlParams == null) {
-        model = SentenceDetectorME.train(params.getLang(), sampleStream, true, dict, 
-            params.getCutoff(), params.getIterations());
-      }
-      else {
-        model = SentenceDetectorME.train(params.getLang(), sampleStream, true, dict, 
-            mlParams);
-      }
+      model = SentenceDetectorME.train(factory.getLang(), sampleStream, true, dict, mlParams);
     } catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
     finally {
       try {

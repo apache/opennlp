@@ -24,11 +24,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import opennlp.tools.cmdline.BaseCLITool;
 import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinder;
@@ -38,12 +37,8 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
-public final class TokenNameFinderTool implements CmdLineTool {
+public final class TokenNameFinderTool extends BaseCLITool {
 
-  public String getName() {
-    return "TokenNameFinder";
-  }
-  
   public String getShortDescription() {
     return "learnable name finder";
   }
@@ -56,59 +51,59 @@ public final class TokenNameFinderTool implements CmdLineTool {
     
     if (args.length == 0) {
       System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    } else {
     
-    NameFinderME nameFinders[] = new NameFinderME[args.length];
-    
-    for (int i = 0; i < nameFinders.length; i++) {
-      TokenNameFinderModel model = new TokenNameFinderModelLoader().load(new File(args[i]));
-      nameFinders[i] = new NameFinderME(model);
-    }
-    
-    ObjectStream<String> untokenizedLineStream =
-        new PlainTextByLineStream(new InputStreamReader(System.in));
-    
-    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
-    perfMon.start();
-    
-    try {
-      String line;
-      while((line = untokenizedLineStream.read()) != null) {
-        String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
-        
-        // A new line indicates a new document,
-        // adaptive data must be cleared for a new document
-        
-        if (whitespaceTokenizerLine.length == 0) {
-          for (NameFinderME nameFinder : nameFinders) {
-            nameFinder.clearAdaptiveData();
-          }
-        }
-        
-        List<Span> names = new ArrayList<Span>();
-        
-        for (TokenNameFinder nameFinder : nameFinders) {
-          Collections.addAll(names, nameFinder.find(whitespaceTokenizerLine));
-        }
-        
-        // Simple way to drop intersecting spans, otherwise the
-        // NameSample is invalid
-        Span reducedNames[] = NameFinderME.dropOverlappingSpans(
-            names.toArray(new Span[names.size()]));
-        
-        NameSample nameSample = new NameSample(whitespaceTokenizerLine,
-            reducedNames, false);
-        
-        System.out.println(nameSample.toString());
-        
-        perfMon.incrementCounter();
+      NameFinderME nameFinders[] = new NameFinderME[args.length];
+
+      for (int i = 0; i < nameFinders.length; i++) {
+        TokenNameFinderModel model = new TokenNameFinderModelLoader().load(new File(args[i]));
+        nameFinders[i] = new NameFinderME(model);
       }
+
+      ObjectStream<String> untokenizedLineStream =
+          new PlainTextByLineStream(new InputStreamReader(System.in));
+
+      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+      perfMon.start();
+
+      try {
+        String line;
+        while((line = untokenizedLineStream.read()) != null) {
+          String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
+
+          // A new line indicates a new document,
+          // adaptive data must be cleared for a new document
+
+          if (whitespaceTokenizerLine.length == 0) {
+            for (NameFinderME nameFinder : nameFinders) {
+              nameFinder.clearAdaptiveData();
+            }
+          }
+
+          List<Span> names = new ArrayList<Span>();
+
+          for (TokenNameFinder nameFinder : nameFinders) {
+            Collections.addAll(names, nameFinder.find(whitespaceTokenizerLine));
+          }
+
+          // Simple way to drop intersecting spans, otherwise the
+          // NameSample is invalid
+          Span reducedNames[] = NameFinderME.dropOverlappingSpans(
+              names.toArray(new Span[names.size()]));
+
+          NameSample nameSample = new NameSample(whitespaceTokenizerLine,
+              reducedNames, false);
+
+          System.out.println(nameSample.toString());
+
+          perfMon.incrementCounter();
+        }
+      }
+      catch (IOException e) {
+        CmdLineUtil.handleStdinIoError(e);
+      }
+
+      perfMon.stopAndPrintFinalResult();
     }
-    catch (IOException e) {
-      CmdLineUtil.handleStdinIoError(e);
-    }
-    
-    perfMon.stopAndPrintFinalResult();
   }
 }

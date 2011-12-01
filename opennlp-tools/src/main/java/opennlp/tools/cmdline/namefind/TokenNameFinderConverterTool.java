@@ -17,48 +17,16 @@
 
 package opennlp.tools.cmdline.namefind;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import opennlp.tools.cmdline.AbstractConverterTool;
-import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.formats.BioNLP2004NameSampleStreamFactory;
-import opennlp.tools.formats.Conll02NameSampleStreamFactory;
-import opennlp.tools.formats.Conll03NameSampleStreamFactory;
-import opennlp.tools.formats.ad.ADNameSampleStreamFactory;
 import opennlp.tools.namefind.NameSample;
 
 /**
- * Tool to convert multiple data formats into native opennlp name finder training
+ * Tool to convert multiple data formats into native OpenNLP name finder training
  * format.
  */
 public class TokenNameFinderConverterTool extends AbstractConverterTool<NameSample> {
 
-  private static final Map<String, ObjectStreamFactory<NameSample>> streamFactories;
-  
-  static {
-    Map<String, ObjectStreamFactory<NameSample>> mutableStreamFactories =
-      new HashMap<String, ObjectStreamFactory<NameSample>>();
-    
-    mutableStreamFactories.put("conll02", new Conll02NameSampleStreamFactory());
-    mutableStreamFactories.put("conll03", new Conll03NameSampleStreamFactory());
-    mutableStreamFactories.put("ad", new ADNameSampleStreamFactory());
-    mutableStreamFactories.put("bionlp2004", new BioNLP2004NameSampleStreamFactory());
-    
-    streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
-  }
-  
-  public String getName() {
-    return "TokenNameFinderConverter";
-  }
-
-  public String getShortDescription() {
-    return "converts foreign data formats to native format";
-  }
-  
-  @Override
-  protected ObjectStreamFactory<NameSample> createStreamFactory(String format) {
-    return streamFactories.get(format);
+  public TokenNameFinderConverterTool() {
+    super(NameSample.class);
   }
 }

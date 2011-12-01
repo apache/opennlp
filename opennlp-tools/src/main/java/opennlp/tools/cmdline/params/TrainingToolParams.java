@@ -21,19 +21,13 @@ import java.io.File;
 
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
-// TODO: remove the old BasicTrainingParameters and rename this class to BasicTrainingParameters
-
 /**
  * Common training parameters.
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface TrainingToolParams extends BasicTrainingParams{
+public interface TrainingToolParams extends BasicTrainingParams {
   
-  @ParameterDescription(valueName = "trainData", description = "the data to be used during training")
-  File getData();
-  
-  @ParameterDescription(valueName = "modelFile", description = "the output model file")
+  @ParameterDescription(valueName = "modelFile", description = "output model file.")
   File getModel();
-  
 }

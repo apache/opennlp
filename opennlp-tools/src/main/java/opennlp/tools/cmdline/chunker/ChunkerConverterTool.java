@@ -17,42 +17,16 @@
 
 package opennlp.tools.cmdline.chunker;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.cmdline.AbstractConverterTool;
-import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.formats.ad.ADChunkSampleStreamFactory;
 
 /**
- * Tool to convert multiple data formats into native opennlp chunler training
+ * Tool to convert multiple data formats into native OpenNLP chunker training
  * format.
  */
 public class ChunkerConverterTool extends AbstractConverterTool<ChunkSample> {
 
-  private static final Map<String, ObjectStreamFactory<ChunkSample>> streamFactories;
-  
-  static {
-    Map<String, ObjectStreamFactory<ChunkSample>> mutableStreamFactories =
-      new HashMap<String, ObjectStreamFactory<ChunkSample>>();
-    
-    mutableStreamFactories.put("ad", new ADChunkSampleStreamFactory());
-    
-    streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
-  }
-  
-  public String getName() {
-    return "ChunkerConverter";
-  }
-
-  public String getShortDescription() {
-    return "converts foreign data formats to native format";
-  }
-  
-  @Override
-  protected ObjectStreamFactory<ChunkSample> createStreamFactory(String format) {
-    return streamFactories.get(format);
+  public ChunkerConverterTool() {
+    super(ChunkSample.class);
   }
 }

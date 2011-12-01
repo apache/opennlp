@@ -17,51 +17,37 @@
 
 package opennlp.tools.formats;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.postag.POSSample;
-import opennlp.tools.tokenize.DetokenizationDictionary;
-import opennlp.tools.tokenize.Detokenizer;
-import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ConllXTokenSampleStreamFactory implements ObjectStreamFactory<TokenSample> {
-  
+public class ConllXTokenSampleStreamFactory extends DetokenizerSampleStreamFactory<TokenSample> {
+
   interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {
   }
-  
-  public String getUsage() {
-    return ArgumentParser.createUsage(Parameters.class);
+
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(TokenSample.class,
+        ConllXPOSSampleStreamFactory.CONLLX_FORMAT, new ConllXTokenSampleStreamFactory(Parameters.class));
   }
 
-  public String validateArguments(String[] args) {
-    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
+  protected <P> ConllXTokenSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public ObjectStream<TokenSample> create(String[] args) {
-    
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    
-    ObjectStream<POSSample> samples = new ConllXPOSSampleStreamFactory().create(params);
-    
-    Detokenizer detokenizer;
-    try {
-      detokenizer = new DictionaryDetokenizer(new DetokenizationDictionary(new FileInputStream(new File(params.getDetokenizer()))));
-    } catch (IOException e) {
-      System.err.println("Error while loading detokenizer dict: " + e.getMessage());
-      throw new TerminateToolException(-1);
-    }
-    
-    return new POSToTokenSampleStream(detokenizer,samples);
+    language = params.getLang();
+
+    ObjectStream<POSSample> samples = StreamFactoryRegistry.getFactory(POSSample.class,
+        ConllXPOSSampleStreamFactory.CONLLX_FORMAT).create(
+        ArgumentParser.filter(args, ConllXPOSSampleStreamFactory.Parameters.class));
+    return new POSToTokenSampleStream(createDetokenizer(params), samples);
   }
 }

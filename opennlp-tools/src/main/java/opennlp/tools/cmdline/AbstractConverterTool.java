@@ -18,69 +18,110 @@
 package opennlp.tools.cmdline;
 
 import java.io.IOException;
+import java.util.Map;
 
 import opennlp.tools.util.ObjectStream;
 
-public abstract class AbstractConverterTool<T> implements CmdLineTool {
-  
+/**
+ * Base class for format conversion tools.
+ *
+ * @param <T> class of data sample the tool converts, for example {@link opennlp.tools.postag
+ * .POSSample}
+ */
+public abstract class AbstractConverterTool<T> extends AbstractTypedTool<T, Class> {
+
+  /**
+   * Constructor with type parameter.
+   *
+   * @param sampleType class of the template parameter
+   */
+  protected AbstractConverterTool(Class<T> sampleType) {
+    super(sampleType, null);
+  }
+
+  public String getShortDescription() {
+    Map<String, ObjectStreamFactory<T>> factories = StreamFactoryRegistry.getFactories(type);
+    StringBuilder help = new StringBuilder();
+    if (2 == factories.keySet().size()) {//opennlp + foreign
+      for (String format : factories.keySet()) {
+        if (!StreamFactoryRegistry.DEFAULT_FORMAT.equals(format)) {
+          help.append(format);
+        }
+      }
+      return "converts " + help.toString() + " data format to native OpenNLP format";
+    } else if (2 < factories.keySet().size()) {
+      for (String format : factories.keySet()) {
+        if (!StreamFactoryRegistry.DEFAULT_FORMAT.equals(format)) {
+          help.append(format).append(",");
+        }
+      }
+      return "converts foreign data formats (" + help.substring(0, help.length() - 1 ) +
+          ") to native OpenNLP format";
+    } else {
+      throw new AssertionError("There should be more than 1 factory registered for converter " +
+          "tool");
+    }
+  }
+
   private String createHelpString(String format, String usage) {
     return "Usage: " + CLI.CMD + " " + getName() + " " + format + " " + usage;
   }
-  
-  public String getHelp() {
-    return createHelpString("format", "...");
-  }
-  
-  protected abstract ObjectStreamFactory<T> createStreamFactory(String format);
-  
-  public void run(String[] args) {
-    
-    String format = null;
-    if (args.length > 0) {
-      format = args[0];
-    }
-    else {
-      System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-    
-    ObjectStreamFactory<T> streamFactory = createStreamFactory(format);
-    
-    if (streamFactory == null) {
-      // TODO: print list of available formats
-      System.err.println("Format is unknown: " + format);
-      throw new TerminateToolException(-1);
-    }
-    
-    String formatArgs[] = new String[args.length - 1];
-    System.arraycopy(args, 1, formatArgs, 0, formatArgs.length);
 
-    String errorMessage = streamFactory.validateArguments(formatArgs);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(createHelpString(format, streamFactory.getUsage()));
-      throw new TerminateToolException(-1);
-    }
-    
-    ObjectStream<T> sampleStream = streamFactory.create(formatArgs);
-    
-    try {
-      Object sample;
-      while((sample = sampleStream.read()) != null) {
-        System.out.println(sample.toString());
+  public String getHelp() {
+    Map<String, ObjectStreamFactory<T>> factories = StreamFactoryRegistry.getFactories(type);
+    StringBuilder help = new StringBuilder("help|");
+    for (String formatName : factories.keySet()) {
+      if (!StreamFactoryRegistry.DEFAULT_FORMAT.equals(formatName)) {
+        help.append(formatName).append("|");
       }
     }
-    catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
-    }
-    finally {
-      if (sampleStream != null)
-        try {
-          sampleStream.close();
-        } catch (IOException e) {
-          // sorry that this can fail
+    return createHelpString(help.substring(0, help.length() - 1), "[help|options...]");
+  }
+
+  public String getHelp(String format) {
+    return getHelp();
+  }
+
+  public void run(String format, String[] args) {
+    if (0 == args.length) {
+      System.out.println(getHelp());
+    } else {
+      format = args[0];
+      ObjectStreamFactory<T> streamFactory = getStreamFactory(format);
+
+      String formatArgs[] = new String[args.length - 1];
+      System.arraycopy(args, 1, formatArgs, 0, formatArgs.length);
+
+      String helpString = createHelpString(format, ArgumentParser.createUsage(streamFactory.getParameters()));
+      if (0 == formatArgs.length || (1 == formatArgs.length && "help".equals(formatArgs[0]))) {
+        System.out.println(helpString);
+        System.exit(0);
+      }
+
+      String errorMessage = ArgumentParser.validateArgumentsLoudly(formatArgs, streamFactory.getParameters());
+      if (null != errorMessage) {
+        throw new TerminateToolException(1, errorMessage + "\n" + helpString);
+      }
+
+      ObjectStream<T> sampleStream = streamFactory.create(formatArgs);
+
+      try {
+        Object sample;
+        while((sample = sampleStream.read()) != null) {
+          System.out.println(sample.toString());
         }
+      }
+      catch (IOException e) {
+        throw new TerminateToolException(-1, "IO error while converting data : " + e.getMessage());
+      }
+      finally {
+        if (sampleStream != null)
+          try {
+            sampleStream.close();
+          } catch (IOException e) {
+            // sorry that this can fail
+          }
+      }
     }
   }
 }

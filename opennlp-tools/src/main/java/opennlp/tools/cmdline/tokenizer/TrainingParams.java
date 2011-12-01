@@ -33,7 +33,7 @@ interface TrainingParams extends BasicTrainingParams {
   @OptionalParameter(defaultValue = "false")
   Boolean getAlphaNumOpt();
   
-  @ParameterDescription(valueName = "path", description = "The abbreviation dictionary in XML format.")
+  @ParameterDescription(valueName = "path", description = "abbreviation dictionary in XML format.")
   @OptionalParameter
   File getAbbDict();
 }

@@ -45,7 +45,7 @@ import opennlp.tools.cmdline.parser.CheckModelUpdaterTool;
 import opennlp.tools.cmdline.parser.ParserTool;
 import opennlp.tools.cmdline.parser.ParserTrainerTool;
 import opennlp.tools.cmdline.parser.TaggerModelReplacerTool;
-import opennlp.tools.cmdline.postag.POSTaggerConverter;
+import opennlp.tools.cmdline.postag.POSTaggerConverterTool;
 import opennlp.tools.cmdline.postag.POSTaggerCrossValidatorTool;
 import opennlp.tools.cmdline.postag.POSTaggerEvaluatorTool;
 import opennlp.tools.cmdline.postag.POSTaggerTrainerTool;
@@ -67,14 +67,14 @@ public final class CLI {
   
   public static final String CMD = "opennlp";
   
-  private static Map<String, CmdLineTool> toolLookupMap;
+  private static Map<String, AbstractCmdLineTool> toolLookupMap;
   
   static {
-    toolLookupMap = new LinkedHashMap<String, CmdLineTool>();
+    toolLookupMap = new LinkedHashMap<String, AbstractCmdLineTool>();
     
-    List<CmdLineTool> tools = new LinkedList<CmdLineTool>();
+    List<AbstractCmdLineTool> tools = new LinkedList<AbstractCmdLineTool>();
     
-    // Docoument Categorizer
+    // Document Categorizer
     tools.add(new DoccatTool());
     tools.add(new DoccatTrainerTool());
     tools.add(new DoccatConverterTool());
@@ -112,10 +112,7 @@ public final class CLI {
     tools.add(new POSTaggerTrainerTool());
     tools.add(new POSTaggerEvaluatorTool());
     tools.add(new POSTaggerCrossValidatorTool());
-    tools.add(new POSTaggerConverter());
-    
-    // add evaluator
-    // add cv validator
+    tools.add(new POSTaggerConverterTool());
     
     // Chunker
     tools.add(new ChunkerMETool());
@@ -131,7 +128,7 @@ public final class CLI {
     tools.add(new CheckModelUpdaterTool()); // re-trains  build model
     tools.add(new TaggerModelReplacerTool());
     
-    for (CmdLineTool tool : tools) {
+    for (AbstractCmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);
     }
     
@@ -151,9 +148,15 @@ public final class CLI {
     System.out.println("where TOOL is one of:");
     
     // distance of tool name from line start
-    int numberOfSpaces = 25;
+    int numberOfSpaces = -1;
+    for (String toolName : toolLookupMap.keySet()) {
+      if (toolName.length() > numberOfSpaces) {
+        numberOfSpaces = toolName.length();
+      }
+    }
+    numberOfSpaces = numberOfSpaces + 4;
     
-    for (CmdLineTool tool : toolLookupMap.values()) {
+    for (AbstractCmdLineTool tool : toolLookupMap.values()) {
       
       System.out.print("  " + tool.getName());
       
@@ -172,25 +175,50 @@ public final class CLI {
     
     if (args.length == 0) {
       usage();
-      System.exit(1);
+      System.exit(0);
     }
     
     String toolArguments[] = new String[args.length -1];
     System.arraycopy(args, 1, toolArguments, 0, toolArguments.length);
-    
-    CmdLineTool tool = toolLookupMap.get(args[0]);
-    
-    if (tool == null) {
-      usage();
-      System.exit(1); 
+
+    String toolName = args[0];
+
+    //check for format
+    String formatName = StreamFactoryRegistry.DEFAULT_FORMAT;
+    int idx = toolName.indexOf(".");
+    if (-1 < idx) {
+      formatName = toolName.substring(idx + 1);
+      toolName = toolName.substring(0, idx);
     }
-    else if (args.length > 1 && args[1].equals("help")) {
-      System.out.println(tool.getHelp());
-      System.exit(1);
-    }
+    AbstractCmdLineTool tool = toolLookupMap.get(toolName);
     
     try {
-      tool.run(toolArguments);
+      if (null == tool) {
+        throw new TerminateToolException(1, "Tool " + toolName + " is not found.");
+      }
+
+      if (0 == toolArguments.length ||
+          0 < toolArguments.length && "help".equals(toolArguments[0])) {
+          if (tool instanceof TypedCmdLineTool) {
+            System.out.println(((TypedCmdLineTool) tool).getHelp(formatName));
+          } else if (tool instanceof CmdLineTool) {
+            System.out.println(tool.getHelp());
+          }
+
+          System.exit(0);
+      }
+
+      if (tool instanceof TypedCmdLineTool) {
+        ((TypedCmdLineTool) tool).run(formatName, toolArguments);
+      } else if (tool instanceof CmdLineTool) {
+        if (-1 == idx) {
+          ((CmdLineTool) tool).run(toolArguments);
+        } else {
+          throw new TerminateToolException(1, "Tool " + toolName + " does not support formats.");
+        }
+      } else {
+        throw new TerminateToolException(1, "Tool " + toolName + " is not supported.");
+      }
     }
     catch (TerminateToolException e) {
       

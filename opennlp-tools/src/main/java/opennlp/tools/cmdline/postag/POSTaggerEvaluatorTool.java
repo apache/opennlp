@@ -17,52 +17,33 @@
 
 package opennlp.tools.cmdline.postag;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EvaluatorParams;
+import opennlp.tools.cmdline.postag.POSTaggerEvaluatorTool.EvalToolParams;
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerEvaluationMonitor;
-import opennlp.tools.util.ObjectStream;
 
-public final class POSTaggerEvaluatorTool implements CmdLineTool {
+public final class POSTaggerEvaluatorTool
+    extends AbstractEvaluatorTool<POSSample, EvalToolParams> {
 
-  public String getName() {
-    return "POSTaggerEvaluator";
+  interface EvalToolParams extends EvaluatorParams {
   }
-  
+
+  public POSTaggerEvaluatorTool() {
+    super(POSSample.class, EvalToolParams.class);
+  }
+
   public String getShortDescription() {
-    return "";
-  }
-  
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(EvaluatorParams.class);
+    return "Measures the performance of the POS tagger model with the reference data";
   }
 
-  public void run(String[] args) {
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, EvaluatorParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-
-    EvaluatorParams params = ArgumentParser.parse(args,
-        EvaluatorParams.class);
-
-    File testData = params.getData();
-    CmdLineUtil.checkInputFile("Test data", testData);
-
-    Charset encoding = params.getEncoding();
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
     POSModel model = new POSModelLoader().load(params.getModel());
     
@@ -74,30 +55,25 @@ public final class POSTaggerEvaluatorTool implements CmdLineTool {
     POSEvaluator evaluator = new POSEvaluator(
         new opennlp.tools.postag.POSTaggerME(model), missclassifiedListener);
 
-      System.out.print("Evaluating ... ");
-      
-      ObjectStream<POSSample> sampleStream =
-          POSTaggerTrainerTool.openSampleData("Test", testData, encoding);
-      
+    System.out.print("Evaluating ... ");
+    try {
+      evaluator.evaluate(sampleStream);
+    }
+    catch (IOException e) {
+      System.err.println("failed");
+      throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage());
+    } finally {
       try {
-        evaluator.evaluate(sampleStream);
+        sampleStream.close();
+      } catch (IOException e) {
+        // sorry that this can fail
       }
-      catch (IOException e) {
-        System.err.println("failed");
-        System.err.println("Reading test data error " + e.getMessage());
-        throw new TerminateToolException(-1);
-      } finally {
-        try {
-          sampleStream.close();
-        } catch (IOException e) {
-          // sorry that this can fail
-        }
-      }
-      
-      System.out.println("done");
-      
-      System.out.println();
-      
-      System.out.println("Accuracy: " + evaluator.getWordAccuracy());
+    }
+
+    System.out.println("done");
+
+    System.out.println();
+
+    System.out.println("Accuracy: " + evaluator.getWordAccuracy());
   }
 }

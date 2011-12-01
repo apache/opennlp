@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.cmdline;
 
 /**
@@ -23,34 +22,12 @@ package opennlp.tools.cmdline;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public interface CmdLineTool {
-  
-  /**
-   * Retrieves the name of the training data tool. The name (used as command)
-   * must not contain white spaces.
-   * 
-   * @return the name of the command line tool
-   */
-  String getName();
-  
-  /**
-   * Retrieves a short description of what the tool does.
-   * 
-   * @return
-   */
-  String getShortDescription();
-  
-  /**
-   * Retrieves a description on how to use the tool.
-   * 
-   * @return
-   */
-  String getHelp();
-  
+public interface CmdLineTool extends AbstractCmdLineTool {
+
   /**
    * Executes the tool with the given parameters.
    * 
-   * @param args
+   * @param args arguments
    */
   void run(String args[]);
 }

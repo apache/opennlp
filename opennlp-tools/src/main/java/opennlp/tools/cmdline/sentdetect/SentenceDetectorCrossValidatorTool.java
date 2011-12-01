@@ -17,64 +17,42 @@
 
 package opennlp.tools.cmdline.sentdetect;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.CVParams;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidatorTool.CVToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.SDCrossValidator;
 import opennlp.tools.sentdetect.SentenceDetectorEvaluationMonitor;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.model.ModelUtil;
 
-public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
+public final class SentenceDetectorCrossValidatorTool
+    extends AbstractCrossValidatorTool<SentenceSample, CVToolParams> {
   
   interface CVToolParams extends TrainingParams, CVParams {
-    
   }
 
-  public String getName() {
-    return "SentenceDetectorCrossValidator";
+  public SentenceDetectorCrossValidatorTool() {
+    super(SentenceSample.class, CVToolParams.class);
   }
-  
+
   public String getShortDescription() {
     return "K-fold cross validator for the learnable sentence detector";
   }
   
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(CVToolParams.class);
-  }
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
-  public void run(String[] args) {
-    
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, CVToolParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
+    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+    if (mlParams == null) {
+      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
     }
-    
-    CVToolParams params = ArgumentParser.parse(args, CVToolParams.class);
-    
-    TrainingParameters mlParams =
-      CmdLineUtil.loadTrainingParameters(params.getParams(), false);
-    
-    File trainingDataInFile = params.getData();
-    CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
-    
-    Charset encoding = params.getEncoding();
-    
-    ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Training Data",
-        trainingDataInFile, encoding);
-    
+
     SDCrossValidator validator;
     
     SentenceDetectorEvaluationMonitor errorListener = null;
@@ -82,26 +60,14 @@ public final class SentenceDetectorCrossValidatorTool implements CmdLineTool {
       errorListener = new SentenceEvaluationErrorListener();
     }
     
-    if (mlParams == null) {
-      mlParams = new TrainingParameters();
-      mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-      mlParams.put(TrainingParameters.ITERATIONS_PARAM,
-          Integer.toString(params.getIterations()));
-      mlParams.put(TrainingParameters.CUTOFF_PARAM,
-          Integer.toString(params.getCutoff()));
-    }
-
     try {
-      Dictionary abbreviations = SentenceDetectorTrainerTool.loadDict(params
-          .getAbbDict());
-      validator = new SDCrossValidator(params.getLang(), mlParams,
-          abbreviations, errorListener);
+      Dictionary abbreviations = SentenceDetectorTrainerTool.loadDict(params.getAbbDict());
+      validator = new SDCrossValidator(factory.getLang(), mlParams, abbreviations, errorListener);
       
       validator.evaluate(sampleStream, params.getFolds());
     }
     catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
     finally {
       try {

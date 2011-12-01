@@ -22,7 +22,6 @@ import java.io.InputStream;
 
 import opennlp.tools.cmdline.ModelLoader;
 import opennlp.tools.doccat.DoccatModel;
-import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Loads a Document Categorizer Model for the command line tools.
@@ -36,8 +35,7 @@ public class DoccatModelLoader extends ModelLoader<DoccatModel> {
   }
   
   @Override
-  protected DoccatModel loadModel(InputStream modelIn) throws IOException,
-      InvalidFormatException {
+  protected DoccatModel loadModel(InputStream modelIn) throws IOException {
     return new DoccatModel(modelIn);
   }
 

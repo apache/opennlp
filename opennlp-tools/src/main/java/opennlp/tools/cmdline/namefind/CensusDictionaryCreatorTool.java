@@ -24,11 +24,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.BaseCLITool;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
@@ -44,7 +42,7 @@ import opennlp.tools.util.StringList;
  * <br>
  * <a href="http://www.census.gov/genealogy/names/names_files.html">www.census.gov</a>
  */
-public class CensusDictionaryCreatorTool implements CmdLineTool {
+public class CensusDictionaryCreatorTool extends BaseCLITool {
 
   /**
    * Create a list of expected parameters.
@@ -66,44 +64,22 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
     String getDict();
   }
 
-  /**
-   * Gets the name for the tool.
-   *
-   * @return {@code String}  a name to be used to call this class.
-   */
-  public String getName() {
-
-    return "CensusDictionaryCreator";
-  }
-
-  /**
-   * Gets a short description for the tool.
-   *
-   * @return {@code String}  a short description describing the purpose of
-   *    the tool to the user.
-   */
   public String getShortDescription() {
-
     return "Converts 1990 US Census names into a dictionary";
   }
 
-  /**
-   * Gets the expected usage of the tool as an example.
-   *
-   * @return {@code String}  a descriptive example on how to properly call
-   *    the tool from the command line.
-   */
-  public String getHelp() {
 
-    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(Parameters.class);
+  public String getHelp() {
+    return getBasicHelp(Parameters.class);
   }
 
   /**
-   * 
-   * @param sampleStream
+   * Creates a dictionary.
+   *
+   * @param sampleStream stream of samples.
    * @return a {@code Dictionary} class containing the name dictionary
    *    built from the input file.
-   * @throws IOException
+   * @throws IOException IOException
    */
   public static Dictionary createDictionary(ObjectStream<StringList> sampleStream) throws IOException {
 
@@ -121,23 +97,8 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
     return mNameDictionary;
   }
 
-  /**
-   * This method is much like the old main() method used in prior class
-   * construction, and allows another main class to run() this classes method
-   * to perform the operations.
-   *
-   * @param args  a String[] array of arguments passed to the run method
-   */
   public void run(String[] args) {
-
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateAndParseParams(args, Parameters.class);
 
     File testData = new File(params.getCensusData());
     File dictOutFile = new File(params.getDict());
@@ -154,8 +115,7 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
       System.out.println("Creating Dictionary...");
       mDictionary = createDictionary(sampleStream);
     } catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     } finally {
       try {
         sampleStream.close();
@@ -172,8 +132,7 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
       out = new FileOutputStream(dictOutFile);
       mDictionary.serialize(out);
     } catch (IOException ex) {
-      System.err.println("Error during write to dictionary file: " + ex.getMessage());
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while writing dictionary file: " + ex.getMessage());
     }
     finally {
       if (out != null)
@@ -181,9 +140,7 @@ public class CensusDictionaryCreatorTool implements CmdLineTool {
           out.close();
         } catch (IOException e) {
           // file might be damaged
-          System.err.println("Attention: Failed to correctly write dictionary:");
-          System.err.println(e.getMessage());
-          throw new TerminateToolException(-1);
+          throw new TerminateToolException(-1, "Attention: Failed to correctly write dictionary:" + e.getMessage());
         }
     }
   }
