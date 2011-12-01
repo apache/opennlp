@@ -17,48 +17,33 @@
 
 package opennlp.tools.cmdline.tokenizer;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EvaluatorParams;
+import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool.EvalToolParams;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerEvaluationMonitor;
 import opennlp.tools.tokenize.TokenizerEvaluator;
 import opennlp.tools.tokenize.TokenizerModel;
-import opennlp.tools.util.ObjectStream;
 
-public final class TokenizerMEEvaluatorTool implements CmdLineTool {
+public final class TokenizerMEEvaluatorTool
+    extends AbstractEvaluatorTool<TokenSample, EvalToolParams> {
 
-  public String getName() {
-    return "TokenizerMEEvaluator";
+  interface EvalToolParams extends EvaluatorParams {
   }
-  
+
+  public TokenizerMEEvaluatorTool() {
+    super(TokenSample.class, EvalToolParams.class);
+  }
+
   public String getShortDescription() {
     return "evaluator for the learnable tokenizer";
   }
   
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(EvaluatorParams.class);
-  }
-
-  public void run(String[] args) {
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, EvaluatorParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-
-    EvaluatorParams params = ArgumentParser.parse(args,
-        EvaluatorParams.class);
-
-    Charset encoding = params.getEncoding();
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
     TokenizerModel model = new TokenizerModelLoader().load(params.getModel());
 
@@ -71,19 +56,12 @@ public final class TokenizerMEEvaluatorTool implements CmdLineTool {
         new opennlp.tools.tokenize.TokenizerME(model), missclassifiedListener);
 
     System.out.print("Evaluating ... ");
-    
-    File testData = params.getData();
-    CmdLineUtil.checkInputFile("Test data", testData);
-
-    ObjectStream<TokenSample> sampleStream = TokenizerTrainerTool
-        .openSampleData("Test", testData, encoding);
 
     try {
       evaluator.evaluate(sampleStream);
     } catch (IOException e) {
       System.err.println("failed");
-      System.err.println("Reading test data error " + e.getMessage());
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage());
     } finally {
       try {
         sampleStream.close();

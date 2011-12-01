@@ -25,22 +25,17 @@ import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.chunker.DefaultChunkerSequenceValidator;
+import opennlp.tools.cmdline.BaseCLITool;
 import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class ChunkerMETool implements CmdLineTool {
+public class ChunkerMETool extends BaseCLITool {
 
-  public String getName() {
-    return "ChunkerME";
-  }
-  
   public String getShortDescription() {
     return "learnable chunker";
   }
@@ -52,46 +47,45 @@ public class ChunkerMETool implements CmdLineTool {
   public void run(String[] args) {
     if (args.length != 1) {
       System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-    
-    ChunkerModel model = new ChunkerModelLoader().load(new File(args[0]));
-    
-    ChunkerME chunker = new ChunkerME(model, ChunkerME.DEFAULT_BEAM_SIZE,
-        new DefaultChunkerSequenceValidator());
-    
-    ObjectStream<String> lineStream =
-      new PlainTextByLineStream(new InputStreamReader(System.in));
-    
-    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
-    perfMon.start();
-    
-    try {
-      String line;
-      while ((line = lineStream.read()) != null) {
-        
-        POSSample posSample;
-        try {
-          posSample = POSSample.parse(line);
-        } catch (InvalidFormatException e) {
-          System.err.println("Invalid format:");
-          System.err.println(line);
-          continue;
+    } else {
+      ChunkerModel model = new ChunkerModelLoader().load(new File(args[0]));
+
+      ChunkerME chunker = new ChunkerME(model, ChunkerME.DEFAULT_BEAM_SIZE,
+          new DefaultChunkerSequenceValidator());
+
+      ObjectStream<String> lineStream =
+        new PlainTextByLineStream(new InputStreamReader(System.in));
+
+      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+      perfMon.start();
+
+      try {
+        String line;
+        while ((line = lineStream.read()) != null) {
+
+          POSSample posSample;
+          try {
+            posSample = POSSample.parse(line);
+          } catch (InvalidFormatException e) {
+            System.err.println("Invalid format:");
+            System.err.println(line);
+            continue;
+          }
+
+          String[] chunks = chunker.chunk(posSample.getSentence(),
+              posSample.getTags());
+
+          System.out.println(new ChunkSample(posSample.getSentence(),
+              posSample.getTags(), chunks).nicePrint());
+
+          perfMon.incrementCounter();
         }
-        
-        String[] chunks = chunker.chunk(posSample.getSentence(),
-            posSample.getTags());
-        
-        System.out.println(new ChunkSample(posSample.getSentence(),
-            posSample.getTags(), chunks).nicePrint());
-        
-        perfMon.incrementCounter();
       }
-    } 
-    catch (IOException e) {
-      CmdLineUtil.handleStdinIoError(e);
+      catch (IOException e) {
+        CmdLineUtil.handleStdinIoError(e);
+      }
+
+      perfMon.stopAndPrintFinalResult();
     }
-    
-    perfMon.stopAndPrintFinalResult();
   }
 }

@@ -17,15 +17,12 @@
 
 package opennlp.tools.formats;
 
-import java.io.File;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.cmdline.params.LanguageFormatParams;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.WordTagSampleStream;
 import opennlp.tools.util.ObjectStream;
@@ -34,40 +31,29 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class WordTagSampleStreamFactory implements ObjectStreamFactory<POSSample> {
+public class WordTagSampleStreamFactory extends LanguageSampleStreamFactory<POSSample> {
 
-  static interface Parameters {
-    
-    @ParameterDescription(valueName = "sampleData")
-    String getData();
-    
-    @ParameterDescription(valueName = "charsetName")
-    String getEncoding();
+  static interface Parameters extends LanguageFormatParams {
+  }
+
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(POSSample.class,
+        StreamFactoryRegistry.DEFAULT_FORMAT, new WordTagSampleStreamFactory(Parameters.class));
   }
   
-  public String getUsage() {
-    return ArgumentParser.createUsage(Parameters.class);
+  protected <P> WordTagSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
-  public String validateArguments(String[] args) {
-    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
-  }
-
-  ObjectStream<POSSample> create(Parameters params) {
-    ObjectStream<String> lineStream;
-    try {
-      lineStream = new PlainTextByLineStream(new InputStreamReader(
-          CmdLineUtil.openInFile(new File(params.getData())), params.getEncoding()));
-      
-      return new WordTagSampleStream(lineStream);
-    } catch (UnsupportedEncodingException e) {
-      System.err.println("Encoding not supported: " + params.getEncoding());
-      throw new TerminateToolException(-1);
-    }
-  }
-  
   public ObjectStream<POSSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    return create(params);
+    language = params.getLang();
+
+    CmdLineUtil.checkInputFile("Data", params.getData());
+    ObjectStream<String> lineStream;
+    lineStream = new PlainTextByLineStream(new InputStreamReader(
+        CmdLineUtil.openInFile(params.getData()), params.getEncoding()));
+
+    return new WordTagSampleStream(lineStream);
   }
 }

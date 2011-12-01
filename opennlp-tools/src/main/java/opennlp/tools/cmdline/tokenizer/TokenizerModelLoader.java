@@ -22,7 +22,6 @@ import java.io.InputStream;
 
 import opennlp.tools.cmdline.ModelLoader;
 import opennlp.tools.tokenize.TokenizerModel;
-import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Loads a Tokenizer Model for the command line tools.
@@ -36,8 +35,7 @@ final class TokenizerModelLoader extends ModelLoader<TokenizerModel> {
   }
   
   @Override
-  protected TokenizerModel loadModel(InputStream modelIn) throws IOException,
-      InvalidFormatException {
+  protected TokenizerModel loadModel(InputStream modelIn) throws IOException {
     return new TokenizerModel(modelIn);
   }
 }

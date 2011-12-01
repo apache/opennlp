@@ -17,16 +17,15 @@
 
 package opennlp.tools.formats;
 
-import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.ObjectStreamFactory;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.params.LanguageFormatParams;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -34,41 +33,36 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ConllXPOSSampleStreamFactory implements ObjectStreamFactory<POSSample> {
+public class ConllXPOSSampleStreamFactory extends LanguageSampleStreamFactory<POSSample> {
+
+  public static final String CONLLX_FORMAT = "conllx";
   
-  interface Parameters {
-    @ParameterDescription(valueName = "sampleData")
-    String getData();
-  }
-  
-  public String getUsage() {
-    return ArgumentParser.createUsage(Parameters.class);
+  interface Parameters extends LanguageFormatParams {
   }
 
-  public String validateArguments(String[] args) {
-    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(POSSample.class,
+        CONLLX_FORMAT, new ConllXPOSSampleStreamFactory(Parameters.class));
   }
 
-  ObjectStream<POSSample> create(Parameters params) {
+  protected <P> ConllXPOSSampleStreamFactory(Class<P> params) {
+    super(params);
+  }
+
+  public ObjectStream<POSSample> create(String[] args) {
+    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    language = params.getLang();
+
     ObjectStream<String> lineStream;
     try {
       lineStream = new PlainTextByLineStream(new InputStreamReader(
-          CmdLineUtil.openInFile(new File(params.getData())), "UTF-8"));
+          CmdLineUtil.openInFile(params.getData()), "UTF-8"));
       System.setOut(new PrintStream(System.out, true, "UTF-8"));
-      
+
       return new ConllXPOSSampleStream(lineStream);
     } catch (UnsupportedEncodingException e) {
       // this shouldn't happen
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "UTF-8 encoding is not supported: " + e.getMessage());
     }
   }
-  
-  public ObjectStream<POSSample> create(String[] args) {
-    
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-    
-    return create(params);
-  }
-  
-
 }

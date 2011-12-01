@@ -20,83 +20,52 @@ package opennlp.tools.cmdline.postag;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import opennlp.model.TrainUtil;
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.TrainingToolParams;
+import opennlp.tools.cmdline.postag.POSTaggerTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.postag.POSDictionary;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerME;
-import opennlp.tools.postag.WordTagSampleStream;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
+import opennlp.tools.util.model.ModelUtil;
 
-public final class POSTaggerTrainerTool implements CmdLineTool {
+public final class POSTaggerTrainerTool
+    extends AbstractTrainerTool<POSSample, TrainerToolParams> {
   
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams{
-
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 
-  public String getName() {
-    return "POSTaggerTrainer";
+  public POSTaggerTrainerTool() {
+    super(POSSample.class, TrainerToolParams.class);
   }
-  
+
   public String getShortDescription() {
     return "trains a model for the part-of-speech tagger";
   }
   
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-      + ArgumentParser.createUsage(TrainerToolParams.class);
-  }
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
-  static ObjectStream<POSSample> openSampleData(String sampleDataName,
-      File sampleDataFile, Charset encoding) {
-    CmdLineUtil.checkInputFile(sampleDataName + " Data", sampleDataFile);
-
-    FileInputStream sampleDataIn = CmdLineUtil.openInFile(sampleDataFile);
-
-    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn
-        .getChannel(), encoding);
-
-    return new WordTagSampleStream(lineStream);
-  }
-  
-  public void run(String[] args) {
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, TrainerToolParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-    
-    TrainerToolParams params = ArgumentParser.parse(args,
-        TrainerToolParams.class);    
-    
-    opennlp.tools.util.TrainingParameters mlParams =
-      CmdLineUtil.loadTrainingParameters(params.getParams(), true);
-    
+    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
     if (mlParams != null && !TrainUtil.isValid(mlParams.getSettings())) {
-      System.err.println("Training parameters file is invalid!");
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(1, "Training parameters file is invalid!");
     }
-    
-    File trainingDataInFile = params.getData();
+
+    if(mlParams == null) {
+      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
+      mlParams.put(TrainingParameters.ALGORITHM_PARAM, getModelType(params.getType()).toString());
+    }
+
     File modelOutFile = params.getModel();
-    
     CmdLineUtil.checkOutputFile("pos tagger model", modelOutFile);
-    ObjectStream<POSSample> sampleStream = openSampleData("Training", trainingDataInFile,
-        params.getEncoding());
-    
-    
+
     Dictionary ngramDict = null;
     
     Integer ngramCutoff = params.getNgram();
@@ -107,8 +76,7 @@ public final class POSTaggerTrainerTool implements CmdLineTool {
         ngramDict = POSTaggerME.buildNGramDictionary(sampleStream, ngramCutoff);
         sampleStream.reset();
       } catch (IOException e) {
-        CmdLineUtil.printTrainingIoError(e);
-        throw new TerminateToolException(-1);
+        throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
       }
       System.err.println("done");
     }
@@ -122,19 +90,11 @@ public final class POSTaggerTrainerTool implements CmdLineTool {
         tagdict = POSDictionary.create(new FileInputStream(params.getDict()));
       }
       
-      if (mlParams == null) {
-        // depending on model and sequence choose training method
-        model = opennlp.tools.postag.POSTaggerME.train(params.getLang(),
-             sampleStream, getModelType(params.getType()), tagdict, ngramDict, params.getCutoff(), params.getIterations());
-      }
-      else {
-        model = opennlp.tools.postag.POSTaggerME.train(params.getLang(),
-            sampleStream, mlParams, tagdict, ngramDict);
-      }
+      model = opennlp.tools.postag.POSTaggerME.train(factory.getLang(),
+          sampleStream, mlParams, tagdict, ngramDict);
     }
     catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
     finally {
       try {

@@ -17,55 +17,44 @@
 
 package opennlp.tools.formats;
 
-import java.io.File;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.cmdline.params.LanguageFormatParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class NameSampleStreamFactory implements ObjectStreamFactory<NameSample> {
+/**
+ * Factory producing OpenNLP {@link NameSampleDataStream}s.
+ */
+public class NameSampleDataStreamFactory extends LanguageSampleStreamFactory<NameSample> {
 
-  static interface Parameters {
-    
-    @ParameterDescription(valueName = "sampleData")
-    String getData();
-    
-    @ParameterDescription(valueName = "charsetName")
-    String getEncoding();
-  }
-  
-  public String getUsage() {
-    return ArgumentParser.createUsage(Parameters.class);
+  static interface Parameters extends LanguageFormatParams {
   }
 
-  public String validateArguments(String[] args) {
-    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(NameSample.class,
+        StreamFactoryRegistry.DEFAULT_FORMAT, new NameSampleDataStreamFactory(Parameters.class));
   }
 
-  ObjectStream<NameSample> create(Parameters params) {
-    
-    ObjectStream<String> lineStream;
-    try {
-      lineStream = new PlainTextByLineStream(new InputStreamReader(
-          CmdLineUtil.openInFile(new File(params.getData())), params.getEncoding()));
-      
-      return new NameSampleDataStream(lineStream);
-    } catch (UnsupportedEncodingException e) {
-      System.err.println("Encoding not supported: " + params.getEncoding());
-      throw new TerminateToolException(-1);
-    }
+  protected <P> NameSampleDataStreamFactory(Class<P> params) {
+    super(params);
   }
-  
+
   public ObjectStream<NameSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    return create(params);
+    language = params.getLang();
+
+    CmdLineUtil.checkInputFile("Data", params.getData());
+
+    ObjectStream<String> lineStream;
+    lineStream = new PlainTextByLineStream(new InputStreamReader(
+        CmdLineUtil.openInFile(params.getData()), params.getEncoding()));
+
+    return new NameSampleDataStream(lineStream);
   }
 }

@@ -26,11 +26,10 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
+import opennlp.tools.cmdline.BaseCLITool;
 import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserFactory;
@@ -39,12 +38,8 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
-public final class ParserTool implements CmdLineTool {
+public final class ParserTool extends BaseCLITool {
 
-  public String getName() {
-    return "Parser";
-  }
-  
   public String getShortDescription() {
     return "performs full syntactic parsing";
   }
@@ -93,64 +88,64 @@ public final class ParserTool implements CmdLineTool {
     
     if (args.length < 1) {
       System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    } else {
     
-    ParserModel model = new ParserModelLoader().load(new File(args[args.length - 1]));
-    
-    Integer beamSize = CmdLineUtil.getIntParameter("-bs", args);
-    if (beamSize == null)
-        beamSize = AbstractBottomUpParser.defaultBeamSize;
-    
-    Integer numParses = CmdLineUtil.getIntParameter("-k", args);
-    boolean showTopK;
-    if (numParses == null) {
-      numParses = 1;
-      showTopK = false;
-    }
-    else {
-      showTopK = true;
-    }
-    
-    Double advancePercentage = CmdLineUtil.getDoubleParameter("-ap", args);
-    
-    if (advancePercentage == null)
-      advancePercentage = AbstractBottomUpParser.defaultAdvancePercentage;
-      
-    opennlp.tools.parser.Parser parser = 
-        ParserFactory.create(model, beamSize, advancePercentage); 
+      ParserModel model = new ParserModelLoader().load(new File(args[args.length - 1]));
 
-    ObjectStream<String> lineStream =
-      new PlainTextByLineStream(new InputStreamReader(System.in));
-    
-    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
-    perfMon.start();
-    
-    try {
-      String line;
-      while ((line = lineStream.read()) != null) {
-        if (line.length() == 0) {
-          System.out.println();
-        }
-        else {
-          Parse[] parses = parseLine(line, parser, numParses);
-          
-          for (int pi=0,pn=parses.length;pi<pn;pi++) {
-            if (showTopK) {
-              System.out.print(pi+" "+parses[pi].getProb()+" ");
+      Integer beamSize = CmdLineUtil.getIntParameter("-bs", args);
+      if (beamSize == null)
+          beamSize = AbstractBottomUpParser.defaultBeamSize;
+
+      Integer numParses = CmdLineUtil.getIntParameter("-k", args);
+      boolean showTopK;
+      if (numParses == null) {
+        numParses = 1;
+        showTopK = false;
+      }
+      else {
+        showTopK = true;
+      }
+
+      Double advancePercentage = CmdLineUtil.getDoubleParameter("-ap", args);
+
+      if (advancePercentage == null)
+        advancePercentage = AbstractBottomUpParser.defaultAdvancePercentage;
+
+      opennlp.tools.parser.Parser parser =
+          ParserFactory.create(model, beamSize, advancePercentage);
+
+      ObjectStream<String> lineStream =
+        new PlainTextByLineStream(new InputStreamReader(System.in));
+
+      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+      perfMon.start();
+
+      try {
+        String line;
+        while ((line = lineStream.read()) != null) {
+          if (line.length() == 0) {
+            System.out.println();
+          }
+          else {
+            Parse[] parses = parseLine(line, parser, numParses);
+
+            for (int pi=0,pn=parses.length;pi<pn;pi++) {
+              if (showTopK) {
+                System.out.print(pi+" "+parses[pi].getProb()+" ");
+              }
+
+              parses[pi].show();
+
+              perfMon.incrementCounter();
             }
-            
-            parses[pi].show();
-            
-            perfMon.incrementCounter();
           }
         }
       }
-    } 
-    catch (IOException e) {
-      CmdLineUtil.handleStdinIoError(e);
+      catch (IOException e) {
+        CmdLineUtil.handleStdinIoError(e);
+      }
+
+      perfMon.stopAndPrintFinalResult();
     }
-    
-    perfMon.stopAndPrintFinalResult();
   }
 }

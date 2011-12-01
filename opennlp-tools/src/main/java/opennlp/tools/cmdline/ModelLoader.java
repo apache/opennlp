@@ -63,13 +63,11 @@ public abstract class ModelLoader<T> {
     }
     catch (InvalidFormatException e) {
       System.err.println("failed");
-      System.err.println("Model has invalid format: " + e.getMessage());
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "Model has invalid format: " + e.getMessage());
     }
     catch (IOException e) {
       System.err.println("failed");
-      System.err.println("IO error while loading model: " + e.getMessage());
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while loading model: " + e.getMessage());
     }
     finally {
       // will not be null because openInFile would 

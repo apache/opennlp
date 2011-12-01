@@ -17,44 +17,12 @@
 
 package opennlp.tools.cmdline.tokenizer;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import opennlp.tools.cmdline.AbstractConverterTool;
-import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
-import opennlp.tools.formats.NameToTokenSampleStreamFactory;
-import opennlp.tools.formats.POSToTokenSampleStreamFactory;
 import opennlp.tools.tokenize.TokenSample;
 
 public class TokenizerConverterTool extends AbstractConverterTool<TokenSample> {
 
-  private static final Map<String, ObjectStreamFactory<TokenSample>> streamFactories;
-  
-  static {
-    Map<String, ObjectStreamFactory<TokenSample>> mutableStreamFactories =
-      new HashMap<String, ObjectStreamFactory<TokenSample>>();
-    
-    mutableStreamFactories.put("conllx", new ConllXTokenSampleStreamFactory());
-    mutableStreamFactories.put("pos", new POSToTokenSampleStreamFactory());
-    mutableStreamFactories.put("namefinder", new NameToTokenSampleStreamFactory());
-    
-    streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
+  public TokenizerConverterTool() {
+    super(TokenSample.class);
   }
-  
-  
-  public String getName() {
-    return "TokenizerConverter";
-  }
-
-  public String getShortDescription() {
-    return "";
-  }
-
-  @Override
-  protected ObjectStreamFactory<TokenSample> createStreamFactory(String format) {
-    return streamFactories.get(format);
-  }
-
 }

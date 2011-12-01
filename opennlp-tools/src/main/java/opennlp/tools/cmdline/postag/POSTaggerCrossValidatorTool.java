@@ -17,77 +17,48 @@
 
 package opennlp.tools.cmdline.postag;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.CVParams;
+import opennlp.tools.cmdline.postag.POSTaggerCrossValidatorTool.CVToolParams;
 import opennlp.tools.postag.POSDictionary;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerCrossValidator;
 import opennlp.tools.postag.POSTaggerEvaluationMonitor;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ModelUtil;
 
-public final class POSTaggerCrossValidatorTool implements CmdLineTool {
+public final class POSTaggerCrossValidatorTool
+    extends AbstractCrossValidatorTool<POSSample, CVToolParams> {
   
   interface CVToolParams extends CVParams, TrainingParams {
-    
   }
 
-  public String getName() {
-    return "POSTaggerCrossValidator";
+  public POSTaggerCrossValidatorTool() {
+    super(POSSample.class, CVToolParams.class);
   }
 
   public String getShortDescription() {
     return "K-fold cross validator for the learnable POS tagger";
   }
 
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(CVToolParams.class);
-  }
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
-  public void run(String[] args) {
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, CVToolParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
+    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+    if (mlParams == null) {
+      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
     }
-    
-    CVToolParams params = ArgumentParser.parse(args, CVToolParams.class);
 
-    TrainingParameters mlParams = CmdLineUtil
-        .loadTrainingParameters(params.getParams(), false);
-
-    File trainingDataInFile = params.getData();
-    CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
-
-    ObjectStream<POSSample> sampleStream = POSTaggerTrainerTool.openSampleData(
-        "Training Data", trainingDataInFile, params.getEncoding());
-
-    POSTaggerCrossValidator validator;
-    
     POSTaggerEvaluationMonitor missclassifiedListener = null;
     if (params.getMisclassified()) {
       missclassifiedListener = new POSEvaluationErrorListener();
     }
-    
-    if (mlParams == null) {
-      mlParams = new TrainingParameters();
-      mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-      mlParams.put(TrainingParameters.ITERATIONS_PARAM,
-          Integer.toString(params.getIterations()));
-      mlParams.put(TrainingParameters.CUTOFF_PARAM,
-          Integer.toString(params.getCutoff()));
-    }
-    
+
+    POSTaggerCrossValidator validator;
     try {
       // TODO: Move to util method ...
       POSDictionary tagdict = null;
@@ -95,13 +66,12 @@ public final class POSTaggerCrossValidatorTool implements CmdLineTool {
         tagdict = POSDictionary.create(new FileInputStream(params.getDict()));
       }
 
-      validator = new POSTaggerCrossValidator(params.getLang(), mlParams,
+      validator = new POSTaggerCrossValidator(factory.getLang(), mlParams,
           tagdict, params.getNgram(), missclassifiedListener);
       
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     } finally {
       try {
         sampleStream.close();

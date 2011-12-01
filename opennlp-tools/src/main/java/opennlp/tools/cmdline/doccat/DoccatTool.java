@@ -21,11 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import opennlp.tools.cmdline.BaseCLITool;
 import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
@@ -33,12 +32,8 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class DoccatTool implements CmdLineTool {
+public class DoccatTool extends BaseCLITool {
 
-  public String getName() {
-    return "Doccat";
-  }
-  
   public String getShortDescription() {
     return "learnable document categorizer";
   }
@@ -49,37 +44,37 @@ public class DoccatTool implements CmdLineTool {
 
   public void run(String[] args) {
     
-    if (args.length != 1) {
+    if (0 == args.length) {
       System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-    
-    DoccatModel model = new DoccatModelLoader().load(new File(args[0]));
-    
-    DocumentCategorizerME doccat = new DocumentCategorizerME(model);
-    
-    ObjectStream<String> documentStream = new ParagraphStream(
-        new PlainTextByLineStream(new InputStreamReader(System.in)));
-    
-    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "doc");
-    perfMon.start();
-    
-    try {
-      String document;
-      while ((document = documentStream.read()) != null) {
-        double prob[] = doccat.categorize(document);
-        String category = doccat.getBestCategory(prob);
-        
-        DocumentSample sample = new DocumentSample(category, document);
-        System.out.println(sample.toString());
-        
-        perfMon.incrementCounter();
+    } else {
+
+      DoccatModel model = new DoccatModelLoader().load(new File(args[0]));
+
+      DocumentCategorizerME doccat = new DocumentCategorizerME(model);
+
+      ObjectStream<String> documentStream = new ParagraphStream(
+          new PlainTextByLineStream(new InputStreamReader(System.in)));
+
+      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "doc");
+      perfMon.start();
+
+      try {
+        String document;
+        while ((document = documentStream.read()) != null) {
+          double prob[] = doccat.categorize(document);
+          String category = doccat.getBestCategory(prob);
+
+          DocumentSample sample = new DocumentSample(category, document);
+          System.out.println(sample.toString());
+
+          perfMon.incrementCounter();
+        }
       }
+      catch (IOException e) {
+        CmdLineUtil.handleStdinIoError(e);
+      }
+
+      perfMon.stopAndPrintFinalResult();
     }
-    catch (IOException e) {
-      CmdLineUtil.handleStdinIoError(e);
-    }
-    
-    perfMon.stopAndPrintFinalResult();
   }
 }

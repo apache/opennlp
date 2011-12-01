@@ -17,38 +17,12 @@
 
 package opennlp.tools.cmdline.doccat;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import opennlp.tools.cmdline.AbstractConverterTool;
-import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.doccat.DocumentSample;
-import opennlp.tools.formats.LeipzigDocumentSampleStreamFactory;
 
 public class DoccatConverterTool extends AbstractConverterTool<DocumentSample> {
 
-  private static final Map<String, ObjectStreamFactory<DocumentSample>> streamFactories;
-  
-  static {
-    Map<String, ObjectStreamFactory<DocumentSample>> mutableStreamFactories =
-      new HashMap<String, ObjectStreamFactory<DocumentSample>>();
-    
-    mutableStreamFactories.put("leipzig", new LeipzigDocumentSampleStreamFactory());
-    
-    streamFactories = Collections.unmodifiableMap(mutableStreamFactories);
-  }
-  
-  public String getName() {
-    return "DoccatConverter";
-  }
-
-  public String getShortDescription() {
-    return "";
-  }
-
-  @Override
-  protected ObjectStreamFactory<DocumentSample> createStreamFactory(String format) {
-    return streamFactories.get(format);
+  public DoccatConverterTool() {
+    super(DocumentSample.class);
   }
 }

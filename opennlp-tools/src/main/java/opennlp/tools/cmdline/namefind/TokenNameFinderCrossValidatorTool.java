@@ -17,75 +17,51 @@
 
 package opennlp.tools.cmdline.namefind;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.namefind.TokenNameFinderCrossValidatorTool.CVToolParams;
 import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.EvaluationMonitor;
+import opennlp.tools.util.model.ModelUtil;
 
-public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
+public final class TokenNameFinderCrossValidatorTool
+    extends AbstractCrossValidatorTool<NameSample, CVToolParams> {
   
-  interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams{
-    
+  interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams {
   }
 
-  public String getName() {
-    return "TokenNameFinderCrossValidator";
+  public TokenNameFinderCrossValidatorTool() {
+    super(NameSample.class, CVToolParams.class);
   }
 
   public String getShortDescription() {
     return "K-fold cross validator for the learnable Name Finder";
   }
 
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(CVToolParams.class);
-  }
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
-  public void run(String[] args) {
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, CVToolParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
+    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+    if (mlParams == null) {
+      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
     }
-    
-    CVToolParams params = ArgumentParser.parse(args, CVToolParams.class);
 
-    opennlp.tools.util.TrainingParameters mlParams = CmdLineUtil
-        .loadTrainingParameters(params.getParams(),false);
+    byte featureGeneratorBytes[] =
+        TokenNameFinderTrainerTool.openFeatureGeneratorBytes(params.getFeaturegen());
 
-    byte featureGeneratorBytes[] = TokenNameFinderTrainerTool
-        .openFeatureGeneratorBytes(params.getFeaturegen());
+    Map<String, Object> resources =
+        TokenNameFinderTrainerTool.loadResources(params.getResources());
 
-    Map<String, Object> resources = TokenNameFinderTrainerTool
-        .loadResources(params.getResources());
-
-    File trainingDataInFile = params.getData();
-    CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
-    
-    Charset encoding = params.getEncoding();
-
-    ObjectStream<NameSample> sampleStream = TokenNameFinderTrainerTool
-        .openSampleData("Training Data", trainingDataInFile, encoding);
-
-    TokenNameFinderCrossValidator validator;
-    
     List<EvaluationMonitor<NameSample>> listeners = new LinkedList<EvaluationMonitor<NameSample>>();
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
@@ -95,23 +71,15 @@ public final class TokenNameFinderCrossValidatorTool implements CmdLineTool {
       detailedFListener = new TokenNameFinderDetailedFMeasureListener();
       listeners.add(detailedFListener);
     }
-    
-    if (mlParams == null) {
-      mlParams = new TrainingParameters();
-      mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-      mlParams.put(TrainingParameters.ITERATIONS_PARAM,
-          Integer.toString(params.getIterations()));
-      mlParams.put(TrainingParameters.CUTOFF_PARAM,
-          Integer.toString(params.getCutoff()));
-    }
 
+    TokenNameFinderCrossValidator validator;
     try {
-      validator = new TokenNameFinderCrossValidator(params.getLang(),
-          params.getType(), mlParams, featureGeneratorBytes, resources, listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));
+      validator = new TokenNameFinderCrossValidator(factory.getLang(),
+          params.getType(), mlParams, featureGeneratorBytes, resources,
+          listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
-      CmdLineUtil.printTrainingIoError(e);
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     } finally {
       try {
         sampleStream.close();

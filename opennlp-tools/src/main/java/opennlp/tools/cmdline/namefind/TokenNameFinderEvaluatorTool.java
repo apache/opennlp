@@ -17,18 +17,14 @@
 
 package opennlp.tools.cmdline.namefind;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool.EvalToolParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.namefind.NameFinderME;
@@ -39,44 +35,24 @@ import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
-public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
+public final class TokenNameFinderEvaluatorTool
+    extends AbstractEvaluatorTool<NameSample, EvalToolParams> {
 
   interface EvalToolParams extends EvaluatorParams, DetailedFMeasureEvaluatorParams {
-    
   }
-  
-  public String getName() {
-    return "TokenNameFinderEvaluator";
+
+  public TokenNameFinderEvaluatorTool() {
+    super(NameSample.class, EvalToolParams.class);
   }
 
   public String getShortDescription() {
-    return "";
+    return "Measures the performance of the NameFinder model with the reference data";
   }
 
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " "
-        + ArgumentParser.createUsage(EvalToolParams.class);
-  }
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
-  public void run(String[] args) {
-
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, EvalToolParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-
-    EvalToolParams params = ArgumentParser.parse(args,
-        EvalToolParams.class);
-
-    File testData = params.getData();
-    CmdLineUtil.checkInputFile("Test data", testData);
-
-    Charset encoding = params.getEncoding();
-
-    TokenNameFinderModel model = new TokenNameFinderModelLoader().load(params
-        .getModel());
+    TokenNameFinderModel model = new TokenNameFinderModelLoader().load(params.getModel());
     
     List<EvaluationMonitor<NameSample>> listeners = new LinkedList<EvaluationMonitor<NameSample>>();
     if (params.getMisclassified()) {
@@ -91,9 +67,6 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
     TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
         new NameFinderME(model),
         listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));
-
-    final ObjectStream<NameSample> sampleStream = TokenNameFinderTrainerTool.openSampleData("Test",
-        testData, encoding);
 
     final PerformanceMonitor monitor = new PerformanceMonitor("sent");
 
@@ -119,8 +92,7 @@ public final class TokenNameFinderEvaluatorTool implements CmdLineTool {
       evaluator.evaluate(measuredSampleStream);
     } catch (IOException e) {
       System.err.println("failed");
-      System.err.println("Reading test data error " + e.getMessage());
-      throw new TerminateToolException(-1);
+      throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage());
     } finally {
       try {
         measuredSampleStream.close();

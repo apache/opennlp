@@ -20,27 +20,22 @@ package opennlp.tools.cmdline.params;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
-// TODO: remove the old BasicTrainingParameters and rename this class to BasicTrainingParameters
-
 /**
  * Common training parameters.
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface BasicTrainingParams extends EncodingParameter{
+public interface BasicTrainingParams {
 
-  @ParameterDescription(valueName = "language", description = "specifies the language which is being processed.")
-  String getLang();
-  
-  @ParameterDescription(valueName = "num", description = "specifies the number of training iterations. It is ignored if a parameters file is passed.")
+  @ParameterDescription(valueName = "num", description = "number of training iterations, ignored if -params is used.")
   @OptionalParameter(defaultValue="100")
   Integer getIterations();
   
-  @ParameterDescription(valueName = "num", description = "specifies the min number of times a feature must be seen. It is ignored if a parameters file is passed.")
+  @ParameterDescription(valueName = "num", description = "minimal number of times a feature must be seen, ignored if -params is used.")
   @OptionalParameter(defaultValue="5")
   Integer getCutoff();
   
-  @ParameterDescription(valueName = "paramsFile", description = "Training parameters file.")
+  @ParameterDescription(valueName = "paramsFile", description = "training parameters file.")
   @OptionalParameter()
   String getParams();
   

@@ -17,54 +17,36 @@
 
 package opennlp.tools.cmdline.sentdetect;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EvaluatorParams;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluatorTool.EvalToolParams;
 import opennlp.tools.sentdetect.SentenceDetectorEvaluationMonitor;
 import opennlp.tools.sentdetect.SentenceDetectorEvaluator;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.util.ObjectStream;
 
-public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
+public final class SentenceDetectorEvaluatorTool
+    extends AbstractEvaluatorTool<SentenceSample, EvalToolParams> {
 
-  public String getName() {
-    return "SentenceDetectorEvaluator";
+  interface EvalToolParams extends EvaluatorParams {
   }
-  
+
+  public SentenceDetectorEvaluatorTool() {
+    super(SentenceSample.class, EvalToolParams.class);
+  }
+
   public String getShortDescription() {
     return "evaluator for the learnable sentence detector";
   }
   
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " " + ArgumentParser.createUsage(EvaluatorParams.class);
-  }
+  public void run(String format, String[] args) {
+    super.run(format, args);
 
-  public void run(String[] args) {
-    
-    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, EvaluatorParams.class);
-    if (null != errorMessage) {
-      System.err.println(errorMessage);
-      System.err.println(getHelp());
-      throw new TerminateToolException(1);
-    }
-    
-    EvaluatorParams params = ArgumentParser.parse(args, EvaluatorParams.class);
-    
-    Charset encoding = params.getEncoding();
-    
     SentenceModel model = new SentenceModelLoader().load(params.getModel());
-    
-    File trainingDataInFile = params.getData();
-    CmdLineUtil.checkInputFile("Training Data", trainingDataInFile);
     
     SentenceDetectorEvaluationMonitor errorListener = null;
     if (params.getMisclassified()) {
@@ -73,30 +55,26 @@ public final class SentenceDetectorEvaluatorTool implements CmdLineTool {
     
     SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
         new SentenceDetectorME(model), errorListener);
-    
+
     System.out.print("Evaluating ... ");
-      ObjectStream<SentenceSample> sampleStream = SentenceDetectorTrainerTool.openSampleData("Test",
-          trainingDataInFile, encoding);
-      
+    try {
+    evaluator.evaluate(sampleStream);
+    }
+    catch (IOException e) {
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+    }
+    finally {
       try {
-      evaluator.evaluate(sampleStream);
+        sampleStream.close();
+      } catch (IOException e) {
+        // sorry that this can fail
       }
-      catch (IOException e) {
-        CmdLineUtil.printTrainingIoError(e);
-        throw new TerminateToolException(-1);
-      }
-      finally {
-        try {
-          sampleStream.close();
-        } catch (IOException e) {
-          // sorry that this can fail
-        }
-      }
-      
-      System.err.println("done");
-      
-      System.out.println();
-      
-      System.out.println(evaluator.getFMeasure());
+    }
+
+    System.err.println("done");
+
+    System.out.println();
+
+    System.out.println(evaluator.getFMeasure());
   }
 }

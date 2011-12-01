@@ -17,37 +17,35 @@
 
 package opennlp.tools.formats;
 
-import java.io.File;
-
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.ObjectStreamFactory;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.cmdline.params.LanguageFormatParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
-public class BioNLP2004NameSampleStreamFactory
-    implements ObjectStreamFactory<NameSample>{
+public class BioNLP2004NameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
 
-  interface Parameters {
-    @ParameterDescription(valueName = "sampleData")
-    String getData();
-    
+  interface Parameters extends LanguageFormatParams {
     @ParameterDescription(valueName = "DNA,protein,cell_type,cell_line,RNA")
     String getTypes();
   }
-  
-  public String getUsage() {
-    return ArgumentParser.createUsage(Parameters.class);
+
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(NameSample.class,
+        "bionlp2004", new BioNLP2004NameSampleStreamFactory(Parameters.class));
   }
-  
-  public String validateArguments(String[] args) {
-    return ArgumentParser.validateArgumentsLoudly(args, Parameters.class);
+
+  protected <P> BioNLP2004NameSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public ObjectStream<NameSample> create(String[] args) {
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);
+    language = params.getLang();
+
     int typesToGenerate = 0;
     
     if (params.getTypes().contains("DNA")) {
@@ -72,6 +70,6 @@ public class BioNLP2004NameSampleStreamFactory
     }
 
     return new BioNLP2004NameSampleStream(
-        CmdLineUtil.openInFile(new File(params.getData())), typesToGenerate);
+        CmdLineUtil.openInFile(params.getData()), typesToGenerate);
   }
 }

@@ -76,13 +76,43 @@ public class CLITest {
     try {
       CLI.main(new String[]{});
     } catch (ExitException e) {
-      assertEquals(1, e.status());
+      assertEquals(0, e.status());
     }
-    
+  }
+
+  /**
+   * Ensure the main method prints error and returns 1.
+   */
+  @Test
+  public void testUnknownToolMessage() {
     try {
-      CLI.main(new String[]{"unkown name"});
+      CLI.main(new String[]{"unknown name"});
     } catch (ExitException e) {
       assertEquals(1, e.status());
+    }
+  }
+
+  /**
+   * Ensure the tool checks the parameter and returns 1.
+   */
+  @Test
+  public void testToolParameterMessage() {
+    try {
+      CLI.main(new String[]{"DoccatTrainer", "-param", "value"});
+    } catch (ExitException e) {
+      assertEquals(1, e.status());
+    }
+  }
+
+  /**
+   * Ensure the main method prints error and returns -1
+   */
+  @Test
+  public void testUnknownFileMessage() {
+    try {
+      CLI.main(new String[]{"Doccat", "unknown.model"});
+    } catch (ExitException e) {
+      assertEquals(-1, e.status());
     }
   }
   
@@ -97,7 +127,7 @@ public class CLITest {
       try {
         CLI.main(new String[]{toolName, "help"});
       } catch (ExitException e) {
-        assertEquals(1, e.status());
+        assertEquals(0, e.status());
       }
     }
   }

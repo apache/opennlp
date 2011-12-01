@@ -31,10 +31,6 @@ import opennlp.tools.util.ObjectStream;
 // trains a new check model ...
 public final class CheckModelUpdaterTool extends ModelUpdaterTool {
 
-  public String getName() {
-    return "CheckModelUpdater";
-  }
-  
   public String getShortDescription() {
     return "trains and updates the check model in a parser model";
   }

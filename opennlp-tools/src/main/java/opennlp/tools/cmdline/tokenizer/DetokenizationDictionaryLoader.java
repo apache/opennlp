@@ -22,7 +22,6 @@ import java.io.InputStream;
 
 import opennlp.tools.cmdline.ModelLoader;
 import opennlp.tools.tokenize.DetokenizationDictionary;
-import opennlp.tools.util.InvalidFormatException;
 
 final class DetokenizationDictionaryLoader extends ModelLoader<DetokenizationDictionary> {
 
@@ -31,8 +30,7 @@ final class DetokenizationDictionaryLoader extends ModelLoader<DetokenizationDic
   }
   
   @Override
-  protected DetokenizationDictionary loadModel(InputStream modelIn)
-      throws IOException, InvalidFormatException {
+  protected DetokenizationDictionary loadModel(InputStream modelIn) throws IOException {
     return new DetokenizationDictionary(modelIn);
   }
 

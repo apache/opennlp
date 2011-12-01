@@ -30,7 +30,7 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
  */
 interface TrainingParams extends BasicTrainingParams {
 
-  @ParameterDescription(valueName = "path", description = "The abbreviation dictionary in XML format.")
+  @ParameterDescription(valueName = "path", description = "abbreviation dictionary in XML format.")
   @OptionalParameter
   File getAbbDict();
 

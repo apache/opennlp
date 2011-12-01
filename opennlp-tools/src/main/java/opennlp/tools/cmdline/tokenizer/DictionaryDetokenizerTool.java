@@ -21,11 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import opennlp.tools.cmdline.BaseCLITool;
 import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
@@ -33,15 +32,7 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public final class DictionaryDetokenizerTool implements CmdLineTool {
-
-  public String getName() {
-    return "DictionaryDetokenizer";
-  }
-
-  public String getShortDescription() {
-    return "";
-  }
+public final class DictionaryDetokenizerTool extends BaseCLITool {
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " detokenizerDictionary";
@@ -91,36 +82,36 @@ public final class DictionaryDetokenizerTool implements CmdLineTool {
     
     if (args.length != 1) {
       System.out.println(getHelp());
-      throw new TerminateToolException(1);
-    }
+    } else {
     
-    Detokenizer detokenizer = new DictionaryDetokenizer(
-        new DetokenizationDictionaryLoader().load(new File(args[0])));
-    
-    ObjectStream<String> tokenizedLineStream =
-      new PlainTextByLineStream(new InputStreamReader(System.in));
-    
-    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
-    perfMon.start();
-    
-    try {
-      String tokenizedLine;
-      while ((tokenizedLine = tokenizedLineStream.read()) != null) {
-        
-        // white space tokenize line
-        String tokens[] = WhitespaceTokenizer.INSTANCE.tokenize(tokenizedLine);
-        
-        DetokenizationOperation operations[] = detokenizer.detokenize(tokens);
-        
-        System.out.println(detokenize(tokens, operations));
-        
-        perfMon.incrementCounter();
+      Detokenizer detokenizer = new DictionaryDetokenizer(
+          new DetokenizationDictionaryLoader().load(new File(args[0])));
+
+      ObjectStream<String> tokenizedLineStream =
+        new PlainTextByLineStream(new InputStreamReader(System.in));
+
+      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+      perfMon.start();
+
+      try {
+        String tokenizedLine;
+        while ((tokenizedLine = tokenizedLineStream.read()) != null) {
+
+          // white space tokenize line
+          String tokens[] = WhitespaceTokenizer.INSTANCE.tokenize(tokenizedLine);
+
+          DetokenizationOperation operations[] = detokenizer.detokenize(tokens);
+
+          System.out.println(detokenize(tokens, operations));
+
+          perfMon.incrementCounter();
+        }
       }
+      catch (IOException e) {
+        CmdLineUtil.handleStdinIoError(e);
+      }
+
+      perfMon.stopAndPrintFinalResult();
     }
-    catch (IOException e) {
-      CmdLineUtil.handleStdinIoError(e);
-    }
-    
-    perfMon.stopAndPrintFinalResult();
   }
 }
