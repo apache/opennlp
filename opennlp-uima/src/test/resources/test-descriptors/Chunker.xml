@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.    
+-->
+
+<analysisEngineDescription xmlns="http://uima.apache.org/resourceSpecifier">
+  <frameworkImplementation>org.apache.uima.java</frameworkImplementation>
+  <primitive>true</primitive>
+  <annotatorImplementationName>opennlp.uima.chunker.Chunker</annotatorImplementationName>
+  <analysisEngineMetaData>
+    <name>Chunker</name>
+    <description></description>
+    <version>1.5.2-incubating</version>
+    <vendor>Apache Software Foundation</vendor>
+    <configurationParameters>
+
+      <configurationParameter>
+        <name>opennlp.uima.SentenceType</name>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+
+      <configurationParameter>
+        <name>opennlp.uima.TokenType</name>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+
+      <configurationParameter>
+        <name>opennlp.uima.POSFeature</name>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+
+      <configurationParameter>
+        <name>opennlp.uima.ChunkType</name>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+
+      <configurationParameter>
+        <name>opennlp.uima.ChunkTagFeature</name>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+    </configurationParameters>
+    <configurationParameterSettings>
+
+      <nameValuePair>
+        <name>opennlp.uima.SentenceType</name>
+        <value>
+          <string>opennlp.uima.Sentence</string>
+        </value>
+      </nameValuePair>
+
+      <nameValuePair>
+        <name>opennlp.uima.TokenType</name>
+        <value>
+          <string>opennlp.uima.Token</string>
+        </value>
+      </nameValuePair>
+
+      <nameValuePair>
+        <name>opennlp.uima.POSFeature</name>
+        <value>
+          <string>pos</string>
+        </value>
+      </nameValuePair>
+
+      <nameValuePair>
+        <name>opennlp.uima.ChunkType</name>
+        <value>
+          <string>opennlp.uima.Chunk</string>
+        </value>
+      </nameValuePair>
+
+      <nameValuePair>
+        <name>opennlp.uima.ChunkTagFeature</name>
+        <value>
+          <string>chunkType</string>
+        </value>
+      </nameValuePair>
+    </configurationParameterSettings>
+
+    <typeSystemDescription>
+      <imports>
+        <import location="TypeSystem.xml"/>
+      </imports>
+    </typeSystemDescription>
+
+    <capabilities>
+      <capability>
+        <inputs/>
+        <outputs/>
+        <languagesSupported>
+          <language>en</language>
+        </languagesSupported>
+      </capability>
+    </capabilities>
+  </analysisEngineMetaData>
+
+  <externalResourceDependencies>
+    <externalResourceDependency>
+      <key>opennlp.uima.ModelName</key>
+      <interfaceName>opennlp.uima.chunker.ChunkerModelResource</interfaceName>
+    </externalResourceDependency>
+  </externalResourceDependencies>
+
+  <resourceManagerConfiguration>
+    <externalResources>
+      <externalResource>
+        <name>ChunkerModel</name>
+        <fileResourceSpecifier>
+          <fileUrl>file:test-models/en-chunker.bin</fileUrl>
+        </fileResourceSpecifier>
+        <implementationName>opennlp.uima.chunker.ChunkerModelResourceImpl</implementationName>
+      </externalResource>
+    </externalResources>
+    <externalResourceBindings>
+      <externalResourceBinding>
+        <key>opennlp.uima.ModelName</key>
+        <resourceName>ChunkerModel</resourceName>
+      </externalResourceBinding>
+    </externalResourceBindings>
+  </resourceManagerConfiguration>
+
+</analysisEngineDescription>
