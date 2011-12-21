@@ -22,7 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.dictionary.Index;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
 
@@ -34,8 +33,6 @@ public class DictionaryNameFinder implements TokenNameFinder {
 
   private Dictionary mDictionary;
 
-  private Index mMetaDictionary;
-
   /**
    * Initializes the current instance.
    *
@@ -43,35 +40,25 @@ public class DictionaryNameFinder implements TokenNameFinder {
    */
   public DictionaryNameFinder(Dictionary dictionary) {
     mDictionary = dictionary;
-    mMetaDictionary = new Index(dictionary.iterator());
   }
 
   public Span[] find(String[] tokenStrings) {
-    List<Span> foundNames = new LinkedList<Span>();
+    List<Span> foundNames = new LinkedList<>();
 
     for (int startToken = 0; startToken < tokenStrings.length; startToken++) {
 
       Span foundName = null;
-
       String  tokens[] = new String[]{};
 
       for (int endToken = startToken; endToken < tokenStrings.length; endToken++) {
 
-        String token = tokenStrings[endToken];
+        tokens = new String[(endToken - startToken + 1)];
+        System.arraycopy(tokenStrings, startToken, tokens, 0, (endToken - startToken + 1));
 
-        // TODO: improve performance here
-        String newTokens[] = new String[tokens.length + 1];
-        System.arraycopy(tokens, 0, newTokens, 0, tokens.length);
-        newTokens[newTokens.length - 1] = token;
-        tokens = newTokens;
+        StringList tokenList = new StringList(tokens);
 
-        if (mMetaDictionary.contains(token)) {
-
-          StringList tokenList = new StringList(tokens);
-
-          if (mDictionary.contains(tokenList)) {
-            foundName = new Span(startToken, endToken + 1);
-          }
+        if (mDictionary.contains(tokenList)) {
+          foundName = new Span(startToken, endToken + 1);
         }
         else {
           break;
@@ -85,7 +72,7 @@ public class DictionaryNameFinder implements TokenNameFinder {
 
     return foundNames.toArray(new Span[foundNames.size()]);
   }
-  
+
   public void clearAdaptiveData() {
     // nothing to clear
   }
