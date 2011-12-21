@@ -43,7 +43,7 @@ public class DictionaryNameFinder implements TokenNameFinder {
   }
 
   public Span[] find(String[] tokenStrings) {
-    List<Span> foundNames = new LinkedList<>();
+    List<Span> foundNames = new LinkedList<Span>();
 
     for (int startToken = 0; startToken < tokenStrings.length; startToken++) {
 
