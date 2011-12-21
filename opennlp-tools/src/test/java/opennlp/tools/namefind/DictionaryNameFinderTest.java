@@ -113,4 +113,14 @@ public class DictionaryNameFinderTest{
     assertTrue(names.length == 1);
     assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
   }
+
+  @Test
+  public void testCaseSensitivity() {
+    String sentence[] = {"a", "b", "c", "vanessa", "williams"};
+
+    Span names[] = mNameFinder.find(sentence);
+
+    assertTrue(names.length == 1);
+    assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
+  }
 }
