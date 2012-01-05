@@ -51,7 +51,7 @@ import org.junit.Test;
  * training sentences.
  */
 public class NameFinderMETest {
-  
+
   private final String TYPE = "default";
 
   @Test
@@ -64,10 +64,10 @@ public class NameFinderMETest {
 
     String encoding = "ISO-8859-1";
 
-    ObjectStream<NameSample> sampleStream = 
+    ObjectStream<NameSample> sampleStream =
           new NameSampleDataStream(
           new PlainTextByLineStream(new InputStreamReader(in, encoding)));
-    
+
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
         Collections.<String, Object>emptyMap(), 70, 1);
 
@@ -107,11 +107,11 @@ public class NameFinderMETest {
     assertEquals(new Span(1, 2, TYPE), names[0]);
     assertEquals(new Span(4, 6, TYPE), names[1]);
   }
-  
+
   /**
    * Train NamefinderME using AnnotatedSentencesWithTypes.txt with "person"
    * nameType and try the model in a sample text.
-   *  
+   *
    * @throws Exception
    */
   @Test
@@ -158,7 +158,7 @@ public class NameFinderMETest {
   /**
    * Train NamefinderME using OnlyWithNames.train. The goal is to check if the model validator accepts it.
    * This is related to the issue OPENNLP-9
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -172,7 +172,7 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, 
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE,
         sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -189,11 +189,11 @@ public class NameFinderMETest {
     assertEquals(new Span(4, 6, TYPE), names1[2]);
     assertTrue(!hasOtherAsOutcome(nameFinderModel));
   }
-  
+
   /**
    * Train NamefinderME using OnlyWithNamesWithTypes.train. The goal is to check if the model validator accepts it.
    * This is related to the issue OPENNLP-9
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -207,7 +207,7 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, 
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE,
         sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -223,14 +223,14 @@ public class NameFinderMETest {
     assertEquals(new Span(2, 4, "person"), names1[1]);
     assertEquals(new Span(4, 6, "person"), names1[2]);
     assertEquals("person", names1[2].getType());
-    
+
     assertTrue(!hasOtherAsOutcome(nameFinderModel));
   }
-  
+
   /**
    * Train NamefinderME using OnlyWithNames.train. The goal is to check if the model validator accepts it.
    * This is related to the issue OPENNLP-9
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -244,7 +244,7 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, 
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE,
         sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -255,12 +255,12 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    assertEquals(new Span(0, 1, "location"), names1[0]);
-    assertEquals(new Span(1, 3, "person"), names1[1]);
+    assertEquals(new Span(0, 1, "organization"), names1[0]); // NATO
+    assertEquals(new Span(1, 3, "location"), names1[1]); // United States
     assertEquals("person", names1[2].getType());
     assertTrue(!hasOtherAsOutcome(nameFinderModel));
   }
-  
+
   private boolean hasOtherAsOutcome(TokenNameFinderModel nameFinderModel) {
 	  AbstractModel model = nameFinderModel.getNameFinderModel();
 	  for (int i = 0; i < model.getNumOutcomes(); i++) {
@@ -271,19 +271,19 @@ public class NameFinderMETest {
 	    }
 	  return false;
   }
-  
+
   @Test
   public void testDropOverlappingSpans() {
     Span spans[] = new Span[] {new Span(1, 10), new Span(1,11), new Span(1,11), new Span(5, 15)};
     Span remainingSpan[] = NameFinderME.dropOverlappingSpans(spans);
-    
+
     assertEquals(new Span(1, 11), remainingSpan[0]);
   }
 
   /**
    * Train NamefinderME using voa1.train with several
    * nameTypes and try the model in a sample text.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -297,7 +297,7 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, 
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE,
         sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -324,14 +324,14 @@ public class NameFinderMETest {
 
     sentence = new String[] { "Scott", "Snyder", "is", "the", "director", "of",
         "the", "Center", "for", "U", ".", "S", ".", "Korea", "Policy", "." };
-    
+
     Span[] names2 = nameFinder.find(sentence);
-    
+
     assertEquals(2, names2.length);
     assertEquals(new Span(0, 2, "person"), names2[0]);
     assertEquals(new Span(7, 15, "organization"), names2[1]);
     assertEquals("person", names2[0].getType());
     assertEquals("organization", names2[1].getType());
   }
-  
+
 }
