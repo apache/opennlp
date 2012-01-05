@@ -25,7 +25,7 @@ public class Span implements Comparable<Span> {
 
   private final int start;
   private final int end;
-  
+
   private final String type;
 
   /**
@@ -36,18 +36,18 @@ public class Span implements Comparable<Span> {
    * @param type the type of the span
    */
   public Span(int s, int e, String type) {
-    
+
     if (s < 0 || e <0)
       throw new IllegalArgumentException("start and end index must be zero or greater!");
-    
-    if (s > e) 
+
+    if (s > e)
       throw new IllegalArgumentException("start index must not be larger than end index!");
-    
+
     start = s;
     end = e;
     this.type = type;
   }
-  
+
   /**
    * Initializes a new Span Object.
    *
@@ -61,14 +61,14 @@ public class Span implements Comparable<Span> {
   /**
    * Initializes a new Span object with an existing Span
    * which is shifted by an offset.
-   * 
+   *
    * @param span
    * @param offset
    */
   public Span(Span span, int offset) {
     this(span.start + offset, span.end + offset, span.getType());
   }
-  
+
   /**
    * Return the start of a span.
    *
@@ -80,7 +80,7 @@ public class Span implements Comparable<Span> {
 
   /**
    * Return the end of a span.
-   * 
+   *
    * Note: that the returned index is one past the
    * actual end of the span in the text, or the first
    * element past the end of the span.
@@ -93,13 +93,13 @@ public class Span implements Comparable<Span> {
 
   /**
    * Retrieves the type of the span.
-   * 
+   *
    * @return the type or null if not set
    */
   public String getType() {
-    return type; 
+    return type;
   }
-  
+
   /**
    * Returns the length of this span.
    *
@@ -125,9 +125,9 @@ public class Span implements Comparable<Span> {
   /**
    * Returns true if the specified index is contained inside this span.
    * An index with the value of end is considered outside the span.
-   * 
+   *
    * @param index the index to test with this span.
-   * 
+   *
    * @return true if the span contains this specified index;
    * false otherwise.
    */
@@ -232,7 +232,7 @@ public class Span implements Comparable<Span> {
     else {
       res = res * 37 + getType().hashCode();
     }
-    
+
     return res;
   }
 
@@ -250,7 +250,7 @@ public class Span implements Comparable<Span> {
     else if (o instanceof Span) {
       Span s = (Span) o;
 
-      result = (getStart() == s.getStart()) && 
+      result = (getStart() == s.getStart()) &&
           (getEnd() == s.getEnd()) &&
           (getType() != null ? type.equals(s.getType()) : true) &&
           (s.getType() != null ? s.getType().equals(getType()) : true);
@@ -273,6 +273,10 @@ public class Span implements Comparable<Span> {
     toStringBuffer.append("..");
     toStringBuffer.append(getEnd());
     toStringBuffer.append(")");
+    if (getType() != null) {
+        toStringBuffer.append(" ");
+        toStringBuffer.append(getType());
+    }
 
     return toStringBuffer.toString();
   }
