@@ -93,27 +93,27 @@ public class NameFinderME implements TokenNameFinder {
   public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize,
       SequenceValidator<String> sequenceValidator) {
     this.model = model.getNameFinderModel();
-    
+
     // If generator is provided always use that one
     if (generator != null) {
       contextGenerator = new DefaultNameContextGenerator(generator);
     }
     else {
-      // If model has a generator use that one, otherwise create default 
+      // If model has a generator use that one, otherwise create default
       AdaptiveFeatureGenerator featureGenerator = model.createFeatureGenerators();
-      
+
       if (featureGenerator == null)
         featureGenerator = createFeatureGenerator();
-      
+
       contextGenerator = new DefaultNameContextGenerator(featureGenerator);
     }
-    
+
     contextGenerator.addFeatureGenerator(
           new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
-    
+
     if (sequenceValidator == null)
       sequenceValidator = new NameFinderSequenceValidator();
-    
+
     beam = new BeamSearch<String>(beamSize, contextGenerator, this.model,
         sequenceValidator, beamSize);
   }
@@ -121,18 +121,18 @@ public class NameFinderME implements TokenNameFinder {
   public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize) {
     this(model, generator, beamSize, null);
   }
-  
+
   public NameFinderME(TokenNameFinderModel model, int beamSize) {
     this(model, null, beamSize);
   }
-  
-  
+
+
   /**
    * Creates a new name finder with the specified model.
-   * 
+   *
    * @param mod The model to be used to find names.
-   * 
-   * @deprecated Use the new model API! 
+   *
+   * @deprecated Use the new model API!
    */
   @Deprecated
   public NameFinderME(MaxentModel mod) {
@@ -141,7 +141,7 @@ public class NameFinderME implements TokenNameFinder {
 
   /**
    * Creates a new name finder with the specified model and context generator.
-   * 
+   *
    * @param mod The model to be used to find names.
    * @param cg The context generator to be used with this name finder.
    */
@@ -152,7 +152,7 @@ public class NameFinderME implements TokenNameFinder {
 
   /**
    * Creates a new name finder with the specified model and context generator.
-   * 
+   *
    * @param mod The model to be used to find names.
    * @param cg The context generator to be used with this name finder.
    * @param beamSize The size of the beam to be used in decoding this model.
@@ -178,7 +178,7 @@ public class NameFinderME implements TokenNameFinder {
            new SentenceFeatureGenerator(true, false)
            });
   }
-  
+
   private static AdaptiveFeatureGenerator createFeatureGenerator(
       byte[] generatorDescriptor, final Map<String, Object> resources)
       throws IOException {
@@ -198,26 +198,26 @@ public class NameFinderME implements TokenNameFinder {
 
     return featureGenerator;
   }
-  
+
   public Span[] find(String[] tokens) {
     return find(tokens, EMPTY);
   }
-  
-  /** 
-   * Generates name tags for the given sequence, typically a sentence, 
+
+  /**
+   * Generates name tags for the given sequence, typically a sentence,
    * returning token spans for any identified names.
-   * 
+   *
    * @param tokens an array of the tokens or words of the sequence,
    *     typically a sentence.
    * @param additionalContext features which are based on context outside
    *     of the sentence but which should also be used.
-   * 
+   *
    * @return an array of spans for each of the names identified.
    */
   public Span[] find(String[] tokens, String[][] additionalContext) {
     additionalContextFeatureGenerator.setCurrentContext(additionalContext);
     bestSequence = beam.bestSequence(tokens, additionalContext);
-    
+
     List<String> c = bestSequence.getOutcomes();
 
     contextGenerator.updateAdaptiveData(tokens, c.toArray(new String[c.size()]));
@@ -229,7 +229,7 @@ public class NameFinderME implements TokenNameFinder {
       String chunkTag = c.get(li);
       if (chunkTag.endsWith(NameFinderME.START)) {
         if (start != -1) {
-          spans.add(new Span(start, end, extractNameType(chunkTag)));
+          spans.add(new Span(start, end, extractNameType(c.get(li - 1))));
         }
 
         start = li;
@@ -282,7 +282,7 @@ public class NameFinderME implements TokenNameFinder {
   /**
     * Returns an array with the probabilities of the last decoded sequence.  The
     * sequence was determined based on the previous call to <code>chunk</code>.
-    * 
+    *
     * @return An array with the same number of probabilities as tokens were sent to <code>chunk</code>
     * when it was last called.
     */
@@ -291,37 +291,37 @@ public class NameFinderME implements TokenNameFinder {
    }
 
    /**
-    * Returns an array of probabilities for each of the specified spans which is the arithmetic mean 
+    * Returns an array of probabilities for each of the specified spans which is the arithmetic mean
     * of the probabilities for each of the outcomes which make up the span.
-    * 
+    *
     * @param spans The spans of the names for which probabilities are desired.
-    * 
+    *
     * @return an array of probabilities for each of the specified spans.
     */
    public double[] probs(Span[] spans) {
-     
+
      double[] sprobs = new double[spans.length];
      double[] probs = bestSequence.getProbs();
-     
+
      for (int si=0; si<spans.length; si++) {
-       
+
        double p = 0;
-       
+
        for (int oi = spans[si].getStart(); oi < spans[si].getEnd(); oi++) {
          p += probs[oi];
        }
-       
-       p /= spans[si].length(); 
-       
+
+       p /= spans[si].length();
+
        sprobs[si] = p;
      }
-     
+
      return sprobs;
    }
 
    /**
     * Trains a name finder model.
-    * 
+    *
     * @param languageCode
     *          the language of the training data
     * @param type
@@ -334,29 +334,29 @@ public class NameFinderME implements TokenNameFinder {
     *          null or the feature generator
     * @param resources
     *          the resources for the name finder or null if none
-    * 
+    *
     * @return the newly trained model
-    * 
+    *
     * @throws IOException
     */
-   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
+   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources) throws IOException {
-     
+
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-     
+
      AdaptiveFeatureGenerator featureGenerator;
-     
+
      if (generator != null)
        featureGenerator = generator;
-     else 
+     else
        featureGenerator = createFeatureGenerator();
-     
+
      AbstractModel nameFinderModel;
-     
+
      if (!TrainUtil.isSequenceTraining(trainParams.getSettings())) {
        EventStream eventStream = new NameFinderEventStream(samples, type,
            new DefaultNameContextGenerator(featureGenerator));
-       
+
        nameFinderModel = TrainUtil.train(eventStream, trainParams.getSettings(), manifestInfoEntries);
      }
      else {
@@ -364,14 +364,14 @@ public class NameFinderME implements TokenNameFinder {
 
        nameFinderModel = TrainUtil.train(ss, trainParams.getSettings(), manifestInfoEntries);
      }
-     
+
      return new TokenNameFinderModel(languageCode, nameFinderModel,
          resources, manifestInfoEntries);
    }
-   
+
   /**
    * Trains a name finder model.
-   * 
+   *
    * @param languageCode
    *          the language of the training data
    * @param type
@@ -384,44 +384,44 @@ public class NameFinderME implements TokenNameFinder {
    *          descriptor to configure the feature generation or null
    * @param resources
    *          the resources for the name finder or null if none
-   * 
+   *
    * @return the newly trained model
-   * 
+   *
    * @throws IOException
    */
   public static TokenNameFinderModel train(String languageCode, String type,
       ObjectStream<NameSample> samples, TrainingParameters trainParams,
       byte[] featureGeneratorBytes, final Map<String, Object> resources)
       throws IOException {
-    
+
     TokenNameFinderModel model = train(languageCode, type, samples, trainParams,
         createFeatureGenerator(featureGeneratorBytes, resources), resources);
-    
+
     // place the descriptor in the model
     if (featureGeneratorBytes != null) {
       model = model.updateFeatureGenerator(featureGeneratorBytes);
     }
-    
+
     return model;
   }
-   
+
    /**
     * Trains a name finder model.
-    * 
+    *
     * @param languageCode the language of the training data
     * @param type null or an override type for all types in the training data
     * @param samples the training data
     * @param iterations the number of iterations
     * @param cutoff
     * @param resources the resources for the name finder or null if none
-    * 
+    *
     * @return the newly trained model
-    * 
+    *
     * @throws IOException
     * @throws ObjectStreamException
     */
-   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
-       AdaptiveFeatureGenerator generator, final Map<String, Object> resources, 
+   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
+       AdaptiveFeatureGenerator generator, final Map<String, Object> resources,
        int iterations, int cutoff) throws IOException {
      return train(languageCode, type, samples, ModelUtil.createTrainingParameters(iterations, cutoff),
          generator, resources);
@@ -432,46 +432,46 @@ public class NameFinderME implements TokenNameFinder {
    * instead and pass in a TrainingParameters object.
    */
   @Deprecated
-   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
+   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        final Map<String, Object> resources, int iterations, int cutoff) throws IOException  {
      return train(languageCode, type, samples, (AdaptiveFeatureGenerator) null, resources, iterations, cutoff);
    }
-   
+
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        final Map<String, Object> resources) throws IOException {
      return NameFinderME.train(languageCode, type, samples, resources, 100, 5);
    }
-  
+
    /**
    * @deprecated use {@link #train(String, String, ObjectStream, TrainingParameters, byte[], Map)}
    * instead and pass in a TrainingParameters object.
    */
   @Deprecated
-   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples, 
-       byte[] generatorDescriptor, final Map<String, Object> resources, 
+   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
+       byte[] generatorDescriptor, final Map<String, Object> resources,
        int iterations, int cutoff) throws IOException {
-     
+
      // TODO: Pass in resource manager ...
-     
+
      AdaptiveFeatureGenerator featureGenerator = createFeatureGenerator(generatorDescriptor, resources);
-     
+
      TokenNameFinderModel model = train(languageCode, type, samples, featureGenerator,
          resources, iterations, cutoff);
-     
+
      if (generatorDescriptor != null) {
        model = model.updateFeatureGenerator(generatorDescriptor);
      }
-     
+
      return model;
    }
-   
+
   @Deprecated
   public static GISModel train(EventStream es, int iterations, int cut) throws IOException {
     return GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
-  
+
   /**
-   * Gets the name type from the outcome 
+   * Gets the name type from the outcome
    * @param outcome the outcome
    * @return the name type, or null if not set
    */
@@ -481,47 +481,47 @@ public class NameFinderME implements TokenNameFinder {
       String nameType = matcher.group(1);
       return nameType;
     }
-    
+
     return null;
   }
 
   /**
    * Removes spans with are intersecting or crossing in anyway.
-   * 
+   *
    * <p>
    * The following rules are used to remove the spans:<br>
    * Identical spans: The first span in the array after sorting it remains<br>
    * Intersecting spans: The first span after sorting remains<br>
    * Contained spans: All spans which are contained by another are removed<br>
-   * 
+   *
    * @param spans
-   * 
+   *
    * @return non-overlapping spans
    */
   public static Span[] dropOverlappingSpans(Span spans[]) {
-    
+
     List<Span> sortedSpans = new ArrayList<Span>(spans.length);
     Collections.addAll(sortedSpans, spans);
     Collections.sort(sortedSpans);
-    
+
     Iterator<Span> it = sortedSpans.iterator();
-    
-    
+
+
     Span lastSpan = null;
-    
+
     while (it.hasNext()) {
       Span span = it.next();
-      
+
       if (lastSpan != null) {
         if (lastSpan.intersects(span)) {
           it.remove();
           span = lastSpan;
         }
       }
-      
+
       lastSpan = span;
     }
-    
+
     return sortedSpans.toArray(new Span[sortedSpans.size()]);
   }
 }
