@@ -17,7 +17,7 @@
 
 package opennlp.tools.formats;
 
-import java.io.InputStreamReader;
+import java.io.FileInputStream;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -50,9 +50,10 @@ public class WordTagSampleStreamFactory extends LanguageSampleStreamFactory<POSS
     language = params.getLang();
 
     CmdLineUtil.checkInputFile("Data", params.getData());
-    ObjectStream<String> lineStream;
-    lineStream = new PlainTextByLineStream(new InputStreamReader(
-        CmdLineUtil.openInFile(params.getData()), params.getEncoding()));
+    FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());
+
+    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn.getChannel(),
+        params.getEncoding());
 
     return new WordTagSampleStream(lineStream);
   }
