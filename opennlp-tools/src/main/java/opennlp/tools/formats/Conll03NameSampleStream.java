@@ -67,8 +67,8 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
 
     this.lang = lang;
     try {
-      this.lineStream = new PlainTextByLineStream(in, "ISO-8859-1");
-      System.setOut(new PrintStream(System.out, true, "ISO-8859-1"));
+      this.lineStream = new PlainTextByLineStream(in, "UTF-8");
+      System.setOut(new PrintStream(System.out, true, "UTF-8"));
     } catch (UnsupportedEncodingException e) {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
