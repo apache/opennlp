@@ -67,12 +67,12 @@ public final class CLI {
   
   public static final String CMD = "opennlp";
   
-  private static Map<String, AbstractCmdLineTool> toolLookupMap;
+  private static Map<String, CmdLineTool> toolLookupMap;
   
   static {
-    toolLookupMap = new LinkedHashMap<String, AbstractCmdLineTool>();
+    toolLookupMap = new LinkedHashMap<String, CmdLineTool>();
     
-    List<AbstractCmdLineTool> tools = new LinkedList<AbstractCmdLineTool>();
+    List<CmdLineTool> tools = new LinkedList<CmdLineTool>();
     
     // Document Categorizer
     tools.add(new DoccatTool());
@@ -128,7 +128,7 @@ public final class CLI {
     tools.add(new CheckModelUpdaterTool()); // re-trains  build model
     tools.add(new TaggerModelReplacerTool());
     
-    for (AbstractCmdLineTool tool : tools) {
+    for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);
     }
     
@@ -156,7 +156,7 @@ public final class CLI {
     }
     numberOfSpaces = numberOfSpaces + 4;
     
-    for (AbstractCmdLineTool tool : toolLookupMap.values()) {
+    for (CmdLineTool tool : toolLookupMap.values()) {
       
       System.out.print("  " + tool.getName());
       
@@ -190,7 +190,7 @@ public final class CLI {
       formatName = toolName.substring(idx + 1);
       toolName = toolName.substring(0, idx);
     }
-    AbstractCmdLineTool tool = toolLookupMap.get(toolName);
+    CmdLineTool tool = toolLookupMap.get(toolName);
     
     try {
       if (null == tool) {
@@ -201,7 +201,7 @@ public final class CLI {
           0 < toolArguments.length && "help".equals(toolArguments[0])) {
           if (tool instanceof TypedCmdLineTool) {
             System.out.println(((TypedCmdLineTool) tool).getHelp(formatName));
-          } else if (tool instanceof CmdLineTool) {
+          } else if (tool instanceof BasicCmdLineTool) {
             System.out.println(tool.getHelp());
           }
 
@@ -210,9 +210,9 @@ public final class CLI {
 
       if (tool instanceof TypedCmdLineTool) {
         ((TypedCmdLineTool) tool).run(formatName, toolArguments);
-      } else if (tool instanceof CmdLineTool) {
+      } else if (tool instanceof BasicCmdLineTool) {
         if (-1 == idx) {
-          ((CmdLineTool) tool).run(toolArguments);
+          ((BasicCmdLineTool) tool).run(toolArguments);
         } else {
           throw new TerminateToolException(1, "Tool " + toolName + " does not support formats.");
         }

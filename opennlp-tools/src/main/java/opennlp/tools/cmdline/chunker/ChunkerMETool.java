@@ -25,7 +25,7 @@ import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.chunker.DefaultChunkerSequenceValidator;
-import opennlp.tools.cmdline.BaseCLITool;
+import opennlp.tools.cmdline.AbstractBasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
@@ -34,7 +34,7 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class ChunkerMETool extends BaseCLITool {
+public class ChunkerMETool extends AbstractBasicCmdLineTool {
 
   public String getShortDescription() {
     return "learnable chunker";

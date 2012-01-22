@@ -20,26 +20,25 @@ package opennlp.tools.cmdline;
 import java.util.Map;
 
 /**
- * Base class for tools which work with data of some type T.
+ * Base class for tools which support processing of samples of some type T
+ * coming from a stream of a certain format.
  */
-public abstract class AbstractTypedTool<T, P>
-    extends AbstractCLITool<P> implements TypedCmdLineTool {
+public abstract class AbstractTypedTool<T>
+    extends AbstractCmdLineTool implements TypedCmdLineTool {
 
   /**
    * variable to access the type of the generic parameter.
    */
-  protected Class<T> type;
+  protected final Class<T> type;
 
   /**
    * Constructor with type parameters.
    *
    * @param sampleType class of the template parameter
-   * @param paramsClass interface with parameters
    */
-  protected AbstractTypedTool(Class<T> sampleType, Class<P> paramsClass) {
-    super(paramsClass);
+  protected AbstractTypedTool(Class<T> sampleType) {
+    super();
     this.type = sampleType;
-    this.paramsClass = paramsClass;
   }
 
   /**
@@ -110,21 +109,5 @@ public abstract class AbstractTypedTool<T, P>
 
   public String getHelp() {
     return getHelp("");
-  }
-
-  @SuppressWarnings({"unchecked"})
-  public String getHelp(String format) {
-    if ("".equals(format) || StreamFactoryRegistry.DEFAULT_FORMAT.equals(format)) {
-      return getBasicHelp(paramsClass,
-          StreamFactoryRegistry.getFactory(type, StreamFactoryRegistry.DEFAULT_FORMAT)
-              .<P>getParameters());
-    } else {
-      ObjectStreamFactory<T> factory = StreamFactoryRegistry.getFactory(type, format);
-      if (null == factory) {
-        throw new TerminateToolException(1, "Format " + format + " is not found.\n" + getHelp());
-      }
-      return "Usage: " + CLI.CMD + " " + getName() + "." + format + " " +
-        ArgumentParser.createUsage(paramsClass, factory.<P>getParameters());
-    }
   }
 }
