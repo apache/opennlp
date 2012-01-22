@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import opennlp.tools.cmdline.BaseCLITool;
+import opennlp.tools.cmdline.AbstractBasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
@@ -37,7 +37,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
-public final class TokenNameFinderTool extends BaseCLITool {
+public final class TokenNameFinderTool extends AbstractBasicCmdLineTool {
 
   public String getShortDescription() {
     return "learnable name finder";

@@ -20,7 +20,7 @@ package opennlp.tools.cmdline.parser;
 import java.io.File;
 import java.io.IOException;
 
-import opennlp.tools.cmdline.AbstractTypedTool;
+import opennlp.tools.cmdline.AbstractTypedParamTool;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.ObjectStreamFactory;
@@ -34,7 +34,7 @@ import opennlp.tools.util.ObjectStream;
  * Abstract base class for tools which update the parser model.
  */
 abstract class ModelUpdaterTool
-    extends AbstractTypedTool<Parse, ModelUpdaterTool.ModelUpdaterParams> {
+    extends AbstractTypedParamTool<Parse, ModelUpdaterTool.ModelUpdaterParams> {
   
   interface ModelUpdaterParams extends TrainingToolParams {
   }

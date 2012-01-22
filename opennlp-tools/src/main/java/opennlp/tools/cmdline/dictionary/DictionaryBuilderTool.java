@@ -25,12 +25,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.BaseCLITool;
+import opennlp.tools.cmdline.AbstractBasicCmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
 
-public class DictionaryBuilderTool extends BaseCLITool {
+public class DictionaryBuilderTool extends AbstractBasicCmdLineTool {
 
   interface Params extends DictionaryBuilderParams {
   }

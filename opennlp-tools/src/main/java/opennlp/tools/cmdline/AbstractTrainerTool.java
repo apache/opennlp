@@ -23,7 +23,7 @@ import opennlp.tools.util.TrainingParameters;
 /**
  * Base class for trainer tools.
  */
-public class AbstractTrainerTool<T, P> extends AbstractTypedTool<T, P> {
+public class AbstractTrainerTool<T, P> extends AbstractTypedParamTool<T, P> {
 
   protected P params;
   protected TrainingParameters mlParams;

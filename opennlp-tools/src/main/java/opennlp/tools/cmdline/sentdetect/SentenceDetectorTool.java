@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import opennlp.tools.cmdline.BaseCLITool;
+import opennlp.tools.cmdline.AbstractBasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
@@ -34,7 +34,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * A sentence detector which uses a maxent model to predict the sentences.
  */
-public final class SentenceDetectorTool extends BaseCLITool {
+public final class SentenceDetectorTool extends AbstractBasicCmdLineTool {
 
   public String getShortDescription() {
     return "learnable sentence detector";
