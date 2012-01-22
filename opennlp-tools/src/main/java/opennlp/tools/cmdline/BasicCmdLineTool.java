@@ -15,30 +15,19 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.tokenizer;
+package opennlp.tools.cmdline;
 
-import opennlp.tools.cmdline.AbstractBasicCmdLineTool;
-import opennlp.tools.cmdline.CLI;
+/**
+ * A simple tool which can be executed from the command line.
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
+ */
+public interface BasicCmdLineTool extends CmdLineTool {
 
-public final class SimpleTokenizerTool extends AbstractBasicCmdLineTool {
-
-  public String getShortDescription() {
-    return "character class tokenizer";
-  }
-  
-  public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " < sentences";
-  }
-
-  public void run(String[] args) {
-    if (args.length != 0) {
-      System.out.println(getHelp());
-    } else {
-    
-      CommandLineTokenizer tokenizer =
-        new CommandLineTokenizer(opennlp.tools.tokenize.SimpleTokenizer.INSTANCE);
-
-      tokenizer.process();
-    }
-  }
+  /**
+   * Executes the tool with the given parameters.
+   * 
+   * @param args arguments
+   */
+  void run(String args[]);
 }

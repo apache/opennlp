@@ -18,16 +18,29 @@
 package opennlp.tools.cmdline;
 
 /**
- * A tool which can be executed from the command line.
- * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * Base interface for all command line tools.
  */
-public interface CmdLineTool extends AbstractCmdLineTool {
+public interface CmdLineTool {
 
   /**
-   * Executes the tool with the given parameters.
-   * 
-   * @param args arguments
+   * Retrieves the name of the training data tool. The name (used as command)
+   * must not contain white spaces.
+   *
+   * @return the name of the command line tool
    */
-  void run(String args[]);
+  String getName();
+
+  /**
+   * Retrieves a short description of what the tool does.
+   *
+   * @return a short description of what the tool does
+   */
+  String getShortDescription();
+
+  /**
+   * Retrieves a description on how to use the tool.
+   *
+   * @return a description on how to use the tool
+   */
+  String getHelp();
 }

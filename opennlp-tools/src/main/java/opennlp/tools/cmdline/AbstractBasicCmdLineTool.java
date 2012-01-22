@@ -18,11 +18,11 @@
 package opennlp.tools.cmdline;
 
 /**
- * Base class for standard tools.
+ * Base class for basic tools.
  */
-public abstract class BaseCLITool extends AbstractCLITool<Class> implements CmdLineTool {
+public abstract class AbstractBasicCmdLineTool extends AbstractCmdLineTool implements BasicCmdLineTool {
 
-  public BaseCLITool() {
-    super(null);
+  public AbstractBasicCmdLineTool() {
+    super();
   }
 }

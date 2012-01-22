@@ -18,9 +18,10 @@
 package opennlp.tools.cmdline;
 
 /**
- * Interface for tools which support formats and processing of samples.
+ * Interface for tools which support processing of samples of some type
+ * coming from a stream of a certain format.
  */
-public interface TypedCmdLineTool extends AbstractCmdLineTool {
+public interface TypedCmdLineTool extends CmdLineTool {
 
   /**
    * Executes the tool with the given parameters.

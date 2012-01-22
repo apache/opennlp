@@ -22,7 +22,7 @@ import opennlp.tools.util.ObjectStream;
 /**
  * Base class for evaluator tools.
  */
-public class AbstractEvaluatorTool<T, P> extends AbstractTypedTool<T, P> {
+public class AbstractEvaluatorTool<T, P> extends AbstractTypedParamTool<T, P> {
 
   protected P params;
   protected ObjectStreamFactory<T> factory;

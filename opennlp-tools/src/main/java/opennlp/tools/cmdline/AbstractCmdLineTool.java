@@ -18,29 +18,40 @@
 package opennlp.tools.cmdline;
 
 /**
- * Base interface for command line tools.
+ * Base class for all command line tools.
  */
-public interface AbstractCmdLineTool {
+public abstract class AbstractCmdLineTool implements CmdLineTool {
 
-  /**
-   * Retrieves the name of the training data tool. The name (used as command)
-   * must not contain white spaces.
-   *
-   * @return the name of the command line tool
-   */
-  String getName();
+  protected AbstractCmdLineTool() {
+  }
 
-  /**
-   * Retrieves a short description of what the tool does.
-   *
-   * @return a short description of what the tool does
-   */
-  String getShortDescription();
+  public String getName() {
+    if (getClass().getName().endsWith("Tool")) {
+      return getClass().getSimpleName().substring(0, getClass().getSimpleName().length() - 4);
+    } else {
+      return getClass().getSimpleName();
+    }
+  }
 
-  /**
-   * Retrieves a description on how to use the tool.
-   *
-   * @return a description on how to use the tool
-   */
-  String getHelp();
+  @SuppressWarnings({"unchecked"})
+  protected <T> String getBasicHelp(Class<T> argProxyInterface) {
+    return getBasicHelp(new Class[]{argProxyInterface});
+  }
+
+  protected <T> String getBasicHelp(Class<T>... argProxyInterfaces) {
+    return "Usage: " + CLI.CMD + " " + getName() + " " +
+        ArgumentParser.createUsage(argProxyInterfaces);
+  }
+
+  protected <T> T validateAndParseParams(String[] args, Class<T> argProxyInterface) {
+    String errorMessage = ArgumentParser.validateArgumentsLoudly(args, argProxyInterface);
+    if (null != errorMessage) {
+      throw new TerminateToolException(1, errorMessage + "\n" + getHelp());
+    }
+    return ArgumentParser.parse(args, argProxyInterface);
+  }
+
+  public String getShortDescription() {
+    return "";
+  }
 }

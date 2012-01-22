@@ -28,7 +28,7 @@ import opennlp.tools.util.ObjectStream;
  * @param <T> class of data sample the tool converts, for example {@link opennlp.tools.postag
  * .POSSample}
  */
-public abstract class AbstractConverterTool<T> extends AbstractTypedTool<T, Class> {
+public abstract class AbstractConverterTool<T> extends AbstractTypedTool<T> {
 
   /**
    * Constructor with type parameter.
@@ -36,7 +36,7 @@ public abstract class AbstractConverterTool<T> extends AbstractTypedTool<T, Clas
    * @param sampleType class of the template parameter
    */
   protected AbstractConverterTool(Class<T> sampleType) {
-    super(sampleType, null);
+    super(sampleType);
   }
 
   public String getShortDescription() {
