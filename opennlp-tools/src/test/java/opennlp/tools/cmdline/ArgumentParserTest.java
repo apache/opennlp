@@ -58,22 +58,26 @@ public class ArgumentParserTest {
     ArgumentParser.createUsage(InvalidReturnType.class);
   }
   
-  interface SimpleArguments {
+  interface SimpleArguments extends AllOptionalArguments {
     
     @ParameterDescription(valueName = "charset", description = "a charset encoding")
     String getEncoding();
     
+    @OptionalParameter
+    Integer getCutoff();
+  }
+
+  interface AllOptionalArguments {
+
     @ParameterDescription(valueName = "num")
     @OptionalParameter(defaultValue = "100")
     Integer getIterations();
-    
-    @OptionalParameter
-    Integer getCutoff();
-    
+
     @ParameterDescription(valueName = "true|false")
     @OptionalParameter(defaultValue = "true")
     Boolean getAlphaNumOpt();
   }
+
   
   @Test
   public void testSimpleArguments() {
@@ -95,7 +99,31 @@ public class ArgumentParserTest {
     assertFalse(ArgumentParser.validateArguments(argsString.split(" "), SimpleArguments.class));
     ArgumentParser.parse(argsString.split(" "), SimpleArguments.class);
   }
-  
+
+  @Test
+  public void testAllOptionalArgumentsOneArgument() {
+    String argsString = "-alphaNumOpt false";
+
+    assertTrue(ArgumentParser.validateArguments(argsString.split(" "), AllOptionalArguments.class));
+    ArgumentParser.parse(argsString.split(" "), AllOptionalArguments.class);
+  }
+
+  @Test
+  public void testAllOptionalArgumentsZeroArguments() {
+    String[] args = {};
+
+    assertTrue(ArgumentParser.validateArguments(args, AllOptionalArguments.class));
+    ArgumentParser.parse(args, AllOptionalArguments.class);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testAllOptionalArgumentsExtraArgument() {
+    String argsString = "-encoding UTF-8";
+
+    assertFalse(ArgumentParser.validateArguments(argsString.split(" "), AllOptionalArguments.class));
+    ArgumentParser.parse(argsString.split(" "), AllOptionalArguments.class);
+  }
+
   @Test
   public void testSimpleArgumentsUsage() {
     
