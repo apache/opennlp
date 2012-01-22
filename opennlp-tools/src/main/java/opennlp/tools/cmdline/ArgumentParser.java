@@ -321,9 +321,9 @@ public class ArgumentParser {
    * @return null, if arguments are valid or error message otherwise
    */
   public static <T> String validateArgumentsLoudly(String args[], Class<T>... argProxyInterfaces) {
-    // number of parameters must be at least 2 and always be even
-    if (args.length < 2 || args.length % 2 != 0) {
-      return "Number of parameters must be at least 2 and always be even";
+    // number of parameters must be always be even
+    if (args.length % 2 != 0) {
+      return "Number of parameters must be always be even";
     }
 
     int argumentCount = 0;
