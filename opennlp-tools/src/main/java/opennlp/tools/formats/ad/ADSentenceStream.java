@@ -51,6 +51,8 @@ public class ADSentenceStream extends
     private String text;
     private Node root;
     private String metadata;
+    
+    public static final String META_LABEL_FINAL = "final";
 
     public String getText() {
       return text;
@@ -85,12 +87,10 @@ public class ADSentenceStream extends
    */
   public static class SentenceParser {
 
-    //private Pattern rootPattern = Pattern.compile("^[^:=]+:[^(\\s]+(\\(.*?\\))?$");
-	private Pattern rootPattern = Pattern.compile("^A\\d+$");
     private Pattern nodePattern = Pattern
-        .compile("^([=-]*)([^:=]+:[^\\(\\s]+)(\\(([^\\)]+)\\))?\\s*$");
+        .compile("([=-]*)([^:=]+:[^\\(\\s]+)(\\(([^\\)]+)\\))?\\s*(?:(\\((<.+>)\\))*)\\s*$");
     private Pattern leafPattern = Pattern
-        .compile("^([=-]*)([^:=]+:[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
+        .compile("^([=-]*)([^:=]+):([^\\(\\s]+)\\([\"'](.+)[\"']\\s*((?:<.+>)*)\\s*([^\\)]+)?\\)\\s+(.+)");
     private Pattern bizarreLeafPattern = Pattern
     		.compile("^([=-]*)([^:=]+=[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
     private Pattern punctuationPattern = Pattern.compile("^(=*)(\\W+)$");
@@ -135,19 +135,18 @@ public class ADSentenceStream extends
 	        if(isTitle) titleTag = " title";
 	        String boxTag = "";
 	        if(isBox) boxTag = " box";
-	        meta = line.substring(0, start) + " p=" + para + titleTag + boxTag + metaFromSource;
+	        if(start > 0) {
+	          meta = line.substring(0, start) + " p=" + para + titleTag + boxTag + metaFromSource;
+	        } else {
+	          // rare case were there is no space between id and the sentence.
+              // will use previous meta for now
+	        }
         }
         sentence.setText(text);
         sentence.setMetadata(meta);
         // now we look for the root node
         line = reader.readLine();
 
-        while (!rootPattern.matcher(line).matches()) {
-          line = reader.readLine();
-          if (line == null) {
-            return null;
-          }
-        }
         // got the root. Add it to the stack
         Stack<Node> nodeStack = new Stack<Node>();
         // we get the complete line
@@ -155,9 +154,9 @@ public class ADSentenceStream extends
         root.setSyntacticTag(line);
         root.setLevel(0);
         nodeStack.add(root);
-        // now we have to take care of the lastLevel. Every time it raises, we
-        // will add the
-        // leaf to the node at the top. If it decreases, we remove the top.
+        
+        /* now we have to take care of the lastLevel. Every time it raises, we will add the
+        leaf to the node at the top. If it decreases, we remove the top. */
         line = reader.readLine();
         while (line != null && line.length() != 0 && line.startsWith("</s>") == false && !line.equals("&&")) {
           TreeElement element = this.getElement(line);
@@ -227,11 +226,9 @@ public class ADSentenceStream extends
       if (nodeMatcher.matches()) {
         int level = nodeMatcher.group(1).length();
         String syntacticTag = nodeMatcher.group(2);
-        String morphologicalTag = nodeMatcher.group(3);
         Node node = new Node();
         node.setLevel(level);
         node.setSyntacticTag(syntacticTag);
-        node.setMorphologicalTag(morphologicalTag);
         return node;
       }
 
@@ -239,20 +236,19 @@ public class ADSentenceStream extends
       if (leafMatcher.matches()) {
         int level = leafMatcher.group(1).length();
         String syntacticTag = leafMatcher.group(2);
-        String lemma = leafMatcher.group(3);
-        String morphologicalTag = leafMatcher.group(4);
-        String lexeme = leafMatcher.group(5);
+        String funcTag = leafMatcher.group(3);
+        String lemma = leafMatcher.group(4);
+        String secondaryTag = leafMatcher.group(5);
+        String morphologicalTag = leafMatcher.group(6);
+        String lexeme = leafMatcher.group(7);
         Leaf leaf = new Leaf();
         leaf.setLevel(level);
         leaf.setSyntacticTag(syntacticTag);
+        leaf.setFunctionalTag(funcTag);
+        leaf.setSecondaryTag(secondaryTag);
         leaf.setMorphologicalTag(morphologicalTag);
         leaf.setLexeme(lexeme);
-        if (lemma != null) {
-          if (lemma.length() > 2) {
-            lemma = lemma.substring(1, lemma.length() - 1);
-          }
-          leaf.setLemma(lemma);
-        }
+        leaf.setLemma(lemma);
 
         return leaf;
       }
@@ -296,6 +292,10 @@ public class ADSentenceStream extends
         } else {
         	int level = line.lastIndexOf("=");
         	String lexeme = line.substring(level + 1);
+        	
+        	if(lexeme.matches("\\w.*?[\\.<>].*")) {
+        	  return null;
+        	}
         	
         	 Leaf leaf = new Leaf();
            leaf.setLevel(level + 1);
@@ -387,16 +387,39 @@ public class ADSentenceStream extends
 
       private String word;
       private String lemma;
+      private String secondaryTag;
+      private String functionalTag;
 
       @Override
       public boolean isLeaf() {return true;}
       
+      public void setFunctionalTag(String funcTag) {
+        this.functionalTag = funcTag;
+      }
+      
+      public String getFunctionalTag(){
+        return this.functionalTag;
+      }
+
+      public void setSecondaryTag(String secondaryTag) {
+        this.secondaryTag = secondaryTag;
+      }
+      
+      public String getSecondaryTag() {
+        return this.secondaryTag;
+      }
+
       public void setLexeme(String lexeme) {
         this.word = lexeme;
       }
 
       public String getLexeme() {
         return word;
+      }
+      
+      private String emptyOrString(String value, String prefix, String suffix) {
+        if(value == null) return "";
+        return prefix + value + suffix;
       }
 
       @Override
@@ -407,7 +430,11 @@ public class ADSentenceStream extends
           sb.append("=");
         }
         if (this.getSyntacticTag() != null) {
-          sb.append(this.getSyntacticTag()).append("(").append(this.getMorphologicalTag()).append(") ");
+          sb.append(this.getSyntacticTag()).append(":")
+              .append(getFunctionalTag()).append("(")
+              .append(emptyOrString(getLemma(), "'", "' "))
+              .append(emptyOrString(getSecondaryTag(), "", " "))
+              .append(this.getMorphologicalTag()).append(") ");
         }
         sb.append(this.word).append("\n");
         return sb.toString();
@@ -433,6 +460,7 @@ public class ADSentenceStream extends
    * The end sentence pattern 
    */
   private static final Pattern sentEnd = Pattern.compile("</s>");
+  private static final Pattern extEnd = Pattern.compile("</ext>");
   
   /** 
    * The start sentence pattern 
@@ -488,8 +516,10 @@ public class ADSentenceStream extends
       if (line != null) {
     	  
     	  if(sentenceStarted) {
-    		  if (sentEnd.matcher(line).matches()) {
+    		  if (sentEnd.matcher(line).matches() || extEnd.matcher(line).matches()) {
 		          sentenceStarted = false;
+	          } else if(line.startsWith("A1")) {
+	            // skip
 	          } else {
 	        	  sentence.append(line).append('\n');
 	          }
