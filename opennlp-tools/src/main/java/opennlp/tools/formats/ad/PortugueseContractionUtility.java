@@ -34,7 +34,8 @@ import java.util.Map;
  */
 public class PortugueseContractionUtility {
 
-  private static final Map<String, String> CONTRACTIONS;
+  protected static final Map<String, String> CONTRACTIONS;
+  
   static {
     Map<String, String> elems = new HashMap<String, String>();
     // 103 CONTRACTIONS.
