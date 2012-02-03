@@ -36,12 +36,14 @@ public class ADParagraphStreamTest {
     ADSentenceStream stream = openData();
     
     ADSentenceStream.Sentence paragraph = stream.read();
+    paragraph.getRoot();
     while(paragraph != null) {
       count++;
       paragraph = stream.read();
+//      paragraph.getRoot();
     }
     
-    assertEquals(4, count);
+    assertEquals(6, count);
   }
   
   @Test
@@ -57,7 +59,7 @@ public class ADParagraphStreamTest {
       paragraph = stream.read();
     }
     
-    assertEquals(4, count);
+    assertEquals(6, count);
   }
   
   private static ADSentenceStream openData() throws IOException {

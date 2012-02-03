@@ -38,7 +38,7 @@ public class ADNameSampleStreamTest {
 
   @Test
   public void testSimpleCount() throws IOException {
-    assertEquals(4, samples.size());
+    assertEquals(6, samples.size());
   }
   
   @Test
@@ -93,6 +93,10 @@ public class ADNameSampleStreamTest {
     assertEquals(new Span(18, 19, "event"), samples.get(3).getNames()[3]);//    18..19
     assertEquals(new Span(27, 28, "event"), samples.get(3).getNames()[4]);//    27..28
     assertEquals(new Span(29, 30, "event"), samples.get(3).getNames()[5]);//    29..30
+    
+    assertEquals(new Span(1, 6, "time"), samples.get(4).getNames()[0]);//    0..1
+    
+    assertEquals(new Span(0, 3, "person"), samples.get(5).getNames()[0]);//    0..1
   }
 
   @Before
