@@ -197,3 +197,37 @@ STA:fcl
 .
 
 </s>
+
+<s id="63955" ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-2" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=">
+SOURCE: ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-2" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme="
+1001 Inicia no próximo dia 6 de outubro o Porto Poesia 2 no Shopping Total Av. Cristovão Colombo, 545 -- Porto Alegre -- RS.
+A1
+STA:fcl
+=ADVL:pp
+==H:prp("em" <left>)    Em
+==P<:adjp(<data>)
+===H:num("9" <NER:date> <card> M S)     9
+===N<:pp
+====H:prp("de" <NER2> <np-close>)       de
+====P<:np(<data>)
+=====H:n("agosto" <np-idf> <NER2> M S)  agosto
+=====N<:pp
+======H:prp("de" <NER2> <np-close>)     de
+======P<:adjp
+=======H:num("1831" <date> <card> <NER2> M P)   1831
+
+</s>
+
+<s id="63955" ref="Ivan do Maxixe">
+SOURCE: ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-2" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme="
+1001 Inicia no próximo dia 6 de outubro o Porto Poesia 2 no Shopping Total Av. Cristovão Colombo, 545 -- Porto Alegre -- RS.
+A1
+STA:fcl
+===H:prop("Ivan" <cjt-sc> <hum> <right> M S)    Ivan
+===N<:pp
+====H:prp("de" <sam-> <NER2> <np-close>)        de
+====P<:np
+=====>N:art("o" <NER2> <artd> <-sam> DET M S)   o
+=====H:n("maxixe" <np-def> <prop> <NER2> <fruit> M S)   Maxixe
+
+</s>
