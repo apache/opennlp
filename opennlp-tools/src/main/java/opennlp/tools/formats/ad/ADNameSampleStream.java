@@ -182,17 +182,28 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
   }
 
+  int textID = -1;
+  
   public NameSample read() throws IOException {
 
     Sentence paragraph;
+    // we should look for text here.
     while ((paragraph = this.adSentenceStream.read()) != null) {
+      
+      int currentTextID = getTextID(paragraph);
+      boolean clearData = false;
+      if(currentTextID != textID) {
+        clearData = true;
+        textID = currentTextID;
+      }
+      
       Node root = paragraph.getRoot();
       List<String> sentence = new ArrayList<String>();
       List<Span> names = new ArrayList<Span>();
       process(root, sentence, names);
 
       return new NameSample(sentence.toArray(new String[sentence.size()]),
-          names.toArray(new Span[names.size()]), true);
+          names.toArray(new Span[names.size()]), clearData);
     }
     return null;
   }
@@ -231,17 +242,40 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    */
   private void processLeaf(Leaf leaf, List<String> sentence,
       List<Span> names) {
+    
+    boolean alreadyAdded = false;
 
-    if (leaf != null && leftContractionPart == null) {
+    if (leftContractionPart != null) {
+      // will handle the contraction
+      String tag = leaf.getSecondaryTag();
+      String right = leaf.getLexeme();
+      if (tag != null && tag.contains("<-sam>")) {
+        right = leaf.getLexeme();
+        String c = PortugueseContractionUtility.toContraction(leftContractionPart, right);
+
+        if (c != null) {
+          sentence.add(c);
+        } else {
+          System.err.println("missing " + leftContractionPart + " + " + right);
+          sentence.add(leftContractionPart);
+          sentence.add(right);
+        }
+
+      } else {
+        System.err.println("unmatch" + leftContractionPart + " + " + right);
+      }
+      leftContractionPart = null;
+      alreadyAdded = true;
+    }
 
       String namedEntityTag = null;
       int startOfNamedEntity = -1;
 
-      String leafTag = leaf.getMorphologicalTag();
+      String leafTag = leaf.getSecondaryTag();
       boolean expandLastNER = false; // used when we find a <NER2> tag
 
       if (leafTag != null) {
-        if (leafTag.contains("<sam->")) {
+        if (leafTag.contains("<sam->") && !alreadyAdded) {
           String[] lexemes = leaf.getLexeme().split("_");
           if(lexemes.length > 1) {
              sentence.addAll(Arrays.asList(lexemes).subList(0, lexemes.length - 1));
@@ -260,8 +294,10 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
         startOfNamedEntity = sentence.size();
       }
 
-      sentence.addAll(Arrays.asList(leaf.getLexeme().split("_")));
-
+      if(!alreadyAdded) {
+        sentence.addAll(Arrays.asList(leaf.getLexeme().split("_")));
+      }
+      
       if (namedEntityTag != null) {
         names
             .add(new Span(startOfNamedEntity, sentence.size(), namedEntityTag));
@@ -286,35 +322,15 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
           error = true;
         }
         if (error) {
-          // Maybe it is not the same NER, skip it.
-          // System.err.println("Missing NER start for sentence [" + sentence
-          // + "] node [" + leaf + "]");
+//           Maybe it is not the same NER, skip it.
+//           System.err.println("Missing NER start for sentence [" + sentence
+//           + "] node [" + leaf + "]");
         }
       }
 
-    } else {
-      // will handle the contraction
-      String tag = leaf.getMorphologicalTag();
-      String right = leaf.getLexeme();
-      if (tag != null && tag.contains("<-sam>")) {
-        right = leaf.getLexeme();
-        String c = PortugueseContractionUtility.toContraction(leftContractionPart, right);
-
-        if (c != null) {
-          sentence.add(c);
-        } else {
-          System.err.println("missing " + leftContractionPart + " + " + right);
-          sentence.add(leftContractionPart);
-          sentence.add(right);
-        }
-
-      } else {
-        System.err.println("unmatch" + leftContractionPart + " + " + right);
-      }
-      leftContractionPart = null;
     }
 
-  }
+  
 
 
 
@@ -328,6 +344,9 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @return the NER tag, or null if not a NER tag in Arvores Deitadas format
    */
   private static String getNER(String tags) {
+    if(tags.contains("<NER2>")) {
+      return null;
+    }
     String[] tag = tags.split("\\s+");
     for (String t : tag) {
       Matcher matcher = tagPattern.matcher(t);
@@ -347,6 +366,79 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   public void close() throws IOException {
     adSentenceStream.close();
+  }
+  
+  enum Type {
+    ama, cie, lit
+  }
+
+  private Type corpusType = null;
+
+  private Pattern metaPattern;
+  
+  // works for Amazonia
+//  private static final Pattern meta1 = Pattern
+//      .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
+//  
+//  // works for selva cie
+//  private static final Pattern meta2 = Pattern
+//    .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
+  
+  private int textIdMeta2 = -1;
+  private String textMeta2 = "";
+
+  private int getTextID(Sentence paragraph) {
+
+    String meta = paragraph.getMetadata();
+
+    if (corpusType == null) {
+      if (meta.startsWith("LIT")) {
+        corpusType = Type.lit;
+        metaPattern = Pattern.compile("^([a-zA-Z\\-]+)(\\d+).*?p=(\\d+).*");
+      } else if (meta.startsWith("CIE")) {
+        corpusType = Type.cie;
+        metaPattern = Pattern.compile("^.*?source=\"(.*?)\".*");
+      } else { // ama
+        corpusType = Type.ama;
+        metaPattern = Pattern.compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
+      }
+    }
+
+    if (corpusType.equals(Type.lit)) {
+      Matcher m2 = metaPattern.matcher(meta);
+      if (m2.matches()) {
+        String textId = m2.group(1);
+        if (!textId.equals(textMeta2)) {
+          textIdMeta2++;
+          textMeta2 = textId;
+        }
+        return textIdMeta2;
+      } else {
+        throw new RuntimeException("Invalid metadata: " + meta);
+      }
+    } else if (corpusType.equals(Type.cie)) {
+      Matcher m2 = metaPattern.matcher(meta);
+      if (m2.matches()) {
+        String textId = m2.group(1);
+        if (!textId.equals(textMeta2)) {
+          textIdMeta2++;
+          textMeta2 = textId;
+        }
+        return textIdMeta2;
+      } else {
+        throw new RuntimeException("Invalid metadata: " + meta);
+      }
+    } else if (corpusType.equals(Type.ama)) {
+      Matcher m2 = metaPattern.matcher(meta);
+      if (m2.matches()) {
+        return Integer.parseInt(m2.group(1));
+        // currentPara = Integer.parseInt(m.group(2));
+      } else {
+        throw new RuntimeException("Invalid metadata: " + meta);
+      }
+    }
+
+    return 0;
   }
 
 }
