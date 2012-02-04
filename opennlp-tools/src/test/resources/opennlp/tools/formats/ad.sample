@@ -200,7 +200,7 @@ STA:fcl
 
 <s id="63955" ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-2" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=">
 SOURCE: ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-2" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme="
-1001 Inicia no próximo dia 6 de outubro o Porto Poesia 2 no Shopping Total Av. Cristovão Colombo, 545 -- Porto Alegre -- RS.
+1001 Em 9 fe agosto de 1831.
 A1
 STA:fcl
 =ADVL:pp
@@ -215,12 +215,12 @@ STA:fcl
 ======H:prp("de" <NER2> <np-close>)     de
 ======P<:adjp
 =======H:num("1831" <date> <card> <NER2> M P)   1831
-
+.
 </s>
 
 <s id="63955" ref="Ivan do Maxixe">
 SOURCE: ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-2" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme="
-1001 Inicia no próximo dia 6 de outubro o Porto Poesia 2 no Shopping Total Av. Cristovão Colombo, 545 -- Porto Alegre -- RS.
+1001 Ivan do Maxixe
 A1
 STA:fcl
 ===H:prop("Ivan" <cjt-sc> <hum> <right> M S)    Ivan
