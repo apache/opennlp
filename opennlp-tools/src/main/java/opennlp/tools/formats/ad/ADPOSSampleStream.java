@@ -132,13 +132,10 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
       if (tag == null)
         tag = lexeme;
 
-      if (expandME /* && !tag.startsWith("prop") */&& lexeme.contains("_")) {
+      if (expandME && lexeme.contains("_")) {
         StringTokenizer tokenizer = new StringTokenizer(lexeme, "_");
 
-        if (tag.startsWith("prop")) {
-          sentence.add(tokenizer.nextToken());
-          tags.add(tag);
-        } else if (tokenizer.countTokens() > 0) {
+        if (tokenizer.countTokens() > 0) {
           List<String> toks = new ArrayList<String>(tokenizer.countTokens());
           List<String> tagsWithCont = new ArrayList<String>(
               tokenizer.countTokens());
