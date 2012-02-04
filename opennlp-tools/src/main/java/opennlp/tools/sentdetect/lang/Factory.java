@@ -28,22 +28,31 @@ import opennlp.tools.sentdetect.SDContextGenerator;
 import opennlp.tools.sentdetect.lang.th.SentenceContextGenerator;
 
 public class Factory {
+  
+  public static final char[] ptEosCharacters = new char[] { '.', '?', '!', ';',
+      ':', '(', ')', '«', '»', '\'', '"' };
+
+  public static final char[] defaultEosCharacters = new char[] { '.', '!', '?' };
 
   public EndOfSentenceScanner createEndOfSentenceScanner(String languageCode) {
     if ("th".equals(languageCode)) {
       return new DefaultEndOfSentenceScanner(new char[]{' ','\n'});
+    } else if("pt".equals(languageCode)) {
+      return new DefaultEndOfSentenceScanner(ptEosCharacters);
     }
 
-    return new DefaultEndOfSentenceScanner(new char[]{'.', '!', '?'});
+    return new DefaultEndOfSentenceScanner(defaultEosCharacters);
   }
 
   public SDContextGenerator createSentenceContextGenerator(String languageCode, Set<String> abbreviations) {
 
     if ("th".equals(languageCode)) {
       return new SentenceContextGenerator();
+    } else if("pt".equals(languageCode)) {
+      return new DefaultSDContextGenerator(abbreviations, ptEosCharacters);
     }
 
-    return new DefaultSDContextGenerator(abbreviations, new char[]{'.', '!', '?'});
+    return new DefaultSDContextGenerator(abbreviations, defaultEosCharacters);
   }
   
   public SDContextGenerator createSentenceContextGenerator(String languageCode) {
