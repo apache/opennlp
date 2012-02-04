@@ -55,6 +55,7 @@ public final class StreamFactoryRegistry {
     ADChunkSampleStreamFactory.registerFactory();
     ADNameSampleStreamFactory.registerFactory();
     ADSentenceSampleStreamFactory.registerFactory();
+    ADPOSSampleStreamFactory.registerFactory();
   }
 
   public static final String DEFAULT_FORMAT = "opennlp";
