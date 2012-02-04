@@ -18,8 +18,7 @@
 package opennlp.tools.cmdline;
 
 import opennlp.tools.formats.*;
-import opennlp.tools.formats.ad.ADChunkSampleStreamFactory;
-import opennlp.tools.formats.ad.ADNameSampleStreamFactory;
+import opennlp.tools.formats.ad.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +54,7 @@ public final class StreamFactoryRegistry {
     LeipzigDocumentSampleStreamFactory.registerFactory();
     ADChunkSampleStreamFactory.registerFactory();
     ADNameSampleStreamFactory.registerFactory();
+    ADSentenceSampleStreamFactory.registerFactory();
   }
 
   public static final String DEFAULT_FORMAT = "opennlp";
