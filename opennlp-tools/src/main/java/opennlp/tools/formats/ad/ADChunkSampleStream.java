@@ -73,7 +73,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 	 *          a stream of lines as {@link String}
 	 */
 	public ADChunkSampleStream(ObjectStream<String> lineStream) {
-		this.adSentenceStream = new ADSentenceStream(lineStream);
+	  this.adSentenceStream = new ADSentenceStream(lineStream);
 	}
 
 	/**
@@ -135,15 +135,21 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 				if (elements[i].isLeaf()) {
 					processLeaf((Leaf) elements[i], false, "O", sentence, tags, target);
 				} else {
-					processNode((Node) elements[i], sentence, tags, target);
+					processNode((Node) elements[i], sentence, tags, target, null);
 				}
 			}
 		}
 	}
 
 	private void processNode(Node node, List<String> sentence, List<String> tags,
-			List<String> target) {
+			List<String> target, String inheritedTag) {
 		String phraseTag = getChunkTag(node.getSyntacticTag());
+		
+		boolean inherited = false;
+		if(phraseTag.equals("O") && inheritedTag != null) {
+		  phraseTag = inheritedTag;
+		  inherited = true;
+		}
 
 		TreeElement[] elements = node.getElements();
 		for (int i = 0; i < elements.length; i++) {
@@ -152,10 +158,13 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 				if ( i > 0 && elements[i - 1].isLeaf() && phraseTag != null && !phraseTag.equals("O")) {
 					isIntermediate = true;
 				}
+				if(inherited && target.size() > 0 && target.get(target.size() - 1).endsWith(phraseTag)) {
+				  isIntermediate = true;
+				}
 				processLeaf((Leaf) elements[i], isIntermediate, phraseTag, sentence,
 						tags, target);
 			} else {
-				processNode((Node) elements[i], sentence, tags, target);
+				processNode((Node) elements[i], sentence, tags, target, phraseTag);
 			}
 		}
 	}
@@ -166,11 +175,11 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 		
 		
 		
-		if (leaf.getSyntacticTag() != null
+		if (leaf.getFunctionalTag() != null
 				&& phraseTag.equals("O")) {
-			if(leaf.getSyntacticTag().endsWith("v-fin")) {
+			if(leaf.getFunctionalTag().equals("v-fin")) {
 				phraseTag = "VP";
-			} else if(leaf.getSyntacticTag().endsWith(":n")) {
+			} else if(leaf.getFunctionalTag().equals("n")) {
 				phraseTag = "NP";
 			}
 		}
@@ -189,16 +198,28 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 		if (leaf.getSyntacticTag() == null) {
 			tags.add(leaf.getLexeme());
 		} else {
-			tags.add(getMorphologicalTag(leaf.getSyntacticTag()));
+			tags.add(ADChunkSampleStream.convertFuncTag(leaf.getFunctionalTag(), false));
 		}
 		target.add(chunkTag);
 	}
 
-	private String getMorphologicalTag(String tag) {
-		return tag.substring(tag.lastIndexOf(":") + 1);
-	}
+  public static String convertPhraseTag(String phraseTag) {
+    if ("NP".equals(phraseTag) || "VP".equals(phraseTag)) {
+      return phraseTag;
+    }
+    return "O";
+  }
 
-	private String getChunkTag(String tag) {
+  public static String convertFuncTag(String t, boolean useCGTags) {
+    if (useCGTags) {
+      if ("art".equals(t) || "pron-det".equals(t) || "pron-indef".equals(t)) {
+        t = "det";
+      }
+    }
+    return t;
+  }
+
+  private String getChunkTag(String tag) {
 		
 		String phraseTag = tag.substring(tag.lastIndexOf(":") + 1);
 
