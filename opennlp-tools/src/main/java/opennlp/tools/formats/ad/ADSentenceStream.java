@@ -130,7 +130,8 @@ public class ADSentenceStream extends
 	        // we should have the plain sentence
 	        // we remove the first token
 	        int start = line.indexOf(" ");
-	        text = line.substring(start + 1);
+	        text = line.substring(start + 1).trim();
+	        text = fixPunctuation(text);
 	        String titleTag = "";
 	        if(isTitle) titleTag = " title";
 	        String boxTag = "";
@@ -211,6 +212,12 @@ public class ADSentenceStream extends
       // second line should be SOURCE
       sentence.setRoot(root);
       return sentence;
+    }
+
+    private String fixPunctuation(String text) {
+      text = text.replaceAll("\\»\\s+\\.", "».");
+      text = text.replaceAll("\\»\\s+\\,", "»,");
+      return text;
     }
 
     /**
