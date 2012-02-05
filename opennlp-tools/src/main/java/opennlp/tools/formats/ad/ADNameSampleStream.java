@@ -262,7 +262,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
         }
 
       } else {
-        System.err.println("unmatch" + leftContractionPart + " + " + right);
+        // could not match contraction !
       }
       leftContractionPart = null;
       alreadyAdded = true;
