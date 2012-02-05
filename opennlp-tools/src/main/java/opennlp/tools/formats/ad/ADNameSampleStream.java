@@ -256,7 +256,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
         if (c != null) {
           sentence.add(c);
         } else {
-          System.err.println("missing " + leftContractionPart + " + " + right);
+          // contraction was missing!
           sentence.add(leftContractionPart);
           sentence.add(right);
         }
