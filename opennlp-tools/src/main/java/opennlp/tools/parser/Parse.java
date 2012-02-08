@@ -348,7 +348,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
       //System.err.println("Parse.insert: "+constituent.hashCode()+" -> "+constituent.getParent().hashCode());
     }
     else {
-      throw (new InternalError("Inserting constituent not contained in the sentence!"));
+      throw new IllegalArgumentException("Inserting constituent not contained in the sentence!");
     }
   }
 
