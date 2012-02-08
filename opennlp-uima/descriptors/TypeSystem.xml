@@ -94,5 +94,17 @@
 			<name>opennlp.uima.Percentage</name>
 			<supertypeName>uima.tcas.Annotation</supertypeName>
 		</typeDescription>
+		
+		<typeDescription>
+			<name>opennlp.uima.Parse</name>
+			<supertypeName>uima.tcas.Annotation</supertypeName>
+			<features>
+				<featureDescription>
+					<name>type</name>
+					<description>Type of the parse node</description>
+					<rangeTypeName>uima.cas.String</rangeTypeName>
+				</featureDescription>
+			</features>
+		</typeDescription>
 	</types>
 </typeSystemDescription>
