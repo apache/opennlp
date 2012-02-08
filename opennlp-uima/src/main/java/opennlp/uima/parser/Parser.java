@@ -71,7 +71,7 @@ public class Parser extends CasAnnotator_ImplBase {
     
     private Parse mParseForTagger;
     
-    private String mSentence;
+    private final String mSentence;
     
     /**
      * Initializes a new instance.
@@ -106,7 +106,8 @@ public class Parser extends CasAnnotator_ImplBase {
       }
       
       // remove last space
-      sentenceStringBuilder.setLength(sentenceStringBuilder.length() - 1);
+      if (sentenceStringBuilder.length() > 0)
+        sentenceStringBuilder.setLength(sentenceStringBuilder.length() - 1);
       
       String tokenizedSentence = sentenceStringBuilder.toString();
       
@@ -184,6 +185,9 @@ public class Parser extends CasAnnotator_ImplBase {
   public static final String TYPE_FEATURE_PARAMETER = 
       "opennlp.uima.TypeFeature";
   
+  public static final String CHILDREN_FEATURE_PARAMETER = 
+      "opennlp.uima.ChildrenFeature";
+  
   protected UimaContext context;
   
   protected Logger mLogger;
@@ -197,6 +201,8 @@ public class Parser extends CasAnnotator_ImplBase {
   private Type mParseType;
 
   private Feature mTypeFeature;
+  
+  private Feature childrenFeature;
 
   /**
    * Initializes the current instance with the given context.
@@ -245,6 +251,9 @@ public class Parser extends CasAnnotator_ImplBase {
 
     mTypeFeature = AnnotatorUtil.getRequiredFeatureParameter(context,
         mParseType, TYPE_FEATURE_PARAMETER, CAS.TYPE_NAME_STRING);
+    
+    childrenFeature = AnnotatorUtil.getRequiredFeatureParameter(context,
+        mParseType, CHILDREN_FEATURE_PARAMETER, CAS.TYPE_NAME_FS_ARRAY);
   }
   
   /**
@@ -264,24 +273,9 @@ public class Parser extends CasAnnotator_ImplBase {
     ContainingConstraint containingConstraint = 
         new ContainingConstraint(sentenceAnnotation);
     
+    String sentence = sentenceAnnotation.getCoveredText();
+
     Iterator<AnnotationFS> containingTokens = cas.createFilteredIterator(
-        allTokens.iterator(), containingConstraint);
-  
-    StringBuilder sentenceStringBuilder = new StringBuilder();
-    
-    while (containingTokens.hasNext()) {
-      AnnotationFS token = (AnnotationFS) containingTokens.next();
-
-      sentenceStringBuilder.append(token.getCoveredText());
-
-      // attention the offsets moves inside the sentence...
-      sentenceStringBuilder.append(' ');
-    }
-     
-    String sentence = sentenceStringBuilder.toString();
-    sentence = sentenceAnnotation.getCoveredText();
-
-    containingTokens = cas.createFilteredIterator(
         allTokens.iterator(), containingConstraint);
    
     List<Span> tokenSpans = new LinkedList<Span>();
@@ -295,19 +289,24 @@ public class Parser extends CasAnnotator_ImplBase {
     
     ParseConverter converter = new ParseConverter(sentence,(Span[]) 
         tokenSpans.toArray(new Span[tokenSpans.size()]));
-    
-   Parse parse = mParser.parse(converter.getParseForTagger());
+   
+    Parse unparsedTree = converter.getParseForTagger();
+   
+    if (unparsedTree.getChildCount() > 0) {
+      
+      Parse parse = mParser.parse(unparsedTree);
   
-   parse = converter.transformParseFromTagger(parse);
+      parse = converter.transformParseFromTagger(parse);
    
-   if (mLogger.isLoggable(Level.INFO)) {
-     StringBuffer parseString = new StringBuffer();
-     parse.show(parseString);
+      if (mLogger.isLoggable(Level.INFO)) {
+        StringBuffer parseString = new StringBuffer();
+        parse.show(parseString);
      
-     mLogger.log(Level.INFO, parseString.toString());
-   }
+        mLogger.log(Level.INFO, parseString.toString());
+      }
    
-   createAnnotation(cas, sentenceAnnotation.getBegin(), parse);
+      createAnnotation(cas, sentenceAnnotation.getBegin(), parse);
+    }
   }
   
   protected void createAnnotation(CAS cas, int offset, Parse parse) {
