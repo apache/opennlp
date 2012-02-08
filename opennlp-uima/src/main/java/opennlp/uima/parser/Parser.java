@@ -34,6 +34,7 @@ import opennlp.uima.util.UimaUtil;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.cas.ArrayFS;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.FSIndex;
 import org.apache.uima.cas.Feature;
@@ -309,13 +310,14 @@ public class Parser extends CasAnnotator_ImplBase {
     }
   }
   
-  protected void createAnnotation(CAS cas, int offset, Parse parse) {
+  protected AnnotationFS createAnnotation(CAS cas, int offset, Parse parse) {
     
     Parse parseChildren[] = parse.getChildren();
+    AnnotationFS parseChildAnnotations[] = new AnnotationFS[parseChildren.length];
     
     // do this for all children
-    for (Parse child : parseChildren) {
-      createAnnotation(cas, offset, child);
+    for (int i = 0; i < parseChildren.length; i++) {
+      parseChildAnnotations[i] = createAnnotation(cas, offset, parseChildren[i]);
     }
     
     AnnotationFS parseAnnotation = cas.createAnnotation(mParseType, offset + 
@@ -323,9 +325,14 @@ public class Parser extends CasAnnotator_ImplBase {
     
     parseAnnotation.setStringValue(mTypeFeature, parse.getType());
     
+    ArrayFS childrenArray = cas.createArrayFS(parseChildAnnotations.length);
+    childrenArray.copyFromArray(parseChildAnnotations, 0, 0, parseChildAnnotations.length);
+    parseAnnotation.setFeatureValue(childrenFeature, childrenArray);
+    
     cas.getIndexRepository().addFS(parseAnnotation);
+    
+    return parseAnnotation;
   }
-
   /**
    * Releases allocated resources.
    */
