@@ -47,9 +47,21 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
   private Map<String, String[]> dictionary;
 
   private boolean caseSensitive = true;
-
+  
+  /**
+   * Initializes an empty case sensitive {@link POSDictionary}.
+   */
   public POSDictionary() {
+    this(true);
+  }
+
+  /**
+   * Initializes an empty {@link POSDictionary}.
+   * @param caseSensitive the {@link POSDictionary} case sensitivity
+   */
+  public POSDictionary(boolean caseSensitive) {
     dictionary = new HashMap<String, String[]>();
+    this.caseSensitive = caseSensitive;
   }
 
   /**
