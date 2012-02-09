@@ -262,9 +262,15 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
   public String toString() {
     StringBuilder dictionaryString = new StringBuilder();
 
+    int count = 0;
     for (String word : dictionary.keySet()) {
       dictionaryString.append(word).append(" -> ").append(tagsToString(getTags(word)));
       dictionaryString.append("\n");
+      if (count++ > 3) {
+        // lets stop now because it takes a lot of time if we are working
+        // with a big dictionary
+        break;
+      }
     }
 
     // remove last new line
