@@ -21,6 +21,7 @@ package opennlp.tools.postag;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -64,9 +65,21 @@ public final class POSModel extends BaseModel {
   private static final String POS_MODEL_ENTRY_NAME = "pos.model";
   private static final String TAG_DICTIONARY_ENTRY_NAME = "tags.tagdict";
   private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram.dictionary";
+  private static final String FACTORY_NAME = "pos.factory";
 
   public POSModel(String languageCode, AbstractModel posModel,
       POSDictionary tagDictionary, Dictionary ngramDict, Map<String, String> manifestInfoEntries) {
+
+    this(languageCode, posModel, tagDictionary, ngramDict, manifestInfoEntries, null);
+  }
+
+  public POSModel(String languageCode, AbstractModel posModel,
+      POSDictionary tagDictionary, Dictionary ngramDict) {
+    this (languageCode, posModel, tagDictionary, ngramDict, null, null);
+  }
+  
+  public POSModel(String languageCode, AbstractModel posModel,
+      POSDictionary tagDictionary, Dictionary ngramDict, Map<String, String> manifestInfoEntries, Factory posFactory) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
 
@@ -81,12 +94,16 @@ public final class POSModel extends BaseModel {
     if (ngramDict != null)
       artifactMap.put(NGRAM_DICTIONARY_ENTRY_NAME, ngramDict);
     
+    // The factory is optional
+    if (posFactory!=null)
+        setManifestProperty(FACTORY_NAME, posFactory.getClass().getCanonicalName());
+    
     checkArtifactMap();
   }
 
   public POSModel(String languageCode, AbstractModel posModel,
-      POSDictionary tagDictionary, Dictionary ngramDict) {
-    this (languageCode, posModel, tagDictionary, ngramDict, null);
+      POSDictionary tagDictionary, Dictionary ngramDict, Factory f) {
+    this (languageCode, posModel, tagDictionary, ngramDict, null, f);
   }
   
   public POSModel(InputStream in) throws IOException, InvalidFormatException {
@@ -110,7 +127,17 @@ public final class POSModel extends BaseModel {
     if (!(artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
       throw new InvalidFormatException("POS model is incomplete!");
     }
-
+    
+    // validate the factory
+    String factoryName = getManifestProperty(FACTORY_NAME);
+    if(factoryName != null) {
+      try {
+        Class.forName(factoryName);
+      } catch (ClassNotFoundException e) {
+        throw new InvalidFormatException("Could not find the POS factory class: " + factoryName);
+      }
+    }
+    
     // Ensure that the tag dictionary is compatible with the model
     Object tagdictEntry = artifactMap.get(TAG_DICTIONARY_ENTRY_NAME);
 
@@ -166,6 +193,46 @@ public final class POSModel extends BaseModel {
    */
   public POSDictionary getTagDictionary() {
     return (POSDictionary) artifactMap.get(TAG_DICTIONARY_ENTRY_NAME);
+  }
+  
+  public Factory getFactory() {
+    String factoryName = getManifestProperty(FACTORY_NAME);
+    Factory theFactory = null;
+    Class<?> factoryClass = null;
+    if(factoryName != null) {
+      try {
+        factoryClass = Class.forName(factoryName);
+      } catch (ClassNotFoundException e) {
+        // already validated
+        return null;
+      }
+    }
+    
+    Constructor<?> constructor = null;
+    if(factoryClass != null) {
+      try {
+        constructor = factoryClass.getConstructor(Dictionary.class, POSDictionary.class);
+        theFactory = (Factory) constructor.newInstance(getNgramDictionary(), getTagDictionary());
+      } catch (NoSuchMethodException e) {
+        // ignore, will try another constructor
+      } catch (Exception e) {
+        throw new IllegalArgumentException("Could not load POS Factory using Dictionary, POSDictionary constructor: " + factoryName, e);
+      }
+      if(theFactory == null) {
+        try {
+          factoryClass.getConstructor();
+          try {
+            theFactory = (Factory) constructor.newInstance();
+          } catch (Exception e) {
+            throw new IllegalArgumentException("Could not load POS Factory using default constructor: " + factoryName, e);
+          }
+        } catch (NoSuchMethodException e) {
+          // we couldn't load the class... raise an exception
+          throw new IllegalArgumentException("Could not load POS Factory: " + factoryName, e);
+        }
+      }
+    }
+    return theFactory;
   }
 
   /**
