@@ -20,22 +20,22 @@ package opennlp.tools.postag;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.SequenceValidator;
 
-public class Factory {
+public class POSTaggerFactory {
 
   protected Dictionary ngramDictionary;
   protected POSDictionary posDictionary;
   
-  public Factory() { 
+  public POSTaggerFactory() { 
   }
 
-  public Factory(POSModel model) { 
+  public POSTaggerFactory(POSModel model) { 
     if(model != null) {
       this.ngramDictionary = model.getNgramDictionary();
       this.posDictionary = model.getTagDictionary();
     }
   }
 
-  public Factory(Dictionary ngramDictionary, POSDictionary posDictionary) {
+  public POSTaggerFactory(Dictionary ngramDictionary, POSDictionary posDictionary) {
     this.ngramDictionary = ngramDictionary;
     this.posDictionary = posDictionary;
   }
