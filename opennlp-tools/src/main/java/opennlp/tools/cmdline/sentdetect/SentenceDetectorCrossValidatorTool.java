@@ -60,9 +60,13 @@ public final class SentenceDetectorCrossValidatorTool
       errorListener = new SentenceEvaluationErrorListener();
     }
     
+    char[] eos = null;
+    if (params.getEosChars()!=null)
+    	eos = params.getEosChars().toCharArray();
+    
     try {
       Dictionary abbreviations = SentenceDetectorTrainerTool.loadDict(params.getAbbDict());
-      validator = new SDCrossValidator(factory.getLang(), mlParams, abbreviations, errorListener);
+      validator = new SDCrossValidator(factory.getLang(), mlParams, abbreviations, eos, errorListener);
       
       validator.evaluate(sampleStream, params.getFolds());
     }
