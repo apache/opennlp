@@ -133,8 +133,14 @@ public final class POSModel extends BaseModel {
         }
         
         if (!modelTags.containsAll(dictTags)) {
+          StringBuilder unknownTag = new StringBuilder();
+          for (String d : dictTags) {
+            if(!modelTags.contains(d)) {
+              unknownTag.append(d).append(" ");
+            }
+          }
           throw new InvalidFormatException("Tag dictioinary contains tags " +
-          		"which are unkown by the model!");
+          		"which are unknown by the model! The unknown tags are: " + unknownTag.toString());
         }
       }
       else {
