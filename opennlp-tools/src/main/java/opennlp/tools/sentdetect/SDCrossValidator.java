@@ -41,11 +41,14 @@ public class SDCrossValidator {
 
   private SentenceDetectorEvaluationMonitor[] listeners;
   
+  private char[] eosCharacters;
+  
   public SDCrossValidator(String languageCode, TrainingParameters params,
-      Dictionary abbreviations, SentenceDetectorEvaluationMonitor... listeners) {
+      Dictionary abbreviations, char[] eosCharacters, SentenceDetectorEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
     this.params = params;
     this.abbreviations = abbreviations;
+    this.eosCharacters = eosCharacters;
     this.listeners = listeners;
   }
   
@@ -58,7 +61,7 @@ public class SDCrossValidator {
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params) {
-    this(languageCode, params, (Dictionary)null);
+    this(languageCode, params, (Dictionary)null,null);
   }
   
   /**
@@ -67,12 +70,12 @@ public class SDCrossValidator {
    */
   @Deprecated
   public SDCrossValidator(String languageCode, int cutoff, int iterations, Dictionary abbreviations) {
-    this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations), abbreviations);
+    this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations), abbreviations,null);
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params,
       SentenceDetectorEvaluationMonitor... listeners) {
-    this(languageCode, params, null, listeners);
+    this(languageCode, params, null, null, listeners);
   }
   
   public SDCrossValidator(String languageCode) {
@@ -102,7 +105,7 @@ public class SDCrossValidator {
       SentenceModel model; 
       
       model = SentenceDetectorME.train(languageCode, trainingSampleStream,
-          true, abbreviations, params);
+          true, abbreviations, eosCharacters, params);
       
       // do testing
       SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(

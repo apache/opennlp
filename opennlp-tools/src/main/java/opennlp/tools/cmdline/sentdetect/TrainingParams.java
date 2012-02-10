@@ -34,4 +34,7 @@ interface TrainingParams extends BasicTrainingParams {
   @OptionalParameter
   File getAbbDict();
 
+  @ParameterDescription(valueName = "string", description = "EOS characters.")
+  @OptionalParameter
+  String getEosChars();
 }
