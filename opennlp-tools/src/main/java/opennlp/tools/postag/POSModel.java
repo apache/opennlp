@@ -79,7 +79,7 @@ public final class POSModel extends BaseModel {
   }
   
   public POSModel(String languageCode, AbstractModel posModel,
-      POSDictionary tagDictionary, Dictionary ngramDict, Map<String, String> manifestInfoEntries, Factory posFactory) {
+      POSDictionary tagDictionary, Dictionary ngramDict, Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
 
@@ -102,7 +102,7 @@ public final class POSModel extends BaseModel {
   }
 
   public POSModel(String languageCode, AbstractModel posModel,
-      POSDictionary tagDictionary, Dictionary ngramDict, Factory f) {
+      POSDictionary tagDictionary, Dictionary ngramDict, POSTaggerFactory f) {
     this (languageCode, posModel, tagDictionary, ngramDict, null, f);
   }
   
@@ -195,9 +195,9 @@ public final class POSModel extends BaseModel {
     return (POSDictionary) artifactMap.get(TAG_DICTIONARY_ENTRY_NAME);
   }
   
-  public Factory getFactory() {
+  public POSTaggerFactory getFactory() {
     String factoryName = getManifestProperty(FACTORY_NAME);
-    Factory theFactory = null;
+    POSTaggerFactory theFactory = null;
     Class<?> factoryClass = null;
     if(factoryName != null) {
       try {
@@ -212,7 +212,7 @@ public final class POSModel extends BaseModel {
     if(factoryClass != null) {
       try {
         constructor = factoryClass.getConstructor(Dictionary.class, POSDictionary.class);
-        theFactory = (Factory) constructor.newInstance(getNgramDictionary(), getTagDictionary());
+        theFactory = (POSTaggerFactory) constructor.newInstance(getNgramDictionary(), getTagDictionary());
       } catch (NoSuchMethodException e) {
         // ignore, will try another constructor
       } catch (Exception e) {
@@ -222,7 +222,7 @@ public final class POSModel extends BaseModel {
         try {
           factoryClass.getConstructor();
           try {
-            theFactory = (Factory) constructor.newInstance();
+            theFactory = (POSTaggerFactory) constructor.newInstance();
           } catch (Exception e) {
             throw new IllegalArgumentException("Could not load POS Factory using default constructor: " + factoryName, e);
           }
