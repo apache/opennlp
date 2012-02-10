@@ -107,4 +107,12 @@ public class POSDictionaryTest {
     assertArrayEquals(new String[]{"NNP"}, dict.getTags("McKinsey"));
     assertArrayEquals(new String[]{"NNP"}, dict.getTags("Mckinsey"));
   }
+  
+  @Test
+  public void testToString() throws IOException {
+    POSDictionary dict = loadDictionary("TagDictionaryCaseInsensitive.xml");
+    assertEquals("POSDictionary{size=1, caseSensitive=false}", dict.toString());
+    dict = loadDictionary("TagDictionaryCaseSensitive.xml");
+    assertEquals("POSDictionary{size=1, caseSensitive=true}", dict.toString());
+  }
 }
