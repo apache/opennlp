@@ -148,40 +148,22 @@ public class Parser extends CasAnnotator_ImplBase {
     Parse transformParseFromTagger(Parse parseFromTagger) {
       int start = parseFromTagger.getSpan().getStart();
       int end = parseFromTagger.getSpan().getEnd();
-      
-      
-      Parse transformedParse = new Parse(mSentence, new Span(mIndexMap.get(start), mIndexMap.get(end)),
-          parseFromTagger.getType(), 
+
+      Parse transformedParse = new Parse(mSentence, new Span(
+          mIndexMap.get(start), mIndexMap.get(end)), parseFromTagger.getType(),
           parseFromTagger.getProb(), parseFromTagger.getHeadIndex());
-      
-      
+
       Parse[] parseFromTaggerChildrens = parseFromTagger.getChildren();
-      
-      // call this method for all childs ... 
+
       for (Parse child : parseFromTaggerChildrens) {
+        transformedParse.insert(transformParseFromTagger(child));
+      }
 
-        if (!child.getType().equals(
-            opennlp.tools.parser.chunking.Parser.TOK_NODE)) {
-
-          // only insert if it has childs
-          if (child.getChildCount() > 0 &&
-              !child.getChildren()[0].getType().equals(opennlp.tools.parser.chunking.Parser.TOK_NODE)) {
-            transformedParse.insert(transformParseFromTagger(child));
-          }
-        }
-      }
-      
-      if (parseFromTagger.getType().equals("TOP")) {
-        return transformedParse.getChildren()[0];
-      }
-      else {
-        return transformedParse;
-      }
+      return transformedParse;
     }
-    
   }
-
-  private static final String PARSE_TYPE_PARAMETER = "opennlp.uima.ParseType";
+  
+  public static final String PARSE_TYPE_PARAMETER = "opennlp.uima.ParseType";
 
   public static final String TYPE_FEATURE_PARAMETER = 
       "opennlp.uima.TypeFeature";
