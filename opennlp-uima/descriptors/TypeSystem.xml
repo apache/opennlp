@@ -104,6 +104,16 @@
 					<description>Type of the parse node</description>
 					<rangeTypeName>uima.cas.String</rangeTypeName>
 				</featureDescription>
+				<featureDescription>
+					<name>children</name>
+					<description>Leaf nodes</description>
+					<rangeTypeName>uima.cas.FSArray</rangeTypeName>
+				</featureDescription>
+				<featureDescription>
+					<name>prob</name>
+					<description>Leaf nodes</description>
+					<rangeTypeName>uima.cas.Double</rangeTypeName>
+				</featureDescription>
 			</features>
 		</typeDescription>
 	</types>

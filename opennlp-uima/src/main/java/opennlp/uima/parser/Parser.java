@@ -171,6 +171,9 @@ public class Parser extends CasAnnotator_ImplBase {
   public static final String CHILDREN_FEATURE_PARAMETER = 
       "opennlp.uima.ChildrenFeature";
   
+  public static final String PROBABILITY_FEATURE_PARAMETER =
+      "opennlp.uima.ProbabilityFeature";
+  
   protected UimaContext context;
   
   protected Logger mLogger;
@@ -187,6 +190,8 @@ public class Parser extends CasAnnotator_ImplBase {
   
   private Feature childrenFeature;
 
+  private Feature probabilityFeature;
+  
   /**
    * Initializes the current instance with the given context.
    */
@@ -237,6 +242,9 @@ public class Parser extends CasAnnotator_ImplBase {
     
     childrenFeature = AnnotatorUtil.getRequiredFeatureParameter(context,
         mParseType, CHILDREN_FEATURE_PARAMETER, CAS.TYPE_NAME_FS_ARRAY);
+    
+    probabilityFeature = AnnotatorUtil.getOptionalFeatureParameter(context,
+        mParseType, PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_FS_ARRAY);
   }
   
   /**
@@ -279,6 +287,9 @@ public class Parser extends CasAnnotator_ImplBase {
       
       Parse parse = mParser.parse(unparsedTree);
   
+      // TODO: We need a strategy to handle the case that a full
+      //       parse could not be found. What to do in this case?
+      
       parse = converter.transformParseFromTagger(parse);
    
       if (mLogger.isLoggable(Level.INFO)) {
@@ -306,6 +317,10 @@ public class Parser extends CasAnnotator_ImplBase {
         parse.getSpan().getStart(), offset + parse.getSpan().getEnd());
     
     parseAnnotation.setStringValue(mTypeFeature, parse.getType());
+    
+    if (probabilityFeature != null) {
+      parseAnnotation.setDoubleValue(probabilityFeature, parse.getProb());
+    }
     
     ArrayFS childrenArray = cas.createArrayFS(parseChildAnnotations.length);
     childrenArray.copyFromArray(parseChildAnnotations, 0, 0, parseChildAnnotations.length);
