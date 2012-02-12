@@ -30,6 +30,7 @@ import java.util.Set;
 import opennlp.model.AbstractModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.UncloseableInputStream;
@@ -67,6 +68,8 @@ public final class POSModel extends BaseModel {
   private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram.dictionary";
   private static final String FACTORY_NAME = "pos.factory";
 
+  private POSTaggerFactory posTaggerFactory = null;
+
   public POSModel(String languageCode, AbstractModel posModel,
       POSDictionary tagDictionary, Dictionary ngramDict, Map<String, String> manifestInfoEntries) {
 
@@ -95,9 +98,12 @@ public final class POSModel extends BaseModel {
       artifactMap.put(NGRAM_DICTIONARY_ENTRY_NAME, ngramDict);
     
     // The factory is optional
-    if (posFactory!=null)
-        setManifestProperty(FACTORY_NAME, posFactory.getClass().getCanonicalName());
+    if (posFactory!=null) {
+      setManifestProperty(FACTORY_NAME, posFactory.getClass().getCanonicalName());
+      artifactMap.putAll(posFactory.createArtifactMap());
+    }
     
+    loadArtifactSerializers();
     checkArtifactMap();
   }
 
@@ -108,6 +114,9 @@ public final class POSModel extends BaseModel {
   
   public POSModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
+    loadArtifactSerializers();
+    finishLoadingArtifacts(in);
+    checkArtifactMap();
   }
 
   @Override
@@ -118,6 +127,9 @@ public final class POSModel extends BaseModel {
     super.createArtifactSerializers(serializers);
 
     POSDictionarySerializer.register(serializers);
+
+    if(getFactory() != null)
+      serializers.putAll(getFactory().createArtifactSerializersMap());
   }
 
   @Override
@@ -192,10 +204,14 @@ public final class POSModel extends BaseModel {
    * @return tag dictionary or null if not used
    */
   public POSDictionary getTagDictionary() {
+    if(getFactory() != null)
+      return getFactory().getPOSDictionary();
     return (POSDictionary) artifactMap.get(TAG_DICTIONARY_ENTRY_NAME);
   }
   
   public POSTaggerFactory getFactory() {
+    if(this.posTaggerFactory != null) 
+      return this.posTaggerFactory;
     String factoryName = getManifestProperty(FACTORY_NAME);
     POSTaggerFactory theFactory = null;
     Class<?> factoryClass = null;
@@ -211,8 +227,8 @@ public final class POSModel extends BaseModel {
     Constructor<?> constructor = null;
     if(factoryClass != null) {
       try {
-        constructor = factoryClass.getConstructor(Dictionary.class, POSDictionary.class);
-        theFactory = (POSTaggerFactory) constructor.newInstance(getNgramDictionary(), getTagDictionary());
+        constructor = factoryClass.getConstructor(ArtifactProvider.class);
+        theFactory = (POSTaggerFactory) constructor.newInstance(this);
       } catch (NoSuchMethodException e) {
         // ignore, will try another constructor
       } catch (Exception e) {

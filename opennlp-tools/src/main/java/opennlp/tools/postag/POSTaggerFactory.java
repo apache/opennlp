@@ -18,26 +18,53 @@
 package opennlp.tools.postag;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.util.model.ArtifactProvider;
 
-public class POSTaggerFactory {
+/**
+ * 
+ */
+public class POSTaggerFactory extends BaseToolFactory {
 
   protected Dictionary ngramDictionary;
   protected POSDictionary posDictionary;
-  
-  public POSTaggerFactory() { 
+
+  /**
+   * Creates a {@link POSTaggerFactory} that provides the default implementation
+   * of the resources.
+   */
+  public POSTaggerFactory() {
   }
 
-  public POSTaggerFactory(POSModel model) { 
-    if(model != null) {
-      this.ngramDictionary = model.getNgramDictionary();
-      this.posDictionary = model.getTagDictionary();
-    }
+  /**
+   * Creates a {@link POSTaggerFactory} with an {@link ArtifactProvider} that
+   * will be used to retrieve artifacts.
+   * <p>
+   * Sub-classes should implement a constructor with this signatures and call
+   * this constructor.
+   * <p>
+   * This will be used to load the factory from a serialized POSModel.
+   */
+  public POSTaggerFactory(ArtifactProvider artifactProvider) {
+    super(artifactProvider);
   }
 
-  public POSTaggerFactory(Dictionary ngramDictionary, POSDictionary posDictionary) {
+  /**
+   * Creates a {@link POSTaggerFactory}. Use this constructor to
+   * programmatically create a factory.
+   * 
+   * @param ngramDictionary
+   * @param posDictionary
+   */
+  public POSTaggerFactory(Dictionary ngramDictionary,
+      POSDictionary posDictionary) {
     this.ngramDictionary = ngramDictionary;
     this.posDictionary = posDictionary;
+  }
+
+  public POSDictionary getPOSDictionary() {
+    return this.posDictionary;
   }
 
   public POSContextGenerator getPOSContextGenerator() {
@@ -45,6 +72,7 @@ public class POSTaggerFactory {
   }
 
   public SequenceValidator<String> getSequenceValidator() {
-    return new DefaultPOSSequenceValidator(posDictionary);
+    return new DefaultPOSSequenceValidator(getPOSDictionary());
   }
+
 }
