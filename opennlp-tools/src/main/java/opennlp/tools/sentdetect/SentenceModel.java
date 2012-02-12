@@ -67,7 +67,7 @@ public class SentenceModel extends BaseModel {
     // EOS characters are optional
     if (eosCharacters!=null)
       setManifestProperty(EOS_CHARACTERS_PROPERTY, eosCharArrayToString(eosCharacters));
-      
+    loadArtifactSerializers();
     checkArtifactMap();
   }
 
@@ -80,6 +80,9 @@ public class SentenceModel extends BaseModel {
   
   public SentenceModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
+    loadArtifactSerializers();
+    finishLoadingArtifacts(in);
+    checkArtifactMap();
   }
 
   @Override

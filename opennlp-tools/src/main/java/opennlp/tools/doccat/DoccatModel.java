@@ -35,7 +35,7 @@ public class DoccatModel extends BaseModel {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
     
     artifactMap.put(DOCCAT_MODEL_ENTRY_NAME, doccatModel);
-    
+    loadArtifactSerializers();
     checkArtifactMap();
   }
   
@@ -45,6 +45,9 @@ public class DoccatModel extends BaseModel {
   
   public DoccatModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
+    loadArtifactSerializers();
+    finishLoadingArtifacts(in);
+    checkArtifactMap();
   }
 
   @Override

@@ -69,7 +69,7 @@ public final class TokenizerModel extends BaseModel {
     // Abbreviations are optional
     if (abbreviations != null)
       artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviations);
-    
+    loadArtifactSerializers();
     checkArtifactMap();
   }
 
@@ -108,6 +108,9 @@ public final class TokenizerModel extends BaseModel {
    */
   public TokenizerModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
+    loadArtifactSerializers();
+    finishLoadingArtifacts(in);
+    checkArtifactMap();
   }
 
   /**

@@ -110,6 +110,9 @@ public class CorefModel extends BaseModel {
 
     artifactMap.put(PLURAL_PRONOUN_RESOLVER_MODEL_ENTRY_NAME,
         createModel(project + File.separator + "tmodel.bin.gz"));
+    
+    loadArtifactSerializers();
+    checkArtifactMap();
   }
 
   private AbstractModel createModel(String fileName) throws IOException {
