@@ -21,8 +21,8 @@ package opennlp.tools.util.model;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -39,7 +39,7 @@ import opennlp.tools.util.Version;
  * TODO:
  * Provide sub classes access to serializers already in constructor
  */
-public abstract class BaseModel {
+public abstract class BaseModel implements ArtifactProvider {
 
   protected static final String MANIFEST_ENTRY = "manifest.properties";
   
@@ -57,13 +57,22 @@ public abstract class BaseModel {
       new HashMap<String, ArtifactSerializer>();
 
   protected final Map<String, Object> artifactMap;
-
+  
   private final String componentName;
+
+  private HashSet<String> unloadedExtensions;
+
+  private boolean subclassSerializersInitiated = false;
+  private boolean finishedLoadingArtifacts = false;
   
   /**
-   * Initializes the current instance.
+   * Initializes the current instance. The sub-class constructor should call the methods:
+   * <li> {@link #loadArtifactSerializers()} to populate the serializers map, and
+   * <li> {@link #checkArtifactMap()} to check the artifact map is OK. <p>
+   * Not calling these methods will cause an {@link IllegalStateException}
    *
-   * @param languageCode
+   * @param componentName the component name
+   * @param languageCode the language code
    * @param manifestInfoEntries additional information in the manifest
    */
   protected BaseModel(String componentName, String languageCode, Map<String, String> manifestInfoEntries) {
@@ -78,7 +87,7 @@ public abstract class BaseModel {
     
     artifactMap = new HashMap<String, Object>();
     
-    createArtifactSerializers(artifactSerializers);
+    createBaseArtifactSerializers(artifactSerializers);
     
     Properties manifest = new Properties();
     manifest.setProperty(MANIFEST_VERSION_PROPERTY, "1.0");
@@ -95,12 +104,18 @@ public abstract class BaseModel {
     }
       
     artifactMap.put(MANIFEST_ENTRY, manifest);
+    finishedLoadingArtifacts = true;
   }
 
   /**
-   * Initializes the current instance.
-   *
-   * @param in
+   * Initializes the current instance. The sub-class constructor should call the methods:
+   * <li> {@link #loadArtifactSerializers()} to populate the serializers map, 
+   * <li> {@link #finishLoadingArtifacts(InputStream)} to finish loading artifacts with the loaded serializers, and
+   * <li> {@link #checkArtifactMap()} to check the artifact map is OK. <p>
+   * Not calling these methods will cause an {@link IllegalStateException}
+   * 
+   * @param componentName the component name
+   * @param in the input stream containing the model
    *
    * @throws IOException
    * @throws InvalidFormatException
@@ -115,11 +130,14 @@ public abstract class BaseModel {
 
     this.componentName = componentName;
     
-    Map<String, Object> artifactMap = new HashMap<String, Object>();
-    
-    createArtifactSerializers(artifactSerializers);
+    artifactMap = new HashMap<String, Object>();
+    createBaseArtifactSerializers(artifactSerializers);
 
     final ZipInputStream zip = new ZipInputStream(in);
+    
+    // will read it in two steps, first using the known factories, latter the
+    // unknown.
+    unloadedExtensions = new HashSet<String>();
 
     ZipEntry entry;
     while((entry = zip.getNextEntry()) != null ) {
@@ -129,17 +147,60 @@ public abstract class BaseModel {
       ArtifactSerializer factory = artifactSerializers.get(extension);
 
       if (factory == null) {
-        throw new InvalidFormatException("Unkown artifact format: " + extension);
+        unloadedExtensions.add(extension);
+      } else {
+        artifactMap.put(entry.getName(), factory.create(zip));
       }
-
-      artifactMap.put(entry.getName(), factory.create(zip));
-
+      
       zip.closeEntry();
     }
 
-    this.artifactMap = Collections.unmodifiableMap(artifactMap);
+  }
+  
+  /**
+   * Loads the artifact serializers. Should be called in sub-class constructor
+   */
+  protected void loadArtifactSerializers() {
+    if (!subclassSerializersInitiated)
+      createArtifactSerializers(artifactSerializers);
+    subclassSerializersInitiated = true;
+  }
 
-    validateArtifactMap();
+  /**
+   * Finish loading the artifacts now that it knows all serializers.
+   * <p>
+   * Should be called while loading a model from serialized file.
+   */
+  protected void finishLoadingArtifacts(InputStream in)
+      throws InvalidFormatException, IOException {
+    finishedLoadingArtifacts = true;
+    if (unloadedExtensions == null || unloadedExtensions.size() == 0) {
+      return;
+    }
+    in.reset();
+    final ZipInputStream zip = new ZipInputStream(in);
+    Map<String, Object> artifactMap = new HashMap<String, Object>(
+        this.artifactMap);
+    ZipEntry entry;
+    while ((entry = zip.getNextEntry()) != null) {
+
+      String extension = getEntryExtension(entry.getName());
+
+      if (unloadedExtensions.contains(extension)) {
+        ArtifactSerializer factory = artifactSerializers.get(extension);
+
+        if (factory == null) {
+          throw new InvalidFormatException("Unkown artifact format: "
+              + extension);
+        } else {
+          artifactMap.put(entry.getName(), factory.create(zip));
+        }
+      }
+
+      zip.closeEntry();
+    }
+    this.unloadedExtensions = null;
+    this.artifactMap.putAll(artifactMap);
   }
 
   /**
@@ -199,9 +260,14 @@ public abstract class BaseModel {
    */
   protected void createArtifactSerializers(
       Map<String, ArtifactSerializer> serializers) {
-    serializers.putAll(createArtifactSerializers());
+    // do nothing, base artifacts are loaded by createBaseArtifactSerializers
   }
 
+  private void createBaseArtifactSerializers(
+      Map<String, ArtifactSerializer> serializers) {
+    serializers.putAll(createArtifactSerializers());
+  }
+  
   /**
    * Validates the parsed artifacts. If something is not
    * valid subclasses should throw an {@link InvalidFormatException}.
@@ -272,6 +338,9 @@ public abstract class BaseModel {
    * If the artifacts are not valid an IllegalArgumentException will be thrown.
    */
   protected void checkArtifactMap() {
+    if (!finishedLoadingArtifacts)
+      throw new IllegalStateException(
+          "The method BaseModel.finishLoadingArtifacts(..) was not called by BaseModel sub-class.");
     try {
       validateArtifactMap();
     } catch (InvalidFormatException e) {
@@ -336,6 +405,11 @@ public abstract class BaseModel {
    */
   @SuppressWarnings("unchecked")
   public final void serialize(OutputStream out) throws IOException {
+    if (!subclassSerializersInitiated) {
+      throw new IllegalStateException(
+          "The method BaseModel.loadArtifactSerializers() was not called by BaseModel subclass constructor.");
+    }
+    
     ZipOutputStream zip = new ZipOutputStream(out);
 
     for (String name : artifactMap.keySet()) {
@@ -354,5 +428,13 @@ public abstract class BaseModel {
     
     zip.finish();
     zip.flush();
+  }
+  
+  @SuppressWarnings("unchecked")
+  public <T> T getArtifact(String key) {
+    Object artifact = artifactMap.get(key);
+    if(artifact == null)
+      return null;
+    return (T) artifact;
   }
 }
