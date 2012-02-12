@@ -318,11 +318,12 @@ public class POSTaggerME implements POSTagger {
     
     
   }
-
-  public static POSModel train(String languageCode, ObjectStream<POSSample> samples, TrainingParameters trainParams, 
-      POSDictionary tagDictionary, Dictionary ngramDictionary) throws IOException {
+  public static POSModel train(String languageCode,
+      ObjectStream<POSSample> samples, TrainingParameters trainParams,
+      POSTaggerFactory posFactory, POSDictionary tagDictionary,
+      Dictionary ngramDictionary) throws IOException {
     
-    POSContextGenerator contextGenerator = new DefaultPOSContextGenerator(ngramDictionary);
+    POSContextGenerator contextGenerator = posFactory.getPOSContextGenerator();
     
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
     
@@ -341,7 +342,14 @@ public class POSTaggerME implements POSTagger {
     }
     
     return new POSModel(languageCode, posModel, tagDictionary,
-        ngramDictionary, manifestInfoEntries);
+        ngramDictionary, manifestInfoEntries, posFactory);
+  }
+
+  public static POSModel train(String languageCode, ObjectStream<POSSample> samples, TrainingParameters trainParams, 
+      POSDictionary tagDictionary, Dictionary ngramDictionary) throws IOException {
+    
+    return train(languageCode, samples, trainParams, new POSTaggerFactory(
+        ngramDictionary, tagDictionary), tagDictionary, ngramDictionary);
   }
   
   /**
