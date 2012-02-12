@@ -25,9 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import opennlp.tools.postag.DummyPOSTaggerFactoy.DummyPOSContextGenerator;
-import opennlp.tools.postag.DummyPOSTaggerFactoy.DummyPOSDictionary;
-import opennlp.tools.postag.DummyPOSTaggerFactoy.DummyPOSSequenceValidator;
+import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSContextGenerator;
+import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSDictionary;
+import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSSequenceValidator;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
@@ -60,7 +60,7 @@ public class POSTaggerFactoryTest {
             .getResourceAsStream("TagDictionaryCaseSensitive.xml")));
 
     POSModel posModel = trainPOSModel(ModelType.MAXENT,
-        new DummyPOSTaggerFactoy(null, posDict));
+        new DummyPOSTaggerFactory(null, posDict));
 
     POSTaggerFactory factory = posModel.getFactory();
     assertTrue(factory.getPOSDictionary() instanceof DummyPOSDictionary);

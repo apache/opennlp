@@ -29,18 +29,18 @@ import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.UncloseableInputStream;
 
-public class DummyPOSTaggerFactoy extends POSTaggerFactory {
+public class DummyPOSTaggerFactory extends POSTaggerFactory {
   
 
   private static final String DUMMY_POSDICT = "DUMMY_POSDICT";
   private DummyPOSDictionary dict;
   
-  public DummyPOSTaggerFactoy(Dictionary ngramDictionary, DummyPOSDictionary posDictionary) {
+  public DummyPOSTaggerFactory(Dictionary ngramDictionary, DummyPOSDictionary posDictionary) {
     super(ngramDictionary, null);
     this.dict = posDictionary;
   }
   
-  public DummyPOSTaggerFactoy(ArtifactProvider artifactProvider) {
+  public DummyPOSTaggerFactory(ArtifactProvider artifactProvider) {
     super(artifactProvider);
   }
   
