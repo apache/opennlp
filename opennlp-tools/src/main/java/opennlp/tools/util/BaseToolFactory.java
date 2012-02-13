@@ -75,5 +75,17 @@ public abstract class BaseToolFactory {
   public Map<String, Object> createArtifactMap() {
     return new HashMap<String, Object>();
   }
+  
+  /**
+   * Validates the parsed artifacts. If something is not
+   * valid subclasses should throw an {@link InvalidFormatException}.
+   *
+   * Note:
+   * Subclasses should generally invoke super.validateArtifactMap at the beginning
+   * of this method.
+   *
+   * @throws InvalidFormatException
+   */
+  public abstract void validateArtifactMap() throws InvalidFormatException;
 
 }
