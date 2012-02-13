@@ -321,8 +321,7 @@ public class POSTaggerME implements POSTagger {
   
   public static POSModel train(String languageCode,
       ObjectStream<POSSample> samples, TrainingParameters trainParams,
-      POSTaggerFactory posFactory, POSDictionary tagDictionary,
-      Dictionary ngramDictionary) throws IOException {
+      POSTaggerFactory posFactory) throws IOException {
     
     POSContextGenerator contextGenerator = posFactory.getPOSContextGenerator();
     
@@ -345,16 +344,23 @@ public class POSTaggerME implements POSTagger {
     return new POSModel(languageCode, posModel, manifestInfoEntries, posFactory);
   }
 
+  /**
+   * @deprecated use
+   *             {@link #train(String, ObjectStream, TrainingParameters, POSTaggerFactory)}
+   *             instead and pass in a {@link POSTaggerFactory}.
+   */
   public static POSModel train(String languageCode, ObjectStream<POSSample> samples, TrainingParameters trainParams, 
       POSDictionary tagDictionary, Dictionary ngramDictionary) throws IOException {
     
     return train(languageCode, samples, trainParams, new POSTaggerFactory(
-        ngramDictionary, tagDictionary), tagDictionary, ngramDictionary);
+        ngramDictionary, tagDictionary));
   }
   
   /**
-   * @deprecated use {@link #train(String, ObjectStream, TrainingParameters, POSDictionary, Dictionary)}
-   * instead and pass in a TrainingParameters object.
+   * @deprecated use
+   *             {@link #train(String, ObjectStream, TrainingParameters, POSTaggerFactory)}
+   *             instead and pass in a {@link POSTaggerFactory} and a
+   *             {@link TrainingParameters}.
    */
   @Deprecated
   public static POSModel train(String languageCode, ObjectStream<POSSample> samples, ModelType modelType, POSDictionary tagDictionary,
