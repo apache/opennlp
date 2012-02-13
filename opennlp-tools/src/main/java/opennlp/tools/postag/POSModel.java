@@ -155,6 +155,10 @@ public final class POSModel extends BaseModel {
         // already validated
         return null;
       }
+    } else {
+      // it is an old model, will use default factory
+      this.posTaggerFactory = new POSTaggerFactory(this);
+      return this.posTaggerFactory;
     }
     
     Constructor<?> constructor = null;
