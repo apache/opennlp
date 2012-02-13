@@ -18,11 +18,12 @@
 
 package opennlp.tools.util.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -60,7 +61,7 @@ public abstract class BaseModel implements ArtifactProvider {
   
   private final String componentName;
 
-  private HashSet<String> unloadedExtensions;
+  private Map<String, byte[]> leftoverArtifacts;
 
   private boolean subclassSerializersInitiated = false;
   private boolean finishedLoadingArtifacts = false;
@@ -137,7 +138,7 @@ public abstract class BaseModel implements ArtifactProvider {
     
     // will read it in two steps, first using the known factories, latter the
     // unknown.
-    unloadedExtensions = new HashSet<String>();
+    leftoverArtifacts = new HashMap<String, byte[]>();
 
     ZipEntry entry;
     while((entry = zip.getNextEntry()) != null ) {
@@ -147,7 +148,9 @@ public abstract class BaseModel implements ArtifactProvider {
       ArtifactSerializer factory = artifactSerializers.get(extension);
 
       if (factory == null) {
-        unloadedExtensions.add(extension);
+        /* TODO: find a better solution, that would consume less memory */
+        byte[] bytes = toByteArray(zip);
+        leftoverArtifacts.put(entry.getName(), bytes);
       } else {
         artifactMap.put(entry.getName(), factory.create(zip));
       }
@@ -174,32 +177,28 @@ public abstract class BaseModel implements ArtifactProvider {
   protected void finishLoadingArtifacts(InputStream in)
       throws InvalidFormatException, IOException {
     finishedLoadingArtifacts = true;
-    if (unloadedExtensions == null || unloadedExtensions.size() == 0) {
+    if (leftoverArtifacts == null || leftoverArtifacts.size() == 0) {
       return;
     }
-    in.reset();
-    final ZipInputStream zip = new ZipInputStream(in);
-    Map<String, Object> artifactMap = new HashMap<String, Object>(
-        this.artifactMap);
-    ZipEntry entry;
-    while ((entry = zip.getNextEntry()) != null) {
 
-      String extension = getEntryExtension(entry.getName());
+    Map<String, Object> artifactMap = new HashMap<String, Object>();
+    
+    for (String entryName : leftoverArtifacts.keySet()) {
+      
+      String extension = getEntryExtension(entryName);
 
-      if (unloadedExtensions.contains(extension)) {
+      if (leftoverArtifacts.containsKey(entryName)) {
         ArtifactSerializer factory = artifactSerializers.get(extension);
 
         if (factory == null) {
           throw new InvalidFormatException("Unkown artifact format: "
               + extension);
         } else {
-          artifactMap.put(entry.getName(), factory.create(zip));
+          artifactMap.put(entryName, factory.create(new ByteArrayInputStream(leftoverArtifacts.get(entryName))));
         }
       }
-
-      zip.closeEntry();
     }
-    this.unloadedExtensions = null;
+    this.leftoverArtifacts = null;
     this.artifactMap.putAll(artifactMap);
   }
 
@@ -436,5 +435,17 @@ public abstract class BaseModel implements ArtifactProvider {
     if(artifact == null)
       return null;
     return (T) artifact;
+  }
+  
+  private static byte[] toByteArray(InputStream input) throws IOException {
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    byte[] buffer = new byte[1024 * 4];
+    int count = 0;
+    int n = 0;
+    while (-1 != (n = input.read(buffer))) {
+      output.write(buffer, 0, n);
+      count += n;
+    }
+    return output.toByteArray();
   }
 }
