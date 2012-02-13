@@ -20,7 +20,6 @@ package opennlp.tools.postag;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,31 +45,6 @@ import opennlp.tools.util.model.ModelType;
  *
  */
 public class POSTaggerME implements POSTagger {
-  
-  private static class PosSequenceValidator implements SequenceValidator<String> {
-    
-    private POSDictionary tagDictionary;
-    
-    PosSequenceValidator(POSDictionary tagDictionary) {
-      this.tagDictionary = tagDictionary;
-    }
-    
-    public boolean validSequence(int i, String[] inputSequence,
-        String[] outcomesSequence, String outcome) {
-      if (tagDictionary == null) {
-        return true;
-      }
-      else {
-        String[] tags = tagDictionary.getTags(inputSequence[i]);
-        if (tags == null) {
-          return true;
-        }
-        else {
-          return Arrays.asList(tags).contains(outcome);
-        }
-      }
-    }
-  }
   
   /**
    * The maximum entropy model to use to evaluate contexts.
@@ -109,12 +83,20 @@ public class POSTaggerME implements POSTagger {
    */
   protected BeamSearch<String> beam;
 
+  /**
+   * Constructor that overrides the {@link SequenceValidator} from the model.
+   * 
+   * @deprecated use {@link #POSTaggerME(POSModel, int, int)} instead. The model
+   *             knows which {@link SequenceValidator} to use.
+   */
   public POSTaggerME(POSModel model, int beamSize, int cacheSize, SequenceValidator<String> sequenceValidator) {
+    POSTaggerFactory factory = model.getFactory();
     posModel = model.getPosModel();
-    contextGen = new DefaultPOSContextGenerator(beamSize, model.getNgramDictionary());
-    tagDictionary = model.getTagDictionary();
+    contextGen = factory.getPOSContextGenerator(beamSize);
+    tagDictionary = factory.getPOSDictionary();
     size = beamSize;
-    beam = new BeamSearch<String>(size, contextGen, posModel, sequenceValidator, cacheSize);
+    beam = new BeamSearch<String>(size, contextGen, posModel,
+        sequenceValidator, cacheSize);
   }
   
   /**
@@ -125,7 +107,13 @@ public class POSTaggerME implements POSTagger {
    * @param beamSize
    */
   public POSTaggerME(POSModel model, int beamSize, int cacheSize) {
-    this(model, beamSize, cacheSize, new PosSequenceValidator(model.getTagDictionary()));
+    POSTaggerFactory factory = model.getFactory();
+    posModel = model.getPosModel();
+    contextGen = factory.getPOSContextGenerator(beamSize);
+    tagDictionary = factory.getPOSDictionary();
+    size = beamSize;
+    beam = new BeamSearch<String>(size, contextGen, posModel,
+        factory.getSequenceValidator(), cacheSize);
   }
   
   /**
