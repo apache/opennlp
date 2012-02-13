@@ -45,19 +45,31 @@ public final class POSModel extends BaseModel {
 
   private POSTaggerFactory posTaggerFactory = null;
 
+  /**
+   * @deprecated Use
+   *             {@link #POSModel(String, AbstractModel, Map, POSTaggerFactory)}
+   *             instead.
+   */
   public POSModel(String languageCode, AbstractModel posModel,
       POSDictionary tagDictionary, Dictionary ngramDict, Map<String, String> manifestInfoEntries) {
 
-    this(languageCode, posModel, tagDictionary, ngramDict, manifestInfoEntries, null);
+    this(languageCode, posModel, manifestInfoEntries, new POSTaggerFactory(
+        ngramDict, tagDictionary));
   }
 
+  /**
+   * @deprecated Use
+   *             {@link #POSModel(String, AbstractModel, Map, POSTaggerFactory)}
+   *             instead.
+   */
   public POSModel(String languageCode, AbstractModel posModel,
       POSDictionary tagDictionary, Dictionary ngramDict) {
-    this (languageCode, posModel, tagDictionary, ngramDict, null, null);
+    this(languageCode, posModel, null, new POSTaggerFactory(ngramDict,
+        tagDictionary));
   }
   
   public POSModel(String languageCode, AbstractModel posModel,
-      POSDictionary tagDictionary, Dictionary ngramDict, Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
+      Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
 
@@ -74,11 +86,6 @@ public final class POSModel extends BaseModel {
     
     loadArtifactSerializers();
     checkArtifactMap();
-  }
-
-  public POSModel(String languageCode, AbstractModel posModel,
-      POSDictionary tagDictionary, Dictionary ngramDict, POSTaggerFactory f) {
-    this (languageCode, posModel, tagDictionary, ngramDict, null, f);
   }
   
   public POSModel(InputStream in) throws IOException, InvalidFormatException {
