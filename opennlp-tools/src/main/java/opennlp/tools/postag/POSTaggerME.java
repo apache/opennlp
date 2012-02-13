@@ -318,6 +318,7 @@ public class POSTaggerME implements POSTagger {
     
     
   }
+  
   public static POSModel train(String languageCode,
       ObjectStream<POSSample> samples, TrainingParameters trainParams,
       POSTaggerFactory posFactory, POSDictionary tagDictionary,
@@ -341,8 +342,7 @@ public class POSTaggerME implements POSTagger {
       posModel = TrainUtil.train(ss, trainParams.getSettings(), manifestInfoEntries);
     }
     
-    return new POSModel(languageCode, posModel, tagDictionary,
-        ngramDictionary, manifestInfoEntries, posFactory);
+    return new POSModel(languageCode, posModel, manifestInfoEntries, posFactory);
   }
 
   public static POSModel train(String languageCode, ObjectStream<POSSample> samples, TrainingParameters trainParams, 
