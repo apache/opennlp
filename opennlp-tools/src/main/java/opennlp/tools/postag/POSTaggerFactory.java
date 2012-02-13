@@ -114,6 +114,10 @@ public class POSTaggerFactory extends BaseToolFactory {
   public POSContextGenerator getPOSContextGenerator() {
     return new DefaultPOSContextGenerator(0, getDictionary());
   }
+  
+  public POSContextGenerator getPOSContextGenerator(int cacheSize) {
+    return new DefaultPOSContextGenerator(cacheSize, getDictionary());
+  }
 
   public SequenceValidator<String> getSequenceValidator() {
     return new DefaultPOSSequenceValidator(getPOSDictionary());
