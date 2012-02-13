@@ -79,10 +79,4 @@ public class POSTaggerFactoryTest {
     assertTrue(factory.getSequenceValidator() instanceof DummyPOSSequenceValidator);
   }
 
-  @Test
-  public void testBuildNGramDictionary() throws IOException {
-    ObjectStream<POSSample> samples = createSampleStream();
-
-    POSTaggerME.buildNGramDictionary(samples, 0);
-  }
 }
