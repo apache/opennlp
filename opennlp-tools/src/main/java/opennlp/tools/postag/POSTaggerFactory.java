@@ -17,15 +17,30 @@
 
 package opennlp.tools.postag;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import opennlp.model.AbstractModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BaseToolFactory;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.model.ArtifactProvider;
+import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
- * 
+ * The factory that provides POS Tagger default implementations and resources 
  */
 public class POSTaggerFactory extends BaseToolFactory {
+  
+  private static final String TAG_DICTIONARY_ENTRY_NAME = "tags.tagdict";
+  private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram.dictionary";
 
   protected Dictionary ngramDictionary;
   protected POSDictionary posDictionary;
@@ -39,7 +54,8 @@ public class POSTaggerFactory extends BaseToolFactory {
 
   /**
    * Creates a {@link POSTaggerFactory} with an {@link ArtifactProvider} that
-   * will be used to retrieve artifacts.
+   * will be used to retrieve artifacts. This constructor will try to get the ngram
+   * and POS tags dictionaries from the artifact provider.
    * <p>
    * Sub-classes should implement a constructor with this signatures and call
    * this constructor.
@@ -48,6 +64,8 @@ public class POSTaggerFactory extends BaseToolFactory {
    */
   public POSTaggerFactory(ArtifactProvider artifactProvider) {
     super(artifactProvider);
+    this.ngramDictionary = artifactProvider.getArtifact(NGRAM_DICTIONARY_ENTRY_NAME);
+    this.posDictionary = artifactProvider.getArtifact(TAG_DICTIONARY_ENTRY_NAME);
   }
 
   /**
@@ -62,17 +80,113 @@ public class POSTaggerFactory extends BaseToolFactory {
     this.ngramDictionary = ngramDictionary;
     this.posDictionary = posDictionary;
   }
+  
+  @Override
+  @SuppressWarnings("rawtypes")
+  public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
+    Map<String, ArtifactSerializer> serializers = super.createArtifactSerializersMap();
+    POSDictionarySerializer.register(serializers);
+    // the ngram Dictionary uses a base serializer, we don't need to add it here.
+    return serializers;
+  }
+  
+  @Override
+  public Map<String, Object> createArtifactMap() {
+    Map<String, Object> artifactMap = super.createArtifactMap();
+    
+    if (posDictionary != null)
+      artifactMap.put(TAG_DICTIONARY_ENTRY_NAME, posDictionary);
+
+    if (ngramDictionary != null)
+      artifactMap.put(NGRAM_DICTIONARY_ENTRY_NAME, ngramDictionary);
+    
+    return artifactMap;
+  }
 
   public POSDictionary getPOSDictionary() {
     return this.posDictionary;
   }
+  
+  public Dictionary getDictionary() {
+    return this.ngramDictionary;
+  }
 
   public POSContextGenerator getPOSContextGenerator() {
-    return new DefaultPOSContextGenerator(0, ngramDictionary);
+    return new DefaultPOSContextGenerator(0, getDictionary());
   }
 
   public SequenceValidator<String> getSequenceValidator() {
     return new DefaultPOSSequenceValidator(getPOSDictionary());
+  }
+  
+  static class POSDictionarySerializer implements ArtifactSerializer<POSDictionary> {
+
+    public POSDictionary create(InputStream in) throws IOException,
+        InvalidFormatException {
+      return POSDictionary.create(new UncloseableInputStream(in));
+    }
+
+    public void serialize(POSDictionary artifact, OutputStream out)
+        throws IOException {
+      artifact.serialize(out);
+    }
+
+    @SuppressWarnings("rawtypes")
+    static void register(Map<String, ArtifactSerializer> factories) {
+      factories.put("tagdict", new POSDictionarySerializer());
+    }
+  }
+
+  @Override
+  public void validateArtifactMap() throws InvalidFormatException {
+    
+    // Ensure that the tag dictionary is compatible with the model
+    
+    Object tagdictEntry = this.artifactProvider
+        .getArtifact(TAG_DICTIONARY_ENTRY_NAME);
+
+    if (tagdictEntry != null) {
+      if (tagdictEntry instanceof POSDictionary) {
+        POSDictionary posDict = (POSDictionary) tagdictEntry;
+        
+        Set<String> dictTags = new HashSet<String>();
+        
+        for (String word : posDict) {
+          Collections.addAll(dictTags, posDict.getTags(word)); 
+        }
+        
+        Set<String> modelTags = new HashSet<String>();
+        
+        AbstractModel posModel = this.artifactProvider
+            .getArtifact(POSModel.POS_MODEL_ENTRY_NAME);
+        
+        for  (int i = 0; i < posModel.getNumOutcomes(); i++) {
+          modelTags.add(posModel.getOutcome(i));
+        }
+        
+        if (!modelTags.containsAll(dictTags)) {
+          StringBuilder unknownTag = new StringBuilder();
+          for (String d : dictTags) {
+            if(!modelTags.contains(d)) {
+              unknownTag.append(d).append(" ");
+            }
+          }
+          throw new InvalidFormatException("Tag dictioinary contains tags " +
+                "which are unknown by the model! The unknown tags are: " + unknownTag.toString());
+        }
+      }
+      else {
+        throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
+      }
+    }
+
+    Object ngramDictEntry = this.artifactProvider
+        .getArtifact(NGRAM_DICTIONARY_ENTRY_NAME);
+
+    if (ngramDictEntry != null && !(ngramDictEntry instanceof Dictionary)) {
+      throw new InvalidFormatException("NGram dictionary has wrong type!");
+    }
+    
   }
 
 }

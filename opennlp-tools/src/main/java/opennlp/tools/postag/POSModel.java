@@ -20,12 +20,8 @@ package opennlp.tools.postag;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Constructor;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import opennlp.model.AbstractModel;
 import opennlp.tools.dictionary.Dictionary;
@@ -33,7 +29,6 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
-import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
  * The {@link POSModel} is the model used
@@ -43,29 +38,9 @@ import opennlp.tools.util.model.UncloseableInputStream;
  */
 public final class POSModel extends BaseModel {
 
-  static class POSDictionarySerializer implements ArtifactSerializer<POSDictionary> {
-
-    public POSDictionary create(InputStream in) throws IOException,
-        InvalidFormatException {
-      return POSDictionary.create(new UncloseableInputStream(in));
-    }
-
-    public void serialize(POSDictionary artifact, OutputStream out)
-        throws IOException {
-      artifact.serialize(out);
-    }
-
-    @SuppressWarnings("unchecked")
-    static void register(Map<String, ArtifactSerializer> factories) {
-      factories.put("tagdict", new POSDictionarySerializer());
-    }
-  }
-
   private static final String COMPONENT_NAME = "POSTaggerME";
   
-  private static final String POS_MODEL_ENTRY_NAME = "pos.model";
-  private static final String TAG_DICTIONARY_ENTRY_NAME = "tags.tagdict";
-  private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram.dictionary";
+  public static final String POS_MODEL_ENTRY_NAME = "pos.model";
   private static final String FACTORY_NAME = "pos.factory";
 
   private POSTaggerFactory posTaggerFactory = null;
@@ -91,12 +66,6 @@ public final class POSModel extends BaseModel {
 
     artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
 
-    if (tagDictionary != null)
-      artifactMap.put(TAG_DICTIONARY_ENTRY_NAME, tagDictionary);
-
-    if (ngramDict != null)
-      artifactMap.put(NGRAM_DICTIONARY_ENTRY_NAME, ngramDict);
-    
     // The factory is optional
     if (posFactory!=null) {
       setManifestProperty(FACTORY_NAME, posFactory.getClass().getCanonicalName());
@@ -120,13 +89,11 @@ public final class POSModel extends BaseModel {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   protected void createArtifactSerializers(
       Map<String, ArtifactSerializer> serializers) {
 
     super.createArtifactSerializers(serializers);
-
-    POSDictionarySerializer.register(serializers);
 
     if(getFactory() != null)
       serializers.putAll(getFactory().createArtifactSerializersMap());
@@ -150,48 +117,7 @@ public final class POSModel extends BaseModel {
       }
     }
     
-    // Ensure that the tag dictionary is compatible with the model
-    Object tagdictEntry = artifactMap.get(TAG_DICTIONARY_ENTRY_NAME);
-
-    if (tagdictEntry != null) {
-      if (tagdictEntry instanceof POSDictionary) {
-        POSDictionary posDict = (POSDictionary) tagdictEntry;
-        
-        Set<String> dictTags = new HashSet<String>();
-        
-        for (String word : posDict) {
-          Collections.addAll(dictTags, posDict.getTags(word)); 
-        }
-        
-        Set<String> modelTags = new HashSet<String>();
-        
-        AbstractModel posModel = getPosModel();
-        
-        for  (int i = 0; i < posModel.getNumOutcomes(); i++) {
-          modelTags.add(posModel.getOutcome(i));
-        }
-        
-        if (!modelTags.containsAll(dictTags)) {
-          StringBuilder unknownTag = new StringBuilder();
-          for (String d : dictTags) {
-            if(!modelTags.contains(d)) {
-              unknownTag.append(d).append(" ");
-            }
-          }
-          throw new InvalidFormatException("Tag dictioinary contains tags " +
-          		"which are unknown by the model! The unknown tags are: " + unknownTag.toString());
-        }
-      }
-      else {
-        throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
-      }
-    }
-
-    Object ngramDictEntry = artifactMap.get(NGRAM_DICTIONARY_ENTRY_NAME);
-
-    if (ngramDictEntry != null && !(ngramDictEntry instanceof Dictionary)) {
-      throw new InvalidFormatException("NGram dictionary has wrong type!");
-    }
+    getFactory().validateArtifactMap();
   }
 
   public AbstractModel getPosModel() {
@@ -206,7 +132,7 @@ public final class POSModel extends BaseModel {
   public POSDictionary getTagDictionary() {
     if(getFactory() != null)
       return getFactory().getPOSDictionary();
-    return (POSDictionary) artifactMap.get(TAG_DICTIONARY_ENTRY_NAME);
+    return null;
   }
   
   public POSTaggerFactory getFactory() {
@@ -257,6 +183,8 @@ public final class POSModel extends BaseModel {
    * @return ngram dictionary or null if not used
    */
   public Dictionary getNgramDictionary() {
-    return (Dictionary) artifactMap.get(NGRAM_DICTIONARY_ENTRY_NAME);
+    if(getFactory() != null)
+      return getFactory().getDictionary();
+    return null;
   }
 }
