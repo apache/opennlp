@@ -39,57 +39,101 @@ public class POSTaggerCrossValidator {
 
   private Mean wordAccuracy = new Mean();
   private POSTaggerEvaluationMonitor[] listeners;
+
+  /* this will be used to load the factory after the ngram dictionary was created */
+  private String factoryClassName;
+  /* user can also send a ready to use factory */
+  private POSTaggerFactory factory;
   
   /**
-   * @deprecated use {@link #POSTaggerCrossValidator(String, TrainingParameters, POSDictionary, Dictionary, POSTaggerEvaluationMonitor...)}
-   * instead and pass in a TrainingParameters object.
+   * Creates a {@link POSTaggerCrossValidator} that builds a ngram dictionary
+   * dynamically. It instantiates a sub-class of {@link POSTaggerFactory} using
+   * the tag and the ngram dictionaries.
    */
-  @Deprecated
-  public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
-      Dictionary ngramDictionary, int cutoff, int iterations) {
-    this.languageCode = languageCode;
-    this.params = ModelUtil.createTrainingParameters(iterations, cutoff);
-    this.params.put(TrainingParameters.ALGORITHM_PARAM, modelType.toString());
-    this.tagDictionary = tagDictionary;
-    this.ngramDictionary = ngramDictionary;
-  }
-  
-  public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
-      Dictionary ngramDictionary) {
-    this(languageCode, modelType, tagDictionary, ngramDictionary, 5, 100);
-  }
-
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSDictionary tagDictionary,
+      Integer ngramCutoff, String factoryClass,
       POSTaggerEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
     this.params = trainParam;
     this.tagDictionary = tagDictionary;
+    this.ngramCutoff = ngramCutoff;
+    this.listeners = listeners;
+    this.factoryClassName = factoryClass;
+    this.ngramDictionary = null;
+  }
+
+  /**
+   * Creates a {@link POSTaggerCrossValidator} using the given
+   * {@link POSTaggerFactory}.
+   */
+  public POSTaggerCrossValidator(String languageCode,
+      TrainingParameters trainParam, POSTaggerFactory factory,
+      POSTaggerEvaluationMonitor... listeners) {
+    this.languageCode = languageCode;
+    this.params = trainParam;
+    this.listeners = listeners;
+    this.factory = factory;
+    this.tagDictionary = null;
     this.ngramDictionary = null;
     this.ngramCutoff = null;
-    this.listeners = listeners;
   }
   
+  /**
+   * @deprecated use
+   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
+   *             instead and pass in a {@link TrainingParameters} object and a
+   *             {@link POSTaggerFactory}.
+   */
+  public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
+      Dictionary ngramDictionary, int cutoff, int iterations) {
+    this(languageCode, create(modelType, cutoff, iterations), create(ngramDictionary, tagDictionary));
+  }
+  
+  /**
+   * @deprecated use
+   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
+   *             instead and pass in a {@link TrainingParameters} object and a
+   *             {@link POSTaggerFactory}.
+   */
+  public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
+      Dictionary ngramDictionary) {
+    this(languageCode, create(modelType, 5, 100), create(ngramDictionary, tagDictionary));
+  }
+
+  /**
+   * @deprecated use
+   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
+   *             instead and pass in a {@link POSTaggerFactory}.
+   */
+  public POSTaggerCrossValidator(String languageCode,
+      TrainingParameters trainParam, POSDictionary tagDictionary,
+      POSTaggerEvaluationMonitor... listeners) {
+    this(languageCode, trainParam, create(null, tagDictionary), listeners);
+  }
+  
+  /**
+   * @deprecated use
+   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSDictionary, Integer, String, POSTaggerEvaluationMonitor...)}
+   *             instead and pass in the name of {@link POSTaggerFactory}
+   *             sub-class.
+   */
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSDictionary tagDictionary,
       Integer ngramCutoff, POSTaggerEvaluationMonitor... listeners) {
-    this.languageCode = languageCode;
-    this.params = trainParam;
-    this.tagDictionary = tagDictionary;
-    this.ngramDictionary = null;
-    this.ngramCutoff = ngramCutoff;
-    this.listeners = listeners;
+    this(languageCode, trainParam, tagDictionary, ngramCutoff,
+        POSTaggerFactory.class.getCanonicalName(), listeners);
   }
 
+  /**
+   * @deprecated use
+   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
+   *             instead and pass in a {@link POSTaggerFactory}.
+   */
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSDictionary tagDictionary,
       Dictionary ngramDictionary, POSTaggerEvaluationMonitor... listeners) {
-    this.languageCode = languageCode;
-    this.params = trainParam;
-    this.tagDictionary = tagDictionary;
-    this.ngramDictionary = ngramDictionary;
-    this.ngramCutoff = null;
-    this.listeners = listeners;
+    this(languageCode, trainParam, create(ngramDictionary, tagDictionary), listeners);
   }
   
   /**
@@ -124,9 +168,14 @@ public class POSTaggerCrossValidator {
       } else {
         ngramDict = this.ngramDictionary;
       }
-
-      POSModel model = POSTaggerME.train(languageCode, trainingSampleStream, params,
-            this.tagDictionary, ngramDict);
+      
+      if (this.factory == null) {
+        this.factory = POSTaggerFactory.create(this.factoryClassName,
+            ngramDict, tagDictionary);
+      }
+      
+      POSModel model = POSTaggerME.train(languageCode, trainingSampleStream,
+          params, this.factory);
 
       POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model), listeners);
       
@@ -154,5 +203,15 @@ public class POSTaggerCrossValidator {
    */
   public long getWordCount() {
     return wordAccuracy.count();
+  }
+  
+  private static TrainingParameters create(ModelType type, int cutoff, int iterations) {
+    TrainingParameters params = ModelUtil.createTrainingParameters(iterations, cutoff);
+    params.put(TrainingParameters.ALGORITHM_PARAM, type.toString());
+    return params;
+  }
+  
+  private static POSTaggerFactory create(Dictionary ngram, POSDictionary pos) {
+    return new POSTaggerFactory(ngram, pos);
   }
 }

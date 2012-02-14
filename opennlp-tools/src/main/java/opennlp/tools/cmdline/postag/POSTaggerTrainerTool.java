@@ -31,7 +31,9 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.postag.POSDictionary;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
 import opennlp.tools.util.model.ModelUtil;
@@ -76,22 +78,35 @@ public final class POSTaggerTrainerTool
         ngramDict = POSTaggerME.buildNGramDictionary(sampleStream, ngramCutoff);
         sampleStream.reset();
       } catch (IOException e) {
-        throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+        throw new TerminateToolException(-1,
+            "IO error while building NGram Dictionary: " + e.getMessage());
       }
       System.err.println("done");
+    }
+
+    // TODO: Move to util method ...
+    POSDictionary tagdict = null;
+    if (params.getDict() != null) {
+      try {
+        tagdict = POSDictionary.create(new FileInputStream(params.getDict()));
+      } catch (IOException e) {
+        throw new TerminateToolException(-1,
+            "IO error while loading POS Dictionary: " + e.getMessage());
+      }
+    }
+
+    POSTaggerFactory postaggerFactory = null;
+    try {
+      postaggerFactory = POSTaggerFactory.create(params.getFactory(),
+          ngramDict, tagdict);
+    } catch (InvalidFormatException e) {
+      throw new TerminateToolException(-1, e.getMessage());
     }
     
     POSModel model;
     try {
-      
-      // TODO: Move to util method ...
-      POSDictionary tagdict = null;
-      if (params.getDict() != null) {
-        tagdict = POSDictionary.create(new FileInputStream(params.getDict()));
-      }
-      
       model = opennlp.tools.postag.POSTaggerME.train(factory.getLang(),
-          sampleStream, mlParams, tagdict, ngramDict);
+          sampleStream, mlParams, postaggerFactory);
     }
     catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
