@@ -20,13 +20,11 @@ package opennlp.tools.postag;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.util.Map;
 
 import opennlp.model.AbstractModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
 
@@ -41,9 +39,6 @@ public final class POSModel extends BaseModel {
   private static final String COMPONENT_NAME = "POSTaggerME";
   
   public static final String POS_MODEL_ENTRY_NAME = "pos.model";
-  private static final String FACTORY_NAME = "pos.factory";
-
-  private POSTaggerFactory posTaggerFactory = null;
 
   /**
    * @deprecated Use
@@ -71,28 +66,23 @@ public final class POSModel extends BaseModel {
   public POSModel(String languageCode, AbstractModel posModel,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
-    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries, posFactory);
 
     if (posModel == null)
         throw new IllegalArgumentException("The maxentPosModel param must not be null!");
 
     artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
-
-    // The factory is optional
-    if (posFactory!=null) {
-      setManifestProperty(FACTORY_NAME, posFactory.getClass().getCanonicalName());
-      artifactMap.putAll(posFactory.createArtifactMap());
-    }
-    
-    loadArtifactSerializers();
     checkArtifactMap();
   }
   
   public POSModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
-    loadArtifactSerializers();
-    finishLoadingArtifacts(in);
-    checkArtifactMap();
+  }
+
+  @Override
+  protected void initializeFactory() {
+    super.initializeFactory();
+
   }
 
   @Override
@@ -113,18 +103,6 @@ public final class POSModel extends BaseModel {
     if (!(artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
       throw new InvalidFormatException("POS model is incomplete!");
     }
-    
-    // validate the factory
-    String factoryName = getManifestProperty(FACTORY_NAME);
-    if(factoryName != null) {
-      try {
-        Class.forName(factoryName);
-      } catch (ClassNotFoundException e) {
-        throw new InvalidFormatException("Could not find the POS factory class: " + factoryName);
-      }
-    }
-    
-    getFactory().validateArtifactMap();
   }
 
   public AbstractModel getPosModel() {
@@ -143,49 +121,7 @@ public final class POSModel extends BaseModel {
   }
   
   public POSTaggerFactory getFactory() {
-    if(this.posTaggerFactory != null) 
-      return this.posTaggerFactory;
-    String factoryName = getManifestProperty(FACTORY_NAME);
-    POSTaggerFactory theFactory = null;
-    Class<?> factoryClass = null;
-    if(factoryName != null) {
-      try {
-        factoryClass = Class.forName(factoryName);
-      } catch (ClassNotFoundException e) {
-        // already validated
-        return null;
-      }
-    } else {
-      // it is an old model, will use default factory
-      this.posTaggerFactory = new POSTaggerFactory(this);
-      return this.posTaggerFactory;
-    }
-    
-    Constructor<?> constructor = null;
-    if(factoryClass != null) {
-      try {
-        constructor = factoryClass.getConstructor(ArtifactProvider.class);
-        theFactory = (POSTaggerFactory) constructor.newInstance(this);
-      } catch (NoSuchMethodException e) {
-        // ignore, will try another constructor
-      } catch (Exception e) {
-        throw new IllegalArgumentException("Could not load POS Factory using Dictionary, POSDictionary constructor: " + factoryName, e);
-      }
-      if(theFactory == null) {
-        try {
-          factoryClass.getConstructor();
-          try {
-            theFactory = (POSTaggerFactory) constructor.newInstance();
-          } catch (Exception e) {
-            throw new IllegalArgumentException("Could not load POS Factory using default constructor: " + factoryName, e);
-          }
-        } catch (NoSuchMethodException e) {
-          // we couldn't load the class... raise an exception
-          throw new IllegalArgumentException("Could not load POS Factory: " + factoryName, e);
-        }
-      }
-    }
-    return theFactory;
+    return (POSTaggerFactory) this.toolFactory;
   }
 
   /**
