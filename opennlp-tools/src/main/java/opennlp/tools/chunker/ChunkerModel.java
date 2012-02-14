@@ -48,7 +48,6 @@ public class ChunkerModel extends BaseModel {
 
     artifactMap.put(CHUNKER_MODEL_ENTRY_NAME, chunkerModel);
 
-    loadArtifactSerializers();
     checkArtifactMap();
   }
   
@@ -58,9 +57,6 @@ public class ChunkerModel extends BaseModel {
   
   public ChunkerModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
-    loadArtifactSerializers();
-    finishLoadingArtifacts(in);
-    checkArtifactMap();
   }
 
   @Override
