@@ -117,6 +117,33 @@ public abstract class BaseToolFactory {
     return theFactory;
   }
 
+  public static BaseToolFactory create(Class<? extends BaseToolFactory> factoryClass,
+      ArtifactProvider artifactProvider) throws InvalidFormatException {
+    BaseToolFactory theFactory = null;
+    if (factoryClass != null) {
+      try {
+        Constructor<?> constructor = null;
+        constructor = factoryClass.getConstructor(ArtifactProvider.class);
+        theFactory = (BaseToolFactory) constructor
+            .newInstance(artifactProvider);
+      } catch (NoSuchMethodException e) {
+        String msg = "Could not instantiate the "
+            + factoryClass.getCanonicalName()
+            + ". The mandatry constructor (ArtifactProvider) is missing.";
+        System.err.println(msg);
+        throw new IllegalArgumentException(msg);
+      } catch (Exception e) {
+        String msg = "Could not instantiate the "
+            + factoryClass.getCanonicalName()
+            + ". The constructor (ArtifactProvider) throw an exception.";
+        System.err.println(msg);
+        e.printStackTrace();
+        throw new InvalidFormatException(msg);
+      }
+    }
+    return theFactory;
+  }
+  
   @SuppressWarnings("unchecked")
   protected
   static Class<? extends BaseToolFactory> loadSubclass(
