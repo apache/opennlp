@@ -29,6 +29,8 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSContextGenerator;
 import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSDictionary;
 import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSSequenceValidator;
+import opennlp.tools.util.BaseToolFactory;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
@@ -109,5 +111,24 @@ public class POSTaggerFactoryTest {
     assertTrue(factory.getSequenceValidator() instanceof DefaultPOSSequenceValidator);
     assertTrue(factory.getDictionary() instanceof Dictionary);
   }
+  
+  @Test(expected = NoClassDefFoundError.class)
+  public void testCreateWithInvalidName() throws InvalidFormatException {
+    BaseToolFactory.create("X", null);
+  }
 
+  @Test(expected = NoClassDefFoundError.class)
+  public void testCreateWithInvalidName2() throws InvalidFormatException {
+    POSTaggerFactory.create("X", null, null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateWithHierarchy() throws InvalidFormatException {
+    BaseToolFactory.create(Object.class.getCanonicalName(), null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateWithHierarchy2() throws InvalidFormatException {
+    POSTaggerFactory.create(this.getClass().getCanonicalName(), null, null);
+  }
 }
