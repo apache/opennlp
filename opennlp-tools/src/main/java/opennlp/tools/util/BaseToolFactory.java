@@ -17,6 +17,7 @@
 
 package opennlp.tools.util;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,4 +89,51 @@ public abstract class BaseToolFactory {
    */
   public abstract void validateArtifactMap() throws InvalidFormatException;
 
+  public static BaseToolFactory create(String subclassName,
+      ArtifactProvider artifactProvider) throws InvalidFormatException {
+    BaseToolFactory theFactory = null;
+    Class<? extends BaseToolFactory> factoryClass = loadSubclass(subclassName);
+    if (factoryClass != null) {
+      try {
+        Constructor<?> constructor = null;
+        constructor = factoryClass.getConstructor(ArtifactProvider.class);
+        theFactory = (BaseToolFactory) constructor
+            .newInstance(artifactProvider);
+      } catch (NoSuchMethodException e) {
+        String msg = "Could not instantiate the "
+            + subclassName
+            + ". The mandatry constructor (ArtifactProvider) is missing.";
+        System.err.println(msg);
+        throw new IllegalArgumentException(msg);
+      } catch (Exception e) {
+        String msg = "Could not instantiate the "
+            + subclassName
+            + ". The constructor (ArtifactProvider) throw an exception.";
+        System.err.println(msg);
+        e.printStackTrace();
+        throw new InvalidFormatException(msg);
+      }
+    }
+    return theFactory;
+  }
+
+  @SuppressWarnings("unchecked")
+  protected
+  static Class<? extends BaseToolFactory> loadSubclass(
+      String factoryName) throws InvalidFormatException {
+    Class<? extends BaseToolFactory> factoryClass = null;
+    try {
+      factoryClass = (Class<? extends BaseToolFactory>) Class
+          .forName(factoryName);
+    } catch (ClassNotFoundException e) {
+      throw new NoClassDefFoundError(
+          "Could not find the factory class in the classpath: " + factoryName);
+    } catch (ClassCastException e) {
+      throw new InvalidFormatException(
+          "The factory class does not extend BaseToolFactory: " + factoryName,
+          e);
+    }
+    return factoryClass;
+  }
+  
 }

@@ -30,6 +30,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import opennlp.tools.postag.POSTaggerFactory;
+import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Version;
 
@@ -43,6 +45,7 @@ import opennlp.tools.util.Version;
 public abstract class BaseModel implements ArtifactProvider {
 
   protected static final String MANIFEST_ENTRY = "manifest.properties";
+  protected static final String FACTORY_NAME = "factory";
   
   private static final String MANIFEST_VERSION_PROPERTY = "Manifest-Version";
   private static final String COMPONENT_NAME_PROPERTY = "Component-Name";
@@ -59,6 +62,8 @@ public abstract class BaseModel implements ArtifactProvider {
 
   protected final Map<String, Object> artifactMap;
   
+  protected BaseToolFactory toolFactory;
+  
   private final String componentName;
 
   private Map<String, byte[]> leftoverArtifacts;
@@ -67,16 +72,38 @@ public abstract class BaseModel implements ArtifactProvider {
   private boolean finishedLoadingArtifacts = false;
   
   /**
-   * Initializes the current instance. The sub-class constructor should call the methods:
-   * <li> {@link #loadArtifactSerializers()} to populate the serializers map, and
-   * <li> {@link #checkArtifactMap()} to check the artifact map is OK. <p>
-   * Not calling these methods will cause an {@link IllegalStateException}
-   *
-   * @param componentName the component name
-   * @param languageCode the language code
-   * @param manifestInfoEntries additional information in the manifest
+   * Initializes the current instance. The sub-class constructor should call the
+   * method {@link #checkArtifactMap()} to check the artifact map is OK.
+   * 
+   * @param componentName
+   *          the component name
+   * @param languageCode
+   *          the language code
+   * @param manifestInfoEntries
+   *          additional information in the manifest
    */
   protected BaseModel(String componentName, String languageCode, Map<String, String> manifestInfoEntries) {
+    this(componentName, languageCode, manifestInfoEntries, null);
+  }
+  
+  /**
+   * Initializes the current instance. The sub-class constructor should call the
+   * method {@link #checkArtifactMap()} to check the artifact map is OK.
+   * <p>
+   * Sub-classes will have access to custom artifacts and serializers provided
+   * by the factory.
+   * 
+   * @param componentName
+   *          the component name
+   * @param languageCode
+   *          the language code
+   * @param manifestInfoEntries
+   *          additional information in the manifest
+   * @param factory
+   *          the factory
+   */
+  protected BaseModel(String componentName, String languageCode,
+      Map<String, String> manifestInfoEntries, BaseToolFactory factory) {
 
     if (componentName == null)
         throw new IllegalArgumentException("componentName must not be null!");
@@ -106,6 +133,14 @@ public abstract class BaseModel implements ArtifactProvider {
       
     artifactMap.put(MANIFEST_ENTRY, manifest);
     finishedLoadingArtifacts = true;
+    
+    if (factory!=null) {
+      setManifestProperty(FACTORY_NAME, factory.getClass().getCanonicalName());
+      artifactMap.putAll(factory.createArtifactMap());
+    }
+    
+    initializeFactory();
+    loadArtifactSerializers();
   }
 
   /**
@@ -158,6 +193,28 @@ public abstract class BaseModel implements ArtifactProvider {
       zip.closeEntry();
     }
 
+    initializeFactory();
+    
+    loadArtifactSerializers();
+    finishLoadingArtifacts(null);
+    checkArtifactMap();
+  }
+  
+  /**
+   * 
+   */
+  protected void initializeFactory() {
+    String factoryName = getManifestProperty(FACTORY_NAME);
+    if (factoryName == null) {
+      // load the default factory
+      this.toolFactory = new POSTaggerFactory(this);
+    } else {
+      try {
+        this.toolFactory = POSTaggerFactory.create(factoryName, this);
+      } catch (InvalidFormatException e) {
+        throw new IllegalArgumentException(e.getMessage());
+      }
+    }
   }
   
   /**
@@ -326,6 +383,19 @@ public abstract class BaseModel implements ArtifactProvider {
     if (getManifestProperty(LANGUAGE_PROPERTY) == null)
       throw new InvalidFormatException("Missing " + LANGUAGE_PROPERTY + " property in " +
       		MANIFEST_ENTRY + "!");
+    
+    // validate the factory
+    String factoryName = getManifestProperty(FACTORY_NAME);
+    if (factoryName != null) {
+      try {
+        Class.forName(factoryName);
+      } catch (ClassNotFoundException e) {
+        throw new InvalidFormatException(
+            "Could not find the POS factory class: " + factoryName);
+      }
+      
+      toolFactory.validateArtifactMap();
+    }
   }
 
   /**
@@ -394,6 +464,10 @@ public abstract class BaseModel implements ArtifactProvider {
     String version = getManifestProperty(VERSION_PROPERTY);
 
     return Version.parse(version);
+  }
+  
+  public BaseToolFactory getFactory() {
+    return null;
   }
 
   /**

@@ -20,6 +20,7 @@ package opennlp.tools.postag;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -64,8 +65,6 @@ public class POSTaggerFactory extends BaseToolFactory {
    */
   public POSTaggerFactory(ArtifactProvider artifactProvider) {
     super(artifactProvider);
-    this.ngramDictionary = artifactProvider.getArtifact(NGRAM_DICTIONARY_ENTRY_NAME);
-    this.posDictionary = artifactProvider.getArtifact(TAG_DICTIONARY_ENTRY_NAME);
   }
 
   /**
@@ -104,10 +103,14 @@ public class POSTaggerFactory extends BaseToolFactory {
   }
 
   public POSDictionary getPOSDictionary() {
+    if(this.posDictionary == null && artifactProvider != null)
+      this.posDictionary = artifactProvider.getArtifact(TAG_DICTIONARY_ENTRY_NAME);
     return this.posDictionary;
   }
   
   public Dictionary getDictionary() {
+    if(this.ngramDictionary == null && artifactProvider != null)
+      this.ngramDictionary = artifactProvider.getArtifact(NGRAM_DICTIONARY_ENTRY_NAME);
     return this.ngramDictionary;
   }
 
@@ -192,5 +195,34 @@ public class POSTaggerFactory extends BaseToolFactory {
     }
     
   }
-
+  
+  public static POSTaggerFactory create(String subclassName,
+      Dictionary ngramDictionary, POSDictionary posDictionary)
+      throws InvalidFormatException {
+    POSTaggerFactory theFactory = null;
+    Class<? extends BaseToolFactory> factoryClass = loadSubclass(subclassName);
+    if (factoryClass != null) {
+      try {
+        Constructor<?> constructor = null;
+        constructor = factoryClass.getConstructor(Dictionary.class,
+            POSDictionary.class);
+        theFactory = (POSTaggerFactory) constructor.newInstance(
+            ngramDictionary, posDictionary);
+      } catch (NoSuchMethodException e) {
+        String msg = "Could not instantiate the "
+            + subclassName
+            + ". The mandatry constructor (Dictionary, POSDictionary) is missing.";
+        System.err.println(msg);
+        throw new IllegalArgumentException(msg);
+      } catch (Exception e) {
+        String msg = "Could not instantiate the "
+            + subclassName
+            + ". The constructor (Dictionary, POSDictionary) throw an exception.";
+        System.err.println(msg);
+        e.printStackTrace();
+        throw new InvalidFormatException(msg);
+      }
+    }
+    return theFactory;
+  }
 }
