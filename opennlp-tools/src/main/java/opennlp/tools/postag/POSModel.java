@@ -24,6 +24,7 @@ import java.util.Map;
 
 import opennlp.model.AbstractModel;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
@@ -80,9 +81,8 @@ public final class POSModel extends BaseModel {
   }
 
   @Override
-  protected void initializeFactory() {
-    super.initializeFactory();
-
+  protected Class<? extends BaseToolFactory> getDefaultFactory() {
+    return POSTaggerFactory.class;
   }
 
   @Override
