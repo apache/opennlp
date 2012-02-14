@@ -144,11 +144,7 @@ public abstract class BaseModel implements ArtifactProvider {
   }
 
   /**
-   * Initializes the current instance. The sub-class constructor should call the methods:
-   * <li> {@link #loadArtifactSerializers()} to populate the serializers map, 
-   * <li> {@link #finishLoadingArtifacts(InputStream)} to finish loading artifacts with the loaded serializers, and
-   * <li> {@link #checkArtifactMap()} to check the artifact map is OK. <p>
-   * Not calling these methods will cause an {@link IllegalStateException}
+   * Initializes the current instance.
    * 
    * @param componentName the component name
    * @param in the input stream containing the model
@@ -196,7 +192,7 @@ public abstract class BaseModel implements ArtifactProvider {
     initializeFactory();
     
     loadArtifactSerializers();
-    finishLoadingArtifacts(null);
+    finishLoadingArtifacts();
     checkArtifactMap();
   }
   
@@ -218,9 +214,9 @@ public abstract class BaseModel implements ArtifactProvider {
   }
   
   /**
-   * Loads the artifact serializers. Should be called in sub-class constructor
+   * Loads the artifact serializers.
    */
-  protected void loadArtifactSerializers() {
+  private void loadArtifactSerializers() {
     if (!subclassSerializersInitiated)
       createArtifactSerializers(artifactSerializers);
     subclassSerializersInitiated = true;
@@ -228,10 +224,8 @@ public abstract class BaseModel implements ArtifactProvider {
 
   /**
    * Finish loading the artifacts now that it knows all serializers.
-   * <p>
-   * Should be called while loading a model from serialized file.
    */
-  protected void finishLoadingArtifacts(InputStream in)
+  private void finishLoadingArtifacts()
       throws InvalidFormatException, IOException {
     finishedLoadingArtifacts = true;
     if (leftoverArtifacts == null || leftoverArtifacts.size() == 0) {

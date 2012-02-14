@@ -95,7 +95,6 @@ public class TokenNameFinderModel extends BaseModel {
     // TODO: Add checks to not put resources where no serializer exists,
     // make that case fail here, should be done in the BaseModel
     artifactMap.putAll(resources);
-    loadArtifactSerializers();
     checkArtifactMap();
   }
 
@@ -106,9 +105,6 @@ public class TokenNameFinderModel extends BaseModel {
       
   public TokenNameFinderModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
-    loadArtifactSerializers();
-    finishLoadingArtifacts(in);
-    checkArtifactMap();
   }
   
   /**

@@ -127,7 +127,6 @@ public class ParserModel extends BaseModel {
     artifactMap.put(CHUNKER_TAGGER_MODEL_ENTRY_NAME, chunkerTagger);
     
     artifactMap.put(HEAD_RULES_MODEL_ENTRY_NAME, headRules);
-    loadArtifactSerializers();
     checkArtifactMap();
   }
 
@@ -149,9 +148,6 @@ public class ParserModel extends BaseModel {
   
   public ParserModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
-    loadArtifactSerializers();
-    finishLoadingArtifacts(in);
-    checkArtifactMap();
   }
   
   @Override
