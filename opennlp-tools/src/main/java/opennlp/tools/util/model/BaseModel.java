@@ -30,7 +30,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Version;
@@ -139,7 +138,11 @@ public abstract class BaseModel implements ArtifactProvider {
       artifactMap.putAll(factory.createArtifactMap());
     }
     
-    initializeFactory();
+    try {
+      initializeFactory();
+    } catch (InvalidFormatException e) {
+      throw new IllegalArgumentException("Could not initialize tool factory. " + e.getMessage());
+    }
     loadArtifactSerializers();
   }
 
@@ -195,22 +198,32 @@ public abstract class BaseModel implements ArtifactProvider {
     finishLoadingArtifacts();
     checkArtifactMap();
   }
-  
-  /**
-   * 
-   */
-  protected void initializeFactory() {
+
+  private void initializeFactory() throws InvalidFormatException {
     String factoryName = getManifestProperty(FACTORY_NAME);
     if (factoryName == null) {
       // load the default factory
-      this.toolFactory = new POSTaggerFactory(this);
+      Class<? extends BaseToolFactory> factoryClass = getDefaultFactory();
+      if(factoryClass != null) {
+        this.toolFactory = BaseToolFactory.create(factoryClass, this);
+      }
     } else {
       try {
-        this.toolFactory = POSTaggerFactory.create(factoryName, this);
+        this.toolFactory = BaseToolFactory.create(factoryName, this);
       } catch (InvalidFormatException e) {
         throw new IllegalArgumentException(e.getMessage());
       }
     }
+  }
+  
+  /**
+   * Sub-classes should override this method if their module has a default
+   * BaseToolFactory sub-class.
+   * 
+   * @return the default {@link BaseToolFactory} for the module, or null if none.
+   */
+  protected Class<? extends BaseToolFactory> getDefaultFactory() {
+    return null;
   }
   
   /**
