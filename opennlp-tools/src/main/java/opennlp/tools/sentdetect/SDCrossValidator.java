@@ -42,7 +42,7 @@ public class SDCrossValidator {
   private SentenceDetectorEvaluationMonitor[] listeners;
   
   private char[] eosCharacters;
-  
+
   public SDCrossValidator(String languageCode, TrainingParameters params,
       Dictionary abbreviations, char[] eosCharacters, SentenceDetectorEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
@@ -61,7 +61,7 @@ public class SDCrossValidator {
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params) {
-    this(languageCode, params, (Dictionary)null,null);
+    this(languageCode, params, (Dictionary) null, null);
   }
   
   /**
@@ -70,7 +70,8 @@ public class SDCrossValidator {
    */
   @Deprecated
   public SDCrossValidator(String languageCode, int cutoff, int iterations, Dictionary abbreviations) {
-    this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations), abbreviations,null);
+    this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations),
+        abbreviations, null);
   }
   
   public SDCrossValidator(String languageCode, TrainingParameters params,
