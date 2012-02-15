@@ -199,6 +199,10 @@ public class POSTaggerFactory extends BaseToolFactory {
   public static POSTaggerFactory create(String subclassName,
       Dictionary ngramDictionary, POSDictionary posDictionary)
       throws InvalidFormatException {
+    if (subclassName == null) {
+      // will create the default factory
+      return new POSTaggerFactory(ngramDictionary, posDictionary);
+    }
     POSTaggerFactory theFactory = null;
     Class<? extends BaseToolFactory> factoryClass = loadSubclass(subclassName);
     if (factoryClass != null) {
@@ -211,7 +215,7 @@ public class POSTaggerFactory extends BaseToolFactory {
       } catch (NoSuchMethodException e) {
         String msg = "Could not instantiate the "
             + subclassName
-            + ". The mandatry constructor (Dictionary, POSDictionary) is missing.";
+            + ". The mandatory constructor (Dictionary, POSDictionary) is missing.";
         System.err.println(msg);
         throw new IllegalArgumentException(msg);
       } catch (Exception e) {
