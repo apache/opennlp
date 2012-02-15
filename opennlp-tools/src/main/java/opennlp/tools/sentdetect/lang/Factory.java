@@ -43,9 +43,10 @@ public class Factory {
 
     return new DefaultEndOfSentenceScanner(defaultEosCharacters);
   }
-  
-  public EndOfSentenceScanner createEndOfSentenceScanner(char[] customEOSCharacters) {
-	  return new DefaultEndOfSentenceScanner(customEOSCharacters);
+
+  public EndOfSentenceScanner createEndOfSentenceScanner(
+      char[] customEOSCharacters) {
+    return new DefaultEndOfSentenceScanner(customEOSCharacters);
   }
 
   public SDContextGenerator createSentenceContextGenerator(String languageCode, Set<String> abbreviations) {
@@ -58,17 +59,19 @@ public class Factory {
 
     return new DefaultSDContextGenerator(abbreviations, defaultEosCharacters);
   }
-  
-  
-  public SDContextGenerator createSentenceContextGenerator(Set<String> abbreviations,char[] customEOSCharacters) {
-	return new DefaultSDContextGenerator(abbreviations, customEOSCharacters);
+
+  public SDContextGenerator createSentenceContextGenerator(
+      Set<String> abbreviations, char[] customEOSCharacters) {
+    return new DefaultSDContextGenerator(abbreviations, customEOSCharacters);
   }
-  
+
   public SDContextGenerator createSentenceContextGenerator(String languageCode) {
     return createSentenceContextGenerator(languageCode, Collections.<String>emptySet());
   }
-  
-  public SDContextGenerator createSentenceContextGenerator(char[] customEOSCharacters) {
-	 return createSentenceContextGenerator(Collections.<String>emptySet(),customEOSCharacters);
+
+  public SDContextGenerator createSentenceContextGenerator(
+      char[] customEOSCharacters) {
+    return createSentenceContextGenerator(Collections.<String> emptySet(),
+        customEOSCharacters);
   }
 }

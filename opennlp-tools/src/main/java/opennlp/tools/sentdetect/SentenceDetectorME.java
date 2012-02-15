@@ -92,14 +92,16 @@ public class SentenceDetectorME implements SentenceDetector {
 
   public SentenceDetectorME(SentenceModel model, Factory factory) {
     this.model = model.getMaxentModel();
-    // if the model has custom EOS characters set, use this to get the context 
+    // if the model has custom EOS characters set, use this to get the context
     // generator and the EOS scanner; otherwise use language-specific defaults
     char[] customEOSCharacters = model.getEosCharacters();
     if (customEOSCharacters == null) {
-      cgen = factory.createSentenceContextGenerator(model.getLanguage(), getAbbreviations(model.getAbbreviations()));
+      cgen = factory.createSentenceContextGenerator(model.getLanguage(),
+          getAbbreviations(model.getAbbreviations()));
       scanner = factory.createEndOfSentenceScanner(model.getLanguage());
     } else {
-      cgen = factory.createSentenceContextGenerator(getAbbreviations(model.getAbbreviations()),customEOSCharacters);
+      cgen = factory.createSentenceContextGenerator(
+          getAbbreviations(model.getAbbreviations()), customEOSCharacters);
       scanner = factory.createEndOfSentenceScanner(customEOSCharacters);
     }
     useTokenEnd = model.useTokenEnd();
@@ -276,13 +278,17 @@ public class SentenceDetectorME implements SentenceDetector {
     return true;
   }
   
-  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
-	      boolean useTokenEnd, Dictionary abbreviations, TrainingParameters mlParams) throws IOException {
-	  return train(languageCode, samples, useTokenEnd, abbreviations, null, mlParams);
+  public static SentenceModel train(String languageCode,
+      ObjectStream<SentenceSample> samples, boolean useTokenEnd,
+      Dictionary abbreviations, TrainingParameters mlParams) throws IOException {
+    return train(languageCode, samples, useTokenEnd, abbreviations, null,
+        mlParams);
   }
   
-  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
-      boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters, TrainingParameters mlParams) throws IOException {
+  public static SentenceModel train(String languageCode,
+      ObjectStream<SentenceSample> samples, boolean useTokenEnd,
+      Dictionary abbreviations, char[] eosCharacters,
+      TrainingParameters mlParams) throws IOException {
     
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
     
@@ -290,23 +296,25 @@ public class SentenceDetectorME implements SentenceDetector {
     
     // TODO: Fix the EventStream to throw exceptions when training goes wrong
     
-    // if the model has custom EOS characters set, use this to get the context 
+    // if the model has custom EOS characters set, use this to get the context
     // generator and the EOS scanner; otherwise use language-specific defaults
     EventStream eventStream = null;
-    if (eosCharacters!=null) {
+    if (eosCharacters != null) {
       eventStream = new SDEventStream(samples,
-          factory.createSentenceContextGenerator(getAbbreviations(abbreviations),eosCharacters),
-    	  factory.createEndOfSentenceScanner(eosCharacters));  
+          factory.createSentenceContextGenerator(
+              getAbbreviations(abbreviations), eosCharacters),
+          factory.createEndOfSentenceScanner(eosCharacters));
     } else {
       eventStream = new SDEventStream(samples,
-          factory.createSentenceContextGenerator(languageCode, getAbbreviations(abbreviations)),
+          factory.createSentenceContextGenerator(languageCode,
+              getAbbreviations(abbreviations)),
           factory.createEndOfSentenceScanner(languageCode));
     }
-    
+
     AbstractModel sentModel = TrainUtil.train(eventStream, mlParams.getSettings(), manifestInfoEntries);
     
-    return new SentenceModel(languageCode, sentModel,
-        useTokenEnd, abbreviations, eosCharacters, manifestInfoEntries);
+    return new SentenceModel(languageCode, sentModel, useTokenEnd,
+        abbreviations, eosCharacters, manifestInfoEntries);
   }
   
   /**

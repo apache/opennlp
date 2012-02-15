@@ -74,16 +74,16 @@ public final class SentenceDetectorTrainerTool
     File modelOutFile = params.getModel();
     CmdLineUtil.checkOutputFile("sentence detector model", modelOutFile);
 
-     
     char[] eos = null;
-    if (params.getEosChars()!=null)
-    	eos = params.getEosChars().toCharArray();
-    
+    if (params.getEosChars() != null)
+      eos = params.getEosChars().toCharArray();
+
     SentenceModel model;
-    
+
     try {
       Dictionary dict = loadDict(params.getAbbDict());
-      model = SentenceDetectorME.train(factory.getLang(), sampleStream, true, dict, eos,mlParams);
+      model = SentenceDetectorME.train(factory.getLang(), sampleStream, true,
+          dict, eos, mlParams);
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
