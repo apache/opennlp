@@ -398,7 +398,8 @@ public abstract class BaseModel implements ArtifactProvider {
         Class.forName(factoryName);
       } catch (ClassNotFoundException e) {
         throw new InvalidFormatException(
-            "Could not find the POS factory class: " + factoryName);
+            "The model could not load an user extension because it is missing on the classpath: "
+                + factoryName);
       }
       
       toolFactory.validateArtifactMap();
@@ -473,10 +474,6 @@ public abstract class BaseModel implements ArtifactProvider {
     return Version.parse(version);
   }
   
-  public BaseToolFactory getFactory() {
-    return null;
-  }
-
   /**
    * Serializes the model to the given {@link OutputStream}.
    *
