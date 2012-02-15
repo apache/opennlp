@@ -46,11 +46,9 @@ public class SentenceModel extends BaseModel {
   private static final String MAXENT_MODEL_ENTRY_NAME = "sent.model";
   private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
   private static final String EOS_CHARACTERS_PROPERTY = "eosCharacters";
-  
+
   private static final String TOKEN_END_PROPERTY = "useTokenEnd";
 
-
-  
   public SentenceModel(String languageCode, AbstractModel sentModel,
       boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters, Map<String, String> manifestInfoEntries) {
 
@@ -63,18 +61,18 @@ public class SentenceModel extends BaseModel {
     // Abbreviations are optional
     if (abbreviations != null)
       artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviations);
-    
+
     // EOS characters are optional
-    if (eosCharacters!=null)
-      setManifestProperty(EOS_CHARACTERS_PROPERTY, eosCharArrayToString(eosCharacters));
+    if (eosCharacters != null)
+      setManifestProperty(EOS_CHARACTERS_PROPERTY,
+          eosCharArrayToString(eosCharacters));
     checkArtifactMap();
   }
 
-
-  
   public SentenceModel(String languageCode, AbstractModel sentModel,
       boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters) {
-    this (languageCode, sentModel, useTokenEnd, abbreviations, eosCharacters, null);
+    this(languageCode, sentModel, useTokenEnd, abbreviations, eosCharacters,
+        null);
   }
   
   public SentenceModel(InputStream in) throws IOException, InvalidFormatException {
@@ -120,23 +118,23 @@ public class SentenceModel extends BaseModel {
 
   public char[] getEosCharacters() {
     String prop = getManifestProperty(EOS_CHARACTERS_PROPERTY);
-	if (prop != null)
-	  return eosStringToCharArray(getManifestProperty(EOS_CHARACTERS_PROPERTY));
-	else 
-	  return null;
+    if (prop != null)
+      return eosStringToCharArray(getManifestProperty(EOS_CHARACTERS_PROPERTY));
+    else
+      return null;
   }
-  
+
   private String eosCharArrayToString(char[] eosCharacters) {
-	String eosString = "";
-	for (int i = 0; i < eosCharacters.length; i++) 
-	  eosString += eosCharacters[i];
-	return eosString;
+    String eosString = "";
+    for (int i = 0; i < eosCharacters.length; i++)
+      eosString += eosCharacters[i];
+    return eosString;
   }
-  
+
   private char[] eosStringToCharArray(String eosCharacters) {
-	return eosCharacters.toCharArray();
+    return eosCharacters.toCharArray();
   }
-  
+
   public static void main(String[] args) throws FileNotFoundException, IOException, InvalidFormatException {
     if (args.length < 3){
       System.err.println("SentenceModel [-abbreviationsDictionary] [-useTokenEnd] languageCode packageName modelName");
@@ -162,7 +160,8 @@ public class SentenceModel extends BaseModel {
     String modelName = args[ai];
 
     AbstractModel model = new GenericModelReader(new File(modelName)).getModel();
-    SentenceModel packageModel = new SentenceModel(languageCode, model, useTokenEnd, abbreviations,null);
+    SentenceModel packageModel = new SentenceModel(languageCode, model,
+        useTokenEnd, abbreviations, null);
     packageModel.serialize(new FileOutputStream(packageName));
   }
 }
