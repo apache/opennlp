@@ -75,6 +75,17 @@ public class SentenceModel extends BaseModel {
         null);
   }
   
+  public SentenceModel(String languageCode, AbstractModel sentModel,
+      boolean useTokenEnd, Dictionary abbreviations, Map<String, String> manifestInfoEntries) {
+    this(languageCode, sentModel, useTokenEnd, abbreviations, null,
+        manifestInfoEntries);
+  }
+
+  public SentenceModel(String languageCode, AbstractModel sentModel,
+      boolean useTokenEnd, Dictionary abbreviations) {
+    this (languageCode, sentModel, useTokenEnd, abbreviations, null, null);
+  }
+
   public SentenceModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
@@ -161,7 +172,7 @@ public class SentenceModel extends BaseModel {
 
     AbstractModel model = new GenericModelReader(new File(modelName)).getModel();
     SentenceModel packageModel = new SentenceModel(languageCode, model,
-        useTokenEnd, abbreviations, null);
+        useTokenEnd, abbreviations, (char[]) null);
     packageModel.serialize(new FileOutputStream(packageName));
   }
 }
