@@ -41,13 +41,9 @@
 	</prerequisites>
 	
 	<scm>
-		<connection>
-      		scm:svn:http://svn.apache.org/repos/asf/incubator/opennlp/trunk/opennlp/
-	    </connection>
-		<developerConnection>
-	      	scm:svn:https://svn.apache.org/repos/asf/incubator/opennlp/trunk/opennlp/
-	    </developerConnection>
-		<url>http://svn.apache.org/viewvc/incubator/opennlp/trunk/opennlp/</url>
+		<connection>scm:svn:http://svn.apache.org/repos/asf/opennlp/trunk/opennlp/</connection>
+		<developerConnection>scm:svn:https://svn.apache.org/repos/asf/opennlp/trunk/opennlp/</developerConnection>
+		<url>http://svn.apache.org/viewvc/opennlp/trunk/opennlp/</url>
 	</scm>
 	
 	<issueManagement>
