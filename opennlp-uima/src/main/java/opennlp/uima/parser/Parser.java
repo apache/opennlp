@@ -244,7 +244,7 @@ public class Parser extends CasAnnotator_ImplBase {
         mParseType, CHILDREN_FEATURE_PARAMETER, CAS.TYPE_NAME_FS_ARRAY);
     
     probabilityFeature = AnnotatorUtil.getOptionalFeatureParameter(context,
-        mParseType, PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_FS_ARRAY);
+        mParseType, PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_DOUBLE);
   }
   
   /**
