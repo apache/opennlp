@@ -132,6 +132,31 @@ public final class StreamFactoryRegistry {
     if (null == formatName) {
       formatName = DEFAULT_FORMAT;
     }
-    return registry.containsKey(sampleClass) ? registry.get(sampleClass).get(formatName) : null;
+    
+    ObjectStreamFactory<T> factory = registry.containsKey(sampleClass) ?
+        registry.get(sampleClass).get(formatName) : null;
+    
+    if (factory != null) {
+      return factory;
+    }
+    else {
+      try {
+        Class<?> factoryClazz = Class.forName(formatName);
+        
+        // TODO: Need to check if it can produce the desired output
+        // Otherwise there will be class cast exceptions later in the flow
+        
+        try {
+          return (ObjectStreamFactory<T>) factoryClazz.newInstance();
+        } catch (InstantiationException e) {
+        	return null;
+        } catch (IllegalAccessException e) {
+          return null;
+        }
+        
+      } catch (ClassNotFoundException e) {
+        return null;
+      }
+    }
   }
 }
