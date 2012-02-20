@@ -46,6 +46,38 @@
 		<url>http://svn.apache.org/viewvc/opennlp/trunk/opennlp/</url>
 	</scm>
 	
+	<mailingLists>
+		<mailingList>
+			<name>Apache OpenNLP Users</name>
+			<subscribe>users-subscribe@opennlp.apache.org</subscribe>
+			<unsubscribe>users-unsubscribe@opennlp.apache.org</unsubscribe>
+			<post>users@opennlp.apache.org</post>
+			<archive>http://mail-archives.apache.org/mod_mbox/opennlp-users/</archive>
+		</mailingList>
+
+		<mailingList>
+			<name>Apache OpenNLP Developers</name>
+			<subscribe>dev-subscribe@opennlp.apache.org</subscribe>
+			<unsubscribe>dev-unsubscribe@opennlp.apache.org</unsubscribe>
+			<post>dev@opennlp.apache.org</post>
+			<archive>http://mail-archives.apache.org/mod_mbox/opennlp-dev/</archive>
+		</mailingList>
+
+		<mailingList>
+			<name>Apache OpenNLP Commits</name>
+			<subscribe>commits-subscribe@opennlp.apache.org</subscribe>
+			<unsubscribe>commits-unsubscribe@opennlp.apache.org</unsubscribe>
+			<archive>http://mail-archives.apache.org/mod_mbox/opennlp-commits/</archive>
+		</mailingList>
+
+		<mailingList>
+			<name>Apache OpenNLP Issues</name>
+			<subscribe>issues-subscribe@opennlp.apache.org</subscribe>
+			<unsubscribe>issues-unsubscribe@opennlp.apache.org</unsubscribe>
+			<archive>http://mail-archives.apache.org/mod_mbox/opennlp-issues/</archive>
+		</mailingList>
+	</mailingLists>
+	
 	<issueManagement>
 		<system>jira</system>
 		<url>https://issues.apache.org/jira/browse/OPENNLP</url>
@@ -154,7 +186,7 @@
 				<version>2.8</version>
 				<configuration>
 					<workspace>../</workspace>
-					<workspaceCodeStylesURL>http://incubator.apache.org/opennlp/code-formatter/OpenNLP-Eclipse-Formatter.xml</workspaceCodeStylesURL>
+					<workspaceCodeStylesURL>http://opennlp.apache.org/code-formatter/OpenNLP-Eclipse-Formatter.xml</workspaceCodeStylesURL>
 				</configuration>
 			</plugin>
 
