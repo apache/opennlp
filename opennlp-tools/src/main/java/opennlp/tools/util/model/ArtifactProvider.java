@@ -26,5 +26,22 @@ public interface ArtifactProvider {
    * Gets an artifact by name
    */
   public <T> T getArtifact(String key);
+  
+  /**
+   * Retrieves the value to the given key from the manifest.properties
+   * entry.
+   *
+   * @param key
+   *
+   * @return the value
+   */
+  public String getManifestProperty(String key);
 
+  /**
+   * Retrieves the language code of the material which was used to train the
+   * model or x-unspecified if non was set.
+   * 
+   * @return the language code of this model
+   */
+  public String getLanguage();
 }

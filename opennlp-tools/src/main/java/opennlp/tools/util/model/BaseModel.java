@@ -136,6 +136,12 @@ public abstract class BaseModel implements ArtifactProvider {
     if (factory!=null) {
       setManifestProperty(FACTORY_NAME, factory.getClass().getCanonicalName());
       artifactMap.putAll(factory.createArtifactMap());
+
+      // new manifest entries
+      Map<String, String> entries = factory.createManifestEntries();
+      for (String key : entries.keySet()) {
+        setManifestProperty(key, entries.get(key));
+      }
     }
     
     try {
@@ -323,7 +329,8 @@ public abstract class BaseModel implements ArtifactProvider {
    */
   protected void createArtifactSerializers(
       Map<String, ArtifactSerializer> serializers) {
-    // do nothing, base artifacts are loaded by createBaseArtifactSerializers
+    if(this.toolFactory != null)
+      serializers.putAll(this.toolFactory.createArtifactSerializersMap());
   }
 
   private void createBaseArtifactSerializers(
