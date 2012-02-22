@@ -91,9 +91,6 @@ public final class POSModel extends BaseModel {
       Map<String, ArtifactSerializer> serializers) {
 
     super.createArtifactSerializers(serializers);
-
-    if(getFactory() != null)
-      serializers.putAll(getFactory().createArtifactSerializersMap());
   }
 
   @Override

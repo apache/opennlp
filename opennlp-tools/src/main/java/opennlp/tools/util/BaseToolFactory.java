@@ -78,6 +78,15 @@ public abstract class BaseToolFactory {
   }
   
   /**
+   * Creates the manifest entries that will be added to the model manifest
+   * 
+   * @return the manifest entries to added to the model manifest
+   */
+  public Map<String, String> createManifestEntries() {
+    return new HashMap<String, String>();
+  }
+  
+  /**
    * Validates the parsed artifacts. If something is not
    * valid subclasses should throw an {@link InvalidFormatException}.
    *
