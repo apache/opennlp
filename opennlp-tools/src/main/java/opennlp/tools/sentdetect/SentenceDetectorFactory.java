@@ -114,12 +114,12 @@ public class SentenceDetectorFactory extends BaseToolFactory {
   public Map<String, String> createManifestEntries() {
     Map<String, String> manifestEntries = super.createManifestEntries();
 
-    manifestEntries.put(TOKEN_END_PROPERTY, Boolean.toString(useTokenEnd));
+    manifestEntries.put(TOKEN_END_PROPERTY, Boolean.toString(isUseTokenEnd()));
 
     // EOS characters are optional
-    if (eosCharacters != null)
+    if (getEOSCharacters() != null)
       manifestEntries.put(EOS_CHARACTERS_PROPERTY,
-          eosCharArrayToString(eosCharacters));
+          eosCharArrayToString(getEOSCharacters()));
 
     return manifestEntries;
   }
