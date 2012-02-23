@@ -33,6 +33,8 @@ public class Factory {
       ':', '(', ')', '«', '»', '\'', '"' };
 
   public static final char[] defaultEosCharacters = new char[] { '.', '!', '?' };
+  
+  public static final char[] thEosCharacters = new char[] { ' ','\n' };
 
   public EndOfSentenceScanner createEndOfSentenceScanner(String languageCode) {
     if ("th".equals(languageCode)) {
@@ -60,6 +62,7 @@ public class Factory {
     return new DefaultSDContextGenerator(abbreviations, defaultEosCharacters);
   }
 
+  // TODO: remove it (added in 1.5.3)
   public SDContextGenerator createSentenceContextGenerator(
       Set<String> abbreviations, char[] customEOSCharacters) {
     return new DefaultSDContextGenerator(abbreviations, customEOSCharacters);
@@ -69,9 +72,20 @@ public class Factory {
     return createSentenceContextGenerator(languageCode, Collections.<String>emptySet());
   }
 
+  // TODO: remove it (added in 1.5.3)
   public SDContextGenerator createSentenceContextGenerator(
       char[] customEOSCharacters) {
     return createSentenceContextGenerator(Collections.<String> emptySet(),
         customEOSCharacters);
+  }
+
+  public char[] getEOSCharacters(String languageCode) {
+    if ("th".equals(languageCode)) {
+      return thEosCharacters;
+    } else if ("pt".equals(languageCode)) {
+      return ptEosCharacters;
+    }
+
+    return defaultEosCharacters;
   }
 }
