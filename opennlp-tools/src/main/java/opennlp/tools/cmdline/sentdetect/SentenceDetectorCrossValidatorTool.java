@@ -27,6 +27,7 @@ import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidatorTool.CVToo
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.SDCrossValidator;
 import opennlp.tools.sentdetect.SentenceDetectorEvaluationMonitor;
+import opennlp.tools.sentdetect.SentenceDetectorFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
@@ -66,8 +67,10 @@ public final class SentenceDetectorCrossValidatorTool
 
     try {
       Dictionary abbreviations = SentenceDetectorTrainerTool.loadDict(params.getAbbDict());
-      validator = new SDCrossValidator(factory.getLang(), mlParams,
-          abbreviations, eos, errorListener);
+      SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
+          params.getFactory(), factory.getLang(), true, abbreviations, eos);
+      validator = new SDCrossValidator(factory.getLang(), mlParams, sdFactory,
+          errorListener);
       
       validator.evaluate(sampleStream, params.getFolds());
     }

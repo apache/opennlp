@@ -33,35 +33,40 @@ public class SDCrossValidator {
   
   private final String languageCode;
   
-  private final Dictionary abbreviations;
-  
   private final TrainingParameters params;
   
   private FMeasure fmeasure = new FMeasure();
 
   private SentenceDetectorEvaluationMonitor[] listeners;
-  
-  private char[] eosCharacters;
+
+  private SentenceDetectorFactory sdFactory;
 
   public SDCrossValidator(String languageCode, TrainingParameters params,
-      Dictionary abbreviations, char[] eosCharacters, SentenceDetectorEvaluationMonitor... listeners) {
+      SentenceDetectorFactory sdFactory,
+      SentenceDetectorEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
     this.params = params;
-    this.abbreviations = abbreviations;
-    this.eosCharacters = eosCharacters;
     this.listeners = listeners;
+    this.sdFactory = sdFactory;
   }
   
   /**
-   * @deprecated use {@link #SDCrossValidator(String, TrainingParameters)}
-   * instead and pass in a TrainingParameters object.
+   * @deprecated Use
+   *             {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
+   *             and pass in a {@link SentenceDetectorFactory}.
    */
   public SDCrossValidator(String languageCode, int cutoff, int iterations) {
     this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations));
   }
   
+  /**
+   * @deprecated Use
+   *             {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
+   *             and pass in a {@link SentenceDetectorFactory}.
+   */
   public SDCrossValidator(String languageCode, TrainingParameters params) {
-    this(languageCode, params, (Dictionary) null, null);
+    this(languageCode, params, new SentenceDetectorFactory(languageCode, true,
+        null, null));
   }
   
   /**
@@ -71,14 +76,24 @@ public class SDCrossValidator {
   @Deprecated
   public SDCrossValidator(String languageCode, int cutoff, int iterations, Dictionary abbreviations) {
     this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations),
-        abbreviations, null);
+        new SentenceDetectorFactory(languageCode, true, abbreviations, null));
   }
   
+  /**
+   * @deprecated use
+   *             {@link #SDCrossValidator(String, TrainingParameters, Dictionary, SentenceDetectorEvaluationMonitor...)}
+   *             instead and pass in a TrainingParameters object.
+   */
   public SDCrossValidator(String languageCode, TrainingParameters params,
       SentenceDetectorEvaluationMonitor... listeners) {
-    this(languageCode, params, null, null, listeners);
+    this(languageCode, params, new SentenceDetectorFactory(languageCode, true,
+        null, null), listeners);
   }
   
+  /**
+   * @deprecated use {@link #SDCrossValidator(String, TrainingParameters, Dictionary, SentenceDetectorEvaluationMonitor...)}
+   * instead and pass in a TrainingParameters object.
+   */
   public SDCrossValidator(String languageCode) {
     this(languageCode, 5, 100);
   }
@@ -106,7 +121,7 @@ public class SDCrossValidator {
       SentenceModel model; 
       
       model = SentenceDetectorME.train(languageCode, trainingSampleStream,
-          true, abbreviations, eosCharacters, params);
+          sdFactory, params);
       
       // do testing
       SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
