@@ -44,31 +44,34 @@ public class SentenceModel extends BaseModel {
   private static final String COMPONENT_NAME = "SentenceDetectorME";
   
   private static final String MAXENT_MODEL_ENTRY_NAME = "sent.model";
-  private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
-  private static final String EOS_CHARACTERS_PROPERTY = "eosCharacters";
-
-  private static final String TOKEN_END_PROPERTY = "useTokenEnd";
 
   public SentenceModel(String languageCode, AbstractModel sentModel,
-      boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters, Map<String, String> manifestInfoEntries) {
-
-    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
-
+      Map<String, String> manifestInfoEntries, SentenceDetectorFactory sdFactory) {
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries, sdFactory);
     artifactMap.put(MAXENT_MODEL_ENTRY_NAME, sentModel);
-
-    setManifestProperty(TOKEN_END_PROPERTY, Boolean.toString(useTokenEnd));
-
-    // Abbreviations are optional
-    if (abbreviations != null)
-      artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviations);
-
-    // EOS characters are optional
-    if (eosCharacters != null)
-      setManifestProperty(EOS_CHARACTERS_PROPERTY,
-          eosCharArrayToString(eosCharacters));
     checkArtifactMap();
   }
 
+  /**
+   * TODO: was added in 1.5.3 -> remove
+   * @deprecated Use
+   *             {@link #SentenceModel(String, AbstractModel, Map, SentenceDetectorFactory)}
+   *             instead and pass in a {@link SentenceDetectorFactory}
+   */
+  public SentenceModel(String languageCode, AbstractModel sentModel,
+      boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters, Map<String, String> manifestInfoEntries) {
+    this(languageCode, sentModel, manifestInfoEntries,
+        new SentenceDetectorFactory(languageCode, useTokenEnd, abbreviations,
+            eosCharacters));
+  }
+
+  /**
+   * TODO: was added in 1.5.3 -> remove
+   * 
+   * @deprecated Use
+   *             {@link #SentenceModel(String, AbstractModel, Map, SentenceDetectorFactory)}
+   *             instead and pass in a {@link SentenceDetectorFactory}
+   */
   public SentenceModel(String languageCode, AbstractModel sentModel,
       boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters) {
     this(languageCode, sentModel, useTokenEnd, abbreviations, eosCharacters,
@@ -104,15 +107,10 @@ public class SentenceModel extends BaseModel {
       throw new InvalidFormatException("The maxent model is not compatible " +
       		"with the sentence detector!");
     }
-    
-    if (getManifestProperty(TOKEN_END_PROPERTY) == null)
-      throw new InvalidFormatException(TOKEN_END_PROPERTY + " is a mandatory property!");
+  }
 
-    Object abbreviationsEntry = artifactMap.get(ABBREVIATIONS_ENTRY_NAME);
-
-    if (abbreviationsEntry != null && !(abbreviationsEntry instanceof Dictionary)) {
-      throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
-    }
+  public SentenceDetectorFactory getFactory() {
+    return (SentenceDetectorFactory) this.toolFactory;
   }
 
   public AbstractModel getMaxentModel() {
@@ -120,30 +118,24 @@ public class SentenceModel extends BaseModel {
   }
 
   public Dictionary getAbbreviations() {
-    return (Dictionary) artifactMap.get(ABBREVIATIONS_ENTRY_NAME);
+    if (getFactory() != null) {
+      return getFactory().getAbbreviationDictionary();
+    }
+    return null;
   }
 
   public boolean useTokenEnd() {
-    return Boolean.parseBoolean(getManifestProperty(TOKEN_END_PROPERTY));
+    if (getFactory() != null) {
+      return getFactory().isUseTokenEnd();
+    }
+    return true;
   }
 
   public char[] getEosCharacters() {
-    String prop = getManifestProperty(EOS_CHARACTERS_PROPERTY);
-    if (prop != null)
-      return eosStringToCharArray(getManifestProperty(EOS_CHARACTERS_PROPERTY));
-    else
-      return null;
-  }
-
-  private String eosCharArrayToString(char[] eosCharacters) {
-    String eosString = "";
-    for (int i = 0; i < eosCharacters.length; i++)
-      eosString += eosCharacters[i];
-    return eosString;
-  }
-
-  private char[] eosStringToCharArray(String eosCharacters) {
-    return eosCharacters.toCharArray();
+    if (getFactory() != null) {
+      return getFactory().getEOSCharacters();
+    }
+    return null;
   }
 
   public static void main(String[] args) throws FileNotFoundException, IOException, InvalidFormatException {
