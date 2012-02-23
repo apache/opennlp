@@ -29,6 +29,7 @@ import java.util.Map;
 import opennlp.model.AbstractModel;
 import opennlp.model.GenericModelReader;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
@@ -111,6 +112,11 @@ public class SentenceModel extends BaseModel {
 
   public SentenceDetectorFactory getFactory() {
     return (SentenceDetectorFactory) this.toolFactory;
+  }
+  
+  @Override
+  protected Class<? extends BaseToolFactory> getDefaultFactory() {
+    return SentenceDetectorFactory.class;
   }
 
   public AbstractModel getMaxentModel() {
