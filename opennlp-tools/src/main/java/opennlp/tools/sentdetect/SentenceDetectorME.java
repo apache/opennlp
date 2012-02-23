@@ -87,9 +87,17 @@ public class SentenceDetectorME implements SentenceDetector {
    * @param model the {@link SentenceModel}
    */
   public SentenceDetectorME(SentenceModel model) {
-    this(model, new Factory());
+    SentenceDetectorFactory sdFactory = model.getFactory();
+    this.model = model.getMaxentModel();
+    cgen = sdFactory.getSDContextGenerator();
+    scanner = sdFactory.getEndOfSentenceScanner();
+    useTokenEnd = sdFactory.isUseTokenEnd();
   }
 
+  /**
+   * @deprecated Use a {@link SentenceDetectorFactory} to extend
+   *             SentenceDetector functionality.
+   */
   public SentenceDetectorME(SentenceModel model, Factory factory) {
     this.model = model.getMaxentModel();
     // if the model has custom EOS characters set, use this to get the context
