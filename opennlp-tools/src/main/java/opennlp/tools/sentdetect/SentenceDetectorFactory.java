@@ -17,14 +17,15 @@
 
 package opennlp.tools.sentdetect;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactProvider;
-import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
  * The factory that provides SentenceDetecor default implementations and
@@ -34,7 +35,12 @@ public class SentenceDetectorFactory extends BaseToolFactory {
 
   private String languageCode;
   private char[] eosCharacters;
-  private Set<String> abbreviations;
+  private Dictionary abbreviationDictionary;
+  private Boolean useTokenEnd = null;
+
+  private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
+  private static final String EOS_CHARACTERS_PROPERTY = "eosCharacters";
+  private static final String TOKEN_END_PROPERTY = "useTokenEnd";
 
   /**
    * Creates a {@link SentenceDetectorFactory} that provides the default
@@ -64,55 +70,103 @@ public class SentenceDetectorFactory extends BaseToolFactory {
    * programmatically create a factory.
    * 
    * @param languageCode
-   * @param abbreviations
+   * @param abbreviationDictionary
    * @param eosCharacters
    */
-  public SentenceDetectorFactory(String languageCode,
-      Set<String> abbreviations, char[] eosCharacters) {
+  public SentenceDetectorFactory(String languageCode, boolean useTokenEnd,
+      Dictionary abbreviationDictionary, char[] eosCharacters) {
     this.languageCode = languageCode;
+    this.useTokenEnd = useTokenEnd;
     this.eosCharacters = eosCharacters;
-    this.abbreviations = abbreviations;
+    this.abbreviationDictionary = abbreviationDictionary;
   }
 
   @Override
   public void validateArtifactMap() throws InvalidFormatException {
-    // TODO: implement
-  }
 
-  @Override
-  @SuppressWarnings("rawtypes")
-  public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
-    Map<String, ArtifactSerializer> serializers = super
-        .createArtifactSerializersMap();
-    // TODO: include serializers
-    return serializers;
+    if (this.artifactProvider.getManifestProperty(TOKEN_END_PROPERTY) == null)
+      throw new InvalidFormatException(TOKEN_END_PROPERTY
+          + " is a mandatory property!");
+
+    Object abbreviationsEntry = this.artifactProvider
+        .getArtifact(ABBREVIATIONS_ENTRY_NAME);
+
+    if (abbreviationsEntry != null
+        && !(abbreviationsEntry instanceof Dictionary)) {
+      throw new InvalidFormatException(
+          "Abbreviations dictionary has wrong type!");
+    }
   }
 
   @Override
   public Map<String, Object> createArtifactMap() {
     Map<String, Object> artifactMap = super.createArtifactMap();
-    // TODO: include artifacts
+
+    // Abbreviations are optional
+    if (abbreviationDictionary != null)
+      artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviationDictionary);
+
     return artifactMap;
   }
 
+  @Override
+  public Map<String, String> createManifestEntries() {
+    Map<String, String> manifestEntries = super.createManifestEntries();
+
+    manifestEntries.put(TOKEN_END_PROPERTY, Boolean.toString(useTokenEnd));
+
+    // EOS characters are optional
+    if (eosCharacters != null)
+      manifestEntries.put(EOS_CHARACTERS_PROPERTY,
+          eosCharArrayToString(eosCharacters));
+
+    return manifestEntries;
+  }
+
   public static SentenceDetectorFactory create(String subclassName,
-      String languageCode, Set<String> abbreviations, char[] eosCharacters) {
+      String languageCode, boolean useTokenEnd,
+      Dictionary abbreviationDictionary, char[] eosCharacters) {
     // TODO: implement
     return null;
   }
 
   public char[] getEOSCharacters() {
-    // TODO: load it from the model
+    if (this.eosCharacters == null) {
+      if (artifactProvider != null) {
+        String prop = this.artifactProvider
+            .getManifestProperty(EOS_CHARACTERS_PROPERTY);
+        if (prop != null) {
+          this.eosCharacters = eosStringToCharArray(prop);
+        }
+      } else {
+        // get from language dependent factory
+        Factory f = new Factory();
+        this.eosCharacters = f.getEOSCharacters(languageCode);
+      }
+    }
     return this.eosCharacters;
   }
 
-  public Set<String> getAbbreviations() {
-    // TODO: load it from the model
-    return this.abbreviations;
+  public boolean isUseTokenEnd() {
+    if (this.useTokenEnd == null && artifactProvider != null) {
+      this.useTokenEnd = Boolean.valueOf(artifactProvider
+          .getManifestProperty(TOKEN_END_PROPERTY));
+    }
+    return this.useTokenEnd;
+  }
+
+  public Dictionary getAbbreviationDictionary() {
+    if (this.abbreviationDictionary == null && artifactProvider != null) {
+      this.abbreviationDictionary = artifactProvider
+          .getArtifact(ABBREVIATIONS_ENTRY_NAME);
+    }
+    return this.abbreviationDictionary;
   }
 
   public String getLanguageCode() {
-    // TODO: load it from the model
+    if (this.languageCode == null && artifactProvider != null) {
+      this.languageCode = this.artifactProvider.getLanguage();
+    }
     return this.languageCode;
   }
 
@@ -129,11 +183,28 @@ public class SentenceDetectorFactory extends BaseToolFactory {
   public SDContextGenerator getSDContextGenerator() {
     Factory f = new Factory();
     char[] eosChars = getEOSCharacters();
-    if (eosChars != null && eosChars.length > 0) {
-      return f.createSentenceContextGenerator(getAbbreviations(), eosChars);
+    Set<String> abbs = null;
+    Dictionary abbDict = getAbbreviationDictionary();
+    if (abbDict != null) {
+      abbs = abbDict.asStringSet();
     } else {
-      return f.createSentenceContextGenerator(this.languageCode,
-          getAbbreviations());
+      abbs = Collections.emptySet();
     }
+    if (eosChars != null && eosChars.length > 0) {
+      return f.createSentenceContextGenerator(abbs, eosChars);
+    } else {
+      return f.createSentenceContextGenerator(this.languageCode, abbs);
+    }
+  }
+
+  private String eosCharArrayToString(char[] eosCharacters) {
+    String eosString = "";
+    for (int i = 0; i < eosCharacters.length; i++)
+      eosString += eosCharacters[i];
+    return eosString;
+  }
+
+  private char[] eosStringToCharArray(String eosCharacters) {
+    return eosCharacters.toCharArray();
   }
 }
