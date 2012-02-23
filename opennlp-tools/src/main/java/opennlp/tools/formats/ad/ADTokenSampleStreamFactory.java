@@ -21,8 +21,8 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.formats.DetokenizerSampleStreamFactory;
-import opennlp.tools.formats.POSToTokenSampleStream;
-import opennlp.tools.postag.POSSample;
+import opennlp.tools.formats.NameToTokenSampleStream;
+import opennlp.tools.namefind.NameSample;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
@@ -49,11 +49,11 @@ public class ADTokenSampleStreamFactory extends
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     language = params.getLang();
 
-    ObjectStream<POSSample> samples = StreamFactoryRegistry.getFactory(
-        POSSample.class, "ad")
+    ObjectStream<NameSample> samples = StreamFactoryRegistry.getFactory(
+        NameSample.class, "ad")
         .create(
             ArgumentParser.filter(args,
                 ADNameSampleStreamFactory.Parameters.class));
-    return new POSToTokenSampleStream(createDetokenizer(params), samples);
+    return new NameToTokenSampleStream(createDetokenizer(params), samples);
   }
 }
