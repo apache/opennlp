@@ -17,6 +17,7 @@
 
 package opennlp.tools.sentdetect;
 
+import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -125,9 +126,38 @@ public class SentenceDetectorFactory extends BaseToolFactory {
 
   public static SentenceDetectorFactory create(String subclassName,
       String languageCode, boolean useTokenEnd,
-      Dictionary abbreviationDictionary, char[] eosCharacters) {
-    // TODO: implement
-    return null;
+      Dictionary abbreviationDictionary, char[] eosCharacters)
+      throws InvalidFormatException {
+    if (subclassName == null) {
+      // will create the default factory
+      return new SentenceDetectorFactory(languageCode, useTokenEnd,
+          abbreviationDictionary, eosCharacters);
+    }
+    SentenceDetectorFactory theFactory = null;
+    Class<? extends BaseToolFactory> factoryClass = loadSubclass(subclassName);
+    if (factoryClass != null) {
+      try {
+        Constructor<?> constructor = null;
+        constructor = factoryClass.getConstructor(String.class, boolean.class,
+            Dictionary.class, char[].class);
+        theFactory = (SentenceDetectorFactory) constructor.newInstance(
+            languageCode, useTokenEnd, abbreviationDictionary, eosCharacters);
+      } catch (NoSuchMethodException e) {
+        String msg = "Could not instantiate the "
+            + subclassName
+            + ". The mandatory constructor (String, boolean, Dictionary, char[])) is missing.";
+        System.err.println(msg);
+        throw new IllegalArgumentException(msg);
+      } catch (Exception e) {
+        String msg = "Could not instantiate the "
+            + subclassName
+            + ". The constructor (String, boolean, Dictionary, char[]) throw an exception.";
+        System.err.println(msg);
+        e.printStackTrace();
+        throw new InvalidFormatException(msg);
+      }
+    }
+    return theFactory;
   }
 
   public char[] getEOSCharacters() {
