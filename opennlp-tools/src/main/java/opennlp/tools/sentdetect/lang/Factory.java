@@ -62,7 +62,6 @@ public class Factory {
     return new DefaultSDContextGenerator(abbreviations, defaultEosCharacters);
   }
 
-  // TODO: remove it (added in 1.5.3)
   public SDContextGenerator createSentenceContextGenerator(
       Set<String> abbreviations, char[] customEOSCharacters) {
     return new DefaultSDContextGenerator(abbreviations, customEOSCharacters);
@@ -70,13 +69,6 @@ public class Factory {
 
   public SDContextGenerator createSentenceContextGenerator(String languageCode) {
     return createSentenceContextGenerator(languageCode, Collections.<String>emptySet());
-  }
-
-  // TODO: remove it (added in 1.5.3)
-  public SDContextGenerator createSentenceContextGenerator(
-      char[] customEOSCharacters) {
-    return createSentenceContextGenerator(Collections.<String> emptySet(),
-        customEOSCharacters);
   }
 
   public char[] getEOSCharacters(String languageCode) {
