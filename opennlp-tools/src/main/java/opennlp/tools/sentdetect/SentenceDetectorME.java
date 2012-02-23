@@ -277,56 +277,53 @@ public class SentenceDetectorME implements SentenceDetector {
   protected boolean isAcceptableBreak(String s, int fromIndex, int candidateIndex) {
     return true;
   }
-  
+
+  /**
+   * @deprecated Use
+   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
+   *             and pass in af {@link SentenceDetectorFactory}.
+   */
   public static SentenceModel train(String languageCode,
       ObjectStream<SentenceSample> samples, boolean useTokenEnd,
       Dictionary abbreviations, TrainingParameters mlParams) throws IOException {
-    return train(languageCode, samples, useTokenEnd, abbreviations, null,
-        mlParams);
+    SentenceDetectorFactory sdFactory = new SentenceDetectorFactory(
+        languageCode, useTokenEnd, abbreviations, null);
+    return train(languageCode, samples, sdFactory, mlParams);
   }
-  
-  public static SentenceModel train(String languageCode,
-      ObjectStream<SentenceSample> samples, boolean useTokenEnd,
-      Dictionary abbreviations, char[] eosCharacters,
-      TrainingParameters mlParams) throws IOException {
-    
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    
-    Factory factory = new Factory();
-    
-    // TODO: Fix the EventStream to throw exceptions when training goes wrong
-    
-    // if the model has custom EOS characters set, use this to get the context
-    // generator and the EOS scanner; otherwise use language-specific defaults
-    EventStream eventStream = null;
-    if (eosCharacters != null) {
-      eventStream = new SDEventStream(samples,
-          factory.createSentenceContextGenerator(
-              getAbbreviations(abbreviations), eosCharacters),
-          factory.createEndOfSentenceScanner(eosCharacters));
-    } else {
-      eventStream = new SDEventStream(samples,
-          factory.createSentenceContextGenerator(languageCode,
-              getAbbreviations(abbreviations)),
-          factory.createEndOfSentenceScanner(languageCode));
-    }
 
-    AbstractModel sentModel = TrainUtil.train(eventStream, mlParams.getSettings(), manifestInfoEntries);
-    
-    return new SentenceModel(languageCode, sentModel, useTokenEnd,
-        abbreviations, eosCharacters, manifestInfoEntries);
+  public static SentenceModel train(String languageCode,
+      ObjectStream<SentenceSample> samples, SentenceDetectorFactory sdFactory,
+      TrainingParameters mlParams) throws IOException {
+
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+
+    // TODO: Fix the EventStream to throw exceptions when training goes wrong
+    EventStream eventStream = new SDEventStream(samples,
+        sdFactory.getSDContextGenerator(), sdFactory.getEndOfSentenceScanner());
+
+    AbstractModel sentModel = TrainUtil.train(eventStream,
+        mlParams.getSettings(), manifestInfoEntries);
+
+    return new SentenceModel(languageCode, sentModel, manifestInfoEntries,
+        sdFactory);
   }
-  
+
   /**
-   * @deprecated use {@link #train(String, ObjectStream, boolean, Dictionary, TrainingParameters)}
-   * instead and pass in a TrainingParameters object.
+   * @deprecated Use
+   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
+   *             and pass in af {@link SentenceDetectorFactory}.
    */
   @Deprecated
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) throws IOException {
     return train(languageCode, samples, useTokenEnd, abbreviations, ModelUtil.createTrainingParameters(iterations, cutoff));
- }
+  }
   
+  /**
+   * @deprecated Use
+   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
+   *             and pass in af {@link SentenceDetectorFactory}.
+   */
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations) throws IOException {
     return train(languageCode, samples, useTokenEnd, abbreviations,5,100);
