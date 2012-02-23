@@ -28,6 +28,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.sentdetect.SentenceDetectorFactory;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
@@ -82,8 +83,10 @@ public final class SentenceDetectorTrainerTool
 
     try {
       Dictionary dict = loadDict(params.getAbbDict());
-      model = SentenceDetectorME.train(factory.getLang(), sampleStream, true,
-          dict, eos, mlParams);
+      SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
+          params.getFactory(), factory.getLang(), true, dict, eos);
+      model = SentenceDetectorME.train(factory.getLang(), sampleStream,
+          sdFactory, mlParams);
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
