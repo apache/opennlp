@@ -91,6 +91,16 @@ public class POSEvaluatorTest {
     public Sequence[] topKSequences(String[] sentence) {
       return null;
     }
+
+    public String[] tag(String[] sentence, Object[] additionaContext) {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
+      // TODO Auto-generated method stub
+      return null;
+    }
     
   }
 
