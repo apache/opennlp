@@ -17,12 +17,18 @@
 
 package opennlp.tools.cmdline.postag;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.postag.POSTaggerCrossValidatorTool.CVToolParams;
 import opennlp.tools.postag.POSDictionary;
@@ -35,6 +41,9 @@ public final class POSTaggerCrossValidatorTool
     extends AbstractCrossValidatorTool<POSSample, CVToolParams> {
   
   interface CVToolParams extends CVParams, TrainingParams {
+    @ParameterDescription(valueName = "outputFile", description = "the path of the fine-grained report file.")
+    @OptionalParameter
+    File getReportOutputFile();
   }
 
   public POSTaggerCrossValidatorTool() {
@@ -58,6 +67,22 @@ public final class POSTaggerCrossValidatorTool
       missclassifiedListener = new POSEvaluationErrorListener();
     }
 
+    POSTaggerFineGrainedReportListener reportListener = null;
+    File reportFile = params.getReportOutputFile();
+    OutputStream reportOutputStream = null;
+    if (reportFile != null) {
+      CmdLineUtil.checkOutputFile("Report Output File", reportFile);
+      try {
+        reportOutputStream = new FileOutputStream(reportFile);
+        reportListener = new POSTaggerFineGrainedReportListener(
+            reportOutputStream);
+      } catch (FileNotFoundException e) {
+        throw new TerminateToolException(-1,
+            "IO error while creating POS Tagger fine-grained report file: "
+                + e.getMessage());
+      }
+    }
+
     POSTaggerCrossValidator validator;
     try {
       // TODO: Move to util method ...
@@ -67,7 +92,8 @@ public final class POSTaggerCrossValidatorTool
       }
 
       validator = new POSTaggerCrossValidator(factory.getLang(), mlParams,
-          tagdict, params.getNgram(), params.getFactory(), missclassifiedListener);
+          tagdict, params.getNgram(), params.getFactory(),
+          missclassifiedListener, reportListener);
       
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
@@ -81,6 +107,19 @@ public final class POSTaggerCrossValidatorTool
     }
 
     System.out.println("done");
+
+    if (reportListener != null) {
+      System.out.println("Writing fine-grained report to "
+          + params.getReportOutputFile().getAbsolutePath());
+      reportListener.writeReport();
+
+      try {
+        // TODO: is it a problem to close the stream now?
+        reportOutputStream.close();
+      } catch (IOException e) {
+        // nothing to do
+      }
+    }
 
     System.out.println();
 

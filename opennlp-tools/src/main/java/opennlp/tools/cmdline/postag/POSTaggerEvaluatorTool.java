@@ -17,10 +17,17 @@
 
 package opennlp.tools.cmdline.postag;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.cmdline.postag.POSTaggerEvaluatorTool.EvalToolParams;
 import opennlp.tools.postag.POSEvaluator;
@@ -32,6 +39,9 @@ public final class POSTaggerEvaluatorTool
     extends AbstractEvaluatorTool<POSSample, EvalToolParams> {
 
   interface EvalToolParams extends EvaluatorParams {
+    @ParameterDescription(valueName = "outputFile", description = "the path of the fine-grained report file.")
+    @OptionalParameter
+    File getReportOutputFile();
   }
 
   public POSTaggerEvaluatorTool() {
@@ -52,8 +62,25 @@ public final class POSTaggerEvaluatorTool
       missclassifiedListener = new POSEvaluationErrorListener();
     }
 
+    POSTaggerFineGrainedReportListener reportListener = null;
+    File reportFile = params.getReportOutputFile();
+    OutputStream reportOutputStream = null;
+    if (reportFile != null) {
+      CmdLineUtil.checkOutputFile("Report Output File", reportFile);
+      try {
+        reportOutputStream = new FileOutputStream(reportFile);
+        reportListener = new POSTaggerFineGrainedReportListener(
+            reportOutputStream);
+      } catch (FileNotFoundException e) {
+        throw new TerminateToolException(-1,
+            "IO error while creating POS Tagger fine-grained report file: "
+                + e.getMessage());
+      }
+    }
+
     POSEvaluator evaluator = new POSEvaluator(
-        new opennlp.tools.postag.POSTaggerME(model), missclassifiedListener);
+        new opennlp.tools.postag.POSTaggerME(model), missclassifiedListener,
+        reportListener);
 
     System.out.print("Evaluating ... ");
     try {
@@ -71,6 +98,19 @@ public final class POSTaggerEvaluatorTool
     }
 
     System.out.println("done");
+
+    if (reportListener != null) {
+      System.out.println("Writing fine-grained report to "
+          + params.getReportOutputFile().getAbsolutePath());
+      reportListener.writeReport();
+
+      try {
+        // TODO: is it a problem to close the stream now?
+        reportOutputStream.close();
+      } catch (IOException e) {
+        // nothing to do
+      }
+    }
 
     System.out.println();
 
