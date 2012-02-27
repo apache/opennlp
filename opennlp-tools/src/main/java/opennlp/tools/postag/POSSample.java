@@ -18,7 +18,6 @@
 
 package opennlp.tools.postag;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,18 +34,40 @@ public class POSSample {
 
   private List<String> tags;
 
+  private final String[][] additionalContext;
+
   public POSSample(String sentence[], String tags[]) {
-    this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
-    this.tags = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tags)));
-    
-    checkArguments();
+    this(sentence, tags, null);
   }
   
   public POSSample(List<String> sentence, List<String> tags) {
-    this.sentence = Collections.unmodifiableList(new ArrayList<String>(sentence));
-    this.tags = Collections.unmodifiableList(new ArrayList<String>(tags));
-    
+    this(sentence, tags, null);
+  }
+
+  public POSSample(List<String> sentence, List<String> tags,
+      String[][] additionalContext) {
+    this.sentence = Collections.unmodifiableList(sentence);
+    this.tags = Collections.unmodifiableList(tags);
+
     checkArguments();
+    String[][] ac;
+    if (additionalContext != null) {
+      ac = new String[additionalContext.length][];
+
+      for (int i = 0; i < additionalContext.length; i++) {
+        ac[i] = new String[additionalContext[i].length];
+        System.arraycopy(additionalContext[i], 0, ac[i], 0,
+            additionalContext[i].length);
+      }
+    } else {
+      ac = null;
+    }
+    this.additionalContext = ac;
+  }
+  
+  public POSSample(String sentence[], String tags[],
+      String[][] additionalContext) {
+    this(Arrays.asList(sentence), Arrays.asList(tags), additionalContext);
   }
   
   private void checkArguments() {
@@ -64,6 +85,10 @@ public class POSSample {
 
   public String[] getTags() {
     return tags.toArray(new String[tags.size()]);
+  }
+
+  public String[][] getAddictionalContext() {
+    return this.additionalContext;
   }
 
   @Override
