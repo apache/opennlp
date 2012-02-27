@@ -57,7 +57,7 @@ public class POSEvaluator extends Evaluator<POSSample> {
   @Override
   protected POSSample processSample(POSSample reference) {
     
-    String predictedTags[] = tagger.tag(reference.getSentence());
+    String predictedTags[] = tagger.tag(reference.getSentence(), reference.getAddictionalContext());
     String referenceTags[] = reference.getTags();
     
     for (int i = 0; i < referenceTags.length; i++) {
