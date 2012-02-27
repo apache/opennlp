@@ -45,6 +45,8 @@ public interface POSTagger {
    */
   public String[] tag(String[] sentence);
 
+  public String[] tag(String[] sentence, Object[] additionaContext);
+
   /**
    * Assigns the sentence of space-delimied tokens pos tags.
    * @param sentence The sentece of space-delimited tokens to be tagged.
@@ -63,4 +65,6 @@ public interface POSTagger {
   public Sequence[] topKSequences(List<String> sentence);
 
   public Sequence[] topKSequences(String[] sentence);
+
+  public Sequence[] topKSequences(String[] sentence, Object[] additionaContext);
 }
