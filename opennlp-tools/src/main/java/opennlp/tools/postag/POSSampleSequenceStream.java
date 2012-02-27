@@ -55,9 +55,11 @@ public class POSSampleSequenceStream implements SequenceStream {
     Sequence<POSSample> pss = sequence;
     POSTagger tagger = new POSTaggerME(new POSModel("x-unspecified", model, null, new POSTaggerFactory()));
     String[] sentence = pss.getSource().getSentence();
+    Object[] ac = pss.getSource().getAddictionalContext();
     String[] tags = tagger.tag(pss.getSource().getSentence());
     Event[] events = new Event[sentence.length];
-    POSSampleEventStream.generateEvents(sentence,tags,pcg).toArray(events);
+    POSSampleEventStream.generateEvents(sentence, tags, ac, pcg)
+        .toArray(events);
     return events;
   }
   
