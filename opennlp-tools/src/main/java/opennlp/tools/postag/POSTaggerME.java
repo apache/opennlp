@@ -216,7 +216,11 @@ public class POSTaggerME implements POSTagger {
   }
 
   public String[] tag(String[] sentence) {
-    bestSequence = beam.bestSequence(sentence, null);
+    return this.tag(sentence, null);
+  }
+
+  public String[] tag(String[] sentence, Object[] additionaContext) {
+    bestSequence = beam.bestSequence(sentence, additionaContext);
     List<String> t = bestSequence.getOutcomes();
     return t.toArray(new String[t.size()]);
   }
@@ -245,7 +249,11 @@ public class POSTaggerME implements POSTagger {
   }
 
   public Sequence[] topKSequences(String[] sentence) {
-    return beam.bestSequences(size, sentence, null);
+    return this.topKSequences(sentence, null);
+  }
+
+  public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
+    return beam.bestSequences(size, sentence, additionaContext);
   }
 
   /**
