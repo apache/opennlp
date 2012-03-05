@@ -93,13 +93,11 @@ public class POSEvaluatorTest {
     }
 
     public String[] tag(String[] sentence, Object[] additionaContext) {
-      // TODO Auto-generated method stub
-      return null;
+      return tag(sentence);
     }
 
     public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
-      // TODO Auto-generated method stub
-      return null;
+      return topKSequences(sentence);
     }
     
   }
