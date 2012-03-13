@@ -189,7 +189,9 @@ public class NameFinderME implements TokenNameFinder {
           generatorDescriptor), new FeatureGeneratorResourceProvider() {
 
         public Object getResource(String key) {
-          return resources.get(key);
+          if (resources != null)
+            return resources.get(key);
+          return null;
         }
       });
     } else {

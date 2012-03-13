@@ -81,20 +81,21 @@ public class TokenNameFinderModel extends BaseModel {
 
     artifactMap.put(MAXENT_MODEL_ENTRY_NAME, nameFinderModel);
     
-    // TODO: Null check ?!
     if (generatorDescriptor != null && generatorDescriptor.length > 0)
       artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, generatorDescriptor);
     
-    // The resource map must not contain key which are already taken
-    // like the name finder maxent model name
-    if (resources.containsKey(MAXENT_MODEL_ENTRY_NAME) ||
-        resources.containsKey(GENERATOR_DESCRIPTOR_ENTRY_NAME)) {
-      throw new IllegalArgumentException();
+    if (resources != null) {
+      // The resource map must not contain key which are already taken
+      // like the name finder maxent model name
+      if (resources.containsKey(MAXENT_MODEL_ENTRY_NAME) ||
+          resources.containsKey(GENERATOR_DESCRIPTOR_ENTRY_NAME)) {
+        throw new IllegalArgumentException();
+      }
+      
+      // TODO: Add checks to not put resources where no serializer exists,
+      // make that case fail here, should be done in the BaseModel
+      artifactMap.putAll(resources); 
     }
-    
-    // TODO: Add checks to not put resources where no serializer exists,
-    // make that case fail here, should be done in the BaseModel
-    artifactMap.putAll(resources);
     checkArtifactMap();
   }
 
