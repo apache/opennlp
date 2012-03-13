@@ -17,10 +17,14 @@
 
 package opennlp.tools.namefind;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.util.Collections;
+import java.util.Map;
 
+import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -34,6 +38,9 @@ public class TokenNameFinderCrossValidatorTest {
   private final String TYPE = "default";
 
   @Test
+  /**
+   * Test that reproduces jira OPENNLP-463
+   */
   public void testWithNullResources() throws Exception {
 
     FileInputStream sampleDataIn = new FileInputStream(getClass()
@@ -49,8 +56,37 @@ public class TokenNameFinderCrossValidatorTest {
     TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en",
         TYPE, mlParams, null, null);
 
-    cv.evaluate(sampleStream, 1);
+    cv.evaluate(sampleStream, 2);
 
+    assertNotNull(cv.getFMeasure());
+  }
+  
+  @Test
+  /**
+   * Test that tries to reproduce jira OPENNLP-466
+   */
+  public void testWithNameEvaluationErrorListener() throws Exception {
+
+    FileInputStream sampleDataIn = new FileInputStream(getClass()
+        .getClassLoader()
+        .getResource("opennlp/tools/namefind/AnnotatedSentences.txt").getFile());
+    ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
+        new PlainTextByLineStream(sampleDataIn.getChannel(), "ISO-8859-1"));
+
+    TrainingParameters mlParams = ModelUtil.createTrainingParameters(70, 1);
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM,
+        ModelType.MAXENT.toString());
+    
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    NameEvaluationErrorListener listener = new NameEvaluationErrorListener(out); 
+
+    Map<String, Object> resources = Collections.emptyMap();
+    TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en",
+        TYPE, mlParams, null, resources, listener);
+
+    cv.evaluate(sampleStream, 2);
+    
+    assertTrue(out.size() > 0);
     assertNotNull(cv.getFMeasure());
   }
 }
