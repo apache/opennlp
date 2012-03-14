@@ -20,6 +20,7 @@ package opennlp.tools.namefind;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.util.Collections;
 import java.util.Map;
@@ -35,7 +36,7 @@ import org.junit.Test;
 
 public class TokenNameFinderCrossValidatorTest {
 
-  private final String TYPE = "default";
+  private final String TYPE = null;
 
   @Test
   /**
@@ -43,9 +44,10 @@ public class TokenNameFinderCrossValidatorTest {
    */
   public void testWithNullResources() throws Exception {
 
-    FileInputStream sampleDataIn = new FileInputStream(getClass()
+    FileInputStream sampleDataIn = new FileInputStream(new File(getClass()
         .getClassLoader()
-        .getResource("opennlp/tools/namefind/AnnotatedSentences.txt").getFile());
+        .getResource("opennlp/tools/namefind/AnnotatedSentences.txt").toURI()));
+
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(sampleDataIn.getChannel(), "ISO-8859-1"));
 
@@ -67,9 +69,10 @@ public class TokenNameFinderCrossValidatorTest {
    */
   public void testWithNameEvaluationErrorListener() throws Exception {
 
-    FileInputStream sampleDataIn = new FileInputStream(getClass()
+    FileInputStream sampleDataIn = new FileInputStream(new File(getClass()
         .getClassLoader()
-        .getResource("opennlp/tools/namefind/AnnotatedSentences.txt").getFile());
+        .getResource("opennlp/tools/namefind/AnnotatedSentences.txt").toURI()));
+
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(sampleDataIn.getChannel(), "ISO-8859-1"));
 
