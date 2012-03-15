@@ -17,7 +17,7 @@
 
 package opennlp.tools.formats;
 
-import java.io.InputStreamReader;
+import java.io.FileInputStream;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -50,10 +50,11 @@ public class NameSampleDataStreamFactory extends LanguageSampleStreamFactory<Nam
     language = params.getLang();
 
     CmdLineUtil.checkInputFile("Data", params.getData());
+    
+    FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());
 
-    ObjectStream<String> lineStream;
-    lineStream = new PlainTextByLineStream(new InputStreamReader(
-        CmdLineUtil.openInFile(params.getData()), params.getEncoding()));
+    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn.getChannel(),
+        params.getEncoding());
 
     return new NameSampleDataStream(lineStream);
   }
