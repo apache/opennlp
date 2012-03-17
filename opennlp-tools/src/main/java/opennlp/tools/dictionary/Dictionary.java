@@ -92,6 +92,8 @@ public class Dictionary implements Iterable<StringList> {
 
   private Set<StringListWrapper> entrySet = new HashSet<StringListWrapper>();
   private final boolean isCaseSensitive;
+  private int minTokenCount = 99999;
+  private int maxTokenCount = 0;
 
 
   /**
@@ -146,6 +148,24 @@ public class Dictionary implements Iterable<StringList> {
    */
   public void put(StringList tokens) {
       entrySet.add(new StringListWrapper(tokens));
+      minTokenCount = Math.min(minTokenCount, tokens.size());
+      maxTokenCount = Math.max(maxTokenCount, tokens.size());
+  }
+  
+  /**
+   * 
+   * @return minimum token count in the dictionary
+   */
+  public int getMinTokenCount() {
+      return minTokenCount;
+  }
+  
+  /**
+   * 
+   * @return maximum token count in the dictionary
+   */
+  public int getMaxTokenCount() {
+      return maxTokenCount;
   }
 
   /**
