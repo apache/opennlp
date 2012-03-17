@@ -52,16 +52,18 @@ public class DictionaryNameFinder implements TokenNameFinder {
 
       for (int endToken = startToken; endToken < tokenStrings.length; endToken++) {
 
-        tokens = new String[(endToken - startToken + 1)];
-        System.arraycopy(tokenStrings, startToken, tokens, 0, (endToken - startToken + 1));
-
-        StringList tokenList = new StringList(tokens);
-
-        if (mDictionary.contains(tokenList)) {
-          foundName = new Span(startToken, endToken + 1);
+        if ((endToken - startToken + 1) > mDictionary.getMaxTokenCount()) {
+          break;
         }
         else {
-          break;
+          tokens = new String[(endToken - startToken + 1)];
+          System.arraycopy(tokenStrings, startToken, tokens, 0, (endToken - startToken + 1));
+
+          StringList tokenList = new StringList(tokens);
+
+          if (mDictionary.contains(tokenList)) {
+            foundName = new Span(startToken, endToken + 1);
+          }
         }
       }
 
