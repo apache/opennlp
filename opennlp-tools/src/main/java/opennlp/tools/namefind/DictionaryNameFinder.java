@@ -33,6 +33,8 @@ public class DictionaryNameFinder implements TokenNameFinder {
 
   private Dictionary mDictionary;
 
+  private static final String DEFAULT_TYPE = "default"; 
+
   /**
    * Initializes the current instance.
    *
@@ -62,7 +64,7 @@ public class DictionaryNameFinder implements TokenNameFinder {
           StringList tokenList = new StringList(tokens);
 
           if (mDictionary.contains(tokenList)) {
-            foundName = new Span(startToken, endToken + 1);
+            foundName = new Span(startToken, endToken + 1, DEFAULT_TYPE);
           }
         }
       }
