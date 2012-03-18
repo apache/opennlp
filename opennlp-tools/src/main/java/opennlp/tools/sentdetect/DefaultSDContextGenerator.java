@@ -145,7 +145,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
       next = new StringBuilder(sb.subSequence(suffixEnd + 1, nextEnd)).toString().trim();
     }
 
-    collectFeatures(prefix,suffix,previous,next);
+    collectFeatures(prefix,suffix,previous,next, sb.charAt(position));
 
     String[] context = new String[collectFeats.size()];
     context = collectFeats.toArray(context);
@@ -156,12 +156,27 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
   /**
    * Determines some of the features for the sentence detector and adds them to list features.
    *
-   * @param prefix String preceeding the eos character in the eos token.
+   * @param prefix String preceding the eos character in the eos token.
    * @param suffix String following the eos character in the eos token.
-   * @param previous Space delimited token preceeding token containing eos character.
-   * @param next Space delimited token following token containsing eos character.
+   * @param previous Space delimited token preceding token containing eos character.
+   * @param next Space delimited token following token containing eos character.
+   * 
+   * @deprecated use {@link #collectFeatures(String, String, String, String, Character)} instead.
    */
   protected void collectFeatures(String prefix, String suffix, String previous, String next) {
+    collectFeatures(prefix, suffix, previous, next, null);
+  }
+
+  /**
+   * Determines some of the features for the sentence detector and adds them to list features.
+   *
+   * @param prefix String preceding the eos character in the eos token.
+   * @param suffix String following the eos character in the eos token.
+   * @param previous Space delimited token preceding token containing eos character.
+   * @param next Space delimited token following token containing eos character.
+   * @param eosChar the EOS character been analyzed
+   */
+  protected void collectFeatures(String prefix, String suffix, String previous, String next, Character eosChar) {
     buf.append("x=");
     buf.append(prefix);
     collectFeats.add(buf.toString());
@@ -171,7 +186,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
       if (isFirstUpper(prefix)) {
         collectFeats.add("xcap");
       }
-      if (inducedAbbreviations.contains(prefix)) {
+      if (eosChar != null && inducedAbbreviations.contains(prefix + eosChar)) {
         collectFeats.add("xabbrev");
       }
     }
