@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -45,15 +46,15 @@ public class DictionaryNameFinderEvaluatorTest {
     DictionaryNameFinder nameFinder = new DictionaryNameFinder(
         createDictionary());
     TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
-        nameFinder);
+        nameFinder, new NameEvaluationErrorListener());
     ObjectStream<NameSample> sample = createSample();
 
     evaluator.evaluate(sample);
     sample.close();
     FMeasure fmeasure = evaluator.getFMeasure();
 
-    // TODO: why isn't it == 1?
-    assertTrue(fmeasure.getFMeasure() > 0);
+    // TODO: change to F-Measure when fix OPENNLP-471
+    assertTrue(fmeasure.getRecallScore() == 1);
   }
 
   /**
@@ -91,8 +92,8 @@ public class DictionaryNameFinderEvaluatorTest {
       if (names != null && names.length > 0) {
         String[] toks = sample.getSentence();
         for (Span name : names) {
-          Span[] n = { name };
-          String[] nameToks = Span.spansToStrings(n, toks);
+          String[] nameToks = new String[name.length()];
+          System.arraycopy(toks, name.getStart(), nameToks, 0, name.length());
           entries.add(nameToks);
         }
       }
