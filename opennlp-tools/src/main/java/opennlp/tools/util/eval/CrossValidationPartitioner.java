@@ -151,14 +151,22 @@ public class CrossValidationPartitioner<E> {
       
       return sampleStream.read();
     }
-    
+
     /**
-     * Throws <code>UnsupportedOperationException</code>
+     * Resets the training sample. Use this if you need to collect things before
+     * training, for example, to collect induced abbreviations or create a POS
+     * Dictionary.
+     * 
+     * @throws IOException
      */
-    public void reset() {
-      throw new UnsupportedOperationException();
+    public void reset() throws IOException {
+      if (testSampleStream != null || isPoisened) {
+        throw new IllegalStateException();
+      }
+      this.index = 0;
+      this.sampleStream.reset();
     }
-    
+
     public void close() throws IOException {
       sampleStream.close();
       poison();
