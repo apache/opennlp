@@ -38,6 +38,9 @@ public class NameSample {
   private final String[][] additionalContext;
   private final boolean isClearAdaptiveData;
 
+  /** The a default type value when there is no type in training data. */
+  public static final String DEFAULT_TYPE = "default";
+
   /**
    * Initializes the current instance.
    *
@@ -188,8 +191,14 @@ public class NameSample {
   }
   
   private static final Pattern START_TAG_PATTERN = Pattern.compile("<START(:([^:>\\s]*))?>");
+
+  public static NameSample parse(String taggedTokens,
+      boolean isClearAdaptiveData) throws IOException {
+    return parse(taggedTokens, DEFAULT_TYPE, isClearAdaptiveData);
+  }
   
-  public static NameSample parse(String taggedTokens, boolean isClearAdaptiveData)
+  public static NameSample parse(String taggedTokens, String defaultType,
+      boolean isClearAdaptiveData)
     // TODO: Should throw another exception, and then convert it into an IOException in the stream
     throws IOException {
     String[] parts = WhitespaceTokenizer.INSTANCE.tokenize(taggedTokens);
@@ -197,7 +206,7 @@ public class NameSample {
     List<String> tokenList = new ArrayList<String>(parts.length);
     List<Span> nameList = new ArrayList<Span>();
 
-    String nameType = null;
+    String nameType = defaultType;
     int startIndex = -1;
     int wordIndex = 0;
     
@@ -214,9 +223,12 @@ public class NameSample {
         }
         catchingName = true;
         startIndex = wordIndex;
-        nameType = startMatcher.group(2);
-        if(nameType != null && nameType.length() == 0) {
-          throw new IOException("Missing a name type: " + errorTokenWithContext(parts, pi));
+        String nameTypeFromSample = startMatcher.group(2);
+        if(nameTypeFromSample != null) {
+          if(nameTypeFromSample.length() == 0) {
+            throw new IOException("Missing a name type: " + errorTokenWithContext(parts, pi));
+          }
+          nameType = nameTypeFromSample;
         }
           
       }
