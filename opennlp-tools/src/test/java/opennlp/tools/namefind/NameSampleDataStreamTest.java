@@ -85,11 +85,11 @@ public class NameSampleDataStreamTest {
     NameSample ns = ds.read();
 
     String[] expectedNames = { "Alan McKennedy", "Julie", "Marie Clara",
-        "Stefanie Schmidt", "Mike", "Stefanie Schmidt", "George", "Luise",
-        "Alisa Fernandes", "Alisa", "Mike Sander", "Stefan Miller",
-        "Stefan Miller", "Stefan Miller", "Elenor Meier", "Gina Schneider",
-        "Bruno Schulz", "Michel Seile", "George Miller", "Miller",
-        "Peter Schubert", "Natalie" };
+        "Stefanie Schmidt", "Mike", "Stefanie Schmidt", "George", "Luise", 
+        "George Bauer", "Alisa Fernandes", "Alisa", "Mike Sander", 
+        "Stefan Miller", "Stefan Miller", "Stefan Miller", "Elenor Meier", 
+        "Gina Schneider", "Bruno Schulz", "Michel Seile", "George Miller", 
+        "Miller", "Peter Schubert", "Natalie" };
 
     List<String> names = new ArrayList<String>();
     List<Span> spans = new ArrayList<Span>();
@@ -111,20 +111,21 @@ public class NameSampleDataStreamTest {
     assertEquals(createDefaultSpan(4,6), spans.get(5));
     assertEquals(createDefaultSpan(2,3), spans.get(6));
     assertEquals(createDefaultSpan(16,17), spans.get(7));
-    assertEquals(createDefaultSpan(0,2), spans.get(8));
-    assertEquals(createDefaultSpan(0,1), spans.get(9));
-    assertEquals(createDefaultSpan(3,5), spans.get(10));
+    assertEquals(createDefaultSpan(18,20), spans.get(8));
+    assertEquals(createDefaultSpan(0,2), spans.get(9));
+    assertEquals(createDefaultSpan(0,1), spans.get(10));
     assertEquals(createDefaultSpan(3,5), spans.get(11));
-    assertEquals(createDefaultSpan(10,12), spans.get(12));
-    assertEquals(createDefaultSpan(1,3), spans.get(13));
-    assertEquals(createDefaultSpan(6,8), spans.get(14));
+    assertEquals(createDefaultSpan(3,5), spans.get(12));
+    assertEquals(createDefaultSpan(10,12), spans.get(13));
+    assertEquals(createDefaultSpan(1,3), spans.get(14));
     assertEquals(createDefaultSpan(6,8), spans.get(15));
-    assertEquals(createDefaultSpan(8,10), spans.get(16));
-    assertEquals(createDefaultSpan(12,14), spans.get(17));
-    assertEquals(createDefaultSpan(1,3), spans.get(18));
-    assertEquals(createDefaultSpan(0,1), spans.get(19));
-    assertEquals(createDefaultSpan(2,4), spans.get(20));
-    assertEquals(createDefaultSpan(5,6), spans.get(21));
+    assertEquals(createDefaultSpan(6,8), spans.get(16));
+    assertEquals(createDefaultSpan(8,10), spans.get(17));
+    assertEquals(createDefaultSpan(12,14), spans.get(18));
+    assertEquals(createDefaultSpan(1,3), spans.get(19));
+    assertEquals(createDefaultSpan(0,1), spans.get(20));
+    assertEquals(createDefaultSpan(2,4), spans.get(21));
+    assertEquals(createDefaultSpan(5,6), spans.get(22));
   }
   
   private Span createDefaultSpan(int s, int e) {
