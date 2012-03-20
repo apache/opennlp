@@ -53,7 +53,7 @@ public class DictionaryNameFinderEvaluatorTest {
     sample.close();
     FMeasure fmeasure = evaluator.getFMeasure();
 
-    // TODO: change to F-Measure when fix OPENNLP-471
+    assertTrue(fmeasure.getFMeasure() == 1);
     assertTrue(fmeasure.getRecallScore() == 1);
   }
 
