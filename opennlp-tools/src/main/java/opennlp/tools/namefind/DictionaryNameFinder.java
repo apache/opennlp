@@ -72,7 +72,7 @@ public class DictionaryNameFinder implements TokenNameFinder {
       if (foundName != null) {
         foundNames.add(foundName);
         /* skip over the found tokens for the next search */
-        startToken = (foundName.getEnd() - 1);
+        startToken += (foundName.length() - 1);
       }
     }
 
