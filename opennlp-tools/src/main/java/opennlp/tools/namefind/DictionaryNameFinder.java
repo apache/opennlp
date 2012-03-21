@@ -33,50 +33,49 @@ public class DictionaryNameFinder implements TokenNameFinder {
 
   private Dictionary mDictionary;
 
-  private static final String DEFAULT_TYPE = "default"; 
+  private static final String DEFAULT_TYPE = "default";
 
   /**
    * Initializes the current instance.
-   *
+   * 
    * @param dictionary
    */
   public DictionaryNameFinder(Dictionary dictionary) {
     mDictionary = dictionary;
   }
 
-  public Span[] find(String[] tokenStrings) {
-    List<Span> foundNames = new LinkedList<Span>();
+  public Span[] find(String[] textTokenized) {
+    List<Span> namesFound = new LinkedList<Span>();
 
-    for (int startToken = 0; startToken < tokenStrings.length; startToken++) {
+    for (int offsetFrom = 0; offsetFrom < textTokenized.length; offsetFrom++) {
+      Span nameFound = null;
+      String tokensSearching[] = new String[] {};
 
-      Span foundName = null;
-      String  tokens[] = new String[]{};
+      for (int offsetTo = offsetFrom; offsetTo < textTokenized.length; offsetTo++) {
+        int lengthSearching = offsetTo - offsetFrom + 1;
 
-      for (int endToken = startToken; endToken < tokenStrings.length; endToken++) {
-
-        if ((endToken - startToken + 1) > mDictionary.getMaxTokenCount()) {
+        if (lengthSearching > mDictionary.getMaxTokenCount()) {
           break;
-        }
-        else {
-          tokens = new String[(endToken - startToken + 1)];
-          System.arraycopy(tokenStrings, startToken, tokens, 0, (endToken - startToken + 1));
+        } else {
+          tokensSearching = new String[lengthSearching];
+          System.arraycopy(textTokenized, offsetFrom, tokensSearching, 0,
+              lengthSearching);
 
-          StringList tokenList = new StringList(tokens);
+          StringList entryForSearch = new StringList(tokensSearching);
 
-          if (mDictionary.contains(tokenList)) {
-            foundName = new Span(startToken, endToken + 1, DEFAULT_TYPE);
+          if (mDictionary.contains(entryForSearch)) {
+            nameFound = new Span(offsetFrom, offsetTo + 1, DEFAULT_TYPE);
           }
         }
       }
 
-      if (foundName != null) {
-        foundNames.add(foundName);
+      if (nameFound != null) {
+        namesFound.add(nameFound);
         /* skip over the found tokens for the next search */
-        startToken += (foundName.length() - 1);
+        offsetFrom += (nameFound.length() - 1);
       }
     }
-
-    return foundNames.toArray(new Span[foundNames.size()]);
+    return namesFound.toArray(new Span[namesFound.size()]);
   }
 
   public void clearAdaptiveData() {
