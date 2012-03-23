@@ -1,0 +1,252 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreemnets.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package opennlp.tools.tokenize;
+
+import java.lang.reflect.Constructor;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.tokenize.lang.Factory;
+import opennlp.tools.util.BaseToolFactory;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.model.ArtifactProvider;
+
+/**
+ * The factory that provides {@link Tokenizer} default implementations and
+ * resources. Users can extend this class if their application requires
+ * overriding the {@link TokenContextGenerator}, {@link Dictionary} etc.
+ */
+public class TokenizerFactory extends BaseToolFactory {
+
+  private String languageCode;
+  private Dictionary abbreviationDictionary;
+  private Boolean useAlphaNumericOptimization = null;
+  private Pattern alphaNumericPattern;
+
+  private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
+  private static final String USE_ALPHA_NUMERIC_OPTIMIZATION = "useAlphaNumericOptimization";
+  private static final String ALPHA_NUMERIC_PATTERN = "alphaNumericPattern";
+
+  /**
+   * Creates a {@link TokenizerFactory} that provides the default implementation
+   * of the resources.
+   */
+  public TokenizerFactory() {
+  }
+
+  /**
+   * Creates a {@link TokenizerFactory} with an {@link ArtifactProvider} that
+   * will be used to retrieve artifacts. This constructor will try to get the
+   * language code, abbreviation dictionary etc from the
+   * {@link ArtifactProvider}.
+   * <p>
+   * Sub-classes should implement a constructor with this signatures and call
+   * this constructor.
+   * <p>
+   * This will be used to load the factory from a serialized
+   * {@link TokenizerModel}.
+   */
+  public TokenizerFactory(ArtifactProvider artifactProvider) {
+    super(artifactProvider);
+  }
+
+  /**
+   * Creates a {@link TokenizerFactory}. Use this constructor to
+   * programmatically create a factory.
+   * 
+   * @param languageCode
+   *          the language of the natural text
+   * @param abbreviationDictionary
+   *          an abbreviations dictionary
+   * @param useAlphaNumericOptimization
+   *          if true alpha numerics are skipped
+   * @param alphaNumericPattern
+   *          null or a custom alphanumeric pattern (default is:
+   *          "^[A-Za-z0-9]+$", provided by {@link Factory#DEFAULT_ALPHANUMERIC}
+   */
+  public TokenizerFactory(String languageCode,
+      Dictionary abbreviationDictionary, boolean useAlphaNumericOptimization,
+      Pattern alphaNumericPattern) {
+    this.languageCode = languageCode;
+    this.useAlphaNumericOptimization = useAlphaNumericOptimization;
+    this.alphaNumericPattern = alphaNumericPattern;
+    this.abbreviationDictionary = abbreviationDictionary;
+  }
+
+  @Override
+  public void validateArtifactMap() throws InvalidFormatException {
+
+    if (this.artifactProvider.getManifestProperty(ALPHA_NUMERIC_PATTERN) == null)
+      throw new InvalidFormatException(ALPHA_NUMERIC_PATTERN
+          + " is a mandatory property!");
+
+    if (this.artifactProvider
+        .getManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION) == null)
+      throw new InvalidFormatException(USE_ALPHA_NUMERIC_OPTIMIZATION
+          + " is a mandatory property!");
+
+    Object abbreviationsEntry = this.artifactProvider
+        .getArtifact(ABBREVIATIONS_ENTRY_NAME);
+
+    if (abbreviationsEntry != null
+        && !(abbreviationsEntry instanceof Dictionary)) {
+      throw new InvalidFormatException(
+          "Abbreviations dictionary has wrong type!");
+    }
+  }
+
+  @Override
+  public Map<String, Object> createArtifactMap() {
+    Map<String, Object> artifactMap = super.createArtifactMap();
+
+    // Abbreviations are optional
+    if (abbreviationDictionary != null)
+      artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviationDictionary);
+
+    return artifactMap;
+  }
+
+  @Override
+  public Map<String, String> createManifestEntries() {
+    Map<String, String> manifestEntries = super.createManifestEntries();
+
+    manifestEntries.put(USE_ALPHA_NUMERIC_OPTIMIZATION,
+        Boolean.toString(isUseAlphaNumericOptmization()));
+
+    // alphanumeric pattern is optional
+    if (getAlphaNumericPattern() != null)
+      manifestEntries.put(ALPHA_NUMERIC_PATTERN, getAlphaNumericPattern()
+          .pattern());
+
+    return manifestEntries;
+  }
+
+  /**
+   * Factory method the framework uses create a new {@link TokenizerFactory}.
+   */
+  public static TokenizerFactory create(String subclassName,
+      String languageCode, Dictionary abbreviationDictionary,
+      boolean useAlphaNumericOptimization, Pattern alphaNumericPattern)
+      throws InvalidFormatException {
+    if (subclassName == null) {
+      // will create the default factory
+      return new TokenizerFactory(languageCode, abbreviationDictionary,
+          useAlphaNumericOptimization, alphaNumericPattern);
+    }
+    TokenizerFactory theFactory = null;
+    Class<? extends BaseToolFactory> factoryClass = loadSubclass(subclassName);
+    if (factoryClass != null) {
+      try {
+        Constructor<?> constructor = null;
+        constructor = factoryClass.getConstructor(String.class,
+            Dictionary.class, boolean.class, Pattern.class);
+        theFactory = (TokenizerFactory) constructor.newInstance(languageCode,
+            abbreviationDictionary, useAlphaNumericOptimization,
+            alphaNumericPattern);
+      } catch (NoSuchMethodException e) {
+        String msg = "Could not instantiate the "
+            + subclassName
+            + ". The mandatory constructor (String, Dictionary, boolean, Pattern) is missing.";
+        System.err.println(msg);
+        throw new IllegalArgumentException(msg);
+      } catch (Exception e) {
+        String msg = "Could not instantiate the "
+            + subclassName
+            + ". The constructor (String, Dictionary, boolean, Pattern) throw an exception.";
+        System.err.println(msg);
+        e.printStackTrace();
+        throw new InvalidFormatException(msg);
+      }
+    }
+    return theFactory;
+  }
+
+  /**
+   * Gets the alpha numeric pattern.
+   * 
+   * @return the user specified alpha numeric pattern or a default.
+   */
+  public Pattern getAlphaNumericPattern() {
+    if (this.alphaNumericPattern == null) {
+      if (artifactProvider != null) {
+        String prop = this.artifactProvider
+            .getManifestProperty(ALPHA_NUMERIC_PATTERN);
+        if (prop != null) {
+          this.alphaNumericPattern = Pattern.compile(prop);
+        }
+      } else {
+        // get from language dependent factory
+        Factory f = new Factory();
+        this.alphaNumericPattern = f.getAlphanumeric(languageCode);
+      }
+    }
+    return this.alphaNumericPattern;
+  }
+
+  /**
+   * Gets whether to use alphanumeric optimization.
+   */
+  public boolean isUseAlphaNumericOptmization() {
+    if (this.useAlphaNumericOptimization == null && artifactProvider != null) {
+      this.useAlphaNumericOptimization = Boolean.valueOf(artifactProvider
+          .getManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION));
+    }
+    return this.useAlphaNumericOptimization;
+  }
+
+  /**
+   * Gets the abbreviation dictionary
+   * 
+   * @return null or the abbreviation dictionary
+   */
+  public Dictionary getAbbreviationDictionary() {
+    if (this.abbreviationDictionary == null && artifactProvider != null) {
+      this.abbreviationDictionary = artifactProvider
+          .getArtifact(ABBREVIATIONS_ENTRY_NAME);
+    }
+    return this.abbreviationDictionary;
+  }
+
+  /**
+   * Gets the language code
+   */
+  public String getLanguageCode() {
+    if (this.languageCode == null && artifactProvider != null) {
+      this.languageCode = this.artifactProvider.getLanguage();
+    }
+    return this.languageCode;
+  }
+
+  /**
+   * Gets the context generator
+   */
+  public TokenContextGenerator getContextGenerator() {
+    Factory f = new Factory();
+    Set<String> abbs = null;
+    Dictionary abbDict = getAbbreviationDictionary();
+    if (abbDict != null) {
+      abbs = abbDict.asStringSet();
+    } else {
+      abbs = Collections.emptySet();
+    }
+    return f.createTokenContextGenerator(getLanguageCode(), abbs);
+  }
+}
