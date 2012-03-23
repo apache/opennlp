@@ -220,7 +220,7 @@ STA:fcl
 
 <s id="63955" ref="Ivan do Maxixe">
 SOURCE: ref="1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme=-2" source="SELVA 1001.porto-poesia=removeme=-2 a poesia toma porto-alegre=removeme="
-1001 Ivan do Maxixe
+1001 Ivan do Maxixe ofereceu-me um café.
 A1
 STA:fcl
 ===H:prop("Ivan" <cjt-sc> <hum> <right> M S)    Ivan
@@ -229,5 +229,10 @@ STA:fcl
 ====P<:np
 =====>N:art("o" <NER2> <artd> <-sam> DET M S)   o
 =====H:n("maxixe" <np-def> <prop> <NER2> <fruit> M S)   Maxixe
-
+===P:v-fin("oferecer" <fmc> PS 3S IND VFIN)	ofereceu-
+===DAT:pron-pers("eu" M/F 1S DAT)	me
+===ACC:np
+====>N:pron-det("um" <arti> DET M S)	um
+====H:n("café" M S)	café
+.
 </s>
