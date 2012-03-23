@@ -30,6 +30,7 @@ import opennlp.maxent.io.BinaryGISModelReader;
 import opennlp.model.AbstractModel;
 import opennlp.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
@@ -45,31 +46,37 @@ public final class TokenizerModel extends BaseModel {
   private static final String COMPONENT_NAME = "TokenizerME";
   
   private static final String TOKENIZER_MODEL_ENTRY = "token.model";
-  private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
 
-  private static final String USE_ALPHA_NUMERIC_OPTIMIZATION =
-      "useAlphaNumericOptimization";
+  /**
+   * Initializes the current instance.
+   * 
+   * @param languageCode the language of the natural text
+   * @param tokenizerModel the model
+   * @param manifestInfoEntries the manifest
+   * @param tokenizerFactory the factory
+   */
+  public TokenizerModel(String languageCode, AbstractModel tokenizerModel,
+      Map<String, String> manifestInfoEntries, TokenizerFactory tokenizerFactory) {
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries, tokenizerFactory);
+    artifactMap.put(TOKENIZER_MODEL_ENTRY, tokenizerModel);
+    checkArtifactMap();
+  }
 
   /**
    * Initializes the current instance.
    *
    * @param tokenizerMaxentModel
    * @param useAlphaNumericOptimization
+   * 
+   * @deprecated Use
+   *             {@link TokenizerModel#TokenizerModel(String, AbstractModel, Map, TokenizerFactory)}
+   *             instead and pass in a {@link TokenizerFactory}.
    */
   public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
       Dictionary abbreviations, boolean useAlphaNumericOptimization,
       Map<String, String> manifestInfoEntries) {
-    super(COMPONENT_NAME, language, manifestInfoEntries);
-
-    artifactMap.put(TOKENIZER_MODEL_ENTRY, tokenizerMaxentModel);
-
-    setManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION,
-        Boolean.toString(useAlphaNumericOptimization));
-
-    // Abbreviations are optional
-    if (abbreviations != null)
-      artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviations);
-    checkArtifactMap();
+    this(language, tokenizerMaxentModel, manifestInfoEntries, 
+        new TokenizerFactory(language, abbreviations, useAlphaNumericOptimization, null));
   }
 
   /**
@@ -79,6 +86,10 @@ public final class TokenizerModel extends BaseModel {
    * @param tokenizerMaxentModel
    * @param useAlphaNumericOptimization
    * @param manifestInfoEntries
+   * 
+   * @deprecated Use
+   *             {@link TokenizerModel#TokenizerModel(String, AbstractModel, Map, TokenizerFactory)}
+   *             instead and pass in a {@link TokenizerFactory}.
    */
   public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
       boolean useAlphaNumericOptimization, Map<String, String> manifestInfoEntries) {
@@ -91,6 +102,10 @@ public final class TokenizerModel extends BaseModel {
    * @param language
    * @param tokenizerMaxentModel
    * @param useAlphaNumericOptimization
+   * 
+   * @deprecated Use
+   *             {@link TokenizerModel#TokenizerModel(String, AbstractModel, Map, TokenizerFactory)}
+   *             instead and pass in a {@link TokenizerFactory}.
    */
   public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
       boolean useAlphaNumericOptimization) {
@@ -130,17 +145,15 @@ public final class TokenizerModel extends BaseModel {
     if (!isModelCompatible(getMaxentModel())) {
       throw new InvalidFormatException("The maxent model is not compatible with the tokenizer!");
     }
+  }
 
-    if (getManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION) == null) {
-      throw new InvalidFormatException("The " + USE_ALPHA_NUMERIC_OPTIMIZATION + " parameter " +
-          "cannot be found!");
-    }
-    
-    Object abbreviationsEntry = artifactMap.get(ABBREVIATIONS_ENTRY_NAME);
+  public TokenizerFactory getFactory() {
+    return (TokenizerFactory) this.toolFactory;
+  }
 
-    if (abbreviationsEntry != null && !(abbreviationsEntry instanceof Dictionary)) {
-      throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
-    }
+  @Override
+  protected Class<? extends BaseToolFactory> getDefaultFactory() {
+    return TokenizerFactory.class;
   }
 
   public AbstractModel getMaxentModel() {
@@ -148,13 +161,17 @@ public final class TokenizerModel extends BaseModel {
   }
   
   public Dictionary getAbbreviations() {
-    return (Dictionary) artifactMap.get(ABBREVIATIONS_ENTRY_NAME);
+    if (getFactory() != null) {
+      return getFactory().getAbbreviationDictionary();
+    }
+    return null;
   }
 
   public boolean useAlphaNumericOptimization() {
-    String optimization = getManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION);
-
-    return Boolean.parseBoolean(optimization);
+    if (getFactory() != null) {
+      return getFactory().isUseAlphaNumericOptmization();
+    }
+    return false;
   }
 
   public static void main(String[] args) throws IOException {

@@ -210,6 +210,41 @@ public class TokenizerME extends AbstractTokenizer {
     newTokens.toArray(spans);
     return spans;
   }
+  
+  /**
+   * Trains a model for the {@link TokenizerME}.
+   * 
+   * @param languageCode
+   *          the language of the natural text
+   * @param samples
+   *          the samples used for the training.
+   * @param factory
+   *          a {@link TokenizerFactory} to get resources from
+   * @param mlParams
+   *          the machine learning train parameters
+   * @return the trained {@link TokenizerModel}
+   * @throws IOException
+   *           it throws an {@link IOException} if an {@link IOException} is
+   *           thrown during IO operations on a temp file which is created
+   *           during training. Or if reading from the {@link ObjectStream}
+   *           fails.
+   */
+  public static TokenizerModel train(String languageCode,
+      ObjectStream<TokenSample> samples, TokenizerFactory factory,
+      TrainingParameters mlParams) throws IOException {
+
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+
+    EventStream eventStream = new TokSpanEventStream(samples,
+        factory.isUseAlphaNumericOptmization(),
+        factory.getAlphaNumericPattern(), factory.getContextGenerator());
+
+    AbstractModel maxentModel = TrainUtil.train(eventStream,
+        mlParams.getSettings(), manifestInfoEntries);
+
+    return new TokenizerModel(languageCode, maxentModel, manifestInfoEntries,
+        factory);
+  }
 
   /**
    * Trains a model for the {@link TokenizerME}.
@@ -225,6 +260,9 @@ public class TokenizerME extends AbstractTokenizer {
    * is thrown during IO operations on a temp file which is created during training.
    * Or if reading from the {@link ObjectStream} fails.
    * 
+   * @deprecated Use 
+   *    {@link #train(String, ObjectStream, TokenizerFactory, TrainingParameters)} 
+   *    and pass in a {@link TokenizerFactory}
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization, TrainingParameters mlParams) throws IOException {
@@ -247,6 +285,9 @@ public class TokenizerME extends AbstractTokenizer {
    * is thrown during IO operations on a temp file which is created during training.
    * Or if reading from the {@link ObjectStream} fails.
    * 
+   * @deprecated Use 
+   *    {@link #train(String, ObjectStream, TokenizerFactory, TrainingParameters)} 
+   *    and pass in a {@link TokenizerFactory}
    */
   public static TokenizerModel train(String languageCode,
       ObjectStream<TokenSample> samples, Dictionary abbreviations,
@@ -283,8 +324,9 @@ public class TokenizerME extends AbstractTokenizer {
    * is thrown during IO operations on a temp file which is created during training.
    * Or if reading from the {@link ObjectStream} fails.
    * 
-   * @deprecated use {@link #train(String, ObjectStream, boolean, TrainingParameters)}
-   * instead and pass in a TrainingParameters object.
+   * @deprecated Use 
+   *    {@link #train(String, ObjectStream, TokenizerFactory, TrainingParameters)} 
+   *    and pass in a {@link TokenizerFactory}
    */
   @Deprecated
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
@@ -308,6 +350,11 @@ public class TokenizerME extends AbstractTokenizer {
    * 
    * @throws ObjectStreamException if reading from the {@link ObjectStream} fails
    * created during training.
+   * 
+   * 
+   * @deprecated Use 
+   *    {@link #train(String, ObjectStream, TokenizerFactory, TrainingParameters)} 
+   *    and pass in a {@link TokenizerFactory}
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization) throws IOException, ObjectStreamException {
