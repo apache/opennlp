@@ -50,14 +50,13 @@ public final class TokenizerModel extends BaseModel {
   /**
    * Initializes the current instance.
    * 
-   * @param languageCode the language of the natural text
    * @param tokenizerModel the model
    * @param manifestInfoEntries the manifest
    * @param tokenizerFactory the factory
    */
-  public TokenizerModel(String languageCode, AbstractModel tokenizerModel,
+  public TokenizerModel(AbstractModel tokenizerModel,
       Map<String, String> manifestInfoEntries, TokenizerFactory tokenizerFactory) {
-    super(COMPONENT_NAME, languageCode, manifestInfoEntries, tokenizerFactory);
+    super(COMPONENT_NAME, tokenizerFactory.getLanguageCode(), manifestInfoEntries, tokenizerFactory);
     artifactMap.put(TOKENIZER_MODEL_ENTRY, tokenizerModel);
     checkArtifactMap();
   }
@@ -75,7 +74,7 @@ public final class TokenizerModel extends BaseModel {
   public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
       Dictionary abbreviations, boolean useAlphaNumericOptimization,
       Map<String, String> manifestInfoEntries) {
-    this(language, tokenizerMaxentModel, manifestInfoEntries, 
+    this(tokenizerMaxentModel, manifestInfoEntries, 
         new TokenizerFactory(language, abbreviations, useAlphaNumericOptimization, null));
   }
 

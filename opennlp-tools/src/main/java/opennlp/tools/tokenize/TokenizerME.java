@@ -121,9 +121,20 @@ public class TokenizerME extends AbstractTokenizer {
   private List<Span> newTokens;
 
   public TokenizerME(TokenizerModel model) {
-    this(model, new Factory());
+    TokenizerFactory factory = model.getFactory();
+    this.alphanumeric = factory.getAlphaNumericPattern();
+    this.cg = factory.getContextGenerator();
+    this.model = model.getMaxentModel();
+    this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptmization();
+
+    newTokens = new ArrayList<Span>();
+    tokProbs = new ArrayList<Double>(50);
   }
-  
+
+  /**
+   * @deprecated use {@link TokenizerFactory} to extend the Tokenizer
+   *             functionality
+   */
   public TokenizerME(TokenizerModel model, Factory factory) {
     String languageCode = model.getLanguage();
 
@@ -214,8 +225,6 @@ public class TokenizerME extends AbstractTokenizer {
   /**
    * Trains a model for the {@link TokenizerME}.
    * 
-   * @param languageCode
-   *          the language of the natural text
    * @param samples
    *          the samples used for the training.
    * @param factory
@@ -229,8 +238,7 @@ public class TokenizerME extends AbstractTokenizer {
    *           during training. Or if reading from the {@link ObjectStream}
    *           fails.
    */
-  public static TokenizerModel train(String languageCode,
-      ObjectStream<TokenSample> samples, TokenizerFactory factory,
+  public static TokenizerModel train(ObjectStream<TokenSample> samples, TokenizerFactory factory,
       TrainingParameters mlParams) throws IOException {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
@@ -242,7 +250,7 @@ public class TokenizerME extends AbstractTokenizer {
     AbstractModel maxentModel = TrainUtil.train(eventStream,
         mlParams.getSettings(), manifestInfoEntries);
 
-    return new TokenizerModel(languageCode, maxentModel, manifestInfoEntries,
+    return new TokenizerModel(maxentModel, manifestInfoEntries,
         factory);
   }
 
