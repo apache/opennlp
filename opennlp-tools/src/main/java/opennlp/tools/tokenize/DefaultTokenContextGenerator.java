@@ -30,7 +30,7 @@ import opennlp.tools.util.StringUtil;
  */
 public class DefaultTokenContextGenerator implements TokenContextGenerator {
   
-  private final Set<String> inducedAbbreviations;
+  protected final Set<String> inducedAbbreviations;
   
   /**
    * Creates a default context generator for tokenizer.
@@ -52,6 +52,25 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
    * @see opennlp.tools.tokenize.TokenContextGenerator#getContext(java.lang.String, int)
    */
   public String[] getContext(String sentence, int index) {
+    List<String> preds = createContext(sentence, index);
+    String[] context = new String[preds.size()];
+    preds.toArray(context);
+    return context;
+  }
+
+  /**
+   * Returns an {@link ArrayList} of features for the specified sentence string
+   * at the specified index. Extensions of this class can override this method
+   * to create a customized {@link TokenContextGenerator}
+   * 
+   * @param sentence
+   *          the token been analyzed
+   * @param index
+   *          the index of the character been analyzed
+   * @return an {@link ArrayList} of features for the specified sentence string
+   *         at the specified index.
+   */
+  protected List<String> createContext(String sentence, int index) {
     List<String> preds = new ArrayList<String>();
     String prefix = sentence.substring(0, index);
     String suffix = sentence.substring(index);
@@ -91,16 +110,14 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
       preds.add("abb");
     }
 
-    String[] context = new String[preds.size()];
-    preds.toArray(context);
-    return context;
+    return preds;
   }
 
 
   /**
    * Helper function for getContext.
    */
-  private void addCharPreds(String key, char c, List<String> preds) {
+  protected void addCharPreds(String key, char c, List<String> preds) {
     preds.add(key + "=" + c);
     if (Character.isLetter(c)) {
       preds.add(key + "_alpha");
