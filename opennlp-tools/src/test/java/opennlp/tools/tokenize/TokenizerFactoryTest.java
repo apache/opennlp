@@ -55,7 +55,7 @@ public class TokenizerFactoryTest {
 
   private static TokenizerModel train(TokenizerFactory factory)
       throws IOException {
-    return TokenizerME.train(factory.getLanguageCode(), createSampleStream(),
+    return TokenizerME.train(createSampleStream(),
         factory, TrainingParameters.defaultParams());
   }
 
