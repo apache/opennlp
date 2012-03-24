@@ -28,6 +28,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerCrossValidator;
 import opennlp.tools.tokenize.TokenizerEvaluationMonitor;
+import opennlp.tools.tokenize.TokenizerFactory;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -63,8 +64,11 @@ public final class TokenizerCrossValidatorTool
     try {
       Dictionary dict = TokenizerTrainerTool.loadDict(params.getAbbDict());
 
-      validator = new opennlp.tools.tokenize.TokenizerCrossValidator(
-          factory.getLang(), dict, params.getAlphaNumOpt(), mlParams, listener);
+      TokenizerFactory tokFactory = TokenizerFactory.create(
+          params.getFactory(), factory.getLang(), dict,
+          params.getAlphaNumOpt(), null);
+      validator = new opennlp.tools.tokenize.TokenizerCrossValidator(mlParams,
+          tokFactory, listener);
 
       validator.evaluate(sampleStream, params.getFolds());
     }

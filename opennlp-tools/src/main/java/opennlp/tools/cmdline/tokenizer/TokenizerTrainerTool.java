@@ -29,6 +29,7 @@ import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.tokenize.TokenizerFactory;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -80,8 +81,13 @@ public final class TokenizerTrainerTool
     TokenizerModel model;
     try {
       Dictionary dict = loadDict(params.getAbbDict());
-      model = opennlp.tools.tokenize.TokenizerME.train(factory.getLang(), sampleStream, dict,
-          params.getAlphaNumOpt(), mlParams);
+
+      TokenizerFactory tokFactory = TokenizerFactory.create(
+          params.getFactory(), factory.getLang(), dict,
+          params.getAlphaNumOpt(), null);
+      model = opennlp.tools.tokenize.TokenizerME.train(sampleStream,
+          tokFactory, mlParams);
+
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
