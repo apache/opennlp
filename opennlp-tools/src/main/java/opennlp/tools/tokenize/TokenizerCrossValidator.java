@@ -28,38 +28,54 @@ import opennlp.tools.util.model.ModelUtil;
 
 public class TokenizerCrossValidator {
   
-  private final String language;
-  private final boolean alphaNumericOptimization;
-  
   private final TrainingParameters params;
-  
-  private final Dictionary abbreviations;
   
   private FMeasure fmeasure = new FMeasure();
   private TokenizerEvaluationMonitor[] listeners;
+  private final TokenizerFactory factory;
   
+  public TokenizerCrossValidator(TrainingParameters params,
+      TokenizerFactory factory, TokenizerEvaluationMonitor... listeners) {
+    this.params = params;
+    this.listeners = listeners;
+    this.factory = factory;
+  }
+
+  /**
+   * @deprecated use
+   *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
+   *             instead and pass in a {@link TokenizerFactory}
+   */
   public TokenizerCrossValidator(String language, Dictionary abbreviations,
       boolean alphaNumericOptimization, TrainingParameters params,
       TokenizerEvaluationMonitor ... listeners) {
-    this.language = language;
-    this.alphaNumericOptimization = alphaNumericOptimization;
-    this.abbreviations = abbreviations;
-    this.params = params;
-    this.listeners = listeners;
+    this(params, new TokenizerFactory(language, abbreviations,
+        alphaNumericOptimization, null), listeners);
   }
   
   /**
-   * @deprecated use {@link #TokenizerCrossValidator(String, boolean, TrainingParameters, TokenizerEvaluationMonitor...)}
-   * instead and pass in a TrainingParameters object.
+   * @deprecated use
+   *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
+   *             instead and pass in a {@link TokenizerFactory}
    */
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, int cutoff, int iterations) {
     this(language, alphaNumericOptimization, ModelUtil.createTrainingParameters(iterations, cutoff));
   }
   
+  /**
+   * @deprecated use
+   *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
+   *             instead and pass in a {@link TokenizerFactory}
+   */
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization) {
     this(language, alphaNumericOptimization, ModelUtil.createTrainingParameters(100, 5));
   }
   
+  /**
+   * @deprecated use
+   *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
+   *             instead and pass in a {@link TokenizerFactory}
+   */
   public TokenizerCrossValidator(String language,
       boolean alphaNumericOptimization, TrainingParameters params,
       TokenizerEvaluationMonitor ... listeners) {
@@ -90,8 +106,7 @@ public class TokenizerCrossValidator {
        // Maybe throws IOException if temporary file handling fails ...
        TokenizerModel model;
        
-      model = TokenizerME.train(language, trainingSampleStream, abbreviations,
-          alphaNumericOptimization, params);
+      model = TokenizerME.train(trainingSampleStream, this.factory, params);
        
        TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model), listeners);
        

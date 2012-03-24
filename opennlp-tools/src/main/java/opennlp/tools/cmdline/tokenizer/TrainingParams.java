@@ -36,4 +36,8 @@ interface TrainingParams extends BasicTrainingParams {
   @ParameterDescription(valueName = "path", description = "abbreviation dictionary in XML format.")
   @OptionalParameter
   File getAbbDict();
+
+  @ParameterDescription(valueName = "factoryName", description = "A sub-class of TokenizerFactory where to get implementation and resources.")
+  @OptionalParameter
+  String getFactory();
 }
