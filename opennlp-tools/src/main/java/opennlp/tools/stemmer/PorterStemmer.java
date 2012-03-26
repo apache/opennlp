@@ -1,12 +1,12 @@
-package org.apache.lucene.analysis.en;
+package opennlp.tools.stemmer;
 
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -43,14 +43,6 @@ package org.apache.lucene.analysis.en;
 
 */
 
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.FileInputStream;
-
-import static org.apache.lucene.util.RamUsageEstimator.NUM_BYTES_CHAR;
-import org.apache.lucene.util.ArrayUtil;
-
 /**
  *
  * Stemmer, implementing the Porter Stemming Algorithm
@@ -60,16 +52,15 @@ import org.apache.lucene.util.ArrayUtil;
  * by calling one of the various stem(something) methods.
  */
 
-class PorterStemmer
-{
+class PorterStemmer implements Stemmer {
   private char[] b;
   private int i,    /* offset into b */
     j, k, k0;
   private boolean dirty = false;
-  private static final int INITIAL_SIZE = 50;
-
+  private static final int INC = 50;
+  
   public PorterStemmer() {
-    b = new char[INITIAL_SIZE];
+    b = new char[INC];
     i = 0;
   }
 
@@ -85,8 +76,12 @@ class PorterStemmer
    * adding characters, you can call stem(void) to process the word.
    */
   public void add(char ch) {
-    if (b.length <= i) {
-      b = ArrayUtil.grow(b, i+1);
+    if (b.length == i) {
+      
+      char[] new_b = new char[i+INC];
+      for (int c = 0; c < i; c++) new_b[c] = b[c]; {
+        b = new_b;
+      }
     }
     b[i++] = ch;
   }
@@ -437,6 +432,14 @@ class PorterStemmer
       return s;
   }
 
+  /**
+   * Stem a word provided as a CharSequence.
+   * Returns the result as a CharSequence.
+   */
+  public CharSequence stem(CharSequence word) {
+    return stem(word.toString());
+  }
+  
   /** Stem a word contained in a char[].  Returns true if the stemming process
    * resulted in a word different from the input.  You can retrieve the
    * result with getResultLength()/getResultBuffer() or toString().
@@ -453,7 +456,7 @@ class PorterStemmer
   public boolean stem(char[] wordBuffer, int offset, int wordLen) {
     reset();
     if (b.length < wordLen) {
-      b = new char[ArrayUtil.oversize(wordLen, NUM_BYTES_CHAR)];
+      b = new char[wordLen - offset];
     }
     System.arraycopy(wordBuffer, offset, b, 0, wordLen);
     i = wordLen;
@@ -490,58 +493,6 @@ class PorterStemmer
       dirty = true;
     i = k+1;
     return dirty;
-  }
-
-  /** Test program for demonstrating the Stemmer.  It reads a file and
-   * stems each word, writing the result to standard out.
-   * Usage: Stemmer file-name
-   */
-  public static void main(String[] args) {
-    PorterStemmer s = new PorterStemmer();
-
-    for (int i = 0; i < args.length; i++) {
-      try {
-        InputStream in = new FileInputStream(args[i]);
-        byte[] buffer = new byte[1024];
-        int bufferLen, offset, ch;
-
-        bufferLen = in.read(buffer);
-        offset = 0;
-        s.reset();
-
-        while(true) {
-          if (offset < bufferLen)
-            ch = buffer[offset++];
-          else {
-            bufferLen = in.read(buffer);
-            offset = 0;
-            if (bufferLen < 0)
-              ch = -1;
-            else
-              ch = buffer[offset++];
-          }
-
-          if (Character.isLetter((char) ch)) {
-            s.add(Character.toLowerCase((char) ch));
-          }
-          else {
-             s.stem();
-             System.out.print(s.toString());
-             s.reset();
-             if (ch < 0)
-               break;
-             else {
-               System.out.print((char) ch);
-             }
-           }
-        }
-
-        in.close();
-      }
-      catch (IOException e) {
-        System.out.println("error reading " + args[i]);
-      }
-    }
   }
 }
 
