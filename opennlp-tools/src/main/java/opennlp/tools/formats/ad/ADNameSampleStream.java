@@ -22,8 +22,10 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -67,6 +69,10 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    */
   private static final Pattern tagPattern = Pattern.compile("<(NER:)?(.*?)>");
   
+  private static final Pattern whitespacePattern = Pattern.compile("\\s+");
+  private static final Pattern underlinePattern = Pattern.compile("[_]+");
+  private static final Pattern alphanumericPattern = Pattern.compile("^[\\p{L}\\p{Nd}-]+$");
+
   /** 
    * Map to the Arvores Deitadas types to our types. It is read-only.
    */
@@ -254,7 +260,8 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
         String c = PortugueseContractionUtility.toContraction(leftContractionPart, right);
 
         if (c != null) {
-          sentence.add(c);
+          String[] parts = whitespacePattern.split(c);
+          sentence.addAll(Arrays.asList(parts));
         } else {
           // contraction was missing!
           sentence.add(leftContractionPart);
@@ -276,7 +283,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
       if (leafTag != null) {
         if (leafTag.contains("<sam->") && !alreadyAdded) {
-          String[] lexemes = leaf.getLexeme().split("_");
+          String[] lexemes = underlinePattern.split(leaf.getLexeme());
           if(lexemes.length > 1) {
              sentence.addAll(Arrays.asList(lexemes).subList(0, lexemes.length - 1));
           }
@@ -295,7 +302,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       }
 
       if(!alreadyAdded) {
-        sentence.addAll(Arrays.asList(leaf.getLexeme().split("_")));
+        sentence.addAll(processLexeme(leaf.getLexeme()));
       }
       
       if (namedEntityTag != null) {
@@ -306,7 +313,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       if (expandLastNER) {
         // if the current leaf has the tag <NER2>, it can be the continuation of
         // a NER.
-        // we check if it is true, and expand the lest NER
+        // we check if it is true, and expand the last NER
         int lastIndex = names.size() - 1;
         Span last = null;
         boolean error = false;
@@ -330,11 +337,42 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
     }
 
-  
+  private List<String> processLexeme(String lexemeStr) {
+    List<String> out = new ArrayList<String>();
+    String[] parts = underlinePattern.split(lexemeStr);
+    for (String tok : parts) {
+      if(tok.length() > 1 && !alphanumericPattern.matcher(tok).matches()) {
+        out.addAll(processTok(tok));
+      } else {
+        out.add(tok);
+      }
+    }
+    return out;
+  }
 
-
-
-
+  private Collection<? extends String> processTok(String tok) {
+    String original = tok;
+    List<String> out = new ArrayList<String>();
+    LinkedList<String> suffix = new LinkedList<String>();
+    char first = tok.charAt(0);
+    if (first == '«') {
+      out.add(Character.toString(first));
+      tok = tok.substring(1);
+    }
+    char last = tok.charAt(tok.length() - 1);
+    if (last == '»' || last == ':' || last == ',' || last == '!' ) {
+      suffix.add(Character.toString(last));
+      tok = tok.substring(0, tok.length() - 1);
+    }
+    
+    if(!original.equals(tok) && tok.length() > 1 && !alphanumericPattern.matcher(tok).matches()) {
+      out.addAll(processTok(tok));
+    } else {
+      out.add(tok);
+    }
+    out.addAll(suffix);
+    return out;
+  }
 
   /**
    * Parse a NER tag in Arvores Deitadas format.
