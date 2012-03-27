@@ -105,10 +105,6 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
     if(index == sentence.length() - 1 && inducedAbbreviations.contains(sentence)) {
       preds.add("pabb");
     }
-    
-    if(inducedAbbreviations.contains(sentence)) {
-      preds.add("abb");
-    }
 
     return preds;
   }
