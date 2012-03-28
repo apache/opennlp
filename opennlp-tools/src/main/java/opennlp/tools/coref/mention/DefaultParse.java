@@ -39,7 +39,7 @@ public class DefaultParse extends AbstractParse {
   private Parse parse;
   private int sentenceNumber;
   private static Set<String> entitySet = new HashSet<String>(Arrays.asList(NAME_TYPES));
-
+  
   /**
    * Initializes the current instance.
    *
@@ -49,6 +49,8 @@ public class DefaultParse extends AbstractParse {
   public DefaultParse(Parse parse, int sentenceNumber) {
     this.parse = parse;
     this.sentenceNumber = sentenceNumber;
+    
+    // Should we just maintain a parse id map !?
   }
 
   public int getSentenceNumber() {
@@ -106,6 +108,9 @@ public class DefaultParse extends AbstractParse {
     if (entitySet.contains(parse.getType())) {
       return null;
     }
+    else if (parse.getType().contains("#")) {
+      return parse.getType().substring(0, parse.getType().indexOf('#'));
+    }
     else {
       return parse.getType();
     }
@@ -153,6 +158,11 @@ public class DefaultParse extends AbstractParse {
   }
 
   public boolean isNamedEntity() {
+    
+    // TODO: We should use here a special tag to, where
+    // the type can be extracted from. Then it just depends
+    // on the training data and not the values inside NAME_TYPES.
+    
     if (entitySet.contains(parse.getType())) {
       return true;
     }
@@ -162,7 +172,7 @@ public class DefaultParse extends AbstractParse {
   }
 
   public boolean isNounPhrase() {
-    return parse.getType().equals("NP");
+    return parse.getType().equals("NP") || parse.getType().startsWith("NP#");
   }
 
   public boolean isSentence() {
@@ -174,7 +184,13 @@ public class DefaultParse extends AbstractParse {
   }
 
   public int getEntityId() {
-    return -1;
+    if (parse.getType().startsWith("NP#")) {
+      String numberString = parse.getType().substring(3);
+      return Integer.parseInt(numberString);
+    }
+    else {
+      return -1;
+    }
   }
 
   public Span getSpan() {
