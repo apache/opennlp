@@ -27,9 +27,9 @@ public class CorefSample {
 
   private List<Parse> parses;
 
-   private CorefSample(List<Parse> parses) {
-     this.parses = parses;
-   }
+  public CorefSample(List<Parse> parses) {
+    this.parses = parses;
+  }
   
   public List<opennlp.tools.coref.mention.Parse> getParses() {
     
