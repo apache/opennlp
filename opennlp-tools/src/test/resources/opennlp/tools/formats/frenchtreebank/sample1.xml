@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.    
+-->
+
+<text>
+   <SENT nb="12999">
+      <NP> 
+         <w lemma="le" ei="Dfs" ee="D-def-fs" cat="D" subcat="def" mph="fs">L'</w> 
+         <w lemma="autonomie" ei="NCfs" ee="N-C-fs" cat="N" subcat="C" mph="fs">autonomie</w> 
+         <PP> 
+            <w lemma="de" ei="P" ee="P" cat="P">de</w> 
+            <NP> 
+               <w lemma="le" ei="Dfs" ee="D-def-fs" cat="D" subcat="def" mph="fs">la</w> 
+               <w lemma="Bundesbank" ei="NPfs" ee="N-P-fs" cat="N" subcat="P" mph="fs">Bundesbank</w> 
+            </NP> 
+         </PP>
+      </NP> 
+      <w lemma="," ei="PONCTW" ee="PONCT-W" cat="PONCT" subcat="W">,</w>
+      <NP>
+         <w lemma="le" ei="Dfs" ee="D-def-fs" cat="D" subcat="def" mph="fs">la</w> 
+         <w lemma="politique" ei="NCfs" ee="N-C-fs" cat="N" subcat="C" mph="fs">politique</w>
+         <PP> 
+            <w lemma="de" ei="P" ee="P" cat="P">de</w> 
+            <NP> 
+               <w lemma="stabilité" ei="NCfs" ee="N-C-fs" cat="N" subcat="C" mph="fs">stabilité</w> 
+            </NP> 
+         </PP>
+         <Srel>
+            <NP> 
+               <w lemma="que" ei="PROR3fs" ee="PRO-rel-3fs" cat="PRO" subcat="rel" mph="3fs">qu'</w> 
+            </NP>
+            <VN> 
+               <w lemma="il" ei="CL3fs" ee="CL-suj-3fs" cat="CL" subcat="suj" mph="3fs">elle</w> 
+               <w lemma="avoir" ei="VP3s" ee="V--P3s" cat="V" subcat="" mph="P3s">a</w> 
+               <w lemma="faire" ei="VKms" ee="V--Kms" cat="V" subcat="" mph="Kms">fait</w> 
+            </VN>
+            <VPinf> 
+               <VN>
+                  <w lemma="prévaloir" ei="VW" ee="V--W" cat="V" subcat="" mph="W">prévaloir</w>
+               </VN> 
+            </VPinf> 
+            <w cat="PONCT" ee="PONCT-W" ei="PONCTW" lemma="(" subcat="W">(</w>
+            <PP>
+               <w lemma="avec" ei="P" ee="P" cat="P">avec</w>
+		<NP> 
+           <w compound="yes" lemma="moins de" ei="P" ee="P" cat="P">
+                     <w catint="ADV">moins</w>
+                     <w catint="P">de</w>
+                  </w>
+                     <w lemma="succès" ei="NCms" ee="N-C-ms" cat="N" subcat="C" mph="ms">succès</w> 
+                  </NP>
+                  <COORD> 
+                     <w lemma="et" ei="CC" ee="C-C" cat="C" subcat="C">et</w> 
+                     <PP> 
+                        <w lemma="de" ei="P" ee="P" cat="P">de</w> 
+                        <NP> 
+                           <w lemma="sévérité" ei="NCfs" ee="N-C-fs" cat="N" subcat="C" mph="fs">sévérité</w> 
+                        </NP> 
+                     </PP> 
+                  </COORD>
+                  <Ssub>
+                     <w lemma="que" ei="CS" ee="C-S" cat="C" subcat="S">qu'</w>
+                     <VN> 
+                        <w lemma="on" ei="CL3ms" ee="CL-suj-3ms" cat="CL" subcat="suj" mph="3ms">on</w> 
+                        <w lemma="ne" ei="ADV" ee="ADV" cat="ADV">ne</w> 
+                        <w lemma="le" ei="CL3ms" ee="CL-obj-3ms" cat="CL" subcat="obj" mph="3ms">le</w> 
+                        <w lemma="dire" ei="VP3s" ee="V--P3s" cat="V" subcat="" mph="P3s">dit</w> 
+                     </VN>
+                  </Ssub>
+            </PP>
+         </Srel>
+      </NP>
+      <w lemma="," ei="PONCTW" ee="PONCT-W" cat="PONCT" subcat="W">,</w>
+      <COORD>
+         <w lemma="mais" ei="CC" ee="C-C" cat="C" subcat="C">mais</w>
+         <Sint>
+            <NP> 
+               <w lemma="tout" ei="PROms" ee="PRO-ind-3ms" cat="PRO" subcat="ind" mph="3ms">tout</w>
+            </NP>
+            <VN> 
+               <w lemma="être" ei="VP3s" ee="V--P3s" cat="V" subcat="" mph="P3s">est</w> 
+            </VN>
+            <AP> 
+               <w lemma="relatif" ei="Ams" ee="A-qual-ms" cat="A" subcat="qual" mph="ms">relatif</w> 
+            </AP>
+         </Sint>
+      </COORD>
+      <w cat="PONCT" ee="PONCT-W" ei="PONCTW" lemma=")" subcat="W">)</w> 
+      <w lemma="," ei="PONCTW" ee="PONCT-W" cat="PONCT" subcat="W">,</w>
+      <VN> 
+         <w lemma="être" ei="VP3s" ee="V--P3s" cat="V" subcat="" mph="P3s">est</w> 
+      </VN>
+      <NP>
+         <w lemma="un" ei="Dfs" ee="D-ind-fs" cat="D" subcat="ind" mph="fs">une</w> 
+         <w lemma="pièce" ei="NCfs" ee="N-C-fs" cat="N" subcat="C" mph="fs">pièce</w>
+         <AP> 
+            <w lemma="essentiel" ei="Afs" ee="A-qual-fs" cat="A" subcat="qual" mph="fs">essentielle</w> 
+         </AP>
+         <PP> 
+            <w lemma="de" ei="P" ee="P" cat="P">de</w> 
+            <NP> 
+               <w lemma="le" ei="Dfs" ee="D-def-fs" cat="D" subcat="def" mph="fs">la</w> 
+               <w lemma="division" ei="NCfs" ee="N-C-fs" cat="N" subcat="C" mph="fs">division</w> 
+               <PP> 
+                  <w lemma="de" ei="P" ee="P" cat="P">des</w> 
+                  <NP> 
+                     <w lemma="le" ei="Dmp" ee="D-def-mp" cat="D" subcat="def" mph="mp"/> 
+                     <w lemma="pouvoir" ei="NCmp" ee="N-C-mp" cat="N" subcat="C" mph="mp">pouvoirs</w> 
+                  </NP> 
+               </PP>
+            </NP> 
+         </PP>
+      </NP>
+      <PP> 
+         <w lemma="en" ei="P" ee="P" cat="P">en</w> 
+         <NP> 
+            <w lemma="ALLEMAGNE" ei="NPfs" ee="N-P-fs" cat="N" subcat="P" mph="fs">Allemagne</w> 
+         </NP> 
+      </PP> 
+      <w lemma="." ei="PONCTS" ee="PONCT-S" cat="PONCT" subcat="S">.</w>
+   </SENT> 
+</text>
