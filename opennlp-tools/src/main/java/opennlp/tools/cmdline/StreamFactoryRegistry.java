@@ -17,11 +17,33 @@
 
 package opennlp.tools.cmdline;
 
-import opennlp.tools.formats.*;
-import opennlp.tools.formats.ad.*;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import opennlp.tools.formats.BioNLP2004NameSampleStreamFactory;
+import opennlp.tools.formats.ChunkerSampleStreamFactory;
+import opennlp.tools.formats.Conll02NameSampleStreamFactory;
+import opennlp.tools.formats.Conll03NameSampleStreamFactory;
+import opennlp.tools.formats.ConllXPOSSampleStreamFactory;
+import opennlp.tools.formats.ConllXSentenceSampleStreamFactory;
+import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
+import opennlp.tools.formats.CorefSampleStreamFactory;
+import opennlp.tools.formats.DocumentSampleStreamFactory;
+import opennlp.tools.formats.LeipzigDocumentSampleStreamFactory;
+import opennlp.tools.formats.NameSampleDataStreamFactory;
+import opennlp.tools.formats.NameToSentenceSampleStreamFactory;
+import opennlp.tools.formats.NameToTokenSampleStreamFactory;
+import opennlp.tools.formats.POSToSentenceSampleStreamFactory;
+import opennlp.tools.formats.POSToTokenSampleStreamFactory;
+import opennlp.tools.formats.ParseSampleStreamFactory;
+import opennlp.tools.formats.SentenceSampleStreamFactory;
+import opennlp.tools.formats.TokenSampleStreamFactory;
+import opennlp.tools.formats.WordTagSampleStreamFactory;
+import opennlp.tools.formats.ad.ADChunkSampleStreamFactory;
+import opennlp.tools.formats.ad.ADNameSampleStreamFactory;
+import opennlp.tools.formats.ad.ADPOSSampleStreamFactory;
+import opennlp.tools.formats.ad.ADSentenceSampleStreamFactory;
+import opennlp.tools.formats.ad.ADTokenSampleStreamFactory;
 
 /**
  * Registry for object stream factories.
@@ -39,7 +61,8 @@ public final class StreamFactoryRegistry {
     SentenceSampleStreamFactory.registerFactory();
     TokenSampleStreamFactory.registerFactory();
     WordTagSampleStreamFactory.registerFactory();
-
+    CorefSampleStreamFactory.registerFactory();
+    
     NameToSentenceSampleStreamFactory.registerFactory();
     NameToTokenSampleStreamFactory.registerFactory();
     POSToSentenceSampleStreamFactory.registerFactory();
