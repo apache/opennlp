@@ -63,7 +63,7 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
         try {
           saxParser.parse(new ByteArrayInputStream(xmlbytes), new ConstitDocumentHandler(producedParses));
         } catch (SAXException e) {
-          throw new IOException(e);
+          throw new IOException("Failed to parse document!", e);
         }
         
         parses.addAll(producedParses);
