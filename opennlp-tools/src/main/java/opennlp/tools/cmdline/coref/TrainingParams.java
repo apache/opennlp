@@ -17,7 +17,6 @@
 
 package opennlp.tools.cmdline.coref;
 
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
@@ -26,7 +25,4 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {
-  
-  @ParameterDescription(valueName = "directoryPath", description = "The model output directory")
-  String getDirectory();
 }

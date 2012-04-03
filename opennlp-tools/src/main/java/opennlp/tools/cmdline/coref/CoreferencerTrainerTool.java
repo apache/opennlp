@@ -28,8 +28,6 @@ import opennlp.tools.coref.CorefTrainer;
 
 public class CoreferencerTrainerTool extends AbstractTrainerTool<CorefSample, TrainerToolParams> {
 
-  // We have different params here ...
-  // - model directory
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
   
@@ -43,7 +41,7 @@ public class CoreferencerTrainerTool extends AbstractTrainerTool<CorefSample, Tr
     super.run(format, args);
     
     try {
-      CorefTrainer.train(params.getDirectory(), sampleStream, true, true);
+      CorefTrainer.train(params.getModel().toString(), sampleStream, true, true);
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
     }
