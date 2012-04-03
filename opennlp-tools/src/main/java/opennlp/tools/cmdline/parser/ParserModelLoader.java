@@ -29,7 +29,7 @@ import opennlp.tools.util.InvalidFormatException;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-final class ParserModelLoader extends ModelLoader<ParserModel> {
+public final class ParserModelLoader extends ModelLoader<ParserModel> {
 
   public ParserModelLoader() {
     super("Parser");
