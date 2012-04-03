@@ -1065,7 +1065,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     for (int ni=0,nn=names.length;ni<nn;ni++) {
       Span nameTokenSpan = names[ni];
       Parse startToken = tokens[nameTokenSpan.getStart()];
-      Parse endToken = tokens[nameTokenSpan.getEnd()];
+      Parse endToken = tokens[nameTokenSpan.getEnd() - 1];
       Parse commonParent = startToken.getCommonParent(endToken);
       //System.err.println("addNames: "+startToken+" .. "+endToken+" commonParent = "+commonParent);
       if (commonParent != null) {
