@@ -360,9 +360,15 @@ public abstract class AbstractBottomUpParser implements Parser {
   }
 
   public Parse parse(Parse tokens) {
-    Parse p = parse(tokens,1)[0];
-    setParents(p);
-    return p;
+    
+    if (tokens.getChildCount() > 0) {
+      Parse p = parse(tokens,1)[0];
+      setParents(p);
+      return p;
+    }
+    else {
+      return tokens;
+    }
   }
 
   /**
