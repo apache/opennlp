@@ -59,11 +59,13 @@ public final class DictionaryDetokenizerTool extends AbstractBasicCmdLineTool {
       }
       // if next token move left, no space after this token,
       // its safe to access next token
-      else if (operations[i + 1].equals(DetokenizationOperation.MERGE_TO_LEFT)) {
+      else if (operations[i + 1].equals(DetokenizationOperation.MERGE_TO_LEFT)
+          || operations[i + 1].equals(DetokenizationOperation.MERGE_BOTH)) {
         isAppendSpace = false;
       }
       // if this token is move right, no space 
-      else if (operations[i].equals(DetokenizationOperation.MERGE_TO_RIGHT)) {
+      else if (operations[i].equals(DetokenizationOperation.MERGE_TO_RIGHT)
+          || operations[i].equals(DetokenizationOperation.MERGE_BOTH)) {
         isAppendSpace = false;
       }
       else {

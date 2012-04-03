@@ -38,10 +38,10 @@ public class DetokenizationDictionaryTest{
   @Before
   public void setUp() throws Exception {
     
-    tokens = new String[]{"\"", "(", ")"};
+    tokens = new String[]{"\"", "(", ")", "-"};
     
-    operations = new Operation[]{Operation.RIGHT_LEFT_MATCHING,
-        Operation.MOVE_RIGHT, Operation.MOVE_LEFT};
+    operations = new Operation[]{ Operation.RIGHT_LEFT_MATCHING,
+        Operation.MOVE_RIGHT, Operation.MOVE_LEFT, Operation.MOVE_BOTH };
     
     dict = new DetokenizationDictionary(tokens, operations);
   }
@@ -50,6 +50,7 @@ public class DetokenizationDictionaryTest{
     assertEquals(Operation.RIGHT_LEFT_MATCHING, dict.getOperation("\""));
     assertEquals(Operation.MOVE_RIGHT, dict.getOperation("("));
     assertEquals(Operation.MOVE_LEFT, dict.getOperation(")"));
+    assertEquals(Operation.MOVE_BOTH, dict.getOperation("-"));
   }
   
   @Test

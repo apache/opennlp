@@ -46,6 +46,11 @@ public class DetokenizationDictionary {
     MOVE_LEFT,
     
     /**
+     * Attaches the token to the token on the left and right sides.
+     */
+    MOVE_BOTH,
+    
+    /**
      * Attaches the token token to the right token on first occurrence, and
      * to the token on the left side on the second occurrence. 
      */
@@ -58,6 +63,9 @@ public class DetokenizationDictionary {
       }
       else if (MOVE_LEFT.toString().equals(operation)) {
         return MOVE_LEFT;
+      }
+      else if (MOVE_BOTH.toString().equals(operation)) {
+        return MOVE_BOTH;
       }
       else if (RIGHT_LEFT_MATCHING.toString().equals(operation)) {
         return RIGHT_LEFT_MATCHING;

@@ -55,6 +55,9 @@ public class DictionaryDetokenizer implements Detokenizer {
       else if (DetokenizationDictionary.Operation.MOVE_RIGHT.equals(dictOperation)) {
         operations[i] = Detokenizer.DetokenizationOperation.MERGE_TO_RIGHT;
       }
+      else if (DetokenizationDictionary.Operation.MOVE_BOTH.equals(dictOperation)) {
+        operations[i] = Detokenizer.DetokenizationOperation.MERGE_BOTH;
+      }
       else if (DetokenizationDictionary.Operation.RIGHT_LEFT_MATCHING.equals(dictOperation)) {
         
         if (matchingTokens.contains(tokens[i])) {
