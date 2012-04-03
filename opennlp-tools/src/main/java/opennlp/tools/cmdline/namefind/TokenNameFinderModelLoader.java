@@ -29,9 +29,9 @@ import opennlp.tools.util.InvalidFormatException;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-final class TokenNameFinderModelLoader extends ModelLoader<TokenNameFinderModel> {
+final public class TokenNameFinderModelLoader extends ModelLoader<TokenNameFinderModel> {
 
-  TokenNameFinderModelLoader() {
+  public TokenNameFinderModelLoader() {
     super("Token Name Finder");
   }
   
