@@ -192,8 +192,9 @@ public class TokenizerFactory extends BaseToolFactory {
         if (prop != null) {
           this.alphaNumericPattern = Pattern.compile(prop);
         }
-      } else {
-        // get from language dependent factory
+      }
+      // could not load from manifest, will get from language dependent factory
+      if (this.alphaNumericPattern == null) {
         Factory f = new Factory();
         this.alphaNumericPattern = f.getAlphanumeric(languageCode);
       }
