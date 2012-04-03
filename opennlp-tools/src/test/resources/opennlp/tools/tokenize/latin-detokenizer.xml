@@ -71,4 +71,7 @@
 	<entry operation="RIGHT_LEFT_MATCHING">
 		<token>"</token>
 	</entry>
+	<entry operation="MOVE_BOTH">
+		<token>-</token>
+	</entry>
 </dictionary>

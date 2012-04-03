@@ -33,25 +33,29 @@ public class DictionaryDetokenizerTest{
   @Test
   public void testDetokenizer() {
     
-    String tokens[] = new String[]{".", "!", "(", ")", "\""};
+    String tokens[] = new String[]{".", "!", "(", ")", "\"", "-"};
     
     Operation operations[] = new Operation[]{
         Operation.MOVE_LEFT,
         Operation.MOVE_LEFT,
         Operation.MOVE_RIGHT,
         Operation.MOVE_LEFT,
-        Operation.RIGHT_LEFT_MATCHING
+        Operation.RIGHT_LEFT_MATCHING,
+        Operation.MOVE_BOTH
       };
     
     DetokenizationDictionary dict = new DetokenizationDictionary(tokens, operations);
     Detokenizer detokenizer = new DictionaryDetokenizer(dict);
     
     DetokenizationOperation detokenizeOperations[] = 
-      detokenizer.detokenize(new String[]{"Simple",  "test", "."});
+      detokenizer.detokenize(new String[]{"Simple",  "test", ".", "co", "-", "worker"});
     
     assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[0]);
     assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[1]);
     assertEquals(DetokenizationOperation.MERGE_TO_LEFT, detokenizeOperations[2]);
+    assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[3]);
+    assertEquals(DetokenizationOperation.MERGE_BOTH, detokenizeOperations[4]);
+    assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[5]);
   }
   
   static Detokenizer createLatinDetokenizer() throws IOException {
@@ -76,5 +80,18 @@ public class DictionaryDetokenizerTest{
     String sentence = DictionaryDetokenizerTool.detokenize(tokens, operations);
       
     assertEquals("A test, (string).", sentence);
+  }
+  
+  @Test
+  public void testDetokenizeToString2() throws IOException {
+    
+    Detokenizer detokenizer = createLatinDetokenizer();
+    
+    String tokens[] = new String[]{"A", "co", "-", "worker", "helped", "."};
+    DetokenizationOperation operations[] = detokenizer.detokenize(tokens);
+      
+    String sentence = DictionaryDetokenizerTool.detokenize(tokens, operations);
+      
+    assertEquals("A co-worker helped.", sentence);
   }
 }

@@ -76,8 +76,8 @@ public class TokenSample {
     for (int i = 0; i < operations.length; i++) {
       
       boolean isSeparateFromPreviousToken = i > 0 && 
-          !DetokenizationOperation.MERGE_TO_RIGHT.equals(operations[i - 1]) && 
-          !DetokenizationOperation.MERGE_TO_LEFT.equals(operations[i]);
+          !isMergeToRight(operations[i - 1]) && 
+          !isMergeToLeft(operations[i]);
       
       if (isSeparateFromPreviousToken) {
         sentence.append(' ');
@@ -92,6 +92,16 @@ public class TokenSample {
     tokenSpans = Collections.unmodifiableList(mergedTokenSpans);
   }
   
+  private boolean isMergeToRight(DetokenizationOperation operation) {
+    return DetokenizationOperation.MERGE_TO_RIGHT.equals(operation)
+        || DetokenizationOperation.MERGE_BOTH.equals(operation);
+  }
+  
+  private boolean isMergeToLeft(DetokenizationOperation operation) {
+    return DetokenizationOperation.MERGE_TO_LEFT.equals(operation)
+        || DetokenizationOperation.MERGE_BOTH.equals(operation);
+  }
+
   /**
    * Retrieves the text.
    */

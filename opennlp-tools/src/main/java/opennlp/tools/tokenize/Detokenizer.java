@@ -37,6 +37,12 @@ public interface Detokenizer {
      * The current token should be attached to the string on the left side.
      */
     MERGE_TO_LEFT,
+
+    /**
+     * The current token should be attached to the string on the left side, as
+     * well as to the begin token on the right side.
+     */
+    MERGE_BOTH,
     
     /**
      * Do not perform a merge operation for this token, but is possible that another
