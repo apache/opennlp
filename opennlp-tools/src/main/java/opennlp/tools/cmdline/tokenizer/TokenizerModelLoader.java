@@ -28,9 +28,9 @@ import opennlp.tools.tokenize.TokenizerModel;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-final class TokenizerModelLoader extends ModelLoader<TokenizerModel> {
+public final class TokenizerModelLoader extends ModelLoader<TokenizerModel> {
 
-  TokenizerModelLoader() {
+  public TokenizerModelLoader() {
     super("Tokenizer");
   }
   
