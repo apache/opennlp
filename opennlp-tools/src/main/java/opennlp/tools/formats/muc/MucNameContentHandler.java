@@ -67,6 +67,7 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
 
   boolean isInsideContentElement = false;
   private final List<String> text = new ArrayList<String>();
+  private boolean isClearAdaptiveData = false;
   private final Stack<Span> incompleteNames = new Stack<Span>();
 
   private List<Span> names = new ArrayList<Span>();
@@ -80,6 +81,11 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
   @Override
   void startElement(String name, Map<String, String> attributes) 
       throws InvalidFormatException {
+    
+    if (MucElementNames.DOC_ELEMENT.equals(name)) {
+      isClearAdaptiveData = true;
+    }
+    
     if (MucElementNames.CONTENT_ELEMENTS.contains(name)) {
       isInsideContentElement = true;
     }
@@ -115,7 +121,11 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
 
     if (MucElementNames.CONTENT_ELEMENTS.contains(name)) {
       storedSamples.add(new NameSample(text.toArray(new String[text.size()]),
-          names.toArray(new Span[names.size()]), false));
+          names.toArray(new Span[names.size()]), isClearAdaptiveData));
+      
+      if (isClearAdaptiveData) {
+        isClearAdaptiveData = false;
+      }
 
       text.clear();
       names.clear();
