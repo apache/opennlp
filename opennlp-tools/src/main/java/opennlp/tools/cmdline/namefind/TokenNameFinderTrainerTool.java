@@ -26,9 +26,11 @@ import java.util.Map;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool.TrainerToolParams;
 import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.NameSampleTypeFilter;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -38,6 +40,8 @@ public final class TokenNameFinderTrainerTool
     extends AbstractTrainerTool<NameSample, TrainerToolParams> {
   
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
+    @ParameterDescription(valueName = "types", description = "name types to use for training")
+    String getNameTypes();
   }
 
   public TokenNameFinderTrainerTool() {
@@ -162,6 +166,11 @@ public final class TokenNameFinderTrainerTool
         
     CmdLineUtil.checkOutputFile("name finder model", modelOutFile);
 
+    if (params.getNameTypes() != null) {
+      String nameTypes[] = params.getNameTypes().split(",");
+      sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
+    }
+    
     TokenNameFinderModel model;
     try {
       model = opennlp.tools.namefind.NameFinderME.train(
