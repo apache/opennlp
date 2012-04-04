@@ -19,7 +19,6 @@ package opennlp.tools.formats.muc;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,14 +37,14 @@ public class SgmlParser {
 
   static abstract class ContentHandler {
   
-    void startElement(String name, Map<String, String> attributes) {
+    void startElement(String name, Map<String, String> attributes) throws InvalidFormatException {
     }
     
-    void characters(CharSequence chars) {
+    void characters(CharSequence chars) throws InvalidFormatException{
       
     }
     
-    void endElement(String name) {
+    void endElement(String name) throws InvalidFormatException {
     }
   }
   
