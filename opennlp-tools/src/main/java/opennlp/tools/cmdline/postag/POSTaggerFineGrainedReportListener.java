@@ -649,7 +649,7 @@ public class POSTaggerFineGrainedReportListener implements
     public SortedSet<String> getTokensOrderedByFrequency() {
       SortedSet<String> toks = new TreeSet<String>(new Comparator<String>() {
         public int compare(String o1, String o2) {
-          if (o1.equals(02)) {
+          if (o1.equals(o2)) {
             return 0;
           }
           int e1 = 0, e2 = 0;
