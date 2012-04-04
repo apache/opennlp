@@ -76,6 +76,8 @@ public class Muc6FullParseCorefSampleStreamFactory extends LanguageSampleStreamF
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     
+    language = params.getLang();
+    
     ParserModel parserModel = new ParserModelLoader().load(params.getParserModel());
     Parser parser =  ParserFactory.create(parserModel);
     

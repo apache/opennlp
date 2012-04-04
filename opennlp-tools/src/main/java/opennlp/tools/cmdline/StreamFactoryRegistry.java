@@ -45,6 +45,7 @@ import opennlp.tools.formats.ad.ADPOSSampleStreamFactory;
 import opennlp.tools.formats.ad.ADSentenceSampleStreamFactory;
 import opennlp.tools.formats.ad.ADTokenSampleStreamFactory;
 import opennlp.tools.formats.muc.Muc6FullParseCorefSampleStreamFactory;
+import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
 
 /**
  * Registry for object stream factories.
@@ -82,6 +83,7 @@ public final class StreamFactoryRegistry {
     ADPOSSampleStreamFactory.registerFactory();
     ADTokenSampleStreamFactory.registerFactory();
     
+    Muc6NameSampleStreamFactory.registerFactory();
     Muc6FullParseCorefSampleStreamFactory.registerFactory();
   }
 

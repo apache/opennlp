@@ -19,12 +19,9 @@ package opennlp.tools.formats.muc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 
 import opennlp.tools.tokenize.Tokenizer;
@@ -44,24 +41,7 @@ class MucCorefContentHandler extends SgmlParser.ContentHandler {
     }
   }
   
-  private static final String DOC_ELEMENT = "DOC";
-  private static final String HEADLINE_ELEMENT = "HL";
-  private static final String DATELINE_ELEMENT = "DATELINE";
-  private static final String DD_ELEMENT = "DD";
-  private static final String SENTENCE_ELEMENT = "s";
-  private static final String COREF_ELEMENT = "COREF";
-  
-  private static Set<String> contentElements;
-  
-  static {
-    Set<String> contentElementNames = new HashSet<String>();
-    contentElementNames.add(HEADLINE_ELEMENT);
-    contentElementNames.add(DATELINE_ELEMENT);
-    contentElementNames.add(DD_ELEMENT);
-    contentElementNames.add(SENTENCE_ELEMENT);
-    
-    contentElements = Collections.unmodifiableSet(contentElementNames);
-  }
+  static final String COREF_ELEMENT = "COREF";
   
   private final Tokenizer tokenizer;
   private final List<RawCorefSample> samples;
@@ -107,15 +87,14 @@ class MucCorefContentHandler extends SgmlParser.ContentHandler {
   @Override
   void startElement(String name, Map<String, String> attributes) {
     
-    if (DOC_ELEMENT.equals(name)) {
+    if (MucElementNames.DOC_ELEMENT.equals(name)) {
       idMap.clear();
       sample = new RawCorefSample(new ArrayList<String>(),
           new ArrayList<MucCorefContentHandler.CorefMention[]>());
     }
     
-    if (contentElements.contains(name)) {
+    if (MucElementNames.CONTENT_ELEMENTS.contains(name)) {
       isInsideContentElement = true;
-      
     }
     
     if (COREF_ELEMENT.equals(name)) {
@@ -141,7 +120,6 @@ class MucCorefContentHandler extends SgmlParser.ContentHandler {
         // throw invalid format exception ...
       }
         
-      
       mentionStack.push(new CorefMention(new Span(beginOffset, beginOffset), id));
     }
   }
@@ -165,7 +143,7 @@ class MucCorefContentHandler extends SgmlParser.ContentHandler {
       mentions.add(mention);
     }
     
-    if (contentElements.contains(name)) {
+    if (MucElementNames.CONTENT_ELEMENTS.contains(name)) {
       
       sample.getTexts().add(text.toArray(new String[text.size()]));
       sample.getMentions().add(mentions.toArray(new CorefMention[mentions.size()]));
@@ -175,7 +153,7 @@ class MucCorefContentHandler extends SgmlParser.ContentHandler {
       isInsideContentElement = false;
     }
     
-    if (DOC_ELEMENT.equals(name)) {
+    if (MucElementNames.DOC_ELEMENT.equals(name)) {
       
       for (CorefMention mentions[] : sample.getMentions()) {
         for (int i = 0; i < mentions.length; i++) {
