@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -71,7 +70,8 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   
   private static final Pattern whitespacePattern = Pattern.compile("\\s+");
   private static final Pattern underlinePattern = Pattern.compile("[_]+");
-  private static final Pattern alphanumericPattern = Pattern.compile("^[\\p{L}\\p{Nd}-]+$");
+  private static final Pattern hyphenPattern = Pattern.compile("((\\p{L}+)-$)|(^-(\\p{L}+)(.*))|((\\p{L}+)-(\\p{L}+)(.*))");
+  private static final Pattern alphanumericPattern = Pattern.compile("^[\\p{L}\\p{Nd}]+$");
 
   /** 
    * Map to the Arvores Deitadas types to our types. It is read-only.
@@ -350,7 +350,8 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     return out;
   }
 
-  private Collection<? extends String> processTok(String tok) {
+  private List<String> processTok(String tok) {
+    boolean tokAdded = false;
     String original = tok;
     List<String> out = new ArrayList<String>();
     LinkedList<String> suffix = new LinkedList<String>();
@@ -365,13 +366,50 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       tok = tok.substring(0, tok.length() - 1);
     }
     
-    if(!original.equals(tok) && tok.length() > 1 && !alphanumericPattern.matcher(tok).matches()) {
-      out.addAll(processTok(tok));
-    } else {
-      out.add(tok);
+    // lets split all hyphens
+    if (tok.contains("-") && tok.length() > 1) {
+      Matcher matcher = hyphenPattern.matcher(tok);
+
+      String firstTok = null;
+      String hyphen = "-";
+      String secondTok = null;
+      String rest = null;
+
+      if (matcher.matches()) {
+        if (matcher.group(1) != null) {
+          firstTok = matcher.group(2);
+        } else if (matcher.group(3) != null) {
+          secondTok = matcher.group(4);
+          rest = matcher.group(5);
+        } else if (matcher.group(6) != null) {
+          firstTok = matcher.group(7);
+          secondTok = matcher.group(8);
+          rest = matcher.group(9);
+        }
+
+        addIfNotEmpty(firstTok, out);
+        addIfNotEmpty(hyphen, out);
+        addIfNotEmpty(secondTok, out);
+        addIfNotEmpty(rest, out);
+        tokAdded = true;
+      }
+    }
+    if (!tokAdded) {
+      if (!original.equals(tok) && tok.length() > 1
+          && !alphanumericPattern.matcher(tok).matches()) {
+        out.addAll(processTok(tok));
+      } else {
+        out.add(tok);
+      }
     }
     out.addAll(suffix);
     return out;
+  }
+
+  private void addIfNotEmpty(String firstTok, List<String> out) {
+    if (firstTok != null && firstTok.length() > 0) {
+      out.addAll(processTok(firstTok));
+    }
   }
 
   /**
