@@ -344,6 +344,10 @@ public class NameFinderME implements TokenNameFinder {
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources) throws IOException {
 
+     if (languageCode == null) {
+       throw new IllegalArgumentException("languageCode must not be null!");
+     }
+     
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
      AdaptiveFeatureGenerator featureGenerator;
