@@ -21,9 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.coref.CorefSample;
-import opennlp.tools.coref.mention.DefaultParse;
-import opennlp.tools.formats.muc.MucCorefContentHandler.CorefMention;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.Parser;
@@ -31,7 +28,7 @@ import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
-public class FullParseCorefEnhancerStream extends FilterObjectStream<RawCorefSample, CorefSample> {
+public class FullParseCorefEnhancerStream extends FilterObjectStream<RawCorefSample, RawCorefSample> {
 
   private final Parser parser;
 
@@ -40,7 +37,7 @@ public class FullParseCorefEnhancerStream extends FilterObjectStream<RawCorefSam
     this.parser = parser;
   }
   
-  private static Parse createIncompleteParse(String tokens[]) {
+  static Parse createIncompleteParse(String tokens[]) {
     
     // produce text
     Span tokenSpans[] = new Span[tokens.length];
@@ -69,7 +66,7 @@ public class FullParseCorefEnhancerStream extends FilterObjectStream<RawCorefSam
     return p;
   }
   
-  public CorefSample read() throws IOException {
+  public RawCorefSample read() throws IOException {
     
     RawCorefSample sample = samples.read();
     
@@ -78,7 +75,6 @@ public class FullParseCorefEnhancerStream extends FilterObjectStream<RawCorefSam
       List<Parse> enhancedParses = new ArrayList<Parse>();
       
       List<String[]> sentences = sample.getTexts();
-      List<CorefMention[]> sentenceMentions = sample.getMentions();
       
       for (int i = 0; i < sentences.size(); i++) {
         
@@ -87,14 +83,14 @@ public class FullParseCorefEnhancerStream extends FilterObjectStream<RawCorefSam
         Parse incompleteParse = createIncompleteParse(sentence);
         Parse p = parser.parse(incompleteParse);
         
-        for (CorefMention mention : sentenceMentions.get(i)) {
-          DefaultParse.addMention(mention.id, mention.span, p.getTagNodes());
-        }
+        // What to do when a parse cannot be found ?!
         
         enhancedParses.add(p);
       }
       
-      return new CorefSample(enhancedParses);
+      sample.setParses(enhancedParses);
+      
+      return sample;
     }
     else {
       return null;

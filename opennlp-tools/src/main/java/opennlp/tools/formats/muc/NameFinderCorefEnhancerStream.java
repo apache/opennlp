@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.coref.CorefSample;
-import opennlp.tools.coref.mention.DefaultParse;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.FilterObjectStream;
@@ -32,21 +30,21 @@ import opennlp.tools.util.Span;
 /**
  * Adds names to the Coref Sample Stream.
  */
-public class NameFinderCorefEnhancerStream extends FilterObjectStream<CorefSample, CorefSample> {
+public class NameFinderCorefEnhancerStream extends FilterObjectStream<RawCorefSample, RawCorefSample> {
 
   private TokenNameFinder nameFinders[];
   private String tags[];
   
   // TODO: Should be updated to use tag from span instead!
-  protected NameFinderCorefEnhancerStream(TokenNameFinder nameFinders[], String tags[], ObjectStream<CorefSample> samples) {
+  protected NameFinderCorefEnhancerStream(TokenNameFinder nameFinders[], String tags[], ObjectStream<RawCorefSample> samples) {
     super(samples);
     this.nameFinders = nameFinders;
     this.tags = tags;
   }
 
-  public CorefSample read() throws IOException {
+  public RawCorefSample read() throws IOException {
     
-    CorefSample sample = samples.read();
+    RawCorefSample sample = samples.read();
     
     if (sample != null) {
 
@@ -56,8 +54,7 @@ public class NameFinderCorefEnhancerStream extends FilterObjectStream<CorefSampl
       
       List<Parse> parses = new ArrayList<Parse>();
       
-      for (opennlp.tools.coref.mention.Parse corefParse : sample.getParses()) {
-        Parse p = ((DefaultParse) corefParse).getParse();
+      for (Parse p : sample.getParses()) {
         
         Parse parseTokens[] = p.getTagNodes();
         String tokens[] = new String[parseTokens.length];
@@ -74,7 +71,9 @@ public class NameFinderCorefEnhancerStream extends FilterObjectStream<CorefSampl
         parses.add(p);
       }
       
-      return new CorefSample(parses);
+      sample.setParses(parses);
+      
+      return sample;
     }
     else {
       return null;

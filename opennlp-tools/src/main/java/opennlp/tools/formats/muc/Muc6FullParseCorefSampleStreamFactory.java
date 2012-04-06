@@ -95,7 +95,7 @@ public class Muc6FullParseCorefSampleStreamFactory extends LanguageSampleStreamF
     ObjectStream<RawCorefSample> rawSamples = 
         new MucCorefSampleStream(tokenizer, mucDocStream);
     
-    ObjectStream<CorefSample> parsedSamples = new FullParseCorefEnhancerStream(parser, rawSamples);
+    ObjectStream<RawCorefSample> parsedSamples = new FullParseCorefEnhancerStream(parser, rawSamples);
     
     
     // How to load all these nameFinder models ?! 
@@ -115,9 +115,9 @@ public class Muc6FullParseCorefSampleStreamFactory extends LanguageSampleStreamF
       tags.add(entry.getKey());
     }
     
-    return new NameFinderCorefEnhancerStream(nameFinders.toArray(
+    return new MucMentionInserterStream(new NameFinderCorefEnhancerStream(nameFinders.toArray(
         new TokenNameFinder[nameFinders.size()]),
-        tags.toArray(new String[tags.size()]), parsedSamples);
+        tags.toArray(new String[tags.size()]), parsedSamples));
   }
   
   public static void registerFactory() {
