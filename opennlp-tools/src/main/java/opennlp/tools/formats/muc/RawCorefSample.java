@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.formats.muc.MucCorefContentHandler.CorefMention;
+import opennlp.tools.parser.Parse;
 
 /**
  * A coreference sample as it is extracted from MUC style training data.
@@ -29,6 +30,8 @@ public class RawCorefSample {
   
   private List<String[]> texts = new ArrayList<String[]>();
   private List<CorefMention[]> mentions = new ArrayList<CorefMention[]>();
+  
+  private List<Parse> parses;
   
   RawCorefSample(List<String> texts, List<CorefMention[]> mentions) {
   }
@@ -39,5 +42,13 @@ public class RawCorefSample {
   
   public List<CorefMention[]> getMentions() {
     return mentions;
+  }
+  
+  void setParses(List<Parse> parses) {
+    this.parses = parses;
+  }
+  
+  List<Parse> getParses() {
+    return parses;
   }
 }
