@@ -34,10 +34,12 @@ class MucCorefContentHandler extends SgmlParser.ContentHandler {
   static class CorefMention {
     Span span;
     int id;
+    String min;
     
-    CorefMention(Span span, int id) {
+    CorefMention(Span span, int id, String min) {
       this.span = span;
       this.id = id;
+      this.min = min;
     }
   }
   
@@ -120,7 +122,7 @@ class MucCorefContentHandler extends SgmlParser.ContentHandler {
         // throw invalid format exception ...
       }
         
-      mentionStack.push(new CorefMention(new Span(beginOffset, beginOffset), id));
+      mentionStack.push(new CorefMention(new Span(beginOffset, beginOffset), id, attributes.get("MIN")));
     }
   }
   
