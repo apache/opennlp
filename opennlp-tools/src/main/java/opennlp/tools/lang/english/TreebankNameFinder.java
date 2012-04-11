@@ -31,7 +31,10 @@ import opennlp.tools.util.Span;
 
 /**
  * Class is used to create a name finder for English.
+ * 
+ * @deprecated will be removed soon!
  */
+@Deprecated
 public class TreebankNameFinder {
   
   public static String[] NAME_TYPES = {"person", "organization", "location", "date", "time", "percentage", "money"};
