@@ -46,7 +46,10 @@ import opennlp.tools.util.Span;
  * will not generate new constituents for pre-nominal entities or sub-entities in
  * simple coordinated noun phrases.  This linker requires that named-entity information also be provided.
  * This information can be added to the parse using the -parse option with EnglishNameFinder.
+ * 
+ * @deprecated will be removed soon!
  */
+@Deprecated
 public class TreebankLinker extends DefaultLinker {
 
   public TreebankLinker(String project, LinkerMode mode) throws IOException {
