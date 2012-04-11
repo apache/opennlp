@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.chunking.Parser;
@@ -184,8 +185,11 @@ public class DefaultParse extends AbstractParse {
   }
 
   public int getEntityId() {
-    if (parse.getType().startsWith("NP#")) {
-      String numberString = parse.getType().substring(3);
+    
+    String type = parse.getType();
+    
+    if (type.contains("#")) {
+      String numberString = type.substring(type.indexOf('#') + 1);
       return Integer.parseInt(numberString);
     }
     else {
@@ -210,10 +214,26 @@ public class DefaultParse extends AbstractParse {
       return 1;
     }
     else {
+      
+      if (parse.getSpan().getStart() == p.getSpan().getStart() &&
+          parse.getSpan().getEnd() == p.getSpan().getEnd()) {
+
+        System.out.println("Maybe incorrect measurement!");
+        
+        Stack<Parse> parents = new Stack<Parse>();
+        
+        
+        
+        
+        // get parent and update distance
+        // if match return distance
+        // if not match do it again
+        }
+      
       return parse.getSpan().compareTo(p.getSpan());
     }
   }
-
+  
   @Override
   public String toString() {
     return parse.toString();
@@ -304,57 +324,5 @@ public class DefaultParse extends AbstractParse {
    */
   public Parse getParse() {
     return parse;
-  }
-  
-  // Tries to find matching noun phrase, if none is there one is created
-  public static void addMention(int id, Span mention, Parse[] tokens) {
-    
-    Parse startToken = tokens[mention.getStart()];
-    Parse endToken = tokens[mention.getEnd() - 1];
-    Parse commonParent = startToken.getCommonParent(endToken);
-    
-    if (commonParent != null) {
-      Span mentionSpan = new Span(startToken.getSpan().getStart(), endToken.getSpan().getEnd());
-      
-      if (mentionSpan.equals(commonParent.getSpan())) {
-        if (commonParent.getType().equals("NP")) {
-          commonParent.setType("NP#" + id);
-        }
-        else {
-          commonParent.insert(new Parse(commonParent.getText(), mentionSpan, "NP#" + id, 1.0, endToken.getHeadIndex()));
-        }
-      }
-      else {
-        Parse[] kids = commonParent.getChildren();
-        boolean crossingKids = false;
-        for (int ki=0,kn=kids.length;ki<kn;ki++) {
-          if (mentionSpan.crosses(kids[ki].getSpan())){
-            crossingKids = true;
-          }
-        }
-        
-        if (!crossingKids) {
-          commonParent.insert(new Parse(commonParent.getText(), mentionSpan, "NP#" + id, 1.0, endToken.getHeadIndex()));
-        }
-        else {
-          if (commonParent.getType().equals("NP")) {
-            Parse[] grandKids = kids[0].getChildren();
-            if (grandKids.length > 1 && mentionSpan.contains(grandKids[grandKids.length-1].getSpan())) {
-              commonParent.insert(new Parse(commonParent.getText(),commonParent.getSpan(),"NP#" + id,1.0,commonParent.getHeadIndex()));
-            }
-            else {
-              // System.out.println("FAILED TO INSERT (1)");
-            }
-
-          }
-          else {
-            // System.out.println("FAILED TO INSERT (1)");
-          }
-        }
-      }
-    }
-    else {
-      throw new IllegalArgumentException("Tokens must always have a common parent!");
-    }
   }
 }

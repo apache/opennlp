@@ -44,6 +44,21 @@ public class CorefSample {
     return corefParses;
   }
   
+  @Override
+  public String toString() {
+    
+    StringBuffer sb = new StringBuffer();
+    
+    for (Parse parse : parses) {
+      parse.show(sb);
+      sb.append('\n');
+    }
+    
+    sb.append('\n');
+    
+    return sb.toString();
+  }
+  
   public static CorefSample parse(String corefSampleString) {
     
     List<Parse> parses = new ArrayList<Parse>();
