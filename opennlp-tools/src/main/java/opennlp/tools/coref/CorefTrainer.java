@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 import opennlp.tools.coref.mention.DefaultParse;
 import opennlp.tools.coref.mention.Mention;
@@ -31,12 +32,19 @@ import opennlp.tools.coref.sim.GenderModel;
 import opennlp.tools.coref.sim.NumberModel;
 import opennlp.tools.coref.sim.SimilarityModel;
 import opennlp.tools.coref.sim.TrainSimilarityModel;
-import opennlp.tools.lang.english.TreebankLinker;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
 
 public class CorefTrainer {
 
+  private static boolean containsToken(String token, Parse p) {
+    for (Parse node : p.getTagNodes()) {
+      if (node.toString().equals(token))
+        return true;
+    }
+    return false;
+  }
+  
   private static Mention[] getMentions(CorefSample sample, MentionFinder mentionFinder) {
     
     List<Mention> mentions = new ArrayList<Mention>();
@@ -50,10 +58,23 @@ public class CorefTrainer {
       for (int ei = 0, en = extents.length; ei < en;ei++) {
 
         if (extents[ei].getParse() == null) {
-          //not sure how to get head index, but its not used at this point.
-          Parse snp = new Parse(p.getText(),extents[ei].getSpan(),"NML",1.0,0);
-          p.insert(snp);
-          extents[ei].setParse(new DefaultParse(snp, corefParse.getSentenceNumber()));
+
+          Stack<Parse> nodes = new Stack<Parse>();
+          nodes.add(p);
+          
+          while (!nodes.isEmpty()) {
+            
+            Parse node = nodes.pop();
+            
+            if (node.getSpan().equals(extents[ei].getSpan()) && node.getType().startsWith("NML")) {
+              DefaultParse corefParseNode = new DefaultParse(node, corefParse.getSentenceNumber());
+              extents[ei].setParse(corefParseNode);
+              extents[ei].setId(corefParseNode.getEntityId());
+              break;
+            }
+            
+            nodes.addAll(Arrays.asList(node.getChildren()));
+          }
         }
       }
       
@@ -63,13 +84,14 @@ public class CorefTrainer {
     return mentions.toArray(new Mention[mentions.size()]);
   }
   
-  // TODO: Move this method away ...
   public static void train(String modelDirectory, ObjectStream<CorefSample> samples,
       boolean useTreebank, boolean useDiscourseModel) throws IOException {
     
     TrainSimilarityModel simTrain = SimilarityModel.trainModel(modelDirectory + "/coref/sim");
     TrainSimilarityModel genTrain = GenderModel.trainModel(modelDirectory + "/coref/gen");
     TrainSimilarityModel numTrain = NumberModel.trainModel(modelDirectory + "/coref/num");
+    
+    useTreebank = true; 
     
     Linker simLinker;
     
