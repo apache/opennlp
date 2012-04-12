@@ -31,17 +31,35 @@ import opennlp.tools.util.StringList;
  */
 public class DictionaryNameFinder implements TokenNameFinder {
 
-  private Dictionary mDictionary;
-
   private static final String DEFAULT_TYPE = "default";
+  
+  private Dictionary mDictionary;
+  private final String type;
 
   /**
-   * Initializes the current instance.
+   * Initialized the current instance with he provided dictionary
+   * and a type.
+   * 
+   * @param dictionary
+   * @param type the name type used for the produced spans
+   */
+  public DictionaryNameFinder(Dictionary dictionary, String type) {
+    mDictionary = dictionary;
+    
+    if (type == null) {
+      throw new IllegalArgumentException("type cannot be null!");
+    }
+    
+    this.type = type;
+  }
+  
+  /**
+   * Initializes the current instance with the provided dictionary.
    * 
    * @param dictionary
    */
   public DictionaryNameFinder(Dictionary dictionary) {
-    mDictionary = dictionary;
+    this(dictionary, DEFAULT_TYPE);
   }
 
   public Span[] find(String[] textTokenized) {
@@ -64,14 +82,14 @@ public class DictionaryNameFinder implements TokenNameFinder {
           StringList entryForSearch = new StringList(tokensSearching);
 
           if (mDictionary.contains(entryForSearch)) {
-            nameFound = new Span(offsetFrom, offsetTo + 1, DEFAULT_TYPE);
+            nameFound = new Span(offsetFrom, offsetTo + 1, type);
           }
         }
       }
 
       if (nameFound != null) {
         namesFound.add(nameFound);
-        /* skip over the found tokens for the next search */
+        // skip over the found tokens for the next search
         offsetFrom += (nameFound.length() - 1);
       }
     }
