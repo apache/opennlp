@@ -210,7 +210,16 @@ public class Span implements Comparable<Span> {
         return 1;
       }
       else {
-        return 0;
+        // compare the type
+        if (getType() == null && s.getType() == null) {
+          return 0;
+        } else if (getType() != null && s.getType() != null) {
+          // use type lexicography order
+          return getType().compareTo(s.getType());
+        } else if(getType() != null) {
+          return -1;
+        }
+        return 1;
       }
     }
     else {
