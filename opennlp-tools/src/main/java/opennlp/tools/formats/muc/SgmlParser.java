@@ -35,7 +35,7 @@ import opennlp.tools.util.StringUtil;
  */
 public class SgmlParser {
 
-  static abstract class ContentHandler {
+  public static abstract class ContentHandler {
   
     void startElement(String name, Map<String, String> attributes) throws InvalidFormatException {
     }
@@ -48,7 +48,7 @@ public class SgmlParser {
     }
   }
   
-  static String extractTagName(CharSequence tagChars) throws InvalidFormatException {
+  private static String extractTagName(CharSequence tagChars) throws InvalidFormatException {
     
     int fromOffset = 1;
 
@@ -66,7 +66,7 @@ public class SgmlParser {
     throw new InvalidFormatException("Failed to extract tag name!");
   }
   
-  static Map<String, String> getAttributes(CharSequence tagChars) {
+  private static Map<String, String> getAttributes(CharSequence tagChars) {
     
     // format:
     // space
@@ -120,7 +120,7 @@ public class SgmlParser {
     return attributes;
   }
   
-  void parse(Reader in, ContentHandler handler) throws IOException {
+  public void parse(Reader in, ContentHandler handler) throws IOException {
     
     StringBuilder buffer = new StringBuilder();
     
