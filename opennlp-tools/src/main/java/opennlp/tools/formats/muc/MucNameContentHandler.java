@@ -79,7 +79,7 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
   }
 
   @Override
-  void startElement(String name, Map<String, String> attributes) 
+  public void startElement(String name, Map<String, String> attributes) 
       throws InvalidFormatException {
     
     if (MucElementNames.DOC_ELEMENT.equals(name)) {
@@ -103,7 +103,7 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
   }
 
   @Override
-  void characters(CharSequence chars) {
+  public void characters(CharSequence chars) {
     if (isInsideContentElement) {
       String tokens [] = tokenizer.tokenize(chars.toString());
       text.addAll(Arrays.asList(tokens));
@@ -111,7 +111,7 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
   }
 
   @Override
-  void endElement(String name) {
+  public void endElement(String name) {
 
     if (NAME_ELEMENT_NAMES.contains(name)) {
       Span nameSpan = incompleteNames.pop();

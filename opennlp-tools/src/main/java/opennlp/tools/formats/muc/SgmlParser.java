@@ -37,14 +37,13 @@ public class SgmlParser {
 
   public static abstract class ContentHandler {
   
-    void startElement(String name, Map<String, String> attributes) throws InvalidFormatException {
+    public void startElement(String name, Map<String, String> attributes) throws InvalidFormatException {
     }
     
-    void characters(CharSequence chars) throws InvalidFormatException{
-      
+    public void characters(CharSequence chars) throws InvalidFormatException{
     }
     
-    void endElement(String name) throws InvalidFormatException {
+    public void endElement(String name) throws InvalidFormatException {
     }
   }
   
