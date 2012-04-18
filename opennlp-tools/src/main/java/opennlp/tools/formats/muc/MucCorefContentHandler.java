@@ -87,7 +87,7 @@ class MucCorefContentHandler extends SgmlParser.ContentHandler {
   }
   
   @Override
-  void startElement(String name, Map<String, String> attributes) {
+  public void startElement(String name, Map<String, String> attributes) {
     
     if (MucElementNames.DOC_ELEMENT.equals(name)) {
       idMap.clear();
@@ -127,7 +127,7 @@ class MucCorefContentHandler extends SgmlParser.ContentHandler {
   }
   
   @Override
-  void characters(CharSequence chars) {
+  public void characters(CharSequence chars) {
     if (isInsideContentElement) {
       
       String tokens [] = tokenizer.tokenize(chars.toString());
@@ -137,7 +137,7 @@ class MucCorefContentHandler extends SgmlParser.ContentHandler {
   }
   
   @Override
-  void endElement(String name) {
+  public void endElement(String name) {
     
     if (COREF_ELEMENT.equals(name)) {
       CorefMention mention = mentionStack.pop();
