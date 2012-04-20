@@ -80,4 +80,57 @@ public class DictionaryDetokenizer implements Detokenizer {
     
     return operations;
   }
+  
+  public String detokenize(String tokens[], String splitMarker) {
+    
+    DetokenizationOperation operations[] = detokenize(tokens);
+    
+    if (tokens.length != operations.length)
+      throw new IllegalArgumentException("tokens and operations array must have same length!");
+    
+    
+    StringBuilder untokenizedString = new StringBuilder();
+    
+    for (int i = 0; i < tokens.length; i++) {
+      
+      // attach token to string buffer
+      untokenizedString.append(tokens[i]);
+      
+      boolean isAppendSpace;
+      boolean isAppendSplitMarker;
+      
+      // if this token is the last token do not attach a space
+      if (i + 1 == operations.length) {
+        isAppendSpace = false;
+        isAppendSplitMarker = false;
+      }
+      // if next token move left, no space after this token,
+      // its safe to access next token
+      else if (operations[i + 1].equals(DetokenizationOperation.MERGE_TO_LEFT)
+          || operations[i + 1].equals(DetokenizationOperation.MERGE_BOTH)) {
+        isAppendSpace = false;
+        isAppendSplitMarker = true;
+      }
+      // if this token is move right, no space 
+      else if (operations[i].equals(DetokenizationOperation.MERGE_TO_RIGHT)
+          || operations[i].equals(DetokenizationOperation.MERGE_BOTH)) {
+        isAppendSpace = false;
+        isAppendSplitMarker = true;
+      }
+      else {
+        isAppendSpace = true;
+        isAppendSplitMarker = false;
+      }
+      
+      if (isAppendSpace) {
+        untokenizedString.append(' ');
+      }
+      
+      if (isAppendSplitMarker && splitMarker != null) {
+        untokenizedString.append(splitMarker);
+      }
+    }
+    
+    return untokenizedString.toString();
+  }
 }

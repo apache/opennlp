@@ -58,4 +58,16 @@ public interface Detokenizer {
    * @return the merge operations to detokenize the input tokens.
    */
   DetokenizationOperation[] detokenize(String tokens[]);
+  
+  /**
+   * Detokenize the input tokens into a String. Tokens which
+   * are connected without a space inbetween can be separated by
+   * a split marker.
+   * 
+   * @param tokens
+   * @param splitMarker the split marker or null
+   * 
+   * @return
+   */
+  String detokenize(String tokens[], String splitMarker);
 }

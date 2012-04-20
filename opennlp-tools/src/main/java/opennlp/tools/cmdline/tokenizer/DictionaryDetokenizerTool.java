@@ -26,7 +26,6 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.tokenize.Detokenizer;
-import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
@@ -36,47 +35,6 @@ public final class DictionaryDetokenizerTool extends AbstractBasicCmdLineTool {
 
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " detokenizerDictionary";
-  }
-
-  public static String detokenize(String tokens[], DetokenizationOperation operations[]) {
- 
-    if (tokens.length != operations.length)
-      throw new IllegalArgumentException("tokens and operations array must have same length!");
-    
-    
-    StringBuilder untokenizedString = new StringBuilder();
-    
-    for (int i = 0; i < tokens.length; i++) {
-      
-      // attach token to string buffer
-      untokenizedString.append(tokens[i]);
-      
-      boolean isAppendSpace;
-      
-      // if this token is the last token do not attach a space
-      if (i + 1 == operations.length) {
-        isAppendSpace = false;
-      }
-      // if next token move left, no space after this token,
-      // its safe to access next token
-      else if (operations[i + 1].equals(DetokenizationOperation.MERGE_TO_LEFT)
-          || operations[i + 1].equals(DetokenizationOperation.MERGE_BOTH)) {
-        isAppendSpace = false;
-      }
-      // if this token is move right, no space 
-      else if (operations[i].equals(DetokenizationOperation.MERGE_TO_RIGHT)
-          || operations[i].equals(DetokenizationOperation.MERGE_BOTH)) {
-        isAppendSpace = false;
-      }
-      else {
-        isAppendSpace = true;
-      }
-      
-      if (isAppendSpace)
-        untokenizedString.append(' ');
-    }
-    
-    return untokenizedString.toString();
   }
   
   public void run(String[] args) {
@@ -102,9 +60,7 @@ public final class DictionaryDetokenizerTool extends AbstractBasicCmdLineTool {
           // white space tokenize line
           String tokens[] = WhitespaceTokenizer.INSTANCE.tokenize(tokenizedLine);
 
-          DetokenizationOperation operations[] = detokenizer.detokenize(tokens);
-
-          System.out.println(detokenize(tokens, operations));
+          System.out.println(detokenizer.detokenize(tokens, null));
 
           perfMon.incrementCounter();
         }
