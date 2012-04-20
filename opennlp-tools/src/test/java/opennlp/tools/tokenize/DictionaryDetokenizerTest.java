@@ -75,9 +75,8 @@ public class DictionaryDetokenizerTest{
     Detokenizer detokenizer = createLatinDetokenizer();
     
     String tokens[] = new String[]{"A", "test", ",", "(", "string", ")", "."};
-    DetokenizationOperation operations[] = detokenizer.detokenize(tokens);
       
-    String sentence = DictionaryDetokenizerTool.detokenize(tokens, operations);
+    String sentence = detokenizer.detokenize(tokens, null);
       
     assertEquals("A test, (string).", sentence);
   }
@@ -88,9 +87,8 @@ public class DictionaryDetokenizerTest{
     Detokenizer detokenizer = createLatinDetokenizer();
     
     String tokens[] = new String[]{"A", "co", "-", "worker", "helped", "."};
-    DetokenizationOperation operations[] = detokenizer.detokenize(tokens);
       
-    String sentence = DictionaryDetokenizerTool.detokenize(tokens, operations);
+    String sentence = detokenizer.detokenize(tokens, null);
       
     assertEquals("A co-worker helped.", sentence);
   }
