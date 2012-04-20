@@ -56,9 +56,7 @@ public class SentenceSample {
     
     for (String sentenceTokens[] : sentences) {
       
-      DetokenizationOperation operations[] = detokenizer.detokenize(sentenceTokens);
-      
-      String sampleSentence = DictionaryDetokenizerTool.detokenize(sentenceTokens, operations);
+      String sampleSentence = detokenizer.detokenize(sentenceTokens, null);
       
       int beginIndex = documentBuilder.length();
       documentBuilder.append(sampleSentence);
