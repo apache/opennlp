@@ -149,6 +149,10 @@ public class DocumentCategorizerME implements DocumentCategorizer {
        TrainingParameters mlParams, FeatureGenerator... featureGenerators)
    throws IOException {
      
+     if (featureGenerators.length == 0) {
+       featureGenerators = new FeatureGenerator[]{defaultFeatureGenerator};
+     }
+     
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
      
      AbstractModel model = TrainUtil.train(
