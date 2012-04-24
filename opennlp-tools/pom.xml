@@ -118,15 +118,17 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-					<Export-Package>
-						!opennlp.tools.cmdline.*,
-						!opennlp.tools.coref.*,
-						opennlp.tools.*
-					</Export-Package>
-					<Import-Package>
-						!net.didion.jwnl.*,
-						*
-					</Import-Package>
+						<Bundle-Activator>opennlp.tools.util.ext.OSGiExtensionLoader</Bundle-Activator>
+						<Bundle-RequiredExecutionEnvironment>J2SE-1.5</Bundle-RequiredExecutionEnvironment>
+						<Export-Package>
+							!opennlp.tools.cmdline.*,
+							!opennlp.tools.coref.*,
+							opennlp.tools.*
+						</Export-Package>
+						<Import-Package>
+							!net.didion.jwnl.*,
+							*
+						</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>

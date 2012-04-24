@@ -17,9 +17,24 @@
 
 package opennlp.tools.util.ext;
 
+/**
+ * The {@link ExtensionLoader} is responsible to load extensions to the OpenNLP library.
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
+ */
 public class ExtensionLoader {
 
+  private static boolean isOsgiAvailable = false;
+  
   private ExtensionLoader() {
+  }
+  
+  static boolean isOSGiAvailable() {
+    return isOsgiAvailable;
+  }
+  
+  static void setOSGiAvailable() {
+    isOsgiAvailable = true;
   }
   
   // Pass in the type (interface) of the class to load
@@ -47,16 +62,16 @@ public class ExtensionLoader {
         try {
           return (T) extClazz.newInstance();
         } catch (InstantiationException e) {
-          throw new ExtensionNotLoadedError(e);
+          throw new ExtensionNotLoadedException(e);
         } catch (IllegalAccessException e) {
-          throw new ExtensionNotLoadedError(e);
+          throw new ExtensionNotLoadedException(e);
         }
       }
       else {
-        // throw exception ... class is not compatible ...
+        throw new ExtensionNotLoadedException("Extension class needs to have type: " + clazz.getName());
       }
     } catch (ClassNotFoundException e) {
-      throw new ExtensionNotLoadedError(e);
+      // Class is not on classpath
     }
     
     // Loading from class path failed
@@ -68,15 +83,6 @@ public class ExtensionLoader {
     
     // Determine if OSGi class is on class path
 
-    boolean isOsgiAvailable;
-    
-    try {
-      Class.forName("org.osgi.framework.ServiceReference");
-      isOsgiAvailable = true;
-    } catch (ClassNotFoundException e) {
-      isOsgiAvailable = false;
-    }
-    
     // Now load class which depends on OSGi API
     if (isOsgiAvailable) {
       
@@ -84,10 +90,10 @@ public class ExtensionLoader {
       // is executed, but not prior, and that is why it is safe to directly
       // reference it here.
       OSGiExtensionLoader extLoader = OSGiExtensionLoader.getInstance();
-      return extLoader.findExtension(clazz, extensionClassName);
+      return extLoader.getExtension(clazz, extensionClassName);
     }
     
-    throw new ExtensionNotLoadedError("Unable to find implementation for " + 
+    throw new ExtensionNotLoadedException("Unable to find implementation for " + 
           clazz.getName() + ", the class or service " + extensionClassName + 
           " could not be located!");
   }
