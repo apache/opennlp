@@ -19,11 +19,16 @@ package opennlp.tools.util.ext;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
+import org.osgi.framework.Filter;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * OSGi bundle activator which can use an OSGi service as
  * an OpenNLP extension.
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
 public class OSGiExtensionLoader implements BundleActivator {
 
@@ -34,21 +39,61 @@ public class OSGiExtensionLoader implements BundleActivator {
   public void start(BundleContext context) throws Exception {
     instance = this;
     this.context = context;
+    
+    ExtensionLoader.setOSGiAvailable();
   }
 
   public void stop(BundleContext context) throws Exception {
     instance = null;
     this.context = null;
   }
-  
-  <T> T findExtension(Class<T> clazz, String id) {
-    ServiceReference serviceRef = 
-        context.getServiceReference(clazz.getName());
+
+  /**
+   * Retrieves the 
+   * 
+   * @param clazz
+   * @param id
+   * @return
+   */
+  <T> T getExtension(Class<T> clazz, String id) {
     
-    return (T )context.getService(serviceRef);
+    if (context == null) {
+      throw new IllegalStateException("OpenNLP Tools Bundle is not active!");
+    }
+    
+    Filter filter;
+    try {
+      filter = FrameworkUtil.createFilter("(&(objectclass=" + clazz.getName() + ")(" +
+          "opennlp" + "=" + id + "))");
+    } catch (InvalidSyntaxException e) {
+      // Might happen when the provided IDs are invalid in some way.
+      throw new ExtensionNotLoadedException(e);
+    }
+    
+    ServiceTracker<T, T> extensionTracker = new ServiceTracker<T, T>(context, filter, null);
+    
+    T extension = null;
+    
+    try {
+      extensionTracker.open();
+      
+      try {
+        extension = extensionTracker.waitForService(30000);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    } finally {
+      extensionTracker.close();
+    }
+    
+    if (extension == null) {
+      throw new ExtensionNotLoadedException("No suitable extension found. Extension name: " + id);
+    }
+    
+    return extension;
   }
 
-  public static OSGiExtensionLoader getInstance() {
+  static OSGiExtensionLoader getInstance() {
     return instance;
   }
 }

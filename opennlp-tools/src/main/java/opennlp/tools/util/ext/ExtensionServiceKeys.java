@@ -17,18 +17,11 @@
 
 package opennlp.tools.util.ext;
 
-/**
- * Exception indicates that an OpenNLP extension could not be loaded.
- */
-public class ExtensionNotLoadedError extends RuntimeException {
-  
-  private static final long serialVersionUID = 1L;
+public class ExtensionServiceKeys {
 
-  public ExtensionNotLoadedError(String message) {
-    super(message);
-  }
-
-  public ExtensionNotLoadedError(Throwable t) {
-    super(t);
-  }
+  /**
+   * Property key for the unique id which identifies an 
+   * OSGi OpenNLP extension service.
+   */
+  public static final String ID = "OPENLP_EXTENSION_ID";
 }
