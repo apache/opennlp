@@ -70,7 +70,8 @@ public class OSGiExtensionLoader implements BundleActivator {
       throw new ExtensionNotLoadedException(e);
     }
     
-    ServiceTracker<T, T> extensionTracker = new ServiceTracker<T, T>(context, filter, null);
+    // NOTE: In 4.3 the parameters are <T, T>
+    ServiceTracker extensionTracker = new ServiceTracker(context, filter, null);
     
     T extension = null;
     
@@ -78,7 +79,7 @@ public class OSGiExtensionLoader implements BundleActivator {
       extensionTracker.open();
       
       try {
-        extension = extensionTracker.waitForService(30000);
+        extension = (T) extensionTracker.waitForService(30000);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
