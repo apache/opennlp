@@ -107,6 +107,10 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     return model.eval(mContextGenerator.getContext(text));
   }
 
+  /**
+   * Categorizes the given text. The text is tokenized with the SimpleTokenizer before it
+   * is passed to the feature generation.
+   */
   public double[] categorize(String documentText) {
     Tokenizer tokenizer = SimpleTokenizer.INSTANCE;
     return categorize(tokenizer.tokenize(documentText));
