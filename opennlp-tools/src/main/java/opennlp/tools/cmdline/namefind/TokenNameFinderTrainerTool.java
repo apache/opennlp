@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import opennlp.tools.cmdline.AbstractTrainerTool;
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
@@ -40,6 +41,7 @@ public final class TokenNameFinderTrainerTool
     extends AbstractTrainerTool<NameSample, TrainerToolParams> {
   
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
+    @OptionalParameter
     @ParameterDescription(valueName = "types", description = "name types to use for training")
     String getNameTypes();
   }
