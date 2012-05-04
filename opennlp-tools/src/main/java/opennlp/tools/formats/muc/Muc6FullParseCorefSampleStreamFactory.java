@@ -35,6 +35,7 @@ import opennlp.tools.cmdline.tokenizer.TokenizerModelLoader;
 import opennlp.tools.coref.CorefSample;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.LanguageSampleStreamFactory;
+import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.parser.Parser;
@@ -84,13 +85,13 @@ public class Muc6FullParseCorefSampleStreamFactory extends LanguageSampleStreamF
     TokenizerModel tokenizerModel = new TokenizerModelLoader().load(params.getTokenizerModel());
     Tokenizer tokenizer = new TokenizerME(tokenizerModel);
     
-    ObjectStream<String> mucDocStream = 
-        new DirectorySampleStream(params.getData(), Charset.forName("UTF-8"), new FileFilter() {
+    ObjectStream<String> mucDocStream = new FileToStringSampleStream(
+        new DirectorySampleStream(params.getData(), new FileFilter() {
           
           public boolean accept(File file) {
             return file.getName().toLowerCase().endsWith(".sgm");
           }
-        }, false);
+        }, false), Charset.forName("UTF-8"));
     
     ObjectStream<RawCorefSample> rawSamples = 
         new MucCorefSampleStream(tokenizer, mucDocStream);

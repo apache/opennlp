@@ -28,6 +28,7 @@ import opennlp.tools.cmdline.params.LanguageFormatParams;
 import opennlp.tools.cmdline.tokenizer.TokenizerModelLoader;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.LanguageSampleStreamFactory;
+import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
@@ -54,13 +55,13 @@ public class Muc6NameSampleStreamFactory  extends LanguageSampleStreamFactory<Na
     TokenizerModel tokenizerModel = new TokenizerModelLoader().load(params.getTokenizerModel());
     Tokenizer tokenizer = new TokenizerME(tokenizerModel);
 
-    ObjectStream<String> mucDocStream =
-        new DirectorySampleStream(params.getData(), Charset.forName("UTF-8"), new FileFilter() {
+    ObjectStream<String> mucDocStream = new FileToStringSampleStream(
+        new DirectorySampleStream(params.getData(), new FileFilter() {
 
           public boolean accept(File file) {
             return file.getName().toLowerCase().endsWith(".sgm");
           }
-        }, false);
+        }, false), Charset.forName("UTF-8"));
 
     return new MucNameSampleStream(tokenizer, mucDocStream);
   }

@@ -44,6 +44,7 @@ import opennlp.tools.formats.ad.ADNameSampleStreamFactory;
 import opennlp.tools.formats.ad.ADPOSSampleStreamFactory;
 import opennlp.tools.formats.ad.ADSentenceSampleStreamFactory;
 import opennlp.tools.formats.ad.ADTokenSampleStreamFactory;
+import opennlp.tools.formats.frenchtreebank.ConstitParseSampleStreamFactory;
 import opennlp.tools.formats.muc.Muc6FullParseCorefSampleStreamFactory;
 import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
 
@@ -85,6 +86,8 @@ public final class StreamFactoryRegistry {
     
     Muc6NameSampleStreamFactory.registerFactory();
     Muc6FullParseCorefSampleStreamFactory.registerFactory();
+    
+    ConstitParseSampleStreamFactory.registerFactory();
   }
 
   public static final String DEFAULT_FORMAT = "opennlp";
