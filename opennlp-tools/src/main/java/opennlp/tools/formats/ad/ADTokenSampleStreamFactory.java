@@ -21,7 +21,7 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.formats.DetokenizerSampleStreamFactory;
-import opennlp.tools.formats.NameToTokenSampleStream;
+import opennlp.tools.formats.convert.NameToTokenSampleStream;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;

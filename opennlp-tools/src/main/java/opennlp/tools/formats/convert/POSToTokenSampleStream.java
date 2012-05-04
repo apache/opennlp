@@ -15,23 +15,43 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.formats.convert;
 
-import opennlp.tools.namefind.NameSample;
+import java.io.IOException;
+
+import opennlp.tools.postag.POSSample;
 import opennlp.tools.tokenize.Detokenizer;
+import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class NameToSentenceSampleStream extends AbstractToSentenceSampleStream<NameSample> {
+public class POSToTokenSampleStream extends FilterObjectStream<POSSample, TokenSample> {
 
-  public NameToSentenceSampleStream(Detokenizer detokenizer, ObjectStream<NameSample> samples, int chunkSize) {
-    super(detokenizer, samples, chunkSize);
+  private final Detokenizer detokenizer;
+  
+  public POSToTokenSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples) {
+    
+    super(samples);
+    
+    if (detokenizer == null)
+      throw new IllegalArgumentException("detokenizer must not be null!");
+    
+    this.detokenizer = detokenizer;
   }
   
-  @Override
-  protected String[] toSentence(NameSample sample) {
-    return sample.getSentence();
+  public TokenSample read() throws IOException {
+    
+    POSSample posSample = samples.read();
+    
+    TokenSample tokenSample = null;
+    
+    if (posSample != null ) {
+      tokenSample = new TokenSample(detokenizer, posSample.getSentence());
+    }
+    
+    return tokenSample;
   }
 }

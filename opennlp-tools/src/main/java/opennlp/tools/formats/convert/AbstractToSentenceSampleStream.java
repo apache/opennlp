@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.formats.convert;
 
 import java.io.IOException;
 import java.util.ArrayList;
