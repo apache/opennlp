@@ -33,7 +33,7 @@ import java.io.FileInputStream;
  */
 public class ParseSampleStreamFactory extends LanguageSampleStreamFactory<Parse> {
 
-  interface Parameters extends LanguageFormatParams {
+  public interface Parameters extends LanguageFormatParams {
   }
 
   public static void registerFactory() {
