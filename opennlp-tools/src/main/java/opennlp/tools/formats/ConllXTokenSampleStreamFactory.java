@@ -20,6 +20,7 @@ package opennlp.tools.formats;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
+import opennlp.tools.formats.convert.POSToTokenSampleStream;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;

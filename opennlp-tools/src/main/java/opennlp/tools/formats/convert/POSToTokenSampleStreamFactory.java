@@ -15,39 +15,42 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.formats.convert;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
-import opennlp.tools.namefind.NameSample;
-import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.formats.DetokenizerSampleStreamFactory;
+import opennlp.tools.formats.WordTagSampleStreamFactory;
+import opennlp.tools.formats.WordTagSampleStreamFactory.Parameters;
+import opennlp.tools.postag.POSSample;
+import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class NameToSentenceSampleStreamFactory extends DetokenizerSampleStreamFactory<SentenceSample> {
+public class POSToTokenSampleStreamFactory extends DetokenizerSampleStreamFactory<TokenSample> {
 
-  interface Parameters extends NameSampleDataStreamFactory.Parameters, DetokenizerParameter {
+  interface Parameters extends WordTagSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 
   public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        "namefinder", new NameToSentenceSampleStreamFactory(Parameters.class));
+    StreamFactoryRegistry.registerFactory(TokenSample.class,
+        "pos", new POSToTokenSampleStreamFactory(Parameters.class));
   }
 
-  protected <P> NameToSentenceSampleStreamFactory(Class<P> params) {
+  protected <P> POSToTokenSampleStreamFactory(Class<P> params) {
     super(params);
   }
 
-  public ObjectStream<SentenceSample> create(String[] args) {
+  public ObjectStream<TokenSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     language = params.getLang();
 
-    ObjectStream<NameSample> nameSampleStream = StreamFactoryRegistry.getFactory(
-        NameSample.class, StreamFactoryRegistry.DEFAULT_FORMAT).create(
-        ArgumentParser.filter(args, NameSampleDataStreamFactory.Parameters.class));
-    return new NameToSentenceSampleStream(createDetokenizer(params), nameSampleStream, 30);
+    ObjectStream<POSSample> posSampleStream = StreamFactoryRegistry.getFactory(POSSample.class,
+        StreamFactoryRegistry.DEFAULT_FORMAT).create(
+        ArgumentParser.filter(args, WordTagSampleStreamFactory.Parameters.class));
+    return new POSToTokenSampleStream(createDetokenizer(params), posSampleStream);
   }
 }

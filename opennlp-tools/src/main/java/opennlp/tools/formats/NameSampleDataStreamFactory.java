@@ -33,7 +33,7 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class NameSampleDataStreamFactory extends LanguageSampleStreamFactory<NameSample> {
 
-  static interface Parameters extends LanguageFormatParams {
+  public static interface Parameters extends LanguageFormatParams {
   }
 
   public static void registerFactory() {

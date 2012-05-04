@@ -33,7 +33,7 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class WordTagSampleStreamFactory extends LanguageSampleStreamFactory<POSSample> {
 
-  static interface Parameters extends LanguageFormatParams {
+  public static interface Parameters extends LanguageFormatParams {
   }
 
   public static void registerFactory() {

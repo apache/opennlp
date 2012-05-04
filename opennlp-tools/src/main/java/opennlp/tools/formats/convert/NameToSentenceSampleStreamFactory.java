@@ -15,39 +15,42 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.formats.convert;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
+import opennlp.tools.formats.DetokenizerSampleStreamFactory;
+import opennlp.tools.formats.NameSampleDataStreamFactory;
+import opennlp.tools.formats.NameSampleDataStreamFactory.Parameters;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class NameToTokenSampleStreamFactory extends DetokenizerSampleStreamFactory<TokenSample> {
+public class NameToSentenceSampleStreamFactory extends DetokenizerSampleStreamFactory<SentenceSample> {
 
   interface Parameters extends NameSampleDataStreamFactory.Parameters, DetokenizerParameter {
   }
 
   public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(TokenSample.class,
-        "namefinder", new NameToTokenSampleStreamFactory(Parameters.class));
+    StreamFactoryRegistry.registerFactory(SentenceSample.class,
+        "namefinder", new NameToSentenceSampleStreamFactory(Parameters.class));
   }
 
-  protected <P> NameToTokenSampleStreamFactory(Class<P> params) {
+  protected <P> NameToSentenceSampleStreamFactory(Class<P> params) {
     super(params);
   }
 
-  public ObjectStream<TokenSample> create(String[] args) {
+  public ObjectStream<SentenceSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     language = params.getLang();
 
     ObjectStream<NameSample> nameSampleStream = StreamFactoryRegistry.getFactory(
         NameSample.class, StreamFactoryRegistry.DEFAULT_FORMAT).create(
         ArgumentParser.filter(args, NameSampleDataStreamFactory.Parameters.class));
-    return new NameToTokenSampleStream(createDetokenizer(params), nameSampleStream);
+    return new NameToSentenceSampleStream(createDetokenizer(params), nameSampleStream, 30);
   }
 }

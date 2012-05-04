@@ -15,39 +15,42 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.formats.convert;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
+import opennlp.tools.formats.DetokenizerSampleStreamFactory;
+import opennlp.tools.formats.WordTagSampleStreamFactory;
+import opennlp.tools.formats.WordTagSampleStreamFactory.Parameters;
 import opennlp.tools.postag.POSSample;
-import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class POSToTokenSampleStreamFactory extends DetokenizerSampleStreamFactory<TokenSample> {
+public class POSToSentenceSampleStreamFactory extends DetokenizerSampleStreamFactory<SentenceSample> {
 
   interface Parameters extends WordTagSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 
   public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(TokenSample.class,
-        "pos", new POSToTokenSampleStreamFactory(Parameters.class));
+    StreamFactoryRegistry.registerFactory(SentenceSample.class,
+        "pos", new POSToSentenceSampleStreamFactory(Parameters.class));
   }
 
-  protected <P> POSToTokenSampleStreamFactory(Class<P> params) {
+  protected <P> POSToSentenceSampleStreamFactory(Class<P> params) {
     super(params);
   }
 
-  public ObjectStream<TokenSample> create(String[] args) {
+  public ObjectStream<SentenceSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     language = params.getLang();
 
     ObjectStream<POSSample> posSampleStream = StreamFactoryRegistry.getFactory(POSSample.class,
         StreamFactoryRegistry.DEFAULT_FORMAT).create(
         ArgumentParser.filter(args, WordTagSampleStreamFactory.Parameters.class));
-    return new POSToTokenSampleStream(createDetokenizer(params), posSampleStream);
+    return new POSToSentenceSampleStream(createDetokenizer(params), posSampleStream, 30);
   }
 }
