@@ -44,6 +44,9 @@ import opennlp.tools.formats.convert.NameToSentenceSampleStreamFactory;
 import opennlp.tools.formats.convert.NameToTokenSampleStreamFactory;
 import opennlp.tools.formats.convert.POSToSentenceSampleStreamFactory;
 import opennlp.tools.formats.convert.POSToTokenSampleStreamFactory;
+import opennlp.tools.formats.convert.ParseToPOSSampleStreamFactory;
+import opennlp.tools.formats.convert.ParseToSentenceSampleStreamFactory;
+import opennlp.tools.formats.convert.ParseToTokenSampleStreamFactory;
 import opennlp.tools.formats.frenchtreebank.ConstitParseSampleStreamFactory;
 import opennlp.tools.formats.muc.Muc6FullParseCorefSampleStreamFactory;
 import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
@@ -68,9 +71,14 @@ public final class StreamFactoryRegistry {
     
     NameToSentenceSampleStreamFactory.registerFactory();
     NameToTokenSampleStreamFactory.registerFactory();
+    
     POSToSentenceSampleStreamFactory.registerFactory();
     POSToTokenSampleStreamFactory.registerFactory();
 
+    ParseToPOSSampleStreamFactory.registerFactory();
+    ParseToSentenceSampleStreamFactory.registerFactory();
+    ParseToTokenSampleStreamFactory.registerFactory();
+    
     BioNLP2004NameSampleStreamFactory.registerFactory();
     Conll02NameSampleStreamFactory.registerFactory();
     Conll03NameSampleStreamFactory.registerFactory();
