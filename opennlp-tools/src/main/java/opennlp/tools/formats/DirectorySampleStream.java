@@ -17,14 +17,9 @@
 
 package opennlp.tools.formats;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,10 +31,8 @@ import opennlp.tools.util.ObjectStream;
  * The directory sample stream scans a directory (recursively) for plain text
  * files and outputs each file as a String object.
  */
-public class DirectorySampleStream implements ObjectStream<String> {
+public class DirectorySampleStream implements ObjectStream<File> {
 
-  private final Charset encoding;
-  
   private final List<File> inputDirectories;
   
   private final boolean isRecursiveScan;
@@ -50,9 +43,8 @@ public class DirectorySampleStream implements ObjectStream<String> {
   
   private Stack<File> textFiles = new Stack<File>();
   
-  public DirectorySampleStream(File dirs[], Charset encoding, FileFilter fileFilter, boolean recursive) {
+  public DirectorySampleStream(File dirs[], FileFilter fileFilter, boolean recursive) {
 
-    this.encoding = encoding;
     this.fileFilter= fileFilter; 
     isRecursiveScan = recursive;
     
@@ -73,36 +65,11 @@ public class DirectorySampleStream implements ObjectStream<String> {
     directories.addAll(inputDirectories);
   }
   
-  public DirectorySampleStream(File dir, Charset encoding, FileFilter fileFilter, boolean recursive) {
-    this(new File[]{dir}, encoding, fileFilter, recursive);
+  public DirectorySampleStream(File dir, FileFilter fileFilter, boolean recursive) {
+    this(new File[]{dir}, fileFilter, recursive);
   }
   
-  static String readFile(File textFile, Charset encoding) throws IOException {
-    
-    Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(textFile), encoding));
-
-    StringBuilder text = new StringBuilder();
-    
-    try {
-      char buffer[] = new char[1024];
-      int length;
-      while ((length = in.read(buffer, 0, buffer.length)) > 0) {
-        text.append(buffer, 0, length);
-      }
-    }
-    finally {
-      try {
-        in.close();
-      }
-      catch (IOException e) {
-        // sorry that this can fail!
-      }
-    }
-    
-    return text.toString();
-  }
-  
-  public String read() throws IOException {
+  public File read() throws IOException {
 
     while(textFiles.isEmpty() && !directories.isEmpty()) {
       File dir = directories.pop();
@@ -127,7 +94,7 @@ public class DirectorySampleStream implements ObjectStream<String> {
     }
     
     if (!textFiles.isEmpty()) {
-      return readFile(textFiles.pop(), encoding);
+      return textFiles.pop();
     }
     else {
       return null;
