@@ -428,9 +428,16 @@ public class Parse implements Cloneable, Comparable<Parse> {
     return (parts.size() == 1);
   }
 
+  public String getCoveredText() {
+    return text.substring(span.getStart(), span.getEnd());
+  }
+  
+  /**
+   * Represents this parse in a human readable way.  
+   */
   @Override
   public String toString() {
-    return (text.substring(span.getStart(), span.getEnd()));
+    return getCoveredText();
   }
 
   /**
