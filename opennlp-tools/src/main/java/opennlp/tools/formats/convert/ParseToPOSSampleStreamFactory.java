@@ -21,7 +21,6 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.formats.ParseSampleStreamFactory;
-import opennlp.tools.formats.convert.POSToSentenceSampleStreamFactory.Parameters;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
@@ -38,7 +37,7 @@ public class ParseToPOSSampleStreamFactory extends LanguageSampleStreamFactory<P
 
   public ObjectStream<POSSample> create(String[] args) {
     
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    ParseSampleStreamFactory.Parameters params = ArgumentParser.parse(args, ParseSampleStreamFactory.Parameters.class);
     language = params.getLang();
     
     ObjectStream<Parse> parseSampleStream = StreamFactoryRegistry.getFactory(Parse.class,
