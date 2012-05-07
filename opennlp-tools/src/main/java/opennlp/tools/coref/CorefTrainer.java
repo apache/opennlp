@@ -39,7 +39,7 @@ public class CorefTrainer {
 
   private static boolean containsToken(String token, Parse p) {
     for (Parse node : p.getTagNodes()) {
-      if (node.toString().equals(token))
+      if (node.getCoveredText().equals(token))
         return true;
     }
     return false;
