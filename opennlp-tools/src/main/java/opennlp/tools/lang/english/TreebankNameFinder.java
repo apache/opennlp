@@ -67,7 +67,7 @@ public class TreebankNameFinder {
       Parse[] tagNodes = p.getTagNodes();
       String[] tokens = new String[tagNodes.length];
       for (int ti=0;ti<tagNodes.length;ti++){
-        tokens[ti] = tagNodes[ti].toString();
+        tokens[ti] = tagNodes[ti].getCoveredText();
       }
       //System.err.println(java.util.Arrays.asList(tokens));
       for (int fi = 0, fl = finders.length; fi < fl; fi++) {
