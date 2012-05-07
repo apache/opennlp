@@ -45,6 +45,7 @@ import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.cmdline.parser.BuildModelUpdaterTool;
 import opennlp.tools.cmdline.parser.CheckModelUpdaterTool;
+import opennlp.tools.cmdline.parser.ParserConverterTool;
 import opennlp.tools.cmdline.parser.ParserTool;
 import opennlp.tools.cmdline.parser.ParserTrainerTool;
 import opennlp.tools.cmdline.parser.TaggerModelReplacerTool;
@@ -127,6 +128,7 @@ public final class CLI {
     // Parser
     tools.add(new ParserTool());
     tools.add(new ParserTrainerTool()); // trains everything
+    tools.add(new ParserConverterTool()); // trains everything
     tools.add(new BuildModelUpdaterTool()); // re-trains  build model
     tools.add(new CheckModelUpdaterTool()); // re-trains  build model
     tools.add(new TaggerModelReplacerTool());
