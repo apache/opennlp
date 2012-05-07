@@ -45,7 +45,7 @@ public class ParseToPOSSampleStream extends FilterObjectStream<Parse, POSSample>
       List<String> tags = new ArrayList<String>();
       
       for(Parse tagNode : parse.getTagNodes()) {
-        sentence.add(tagNode.toString());
+        sentence.add(tagNode.getCoveredText());
         tags.add(tagNode.getType());
       }
       
