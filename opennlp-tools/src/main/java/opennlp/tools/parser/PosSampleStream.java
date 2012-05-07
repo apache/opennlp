@@ -42,7 +42,7 @@ public class PosSampleStream extends FilterObjectStream<Parse, POSSample> {
       
       for (int ti=0; ti < nodes.length; ti++) {
         Parse tok = nodes[ti];
-        toks[ti] = tok.toString();
+        toks[ti] = tok.getCoveredText();
         preds[ti] = tok.getType();
       }
       
