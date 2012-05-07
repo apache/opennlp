@@ -119,36 +119,36 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     if (dict != null) {
 
       if (p_2 != null) {
-        unigram[0] = p_2.getHead().toString();
+        unigram[0] = p_2.getHead().getCoveredText();
         u_2 = dict.contains(new StringList(unigram));
       }
 
       if (p2 != null) {
-        unigram[0] = p2.getHead().toString();
+        unigram[0] = p2.getHead().getCoveredText();
         u2 = dict.contains(new StringList(unigram));
       }
 
-      unigram[0] = p0.getHead().toString();
+      unigram[0] = p0.getHead().getCoveredText();
       u0 = dict.contains(new StringList(unigram));
 
       if (p_2 != null && p_1 != null) {
-        bigram[0] = p_2.getHead().toString();
-        bigram[1] = p_1.getHead().toString();
+        bigram[0] = p_2.getHead().getCoveredText();
+        bigram[1] = p_1.getHead().getCoveredText();
         b_2_1 = dict.contains(new StringList(bigram));
 
-        trigram[0] = p_2.getHead().toString();
-        trigram[1] = p_1.getHead().toString();
-        trigram[2] = p0.getHead().toString();
+        trigram[0] = p_2.getHead().getCoveredText();
+        trigram[1] = p_1.getHead().getCoveredText();
+        trigram[2] = p0.getHead().getCoveredText();
         t_2_10 = dict.contains(new StringList(trigram));
       }
       if (p_1 != null && p1 != null) {
-        trigram[0] = p_1.getHead().toString();
-        trigram[1] = p0.getHead().toString();
-        trigram[2] = p1.getHead().toString();
+        trigram[0] = p_1.getHead().getCoveredText();
+        trigram[1] = p0.getHead().getCoveredText();
+        trigram[2] = p1.getHead().getCoveredText();
         t_101 = dict.contains(new StringList(trigram));
       }
       if (p_1 != null) {
-        unigram[0] = p_1.getHead().toString();
+        unigram[0] = p_1.getHead().getCoveredText();
         u_1 = dict.contains(new StringList(unigram));
 
         //extra check for 2==null case
@@ -156,22 +156,22 @@ public class BuildContextGenerator extends AbstractContextGenerator {
         t_2_10 = t_2_10 && u_1 & u_2 & u0;
         t_101 = t_101 && u_1 & u0 && u1;
 
-        bigram[0] = p_1.getHead().toString();
-        bigram[1] = p0.getHead().toString();
+        bigram[0] = p_1.getHead().getCoveredText();
+        bigram[1] = p0.getHead().getCoveredText();
         b_10 = dict.contains(new StringList(bigram)) && u_1 && u0;
       }
       if (p1 != null && p2 != null) {
-        bigram[0] = p1.getHead().toString();
-        bigram[1] = p2.getHead().toString();
+        bigram[0] = p1.getHead().getCoveredText();
+        bigram[1] = p2.getHead().getCoveredText();
         b12 = dict.contains(new StringList(bigram));
 
-        trigram[0] = p0.getHead().toString();
-        trigram[1] = p1.getHead().toString();
-        trigram[2] = p2.getHead().toString();
+        trigram[0] = p0.getHead().getCoveredText();
+        trigram[1] = p1.getHead().getCoveredText();
+        trigram[2] = p2.getHead().getCoveredText();
         t012 = dict.contains(new StringList(trigram));
       }
       if (p1 != null) {
-        unigram[0] = p1.getHead().toString();
+        unigram[0] = p1.getHead().getCoveredText();
         u1 = dict.contains(new StringList(unigram));
 
         //extra check for 2==null case
@@ -179,8 +179,8 @@ public class BuildContextGenerator extends AbstractContextGenerator {
         t012 = t012 && u1 && u2 && u0;
         t_101 = t_101 && u0 && u_1 && u1;
 
-        bigram[0] = p0.getHead().toString();
-        bigram[1] = p1.getHead().toString();
+        bigram[0] = p0.getHead().getCoveredText();
+        bigram[1] = p1.getHead().getCoveredText();
         b01 = dict.contains(new StringList(bigram));
         b01 = b01 && u0 && u1;
       }
