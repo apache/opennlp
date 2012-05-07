@@ -34,7 +34,6 @@ class ConstitDocumentHandler extends DefaultHandler {
   
   private static final String SENT_ELEMENT_NAME = "SENT";
   private static final String WORD_ELEMENT_NAME = "w";
-  private static final String COMPOUND_ATTR_NAME = "compound";
   
   private static final String SENT_TYPE_NAME = "S";
   
@@ -58,7 +57,8 @@ class ConstitDocumentHandler extends DefaultHandler {
     this.parses = parses;
   }
   
-  private String compoundCat;
+  private String cat;
+  private String subcat;
   
   @Override
   public void startElement(String uri, String localName, String qName,
@@ -66,8 +66,6 @@ class ConstitDocumentHandler extends DefaultHandler {
     
     String type = qName;
 
-    boolean isCompoundWord = false;
-    
     if (SENT_ELEMENT_NAME.equals(qName)) {
       // Clear everything to be ready for the next sentence
       text.setLength(0);
@@ -81,24 +79,43 @@ class ConstitDocumentHandler extends DefaultHandler {
     }
     else if (WORD_ELEMENT_NAME.equals(qName)) {
       
-      // insideCompoundElement
-      if (attributes.getValue(COMPOUND_ATTR_NAME) != null) {
-        isCompoundWord = "yes".equals(attributes.getValue(COMPOUND_ATTR_NAME));
+      // Note:
+      // If there are compound words they are represented in a couple
+      // of ways in the training data.
+      // Many of them are marked with the compound attribute, but not 
+      // all of them. Thats why it is not used in the code to detect
+      // a compound word.
+      // Compounds are detected by the fact that a w tag is appearing
+      // inside a w tag.
+      //
+      // The type of a compound word can be encoded either cat of the compound
+      // plus the catint of each word of the compound.
+      // Or all compound words have the cat plus subcat of the compound, in this
+      // case they have an empty cat attribute.
+      //
+      // This implementation hopefully decodes these cases correctly!
+      
+      String newCat = attributes.getValue("cat");
+      if (newCat != null && newCat.length() > 0) {
+        cat = newCat;
       }
       
-      String cat = attributes.getValue("cat");
-      
-      if (isCompoundWord) {
-        compoundCat = cat;
+      String newSubcat = attributes.getValue("subcat");
+      if (newSubcat != null && newSubcat.length() > 0) {
+        subcat = newSubcat;
       }
       
       if (cat != null) {
-        String subcat = attributes.getValue("subcat");
         type = cat + (subcat != null ? subcat : "");
       }
       else {
         String catint = attributes.getValue("catint");
-        type = compoundCat + (catint != null ? catint : "");
+        if (catint != null) {
+          type = cat + (catint != null ? catint : "");
+        }
+        else {
+          type = cat + subcat;
+        }
       }
     }
     
@@ -139,7 +156,7 @@ class ConstitDocumentHandler extends DefaultHandler {
       if (isCreateConstituent) {
         int start = unfinishedCon.getSpan().getStart();
         if (start < offset) {
-          cons.add(new Constituent(unfinishedCon.getLabel(), new Span(start, offset-1)));
+          cons.add(new Constituent(unfinishedCon.getLabel(), new Span(start, offset - 1)));
         }
       }
       
