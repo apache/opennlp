@@ -23,7 +23,7 @@ import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.formats.DetokenizerSampleStreamFactory;
 import opennlp.tools.formats.ParseSampleStreamFactory;
 import opennlp.tools.formats.WordTagSampleStreamFactory;
-import opennlp.tools.postag.POSSample;
+import opennlp.tools.parser.Parse;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
@@ -43,10 +43,12 @@ public class ParseToTokenSampleStreamFactory extends DetokenizerSampleStreamFact
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     language = params.getLang();
 
-    ObjectStream<POSSample> posSampleStream = StreamFactoryRegistry.getFactory(POSSample.class,
+    ObjectStream<Parse> parseSampleStream = StreamFactoryRegistry.getFactory(Parse.class,
         StreamFactoryRegistry.DEFAULT_FORMAT).create(
         ArgumentParser.filter(args, WordTagSampleStreamFactory.Parameters.class));
-    return new POSToTokenSampleStream(createDetokenizer(params), posSampleStream);
+    
+    return (new POSToTokenSampleStream(createDetokenizer(params),
+        new ParseToPOSSampleStream(parseSampleStream)));
   }
   
   public static void registerFactory() {
