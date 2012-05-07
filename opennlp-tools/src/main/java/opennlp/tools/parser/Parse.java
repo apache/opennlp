@@ -1048,7 +1048,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
       nlevels[levels.length] = ki;
       System.out.println(levelsBuff.toString() + ki + "] "+ kids[ki].getType() +
           " " + kids[ki].hashCode() + " -> " + kids[ki].getParent().hashCode() +
-          " " + kids[ki].getParent().getType() + " " + kids[ki].toString());
+          " " + kids[ki].getParent().getType() + " " + kids[ki].getCoveredText());
       codeTree(kids[ki],nlevels);
     }
   }

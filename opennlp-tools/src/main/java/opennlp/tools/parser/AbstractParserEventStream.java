@@ -140,7 +140,7 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
     for (int ci = 0, cl = chunks.length; ci < cl; ci++) {
       Parse c = chunks[ci];
       if (c.isPosTag()) {
-        toks.add(c.toString());
+        toks.add(c.getCoveredText());
         tags.add(c.getType());
         preds.add(Parser.OTHER);
       }
@@ -150,7 +150,7 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
         Parse[] kids = c.getChildren();
         for (int ti=0,tl=kids.length;ti<tl;ti++) {
           Parse tok = kids[ti];
-          toks.add(tok.toString());
+          toks.add(tok.getCoveredText());
           tags.add(tok.getType());
           if (start) {
             preds.add(Parser.START + ctype);
@@ -173,14 +173,14 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
     for (int ci = 0, cl = chunks.length; ci < cl; ci++) {
       Parse c = chunks[ci];
       if (c.isPosTag()) {
-        toks.add(c.toString());
+        toks.add(c.getCoveredText());
         preds.add(c.getType());
       }
       else {
         Parse[] kids = c.getChildren();
         for (int ti=0,tl=kids.length;ti<tl;ti++) {
           Parse tok = kids[ti];
-          toks.add(tok.toString());
+          toks.add(tok.getCoveredText());
           preds.add(tok.getType());
         }
       }
