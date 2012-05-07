@@ -23,7 +23,6 @@ import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.formats.DetokenizerSampleStreamFactory;
 import opennlp.tools.formats.ParseSampleStreamFactory;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.postag.POSSample;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
@@ -45,7 +44,7 @@ public class ParseToSentenceSampleStreamFactory extends DetokenizerSampleStreamF
     
     ObjectStream<Parse> parseSampleStream = StreamFactoryRegistry.getFactory(Parse.class,
         StreamFactoryRegistry.DEFAULT_FORMAT).create(
-        ArgumentParser.filter(args, Parameters.class));
+        ArgumentParser.filter(args, ParseSampleStreamFactory.Parameters.class));
     
     return new POSToSentenceSampleStream(createDetokenizer(params),
         new ParseToPOSSampleStream(parseSampleStream), 30);
