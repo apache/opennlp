@@ -23,7 +23,6 @@ import opennlp.tools.cmdline.params.LanguageFormatParams;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.formats.convert.FileToByteArraySampleStream;
-import opennlp.tools.namefind.NameSample;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
 
@@ -47,7 +46,7 @@ public class ConstitParseSampleStreamFactory extends LanguageSampleStreamFactory
   }
   
   public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(NameSample.class, "frenchtreebank",
+    StreamFactoryRegistry.registerFactory(Parse.class, "frenchtreebank",
         new ConstitParseSampleStreamFactory());
   }
 }
