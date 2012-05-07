@@ -386,7 +386,7 @@ public abstract class AbstractBottomUpParser implements Parser {
     Parse sp = null;
     for (int i = 0, il = children.length; i < il; i++) {
       sp = children[i];
-      words[i] = sp.getHead().toString();
+      words[i] = sp.getHead().getCoveredText();
       ptags[i] = sp.getType();
     }
     //System.err.println("adjusted mcs = "+(minChunkScore-p.getProb()));
@@ -457,7 +457,7 @@ public abstract class AbstractBottomUpParser implements Parser {
     String[] words = new String[children.length];
     double[] probs = new double[words.length];
     for (int i = 0,il = children.length; i < il; i++) {
-      words[i] = children[i].toString();
+      words[i] = children[i].getCoveredText();
     }
     Sequence[] ts = tagger.topKSequences(words);
     if (ts.length == 0) {
@@ -533,7 +533,7 @@ public abstract class AbstractBottomUpParser implements Parser {
       String[] words = new String[pwords.length];
       //add all uni-grams
       for (int wi=0;wi<words.length;wi++) {
-        words[wi] = pwords[wi].toString();
+        words[wi] = pwords[wi].getCoveredText();
       }
 
       mdict.add(new StringList(words), 1, 1);
@@ -541,14 +541,14 @@ public abstract class AbstractBottomUpParser implements Parser {
       Parse[] chunks = collapsePunctuation(ParserEventStream.getInitialChunks(p),rules.getPunctuationTags());
       String[] cwords = new String[chunks.length];
       for (int wi=0;wi<cwords.length;wi++) {
-        cwords[wi] = chunks[wi].getHead().toString();
+        cwords[wi] = chunks[wi].getHead().getCoveredText();
       }
       mdict.add(new StringList(cwords), 2, 3);
 
       //emulate reductions to produce additional n-grams
       int ci = 0;
       while (ci < chunks.length) {
-        //System.err.println("chunks["+ci+"]="+chunks[ci].getHead().toString()+" chunks.length="+chunks.length);
+        //System.err.println("chunks["+ci+"]="+chunks[ci].getHead().getCoveredText()+" chunks.length="+chunks.length);
         if (lastChild(chunks[ci], chunks[ci].getParent(),rules.getPunctuationTags())) {
           //perform reduce
           int reduceStart = ci;
@@ -561,11 +561,11 @@ public abstract class AbstractBottomUpParser implements Parser {
           if (chunks.length != 0) {
             String[] window = new String[5];
             int wi = 0;
-            if (ci-2 >= 0) window[wi++] = chunks[ci-2].getHead().toString();
-            if (ci-1 >= 0) window[wi++] = chunks[ci-1].getHead().toString();
-            window[wi++] = chunks[ci].getHead().toString();
-            if (ci+1 < chunks.length) window[wi++] = chunks[ci+1].getHead().toString();
-            if (ci+2 < chunks.length) window[wi++] = chunks[ci+2].getHead().toString();
+            if (ci-2 >= 0) window[wi++] = chunks[ci-2].getHead().getCoveredText();
+            if (ci-1 >= 0) window[wi++] = chunks[ci-1].getHead().getCoveredText();
+            window[wi++] = chunks[ci].getHead().getCoveredText();
+            if (ci+1 < chunks.length) window[wi++] = chunks[ci+1].getHead().getCoveredText();
+            if (ci+2 < chunks.length) window[wi++] = chunks[ci+2].getHead().getCoveredText();
             if (wi < 5) {
               String[] subWindow = new String[wi];
               for (int swi=0;swi<wi;swi++) {
