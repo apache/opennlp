@@ -44,7 +44,7 @@ public abstract class AbstractContextGenerator {
   protected String punct(Parse punct, int i) {
     StringBuilder feat = new StringBuilder(5);
     feat.append(i).append("=");
-    feat.append(punct.toString());
+    feat.append(punct.getCoveredText());
     return feat.toString();
   }
 
@@ -68,7 +68,7 @@ public abstract class AbstractContextGenerator {
       if (useLabel && i < 0) {
         feat.append(p.getLabel()).append("|");
       }
-      feat.append(p.getType()).append("|").append(p.getHead().toString());
+      feat.append(p.getType()).append("|").append(p.getHead().getCoveredText());
     }
     else {
       feat.append(EOS);
@@ -303,7 +303,7 @@ public abstract class AbstractContextGenerator {
       for (Iterator<Parse> pi=punctuation.iterator();pi.hasNext();) {
         Parse punct = pi.next();
         if (node != null) {
-          feat.append(node.getHead().toString()).append("|").append(type).append("|").append(node.getType()).append("|").append(punct.getType());
+          feat.append(node.getHead().getCoveredText()).append("|").append(type).append("|").append(node.getType()).append("|").append(punct.getType());
         }
         else {
           feat.append(type).append("|").append(EOS).append("|").append(punct.getType());
@@ -328,7 +328,7 @@ public abstract class AbstractContextGenerator {
     }
     else {
       if (node != null) {
-        feat.append(node.getHead().toString()).append("|").append(type).append("|").append(node.getType());
+        feat.append(node.getHead().getCoveredText()).append("|").append(type).append("|").append(node.getType());
       }
       else {
         feat.append(type).append("|").append(EOS);
@@ -357,7 +357,7 @@ public abstract class AbstractContextGenerator {
    */
   protected void checkcons(Parse child, String i, String type, List<String> features) {
     StringBuilder feat = new StringBuilder(20);
-    feat.append("c").append(i).append("=").append(child.getType()).append("|").append(child.getHead().toString()).append("|").append(type);
+    feat.append("c").append(i).append("=").append(child.getType()).append("|").append(child.getHead().getCoveredText()).append("|").append(type);
     features.add(feat.toString());
     feat.setLength(0);
     feat.append("c").append(i).append("*=").append(child.getType()).append("|").append(type);
@@ -366,13 +366,13 @@ public abstract class AbstractContextGenerator {
 
   protected void checkcons(Parse p1, Parse p2, String type, List<String> features) {
     StringBuilder feat = new StringBuilder(20);
-    feat.append("cil=").append(type).append(",").append(p1.getType()).append("|").append(p1.getHead().toString()).append(",").append(p2.getType()).append("|").append(p2.getHead().toString());
+    feat.append("cil=").append(type).append(",").append(p1.getType()).append("|").append(p1.getHead().getCoveredText()).append(",").append(p2.getType()).append("|").append(p2.getHead().getCoveredText());
     features.add(feat.toString());
     feat.setLength(0);
-    feat.append("ci*l=").append(type).append(",").append(p1.getType()).append(",").append(p2.getType()).append("|").append(p2.getHead().toString());
+    feat.append("ci*l=").append(type).append(",").append(p1.getType()).append(",").append(p2.getType()).append("|").append(p2.getHead().getCoveredText());
     features.add(feat.toString());
     feat.setLength(0);
-    feat.append("cil*=").append(type).append(",").append(p1.getType()).append("|").append(p1.getHead().toString()).append(",").append(p2.getType());
+    feat.append("cil*=").append(type).append(",").append(p1.getType()).append("|").append(p1.getHead().getCoveredText()).append(",").append(p2.getType());
     features.add(feat.toString());
     feat.setLength(0);
     feat.append("ci*l*=").append(type).append(",").append(p1.getType()).append(",").append(p2.getType());
