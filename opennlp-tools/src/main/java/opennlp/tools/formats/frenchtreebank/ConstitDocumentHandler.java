@@ -83,7 +83,7 @@ class ConstitDocumentHandler extends DefaultHandler {
       
       // insideCompoundElement
       if (attributes.getValue(COMPOUND_ATTR_NAME) != null) {
-        isCompoundWord = "yes".equals(COMPOUND_ATTR_NAME);
+        isCompoundWord = "yes".equals(attributes.getValue(COMPOUND_ATTR_NAME));
       }
       
       String cat = attributes.getValue("cat");
@@ -165,6 +165,8 @@ class ConstitDocumentHandler extends DefaultHandler {
         
         insideSentenceElement = false;
       }
+      
+      tokenBuffer.setLength(0);
     }
   }
 }
