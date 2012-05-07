@@ -236,7 +236,7 @@ public class DefaultParse extends AbstractParse {
   
   @Override
   public String toString() {
-    return parse.toString();
+    return parse.getCoveredText();
   }
 
 
