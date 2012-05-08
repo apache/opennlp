@@ -42,7 +42,7 @@ import opennlp.tools.util.StringUtil;
  * Provides a means of determining which tags are valid for a particular word
  * based on a tag dictionary read from a file.
  */
-public class POSDictionary implements Iterable<String>, TagDictionary {
+public class POSDictionary implements Iterable<String>, MutableTagDictionary {
 
   private Map<String, String[]> dictionary;
 
@@ -158,13 +158,19 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
   }
 
   /**
-   * Adds the tags for the word.
-   *
-   * @param word The word to be added to the dictionary.
-   * @param tags The set of tags associated with the specified word.
+   * Associates the specified tags with the specified word. If the dictionary
+   * previously contained the word, the old tags are replaced by the specified
+   * ones.
+   * 
+   * @param word
+   *          The word to be added to the dictionary.
+   * @param tags
+   *          The set of tags associated with the specified word.
+   * 
+   * @deprecated Use {@link #put(String, String[])} instead
    */
   void addTags(String word, String... tags) {
-    dictionary.put(word, tags);
+    put(word, tags);
   }
 
   /**
@@ -313,5 +319,17 @@ public class POSDictionary implements Iterable<String>, TagDictionary {
     }
     
     return newPosDict;
+  }
+
+  public String[] put(String word, String... tags) {
+    if (this.caseSensitive) {
+      return dictionary.put(word, tags);
+    } else {
+      return dictionary.put(word.toLowerCase(), tags);
+    }
+  }
+
+  public boolean isCaseSensitive() {
+    return this.caseSensitive;
   }
 }
