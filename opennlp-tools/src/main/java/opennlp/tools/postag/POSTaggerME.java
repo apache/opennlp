@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import opennlp.model.AbstractModel;
 import opennlp.model.EventStream;
@@ -36,6 +38,7 @@ import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.featuregen.StringPattern;
 import opennlp.tools.util.model.ModelType;
 
 /**
@@ -387,5 +390,72 @@ public class POSTaggerME implements POSTagger {
     ngramModel.cutoff(cutoff, Integer.MAX_VALUE);
     
     return ngramModel.toDictionary(true);
+  }
+
+  public static void populatePOSDictionary(ObjectStream<POSSample> samples,
+      MutableTagDictionary dict, int cutoff) throws IOException {
+    System.out.println("Expanding POS Dictionary ...");
+    long start = System.nanoTime();
+
+    // the data structure will store the word, the tag, and the number of
+    // occurrences
+    Map<String, Map<String, AtomicInteger>> newEntries = new HashMap<String, Map<String, AtomicInteger>>();
+    POSSample sample;
+    while ((sample = samples.read()) != null) {
+      String[] words = sample.getSentence();
+      String[] tags = sample.getTags();
+
+      for (int i = 0; i < words.length; i++) {
+        // only store words
+        if (StringPattern.recognize(words[i]).isAllLetter()) {
+          String word;
+          if (dict.isCaseSensitive()) {
+            word = words[i];
+          } else {
+            word = words[i].toLowerCase();
+          }
+
+          if (!newEntries.containsKey(word)) {
+            newEntries.put(word, new HashMap<String, AtomicInteger>());
+          }
+
+          String[] dictTags = dict.getTags(word);
+          if (dictTags != null) {
+            for (String tag : dictTags) {
+              // for this tags we start with the cutoff
+              Map<String, AtomicInteger> value = newEntries.get(word);
+              if (!value.containsKey(tag)) {
+                value.put(tag, new AtomicInteger(cutoff));
+              }
+            }
+          }
+
+          if (!newEntries.get(word).containsKey(tags[i])) {
+            newEntries.get(word).put(tags[i], new AtomicInteger(1));
+          } else {
+            newEntries.get(word).get(tags[i]).incrementAndGet();
+          }
+        }
+      }
+    }
+    
+    // now we check if the word + tag pairs have enough occurrences, if yes we
+    // add it to the dictionary 
+    for (Entry<String, Map<String, AtomicInteger>> wordEntry : newEntries
+        .entrySet()) {
+      List<String> tagsForWord = new ArrayList<String>();
+      for (Entry<String, AtomicInteger> entry : wordEntry.getValue().entrySet()) {
+        if (entry.getValue().get() >= cutoff) {
+          tagsForWord.add(entry.getKey());
+        }
+      }
+      if (tagsForWord.size() > 0) {
+        dict.put(wordEntry.getKey(),
+            tagsForWord.toArray(new String[tagsForWord.size()]));
+      }
+    }
+
+    System.out.println("... finished expanding POS Dictionary. ["
+        + (System.nanoTime() - start) / 1000000 + "ms]");
   }
 }
