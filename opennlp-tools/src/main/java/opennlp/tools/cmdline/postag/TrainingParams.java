@@ -42,6 +42,10 @@ interface TrainingParams extends BasicTrainingParams {
   @OptionalParameter
   Integer getNgram();
   
+  @ParameterDescription(valueName = "tagDictCutoff", description = "TagDictionary cutoff. If specified will create/expand a mutable TagDictionary")
+  @OptionalParameter
+  Integer getTagDictCutoff();
+  
   @ParameterDescription(valueName = "factoryName", description = "A sub-class of POSTaggerFactory where to get implementation and resources.")
   @OptionalParameter
   String getFactory();
