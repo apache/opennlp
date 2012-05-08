@@ -229,4 +229,13 @@ public class POSTaggerFactory extends BaseToolFactory {
     }
     return theFactory;
   }
+
+  public void rereadPOSDictionary() throws InvalidFormatException, IOException {
+    this.posDictionary = null;
+  }
+
+  public POSDictionary createEmptyPOSDictionary() {
+    this.posDictionary = new POSDictionary();
+    return this.posDictionary;
+  }
 }

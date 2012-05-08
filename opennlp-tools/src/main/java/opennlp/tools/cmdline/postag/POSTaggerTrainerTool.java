@@ -28,6 +28,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.cmdline.postag.POSTaggerTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.postag.MutableTagDictionary;
 import opennlp.tools.postag.POSDictionary;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
@@ -103,6 +104,27 @@ public final class POSTaggerTrainerTool
       throw new TerminateToolException(-1, e.getMessage());
     }
     
+    if (params.getTagDictCutoff() != null) {
+      try {
+        POSDictionary dict = postaggerFactory.getPOSDictionary();
+        if (dict == null) {
+          dict = postaggerFactory.createEmptyPOSDictionary();
+        }
+        if (dict instanceof MutableTagDictionary) {
+          POSTaggerME.populatePOSDictionary(sampleStream, dict,
+              params.getTagDictCutoff());
+        } else {
+          throw new IllegalArgumentException(
+              "Can't extend a POSDictionary that does not implement MutableTagDictionary.");
+        }
+        sampleStream.reset();
+      } catch (IOException e) {
+        throw new TerminateToolException(-1,
+            "IO error while creating/extending POS Dictionary: "
+                + e.getMessage());
+      }
+    }
+
     POSModel model;
     try {
       model = opennlp.tools.postag.POSTaggerME.train(factory.getLang(),
