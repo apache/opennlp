@@ -17,6 +17,9 @@
 
 package opennlp.tools.postag;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -102,6 +105,24 @@ public class POSTaggerFactory extends BaseToolFactory {
     return artifactMap;
   }
 
+  public POSDictionary createPOSDictionary(File dictionary)
+      throws InvalidFormatException, FileNotFoundException, IOException {
+    return createPOSDictionary(new FileInputStream(dictionary));
+  }
+
+  public POSDictionary createPOSDictionary(InputStream in)
+      throws InvalidFormatException, IOException {
+    return POSDictionary.create(in);
+  }
+
+  public void setPOSDictionary(POSDictionary dictionary) {
+    if (artifactProvider != null) {
+      throw new IllegalStateException(
+          "Can not set tag dictionary while using artifact provider.");
+    }
+    this.posDictionary = dictionary;
+  }
+
   public POSDictionary getPOSDictionary() {
     if(this.posDictionary == null && artifactProvider != null)
       this.posDictionary = artifactProvider.getArtifact(TAG_DICTIONARY_ENTRY_NAME);
@@ -112,6 +133,14 @@ public class POSTaggerFactory extends BaseToolFactory {
     if(this.ngramDictionary == null && artifactProvider != null)
       this.ngramDictionary = artifactProvider.getArtifact(NGRAM_DICTIONARY_ENTRY_NAME);
     return this.ngramDictionary;
+  }
+
+  public void setDictionary(Dictionary ngramDict) {
+    if (artifactProvider != null) {
+      throw new IllegalStateException(
+          "Can not set ngram dictionary while using artifact provider.");
+    }
+    this.ngramDictionary = ngramDict;
   }
 
   public POSContextGenerator getPOSContextGenerator() {
@@ -230,12 +259,8 @@ public class POSTaggerFactory extends BaseToolFactory {
     return theFactory;
   }
 
-  public void rereadPOSDictionary() throws InvalidFormatException, IOException {
-    this.posDictionary = null;
-  }
-
   public POSDictionary createEmptyPOSDictionary() {
-    this.posDictionary = new POSDictionary();
+    this.posDictionary = new POSDictionary(true);
     return this.posDictionary;
   }
 }
