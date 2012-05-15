@@ -407,7 +407,7 @@ public class POSTaggerME implements POSTagger {
 
       for (int i = 0; i < words.length; i++) {
         // only store words
-        if (StringPattern.recognize(words[i]).isAllLetter()) {
+        if (!StringPattern.recognize(words[i]).containsDigit()) {
           String word;
           if (dict.isCaseSensitive()) {
             word = words[i];
