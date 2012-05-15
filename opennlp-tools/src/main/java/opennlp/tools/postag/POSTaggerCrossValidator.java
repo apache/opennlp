@@ -17,6 +17,7 @@
 
 package opennlp.tools.postag;
 
+import java.io.File;
 import java.io.IOException;
 
 import opennlp.tools.dictionary.Dictionary;
@@ -33,8 +34,6 @@ public class POSTaggerCrossValidator {
   
   private final TrainingParameters params;
   
-  private POSDictionary tagDictionary;
-  private Dictionary ngramDictionary;
   private Integer ngramCutoff;
 
   private Mean wordAccuracy = new Mean();
@@ -46,6 +45,7 @@ public class POSTaggerCrossValidator {
   private POSTaggerFactory factory;
 
   private Integer tagdicCutoff = null;
+  private File tagDictionaryFile;
   
   /**
    * Creates a {@link POSTaggerCrossValidator} that builds a ngram dictionary
@@ -53,17 +53,16 @@ public class POSTaggerCrossValidator {
    * the tag and the ngram dictionaries.
    */
   public POSTaggerCrossValidator(String languageCode,
-      TrainingParameters trainParam, POSDictionary tagDictionary,
+      TrainingParameters trainParam, File tagDictionary,
       Integer ngramCutoff, Integer tagdicCutoff, String factoryClass,
       POSTaggerEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
     this.params = trainParam;
-    this.tagDictionary = tagDictionary;
     this.ngramCutoff = ngramCutoff;
     this.listeners = listeners;
     this.factoryClassName = factoryClass;
-    this.ngramDictionary = null;
     this.tagdicCutoff = tagdicCutoff;
+    this.tagDictionaryFile = tagDictionary;
   }
 
   /**
@@ -72,34 +71,15 @@ public class POSTaggerCrossValidator {
    */
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSTaggerFactory factory,
-      Integer tagdicCutoff, POSTaggerEvaluationMonitor... listeners) {
-    this.languageCode = languageCode;
-    this.params = trainParam;
-    this.listeners = listeners;
-    this.factory = factory;
-    this.tagDictionary = null;
-    this.ngramDictionary = null;
-    this.ngramCutoff = null;
-    this.tagdicCutoff = tagdicCutoff;
-  }
-  
-  /**
-   * Creates a {@link POSTaggerCrossValidator} using the given
-   * {@link POSTaggerFactory}.
-   */
-  public POSTaggerCrossValidator(String languageCode,
-      TrainingParameters trainParam, Integer posdicCutoff, POSTaggerFactory factory,
       POSTaggerEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
     this.params = trainParam;
     this.listeners = listeners;
     this.factory = factory;
-    this.tagDictionary = null;
-    this.ngramDictionary = null;
     this.ngramCutoff = null;
-    this.tagdicCutoff = posdicCutoff;
+    this.tagdicCutoff = null;
   }
-
+  
   /**
    * @deprecated use
    *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
@@ -108,7 +88,7 @@ public class POSTaggerCrossValidator {
    */
   public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
       Dictionary ngramDictionary, int cutoff, int iterations) {
-    this(languageCode, create(modelType, cutoff, iterations), null, create(ngramDictionary, tagDictionary));
+    this(languageCode, create(modelType, cutoff, iterations), create(ngramDictionary, tagDictionary));
   }
   
   /**
@@ -119,7 +99,7 @@ public class POSTaggerCrossValidator {
    */
   public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
       Dictionary ngramDictionary) {
-    this(languageCode, create(modelType, 5, 100), null, create(ngramDictionary, tagDictionary));
+    this(languageCode, create(modelType, 5, 100), create(ngramDictionary, tagDictionary));
   }
 
   /**
@@ -130,7 +110,7 @@ public class POSTaggerCrossValidator {
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSDictionary tagDictionary,
       POSTaggerEvaluationMonitor... listeners) {
-    this(languageCode, trainParam, null, create(null, tagDictionary), listeners);
+    this(languageCode, trainParam, create(null, tagDictionary), listeners);
   }
   
   /**
@@ -142,8 +122,8 @@ public class POSTaggerCrossValidator {
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSDictionary tagDictionary,
       Integer ngramCutoff, POSTaggerEvaluationMonitor... listeners) {
-    this(languageCode, trainParam, tagDictionary, ngramCutoff, null,
-        POSTaggerFactory.class.getCanonicalName(), listeners);
+    this(languageCode, trainParam, create(null, tagDictionary), listeners);
+    this.ngramCutoff = ngramCutoff;
   }
 
   /**
@@ -154,7 +134,7 @@ public class POSTaggerCrossValidator {
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSDictionary tagDictionary,
       Dictionary ngramDictionary, POSTaggerEvaluationMonitor... listeners) {
-    this(languageCode, trainParam, null, create(ngramDictionary, tagDictionary), listeners);
+    this(languageCode, trainParam, create(ngramDictionary, tagDictionary), listeners);
   }
   
   /**
@@ -177,8 +157,13 @@ public class POSTaggerCrossValidator {
       CrossValidationPartitioner.TrainingSampleStream<POSSample> trainingSampleStream = partitioner
           .next();
       
-      Dictionary ngramDict = null;
-      if (this.ngramDictionary == null) {
+      if (this.factory == null) {
+        this.factory = POSTaggerFactory.create(this.factoryClassName, null,
+            null);
+      }
+
+      Dictionary ngramDict = this.factory.getDictionary();
+      if (ngramDict == null) {
         if(this.ngramCutoff != null) {
           System.err.print("Building ngram dictionary ... ");
           ngramDict = POSTaggerME.buildNGramDictionary(trainingSampleStream,
@@ -186,18 +171,19 @@ public class POSTaggerCrossValidator {
           trainingSampleStream.reset();
           System.err.println("done");
         }
-      } else {
-        ngramDict = this.ngramDictionary;
+        this.factory.setDictionary(ngramDict);
       }
       
-      if (this.factory == null) {
-        this.factory = POSTaggerFactory.create(this.factoryClassName,
-            ngramDict, tagDictionary);
+      if (this.tagDictionaryFile != null
+          && this.factory.getPOSDictionary() == null) {
+        this.factory.setPOSDictionary(this.factory
+            .createPOSDictionary(tagDictionaryFile));
       }
       if (this.tagdicCutoff != null) {
         POSDictionary dict = this.factory.getPOSDictionary();
         if (dict == null) {
           dict = this.factory.createEmptyPOSDictionary();
+          this.factory.setPOSDictionary(dict);
         }
         if (dict instanceof MutableTagDictionary) {
           POSTaggerME.populatePOSDictionary(trainingSampleStream, dict,
@@ -219,7 +205,7 @@ public class POSTaggerCrossValidator {
       wordAccuracy.add(evaluator.getWordAccuracy(), evaluator.getWordCount());
 
       if (this.tagdicCutoff != null) {
-        this.factory.rereadPOSDictionary();
+        this.factory.setPOSDictionary(null);
       }
 
     }
