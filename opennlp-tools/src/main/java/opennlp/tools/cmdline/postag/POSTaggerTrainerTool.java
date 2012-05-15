@@ -18,7 +18,6 @@
 package opennlp.tools.cmdline.postag;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import opennlp.model.TrainUtil;
@@ -85,30 +84,30 @@ public final class POSTaggerTrainerTool
       System.err.println("done");
     }
 
-    // TODO: Move to util method ...
-    POSDictionary tagdict = null;
+    POSTaggerFactory postaggerFactory = null;
+    try {
+      postaggerFactory = POSTaggerFactory.create(params.getFactory(),
+          ngramDict, null);
+    } catch (InvalidFormatException e) {
+      throw new TerminateToolException(-1, e.getMessage());
+    }
+
     if (params.getDict() != null) {
       try {
-        tagdict = POSDictionary.create(new FileInputStream(params.getDict()));
+        postaggerFactory.setPOSDictionary(postaggerFactory
+            .createPOSDictionary(params.getDict()));
       } catch (IOException e) {
         throw new TerminateToolException(-1,
             "IO error while loading POS Dictionary: " + e.getMessage());
       }
     }
 
-    POSTaggerFactory postaggerFactory = null;
-    try {
-      postaggerFactory = POSTaggerFactory.create(params.getFactory(),
-          ngramDict, tagdict);
-    } catch (InvalidFormatException e) {
-      throw new TerminateToolException(-1, e.getMessage());
-    }
-    
     if (params.getTagDictCutoff() != null) {
       try {
         POSDictionary dict = postaggerFactory.getPOSDictionary();
         if (dict == null) {
           dict = postaggerFactory.createEmptyPOSDictionary();
+          postaggerFactory.setPOSDictionary(dict);
         }
         if (dict instanceof MutableTagDictionary) {
           POSTaggerME.populatePOSDictionary(sampleStream, dict,

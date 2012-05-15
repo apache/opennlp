@@ -18,7 +18,6 @@
 package opennlp.tools.cmdline.postag;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -85,14 +84,8 @@ public final class POSTaggerCrossValidatorTool
 
     POSTaggerCrossValidator validator;
     try {
-      // TODO: Move to util method ...
-      POSDictionary tagdict = null;
-      if (params.getDict() != null) {
-        tagdict = POSDictionary.create(new FileInputStream(params.getDict()));
-      }
-
       validator = new POSTaggerCrossValidator(factory.getLang(), mlParams,
-          tagdict, params.getNgram(), params.getTagDictCutoff(),
+          params.getDict(), params.getNgram(), params.getTagDictCutoff(),
           params.getFactory(), missclassifiedListener, reportListener);
       
       validator.evaluate(sampleStream, params.getFolds());
