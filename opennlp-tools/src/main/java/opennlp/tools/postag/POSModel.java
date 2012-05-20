@@ -111,9 +111,9 @@ public final class POSModel extends BaseModel {
    *
    * @return tag dictionary or null if not used
    */
-  public POSDictionary getTagDictionary() {
+  public TagDictionary getTagDictionary() {
     if(getFactory() != null)
-      return getFactory().getPOSDictionary();
+      return getFactory().getTagDictionary();
     return null;
   }
   

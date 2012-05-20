@@ -33,6 +33,7 @@ import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.postag.TagDictionary;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
@@ -94,8 +95,8 @@ public final class POSTaggerTrainerTool
 
     if (params.getDict() != null) {
       try {
-        postaggerFactory.setPOSDictionary(postaggerFactory
-            .createPOSDictionary(params.getDict()));
+        postaggerFactory.setTagDictionary(postaggerFactory
+            .createTagDictionary(params.getDict()));
       } catch (IOException e) {
         throw new TerminateToolException(-1,
             "IO error while loading POS Dictionary: " + e.getMessage());
@@ -104,13 +105,13 @@ public final class POSTaggerTrainerTool
 
     if (params.getTagDictCutoff() != null) {
       try {
-        POSDictionary dict = postaggerFactory.getPOSDictionary();
+        TagDictionary dict = postaggerFactory.getTagDictionary();
         if (dict == null) {
-          dict = postaggerFactory.createEmptyPOSDictionary();
-          postaggerFactory.setPOSDictionary(dict);
+          dict = postaggerFactory.createEmptyTagDictionary();
+          postaggerFactory.setTagDictionary(dict);
         }
         if (dict instanceof MutableTagDictionary) {
-          POSTaggerME.populatePOSDictionary(sampleStream, dict,
+          POSTaggerME.populatePOSDictionary(sampleStream, (MutableTagDictionary)dict,
               params.getTagDictCutoff());
         } else {
           throw new IllegalArgumentException(

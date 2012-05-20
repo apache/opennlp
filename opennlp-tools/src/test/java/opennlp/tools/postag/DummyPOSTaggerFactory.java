@@ -49,8 +49,9 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
     return new DummyPOSSequenceValidator();
   }
   
-  public POSDictionary getPOSDictionary() {
-    return (POSDictionary) artifactProvider.getArtifact(DUMMY_POSDICT);
+  @Override
+  public DummyPOSDictionary getTagDictionary() {
+    return (DummyPOSDictionary) artifactProvider.getArtifact(DUMMY_POSDICT);
   }
   
   @Override

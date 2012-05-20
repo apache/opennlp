@@ -47,7 +47,7 @@ public class POSTaggerFactory extends BaseToolFactory {
   private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram.dictionary";
 
   protected Dictionary ngramDictionary;
-  protected POSDictionary posDictionary;
+  protected TagDictionary posDictionary;
 
   /**
    * Creates a {@link POSTaggerFactory} that provides the default implementation
@@ -78,7 +78,7 @@ public class POSTaggerFactory extends BaseToolFactory {
    * @param posDictionary
    */
   public POSTaggerFactory(Dictionary ngramDictionary,
-      POSDictionary posDictionary) {
+      TagDictionary posDictionary) {
     this.ngramDictionary = ngramDictionary;
     this.posDictionary = posDictionary;
   }
@@ -105,17 +105,17 @@ public class POSTaggerFactory extends BaseToolFactory {
     return artifactMap;
   }
 
-  public POSDictionary createPOSDictionary(File dictionary)
+  public TagDictionary createTagDictionary(File dictionary)
       throws InvalidFormatException, FileNotFoundException, IOException {
-    return createPOSDictionary(new FileInputStream(dictionary));
+    return createTagDictionary(new FileInputStream(dictionary));
   }
 
-  public POSDictionary createPOSDictionary(InputStream in)
+  public TagDictionary createTagDictionary(InputStream in)
       throws InvalidFormatException, IOException {
     return POSDictionary.create(in);
   }
 
-  public void setPOSDictionary(POSDictionary dictionary) {
+  public void setTagDictionary(TagDictionary dictionary) {
     if (artifactProvider != null) {
       throw new IllegalStateException(
           "Can not set tag dictionary while using artifact provider.");
@@ -123,7 +123,7 @@ public class POSTaggerFactory extends BaseToolFactory {
     this.posDictionary = dictionary;
   }
 
-  public POSDictionary getPOSDictionary() {
+  public TagDictionary getTagDictionary() {
     if(this.posDictionary == null && artifactProvider != null)
       this.posDictionary = artifactProvider.getArtifact(TAG_DICTIONARY_ENTRY_NAME);
     return this.posDictionary;
@@ -152,7 +152,7 @@ public class POSTaggerFactory extends BaseToolFactory {
   }
 
   public SequenceValidator<String> getSequenceValidator() {
-    return new DefaultPOSSequenceValidator(getPOSDictionary());
+    return new DefaultPOSSequenceValidator(getTagDictionary());
   }
   
   static class POSDictionarySerializer implements ArtifactSerializer<POSDictionary> {
@@ -226,7 +226,7 @@ public class POSTaggerFactory extends BaseToolFactory {
   }
   
   public static POSTaggerFactory create(String subclassName,
-      Dictionary ngramDictionary, POSDictionary posDictionary)
+      Dictionary ngramDictionary, TagDictionary posDictionary)
       throws InvalidFormatException {
     if (subclassName == null) {
       // will create the default factory
@@ -238,19 +238,19 @@ public class POSTaggerFactory extends BaseToolFactory {
       try {
         Constructor<?> constructor = null;
         constructor = factoryClass.getConstructor(Dictionary.class,
-            POSDictionary.class);
+            TagDictionary.class);
         theFactory = (POSTaggerFactory) constructor.newInstance(
             ngramDictionary, posDictionary);
       } catch (NoSuchMethodException e) {
         String msg = "Could not instantiate the "
             + subclassName
-            + ". The mandatory constructor (Dictionary, POSDictionary) is missing.";
+            + ". The mandatory constructor (Dictionary, TagDictionary) is missing.";
         System.err.println(msg);
         throw new IllegalArgumentException(msg);
       } catch (Exception e) {
         String msg = "Could not instantiate the "
             + subclassName
-            + ". The constructor (Dictionary, POSDictionary) throw an exception.";
+            + ". The constructor (Dictionary, TagDictionary) throw an exception.";
         System.err.println(msg);
         e.printStackTrace();
         throw new InvalidFormatException(msg);
@@ -259,7 +259,7 @@ public class POSTaggerFactory extends BaseToolFactory {
     return theFactory;
   }
 
-  public POSDictionary createEmptyPOSDictionary() {
+  public TagDictionary createEmptyTagDictionary() {
     this.posDictionary = new POSDictionary(true);
     return this.posDictionary;
   }

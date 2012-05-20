@@ -23,9 +23,9 @@ import opennlp.tools.util.SequenceValidator;
 
 public class DefaultPOSSequenceValidator implements SequenceValidator<String> {
 
-  private POSDictionary tagDictionary;
+  private TagDictionary tagDictionary;
 
-  public DefaultPOSSequenceValidator(POSDictionary tagDictionary) {
+  public DefaultPOSSequenceValidator(TagDictionary tagDictionary) {
     this.tagDictionary = tagDictionary;
   }
 
