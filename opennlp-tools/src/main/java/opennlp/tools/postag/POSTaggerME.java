@@ -96,7 +96,7 @@ public class POSTaggerME implements POSTagger {
     POSTaggerFactory factory = model.getFactory();
     posModel = model.getPosModel();
     contextGen = factory.getPOSContextGenerator(beamSize);
-    tagDictionary = factory.getPOSDictionary();
+    tagDictionary = factory.getTagDictionary();
     size = beamSize;
     beam = new BeamSearch<String>(size, contextGen, posModel,
         sequenceValidator, cacheSize);
@@ -113,7 +113,7 @@ public class POSTaggerME implements POSTagger {
     POSTaggerFactory factory = model.getFactory();
     posModel = model.getPosModel();
     contextGen = factory.getPOSContextGenerator(beamSize);
-    tagDictionary = factory.getPOSDictionary();
+    tagDictionary = factory.getTagDictionary();
     size = beamSize;
     beam = new BeamSearch<String>(size, contextGen, posModel,
         factory.getSequenceValidator(), cacheSize);

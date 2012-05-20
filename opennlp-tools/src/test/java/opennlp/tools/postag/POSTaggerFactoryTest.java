@@ -67,7 +67,7 @@ public class POSTaggerFactoryTest {
         new DummyPOSTaggerFactory(dic, posDict));
 
     POSTaggerFactory factory = posModel.getFactory();
-    assertTrue(factory.getPOSDictionary() instanceof DummyPOSDictionary);
+    assertTrue(factory.getTagDictionary() instanceof DummyPOSDictionary);
     assertTrue(factory.getPOSContextGenerator() instanceof DummyPOSContextGenerator);
     assertTrue(factory.getSequenceValidator() instanceof DummyPOSSequenceValidator);
 
@@ -78,7 +78,7 @@ public class POSTaggerFactoryTest {
     POSModel fromSerialized = new POSModel(in);
 
     factory = fromSerialized.getFactory();
-    assertTrue(factory.getPOSDictionary() instanceof DummyPOSDictionary);
+    assertTrue(factory.getTagDictionary() instanceof DummyPOSDictionary);
     assertTrue(factory.getPOSContextGenerator() instanceof DummyPOSContextGenerator);
     assertTrue(factory.getSequenceValidator() instanceof DummyPOSSequenceValidator);
     assertTrue(factory.getDictionary() instanceof Dictionary);
@@ -94,7 +94,7 @@ public class POSTaggerFactoryTest {
         new POSTaggerFactory(dic, posDict));
 
     POSTaggerFactory factory = posModel.getFactory();
-    assertTrue(factory.getPOSDictionary() instanceof POSDictionary);
+    assertTrue(factory.getTagDictionary() instanceof POSDictionary);
     assertTrue(factory.getPOSContextGenerator() instanceof POSContextGenerator);
     assertTrue(factory.getSequenceValidator() instanceof DefaultPOSSequenceValidator);
     assertTrue(factory.getDictionary() instanceof Dictionary);
@@ -106,7 +106,7 @@ public class POSTaggerFactoryTest {
     POSModel fromSerialized = new POSModel(in);
 
     factory = fromSerialized.getFactory();
-    assertTrue(factory.getPOSDictionary() instanceof POSDictionary);
+    assertTrue(factory.getTagDictionary() instanceof POSDictionary);
     assertTrue(factory.getPOSContextGenerator() instanceof POSContextGenerator);
     assertTrue(factory.getSequenceValidator() instanceof DefaultPOSSequenceValidator);
     assertTrue(factory.getDictionary() instanceof Dictionary);

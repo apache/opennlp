@@ -175,22 +175,22 @@ public class POSTaggerCrossValidator {
       }
       
       if (this.tagDictionaryFile != null
-          && this.factory.getPOSDictionary() == null) {
-        this.factory.setPOSDictionary(this.factory
-            .createPOSDictionary(tagDictionaryFile));
+          && this.factory.getTagDictionary() == null) {
+        this.factory.setTagDictionary(this.factory
+            .createTagDictionary(tagDictionaryFile));
       }
       if (this.tagdicCutoff != null) {
-        POSDictionary dict = this.factory.getPOSDictionary();
+        TagDictionary dict = this.factory.getTagDictionary();
         if (dict == null) {
-          dict = this.factory.createEmptyPOSDictionary();
-          this.factory.setPOSDictionary(dict);
+          dict = this.factory.createEmptyTagDictionary();
+          this.factory.setTagDictionary(dict);
         }
         if (dict instanceof MutableTagDictionary) {
-          POSTaggerME.populatePOSDictionary(trainingSampleStream, dict,
+          POSTaggerME.populatePOSDictionary(trainingSampleStream, (MutableTagDictionary)dict,
               this.tagdicCutoff);
         } else {
           throw new IllegalArgumentException(
-              "Can't extend a POSDictionary that does not implement MutableTagDictionary.");
+              "Can't extend a TagDictionary that does not implement MutableTagDictionary.");
         }
         trainingSampleStream.reset();
       }
@@ -205,7 +205,7 @@ public class POSTaggerCrossValidator {
       wordAccuracy.add(evaluator.getWordAccuracy(), evaluator.getWordCount());
 
       if (this.tagdicCutoff != null) {
-        this.factory.setPOSDictionary(null);
+        this.factory.setTagDictionary(null);
       }
 
     }
@@ -237,7 +237,7 @@ public class POSTaggerCrossValidator {
     return params;
   }
   
-  private static POSTaggerFactory create(Dictionary ngram, POSDictionary pos) {
+  private static POSTaggerFactory create(Dictionary ngram, TagDictionary pos) {
     return new POSTaggerFactory(ngram, pos);
   }
 }
