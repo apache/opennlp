@@ -108,12 +108,32 @@ public final class POSModel extends BaseModel {
 
   /**
    * Retrieves the tag dictionary.
-   *
+   * 
    * @return tag dictionary or null if not used
+   * 
+   * @deprecated Use {@link POSModel#getFactory()} to get a
+   *             {@link POSTaggerFactory} and
+   *             {@link POSTaggerFactory#getTagDictionary()} to get a
+   *             {@link TagDictionary}.
+   * 
+   * @throws IllegalStateException
+   *           if the TagDictionary is not an instance of POSDictionary
    */
-  public TagDictionary getTagDictionary() {
-    if(getFactory() != null)
-      return getFactory().getTagDictionary();
+  public POSDictionary getTagDictionary() {
+    if (getFactory() != null) {
+      TagDictionary dict = getFactory().getTagDictionary();
+      if (dict != null) {
+        if (dict instanceof POSDictionary) {
+          return (POSDictionary) dict;
+        }
+        String clazz = dict.getClass().getCanonicalName();
+        throw new IllegalStateException("Can not get a dictionary of type "
+            + clazz
+            + " using the deprecated method POSModel.getTagDictionary() "
+            + "because it can only return dictionaries of type POSDictionary. "
+            + "Use POSModel.getFactory().getTagDictionary() instead.");
+      }
+    }
     return null;
   }
   
