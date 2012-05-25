@@ -95,6 +95,7 @@ public class POSTaggerME implements POSTagger {
   public POSTaggerME(POSModel model, int beamSize, int cacheSize, SequenceValidator<String> sequenceValidator) {
     POSTaggerFactory factory = model.getFactory();
     posModel = model.getPosModel();
+    model.getTagDictionary();
     contextGen = factory.getPOSContextGenerator(beamSize);
     tagDictionary = factory.getTagDictionary();
     size = beamSize;
