@@ -138,12 +138,117 @@ F-Measure: 0.9230575441395671]]>
 		<section id="tools.corpora.conll.2002">
 		<title>CONLL 2002</title>
 		<para>
-		TODO: Document how to use the converters for CONLL 2002. Any contributions
-		are very welcome. If you want to contribute please contact us on the mailing list
-		or comment on the jira issue 
-		<ulink url="https://issues.apache.org/jira/browse/OPENNLP-46">OPENNLP-46</ulink>.
+		The shared task of CoNLL-2002 is language independent named entity recognition for Spanish and Dutch.
+		</para>
+		<section id="tools.corpora.conll.2002.getting">
+		<title>Getting the data</title>
+		<para>The data consists of three files per language: one training file and two test files testa and testb.
+		The first test file will be used in the development phase for finding good parameters for the learning system.
+		The second test file will be used for the final evaluation. Currently there are data files available for two languages:
+		Spanish and Dutch.
+		</para>
+		<para>
+		The Spanish data is a collection of news wire articles made available by the Spanish EFE News Agency. The articles are
+		from May 2000. The annotation was carried out by the <ulink url="http://www.talp.cat/">TALP Research Center</ulink> of the Technical University of Catalonia (UPC)
+		and the <ulink url="http://clic.ub.edu/">Center of Language and Computation (CLiC)</ulink>of the University of Barcelona (UB), and funded by the European Commission
+		through the NAMIC project (IST-1999-12392). 
+		</para>
+		<para>
+		The Dutch data consist of four editions of the Belgian newspaper "De Morgen" of 2000 (June 2, July 1, August 1 and September 1).
+		The data was annotated as a part of the <ulink url="http://atranos.esat.kuleuven.ac.be/">Atranos</ulink> project at the University of Antwerp. 
+		</para>
+		<para>
+		You can find the Spanish files here: 
+		<ulink url="http://www.lsi.upc.edu/~nlp/tools/nerc/nerc.html">http://www.lsi.upc.edu/~nlp/tools/nerc/nerc.html</ulink>
+		You must download esp.train.gz, unzip it and you will see the file esp.train.
+		</para>
+		<para>
+		You can find the Dutch files here: 
+		<ulink url="http://www.cnts.ua.ac.be/conll2002/ner.tgz">http://www.cnts.ua.ac.be/conll2002/ner.tgz</ulink>
+		You must unzip it and go to /ner/data/ned.train.gz, so you unzip it too, and you will see the file ned.train.
 		</para>
 		</section>
+		<section id="tools.corpora.conll.2002.converting">
+		<title>Converting the data</title>
+		<para>
+		I will use Spanish data as reference, but it would be the same operations to Dutch. You just must remember change “-lang es” to “-lang nl” and use
+		the correct training files. So to convert the information to the OpenNLP format: 
+		<screen>
+			<![CDATA[
+$ opennlp TokenNameFinderConverter conll02 -data esp.train -lang es -types per > es_corpus_train_persons.txt]]>
+		</screen>
+		Optionally, you can convert the training test samples as well.
+		<screen>
+			<![CDATA[
+$ opennlp TokenNameFinderConverter conll02 -data esp.testa -lang es -types per > corpus_testa.txt
+$ opennlp TokenNameFinderConverter conll02 -data esp.testb -lang es -types per > corpus_testb.txt]]>
+		</screen>
+		</para>
+		</section>
+		<section id="tools.corpora.conll.2002.training.spanish">
+		<title>Training with Spanish data</title>
+		<para>
+		To train the model for the name finder: 
+		<screen>
+			<![CDATA[
+\bin\opennlp TokenNameFinderTrainer -lang es -encoding u
+tf8 -iterations 500 -data es_corpus_train_persons.txt -model es_ner_person.bin
+
+
+Indexing events using cutoff of 5
+
+        Computing event counts...  done. 264715 events
+        Indexing...  done.
+Sorting and merging events... done. Reduced 264715 events to 222660.
+Done indexing.
+Incorporating indexed data for training...
+done.
+        Number of Event Tokens: 222660
+           Number of Outcomes: 3
+          Number of Predicates: 71514
+...done.
+Computing model parameters ...
+Performing 500 iterations.
+  1:  ... loglikelihood=-290819.1519958615      0.9689326256540053
+  2:  ... loglikelihood=-37097.17676455632      0.9689326256540053
+  3:  ... loglikelihood=-22910.372489660916     0.9706476776911017
+  4:  ... loglikelihood=-17091.547325669497     0.9777874317662392
+  5:  ... loglikelihood=-13797.620926769372     0.9833821279489262
+  6:  ... loglikelihood=-11715.806710780415     0.9867140131839903
+  7:  ... loglikelihood=-10289.222078246517     0.9886859452618855
+  8:  ... loglikelihood=-9249.208318314624      0.9902310031543358
+  9:  ... loglikelihood=-8454.169590899777      0.9913227433277298
+ 10:  ... loglikelihood=-7823.742997451327      0.9921953799369133
+ 11:  ... loglikelihood=-7309.375882641964      0.9928224694482746
+ 12:  ... loglikelihood=-6880.131972149693      0.9932946754056249
+ 13:  ... loglikelihood=-6515.3828767792365     0.993638441342576
+ 14:  ... loglikelihood=-6200.82723154046       0.9939595413935742
+ 15:  ... loglikelihood=-5926.213730444915      0.994269308501596
+ 16:  ... loglikelihood=-5683.9821840753275     0.9945299661900534
+ 17:  ... loglikelihood=-5468.4211798176075     0.9948246227074401
+ 18:  ... loglikelihood=-5275.127017232056      0.9950286156810154
+
+... cut lots of iterations ...
+
+491:  ... loglikelihood=-1174.8485558758211     0.998983812779782
+492:  ... loglikelihood=-1173.9971776942477     0.998983812779782
+493:  ... loglikelihood=-1173.1482915871768     0.998983812779782
+494:  ... loglikelihood=-1172.3018855781158     0.998983812779782
+495:  ... loglikelihood=-1171.457947774544      0.998983812779782
+496:  ... loglikelihood=-1170.6164663670502     0.998983812779782
+497:  ... loglikelihood=-1169.7774296286693     0.998983812779782
+498:  ... loglikelihood=-1168.94082591387       0.998983812779782
+499:  ... loglikelihood=-1168.1066436580463     0.9989875904274408
+500:  ... loglikelihood=-1167.2748713765225     0.9989875904274408
+Writing name finder model ... done (2,168s)
+
+Wrote name finder model to
+path: .\es_ner_person.bin]]>
+		</screen>
+		</para>
+		</section>
+		</section>
+		
 		<section id="tools.corpora.conll.2003">
 		<title>CONLL 2003</title>
 		<para>
