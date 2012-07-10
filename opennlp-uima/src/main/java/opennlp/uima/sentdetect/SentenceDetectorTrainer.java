@@ -20,15 +20,17 @@ package opennlp.uima.sentdetect;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import opennlp.maxent.GIS;
+import opennlp.tools.sentdetect.SentenceDetectorFactory;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ModelUtil;
 import opennlp.uima.util.CasConsumerUtil;
 import opennlp.uima.util.OpennlpUtil;
 import opennlp.uima.util.UimaUtil;
@@ -54,6 +56,7 @@ import org.apache.uima.util.ProcessTrace;
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
  *   <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.EOSChars</td> <td>A string containing end-of-sentence characters</td></tr>
  * </table>
  */
 public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
@@ -69,6 +72,8 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
   private Logger mLogger;
 
   private UimaContext mContext;
+  
+  private String eosChars;
   
   /**
    * Initializes the current instance.
@@ -91,6 +96,8 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
     
     language = CasConsumerUtil.getRequiredStringParameter(mContext,
         UimaUtil.LANGUAGE_PARAMETER);
+    
+    eosChars = CasConsumerUtil.getOptionalStringParameter(mContext, "opennlp.uima.EOSChars");
   }
   
   /**
@@ -130,9 +137,19 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
   public void collectionProcessComplete(ProcessTrace trace)
       throws ResourceProcessException, IOException {
     GIS.PRINT_MESSAGES = false;
-
-    SentenceModel sentenceModel = SentenceDetectorME.train(language,
-        ObjectStreamUtils.createObjectStream(sentenceSamples), true, null);
+    
+    char eos[] = null; 
+    if (eosChars != null) {
+      eos = eosChars.toCharArray();
+    }
+    
+    SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
+            null, language, true, null, eos);
+    
+    TrainingParameters mlParams = ModelUtil.createTrainingParameters(100, 5);
+    
+    SentenceModel sentenceModel = SentenceDetectorME.train(language, ObjectStreamUtils.createObjectStream(sentenceSamples),
+         sdFactory, mlParams);
     
     // dereference to allow garbage collection
     sentenceSamples = null;
