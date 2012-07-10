@@ -69,6 +69,24 @@
 		</externalResourceDependency>
 	</externalResourceDependencies>
 	
-	<resourceManagerConfiguration/>
+	<resourceManagerConfiguration>
+
+		<externalResources>
+			<externalResource>
+				<name>DoccatModel</name>
+				<fileResourceSpecifier>
+					<fileUrl>file:mlang.bin</fileUrl>
+				</fileResourceSpecifier>
+				<implementationName>opennlp.uima.doccat.DoccatModelResourceImpl</implementationName>
+			</externalResource>
+		</externalResources>
+		
+		<externalResourceBindings>
+			<externalResourceBinding>
+				<key>opennlp.uima.ModelName</key>
+				<resourceName>DoccatModel</resourceName>
+			</externalResourceBinding>
+		</externalResourceBindings>
+	</resourceManagerConfiguration>
 			
 </analysisEngineDescription>
