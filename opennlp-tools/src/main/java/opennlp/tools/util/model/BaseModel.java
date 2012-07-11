@@ -70,6 +70,8 @@ public abstract class BaseModel implements ArtifactProvider {
   private boolean subclassSerializersInitiated = false;
   private boolean finishedLoadingArtifacts = false;
   
+  private final boolean isLoadedFromSerialized;
+
   /**
    * Initializes the current instance. The sub-class constructor should call the
    * method {@link #checkArtifactMap()} to check the artifact map is OK.
@@ -103,6 +105,8 @@ public abstract class BaseModel implements ArtifactProvider {
    */
   protected BaseModel(String componentName, String languageCode,
       Map<String, String> manifestInfoEntries, BaseToolFactory factory) {
+
+    isLoadedFromSerialized = false;
 
     if (componentName == null)
         throw new IllegalArgumentException("componentName must not be null!");
@@ -162,6 +166,8 @@ public abstract class BaseModel implements ArtifactProvider {
    * @throws InvalidFormatException
    */
   protected BaseModel(String componentName, InputStream in) throws IOException, InvalidFormatException {
+
+    this.isLoadedFromSerialized = true;
 
     if (componentName == null)
       throw new IllegalArgumentException("componentName must not be null!");
@@ -535,5 +541,9 @@ public abstract class BaseModel implements ArtifactProvider {
       count += n;
     }
     return output.toByteArray();
+  }
+
+  public boolean isLoadedFromSerialized() {
+    return isLoadedFromSerialized;
   }
 }
