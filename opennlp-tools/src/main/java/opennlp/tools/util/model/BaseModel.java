@@ -408,7 +408,10 @@ public abstract class BaseModel implements ArtifactProvider {
             "The model could not load an user extension because it is missing on the classpath: "
                 + factoryName);
       }
-      
+    }
+    
+    // validate artifacts declared by the factory
+    if(toolFactory != null) {
       toolFactory.validateArtifactMap();
     }
   }
