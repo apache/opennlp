@@ -173,6 +173,33 @@ public class POSTaggerFactory extends BaseToolFactory {
     }
   }
 
+  protected void validatePOSDictionary(POSDictionary posDict,
+      AbstractModel posModel) throws InvalidFormatException {
+    Set<String> dictTags = new HashSet<String>();
+
+    for (String word : posDict) {
+      Collections.addAll(dictTags, posDict.getTags(word));
+    }
+
+    Set<String> modelTags = new HashSet<String>();
+
+    for (int i = 0; i < posModel.getNumOutcomes(); i++) {
+      modelTags.add(posModel.getOutcome(i));
+    }
+
+    if (!modelTags.containsAll(dictTags)) {
+      StringBuilder unknownTag = new StringBuilder();
+      for (String d : dictTags) {
+        if (!modelTags.contains(d)) {
+          unknownTag.append(d).append(" ");
+        }
+      }
+      throw new InvalidFormatException("Tag dictioinary contains tags "
+          + "which are unknown by the model! The unknown tags are: "
+          + unknownTag.toString());
+    }
+  }
+  
   @Override
   public void validateArtifactMap() throws InvalidFormatException {
     
@@ -183,36 +210,15 @@ public class POSTaggerFactory extends BaseToolFactory {
 
     if (tagdictEntry != null) {
       if (tagdictEntry instanceof POSDictionary) {
-        POSDictionary posDict = (POSDictionary) tagdictEntry;
-        
-        Set<String> dictTags = new HashSet<String>();
-        
-        for (String word : posDict) {
-          Collections.addAll(dictTags, posDict.getTags(word)); 
+        if(!this.artifactProvider.isLoadedFromSerialized()) {
+          AbstractModel posModel = this.artifactProvider
+              .getArtifact(POSModel.POS_MODEL_ENTRY_NAME);
+          POSDictionary posDict = (POSDictionary) tagdictEntry; 
+          validatePOSDictionary(posDict, posModel);
         }
-        
-        Set<String> modelTags = new HashSet<String>();
-        
-        AbstractModel posModel = this.artifactProvider
-            .getArtifact(POSModel.POS_MODEL_ENTRY_NAME);
-        
-        for  (int i = 0; i < posModel.getNumOutcomes(); i++) {
-          modelTags.add(posModel.getOutcome(i));
-        }
-        
-        if (!modelTags.containsAll(dictTags)) {
-          StringBuilder unknownTag = new StringBuilder();
-          for (String d : dictTags) {
-            if(!modelTags.contains(d)) {
-              unknownTag.append(d).append(" ");
-            }
-          }
-          throw new InvalidFormatException("Tag dictioinary contains tags " +
-                "which are unknown by the model! The unknown tags are: " + unknownTag.toString());
-        }
-      }
-      else {
-        throw new InvalidFormatException("Abbreviations dictionary has wrong type!");
+      } else {
+        throw new InvalidFormatException(
+            "POSTag dictionary has wrong type!");
       }
     }
 

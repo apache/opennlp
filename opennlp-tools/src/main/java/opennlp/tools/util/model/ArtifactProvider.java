@@ -44,4 +44,13 @@ public interface ArtifactProvider {
    * @return the language code of this model
    */
   public String getLanguage();
+  
+  /**
+   * Indicates if this provider was loaded from serialized. It is useful, for
+   * example, while validating artifacts: you can skip the time consuming ones
+   * if they where already validated during the serialization.
+   * 
+   * @return true if this model was loaded from serialized
+   */
+  public boolean isLoadedFromSerialized();
 }
