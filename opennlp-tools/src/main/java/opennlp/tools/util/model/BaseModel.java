@@ -151,7 +151,7 @@ public abstract class BaseModel implements ArtifactProvider {
     try {
       initializeFactory();
     } catch (InvalidFormatException e) {
-      throw new IllegalArgumentException("Could not initialize tool factory. " + e.getMessage());
+      throw new IllegalArgumentException("Could not initialize tool factory. ", e);
     }
     loadArtifactSerializers();
   }
@@ -223,7 +223,7 @@ public abstract class BaseModel implements ArtifactProvider {
       try {
         this.toolFactory = BaseToolFactory.create(factoryName, this);
       } catch (InvalidFormatException e) {
-        throw new IllegalArgumentException(e.getMessage());
+        throw new IllegalArgumentException(e);
       }
     }
   }
@@ -267,7 +267,7 @@ public abstract class BaseModel implements ArtifactProvider {
         ArtifactSerializer factory = artifactSerializers.get(extension);
 
         if (factory == null) {
-          throw new InvalidFormatException("Unkown artifact format: "
+          throw new InvalidFormatException("Unknown artifact format: "
               + extension);
         } else {
           artifactMap.put(entryName, factory.create(new ByteArrayInputStream(leftoverArtifacts.get(entryName))));
@@ -296,10 +296,10 @@ public abstract class BaseModel implements ArtifactProvider {
     return entry.substring(extensionIndex);
   }
 
-  protected ArtifactSerializer getArtifactSerializer(String resoruceName) {
+  protected ArtifactSerializer getArtifactSerializer(String resourceName) {
     String extension = null;
     try {
-      extension = getEntryExtension(resoruceName);
+      extension = getEntryExtension(resourceName);
     } catch (InvalidFormatException e) {
       throw new IllegalStateException(e);
     }
@@ -368,7 +368,7 @@ public abstract class BaseModel implements ArtifactProvider {
         version = Version.parse(versionString);
       }
       catch (NumberFormatException e) {
-        throw new InvalidFormatException("Unable to parse model version!, e");
+        throw new InvalidFormatException("Unable to parse model version '" + versionString + "'!", e);
       }
       
       // Version check is only performed if current version is not the dev/debug version
@@ -382,8 +382,8 @@ public abstract class BaseModel implements ArtifactProvider {
         
         // Reject loading a snapshot model with a non-snapshot version
         if (!Version.currentVersion().isSnapshot() && version.isSnapshot()) {
-          throw new InvalidFormatException("Model is a snapshot models are not" +
-          		"supported by release versions!");
+          throw new InvalidFormatException("Model version " + version + " is a snapshot - snapshot models are not " +
+          		"supported by this non-snapshot version (" + Version.currentVersion() + ") of OpenNLP!");
         }
       }
     }
@@ -411,8 +411,8 @@ public abstract class BaseModel implements ArtifactProvider {
         Class.forName(factoryName);
       } catch (ClassNotFoundException e) {
         throw new InvalidFormatException(
-            "The model could not load an user extension because it is missing on the classpath: "
-                + factoryName);
+            "The model could not load a user extension because it is missing on the classpath: "
+                + factoryName, e);
       }
     }
     
@@ -437,7 +437,7 @@ public abstract class BaseModel implements ArtifactProvider {
     try {
       validateArtifactMap();
     } catch (InvalidFormatException e) {
-      throw new IllegalArgumentException(e.getMessage());
+      throw new IllegalArgumentException(e);
     }
   }
   
