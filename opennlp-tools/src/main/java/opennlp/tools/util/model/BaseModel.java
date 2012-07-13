@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +37,7 @@ import java.util.zip.ZipOutputStream;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Version;
+import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
  * This model is a common based which can be used by the components
@@ -434,14 +434,20 @@ public abstract class BaseModel implements ArtifactProvider {
       throw new InvalidFormatException("Missing " + LANGUAGE_PROPERTY + " property in " +
       		MANIFEST_ENTRY + "!");
     
-    // validate the factory
+    // Validate the factory. We try to load it using the ExtensionLoader. It
+    // will return the factory, null or raise an exception 
     String factoryName = getManifestProperty(FACTORY_NAME);
     if (factoryName != null) {
       try {
-        Class.forName(factoryName);
-      } catch (ClassNotFoundException e) {
+        if (ExtensionLoader.instantiateExtension(BaseToolFactory.class,
+            factoryName) == null) {
+          throw new InvalidFormatException(
+              "Could not load an user extension specified by the model: "
+                  + factoryName);
+        }
+      } catch (Exception e) {
         throw new InvalidFormatException(
-            "The model could not load a user extension because it is missing on the classpath: "
+            "Could not load an user extension specified by the model: "
                 + factoryName, e);
       }
     }
