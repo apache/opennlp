@@ -117,7 +117,7 @@ public class POSTaggerFactoryTest {
     BaseToolFactory.create("X", null);
   }
 
-  @Test(expected = NoClassDefFoundError.class)
+  @Test(expected = InvalidFormatException.class)
   public void testCreateWithInvalidName2() throws InvalidFormatException {
     POSTaggerFactory.create("X", null, null);
   }
@@ -127,7 +127,7 @@ public class POSTaggerFactoryTest {
     BaseToolFactory.create(Object.class.getCanonicalName(), null);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = InvalidFormatException.class)
   public void testCreateWithHierarchy2() throws InvalidFormatException {
     POSTaggerFactory.create(this.getClass().getCanonicalName(), null, null);
   }

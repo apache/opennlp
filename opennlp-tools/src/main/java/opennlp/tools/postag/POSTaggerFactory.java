@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,6 +33,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.UncloseableInputStream;
 
@@ -64,6 +64,10 @@ public class POSTaggerFactory extends BaseToolFactory {
    */
   public POSTaggerFactory(Dictionary ngramDictionary,
       TagDictionary posDictionary) {
+    this.init(ngramDictionary, posDictionary);
+  }
+  
+  protected void init(Dictionary ngramDictionary, TagDictionary posDictionary) {
     this.ngramDictionary = ngramDictionary;
     this.posDictionary = posDictionary;
   }
@@ -223,31 +227,19 @@ public class POSTaggerFactory extends BaseToolFactory {
       // will create the default factory
       return new POSTaggerFactory(ngramDictionary, posDictionary);
     }
-    POSTaggerFactory theFactory = null;
-    Class<? extends BaseToolFactory> factoryClass = loadSubclass(subclassName);
-    if (factoryClass != null) {
-      try {
-        Constructor<?> constructor = null;
-        constructor = factoryClass.getConstructor(Dictionary.class,
-            TagDictionary.class);
-        theFactory = (POSTaggerFactory) constructor.newInstance(
-            ngramDictionary, posDictionary);
-      } catch (NoSuchMethodException e) {
-        String msg = "Could not instantiate the "
-            + subclassName
-            + ". The mandatory constructor (Dictionary, TagDictionary) is missing.";
-        System.err.println(msg);
-        throw new IllegalArgumentException(msg);
-      } catch (Exception e) {
-        String msg = "Could not instantiate the "
-            + subclassName
-            + ". The constructor (Dictionary, TagDictionary) throw an exception.";
-        System.err.println(msg);
-        e.printStackTrace();
-        throw new InvalidFormatException(msg);
-      }
+    try {
+      POSTaggerFactory theFactory = ExtensionLoader.instantiateExtension(
+          POSTaggerFactory.class, subclassName);
+      theFactory.init(ngramDictionary, posDictionary);
+      return theFactory;
+    } catch (Exception e) {
+      String msg = "Could not instantiate the " + subclassName
+          + ". The initialization throw an exception.";
+      System.err.println(msg);
+      e.printStackTrace();
+      throw new InvalidFormatException(msg, e);
     }
-    return theFactory;
+
   }
 
   public TagDictionary createEmptyTagDictionary() {
