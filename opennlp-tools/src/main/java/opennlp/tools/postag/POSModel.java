@@ -18,8 +18,10 @@
 
 package opennlp.tools.postag;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Map;
 
 import opennlp.model.AbstractModel;
@@ -78,6 +80,14 @@ public final class POSModel extends BaseModel {
   
   public POSModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
+  }
+  
+  public POSModel(File modelFile) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelFile);
+  }
+  
+  public POSModel(URL modelURL) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelURL);
   }
 
   @Override

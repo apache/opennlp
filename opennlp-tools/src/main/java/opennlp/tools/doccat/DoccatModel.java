@@ -17,8 +17,10 @@
 
 package opennlp.tools.doccat;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Map;
 
 import opennlp.model.AbstractModel;
@@ -44,6 +46,14 @@ public class DoccatModel extends BaseModel {
   
   public DoccatModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
+  }
+  
+  public DoccatModel(File modelFile) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelFile);
+  }
+  
+  public DoccatModel(URL modelURL) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelURL);
   }
 
   @Override

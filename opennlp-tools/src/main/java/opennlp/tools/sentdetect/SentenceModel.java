@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Map;
 
 import opennlp.model.AbstractModel;
@@ -92,6 +93,14 @@ public class SentenceModel extends BaseModel {
 
   public SentenceModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
+  }
+  
+  public SentenceModel(File modelFile) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelFile);
+  }
+  
+  public SentenceModel(URL modelURL) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelURL);
   }
 
   @Override

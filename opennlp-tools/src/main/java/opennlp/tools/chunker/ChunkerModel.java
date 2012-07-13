@@ -18,11 +18,13 @@
 
 package opennlp.tools.chunker;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Map;
 
 import opennlp.model.AbstractModel;
@@ -59,6 +61,14 @@ public class ChunkerModel extends BaseModel {
     super(COMPONENT_NAME, in);
   }
 
+  public ChunkerModel(File modelFile) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelFile);
+  }
+  
+  public ChunkerModel(URL modelURL) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelURL);
+  }
+  
   @Override
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
