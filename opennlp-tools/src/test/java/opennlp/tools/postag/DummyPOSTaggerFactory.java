@@ -25,7 +25,6 @@ import java.util.Map;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceValidator;
-import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.UncloseableInputStream;
 
@@ -35,13 +34,12 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
   private static final String DUMMY_POSDICT = "DUMMY_POSDICT";
   private DummyPOSDictionary dict;
   
+  public DummyPOSTaggerFactory() {
+  }
+
   public DummyPOSTaggerFactory(Dictionary ngramDictionary, DummyPOSDictionary posDictionary) {
     super(ngramDictionary, null);
     this.dict = posDictionary;
-  }
-  
-  public DummyPOSTaggerFactory(ArtifactProvider artifactProvider) {
-    super(artifactProvider);
   }
   
   @Override

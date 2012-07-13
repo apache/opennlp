@@ -53,22 +53,6 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * Creates a {@link TokenizerFactory} with an {@link ArtifactProvider} that
-   * will be used to retrieve artifacts. This constructor will try to get the
-   * language code, abbreviation dictionary etc from the
-   * {@link ArtifactProvider}.
-   * <p>
-   * Sub-classes should implement a constructor with this signatures and call
-   * this constructor.
-   * <p>
-   * This will be used to load the factory from a serialized
-   * {@link TokenizerModel}.
-   */
-  public TokenizerFactory(ArtifactProvider artifactProvider) {
-    super(artifactProvider);
-  }
-
-  /**
    * Creates a {@link TokenizerFactory}. Use this constructor to
    * programmatically create a factory.
    * 
