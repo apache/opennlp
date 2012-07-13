@@ -34,7 +34,6 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceValidator;
-import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.UncloseableInputStream;
 
@@ -54,20 +53,6 @@ public class POSTaggerFactory extends BaseToolFactory {
    * of the resources.
    */
   public POSTaggerFactory() {
-  }
-
-  /**
-   * Creates a {@link POSTaggerFactory} with an {@link ArtifactProvider} that
-   * will be used to retrieve artifacts. This constructor will try to get the ngram
-   * and POS tags dictionaries from the artifact provider.
-   * <p>
-   * Sub-classes should implement a constructor with this signatures and call
-   * this constructor.
-   * <p>
-   * This will be used to load the factory from a serialized POSModel.
-   */
-  public POSTaggerFactory(ArtifactProvider artifactProvider) {
-    super(artifactProvider);
   }
 
   /**

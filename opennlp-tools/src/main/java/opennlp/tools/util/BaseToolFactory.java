@@ -17,10 +17,10 @@
 
 package opennlp.tools.util;
 
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
@@ -36,19 +36,18 @@ import opennlp.tools.util.model.BaseModel;
  */
 public abstract class BaseToolFactory {
 
-  protected final ArtifactProvider artifactProvider;
+  protected ArtifactProvider artifactProvider;
 
   /**
    * All sub-classes should have an empty constructor
    */
   public BaseToolFactory() {
-    this.artifactProvider = null;
   }
 
-  /**
-   * All sub-classes should have a constructor whith this signature
-   */
-  public BaseToolFactory(ArtifactProvider artifactProvider) {
+ /**
+  * Initializes the ToolFactory with an artifact provider.
+  */
+  public void init(ArtifactProvider artifactProvider) {
     this.artifactProvider = artifactProvider;
   }
 
@@ -101,27 +100,21 @@ public abstract class BaseToolFactory {
   public static BaseToolFactory create(String subclassName,
       ArtifactProvider artifactProvider) throws InvalidFormatException {
     BaseToolFactory theFactory = null;
-    Class<? extends BaseToolFactory> factoryClass = loadSubclass(subclassName);
-    if (factoryClass != null) {
-      try {
-        Constructor<?> constructor = null;
-        constructor = factoryClass.getConstructor(ArtifactProvider.class);
-        theFactory = (BaseToolFactory) constructor
-            .newInstance(artifactProvider);
-      } catch (NoSuchMethodException e) {
-        String msg = "Could not instantiate the "
-            + subclassName
-            + ". The mandatry constructor (ArtifactProvider) is missing.";
-        System.err.println(msg);
-        throw new IllegalArgumentException(msg);
-      } catch (Exception e) {
-        String msg = "Could not instantiate the "
-            + subclassName
-            + ". The constructor (ArtifactProvider) throw an exception.";
-        System.err.println(msg);
-        e.printStackTrace();
-        throw new InvalidFormatException(msg);
+    
+    try {
+      // load the ToolFactory using the default constructor
+      theFactory = ExtensionLoader.instantiateExtension(
+          BaseToolFactory.class, subclassName);
+
+      if (theFactory != null) {
+        theFactory.init(artifactProvider);
       }
+    } catch (Exception e) {
+      String msg = "Could not instantiate the " + subclassName
+          + ". The initialization throw an exception.";
+      System.err.println(msg);
+      e.printStackTrace();
+      throw new InvalidFormatException(msg, e);
     }
     return theFactory;
   }
@@ -131,23 +124,15 @@ public abstract class BaseToolFactory {
     BaseToolFactory theFactory = null;
     if (factoryClass != null) {
       try {
-        Constructor<?> constructor = null;
-        constructor = factoryClass.getConstructor(ArtifactProvider.class);
-        theFactory = (BaseToolFactory) constructor
-            .newInstance(artifactProvider);
-      } catch (NoSuchMethodException e) {
-        String msg = "Could not instantiate the "
-            + factoryClass.getCanonicalName()
-            + ". The mandatry constructor (ArtifactProvider) is missing.";
-        System.err.println(msg);
-        throw new IllegalArgumentException(msg);
+        theFactory = factoryClass.newInstance();
+        theFactory.init(artifactProvider);
       } catch (Exception e) {
         String msg = "Could not instantiate the "
             + factoryClass.getCanonicalName()
-            + ". The constructor (ArtifactProvider) throw an exception.";
+            + ". The initialization throw an exception.";
         System.err.println(msg);
         e.printStackTrace();
-        throw new InvalidFormatException(msg);
+        throw new InvalidFormatException(msg, e);
       }
     }
     return theFactory;

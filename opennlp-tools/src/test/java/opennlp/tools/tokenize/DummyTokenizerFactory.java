@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 public class DummyTokenizerFactory extends TokenizerFactory {
@@ -34,16 +33,15 @@ public class DummyTokenizerFactory extends TokenizerFactory {
   private static final String DUMMY_DICT = "dummy";
   private DummyDictionary dict;
 
+  public DummyTokenizerFactory() {
+  }
+  
   public DummyTokenizerFactory(String languageCode,
       Dictionary abbreviationDictionary, boolean useAlphaNumericOptimization,
       Pattern alphaNumericPattern) {
     super(languageCode, abbreviationDictionary, useAlphaNumericOptimization,
         alphaNumericPattern);
     this.dict = new DummyDictionary(abbreviationDictionary);
-  }
-
-  public DummyTokenizerFactory(ArtifactProvider provider) {
-    super(provider);
   }
 
   @Override

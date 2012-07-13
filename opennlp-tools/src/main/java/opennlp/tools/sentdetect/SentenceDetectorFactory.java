@@ -26,7 +26,6 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.ArtifactProvider;
 
 /**
  * The factory that provides SentenceDetecor default implementations and
@@ -48,22 +47,6 @@ public class SentenceDetectorFactory extends BaseToolFactory {
    * implementation of the resources.
    */
   public SentenceDetectorFactory() {
-  }
-
-  /**
-   * Creates a {@link SentenceDetectorFactory} with an {@link ArtifactProvider}
-   * that will be used to retrieve artifacts. This constructor will try to get
-   * the language code, abbreviation dictionary and EOS characters from the
-   * {@link ArtifactProvider}.
-   * <p>
-   * Sub-classes should implement a constructor with this signatures and call
-   * this constructor.
-   * <p>
-   * This will be used to load the factory from a serialized
-   * {@link SentenceModel}.
-   */
-  public SentenceDetectorFactory(ArtifactProvider artifactProvider) {
-    super(artifactProvider);
   }
 
   /**

@@ -25,7 +25,6 @@ import java.util.Set;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
@@ -33,14 +32,13 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
   private static final String DUMMY_DICT = "dummy";
   private DummyDictionary dict;
 
+  public DummySentenceDetectorFactory() {
+  }
+  
   public DummySentenceDetectorFactory(String languageCode, boolean useTokenEnd,
       Dictionary abbreviationDictionary, char[] eosCharacters) {
     super(languageCode, useTokenEnd, null, eosCharacters);
     this.dict = new DummyDictionary(abbreviationDictionary);
-  }
-
-  public DummySentenceDetectorFactory(ArtifactProvider provider) {
-    super(provider);
   }
 
   @Override
