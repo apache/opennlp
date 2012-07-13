@@ -30,6 +30,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ext.ExtensionLoader;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -443,30 +444,8 @@ public class GeneratorFactory {
       
       String featureGeneratorClassName = generatorElement.getAttribute("class");
       
-      Class<?> featureGenClass;
-      try {
-        featureGenClass = Class.forName(featureGeneratorClassName);
-      } catch (ClassNotFoundException e) {
-        throw new NoClassDefFoundError(e.getMessage());
-      }
-      
-      // TODO: How to inject configuration?
-      // TODO: How to provide access to resources?
-      
-      // Special interface which defines configure method?!
-      // public interface CustomFeatureGenerator {
-      //   void initialize(Map<String, String>, FeatureGeneratoreResourceProvider)
-      //       throws InvalidFormatException;
-      // }
-      
-      AdaptiveFeatureGenerator generator = null;
-      try {
-        generator = (AdaptiveFeatureGenerator) featureGenClass.newInstance();
-      } catch (InstantiationException e) {
-        throw new InvalidFormatException("Failed to instantiate custom class!", e);
-      } catch (IllegalAccessException e) {
-        throw new InvalidFormatException("Failed to instantiate custom class!", e);
-      }
+      AdaptiveFeatureGenerator generator = ExtensionLoader.instantiateExtension(AdaptiveFeatureGenerator.class,
+          featureGeneratorClassName);
       
       return generator;
     }
