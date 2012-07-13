@@ -41,6 +41,13 @@ public class DummyTokenizerFactory extends TokenizerFactory {
       Pattern alphaNumericPattern) {
     super(languageCode, abbreviationDictionary, useAlphaNumericOptimization,
         alphaNumericPattern);
+  }
+  
+  @Override
+  protected void init(String languageCode, Dictionary abbreviationDictionary,
+      boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {
+    super.init(languageCode, abbreviationDictionary, useAlphaNumericOptimization,
+        alphaNumericPattern);
     this.dict = new DummyDictionary(abbreviationDictionary);
   }
 

@@ -47,7 +47,7 @@ public abstract class BaseToolFactory {
  /**
   * Initializes the ToolFactory with an artifact provider.
   */
-  public void init(ArtifactProvider artifactProvider) {
+  protected void init(ArtifactProvider artifactProvider) {
     this.artifactProvider = artifactProvider;
   }
 
@@ -137,24 +137,4 @@ public abstract class BaseToolFactory {
     }
     return theFactory;
   }
-  
-  @SuppressWarnings("unchecked")
-  protected
-  static Class<? extends BaseToolFactory> loadSubclass(
-      String factoryName) throws InvalidFormatException {
-    Class<? extends BaseToolFactory> factoryClass = null;
-    try {
-      factoryClass = (Class<? extends BaseToolFactory>) Class
-          .forName(factoryName);
-    } catch (ClassNotFoundException e) {
-      throw new NoClassDefFoundError(
-          "Could not find the factory class in the classpath: " + factoryName);
-    } catch (ClassCastException e) {
-      throw new InvalidFormatException(
-          "The factory class does not extend BaseToolFactory: " + factoryName,
-          e);
-    }
-    return factoryClass;
-  }
-  
 }

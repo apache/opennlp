@@ -17,7 +17,6 @@
 
 package opennlp.tools.tokenize;
 
-import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -27,7 +26,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.ArtifactProvider;
+import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
  * The factory that provides {@link Tokenizer} default implementations and
@@ -69,6 +68,12 @@ public class TokenizerFactory extends BaseToolFactory {
   public TokenizerFactory(String languageCode,
       Dictionary abbreviationDictionary, boolean useAlphaNumericOptimization,
       Pattern alphaNumericPattern) {
+    this.init(languageCode, abbreviationDictionary,
+        useAlphaNumericOptimization, alphaNumericPattern);
+  }
+  
+  protected void init(String languageCode, Dictionary abbreviationDictionary,
+      boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {
     this.languageCode = languageCode;
     this.useAlphaNumericOptimization = useAlphaNumericOptimization;
     this.alphaNumericPattern = alphaNumericPattern;
@@ -135,32 +140,19 @@ public class TokenizerFactory extends BaseToolFactory {
       return new TokenizerFactory(languageCode, abbreviationDictionary,
           useAlphaNumericOptimization, alphaNumericPattern);
     }
-    TokenizerFactory theFactory = null;
-    Class<? extends BaseToolFactory> factoryClass = loadSubclass(subclassName);
-    if (factoryClass != null) {
-      try {
-        Constructor<?> constructor = null;
-        constructor = factoryClass.getConstructor(String.class,
-            Dictionary.class, boolean.class, Pattern.class);
-        theFactory = (TokenizerFactory) constructor.newInstance(languageCode,
-            abbreviationDictionary, useAlphaNumericOptimization,
-            alphaNumericPattern);
-      } catch (NoSuchMethodException e) {
-        String msg = "Could not instantiate the "
-            + subclassName
-            + ". The mandatory constructor (String, Dictionary, boolean, Pattern) is missing.";
-        System.err.println(msg);
-        throw new IllegalArgumentException(msg);
-      } catch (Exception e) {
-        String msg = "Could not instantiate the "
-            + subclassName
-            + ". The constructor (String, Dictionary, boolean, Pattern) throw an exception.";
-        System.err.println(msg);
-        e.printStackTrace();
-        throw new InvalidFormatException(msg);
-      }
+    try {
+      TokenizerFactory theFactory = ExtensionLoader.instantiateExtension(
+          TokenizerFactory.class, subclassName);
+      theFactory.init(languageCode, abbreviationDictionary,
+          useAlphaNumericOptimization, alphaNumericPattern);
+      return theFactory;
+    } catch (Exception e) {
+      String msg = "Could not instantiate the " + subclassName
+          + ". The initialization throw an exception.";
+      System.err.println(msg);
+      e.printStackTrace();
+      throw new InvalidFormatException(msg, e);
     }
-    return theFactory;
   }
 
   /**
