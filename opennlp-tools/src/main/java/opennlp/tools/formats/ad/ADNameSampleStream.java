@@ -156,6 +156,8 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * To keep the last left contraction part
    */
   private String leftContractionPart = null;
+
+  private final boolean splitHyphenatedTokens;
   
   /**
    * Creates a new {@link NameSample} stream from a line stream, i.e.
@@ -164,9 +166,13 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * 
    * @param lineStream
    *          a stream of lines as {@link String}
+   * @param splitHyphenatedTokens
+   *          if true hyphenated tokens will be separated: "carros-monstro" >
+   *          "carros" "-" "monstro"
    */
-  public ADNameSampleStream(ObjectStream<String> lineStream) {
+  public ADNameSampleStream(ObjectStream<String> lineStream, boolean splitHyphenatedTokens) {
     this.adSentenceStream = new ADSentenceStream(lineStream);
+    this.splitHyphenatedTokens = splitHyphenatedTokens;
   }
 
   /**
@@ -176,12 +182,17 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    *          the Corpus {@link InputStream}
    * @param charsetName
    *          the charset of the Arvores Deitadas Corpus
+   * @param splitHyphenatedTokens
+   *          if true hyphenated tokens will be separated: "carros-monstro" >
+   *          "carros" "-" "monstro"
    */
-  public ADNameSampleStream(InputStream in, String charsetName) {
+  public ADNameSampleStream(InputStream in, String charsetName,
+      boolean splitHyphenatedTokens) {
 
     try {
       this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
           in, charsetName));
+      this.splitHyphenatedTokens = splitHyphenatedTokens;
     } catch (UnsupportedEncodingException e) {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
@@ -367,7 +378,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
     
     // lets split all hyphens
-    if (tok.contains("-") && tok.length() > 1) {
+    if (this.splitHyphenatedTokens && tok.contains("-") && tok.length() > 1) {
       Matcher matcher = hyphenPattern.matcher(tok);
 
       String firstTok = null;

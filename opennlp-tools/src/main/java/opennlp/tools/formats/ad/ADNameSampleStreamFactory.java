@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -47,6 +48,10 @@ public class ADNameSampleStreamFactory extends LanguageSampleStreamFactory<NameS
 
     @ParameterDescription(valueName = "sampleData", description = "data to be used, usually a file name.")
     File getData();
+    
+    @ParameterDescription(valueName = "split", description = "if true all hyphenated tokens will be separated (default true)")
+    @OptionalParameter(defaultValue = "true")
+    Boolean getSplitHyphenatedTokens();
 
     @ParameterDescription(valueName = "language", description = "language which is being processed.")
     String getLang();
@@ -72,6 +77,6 @@ public class ADNameSampleStreamFactory extends LanguageSampleStreamFactory<NameS
     ObjectStream<String> lineStream = new PlainTextByLineStream(
         sampleDataIn.getChannel(), params.getEncoding());
 
-    return new ADNameSampleStream(lineStream);
+    return new ADNameSampleStream(lineStream, params.getSplitHyphenatedTokens());
   }
 }

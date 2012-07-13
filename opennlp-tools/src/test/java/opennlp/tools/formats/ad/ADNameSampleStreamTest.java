@@ -105,7 +105,7 @@ public class ADNameSampleStreamTest {
         .getResourceAsStream("/opennlp/tools/formats/ad.sample");
 
     ADNameSampleStream stream = new ADNameSampleStream(
-        new PlainTextByLineStream(in, "UTF-8"));
+        new PlainTextByLineStream(in, "UTF-8"), true);
 
     NameSample sample = stream.read();
 
