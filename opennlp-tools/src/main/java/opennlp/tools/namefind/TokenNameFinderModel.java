@@ -19,9 +19,11 @@
 package opennlp.tools.namefind;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -107,6 +109,15 @@ public class TokenNameFinderModel extends BaseModel {
   public TokenNameFinderModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
+  
+  public TokenNameFinderModel(File modelFile) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelFile);
+  }
+  
+  public TokenNameFinderModel(URL modelURL) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelURL);
+  }
+  
   
   /**
    * Retrieves the {@link TokenNameFinder} model.

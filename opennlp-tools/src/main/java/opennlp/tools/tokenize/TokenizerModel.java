@@ -19,11 +19,13 @@
 package opennlp.tools.tokenize;
 
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.Map;
 
 import opennlp.maxent.io.BinaryGISModelReader;
@@ -121,6 +123,14 @@ public final class TokenizerModel extends BaseModel {
    */
   public TokenizerModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
+  }
+  
+  public TokenizerModel(File modelFile) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelFile);
+  }
+  
+  public TokenizerModel(URL modelURL) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelURL);
   }
 
   /**

@@ -19,11 +19,13 @@
 package opennlp.tools.parser;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URL;
 import java.util.Map;
 
 import opennlp.model.AbstractModel;
@@ -148,6 +150,14 @@ public class ParserModel extends BaseModel {
   
   public ParserModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
+  }
+  
+  public ParserModel(File modelFile) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelFile);
+  }
+  
+  public ParserModel(URL modelURL) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelURL);
   }
   
   @Override

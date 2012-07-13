@@ -18,11 +18,16 @@
 
 package opennlp.tools.util.model;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -59,7 +64,7 @@ public abstract class BaseModel implements ArtifactProvider {
   private Map<String, ArtifactSerializer> artifactSerializers =
       new HashMap<String, ArtifactSerializer>();
 
-  protected final Map<String, Object> artifactMap;
+  protected final Map<String, Object> artifactMap = new HashMap<String, Object>();
   
   protected BaseToolFactory toolFactory;
   
@@ -72,19 +77,13 @@ public abstract class BaseModel implements ArtifactProvider {
   
   private final boolean isLoadedFromSerialized;
 
-  /**
-   * Initializes the current instance. The sub-class constructor should call the
-   * method {@link #checkArtifactMap()} to check the artifact map is OK.
-   * 
-   * @param componentName
-   *          the component name
-   * @param languageCode
-   *          the language code
-   * @param manifestInfoEntries
-   *          additional information in the manifest
-   */
-  protected BaseModel(String componentName, String languageCode, Map<String, String> manifestInfoEntries) {
-    this(componentName, languageCode, manifestInfoEntries, null);
+  private BaseModel(String componentName, boolean isLoadedFromSerialized) {
+    this.isLoadedFromSerialized = isLoadedFromSerialized;
+    
+    if (componentName == null)
+      throw new IllegalArgumentException("componentName must not be null!");
+    
+    this.componentName = componentName;
   }
   
   /**
@@ -106,18 +105,11 @@ public abstract class BaseModel implements ArtifactProvider {
   protected BaseModel(String componentName, String languageCode,
       Map<String, String> manifestInfoEntries, BaseToolFactory factory) {
 
-    isLoadedFromSerialized = false;
+    this(componentName, false);
 
-    if (componentName == null)
-        throw new IllegalArgumentException("componentName must not be null!");
-    
     if (languageCode == null)
         throw new IllegalArgumentException("languageCode must not be null!");
 
-    this.componentName = componentName;
-    
-    artifactMap = new HashMap<String, Object>();
-    
     createBaseArtifactSerializers(artifactSerializers);
     
     Properties manifest = new Properties();
@@ -157,6 +149,21 @@ public abstract class BaseModel implements ArtifactProvider {
   }
 
   /**
+   * Initializes the current instance. The sub-class constructor should call the
+   * method {@link #checkArtifactMap()} to check the artifact map is OK.
+   * 
+   * @param componentName
+   *          the component name
+   * @param languageCode
+   *          the language code
+   * @param manifestInfoEntries
+   *          additional information in the manifest
+   */
+  protected BaseModel(String componentName, String languageCode, Map<String, String> manifestInfoEntries) {
+    this(componentName, languageCode, manifestInfoEntries, null);
+  }
+  
+  /**
    * Initializes the current instance.
    * 
    * @param componentName the component name
@@ -166,18 +173,41 @@ public abstract class BaseModel implements ArtifactProvider {
    * @throws InvalidFormatException
    */
   protected BaseModel(String componentName, InputStream in) throws IOException, InvalidFormatException {
-
-    this.isLoadedFromSerialized = true;
-
-    if (componentName == null)
-      throw new IllegalArgumentException("componentName must not be null!");
+    this(componentName, true);
     
     if (in == null)
         throw new IllegalArgumentException("in must not be null!");
 
-    this.componentName = componentName;
+    loadModel(in);
+  }
+
+  protected BaseModel(String componentName, File modelFile) throws IOException, InvalidFormatException  {
+    this(componentName, true);
     
-    artifactMap = new HashMap<String, Object>();
+    InputStream in = new BufferedInputStream(new FileInputStream(modelFile));
+    
+    try {
+      loadModel(in);
+    }
+    finally {
+      in.close();
+    }
+  }
+
+  protected BaseModel(String componentName, URL modelURL) throws IOException, InvalidFormatException  {
+    this(componentName, true);
+    
+    InputStream in = modelURL.openStream();
+
+    try {
+      loadModel(in);
+    }
+    finally {
+      in.close();
+    }
+  }
+
+  private void loadModel(InputStream in) throws IOException, InvalidFormatException {
     createBaseArtifactSerializers(artifactSerializers);
 
     final ZipInputStream zip = new ZipInputStream(in);
@@ -210,7 +240,7 @@ public abstract class BaseModel implements ArtifactProvider {
     finishLoadingArtifacts();
     checkArtifactMap();
   }
-
+  
   private void initializeFactory() throws InvalidFormatException {
     String factoryName = getManifestProperty(FACTORY_NAME);
     if (factoryName == null) {
