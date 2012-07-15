@@ -43,4 +43,10 @@ public interface CmdLineTool {
    * @return a description on how to use the tool
    */
   String getHelp();
+
+  /**
+   * Returns whether the tool has any command line params.
+   * @return whether the tool has any command line params
+   */
+  boolean hasParams();
 }

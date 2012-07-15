@@ -207,7 +207,7 @@ public final class CLI {
         throw new TerminateToolException(1, "Tool " + toolName + " is not found.");
       }
 
-      if (0 == toolArguments.length ||
+      if ((0 == toolArguments.length && tool.hasParams()) ||
           0 < toolArguments.length && "help".equals(toolArguments[0])) {
           if (tool instanceof TypedCmdLineTool) {
             System.out.println(((TypedCmdLineTool) tool).getHelp(formatName));

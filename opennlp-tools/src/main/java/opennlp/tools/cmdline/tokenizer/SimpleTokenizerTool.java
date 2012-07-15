@@ -30,6 +30,11 @@ public final class SimpleTokenizerTool extends AbstractBasicCmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " < sentences";
   }
 
+  @Override
+  public boolean hasParams() {
+    return false;
+  }
+
   public void run(String[] args) {
     if (args.length != 0) {
       System.out.println(getHelp());
