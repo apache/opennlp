@@ -33,6 +33,10 @@ public abstract class AbstractCmdLineTool implements CmdLineTool {
     }
   }
 
+  public boolean hasParams() {
+    return true;
+  }
+
   @SuppressWarnings({"unchecked"})
   protected <T> String getBasicHelp(Class<T> argProxyInterface) {
     return getBasicHelp(new Class[]{argProxyInterface});
