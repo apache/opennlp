@@ -83,10 +83,6 @@ public class TokenizerFactory extends BaseToolFactory {
   @Override
   public void validateArtifactMap() throws InvalidFormatException {
 
-    if (this.artifactProvider.getManifestProperty(ALPHA_NUMERIC_PATTERN) == null)
-      throw new InvalidFormatException(ALPHA_NUMERIC_PATTERN
-          + " is a mandatory property!");
-
     if (this.artifactProvider
         .getManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION) == null)
       throw new InvalidFormatException(USE_ALPHA_NUMERIC_OPTIMIZATION
