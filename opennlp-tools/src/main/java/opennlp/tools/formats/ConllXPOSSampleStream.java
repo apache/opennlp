@@ -84,7 +84,7 @@ public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample>
        }
        else {
          throw new InvalidFormatException("Every non-empty line must have at least " +
-             minNumberOfFields + " fields!");
+             minNumberOfFields + " fields: '" + line + "'!");
        }
      }
      

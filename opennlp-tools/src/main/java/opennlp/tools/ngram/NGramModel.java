@@ -63,9 +63,10 @@ public class NGramModel implements Iterable<StringList>{
       public void insert(Entry entry) throws InvalidFormatException {
 
         int count;
+        String countValueString = null;
 
         try {
-          String countValueString = entry.getAttributes().getValue(COUNT);
+          countValueString = entry.getAttributes().getValue(COUNT);
 
           if (countValueString == null) {
         	  throw new InvalidFormatException(
@@ -74,8 +75,8 @@ public class NGramModel implements Iterable<StringList>{
 
           count = Integer.parseInt(countValueString);
         } catch (NumberFormatException e) {
-          throw new InvalidFormatException(
-              "The count attribute must be a nubmer!");
+          throw new InvalidFormatException("The count attribute '" + countValueString
+              + "' must be a number!", e);
         }
 
         add(entry.getTokens());
@@ -144,10 +145,12 @@ public class NGramModel implements Iterable<StringList>{
   public void add(StringList ngram, int minLength, int maxLength) {
 
     if (minLength < 1 || maxLength < 1)
-        throw new IllegalArgumentException("minLength and maxLength param must be at least 1!");
+        throw new IllegalArgumentException("minLength and maxLength param must be at least 1. " +
+            "minLength=" + minLength + ", maxLength= " + maxLength);
 
     if (minLength > maxLength)
-        throw new IllegalArgumentException("minLength param must not be larger than maxLength param!");
+        throw new IllegalArgumentException("minLength param must not be larger than " +
+            "maxLength param. minLength=" + minLength + ", maxLength= " + maxLength);
 
     for (int lengthIndex = minLength; lengthIndex < maxLength + 1;
     lengthIndex++) {

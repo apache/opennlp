@@ -115,8 +115,7 @@ public class CoreferencerTool extends AbstractBasicCmdLineTool {
       try {
         treebankLinker = new TreebankLinker(args[0], LinkerMode.TEST);
       } catch (IOException e) {
-        e.printStackTrace();
-        throw new TerminateToolException(-1, "Failed to load all coreferencer models!");
+        throw new TerminateToolException(-1, "Failed to load all coreferencer models!", e);
       }
       
       ObjectStream<String> lineStream =

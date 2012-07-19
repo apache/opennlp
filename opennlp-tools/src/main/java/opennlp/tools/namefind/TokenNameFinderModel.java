@@ -166,7 +166,7 @@ public class TokenNameFinderModel extends BaseModel {
         
         throw new FeatureGeneratorCreationError(e);
       } catch (IOException e) {
-        throw new IllegalStateException("Reading from mem cannot result in an I/O error");
+        throw new IllegalStateException("Reading from mem cannot result in an I/O error", e);
       }
   
       return generator;

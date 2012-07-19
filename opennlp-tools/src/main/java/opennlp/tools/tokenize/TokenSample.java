@@ -60,7 +60,7 @@ public class TokenSample {
       if (tokenSpan.getStart() < 0 || tokenSpan.getStart() > text.length() ||
           tokenSpan.getEnd() > text.length() || tokenSpan.getEnd() < 0) {
         throw new IllegalArgumentException("Span " + tokenSpan.toString() +
-            " is out of bounds!");
+            " is out of bounds, text length: " + text.length() + "!");
       }
     }
   }
@@ -161,9 +161,13 @@ public class TokenSample {
   
   public static TokenSample parse(String sampleString, String separatorChars) {
     
-    if (sampleString == null || separatorChars == null)
-        throw new IllegalArgumentException("arguments must not be null!");
-    
+    if (sampleString == null) {
+        throw new IllegalArgumentException("sampleString must not be null!");
+    }
+    if (separatorChars == null) {
+        throw new IllegalArgumentException("separatorChars must not be null!");
+    }
+
     Span whitespaceTokenSpans[] = WhitespaceTokenizer.INSTANCE.tokenizePos(sampleString);
     
     // Pre-allocate 20% for newly created tokens

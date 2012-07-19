@@ -87,7 +87,7 @@ public class ObjectStreamUtils {
     
     for (ObjectStream<T> stream : streams) {
       if (stream == null)
-        throw new NullPointerException();
+        throw new NullPointerException("stream cannot be null");
     }
     
     return new ObjectStream<T>() {

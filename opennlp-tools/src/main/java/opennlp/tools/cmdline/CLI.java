@@ -232,8 +232,14 @@ public final class CLI {
     }
     catch (TerminateToolException e) {
       
-      if (e.getMessage() != null)
+      if (e.getMessage() != null) {
         System.err.println(e.getMessage());
+      }
+
+      if (e.getCause() != null) {
+        System.err.println(e.getCause().getMessage());
+        e.getCause().printStackTrace(System.err);
+      }
       
       System.exit(e.getCode());
     }

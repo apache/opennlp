@@ -93,7 +93,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
         String emptyLine = lineStream.read();
         
         if (!StringUtil.isEmpty(emptyLine))
-          throw new IOException("Empty line after -DOCSTART- not empty!");
+          throw new IOException("Empty line after -DOCSTART- not empty: '" + emptyLine +"'!");
         
         continue;
       }
@@ -111,7 +111,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
         tags.add(fields[4]); // 4 is NE-TAG
       }
       else {
-        throw new IOException("Incorrect number of fields per line for language!");
+        throw new IOException("Incorrect number of fields per line for language: '" + line + "'!");
       }
     }
 

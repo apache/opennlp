@@ -121,7 +121,7 @@ public class ParserModel extends BaseModel {
       artifactMap.put(ATTACH_MODEL_ENTRY_NAME, attachModel);
     }
     else {
-      throw new IllegalStateException("Unkown ParserType!");
+      throw new IllegalStateException("Unknown ParserType '" + modelType + "'!");
     }
     
     artifactMap.put(PARSER_TAGGER_MODEL_ENTRY_NAME, parserTagger);
@@ -244,7 +244,7 @@ public class ParserModel extends BaseModel {
           throw new InvalidFormatException("attachModel must not be null!");
       }
       else {
-        throw new InvalidFormatException("Unkown ParserType!");
+        throw new InvalidFormatException("Unknown ParserType '" + modelType + "'!");
       }
     }
     else {

@@ -91,10 +91,9 @@ public class TokenizerFactory extends BaseToolFactory {
     Object abbreviationsEntry = this.artifactProvider
         .getArtifact(ABBREVIATIONS_ENTRY_NAME);
 
-    if (abbreviationsEntry != null
-        && !(abbreviationsEntry instanceof Dictionary)) {
-      throw new InvalidFormatException(
-          "Abbreviations dictionary has wrong type!");
+    if (abbreviationsEntry != null && !(abbreviationsEntry instanceof Dictionary)) {
+      throw new InvalidFormatException("Abbreviations dictionary '" + abbreviationsEntry +
+              "' has wrong type, needs to be of type Dictionary!");
     }
   }
 

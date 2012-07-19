@@ -158,8 +158,9 @@ public class Version {
 
     int indexSecondDot = version.indexOf('.', indexFirstDot + 1);
 
-    if (indexFirstDot == -1 || indexSecondDot == -1)
-        throw new NumberFormatException("Invalid version!");
+    if (indexFirstDot == -1 || indexSecondDot == -1) {
+        throw new NumberFormatException("Invalid version format '" + version + "', expected two dots!");
+    }
 
     int indexFirstDash = version.indexOf('-');
     

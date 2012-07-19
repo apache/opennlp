@@ -68,7 +68,8 @@ public class ExtensionLoader {
         }
       }
       else {
-        throw new ExtensionNotLoadedException("Extension class needs to have type: " + clazz.getName());
+        throw new ExtensionNotLoadedException("Extension class '" + extClazz.getName() +
+                "' needs to have type: " + clazz.getName());
       }
     } catch (ClassNotFoundException e) {
       // Class is not on classpath

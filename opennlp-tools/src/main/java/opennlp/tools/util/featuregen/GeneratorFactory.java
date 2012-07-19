@@ -158,9 +158,10 @@ public class GeneratorFactory {
         throw new InvalidFormatException("Could not find containing generator element!");
       }
 
-      AdaptiveFeatureGenerator chachedGenerator = GeneratorFactory.createGenerator(cachedGeneratorElement, resourceManager);
+      AdaptiveFeatureGenerator cachedGenerator =
+          GeneratorFactory.createGenerator(cachedGeneratorElement, resourceManager);
 
-      return new CachedFeatureGenerator(chachedGenerator);
+      return new CachedFeatureGenerator(cachedGenerator);
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
@@ -183,7 +184,7 @@ public class GeneratorFactory {
       try {
         min = Integer.parseInt(minString);
       } catch (NumberFormatException e) {
-        throw new InvalidFormatException("min attribute is not a number!");
+        throw new InvalidFormatException("min attribute '" + minString + "' is not a number!", e);
       }
 
       String maxString = generatorElement.getAttribute("max");
@@ -193,7 +194,7 @@ public class GeneratorFactory {
       try {
         max = Integer.parseInt(maxString);
       } catch (NumberFormatException e) {
-        throw new InvalidFormatException("max attribute is not a number!");
+        throw new InvalidFormatException("max attribute '" + maxString + "' is not a number!", e);
       }
 
       return new CharacterNgramFeatureGenerator(min, max);
@@ -374,7 +375,7 @@ public class GeneratorFactory {
 
       if (nestedGeneratorElement == null) {
         throw new InvalidFormatException("window feature generator must contain" +
-        		"a agregator element");
+        		" an aggregator element");
       }
       
       AdaptiveFeatureGenerator nestedGenerator = GeneratorFactory.createGenerator(nestedGeneratorElement, resourceManager);
@@ -386,7 +387,7 @@ public class GeneratorFactory {
       try {
         prevLength = Integer.parseInt(prevLengthString);
       } catch (NumberFormatException e) {
-        throw new InvalidFormatException("prevLength attribute is not a number!");
+        throw new InvalidFormatException("prevLength attribute '" + prevLengthString + "' is not a number!", e);
       }
       
       String nextLengthString = generatorElement.getAttribute("nextLength");
@@ -396,7 +397,7 @@ public class GeneratorFactory {
       try {
         nextLength = Integer.parseInt(nextLengthString);
       } catch (NumberFormatException e) {
-        throw new InvalidFormatException("nextLength attribute is not a number!");
+        throw new InvalidFormatException("nextLength attribute '" + nextLengthString + "' is not a number!", e);
       }  
       
       return new WindowFeatureGenerator(nestedGenerator, prevLength, nextLength);

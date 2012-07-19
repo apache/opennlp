@@ -93,7 +93,7 @@ public final class ChunkerEvaluatorTool
       evaluator.evaluate(measuredSampleStream);
     } catch (IOException e) {
       System.err.println("failed");
-      throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage(), e);
     } finally {
       try {
         measuredSampleStream.close();

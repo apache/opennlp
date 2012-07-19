@@ -54,8 +54,11 @@ public class StringList implements Iterable<String> {
    */
   public StringList(String... tokens) {
 
-    if (tokens == null || tokens.length == 0) {
-      throw new IllegalArgumentException();
+    if (tokens == null) {
+      throw new IllegalArgumentException("tokens must not be null");
+    }
+    if (tokens.length == 0) {
+      throw new IllegalArgumentException("tokens must not be empty");
     }
 
     this.tokens = new String[tokens.length];

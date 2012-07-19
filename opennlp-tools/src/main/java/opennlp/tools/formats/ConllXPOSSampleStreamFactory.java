@@ -62,7 +62,7 @@ public class ConllXPOSSampleStreamFactory extends LanguageSampleStreamFactory<PO
       return new ConllXPOSSampleStream(lineStream);
     } catch (UnsupportedEncodingException e) {
       // this shouldn't happen
-      throw new TerminateToolException(-1, "UTF-8 encoding is not supported: " + e.getMessage());
+      throw new TerminateToolException(-1, "UTF-8 encoding is not supported: " + e.getMessage(), e);
     }
   }
 }

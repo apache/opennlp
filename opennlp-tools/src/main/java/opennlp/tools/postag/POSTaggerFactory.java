@@ -183,7 +183,7 @@ public class POSTaggerFactory extends BaseToolFactory {
           unknownTag.append(d).append(" ");
         }
       }
-      throw new InvalidFormatException("Tag dictioinary contains tags "
+      throw new InvalidFormatException("Tag dictionary contains tags "
           + "which are unknown by the model! The unknown tags are: "
           + unknownTag.toString());
     }

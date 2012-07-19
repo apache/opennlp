@@ -92,7 +92,8 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
         tags.add(fields[1]);
       }
       else {
-        throw new IOException("Expected two fields per line in training data!");
+        throw new IOException("Expected two fields per line in training data, got " +
+            fields.length + " for line '" + line + "'!");
       }
     }
     

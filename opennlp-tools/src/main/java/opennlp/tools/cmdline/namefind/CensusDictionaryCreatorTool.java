@@ -115,7 +115,8 @@ public class CensusDictionaryCreatorTool extends AbstractBasicCmdLineTool {
       System.out.println("Creating Dictionary...");
       mDictionary = createDictionary(sampleStream);
     } catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
+          + e.getMessage(), e);
     } finally {
       try {
         sampleStream.close();
@@ -131,8 +132,9 @@ public class CensusDictionaryCreatorTool extends AbstractBasicCmdLineTool {
     try {
       out = new FileOutputStream(dictOutFile);
       mDictionary.serialize(out);
-    } catch (IOException ex) {
-      throw new TerminateToolException(-1, "IO error while writing dictionary file: " + ex.getMessage());
+    } catch (IOException e) {
+      throw new TerminateToolException(-1, "IO error while writing dictionary file: "
+          + e.getMessage(), e);
     }
     finally {
       if (out != null)
@@ -140,7 +142,8 @@ public class CensusDictionaryCreatorTool extends AbstractBasicCmdLineTool {
           out.close();
         } catch (IOException e) {
           // file might be damaged
-          throw new TerminateToolException(-1, "Attention: Failed to correctly write dictionary:" + e.getMessage());
+          throw new TerminateToolException(-1, "Attention: Failed to correctly write dictionary:" +
+              e.getMessage(), e);
         }
     }
   }

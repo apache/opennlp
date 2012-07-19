@@ -60,7 +60,8 @@ public class DoccatTrainerTool
     try {
       model = DocumentCategorizerME.train(factory.getLang(), sampleStream, mlParams);
     } catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " +
+          e.getMessage(), e);
     }
     finally {
       try {

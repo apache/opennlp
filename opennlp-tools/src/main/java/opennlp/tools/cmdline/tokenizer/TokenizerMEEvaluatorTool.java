@@ -47,13 +47,13 @@ public final class TokenizerMEEvaluatorTool
 
     TokenizerModel model = new TokenizerModelLoader().load(params.getModel());
 
-    TokenizerEvaluationMonitor missclassifiedListener = null;
+    TokenizerEvaluationMonitor misclassifiedListener = null;
     if (params.getMisclassified()) {
-      missclassifiedListener = new TokenEvaluationErrorListener();
+      misclassifiedListener = new TokenEvaluationErrorListener();
     }
 
     TokenizerEvaluator evaluator = new TokenizerEvaluator(
-        new opennlp.tools.tokenize.TokenizerME(model), missclassifiedListener);
+        new opennlp.tools.tokenize.TokenizerME(model), misclassifiedListener);
 
     System.out.print("Evaluating ... ");
 
@@ -61,7 +61,7 @@ public final class TokenizerMEEvaluatorTool
       evaluator.evaluate(sampleStream);
     } catch (IOException e) {
       System.err.println("failed");
-      throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage(), e);
     } finally {
       try {
         sampleStream.close();

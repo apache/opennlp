@@ -268,8 +268,8 @@ public class DictionarySerializer {
     TransformerHandler hd;
     try {
       hd = tf.newTransformerHandler();
-    } catch (TransformerConfigurationException e1) {
-      throw new AssertionError("The Tranformer configuration must be valid!");
+    } catch (TransformerConfigurationException e) {
+      throw new AssertionError("The Transformer configuration must be valid!");
     }
 
     Transformer serializer = hd.getTransformer();
@@ -299,7 +299,7 @@ public class DictionarySerializer {
       hd.endDocument();
     }
     catch (SAXException e) {
-      throw new IOException("There was an error during serialization!");
+      throw new IOException("There was an error during serialization!", e);
     }
   }
 

@@ -63,7 +63,8 @@ public final class TokenizerTrainerTool
 
     if (mlParams != null) {
       if (!TrainUtil.isValid(mlParams.getSettings())) {
-        throw new TerminateToolException(1, "Training parameters file is invalid!");
+        throw new TerminateToolException(1, "Training parameters file '" + params.getParams() +
+            "' is invalid!");
       }
 
       if (TrainUtil.isSequenceTraining(mlParams.getSettings())) {
@@ -89,7 +90,8 @@ public final class TokenizerTrainerTool
           tokFactory, mlParams);
 
     } catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
+          + e.getMessage(), e);
     }
     finally {
       try {

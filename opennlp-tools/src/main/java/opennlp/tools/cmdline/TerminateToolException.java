@@ -37,6 +37,12 @@ public class TerminateToolException extends RuntimeException {
   private final int code;
   private final String message;
   
+  public TerminateToolException(int code, String message, Throwable t) {
+    super(t);
+    this.code = code;
+    this.message = message;
+  }
+
   public TerminateToolException(int code, String message) {
     this.code = code;
     this.message = message;

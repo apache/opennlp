@@ -106,7 +106,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
       type = "organization";
     }
     else {
-      throw new InvalidFormatException("Unkonw type: " + type);
+      throw new InvalidFormatException("Unknown type: " + type);
     }
     
     return new Span(begin, end, type);
@@ -137,7 +137,8 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
         tags.add(fields[2]);
       }
       else {
-        throw new IOException("Expected three fields per line in training data!");
+        throw new IOException("Expected three fields per line in training data, got " +
+            fields.length + " for line '" + line + "'!");
       }
     }
     

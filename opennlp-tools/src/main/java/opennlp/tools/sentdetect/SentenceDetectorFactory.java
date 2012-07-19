@@ -83,7 +83,8 @@ public class SentenceDetectorFactory extends BaseToolFactory {
     if (abbreviationsEntry != null
         && !(abbreviationsEntry instanceof Dictionary)) {
       throw new InvalidFormatException(
-          "Abbreviations dictionary has wrong type!");
+          "Abbreviations dictionary '" + abbreviationsEntry +
+              "' has wrong type, needs to be of type Dictionary!");
     }
   }
 
@@ -204,10 +205,9 @@ public class SentenceDetectorFactory extends BaseToolFactory {
   }
 
   private String eosCharArrayToString(char[] eosCharacters) {
-    String eosString = "";
-    for (int i = 0; i < eosCharacters.length; i++)
-      eosString += eosCharacters[i];
-    return eosString;
+    StringBuilder eosString = new StringBuilder();
+    eosString.append(eosCharacters);
+    return eosString.toString();
   }
 
   private char[] eosStringToCharArray(String eosCharacters) {
