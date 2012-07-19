@@ -68,7 +68,7 @@ public class PerformanceMonitor {
       throw new IllegalStateException("Must be started first!");
     
     if (increment < 0) 
-      throw new IllegalArgumentException("increment must be zero or positive!");
+      throw new IllegalArgumentException("increment must be zero or positive but was " + increment + "!");
     
     counter += increment;
   }

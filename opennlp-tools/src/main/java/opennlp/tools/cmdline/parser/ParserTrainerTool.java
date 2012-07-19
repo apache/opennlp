@@ -72,7 +72,8 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     if(typeAsString != null && typeAsString.length() > 0) {
       type = ParserType.parse(typeAsString);
       if(type == null) {
-        throw new TerminateToolException(1, "ParserType training parameter is invalid!");
+        throw new TerminateToolException(1, "ParserType training parameter '" + typeAsString +
+            "' is invalid!");
       }
     }
     
@@ -138,7 +139,8 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
       }
     }
     catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
+          + e.getMessage(), e);
     }
     finally {
       try {

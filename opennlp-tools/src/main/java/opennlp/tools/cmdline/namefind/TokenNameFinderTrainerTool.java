@@ -70,7 +70,8 @@ public final class TokenNameFinderTrainerTool
       try {
         featureGeneratorBytes = ModelUtil.read(bytesIn);
       } catch (IOException e) {
-        throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+        throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
+            + e.getMessage(), e);
       } finally {
         try {
           bytesIn.close();
@@ -180,7 +181,8 @@ public final class TokenNameFinderTrainerTool
           mlParams, featureGeneratorBytes, resources);
     }
     catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
+          + e.getMessage(), e);
     }
     finally {
       try {

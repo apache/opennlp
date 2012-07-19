@@ -43,7 +43,8 @@ public class CoreferencerTrainerTool extends AbstractTrainerTool<CorefSample, Tr
     try {
       CorefTrainer.train(params.getModel().toString(), sampleStream, true, true);
     } catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " +
+          e.getMessage(), e);
     }
   }
   

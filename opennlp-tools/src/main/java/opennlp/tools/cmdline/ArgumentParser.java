@@ -77,7 +77,7 @@ public class ArgumentParser {
       }
       catch (NumberFormatException e) {
         throw new TerminateToolException(1, String.format(INVALID_ARG, argName, argValue) +
-            "Value must be an integer!");
+            "Value must be an integer!", e);
       }
       
       return value;
@@ -176,11 +176,12 @@ public class ArgumentParser {
 
           // check that method names start with get
           if (!method.getName().startsWith("get") && method.getName().length() > 3)
-            throw new IllegalArgumentException(method.getName() + " method name does not start with get!");
+            throw new IllegalArgumentException(method.getName() + " method name does not start with 'get'!");
 
           // check that method has zero arguments
           if (method.getParameterTypes().length != 0)
-            throw new IllegalArgumentException(method.getName() + " method must have zero parameters!");
+            throw new IllegalArgumentException(method.getName() + " method must have zero parameters but has " +
+                    method.getParameterTypes().length + "!");
 
           // check return types of interface
           Class<?> returnType = method.getReturnType();
@@ -188,7 +189,8 @@ public class ArgumentParser {
           Set<Class<?>> compatibleReturnTypes = argumentFactories.keySet();
 
           if(!compatibleReturnTypes.contains(returnType))
-             throw new IllegalArgumentException(method.getName() + " method must have compatible return type!");
+             throw new IllegalArgumentException(method.getName() + " method must have compatible return type! Got " +
+                     returnType + ", expected one of " + compatibleReturnTypes);
         }
       }
     }
@@ -408,7 +410,7 @@ public class ArgumentParser {
         ArgumentFactory factory = argumentFactories.get(returnType);
         
         if (factory == null)
-          throw new IllegalStateException();
+          throw new IllegalStateException("factory for '" + returnType + "' must not be null");
         
         value = factory.parseArgument(method, parameterName, valueString);
       }

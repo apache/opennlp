@@ -147,7 +147,7 @@ public final class CmdLineUtil {
     try {
       return new FileInputStream(file);
     } catch (FileNotFoundException e) {
-      throw new TerminateToolException(-1, "File cannot be found: " + e.getMessage());
+      throw new TerminateToolException(-1, "File '" + file + "' cannot be found", e);
     }
   }
   
@@ -173,13 +173,13 @@ public final class CmdLineUtil {
       model.serialize(modelOut);
     } catch (IOException e) {
       System.err.println("failed");
-      throw new TerminateToolException(-1, "Error during writing model file: " + e.getMessage());
+      throw new TerminateToolException(-1, "Error during writing model file '" + modelFile + "'", e);
     } finally {
       if (modelOut != null) {
         try {
           modelOut.close();
         } catch (IOException e) {
-          System.err.println("Failed to properly close model file: " + 
+          System.err.println("Failed to properly close model file '" + modelFile + "': " +
               e.getMessage());
         }
       }
@@ -295,7 +295,7 @@ public final class CmdLineUtil {
   }
 
   public static void handleStdinIoError(IOException e) {
-    throw new TerminateToolException(-1, "IO Error while reading from stdin: " + e.getMessage());
+    throw new TerminateToolException(-1, "IO Error while reading from stdin: " + e.getMessage(), e);
   }
   
   // its optional, passing null is allowed
@@ -314,18 +314,19 @@ public final class CmdLineUtil {
         
         params = new opennlp.tools.util.TrainingParameters(paramsIn);
       } catch (IOException e) {
-        throw new TerminateToolException(-1, "Error during parameters loading: " + e.getMessage());
+        throw new TerminateToolException(-1, "Error during parameters loading: " + e.getMessage(), e);
       }
       finally {
         try {
           if (paramsIn != null)
             paramsIn.close();
         } catch (IOException e) {
+          //sorry that this can fail
         }
       }
       
       if (!TrainUtil.isValid(params.getSettings())) {
-        throw new TerminateToolException(1, "Training parameters file is invalid!");
+        throw new TerminateToolException(1, "Training parameters file '" + paramFile + "' is invalid!");
       }
       
       if (!supportSequenceTraining && TrainUtil.isSequenceTraining(params.getSettings())) {

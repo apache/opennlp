@@ -38,8 +38,11 @@ public class DocumentSample {
   }
 
   public DocumentSample(String category, String text[]) {
-    if (category == null || text == null) {
-      throw new IllegalArgumentException();
+    if (category == null) {
+      throw new IllegalArgumentException("category must not be null");
+    }
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
     }
 
     this.category = category;

@@ -57,7 +57,8 @@ public final class POSTaggerTrainerTool
 
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
     if (mlParams != null && !TrainUtil.isValid(mlParams.getSettings())) {
-      throw new TerminateToolException(1, "Training parameters file is invalid!");
+      throw new TerminateToolException(1, "Training parameters file '" + params.getParams() +
+          "' is invalid!");
     }
 
     if(mlParams == null) {
@@ -79,17 +80,16 @@ public final class POSTaggerTrainerTool
         sampleStream.reset();
       } catch (IOException e) {
         throw new TerminateToolException(-1,
-            "IO error while building NGram Dictionary: " + e.getMessage());
+            "IO error while building NGram Dictionary: " + e.getMessage(), e);
       }
       System.err.println("done");
     }
 
     POSTaggerFactory postaggerFactory = null;
     try {
-      postaggerFactory = POSTaggerFactory.create(params.getFactory(),
-          ngramDict, null);
+      postaggerFactory = POSTaggerFactory.create(params.getFactory(), ngramDict, null);
     } catch (InvalidFormatException e) {
-      throw new TerminateToolException(-1, e.getMessage());
+      throw new TerminateToolException(-1, e.getMessage(), e);
     }
 
     if (params.getDict() != null) {
@@ -98,7 +98,7 @@ public final class POSTaggerTrainerTool
             .createTagDictionary(params.getDict()));
       } catch (IOException e) {
         throw new TerminateToolException(-1,
-            "IO error while loading POS Dictionary: " + e.getMessage());
+            "IO error while loading POS Dictionary: " + e.getMessage(), e);
       }
     }
 
@@ -120,7 +120,7 @@ public final class POSTaggerTrainerTool
       } catch (IOException e) {
         throw new TerminateToolException(-1,
             "IO error while creating/extending POS Dictionary: "
-                + e.getMessage());
+                + e.getMessage(), e);
       }
     }
 
@@ -130,7 +130,8 @@ public final class POSTaggerTrainerTool
           sampleStream, mlParams, postaggerFactory);
     }
     catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
+          + e.getMessage(), e);
     }
     finally {
       try {

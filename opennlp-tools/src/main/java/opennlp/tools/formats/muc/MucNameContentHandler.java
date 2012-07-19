@@ -95,7 +95,8 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
       String nameType = attributes.get("TYPE");
 
       if (!EXPECTED_TYPES.contains(nameType)) {
-        throw new InvalidFormatException("Unkown timex, numex or namex type: " + nameType);
+        throw new InvalidFormatException("Unknown timex, numex or namex type: "
+            + nameType + ", expected one of " + EXPECTED_TYPES);
       }
 
       incompleteNames.add(new Span(text.size(), text.size(), nameType.toLowerCase(Locale.ENGLISH)));

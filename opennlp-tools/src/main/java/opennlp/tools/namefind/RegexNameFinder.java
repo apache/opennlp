@@ -36,7 +36,7 @@ public final class RegexNameFinder implements TokenNameFinder {
 
   public RegexNameFinder(Pattern patterns[]) {
     if (patterns == null || patterns.length == 0) {
-      throw new IllegalArgumentException("patterns must not be null or emtpy!");
+      throw new IllegalArgumentException("patterns must not be null or empty!");
     }
 
     mPatterns = patterns;

@@ -71,12 +71,18 @@ public class POSSample {
   }
   
   private void checkArguments() {
-    if (sentence.size() != tags.size())
+    if (sentence.size() != tags.size()) {
       throw new IllegalArgumentException(
-      "There must be exactly one tag for each token!");
-    
-      if (sentence.contains(null) || tags.contains(null))
-        throw new IllegalArgumentException("null elements are not allowed!");
+        "There must be exactly one tag for each token. tokens: " + sentence.size() +
+            ", tags: " + tags.size());
+    }
+
+      if (sentence.contains(null)) {
+        throw new IllegalArgumentException("null elements are not allowed in sentence tokens!");
+      }
+      if (tags.contains(null)) {
+        throw new IllegalArgumentException("null elements are not allowed in tags!");
+      }
   }
   
   public String[] getSentence() {
@@ -122,7 +128,7 @@ public class POSSample {
       int split = tokenTags[i].lastIndexOf("_");
 
       if (split == -1) {
-        throw new InvalidFormatException("Cannot find \"_\" inside token!");
+        throw new InvalidFormatException("Cannot find \"_\" inside token '" + tokenTags[i] + "'!");
       }
 
       sentence[i] = tokenTags[i].substring(0, split);

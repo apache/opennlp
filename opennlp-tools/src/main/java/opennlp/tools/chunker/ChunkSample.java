@@ -142,7 +142,10 @@ public class ChunkSample {
   private static void validateArguments(int sentenceSize, int tagsSize, int predsSize) throws IllegalArgumentException {
     if (sentenceSize != tagsSize || tagsSize != predsSize)
       throw new IllegalArgumentException(
-          "All arrays must have the same length!");
+          "All arrays must have the same length: " +
+              "sentenceSize: " + sentenceSize +
+              ", tagsSize: " + tagsSize +
+              ", predsSize: " + predsSize + "!");
   }
   
   /**

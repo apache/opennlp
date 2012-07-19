@@ -44,10 +44,13 @@ public class TokenSampleStream extends FilterObjectStream<String, TokenSample> {
     
     super(sampleStrings);
     
-    if (sampleStrings == null || separatorChars == null) {
-      throw new IllegalArgumentException("parameters must not be null!");
+    if (sampleStrings == null) {
+      throw new IllegalArgumentException("sampleStrings must not be null!");
     }
-    
+    if (separatorChars == null) {
+      throw new IllegalArgumentException("separatorChars must not be null!");
+    }
+
     this.separatorChars= separatorChars;
   }
   

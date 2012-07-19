@@ -87,7 +87,8 @@ public class DetokenizationDictionary {
   public DetokenizationDictionary(String tokens[],
       DetokenizationDictionary.Operation operations[]) {
     if (tokens.length != operations.length)
-      throw new IllegalArgumentException("tokens and ops must have the same length!");
+      throw new IllegalArgumentException("tokens and ops must have the same length: tokens=" +
+          tokens.length + ", operations=" + operations.length + "!");
     
     for (int i = 0; i < tokens.length; i++) {
       String token = tokens[i];
@@ -119,7 +120,7 @@ public class DetokenizationDictionary {
         Operation operation = Operation.parse(operationString);
         
         if (operation == null)
-            throw new InvalidFormatException("Unkown operation type: " + operationString);
+            throw new InvalidFormatException("Unknown operation type: " + operationString);
         
         operationTable.put(word.getToken(0), operation);
       }});

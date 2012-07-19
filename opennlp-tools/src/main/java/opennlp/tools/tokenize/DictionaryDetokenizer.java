@@ -74,7 +74,7 @@ public class DictionaryDetokenizer implements Detokenizer {
         }
       }
       else {
-        throw new IllegalStateException("Unkown operation: " + dictOperation);
+        throw new IllegalStateException("Unknown operation: " + dictOperation);
       }
     }
     
@@ -86,7 +86,8 @@ public class DictionaryDetokenizer implements Detokenizer {
     DetokenizationOperation operations[] = detokenize(tokens);
     
     if (tokens.length != operations.length)
-      throw new IllegalArgumentException("tokens and operations array must have same length!");
+      throw new IllegalArgumentException("tokens and operations array must have same length: tokens=" +
+          tokens.length + ", operations=" + operations.length + "!");
     
     
     StringBuilder untokenizedString = new StringBuilder();

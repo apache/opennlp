@@ -79,7 +79,8 @@ public final class TokenNameFinderCrossValidatorTool
           listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
+          + e.getMessage(), e);
     } finally {
       try {
         sampleStream.close();

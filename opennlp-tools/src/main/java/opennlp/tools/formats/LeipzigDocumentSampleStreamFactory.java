@@ -53,7 +53,7 @@ public class LeipzigDocumentSampleStreamFactory extends LanguageSampleStreamFact
       return new LeipzigDoccatSampleStream(params.getLang(), 20,
           CmdLineUtil.openInFile(params.getData()));
     } catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while opening sample data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while opening sample data: " + e.getMessage(), e);
     }
   }
 }

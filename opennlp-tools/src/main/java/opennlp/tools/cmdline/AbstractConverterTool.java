@@ -112,7 +112,7 @@ public abstract class AbstractConverterTool<T> extends AbstractTypedTool<T> {
         }
       }
       catch (IOException e) {
-        throw new TerminateToolException(-1, "IO error while converting data : " + e.getMessage());
+        throw new TerminateToolException(-1, "IO error while converting data : " + e.getMessage(), e);
       }
       finally {
         if (sampleStream != null)

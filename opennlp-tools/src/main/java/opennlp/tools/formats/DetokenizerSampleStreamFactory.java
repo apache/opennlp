@@ -41,7 +41,7 @@ public abstract class DetokenizerSampleStreamFactory<T> extends LanguageSampleSt
       return new DictionaryDetokenizer(new DetokenizationDictionary(
           new FileInputStream(new File(p.getDetokenizer()))));
     } catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while loading detokenizer dict: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while loading detokenizer dict: " + e.getMessage(), e);
     }
   }
 }

@@ -39,7 +39,8 @@ public final class POSTaggerCrossValidatorTool
     extends AbstractCrossValidatorTool<POSSample, CVToolParams> {
   
   interface CVToolParams extends CVParams, TrainingParams {
-    @ParameterDescription(valueName = "outputFile", description = "the path of the fine-grained report file.")
+    @ParameterDescription(valueName = "outputFile",
+        description = "the path of the fine-grained report file.")
     @OptionalParameter
     File getReportOutputFile();
   }
@@ -89,7 +90,8 @@ public final class POSTaggerCrossValidatorTool
       
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage());
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
+          + e.getMessage(), e);
     } finally {
       try {
         sampleStream.close();

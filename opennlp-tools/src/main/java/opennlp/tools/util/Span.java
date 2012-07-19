@@ -37,11 +37,16 @@ public class Span implements Comparable<Span> {
    */
   public Span(int s, int e, String type) {
 
-    if (s < 0 || e <0)
-      throw new IllegalArgumentException("start and end index must be zero or greater!");
-
-    if (s > e)
-      throw new IllegalArgumentException("start index must not be larger than end index!");
+    if (s < 0) {
+      throw new IllegalArgumentException("start index must be zero or greater: " + s);
+    }
+    if (e < 0) {
+      throw new IllegalArgumentException("end index must be zero or greater: " + e);
+    }
+    if (s > e) {
+      throw new IllegalArgumentException("start index must not be larger than end index: " +
+          "start=" + s + ", end=" + e);
+    }
 
     start = s;
     end = e;
@@ -189,7 +194,7 @@ public class Span implements Comparable<Span> {
   public CharSequence getCoveredText(CharSequence text) {
     if (getEnd() > text.length()) {
       throw new IllegalArgumentException("The span " + toString() +
-          " is outside the given text!");
+          " is outside the given text which has length " + text.length() + "!");
     }
 
     return text.subSequence(getStart(), getEnd());

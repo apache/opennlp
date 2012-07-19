@@ -43,7 +43,7 @@ public abstract class AbstractToSentenceSampleStream<T> extends
     this.detokenizer = detokenizer;
 
     if (chunkSize < 0)
-      throw new IllegalArgumentException("chunkSize must be zero or larger!");
+      throw new IllegalArgumentException("chunkSize must be zero or larger but was " + chunkSize + "!");
 
     if (chunkSize > 0)
       this.chunkSize = chunkSize;
