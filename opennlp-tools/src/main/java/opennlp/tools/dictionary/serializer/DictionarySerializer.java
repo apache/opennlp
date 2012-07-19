@@ -299,7 +299,7 @@ public class DictionarySerializer {
       hd.endDocument();
     }
     catch (SAXException e) {
-      throw new IOException("There was an error during serialization!", e);
+      throw new IOException("Error during serialization: " + e.getMessage());
     }
   }
 
