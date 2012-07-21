@@ -299,7 +299,8 @@ public class DictionarySerializer {
       hd.endDocument();
     }
     catch (SAXException e) {
-      throw new IOException("Error during serialization: " + e.getMessage());
+      //TODO update after Java6 upgrade
+      throw (IOException) new IOException("Error during serialization: " + e.getMessage()).initCause(e);
     }
   }
 
