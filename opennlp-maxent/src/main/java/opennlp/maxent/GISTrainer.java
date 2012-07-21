@@ -247,8 +247,9 @@ class GISTrainer {
    */
   public GISModel trainModel(int iterations, DataIndexer di, Prior modelPrior, int cutoff, int threads) {
     
-    if (threads <= 0)
-      throw new IllegalArgumentException("threads must be at leat one or greater!");
+    if (threads <= 0) {
+      throw new IllegalArgumentException("threads must be at least one or greater but is " + threads + "!");
+    }
     
     modelExpects = new MutableContext[threads][];
     
@@ -580,7 +581,7 @@ class GISTrainer {
         // Only runtime exception can be thrown during training, if one was thrown
         // it should be re-thrown. That could for example be a NullPointerException
         // which is caused through a bug in our implementation.
-        throw new RuntimeException(e.getCause());
+        throw new RuntimeException("Exception during training: " + e.getMessage(), e);
       }
       
       // When they are done, retrieve the results ...

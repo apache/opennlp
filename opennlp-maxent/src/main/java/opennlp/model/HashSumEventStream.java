@@ -55,7 +55,7 @@ public class HashSumEventStream implements EventStream {
       digest.update(event.toString().getBytes("UTF-8"));
     }
     catch (UnsupportedEncodingException e) {
-      throw new IllegalStateException("UTF-8 encoding is not available!");
+      throw new IllegalStateException("UTF-8 encoding is not available!", e);
     }
     
     return event;

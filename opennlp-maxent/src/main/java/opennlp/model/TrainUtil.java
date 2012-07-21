@@ -155,7 +155,7 @@ public class TrainUtil {
     else if (PERCEPTRON_VALUE.equals(algorithmName))
       sortAndMerge = false;
     else
-      throw new IllegalStateException("Unexpected algorihtm name: " + algorithmName);
+      throw new IllegalStateException("Unexpected algorithm name: " + algorithmName);
 
     HashSumEventStream hses = new HashSumEventStream(events);
     
