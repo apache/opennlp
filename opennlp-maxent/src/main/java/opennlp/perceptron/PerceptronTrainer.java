@@ -85,8 +85,10 @@ public class PerceptronTrainer {
    */
   public void setTolerance(double tolerance) {
     
-    if (tolerance < 0)
-      throw new IllegalArgumentException("tolerance must be a positive number!");
+    if (tolerance < 0) {
+      throw new
+          IllegalArgumentException("tolerance must be a positive number but is " + tolerance + "!");
+    }
     
     this.tolerance = tolerance;
   }
@@ -99,8 +101,10 @@ public class PerceptronTrainer {
    */
   public void setStepSizeDecrease(double decrease) {
     
-    if (decrease < 0 || decrease > 100)
-      throw new IllegalArgumentException("decrease must be between 0 and 100");
+    if (decrease < 0 || decrease > 100) {
+      throw new
+          IllegalArgumentException("decrease must be between 0 and 100 but is " + decrease + "!");
+    }
     
     stepSizeDecrease = decrease;
   }

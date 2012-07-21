@@ -55,9 +55,10 @@ public class IndexHashTable<T> {
    *           if the entries are not unique
    */
   public IndexHashTable(T mapping[], double loadfactor) {
-    if (loadfactor <= 0 || loadfactor > 1)
+    if (loadfactor <= 0 || loadfactor > 1) {
       throw new IllegalArgumentException("loadfactor must be larger than 0 "
-          + "and equal to or smaller than 1!");
+          + "and equal to or smaller than 1 but is " + loadfactor + "!");
+    }
 
     int arraySize = (int) (mapping.length / loadfactor) + 1;
 
