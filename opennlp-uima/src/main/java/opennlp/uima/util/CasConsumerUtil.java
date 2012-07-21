@@ -93,7 +93,7 @@ public final class CasConsumerUtil {
     if (type == null) {
       throw new ResourceInitializationException(
           ResourceInitializationException.INCOMPATIBLE_RANGE_TYPES,
-          new Object[] { "Unable to retrive " + name + " type!" });
+          new Object[] { "Unable to retrieve " + name + " type!" });
     }
     
     return type;
@@ -195,7 +195,7 @@ public final class CasConsumerUtil {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
           new Object[] { "The " + parameterName + " is a " + 
-          "requiered parameter!" });
+          "required parameter!" });
     }
   }
   
@@ -222,7 +222,7 @@ public final class CasConsumerUtil {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
           new Object[] {"The parameter: "  + parameter + " does not have" +
-          "the expected type String"});
+          " the expected type String"});
     }
   }
   
@@ -239,7 +239,7 @@ public final class CasConsumerUtil {
 	    throw new ResourceInitializationException(
 		    ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
 		    new Object[] { "The parameter: " + parameter
-			    + " does not have" + "the expected type String array" });
+			    + " does not have the expected type String array" });
 	}
     }
   
@@ -265,7 +265,7 @@ public final class CasConsumerUtil {
     else {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] {"The parameter: "  + parameter + " does not have" +
+          new Object[] {"The parameter: "  + parameter + " does not have " +
           "the expected type Integer"});
     }
   }
@@ -314,7 +314,7 @@ public final class CasConsumerUtil {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
           new Object[] {"The parameter: "  + parameter + " does not have" +
-          "the expected type Float"});
+          " the expected type Float"});
     }
   }
   
@@ -341,7 +341,7 @@ public final class CasConsumerUtil {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
           new Object[] {"The parameter: "  + parameter + " does not have" +
-          "the expected type Boolean"});
+          " the expected type Boolean"});
     }
   }
   

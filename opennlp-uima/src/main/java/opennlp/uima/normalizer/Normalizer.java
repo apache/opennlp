@@ -141,7 +141,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
     } catch (IOException e) {
       throw new ResourceInitializationException(
           ExceptionMessages.MESSAGE_CATALOG, "io_error_model_reading",
-          new Object[] {});
+          new Object[] {e.getMessage()}, e);
     }
   }
 
