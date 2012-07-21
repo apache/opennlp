@@ -82,7 +82,7 @@ public final class NumberUtil {
       throws ParseException {
 
     if (!isLanguageSupported(languageCode)) {
-      throw new IllegalArgumentException("Language is not supported!");
+      throw new IllegalArgumentException("Language " + languageCode + " is not supported!");
     }
 
     Locale locale = new Locale(languageCode);
