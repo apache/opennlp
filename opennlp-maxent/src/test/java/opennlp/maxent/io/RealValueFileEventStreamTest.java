@@ -26,15 +26,25 @@ import opennlp.model.RealValueFileEventStream;
 public class RealValueFileEventStreamTest extends TestCase {
 
   public void testLastLineBug() throws IOException {
-    RealValueFileEventStream rvfes = new RealValueFileEventStream(
+    OnePassRealValueDataIndexer indexer;
+    RealValueFileEventStream rvfes;
+    
+    rvfes = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-ok.txt");
-    OnePassRealValueDataIndexer indexer = new OnePassRealValueDataIndexer(
-        rvfes, 1);
+    try {
+      indexer = new OnePassRealValueDataIndexer(rvfes, 1);
+    } finally {
+      rvfes.close();
+    }
     assertEquals(1, indexer.getOutcomeLabels().length);
 
     rvfes = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-broken.txt");
-    indexer = new OnePassRealValueDataIndexer(rvfes, 1);
+    try {
+      indexer = new OnePassRealValueDataIndexer(rvfes, 1);
+    } finally {
+      rvfes.close();
+    }
     assertEquals(1, indexer.getOutcomeLabels().length);
   }
 }

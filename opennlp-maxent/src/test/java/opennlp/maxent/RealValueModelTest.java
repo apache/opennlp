@@ -28,11 +28,21 @@ import junit.framework.TestCase;
 public class RealValueModelTest extends TestCase {
 
   public void testRealValuedWeightsVsRepeatWeighting() throws IOException {
+    GISModel realModel;
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
-    GISModel realModel = GIS.trainModel(100,new OnePassRealValueDataIndexer(rvfes1,1));
+    try {
+      realModel = GIS.trainModel(100,new OnePassRealValueDataIndexer(rvfes1,1));
+    } finally {
+      rvfes1.close();
+    }
 
+    GISModel repeatModel;
     FileEventStream rvfes2 = new FileEventStream("src/test/resources/data/opennlp/maxent/repeat-weighting-training-data.txt");
-    GISModel repeatModel = GIS.trainModel(100,new OnePassRealValueDataIndexer(rvfes2,1));
+    try {
+      repeatModel = GIS.trainModel(100,new OnePassRealValueDataIndexer(rvfes2,1));
+    } finally {
+      rvfes2.close();
+    }
 
     String[] features2Classify = new String[] {"feature2","feature5"};
     double[] realResults = realModel.eval(features2Classify);

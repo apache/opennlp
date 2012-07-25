@@ -20,6 +20,7 @@
 package opennlp.model;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -34,7 +35,7 @@ import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
  * Class for using a file of events as an event stream.  The format of the file is one event perline with
  * each line consisting of outcome followed by contexts (space delimited).
  */
-public class FileEventStream extends  AbstractEventStream {
+public class FileEventStream extends  AbstractEventStream implements Closeable {
 
   BufferedReader reader;
   String line;
@@ -87,6 +88,10 @@ public class FileEventStream extends  AbstractEventStream {
     return (new Event(outcome, context));
   }
   
+  public void close() throws IOException {
+    reader.close();
+  }
+
   /**
    * Generates a string representing the specified event.
    * @param event The event for which a string representation is needed.
@@ -116,14 +121,19 @@ public class FileEventStream extends  AbstractEventStream {
     }
     int ai=0;
     String eventFile = args[ai++];
-    EventStream es = new FileEventStream(eventFile);
     int iterations = 100;
     int cutoff = 5;
     if (ai < args.length) {
       iterations = Integer.parseInt(args[ai++]);
       cutoff = Integer.parseInt(args[ai++]);
     }
-    AbstractModel model = GIS.trainModel(es,iterations,cutoff);
+    AbstractModel model;
+    FileEventStream es = new FileEventStream(eventFile);
+    try {
+      model = GIS.trainModel(es,iterations,cutoff);
+    } finally {
+      es.close();
+    }
     new SuffixSensitiveGISModelWriter(model, new File(eventFile+".bin.gz")).persist();
   }
 }

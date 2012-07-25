@@ -95,14 +95,19 @@ public class RealValueFileEventStream extends FileEventStream {
     }
     int ai = 0;
     String eventFile = args[ai++];
-    EventStream es = new RealValueFileEventStream(eventFile);
     int iterations = 100;
     int cutoff = 5;
     if (ai < args.length) {
       iterations = Integer.parseInt(args[ai++]);
       cutoff = Integer.parseInt(args[ai++]);
     }
-    AbstractModel model = GIS.trainModel(iterations, new OnePassRealValueDataIndexer(es, cutoff));
+    AbstractModel model;
+    RealValueFileEventStream es = new RealValueFileEventStream(eventFile);
+    try {
+      model = GIS.trainModel(iterations, new OnePassRealValueDataIndexer(es, cutoff));
+    } finally {
+      es.close();
+    }
     new SuffixSensitiveGISModelWriter(model, new File(eventFile + ".bin.gz")).persist();
   }
 }
