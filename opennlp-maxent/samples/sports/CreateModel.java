@@ -27,10 +27,12 @@ import opennlp.maxent.RealBasicEventStream;
 import opennlp.maxent.io.GISModelWriter;
 import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.AbstractModel;
+import opennlp.model.AbstractModelWriter;
 import opennlp.model.EventStream;
 import opennlp.model.OnePassDataIndexer;
 import opennlp.model.OnePassRealValueDataIndexer;
 import opennlp.perceptron.PerceptronTrainer;
+import opennlp.perceptron.SuffixSensitivePerceptronModelWriter;
 
 /**
  * Main class which calls the GIS procedure after building the EventStream
@@ -48,7 +50,7 @@ public class CreateModel {
     public static double SMOOTHING_OBSERVATION = 0.1;
     
     private static void usage() {
-      System.err.println("java CreateModel [-real] dataFile");
+      System.err.println("java CreateModel [-real] [-perceptron] dataFile");
       System.exit(1);
     }
     
@@ -81,6 +83,8 @@ public class CreateModel {
       String modelFileName =
         dataFileName.substring(0,dataFileName.lastIndexOf('.'))
         + "Model.txt";
+      File outputFile = new File(modelFileName);
+      AbstractModelWriter writer = null;
       try {
         FileReader datafr = new FileReader(new File(dataFileName));
         EventStream es;
@@ -100,18 +104,18 @@ public class CreateModel {
           else {
             model = GIS.trainModel(100, new OnePassRealValueDataIndexer(es,0), USE_SMOOTHING);
           }
+          writer =  new SuffixSensitiveGISModelWriter(model, outputFile);
         }
         else if (type.equals("perceptron")){ 
           System.err.println("Perceptron training");
           model = new PerceptronTrainer().trainModel(10, new OnePassDataIndexer(es,0),0);
+          writer = new SuffixSensitivePerceptronModelWriter(model, outputFile);
         }
         else {
           System.err.println("Unknown model type: "+type);
           model = null;
         }
         
-        File outputFile = new File(modelFileName);
-        GISModelWriter writer =  new SuffixSensitiveGISModelWriter(model, outputFile);
         writer.persist();
       } catch (Exception e) {
         System.out.print("Unable to create model due to exception: ");
