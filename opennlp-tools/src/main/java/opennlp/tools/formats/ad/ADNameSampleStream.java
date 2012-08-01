@@ -264,26 +264,20 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
     if (leftContractionPart != null) {
       // will handle the contraction
-      String tag = leaf.getSecondaryTag();
       String right = leaf.getLexeme();
-      if (tag != null && tag.contains("<-sam>")) {
-        right = leaf.getLexeme();
-        String c = PortugueseContractionUtility.toContraction(leftContractionPart, right);
 
-        if (c != null) {
-          String[] parts = whitespacePattern.split(c);
-          sentence.addAll(Arrays.asList(parts));
-        } else {
-          // contraction was missing!
-          sentence.add(leftContractionPart);
-          sentence.add(right);
-        }
-
+      String c = PortugueseContractionUtility.toContraction(
+          leftContractionPart, right);
+      if (c != null) {
+        String[] parts = whitespacePattern.split(c);
+        sentence.addAll(Arrays.asList(parts));
+        alreadyAdded = true;
       } else {
-        // could not match contraction !
+        // contraction was missing! why?
+        sentence.add(leftContractionPart);
+        // keep alreadyAdded false.
       }
       leftContractionPart = null;
-      alreadyAdded = true;
     }
 
       String namedEntityTag = null;
