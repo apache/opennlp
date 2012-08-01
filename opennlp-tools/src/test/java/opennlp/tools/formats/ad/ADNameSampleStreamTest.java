@@ -38,7 +38,7 @@ public class ADNameSampleStreamTest {
 
   @Test
   public void testSimpleCount() throws IOException {
-    assertEquals(6, samples.size());
+    assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
   }
   
   @Test
@@ -97,6 +97,18 @@ public class ADNameSampleStreamTest {
     assertEquals(new Span(1, 6, "time"), samples.get(4).getNames()[0]);//    0..1
     
     assertEquals(new Span(0, 3, "person"), samples.get(5).getNames()[0]);//    0..1
+  }
+  
+  @Test
+  public void testSmallSentence() throws IOException {
+    assertEquals(2, samples.get(6).getSentence().length);
+  }
+  
+  @Test
+  public void testMissingRightContraction() throws IOException {
+    assertEquals(new Span(0, 1, "person"), samples.get(7).getNames()[0]);
+    assertEquals(new Span(3, 4, "person"), samples.get(7).getNames()[1]);
+    assertEquals(new Span(5, 6, "person"), samples.get(7).getNames()[2]);
   }
 
   @Before

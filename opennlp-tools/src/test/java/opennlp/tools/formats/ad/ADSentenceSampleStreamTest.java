@@ -38,7 +38,7 @@ public class ADSentenceSampleStreamTest {
 
   @Test
   public void testSimpleCount() throws IOException {
-    assertEquals(3, samples.size()); // means that there are 3 documents
+    assertEquals(5, samples.size());
   }
 
   @Test
