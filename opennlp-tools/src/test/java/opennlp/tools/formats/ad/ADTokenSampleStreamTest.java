@@ -38,7 +38,7 @@ public class ADTokenSampleStreamTest {
 
   @Test
   public void testSimpleCount() throws IOException {
-    assertEquals(6, samples.size()); // means that there are 3 documents
+    assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
   }
 
   @Test

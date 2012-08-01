@@ -29,6 +29,8 @@ import org.junit.Test;
 
 public class ADParagraphStreamTest {
 
+  public static final int NUM_SENTENCES = 8;
+
   @Test
   public void testSimpleReading() throws IOException {
     int count = 0;
@@ -43,7 +45,7 @@ public class ADParagraphStreamTest {
 //      paragraph.getRoot();
     }
     
-    assertEquals(6, count);
+    assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
   }
   
   @Test
@@ -59,7 +61,7 @@ public class ADParagraphStreamTest {
       paragraph = stream.read();
     }
     
-    assertEquals(6, count);
+    assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
   }
   
   private static ADSentenceStream openData() throws IOException {

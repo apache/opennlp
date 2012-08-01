@@ -146,59 +146,78 @@ public class ADSentenceStream extends
         sentence.setText(text);
         sentence.setMetadata(meta);
         // now we look for the root node
-        line = reader.readLine();
 
+        // skip lines starting with ###
+        line = reader.readLine();
+        while(line != null && line.startsWith("###")) {
+        	line = reader.readLine();
+        }
+        
         // got the root. Add it to the stack
         Stack<Node> nodeStack = new Stack<Node>();
-        // we get the complete line
 
-        root.setSyntacticTag(line);
+        root.setSyntacticTag("ROOT");
         root.setLevel(0);
         nodeStack.add(root);
         
+        
         /* now we have to take care of the lastLevel. Every time it raises, we will add the
         leaf to the node at the top. If it decreases, we remove the top. */
-        line = reader.readLine();
+        
         while (line != null && line.length() != 0 && line.startsWith("</s>") == false && !line.equals("&&")) {
           TreeElement element = this.getElement(line);
           
           if(element != null) {
-            // remove elements at same level or higher
-            while (!nodeStack.isEmpty()
-                && element.getLevel() > 0 && element.getLevel() <= nodeStack.peek().getLevel()) {
-              nodeStack.pop();
+            // The idea here is to keep a stack of nodes that are candidates for
+            // parenting the following elements (nodes and leafs).
+
+            // 1) When we get a new element, we check its level and remove from
+            // the top of the stack nodes that are brothers or nephews.
+            while (!nodeStack.isEmpty() && element.getLevel() > 0
+                && element.getLevel() <= nodeStack.peek().getLevel()) {
+              Node nephew = nodeStack.pop();
             }
+            
             if( element.isLeaf() ) {
+              // 2a) If the element is a leaf and there is no parent candidate,
+              // add it as a daughter of the root.  
               if (nodeStack.isEmpty()) {
                 root.addElement(element);
-  						} else {
-  							// look for the node with the correct level
-  							Node peek = nodeStack.peek();
-  							if (element.level == 0) { // add to the root
-  								nodeStack.firstElement().addElement(element);
-  							} else {
-  								Node parent = null;
-  								int index = nodeStack.size() - 1;
-  								while(parent == null) {
-  									if(peek.getLevel() < element.getLevel()) {
-  										parent = peek;
-  									} else {
-  										index--;
-  										if(index > -1) {
-  											peek = nodeStack.get(index);
-  										} else {
-  											parent = nodeStack.firstElement();
-  										}
-  									}
-  								}
-  								parent.addElement(element);
-  							}
+              } else {
+                // 2b) There are parent candidates. 
+                // look for the node with the correct level
+                Node peek = nodeStack.peek();
+                if (element.level == 0) { // add to the root
+                  nodeStack.firstElement().addElement(element);
+                } else {
+                  Node parent = null;
+                  int index = nodeStack.size() - 1;
+                  while (parent == null) {
+                    if (peek.getLevel() < element.getLevel()) {
+                      parent = peek;
+                    } else {
+                      index--;
+                      if (index > -1) {
+                        peek = nodeStack.get(index);
+                      } else {
+                        parent = nodeStack.firstElement();
+                      }
+                    }
+                  }
+                  parent.addElement(element);
+                }
               }
             } else {
-              if (!nodeStack.isEmpty()) {
-                nodeStack.peek().addElement(element);
+              // 3) Check if the element that is at the top of the stack is this
+              // node parent, if yes add it as a son 
+              if (!nodeStack.isEmpty() && nodeStack.peek().getLevel() < element.getLevel()) {
+                  nodeStack.peek().addElement(element);
+              } else {
+                System.err.println("should not happen!");
               }
+              // 4) Add it to the stack so it is a parent candidate.
               nodeStack.push((Node) element);
+              
             }
           }
           line = reader.readLine();
@@ -228,10 +247,12 @@ public class ADSentenceStream extends
      * @return the tree element
      */
     public TreeElement getElement(String line) {
+      // Note: all levels are higher than 1, because 0 is reserved for the root.
+      
       // try node
       Matcher nodeMatcher = nodePattern.matcher(line);
       if (nodeMatcher.matches()) {
-        int level = nodeMatcher.group(1).length();
+        int level = nodeMatcher.group(1).length() + 1;
         String syntacticTag = nodeMatcher.group(2);
         Node node = new Node();
         node.setLevel(level);
@@ -241,7 +262,7 @@ public class ADSentenceStream extends
 
       Matcher leafMatcher = leafPattern.matcher(line);
       if (leafMatcher.matches()) {
-        int level = leafMatcher.group(1).length();
+        int level = leafMatcher.group(1).length() + 1;
         String syntacticTag = leafMatcher.group(2);
         String funcTag = leafMatcher.group(3);
         String lemma = leafMatcher.group(4);
@@ -262,7 +283,7 @@ public class ADSentenceStream extends
 
       Matcher punctuationMatcher = punctuationPattern.matcher(line);
       if (punctuationMatcher.matches()) {
-        int level = punctuationMatcher.group(1).length();
+        int level = punctuationMatcher.group(1).length() + 1;
         String lexeme = punctuationMatcher.group(2);
         Leaf leaf = new Leaf();
         leaf.setLevel(level);
@@ -278,7 +299,7 @@ public class ADSentenceStream extends
       if(line.startsWith("=")) {
       	Matcher bizarreLeafMatcher = bizarreLeafPattern.matcher(line);
         if (bizarreLeafMatcher.matches()) {
-          int level = bizarreLeafMatcher.group(1).length();
+          int level = bizarreLeafMatcher.group(1).length() + 1;
           String syntacticTag = bizarreLeafMatcher.group(2);
           String lemma = bizarreLeafMatcher.group(3);
           String morphologicalTag = bizarreLeafMatcher.group(4);
@@ -297,7 +318,7 @@ public class ADSentenceStream extends
 
           return leaf;
         } else {
-        	int level = line.lastIndexOf("=");
+        	int level = line.lastIndexOf("=") + 1;
         	String lexeme = line.substring(level + 1);
         	
         	if(lexeme.matches("\\w.*?[\\.<>].*")) {
@@ -316,7 +337,7 @@ public class ADSentenceStream extends
       
       System.err.println("Couldn't parse leaf: " + line);
       Leaf leaf = new Leaf();
-      leaf.setLevel(0);
+      leaf.setLevel(1);
       leaf.setSyntacticTag("");
       leaf.setMorphologicalTag("");
       leaf.setLexeme(line);

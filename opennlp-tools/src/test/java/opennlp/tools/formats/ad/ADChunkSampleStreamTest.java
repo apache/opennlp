@@ -37,7 +37,7 @@ public class ADChunkSampleStreamTest {
 
   @Test
   public void testSimpleCount() throws IOException {
-    assertEquals(6, samples.size());
+    assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
   }
 
   @Test
@@ -45,7 +45,7 @@ public class ADChunkSampleStreamTest {
 
     assertEquals("Inicia", samples.get(0).getSentence()[0]);
     assertEquals("v-fin", samples.get(0).getTags()[0]);
-    assertEquals("B-NP", samples.get(0).getPreds()[2]);
+    assertEquals("B-VP", samples.get(0).getPreds()[0]);
 
     assertEquals("em", samples.get(0).getSentence()[1]);
     assertEquals("prp", samples.get(0).getTags()[1]);

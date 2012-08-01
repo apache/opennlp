@@ -236,3 +236,30 @@ STA:fcl
 ====H:n("café" M S)	café
 .
 </s>
+
+<s id="122426" ref="1002.pesquisa da usp mapeia cultura livre em são paulo-14" source="SELVA 1002.pesquisa da usp mapeia cultura livre em são paulo">
+SOURCE: ref="1002.pesquisa da usp mapeia cultura livre em são paulo-14" source="SELVA 1002.pesquisa da usp mapeia cultura livre em são paulo"
+1002 Contato:
+A1
+UTT:n("contato" <np-idf> <ac> M S)      Contato
+:
+
+</s>
+
+<s id="10099" ref="1783.sim o ms tambem tem-forro=removeme=-31" source="SELVA 1783.sim o ms tambem tem-forro=removeme=">
+SOURCE: ref="1783.sim o ms tambem tem-forro=removeme=-31" source="SELVA 1783.sim o ms tambem tem-forro=removeme="
+1783 Gonzagão e aquele outro Zé apelidado Jackson.
+A1
+STA:fcl
+=ACC:cu
+==CJT:prop("Gonzagão" <cjt-head> <hum> <right> M/F S)    Gonzagão
+==CO:conj-c("e" <co-acc>)        e
+==CJT:pron-det("aquele" <cjt-acc> <sam-> <right> DET M S)        aquele
+==CJT:np
+===H:prop("Zé" <cjt-acc> <hum> <right> M S)      Zé
+===N<:adj("apelidado" <np-close> M S)    apelidado
+==CJT:prop("Jackson" <cjt-acc> <hum> <right> M S)        Jackson
+.
+
+</s>
+</ext>
