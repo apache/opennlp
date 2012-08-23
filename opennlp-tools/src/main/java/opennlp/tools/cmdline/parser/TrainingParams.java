@@ -39,4 +39,8 @@ interface TrainingParams extends BasicTrainingParams {
   @ParameterDescription(valueName = "headRulesFile", description = "head rules file.")
   File getHeadRules();
   
+  @ParameterDescription(valueName = "true|false", description = "Learn to generate function tags.")
+  @OptionalParameter(defaultValue = "false")
+  Boolean getFun();
+  
 }
