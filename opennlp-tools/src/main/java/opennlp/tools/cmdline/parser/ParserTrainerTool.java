@@ -124,6 +124,9 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
               params.getEncoding()));
       
       ParserType type = parseParserType(params.getParserType());
+      if(params.getFun()){
+    	  Parse.useFunctionTags(true);
+      }
       
       if (ParserType.CHUNKING.equals(type)) {
         model = opennlp.tools.parser.chunking.Parser.train(
