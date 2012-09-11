@@ -19,9 +19,12 @@ package opennlp.uima.tokenize;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -30,7 +33,6 @@ import java.util.List;
 
 import opennlp.maxent.GIS;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenSampleStream;
 import opennlp.tools.tokenize.TokenizerME;
@@ -42,6 +44,7 @@ import opennlp.tools.util.Span;
 import opennlp.uima.util.CasConsumerUtil;
 import opennlp.uima.util.ContainingConstraint;
 import opennlp.uima.util.OpennlpUtil;
+import opennlp.uima.util.SampleTraceStream;
 import opennlp.uima.util.UimaUtil;
 
 import org.apache.uima.UimaContext;
@@ -78,7 +81,7 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
   
   public static final String IS_ALPHA_NUMERIC_OPTIMIZATION = 
       "opennlp.uima.tokenizer.IsAlphaNumericOptimization";
-	  
+
   private List<TokenSample> tokenSamples = new ArrayList<TokenSample>();
 
   private UimaContext mContext;
@@ -90,14 +93,18 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
   private String mModelName;
 
   private String additionalTrainingDataFile;
-  
+
   private String additionalTrainingDataEncoding;
-  
+
   private String language;
-  
+
   private Boolean isSkipAlphaNumerics;
-  
+
   private Logger mLogger;
+
+  private String sampleTraceFileEncoding;
+
+  private File sampleTraceFile;
   
   /**
    * Initializes the current instance.
@@ -124,8 +131,9 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
         CasConsumerUtil.getOptionalBooleanParameter(
         mContext, IS_ALPHA_NUMERIC_OPTIMIZATION);
     
-    if (isSkipAlphaNumerics == null)
+    if (isSkipAlphaNumerics == null) {
     	isSkipAlphaNumerics = false;
+    }
     
     additionalTrainingDataFile = CasConsumerUtil.getOptionalStringParameter(
         getUimaContext(), UimaUtil.ADDITIONAL_TRAINING_DATA_FILE);
@@ -134,6 +142,16 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
     if (additionalTrainingDataFile != null) {
       additionalTrainingDataEncoding = CasConsumerUtil.getRequiredStringParameter(
           getUimaContext(), UimaUtil.ADDITIONAL_TRAINING_DATA_ENCODING);
+    }
+    
+    String sampleTraceFileName = CasConsumerUtil.getOptionalStringParameter(
+            getUimaContext(), "opennlp.uima.SampleTraceFile");
+        
+    if (sampleTraceFileName != null) {
+      sampleTraceFile = new File(getUimaContextAdmin().getResourceManager()
+          .getDataPath() + File.separatorChar + sampleTraceFileName);
+      sampleTraceFileEncoding = CasConsumerUtil.getRequiredStringParameter(
+          getUimaContext(), "opennlp.uima.SampleTraceFileEncoding");
     }
   }
 
@@ -208,7 +226,12 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
    
     ObjectStream<TokenSample> samples = ObjectStreamUtils.createObjectStream(tokenSamples);
     
+    // Write stream to disk ...
+    // if trace file
+    // serialize events ...
+    
     InputStream additionalTrainingDataIn = null;
+    Writer samplesOut = null;
     TokenizerModel tokenModel;
     
     try {
@@ -224,6 +247,11 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
             new PlainTextByLineStream(new InputStreamReader(additionalTrainingDataIn, additionalTrainingDataEncoding)));
         
         samples = ObjectStreamUtils.createObjectStream(samples, additionalSamples);
+      }
+      
+      if (sampleTraceFile != null) {
+        samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
+        samples = new SampleTraceStream<TokenSample>(samples, samplesOut);
       }
       
       tokenModel = TokenizerME.train(language, samples, isSkipAlphaNumerics);

@@ -61,6 +61,18 @@
 				<multiValued>false</multiValued>
 				<mandatory>true</mandatory>
 			</configurationParameter>
+			<configurationParameter>
+				<name>opennlp.uima.SampleTraceFile</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+			</configurationParameter>
+			<configurationParameter>
+				<name>opennlp.uima.SampleTraceFileEncoding</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+			</configurationParameter>			
 		</configurationParameters>
 		<configurationParameterSettings>
 			<nameValuePair>
