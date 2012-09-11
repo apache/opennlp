@@ -18,7 +18,10 @@
 package opennlp.uima.sentdetect;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,12 +30,14 @@ import opennlp.tools.sentdetect.SentenceDetectorFactory;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 import opennlp.uima.util.CasConsumerUtil;
 import opennlp.uima.util.OpennlpUtil;
+import opennlp.uima.util.SampleTraceStream;
 import opennlp.uima.util.UimaUtil;
 
 import org.apache.uima.UimaContext;
@@ -74,6 +79,10 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
   private UimaContext mContext;
   
   private String eosChars;
+
+  private File sampleTraceFile;
+
+  private String sampleTraceFileEncoding;
   
   /**
    * Initializes the current instance.
@@ -98,6 +107,17 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
         UimaUtil.LANGUAGE_PARAMETER);
     
     eosChars = CasConsumerUtil.getOptionalStringParameter(mContext, "opennlp.uima.EOSChars");
+    
+    
+    String sampleTraceFileName = CasConsumerUtil.getOptionalStringParameter(
+            getUimaContext(), "opennlp.uima.SampleTraceFile");
+        
+    if (sampleTraceFileName != null) {
+      sampleTraceFile = new File(getUimaContextAdmin().getResourceManager()
+          .getDataPath() + File.separatorChar + sampleTraceFileName);
+      sampleTraceFileEncoding = CasConsumerUtil.getRequiredStringParameter(
+          getUimaContext(), "opennlp.uima.SampleTraceFileEncoding");
+    }    
   }
   
   /**
@@ -127,7 +147,8 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
       sentSpans[i++] = new Span(sentenceAnnotation.getBegin(), sentenceAnnotation.getEnd());
     }
 
-    sentenceSamples.add(new SentenceSample(cas.getDocumentText(), sentSpans));
+    // TODO: The line cleaning should be done more carefully
+    sentenceSamples.add(new SentenceSample(cas.getDocumentText().replace('\n', ' '), sentSpans));
   }
 
   /**
@@ -148,7 +169,16 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
     
     TrainingParameters mlParams = ModelUtil.createTrainingParameters(100, 5);
     
-    SentenceModel sentenceModel = SentenceDetectorME.train(language, ObjectStreamUtils.createObjectStream(sentenceSamples),
+    ObjectStream<SentenceSample> samples = ObjectStreamUtils.createObjectStream(sentenceSamples);
+    
+    Writer samplesOut = null;
+    
+    if (sampleTraceFile != null) {
+        samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
+        samples = new SampleTraceStream<SentenceSample>(samples, samplesOut);
+    }
+    
+    SentenceModel sentenceModel = SentenceDetectorME.train(language, samples,
          sdFactory, mlParams);
     
     // dereference to allow garbage collection
