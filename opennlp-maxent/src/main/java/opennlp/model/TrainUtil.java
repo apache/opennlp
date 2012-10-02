@@ -20,9 +20,9 @@
 package opennlp.model;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.maxent.quasinewton.QNTrainer;
 import opennlp.perceptron.PerceptronTrainer;
 import opennlp.perceptron.SimplePerceptronSequenceTrainer;
 
@@ -31,6 +31,7 @@ public class TrainUtil {
   public static final String ALGORITHM_PARAM = "Algorithm";
   
   public static final String MAXENT_VALUE = "MAXENT";
+  public static final String MAXENT_QN_VALUE = "MAXENT_QN_EXPERIMENTAL";
   public static final String PERCEPTRON_VALUE = "PERCEPTRON";
   public static final String PERCEPTRON_SEQUENCE_VALUE = "PERCEPTRON_SEQUENCE";
   
@@ -99,7 +100,8 @@ public class TrainUtil {
     
     String algorithmName = trainParams.get(ALGORITHM_PARAM);
 
-    if (algorithmName != null && !(MAXENT_VALUE.equals(algorithmName) || 
+    if (algorithmName != null && !(MAXENT_VALUE.equals(algorithmName) ||
+    	MAXENT_QN_VALUE.equals(algorithmName) ||
         PERCEPTRON_VALUE.equals(algorithmName) ||
         PERCEPTRON_SEQUENCE_VALUE.equals(algorithmName))) {
       return false;
@@ -150,8 +152,8 @@ public class TrainUtil {
 
     boolean sortAndMerge;
     
-    if (MAXENT_VALUE.equals(algorithmName))
-        sortAndMerge = true;
+    if (MAXENT_VALUE.equals(algorithmName) || MAXENT_QN_VALUE.equals(algorithmName))
+      sortAndMerge = true;
     else if (PERCEPTRON_VALUE.equals(algorithmName))
       sortAndMerge = false;
     else
@@ -181,6 +183,11 @@ public class TrainUtil {
       
       model = opennlp.maxent.GIS.trainModel(iterations, indexer,
           true, false, null, 0, threads);
+    }
+    else if (MAXENT_QN_VALUE.equals(algorithmName)) {
+      int m = getIntParam(trainParams, "numOfUpdates", QNTrainer.DEFAULT_M, reportMap);
+      int maxFctEval = getIntParam(trainParams, "maxFctEval", QNTrainer.DEFAULT_MAX_FCT_EVAL, reportMap);
+      model = new QNTrainer(m, maxFctEval, true).trainModel(indexer);
     }
     else if (PERCEPTRON_VALUE.equals(algorithmName)) {
       boolean useAverage = getBooleanParam(trainParams, "UseAverage", true, reportMap);

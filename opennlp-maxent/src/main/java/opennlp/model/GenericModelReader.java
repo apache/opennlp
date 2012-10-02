@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 
 import opennlp.maxent.io.GISModelReader;
+import opennlp.maxent.io.QNModelReader;
 import opennlp.perceptron.PerceptronModelReader;
 
 public class GenericModelReader extends AbstractModelReader {
@@ -44,6 +45,9 @@ public class GenericModelReader extends AbstractModelReader {
     }
     else if (modelType.equals("GIS")) {
       delegateModelReader = new GISModelReader(this.dataReader);
+    }
+    else if (modelType.equals("QN")) {
+        delegateModelReader = new QNModelReader(this.dataReader);
     }
     else {
       throw new IOException("Unknown model format: "+modelType);
