@@ -35,7 +35,7 @@ public class LogLikelihoodFunctionTest {
   @Test
   public void testDomainDimensionSanity() throws IOException {
     // given
-    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");  
+    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");  
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     LogLikelihoodFunction objectFunction = new LogLikelihoodFunction(testDataIndexer);
     // when
@@ -47,7 +47,7 @@ public class LogLikelihoodFunctionTest {
   @Test
   public void testInitialSanity() throws IOException {
     // given
-    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");  
+    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");  
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     LogLikelihoodFunction objectFunction = new LogLikelihoodFunction(testDataIndexer);
     // when
@@ -61,7 +61,7 @@ public class LogLikelihoodFunctionTest {
   @Test
   public void testGradientSanity() throws IOException {
     // given
-    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");  
+    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");  
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     LogLikelihoodFunction objectFunction = new LogLikelihoodFunction(testDataIndexer);
     // when
@@ -74,7 +74,7 @@ public class LogLikelihoodFunctionTest {
   @Test
   public void testValueAtInitialPoint() throws IOException {
     // given
-    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
+    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     LogLikelihoodFunction objectFunction = new LogLikelihoodFunction(testDataIndexer);
     // when
@@ -87,7 +87,7 @@ public class LogLikelihoodFunctionTest {
   @Test
   public void testValueAtNonInitialPoint01() throws IOException {
     // given
-    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
+    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     LogLikelihoodFunction objectFunction = new LogLikelihoodFunction(testDataIndexer);
     // when
@@ -101,7 +101,7 @@ public class LogLikelihoodFunctionTest {
   @Test
   public void testValueAtNonInitialPoint02() throws IOException {
     // given
-    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
+    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     LogLikelihoodFunction objectFunction = new LogLikelihoodFunction(testDataIndexer);
     // when
@@ -115,7 +115,7 @@ public class LogLikelihoodFunctionTest {
   @Test 
   public void testGradientAtInitialPoint() throws IOException {
     // given
-    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
+    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     LogLikelihoodFunction objectFunction = new LogLikelihoodFunction(testDataIndexer);
     // when
@@ -131,7 +131,7 @@ public class LogLikelihoodFunctionTest {
   @Test
   public void testGradientAtNonInitialPoint() throws IOException {
     // given
-    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
+    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     LogLikelihoodFunction objectFunction = new LogLikelihoodFunction(testDataIndexer);
     // when
