@@ -30,6 +30,10 @@ public class RealValueFileEventStream extends FileEventStream {
     super(fileName);
   }
 
+  public RealValueFileEventStream(String fileName, String encoding) throws IOException {
+    super(fileName, encoding);
+  }
+  
   public RealValueFileEventStream(File file) throws IOException {
     super(file);
   }
