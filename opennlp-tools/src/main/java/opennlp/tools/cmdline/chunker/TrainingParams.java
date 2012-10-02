@@ -17,6 +17,8 @@
 
 package opennlp.tools.cmdline.chunker;
 
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
@@ -25,5 +27,9 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {
+  
+  @ParameterDescription(valueName = "factoryName", description = "A sub-class of ChunkerFactory where to get implementation and resources.")
+  @OptionalParameter
+  String getFactory();
   
 }

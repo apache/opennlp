@@ -24,6 +24,7 @@ import java.util.List;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerCrossValidator;
 import opennlp.tools.chunker.ChunkerEvaluationMonitor;
+import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -67,11 +68,15 @@ public final class ChunkerCrossValidatorTool
       listeners.add(detailedFMeasureListener);
     }
 
-    ChunkerCrossValidator validator = new ChunkerCrossValidator(
-        factory.getLang(), mlParams,
-        listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
-      
+    ChunkerCrossValidator validator;
+
     try {
+      ChunkerFactory chunkerFactory = ChunkerFactory
+          .create(params.getFactory());
+
+      validator = new ChunkerCrossValidator(factory.getLang(), mlParams,
+          chunkerFactory,
+          listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
       validator.evaluate(sampleStream, params.getFolds());
     }
     catch (IOException e) {

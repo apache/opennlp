@@ -30,6 +30,7 @@ import java.util.Map;
 import opennlp.model.AbstractModel;
 import opennlp.model.BinaryFileDataReader;
 import opennlp.model.GenericModelReader;
+import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 
@@ -44,17 +45,33 @@ public class ChunkerModel extends BaseModel {
   private static final String COMPONENT_NAME = "ChunkerME";
   private static final String CHUNKER_MODEL_ENTRY_NAME = "chunker.model";
 
+  /**
+   * @deprecated Use
+   *             {@link #ChunkerModel(String, AbstractModel, Map, ChunkerFactory)}
+   *             instead.
+   */
   public ChunkerModel(String languageCode, AbstractModel chunkerModel, Map<String, String> manifestInfoEntries) {
-
-    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
-
+    this(languageCode, chunkerModel, manifestInfoEntries, new ChunkerFactory());
+  }
+  
+  public ChunkerModel(String languageCode, AbstractModel chunkerModel,
+      Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
     artifactMap.put(CHUNKER_MODEL_ENTRY_NAME, chunkerModel);
-
     checkArtifactMap();
   }
   
+  /**
+   * @deprecated Use
+   *             {@link #ChunkerModel(String, AbstractModel, ChunkerFactory)
+   *             instead.}
+   */
   public ChunkerModel(String languageCode, AbstractModel chunkerModel) {
-    this(languageCode, chunkerModel, null);
+    this(languageCode, chunkerModel, null, new ChunkerFactory());
+  }
+
+  public ChunkerModel(String languageCode, AbstractModel chunkerModel, ChunkerFactory factory) {
+    this(languageCode, chunkerModel, null, factory);
   }
   
   public ChunkerModel(InputStream in) throws IOException, InvalidFormatException {
@@ -80,6 +97,16 @@ public class ChunkerModel extends BaseModel {
 
   public AbstractModel getChunkerModel() {
     return (AbstractModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);
+  }
+  
+  @Override
+  protected Class<? extends BaseToolFactory> getDefaultFactory() {
+    return ChunkerFactory.class;
+  }
+
+  
+  public ChunkerFactory getFactory() {
+    return (ChunkerFactory) this.toolFactory;
   }
   
   public static void main(String[] args) throws FileNotFoundException, IOException {

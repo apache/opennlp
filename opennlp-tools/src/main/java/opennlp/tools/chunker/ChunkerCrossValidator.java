@@ -33,10 +33,12 @@ public class ChunkerCrossValidator {
 
   private FMeasure fmeasure = new FMeasure();
   private ChunkerEvaluationMonitor[] listeners;
+  private ChunkerFactory chunkerFactory;
 
   /**
-   * @deprecated use {@link ChunkerCrossValidator#ChunkerCrossValidator(String, TrainingParameters, ChunkerEvaluationMonitor...)}
-   * instead and pass in a TrainingParameters object.
+   * @deprecated Use
+   *             {@link #ChunkerCrossValidator(String, TrainingParameters, ChunkerFactory, ChunkerEvaluationMonitor...)}
+   *             instead.
    */
   @Deprecated
   public ChunkerCrossValidator(String languageCode, int cutoff, int iterations) {
@@ -47,9 +49,20 @@ public class ChunkerCrossValidator {
     listeners = null;
   }
 
+  /**
+   * @deprecated Use {@link #ChunkerCrossValidator(String, TrainingParameters, ChunkerFactory, ChunkerEvaluationMonitor...)} instead. 
+   */
   public ChunkerCrossValidator(String languageCode, TrainingParameters params,
       ChunkerEvaluationMonitor... listeners) {
 
+    this.languageCode = languageCode;
+    this.params = params;
+    this.listeners = listeners;
+  }
+  
+  public ChunkerCrossValidator(String languageCode, TrainingParameters params,
+      ChunkerFactory factory, ChunkerEvaluationMonitor... listeners) {
+    this.chunkerFactory = factory;
     this.languageCode = languageCode;
     this.params = params;
     this.listeners = listeners;
@@ -76,12 +89,11 @@ public class ChunkerCrossValidator {
           .next();
 
       ChunkerModel model = ChunkerME.train(languageCode, trainingSampleStream,
-          new DefaultChunkerContextGenerator(), params);
+          params, chunkerFactory);
 
       // do testing
       ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model,
-          ChunkerME.DEFAULT_BEAM_SIZE, new DefaultChunkerSequenceValidator()),
-          listeners);
+          ChunkerME.DEFAULT_BEAM_SIZE), listeners);
 
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 
