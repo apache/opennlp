@@ -21,9 +21,9 @@ import java.io.File;
 import java.io.IOException;
 
 import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
-import opennlp.tools.chunker.DefaultChunkerContextGenerator;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -63,8 +63,10 @@ public class ChunkerTrainerTool
 
     ChunkerModel model;
     try {
-      model = ChunkerME.train(factory.getLang(), sampleStream,
-          new DefaultChunkerContextGenerator(), mlParams);
+      ChunkerFactory chunkerFactory = ChunkerFactory
+          .create(params.getFactory());
+      model = ChunkerME.train(factory.getLang(), sampleStream, mlParams,
+          chunkerFactory);
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " +
           e.getMessage(), e);

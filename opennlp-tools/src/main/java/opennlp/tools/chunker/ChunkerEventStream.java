@@ -48,6 +48,8 @@ public class ChunkerEventStream extends opennlp.model.AbstractEventStream {
   /**
    * Creates a new event stream based on the specified data stream.
    * @param d The data stream for this event stream.
+   * 
+   * @deprecated Use {@link #ChunkerEventStream(ObjectStream, ChunkerContextGenerator)} instead.
    */
   public ChunkerEventStream(ObjectStream<ChunkSample> d) {
     this(d, new DefaultChunkerContextGenerator());

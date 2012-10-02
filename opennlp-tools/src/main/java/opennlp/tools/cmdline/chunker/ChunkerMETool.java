@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
-import opennlp.tools.chunker.DefaultChunkerSequenceValidator;
 import opennlp.tools.cmdline.AbstractBasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -50,8 +49,7 @@ public class ChunkerMETool extends AbstractBasicCmdLineTool {
     } else {
       ChunkerModel model = new ChunkerModelLoader().load(new File(args[0]));
 
-      ChunkerME chunker = new ChunkerME(model, ChunkerME.DEFAULT_BEAM_SIZE,
-          new DefaultChunkerSequenceValidator());
+      ChunkerME chunker = new ChunkerME(model, ChunkerME.DEFAULT_BEAM_SIZE);
 
       ObjectStream<String> lineStream =
         new PlainTextByLineStream(new InputStreamReader(System.in));

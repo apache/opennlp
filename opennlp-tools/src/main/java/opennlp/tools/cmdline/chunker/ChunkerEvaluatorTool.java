@@ -26,7 +26,6 @@ import opennlp.tools.chunker.ChunkerEvaluationMonitor;
 import opennlp.tools.chunker.ChunkerEvaluator;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
-import opennlp.tools.chunker.DefaultChunkerSequenceValidator;
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -66,7 +65,7 @@ public final class ChunkerEvaluatorTool
     }
 
     ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model,
-        ChunkerME.DEFAULT_BEAM_SIZE, new DefaultChunkerSequenceValidator()),
+        ChunkerME.DEFAULT_BEAM_SIZE),
         listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
     
     final PerformanceMonitor monitor = new PerformanceMonitor("sent");

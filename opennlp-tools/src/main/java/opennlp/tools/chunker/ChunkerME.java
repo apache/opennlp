@@ -64,6 +64,8 @@ public class ChunkerME implements Chunker {
    * @param sequenceValidator  The {@link SequenceValidator} to determines whether the outcome 
    *        is valid for the preceding sequence. This can be used to implement constraints 
    *        on what sequences are valid.
+   * @deprecated Use {@link #ChunkerME(ChunkerModel, int)} instead 
+   *    and use the {@link ChunkerFactory} to configure the {@link SequenceValidator} and {@link ChunkerContextGenerator}.
    */
   public ChunkerME(ChunkerModel model, int beamSize, SequenceValidator<String> sequenceValidator,
       ChunkerContextGenerator contextGenerator) {
@@ -80,6 +82,8 @@ public class ChunkerME implements Chunker {
    * @param sequenceValidator  The {@link SequenceValidator} to determines whether the outcome 
    *        is valid for the preceding sequence. This can be used to implement constraints 
    *        on what sequences are valid.
+   * @deprecated Use {@link #ChunkerME(ChunkerModel, int)} instead 
+   *    and use the {@link ChunkerFactory} to configure the {@link SequenceValidator}.
    */
   public ChunkerME(ChunkerModel model, int beamSize,
       SequenceValidator<String> sequenceValidator) {
@@ -95,7 +99,10 @@ public class ChunkerME implements Chunker {
    * @param beamSize The size of the beam that should be used when decoding sequences.
    */
   public ChunkerME(ChunkerModel model, int beamSize) {
-    this(model, beamSize, null);
+    this.model = model.getChunkerModel();
+    ChunkerContextGenerator contextGenerator = model.getFactory().getContextGenerator();
+    SequenceValidator<String> sequenceValidator = model.getFactory().getSequenceValidator();
+    beam = new BeamSearch<String>(beamSize, contextGenerator, this.model, sequenceValidator, 0);
   }
   
   /**
@@ -196,7 +203,25 @@ public class ChunkerME implements Chunker {
   public double[] probs() {
     return bestSequence.getProbs();
   }
+  
+  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in,
+      TrainingParameters mlParams, ChunkerFactory factory) throws IOException {
 
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+
+    EventStream es = new ChunkerEventStream(in, factory.getContextGenerator());
+
+    AbstractModel maxentModel = TrainUtil.train(es, mlParams.getSettings(),
+        manifestInfoEntries);
+
+    return new ChunkerModel(lang, maxentModel, manifestInfoEntries, factory);
+  }
+
+  /**
+   * @deprecated Use
+   *             {@link #train(String, ObjectStream, ChunkerContextGenerator, TrainingParameters, ChunkerFactory)}
+   *             instead.
+   */
   public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, 
       ChunkerContextGenerator contextGenerator, TrainingParameters mlParams)
   throws IOException {
