@@ -29,6 +29,7 @@ import java.io.OutputStreamWriter;
 import java.util.zip.GZIPOutputStream;
 
 import opennlp.maxent.io.BinaryGISModelWriter;
+import opennlp.maxent.io.BinaryQNModelWriter;
 import opennlp.maxent.io.PlainTextGISModelWriter;
 import opennlp.model.AbstractModel.ModelType;
 import opennlp.perceptron.BinaryPerceptronModelWriter;
@@ -70,6 +71,9 @@ public class GenericModelWriter extends AbstractModelWriter {
     else if (model.getModelType() == ModelType.Maxent) {
       delegateWriter = new BinaryGISModelWriter(model,dos);
     }
+    else if (model.getModelType() == ModelType.MaxentQn) {
+        delegateWriter = new BinaryQNModelWriter(model,dos);
+    }
   }
   
   private void init(AbstractModel model, BufferedWriter bw) {
@@ -105,5 +109,4 @@ public class GenericModelWriter extends AbstractModelWriter {
   public void writeUTF(String s) throws IOException {
     delegateWriter.writeUTF(s);
   }
-  
 }
