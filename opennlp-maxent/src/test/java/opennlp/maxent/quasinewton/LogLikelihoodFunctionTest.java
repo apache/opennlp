@@ -21,6 +21,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import opennlp.model.DataIndexer;
 import opennlp.model.OnePassRealValueDataIndexer;
@@ -120,12 +123,9 @@ public class LogLikelihoodFunctionTest {
     LogLikelihoodFunction objectFunction = new LogLikelihoodFunction(testDataIndexer);
     // when
     double[] gradientAtInitialPoint = objectFunction.gradientAt(objectFunction.getInitialPoint());
-    double[] expectedGradient = new double[] { 20, 8.5, -14, -17, -9, -20, -8.5, 14, 17, 9 };
+    double[] expectedGradient = new double[] { -9, -14, -17, 20, 8.5, 9, 14, 17, -20, -8.5 };
     // then
-    assertTrue(expectedGradient.length == gradientAtInitialPoint.length);
-    for (int i = 0; i < expectedGradient.length; i++) {
-      assertEquals(expectedGradient[i], gradientAtInitialPoint[i], TOLERANCE01);
-    }
+    assertTrue(compareDoubleArray(expectedGradient, gradientAtInitialPoint, testDataIndexer, TOLERANCE01));
   }
 
   @Test
@@ -135,15 +135,89 @@ public class LogLikelihoodFunctionTest {
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     LogLikelihoodFunction objectFunction = new LogLikelihoodFunction(testDataIndexer);
     // when
-    double[] nonInitialPoint = new double[] { 2, 3, 2, 3, 3, 3, 2, 3, 2, 2 };
-    double[] gradientAtInitialPoint = objectFunction.gradientAt(nonInitialPoint);
+    double[] nonInitialPoint = new double[] { 0.2, 0.5, 0.2, 0.5, 0.2,
+    		0.5, 0.2, 0.5, 0.2, 0.5 };
+    double[] gradientAtNonInitialPoint = 
+    		objectFunction.gradientAt(dealignDoubleArrayForTestData(nonInitialPoint,
+    				testDataIndexer.getPredLabels(), 
+    				testDataIndexer.getOutcomeLabels()));
     double[] expectedGradient = 
-        new double[] { 6.19368E-09, -3.04514E-16, 7.48224E-09,  -7.15239E-09, 4.14274E-09, 
-        -6.19368E-09, 0.0, -7.48225E-09, 7.15239E-09, -4.14274E-09};
+            new double[] { -0.311616214, -0.211771052, -1.324041847, 0.93340278, 0.317407069, 
+    		0.311616214, 0.211771052, 1.324041847, -0.93340278, -0.317407069 };   
     // then
-    assertTrue(expectedGradient.length == gradientAtInitialPoint.length);
-    for (int i = 0; i < expectedGradient.length; i++) {
-      assertEquals(expectedGradient[i], gradientAtInitialPoint[i], TOLERANCE01);
+    assertTrue(compareDoubleArray(expectedGradient, gradientAtNonInitialPoint, testDataIndexer, TOLERANCE01));
+  }
+  
+  private double[] alignDoubleArrayForTestData(double[] expected, String[] predLabels, String[] outcomeLabels) {
+	double[] aligned = new double[predLabels.length * outcomeLabels.length];
+	
+	String[] sortedPredLabels = predLabels.clone();
+	String[] sortedOutcomeLabels =  outcomeLabels.clone();
+	Arrays.sort(sortedPredLabels);
+	Arrays.sort(sortedOutcomeLabels);
+	
+	Map<String, Integer> invertedPredIndex = new HashMap<String, Integer>();
+	Map<String, Integer> invertedOutcomeIndex = new HashMap<String, Integer>();
+    for (int i = 0; i < predLabels.length; i++) {
+      invertedPredIndex.put(predLabels[i], i);
     }
+    for (int i = 0; i < outcomeLabels.length; i++) {
+      invertedOutcomeIndex.put(outcomeLabels[i], i);
+    }
+	
+    for (int i = 0; i < sortedOutcomeLabels.length; i++) {
+      for (int j = 0; j < sortedPredLabels.length; j++) {
+        aligned[i * sortedPredLabels.length + j] = expected[invertedOutcomeIndex
+            .get(sortedOutcomeLabels[i])
+            * sortedPredLabels.length
+            + invertedPredIndex.get(sortedPredLabels[j])];
+      }
+    }
+	return aligned;
+  }
+  
+  private double[] dealignDoubleArrayForTestData(double[] expected,
+      String[] predLabels, String[] outcomeLabels) {
+    double[] dealigned = new double[predLabels.length * outcomeLabels.length];
+
+    String[] sortedPredLabels = predLabels.clone();
+    String[] sortedOutcomeLabels = outcomeLabels.clone();
+    Arrays.sort(sortedPredLabels);
+    Arrays.sort(sortedOutcomeLabels);
+
+    Map<String, Integer> invertedPredIndex = new HashMap<String, Integer>();
+    Map<String, Integer> invertedOutcomeIndex = new HashMap<String, Integer>();
+    for (int i = 0; i < predLabels.length; i++) {
+      invertedPredIndex.put(predLabels[i], i);
+    }
+    for (int i = 0; i < outcomeLabels.length; i++) {
+      invertedOutcomeIndex.put(outcomeLabels[i], i);
+    }
+
+    for (int i = 0; i < sortedOutcomeLabels.length; i++) {
+      for (int j = 0; j < sortedPredLabels.length; j++) {
+        dealigned[invertedOutcomeIndex.get(sortedOutcomeLabels[i])
+            * sortedPredLabels.length
+            + invertedPredIndex.get(sortedPredLabels[j])] = expected[i
+            * sortedPredLabels.length + j];
+      }
+    }
+
+    return dealigned;
+  }
+  
+  private boolean compareDoubleArray(double[] expected, double[] actual, DataIndexer indexer, double tolerance) {
+	double[] alignedActual = alignDoubleArrayForTestData(actual, indexer.getPredLabels(), indexer.getOutcomeLabels());
+	  
+    if (expected.length != alignedActual.length) {
+      return false;
+    }
+    
+    for (int i = 0; i < alignedActual.length; i++) {
+      if (Math.abs(alignedActual[i] - expected[i]) > tolerance) {
+        return false;
+      }
+    }
+    return true;
   }
 }
