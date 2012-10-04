@@ -108,8 +108,10 @@ public class LogLikelihoodFunctionTest {
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     LogLikelihoodFunction objectFunction = new LogLikelihoodFunction(testDataIndexer);
     // when
-    double[] nonInitialPoint = new double[] { 2, 3, 2, 3, 3, 3, 2, 3, 2, 2 };
-    double value = objectFunction.valueAt(nonInitialPoint);
+    double[] nonInitialPoint = new double[] { 3, 2, 3, 2, 3, 2, 3, 2, 3, 2 };
+    double value = objectFunction.valueAt(dealignDoubleArrayForTestData(nonInitialPoint,
+			testDataIndexer.getPredLabels(), 
+			testDataIndexer.getOutcomeLabels()));
     double expectedValue = -0.00000000285417;
     // then
     assertEquals(expectedValue, value, TOLERANCE02);
