@@ -57,12 +57,14 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 
-	private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
+	protected final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
 
 	private int start = -1;
 	private int end = -1;
 
 	private int index = 0;
+
+    public static final String OTHER = "O";
 
 	/**
 	 * Creates a new {@link NameSample} stream from a line stream, i.e.
@@ -127,13 +129,13 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 		return null;
 	}
 
-	private void processRoot(Node root, List<String> sentence, List<String> tags,
+	protected void processRoot(Node root, List<String> sentence, List<String> tags,
 			List<String> target) {
 		if (root != null) {
 			TreeElement[] elements = root.getElements();
 			for (int i = 0; i < elements.length; i++) {
 				if (elements[i].isLeaf()) {
-					processLeaf((Leaf) elements[i], false, "O", sentence, tags, target);
+					processLeaf((Leaf) elements[i], false, OTHER, sentence, tags, target);
 				} else {
 					processNode((Node) elements[i], sentence, tags, target, null);
 				}
@@ -141,50 +143,63 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 		}
 	}
 
-	private void processNode(Node node, List<String> sentence, List<String> tags,
-			List<String> target, String inheritedTag) {
-		String phraseTag = getChunkTag(node.getSyntacticTag());
-		
-		boolean inherited = false;
-		if(phraseTag.equals("O") && inheritedTag != null) {
-		  phraseTag = inheritedTag;
-		  inherited = true;
-		}
+    private void processNode(Node node, List<String> sentence, List<String> tags,
+        List<String> target, String inheritedTag) {
+    String phraseTag = getChunkTag(node.getSyntacticTag());
+    
+    boolean inherited = false;
+    if(phraseTag.equals(OTHER) && inheritedTag != null) {
+      phraseTag = inheritedTag;
+      inherited = true;
+    }
 
-		TreeElement[] elements = node.getElements();
-		for (int i = 0; i < elements.length; i++) {
-			if (elements[i].isLeaf()) {
-				boolean isIntermediate = false;
-				if ( i > 0 && elements[i - 1].isLeaf() && phraseTag != null && !phraseTag.equals("O")) {
-					isIntermediate = true;
-				}
-				if(inherited && target.size() > 0 && target.get(target.size() - 1).endsWith(phraseTag)) {
-				  isIntermediate = true;
-				}
-				processLeaf((Leaf) elements[i], isIntermediate, phraseTag, sentence,
-						tags, target);
-			} else {
-				processNode((Node) elements[i], sentence, tags, target, phraseTag);
-			}
-		}
-	}
+    TreeElement[] elements = node.getElements();
+    for (int i = 0; i < elements.length; i++) {
+        if (elements[i].isLeaf()) {
+            boolean isIntermediate = false;
+            String tag = phraseTag;
+            Leaf leaf = (Leaf) elements[i];
+            
+            if(isIntermediate(tags, target, phraseTag) && (inherited || i > 0)) {
+                  isIntermediate = true;
+            }
+            if(!isIncludePunctuations() && leaf.getFunctionalTag() == null &&
+                (
+                    !( i + 1 < elements.length && elements[i+1].isLeaf() ) ||
+                    !( i > 0 && elements[i - 1].isLeaf() )
+                ) 
+              ){
+              isIntermediate = false;
+              tag = OTHER;
+            }
+            processLeaf(leaf, isIntermediate, tag, sentence,
+                    tags, target);
+        } else {
+            int before = target.size();
+            processNode((Node) elements[i], sentence, tags, target, phraseTag);
+            
+            // if the child node was of a different type we should break the chunk sequence
+            for (int j = target.size() - 1; j >= before; j--) {
+              if(!target.get(j).endsWith("-" + phraseTag)) {
+                phraseTag = OTHER;
+                break;
+              }
+            }
+        }
+    }
+}
 
-	private void processLeaf(Leaf leaf, boolean isIntermediate, String phraseTag,
+
+  protected void processLeaf(Leaf leaf, boolean isIntermediate, String phraseTag,
 			List<String> sentence, List<String> tags, List<String> target) {
 		String chunkTag;
 		
-		
-		
 		if (leaf.getFunctionalTag() != null
-				&& phraseTag.equals("O")) {
-			if(leaf.getFunctionalTag().equals("v-fin")) {
-				phraseTag = "VP";
-			} else if(leaf.getFunctionalTag().equals("n")) {
-				phraseTag = "NP";
-			}
+				&& phraseTag.equals(OTHER)) {
+		  phraseTag = getPhraseTagFromPosTag(leaf.getFunctionalTag());
 		}
 
-		if (!phraseTag.equals("O")) {
+		if (!phraseTag.equals(OTHER)) {
 			if (isIntermediate) {
 				chunkTag = "I-" + phraseTag;
 			} else {
@@ -203,11 +218,20 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 		target.add(chunkTag);
 	}
 
+  protected String getPhraseTagFromPosTag(String functionalTag) {
+    if (functionalTag.equals("v-fin")) {
+      return "VP";
+    } else if (functionalTag.equals("n")) {
+      return "NP";
+    }
+    return OTHER;
+  }
+
   public static String convertPhraseTag(String phraseTag) {
     if ("NP".equals(phraseTag) || "VP".equals(phraseTag)) {
       return phraseTag;
     }
-    return "O";
+    return OTHER;
   }
 
   public static String convertFuncTag(String t, boolean useCGTags) {
@@ -219,20 +243,24 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
     return t;
   }
 
-  private String getChunkTag(String tag) {
-		
-		String phraseTag = tag.substring(tag.lastIndexOf(":") + 1);
+  protected String getChunkTag(String tag) {
 
-		// maybe we should use only np, vp and pp, but will keep ap and advp.
+    String phraseTag = tag.substring(tag.lastIndexOf(":") + 1);
+
+    while (phraseTag.endsWith("-")) {
+      phraseTag = phraseTag.substring(0, phraseTag.length() - 1);
+    }
+
+    // maybe we should use only np, vp and pp, but will keep ap and advp.
     if (phraseTag.equals("np") || phraseTag.equals("vp")
         || phraseTag.equals("pp") || phraseTag.equals("ap")
-        || phraseTag.equals("advp")) {
+        || phraseTag.equals("advp") || phraseTag.equals("adjp")) {
       phraseTag = phraseTag.toUpperCase();
     } else {
-      phraseTag = "O";
+      phraseTag = OTHER;
     }
-		return phraseTag;
-	}
+    return phraseTag;
+  }
 
 	public void setStart(int aStart) {
 		this.start = aStart;
@@ -249,5 +277,15 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 	public void close() throws IOException {
 		adSentenceStream.close();
 	}
+	
+  protected boolean isIncludePunctuations() {
+    return false;
+  }
+
+  protected boolean isIntermediate(List<String> tags, List<String> target,
+      String phraseTag) {
+    return target.size() > 0
+        && target.get(target.size() - 1).endsWith("-" + phraseTag);
+  }
 
 }
