@@ -145,7 +145,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 
     private void processNode(Node node, List<String> sentence, List<String> tags,
         List<String> target, String inheritedTag) {
-    String phraseTag = getChunkTag(node.getSyntacticTag());
+    String phraseTag = getChunkTag(node);
     
     boolean inherited = false;
     if(phraseTag.equals(OTHER) && inheritedTag != null) {
@@ -160,7 +160,12 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
             String tag = phraseTag;
             Leaf leaf = (Leaf) elements[i];
             
-            if(isIntermediate(tags, target, phraseTag) && (inherited || i > 0)) {
+            String localChunk = getChunkTag(leaf);
+            if(localChunk != null && !tag.equals(localChunk)) {
+              tag = localChunk;
+            }
+            
+            if(isIntermediate(tags, target, tag) && (inherited || i > 0)) {
                   isIntermediate = true;
             }
             if(!isIncludePunctuations() && leaf.getFunctionalTag() == null &&
@@ -227,13 +232,6 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
     return OTHER;
   }
 
-  public static String convertPhraseTag(String phraseTag) {
-    if ("NP".equals(phraseTag) || "VP".equals(phraseTag)) {
-      return phraseTag;
-    }
-    return OTHER;
-  }
-
   public static String convertFuncTag(String t, boolean useCGTags) {
     if (useCGTags) {
       if ("art".equals(t) || "pron-det".equals(t) || "pron-indef".equals(t)) {
@@ -242,9 +240,18 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
     }
     return t;
   }
+  
+  protected String getChunkTag(Leaf leaf) {
+    String tag = leaf.getSyntacticTag();
+    if("P".equals(tag)) {
+      return "VP";
+    }
+    return null;
+  }
 
-  protected String getChunkTag(String tag) {
-
+  protected String getChunkTag(Node node) {
+    String tag = node.getSyntacticTag();
+    
     String phraseTag = tag.substring(tag.lastIndexOf(":") + 1);
 
     while (phraseTag.endsWith("-")) {
