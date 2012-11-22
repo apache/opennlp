@@ -84,7 +84,7 @@ public class JWNLDictionary implements Dictionary {
       if (tag.startsWith("N") || tag.startsWith("n")) {
         pos = POS.NOUN;
       }
-      else if (tag.startsWith("N") || tag.startsWith("v")) {
+      else if (tag.startsWith("V") || tag.startsWith("v")) {
         pos = POS.VERB;
       }
       else if (tag.startsWith("J") || tag.startsWith("a")) {
