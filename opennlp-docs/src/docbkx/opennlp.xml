@@ -84,6 +84,7 @@ under the License.
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./chunker.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./parser.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./coref.xml" />
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./extension.xml" />	
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./corpora.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./machine-learning.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./uima-integration.xml" />
