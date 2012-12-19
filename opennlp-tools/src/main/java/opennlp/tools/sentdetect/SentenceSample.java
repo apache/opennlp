@@ -22,9 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import opennlp.tools.cmdline.tokenizer.DictionaryDetokenizerTool;
 import opennlp.tools.tokenize.Detokenizer;
-import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
 import opennlp.tools.util.Span;
 
 /**

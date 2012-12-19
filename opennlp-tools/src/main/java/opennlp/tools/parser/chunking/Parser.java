@@ -32,7 +32,6 @@ import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.ChunkContextGenerator;
 import opennlp.tools.parser.ChunkSampleStream;
