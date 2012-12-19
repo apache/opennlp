@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.AbstractBasicCmdLineTool;
+import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -42,7 +42,7 @@ import opennlp.tools.util.StringList;
  * <br>
  * <a href="http://www.census.gov/genealogy/names/names_files.html">www.census.gov</a>
  */
-public class CensusDictionaryCreatorTool extends AbstractBasicCmdLineTool {
+public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
 
   /**
    * Create a list of expected parameters.

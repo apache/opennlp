@@ -39,4 +39,5 @@ public interface BasicTrainingParams {
   @OptionalParameter()
   String getParams();
   
+  // add language here ?!
 }

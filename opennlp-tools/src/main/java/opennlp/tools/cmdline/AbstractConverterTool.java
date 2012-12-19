@@ -28,7 +28,7 @@ import opennlp.tools.util.ObjectStream;
  * @param <T> class of data sample the tool converts, for example {@link opennlp.tools.postag
  * .POSSample}
  */
-public abstract class AbstractConverterTool<T> extends AbstractTypedTool<T> {
+public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
 
   /**
    * Constructor with type parameter.

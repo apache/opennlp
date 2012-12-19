@@ -20,7 +20,7 @@ package opennlp.tools.cmdline;
 /**
  * Base class for tools which take additional parameters. For example, trainers or evaluators.
  */
-public abstract class AbstractTypedParamTool<T, P> extends AbstractTypedTool<T> {
+public abstract class AbstractTypedParamTool<T, P> extends TypedCmdLineTool<T> {
 
   /**
    * variable to access the parameters

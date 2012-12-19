@@ -17,10 +17,10 @@
 
 package opennlp.tools.cmdline.tokenizer;
 
-import opennlp.tools.cmdline.AbstractBasicCmdLineTool;
+import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 
-public final class SimpleTokenizerTool extends AbstractBasicCmdLineTool {
+public final class SimpleTokenizerTool extends BasicCmdLineTool {
 
   public String getShortDescription() {
     return "character class tokenizer";
