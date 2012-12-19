@@ -22,7 +22,6 @@ import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.formats.DetokenizerSampleStreamFactory;
 import opennlp.tools.formats.WordTagSampleStreamFactory;
-import opennlp.tools.formats.WordTagSampleStreamFactory.Parameters;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
