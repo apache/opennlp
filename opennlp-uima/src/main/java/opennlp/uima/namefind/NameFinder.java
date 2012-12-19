@@ -17,8 +17,6 @@
 
 package opennlp.uima.namefind;
 
-import java.util.List;
-
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.Span;

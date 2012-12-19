@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import opennlp.tools.util.StringList;

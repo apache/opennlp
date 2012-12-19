@@ -17,8 +17,6 @@
 
 package opennlp.uima.tokenize;
 
-import java.util.Iterator;
-
 import opennlp.tools.util.Span;
 import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.UimaUtil;
