@@ -19,11 +19,11 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
 
-import opennlp.tools.cmdline.AbstractBasicCmdLineTool;
+import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.tokenize.TokenizerModel;
 
-public final class TokenizerMETool extends AbstractBasicCmdLineTool {
+public final class TokenizerMETool extends BasicCmdLineTool {
 
   public String getShortDescription() {
     return "learnable tokenizer";

@@ -22,12 +22,12 @@ package opennlp.tools.cmdline;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public interface BasicCmdLineTool extends CmdLineTool {
+public abstract class BasicCmdLineTool extends CmdLineTool {
 
   /**
    * Executes the tool with the given parameters.
    * 
    * @param args arguments
    */
-  void run(String args[]);
+  public abstract void run(String args[]);
 }
