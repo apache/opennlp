@@ -22,7 +22,6 @@ package opennlp.maxent;
 import java.io.File;
 import java.io.FileReader;
 
-import opennlp.maxent.io.GISModelWriter;
 import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.model.AbstractModel;
 import opennlp.model.AbstractModelWriter;

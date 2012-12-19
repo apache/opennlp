@@ -32,7 +32,6 @@ import opennlp.model.OnePassDataIndexer;
 import opennlp.model.Sequence;
 import opennlp.model.SequenceStream;
 import opennlp.model.SequenceStreamEventStream;
-import opennlp.model.TwoPassDataIndexer;
 
 /**
  * Trains models for sequences using the perceptron algorithm.  Each outcome is represented as
