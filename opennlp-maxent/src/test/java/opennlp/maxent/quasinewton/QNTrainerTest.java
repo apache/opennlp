@@ -23,6 +23,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.model.AbstractModel;
+import opennlp.model.BinaryFileDataReader;
 import opennlp.model.DataIndexer;
 import opennlp.model.Event;
 import opennlp.model.GenericModelReader;
@@ -92,15 +97,17 @@ public class QNTrainerTest {
 	    // given
 	    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");  
 	    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
-	    String modelFileName = "qn-test-model.bin";
 	    // when
 	   // QNModel trainedModel = new QNTrainer(5, 500, true).trainModel(new TwoPassDataIndexer(createTrainingStream()));
 	    QNModel trainedModel = new QNTrainer(5, 700, true).trainModel(testDataIndexer);
 	    
-	    GenericModelWriter modelWriter = new GenericModelWriter(trainedModel, new File(modelFileName));
+	    ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
+	    GenericModelWriter modelWriter = new GenericModelWriter(trainedModel, new DataOutputStream(modelBytes));
 	    modelWriter.persist();
+	    modelWriter.close();
 	    
-	    GenericModelReader modelReader = new GenericModelReader(new File(modelFileName));
+	    GenericModelReader modelReader = new GenericModelReader(new BinaryFileDataReader(
+	        new ByteArrayInputStream(modelBytes.toByteArray())));
 	    AbstractModel readModel = modelReader.getModel();
 	    QNModel deserModel = (QNModel) readModel;
 	    
