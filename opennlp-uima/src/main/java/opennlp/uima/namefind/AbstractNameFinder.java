@@ -17,8 +17,6 @@
 
 package opennlp.uima.namefind;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,14 +24,12 @@ import opennlp.tools.util.Span;
 import opennlp.uima.util.AnnotationComboIterator;
 import opennlp.uima.util.AnnotationIteratorPair;
 import opennlp.uima.util.AnnotatorUtil;
-import opennlp.uima.util.ContainingConstraint;
 import opennlp.uima.util.UimaUtil;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CAS;
-import org.apache.uima.cas.FSIndex;
 import org.apache.uima.cas.Type;
 import org.apache.uima.cas.TypeSystem;
 import org.apache.uima.cas.text.AnnotationFS;
