@@ -23,7 +23,53 @@ under the License.
 
 <chapter id="tools.coref">
 <title>Coreference Resolution</title>
-<para>TODO: Write documentation about the coref component. Any contributions
+<para>
+The OpenNLP Coreference Resolution system links multiple mentions of an
+entity in a document together.
+The OpenNLP implementation is currently limited to noun phrase mentions,
+other mention types cannot be resolved.
+</para>
+
+<para>
+TODO: Write more documentation about the coref component. Any contributions
 are very welcome. If you want to contribute please contact us on the mailing list
-or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-48">OPENNLP-48</ulink>.</para>
+or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-48">OPENNLP-48</ulink>.
+</para>
+<!--
+<section id="tools.coref.implementation">
+	<title>Implementation</title>
+	<para>The following section gives an overview of the implementation.
+	The process is divided in two steps. First mention which can be linked
+	are identified and in a second step a set of specialized resolvers links them together.
+	</para>
+
+	<section id="tools.coref.implementation.mention_finding">
+	<title>Mention Finding</title>
+	<para>
+	</para>
+	</section>
+
+	<section id="tools.coref.implementation.linking">
+	<title>Linking</title>
+	<para>
+Resolvers and linking:
+The implementation has a dedicated model for different mention
+categories.
+These are:
+Common Nouns
+Definite Nouns
+Plural Nouns
+Plural Pronouns
+Proper Nouns
+Singular Pronouns
+Speech Pronouns
+
+-- speak about 7 seven different models ...
+-- explain non referential thing
+-- speak about number, gender and similarity
+-- Speak about mention finding
+	
+	</para>
+	</section>
+</section> -->
 </chapter>
