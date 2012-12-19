@@ -437,6 +437,12 @@ public class Parse implements Cloneable, Comparable<Parse> {
    */
   @Override
   public String toString() {
+    // TODO: Use the commented code in next bigger release,
+    // change probably breaks backward compatibility in some
+    // applications
+    //StringBuffer buffer = new StringBuffer();
+    //show(buffer);
+    //return buffer.toString();
     return getCoveredText();
   }
 
