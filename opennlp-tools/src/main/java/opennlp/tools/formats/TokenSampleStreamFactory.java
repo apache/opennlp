@@ -20,7 +20,7 @@ package opennlp.tools.formats;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.LanguageFormatParams;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenSampleStream;
 import opennlp.tools.util.ObjectStream;
@@ -33,7 +33,7 @@ import java.io.FileInputStream;
  */
 public class TokenSampleStreamFactory extends LanguageSampleStreamFactory<TokenSample> {
 
-  interface Parameters extends LanguageFormatParams {
+  interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
@@ -47,8 +47,6 @@ public class TokenSampleStreamFactory extends LanguageSampleStreamFactory<TokenS
 
   public ObjectStream<TokenSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    language = params.getLang();
 
     CmdLineUtil.checkInputFile("Data", params.getData());
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());

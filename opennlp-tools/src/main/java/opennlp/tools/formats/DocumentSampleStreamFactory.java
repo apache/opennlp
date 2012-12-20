@@ -20,7 +20,7 @@ package opennlp.tools.formats;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.LanguageFormatParams;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.doccat.DocumentSampleStream;
 import opennlp.tools.util.ObjectStream;
@@ -31,9 +31,9 @@ import java.io.FileInputStream;
 /**
  * Factory producing OpenNLP {@link DocumentSampleStream}s.
  */
-public class DocumentSampleStreamFactory extends LanguageSampleStreamFactory<DocumentSample> {
+public class DocumentSampleStreamFactory extends AbstractSampleStreamFactory<DocumentSample> {
 
-  interface Parameters extends LanguageFormatParams {
+  interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
@@ -47,8 +47,6 @@ public class DocumentSampleStreamFactory extends LanguageSampleStreamFactory<Doc
 
   public ObjectStream<DocumentSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    language = params.getLang();
 
     CmdLineUtil.checkInputFile("Data", params.getData());
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());

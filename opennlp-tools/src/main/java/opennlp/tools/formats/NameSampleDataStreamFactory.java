@@ -22,7 +22,7 @@ import java.io.FileInputStream;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.LanguageFormatParams;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.util.ObjectStream;
@@ -31,9 +31,9 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * Factory producing OpenNLP {@link NameSampleDataStream}s.
  */
-public class NameSampleDataStreamFactory extends LanguageSampleStreamFactory<NameSample> {
+public class NameSampleDataStreamFactory extends AbstractSampleStreamFactory<NameSample> {
 
-  public static interface Parameters extends LanguageFormatParams {
+  public static interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
@@ -47,7 +47,6 @@ public class NameSampleDataStreamFactory extends LanguageSampleStreamFactory<Nam
 
   public ObjectStream<NameSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    language = params.getLang();
 
     CmdLineUtil.checkInputFile("Data", params.getData());
     

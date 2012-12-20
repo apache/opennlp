@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -234,6 +235,8 @@ public class ArgumentParser {
   public static <T> String createUsage(Class<T>... argProxyInterfaces) {
     checkProxyInterfaces(argProxyInterfaces);
 
+    Set<String> duplicateFilter = new HashSet<String>();
+    
     StringBuilder usage = new StringBuilder();
     StringBuilder details = new StringBuilder();
     for (Class<T> argProxyInterface : argProxyInterfaces) {
@@ -247,6 +250,13 @@ public class ArgumentParser {
           if (desc != null) {
             String paramName = methodNameToParameter(method.getName());
 
+            if (duplicateFilter.contains(paramName)) {
+              continue;
+            }
+            else {
+              duplicateFilter.add(paramName);
+            }
+            
             if (optional != null)
               usage.append('[');
 

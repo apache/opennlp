@@ -22,7 +22,7 @@ import opennlp.tools.chunker.ChunkSampleStream;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.LanguageFormatParams;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -31,9 +31,9 @@ import java.io.FileInputStream;
 /**
  * Factory producing OpenNLP {@link ChunkSampleStream}s.
  */
-public class ChunkerSampleStreamFactory extends LanguageSampleStreamFactory<ChunkSample> {
+public class ChunkerSampleStreamFactory extends AbstractSampleStreamFactory<ChunkSample> {
 
-  interface Parameters extends LanguageFormatParams {
+  interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
@@ -47,8 +47,6 @@ public class ChunkerSampleStreamFactory extends LanguageSampleStreamFactory<Chun
 
   public ObjectStream<ChunkSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    language = params.getLang();
 
     CmdLineUtil.checkInputFile("Data", params.getData());
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());

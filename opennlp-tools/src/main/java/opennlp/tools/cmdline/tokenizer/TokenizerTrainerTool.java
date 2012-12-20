@@ -84,7 +84,7 @@ public final class TokenizerTrainerTool
       Dictionary dict = loadDict(params.getAbbDict());
 
       TokenizerFactory tokFactory = TokenizerFactory.create(
-          params.getFactory(), factory.getLang(), dict,
+          params.getFactory(), params.getLang(), dict,
           params.getAlphaNumOpt(), null);
       model = opennlp.tools.tokenize.TokenizerME.train(sampleStream,
           tokFactory, mlParams);

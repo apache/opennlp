@@ -22,16 +22,16 @@ import java.io.FileInputStream;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.LanguageFormatParams;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.coref.CorefSample;
 import opennlp.tools.coref.CorefSampleDataStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class CorefSampleStreamFactory extends LanguageSampleStreamFactory<CorefSample> {
+public class CorefSampleStreamFactory extends AbstractSampleStreamFactory<CorefSample> {
 
-  interface Parameters extends LanguageFormatParams {
+  interface Parameters extends BasicFormatParams {
   }
   
   protected CorefSampleStreamFactory() {
@@ -45,8 +45,6 @@ public class CorefSampleStreamFactory extends LanguageSampleStreamFactory<CorefS
   
   public ObjectStream<CorefSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    language = params.getLang();
 
     CmdLineUtil.checkInputFile("Data", params.getData());
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());

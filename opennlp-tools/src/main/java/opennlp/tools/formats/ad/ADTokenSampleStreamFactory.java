@@ -47,7 +47,6 @@ public class ADTokenSampleStreamFactory extends
 
   public ObjectStream<TokenSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    language = params.getLang();
 
     ObjectStream<NameSample> samples = StreamFactoryRegistry.getFactory(
         NameSample.class, "ad")

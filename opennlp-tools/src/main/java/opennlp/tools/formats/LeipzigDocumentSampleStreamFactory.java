@@ -23,7 +23,8 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.params.LanguageFormatParams;
+import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.cmdline.params.LanguageParams;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.util.ObjectStream;
 
@@ -32,7 +33,7 @@ import opennlp.tools.util.ObjectStream;
  */
 public class LeipzigDocumentSampleStreamFactory extends LanguageSampleStreamFactory<DocumentSample> {
 
-  interface Parameters extends LanguageFormatParams {
+  interface Parameters extends BasicFormatParams, LanguageParams {
   }
 
   public static void registerFactory() {

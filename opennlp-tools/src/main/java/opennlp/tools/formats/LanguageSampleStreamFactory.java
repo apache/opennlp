@@ -22,8 +22,6 @@ package opennlp.tools.formats;
  */
 public abstract class LanguageSampleStreamFactory<T> extends AbstractSampleStreamFactory<T> {
 
-  // language seems to belong to the stream, however, ObjectStream is used in 400+ places
-  // in the project and introducing new things to it is not a light decision.
   protected String language;
 
   protected <P> LanguageSampleStreamFactory(Class<P> params) {

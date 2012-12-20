@@ -22,7 +22,7 @@ import java.io.FileInputStream;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.LanguageFormatParams;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.WordTagSampleStream;
 import opennlp.tools.util.ObjectStream;
@@ -31,9 +31,9 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class WordTagSampleStreamFactory extends LanguageSampleStreamFactory<POSSample> {
+public class WordTagSampleStreamFactory extends AbstractSampleStreamFactory<POSSample> {
 
-  public static interface Parameters extends LanguageFormatParams {
+  public static interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
@@ -47,7 +47,6 @@ public class WordTagSampleStreamFactory extends LanguageSampleStreamFactory<POSS
 
   public ObjectStream<POSSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    language = params.getLang();
 
     CmdLineUtil.checkInputFile("Data", params.getData());
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());

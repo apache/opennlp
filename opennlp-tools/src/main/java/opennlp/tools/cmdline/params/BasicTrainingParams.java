@@ -25,7 +25,7 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
  * 
  * Note: Do not use this class, internal use only!
  */
-public interface BasicTrainingParams {
+public interface BasicTrainingParams extends LanguageParams {
 
   @ParameterDescription(valueName = "num", description = "number of training iterations, ignored if -params is used.")
   @OptionalParameter(defaultValue="100")
@@ -38,6 +38,4 @@ public interface BasicTrainingParams {
   @ParameterDescription(valueName = "paramsFile", description = "training parameters file.")
   @OptionalParameter()
   String getParams();
-  
-  // add language here ?!
 }

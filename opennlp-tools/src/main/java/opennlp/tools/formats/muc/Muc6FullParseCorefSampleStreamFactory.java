@@ -29,12 +29,12 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.namefind.TokenNameFinderModelLoader;
-import opennlp.tools.cmdline.params.LanguageFormatParams;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.cmdline.parser.ParserModelLoader;
 import opennlp.tools.cmdline.tokenizer.TokenizerModelLoader;
 import opennlp.tools.coref.CorefSample;
+import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.DirectorySampleStream;
-import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinder;
@@ -50,9 +50,9 @@ import opennlp.tools.util.ObjectStream;
  * Factory creates a stream which can parse MUC 6 Coref data and outputs CorefSample
  * objects which are enhanced with a full parse and are suitable to train the Coreference component.
  */
-public class Muc6FullParseCorefSampleStreamFactory extends LanguageSampleStreamFactory<CorefSample> {
+public class Muc6FullParseCorefSampleStreamFactory extends AbstractSampleStreamFactory<CorefSample> {
 
-  interface Parameters extends LanguageFormatParams {
+  interface Parameters extends BasicFormatParams {
 
     @ParameterDescription(valueName = "modelFile")
     File getParserModel();
@@ -76,8 +76,6 @@ public class Muc6FullParseCorefSampleStreamFactory extends LanguageSampleStreamF
   public ObjectStream<CorefSample> create(String[] args) {
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    
-    language = params.getLang();
     
     ParserModel parserModel = new ParserModelLoader().load(params.getParserModel());
     Parser parser =  ParserFactory.create(parserModel);

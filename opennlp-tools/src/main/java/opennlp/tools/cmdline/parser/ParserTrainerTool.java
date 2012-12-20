@@ -130,11 +130,11 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
       
       if (ParserType.CHUNKING.equals(type)) {
         model = opennlp.tools.parser.chunking.Parser.train(
-            factory.getLang(), sampleStream, rules,
+            params.getLang(), sampleStream, rules,
             mlParams);
       }
       else if (ParserType.TREEINSERT.equals(type)) {
-        model = opennlp.tools.parser.treeinsert.Parser.train(factory.getLang(), sampleStream, rules,
+        model = opennlp.tools.parser.treeinsert.Parser.train(params.getLang(), sampleStream, rules,
             mlParams);
       }
       else {

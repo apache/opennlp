@@ -45,7 +45,6 @@ public class NameToSentenceSampleStreamFactory extends DetokenizerSampleStreamFa
 
   public ObjectStream<SentenceSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    language = params.getLang();
 
     ObjectStream<NameSample> nameSampleStream = StreamFactoryRegistry.getFactory(
         NameSample.class, StreamFactoryRegistry.DEFAULT_FORMAT).create(

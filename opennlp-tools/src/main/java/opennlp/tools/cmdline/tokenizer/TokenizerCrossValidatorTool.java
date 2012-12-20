@@ -65,7 +65,7 @@ public final class TokenizerCrossValidatorTool
       Dictionary dict = TokenizerTrainerTool.loadDict(params.getAbbDict());
 
       TokenizerFactory tokFactory = TokenizerFactory.create(
-          params.getFactory(), factory.getLang(), dict,
+          params.getFactory(), params.getLang(), dict,
           params.getAlphaNumOpt(), null);
       validator = new opennlp.tools.tokenize.TokenizerCrossValidator(mlParams,
           tokFactory, listener);

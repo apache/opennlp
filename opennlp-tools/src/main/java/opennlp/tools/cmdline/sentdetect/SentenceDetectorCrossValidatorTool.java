@@ -68,8 +68,8 @@ public final class SentenceDetectorCrossValidatorTool
     try {
       Dictionary abbreviations = SentenceDetectorTrainerTool.loadDict(params.getAbbDict());
       SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
-          params.getFactory(), factory.getLang(), true, abbreviations, eos);
-      validator = new SDCrossValidator(factory.getLang(), mlParams, sdFactory,
+          params.getFactory(), params.getLang(), true, abbreviations, eos);
+      validator = new SDCrossValidator(params.getLang(), mlParams, sdFactory,
           errorListener);
       
       validator.evaluate(sampleStream, params.getFolds());

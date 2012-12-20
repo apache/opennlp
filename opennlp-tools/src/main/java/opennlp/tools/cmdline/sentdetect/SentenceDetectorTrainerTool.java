@@ -84,8 +84,8 @@ public final class SentenceDetectorTrainerTool
     try {
       Dictionary dict = loadDict(params.getAbbDict());
       SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
-          params.getFactory(), factory.getLang(), true, dict, eos);
-      model = SentenceDetectorME.train(factory.getLang(), sampleStream,
+          params.getFactory(), params.getLang(), true, dict, eos);
+      model = SentenceDetectorME.train(params.getLang(), sampleStream,
           sdFactory, mlParams);
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
