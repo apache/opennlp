@@ -177,7 +177,7 @@ public final class TokenNameFinderTrainerTool
     TokenNameFinderModel model;
     try {
       model = opennlp.tools.namefind.NameFinderME.train(
-          factory.getLang(), params.getType(), sampleStream,
+          params.getLang(), params.getType(), sampleStream,
           mlParams, featureGeneratorBytes, resources);
     }
     catch (IOException e) {

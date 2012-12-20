@@ -30,7 +30,7 @@ import java.io.IOException;
 /**
  * Base class for factories which need detokenizer.
  */
-public abstract class DetokenizerSampleStreamFactory<T> extends LanguageSampleStreamFactory<T> {
+public abstract class DetokenizerSampleStreamFactory<T> extends AbstractSampleStreamFactory<T> {
 
   protected <P> DetokenizerSampleStreamFactory(Class<P> params) {
     super(params);

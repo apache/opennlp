@@ -45,7 +45,6 @@ public class NameToTokenSampleStreamFactory extends DetokenizerSampleStreamFacto
 
   public ObjectStream<TokenSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    language = params.getLang();
 
     ObjectStream<NameSample> nameSampleStream = StreamFactoryRegistry.getFactory(
         NameSample.class, StreamFactoryRegistry.DEFAULT_FORMAT).create(

@@ -74,7 +74,7 @@ public final class TokenNameFinderCrossValidatorTool
 
     TokenNameFinderCrossValidator validator;
     try {
-      validator = new TokenNameFinderCrossValidator(factory.getLang(),
+      validator = new TokenNameFinderCrossValidator(params.getLang(),
           params.getType(), mlParams, featureGeneratorBytes, resources,
           listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));
       validator.evaluate(sampleStream, params.getFolds());

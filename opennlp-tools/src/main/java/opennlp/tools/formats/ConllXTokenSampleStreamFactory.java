@@ -44,7 +44,6 @@ public class ConllXTokenSampleStreamFactory extends DetokenizerSampleStreamFacto
 
   public ObjectStream<TokenSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    language = params.getLang();
 
     ObjectStream<POSSample> samples = StreamFactoryRegistry.getFactory(POSSample.class,
         ConllXPOSSampleStreamFactory.CONLLX_FORMAT).create(

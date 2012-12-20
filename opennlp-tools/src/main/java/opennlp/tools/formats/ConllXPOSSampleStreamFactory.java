@@ -25,7 +25,7 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.params.LanguageFormatParams;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -33,11 +33,11 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ConllXPOSSampleStreamFactory extends LanguageSampleStreamFactory<POSSample> {
+public class ConllXPOSSampleStreamFactory extends AbstractSampleStreamFactory<POSSample> {
 
   public static final String CONLLX_FORMAT = "conllx";
   
-  interface Parameters extends LanguageFormatParams {
+  interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
@@ -51,7 +51,6 @@ public class ConllXPOSSampleStreamFactory extends LanguageSampleStreamFactory<PO
 
   public ObjectStream<POSSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    language = params.getLang();
 
     ObjectStream<String> lineStream;
     try {

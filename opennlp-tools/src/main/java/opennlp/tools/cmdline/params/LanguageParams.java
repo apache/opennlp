@@ -15,24 +15,13 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline;
+package opennlp.tools.cmdline.params;
 
-import opennlp.tools.util.ObjectStream;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
-public interface ObjectStreamFactory<T> {
+public interface LanguageParams {
 
-  /**
-   * Returns interface with parameters description.
-   *
-   * @return interface with parameters description
-   */
-  <P> Class<P> getParameters();
+  @ParameterDescription(valueName = "language", description = "language which is being processed.")
+  String getLang();
   
-  /**
-   * Creates the <code>ObjectStream</code>.
-   * 
-   * @param args arguments
-   * @return ObjectStream instance
-   */
-  ObjectStream<T> create(String args[]);
 }

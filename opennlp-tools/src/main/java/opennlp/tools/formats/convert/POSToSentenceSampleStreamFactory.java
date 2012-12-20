@@ -45,7 +45,6 @@ public class POSToSentenceSampleStreamFactory extends DetokenizerSampleStreamFac
 
   public ObjectStream<SentenceSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    language = params.getLang();
 
     ObjectStream<POSSample> posSampleStream = StreamFactoryRegistry.getFactory(POSSample.class,
         StreamFactoryRegistry.DEFAULT_FORMAT).create(

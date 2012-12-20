@@ -21,13 +21,13 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.LanguageFormatParams;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
-public class BioNLP2004NameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
+public class BioNLP2004NameSampleStreamFactory extends AbstractSampleStreamFactory<NameSample> {
 
-  interface Parameters extends LanguageFormatParams {
+  interface Parameters extends BasicFormatParams {
     @ParameterDescription(valueName = "DNA,protein,cell_type,cell_line,RNA")
     String getTypes();
   }
@@ -44,7 +44,6 @@ public class BioNLP2004NameSampleStreamFactory extends LanguageSampleStreamFacto
   public ObjectStream<NameSample> create(String[] args) {
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    language = params.getLang();
 
     int typesToGenerate = 0;
     

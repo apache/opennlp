@@ -126,7 +126,7 @@ public final class POSTaggerTrainerTool
 
     POSModel model;
     try {
-      model = opennlp.tools.postag.POSTaggerME.train(factory.getLang(),
+      model = opennlp.tools.postag.POSTaggerME.train(params.getLang(),
           sampleStream, mlParams, postaggerFactory);
     }
     catch (IOException e) {

@@ -84,7 +84,7 @@ public final class POSTaggerCrossValidatorTool
 
     POSTaggerCrossValidator validator;
     try {
-      validator = new POSTaggerCrossValidator(factory.getLang(), mlParams,
+      validator = new POSTaggerCrossValidator(params.getLang(), mlParams,
           params.getDict(), params.getNgram(), params.getTagDictCutoff(),
           params.getFactory(), missclassifiedListener, reportListener);
       

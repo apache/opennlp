@@ -19,16 +19,17 @@ package opennlp.tools.formats.frenchtreebank;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.LanguageFormatParams;
+import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.DirectorySampleStream;
-import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.formats.convert.FileToByteArraySampleStream;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
 
-public class ConstitParseSampleStreamFactory extends LanguageSampleStreamFactory<Parse> {
+public class ConstitParseSampleStreamFactory extends AbstractSampleStreamFactory<Parse> {
 
-  interface Parameters extends LanguageFormatParams {    
+  // TODO: The parameters have an encoding, but the data is in xml
+  interface Parameters extends BasicFormatParams {    
   }
   
   private ConstitParseSampleStreamFactory() {
@@ -39,7 +40,6 @@ public class ConstitParseSampleStreamFactory extends LanguageSampleStreamFactory
     
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
-    language = params.getLang();
     
     return new ConstitParseSampleStream(new FileToByteArraySampleStream(new DirectorySampleStream(params.getData(),
         null, false)));
