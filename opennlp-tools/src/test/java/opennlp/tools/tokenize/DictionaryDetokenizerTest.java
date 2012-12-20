@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 
-import opennlp.tools.cmdline.tokenizer.DictionaryDetokenizerTool;
 import opennlp.tools.tokenize.DetokenizationDictionary.Operation;
 import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
 
