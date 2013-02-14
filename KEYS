@@ -120,17 +120,17 @@ M3lA67tQpl6feMswEOgsEql7Bg==
 
 -----------------------------------------------------------------------------------
 pub   1024D/91DDAC20 2008-01-25
-uid                  Jšrn Kottmann <joern@apache.org>
-sig 3        91DDAC20 2011-02-22  Jšrn Kottmann <joern@apache.org>
+uid                  Jï¿½rn Kottmann <joern@apache.org>
+sig 3        91DDAC20 2011-02-22  Jï¿½rn Kottmann <joern@apache.org>
 sub   2048g/7B06114B 2008-01-25
-sig          91DDAC20 2008-01-25  Jšrn Kottmann <joern@apache.org>
+sig          91DDAC20 2008-01-25  Jï¿½rn Kottmann <joern@apache.org>
 
 pub   4096R/5EE31F7F 2011-02-22
-uid                  Jšrn Kottmann <joern@apache.org>
-sig 3        5EE31F7F 2011-02-22  Jšrn Kottmann <joern@apache.org>
-sig          91DDAC20 2011-02-22  Jšrn Kottmann <joern@apache.org>
+uid                  Jï¿½rn Kottmann <joern@apache.org>
+sig 3        5EE31F7F 2011-02-22  Jï¿½rn Kottmann <joern@apache.org>
+sig          91DDAC20 2011-02-22  Jï¿½rn Kottmann <joern@apache.org>
 sub   4096R/87CFF9D9 2011-02-22
-sig          5EE31F7F 2011-02-22  Jšrn Kottmann <joern@apache.org>
+sig          5EE31F7F 2011-02-22  Jï¿½rn Kottmann <joern@apache.org>
 
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG/MacGPG2 v2.0.16 (Darwin)
@@ -215,4 +215,65 @@ XJ88V2f4lU+/dQjasBXph0e7LvlkZrn50ji/sfwpuBT/6++Jf2dr1330VukWXyDg
 UPF+BhTMjtxCA7+XTVIHXkOBEWiA6b9WRyK9y3T2pLFvwQi8qhCk0DgY4tUX3Yoz
 K8lv1puwHj4laJEwSV7NpnveVzKRIw==
 =cn0A
+-----END PGP PUBLIC KEY BLOCK-----
+
+-----------------------------------------------------------------------------------
+pub   4096R/BC0737A6 2013-02-05
+uid                  William Daniel Colen de Moura Silva (CODE SIGNING KEY) <colen@apache.org>
+sig 3        BC0737A6 2013-02-05  William Daniel Colen de Moura Silva (CODE SIGNING KEY) <colen@apache.org>
+sub   4096R/EC30C4FB 2013-02-05
+sig          BC0737A6 2013-02-05  William Daniel Colen de Moura Silva (CODE SIGNING KEY) <colen@apache.org>
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG/MacGPG2 v2.0.18 (Darwin)
+Comment: GPGTools - http://gpgtools.org
+
+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
+=FZ1t
 -----END PGP PUBLIC KEY BLOCK-----
