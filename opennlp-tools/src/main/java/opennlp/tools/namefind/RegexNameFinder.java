@@ -33,6 +33,16 @@ import opennlp.tools.util.Span;
 public final class RegexNameFinder implements TokenNameFinder {
 
   private final Pattern mPatterns[];
+  private final String sType;
+
+  public RegexNameFinder(Pattern patterns[], String type) {
+    if (patterns == null || patterns.length == 0) {
+      throw new IllegalArgumentException("patterns must not be null or empty!");
+    }
+
+    mPatterns = patterns;
+    sType = type;
+  }
 
   public RegexNameFinder(Pattern patterns[]) {
     if (patterns == null || patterns.length == 0) {
@@ -40,8 +50,9 @@ public final class RegexNameFinder implements TokenNameFinder {
     }
 
     mPatterns = patterns;
+    sType = null;
   }
-
+  
   public Span[] find(String tokens[]) {
     Map<Integer, Integer> sentencePosTokenMap = new HashMap<Integer, Integer>();
 
@@ -55,7 +66,7 @@ public final class RegexNameFinder implements TokenNameFinder {
       sentenceString.append(tokens[i]);
 
       int endIndex = sentenceString.length();
-      sentencePosTokenMap.put(endIndex, i);
+      sentencePosTokenMap.put(endIndex, i + 1);
 
       if (i < tokens.length - 1) {
         sentenceString.append(' ');
@@ -74,7 +85,7 @@ public final class RegexNameFinder implements TokenNameFinder {
             sentencePosTokenMap.get(matcher.end());
 
         if (tokenStartIndex != null && tokenEndIndex != null) {
-          Span annotation = new Span(tokenStartIndex, tokenEndIndex);
+          Span annotation = new Span(tokenStartIndex, tokenEndIndex, sType);
           annotations.add(annotation);
         }
       }

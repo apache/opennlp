@@ -45,7 +45,7 @@ public class RegexNameFinderTest {
     assertTrue(result.length == 1);
 
     assertTrue(result[0].getStart() == 1);
-    assertTrue(result[0].getEnd() == 1);
+    assertTrue(result[0].getEnd() == 2);
   }
 
   @Test
@@ -55,14 +55,15 @@ public class RegexNameFinderTest {
     String sentence[] = new String[]{"a", "80", "year", "b", "c"};
 
     RegexNameFinder finder =
-      new RegexNameFinder(new Pattern[]{testPattern});
+      new RegexNameFinder(new Pattern[]{testPattern}, "match");
 
     Span[] result = finder.find(sentence);
 
     assertTrue(result.length == 1);
 
     assertTrue(result[0].getStart() == 1);
-    assertTrue(result[0].getEnd() == 2);
+    assertTrue(result[0].getEnd() == 3);
+    assertTrue(result[0].getType().equals("match"));
   }
 
   @Test
