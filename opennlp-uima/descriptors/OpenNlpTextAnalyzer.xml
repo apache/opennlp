@@ -67,7 +67,9 @@
 		<delegateAnalysisEngine key="Chunker">
 			<import location="Chunker.xml" />
 		</delegateAnalysisEngine>
-		
+		<delegateAnalysisEngine key="Parser">
+			<import location="Parser.xml" />
+		</delegateAnalysisEngine>		
 	</delegateAnalysisEngineSpecifiers>
 
 	<analysisEngineMetaData>
@@ -90,6 +92,7 @@
 				<node>TimeFinder</node>
 				<node>PosTagger</node>
 				<node>Chunker</node>
+				<node>Parser</node>
 			</fixedFlow>
 		</flowConstraints>
 		<capabilities>
@@ -198,6 +201,13 @@
 				</fileResourceSpecifier>
 				<implementationName>opennlp.uima.chunker.ChunkerModelResourceImpl</implementationName>
 			</externalResource>
+			<externalResource>
+				<name>ParserModel</name>
+				<fileResourceSpecifier>
+					<fileUrl>file:en-parser-chunking.bin</fileUrl>
+				</fileResourceSpecifier>
+				<implementationName>opennlp.uima.parser.ParserModelResourceImpl</implementationName>
+			</externalResource>			
 		</externalResources>
 
 		<externalResourceBindings>
@@ -245,6 +255,10 @@
 				<key>Chunker/opennlp.uima.ModelName</key>
 				<resourceName>ChunkerModel</resourceName>
 			</externalResourceBinding>
+			<externalResourceBinding>
+				<key>Parser/opennlp.uima.ModelName</key>
+				<resourceName>ParserModel</resourceName>
+			</externalResourceBinding>			
 		</externalResourceBindings>
 
 	</resourceManagerConfiguration>

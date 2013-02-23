@@ -40,6 +40,7 @@
 				<file file="descriptors/PersonNameFinder.xml" />
 				<file file="descriptors/TimeNameFinder.xml" />
 				<file file="descriptors/PosTagger.xml" />
+				<file file="descriptors/Parser.xml" />
 				<file file="descriptors/Chunker.xml" />
 				<file file="descriptors/TypeSystem.xml" />
 			</resources>
@@ -80,6 +81,7 @@
 		<get src="http://opennlp.sourceforge.net/models-1.5/en-ner-person.bin" dest="${modelDir}/en-ner-person.bin" />
 		<get src="http://opennlp.sourceforge.net/models-1.5/en-ner-time.bin" dest="${modelDir}/en-ner-time.bin" />
 		<get src="http://opennlp.sourceforge.net/models-1.5/en-pos-maxent.bin" dest="${modelDir}/en-pos-maxent.bin" />
+		<get src="http://opennlp.sourceforge.net/models-1.5/en-parser-chunking.bin" dest="${modelDir}/en-parser-chunking.bin" />
 		<get src="http://opennlp.sourceforge.net/models-1.5/en-chunker.bin" dest="${modelDir}/en-chunker.bin" />
 
 		<!-- Create pear zip file-->
