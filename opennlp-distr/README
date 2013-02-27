@@ -16,23 +16,19 @@ The results of the build will be placed  in:
 What is new in Apache OpenNLP ${pom.version}
 ---------------------------------------
 
-This release contains a couple of new features, improvements and bug fixes.
-The maxent trainer can now run in multiple threads to utilize
-multi-core CPUs, configurable feature generation was added to the name finder,
-the perceptron trainer was refactored and improved, machine learners
-can now be configured with much more options via a parameter file,
-evaluators can print out detailed evaluation information.
+This release contains a couple of new features, improvements and bug fixes. The CLI
+has been improved for a better consistency. Now the tools supports extensions that
+can be configured from the model, including customized context generators and
+validators.
 
 Additionally the release contains the following noteworthy changes:
 
-- Improved the white space handling in the Sentence Detector and its training code
-- Added more cross validator command line tools
-- Command line handling code has been refactored
-- Fixed problems with the new build
-- Now uses fast token class feature generation code by default
-- Added support for BioNLP/NLPBA 2004 shared task data
-- Removal of old and deprecated code
-- Dictionary case sensitivity support is now done properly
+- Porter Stemmer tool
+- L-BFGS parameter estimation
+- Improved documentation
+- Fine-grained POSTagger evaluation report
+- Improved support to load user provided feature generator and context validation
+  classes from OSGi environment
 
 A detailed list of the issues related to this release can be found in the release
 notes.
@@ -46,7 +42,6 @@ Known OSGi Issues
 ------------
 In an OSGi environment the following things are not supported:
 - The coreference resolution component
-- The ability to load a user provided feature generator class
 
 Note
 ----
