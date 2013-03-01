@@ -35,13 +35,6 @@
 
 	<repositories>
 		<repository>
-			<id>OpenNLPRepository</id>
-			<url>
-				http://opennlp.sourceforge.net/maven2
-			</url>
-		</repository>
-
-		<repository>
 			<id>ApacheIncubatorRepository</id>
 			<url>
 				http://people.apache.org/repo/m2-incubating-repository/
