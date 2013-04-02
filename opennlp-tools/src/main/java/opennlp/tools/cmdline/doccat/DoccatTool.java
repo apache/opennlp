@@ -31,6 +31,7 @@ import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 
 public class DoccatTool extends BasicCmdLineTool {
 
@@ -61,7 +62,7 @@ public class DoccatTool extends BasicCmdLineTool {
       try {
         String document;
         while ((document = documentStream.read()) != null) {
-          double prob[] = doccat.categorize(document);
+          double prob[] = doccat.categorize(WhitespaceTokenizer.INSTANCE.tokenize(document));
           String category = doccat.getBestCategory(prob);
 
           DocumentSample sample = new DocumentSample(category, document);
