@@ -24,6 +24,7 @@ import opennlp.tools.formats.BioNLP2004NameSampleStreamFactory;
 import opennlp.tools.formats.ChunkerSampleStreamFactory;
 import opennlp.tools.formats.Conll02NameSampleStreamFactory;
 import opennlp.tools.formats.Conll03NameSampleStreamFactory;
+import opennlp.tools.formats.EvalitaNameSampleStreamFactory;
 import opennlp.tools.formats.ConllXPOSSampleStreamFactory;
 import opennlp.tools.formats.ConllXSentenceSampleStreamFactory;
 import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
@@ -82,6 +83,7 @@ public final class StreamFactoryRegistry {
     BioNLP2004NameSampleStreamFactory.registerFactory();
     Conll02NameSampleStreamFactory.registerFactory();
     Conll03NameSampleStreamFactory.registerFactory();
+    EvalitaNameSampleStreamFactory.registerFactory();
     ConllXPOSSampleStreamFactory.registerFactory();
     ConllXSentenceSampleStreamFactory.registerFactory();
     ConllXTokenSampleStreamFactory.registerFactory();
