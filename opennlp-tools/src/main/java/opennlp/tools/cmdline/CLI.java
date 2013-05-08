@@ -30,9 +30,6 @@ import opennlp.tools.cmdline.chunker.ChunkerCrossValidatorTool;
 import opennlp.tools.cmdline.chunker.ChunkerEvaluatorTool;
 import opennlp.tools.cmdline.chunker.ChunkerMETool;
 import opennlp.tools.cmdline.chunker.ChunkerTrainerTool;
-import opennlp.tools.cmdline.coref.CoreferencerTool;
-import opennlp.tools.cmdline.coref.CoreferencerTrainerTool;
-import opennlp.tools.cmdline.coref.CoreferenceConverterTool;
 import opennlp.tools.cmdline.dictionary.DictionaryBuilderTool;
 import opennlp.tools.cmdline.doccat.DoccatConverterTool;
 import opennlp.tools.cmdline.doccat.DoccatTool;
@@ -132,11 +129,6 @@ public final class CLI {
     tools.add(new BuildModelUpdaterTool()); // re-trains  build model
     tools.add(new CheckModelUpdaterTool()); // re-trains  build model
     tools.add(new TaggerModelReplacerTool());
-    
-    // Coreferencer
-    tools.add(new CoreferencerTool());
-    tools.add(new CoreferencerTrainerTool());
-    tools.add(new CoreferenceConverterTool());
     
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);

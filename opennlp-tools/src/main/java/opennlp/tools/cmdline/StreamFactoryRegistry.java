@@ -28,7 +28,6 @@ import opennlp.tools.formats.EvalitaNameSampleStreamFactory;
 import opennlp.tools.formats.ConllXPOSSampleStreamFactory;
 import opennlp.tools.formats.ConllXSentenceSampleStreamFactory;
 import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
-import opennlp.tools.formats.CorefSampleStreamFactory;
 import opennlp.tools.formats.DocumentSampleStreamFactory;
 import opennlp.tools.formats.LeipzigDocumentSampleStreamFactory;
 import opennlp.tools.formats.NameSampleDataStreamFactory;
@@ -49,7 +48,6 @@ import opennlp.tools.formats.convert.ParseToPOSSampleStreamFactory;
 import opennlp.tools.formats.convert.ParseToSentenceSampleStreamFactory;
 import opennlp.tools.formats.convert.ParseToTokenSampleStreamFactory;
 import opennlp.tools.formats.frenchtreebank.ConstitParseSampleStreamFactory;
-import opennlp.tools.formats.muc.Muc6FullParseCorefSampleStreamFactory;
 import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
 
 /**
@@ -68,7 +66,6 @@ public final class StreamFactoryRegistry {
     SentenceSampleStreamFactory.registerFactory();
     TokenSampleStreamFactory.registerFactory();
     WordTagSampleStreamFactory.registerFactory();
-    CorefSampleStreamFactory.registerFactory();
     
     NameToSentenceSampleStreamFactory.registerFactory();
     NameToTokenSampleStreamFactory.registerFactory();
@@ -95,7 +92,6 @@ public final class StreamFactoryRegistry {
     ADTokenSampleStreamFactory.registerFactory();
     
     Muc6NameSampleStreamFactory.registerFactory();
-    Muc6FullParseCorefSampleStreamFactory.registerFactory();
     
     ConstitParseSampleStreamFactory.registerFactory();
   }
