@@ -61,23 +61,25 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
   }
   
   public final void initialize(UimaContext context) throws ResourceInitializationException {
-    
+
+	super.initialize(context);
+
 	this.context = context;
-	  
+
     mLogger = context.getLogger();
-    
+
     if (mLogger.isLoggable(Level.INFO)) {
       mLogger.log(Level.INFO, 
       "Initializing the " + name + ".");
     } 
-    
+
     isRemoveExistingAnnotations = AnnotatorUtil.getOptionalBooleanParameter(
         context, UimaUtil.IS_REMOVE_EXISTINGS_ANNOTAIONS);
 
     if (isRemoveExistingAnnotations == null) {
         isRemoveExistingAnnotations = false;
     }
-    
+
     initialize();
   }
   
