@@ -311,4 +311,11 @@ public class SpanTest {
   public void testToString() {
     new Span(50, 100).toString();
   }
+  
+  @Test
+  public void testTrim() {
+    String string1 = "  12 34  ";
+    Span span1 = new Span(0, string1.length());
+    assertEquals("12 34", span1.trim(string1).getCoveredText(string1));
+  }
 }
