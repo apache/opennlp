@@ -201,6 +201,33 @@ public class Span implements Comparable<Span> {
   }
 
   /**
+   * Return a copy of this span with leading and trailing white spaces removed.
+   * 
+   * @param text
+   * @return
+   */
+  public Span trim(CharSequence text) {
+    
+    int newStartOffset = getStart();
+    
+    for (int i = getStart(); i < getEnd() && StringUtil.isWhitespace(text.charAt(i)); i++) {
+      newStartOffset++;
+    }
+
+    int newEndOffset = getEnd();
+    for (int i = getEnd(); i > getStart() && StringUtil.isWhitespace(text.charAt(i - 1)); i--) {
+      newEndOffset--;
+    }
+    
+    if (newStartOffset == getStart() && newEndOffset == getEnd()) {
+      return this;
+    }
+    else {
+      return new Span(newStartOffset, newEndOffset, getType());
+    }
+  }
+  
+  /**
    * Compares the specified span to the current span.
    */
   public int compareTo(Span s) {
