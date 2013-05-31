@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import opennlp.maxent.GIS;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
+import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.uima.util.CasConsumerUtil;
 import opennlp.uima.util.ContainingConstraint;

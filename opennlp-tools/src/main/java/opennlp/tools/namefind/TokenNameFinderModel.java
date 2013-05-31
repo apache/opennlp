@@ -29,8 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.model.AbstractModel;
-import opennlp.model.MaxentModel;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;

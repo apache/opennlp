@@ -22,15 +22,15 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 
-import opennlp.model.Event;
-import opennlp.model.EventStream;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.ml.model.EventStream;
 
 /**
  * This is a base class for {@link EventStream} classes.
  * It takes an {@link Iterator} of sample objects as input and
  * outputs the events creates by a subclass.
  */
-public abstract class AbstractEventStream<T> extends opennlp.model.AbstractEventStream {
+public abstract class AbstractEventStream<T> extends opennlp.tools.ml.model.AbstractEventStream {
 
   private ObjectStream<T> samples;
 

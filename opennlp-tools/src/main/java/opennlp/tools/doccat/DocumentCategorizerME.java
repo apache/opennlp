@@ -23,11 +23,11 @@ import java.io.ObjectStreamException;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.maxent.GIS;
-import opennlp.model.AbstractModel;
-import opennlp.model.MaxentModel;
-import opennlp.model.TrainUtil;
-import opennlp.model.TwoPassDataIndexer;
+import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.TrainUtil;
+import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;

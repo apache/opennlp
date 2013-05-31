@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 
 import junit.framework.Assert;
-import opennlp.model.EventStream;
+import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Span;
 

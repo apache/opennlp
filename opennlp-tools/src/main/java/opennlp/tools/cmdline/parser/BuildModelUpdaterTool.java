@@ -19,7 +19,7 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.IOException;
 
-import opennlp.model.AbstractModel;
+import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserEventTypeEnum;
@@ -46,7 +46,7 @@ public final class BuildModelUpdaterTool extends ModelUpdaterTool {
       // TODO: training individual models should be in the chunking parser, not here
       // Training build
       System.out.println("Training builder");
-      opennlp.model.EventStream bes = new ParserEventStream(parseSamples, 
+      opennlp.tools.ml.model.EventStream bes = new ParserEventStream(parseSamples, 
           originalModel.getHeadRules(), ParserEventTypeEnum.BUILD, mdict);
       AbstractModel buildModel = Parser.train(bes, 
           parameters.getIterations(), parameters.getCutoff());

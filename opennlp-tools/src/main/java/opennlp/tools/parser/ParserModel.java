@@ -28,7 +28,7 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.Map;
 
-import opennlp.model.AbstractModel;
+import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;

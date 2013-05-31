@@ -25,7 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import opennlp.model.Event;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;

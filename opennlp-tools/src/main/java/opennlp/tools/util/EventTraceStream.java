@@ -20,8 +20,8 @@ package opennlp.tools.util;
 import java.io.IOException;
 import java.io.Writer;
 
-import opennlp.model.Event;
-import opennlp.model.EventStream;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.ml.model.EventStream;
 
 public class EventTraceStream implements EventStream {
 

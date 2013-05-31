@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import opennlp.maxent.io.SuffixSensitiveGISModelReader;
+import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader;
 import opennlp.tools.namefind.NameFinderEventStream;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.util.Span;

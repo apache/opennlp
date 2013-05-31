@@ -19,7 +19,7 @@
 package opennlp.tools.postag;
 
 import junit.framework.Assert;
-import opennlp.model.EventStream;
+import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.util.ObjectStreamUtils;
 
 import org.junit.Test;

@@ -32,8 +32,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.maxent.GIS;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
+import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;

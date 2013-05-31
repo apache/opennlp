@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import opennlp.model.Event;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
 

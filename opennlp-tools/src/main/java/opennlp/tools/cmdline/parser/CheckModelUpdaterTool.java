@@ -19,7 +19,7 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.IOException;
 
-import opennlp.model.AbstractModel;
+import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserEventTypeEnum;
@@ -47,7 +47,7 @@ public final class CheckModelUpdaterTool extends ModelUpdaterTool {
       // TODO: Maybe that should be part of the ChunkingParser ...
       // Training build
       System.out.println("Training check model");
-      opennlp.model.EventStream bes = new ParserEventStream(parseSamples, 
+      opennlp.tools.ml.model.EventStream bes = new ParserEventStream(parseSamples, 
           originalModel.getHeadRules(), ParserEventTypeEnum.CHECK, mdict);
       AbstractModel checkModel = Parser.train(bes, 
           parameters.getIterations(), parameters.getCutoff());

@@ -27,9 +27,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
-import opennlp.model.AbstractModel;
-import opennlp.model.BinaryFileDataReader;
-import opennlp.model.GenericModelReader;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.BinaryFileDataReader;
+import opennlp.tools.ml.model.GenericModelReader;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;

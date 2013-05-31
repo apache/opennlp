@@ -20,7 +20,7 @@ package opennlp.tools.util;
 import java.util.Arrays;
 import java.util.List;
 
-import opennlp.model.MaxentModel;
+import opennlp.tools.ml.model.MaxentModel;
 
 /**
  * Performs k-best search over sequence.  This is based on the description in

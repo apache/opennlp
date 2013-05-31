@@ -23,10 +23,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.model.AbstractModel;
-import opennlp.model.EventStream;
-import opennlp.model.MaxentModel;
-import opennlp.model.TrainUtil;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;

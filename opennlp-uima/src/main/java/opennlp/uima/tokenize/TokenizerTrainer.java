@@ -31,7 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import opennlp.maxent.GIS;
+import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenSampleStream;
 import opennlp.tools.tokenize.TokenizerME;

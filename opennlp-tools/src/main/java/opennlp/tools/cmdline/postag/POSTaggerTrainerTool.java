@@ -20,7 +20,7 @@ package opennlp.tools.cmdline.postag;
 import java.io.File;
 import java.io.IOException;
 
-import opennlp.model.TrainUtil;
+import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
