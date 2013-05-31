@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
-import opennlp.model.AbstractModel;
+import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 

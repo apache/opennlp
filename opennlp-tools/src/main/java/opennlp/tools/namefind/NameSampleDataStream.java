@@ -19,7 +19,7 @@ package opennlp.tools.namefind;
 
 import java.io.IOException;
 
-import opennlp.maxent.DataStream;
+import opennlp.tools.ml.maxent.DataStream;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 

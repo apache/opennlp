@@ -28,9 +28,9 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Map;
 
-import opennlp.maxent.io.BinaryGISModelReader;
-import opennlp.model.AbstractModel;
-import opennlp.model.MaxentModel;
+import opennlp.tools.ml.maxent.io.BinaryGISModelReader;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;

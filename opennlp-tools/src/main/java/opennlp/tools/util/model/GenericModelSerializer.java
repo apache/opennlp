@@ -23,9 +23,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import opennlp.model.AbstractModel;
-import opennlp.model.BinaryFileDataReader;
-import opennlp.model.GenericModelReader;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.BinaryFileDataReader;
+import opennlp.tools.ml.model.GenericModelReader;
 import opennlp.tools.util.InvalidFormatException;
 
 public class GenericModelSerializer implements ArtifactSerializer<AbstractModel> {

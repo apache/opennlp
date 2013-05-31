@@ -25,9 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.maxent.io.SuffixSensitiveGISModelReader;
-import opennlp.model.AbstractModel;
-import opennlp.model.Event;
+import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserEventStream;
@@ -379,7 +379,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     if (fun) {
       Parse.useFunctionTags(true);
     }
-    opennlp.model.EventStream es = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))), rules, etype, dict);
+    opennlp.tools.ml.model.EventStream es = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))), rules, etype, dict);
     while (es.hasNext()) {
       Event e = es.next();
       if (model != null) {

@@ -22,10 +22,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.maxent.GIS;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
+import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.uima.util.CasConsumerUtil;
 import opennlp.uima.util.OpennlpUtil;

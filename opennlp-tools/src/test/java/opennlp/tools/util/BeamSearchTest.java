@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNotSame;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.model.MaxentModel;
+import opennlp.tools.ml.model.MaxentModel;
 
 import org.junit.Test;
 

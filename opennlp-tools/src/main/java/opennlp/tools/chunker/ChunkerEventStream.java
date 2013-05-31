@@ -19,13 +19,13 @@ package opennlp.tools.chunker;
 
 import java.io.IOException;
 
-import opennlp.model.Event;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * Class for creating an event stream out of data files for training a chunker.
  */
-public class ChunkerEventStream extends opennlp.model.AbstractEventStream {
+public class ChunkerEventStream extends opennlp.tools.ml.model.AbstractEventStream {
 
   private ChunkerContextGenerator cg;
   private ObjectStream<ChunkSample> data;

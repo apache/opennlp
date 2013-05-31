@@ -21,7 +21,7 @@ package opennlp.tools.sentdetect;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.maxent.IntegerPool;
+import opennlp.tools.ml.maxent.IntegerPool;
 
 /**
  * Default implementation of the {@link EndOfSentenceScanner}.

@@ -27,8 +27,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
-import opennlp.model.AbstractModel;
-import opennlp.model.GenericModelReader;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.GenericModelReader;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;

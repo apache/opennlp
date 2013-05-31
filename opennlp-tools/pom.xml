@@ -35,13 +35,6 @@
 
 	<dependencies>
         <dependency>
-            <groupId>org.apache.opennlp</groupId>
-            <artifactId>opennlp-maxent</artifactId>
-            <version>3.0.4-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
             <version>4.2.0</version>

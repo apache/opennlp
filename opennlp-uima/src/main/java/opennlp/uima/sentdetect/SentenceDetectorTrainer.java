@@ -25,7 +25,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.maxent.GIS;
+import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.sentdetect.SentenceDetectorFactory;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;

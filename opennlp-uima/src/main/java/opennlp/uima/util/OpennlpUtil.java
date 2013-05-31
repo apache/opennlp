@@ -28,8 +28,8 @@ import java.io.OutputStream;
 
 import org.apache.uima.resource.ResourceInitializationException;
 
-import opennlp.maxent.GISModel;
-import opennlp.model.TrainUtil;
+import opennlp.tools.ml.maxent.GISModel;
+import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 

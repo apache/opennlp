@@ -27,9 +27,9 @@ import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import opennlp.model.AbstractModel;
-import opennlp.model.EventStream;
-import opennlp.model.TrainUtil;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.BeamSearch;

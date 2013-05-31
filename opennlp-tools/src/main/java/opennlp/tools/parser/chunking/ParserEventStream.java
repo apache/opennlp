@@ -20,7 +20,7 @@ package opennlp.tools.parser.chunking;
 import java.io.FileInputStream;
 import java.util.List;
 
-import opennlp.model.Event;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserEventStream;
@@ -204,7 +204,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     if (fun) {
       Parse.useFunctionTags(true);
     }
-    opennlp.model.EventStream es = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))), rules, etype, dict);
+    opennlp.tools.ml.model.EventStream es = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))), rules, etype, dict);
     while (es.hasNext()) {
       System.out.println(es.next());
     }

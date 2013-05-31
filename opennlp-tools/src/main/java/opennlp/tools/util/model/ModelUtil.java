@@ -28,10 +28,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import opennlp.model.AbstractModel;
-import opennlp.model.GenericModelWriter;
-import opennlp.model.MaxentModel;
-import opennlp.model.TrainUtil;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.GenericModelWriter;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.util.TrainingParameters;
 
 /**

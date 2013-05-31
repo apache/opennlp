@@ -25,15 +25,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import opennlp.maxent.DataStream;
-import opennlp.maxent.GISModel;
-import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
-import opennlp.model.AbstractModel;
-import opennlp.model.EventStream;
-import opennlp.model.SequenceStream;
-import opennlp.model.TwoPassDataIndexer;
-import opennlp.perceptron.SimplePerceptronSequenceTrainer;
-import opennlp.perceptron.SuffixSensitivePerceptronModelWriter;
+import opennlp.tools.ml.maxent.DataStream;
+import opennlp.tools.ml.maxent.GISModel;
+import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelWriter;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.SequenceStream;
+import opennlp.tools.ml.model.TwoPassDataIndexer;
+import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
+import opennlp.tools.ml.perceptron.SuffixSensitivePerceptronModelWriter;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.ObjectStream;
@@ -68,7 +68,7 @@ public class POSTaggerTrainer {
   public static POSModel train(String languageCode, ObjectStream<POSSample> samples, POSDictionary tagDictionary,
       Dictionary ngramDictionary, int cutoff, int iterations) throws IOException {
 
-    GISModel posModel = opennlp.maxent.GIS.trainModel(iterations,
+    GISModel posModel = opennlp.tools.ml.maxent.GIS.trainModel(iterations,
         new TwoPassDataIndexer(new POSSampleEventStream(samples,
         new DefaultPOSContextGenerator(ngramDictionary)), cutoff));
 
@@ -99,11 +99,11 @@ public class POSTaggerTrainer {
    */
   @Deprecated
   public static AbstractModel trainMaxentModel(EventStream es, int iterations, int cut) throws IOException {
-    return opennlp.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
+    return opennlp.tools.ml.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 
   public static AbstractModel trainPerceptronModel(EventStream es, int iterations, int cut, boolean useAverage) throws IOException {
-    return new opennlp.perceptron.PerceptronTrainer().trainModel(iterations, new TwoPassDataIndexer(es, cut, false), cut, useAverage);
+    return new opennlp.tools.ml.perceptron.PerceptronTrainer().trainModel(iterations, new TwoPassDataIndexer(es, cut, false), cut, useAverage);
   }
 
   public static AbstractModel trainPerceptronModel(EventStream es, int iterations, int cut) throws IOException {
@@ -279,7 +279,7 @@ public class POSTaggerTrainer {
 
     NGramModel ngramModel = new NGramModel();
 
-    DataStream data = new opennlp.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile));
+    DataStream data = new opennlp.tools.ml.maxent.PlainTextByLineDataStream(new java.io.FileReader(inFile));
     while(data.hasNext()) {
       String tagStr = (String) data.nextToken();
       String[] tt = tagStr.split(" ");

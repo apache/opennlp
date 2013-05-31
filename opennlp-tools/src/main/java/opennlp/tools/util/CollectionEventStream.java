@@ -21,12 +21,12 @@ package opennlp.tools.util;
 import java.util.Collection;
 import java.util.Iterator;
 
-import opennlp.model.Event;
+import opennlp.tools.ml.model.Event;
 
 /**
  * Creates an event stream out of a collection of events.
  */
-public class CollectionEventStream extends opennlp.model.AbstractEventStream {
+public class CollectionEventStream extends opennlp.tools.ml.model.AbstractEventStream {
 
   private Iterator<Event> ci;
 

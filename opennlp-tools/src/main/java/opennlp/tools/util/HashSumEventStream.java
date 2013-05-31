@@ -23,8 +23,8 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import opennlp.model.Event;
-import opennlp.model.EventStream;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.ml.model.EventStream;
 
 @Deprecated
 public class HashSumEventStream implements EventStream {

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import opennlp.model.EventStream;
+import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;

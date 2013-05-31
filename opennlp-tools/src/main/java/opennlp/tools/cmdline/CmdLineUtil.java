@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import opennlp.model.TrainUtil;
+import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 

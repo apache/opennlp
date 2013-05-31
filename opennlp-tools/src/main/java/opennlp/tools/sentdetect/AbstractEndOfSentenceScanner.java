@@ -21,7 +21,7 @@ package opennlp.tools.sentdetect;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.maxent.IntegerPool;
+import opennlp.tools.ml.maxent.IntegerPool;
 
 /**
  * Abstract class for common methods related to identifying potential ends of sentences.

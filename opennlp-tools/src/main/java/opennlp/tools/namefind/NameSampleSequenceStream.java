@@ -23,10 +23,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import opennlp.model.AbstractModel;
-import opennlp.model.Event;
-import opennlp.model.Sequence;
-import opennlp.model.SequenceStream;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.ml.model.Sequence;
+import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
