@@ -20,7 +20,11 @@
 package opennlp.tools.ml.maxent;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 
+import opennlp.tools.ml.AbstractEventTrainer;
+import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.ml.model.Prior;
@@ -30,7 +34,10 @@ import opennlp.tools.ml.model.UniformPrior;
  * A Factory class which uses instances of GISTrainer to create and train
  * GISModels.
  */
-public class GIS {
+public class GIS extends AbstractEventTrainer {
+
+  public static final String MAXENT_VALUE = "MAXENT";
+
   /**
    * Set this to false if you don't want messages about the progress of model
    * training displayed. Alternately, you can use the overloaded version of
@@ -44,6 +51,53 @@ public class GIS {
    * Defaulted to 0.1.
    */
   public static double SMOOTHING_OBSERVATION = 0.1;
+
+  // >> members related to AbstractEventTrainer
+  public GIS(Map<String, String> trainParams, Map<String, String> reportMap) {
+    super(trainParams, reportMap);
+  }
+
+  public GIS() {
+    super(Collections.<String, String> emptyMap(), Collections
+        .<String, String> emptyMap());
+  }
+
+  public boolean isValid() {
+
+    if (!super.isValid()) {
+      return false;
+    }
+
+    String algorithmName = getAlgorithm();
+
+    if (algorithmName != null && !(MAXENT_VALUE.equals(algorithmName))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public boolean isSortAndMerge() {
+    return true;
+  }
+
+  public AbstractModel doTrain(DataIndexer indexer) throws IOException {
+    if (!isValid()) {
+      throw new IllegalArgumentException("trainParams are not valid!");
+    }
+
+    int iterations = getIterations();
+
+    AbstractModel model;
+
+    int threads = getIntParam("Threads", 1);
+
+    model = trainModel(iterations, indexer, true, false, null, 0, threads);
+
+    return model;
+  }
+
+  // << members related to AbstractEventTrainer
 
   /**
    * Train a model using the GIS algorithm, assuming 100 iterations and no
