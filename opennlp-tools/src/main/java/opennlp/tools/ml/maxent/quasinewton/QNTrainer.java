@@ -18,14 +18,22 @@
  */
 package opennlp.tools.ml.maxent.quasinewton;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 
+import opennlp.tools.ml.AbstractEventTrainer;
+import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 
 /**
  * maxent model trainer using l-bfgs algorithm.
  */
-public class QNTrainer {
+public class QNTrainer extends AbstractEventTrainer {
+
+  public static final String MAXENT_QN_VALUE = "MAXENT_QN_EXPERIMENTAL";
+
   // constants for optimization.
   private static final double CONVERGE_TOLERANCE = 1.0E-10;
   private static final int MAX_M = 15;
@@ -61,6 +69,9 @@ public class QNTrainer {
   }
 
   public QNTrainer(int m, int maxFctEval, boolean verbose) {
+    super(Collections.<String, String> emptyMap(), Collections
+        .<String, String> emptyMap());
+
     this.verbose = verbose;
     if (m > MAX_M) {
       this.m = MAX_M;
@@ -75,6 +86,62 @@ public class QNTrainer {
       this.maxFctEval = maxFctEval;
     }
   }
+
+  // >> members related to AbstractEventTrainer
+  public QNTrainer(Map<String, String> trainParams,
+      Map<String, String> reportMap) {
+    super(trainParams, reportMap);
+
+    int m = getIntParam("numOfUpdates", DEFAULT_M);
+    int maxFctEval = getIntParam("maxFctEval", DEFAULT_MAX_FCT_EVAL);
+
+    this.verbose = true;
+    if (m > MAX_M) {
+      this.m = MAX_M;
+    } else {
+      this.m = m;
+    }
+    if (maxFctEval < 0) {
+      this.maxFctEval = DEFAULT_MAX_FCT_EVAL;
+    } else if (maxFctEval > MAX_FCT_EVAL) {
+      this.maxFctEval = MAX_FCT_EVAL;
+    } else {
+      this.maxFctEval = maxFctEval;
+    }
+  }
+
+  public boolean isValid() {
+
+    if (!super.isValid()) {
+      return false;
+    }
+
+    String algorithmName = getAlgorithm();
+
+    if (algorithmName != null && !(MAXENT_QN_VALUE.equals(algorithmName))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public boolean isSortAndMerge() {
+    return true;
+  }
+
+  public AbstractModel doTrain(DataIndexer indexer) throws IOException {
+    if (!isValid()) {
+      throw new IllegalArgumentException("trainParams are not valid!");
+    }
+
+    AbstractModel model;
+
+    model = trainModel(indexer);
+
+    return model;
+  }
+
+  // << members related to AbstractEventTrainer
 
   public QNModel trainModel(DataIndexer indexer) {
     LogLikelihoodFunction objectiveFunction = generateFunction(indexer);

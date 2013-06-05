@@ -19,6 +19,11 @@
 
 package opennlp.tools.ml.perceptron;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+
+import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
@@ -32,8 +37,9 @@ import opennlp.tools.ml.model.MutableContext;
  * with the Perceptron Algorithm. Michael Collins, EMNLP 2002.
  *
  */
-public class PerceptronTrainer {
+public class PerceptronTrainer extends AbstractEventTrainer {
 
+  public static final String PERCEPTRON_VALUE = "PERCEPTRON";
   public static final double TOLERANCE_DEFAULT = .00001;
   
   /** Number of unique events which occurred in the event set. */
@@ -77,6 +83,73 @@ public class PerceptronTrainer {
   
   private boolean useSkippedlAveraging;
   
+  // >> members related to AbstractSequenceTrainer
+  public PerceptronTrainer(Map<String, String> trainParams,
+      Map<String, String> reportMap) {
+    super(trainParams, reportMap);
+  }
+
+  public PerceptronTrainer() {
+    super(Collections.<String, String> emptyMap(), Collections
+        .<String, String> emptyMap());
+  }
+
+  public boolean isValid() {
+
+    if (!super.isValid()) {
+      return false;
+    }
+
+    String algorithmName = getAlgorithm();
+
+    if (algorithmName != null && !(PERCEPTRON_VALUE.equals(algorithmName))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public boolean isSortAndMerge() {
+    return false;
+  }
+
+  public AbstractModel doTrain(DataIndexer indexer) throws IOException {
+    if (!isValid()) {
+      throw new IllegalArgumentException("trainParams are not valid!");
+    }
+
+    int iterations = getIterations();
+    int cutoff = getCutoff();
+
+    AbstractModel model;
+
+    boolean useAverage = getBooleanParam("UseAverage", true);
+
+    boolean useSkippedAveraging = getBooleanParam("UseSkippedAveraging", false);
+
+    // overwrite otherwise it might not work
+    if (useSkippedAveraging)
+      useAverage = true;
+
+    double stepSizeDecrease = getDoubleParam("StepSizeDecrease", 0);
+
+    double tolerance = getDoubleParam("Tolerance",
+        PerceptronTrainer.TOLERANCE_DEFAULT);
+
+    this.setSkippedAveraging(useSkippedAveraging);
+
+    if (stepSizeDecrease > 0)
+      this.setStepSizeDecrease(stepSizeDecrease);
+
+    this.setTolerance(tolerance);
+
+    model = this.trainModel(iterations, indexer, cutoff, useAverage);
+
+    return model;
+  }
+
+  // << members related to AbstractSequenceTrainer
+
   /**
    * Specifies the tolerance. If the change in training set accuracy
    * is less than this, stop iterating.

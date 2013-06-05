@@ -22,6 +22,8 @@ package opennlp.tools.ml.model;
 import java.io.IOException;
 import java.util.Map;
 
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
 import opennlp.tools.ml.perceptron.PerceptronTrainer;
 import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
@@ -61,38 +63,6 @@ public class TrainUtil {
     return valueString;
   }
   
-  private static int getIntParam(Map<String, String> trainParams, String key,
-      int defaultValue, Map<String, String> reportMap) {
-
-    String valueString = trainParams.get(key);
-
-    if (valueString != null)
-      return Integer.parseInt(valueString);
-    else
-      return defaultValue;
-  }
-  
-  private static double getDoubleParam(Map<String, String> trainParams, String key,
-      double defaultValue, Map<String, String> reportMap) {
-    
-    String valueString = trainParams.get(key);
-    
-    if (valueString != null)
-      return Double.parseDouble(valueString);
-    else
-      return defaultValue;
-  }
-  
-  private static boolean getBooleanParam(Map<String, String> trainParams, String key,
-      boolean defaultValue, Map<String, String> reportMap) {
-
-    String valueString = trainParams.get(key);
-
-    if (valueString != null)
-      return Boolean.parseBoolean(valueString);
-    else
-      return defaultValue;
-  }
   
   public static boolean isValid(Map<String, String> trainParams) {
 
@@ -146,81 +116,24 @@ public class TrainUtil {
     
     String algorithmName = getStringParam(trainParams, ALGORITHM_PARAM, MAXENT_VALUE, reportMap);
     
-    int iterations = getIntParam(trainParams, ITERATIONS_PARAM, ITERATIONS_DEFAULT, reportMap);
-        
-    int cutoff = getIntParam(trainParams, CUTOFF_PARAM, CUTOFF_DEFAULT, reportMap);
-
-    boolean sortAndMerge;
+    EventTrainer trainer;
+    if(PERCEPTRON_VALUE.equals(algorithmName)) {
+      
+      trainer = new PerceptronTrainer(trainParams, reportMap);
+      
+    } else if(MAXENT_VALUE.equals(algorithmName)) {
+      
+      trainer = new GIS(trainParams, reportMap);
+      
+    } else if(MAXENT_QN_VALUE.equals(algorithmName)) {
+      
+      trainer = new QNTrainer(trainParams, reportMap);
     
-    if (MAXENT_VALUE.equals(algorithmName) || MAXENT_QN_VALUE.equals(algorithmName))
-      sortAndMerge = true;
-    else if (PERCEPTRON_VALUE.equals(algorithmName))
-      sortAndMerge = false;
-    else
-      throw new IllegalStateException("Unexpected algorithm name: " + algorithmName);
-
-    HashSumEventStream hses = new HashSumEventStream(events);
-    
-    String dataIndexerName = getStringParam(trainParams, DATA_INDEXER_PARAM,
-        DATA_INDEXER_TWO_PASS_VALUE, reportMap);
-
-    DataIndexer indexer = null;
-    
-    if (DATA_INDEXER_ONE_PASS_VALUE.equals(dataIndexerName)) {
-      indexer = new OnePassDataIndexer(hses, cutoff, sortAndMerge);
-    }
-    else if (DATA_INDEXER_TWO_PASS_VALUE.equals(dataIndexerName)) {
-      indexer = new TwoPassDataIndexer(hses, cutoff, sortAndMerge);
-    }
-    else {
-      throw new IllegalStateException("Unexpected data indexer name: " +  dataIndexerName);
+    } else {
+      trainer = new GIS(trainParams, reportMap); // default to maxent?
     }
     
-    AbstractModel model;
-    if (MAXENT_VALUE.equals(algorithmName)) {
-      
-      int threads = getIntParam(trainParams, "Threads", 1, reportMap);
-      
-      model = opennlp.tools.ml.maxent.GIS.trainModel(iterations, indexer,
-          true, false, null, 0, threads);
-    }
-    else if (MAXENT_QN_VALUE.equals(algorithmName)) {
-      int m = getIntParam(trainParams, "numOfUpdates", QNTrainer.DEFAULT_M, reportMap);
-      int maxFctEval = getIntParam(trainParams, "maxFctEval", QNTrainer.DEFAULT_MAX_FCT_EVAL, reportMap);
-      model = new QNTrainer(m, maxFctEval, true).trainModel(indexer);
-    }
-    else if (PERCEPTRON_VALUE.equals(algorithmName)) {
-      boolean useAverage = getBooleanParam(trainParams, "UseAverage", true, reportMap);
-      
-      boolean useSkippedAveraging = getBooleanParam(trainParams, "UseSkippedAveraging", false, reportMap);
-      
-      // overwrite otherwise it might not work
-      if (useSkippedAveraging)
-        useAverage = true;
-      
-      double stepSizeDecrease = getDoubleParam(trainParams, "StepSizeDecrease", 0, reportMap);
-      
-      double tolerance = getDoubleParam(trainParams, "Tolerance", PerceptronTrainer.TOLERANCE_DEFAULT, reportMap);
-      
-      opennlp.tools.ml.perceptron.PerceptronTrainer perceptronTrainer = new opennlp.tools.ml.perceptron.PerceptronTrainer();
-      perceptronTrainer.setSkippedAveraging(useSkippedAveraging);
-      
-      if (stepSizeDecrease > 0)
-        perceptronTrainer.setStepSizeDecrease(stepSizeDecrease);
-      
-      perceptronTrainer.setTolerance(tolerance);
-      
-      model = perceptronTrainer.trainModel(
-          iterations, indexer, cutoff, useAverage);
-    }
-    else {
-      throw new IllegalStateException("Algorithm not supported: " + algorithmName);
-    }
-    
-    if (reportMap != null)
-        reportMap.put("Training-Eventhash", hses.calculateHashSum().toString(16));
-    
-    return model;
+    return trainer.train(events);
   }
   
   /**
@@ -234,18 +147,8 @@ public class TrainUtil {
   public static AbstractModel train(SequenceStream events, Map<String, String> trainParams,
       Map<String, String> reportMap) throws IOException {
     
-    if (!isValid(trainParams))
-      throw new IllegalArgumentException("trainParams are not valid!");
-  
-    if (!isSequenceTraining(trainParams))
-      throw new IllegalArgumentException("Algorithm must be a sequence algorithm!");
-    
-    int iterations = getIntParam(trainParams, ITERATIONS_PARAM, ITERATIONS_DEFAULT, reportMap);
-    int cutoff = getIntParam(trainParams, CUTOFF_PARAM, CUTOFF_DEFAULT, reportMap);
-    
-    boolean useAverage = getBooleanParam(trainParams, "UseAverage", true, reportMap);
-    
-    return new SimplePerceptronSequenceTrainer().trainModel(
-        iterations, events, cutoff,useAverage);
+    SimplePerceptronSequenceTrainer trainer = new SimplePerceptronSequenceTrainer(
+        trainParams, reportMap);
+    return trainer.train(events);
   }
 }

@@ -20,9 +20,11 @@
 package opennlp.tools.ml.perceptron;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.ml.AbstractSequenceTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
@@ -42,7 +44,9 @@ import opennlp.tools.ml.model.SequenceStreamEventStream;
  * Specifically only updates are applied to tokens which were incorrectly tagged by a sequence tagger
  * rather than to all feature across the sequence which differ from the training sequence.
  */
-public class SimplePerceptronSequenceTrainer {
+public class SimplePerceptronSequenceTrainer extends AbstractSequenceTrainer {
+
+  public static final String PERCEPTRON_SEQUENCE_VALUE = "PERCEPTRON_SEQUENCE";
 
   private boolean printMessages = true;
   private int iterations;
@@ -80,6 +84,48 @@ public class SimplePerceptronSequenceTrainer {
   private int[] allOutcomesPattern;
   private String[] predLabels;
   int numSequences;
+
+  // >> members related to AbstractSequenceTrainer
+  public SimplePerceptronSequenceTrainer(Map<String, String> trainParams,
+      Map<String, String> reportMap) {
+    super(trainParams, reportMap);
+  }
+
+  public SimplePerceptronSequenceTrainer() {
+    super(Collections.<String, String> emptyMap(), Collections
+        .<String, String> emptyMap());
+  }
+
+  public boolean isValid() {
+
+    if (!super.isValid()) {
+      return false;
+    }
+
+    String algorithmName = getAlgorithm();
+
+    if (algorithmName != null
+        && !(PERCEPTRON_SEQUENCE_VALUE.equals(algorithmName))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public AbstractModel train(SequenceStream events) throws IOException {
+    if (!isValid()) {
+      throw new IllegalArgumentException("trainParams are not valid!");
+    }
+
+    int iterations = getIterations();
+    int cutoff = getCutoff();
+
+    boolean useAverage = getBooleanParam("UseAverage", true);
+
+    return trainModel(iterations, events, cutoff, useAverage);
+  }
+
+  // << members related to AbstractSequenceTrainer
 
   public AbstractModel trainModel(int iterations, SequenceStream sequenceStream, int cutoff, boolean useAverage) throws IOException {
     this.iterations = iterations;
