@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.Map;
 
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.SequenceTrainer;
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
 import opennlp.tools.ml.perceptron.PerceptronTrainer;
@@ -37,32 +39,13 @@ public class TrainUtil {
   public static final String PERCEPTRON_VALUE = "PERCEPTRON";
   public static final String PERCEPTRON_SEQUENCE_VALUE = "PERCEPTRON_SEQUENCE";
   
-  
   public static final String CUTOFF_PARAM = "Cutoff";
-  private static final int CUTOFF_DEFAULT = 5;
   
   public static final String ITERATIONS_PARAM = "Iterations";
-  private static final int ITERATIONS_DEFAULT = 100;
   
   public static final String DATA_INDEXER_PARAM = "DataIndexer";
   public static final String DATA_INDEXER_ONE_PASS_VALUE = "OnePass";
   public static final String DATA_INDEXER_TWO_PASS_VALUE = "TwoPass";
-  
-  
-  private static String getStringParam(Map<String, String> trainParams, String key,
-      String defaultValue, Map<String, String> reportMap) {
-
-    String valueString = trainParams.get(key);
-
-    if (valueString == null)
-      valueString = defaultValue;
-    
-    if (reportMap != null)
-      reportMap.put(key, valueString);
-    
-    return valueString;
-  }
-  
   
   public static boolean isValid(Map<String, String> trainParams) {
 
@@ -108,30 +91,10 @@ public class TrainUtil {
   public static AbstractModel train(EventStream events, Map<String, String> trainParams, Map<String, String> reportMap) 
       throws IOException {
     
-    if (!isValid(trainParams))
-        throw new IllegalArgumentException("trainParams are not valid!");
-    
-    if(isSequenceTraining(trainParams))
-      throw new IllegalArgumentException("sequence training is not supported by this method!");
-    
-    String algorithmName = getStringParam(trainParams, ALGORITHM_PARAM, MAXENT_VALUE, reportMap);
-    
-    EventTrainer trainer;
-    if(PERCEPTRON_VALUE.equals(algorithmName)) {
-      
-      trainer = new PerceptronTrainer(trainParams, reportMap);
-      
-    } else if(MAXENT_VALUE.equals(algorithmName)) {
-      
-      trainer = new GIS(trainParams, reportMap);
-      
-    } else if(MAXENT_QN_VALUE.equals(algorithmName)) {
-      
-      trainer = new QNTrainer(trainParams, reportMap);
-    
-    } else {
-      trainer = new GIS(trainParams, reportMap); // default to maxent?
+    if(!TrainerFactory.isSupportEvent(trainParams)) {
+      throw new IllegalArgumentException("EventTrain is not supported");
     }
+    EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, reportMap);
     
     return trainer.train(events);
   }
@@ -147,8 +110,11 @@ public class TrainUtil {
   public static AbstractModel train(SequenceStream events, Map<String, String> trainParams,
       Map<String, String> reportMap) throws IOException {
     
-    SimplePerceptronSequenceTrainer trainer = new SimplePerceptronSequenceTrainer(
-        trainParams, reportMap);
+    if(!TrainerFactory.isSupportSequence(trainParams)) {
+      throw new IllegalArgumentException("EventTrain is not supported");
+    }
+    SequenceTrainer trainer = TrainerFactory.getSequenceTrainer(trainParams, reportMap);
+    
     return trainer.train(events);
   }
 }
