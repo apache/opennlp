@@ -130,10 +130,6 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   public AbstractModel doTrain(DataIndexer indexer) throws IOException {
-    if (!isValid()) {
-      throw new IllegalArgumentException("trainParams are not valid!");
-    }
-
     AbstractModel model;
 
     model = trainModel(indexer);

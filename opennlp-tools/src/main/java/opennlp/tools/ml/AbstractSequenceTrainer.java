@@ -17,7 +17,11 @@
 
 package opennlp.tools.ml;
 
+import java.io.IOException;
 import java.util.Map;
+
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.SequenceStream;
 
 public abstract class AbstractSequenceTrainer extends AbstractTrainer implements
     SequenceTrainer {
@@ -25,6 +29,21 @@ public abstract class AbstractSequenceTrainer extends AbstractTrainer implements
   public AbstractSequenceTrainer(Map<String, String> trainParams,
       Map<String, String> reportMap) {
     super(trainParams, reportMap);
+  }
+
+  public abstract AbstractModel doTrain(SequenceStream events)
+      throws IOException;
+
+  public final AbstractModel train(SequenceStream events) throws IOException {
+
+    if (!isValid()) {
+      throw new IllegalArgumentException("trainParams are not valid!");
+    }
+
+    AbstractModel model = doTrain(events);
+    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM,
+        SequenceTrainer.SEQUENCE_VALUE);
+    return model;
   }
 
 }

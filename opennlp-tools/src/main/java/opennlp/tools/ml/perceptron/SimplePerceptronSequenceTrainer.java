@@ -112,11 +112,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractSequenceTrainer {
     return true;
   }
 
-  public AbstractModel train(SequenceStream events) throws IOException {
-    if (!isValid()) {
-      throw new IllegalArgumentException("trainParams are not valid!");
-    }
-
+  public AbstractModel doTrain(SequenceStream events) throws IOException {
     int iterations = getIterations();
     int cutoff = getCutoff();
 
