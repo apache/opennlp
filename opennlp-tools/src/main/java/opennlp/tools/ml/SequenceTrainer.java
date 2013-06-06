@@ -24,6 +24,8 @@ import opennlp.tools.ml.model.SequenceStream;
 
 public interface SequenceTrainer {
 
+  public static final String SEQUENCE_VALUE = "Sequence";
+
   public AbstractModel train(SequenceStream events) throws IOException;
 
 }

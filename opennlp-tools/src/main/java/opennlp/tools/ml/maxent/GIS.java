@@ -82,10 +82,6 @@ public class GIS extends AbstractEventTrainer {
   }
 
   public AbstractModel doTrain(DataIndexer indexer) throws IOException {
-    if (!isValid()) {
-      throw new IllegalArgumentException("trainParams are not valid!");
-    }
-
     int iterations = getIterations();
 
     AbstractModel model;

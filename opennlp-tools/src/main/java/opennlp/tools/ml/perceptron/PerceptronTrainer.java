@@ -95,11 +95,6 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   }
 
   public boolean isValid() {
-
-    if (!super.isValid()) {
-      return false;
-    }
-
     String algorithmName = getAlgorithm();
 
     if (algorithmName != null && !(PERCEPTRON_VALUE.equals(algorithmName))) {

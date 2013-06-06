@@ -23,6 +23,8 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.EventStream;
 
 public interface EventTrainer {
+  
+  public static final String EVENT_VALUE = "Event";
 
   public AbstractModel train(EventStream events) throws IOException;
 

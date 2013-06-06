@@ -84,12 +84,18 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
   public abstract AbstractModel doTrain(DataIndexer indexer) throws IOException;
 
   public final AbstractModel train(EventStream events) throws IOException {
+    
+    if (!isValid()) {
+      throw new IllegalArgumentException("trainParams are not valid!");
+    }
+    
     HashSumEventStream hses = new HashSumEventStream(events);
     DataIndexer indexer = getDataIndexer(events);
 
     AbstractModel model = doTrain(indexer);
 
-    addToReport("Training-Eventhash", hses.calculateHashSum().toString(16));
+    addToReport("Training-Eventhash", hses.calculateHashSum().toString(16)); 
+    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE); 
     return model;
   }
 }
