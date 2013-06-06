@@ -27,12 +27,4 @@ public abstract class AbstractSequenceTrainer extends AbstractTrainer implements
     super(trainParams, reportMap);
   }
 
-  public boolean isSequenceTraining() {
-    return true;
-  }
-
-  public boolean isEventTraining() {
-    return false;
-  }
-
 }
