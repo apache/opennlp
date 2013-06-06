@@ -21,7 +21,7 @@ import java.util.Map;
 
 import opennlp.tools.ml.maxent.GIS;
 
-public abstract class AbstractTrainer implements Trainer {
+public abstract class AbstractTrainer {
 
   public static final String ALGORITHM_PARAM = "Algorithm";
 

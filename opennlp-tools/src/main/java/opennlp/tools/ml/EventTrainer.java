@@ -22,7 +22,7 @@ import java.io.IOException;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.EventStream;
 
-public interface EventTrainer extends Trainer {
+public interface EventTrainer {
 
   public AbstractModel train(EventStream events) throws IOException;
 
