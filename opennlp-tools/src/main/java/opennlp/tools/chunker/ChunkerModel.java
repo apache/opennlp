@@ -30,6 +30,7 @@ import java.util.Map;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.BinaryFileDataReader;
 import opennlp.tools.ml.model.GenericModelReader;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
@@ -50,11 +51,11 @@ public class ChunkerModel extends BaseModel {
    *             {@link #ChunkerModel(String, AbstractModel, Map, ChunkerFactory)}
    *             instead.
    */
-  public ChunkerModel(String languageCode, AbstractModel chunkerModel, Map<String, String> manifestInfoEntries) {
+  public ChunkerModel(String languageCode, MaxentModel chunkerModel, Map<String, String> manifestInfoEntries) {
     this(languageCode, chunkerModel, manifestInfoEntries, new ChunkerFactory());
   }
   
-  public ChunkerModel(String languageCode, AbstractModel chunkerModel,
+  public ChunkerModel(String languageCode, MaxentModel chunkerModel,
       Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
     artifactMap.put(CHUNKER_MODEL_ENTRY_NAME, chunkerModel);
@@ -66,11 +67,11 @@ public class ChunkerModel extends BaseModel {
    *             {@link #ChunkerModel(String, AbstractModel, ChunkerFactory)
    *             instead.}
    */
-  public ChunkerModel(String languageCode, AbstractModel chunkerModel) {
+  public ChunkerModel(String languageCode, MaxentModel chunkerModel) {
     this(languageCode, chunkerModel, null, new ChunkerFactory());
   }
 
-  public ChunkerModel(String languageCode, AbstractModel chunkerModel, ChunkerFactory factory) {
+  public ChunkerModel(String languageCode, MaxentModel chunkerModel, ChunkerFactory factory) {
     this(languageCode, chunkerModel, null, factory);
   }
   
@@ -95,8 +96,8 @@ public class ChunkerModel extends BaseModel {
     }
   }
 
-  public AbstractModel getChunkerModel() {
-    return (AbstractModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);
+  public MaxentModel getChunkerModel() {
+    return (MaxentModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);
   }
   
   @Override

@@ -29,6 +29,7 @@ import java.net.URL;
 import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
@@ -97,8 +98,8 @@ public class ParserModel extends BaseModel {
   
   private static final String PARSER_TYPE = "parser-type";
   
-  public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, 
-      AbstractModel attachModel, POSModel parserTagger,
+  public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel, 
+      MaxentModel attachModel, POSModel parserTagger,
       ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules,
       ParserType modelType, Map<String, String> manifestInfoEntries) {
 
@@ -132,8 +133,8 @@ public class ParserModel extends BaseModel {
     checkArtifactMap();
   }
 
-  public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, 
-      AbstractModel attachModel, POSModel parserTagger,
+  public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel, 
+      MaxentModel attachModel, POSModel parserTagger,
       ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules,
       ParserType modelType) {
     this (languageCode, buildModel, checkModel, attachModel, parserTagger,
@@ -176,16 +177,16 @@ public class ParserModel extends BaseModel {
     return ParserType.parse(getManifestProperty(PARSER_TYPE));
   }
   
-  public AbstractModel getBuildModel() {
-    return (AbstractModel) artifactMap.get(BUILD_MODEL_ENTRY_NAME);
+  public MaxentModel getBuildModel() {
+    return (MaxentModel) artifactMap.get(BUILD_MODEL_ENTRY_NAME);
   }
 
-  public AbstractModel getCheckModel() {
-    return (AbstractModel) artifactMap.get(CHECK_MODEL_ENTRY_NAME);
+  public MaxentModel getCheckModel() {
+    return (MaxentModel) artifactMap.get(CHECK_MODEL_ENTRY_NAME);
   }
 
-  public AbstractModel getAttachModel() {
-    return (AbstractModel) artifactMap.get(ATTACH_MODEL_ENTRY_NAME);
+  public MaxentModel getAttachModel() {
+    return (MaxentModel) artifactMap.get(ATTACH_MODEL_ENTRY_NAME);
   }
   
   public POSModel getParserTaggerModel() {
@@ -202,13 +203,13 @@ public class ParserModel extends BaseModel {
   }
 
   // TODO: Update model methods should make sure properties are copied correctly ...
-  public ParserModel updateBuildModel(AbstractModel buildModel) {
+  public ParserModel updateBuildModel(MaxentModel buildModel) {
     return new ParserModel(getLanguage(), buildModel, getCheckModel(), getAttachModel(), 
         getParserTaggerModel(), getParserChunkerModel(),
         getHeadRules(), getParserType());
   }
 
-  public ParserModel updateCheckModel(AbstractModel checkModel) {
+  public ParserModel updateCheckModel(MaxentModel checkModel) {
     return new ParserModel(getLanguage(), getBuildModel(), checkModel,
         getAttachModel(), getParserTaggerModel(),
         getParserChunkerModel(), getHeadRules(), getParserType());

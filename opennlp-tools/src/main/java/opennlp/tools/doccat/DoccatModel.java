@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 
@@ -32,7 +33,7 @@ public class DoccatModel extends BaseModel {
   private static final String COMPONENT_NAME = "DocumentCategorizerME";
   private static final String DOCCAT_MODEL_ENTRY_NAME = "doccat.model";
   
-  protected DoccatModel(String languageCode, AbstractModel doccatModel,
+  protected DoccatModel(String languageCode, MaxentModel doccatModel,
       Map<String, String> manifestInfoEntries) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
     
@@ -40,7 +41,7 @@ public class DoccatModel extends BaseModel {
     checkArtifactMap();
   }
   
-  public DoccatModel(String languageCode, AbstractModel doccatModel) {
+  public DoccatModel(String languageCode, MaxentModel doccatModel) {
     this(languageCode, doccatModel, null);
   }
   
@@ -65,7 +66,7 @@ public class DoccatModel extends BaseModel {
     }
   }
 
-  public AbstractModel getChunkerModel() {
-    return (AbstractModel) artifactMap.get(DOCCAT_MODEL_ENTRY_NAME);
+  public MaxentModel getChunkerModel() {
+    return (MaxentModel) artifactMap.get(DOCCAT_MODEL_ENTRY_NAME);
   }
 }
