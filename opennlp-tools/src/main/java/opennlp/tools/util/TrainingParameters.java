@@ -25,9 +25,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import opennlp.tools.ml.EventTrainer;
+
 public class TrainingParameters {
   
+  // TODO: are them duplicated?
   public static final String ALGORITHM_PARAM = "Algorithm";
+  public static final String TRAINER_TYPE_PARAM = "TrainerType";
   
   public static final String ITERATIONS_PARAM = "Iterations";
   public static final String CUTOFF_PARAM = "Cutoff";
@@ -144,6 +148,7 @@ public class TrainingParameters {
   public static final TrainingParameters defaultParams() {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(5));
 
