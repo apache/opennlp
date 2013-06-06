@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
@@ -52,7 +53,7 @@ public class POSTaggerME implements POSTagger {
   /**
    * The maximum entropy model to use to evaluate contexts.
    */
-  protected AbstractModel posModel;
+  protected MaxentModel posModel;
 
   /**
    * The feature context generator.

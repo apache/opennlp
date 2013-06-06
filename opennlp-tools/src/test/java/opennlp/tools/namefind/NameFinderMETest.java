@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.util.Collections;
 
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -262,7 +263,7 @@ public class NameFinderMETest {
   }
 
   private boolean hasOtherAsOutcome(TokenNameFinderModel nameFinderModel) {
-	  AbstractModel model = nameFinderModel.getNameFinderModel();
+	  MaxentModel model = nameFinderModel.getNameFinderModel();
 	  for (int i = 0; i < model.getNumOutcomes(); i++) {
 	      String outcome = model.getOutcome(i);
 	      if (outcome.equals(NameFinderME.OTHER)) {

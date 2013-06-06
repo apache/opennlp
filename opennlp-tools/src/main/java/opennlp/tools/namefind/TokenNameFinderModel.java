@@ -72,7 +72,7 @@ public class TokenNameFinderModel extends BaseModel {
  
   private static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
  
-  public TokenNameFinderModel(String languageCode, AbstractModel nameFinderModel,
+  public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
@@ -101,7 +101,7 @@ public class TokenNameFinderModel extends BaseModel {
     checkArtifactMap();
   }
 
-  public TokenNameFinderModel(String languageCode, AbstractModel nameFinderModel,
+  public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
       Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     this(languageCode, nameFinderModel, null, resources, manifestInfoEntries);
   }
@@ -124,8 +124,8 @@ public class TokenNameFinderModel extends BaseModel {
    *
    * @return the classification model
    */
-  public AbstractModel getNameFinderModel() {
-    return (AbstractModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
+  public MaxentModel getNameFinderModel() {
+    return (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
   }
 
   /**
@@ -178,7 +178,7 @@ public class TokenNameFinderModel extends BaseModel {
   
   public TokenNameFinderModel updateFeatureGenerator(byte descriptor[]) {
         
-    TokenNameFinderModel model = new TokenNameFinderModel(getLanguage(), getNameFinderModel(),
+    TokenNameFinderModel model = new TokenNameFinderModel(getLanguage(), (AbstractModel) getNameFinderModel(),
         descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap());
     
     // TODO: Not so nice!

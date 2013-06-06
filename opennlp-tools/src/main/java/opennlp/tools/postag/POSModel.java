@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
@@ -48,7 +49,7 @@ public final class POSModel extends BaseModel {
    *             {@link #POSModel(String, AbstractModel, Map, POSTaggerFactory)}
    *             instead.
    */
-  public POSModel(String languageCode, AbstractModel posModel,
+  public POSModel(String languageCode, MaxentModel posModel,
       POSDictionary tagDictionary, Dictionary ngramDict, Map<String, String> manifestInfoEntries) {
 
     this(languageCode, posModel, manifestInfoEntries, new POSTaggerFactory(
@@ -60,13 +61,13 @@ public final class POSModel extends BaseModel {
    *             {@link #POSModel(String, AbstractModel, Map, POSTaggerFactory)}
    *             instead.
    */
-  public POSModel(String languageCode, AbstractModel posModel,
+  public POSModel(String languageCode, MaxentModel posModel,
       POSDictionary tagDictionary, Dictionary ngramDict) {
     this(languageCode, posModel, null, new POSTaggerFactory(ngramDict,
         tagDictionary));
   }
   
-  public POSModel(String languageCode, AbstractModel posModel,
+  public POSModel(String languageCode, MaxentModel posModel,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, posFactory);
@@ -112,8 +113,8 @@ public final class POSModel extends BaseModel {
     }
   }
 
-  public AbstractModel getPosModel() {
-    return (AbstractModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
+  public MaxentModel getPosModel() {
+    return (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
   }
 
   /**

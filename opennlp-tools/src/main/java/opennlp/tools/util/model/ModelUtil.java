@@ -54,7 +54,7 @@ public final class ModelUtil {
    * @throws IOException
    * @throws {@link IllegalArgumentException} in case one of the parameters is null
    */
-  public static void writeModel(AbstractModel model, final OutputStream out) throws IOException {
+  public static void writeModel(MaxentModel model, final OutputStream out) throws IOException {
     
     if (model == null)
       throw new IllegalArgumentException("model parameter must not be null!");
@@ -62,7 +62,7 @@ public final class ModelUtil {
     if (out == null)
       throw new IllegalArgumentException("out parameter must not be null!");
     
-    GenericModelWriter modelWriter = new GenericModelWriter(model, new DataOutputStream(new OutputStream() {
+    GenericModelWriter modelWriter = new GenericModelWriter((AbstractModel) model, new DataOutputStream(new OutputStream() {
       @Override
       public void write(int b) throws IOException {
         out.write(b);

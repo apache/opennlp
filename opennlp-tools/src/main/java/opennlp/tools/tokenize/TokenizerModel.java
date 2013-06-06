@@ -165,8 +165,8 @@ public final class TokenizerModel extends BaseModel {
     return TokenizerFactory.class;
   }
 
-  public AbstractModel getMaxentModel() {
-    return (AbstractModel) artifactMap.get(TOKENIZER_MODEL_ENTRY);
+  public MaxentModel getMaxentModel() {
+    return (MaxentModel) artifactMap.get(TOKENIZER_MODEL_ENTRY);
   }
   
   public Dictionary getAbbreviations() {

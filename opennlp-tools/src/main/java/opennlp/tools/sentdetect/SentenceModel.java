@@ -29,6 +29,7 @@ import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.GenericModelReader;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
@@ -47,7 +48,7 @@ public class SentenceModel extends BaseModel {
   
   private static final String MAXENT_MODEL_ENTRY_NAME = "sent.model";
 
-  public SentenceModel(String languageCode, AbstractModel sentModel,
+  public SentenceModel(String languageCode, MaxentModel sentModel,
       Map<String, String> manifestInfoEntries, SentenceDetectorFactory sdFactory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, sdFactory);
     artifactMap.put(MAXENT_MODEL_ENTRY_NAME, sentModel);
@@ -60,7 +61,7 @@ public class SentenceModel extends BaseModel {
    *             {@link #SentenceModel(String, AbstractModel, Map, SentenceDetectorFactory)}
    *             instead and pass in a {@link SentenceDetectorFactory}
    */
-  public SentenceModel(String languageCode, AbstractModel sentModel,
+  public SentenceModel(String languageCode, MaxentModel sentModel,
       boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters, Map<String, String> manifestInfoEntries) {
     this(languageCode, sentModel, manifestInfoEntries,
         new SentenceDetectorFactory(languageCode, useTokenEnd, abbreviations,
@@ -74,19 +75,19 @@ public class SentenceModel extends BaseModel {
    *             {@link #SentenceModel(String, AbstractModel, Map, SentenceDetectorFactory)}
    *             instead and pass in a {@link SentenceDetectorFactory}
    */
-  public SentenceModel(String languageCode, AbstractModel sentModel,
+  public SentenceModel(String languageCode, MaxentModel sentModel,
       boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters) {
     this(languageCode, sentModel, useTokenEnd, abbreviations, eosCharacters,
         null);
   }
   
-  public SentenceModel(String languageCode, AbstractModel sentModel,
+  public SentenceModel(String languageCode, MaxentModel sentModel,
       boolean useTokenEnd, Dictionary abbreviations, Map<String, String> manifestInfoEntries) {
     this(languageCode, sentModel, useTokenEnd, abbreviations, null,
         manifestInfoEntries);
   }
 
-  public SentenceModel(String languageCode, AbstractModel sentModel,
+  public SentenceModel(String languageCode, MaxentModel sentModel,
       boolean useTokenEnd, Dictionary abbreviations) {
     this (languageCode, sentModel, useTokenEnd, abbreviations, null, null);
   }
@@ -128,8 +129,8 @@ public class SentenceModel extends BaseModel {
     return SentenceDetectorFactory.class;
   }
 
-  public AbstractModel getMaxentModel() {
-    return (AbstractModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
+  public MaxentModel getMaxentModel() {
+    return (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
   }
 
   public Dictionary getAbbreviations() {
