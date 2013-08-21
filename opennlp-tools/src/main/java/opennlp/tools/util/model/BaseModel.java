@@ -406,8 +406,11 @@ public abstract class BaseModel implements ArtifactProvider {
         // Major and minor version must match, revision might be 
         if (Version.currentVersion().getMajor() != version.getMajor() ||
             Version.currentVersion().getMinor() != version.getMinor()) {
+          //this check allows for the use of models one minor release behind current minor release
+          if(Version.currentVersion().getMajor() == version.getMajor() && (Version.currentVersion().getMinor()-1) != version.getMinor()){
           throw new InvalidFormatException("Model version " + version + " is not supported by this (" 
               + Version.currentVersion() +") version of OpenNLP!");
+          }
         }
         
         // Reject loading a snapshot model with a non-snapshot version
