@@ -34,7 +34,7 @@ under the License.
 			of pre-trained name finder models which are trained on various freely available corpora.
 			They can be downloaded at our model download page. To find names in raw text the text
 			must be segmented into tokens and sentences. A detailed description is given in the
-			sentence detector and tokenizer tutorial. Its important that the tokenization for
+			sentence detector and tokenizer tutorial. It is important that the tokenization for
 			the training data and the input text is identical.
 		</para>
 	
@@ -74,10 +74,10 @@ Mr . <START:person> Vinken <END> is chairman of Elsevier N.V. , the Dutch publis
 		<section id="tools.namefind.recognition.api">
 		<title>Name Finder API</title>
 		<para>
-			To use the Name Finder in a production system its strongly recommended to embed it
+			To use the Name Finder in a production system it is strongly recommended to embed it
 			directly into the application instead of using the command line interface.
 			First the name finder model must be loaded into memory from disk or an other source.
-			In the sample below its loaded from disk.
+			In the sample below it is loaded from disk.
 			<programlisting language="java">
 				<![CDATA[
 InputStream modelIn = new FileInputStream("en-ner-person.bin");
@@ -158,7 +158,7 @@ Span nameSpans[] = nameFinder.find(sentence);]]>
 			The nameSpans arrays contains now exactly one Span which marks the name Pierre Vinken. 
 			The elements between the begin and end offsets are the name tokens. In this case the begin 
 			offset is 0 and the end offset is 2. The Span object also knows the type of the entity.
-			In this case its person (defined by the model). It can be retrieved with a call to Span.getType().
+			In this case it is person (defined by the model). It can be retrieved with a call to Span.getType().
 			Additionally to the statistical Name Finder, OpenNLP also offers a dictionary and a regular
 			expression name finder implementation.
 		</para>
@@ -188,7 +188,7 @@ Span nameSpans[] = nameFinder.find(sentence);]]>
 			The sentence must be tokenized and contain spans which mark the entities. Documents are separated by
 			empty lines which trigger the reset of the adaptive feature generators. A training file can contain
 			multiple types. If the training file contains multiple types the created model will also be able to
-			detect these multiple types. For now its recommended to only train single type models, since multi
+			detect these multiple types. For now it is recommended to only train single type models, since multi
 			type support is still experimental.
 		</para>
 		<para>
@@ -230,21 +230,21 @@ Arguments description:
         -encoding charsetName
                 encoding for reading and writing text, if absent the system default is used.]]>
 			 </screen>
-			 Its now assumed that the english person name finder model should be trained from a file
+			 It is now assumed that the english person name finder model should be trained from a file
 			 called en-ner-person.train which is encoded as UTF-8. The following command will train
 			 the name finder and write the model to en-ner-person.bin:
 			 <screen>
 				<![CDATA[
 $ opennlp TokenNameFinderTrainer -model en-ner-person.bin -lang en -data en-ner-person.train -encoding UTF-8]]>
 			 </screen>
-			 Additionally its possible to specify the number of iterations,
+			 Additionally it is possible to specify the number of iterations,
 			 the cutoff and to overwrite all types in the training data with a single type.
 		</para>
 		</section>
 		<section id="tools.namefind.training.api">
 		<title>Training API</title>
 		<para>
-			To train the name finder from within an application its recommended to use the training
+			To train the name finder from within an application it is recommended to use the training
 			API instead of the command line tool.
 			Basically three steps are necessary to train it:
 			<itemizedlist>
@@ -510,7 +510,7 @@ System.out.println(result.toString());]]>
 		<title>Named Entity Annotation Guidelines</title>
 		<para>
 			Annotation guidelines define what should be labeled as an entity. To build
-			a private corpus its important to know these guidelines and maybe write a
+			a private corpus it is important to know these guidelines and maybe write a
 			custom one.
 			Here is a list of publicly available annotation guidelines:
 				<itemizedlist>
