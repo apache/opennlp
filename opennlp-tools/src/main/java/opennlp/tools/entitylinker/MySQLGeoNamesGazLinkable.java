@@ -1,21 +1,9 @@
-/*
- * Copyright 2013 The Apache Software Foundation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package opennlp.tools.entitylinker;
 
+/**
+ *
+ * @author Owner
+ */
 import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -28,10 +16,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import opennlp.tools.entitylinker.EntityLinkerProperties;
 import opennlp.tools.entitylinker.domain.BaseLink;
 import opennlp.tools.util.Span;
 
+/**
+ *
+ *
+ */
 public final class MySQLGeoNamesGazLinkable {
 
   private Connection con;
@@ -70,7 +61,7 @@ public final class MySQLGeoNamesGazLinkable {
     String driver = property.getProperty("mysql.driver", "org.gjt.mm.mysql.Driver");
     String url = property.getProperty("mysql.url", "jdbc:mysql://localhost:3306/world");
     String username = property.getProperty("mysql.username", "root");
-    String password = property.getProperty("mysql.password", "559447");
+    String password = property.getProperty("mysql.password", "?");
 
     Class.forName(driver);
     Connection conn = DriverManager.getConnection(url, username, password);
@@ -129,10 +120,10 @@ public final class MySQLGeoNamesGazLinkable {
 
         if (filterCountryContext) {
           if (countryCodes.contains(s.getCC1().toLowerCase())) {
-            System.out.println("qualified on: " + s.getCC1());
+          //  System.out.println(searchString +" GeoNames qualified on: " + s.getCC1());
             s.setRank(s.getRank() + 1.0);
           } else {
-             System.out.println(s.getFULL_NAME_ND_RO() + ", with CC1 of "+ s.getCC1()+ ", is not within countries discovered in the document. The Country list used to discover countries can be modified in mysql procedure getCountryList()");
+         //    System.out.println(s.getFULL_NAME_ND_RO() + ", with CC1 of "+ s.getCC1()+ ", is not within countries discovered in the document. The Country list used to discover countries can be modified in mysql procedure getCountryList()");
             continue;
           }
         }

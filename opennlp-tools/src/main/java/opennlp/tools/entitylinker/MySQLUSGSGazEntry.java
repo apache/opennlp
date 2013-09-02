@@ -17,7 +17,12 @@ package opennlp.tools.entitylinker;
 
 import opennlp.tools.entitylinker.domain.BaseLink;
 
-public class MySQLUSGSGazEntry extends BaseLink {
+/**
+ *
+
+ */
+public class MySQLUSGSGazEntry extends BaseLink
+{
 
   private double rank;
   private String featureid;
@@ -28,76 +33,89 @@ public class MySQLUSGSGazEntry extends BaseLink {
   private double primarylongitudeDEC;
   private String mapname;
 
-  public double getRank() {
+  public double getRank()
+  {
     return rank;
   }
 
-  public void setRank(double rank) {
+  public void setRank(double rank)
+  {
     this.rank = rank;
   }
 
-  public String getFeatureid() {
+  public String getFeatureid()
+  {
     return featureid;
   }
 
-  public void setFeatureid(String featureid) {
+  public void setFeatureid(String featureid)
+  {
     this.featureid = featureid;
   }
 
-  public String getFeaturename() {
+  public String getFeaturename()
+  {
     return featurename;
   }
 
-  public void setFeaturename(String featurename) {
+  public void setFeaturename(String featurename)
+  {
     this.featurename = featurename;
   }
 
-  public String getFeatureclass() {
+  public String getFeatureclass()
+  {
     return featureclass;
   }
 
-  public void setFeatureclass(String featureclass) {
+  public void setFeatureclass(String featureclass)
+  {
     this.featureclass = featureclass;
   }
 
-  public String getStatealpha() {
+  public String getStatealpha()
+  {
     return statealpha;
   }
 
-  public void setStatealpha(String statealpha) {
+  public void setStatealpha(String statealpha)
+  {
     this.statealpha = statealpha;
   }
 
-  public double getPrimarylatitudeDEC() {
+  public double getPrimarylatitudeDEC()
+  {
     return primarylatitudeDEC;
   }
 
-  public void setPrimarylatitudeDEC(double primarylatitudeDEC) {
+  public void setPrimarylatitudeDEC(double primarylatitudeDEC)
+  {
     this.primarylatitudeDEC = primarylatitudeDEC;
   }
 
-  public double getPrimarylongitudeDEC() {
+  public double getPrimarylongitudeDEC()
+  {
     return primarylongitudeDEC;
   }
 
-  public void setPrimarylongitudeDEC(double primarylongitudeDEC) {
+  public void setPrimarylongitudeDEC(double primarylongitudeDEC)
+  {
     this.primarylongitudeDEC = primarylongitudeDEC;
   }
 
-  public String getMapname() {
+  public String getMapname()
+  {
     return mapname;
   }
 
-  public void setMapname(String mapname) {
+  public void setMapname(String mapname)
+  {
     this.mapname = mapname;
   }
 
   @Override
   public String toString() {
-    return "MySQLUSGSGazEntry{" + "rank=" + rank + ", featureid=" + featureid
-        + ", featurename=" + featurename + ", featureclass=" + featureclass
-        + ", statealpha=" + statealpha + ", primarylatitudeDEC="
-        + primarylatitudeDEC + ", primarylongitudeDEC=" + primarylongitudeDEC
-        + ", mapname=" + mapname + "}\n\n";
+    return "MySQLUSGSGazEntry{" + "rank=" + rank + ", featureid=" + featureid + ", featurename=" + featurename + ", featureclass=" + featureclass + ", statealpha=" + statealpha + ", primarylatitudeDEC=" + primarylatitudeDEC + ", primarylongitudeDEC=" + primarylongitudeDEC + ", mapname=" + mapname + "}\n\n";
   }
+  
 }

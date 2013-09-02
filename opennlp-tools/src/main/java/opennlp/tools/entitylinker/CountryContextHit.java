@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.entitylinker;
 
 /**
- *
+ *Stores a "hit" on a country and the start and end of the hit
 
  */
 public class CountryContextHit {

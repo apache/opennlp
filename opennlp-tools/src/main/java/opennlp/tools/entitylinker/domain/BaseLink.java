@@ -18,6 +18,8 @@ package opennlp.tools.entitylinker.domain;
 
 /**
  * Stores a minimal tuple of information. Intended to be used with LinkedSpan
+ *
+
  */
 public abstract class BaseLink {
 
@@ -90,6 +92,8 @@ public abstract class BaseLink {
   public void setItemType(String itemType) {
     this.itemType = itemType;
   }
+
+
 
   @Override
   public String toString() {

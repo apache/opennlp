@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.entitylinker;
 
 import java.sql.CallableStatement;
@@ -25,8 +24,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import opennlp.tools.entitylinker.EntityLinkerProperties;
 
+/**
+ *Finds instances of country mentions in a String, typically a document text.
+ * Used to boost or degrade scoring of linked geo entities
+
+ */
 public class CountryContext {
 
   private Connection con;
@@ -47,7 +50,7 @@ public class CountryContext {
       for (CountryContextEntry entry : countrydata) {
 
         if (docText.contains(entry.getFull_name_nd_ro())) {
-          System.out.println("hit on " + entry.getFull_name_nd_ro());
+          System.out.println("\tFound Country indicator: " + entry.getFull_name_nd_ro());
           CountryContextHit hit = new CountryContextHit(entry.getCc1(), docText.indexOf(entry.getFull_name_nd_ro()), docText.indexOf(entry.getFull_name_nd_ro()+ entry.getFull_name_nd_ro().length()));
           hits.add(hit);
         }

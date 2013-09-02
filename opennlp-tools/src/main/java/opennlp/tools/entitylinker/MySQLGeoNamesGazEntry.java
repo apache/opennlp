@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.entitylinker;
 
 import opennlp.tools.entitylinker.domain.BaseLink;
 
+/**
+ *
+
+ */
 public class MySQLGeoNamesGazEntry extends BaseLink
 {
   ////actual fields returned

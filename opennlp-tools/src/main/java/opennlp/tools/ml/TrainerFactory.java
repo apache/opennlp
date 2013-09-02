@@ -18,8 +18,10 @@
 package opennlp.tools.ml;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.ml.maxent.GIS;
@@ -131,6 +133,7 @@ public class TrainerFactory {
         throw new IllegalArgumentException(msg, e);
       }
     }
+    
     return theTrainer;
   }
 }

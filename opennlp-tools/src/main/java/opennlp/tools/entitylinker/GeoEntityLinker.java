@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.entitylinker;
 
 import java.io.File;
@@ -22,28 +21,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import opennlp.tools.entitylinker.EntityLinker;
-import opennlp.tools.entitylinker.EntityLinkerProperties;
 import opennlp.tools.entitylinker.domain.BaseLink;
 import opennlp.tools.entitylinker.domain.LinkedSpan;
 import opennlp.tools.util.Span;
 
 /**
  * Links location entities to gazatteers.
+ *
+ *
  */
 public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
 
-  MySQLGeoNamesGazLinkable geoNamesGaz;// = new MySQLGeoNamesGazLinkable();
-  MySQLUSGSGazLinkable usgsGaz;//= new MySQLUSGSGazLinkable();
-  CountryContext countryContext;
-  List<CountryContextHit> hits;
-  EntityLinkerProperties props;
+  private MySQLGeoNamesGazLinkable geoNamesGaz;// = new MySQLGeoNamesGazLinkable();
+  private MySQLUSGSGazLinkable usgsGaz;//= new MySQLUSGSGazLinkable();
+  private CountryContext countryContext;
+  private List<CountryContextHit> hits;
+  private EntityLinkerProperties props;
 
   public GeoEntityLinker() {
     if (geoNamesGaz == null || usgsGaz == null) {
       geoNamesGaz = new MySQLGeoNamesGazLinkable();
       usgsGaz = new MySQLUSGSGazLinkable();
       countryContext = new CountryContext();
+
     }
   }
 
@@ -54,15 +54,18 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
         props = new EntityLinkerProperties(new File("C:\\temp\\opennlpmodels\\entitylinker.properties"));
       }
       if (hits == null) {
+        System.out.println("getting country context");
         hits = countryContext.find(text, props);
       }
-     
+
       String[] matches = Span.spansToStrings(names, tokens);
       for (int i = 0; i < matches.length; i++) {
+        System.out.println("processing match " + i + " of " + matches.length);
         ArrayList<BaseLink> geoNamesEntries = geoNamesGaz.find(matches[i], names[i], hits, props);
         ArrayList<BaseLink> usgsEntries = usgsGaz.find(matches[i], names[i], hits, props);
-        LinkedSpan<BaseLink> geoSpans = new LinkedSpan<BaseLink>(geoNamesEntries, names[i], 0);
+        LinkedSpan<BaseLink> geoSpans = new LinkedSpan<BaseLink>(geoNamesEntries, names[i].getStart(), names[i].getEnd());
         geoSpans.getLinkedEntries().addAll(usgsEntries);
+        geoSpans.setSearchTerm(matches[i]);
         spans.add(geoSpans);
       }
       return spans;
@@ -93,6 +96,7 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
         ArrayList<BaseLink> usgsEntries = usgsGaz.find(matches[i], names[i], hits, props);
         LinkedSpan<BaseLink> geoSpans = new LinkedSpan<BaseLink>(geoNamesEntries, names[i], 0);
         geoSpans.getLinkedEntries().addAll(usgsEntries);
+        geoSpans.setSearchTerm(matches[i]);
         spans.add(geoSpans);
       }
       return spans;
@@ -110,7 +114,7 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
         props = new EntityLinkerProperties(new File("C:\\temp\\opennlpmodels\\entitylinker.properties"));
       }
       List<CountryContextHit> hits = countryContext.find(text, props);
-  
+
       Span s = sentences[sentenceIndex];
       String sentence = text.substring(s.getStart(), s.getEnd());
 
@@ -123,6 +127,8 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
         ArrayList<BaseLink> usgsEntries = usgsGaz.find(matches[i], names[i], hits, props);
         LinkedSpan<BaseLink> geoSpans = new LinkedSpan<BaseLink>(geoNamesEntries, names[i], 0);
         geoSpans.getLinkedEntries().addAll(usgsEntries);
+        geoSpans.setSearchTerm(matches[i]);
+        geoSpans.setSentenceid(sentenceIndex);
         spans.add(geoSpans);
       }
 
@@ -130,5 +136,9 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
       Logger.getLogger(GeoEntityLinker.class.getName()).log(Level.SEVERE, null, ex);
     }
     return spans;
+  }
+
+  public void setEntityLinkerProperties(EntityLinkerProperties properties) {
+    this.props = properties;
   }
 }
