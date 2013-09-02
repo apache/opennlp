@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.entitylinker;
 
 import java.sql.CallableStatement;
@@ -27,10 +26,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import opennlp.tools.entitylinker.EntityLinkerProperties;
 import opennlp.tools.entitylinker.domain.BaseLink;
 import opennlp.tools.util.Span;
 
+/**
+ *
+ * @author opennlp
+ */
 public class MySQLUSGSGazLinkable {
 
   private Connection con;
@@ -67,7 +69,7 @@ public class MySQLUSGSGazLinkable {
     String driver = properties.getProperty("mysql.driver", "org.gjt.mm.mysql.Driver");
     String url = properties.getProperty("mysql.url", "jdbc:mysql://127.0.0.1:3306/world");
     String username = properties.getProperty("mysql.username", "root");
-    String password = properties.getProperty("mysql.password", "559447");
+    String password = properties.getProperty("mysql.password", "?");
 
     Class.forName(driver);
     Connection conn = DriverManager.getConnection(url, username, password);
@@ -103,8 +105,13 @@ public class MySQLUSGSGazLinkable {
         s.setPrimarylongitudeDEC(rs.getDouble(7));
         s.setMapname(rs.getString(8));
         if (countryCodes.contains("us")) {
-          s.setRank(s.getRank() + 1.0);
-          System.out.println("qualified on: US");
+          s.setRank(s.getRank() + (s.getRank() * .5));
+         // System.out.println(searchString +"USGS qualified on: " + s.getFeaturename());
+        } else {
+          s.setRank(s.getRank() * .5);
+          if(filterCountryContext){
+            continue;
+          }
         }
         retUrls.add(s);
       }

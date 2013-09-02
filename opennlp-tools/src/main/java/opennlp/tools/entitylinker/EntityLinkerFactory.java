@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.entitylinker;
 
 import java.io.IOException;
@@ -21,11 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import opennlp.tools.entitylinker.GeoEntityLinker;
 
 /**
- * Generates Lists of EntityLinker implementations via
- * properties file configuration
+ * Generates Lists of EntityLinker implementations via properties file
+ * configuration
  *
  */
 public class EntityLinkerFactory {
@@ -35,29 +33,35 @@ public class EntityLinkerFactory {
    * consists of a comma separated list of full class names. The entityType is
    * used to build the key to the properties entry. the entityType will be
    * prefixed with "linker." Therefore, a compliant property entry for location
-   * entity linker types would be:
-   * linker.<yourtype>=<yourclass1,yourclass2>
-   * For example:
+   * entity linker types would be: linker.<yourtype>=<yourclass1,yourclass2> For
+   * example:
    * linker.location=opennlp.tools.entitylinker.GeoEntityLinker,opennlp.tools.entitylinker.GeoEntityLinker2
    *
    *
    * @param entityType the type of entity, the same as what would be returned
    *                   from span.getType()
-   * @param properties the entitylinker properties that contain the configured entitylinkers
-   * @return  
-  
+   * @param properties the entitylinker properties that contain the configured
+   *                   entitylinkers
+   * @return *
    */
   public static synchronized List<EntityLinker> getLinkers(String entityType, EntityLinkerProperties properties) {
     List<EntityLinker> linkers = new ArrayList<EntityLinker>();
     try {
-      String listoflinkers = properties.getProperty("linker." + entityType, GeoEntityLinker.class.getName());    
+      String listoflinkers = properties.getProperty("linker." + entityType, GeoEntityLinker.class.getName());
       for (String classname : listoflinkers.split(",")) {
         Class theClass = Class.forName(classname);
         EntityLinker linker = (EntityLinker) theClass.newInstance();
         System.out.println("EntityLinker factory instantiated: " + linker.getClass().getName());
+        linker.setEntityLinkerProperties(properties);
         linkers.add(linker);
       }
-    } catch (Exception ex) {
+    } catch (InstantiationException ex) {
+      Logger.getLogger(EntityLinkerFactory.class.getName()).log(Level.SEVERE, null, ex);
+    } catch (IllegalAccessException ex) {
+      Logger.getLogger(EntityLinkerFactory.class.getName()).log(Level.SEVERE, null, ex);
+    } catch (ClassNotFoundException ex) {
+      Logger.getLogger(EntityLinkerFactory.class.getName()).log(Level.SEVERE, null, ex);
+    } catch (IOException ex) {
       Logger.getLogger(EntityLinkerFactory.class.getName()).log(Level.SEVERE, null, ex);
     }
     return linkers;
@@ -65,8 +69,10 @@ public class EntityLinkerFactory {
 
   /**
    *
-   * @param entityTypes the types of entities, i.e person, location, organization
-     * @param properties the entitylinker properties that contain the configured entitylinkers
+   * @param entityTypes the types of entities, i.e person, location,
+   *                    organization
+   * @param properties  the entitylinker properties that contain the configured
+   *                    entitylinkers
    * @return
    */
   public static synchronized List<EntityLinker> getLinkers(String[] entityTypes, EntityLinkerProperties properties) {
@@ -74,14 +80,21 @@ public class EntityLinkerFactory {
 
     for (String entityType : entityTypes) {
       try {
-        String listoflinkers = properties.getProperty("linker." + entityType, GeoEntityLinker.class.getName());   
+        String listoflinkers = properties.getProperty("linker." + entityType, GeoEntityLinker.class.getName());
         for (String classname : listoflinkers.split(",")) {
           Class theClass = Class.forName(classname);
           EntityLinker linker = (EntityLinker) theClass.newInstance();
           System.out.println("EntityLinker factory instantiated: " + linker.getClass().getName());
+          linker.setEntityLinkerProperties(properties);
           linkers.add(linker);
         }
-      }  catch (Exception ex) {
+      } catch (InstantiationException ex) {
+        Logger.getLogger(EntityLinkerFactory.class.getName()).log(Level.SEVERE, null, ex);
+      } catch (IllegalAccessException ex) {
+        Logger.getLogger(EntityLinkerFactory.class.getName()).log(Level.SEVERE, null, ex);
+      } catch (ClassNotFoundException ex) {
+        Logger.getLogger(EntityLinkerFactory.class.getName()).log(Level.SEVERE, null, ex);
+      } catch (IOException ex) {
         Logger.getLogger(EntityLinkerFactory.class.getName()).log(Level.SEVERE, null, ex);
       }
 
@@ -89,6 +102,4 @@ public class EntityLinkerFactory {
 
     return linkers;
   }
-
-
 }

@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.entitylinker;
 
 /**
- *
+ *Stores a tuple from mysql that is used to find country mentions in document text.
  *
  */
 public class CountryContextEntry {

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.entitylinker;
 
 import java.util.List;
@@ -32,6 +31,12 @@ import opennlp.tools.util.Span;
  */
 public interface EntityLinker<T extends Span> {
 
+  /**
+   * allows for passing properties through the EntityLinkerFactory into all impls dynamically
+   * @param properties the EntityLinkerProperties object that contains properties needed by the impl
+   */
+  void setEntityLinkerProperties(EntityLinkerProperties properties);
+  
   /**
    *
    * @param text      the document text to be used as additional context, and to

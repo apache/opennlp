@@ -27,7 +27,11 @@ import java.util.Set;
 
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.SentenceDetector;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.TokenizerME;
+import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
@@ -47,6 +51,15 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
     this.tokenizer = tokenizer;
   }
   
+  protected BratNameSampleStream(SentenceModel sentModel, TokenizerModel tokenModel,
+      ObjectStream<BratDocument> samples) {
+    super(samples);
+    
+    // TODO: We can pass in custom validators here ... 
+    this.sentDetector = new SentenceDetectorME(sentModel);
+    this.tokenizer = new TokenizerME(tokenModel);
+  }
+  
   @Override
   protected List<NameSample> read(BratDocument sample) throws IOException {
     
@@ -63,6 +76,22 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
     }
     
     Span sentences[] = sentDetector.sentPosDetect(sample.getText());
+    
+    // TODO: Sentence breaks should be avoided inside name annotations
+    // a) Merge two sentences, if an end/begin pair is part of a name annotation
+    // b) Implement a custom sentence validator which can be injected into the SD
+    
+    // How could a custom validator be injected into an already instantiated sentence detector ?1
+    // Via a set method ...
+    // Via constructor ... probably best option, but a bit tricky to work with the SD interface then
+    // 
+    
+    
+    // TODO: Token breaks should be enforced on name span boundaries
+    // a) Just split tokens
+    // b) Implement a custom token split validator which can be injected into the Tokenizer
+    
+    // Currently we are missing all 
     
     List<NameSample> samples = new ArrayList<NameSample>(sentences.length);
     
