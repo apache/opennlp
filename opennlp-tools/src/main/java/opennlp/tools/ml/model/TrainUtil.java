@@ -25,69 +25,22 @@ import java.util.Map;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.maxent.GIS;
-import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
-import opennlp.tools.ml.perceptron.PerceptronTrainer;
-import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
 
 public class TrainUtil {
 
-  public static final String ALGORITHM_PARAM = "Algorithm";
-  
-  public static final String MAXENT_VALUE = "MAXENT";
-  public static final String MAXENT_QN_VALUE = "MAXENT_QN_EXPERIMENTAL";
-  public static final String PERCEPTRON_VALUE = "PERCEPTRON";
-  public static final String PERCEPTRON_SEQUENCE_VALUE = "PERCEPTRON_SEQUENCE";
-  
-  public static final String CUTOFF_PARAM = "Cutoff";
-  
-  public static final String ITERATIONS_PARAM = "Iterations";
-  
-  public static final String DATA_INDEXER_PARAM = "DataIndexer";
-  public static final String DATA_INDEXER_ONE_PASS_VALUE = "OnePass";
-  public static final String DATA_INDEXER_TWO_PASS_VALUE = "TwoPass";
-  
+  /**
+   * @deprecated Use {@link TrainerFactory#isValid(Map)} instead.
+   */
   public static boolean isValid(Map<String, String> trainParams) {
-
-    // TODO: Need to validate all parameters correctly ... error prone?!
-    
-    String algorithmName = trainParams.get(ALGORITHM_PARAM);
-
-    if (algorithmName != null && !(MAXENT_VALUE.equals(algorithmName) ||
-    	MAXENT_QN_VALUE.equals(algorithmName) ||
-        PERCEPTRON_VALUE.equals(algorithmName) ||
-        PERCEPTRON_SEQUENCE_VALUE.equals(algorithmName))) {
-      return false;
-    }
-
-    try {
-      String cutoffString = trainParams.get(CUTOFF_PARAM);
-      if (cutoffString != null) Integer.parseInt(cutoffString);
-      
-      String iterationsString = trainParams.get(ITERATIONS_PARAM);
-      if (iterationsString != null) Integer.parseInt(iterationsString);
-    }
-    catch (NumberFormatException e) {
-      return false;
-    }
-    
-    String dataIndexer = trainParams.get(DATA_INDEXER_PARAM);
-    
-    if (dataIndexer != null) {
-      if (!("OnePass".equals(dataIndexer) || "TwoPass".equals(dataIndexer))) {
-        return false;
-      }
-    }
-    
-    // TODO: Check data indexing ... 
-     
-    return true;
+    return TrainerFactory.isValid(trainParams);
   }
-  
-  
   
   // TODO: Need a way to report results and settings back for inclusion in model ...
   
+  /**
+   * @deprecated Use {@link TrainerFactory#getEventTrainer(Map, Map)} to get an
+   *             {@link EventTrainer} instead.
+   */
   public static AbstractModel train(EventStream events, Map<String, String> trainParams, Map<String, String> reportMap) 
       throws IOException {
     
@@ -100,13 +53,19 @@ public class TrainUtil {
   }
   
   /**
-   * Detects if the training algorithm requires sequence based feature generation
-   * or not.
+   * Detects if the training algorithm requires sequence based feature
+   * generation or not.
+   * 
+   * @deprecated Use {@link TrainerFactory#isSupportSequence(Map)} instead.
    */
   public static boolean isSequenceTraining(Map<String, String> trainParams) {
-    return PERCEPTRON_SEQUENCE_VALUE.equals(trainParams.get(ALGORITHM_PARAM));
+	return TrainerFactory.isSupportSequence(trainParams);
   }
   
+  /**
+   * @deprecated Use {@link TrainerFactory#getSequenceTrainer(Map, Map)} to get an
+   *             {@link SequenceTrainer} instead.
+   */
   public static AbstractModel train(SequenceStream events, Map<String, String> trainParams,
       Map<String, String> reportMap) throws IOException {
     

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
@@ -48,8 +49,8 @@ public class PerceptronPrepAttachTest {
   public void testPerceptronOnPrepAttachDataWithSkippedAveraging() throws IOException {
     
     Map<String, String> trainParams = new HashMap<String, String>();
-    trainParams.put(TrainUtil.ALGORITHM_PARAM, TrainUtil.PERCEPTRON_VALUE);
-    trainParams.put(TrainUtil.CUTOFF_PARAM, Integer.toString(1));
+    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put("UseSkippedAveraging", Boolean.toString(true));
     
     AbstractModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
@@ -61,9 +62,9 @@ public class PerceptronPrepAttachTest {
   public void testPerceptronOnPrepAttachDataWithTolerance() throws IOException {
     
     Map<String, String> trainParams = new HashMap<String, String>();
-    trainParams.put(TrainUtil.ALGORITHM_PARAM, TrainUtil.PERCEPTRON_VALUE);
-    trainParams.put(TrainUtil.CUTOFF_PARAM, Integer.toString(1));
-    trainParams.put(TrainUtil.ITERATIONS_PARAM, Integer.toString(500));
+    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
+    trainParams.put(AbstractTrainer.ITERATIONS_PARAM, Integer.toString(500));
     trainParams.put("Tolerance", Double.toString(0.0001d));
     
     AbstractModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
@@ -75,9 +76,9 @@ public class PerceptronPrepAttachTest {
   public void testPerceptronOnPrepAttachDataWithStepSizeDecrease() throws IOException {
     
     Map<String, String> trainParams = new HashMap<String, String>();
-    trainParams.put(TrainUtil.ALGORITHM_PARAM, TrainUtil.PERCEPTRON_VALUE);
-    trainParams.put(TrainUtil.CUTOFF_PARAM, Integer.toString(1));
-    trainParams.put(TrainUtil.ITERATIONS_PARAM, Integer.toString(500));
+    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
+    trainParams.put(AbstractTrainer.ITERATIONS_PARAM, Integer.toString(500));
     trainParams.put("StepSizeDecrease", Double.toString(0.06d));
     
     AbstractModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
