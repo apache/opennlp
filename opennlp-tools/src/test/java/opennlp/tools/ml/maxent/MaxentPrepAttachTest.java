@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.ml.AbstractEventTrainer;
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
@@ -56,10 +58,10 @@ public class MaxentPrepAttachTest {
   public void testMaxentOnPrepAttachDataWithParams() throws IOException {
     
     Map<String, String> trainParams = new HashMap<String, String>();
-    trainParams.put(TrainUtil.ALGORITHM_PARAM, TrainUtil.MAXENT_VALUE);
-    trainParams.put(TrainUtil.DATA_INDEXER_PARAM,
-        TrainUtil.DATA_INDEXER_TWO_PASS_VALUE);
-    trainParams.put(TrainUtil.CUTOFF_PARAM, Integer.toString(1));
+    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GIS.MAXENT_VALUE);
+    trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
+        AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
+    trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     
     AbstractModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
     
@@ -70,7 +72,7 @@ public class MaxentPrepAttachTest {
   public void testMaxentOnPrepAttachDataWithParamsDefault() throws IOException {
     
     Map<String, String> trainParams = new HashMap<String, String>();
-    trainParams.put(TrainUtil.ALGORITHM_PARAM, TrainUtil.MAXENT_VALUE);
+    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GIS.MAXENT_VALUE);
     
     AbstractModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
     

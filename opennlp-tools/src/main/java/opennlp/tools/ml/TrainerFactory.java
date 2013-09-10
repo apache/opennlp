@@ -18,10 +18,8 @@
 package opennlp.tools.ml;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.ml.maxent.GIS;
@@ -93,6 +91,59 @@ public class TrainerFactory {
           reportMap);
     }
   }
+  
+  public static boolean isValid(Map<String, String> trainParams) {
+
+    // TODO: Need to validate all parameters correctly ... error prone?!
+    
+    String algorithmName = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
+    
+    // to check the algorithm we verify if it is a built in trainer, or if we can instantiate
+    // one if it is a class name
+    
+    if (algorithmName != null && 
+        !(BUILTIN_TRAINERS.containsKey(algorithmName) || canLoadTrainer(algorithmName))) {
+      return false;
+    }
+
+    try {
+      String cutoffString = trainParams.get(AbstractTrainer.CUTOFF_PARAM);
+      if (cutoffString != null) Integer.parseInt(cutoffString);
+      
+      String iterationsString = trainParams.get(AbstractTrainer.ITERATIONS_PARAM);
+      if (iterationsString != null) Integer.parseInt(iterationsString);
+    }
+    catch (NumberFormatException e) {
+      return false;
+    }
+    
+    String dataIndexer = trainParams.get(AbstractEventTrainer.DATA_INDEXER_PARAM);
+    
+    if (dataIndexer != null) {
+      if (!(AbstractEventTrainer.DATA_INDEXER_ONE_PASS_VALUE.equals(dataIndexer) 
+          || AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE.equals(dataIndexer))) {
+        return false;
+      }
+    }
+    
+    // TODO: Check data indexing ... 
+     
+    return true;
+  }
+
+  private static boolean canLoadTrainer(String className) {
+    try {
+      Class<?> trainerClass = Class.forName(className);
+      if(trainerClass != null &&
+          (EventTrainer.class.isAssignableFrom(trainerClass)
+              || SequenceTrainer.class.isAssignableFrom(trainerClass))) {
+        return true;
+      }
+    } catch (ClassNotFoundException e) {
+      // fail
+    }
+    return false;
+  }
 
   private static String getTrainerType(Map<String, String> trainParams) {
     return trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
@@ -105,6 +156,7 @@ public class TrainerFactory {
     try {
       // TODO: won't work in OSGi!
       Class<T> trainerClass = (Class<T>) Class.forName(className);
+      
       theFactory = create(trainerClass, trainParams, reportMap);
     } catch (Exception e) {
       String msg = "Could not instantiate the " + className

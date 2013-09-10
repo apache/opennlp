@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.GenericModelWriter;
 import opennlp.tools.ml.model.MaxentModel;
@@ -141,7 +142,7 @@ public final class ModelUtil {
    */
   public static TrainingParameters createTrainingParameters(int iterations, int cutoff) {
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, TrainUtil.MAXENT_VALUE);
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, GIS.MAXENT_VALUE);
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
     
