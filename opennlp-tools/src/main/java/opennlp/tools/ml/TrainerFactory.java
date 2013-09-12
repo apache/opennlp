@@ -63,6 +63,12 @@ public class TrainerFactory {
     return false;
   }
 
+  // not sure if we need this method
+  public static boolean isSequenceTraining(Map<String, String> trainParams) {
+    return SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE
+        .equals(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
+  }
+  
   public static SequenceTrainer getSequenceTrainer(
       Map<String, String> trainParams, Map<String, String> reportMap) {
     String trainerType = getTrainerType(trainParams);

@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -63,7 +64,7 @@ public final class SentenceDetectorTrainerTool
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
 
     if (mlParams != null) {
-      if (TrainUtil.isSequenceTraining(mlParams.getSettings())) {
+      if (TrainerFactory.isSequenceTraining(mlParams.getSettings())) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }

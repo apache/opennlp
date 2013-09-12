@@ -2,6 +2,7 @@ package opennlp.tools.ml;
 
 import static org.junit.Assert.*;
 import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.util.TrainingParameters;
 
 import org.junit.Before;
@@ -40,6 +41,22 @@ public class TrainerFactoryTest {
   public void testInvalidTrainer() {
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, "xyz");
     assertFalse(TrainerFactory.isValid(mlParams.getSettings()));
+  }
+
+  @Test
+  public void testIsSequenceTrainerTrue() {
+    mlParams.put(AbstractTrainer.ALGORITHM_PARAM,
+        SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE);
+
+    assertTrue(TrainerFactory.isSequenceTraining(mlParams.getSettings()));
+  }
+
+  @Test
+  public void testIsSequenceTrainerFalse() {
+    mlParams.put(AbstractTrainer.ALGORITHM_PARAM,
+        SimplePerceptronSequenceTrainer.SEQUENCE_VALUE);
+
+    assertTrue(TrainerFactory.isSequenceTraining(mlParams.getSettings()));
   }
 
 }

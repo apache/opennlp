@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.postag;
 import java.io.File;
 import java.io.IOException;
 
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -56,7 +57,7 @@ public final class POSTaggerTrainerTool
     super.run(format, args);
 
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
-    if (mlParams != null && !TrainUtil.isValid(mlParams.getSettings())) {
+    if (mlParams != null && !TrainerFactory.isValid(mlParams.getSettings())) {
       throw new TerminateToolException(1, "Training parameters file '" + params.getParams() +
           "' is invalid!");
     }

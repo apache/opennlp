@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import opennlp.tools.ml.model.TrainUtil;
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -62,12 +62,12 @@ public final class TokenizerTrainerTool
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
 
     if (mlParams != null) {
-      if (!TrainUtil.isValid(mlParams.getSettings())) {
+      if (!TrainerFactory.isValid(mlParams.getSettings())) {
         throw new TerminateToolException(1, "Training parameters file '" + params.getParams() +
             "' is invalid!");
       }
 
-      if (TrainUtil.isSequenceTraining(mlParams.getSettings())) {
+      if (TrainerFactory.isSequenceTraining(mlParams.getSettings())) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }

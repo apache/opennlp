@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
@@ -325,11 +326,11 @@ public final class CmdLineUtil {
         }
       }
       
-      if (!TrainUtil.isValid(params.getSettings())) {
+      if (!TrainerFactory.isValid(params.getSettings())) {
         throw new TerminateToolException(1, "Training parameters file '" + paramFile + "' is invalid!");
       }
       
-      if (!supportSequenceTraining && TrainUtil.isSequenceTraining(params.getSettings())) {
+      if (!supportSequenceTraining && TrainerFactory.isSequenceTraining(params.getSettings())) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }
