@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -87,23 +88,23 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
     
     if (mlParams != null) {
-      if (!TrainUtil.isValid(mlParams.getSettings("build"))) {
+      if (!TrainerFactory.isValid(mlParams.getSettings("build"))) {
         throw new TerminateToolException(1, "Build training parameters are invalid!");
       }
       
-      if (!TrainUtil.isValid(mlParams.getSettings("check"))) {
+      if (!TrainerFactory.isValid(mlParams.getSettings("check"))) {
         throw new TerminateToolException(1, "Check training parameters are invalid!");
       }
       
-      if (!TrainUtil.isValid(mlParams.getSettings("attach"))) {
+      if (!TrainerFactory.isValid(mlParams.getSettings("attach"))) {
         throw new TerminateToolException(1, "Attach training parameters are invalid!");
       }
       
-      if (!TrainUtil.isValid(mlParams.getSettings("tagger"))) {
+      if (!TrainerFactory.isValid(mlParams.getSettings("tagger"))) {
         throw new TerminateToolException(1, "Tagger training parameters are invalid!");
       }
       
-      if (!TrainUtil.isValid(mlParams.getSettings("chunker"))) {
+      if (!TrainerFactory.isValid(mlParams.getSettings("chunker"))) {
         throw new TerminateToolException(1, "Chunker training parameters are invalid!");
       }
     }

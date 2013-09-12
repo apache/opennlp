@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.maxent.GISModel;
 import opennlp.tools.ml.model.AbstractModel;
@@ -359,7 +360,7 @@ public class NameFinderME implements TokenNameFinder {
 
      AbstractModel nameFinderModel;
 
-     if (!TrainUtil.isSequenceTraining(trainParams.getSettings())) {
+     if (!TrainerFactory.isSequenceTraining(trainParams.getSettings())) {
        EventStream eventStream = new NameFinderEventStream(samples, type,
            new DefaultNameContextGenerator(featureGenerator));
 

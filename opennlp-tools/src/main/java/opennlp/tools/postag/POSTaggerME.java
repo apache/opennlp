@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.ml.model.MaxentModel;
@@ -330,7 +331,7 @@ public class POSTaggerME implements POSTagger {
     
     AbstractModel posModel;
     
-    if (!TrainUtil.isSequenceTraining(trainParams.getSettings())) {
+    if (!TrainerFactory.isSequenceTraining(trainParams.getSettings())) {
       
       EventStream es = new POSSampleEventStream(samples, contextGenerator);
       
