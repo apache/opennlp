@@ -54,9 +54,9 @@ public class TrainerFactoryTest {
   @Test
   public void testIsSequenceTrainerFalse() {
     mlParams.put(AbstractTrainer.ALGORITHM_PARAM,
-        SimplePerceptronSequenceTrainer.SEQUENCE_VALUE);
+        GIS.MAXENT_VALUE);
 
-    assertTrue(TrainerFactory.isSequenceTraining(mlParams.getSettings()));
+    assertFalse(TrainerFactory.isSequenceTraining(mlParams.getSettings()));
   }
 
 }

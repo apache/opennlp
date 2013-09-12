@@ -27,6 +27,13 @@ import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
 
 public class TrainUtil {
+
+  /**
+   * @deprecated Use {@link TrainerFactory#isValid(Map)} instead.
+   */
+  public static boolean isValid(Map<String, String> trainParams) {
+    return TrainerFactory.isValid(trainParams);
+  }
   
   // TODO: Need a way to report results and settings back for inclusion in model ...
   
@@ -43,6 +50,16 @@ public class TrainUtil {
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, reportMap);
     
     return trainer.train(events);
+  }
+  
+  /**
+   * Detects if the training algorithm requires sequence based feature
+   * generation or not.
+   * 
+   * @deprecated Use {@link TrainerFactory#isSequenceTraining(Map)} instead.
+   */
+  public static boolean isSequenceTraining(Map<String, String> trainParams) {
+	return TrainerFactory.isSequenceTraining(trainParams);
   }
   
   /**
