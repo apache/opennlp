@@ -55,7 +55,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   }
 
   // for namefinder, chunker...
-  protected void printError(Span references[], Span predictions[],
+  protected void printError(String id, Span references[], Span predictions[],
       T referenceSample, T predictedSample, String[] sentenceTokens) {
     List<Span> falseNegatives = new ArrayList<Span>();
     List<Span> falsePositives = new ArrayList<Span>();
@@ -64,6 +64,10 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
 
     if (falsePositives.size() + falseNegatives.size() > 0) {
 
+      if (id != null) {
+        printStream.println("Id: {" + id + "}");
+      }
+      
       printSamples(referenceSample, predictedSample);
 
       printErrors(falsePositives, falseNegatives, sentenceTokens);
@@ -71,6 +75,11 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
     }
   }
 
+  protected void printError(Span references[], Span predictions[],
+      T referenceSample, T predictedSample, String[] sentenceTokens) {
+    printError(null, references, predictions, referenceSample, predictedSample, sentenceTokens);
+  }
+  
   // for pos tagger
   protected void printError(String references[], String predictions[],
       T referenceSample, T predictedSample, String[] sentenceTokens) {

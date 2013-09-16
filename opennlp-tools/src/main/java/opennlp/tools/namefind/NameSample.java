@@ -33,6 +33,7 @@ import opennlp.tools.util.Span;
  */
 public class NameSample {
 
+  private final String id;
   private final List<String> sentence;
   private final List<Span> names;
   private final String[][] additionalContext;
@@ -41,18 +42,11 @@ public class NameSample {
   /** The a default type value when there is no type in training data. */
   public static final String DEFAULT_TYPE = "default";
 
-  /**
-   * Initializes the current instance.
-   *
-   * @param sentence training sentence
-   * @param names
-   * @param additionalContext
-   * @param clearAdaptiveData if true the adaptive data of the 
-   *     feature generators is cleared
-   */
-  public NameSample(String[] sentence, Span[] names,
+  public NameSample(String id, String[] sentence, Span[] names,
       String[][] additionalContext, boolean clearAdaptiveData) {
-
+    
+    this.id = id;
+    
     if (sentence == null) {
       throw new IllegalArgumentException("sentence must not be null!");
     }
@@ -79,9 +73,27 @@ public class NameSample {
     
     // TODO: Check that name spans are not overlapping, otherwise throw exception
   }
+  
+  /**
+   * Initializes the current instance.
+   *
+   * @param sentence training sentence
+   * @param names
+   * @param additionalContext
+   * @param clearAdaptiveData if true the adaptive data of the 
+   *     feature generators is cleared
+   */
+  public NameSample(String[] sentence, Span[] names,
+      String[][] additionalContext, boolean clearAdaptiveData) {
+    this(null, sentence, names, additionalContext, clearAdaptiveData);
+  }
 
   public NameSample(String[] sentence, Span[] names, boolean clearAdaptiveData) {
     this(sentence, names, null, clearAdaptiveData);
+  }
+  
+  public String getId() {
+    return id;
   }
   
   public String[] getSentence() {
