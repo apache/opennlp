@@ -71,7 +71,7 @@
 			<nameValuePair>
 				<name>opennlp.uima.NameType</name>
 				<value>
-					<string>opennlp.uima.Person</string>
+					<string>opennlp.uima.Time</string>
 				</value>
 			</nameValuePair>
 		</configurationParameterSettings>
