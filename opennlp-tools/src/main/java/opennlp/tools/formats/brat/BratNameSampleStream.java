@@ -113,7 +113,7 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
       
       for (int i = 0; i < tokens.length; i++) {
         tokenIndexMap.put(-(sentence.getStart() + tokens[i].getStart()), i);
-        tokenIndexMap.put(sentence.getStart() + tokens[i].getEnd(), i);
+        tokenIndexMap.put(sentence.getStart() + tokens[i].getEnd(), i + 1);
       }
       
       List<Span> names = new ArrayList<Span>();
@@ -128,22 +128,24 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
           if (sentence.contains(entitySpan)) {
             entityIdSet.remove(ann.getId());
             
+            entitySpan = entitySpan.trim(sample.getText());
+            
             Integer nameBeginIndex = tokenIndexMap.get(-entitySpan.getStart());
             Integer nameEndIndex = tokenIndexMap.get(entitySpan.getEnd());
-           
+            
             if (nameBeginIndex != null && nameEndIndex != null) {
               names.add(new Span(nameBeginIndex, nameEndIndex, entity.getType()));
             }
             else {
-              System.err.println("Dropped entity " + entity.getId() + " in document " + 
+              System.err.println("Dropped entity " + entity.getId() + " (" + entitySpan.getCoveredText(sample.getText()) + ") " + " in document " + 
                   sample.getId() + ", it is not matching tokenization!");
             }
           }
         }
       }
       
-      samples.add(new NameSample(Span.spansToStrings(tokens, sentenceText),
-          names.toArray(new Span[names.size()]), samples.size() == 0));
+      samples.add(new NameSample(sample.getId(), Span.spansToStrings(tokens, sentenceText),
+          names.toArray(new Span[names.size()]), null, samples.size() == 0));
     }
     
     for (String id : entityIdSet) {
