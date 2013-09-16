@@ -518,8 +518,10 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   public void remove(int index) {
     parts.remove(index);
-    if (index == 0 || index == parts.size()) { //size is orig last element
-      span = new Span((parts.get(0)).span.getStart(),(parts.get(parts.size()-1)).span.getEnd());
+    if(! parts.isEmpty()) {
+        if (index == 0 || index == parts.size()) { //size is orig last element
+            span = new Span((parts.get(0)).span.getStart(),(parts.get(parts.size()-1)).span.getEnd());
+          }
     }
   }
 
