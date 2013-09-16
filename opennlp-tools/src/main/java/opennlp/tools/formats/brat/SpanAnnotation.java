@@ -34,6 +34,10 @@ public class SpanAnnotation extends BratAnnotation {
     return span;
   }
   
+  public String getCoveredText() {
+    return coveredText;
+  }
+  
   @Override
   public String toString() {
     return super.toString() + " " + span.getStart() + " " + span.getEnd() + " " + coveredText;
