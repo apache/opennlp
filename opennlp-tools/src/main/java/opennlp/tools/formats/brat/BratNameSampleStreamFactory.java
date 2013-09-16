@@ -18,17 +18,16 @@
 package opennlp.tools.formats.brat;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.InputStream;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
-import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.NewlineSentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetector;
@@ -47,6 +46,9 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
     @ParameterDescription(valueName = "bratDataDir", description = "location of brat data dir")
     File getBratDataDir();
 
+    @ParameterDescription(valueName = "annConfFile")
+    File getAnnotationConfig();
+    
     @ParameterDescription(valueName = "modelFile")
     @OptionalParameter
     File getSentenceDetectorModel();
@@ -54,7 +56,7 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
     @ParameterDescription(valueName = "modelFile")
     @OptionalParameter
     File getTokenizerModel();
-
+    
     @ParameterDescription(valueName = "name")
     @OptionalParameter
     String getRuleBasedTokenizer();
@@ -62,6 +64,7 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
     @ParameterDescription(valueName = "value")
     @OptionalParameter(defaultValue = "false")
     Boolean getRecursive();
+    
   }
   
   protected BratNameSampleStreamFactory() {
@@ -92,21 +95,23 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
       throw new TerminateToolException(-1, "Either use rule based or statistical tokenizer!");
     }
     
-    // TODO: This need to be loaded from the real file ...
-    Map<String, String> typeToClassMap = new HashMap<String, String>();
-    
-    typeToClassMap.put("bumblebee_annotations_Person", "Entity");
-    typeToClassMap.put("bumblebee_annotations_Organization", "Entity");
-    typeToClassMap.put("bumblebee_annotations_DateMention", "Entity");
-    typeToClassMap.put("bumblebee_annotations_Location", "Entity");
-    typeToClassMap.put("bumblebee_annotations_CRN", "Entity");
-    typeToClassMap.put("bumblebee_annotations_Money", "Entity");
-    typeToClassMap.put("bumblebee_annotations_LocatedAt", AnnotationConfiguration.RELATION_TYPE);
-    typeToClassMap.put("bumblebee_annotations_BornIn", AnnotationConfiguration.RELATION_TYPE);
-    typeToClassMap.put("bumblebee_annotations_BornOn", AnnotationConfiguration.RELATION_TYPE);
-    typeToClassMap.put("bumblebee_annotations_MemberOf", AnnotationConfiguration.RELATION_TYPE);
-    
-    AnnotationConfiguration annConfig = new AnnotationConfiguration(typeToClassMap);
+    // TODO: Provide the file name to the annotation.conf file and implement the parser ...
+    AnnotationConfiguration annConfig;
+    InputStream annConfIn = null;
+    try {
+      annConfIn = new FileInputStream(params.getAnnotationConfig());
+      annConfig = AnnotationConfiguration.parse(annConfIn);
+    }
+    catch (IOException e) {
+      throw new TerminateToolException(1, "Failed to parse annotation.conf file!");
+    }
+    finally {
+      if (annConfIn != null) {
+        try {
+          annConfIn.close();
+        } catch (IOException e) {}
+      }
+    }
     
     // TODO: Add an optional parameter to search recursive
     // TODO: How to handle the error here ? terminate the tool? not nice if used by API!

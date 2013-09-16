@@ -17,6 +17,11 @@
 
 package opennlp.tools.formats.brat;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,5 +44,36 @@ public class AnnotationConfiguration {
     return typeToClassMap.get(type);
   }
   
-  // TODO: Add a parser for the brat configuration file!
+  
+  public static AnnotationConfiguration parse(InputStream in) throws IOException {
+    Map<String, String> typeToClassMap = new HashMap<String, String>();
+    
+    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+    
+    // Note: This only supports entities and relations section
+    String line = null;
+    String sectionType = null;
+    
+    while ((line = reader.readLine())!= null) {
+      line = line.trim();
+      
+      if (line.isEmpty()) {
+        continue;
+      } else if (line.startsWith("#")) {
+        continue;
+      } else if (line.startsWith("[") && line.endsWith("]")) {
+        sectionType = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
+      }
+      else {
+        if ("entities".equals(sectionType)) {
+          typeToClassMap.put(line, AnnotationConfiguration.ENTITY_TYPE);
+        }
+        else if ("relations".equals(sectionType)) {
+          typeToClassMap.put(line.substring(0, line.indexOf(' ')), AnnotationConfiguration.RELATION_TYPE);
+        }
+      }
+    }
+    
+    return new AnnotationConfiguration(typeToClassMap);
+  }
 }
