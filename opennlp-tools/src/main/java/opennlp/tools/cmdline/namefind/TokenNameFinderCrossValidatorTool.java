@@ -29,6 +29,7 @@ import opennlp.tools.cmdline.namefind.TokenNameFinderCrossValidatorTool.CVToolPa
 import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.NameSampleTypeFilter;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.util.eval.EvaluationMonitor;
@@ -62,6 +63,11 @@ public final class TokenNameFinderCrossValidatorTool
     Map<String, Object> resources =
         TokenNameFinderTrainerTool.loadResources(params.getResources());
 
+    if (params.getNameTypes() != null) {
+      String nameTypes[] = params.getNameTypes().split(",");
+      sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
+    }
+    
     List<EvaluationMonitor<NameSample>> listeners = new LinkedList<EvaluationMonitor<NameSample>>();
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());

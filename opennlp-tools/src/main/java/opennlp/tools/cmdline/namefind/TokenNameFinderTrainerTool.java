@@ -41,9 +41,7 @@ public final class TokenNameFinderTrainerTool
     extends AbstractTrainerTool<NameSample, TrainerToolParams> {
   
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
-    @OptionalParameter
-    @ParameterDescription(valueName = "types", description = "name types to use for training")
-    String getNameTypes();
+
   }
 
   public TokenNameFinderTrainerTool() {
