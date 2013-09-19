@@ -41,4 +41,8 @@ interface TrainingParams extends BasicTrainingParams {
   @ParameterDescription(valueName = "featuregenFile", description = "The feature generator descriptor file")
   @OptionalParameter
   File getFeaturegen();  
+  
+  @OptionalParameter
+  @ParameterDescription(valueName = "types", description = "name types to use for training")
+  String getNameTypes();
 }
