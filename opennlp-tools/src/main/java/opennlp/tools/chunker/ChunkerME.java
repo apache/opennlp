@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TrainUtil;
@@ -211,7 +210,7 @@ public class ChunkerME implements Chunker {
 
     EventStream es = new ChunkerEventStream(in, factory.getContextGenerator());
 
-    AbstractModel maxentModel = TrainUtil.train(es, mlParams.getSettings(),
+    MaxentModel maxentModel = TrainUtil.train(es, mlParams.getSettings(),
         manifestInfoEntries);
 
     return new ChunkerModel(lang, maxentModel, manifestInfoEntries, factory);
@@ -230,7 +229,7 @@ public class ChunkerME implements Chunker {
     
     EventStream es = new ChunkerEventStream(in, contextGenerator);
     
-    AbstractModel maxentModel = TrainUtil.train(es, mlParams.getSettings(), manifestInfoEntries);
+    MaxentModel maxentModel = TrainUtil.train(es, mlParams.getSettings(), manifestInfoEntries);
     
     return new ChunkerModel(lang, maxentModel, manifestInfoEntries);
   }

@@ -41,7 +41,7 @@ public class TrainUtil {
    * @deprecated Use {@link TrainerFactory#getEventTrainer(Map, Map)} to get an
    *             {@link EventTrainer} instead.
    */
-  public static AbstractModel train(EventStream events, Map<String, String> trainParams, Map<String, String> reportMap) 
+  public static MaxentModel train(EventStream events, Map<String, String> trainParams, Map<String, String> reportMap) 
       throws IOException {
     
     if(!TrainerFactory.isSupportEvent(trainParams)) {
@@ -66,7 +66,7 @@ public class TrainUtil {
    * @deprecated Use {@link TrainerFactory#getSequenceTrainer(Map, Map)} to get an
    *             {@link SequenceTrainer} instead.
    */
-  public static AbstractModel train(SequenceStream events, Map<String, String> trainParams,
+  public static MaxentModel train(SequenceStream events, Map<String, String> trainParams,
       Map<String, String> reportMap) throws IOException {
     
     if(!TrainerFactory.isSupportSequence(trainParams)) {

@@ -56,7 +56,7 @@ public final class TokenizerModel extends BaseModel {
    * @param manifestInfoEntries the manifest
    * @param tokenizerFactory the factory
    */
-  public TokenizerModel(AbstractModel tokenizerModel,
+  public TokenizerModel(MaxentModel tokenizerModel,
       Map<String, String> manifestInfoEntries, TokenizerFactory tokenizerFactory) {
     super(COMPONENT_NAME, tokenizerFactory.getLanguageCode(), manifestInfoEntries, tokenizerFactory);
     artifactMap.put(TOKENIZER_MODEL_ENTRY, tokenizerModel);
@@ -73,7 +73,7 @@ public final class TokenizerModel extends BaseModel {
    *             {@link TokenizerModel#TokenizerModel(String, AbstractModel, Map, TokenizerFactory)}
    *             instead and pass in a {@link TokenizerFactory}.
    */
-  public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
+  public TokenizerModel(String language, MaxentModel tokenizerMaxentModel,
       Dictionary abbreviations, boolean useAlphaNumericOptimization,
       Map<String, String> manifestInfoEntries) {
     this(tokenizerMaxentModel, manifestInfoEntries, 

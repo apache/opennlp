@@ -20,10 +20,10 @@ package opennlp.tools.ml;
 import java.io.IOException;
 import java.util.Map;
 
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.ml.model.HashSumEventStream;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 
@@ -81,9 +81,9 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
     return indexer;
   }
 
-  public abstract AbstractModel doTrain(DataIndexer indexer) throws IOException;
+  public abstract MaxentModel doTrain(DataIndexer indexer) throws IOException;
 
-  public final AbstractModel train(EventStream events) throws IOException {
+  public final MaxentModel train(EventStream events) throws IOException {
     
     if (!isValid()) {
       throw new IllegalArgumentException("trainParams are not valid!");
@@ -92,7 +92,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
     HashSumEventStream hses = new HashSumEventStream(events);
     DataIndexer indexer = getDataIndexer(events);
 
-    AbstractModel model = doTrain(indexer);
+    MaxentModel model = doTrain(indexer);
 
     addToReport("Training-Eventhash", hses.calculateHashSum().toString(16)); 
     addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE); 

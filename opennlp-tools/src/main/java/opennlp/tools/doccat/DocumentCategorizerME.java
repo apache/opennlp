@@ -159,7 +159,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
      
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
      
-     AbstractModel model = TrainUtil.train(
+     MaxentModel model = TrainUtil.train(
          new DocumentCategorizerEventStream(samples, featureGenerators),
          mlParams.getSettings(), manifestInfoEntries);
        
