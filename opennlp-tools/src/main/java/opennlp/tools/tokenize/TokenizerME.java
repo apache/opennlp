@@ -247,7 +247,7 @@ public class TokenizerME extends AbstractTokenizer {
         factory.isUseAlphaNumericOptmization(),
         factory.getAlphaNumericPattern(), factory.getContextGenerator());
 
-    AbstractModel maxentModel = TrainUtil.train(eventStream,
+    MaxentModel maxentModel = TrainUtil.train(eventStream,
         mlParams.getSettings(), manifestInfoEntries);
 
     return new TokenizerModel(maxentModel, manifestInfoEntries,
@@ -310,7 +310,7 @@ public class TokenizerME extends AbstractTokenizer {
         factory.createTokenContextGenerator(languageCode,
             getAbbreviations(abbreviations)));
 
-    AbstractModel maxentModel = TrainUtil.train(eventStream,
+    MaxentModel maxentModel = TrainUtil.train(eventStream,
         mlParams.getSettings(), manifestInfoEntries);
 
     return new TokenizerModel(languageCode, maxentModel, abbreviations,

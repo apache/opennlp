@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.maxent.GISModel;
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TrainUtil;
@@ -358,7 +357,7 @@ public class NameFinderME implements TokenNameFinder {
      else
        featureGenerator = createFeatureGenerator();
 
-     AbstractModel nameFinderModel;
+     MaxentModel nameFinderModel;
 
      if (!TrainerFactory.isSequenceTraining(trainParams.getSettings())) {
        EventStream eventStream = new NameFinderEventStream(samples, type,

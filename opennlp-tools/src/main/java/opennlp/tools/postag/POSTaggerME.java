@@ -27,12 +27,12 @@ import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TrainUtil;
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.ObjectStream;
@@ -329,7 +329,7 @@ public class POSTaggerME implements POSTagger {
     
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
     
-    AbstractModel posModel;
+    MaxentModel posModel;
     
     if (!TrainerFactory.isSequenceTraining(trainParams.getSettings())) {
       

@@ -24,14 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.TrainUtil;
-import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.TrainUtil;
+import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.ChunkContextGenerator;
 import opennlp.tools.parser.ChunkSampleStream;
@@ -294,7 +294,7 @@ public class Parser extends AbstractBottomUpParser {
     System.err.println("Training builder");
     opennlp.tools.ml.model.EventStream bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
     Map<String, String> buildReportMap = new HashMap<String, String>();
-    AbstractModel buildModel = TrainUtil.train(bes, mlParams.getSettings("build"), buildReportMap);
+    MaxentModel buildModel = TrainUtil.train(bes, mlParams.getSettings("build"), buildReportMap);
     mergeReportIntoManifest(manifestInfoEntries, buildReportMap, "build");
     
     parseSamples.reset();
@@ -316,7 +316,7 @@ public class Parser extends AbstractBottomUpParser {
     System.err.println("Training checker");
     opennlp.tools.ml.model.EventStream kes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.CHECK);
     Map<String, String> checkReportMap = new HashMap<String, String>();
-    AbstractModel checkModel = TrainUtil.train(kes, mlParams.getSettings("check"), checkReportMap);
+    MaxentModel checkModel = TrainUtil.train(kes, mlParams.getSettings("check"), checkReportMap);
     mergeReportIntoManifest(manifestInfoEntries, checkReportMap, "check");
 
     // TODO: Remove cast for HeadRules

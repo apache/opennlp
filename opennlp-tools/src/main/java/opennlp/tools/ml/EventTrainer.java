@@ -19,13 +19,13 @@ package opennlp.tools.ml;
 
 import java.io.IOException;
 
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.MaxentModel;
 
 public interface EventTrainer {
   
   public static final String EVENT_VALUE = "Event";
 
-  public AbstractModel train(EventStream events) throws IOException;
+  public MaxentModel train(EventStream events) throws IOException;
 
 }

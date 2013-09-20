@@ -28,9 +28,9 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.Map;
 
+import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -141,7 +141,7 @@ public class ParserModel extends BaseModel {
         chunkerTagger, headRules, modelType, null);
   }
   
-  public ParserModel(String languageCode, AbstractModel buildModel, AbstractModel checkModel, 
+  public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel, 
       POSModel parserTagger, ChunkerModel chunkerTagger, 
       opennlp.tools.parser.lang.en.HeadRules headRules, ParserType type,
       Map<String, String> manifestInfoEntries) {

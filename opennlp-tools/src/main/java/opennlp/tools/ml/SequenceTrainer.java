@@ -19,13 +19,13 @@ package opennlp.tools.ml;
 
 import java.io.IOException;
 
-import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceStream;
 
 public interface SequenceTrainer {
 
   public static final String SEQUENCE_VALUE = "Sequence";
 
-  public AbstractModel train(SequenceStream events) throws IOException;
+  public MaxentModel train(SequenceStream events) throws IOException;
 
 }
