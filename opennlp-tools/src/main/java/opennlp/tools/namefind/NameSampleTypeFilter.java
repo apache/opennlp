@@ -60,8 +60,8 @@ public class NameSampleTypeFilter extends FilterObjectStream<NameSample, NameSam
         }
       }
       
-      return new NameSample(sample.getSentence(),
-          filteredNames.toArray(new Span[filteredNames.size()]), sample.isClearAdaptiveDataSet());
+      return new NameSample(sample.getId(), sample.getSentence(),
+          filteredNames.toArray(new Span[filteredNames.size()]), null, sample.isClearAdaptiveDataSet());
     }
     else {
       return null;
