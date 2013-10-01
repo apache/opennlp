@@ -108,7 +108,7 @@ public class SentenceModel extends BaseModel {
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
 
-    if (!(artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
+    if (!(artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel)) {
       throw new InvalidFormatException("Unable to find " + MAXENT_MODEL_ENTRY_NAME +
           " maxent model!");
     }
