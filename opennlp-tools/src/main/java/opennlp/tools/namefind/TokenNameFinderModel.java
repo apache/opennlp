@@ -253,8 +253,8 @@ public class TokenNameFinderModel extends BaseModel {
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
     
-    if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof AbstractModel) {
-      AbstractModel model = (AbstractModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
+    if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel) {
+      MaxentModel model = (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
       isModelValid(model);
     }
     else {
