@@ -4,7 +4,6 @@ package opennlp.tools.entitylinker;
  *
  * @author Owner
  */
-import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -56,8 +55,8 @@ public final class MySQLGeoNamesGazLinkable {
     return returnlocs;
   }
 
-  protected Connection getMySqlConnection(EntityLinkerProperties properties) throws Exception {
-    EntityLinkerProperties property = new EntityLinkerProperties(new File("c:\\temp\\opennlpmodels\\entitylinker.properties"));
+  protected Connection getMySqlConnection(EntityLinkerProperties property) throws Exception {
+   // EntityLinkerProperties property = new EntityLinkerProperties(new File("c:\\temp\\opennlpmodels\\entitylinker.properties"));
     String driver = property.getProperty("mysql.driver", "org.gjt.mm.mysql.Driver");
     String url = property.getProperty("mysql.url", "jdbc:mysql://localhost:3306/world");
     String username = property.getProperty("mysql.username", "root");
