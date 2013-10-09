@@ -61,6 +61,8 @@ public abstract class BaseModel implements ArtifactProvider {
   public static final String TRAINING_ITERATIONS_PROPERTY = "Training-Iterations";
   public static final String TRAINING_EVENTHASH_PROPERTY = "Training-Eventhash";
   
+  private static String SERIALIZER_CLASS_NAME_PREFIX = "serializer-class-";
+  
   private Map<String, ArtifactSerializer> artifactSerializers =
       new HashMap<String, ArtifactSerializer>();
 
@@ -296,6 +298,13 @@ public abstract class BaseModel implements ArtifactProvider {
       if (leftoverArtifacts.containsKey(entryName)) {
         ArtifactSerializer factory = artifactSerializers.get(extension);
 
+        if (factory == null) {
+          String artifactSerializerClazzName = 
+              getManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + entryName);
+            
+          factory = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerClazzName);
+        }
+        
         if (factory == null) {
           throw new InvalidFormatException("Unknown artifact format: "
               + extension);
@@ -547,8 +556,20 @@ public abstract class BaseModel implements ArtifactProvider {
     for (String name : artifactMap.keySet()) {
       zip.putNextEntry(new ZipEntry(name));
 
+      Object artifact = artifactMap.get(name);
+      
       ArtifactSerializer serializer = getArtifactSerializer(name);
 
+      if (serializer == null && artifact instanceof SerializableArtifact) {
+        SerializableArtifact serializableArtifact = (SerializableArtifact) artifact;
+        
+        String artifactSerializerName =
+            serializableArtifact.getArtifactSerializerClass().getName();
+        
+        serializer = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerName);
+        setManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + name, artifactSerializerName);
+      }
+      
       if (serializer == null) {
         throw new IllegalStateException("Missing serializer for " + name);
       }
