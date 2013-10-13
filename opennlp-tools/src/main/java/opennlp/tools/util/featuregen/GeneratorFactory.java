@@ -95,6 +95,8 @@ public class GeneratorFactory {
      */
     AdaptiveFeatureGenerator create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException;
+    
+    //
   }
 
   /**
@@ -251,6 +253,30 @@ public class GeneratorFactory {
     }
   }
 
+  /**
+   * @see DictionaryFeatureGenerator
+   */
+  static class W2VClassesFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
+
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+        FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
+      
+      String dictResourceKey = generatorElement.getAttribute("dict");
+      
+      Object dictResource = resourceManager.getResource(dictResourceKey);
+      
+      if (!(dictResource instanceof W2VClassesDictionary)) {
+        throw new InvalidFormatException("Not a W2VClassesDictionary resource for key: " + dictResourceKey);
+      }
+      
+      return new WordClusterFeatureGenerator((W2VClassesDictionary) dictResource);
+    }
+
+    static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("dictionary", new DictionaryFeatureGeneratorFactory());
+    }
+  }
+  
   /**
    * @see PreviousMapFeatureGenerator
    */
@@ -448,6 +474,8 @@ public class GeneratorFactory {
       AdaptiveFeatureGenerator generator = ExtensionLoader.instantiateExtension(AdaptiveFeatureGenerator.class,
           featureGeneratorClassName);
       
+      // TODO: User could define artifact mappings ...
+      
       return generator;
     }
 
@@ -545,4 +573,6 @@ public class GeneratorFactory {
 
     return createGenerator(generatorElement, resourceManager);
   }
+  
+  // TODO: Add method to extract ArtifactSerializer mapping from feature gen ...
 }
