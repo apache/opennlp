@@ -253,6 +253,18 @@ public class GeneratorFactory {
     }
   }
 
+  static class DocumentBeginFeatureGenerator implements XmlFeatureGeneratorFactory {
+
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+        FeatureGeneratorResourceProvider resourceManager) {
+      return new PreviousMapFeatureGenerator();
+    }
+
+    static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("docbegin", new DocumentBeginFeatureGenerator());
+    }
+  }
+  
   /**
    * @see DictionaryFeatureGenerator
    */
@@ -493,6 +505,7 @@ public class GeneratorFactory {
     CharacterNgramFeatureGeneratorFactory.register(factories);
     DefinitionFeatureGeneratorFactory.register(factories);
     DictionaryFeatureGeneratorFactory.register(factories);
+    DocumentBeginFeatureGenerator.register(factories);
     PreviousMapFeatureGeneratorFactory.register(factories);
     SentenceFeatureGeneratorFactory.register(factories);
     TokenClassFeatureGeneratorFactory.register(factories);
