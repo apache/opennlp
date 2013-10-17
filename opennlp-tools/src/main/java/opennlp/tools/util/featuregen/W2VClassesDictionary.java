@@ -33,7 +33,7 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
-public class W2VClassesDictionary {
+public class W2VClassesDictionary implements SerializableArtifact {
 
   public static class W2VClassesDictionarySerializer implements ArtifactSerializer<W2VClassesDictionary> {
 

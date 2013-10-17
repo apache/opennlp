@@ -29,13 +29,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
 import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
 import opennlp.tools.util.featuregen.GeneratorFactory;
+import opennlp.tools.util.featuregen.W2VClassesDictionary;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
@@ -178,7 +178,7 @@ public class TokenNameFinderModel extends BaseModel {
   
   public TokenNameFinderModel updateFeatureGenerator(byte descriptor[]) {
         
-    TokenNameFinderModel model = new TokenNameFinderModel(getLanguage(), (AbstractModel) getNameFinderModel(),
+    TokenNameFinderModel model = new TokenNameFinderModel(getLanguage(), getNameFinderModel(),
         descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap());
     
     // TODO: Not so nice!
@@ -201,10 +201,14 @@ public class TokenNameFinderModel extends BaseModel {
     // TODO: Not so nice, because code cannot really be reused by the other create serializer method
     //       Has to be redesigned, we need static access to default serializers
     //       and these should be able to extend during runtime ?! 
+    //
+    //       The XML feature generator factory should provide these mappings.
+    //       Usually the feature generators should know what type of resource they expect.
     
     Map<String, ArtifactSerializer> serializers = BaseModel.createArtifactSerializers();
     
     serializers.put("featuregen", new ByteArraySerializer());
+    serializers.put("w2vclasses", new W2VClassesDictionary.W2VClassesDictionarySerializer());
     
     return serializers;
   }
