@@ -277,6 +277,7 @@ public class GeneratorFactory {
       
       Object dictResource = resourceManager.getResource(dictResourceKey);
       
+
       if (!(dictResource instanceof W2VClassesDictionary)) {
         throw new InvalidFormatException("Not a W2VClassesDictionary resource for key: " + dictResourceKey);
       }
@@ -285,7 +286,7 @@ public class GeneratorFactory {
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
-      factoryMap.put("dictionary", new DictionaryFeatureGeneratorFactory());
+      factoryMap.put("w2vwordcluster", new W2VClassesFeatureGeneratorFactory());
     }
   }
   
@@ -515,6 +516,7 @@ public class GeneratorFactory {
     PrefixFeatureGeneratorFactory.register(factories);
     SuffixFeatureGeneratorFactory.register(factories);
     WindowFeatureGeneratorFactory.register(factories);
+    W2VClassesFeatureGeneratorFactory.register(factories);
     CustomFeatureGeneratorFactory.register(factories);
   }
 

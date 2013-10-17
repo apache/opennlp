@@ -301,8 +301,10 @@ public abstract class BaseModel implements ArtifactProvider {
         if (factory == null) {
           String artifactSerializerClazzName = 
               getManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + entryName);
-            
-          factory = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerClazzName);
+
+          if (artifactSerializerClazzName != null) {
+            factory = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerClazzName);
+          }
         }
         
         if (factory == null) {
@@ -550,6 +552,20 @@ public abstract class BaseModel implements ArtifactProvider {
       throw new IllegalStateException(
           "The method BaseModel.loadArtifactSerializers() was not called by BaseModel subclass constructor.");
     }
+
+    for (String name : artifactMap.keySet()) {
+      Object artifact = artifactMap.get(name);
+      if (artifact instanceof SerializableArtifact) {
+
+        SerializableArtifact serializableArtifact = (SerializableArtifact) artifact;
+
+        String artifactSerializerName = serializableArtifact
+            .getArtifactSerializerClass().getName();
+
+        setManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + name,
+            artifactSerializerName);
+      }
+    }
     
     ZipOutputStream zip = new ZipOutputStream(out);
 
@@ -561,13 +577,13 @@ public abstract class BaseModel implements ArtifactProvider {
       ArtifactSerializer serializer = getArtifactSerializer(name);
 
       if (serializer == null && artifact instanceof SerializableArtifact) {
-        SerializableArtifact serializableArtifact = (SerializableArtifact) artifact;
         
+        SerializableArtifact serializableArtifact = (SerializableArtifact) artifact;
+
         String artifactSerializerName =
             serializableArtifact.getArtifactSerializerClass().getName();
         
         serializer = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerName);
-        setManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + name, artifactSerializerName);
       }
       
       if (serializer == null) {
