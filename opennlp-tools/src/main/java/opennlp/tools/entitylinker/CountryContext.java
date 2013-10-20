@@ -21,23 +21,42 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- *Finds instances of country mentions in a String, typically a document text.
+ * Finds instances of country mentions in a String, typically a document text.
  * Used to boost or degrade scoring of linked geo entities
-
+ *
  */
 public class CountryContext {
 
   private Connection con;
   private List<CountryContextEntry> countrydata;
+  private Map<String, Set<String>> nameCodesMap = new HashMap<String, Set<String>>();
+
+  public Map<String, Set<String>> getNameCodesMap() {
+    return nameCodesMap;
+  }
+
+  public void setNameCodesMap(Map<String, Set<String>> nameCodesMap) {
+    this.nameCodesMap = nameCodesMap;
+  }
 
   public CountryContext() {
   }
 
+  /**
+   * use regexFind
+   */
+  @Deprecated
   public List<CountryContextHit> find(String docText, EntityLinkerProperties properties) {
     List<CountryContextHit> hits = new ArrayList<CountryContextHit>();
     try {
@@ -51,7 +70,7 @@ public class CountryContext {
 
         if (docText.contains(entry.getFull_name_nd_ro())) {
           System.out.println("\tFound Country indicator: " + entry.getFull_name_nd_ro());
-          CountryContextHit hit = new CountryContextHit(entry.getCc1(), docText.indexOf(entry.getFull_name_nd_ro()), docText.indexOf(entry.getFull_name_nd_ro()+ entry.getFull_name_nd_ro().length()));
+          CountryContextHit hit = new CountryContextHit(entry.getCc1(), docText.indexOf(entry.getFull_name_nd_ro()), docText.indexOf(entry.getFull_name_nd_ro() + entry.getFull_name_nd_ro().length()));
           hits.add(hit);
         }
       }
@@ -60,6 +79,81 @@ public class CountryContext {
       Logger.getLogger(CountryContext.class.getName()).log(Level.SEVERE, null, ex);
     }
     return hits;
+
+  }
+/**
+ * Finds mentions of countries based on a list from MySQL stored procedure called getCountryList. This method finds country mentions in documents,
+ * which is an essential element of the scoring that is done for geo linkedspans. Lazily loads the list from the database.
+ * @param docText the full text of the document
+ * @param properties EntityLinkerProperties for getting database connection
+ * @return
+ */
+  public Map<String, Set<Integer>> regexfind(String docText, EntityLinkerProperties properties) {
+    Map<String, Set<Integer>> hits = new HashMap<String, Set<Integer>>();
+    try {
+      if (con == null) {
+        con = getMySqlConnection(properties);
+      }
+      if (countrydata == null) {
+        countrydata = getCountryData(properties);
+      }
+      for (CountryContextEntry entry : countrydata) {
+        Pattern regex = Pattern.compile(entry.getFull_name_nd_ro(), Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher rs = regex.matcher(docText);
+        String code = entry.getCc1().toLowerCase();
+        while (rs.find()) {
+          Integer start = rs.start();
+          String hit = rs.group().toLowerCase();
+          if (hits.containsKey(code)) {
+            hits.get(code).add(start);
+          } else {
+            Set<Integer> newset = new HashSet<Integer>();
+            newset.add(start);
+            hits.put(code, newset);
+          }
+          if (!hit.equals("")) {
+            if (this.nameCodesMap.containsKey(hit)) {
+              nameCodesMap.get(hit).add(code);
+            } else {
+              HashSet<String> newset = new HashSet<String>();
+              newset.add(code);
+              nameCodesMap.put(hit, newset);
+            }
+          }
+        }
+
+      }
+
+    } catch (Exception ex) {
+      Logger.getLogger(CountryContext.class.getName()).log(Level.SEVERE, null, ex);
+    }
+
+    //System.out.println(hits);
+    return hits;
+  }
+/**
+ * returns a unique list of country codes
+ * @param hits the hits discovered
+ * @return
+ */
+  public static Set<String> getCountryCodes(List<CountryContextHit> hits) {
+    Set<String> ccs = new HashSet<String>();
+    for (CountryContextHit hit : hits) {
+      ccs.add(hit.getCountryCode().toLowerCase());
+    }
+    return ccs;
+  }
+
+  public static String getCountryCodeCSV(Set<String> hits) {
+    String csv = "";
+    if (hits.isEmpty()) {
+      return csv;
+    }
+
+    for (String code : hits) {
+      csv += "," + code;
+    }
+    return csv.substring(1);
   }
 
   private Connection getMySqlConnection(EntityLinkerProperties properties) throws Exception {
@@ -73,7 +167,12 @@ public class CountryContext {
     Connection conn = DriverManager.getConnection(url, username, password);
     return conn;
   }
-
+/**
+ * reads the list from the database by calling a stored procedure getCountryList
+ * @param properties
+ * @return
+ * @throws SQLException
+ */
   private List<CountryContextEntry> getCountryData(EntityLinkerProperties properties) throws SQLException {
     List<CountryContextEntry> entries = new ArrayList<CountryContextEntry>();
     try {

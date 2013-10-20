@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import opennlp.tools.entitylinker.domain.BaseLink;
@@ -26,17 +28,24 @@ import opennlp.tools.entitylinker.domain.LinkedSpan;
 import opennlp.tools.util.Span;
 
 /**
- * Links location entities to gazatteers.
+ * Links location entities to gazatteers. Currently supports gazateers in a
+ * MySql database (NGA and USGS)
  *
  *
  */
 public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
 
+  GeoEntityScorer scorer = new GeoEntityScorer();
   private MySQLGeoNamesGazLinkable geoNamesGaz;// = new MySQLGeoNamesGazLinkable();
   private MySQLUSGSGazLinkable usgsGaz;//= new MySQLUSGSGazLinkable();
   private CountryContext countryContext;
-  private List<CountryContextHit> hits;
-  private EntityLinkerProperties props;
+  private Map<String, Set<Integer>> countryMentions;
+  private EntityLinkerProperties linkerProperties;
+  /**
+   * Flag for deciding whether to search gaz only for toponyms within countries
+   * that are mentioned in the document
+   */
+  private Boolean filterCountryContext=true;
 
   public GeoEntityLinker() {
     if (geoNamesGaz == null || usgsGaz == null) {
@@ -50,25 +59,44 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
   public List<LinkedSpan> find(String text, Span[] sentences, String[] tokens, Span[] names) {
     ArrayList<LinkedSpan> spans = new ArrayList<LinkedSpan>();
     try {
-      if (props == null) {
-        props = new EntityLinkerProperties(new File("C:\\temp\\opennlpmodels\\entitylinker.properties"));
+      if (linkerProperties == null) {
+        linkerProperties = new EntityLinkerProperties(new File("C:\\temp\\opennlpmodels\\entitylinker.properties"));
       }
-      if (hits == null) {
-        System.out.println("getting country context");
-        hits = countryContext.find(text, props);
-      }
-
+     
+        countryMentions = countryContext.regexfind(text, linkerProperties);
+      
+      //prioritize query
+      filterCountryContext = Boolean.valueOf(linkerProperties.getProperty("geoentitylinker.filter_by_country_context", "true"));
       String[] matches = Span.spansToStrings(names, tokens);
       for (int i = 0; i < matches.length; i++) {
-        System.out.println("processing match " + i + " of " + matches.length);
-        ArrayList<BaseLink> geoNamesEntries = geoNamesGaz.find(matches[i], names[i], hits, props);
-        ArrayList<BaseLink> usgsEntries = usgsGaz.find(matches[i], names[i], hits, props);
-        LinkedSpan<BaseLink> geoSpans = new LinkedSpan<BaseLink>(geoNamesEntries, names[i].getStart(), names[i].getEnd());
-        geoSpans.getLinkedEntries().addAll(usgsEntries);
-        geoSpans.setSearchTerm(matches[i]);
-        spans.add(geoSpans);
+
+//nga gazateer is for other than US placenames, don't use it unless US is a mention in the document
+        ArrayList<BaseLink> geoNamesEntries = new ArrayList<BaseLink>();
+        if (!(countryMentions.keySet().contains("us") && countryMentions.keySet().size() == 1) || countryMentions.keySet().size() > 1) {
+          geoNamesEntries = geoNamesGaz.find(matches[i], names[i], countryMentions, linkerProperties);
+        }
+        ArrayList<BaseLink> usgsEntries = new ArrayList<BaseLink>();
+        if (countryMentions.keySet().contains("us")) {
+          usgsEntries = usgsGaz.find(matches[i], names[i], countryMentions, linkerProperties);
+        }
+        LinkedSpan<BaseLink> geoSpan = new LinkedSpan<BaseLink>(geoNamesEntries, names[i].getStart(), names[i].getEnd());
+
+        if (!usgsEntries.isEmpty()) {
+          geoSpan.getLinkedEntries().addAll(usgsEntries);
+          geoSpan.setSearchTerm(matches[i]);
+        }
+
+        if (!geoSpan.getLinkedEntries().isEmpty()) {
+          geoSpan.setSearchTerm(matches[i]);
+          spans.add(geoSpan);
+        }
+
       }
-      return spans;
+      //score the spans
+
+      scorer.score(spans, countryMentions, countryContext.getNameCodesMap(), text, sentences, 1000);
+
+      //  return spans;
     } catch (IOException ex) {
       Logger.getLogger(GeoEntityLinker.class.getName()).log(Level.SEVERE, null, ex);
     }
@@ -78,12 +106,14 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
   public List<LinkedSpan> find(String text, Span[] sentences, Span[] tokens, Span[] names) {
     ArrayList<LinkedSpan> spans = new ArrayList<LinkedSpan>();
     try {
-
-
-      if (props == null) {
-        props = new EntityLinkerProperties(new File("C:\\temp\\opennlpmodels\\entitylinker.properties"));
+      if (linkerProperties == null) {
+        linkerProperties = new EntityLinkerProperties(new File("C:\\temp\\opennlpmodels\\entitylinker.properties"));
       }
-      List<CountryContextHit> hits = countryContext.find(text, props);
+     
+        //  System.out.println("getting country context");
+        //hits = countryContext.find(text, linkerProperties);
+        countryMentions = countryContext.regexfind(text, linkerProperties);
+      
       //get the sentence text....must assume some index
       Span s = sentences[0];
       String sentence = text.substring(s.getStart(), s.getEnd());
@@ -92,17 +122,32 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
       //get the names based on the tokens
       String[] matches = Span.spansToStrings(names, stringtokens);
       for (int i = 0; i < matches.length; i++) {
-        ArrayList<BaseLink> geoNamesEntries = geoNamesGaz.find(matches[i], names[i], hits, props);
-        ArrayList<BaseLink> usgsEntries = usgsGaz.find(matches[i], names[i], hits, props);
-        LinkedSpan<BaseLink> geoSpans = new LinkedSpan<BaseLink>(geoNamesEntries, names[i], 0);
-        geoSpans.getLinkedEntries().addAll(usgsEntries);
-        geoSpans.setSearchTerm(matches[i]);
-        spans.add(geoSpans);
+        //nga gazateer is for other than US placenames, don't use it unless US is a mention in the document
+        ArrayList<BaseLink> geoNamesEntries = new ArrayList<BaseLink>();
+        if (!(countryMentions.keySet().contains("us") && countryMentions.keySet().size() == 1) || countryMentions.keySet().size() > 1) {
+          geoNamesEntries = geoNamesGaz.find(matches[i], names[i], countryMentions, linkerProperties);
+        }
+        ArrayList<BaseLink> usgsEntries = new ArrayList<BaseLink>();
+        if (countryMentions.keySet().contains("us")) {
+          usgsEntries = usgsGaz.find(matches[i], names[i], countryMentions, linkerProperties);
+        }
+        LinkedSpan<BaseLink> geoSpan = new LinkedSpan<BaseLink>(geoNamesEntries, names[i].getStart(), names[i].getEnd());
+
+        if (!usgsEntries.isEmpty()) {
+          geoSpan.getLinkedEntries().addAll(usgsEntries);
+          geoSpan.setSearchTerm(matches[i]);
+        }
+
+        if (!geoSpan.getLinkedEntries().isEmpty()) {
+          geoSpan.setSearchTerm(matches[i]);
+          spans.add(geoSpan);
+        }
       }
-      return spans;
+
     } catch (IOException ex) {
       Logger.getLogger(GeoEntityLinker.class.getName()).log(Level.SEVERE, null, ex);
     }
+    scorer.score(spans, countryMentions, countryContext.getNameCodesMap(), text, sentences, 1000);
     return spans;
   }
 
@@ -110,10 +155,11 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
     ArrayList<LinkedSpan> spans = new ArrayList<LinkedSpan>();
     try {
 
-      if (props == null) {
-        props = new EntityLinkerProperties(new File("C:\\temp\\opennlpmodels\\entitylinker.properties"));
+      if (linkerProperties == null) {
+        linkerProperties = new EntityLinkerProperties(new File("C:\\temp\\opennlpmodels\\entitylinker.properties"));
       }
-      List<CountryContextHit> hits = countryContext.find(text, props);
+
+      countryMentions = countryContext.regexfind(text, linkerProperties);
 
       Span s = sentences[sentenceIndex];
       String sentence = text.substring(s.getStart(), s.getEnd());
@@ -123,15 +169,29 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
       String[] matches = Span.spansToStrings(names, stringtokens);
 
       for (int i = 0; i < matches.length; i++) {
-        ArrayList<BaseLink> geoNamesEntries = geoNamesGaz.find(matches[i], names[i], hits, props);
-        ArrayList<BaseLink> usgsEntries = usgsGaz.find(matches[i], names[i], hits, props);
-        LinkedSpan<BaseLink> geoSpans = new LinkedSpan<BaseLink>(geoNamesEntries, names[i], 0);
-        geoSpans.getLinkedEntries().addAll(usgsEntries);
-        geoSpans.setSearchTerm(matches[i]);
-        geoSpans.setSentenceid(sentenceIndex);
-        spans.add(geoSpans);
-      }
+//nga gazateer is for other than US placenames, don't use it unless US is a mention in the document
+        ArrayList<BaseLink> geoNamesEntries = new ArrayList<BaseLink>();
+        if (!(countryMentions.keySet().contains("us") && countryMentions.keySet().size() == 1) || countryMentions.keySet().size() > 1) {
+          geoNamesEntries = geoNamesGaz.find(matches[i], names[i], countryMentions, linkerProperties);
+        }
+        ArrayList<BaseLink> usgsEntries = new ArrayList<BaseLink>();
+        if (countryMentions.keySet().contains("us")) {
+          usgsEntries = usgsGaz.find(matches[i], names[i], countryMentions, linkerProperties);
+        }
+        LinkedSpan<BaseLink> geoSpan = new LinkedSpan<BaseLink>(geoNamesEntries, names[i].getStart(), names[i].getEnd());
 
+        if (!usgsEntries.isEmpty()) {
+          geoSpan.getLinkedEntries().addAll(usgsEntries);
+          geoSpan.setSearchTerm(matches[i]);
+        }
+
+        if (!geoSpan.getLinkedEntries().isEmpty()) {
+          geoSpan.setSearchTerm(matches[i]);
+          geoSpan.setSentenceid(sentenceIndex);
+          spans.add(geoSpan);
+        }
+      }
+      scorer.score(spans, countryMentions, countryContext.getNameCodesMap(), text, sentences, 2000);
     } catch (IOException ex) {
       Logger.getLogger(GeoEntityLinker.class.getName()).log(Level.SEVERE, null, ex);
     }
@@ -139,6 +199,6 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
   }
 
   public void setEntityLinkerProperties(EntityLinkerProperties properties) {
-    this.props = properties;
+    this.linkerProperties = properties;
   }
 }

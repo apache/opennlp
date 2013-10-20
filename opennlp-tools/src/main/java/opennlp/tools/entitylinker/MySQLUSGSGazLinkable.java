@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,8 +31,7 @@ import opennlp.tools.entitylinker.domain.BaseLink;
 import opennlp.tools.util.Span;
 
 /**
- *
- * @author opennlp
+ * Links names to the USGS gazateer
  */
 public class MySQLUSGSGazLinkable {
 
@@ -41,12 +41,12 @@ public class MySQLUSGSGazLinkable {
   public MySQLUSGSGazLinkable() {
   }
 
-  public ArrayList<BaseLink> find(String locationText, Span span, List<CountryContextHit> countryHits, EntityLinkerProperties properties) {
+  public ArrayList<BaseLink> find(String locationText, Span span, Map<String, Set<Integer>> countryHits, EntityLinkerProperties properties) {
     ArrayList<BaseLink> returnlocs = new ArrayList<BaseLink>();
     try {
       filterCountryContext = Boolean.valueOf(properties.getProperty("geoentitylinker.filter_by_country_context", "false"));
       //the usgs gazateer only has us geonames, so only use it if the user doesn't care about country isolation or the hits contain us
-      if (getCountryCodes(countryHits).contains("us") || !filterCountryContext) {
+      if (countryHits.keySet().contains("us") || !filterCountryContext) {
 
         if (con == null) {
           con = getMySqlConnection(properties);
@@ -56,7 +56,7 @@ public class MySQLUSGSGazLinkable {
         if (!thresh.matches("[azAZ]")) {
           threshhold = Integer.valueOf(thresh);
         }
-        returnlocs.addAll(this.searchGaz(locationText, threshhold, getCountryCodes(countryHits), properties));
+        returnlocs.addAll(this.searchGaz(locationText, threshhold, countryHits.keySet(), properties));
       }
     } catch (Exception ex) {
       Logger.getLogger(MySQLUSGSGazLinkable.class.getName()).log(Level.SEVERE, null, ex);
@@ -84,13 +84,13 @@ public class MySQLUSGSGazLinkable {
     cs = con.prepareCall("CALL `search_gaz`(?, ?)");
     cs.setString(1, this.format(searchString));
     cs.setInt(2, matchthresh);
-    ArrayList<MySQLUSGSGazEntry> retUrls = new ArrayList<MySQLUSGSGazEntry>();
+    ArrayList<MySQLUSGSGazEntry> toponyms = new ArrayList<MySQLUSGSGazEntry>();
     ResultSet rs;
     try {
       rs = cs.executeQuery();
 
       if (rs == null) {
-        return retUrls;
+        return toponyms;
       }
 
       while (rs.next()) {
@@ -99,21 +99,20 @@ public class MySQLUSGSGazLinkable {
 
         s.setFeatureid(String.valueOf(rs.getLong(2)));
         s.setFeaturename(rs.getString(3));
+
         s.setFeatureclass(rs.getString(4));
         s.setStatealpha(rs.getString(5));
         s.setPrimarylatitudeDEC(rs.getDouble(6));
         s.setPrimarylongitudeDEC(rs.getDouble(7));
         s.setMapname(rs.getString(8));
-        if (countryCodes.contains("us")) {
-          s.setRank(s.getRank() + (s.getRank() * .5));
-         // System.out.println(searchString +"USGS qualified on: " + s.getFeaturename());
-        } else {
-          s.setRank(s.getRank() * .5);
-          if(filterCountryContext){
-            continue;
-          }
-        }
-        retUrls.add(s);
+
+        //set the base link data
+        s.setItemName(s.getFeaturename().toLowerCase().trim());
+        s.setItemID(s.getFeatureid());
+        s.setItemType(s.getFeatureclass());
+        s.setItemParentID("us");
+
+        toponyms.add(s);
       }
 
     } catch (SQLException ex) {
@@ -124,7 +123,7 @@ public class MySQLUSGSGazLinkable {
       con.close();
     }
 
-    return retUrls;
+    return toponyms;
   }
 
   private Set<String> getCountryCodes(List<CountryContextHit> hits) {
