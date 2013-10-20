@@ -13,27 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.entitylinker.domain;
 
 /**
  * Stores a minimal tuple of information. Intended to be used with LinkedSpan
  *
-
+ *
  */
 public abstract class BaseLink {
 
+  private String itemParentID;
   private String itemID;
   private String itemName;
   private String itemType;
+  private Double score;
+  private Double fuzzyStringMatchingScore;
 
   public BaseLink() {
   }
 
-  public BaseLink(String itemID, String itemName, String itemType) {
+  public BaseLink(String itemParentID, String itemID, String itemName, String itemType) {
+    this.itemParentID = itemParentID;
     this.itemID = itemID;
     this.itemName = itemName;
     this.itemType = itemType;
+  }
+
+  public Double getScore() {
+    return score;
+  }
+
+  public void setScore(Double score) {
+    this.score = score;
+  }
+
+  public String getItemParentID() {
+    return itemParentID;
+  }
+
+  public void setItemParentID(String itemParentID) {
+    this.itemParentID = itemParentID;
   }
 
   /**
@@ -93,10 +112,16 @@ public abstract class BaseLink {
     this.itemType = itemType;
   }
 
-
-
   @Override
   public String toString() {
     return "BaseLink{" + "itemID=" + itemID + ", itemName=" + itemName + ", itemType=" + itemType + '}';
+  }
+
+  public Double getFuzzyStringMatchingScore() {
+    return fuzzyStringMatchingScore;
+  }
+
+  public void setFuzzyStringMatchingScore(Double fuzzyStringMatchingScore) {
+    this.fuzzyStringMatchingScore = fuzzyStringMatchingScore;
   }
 }

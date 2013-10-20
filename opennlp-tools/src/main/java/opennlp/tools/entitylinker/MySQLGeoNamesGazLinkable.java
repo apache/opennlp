@@ -1,17 +1,13 @@
 package opennlp.tools.entitylinker;
 
-/**
- *
- * @author Owner
- */
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,7 +16,7 @@ import opennlp.tools.util.Span;
 
 /**
  *
- *
+ *Links names to the NGA gazateer
  */
 public final class MySQLGeoNamesGazLinkable {
 
@@ -30,7 +26,7 @@ public final class MySQLGeoNamesGazLinkable {
   public MySQLGeoNamesGazLinkable() {
   }
 
-  public ArrayList<BaseLink> find(String locationText, Span span, List<CountryContextHit> countryHits, EntityLinkerProperties properties) {
+  public ArrayList<BaseLink> find(String locationText, Span span, Map<String, Set<Integer>> countryHits, EntityLinkerProperties properties) {
     ArrayList<BaseLink> returnlocs = new ArrayList<BaseLink>();
 
     try {
@@ -40,13 +36,13 @@ public final class MySQLGeoNamesGazLinkable {
       //   pull from config to utilize country context filtering
       filterCountryContext = Boolean.valueOf(properties.getProperty("geoentitylinker.filter_by_country_context", "false"));
 
-      Set<String> countrycodes = getCountryCodes(countryHits);
+      
       String thresh = properties.getProperty("mysqlusgsgazscorethresh", "25");
       int threshhold = -1;
       if (!thresh.matches("[azAZ]")) {
         threshhold = Integer.valueOf(thresh);
       }
-      returnlocs.addAll(this.searchGaz(locationText, threshhold, countrycodes, properties));
+      returnlocs.addAll(this.searchGaz(locationText, threshhold, countryHits.keySet(), properties));
 
 
     } catch (Exception ex) {
@@ -56,7 +52,7 @@ public final class MySQLGeoNamesGazLinkable {
   }
 
   protected Connection getMySqlConnection(EntityLinkerProperties property) throws Exception {
-   // EntityLinkerProperties property = new EntityLinkerProperties(new File("c:\\temp\\opennlpmodels\\entitylinker.properties"));
+    // EntityLinkerProperties property = new EntityLinkerProperties(new File("c:\\temp\\opennlpmodels\\entitylinker.properties"));
     String driver = property.getProperty("mysql.driver", "org.gjt.mm.mysql.Driver");
     String url = property.getProperty("mysql.url", "jdbc:mysql://localhost:3306/world");
     String username = property.getProperty("mysql.username", "root");
@@ -73,16 +69,23 @@ public final class MySQLGeoNamesGazLinkable {
       con = getMySqlConnection(properties);
     }
     CallableStatement cs;
-    cs = con.prepareCall("CALL `search_geonames`(?, ?)");
+    cs = con.prepareCall("CALL `search_geonames`(?, ?, ?)");
     cs.setString(1, this.format(searchString));
     cs.setInt(2, matchthresh);
-    ArrayList<MySQLGeoNamesGazEntry> retLocs = new ArrayList<MySQLGeoNamesGazEntry>();
+    if (filterCountryContext) {
+      cs.setString(3,CountryContext.getCountryCodeCSV(countryCodes));
+    } else {
+      //database stored procedure handles empty string
+      cs.setString(3, "");
+    }
+
+    ArrayList<MySQLGeoNamesGazEntry> toponyms = new ArrayList<MySQLGeoNamesGazEntry>();
     ResultSet rs;
     try {
       rs = cs.executeQuery();
 
       if (rs == null) {
-        return retLocs;
+        return toponyms;
       }
 
       while (rs.next()) {
@@ -117,17 +120,13 @@ public final class MySQLGeoNamesGazLinkable {
 
         s.setRank(rs.getDouble(14));
 
-        if (filterCountryContext) {
-          if (countryCodes.contains(s.getCC1().toLowerCase())) {
-          //  System.out.println(searchString +" GeoNames qualified on: " + s.getCC1());
-            s.setRank(s.getRank() + 1.0);
-          } else {
-         //    System.out.println(s.getFULL_NAME_ND_RO() + ", with CC1 of "+ s.getCC1()+ ", is not within countries discovered in the document. The Country list used to discover countries can be modified in mysql procedure getCountryList()");
-            continue;
-          }
-        }
-
-        retLocs.add(s);
+            //set the base link data
+        s.setItemName(s.getFULL_NAME_ND_RO().toLowerCase().trim());
+        s.setItemID(s.getUFI());
+        s.setItemType(s.getDSG());
+        s.setItemParentID(s.getCC1().toLowerCase());
+   
+        toponyms.add(s);
       }
 
     } catch (SQLException ex) {
@@ -138,16 +137,10 @@ public final class MySQLGeoNamesGazLinkable {
       con.close();
     }
 
-    return retLocs;
+    return toponyms;
   }
 
-  private Set<String> getCountryCodes(List<CountryContextHit> hits) {
-    Set<String> ccs = new HashSet<String>();
-    for (CountryContextHit hit : hits) {
-      ccs.add(hit.getCountryCode().toLowerCase());
-    }
-    return ccs;
-  }
+
 
   public String format(String entity) {
     return "\"" + entity + "\"";

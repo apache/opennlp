@@ -18,59 +18,31 @@ package opennlp.tools.entitylinker;
 import opennlp.tools.entitylinker.domain.BaseLink;
 
 /**
- *
+ *Stores an entry from the NGA Geonames gazateer
 
  */
 public class MySQLGeoNamesGazEntry extends BaseLink
 {
-  ////actual fields returned
-//ufi, 
-//latitude, 
-//longitude, 
-//cc1,
-//adm1, 
-//dsg,
-//SHORT_FORM ,
-//	SORT_NAME_RO ,
-//	FULL_NAME_RO ,
-//	FULL_NAME_ND_RO ,
-//	SORT_NAME_RG ,
-//	FULL_NAME_RG ,
-//	FULL_NAME_ND_RG ,
-//match(`SHORT_FORM` ,`SORT_NAME_RO`,`FULL_NAME_RO`,`FULL_NAME_ND_RO` ,`SORT_NAME_RG` ,`FULL_NAME_RG` ,`FULL_NAME_ND_RG`) 
-//against(pSearch in natural language mode) as rank
-  
-  ///////
-  
- // private String RC;// VARCHAR(150) NULL DEFAULT NULL,
+
   private String UFI;
-  //private String UNI;
+
   private Double LATITUDE; //DOUBLE NULL DEFAULT NULL,
   private Double LONGITUDE;// DOUBLE NULL DEFAULT NULL,
- // private String DMS_LAT;// VARCHAR(150) NULL DEFAULT NULL,
- // private String DMS_LONG;// VARCHAR(150) NULL DEFAULT NULL,
- // private String MGRS;// VARCHAR(150) NULL DEFAULT NULL,
-//  private String JOG;// VARCHAR(150) NULL DEFAULT NULL,
- // private String FC;// VARCHAR(150) NULL DEFAULT NULL,
+
   private String DSG;// VARCHAR(150) NULL DEFAULT NULL,
- // private String PC;// VARCHAR(150) NULL DEFAULT NULL,
+
   private String CC1;//` VARCHAR(150) NULL DEFAULT NULL,
   private String ADM1;// VARCHAR(150) NULL DEFAULT NULL,
- // private String POP;// VARCHAR(150) NULL DEFAULT NULL,
-  //private String ELEV;//VARCHAR(150) NULL DEFAULT NULL,
-//  private String CC2;// VARCHAR(150) NULL DEFAULT NULL,
- // private String NT;//VARCHAR(150) NULL DEFAULT NULL,
- // private String LC;// VARCHAR(150) NULL DEFAULT NULL,
+
   private String SHORT_FORM;// VARCHAR(500) NULL DEFAULT NULL,
- // private String GENERIC;// VARCHAR(150) NULL DEFAULT NULL,
+
   private String SORT_NAME_RO;//VARCHAR(500) NULL DEFAULT NULL,
   private String FULL_NAME_RO;// VARCHAR(500) NULL DEFAULT NULL,
   private String FULL_NAME_ND_RO;// VARCHAR(500) NULL DEFAULT NULL,
   private String SORT_NAME_RG;// VARCHAR(500) NULL DEFAULT NULL,
   private String FULL_NAME_RG;// VARCHAR(500) NULL DEFAULT NULL,
   private String FULL_NAME_ND_RG;// VARCHAR(500) NULL DEFAULT NULL,
-//  private String NOTE;//VARCHAR(500) NULL DEFAULT NULL,
- // private String MODIFY_DATE;// VARCHAR(150) NULL DEFAULT NULL,
+
 private Double rank;
 
   public String getUFI()

@@ -18,7 +18,7 @@ package opennlp.tools.entitylinker;
 import opennlp.tools.entitylinker.domain.BaseLink;
 
 /**
- *
+ *Stores an entry from the USGS gazateer
 
  */
 public class MySQLUSGSGazEntry extends BaseLink
