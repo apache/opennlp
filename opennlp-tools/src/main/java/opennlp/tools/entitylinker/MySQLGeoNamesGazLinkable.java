@@ -1,6 +1,5 @@
 package opennlp.tools.entitylinker;
 
-
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,7 +15,7 @@ import opennlp.tools.util.Span;
 
 /**
  *
- *Links names to the NGA gazateer
+ * Links names to the NGA gazateer
  */
 public final class MySQLGeoNamesGazLinkable {
 
@@ -36,8 +35,8 @@ public final class MySQLGeoNamesGazLinkable {
       //   pull from config to utilize country context filtering
       filterCountryContext = Boolean.valueOf(properties.getProperty("geoentitylinker.filter_by_country_context", "false"));
 
-      
-      String thresh = properties.getProperty("mysqlusgsgazscorethresh", "25");
+
+      String thresh = properties.getProperty("mysqlusgsgazscorethresh", "200");
       int threshhold = -1;
       if (!thresh.matches("[azAZ]")) {
         threshhold = Integer.valueOf(thresh);
@@ -73,7 +72,7 @@ public final class MySQLGeoNamesGazLinkable {
     cs.setString(1, this.format(searchString));
     cs.setInt(2, matchthresh);
     if (filterCountryContext) {
-      cs.setString(3,CountryContext.getCountryCodeCSV(countryCodes));
+      cs.setString(3, CountryContext.getCountryCodeCSV(countryCodes));
     } else {
       //database stored procedure handles empty string
       cs.setString(3, "");
@@ -120,12 +119,12 @@ public final class MySQLGeoNamesGazLinkable {
 
         s.setRank(rs.getDouble(14));
 
-            //set the base link data
+        //set the base link data
         s.setItemName(s.getFULL_NAME_ND_RO().toLowerCase().trim());
         s.setItemID(s.getUFI());
         s.setItemType(s.getDSG());
         s.setItemParentID(s.getCC1().toLowerCase());
-   
+        s.getScoreMap().put("mysqlfulltext", s.getRank());
         toponyms.add(s);
       }
 
@@ -139,8 +138,6 @@ public final class MySQLGeoNamesGazLinkable {
 
     return toponyms;
   }
-
-
 
   public String format(String entity) {
     return "\"" + entity + "\"";

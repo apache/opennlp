@@ -15,6 +15,8 @@
  */
 package opennlp.tools.entitylinker.domain;
 
+import java.util.HashMap;
+
 /**
  * Stores a minimal tuple of information. Intended to be used with LinkedSpan
  *
@@ -26,9 +28,8 @@ public abstract class BaseLink {
   private String itemID;
   private String itemName;
   private String itemType;
-  private Double score;
-  private Double fuzzyStringMatchingScore;
 
+  private HashMap<String, Double> scoreMap = new HashMap<String, Double>();
   public BaseLink() {
   }
 
@@ -39,13 +40,7 @@ public abstract class BaseLink {
     this.itemType = itemType;
   }
 
-  public Double getScore() {
-    return score;
-  }
 
-  public void setScore(Double score) {
-    this.score = score;
-  }
 
   public String getItemParentID() {
     return itemParentID;
@@ -117,11 +112,13 @@ public abstract class BaseLink {
     return "BaseLink{" + "itemID=" + itemID + ", itemName=" + itemName + ", itemType=" + itemType + '}';
   }
 
-  public Double getFuzzyStringMatchingScore() {
-    return fuzzyStringMatchingScore;
+ 
+
+  public HashMap<String, Double> getScoreMap() {
+    return scoreMap;
   }
 
-  public void setFuzzyStringMatchingScore(Double fuzzyStringMatchingScore) {
-    this.fuzzyStringMatchingScore = fuzzyStringMatchingScore;
+  public void setScoreMap(HashMap<String, Double> scoreMap) {
+    this.scoreMap = scoreMap;
   }
 }
