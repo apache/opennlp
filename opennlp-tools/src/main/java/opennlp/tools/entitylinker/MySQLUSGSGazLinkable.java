@@ -111,7 +111,7 @@ public class MySQLUSGSGazLinkable {
         s.setItemID(s.getFeatureid());
         s.setItemType(s.getFeatureclass());
         s.setItemParentID("us");
-
+        s.getScoreMap().put("mysqlfulltext", s.getRank());
         toponyms.add(s);
       }
 

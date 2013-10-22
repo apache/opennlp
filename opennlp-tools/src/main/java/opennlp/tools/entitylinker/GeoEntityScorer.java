@@ -37,7 +37,8 @@ public class GeoEntityScorer {
   /**
    * Assigns a score to each BaseLink in each linkedSpan's set of N best
    * matches. Currently the scoring indicates the probability that the toponym
-   * is correct based on the country context in the document and fuzzy string matching
+   * is correct based on the country context in the document and fuzzy string
+   * matching
    *
    * @param linkedData     the linked spans, holds the Namefinder results, and
    *                       the list of BaseLink for each
@@ -67,17 +68,18 @@ public class GeoEntityScorer {
          * high. To allow more recall, change mysql to "natural language mode",
          * and this score will become more significant
          */
-        link.setFuzzyStringMatchingScore(dice);
-
+        link.getScoreMap().put("dice", dice);
       }
       linkedspan = simpleProximityAnalysis(sentences, countryHits, linkedspan, maxAllowedDist);
     }
     return linkedData;
   }
-/**
- * sets class level variable to a code based on the number of mentions
- * @param countryHits
- */
+
+  /**
+   * sets class level variable to a code based on the number of mentions
+   *
+   * @param countryHits
+   */
   private void setDominantCode(Map<String, Set<Integer>> countryHits) {
     int hits = -1;
     for (String code : countryHits.keySet()) {
@@ -99,6 +101,7 @@ public class GeoEntityScorer {
    * @return
    */
   private LinkedSpan<BaseLink> simpleProximityAnalysis(Span[] sentences, Map<String, Set<Integer>> countryHits, LinkedSpan<BaseLink> span, Integer maxAllowedDistance) {
+    Double score = 0.0;
     //get the index of the actual span, begining of sentence
     //should generate tokens from sentence and create a char offset...
     //could have large sentences due to poor sentence detection or wonky doc text
@@ -142,7 +145,8 @@ public class GeoEntityScorer {
       //getItemParentId is the country code
       String spanCountryCode = link.getItemParentID();
       if (scoreMap.containsKey(spanCountryCode)) {
-        link.setScore(scoreMap.get(spanCountryCode));
+
+        score = scoreMap.get(spanCountryCode);
         ///does the name extracted match a country name?
         if (nameCodesMap.containsKey(link.getItemName().toLowerCase())) {
           //if so, is it the correct country code for that name
@@ -150,18 +154,19 @@ public class GeoEntityScorer {
             //boost the score becuase it is likely that this is the location in the text, so add 50% to the score or set to 1
             //TODO: make this multiplier configurable
             //TODO: improve this with a geographic/geometry based clustering (linear binning to be more precise) of points returned from the gaz
-            Double score = (link.getScore() + .75) > 1.0 ? 1d : (link.getScore() + .75);
+            score = (score + .75) > 1.0 ? 1d : (score + .75);
             //boost the score if the hit is from the dominant country context
 
-            if(link.getItemParentID().equals(dominantCode)){
+            if (link.getItemParentID().equals(dominantCode)) {
               score = (score + .25) > 1.0 ? 1d : (score + .25);
             }
-            link.setScore(score);
+
 
           }
 
         }
       }
+      link.getScoreMap().put("countrycontext", score);
     }
     return span;
   }
