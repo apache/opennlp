@@ -164,7 +164,7 @@ public class GeoHashBinScorer {
       Long n = list.get(i + 1);
       Long v = list.get(i);
       //Long percent = 100 - (v / n * 100);
-      long diff = n-v;
+      Long diff = n-v;
       if (diff > avg) {
         breaks.add(v);
       }
@@ -175,16 +175,16 @@ public class GeoHashBinScorer {
     Long lastBreak = -1L;
     for (Long br : breaks) {
       if (lastBreak == -1L) {
-        binToAmount.put(br, sets.subSet(0L, true, br, false));
+        binToAmount.put(br, sets.subSet(0L, br));
       } else {
-        binToAmount.put(br, sets.subSet(lastBreak, true, br, false));
+        binToAmount.put(br, sets.subSet(lastBreak, br));
       }
       lastBreak = br;
 
     }
     lastBreak = sets.higher(lastBreak);
     if (lastBreak != null) {
-      binToAmount.put(lastBreak, sets.subSet(lastBreak, true, sets.last(), true));
+      binToAmount.put(lastBreak, sets.subSet(lastBreak, sets.last()));
       if (binToAmount.get(lastBreak).isEmpty()) {
         binToAmount.get(lastBreak).add(lastBreak);
       }
