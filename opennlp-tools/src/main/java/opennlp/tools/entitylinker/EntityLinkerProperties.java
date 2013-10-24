@@ -24,7 +24,7 @@ import java.util.Properties;
 
 /**
  * Properties wrapper for the EntityLinker framework
-
+ *
  */
 public class EntityLinkerProperties {
 
@@ -39,9 +39,25 @@ public class EntityLinkerProperties {
    */
   public EntityLinkerProperties(File propertiesfile) throws IOException, FileNotFoundException {
 
-    props = new Properties();    
+    props = new Properties();
     stream = new FileInputStream(propertiesfile);
     props.load(stream);
+    stream.close();
+  }
+
+  public EntityLinkerProperties(InputStream propertiesfile) throws IOException, FileNotFoundException {
+
+    props = new Properties();
+    stream = propertiesfile;
+    props.load(stream);
+    stream.close();
+  }
+
+  public EntityLinkerProperties(String propertiesfile) throws IOException, FileNotFoundException {
+    this.propertyFileLocation = propertiesfile;
+    stream = new FileInputStream(propertiesfile);
+    props.load(stream);
+    stream.close();
   }
 
   public EntityLinkerProperties() {
@@ -60,9 +76,10 @@ public class EntityLinkerProperties {
   /**
    * Gets a property from the props file.
    *
-   * @param key the key to the desired item in the properties file (key=value)
+   * @param key          the key to the desired item in the properties file
+   *                     (key=value)
    * @param defaultValue a default value in case the file, key, or the value are
-   * missing
+   *                     missing
    * @return
    * @throws FileNotFoundException
    * @throws IOException
@@ -80,7 +97,7 @@ public class EntityLinkerProperties {
     }
     if (props != null) {
       propVal = props.getProperty(key, defaultValue);
-    }    
+    }
     return propVal;
   }
 }
