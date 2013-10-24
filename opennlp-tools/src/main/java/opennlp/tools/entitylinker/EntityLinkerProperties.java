@@ -53,12 +53,7 @@ public class EntityLinkerProperties {
     stream.close();
   }
 
-  public EntityLinkerProperties(String propertiesfile) throws IOException, FileNotFoundException {
-    this.propertyFileLocation = propertiesfile;
-    stream = new FileInputStream(propertiesfile);
-    props.load(stream);
-    stream.close();
-  }
+
 
   public EntityLinkerProperties() {
   }
