@@ -101,7 +101,7 @@ public class GeoEntityLinker implements EntityLinker<LinkedSpan> {
       Logger.getLogger(GeoEntityLinker.class.getName()).log(Level.SEVERE, null, ex);
     }
     List<LinkedEntityScorer<CountryContext>> scorers = new ArrayList<>();
-    scorers.add(new GeoHashBinScorer());
+    scorers.add(new GeoHashBinningScorer());
     scorers.add(new CountryProximityScorer());
     scorers.add(new FuzzyStringMatchScorer());
     for (LinkedEntityScorer scorer : scorers) {
