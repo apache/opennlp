@@ -29,6 +29,36 @@ import java.util.logging.Logger;
 public class EntityLinkerFactory {
 
   /**
+   * instantiates a single linker based on properties file configuration. The properties file supports multiple types.
+   * @param entityType the type of entity, i.e. person, organization, location
+   * @param properties the properties file that holds the configuration for entitylinkers.
+   * @return
+   */
+  public static synchronized EntityLinker getLinker(String entityType, EntityLinkerProperties properties) {
+    if (entityType == null || properties == null) {
+      throw new IllegalArgumentException("Null argument in entityLinkerFactory");
+    }
+    EntityLinker linker = null;
+    try {
+      String linkerImplFullName = properties.getProperty("linker." + entityType, GeoEntityLinker.class.getName());
+      Class theClass = Class.forName(linkerImplFullName);
+      linker = (EntityLinker) theClass.newInstance();
+      System.out.println("EntityLinker factory instantiated: " + linker.getClass().getName());
+      linker.setEntityLinkerProperties(properties);
+
+    } catch (InstantiationException ex) {
+      System.out.println("Check the entity linker properties file. The entry must be formatted as linker.<type>=<fullclassname>, i.e linker.person=org.my.company.MyPersonLinker" + ex);
+   } catch (IllegalAccessException ex) {
+      System.out.println("Check the entity linker properties file. The entry must be formatted as linker.<type>=<fullclassname>, i.e linker.person=org.my.company.MyPersonLinker" + ex);
+    } catch (ClassNotFoundException ex) {
+      System.out.println("Check the entity linker properties file. The entry must be formatted as linker.<type>=<fullclassname>, i.e linker.person=org.my.company.MyPersonLinker" + ex);
+    } catch (IOException ex) {
+      System.out.println("Check the entity linker properties file. The entry must be formatted as linker.<type>=<fullclassname>, i.e linker.person=org.my.company.MyPersonLinker" + ex);
+    }
+    return linker;
+  }
+
+  /**
    * Instantiates a list of EntityLinkers based on a properties file entry that
    * consists of a comma separated list of full class names. The entityType is
    * used to build the key to the properties entry. the entityType will be
@@ -44,6 +74,7 @@ public class EntityLinkerFactory {
    *                   entitylinkers
    * @return *
    */
+  @Deprecated
   public static synchronized List<EntityLinker> getLinkers(String entityType, EntityLinkerProperties properties) {
     List<EntityLinker> linkers = new ArrayList<EntityLinker>();
     try {
@@ -75,6 +106,7 @@ public class EntityLinkerFactory {
    *                    entitylinkers
    * @return
    */
+  @Deprecated
   public static synchronized List<EntityLinker> getLinkers(String[] entityTypes, EntityLinkerProperties properties) {
     List<EntityLinker> linkers = new ArrayList<EntityLinker>();
 
