@@ -41,6 +41,7 @@ public class CountryContext {
   private Connection con;
   private List<CountryContextEntry> countrydata;
   private Map<String, Set<String>> nameCodesMap = new HashMap<String, Set<String>>();
+ private Map<String, Set<Integer>> countryMentions = new HashMap<String, Set<Integer>>();
 
   public Map<String, Set<String>> getNameCodesMap() {
     return nameCodesMap;
@@ -81,15 +82,20 @@ public class CountryContext {
     return hits;
 
   }
-/**
- * Finds mentions of countries based on a list from MySQL stored procedure called getCountryList. This method finds country mentions in documents,
- * which is an essential element of the scoring that is done for geo linkedspans. Lazily loads the list from the database.
- * @param docText the full text of the document
- * @param properties EntityLinkerProperties for getting database connection
- * @return
- */
+
+  /**
+   * Finds mentions of countries based on a list from MySQL stored procedure
+   * called getCountryList. This method finds country mentions in documents,
+   * which is an essential element of the scoring that is done for geo
+   * linkedspans. Lazily loads the list from the database.
+   *
+   * @param docText    the full text of the document
+   * @param properties EntityLinkerProperties for getting database connection
+   * @return
+   */
   public Map<String, Set<Integer>> regexfind(String docText, EntityLinkerProperties properties) {
-    Map<String, Set<Integer>> hits = new HashMap<String, Set<Integer>>();
+    countryMentions = new HashMap<String, Set<Integer>>();
+    nameCodesMap.clear();
     try {
       if (con == null) {
         con = getMySqlConnection(properties);
@@ -104,12 +110,12 @@ public class CountryContext {
         while (rs.find()) {
           Integer start = rs.start();
           String hit = rs.group().toLowerCase();
-          if (hits.containsKey(code)) {
-            hits.get(code).add(start);
+          if (countryMentions.containsKey(code)) {
+            countryMentions.get(code).add(start);
           } else {
             Set<Integer> newset = new HashSet<Integer>();
             newset.add(start);
-            hits.put(code, newset);
+            countryMentions.put(code, newset);
           }
           if (!hit.equals("")) {
             if (this.nameCodesMap.containsKey(hit)) {
@@ -128,14 +134,16 @@ public class CountryContext {
       Logger.getLogger(CountryContext.class.getName()).log(Level.SEVERE, null, ex);
     }
 
-    //System.out.println(hits);
-    return hits;
+
+    return countryMentions;
   }
-/**
- * returns a unique list of country codes
- * @param hits the hits discovered
- * @return
- */
+
+  /**
+   * returns a unique list of country codes
+   *
+   * @param countryMentions the countryMentions discovered
+   * @return
+   */
   public static Set<String> getCountryCodes(List<CountryContextHit> hits) {
     Set<String> ccs = new HashSet<String>();
     for (CountryContextHit hit : hits) {
@@ -167,12 +175,15 @@ public class CountryContext {
     Connection conn = DriverManager.getConnection(url, username, password);
     return conn;
   }
-/**
- * reads the list from the database by calling a stored procedure getCountryList
- * @param properties
- * @return
- * @throws SQLException
- */
+
+  /**
+   * reads the list from the database by calling a stored procedure
+   * getCountryList
+   *
+   * @param properties
+   * @return
+   * @throws SQLException
+   */
   private List<CountryContextEntry> getCountryData(EntityLinkerProperties properties) throws SQLException {
     List<CountryContextEntry> entries = new ArrayList<CountryContextEntry>();
     try {
@@ -207,4 +218,9 @@ public class CountryContext {
     }
     return entries;
   }
+
+  public Map<String, Set<Integer>> getCountryMentions() {
+    return countryMentions;
+  }
+
 }

@@ -29,10 +29,17 @@ import opennlp.tools.util.Span;
 /**
  * Scores toponyms based on country context as well as fuzzy string matching
  */
-public class GeoEntityScorer {
+public class CountryProximityScorer implements LinkedEntityScorer<CountryContext> {
 
   private Map<String, Set<String>> nameCodesMap;
   String dominantCode = "";
+
+  @Override
+  public void score(List<LinkedSpan> linkedSpans, String docText, Span[] sentenceSpans, CountryContext additionalContext) {
+
+    score(linkedSpans, additionalContext.getCountryMentions(), additionalContext.getNameCodesMap(), docText, sentenceSpans, 1000);
+
+  }
 
   /**
    * Assigns a score to each BaseLink in each linkedSpan's set of N best
@@ -61,15 +68,6 @@ public class GeoEntityScorer {
     setDominantCode(countryHits);
     for (LinkedSpan<BaseLink> linkedspan : linkedData) {
 
-      for (BaseLink link : linkedspan.getLinkedEntries()) {
-        Double dice = FuzzyStringMatcher.getDiceCoefficient(linkedspan.getSearchTerm().toLowerCase().replace(" ", ""), link.getItemName().toLowerCase().replace(" ", ""), 2);
-        /**
-         * Since MySQL is using "boolean mode" this score will always be very
-         * high. To allow more recall, change mysql to "natural language mode",
-         * and this score will become more significant
-         */
-        link.getScoreMap().put("dice", dice);
-      }
       linkedspan = simpleProximityAnalysis(sentences, countryHits, linkedspan, maxAllowedDist);
     }
     return linkedData;

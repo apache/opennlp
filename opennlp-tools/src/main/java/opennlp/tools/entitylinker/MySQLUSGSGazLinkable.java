@@ -21,43 +21,35 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import opennlp.tools.entitylinker.domain.BaseLink;
 import opennlp.tools.util.Span;
 
 /**
- * Links names to the USGS gazateer
+ * Links names to the USGS gazateer that resides in a database
  */
 public class MySQLUSGSGazLinkable {
 
   private Connection con;
-  private Boolean filterCountryContext;
 
   public MySQLUSGSGazLinkable() {
   }
 
-  public ArrayList<BaseLink> find(String locationText, Span span, Map<String, Set<Integer>> countryHits, EntityLinkerProperties properties) {
+  public ArrayList<BaseLink> find(String locationText, Span span, EntityLinkerProperties properties) {
     ArrayList<BaseLink> returnlocs = new ArrayList<BaseLink>();
     try {
-      filterCountryContext = Boolean.valueOf(properties.getProperty("geoentitylinker.filter_by_country_context", "false"));
-      //the usgs gazateer only has us geonames, so only use it if the user doesn't care about country isolation or the hits contain us
-      if (countryHits.keySet().contains("us") || !filterCountryContext) {
 
-        if (con == null) {
-          con = getMySqlConnection(properties);
-        }
-        String thresh = properties.getProperty("mysqlusgsgazscorethresh", "10");
-        int threshhold = -1;
-        if (!thresh.matches("[azAZ]")) {
-          threshhold = Integer.valueOf(thresh);
-        }
-        returnlocs.addAll(this.searchGaz(locationText, threshhold, countryHits.keySet(), properties));
+      if (con == null) {
+        con = getMySqlConnection(properties);
       }
+      String thresh = properties.getProperty("usgs.gaz.rowsreturned", "5");
+      int threshhold = -1;
+      if (!thresh.matches("[azAZ]")) {
+        threshhold = Integer.valueOf(thresh);
+      }
+      returnlocs.addAll(this.searchGaz(locationText, threshhold, properties));
+
     } catch (Exception ex) {
       Logger.getLogger(MySQLUSGSGazLinkable.class.getName()).log(Level.SEVERE, null, ex);
     }
@@ -65,25 +57,36 @@ public class MySQLUSGSGazLinkable {
     return returnlocs;
   }
 
-  protected Connection getMySqlConnection(EntityLinkerProperties properties) throws Exception {
-    String driver = properties.getProperty("mysql.driver", "org.gjt.mm.mysql.Driver");
-    String url = properties.getProperty("mysql.url", "jdbc:mysql://127.0.0.1:3306/world");
-    String username = properties.getProperty("mysql.username", "root");
-    String password = properties.getProperty("mysql.password", "?");
+  private Connection getMySqlConnection(EntityLinkerProperties properties) throws Exception {
+    String driver = properties.getProperty("db.driver", "org.gjt.mm.mysql.Driver");
+    String url = properties.getProperty("db.url", "jdbc:mysql://127.0.0.1:3306/world");
+    String username = properties.getProperty("db.username", "root");
+    String password = properties.getProperty("db.password", "?");
 
     Class.forName(driver);
     Connection conn = DriverManager.getConnection(url, username, password);
     return conn;
   }
 
-  private ArrayList<MySQLUSGSGazEntry> searchGaz(String searchString, int matchthresh, Set<String> countryCodes, EntityLinkerProperties properties) throws SQLException, Exception {
+  /**
+   *
+   * @param searchString the name to look up in the gazateer
+   * @param rowsReturned number of rows to return
+   * @param properties   EntityLinkerProperties that identifies the database
+   *                     connection properties
+   *
+   * @return
+   * @throws SQLException
+   * @throws Exception
+   */
+  public ArrayList<MySQLUSGSGazEntry> searchGaz(String searchString, int rowsReturned, EntityLinkerProperties properties) throws SQLException, Exception {
     if (con.isClosed()) {
       con = getMySqlConnection(properties);
     }
     CallableStatement cs;
     cs = con.prepareCall("CALL `search_gaz`(?, ?)");
     cs.setString(1, this.format(searchString));
-    cs.setInt(2, matchthresh);
+    cs.setInt(2, rowsReturned);
     ArrayList<MySQLUSGSGazEntry> toponyms = new ArrayList<MySQLUSGSGazEntry>();
     ResultSet rs;
     try {
@@ -96,22 +99,20 @@ public class MySQLUSGSGazLinkable {
       while (rs.next()) {
         MySQLUSGSGazEntry s = new MySQLUSGSGazEntry();
         s.setRank(rs.getDouble(1));
-
         s.setFeatureid(String.valueOf(rs.getLong(2)));
         s.setFeaturename(rs.getString(3));
-
         s.setFeatureclass(rs.getString(4));
         s.setStatealpha(rs.getString(5));
         s.setPrimarylatitudeDEC(rs.getDouble(6));
         s.setPrimarylongitudeDEC(rs.getDouble(7));
         s.setMapname(rs.getString(8));
 
-        //set the base link data
+        //set the baselink data
         s.setItemName(s.getFeaturename().toLowerCase().trim());
         s.setItemID(s.getFeatureid());
         s.setItemType(s.getFeatureclass());
         s.setItemParentID("us");
-        s.getScoreMap().put("mysqlfulltext", s.getRank());
+        s.getScoreMap().put("dbfulltext", s.getRank());
         toponyms.add(s);
       }
 
@@ -124,14 +125,6 @@ public class MySQLUSGSGazLinkable {
     }
 
     return toponyms;
-  }
-
-  private Set<String> getCountryCodes(List<CountryContextHit> hits) {
-    Set<String> ccs = new HashSet<String>();
-    for (CountryContextHit hit : hits) {
-      ccs.add(hit.getCountryCode().toLowerCase());
-    }
-    return ccs;
   }
 
   public String format(String entity) {

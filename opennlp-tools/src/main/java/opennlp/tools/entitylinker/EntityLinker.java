@@ -20,11 +20,11 @@ import opennlp.tools.util.Span;
 
 /**
  * EntityLinkers establish connections to external data to enrich extracted
- * entities. For instance, for Location entities a linker can be
- * developed to lookup each found location in a geonames gazateer. Another
- * example may be to find peoples' names and look them up in a database or active
- * directory. Intended to return n best matches for any give search, but can
- * also be implemented as deterministic
+ * entities. For instance, for Location entities a linker can be developed to
+ * lookup each found location in a geonames gazateer. Another example may be to
+ * find peoples' names and look them up in a database or active directory.
+ * Intended to return n best matches for any give search, but can also be
+ * implemented as deterministic
  *
  * @param <T> A type that extends Span
  *
@@ -32,11 +32,31 @@ import opennlp.tools.util.Span;
 public interface EntityLinker<T extends Span> {
 
   /**
-   * allows for passing properties through the EntityLinkerFactory into all impls dynamically
-   * @param properties the EntityLinkerProperties object that contains properties needed by the impl
+   * allows for passing properties through the EntityLinkerFactory into all
+   * impls dynamically
+   *
+   * @param properties the EntityLinkerProperties object that contains
+   *                   properties needed by the impl
    */
   void setEntityLinkerProperties(EntityLinkerProperties properties);
-  
+
+  /**
+   * Links an entire document of named entities to an external source
+   *
+   * @param doctext          the full text of the document
+   * @param sentences        the list of sentences spans that correspond to the
+   *                         text.
+   * @param tokensBySentence a list of tokens that correspond to each sentence.
+   *                         The outer array refers to the sentence, the inner
+   *                         array is the tokens for the outer sentence. Similar in nature to Map<SentenceIndex,List<Tokens>>
+   * @param namesBySentence  a list of name spans that correspond to each
+   *                         sentence. The outer array refers to the sentence,
+   *                         the inner array refers to the tokens that for the
+   *                         same sentence.Similar in nature to Map<SentenceIndex,List<Name Spans For This Sentence's Tokens>>
+   * @return
+   */
+  List<T> find(String doctext, Span[] sentences, String[][] tokensBySentence, Span[][] namesBySentence);
+
   /**
    *
    * @param text      the document text to be used as additional context, and to
@@ -50,8 +70,8 @@ public interface EntityLinker<T extends Span> {
 
   /**
    * Links the names that correspond to the tokens[] spans. The sentenceindex
-   * can be used to get the sentence text and tokens from the text based on the sentence and token spans.
-   * The text is available for additional context.
+   * can be used to get the sentence text and tokens from the text based on the
+   * sentence and token spans. The text is available for additional context.
    *
    * @param text          the document text to be used as additional context,
    *                      and to derive sentences and tokens String[]
