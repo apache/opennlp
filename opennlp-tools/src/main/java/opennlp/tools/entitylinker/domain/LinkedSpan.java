@@ -16,6 +16,7 @@
 package opennlp.tools.entitylinker.domain;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import opennlp.tools.util.Span;
 
 /**
@@ -29,8 +30,6 @@ public class LinkedSpan<T extends BaseLink> extends Span {
   private int sentenceid = 0;
   private String searchTerm;
 
-
-  
   public LinkedSpan(ArrayList<T> linkedEntries, int s, int e, String type) {
     super(s, e, type);
     this.linkedEntries = linkedEntries;
@@ -61,6 +60,7 @@ public class LinkedSpan<T extends BaseLink> extends Span {
   public void setSentenceid(int sentenceid) {
     this.sentenceid = sentenceid;
   }
+
   public String getSearchTerm() {
     return searchTerm;
   }
@@ -68,14 +68,39 @@ public class LinkedSpan<T extends BaseLink> extends Span {
   public void setSearchTerm(String searchTerm) {
     this.searchTerm = searchTerm;
   }
+
   @Override
   public String toString() {
-    return "LinkedSpan{" + "linkedEntries=" + linkedEntries + '}';
+    return "LinkedSpan{" + "linkedEntries=" + linkedEntries + ", sentenceid=" + sentenceid + ", searchTerm=" + searchTerm + '}';
   }
 
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 71 * hash + Objects.hashCode(this.linkedEntries);
+    hash = 71 * hash + this.sentenceid;
+    hash = 71 * hash + Objects.hashCode(this.searchTerm);
+    return hash;
+  }
 
-
-
-
-  
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final LinkedSpan<T> other = (LinkedSpan<T>) obj;
+    if (!Objects.equals(this.linkedEntries, other.linkedEntries)) {
+      return false;
+    }
+    if (this.sentenceid != other.sentenceid) {
+      return false;
+    }
+    if (!Objects.equals(this.searchTerm, other.searchTerm)) {
+      return false;
+    }
+    return true;
+  }
 }

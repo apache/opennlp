@@ -16,6 +16,7 @@
 package opennlp.tools.entitylinker.domain;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Stores a minimal tuple of information. Intended to be used with LinkedSpan
@@ -28,8 +29,8 @@ public abstract class BaseLink {
   private String itemID;
   private String itemName;
   private String itemType;
-
   private HashMap<String, Double> scoreMap = new HashMap<String, Double>();
+
   public BaseLink() {
   }
 
@@ -39,8 +40,6 @@ public abstract class BaseLink {
     this.itemName = itemName;
     this.itemType = itemType;
   }
-
-
 
   public String getItemParentID() {
     return itemParentID;
@@ -107,18 +106,50 @@ public abstract class BaseLink {
     this.itemType = itemType;
   }
 
-  @Override
-  public String toString() {
-    return "BaseLink{" + "itemID=" + itemID + ", itemName=" + itemName + ", itemType=" + itemType + '}';
-  }
-
- 
-
   public HashMap<String, Double> getScoreMap() {
     return scoreMap;
   }
 
   public void setScoreMap(HashMap<String, Double> scoreMap) {
     this.scoreMap = scoreMap;
+  }
+
+  @Override
+  public String toString() {
+    return "BaseLink{" + "itemParentID=" + itemParentID + ", itemID=" + itemID + ", itemName=" + itemName + ", itemType=" + itemType + ", scoreMap=" + scoreMap + '}';
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 71 * hash + Objects.hashCode(this.itemParentID);
+    hash = 71 * hash + Objects.hashCode(this.itemID);
+    hash = 71 * hash + Objects.hashCode(this.itemName);
+    hash = 71 * hash + Objects.hashCode(this.itemType);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final BaseLink other = (BaseLink) obj;
+    if (!Objects.equals(this.itemParentID, other.itemParentID)) {
+      return false;
+    }
+    if (!Objects.equals(this.itemID, other.itemID)) {
+      return false;
+    }
+    if (!Objects.equals(this.itemName, other.itemName)) {
+      return false;
+    }
+    if (!Objects.equals(this.itemType, other.itemType)) {
+      return false;
+    }
+    return true;
   }
 }
