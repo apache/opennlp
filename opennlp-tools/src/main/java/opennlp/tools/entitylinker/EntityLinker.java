@@ -26,7 +26,8 @@ import opennlp.tools.util.Span;
  * Intended to return n best matches for any give search, but can also be
  * implemented as deterministic
  *
- * @param <T> A type that extends Span
+ * @param <T> A type that extends Span. LinkedSpan and BaseLink are provided to provide this signature:
+ * EntityLinker<LinkedSpan<BaseLink>> as a default
  *
  */
 public interface EntityLinker<T extends Span> {
