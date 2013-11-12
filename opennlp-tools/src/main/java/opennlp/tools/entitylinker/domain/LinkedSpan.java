@@ -45,26 +45,61 @@ public class LinkedSpan<T extends BaseLink> extends Span {
     this.linkedEntries = linkedEntries;
   }
 
+  /**
+   * Returns the n best linked entries from an external data source. For
+   * instance, this will hold gazateer entries for a search into a geonames
+   * gazateer
+   *
+   * @return
+   */
   public ArrayList<T> getLinkedEntries() {
     return linkedEntries;
   }
 
+  /**
+   * Sets the n best linked entries from an external data source. For instance,
+   * this will hold gazateer entries for a search into a geonames gazateer
+   *
+   * @return
+   */
   public void setLinkedEntries(ArrayList<T> linkedEntries) {
     this.linkedEntries = linkedEntries;
   }
 
+  /**
+   * Returns the id or index of the sentence from which this span was extracted
+   *
+   * @return
+   */
   public int getSentenceid() {
     return sentenceid;
   }
 
+  /**
+   * sets the id or index of the sentence from which this span was extracted
+   *
+   * @return
+   */
   public void setSentenceid(int sentenceid) {
     this.sentenceid = sentenceid;
   }
 
+  /**
+   * Returns the search term that was used to link this span to an external data
+   * source
+   *
+   * @param searchTerm
+   */
   public String getSearchTerm() {
     return searchTerm;
   }
 
+  /**
+   * sets the search term that is used to link this span to an external data
+   * source
+   *
+   * @param searchTerm
+   */
   public void setSearchTerm(String searchTerm) {
     this.searchTerm = searchTerm;
   }

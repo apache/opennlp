@@ -16,7 +16,7 @@
 package opennlp.tools.entitylinker;
 
 /**
- * Generates Lists of EntityLinker implementations via properties file
+ * Generates an EntityLinker implementation via properties file
  * configuration
  *
  */
