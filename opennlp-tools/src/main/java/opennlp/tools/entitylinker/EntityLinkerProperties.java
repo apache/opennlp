@@ -44,7 +44,12 @@ public class EntityLinkerProperties {
     props.load(stream);
     stream.close();
   }
-
+/**
+ *
+ * @param propertiesfile inputstream of properties file
+ * @throws IOException
+ * @throws FileNotFoundException
+ */
   public EntityLinkerProperties(InputStream propertiesfile) throws IOException, FileNotFoundException {
 
     props = new Properties();
