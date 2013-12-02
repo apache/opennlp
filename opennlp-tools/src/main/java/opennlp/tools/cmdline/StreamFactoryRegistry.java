@@ -50,6 +50,7 @@ import opennlp.tools.formats.convert.ParseToSentenceSampleStreamFactory;
 import opennlp.tools.formats.convert.ParseToTokenSampleStreamFactory;
 import opennlp.tools.formats.frenchtreebank.ConstitParseSampleStreamFactory;
 import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
+import opennlp.tools.formats.ontonotes.OntoNotesNameSampleStreamFactory;
 
 /**
  * Registry for object stream factories.
@@ -78,6 +79,7 @@ public final class StreamFactoryRegistry {
     ParseToSentenceSampleStreamFactory.registerFactory();
     ParseToTokenSampleStreamFactory.registerFactory();
     
+    OntoNotesNameSampleStreamFactory.registerFactory();
     BioNLP2004NameSampleStreamFactory.registerFactory();
     Conll02NameSampleStreamFactory.registerFactory();
     Conll03NameSampleStreamFactory.registerFactory();

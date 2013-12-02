@@ -78,6 +78,7 @@ public interface MaxentModel {
    *            probability (contained in the <code>double[] ocs</code>)
    *            for each one.
    **/
+  // TODO: This should be removed, can't be used anyway without format spec
   public String getAllOutcomes(double[] outcomes);
 
   /**
@@ -104,7 +105,7 @@ public interface MaxentModel {
   /**
    * Returns the data structures relevant to storing the model.
    **/
-  public Object[] getDataStructures();
+  // public Object[] getDataStructures();
 
   /** Returns the number of outcomes for this model.
    *  @return The number of outcomes.
