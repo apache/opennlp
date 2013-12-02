@@ -1,0 +1,10 @@
+casa	casa	NOUN
+casa	casar	V
+Casa	Casa	PROP
+casinha	casa	NOUN
+casona	casa	NOUN
+menina	menino	NOUN
+menino	menino	NOUN
+meninão	menino	NOUN
+menininho	menino	NOUN
+carro		NOUN
