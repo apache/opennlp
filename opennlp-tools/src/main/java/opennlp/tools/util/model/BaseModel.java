@@ -48,6 +48,8 @@ import opennlp.tools.util.ext.ExtensionLoader;
  */
 public abstract class BaseModel implements ArtifactProvider {
 
+  private static int MODEL_BUFFER_SIZE_LIMIT = Integer.MAX_VALUE;
+  
   protected static final String MANIFEST_ENTRY = "manifest.properties";
   protected static final String FACTORY_NAME = "factory";
   
@@ -71,8 +73,6 @@ public abstract class BaseModel implements ArtifactProvider {
   protected BaseToolFactory toolFactory;
   
   private final String componentName;
-
-  private Map<String, byte[]> leftoverArtifacts;
 
   private boolean subclassSerializersInitiated = false;
   private boolean finishedLoadingArtifacts = false;
@@ -177,9 +177,6 @@ public abstract class BaseModel implements ArtifactProvider {
   protected BaseModel(String componentName, InputStream in) throws IOException, InvalidFormatException {
     this(componentName, true);
     
-    if (in == null)
-        throw new IllegalArgumentException("in must not be null!");
-
     loadModel(in);
   }
 
@@ -199,7 +196,7 @@ public abstract class BaseModel implements ArtifactProvider {
   protected BaseModel(String componentName, URL modelURL) throws IOException, InvalidFormatException  {
     this(componentName, true);
     
-    InputStream in = modelURL.openStream();
+    InputStream in = new BufferedInputStream(modelURL.openStream());
 
     try {
       loadModel(in);
@@ -210,36 +207,55 @@ public abstract class BaseModel implements ArtifactProvider {
   }
 
   private void loadModel(InputStream in) throws IOException, InvalidFormatException {
+    
+    if (in == null) {
+      throw new IllegalArgumentException("in must not be null!");
+    }
+    
     createBaseArtifactSerializers(artifactSerializers);
 
+    if (!in.markSupported()) {
+      in = new BufferedInputStream(in);
+    }
+    
+    // TODO: Discuss this solution, the buffering should 
+    in.mark(MODEL_BUFFER_SIZE_LIMIT);
+    
     final ZipInputStream zip = new ZipInputStream(in);
     
-    // will read it in two steps, first using the known factories, latter the
-    // unknown.
-    leftoverArtifacts = new HashMap<String, byte[]>();
-
+    // The model package can contain artifacts which are serialized with 3rd party
+    // serializers which are configured in the manifest file. To be able to load
+    // the model the manifest must be read first, and afterwards all the artifacts 
+    // can be de-serialized.
+    
+    // The ordering of artifacts in a zip package is not guaranteed. The stream is first
+    // read until the manifest appears, reseted, and read again to load all artifacts.
+    
+    boolean isSearchingForManifest = true;
+    
     ZipEntry entry;
-    while((entry = zip.getNextEntry()) != null ) {
+    while((entry = zip.getNextEntry()) != null && isSearchingForManifest) {
 
-      String extension = getEntryExtension(entry.getName());
-
-      ArtifactSerializer factory = artifactSerializers.get(extension);
-
-      if (factory == null) {
-        /* TODO: find a better solution, that would consume less memory */
-        byte[] bytes = toByteArray(zip);
-        leftoverArtifacts.put(entry.getName(), bytes);
-      } else {
+      if ("manifest.properties".equals(entry.getName())) {
+        // TODO: Probably better to use the serializer here directly!
+        ArtifactSerializer factory = artifactSerializers.get("properties");
         artifactMap.put(entry.getName(), factory.create(zip));
+        isSearchingForManifest = false;
       }
-      
+
       zip.closeEntry();
     }
-
+    
     initializeFactory();
     
     loadArtifactSerializers();
-    finishLoadingArtifacts();
+
+    // The Input Stream should always be reset-able because if markSupport returns
+    // false it is wrapped before hand into an Buffered InputStream
+    in.reset();
+    
+    finishLoadingArtifacts(in);
+    
     checkArtifactMap();
   }
   
@@ -282,41 +298,45 @@ public abstract class BaseModel implements ArtifactProvider {
   /**
    * Finish loading the artifacts now that it knows all serializers.
    */
-  private void finishLoadingArtifacts()
+  private void finishLoadingArtifacts(InputStream in)
       throws InvalidFormatException, IOException {
-    finishedLoadingArtifacts = true;
-    if (leftoverArtifacts == null || leftoverArtifacts.size() == 0) {
-      return;
-    }
-
+    
+    final ZipInputStream zip = new ZipInputStream(in);
+    
     Map<String, Object> artifactMap = new HashMap<String, Object>();
     
-    for (String entryName : leftoverArtifacts.keySet()) {
+    ZipEntry entry;
+    while((entry = zip.getNextEntry()) != null ) {
       
+      // Note: The manifest.properties file will be read here again,
+      // there should be no need to prevent that.
+      
+      String entryName = entry.getName();
       String extension = getEntryExtension(entryName);
 
-      if (leftoverArtifacts.containsKey(entryName)) {
-        ArtifactSerializer factory = artifactSerializers.get(extension);
+      ArtifactSerializer factory = artifactSerializers.get(extension);
 
-        if (factory == null) {
-          String artifactSerializerClazzName = 
-              getManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + entryName);
+      String artifactSerializerClazzName = 
+          getManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + entryName);
 
-          if (artifactSerializerClazzName != null) {
-            factory = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerClazzName);
-          }
-        }
-        
-        if (factory == null) {
-          throw new InvalidFormatException("Unknown artifact format: "
-              + extension);
-        } else {
-          artifactMap.put(entryName, factory.create(new ByteArrayInputStream(leftoverArtifacts.get(entryName))));
+      if (artifactSerializerClazzName != null) {
+        if (artifactSerializerClazzName != null) {
+          factory = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerClazzName);
         }
       }
+      
+      if (factory != null) {
+        artifactMap.put(entryName, factory.create(zip));
+      } else {
+        throw new InvalidFormatException("Unknown artifact format: " + extension);
+      }
+      
+      zip.closeEntry();
     }
-    this.leftoverArtifacts = null;
+
     this.artifactMap.putAll(artifactMap);
+    
+    finishedLoadingArtifacts = true;
   }
 
   /**
@@ -576,7 +596,8 @@ public abstract class BaseModel implements ArtifactProvider {
       
       ArtifactSerializer serializer = getArtifactSerializer(name);
 
-      if (serializer == null && artifact instanceof SerializableArtifact) {
+      // If model is serialize-able always use the provided serializer
+      if (artifact instanceof SerializableArtifact) {
         
         SerializableArtifact serializableArtifact = (SerializableArtifact) artifact;
 
@@ -621,5 +642,28 @@ public abstract class BaseModel implements ArtifactProvider {
 
   public boolean isLoadedFromSerialized() {
     return isLoadedFromSerialized;
+  }
+  
+  public static void main(String[] args) throws Exception {
+    
+    // create a stream which can be reset, enclose it in a buffered stream which supports reseting 
+    InputStream in = new FileInputStream("annotation.conf");
+    
+    System.out.println("Is mark supported: " + in.markSupported());
+    
+    in = new BufferedInputStream(in);
+    
+    System.out.println("Is mark supported: " + in.markSupported());
+    
+    // 2 GB limit 
+    in.mark(4096);
+    
+    in.read();
+    
+    in.reset();
+    
+    // the mark support can be used to test if reseting is supported, we shoudl use this test anyway
+    // to fail gracefully in the cross validators ...
+    
   }
 }
