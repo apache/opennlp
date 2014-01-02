@@ -42,6 +42,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
   public static final String BRACKET_RRB = ")";
   public static final String BRACKET_LCB = "{";
   public static final String BRACKET_RCB = "}";
+  public static final String BRACKET_LSB = "[";
+  public static final String BRACKET_RSB = "]";
   
   /**
    * The text string on which this parse is based.
@@ -653,6 +655,13 @@ public class Parse implements Cloneable, Comparable<Parse> {
     else if (rest.startsWith("-RRB-")) {
       return "-RRB-";
     }
+    else if (rest.startsWith("-RSB-")) {
+      return "-RSB-";
+    }
+    else if (rest.startsWith("-LSB-")) {
+      return "-LSB-";
+    }
+    
     else if (rest.startsWith("-NONE-")) {
       return "-NONE-";
     }
@@ -686,6 +695,12 @@ public class Parse implements Cloneable, Comparable<Parse> {
     else if (BRACKET_RCB.equals(token)) {
       return "-RCB-";
     }
+    else if (BRACKET_LSB.equals(token)) {
+      return "-LSB-";
+    }
+    else if (BRACKET_RSB.equals(token)) {
+      return "-RSB-";
+    }
     
     return token;
   }
@@ -702,6 +717,12 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     else if ("-RCB-".equals(token)) {
       return BRACKET_RCB;
+    }
+    else if ("-LSB-".equals(token)) {
+      return BRACKET_LSB;
+    }
+    else if ("-RSB-".equals(token)) {
+      return BRACKET_RSB;
     }
     
     return token;
