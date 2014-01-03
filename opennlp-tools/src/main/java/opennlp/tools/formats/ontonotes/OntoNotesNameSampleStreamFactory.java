@@ -22,7 +22,6 @@ import java.io.FileFilter;
 import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.DirectorySampleStream;
@@ -33,18 +32,13 @@ import opennlp.tools.util.ObjectStream;
 public class OntoNotesNameSampleStreamFactory extends
     AbstractSampleStreamFactory<NameSample> {
 
-  interface Parameters {
-    @ParameterDescription(valueName = "OntoNotes 4.0 corpus directory")
-    String getOntoNotesDir();
-  }
-
   public OntoNotesNameSampleStreamFactory() {
-    super(Parameters.class);
+    super(OntoNotesFormatParameters.class);
   }
 
   public ObjectStream<NameSample> create(String[] args) {
 
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    OntoNotesFormatParameters params = ArgumentParser.parse(args, OntoNotesFormatParameters.class);
 
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
         params.getOntoNotesDir()), new FileFilter() {
