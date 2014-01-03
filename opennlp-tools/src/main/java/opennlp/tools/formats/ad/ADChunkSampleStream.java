@@ -31,6 +31,7 @@ import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Parser for Floresta Sita(c)tica Arvores Deitadas corpus, output to for the
@@ -262,7 +263,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
     if (phraseTag.equals("np") || phraseTag.equals("vp")
         || phraseTag.equals("pp") || phraseTag.equals("ap")
         || phraseTag.equals("advp") || phraseTag.equals("adjp")) {
-      phraseTag = phraseTag.toUpperCase();
+      phraseTag = StringUtil.toUpperCase(phraseTag);
     } else {
       phraseTag = OTHER;
     }
