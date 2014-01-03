@@ -32,6 +32,7 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Name Sample Stream parser for the OntoNotes 4.0 corpus.
@@ -129,8 +130,7 @@ public class OntoNotesNameSampleStream extends
 
                 int typeEnd = token.indexOf("\"", typeBegin.length());
 
-                entityType = token.substring(typeBegin.length(), typeEnd)
-                    .toLowerCase();
+                entityType = StringUtil.toLowerCase(token.substring(typeBegin.length(), typeEnd));
               }
 
               if (token.contains(">")) {

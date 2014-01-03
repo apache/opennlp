@@ -39,6 +39,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.featuregen.StringPattern;
 import opennlp.tools.util.model.ModelType;
@@ -415,7 +416,7 @@ public class POSTaggerME implements POSTagger {
           if (dict.isCaseSensitive()) {
             word = words[i];
           } else {
-            word = words[i].toLowerCase();
+            word = StringUtil.toLowerCase(words[i]);
           }
 
           if (!newEntries.containsKey(word)) {

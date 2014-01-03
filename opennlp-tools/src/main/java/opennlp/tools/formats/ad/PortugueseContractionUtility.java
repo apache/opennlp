@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * Utility class to handle Portuguese contractions.
  * <p>
@@ -190,7 +192,7 @@ public class PortugueseContractionUtility {
 
       }
 
-      String leftLower = parts[parts.length - 1].toLowerCase();
+      String leftLower = StringUtil.toLowerCase(parts[parts.length - 1]);
       key = leftLower + "+" + right;
       if (CONTRACTIONS.containsKey(key)) {
         String r = CONTRACTIONS.get(key);

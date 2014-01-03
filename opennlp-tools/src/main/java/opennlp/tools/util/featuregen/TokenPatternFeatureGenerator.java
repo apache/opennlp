@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Partitions tokens into sub-tokens based on character classes and generates
@@ -55,7 +56,7 @@ public class TokenPatternFeatureGenerator extends FeatureGeneratorAdapter {
       String[] tokenized = tokenizer.tokenize(toks[index]);
 
       if (tokenized.length == 1) {
-        feats.add("st=" + toks[index].toLowerCase());
+        feats.add("st=" + StringUtil.toLowerCase(toks[index]));
         return;
       }
 
@@ -79,7 +80,7 @@ public class TokenPatternFeatureGenerator extends FeatureGeneratorAdapter {
         pattern.append(FeatureGeneratorUtil.tokenFeature(tokenized[i]));
 
         if (!noLetters.matcher(tokenized[i]).find()) {
-          feats.add("st=" + tokenized[i].toLowerCase());
+          feats.add("st=" + StringUtil.toLowerCase(tokenized[i]));
         }
       }
 

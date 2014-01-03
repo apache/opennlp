@@ -34,6 +34,7 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 public class Muc6NameSampleStreamFactory extends AbstractSampleStreamFactory<NameSample> {
 
@@ -57,7 +58,7 @@ public class Muc6NameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
         new DirectorySampleStream(params.getData(), new FileFilter() {
 
           public boolean accept(File file) {
-            return file.getName().toLowerCase().endsWith(".sgm");
+            return StringUtil.toLowerCase(file.getName()).endsWith(".sgm");
           }
         }, false), Charset.forName("UTF-8"));
 

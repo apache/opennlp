@@ -21,6 +21,7 @@ import java.util.List;
 
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.StringUtil;
 
 /**
  * The {@link CharacterNgramFeatureGenerator} uses character ngrams to
@@ -52,7 +53,7 @@ public class CharacterNgramFeatureGenerator extends FeatureGeneratorAdapter {
     for (StringList tokenList : model) {
 
       if (tokenList.size() > 0) {
-        features.add("ng=" + tokenList.getToken(0).toLowerCase());
+        features.add("ng=" + StringUtil.toLowerCase(tokenList.getToken(0)));
       }
     }
   }

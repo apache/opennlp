@@ -33,6 +33,7 @@ import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.dictionary.serializer.EntryInserter;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.StringUtil;
 
 /**
  * The {@link NGramModel} can be used to crate ngrams and character ngrams.
@@ -182,8 +183,8 @@ public class NGramModel implements Iterable<StringList>{
       for (int textIndex = 0;
           textIndex + lengthIndex - 1 < chars.length(); textIndex++) {
 
-        String gram =
-            chars.substring(textIndex, textIndex + lengthIndex).toLowerCase();
+        String gram = StringUtil.toLowerCase(
+            chars.substring(textIndex, textIndex + lengthIndex));
 
         add(new StringList(new String[]{gram}));
       }

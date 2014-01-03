@@ -20,6 +20,8 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * Generates a feature which contains the token itself.
  */
@@ -38,7 +40,7 @@ public class TokenFeatureGenerator extends FeatureGeneratorAdapter {
 
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
     if (lowercase) {
-      features.add(WORD_PREFIX + "=" + tokens[index].toLowerCase());
+      features.add(WORD_PREFIX + "=" + StringUtil.toLowerCase(tokens[index]));
     }
     else {
       features.add(WORD_PREFIX + "=" + tokens[index]);

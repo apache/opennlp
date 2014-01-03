@@ -20,6 +20,8 @@ package opennlp.tools.util.featuregen;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import opennlp.tools.util.StringUtil;
+
 
 
 /**
@@ -111,7 +113,7 @@ public class FastTokenClassFeatureGenerator extends FeatureGeneratorAdapter {
     features.add(TOKEN_CLASS_PREFIX + "=" + wordClass);
 
     if (generateWordAndClassFeature) {
-      features.add(TOKEN_AND_CLASS_PREFIX + "=" + tokens[index].toLowerCase()+","+wordClass);
+      features.add(TOKEN_AND_CLASS_PREFIX + "=" + StringUtil.toLowerCase(tokens[index]) +","+wordClass);
     }
   }
 }

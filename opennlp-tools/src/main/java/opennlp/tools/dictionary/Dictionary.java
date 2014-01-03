@@ -35,6 +35,7 @@ import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.dictionary.serializer.EntryInserter;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.StringUtil;
 
 /**
  * This class is a dictionary.
@@ -81,7 +82,7 @@ public class Dictionary implements Iterable<StringList> {
     @Override
     public int hashCode() {
       // if lookup is too slow optimize this
-      return this.stringList.toString().toLowerCase().hashCode();
+      return StringUtil.toLowerCase(this.stringList.toString()).hashCode();
     }
 
     @Override
