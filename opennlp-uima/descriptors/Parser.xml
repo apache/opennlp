@@ -94,7 +94,7 @@
 			<nameValuePair>
 				<name>opennlp.uima.TypeFeature</name>
 				<value>
-					<string>type</string>
+					<string>parseType</string>
 				</value>
 			</nameValuePair>
 			<nameValuePair>
