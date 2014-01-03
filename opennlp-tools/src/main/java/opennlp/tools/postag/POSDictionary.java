@@ -153,7 +153,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
       return dictionary.get(word);
     }
     else {
-      return dictionary.get(word.toLowerCase());
+      return dictionary.get(StringUtil.toLowerCase(word));
     }
   }
 
@@ -325,7 +325,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
     if (this.caseSensitive) {
       return dictionary.put(word, tags);
     } else {
-      return dictionary.put(word.toLowerCase(), tags);
+      return dictionary.put(StringUtil.toLowerCase(word), tags);
     }
   }
 

@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import opennlp.tools.util.StringUtil;
+
 public class SimpleLemmatizer implements DictionaryLemmatizer {
   
   public final Set<String> constantTags = new HashSet<String>(Arrays.asList("NNP","NP00000"));
@@ -56,7 +58,7 @@ public class SimpleLemmatizer implements DictionaryLemmatizer {
             keys.addAll(Arrays.asList(word,postag));
         }
         else {
-            keys.addAll(Arrays.asList(word.toLowerCase(),postag));
+            keys.addAll(Arrays.asList(StringUtil.toLowerCase(word),postag));
         }
         return keys;
     }
@@ -76,7 +78,7 @@ public class SimpleLemmatizer implements DictionaryLemmatizer {
         lemma = word;
     }
     else {
-        lemma = word.toLowerCase();
+        lemma = StringUtil.toLowerCase(word);
     }
     return lemma;  
   }
