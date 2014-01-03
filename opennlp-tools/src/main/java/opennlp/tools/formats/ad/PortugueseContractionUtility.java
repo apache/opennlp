@@ -197,7 +197,7 @@ public class PortugueseContractionUtility {
       if (CONTRACTIONS.containsKey(key)) {
         String r = CONTRACTIONS.get(key);
         String firstChar = r.substring(0, 1);
-        r = firstChar.toUpperCase() + r.substring(1);
+        r = StringUtil.toUpperCase(firstChar) + r.substring(1);
         sb.append(r);
         return sb.toString();
       }
