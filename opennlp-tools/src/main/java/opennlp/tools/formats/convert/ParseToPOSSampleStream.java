@@ -31,7 +31,7 @@ import opennlp.tools.util.ObjectStream;
  */
 public class ParseToPOSSampleStream extends FilterObjectStream<Parse, POSSample>  {
 
-  protected ParseToPOSSampleStream(ObjectStream<Parse> samples) {
+  public ParseToPOSSampleStream(ObjectStream<Parse> samples) {
     super(samples);
   }
 
