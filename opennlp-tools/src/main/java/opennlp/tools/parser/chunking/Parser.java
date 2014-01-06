@@ -86,19 +86,6 @@ public class Parser extends AbstractBottomUpParser {
   }
 
   /**
-   * Creates a new parser using the specified models and head rules.
-   * @param buildModel The model to assign constituent labels.
-   * @param checkModel The model to determine a constituent is complete.
-   * @param tagger The model to assign pos-tags.
-   * @param chunker The model to assign flat constituent labels.
-   * @param headRules The head rules for head word perculation.
-   */
-  @Deprecated
-  public Parser(MaxentModel buildModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules) {
-  	this(buildModel,checkModel,tagger,chunker,headRules,defaultBeamSize,defaultAdvancePercentage);
-  }
-
-  /**
    * Creates a new parser using the specified models and head rules using the specified beam size and advance percentage.
    * @param buildModel The model to assign constituent labels.
    * @param checkModel The model to determine a constituent is complete.
@@ -109,8 +96,7 @@ public class Parser extends AbstractBottomUpParser {
    * @param advancePercentage The minimal amount of probability mass which advanced outcomes must represent.
    * Only outcomes which contribute to the top "advancePercentage" will be explored.
    */
-  @Deprecated
-  public Parser(MaxentModel buildModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
+  private Parser(MaxentModel buildModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
     super(tagger, chunker, headRules, beamSize, advancePercentage);
     this.buildModel = buildModel;
     this.checkModel = checkModel;

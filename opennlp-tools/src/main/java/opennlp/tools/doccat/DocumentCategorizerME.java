@@ -67,36 +67,6 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   public DocumentCategorizerME(DoccatModel model) {
     this(model, defaultFeatureGenerator);
   }
-  
-  /**
-   * Initializes the current instance with the given {@link MaxentModel}.
-   *
-   * @param model
-   * 
-   * @deprecated Use {@link DocumentCategorizerME#DocumentCategorizerME(DoccatModel)} instead.
-   */
-  @Deprecated
-  public DocumentCategorizerME(MaxentModel model) {
-    this(model, new FeatureGenerator[]{new BagOfWordsFeatureGenerator()});
-  }
-
-  /**
-   * Initializes the current instance with a the given {@link MaxentModel}
-   * and {@link FeatureGenerator}s.
-   *
-   * @param model
-   * @param featureGenerators
-   * 
-   * @deprecated Use {@link DocumentCategorizerME#DocumentCategorizerME(DoccatModel, FeatureGenerator...)} instead.
-   */
-  @Deprecated
-  public DocumentCategorizerME(MaxentModel model,
-      FeatureGenerator... featureGenerators) {
-
-    this.model = model;
-    mContextGenerator =
-        new DocumentCategorizerContextGenerator(featureGenerators);
-  }
 
   /**
    * Categorizes the given text.
@@ -136,19 +106,6 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     return model.getAllOutcomes(results);
   }
 
-  /**
-   * Trains a new model for the {@link DocumentCategorizerME}.
-   *
-   * @param eventStream
-   *
-   * @return the new model
-   */
-   @Deprecated
-  public static AbstractModel train(DocumentCategorizerEventStream eventStream) throws IOException {
-    return GIS.trainModel(100, new TwoPassDataIndexer(eventStream, 5));
-  }
-  
-   
    public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
        TrainingParameters mlParams, FeatureGenerator... featureGenerators)
    throws IOException {

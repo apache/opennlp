@@ -114,41 +114,6 @@ public class ChunkerME implements Chunker {
     this(model, DEFAULT_BEAM_SIZE);
   }
 
-  /**
-   * Creates a chunker using the specified model.
-   *
-   * @param mod The maximum entropy model for this chunker.
-   */
-  @Deprecated
-  public ChunkerME(MaxentModel mod) {
-    this(mod, new DefaultChunkerContextGenerator(), DEFAULT_BEAM_SIZE);
-  }
-
-  /**
-   * Creates a chunker using the specified model and context generator.
-   *
-   * @param mod The maximum entropy model for this chunker.
-   * @param cg The context generator to be used by the specified model.
-   */
-  @Deprecated
-  public ChunkerME(MaxentModel mod, ChunkerContextGenerator cg) {
-    this(mod, cg, DEFAULT_BEAM_SIZE);
-  }
-
-  /**
-   * Creates a chunker using the specified model and context generator and decodes the
-   * model using a beam search of the specified size.
-   *
-   * @param mod The maximum entropy model for this chunker.
-   * @param cg The context generator to be used by the specified model.
-   * @param beamSize The size of the beam that should be used when decoding sequences.
-   */
-  @Deprecated
-  public ChunkerME(MaxentModel mod, ChunkerContextGenerator cg, int beamSize) {
-    beam = new BeamSearch<String>(beamSize, cg, mod);
-    this.model = mod;
-  }
-
   @Deprecated
   public List<String> chunk(List<String> toks, List<String> tags) {
     bestSequence =

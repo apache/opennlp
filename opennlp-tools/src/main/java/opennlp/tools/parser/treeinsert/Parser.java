@@ -112,8 +112,7 @@ public class Parser extends AbstractBottomUpParser {
     this(model, defaultBeamSize, defaultAdvancePercentage);
   }
   
-  @Deprecated
-  public Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
+  private Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
     super(tagger,chunker,headRules,beamSize,advancePercentage);
     this.buildModel = buildModel;
     this.attachModel = attachModel;
@@ -133,11 +132,6 @@ public class Parser extends AbstractBottomUpParser {
     this.nonAttachIndex = attachModel.getIndex(NON_ATTACH);
     attachments = new int[] {daughterAttachIndex,sisterAttachIndex};
     this.completeIndex = checkModel.getIndex(Parser.COMPLETE);
-  }
-
-  @Deprecated
-  public Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules) {
-    this(buildModel,attachModel,checkModel, tagger,chunker,headRules,defaultBeamSize,defaultAdvancePercentage);
   }
 
   /**
