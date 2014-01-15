@@ -17,7 +17,6 @@ package opennlp.tools.entitylinker;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -29,48 +28,43 @@ import java.util.Properties;
 public class EntityLinkerProperties {
 
   private Properties props;
-  private InputStream stream;
-  private String propertyFileLocation = "";
 
   /**
    * Constructor takes location of properties file as arg
    *
-   * @param propertiesfile the location of the properties file
+   * @param propertiesfile the properties file
+   * @throws IOException
    */
-  public EntityLinkerProperties(File propertiesfile) throws IOException, FileNotFoundException {
-
-    props = new Properties();
-    stream = new FileInputStream(propertiesfile);
-    props.load(stream);
-    stream.close();
-  }
-/**
- *
- * @param propertiesfile inputstream of properties file
- * @throws IOException
- * @throws FileNotFoundException
- */
-  public EntityLinkerProperties(InputStream propertiesfile) throws IOException, FileNotFoundException {
-
-    props = new Properties();
-    stream = propertiesfile;
-    props.load(stream);
-    stream.close();
-  }
-
-
-
-  public EntityLinkerProperties() {
+  public EntityLinkerProperties(File propertiesfile) throws IOException {
+    InputStream stream = null;
+    try {
+      props = new Properties();
+      stream = new FileInputStream(propertiesfile);
+      props.load(stream);
+      stream.close();
+    } catch (Exception e) {
+      throw new IOException(e);
+    } finally {
+      if (stream != null) {
+        stream.close();
+      }
+    }
   }
 
   /**
-   * sets where the props file is without using overloaded constructor
    *
-   * @param propertyFileLocation
+   * @param propertiesfile inputstream of properties file. Stream will not be
+   *                       closed
+   * @throws IOException
+   *
    */
-  public void setPropertyFileLocation(String propertyFileLocation) {
-
-    this.propertyFileLocation = propertyFileLocation;
+  public EntityLinkerProperties(InputStream propertiesfile) throws IOException {
+    try {
+      props = new Properties();
+      props.load(propertiesfile);
+    } catch (IOException e) {
+      throw new IOException(e);
+    }
   }
 
   /**
@@ -78,25 +72,20 @@ public class EntityLinkerProperties {
    *
    * @param key          the key to the desired item in the properties file
    *                     (key=value)
-   * @param defaultValue a default value in case the file, key, or the value are
+   * @param defaultValue a default value in case the key, or the value are
    *                     missing
-   * @return
-   * @throws FileNotFoundException
-   * @throws IOException
+   * @return a property value in the form of a string
+
+   * @throws IOException when the  properties object was somehow not initialized properly
    */
-  public String getProperty(String key, String defaultValue) throws FileNotFoundException, IOException {
-    if (propertyFileLocation == null) {
-      throw new FileNotFoundException("property file location not set. Use method setPropertyFileLocation to specify location of entitylinker.properties file, or use constructor and pass in a File.");
-    }
+  public String getProperty(String key, String defaultValue) throws IOException {
+
     String propVal = defaultValue;
-    if (props == null) {
-      props = new Properties();
-      stream = new FileInputStream(propertyFileLocation);
-      props.load(stream);
-      stream.close();
-    }
+
     if (props != null) {
       propVal = props.getProperty(key, defaultValue);
+    } else {
+      throw new IOException("EntityLinkerProperties was not successfully initialized");
     }
     return propVal;
   }
