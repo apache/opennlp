@@ -330,7 +330,7 @@ public final class CmdLineUtil {
         throw new TerminateToolException(1, "Training parameters file '" + paramFile + "' is invalid!");
       }
       
-      if (!supportSequenceTraining && TrainerFactory.isSequenceTraining(params.getSettings())) {
+      if (!supportSequenceTraining && TrainerFactory.isSupportSequence(params.getSettings())) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }

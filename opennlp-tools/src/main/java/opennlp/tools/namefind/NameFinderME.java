@@ -318,7 +318,7 @@ public class NameFinderME implements TokenNameFinder {
 
      MaxentModel nameFinderModel;
 
-     if (!TrainerFactory.isSequenceTraining(trainParams.getSettings())) {
+     if (!TrainerFactory.isSupportSequence((trainParams.getSettings()))) {
        EventStream eventStream = new NameFinderEventStream(samples, type,
            new DefaultNameContextGenerator(featureGenerator));
 
