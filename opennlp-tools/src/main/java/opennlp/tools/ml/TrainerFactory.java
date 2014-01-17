@@ -43,23 +43,53 @@ public class TrainerFactory {
     BUILTIN_TRAINERS = Collections.unmodifiableMap(_trainers);
   }
 
-  public static boolean isSupportEvent(Map<String, String> trainParams) {
-    if (trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM) != null) {
-      if(EventTrainer.EVENT_VALUE.equals(trainParams
-            .get(AbstractTrainer.TRAINER_TYPE_PARAM))) {
-        return true;
+  private static String getPluggableTrainerType(String className) {
+    try {
+      Class<?> trainerClass = Class.forName(className);
+      if(trainerClass != null) {
+        
+        if (EventTrainer.class.isAssignableFrom(trainerClass)) {
+          return EventTrainer.EVENT_VALUE;
+        }
+        else if (SequenceTrainer.class.isAssignableFrom(trainerClass)) {
+          return SequenceTrainer.SEQUENCE_VALUE;
+        }
       }
-      return false;
-    } else {
-      return true; // default to event train
+    } catch (ClassNotFoundException e) {
     }
+    
+    return "UNKOWN";
+  }
+  
+  public static boolean isSupportEvent(Map<String, String> trainParams) {
+    
+    String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
+    
+    if (trainerType == null) {
+      trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
+    }
+    
+    if (trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM) != null) {
+      return EventTrainer.EVENT_VALUE.equals(trainParams
+          .get(AbstractTrainer.TRAINER_TYPE_PARAM));
+    } 
+    
+    // default
+    return true;
   }
 
   public static boolean isSupportSequence(Map<String, String> trainParams) {
-    if (SequenceTrainer.SEQUENCE_VALUE.equals(trainParams
-        .get(AbstractTrainer.TRAINER_TYPE_PARAM))) {
+    
+    String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
+    
+    if (trainerType == null) {
+      trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
+    }
+    
+    if (SequenceTrainer.SEQUENCE_VALUE.equals(trainerType)) {
       return true;
     }
+    
     return false;
   }
 
