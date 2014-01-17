@@ -67,7 +67,7 @@ public final class TokenizerTrainerTool
             "' is invalid!");
       }
 
-      if (TrainerFactory.isSequenceTraining(mlParams.getSettings())) {
+      if (TrainerFactory.isSupportSequence(mlParams.getSettings())) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }

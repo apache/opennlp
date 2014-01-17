@@ -59,7 +59,7 @@ public class TrainUtil {
    * @deprecated Use {@link TrainerFactory#isSequenceTraining(Map)} instead.
    */
   public static boolean isSequenceTraining(Map<String, String> trainParams) {
-	return TrainerFactory.isSequenceTraining(trainParams);
+	return TrainerFactory.isSupportSequence(trainParams);
   }
   
   /**

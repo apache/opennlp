@@ -64,7 +64,7 @@ public final class SentenceDetectorTrainerTool
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
 
     if (mlParams != null) {
-      if (TrainerFactory.isSequenceTraining(mlParams.getSettings())) {
+      if (TrainerFactory.isSupportSequence(mlParams.getSettings())) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }

@@ -258,7 +258,7 @@ public class POSTaggerME implements POSTagger {
     
     MaxentModel posModel;
     
-    if (!TrainerFactory.isSequenceTraining(trainParams.getSettings())) {
+    if (!TrainerFactory.isSupportSequence(trainParams.getSettings())) {
       
       EventStream es = new POSSampleEventStream(samples, contextGenerator);
       

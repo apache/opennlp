@@ -63,7 +63,14 @@ public class TrainerFactory {
     return false;
   }
 
-  // not sure if we need this method
+  /**
+   * This method is deprecated and should not be used! <br>
+   * Use {@link TrainerFactory#isSupportSequence(Map)} instead.
+   * 
+   * @param trainParams
+   * @return
+   */
+  @Deprecated
   public static boolean isSequenceTraining(Map<String, String> trainParams) {
     return SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE
         .equals(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
