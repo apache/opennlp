@@ -16,34 +16,37 @@
 package opennlp.tools.entitylinker;
 
 /**
- * Generates an EntityLinker implementation via properties file
- * configuration
+ * Generates an EntityLinker implementation via properties file configuration
  *
  */
 public class EntityLinkerFactory {
 
   /**
-   * instantiates a single linker based on properties file configuration.
-   * @param entityType the type of entity, i.e. person, organization, location
-   * @param properties the properties file that holds the configuration for entitylinkers.
-   * @return
+   *
+   * @param <I>        An type that extends EntityLinkerProperties.
+   * @param entityType The type of entity being linked to. This value is used to
+   *                   retrieve the implementation of the entitylinker from the
+   *                   entitylinker properties file.
+   * @param properties An object that extends EntityLinkerProperties. This
+   *                   object will be passed into the implemented EntityLinker
+   *                   init(..) within this getLinker method.
+   * @return an EntityLinker impl
    */
-  public static synchronized EntityLinker getLinker(String entityType, EntityLinkerProperties properties) {
+  public static synchronized <I extends EntityLinkerProperties> EntityLinker getLinker(String entityType, I properties) {
     if (entityType == null || properties == null) {
       throw new IllegalArgumentException("Null argument in entityLinkerFactory");
     }
     EntityLinker linker = null;
     try {
-      String linkerImplFullName = properties.getProperty("linker." + entityType,"");
+      String linkerImplFullName = properties.getProperty("linker." + entityType, "");
       Class theClass = Class.forName(linkerImplFullName);
       linker = (EntityLinker) theClass.newInstance();
       System.out.println("EntityLinker factory instantiated: " + linker.getClass().getName());
-      linker.setEntityLinkerProperties(properties);
+      linker.init(properties);
 
     } catch (Exception ex) {
-      System.out.println("Check the entity linker properties file. The entry must be formatted as linker.<type>=<fullclassname>, i.e linker.person=org.my.company.MyPersonLinker\n" + ex);
-   }
+      System.out.println("Error in EntityLinker factory. Check the entity linker properties file. The entry must be formatted as linker.<type>=<fullclassname>, i.e linker.person=org.my.company.MyPersonLinker\n" + ex);
+    }
     return linker;
   }
-
 }
