@@ -23,16 +23,16 @@ public class EntityLinkerFactory {
 
   /**
    *
-   * @param <I>        An type that extends EntityLinkerProperties.
+   * @param <I>        A type that extends EntityLinkerProperties.
    * @param entityType The type of entity being linked to. This value is used to
    *                   retrieve the implementation of the entitylinker from the
    *                   entitylinker properties file.
    * @param properties An object that extends EntityLinkerProperties. This
    *                   object will be passed into the implemented EntityLinker
-   *                   init(..) within this getLinker method.
+   *                   init(..) method, so it is an appropriate place to put additional resources.
    * @return an EntityLinker impl
    */
-  public static synchronized <I extends EntityLinkerProperties> EntityLinker getLinker(String entityType, I properties) {
+  public static synchronized <I extends EntityLinkerProperties> EntityLinker getLinker(String entityType, I properties)throws Exception {
     if (entityType == null || properties == null) {
       throw new IllegalArgumentException("Null argument in entityLinkerFactory");
     }
@@ -45,7 +45,7 @@ public class EntityLinkerFactory {
       linker.init(properties);
 
     } catch (Exception ex) {
-      System.out.println("Error in EntityLinker factory. Check the entity linker properties file. The entry must be formatted as linker.<type>=<fullclassname>, i.e linker.person=org.my.company.MyPersonLinker\n" + ex);
+      throw new Exception("Error in EntityLinker factory. Check the entity linker properties file. The entry must be formatted as linker.<type>=<fullclassname>, i.e linker.person=org.my.company.MyPersonLinker",ex);
     }
     return linker;
   }
