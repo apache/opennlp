@@ -66,7 +66,10 @@ public class TrainerFactory {
     String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
     
     if (trainerType == null) {
-      trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
+      String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
+      if (alogrithmValue != null) {
+        trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
+      }
     }
     
     if (trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM) != null) {
@@ -74,7 +77,6 @@ public class TrainerFactory {
           .get(AbstractTrainer.TRAINER_TYPE_PARAM));
     } 
     
-    // default
     return true;
   }
 
@@ -83,7 +85,10 @@ public class TrainerFactory {
     String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
     
     if (trainerType == null) {
-      trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
+      String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
+      if (alogrithmValue != null) {
+        trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
+      }
     }
     
     if (SequenceTrainer.SEQUENCE_VALUE.equals(trainerType)) {
