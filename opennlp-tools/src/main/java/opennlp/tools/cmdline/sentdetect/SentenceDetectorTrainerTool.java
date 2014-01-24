@@ -33,6 +33,7 @@ import opennlp.tools.sentdetect.SentenceDetectorFactory;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.sentdetect.SentenceSampleStream;
 import opennlp.tools.util.model.ModelUtil;
 
 public final class SentenceDetectorTrainerTool
@@ -77,8 +78,11 @@ public final class SentenceDetectorTrainerTool
     CmdLineUtil.checkOutputFile("sentence detector model", modelOutFile);
 
     char[] eos = null;
-    if (params.getEosChars() != null)
-      eos = params.getEosChars().toCharArray();
+    if (params.getEosChars() != null) {
+      String eosString = SentenceSampleStream.replaceNewLineEscapeTags(
+          params.getEosChars());
+      eos = eosString.toCharArray();
+    }
 
     SentenceModel model;
 
