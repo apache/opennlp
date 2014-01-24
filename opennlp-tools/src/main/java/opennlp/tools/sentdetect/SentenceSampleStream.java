@@ -37,6 +37,10 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
     super(new EmptyLinePreprocessorStream(sentences));
   }
 
+  public static String replaceNewLineEscapeTags(String s) {
+    return s.replace("<LF>", "\n").replace("<CR>", "\r");
+  }
+  
   public SentenceSample read() throws IOException {
     
     StringBuilder sentencesString = new StringBuilder();
@@ -46,7 +50,9 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
     while ((sentence = samples.read()) != null && !sentence.equals("")) {
 
       int begin = sentencesString.length();
-      sentencesString.append(sentence.trim());
+      sentence = sentence.trim();
+      sentence = replaceNewLineEscapeTags(sentence);
+      sentencesString.append(sentence); 
       int end = sentencesString.length();
       sentenceSpans.add(new Span(begin, end));
       sentencesString.append(' ');

@@ -71,6 +71,18 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     collectFeats = new ArrayList<String>();
   }
 
+  private static String escapeChar(Character c) {
+    if (c == '\n') {
+      return "<LF>";
+    }
+
+    if (c == '\r') {
+      return "<CR>";
+    }
+    
+    return new String(new char[]{c});
+  }
+  
   /* (non-Javadoc)
    * @see opennlp.tools.sentdetect.SDContextGenerator#getContext(java.lang.StringBuffer, int)
    */
@@ -102,7 +114,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
         collectFeats.add("sp");
       if (position < lastIndex && StringUtil.isWhitespace(sb.charAt(position + 1)))
         collectFeats.add("sn");
-      collectFeats.add("eos=" + sb.charAt(position));
+      collectFeats.add("eos=" + escapeChar(sb.charAt(position)));
     }
     int prefixStart = previousSpaceIndex(sb, position);
 

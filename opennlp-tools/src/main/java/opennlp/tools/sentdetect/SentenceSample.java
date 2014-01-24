@@ -85,17 +85,29 @@ public class SentenceSample {
     return sentences.toArray(new Span[sentences.size()]);
   }
   
+  // TODO: This one must output the tags!
   @Override
   public String toString() {
     
     StringBuilder documentBuilder = new StringBuilder();
     
     for (Span sentSpan : sentences) {
-      documentBuilder.append(sentSpan.getCoveredText(document));
+      documentBuilder.append(sentSpan.getCoveredText(document).toString()
+          .replace("\r", "<CR>").replace("\n", "<LF>"));
       documentBuilder.append("\n");
     }
     
     return documentBuilder.toString();
+  }
+  
+  private Span[] trimSpans(Span spans[]) {
+    Span trimedSpans[] = new Span[spans.length];
+    
+    for (int i = 0; i < spans.length; i++) {
+      trimedSpans[i] = spans[i].trim(document);
+    }
+    
+    return trimedSpans;
   }
   
   @Override
@@ -104,9 +116,9 @@ public class SentenceSample {
       return true;
     } else if (obj instanceof SentenceSample) {
       SentenceSample a = (SentenceSample) obj;
-
+      
       return getDocument().equals(a.getDocument())
-          && Arrays.equals(getSentences(), a.getSentences());
+          && Arrays.equals(trimSpans(getSentences()), trimSpans(a.getSentences()));
     } else {
       return false;
     }
