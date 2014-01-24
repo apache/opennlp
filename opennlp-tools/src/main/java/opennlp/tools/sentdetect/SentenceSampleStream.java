@@ -29,6 +29,7 @@ import opennlp.tools.util.Span;
 /**
  * This class is a stream filter which reads a sentence by line samples from
  * a <code>Reader</code> and converts them into {@link SentenceSample} objects.
+ * An empty line indicates the begin of a new document.
  */
 public class SentenceSampleStream extends FilterObjectStream<String, SentenceSample> {
 
