@@ -18,6 +18,8 @@
 
 package opennlp.tools.util;
 
+import opennlp.tools.sentdetect.EndOfSentenceScanner;
+
 /**
  * Class for storing start and end integer offsets.
  **/
@@ -221,6 +223,9 @@ public class Span implements Comparable<Span> {
     
     if (newStartOffset == getStart() && newEndOffset == getEnd()) {
       return this;
+    }
+    else if (newStartOffset > newEndOffset) {
+      return new Span(getStart(), getStart(), getType());
     }
     else {
       return new Span(newStartOffset, newEndOffset, getType());

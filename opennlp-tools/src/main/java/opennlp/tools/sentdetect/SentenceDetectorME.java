@@ -40,7 +40,7 @@ import opennlp.tools.util.model.ModelUtil;
 /**
  * A sentence detector for splitting up raw text into sentences.
  * <p>
- * A maximum entropy model is used to evaluate the characters ".", "!", and "?" in a
+ * A maximum entropy model is used to evaluate end-of-sentence characters in a
  * string to determine if they signify the end of a sentence.
  */
 public class SentenceDetectorME implements SentenceDetector {
@@ -54,9 +54,6 @@ public class SentenceDetectorME implements SentenceDetector {
    * Constant indicates no sentence split.
    */
   public static final String NO_SPLIT ="n";
-  
-  // Note: That should be inlined when doing a re-factoring!
-  private static final Double ONE = new Double(1);
 
   /**
    * The maximum entropy model to use to evaluate contexts.
@@ -223,33 +220,41 @@ public class SentenceDetectorME implements SentenceDetector {
           return new Span[0];
     }
     
-    // Now convert the sent indexes to spans
+    // Convert the sentence end indexes to spans
+    
     boolean leftover = starts[starts.length - 1] != s.length();
-    Span[] spans = new Span[leftover? starts.length + 1 : starts.length];
-    for (int si=0;si<starts.length;si++) {
-      int start,end;
+    List<Span> spans = new ArrayList<Span>(leftover? starts.length + 1 : starts.length);
+    
+    for (int si=0; si < starts.length; si++) {
+      int start;
+      
       if (si==0) {
         start = 0;
-        
-        while (si < starts.length && StringUtil.isWhitespace(s.charAt(start)))
-          start++;
       }
       else {
         start = starts[si-1];
       }
-      end = starts[si];
-      while (end > 0 && StringUtil.isWhitespace(s.charAt(end-1))) {
-        end--;
+      
+      // A span might contain only white spaces, in this case the length of
+      // the span will be zero after trimming and should be ignored.
+      Span span = new Span(start, starts[si]).trim(s);
+      if (span.length() > 0) {
+        spans.add(span);
       }
-      spans[si]=new Span(start,end);
+      else {
+        sentProbs.remove(si);
+      }
     }
     
     if (leftover) {
-      spans[spans.length-1] = new Span(starts[starts.length-1],s.length());
-      sentProbs.add(ONE);
+      Span span = new Span(starts[starts.length-1],s.length()).trim(s);
+      if (span.length() > 0) {
+        spans.add(span);
+        sentProbs.add(1d);
+      }
     }
     
-    return spans;
+    return spans.toArray(new Span[spans.size()]);
   }
 
   /**

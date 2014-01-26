@@ -318,4 +318,11 @@ public class SpanTest {
     Span span1 = new Span(0, string1.length());
     assertEquals("12 34", span1.trim(string1).getCoveredText(string1));
   }
+  
+  @Test
+  public void testTrimWhitespaceSpan() {
+    String string1 = "              ";
+    Span span1 = new Span(0, string1.length());
+    assertEquals("", span1.trim(string1).getCoveredText(string1));
+  }
 }
