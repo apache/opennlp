@@ -53,6 +53,6 @@ public class SentenceSampleTest {
   }
 
   public static SentenceSample createPredSample() {
-    return new SentenceSample("1. 2.", new Span(0, 1), new Span(2, 5));
+    return new SentenceSample("1. 2.", new Span(0, 1), new Span(4, 5));
   }
 }
