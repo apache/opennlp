@@ -176,7 +176,8 @@ public class SentenceDetectorME implements SentenceDetector {
       if (i + 1 < end && enders.get(i + 1) < fws) {
         continue;
       }
-
+      if(positions.size() > 0 && cint < positions.get(positions.size()-1)) continue;
+      
       double[] probs = model.eval(cgen.getContext(sb, cint));
       String bestOutcome = model.getBestOutcome(probs);
 
@@ -223,7 +224,7 @@ public class SentenceDetectorME implements SentenceDetector {
     // Convert the sentence end indexes to spans
     
     boolean leftover = starts[starts.length - 1] != s.length();
-    List<Span> spans = new ArrayList<Span>(leftover? starts.length + 1 : starts.length);
+    Span[] spans = new Span[leftover? starts.length + 1 : starts.length];
     
     for (int si=0; si < starts.length; si++) {
       int start;
@@ -239,7 +240,7 @@ public class SentenceDetectorME implements SentenceDetector {
       // the span will be zero after trimming and should be ignored.
       Span span = new Span(start, starts[si]).trim(s);
       if (span.length() > 0) {
-        spans.add(span);
+        spans[si] = span;
       }
       else {
         sentProbs.remove(si);
@@ -249,12 +250,12 @@ public class SentenceDetectorME implements SentenceDetector {
     if (leftover) {
       Span span = new Span(starts[starts.length-1],s.length()).trim(s);
       if (span.length() > 0) {
-        spans.add(span);
+        spans[spans.length-1] = span;
         sentProbs.add(1d);
       }
     }
     
-    return spans.toArray(new Span[spans.size()]);
+    return spans;
   }
 
   /**
