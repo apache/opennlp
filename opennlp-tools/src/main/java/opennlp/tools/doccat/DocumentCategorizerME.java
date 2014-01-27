@@ -122,40 +122,6 @@ public class DocumentCategorizerME implements DocumentCategorizer {
        
      return new DoccatModel(languageCode, model, manifestInfoEntries);
    }
-   
-  /**
-   * Trains a document categorizer model with custom feature generation.
-   * 
-   * @param languageCode
-   * @param samples
-   * @param cutoff
-   * @param iterations
-   * @param featureGenerators
-   * 
-   * @return the trained doccat model
-   * 
-   * @throws IOException
-   */
-  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples, int cutoff, int iterations, FeatureGenerator... featureGenerators)
-      throws IOException {
-    return train(languageCode, samples, ModelUtil.createTrainingParameters(iterations, cutoff),
-        featureGenerators);
-  }
-  
-  /**
-   * Trains a doccat model with default feature generation.
-   * 
-   * @param languageCode
-   * @param samples
-   * 
-   * @return the trained doccat model
-   * 
-   * @throws IOException
-   * @throws ObjectStreamException 
-   */
-  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples, int cutoff, int iterations) throws IOException {
-    return train(languageCode, samples, cutoff, iterations, defaultFeatureGenerator);
-  }
   
   /**
    * Trains a doccat model with default feature generation.
@@ -169,6 +135,6 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @throws ObjectStreamException 
    */
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples) throws IOException {
-    return train(languageCode, samples, 5, 100, defaultFeatureGenerator);
+    return train(languageCode, samples, ModelUtil.createDefaultTrainingParameters(), defaultFeatureGenerator);
   }
 }

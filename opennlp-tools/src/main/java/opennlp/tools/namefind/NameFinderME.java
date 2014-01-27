@@ -370,70 +370,13 @@ public class NameFinderME implements TokenNameFinder {
     return model;
   }
 
-   /**
-    * Trains a name finder model.
-    *
-    * @param languageCode the language of the training data
-    * @param type null or an override type for all types in the training data
-    * @param samples the training data
-    * @param iterations the number of iterations
-    * @param cutoff
-    * @param resources the resources for the name finder or null if none
-    *
-    * @return the newly trained model
-    *
-    * @throws IOException
-    * @throws ObjectStreamException
-    */
-   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
-       AdaptiveFeatureGenerator generator, final Map<String, Object> resources,
-       int iterations, int cutoff) throws IOException {
-     return train(languageCode, type, samples, ModelUtil.createTrainingParameters(iterations, cutoff),
-         generator, resources);
-   }
-
-   /**
-   * @deprecated use {@link #train(String, String, ObjectStream, TrainingParameters, AdaptiveFeatureGenerator, Map)}
-   * instead and pass in a TrainingParameters object.
-   */
-  @Deprecated
-   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
-       final Map<String, Object> resources, int iterations, int cutoff) throws IOException  {
-     return train(languageCode, type, samples, (AdaptiveFeatureGenerator) null, resources, iterations, cutoff);
-   }
 
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        final Map<String, Object> resources) throws IOException {
-     return NameFinderME.train(languageCode, type, samples, resources, 100, 5);
+     return NameFinderME.train(languageCode, type, samples,
+         ModelUtil.createDefaultTrainingParameters(), (byte[]) null, resources);
    }
 
-   /**
-   * @deprecated use {@link #train(String, String, ObjectStream, TrainingParameters, byte[], Map)}
-   * instead and pass in a TrainingParameters object.
-   */
-  @Deprecated
-   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
-       byte[] generatorDescriptor, final Map<String, Object> resources,
-       int iterations, int cutoff) throws IOException {
-
-     // TODO: Pass in resource manager ...
-
-     AdaptiveFeatureGenerator featureGenerator = createFeatureGenerator(generatorDescriptor, resources);
-
-     TokenNameFinderModel model = train(languageCode, type, samples, featureGenerator,
-         resources, iterations, cutoff);
-
-     if (generatorDescriptor != null) {
-       model = model.updateFeatureGenerator(generatorDescriptor);
-     }
-
-     return model;
-   }
-
-  @Deprecated
-  public static GISModel train(EventStream es, int iterations, int cut) throws IOException {
-    return GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
-  }
 
   /**
    * Gets the name type from the outcome

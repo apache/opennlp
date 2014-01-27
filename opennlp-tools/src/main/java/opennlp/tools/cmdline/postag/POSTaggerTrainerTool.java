@@ -63,7 +63,7 @@ public final class POSTaggerTrainerTool
     }
 
     if(mlParams == null) {
-      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
+      mlParams = ModelUtil.createDefaultTrainingParameters();
       mlParams.put(TrainingParameters.ALGORITHM_PARAM, getModelType(params.getType()).toString());
     }
 

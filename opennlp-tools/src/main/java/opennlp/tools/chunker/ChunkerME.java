@@ -18,7 +18,6 @@
 package opennlp.tools.chunker;
 
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,6 @@ import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * The class represents a maximum-entropy-based chunker.  Such a chunker can be used to
@@ -197,35 +195,5 @@ public class ChunkerME implements Chunker {
     MaxentModel maxentModel = TrainUtil.train(es, mlParams.getSettings(), manifestInfoEntries);
     
     return new ChunkerModel(lang, maxentModel, manifestInfoEntries);
-  }
-  
-  /**
-   * @deprecated use {@link #train(String, ObjectStream, ChunkerContextGenerator, TrainingParameters)}
-   * instead and pass in a TrainingParameters object.
-   */
-  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, 
-      int cutoff, int iterations, ChunkerContextGenerator contextGenerator)
-      throws IOException {
-    return train(lang, in, contextGenerator, ModelUtil.createTrainingParameters(iterations, cutoff));
-  }
-  
-  /**
-   * Trains a new model for the {@link ChunkerME}.
-   *
-   * @param in
-   * @param cutoff
-   * @param iterations
-   * 
-   * @return the new model
-   * 
-   * @throws IOException
-   * 
-   * @deprecated use {@link #train(String, ObjectStream, ChunkerContextGenerator, TrainingParameters)}
-   * instead and pass in a TrainingParameters object.
-   */
-  @Deprecated
-  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, int cutoff, int iterations)
-      throws IOException, ObjectStreamException {
-    return train(lang, in, cutoff, iterations, new DefaultChunkerContextGenerator());
   }
 }

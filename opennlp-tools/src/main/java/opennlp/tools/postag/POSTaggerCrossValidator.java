@@ -83,28 +83,6 @@ public class POSTaggerCrossValidator {
   /**
    * @deprecated use
    *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
-   *             instead and pass in a {@link TrainingParameters} object and a
-   *             {@link POSTaggerFactory}.
-   */
-  public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
-      Dictionary ngramDictionary, int cutoff, int iterations) {
-    this(languageCode, create(modelType, cutoff, iterations), create(ngramDictionary, tagDictionary));
-  }
-  
-  /**
-   * @deprecated use
-   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
-   *             instead and pass in a {@link TrainingParameters} object and a
-   *             {@link POSTaggerFactory}.
-   */
-  public POSTaggerCrossValidator(String languageCode, ModelType modelType, POSDictionary tagDictionary,
-      Dictionary ngramDictionary) {
-    this(languageCode, create(modelType, 5, 100), create(ngramDictionary, tagDictionary));
-  }
-
-  /**
-   * @deprecated use
-   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
    *             instead and pass in a {@link POSTaggerFactory}.
    */
   public POSTaggerCrossValidator(String languageCode,
@@ -229,12 +207,6 @@ public class POSTaggerCrossValidator {
    */
   public long getWordCount() {
     return wordAccuracy.count();
-  }
-  
-  private static TrainingParameters create(ModelType type, int cutoff, int iterations) {
-    TrainingParameters params = ModelUtil.createTrainingParameters(iterations, cutoff);
-    params.put(TrainingParameters.ALGORITHM_PARAM, type.toString());
-    return params;
   }
   
   private static POSTaggerFactory create(Dictionary ngram, TagDictionary pos) {

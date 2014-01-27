@@ -73,7 +73,7 @@ public final class TokenizerTrainerTool
     }
 
     if(mlParams == null) {
-      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
+      mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 
     File modelOutFile = params.getModel();

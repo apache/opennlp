@@ -325,19 +325,8 @@ public class SentenceDetectorME implements SentenceDetector {
    *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
    *             and pass in af {@link SentenceDetectorFactory}.
    */
-  @Deprecated
-  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
-      boolean useTokenEnd, Dictionary abbreviations, int cutoff, int iterations) throws IOException {
-    return train(languageCode, samples, useTokenEnd, abbreviations, ModelUtil.createTrainingParameters(iterations, cutoff));
-  }
-  
-  /**
-   * @deprecated Use
-   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
-   *             and pass in af {@link SentenceDetectorFactory}.
-   */
   public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
       boolean useTokenEnd, Dictionary abbreviations) throws IOException {
-    return train(languageCode, samples, useTokenEnd, abbreviations,5,100);
+    return train(languageCode, samples, useTokenEnd, abbreviations, ModelUtil.createDefaultTrainingParameters());
   }
 }

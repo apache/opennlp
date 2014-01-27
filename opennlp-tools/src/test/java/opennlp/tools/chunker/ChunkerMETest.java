@@ -30,6 +30,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -76,7 +77,11 @@ public class ChunkerMETest {
     ObjectStream<ChunkSample> sampleStream = new ChunkSampleStream(
         new PlainTextByLineStream(new InputStreamReader(in, encoding)));
 
-    ChunkerModel chunkerModel = ChunkerME.train("en", sampleStream, 1, 70);
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    
+    ChunkerModel chunkerModel = ChunkerME.train("en", sampleStream, params, new ChunkerFactory());
 
     this.chunker = new ChunkerME(chunkerModel);
   }

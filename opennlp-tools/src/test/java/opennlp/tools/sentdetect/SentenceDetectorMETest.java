@@ -26,6 +26,8 @@ import java.io.InputStreamReader;
 
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ModelType;
 
 import org.junit.Test;
 
@@ -40,8 +42,12 @@ public class SentenceDetectorMETest {
     InputStream in = getClass().getResourceAsStream(
         "/opennlp/tools/sentdetect/Sentences.txt");
 
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
+    
     SentenceModel sentdetectModel = SentenceDetectorME.train(
-        "en", new SentenceSampleStream(new PlainTextByLineStream(new InputStreamReader(in))), true, null, 100, 0);
+        "en", new SentenceSampleStream(new PlainTextByLineStream(new InputStreamReader(in))), true, null, mlParams);
     
     assertEquals("en", sentdetectModel.getLanguage());
     

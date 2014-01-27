@@ -58,17 +58,8 @@ public class TokenizerCrossValidator {
    *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
    *             instead and pass in a {@link TokenizerFactory}
    */
-  public TokenizerCrossValidator(String language, boolean alphaNumericOptimization, int cutoff, int iterations) {
-    this(language, alphaNumericOptimization, ModelUtil.createTrainingParameters(iterations, cutoff));
-  }
-  
-  /**
-   * @deprecated use
-   *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
-   *             instead and pass in a {@link TokenizerFactory}
-   */
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization) {
-    this(language, alphaNumericOptimization, ModelUtil.createTrainingParameters(100, 5));
+    this(language, alphaNumericOptimization, ModelUtil.createDefaultTrainingParameters());
   }
   
   /**

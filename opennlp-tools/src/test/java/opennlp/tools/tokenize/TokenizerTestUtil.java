@@ -28,6 +28,7 @@ import opennlp.tools.util.CollectionObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Utility class for testing the {@link Tokenizer}.
@@ -52,8 +53,12 @@ public class TokenizerTestUtil {
         new Span(0, 3),
         new Span(3, 4)}));
 
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
+    
     return TokenizerME.train("en", new CollectionObjectStream<TokenSample>(samples), true,
-                             5, 100);
+        mlParams);
   }
 
   static TokenizerModel createMaxentTokenModel() throws IOException {
@@ -64,7 +69,11 @@ public class TokenizerTestUtil {
     ObjectStream<TokenSample> samples = new TokenSampleStream(
         new PlainTextByLineStream(new InputStreamReader(trainDataIn, "UTF-8")));
     
-    return TokenizerME.train("en", samples, true, 5, 100);
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
+    
+    return TokenizerME.train("en", samples, true, mlParams);
   }
   
 }

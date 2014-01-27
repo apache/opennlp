@@ -40,7 +40,7 @@ public final class CheckModelUpdaterTool extends ModelUpdaterTool {
       ObjectStream<Parse> parseSamples, ModelUpdaterParams parameters)
       throws IOException {
     
-      Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), parameters.getCutoff());
+      Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), 5);
       
       parseSamples.reset();
       
@@ -50,7 +50,7 @@ public final class CheckModelUpdaterTool extends ModelUpdaterTool {
       opennlp.tools.ml.model.EventStream bes = new ParserEventStream(parseSamples, 
           originalModel.getHeadRules(), ParserEventTypeEnum.CHECK, mdict);
       AbstractModel checkModel = Parser.train(bes, 
-          parameters.getIterations(), parameters.getCutoff());
+          100, 5);
       
       parseSamples.close();
       
