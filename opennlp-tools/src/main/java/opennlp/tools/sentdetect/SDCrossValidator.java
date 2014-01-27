@@ -27,7 +27,7 @@ import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
 
 /**
- * 
+ * A cross validator for the sentence detector.
  */
 public class SDCrossValidator {
   
@@ -55,28 +55,9 @@ public class SDCrossValidator {
    *             {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
    *             and pass in a {@link SentenceDetectorFactory}.
    */
-  public SDCrossValidator(String languageCode, int cutoff, int iterations) {
-    this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations));
-  }
-  
-  /**
-   * @deprecated Use
-   *             {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
-   *             and pass in a {@link SentenceDetectorFactory}.
-   */
   public SDCrossValidator(String languageCode, TrainingParameters params) {
     this(languageCode, params, new SentenceDetectorFactory(languageCode, true,
         null, null));
-  }
-  
-  /**
-   * @deprecated use {@link #SDCrossValidator(String, TrainingParameters, Dictionary, SentenceDetectorEvaluationMonitor...)}
-   * instead and pass in a TrainingParameters object.
-   */
-  @Deprecated
-  public SDCrossValidator(String languageCode, int cutoff, int iterations, Dictionary abbreviations) {
-    this(languageCode, ModelUtil.createTrainingParameters(cutoff, iterations),
-        new SentenceDetectorFactory(languageCode, true, abbreviations, null));
   }
   
   /**
@@ -95,7 +76,7 @@ public class SDCrossValidator {
    * instead and pass in a TrainingParameters object.
    */
   public SDCrossValidator(String languageCode) {
-    this(languageCode, 5, 100);
+    this(languageCode, ModelUtil.createDefaultTrainingParameters());
   }
 
   /**

@@ -133,18 +133,20 @@ public final class ModelUtil {
   }
   
   /**
-   * Note: Do not use this legacy support method, internal use only!
+   * Creates the default training parameters in case they are not provided.
+   * 
+   * Note: Do not use this method, internal use only!
    * 
    * @param iterations number of iterations
    * @param cutoff cutoff threshold
    * 
    * @return training parameters instance
    */
-  public static TrainingParameters createTrainingParameters(int iterations, int cutoff) {
+  public static TrainingParameters createDefaultTrainingParameters() {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, GIS.MAXENT_VALUE);
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(5));
     
     return mlParams;
   }

@@ -27,11 +27,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TrainUtil;
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
@@ -317,32 +316,6 @@ public class TokenizerME extends AbstractTokenizer {
         useAlphaNumericOptimization, manifestInfoEntries);
   }
   
-  /**
-   * Trains a model for the {@link TokenizerME}.
-   *
-   * @param languageCode the language of the natural text
-   * @param samples the samples used for the training.
-   * @param useAlphaNumericOptimization - if true alpha numerics are skipped
-   * @param cutoff number of times a feature must be seen to be considered
-   * @param iterations number of iterations to train the maxent model
-   * 
-   * @return the trained {@link TokenizerModel}
-   *
-   * @throws IOException it throws an {@link IOException} if an {@link IOException}
-   * is thrown during IO operations on a temp file which is created during training.
-   * Or if reading from the {@link ObjectStream} fails.
-   * 
-   * @deprecated Use 
-   *    {@link #train(String, ObjectStream, TokenizerFactory, TrainingParameters)} 
-   *    and pass in a {@link TokenizerFactory}
-   */
-  @Deprecated
-  public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
-      boolean useAlphaNumericOptimization, int cutoff, int iterations) throws IOException {
-
-    return train(languageCode, samples, useAlphaNumericOptimization, ModelUtil.createTrainingParameters(iterations, cutoff));
-  }
-
 
   /**
    * Trains a model for the {@link TokenizerME} with a default cutoff of 5 and 100 iterations.
@@ -366,7 +339,7 @@ public class TokenizerME extends AbstractTokenizer {
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization) throws IOException, ObjectStreamException {
-    return train(languageCode, samples, useAlphaNumericOptimization, 5, 100);
+    return train(languageCode, samples, useAlphaNumericOptimization, ModelUtil.createDefaultTrainingParameters());
   }
   
   /**

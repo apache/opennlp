@@ -51,7 +51,10 @@ public class TokenNameFinderCrossValidatorTest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(sampleDataIn.getChannel(), "ISO-8859-1"));
 
-    TrainingParameters mlParams = ModelUtil.createTrainingParameters(70, 1);
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
 
@@ -76,7 +79,10 @@ public class TokenNameFinderCrossValidatorTest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(sampleDataIn.getChannel(), "ISO-8859-1"));
 
-    TrainingParameters mlParams = ModelUtil.createTrainingParameters(70, 1);
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
     

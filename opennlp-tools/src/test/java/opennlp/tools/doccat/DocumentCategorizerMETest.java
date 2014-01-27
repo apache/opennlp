@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.TrainingParameters;
 
 import org.junit.Test;
 
@@ -40,8 +41,12 @@ public class DocumentCategorizerMETest {
         new DocumentSample("0", new String[]{"x", "y", "z", "7", "8"})
     });
     
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
+    
     DoccatModel model = DocumentCategorizerME.train("x-unspecified", samples,
-        0, 100, new BagOfWordsFeatureGenerator());
+        params, new BagOfWordsFeatureGenerator());
     
     DocumentCategorizer doccat = new DocumentCategorizerME(model);
     

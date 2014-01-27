@@ -110,7 +110,7 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     }
 
     if(mlParams == null) {
-      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
+      mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 
     File modelOutFile = params.getModel();

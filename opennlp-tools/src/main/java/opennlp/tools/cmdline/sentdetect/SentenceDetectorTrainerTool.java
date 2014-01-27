@@ -71,7 +71,7 @@ public final class SentenceDetectorTrainerTool
     }
 
     if(mlParams == null) {
-      mlParams = ModelUtil.createTrainingParameters(params.getIterations(), params.getCutoff());
+      mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 
     File modelOutFile = params.getModel();

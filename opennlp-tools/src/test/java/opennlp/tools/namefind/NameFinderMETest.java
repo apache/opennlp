@@ -30,6 +30,7 @@ import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
 
 import org.junit.Test;
 
@@ -69,8 +70,12 @@ public class NameFinderMETest {
           new NameSampleDataStream(
           new PlainTextByLineStream(new InputStreamReader(in, encoding)));
 
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
-        Collections.<String, Object>emptyMap(), 70, 1);
+        params, (byte[]) null, Collections.<String, Object>emptyMap());
 
     TokenNameFinder nameFinder = new NameFinderME(nameFinderModel);
 
@@ -128,9 +133,13 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in, encoding)));
 
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
-        Collections.<String, Object>emptyMap(), 70, 1);
-
+        params, (byte[]) null, Collections.<String, Object>emptyMap());
+    
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
@@ -173,9 +182,13 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE,
-        sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
-
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
+        params, (byte[]) null, Collections.<String, Object>emptyMap());
+    
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
@@ -208,9 +221,13 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE,
-        sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
-
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
+        params, (byte[]) null, Collections.<String, Object>emptyMap());
+    
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
@@ -245,8 +262,12 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE,
-        sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
+        params, (byte[]) null, Collections.<String, Object>emptyMap());
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
@@ -298,8 +319,12 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in)));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE,
-        sampleStream, Collections.<String, Object>emptyMap(), 70, 1);
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
+        params, (byte[]) null, Collections.<String, Object>emptyMap());
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
