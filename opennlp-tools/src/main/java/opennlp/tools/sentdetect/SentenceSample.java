@@ -100,16 +100,6 @@ public class SentenceSample {
     return documentBuilder.toString();
   }
   
-  private Span[] trimSpans(Span spans[]) {
-    Span trimedSpans[] = new Span[spans.length];
-    
-    for (int i = 0; i < spans.length; i++) {
-      trimedSpans[i] = spans[i].trim(document);
-    }
-    
-    return trimedSpans;
-  }
-  
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -118,7 +108,7 @@ public class SentenceSample {
       SentenceSample a = (SentenceSample) obj;
       
       return getDocument().equals(a.getDocument())
-          && Arrays.equals(trimSpans(getSentences()), trimSpans(a.getSentences()));
+          && Arrays.equals(getSentences(), a.getSentences());
     } else {
       return false;
     }

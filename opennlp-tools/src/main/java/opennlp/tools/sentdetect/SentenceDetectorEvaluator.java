@@ -51,10 +51,20 @@ public class SentenceDetectorEvaluator extends Evaluator<SentenceSample> {
     this.sentenceDetector = sentenceDetector;
   }
 
+  private Span[] trimSpans(String document, Span spans[]) {
+    Span trimedSpans[] = new Span[spans.length];
+    
+    for (int i = 0; i < spans.length; i++) {
+      trimedSpans[i] = spans[i].trim(document);
+    }
+    
+    return trimedSpans;
+  }
+  
   @Override
   protected SentenceSample processSample(SentenceSample sample) {
-    Span predictions[] = sentenceDetector.sentPosDetect(sample.getDocument());
-    Span[] references = sample.getSentences();
+    Span predictions[] = trimSpans(sample.getDocument(), sentenceDetector.sentPosDetect(sample.getDocument()));
+    Span[] references = trimSpans(sample.getDocument(), sample.getSentences());
 
     fmeasure.updateScores(references, predictions);
     
