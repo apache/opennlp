@@ -22,7 +22,7 @@ import java.io.IOException;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.SequenceStream;
 
-public class MockSequenceTrainer implements SequenceTrainer {
+public class MockSequenceTrainer implements EventModelSequenceTrainer {
 
   public AbstractModel train(SequenceStream events) throws IOException {
     return null;

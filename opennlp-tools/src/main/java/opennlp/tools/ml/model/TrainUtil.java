@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import opennlp.tools.ml.EventTrainer;
-import opennlp.tools.ml.SequenceTrainer;
+import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
 
 public class TrainUtil {
@@ -64,7 +64,7 @@ public class TrainUtil {
   
   /**
    * @deprecated Use {@link TrainerFactory#getSequenceTrainer(Map, Map)} to get an
-   *             {@link SequenceTrainer} instead.
+   *             {@link EventModelSequenceTrainer} instead.
    */
   public static MaxentModel train(SequenceStream events, Map<String, String> trainParams,
       Map<String, String> reportMap) throws IOException {
@@ -72,7 +72,7 @@ public class TrainUtil {
     if(!TrainerFactory.isSupportSequence(trainParams)) {
       throw new IllegalArgumentException("EventTrain is not supported");
     }
-    SequenceTrainer trainer = TrainerFactory.getSequenceTrainer(trainParams, reportMap);
+    EventModelSequenceTrainer trainer = TrainerFactory.getSequenceTrainer(trainParams, reportMap);
     
     return trainer.train(events);
   }

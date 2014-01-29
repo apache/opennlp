@@ -51,8 +51,8 @@ public class TrainerFactory {
         if (EventTrainer.class.isAssignableFrom(trainerClass)) {
           return EventTrainer.EVENT_VALUE;
         }
-        else if (SequenceTrainer.class.isAssignableFrom(trainerClass)) {
-          return SequenceTrainer.SEQUENCE_VALUE;
+        else if (EventModelSequenceTrainer.class.isAssignableFrom(trainerClass)) {
+          return EventModelSequenceTrainer.SEQUENCE_VALUE;
         }
       }
     } catch (ClassNotFoundException e) {
@@ -91,7 +91,7 @@ public class TrainerFactory {
       }
     }
     
-    if (SequenceTrainer.SEQUENCE_VALUE.equals(trainerType)) {
+    if (EventModelSequenceTrainer.SEQUENCE_VALUE.equals(trainerType)) {
       return true;
     }
     
@@ -111,14 +111,14 @@ public class TrainerFactory {
         .equals(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
   }
   
-  public static SequenceTrainer getSequenceTrainer(
+  public static EventModelSequenceTrainer getSequenceTrainer(
       Map<String, String> trainParams, Map<String, String> reportMap) {
     String trainerType = getTrainerType(trainParams);
     if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-      return TrainerFactory.<SequenceTrainer> create(
+      return TrainerFactory.<EventModelSequenceTrainer> create(
           BUILTIN_TRAINERS.get(trainerType), trainParams, reportMap);
     } else {
-      return TrainerFactory.<SequenceTrainer> create(trainerType, trainParams,
+      return TrainerFactory.<EventModelSequenceTrainer> create(trainerType, trainParams,
           reportMap);
     }
   }
@@ -184,7 +184,7 @@ public class TrainerFactory {
       Class<?> trainerClass = Class.forName(className);
       if(trainerClass != null &&
           (EventTrainer.class.isAssignableFrom(trainerClass)
-              || SequenceTrainer.class.isAssignableFrom(trainerClass))) {
+              || EventModelSequenceTrainer.class.isAssignableFrom(trainerClass))) {
         return true;
       }
     } catch (ClassNotFoundException e) {
