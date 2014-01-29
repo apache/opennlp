@@ -20,7 +20,7 @@ package opennlp.tools.ml;
 import java.io.IOException;
 import java.util.Map;
 
-import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceStream;
 
 public abstract class AbstractSequenceTrainer extends AbstractTrainer implements
@@ -31,16 +31,16 @@ public abstract class AbstractSequenceTrainer extends AbstractTrainer implements
     super(trainParams, reportMap);
   }
 
-  public abstract AbstractModel doTrain(SequenceStream events)
+  public abstract MaxentModel doTrain(SequenceStream events)
       throws IOException;
 
-  public final AbstractModel train(SequenceStream events) throws IOException {
+  public final MaxentModel train(SequenceStream events) throws IOException {
 
     if (!isValid()) {
       throw new IllegalArgumentException("trainParams are not valid!");
     }
 
-    AbstractModel model = doTrain(events);
+    MaxentModel model = doTrain(events);
     addToReport(AbstractTrainer.TRAINER_TYPE_PARAM,
         SequenceTrainer.SEQUENCE_VALUE);
     return model;
