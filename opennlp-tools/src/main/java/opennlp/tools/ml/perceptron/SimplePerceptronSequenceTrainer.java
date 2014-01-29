@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.ml.AbstractSequenceTrainer;
+import opennlp.tools.ml.AbstractEventModelSequenceTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
@@ -44,7 +44,7 @@ import opennlp.tools.ml.model.SequenceStreamEventStream;
  * Specifically only updates are applied to tokens which were incorrectly tagged by a sequence tagger
  * rather than to all feature across the sequence which differ from the training sequence.
  */
-public class SimplePerceptronSequenceTrainer extends AbstractSequenceTrainer {
+public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceTrainer {
 
   public static final String PERCEPTRON_SEQUENCE_VALUE = "PERCEPTRON_SEQUENCE";
 

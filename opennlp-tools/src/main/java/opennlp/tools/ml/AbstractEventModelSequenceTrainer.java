@@ -18,14 +18,32 @@
 package opennlp.tools.ml;
 
 import java.io.IOException;
+import java.util.Map;
 
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceStream;
 
-public interface SequenceTrainer {
+public abstract class AbstractEventModelSequenceTrainer extends AbstractTrainer implements
+    EventModelSequenceTrainer {
 
-  public static final String SEQUENCE_VALUE = "Sequence";
+  public AbstractEventModelSequenceTrainer(Map<String, String> trainParams,
+      Map<String, String> reportMap) {
+    super(trainParams, reportMap);
+  }
 
-  public MaxentModel train(SequenceStream events) throws IOException;
+  public abstract MaxentModel doTrain(SequenceStream events)
+      throws IOException;
+
+  public final MaxentModel train(SequenceStream events) throws IOException {
+
+    if (!isValid()) {
+      throw new IllegalArgumentException("trainParams are not valid!");
+    }
+
+    MaxentModel model = doTrain(events);
+    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM,
+        EventModelSequenceTrainer.SEQUENCE_VALUE);
+    return model;
+  }
 
 }
