@@ -52,7 +52,7 @@ public final class TokenNameFinderCrossValidatorTool
   public void run(String format, String[] args) {
     super.run(format, args);
 
-    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
     if (mlParams == null) {
       mlParams = ModelUtil.createDefaultTrainingParameters();
     }
