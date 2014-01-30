@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
@@ -72,6 +73,17 @@ public class TokenNameFinderModel extends BaseModel {
  
   private static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
  
+  public TokenNameFinderModel(String languageCode, SequenceClassificationModel nameFinderModel,
+      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
+    
+    // if (!isModelValid(nameFinderModel)) {
+    //  throw new IllegalArgumentException("Model not compatible with name finder!");
+    //}
+    
+    init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries);
+  }
+  
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     
@@ -81,24 +93,7 @@ public class TokenNameFinderModel extends BaseModel {
       throw new IllegalArgumentException("Model not compatible with name finder!");
     }
 
-    artifactMap.put(MAXENT_MODEL_ENTRY_NAME, nameFinderModel);
-    
-    if (generatorDescriptor != null && generatorDescriptor.length > 0)
-      artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, generatorDescriptor);
-    
-    if (resources != null) {
-      // The resource map must not contain key which are already taken
-      // like the name finder maxent model name
-      if (resources.containsKey(MAXENT_MODEL_ENTRY_NAME) ||
-          resources.containsKey(GENERATOR_DESCRIPTOR_ENTRY_NAME)) {
-        throw new IllegalArgumentException();
-      }
-      
-      // TODO: Add checks to not put resources where no serializer exists,
-      // make that case fail here, should be done in the BaseModel
-      artifactMap.putAll(resources); 
-    }
-    checkArtifactMap();
+    init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries);
   }
 
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
@@ -118,16 +113,51 @@ public class TokenNameFinderModel extends BaseModel {
     super(COMPONENT_NAME, modelURL);
   }
   
-  
+  private void init(Object nameFinderModel,
+      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
+    artifactMap.put(MAXENT_MODEL_ENTRY_NAME, nameFinderModel);
+    
+    if (generatorDescriptor != null && generatorDescriptor.length > 0)
+      artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, generatorDescriptor);
+    
+    if (resources != null) {
+      // The resource map must not contain key which are already taken
+      // like the name finder maxent model name
+      if (resources.containsKey(MAXENT_MODEL_ENTRY_NAME) ||
+          resources.containsKey(GENERATOR_DESCRIPTOR_ENTRY_NAME)) {
+        throw new IllegalArgumentException();
+      }
+      
+      // TODO: Add checks to not put resources where no serializer exists,
+      // make that case fail here, should be done in the BaseModel
+      artifactMap.putAll(resources); 
+    }
+    checkArtifactMap();
+  }
   /**
    * Retrieves the {@link TokenNameFinder} model.
    *
    * @return the classification model
    */
   public MaxentModel getNameFinderModel() {
-    return (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
+    
+    if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel) {
+      return (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
+    }
+    else {
+      return null;
+    }
   }
 
+  public SequenceClassificationModel<String> getNameFinderSequenceModel() {
+    if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
+      return (SequenceClassificationModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
+    }
+    else {
+      return null;
+    }
+  }
+  
   /**
    * Creates the {@link AdaptiveFeatureGenerator}. Usually this
    * is a set of generators contained in the {@link AggregatedFeatureGenerator}.
@@ -257,9 +287,11 @@ public class TokenNameFinderModel extends BaseModel {
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
     
-    if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel) {
-      MaxentModel model = (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
-      isModelValid(model);
+    if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel ||
+        artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
+      // TODO: Check should be performed on the possible outcomes!
+//      MaxentModel model = (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
+//      isModelValid(model);
     }
     else {
       throw new InvalidFormatException("Token Name Finder model is incomplete!");

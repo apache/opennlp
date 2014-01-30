@@ -20,7 +20,6 @@ package opennlp.tools.namefind;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,11 +29,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.maxent.GIS;
-import opennlp.tools.ml.maxent.GISModel;
 import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.util.BeamSearch;
@@ -66,19 +65,18 @@ public class NameFinderME implements TokenNameFinder {
   public static final int DEFAULT_BEAM_SIZE = 3;
   private static final Pattern typedOutcomePattern = Pattern.compile("(.+)-\\w+");
 
-
-
   public static final String START = "start";
   public static final String CONTINUE = "cont";
   public static final String OTHER = "other";
 
-  protected MaxentModel model;
+  protected SequenceClassificationModel<String> model;
+  
   protected NameContextGenerator contextGenerator;
   private Sequence bestSequence;
-  private BeamSearch<String> beam;
-
+  
   private AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
       new AdditionalContextFeatureGenerator();
+  private SequenceValidator<String> sequenceValidator;
 
   public NameFinderME(TokenNameFinderModel model) {
     this(model, DEFAULT_BEAM_SIZE);
@@ -92,7 +90,23 @@ public class NameFinderME implements TokenNameFinder {
    */
   public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize,
       SequenceValidator<String> sequenceValidator) {
-    this.model = model.getNameFinderModel();
+    
+    this.sequenceValidator = sequenceValidator;
+    
+    // TODO: The beam size should be stored in the model and passed in during training in the future.
+    // At this point no assumption can be made about the underlying sequence classification!
+    
+    // TODO: getNameFinderModel should be removed! Instead the model should always return
+    // a sequence classification model
+    // To maintain backward compatibility this should be done later, e.g. for 1.7.0
+    
+    if (model.getNameFinderModel() != null) {
+      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
+          model.getNameFinderModel());
+    }
+    else {
+      this.model = model.getNameFinderSequenceModel();
+    }
 
     // If generator is provided always use that one
     if (generator != null) {
@@ -108,14 +122,17 @@ public class NameFinderME implements TokenNameFinder {
       contextGenerator = new DefaultNameContextGenerator(featureGenerator);
     }
 
+    // NOTE: This didn't turn out to work well ... anybody using this actually ?!
     contextGenerator.addFeatureGenerator(
           new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
 
-    if (sequenceValidator == null)
-      sequenceValidator = new NameFinderSequenceValidator();
+    if (this.sequenceValidator == null)
+      this.sequenceValidator = new NameFinderSequenceValidator();
 
-    beam = new BeamSearch<String>(beamSize, contextGenerator, this.model,
-        sequenceValidator, beamSize);
+//    if (this.model != null) {
+//      beam = new BeamSearch<String>(beamSize, contextGenerator, this.model,
+//          sequenceValidator, beamSize);
+//    }
   }
 
   public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize) {
@@ -176,9 +193,11 @@ public class NameFinderME implements TokenNameFinder {
    * @return an array of spans for each of the names identified.
    */
   public Span[] find(String[] tokens, String[][] additionalContext) {
+    
     additionalContextFeatureGenerator.setCurrentContext(additionalContext);
-    bestSequence = beam.bestSequence(tokens, additionalContext);
-
+    
+    bestSequence = model.bestSequence(tokens, additionalContext, contextGenerator, sequenceValidator);
+    
     List<String> c = bestSequence.getOutcomes();
 
     contextGenerator.updateAdaptiveData(tokens, c.toArray(new String[c.size()]));
@@ -316,20 +335,38 @@ public class NameFinderME implements TokenNameFinder {
      else
        featureGenerator = createFeatureGenerator();
 
-     MaxentModel nameFinderModel;
-
-     if (!TrainerFactory.isSupportSequence((trainParams.getSettings()))) {
+     MaxentModel nameFinderModel = null;
+     
+     SequenceClassificationModel<String> seqModel = null;
+     
+     if (TrainerFactory.isSupportEvent((trainParams.getSettings()))) {
        EventStream eventStream = new NameFinderEventStream(samples, type,
            new DefaultNameContextGenerator(featureGenerator));
 
        nameFinderModel = TrainUtil.train(eventStream, trainParams.getSettings(), manifestInfoEntries);
      }
-     else {
+     else if (TrainerFactory.isSupportEventModelSequenceTraining((trainParams.getSettings()))) {
        NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, featureGenerator);
 
        nameFinderModel = TrainUtil.train(ss, trainParams.getSettings(), manifestInfoEntries);
      }
+     else if (TrainerFactory.isSupportSequenceTraining((trainParams.getSettings()))) {
+       SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
+           trainParams.getSettings(), manifestInfoEntries);
 
+       NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, featureGenerator, false);
+       seqModel = trainer.train(ss);
+     }
+     else {
+       throw new IllegalStateException("Unexpected trainer type required!");
+     }
+     
+     // depending on which one is not null!
+     if (seqModel != null) {
+       return new TokenNameFinderModel(languageCode, seqModel, null,
+           resources, manifestInfoEntries);
+     }
+     
      return new TokenNameFinderModel(languageCode, nameFinderModel,
          resources, manifestInfoEntries);
    }
@@ -364,6 +401,7 @@ public class NameFinderME implements TokenNameFinder {
 
     // place the descriptor in the model
     if (featureGeneratorBytes != null) {
+      // TODO: This will not work!!! Method is broken.
       model = model.updateFeatureGenerator(featureGeneratorBytes);
     }
 
