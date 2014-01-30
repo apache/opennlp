@@ -29,8 +29,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.ml.EventModelSequenceTrainer;
+import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
@@ -339,26 +342,31 @@ public class NameFinderME implements TokenNameFinder {
      
      SequenceClassificationModel<String> seqModel = null;
      
-     if (TrainerFactory.isSupportEvent((trainParams.getSettings()))) {
+     TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
+     
+     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
        EventStream eventStream = new NameFinderEventStream(samples, type,
            new DefaultNameContextGenerator(featureGenerator));
 
-       nameFinderModel = TrainUtil.train(eventStream, trainParams.getSettings(), manifestInfoEntries);
+       EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams.getSettings(), manifestInfoEntries);
+       nameFinderModel = trainer.train(eventStream);
      }
-     else if (TrainerFactory.isSupportEventModelSequenceTraining((trainParams.getSettings()))) {
+     else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
        NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, featureGenerator);
 
-       nameFinderModel = TrainUtil.train(ss, trainParams.getSettings(), manifestInfoEntries);
+       EventModelSequenceTrainer trainer = TrainerFactory.getEventModelSequenceTrainer(
+           trainParams.getSettings(), manifestInfoEntries);
+       nameFinderModel = trainer.train(ss);
      }
-     else if (TrainerFactory.isSupportSequenceTraining((trainParams.getSettings()))) {
+     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
        SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
            trainParams.getSettings(), manifestInfoEntries);
-
+       
        NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, featureGenerator, false);
        seqModel = trainer.train(ss);
      }
      else {
-       throw new IllegalStateException("Unexpected trainer type required!");
+       throw new IllegalStateException("Unexpected trainer type!");
      }
      
      // depending on which one is not null!
@@ -366,9 +374,10 @@ public class NameFinderME implements TokenNameFinder {
        return new TokenNameFinderModel(languageCode, seqModel, null,
            resources, manifestInfoEntries);
      }
-     
-     return new TokenNameFinderModel(languageCode, nameFinderModel,
-         resources, manifestInfoEntries);
+     else {
+       return new TokenNameFinderModel(languageCode, nameFinderModel,
+           resources, manifestInfoEntries);
+     }
    }
 
   /**
