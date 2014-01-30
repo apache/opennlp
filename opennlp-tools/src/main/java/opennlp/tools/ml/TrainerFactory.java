@@ -61,7 +61,7 @@ public class TrainerFactory {
     } catch (ClassNotFoundException e) {
     }
     
-    return "UNKOWN";
+    return null;
   }
   
   // Note: A better way to indicate which training approach is necessary would be
