@@ -34,18 +34,30 @@ public class NameSampleSequenceStream implements SequenceStream {
 
   private NameContextGenerator pcg;
   private List<NameSample> samples;
+  private final boolean useOutcomes;
   
   public NameSampleSequenceStream(ObjectStream<NameSample> psi) throws IOException {
-    this(psi, new DefaultNameContextGenerator((AdaptiveFeatureGenerator) null));
+    this(psi, new DefaultNameContextGenerator((AdaptiveFeatureGenerator) null), true);
   }
   
   public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen) 
   throws IOException {
-    this(psi, new DefaultNameContextGenerator(featureGen));
+    this(psi, new DefaultNameContextGenerator(featureGen), true);
+  }
+
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen, boolean useOutcomes) 
+  throws IOException {
+    this(psi, new DefaultNameContextGenerator(featureGen), useOutcomes);
   }
   
   public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg)
       throws IOException {
+    this(psi, pcg, true);
+  }
+
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg, boolean useOutcomes)
+      throws IOException {
+    this.useOutcomes = useOutcomes;
     samples = new ArrayList<NameSample>();
     
     NameSample sample;
@@ -74,7 +86,7 @@ public class NameSampleSequenceStream implements SequenceStream {
   
   @SuppressWarnings("unchecked")
   public Iterator<Sequence> iterator() {
-    return new NameSampleSequenceIterator(samples.iterator());
+    return new NameSampleSequenceIterator(samples.iterator(), useOutcomes);
   }
 
 }
@@ -83,9 +95,11 @@ class NameSampleSequenceIterator implements Iterator<Sequence> {
 
   private Iterator<NameSample> psi;
   private NameContextGenerator cg;
+  private boolean useOutcomes;
   
-  public NameSampleSequenceIterator(Iterator<NameSample> psi) {
+  public NameSampleSequenceIterator(Iterator<NameSample> psi, boolean useOutcomes) {
     this.psi = psi;
+    this.useOutcomes = useOutcomes;
     cg = new DefaultNameContextGenerator(null);
   }
   
@@ -104,8 +118,14 @@ class NameSampleSequenceIterator implements Iterator<Sequence> {
 
       // it is safe to pass the tags as previous tags because
       // the context generator does not look for non predicted tags
-      String[] context = cg.getContext(i, sentence, tags, null);
-
+      String[] context;
+      if (useOutcomes) {
+        context = cg.getContext(i, sentence, tags, null);
+      }
+      else {
+        context = cg.getContext(i, sentence, null, null);
+      }
+      
       events[i] = new Event(tags[i], context);
     }
     Sequence<NameSample> sequence = new Sequence<NameSample>(events,sample);
