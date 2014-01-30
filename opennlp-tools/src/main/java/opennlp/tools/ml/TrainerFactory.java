@@ -54,12 +54,18 @@ public class TrainerFactory {
         else if (EventModelSequenceTrainer.class.isAssignableFrom(trainerClass)) {
           return EventModelSequenceTrainer.SEQUENCE_VALUE;
         }
+        else if (SequenceTrainer.class.isAssignableFrom(trainerClass)) {
+          return SequenceTrainer.SEQUENCE_VALUE;
+        }
       }
     } catch (ClassNotFoundException e) {
     }
     
     return "UNKOWN";
   }
+  
+  // Note: A better way to indicate which training approach is necessary would be
+  // to use an enum which encodes the different possibilities ...
   
   public static boolean isSupportEvent(Map<String, String> trainParams) {
     
@@ -72,15 +78,19 @@ public class TrainerFactory {
       }
     }
     
-    if (trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM) != null) {
-      return EventTrainer.EVENT_VALUE.equals(trainParams
-          .get(AbstractTrainer.TRAINER_TYPE_PARAM));
+    if (trainerType != null) {
+      return EventTrainer.EVENT_VALUE.equals(trainerType);
     } 
     
     return true;
   }
-
+  
+  @Deprecated
   public static boolean isSupportSequence(Map<String, String> trainParams) {
+    return isSupportEventModelSequenceTraining(trainParams);
+  }
+  
+  public static boolean isSupportEventModelSequenceTraining(Map<String, String> trainParams) {
     
     String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
     
@@ -91,16 +101,29 @@ public class TrainerFactory {
       }
     }
     
-    if (EventModelSequenceTrainer.SEQUENCE_VALUE.equals(trainerType)) {
-      return true;
+    return EventModelSequenceTrainer.SEQUENCE_VALUE.equals(trainerType);
+  }
+  
+  public static boolean isSupportSequenceTraining(Map<String, String> trainParams) {
+    String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
+    
+    if (trainerType == null) {
+      String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
+      if (alogrithmValue != null) {
+        trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
+      }
     }
     
-    return false;
+    return SequenceTrainer.SEQUENCE_VALUE.equals(trainerType);
   }
-
+  
+  // TODO: How to do the testing ?!
+  // is support event sequence ?
+  // is support sequence ?
+  
   /**
    * This method is deprecated and should not be used! <br>
-   * Use {@link TrainerFactory#isSupportSequence(Map)} instead.
+   * Use {@link TrainerFactory#isSupportEventModelSequenceTraining(Map)} instead.
    * 
    * @param trainParams
    * @return
@@ -109,6 +132,20 @@ public class TrainerFactory {
   public static boolean isSequenceTraining(Map<String, String> trainParams) {
     return SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE
         .equals(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
+  }
+  
+  
+  public static SequenceTrainer getSequenceModelTrainer(Map<String, String> trainParams,
+      Map<String, String> reportMap) {
+    String trainerType = getTrainerType(trainParams);
+    if (BUILTIN_TRAINERS.containsKey(trainerType)) {
+      return TrainerFactory.<SequenceTrainer> create(
+          BUILTIN_TRAINERS.get(trainerType), trainParams, reportMap);
+    } else {
+      return TrainerFactory.<SequenceTrainer> create(trainerType, trainParams,
+          reportMap);
+    }
+    
   }
   
   public static EventModelSequenceTrainer getSequenceTrainer(
@@ -184,7 +221,7 @@ public class TrainerFactory {
       Class<?> trainerClass = Class.forName(className);
       if(trainerClass != null &&
           (EventTrainer.class.isAssignableFrom(trainerClass)
-              || EventModelSequenceTrainer.class.isAssignableFrom(trainerClass))) {
+              || EventModelSequenceTrainer.class.isAssignableFrom(trainerClass) || SequenceTrainer.class.isAssignableFrom(trainerClass))) {
         return true;
       }
     } catch (ClassNotFoundException e) {
