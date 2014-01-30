@@ -122,18 +122,21 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
     String po = NameFinderME.OTHER;
     String ppo = NameFinderME.OTHER;
 
-    if (index > 1){
-      ppo = preds[index-2];
+    // TODO: These should be moved out here in its own feature generator!
+    if (preds != null) {
+      if (index > 1){
+        ppo = preds[index-2];
+      }
+  
+      if (index > 0) {
+        po = preds[index-1];
+      }
+      features.add("po=" + po);
+      features.add("pow=" + po + "," + tokens[index]);
+      features.add("powf=" + po + "," + FeatureGeneratorUtil.tokenFeature(tokens[index]));
+      features.add("ppo=" + ppo);
     }
-
-    if (index > 0) {
-      po = preds[index-1];
-    }
-    features.add("po=" + po);
-    features.add("pow=" + po + "," + tokens[index]);
-    features.add("powf=" + po + "," + FeatureGeneratorUtil.tokenFeature(tokens[index]));
-    features.add("ppo=" + ppo);
-
+    
     return features.toArray(new String[features.size()]);
   }
 }
