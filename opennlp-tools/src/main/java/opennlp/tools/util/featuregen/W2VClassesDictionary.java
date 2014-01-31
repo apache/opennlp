@@ -72,7 +72,7 @@ public class W2VClassesDictionary implements SerializableArtifact {
     Writer writer = new BufferedWriter(new OutputStreamWriter(out));
     
     for (Map.Entry<String, String> entry : tokenToClusterMap.entrySet()) {
-      writer.write(entry.getKey() + " " + entry.getValue());
+      writer.write(entry.getKey() + " " + entry.getValue() + "\n");
     }
     
     writer.flush();
