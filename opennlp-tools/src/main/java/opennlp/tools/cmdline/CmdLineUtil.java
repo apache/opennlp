@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Locale;
 
 import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.model.TrainUtil;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 
@@ -43,11 +43,11 @@ import opennlp.tools.util.model.BaseModel;
 public final class CmdLineUtil {
 
  static final int IO_BUFFER_SIZE = 1024 * 1024;
-  
+
   private CmdLineUtil() {
     // not intended to be instantiated
   }
-  
+
   /**
    * Check that the given input file is valid.
    * <p>
@@ -55,17 +55,17 @@ public final class CmdLineUtil {
    * - exist<br>
    * - not be a directory<br>
    * - accessibly<br>
-   * 
+   *
    * @param name the name which is used to refer to the file in an error message, it
    * should start with a capital letter.
-   * 
+   *
    * @param inFile the particular file to check to qualify an input file
-   * 
+   *
    * @throws TerminateToolException  if test does not pass this exception is
    * thrown and an error message is printed to the console.
    */
   public static void checkInputFile(String name, File inFile) {
-    
+
     String isFailure = null;
 
     if (inFile.isDirectory()) {
@@ -82,9 +82,9 @@ public final class CmdLineUtil {
       throw new TerminateToolException(-1, isFailure + " Path: " + inFile.getAbsolutePath());
     }
   }
-  
+
   /**
-   * Tries to ensure that it is possible to write to an output file. 
+   * Tries to ensure that it is possible to write to an output file.
    * <p>
    * The method does nothing if it is possible to write otherwise
    * it prints an appropriate error message and a {@link TerminateToolException} is thrown.
@@ -93,19 +93,19 @@ public final class CmdLineUtil {
    * Prior to this computation it should be checked once that writing this output file is
    * possible to be able to fail fast if not. If this validation is only done after a time
    * consuming computation it could frustrate the user.
-   * 
+   *
    * @param name human-friendly file name. for example perceptron model
    * @param outFile file
    */
   public static void checkOutputFile(String name, File outFile) {
-    
+
     String isFailure = null;
-    
+
     if (outFile.exists()) {
-      
+
       // The file already exists, ensure that it is a normal file and that it is
       // possible to write into it
-      
+
       if (outFile.isDirectory()) {
         isFailure = "The " + name + " file is a directory!";
       }
@@ -119,15 +119,15 @@ public final class CmdLineUtil {
       }
     }
     else {
-      
+
       // The file does not exist ensure its parent
       // directory exists and has write permissions to create
       // a new file in it
-      
+
       File parentDir = outFile.getAbsoluteFile().getParentFile();
-      
+
       if (parentDir != null && parentDir.exists()) {
-        
+
         if (!parentDir.canWrite()) {
           isFailure = "No permissions to create the " + name + " file!";
         }
@@ -136,14 +136,14 @@ public final class CmdLineUtil {
         isFailure = "The parent directory of the " + name + " file does not exist, " +
         		"please create it first!";
       }
-      
+
     }
-    
+
     if (null != isFailure) {
       throw new TerminateToolException(-1, isFailure + " Path: " + outFile.getAbsolutePath());
     }
   }
-  
+
   public static FileInputStream openInFile(File file) {
     try {
       return new FileInputStream(file);
@@ -151,11 +151,19 @@ public final class CmdLineUtil {
       throw new TerminateToolException(-1, "File '" + file + "' cannot be found", e);
     }
   }
-  
+
+  public static InputStreamFactory createInputStreamFactory(File file) {
+    try {
+      return new MarkableFileInputStreamFactory(file);
+    } catch (FileNotFoundException e) {
+      throw new TerminateToolException(-1, "File '" + file + "' cannot be found", e);
+    }
+  }
+
   /**
    * Writes a {@link BaseModel} to disk. Occurring errors are printed to the console
    * to inform the user.
-   * 
+   *
    * @param modelName type of the model, name is used in error messages.
    * @param modelFile output file of the model
    * @param model the model itself which should be written to disk
@@ -165,9 +173,9 @@ public final class CmdLineUtil {
     CmdLineUtil.checkOutputFile(modelName + " model", modelFile);
 
     System.err.print("Writing " + modelName + " model ... ");
-    
+
     long beginModelWritingTime = System.currentTimeMillis();
-    
+
     OutputStream modelOut = null;
     try {
       modelOut = new BufferedOutputStream(new FileOutputStream(modelFile), IO_BUFFER_SIZE);
@@ -185,16 +193,16 @@ public final class CmdLineUtil {
         }
       }
     }
-    
+
     long modelWritingDuration = System.currentTimeMillis() - beginModelWritingTime;
-    
+
     System.err.printf("done (%.3fs)\n", modelWritingDuration / 1000d);
-    
+
     System.err.println();
-    
+
     System.err.println("Wrote " + modelName + " model to");
     System.err.println("path: " + modelFile.getAbsolutePath());
-    
+
     System.err.println();
   }
 
@@ -217,7 +225,7 @@ public final class CmdLineUtil {
 
   /**
    * Retrieves the specified parameter from the given arguments.
-   * 
+   *
    * @param param parameter name
    * @param args arguments
    * @return parameter value
@@ -233,44 +241,44 @@ public final class CmdLineUtil {
 
     return null;
   }
-  
+
   /**
    * Retrieves the specified parameter from the specified arguments.
-   * 
+   *
    * @param param parameter name
    * @param args arguments
    * @return parameter value
    */
   public static Integer getIntParameter(String param, String args[]) {
     String value = getParameter(param, args);
-    
+
     try {
       if (value != null)
           return Integer.parseInt(value);
     }
     catch (NumberFormatException e) {
     }
-    
+
     return null;
   }
-  
+
   /**
    * Retrieves the specified parameter from the specified arguments.
-   * 
+   *
    * @param param parameter name
    * @param args arguments
    * @return parameter value
    */
   public static Double getDoubleParameter(String param, String args[]) {
     String value = getParameter(param, args);
-    
+
     try {
       if (value != null)
           return Double.parseDouble(value);
     }
     catch (NumberFormatException e) {
     }
-    
+
     return null;
   }
 
@@ -278,41 +286,41 @@ public final class CmdLineUtil {
     List<String> languageCodes  = new ArrayList<String>();
     languageCodes.addAll(Arrays.asList(Locale.getISOLanguages()));
     languageCodes.add("x-unspecified");
-    
+
     if (!languageCodes.contains(code)) {
       throw new TerminateToolException(1, "Unknown language code " + code + ", " +
           "must be an ISO 639 code!");
     }
   }
-  
+
   public static boolean containsParam(String param, String args[]) {
     for (String arg : args) {
       if (arg.equals(param)) {
         return true;
       }
     }
-    
+
     return false;
   }
 
   public static void handleStdinIoError(IOException e) {
     throw new TerminateToolException(-1, "IO Error while reading from stdin: " + e.getMessage(), e);
   }
-  
+
   // its optional, passing null is allowed
   public static TrainingParameters loadTrainingParameters(String paramFile,
       boolean supportSequenceTraining) {
-    
+
     TrainingParameters params = null;
-    
+
     if (paramFile != null) {
-      
+
       checkInputFile("Training Parameter", new File(paramFile));
-      
+
       InputStream paramsIn = null;
       try {
         paramsIn = new FileInputStream(new File(paramFile));
-        
+
         params = new opennlp.tools.util.TrainingParameters(paramsIn);
       } catch (IOException e) {
         throw new TerminateToolException(-1, "Error during parameters loading: " + e.getMessage(), e);
@@ -325,16 +333,16 @@ public final class CmdLineUtil {
           //sorry that this can fail
         }
       }
-      
+
       if (!TrainerFactory.isValid(params.getSettings())) {
         throw new TerminateToolException(1, "Training parameters file '" + paramFile + "' is invalid!");
       }
-      
+
       if (!supportSequenceTraining && TrainerFactory.isSupportEventModelSequenceTraining(params.getSettings())) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }
-    
+
     return params;
   }
 }
