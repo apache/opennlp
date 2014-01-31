@@ -32,49 +32,76 @@ import java.nio.charset.Charset;
  * Reads a plain text file and return each line as a <code>String</code> object.
  */
 public class PlainTextByLineStream implements ObjectStream<String> {
-  
+
   private final FileChannel channel;
   private final String encoding;
-  
+
   private BufferedReader in;
-  
+
+  public PlainTextByLineStream(InputStreamFactory inputStreamFactory, String charsetName) throws IOException {
+    this.in = new BufferedReader(new InputStreamReader(
+        inputStreamFactory.createInputStream(), charsetName));
+    this.channel = null;
+    this.encoding = charsetName;
+  }
+
+  public PlainTextByLineStream(InputStreamFactory inputStreamFactory, Charset charset) throws IOException {
+    this.in = new BufferedReader(new InputStreamReader(
+        inputStreamFactory.createInputStream(), charset));
+    this.channel = null;
+    this.encoding = charset.name();
+  }
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param in
+   * @deprecated Use {@link #PlainTextByLineStream(InputStreamFactory, Charset)} instead.
    */
   public PlainTextByLineStream(Reader in) {
     this.in = new BufferedReader(in);
     this.channel = null;
     this.encoding = null;
   }
-  
+
+  /**
+   * @deprecated Use {@link #PlainTextByLineStream(InputStreamFactory, String)} instead.
+   */
   public PlainTextByLineStream(InputStream in, String charsetName) throws UnsupportedEncodingException {
     this(new InputStreamReader(in, charsetName));
   }
-  
+
+  /**
+   * @deprecated Use {@link #PlainTextByLineStream(InputStreamFactory, Charset)} instead.
+   */
   public PlainTextByLineStream(InputStream in, Charset charset) {
     this(new InputStreamReader(in, charset));
   }
-  
+
+  /**
+   * @deprecated Use {@link #PlainTextByLineStream(InputStreamFactory, String)} instead.
+   */
   public PlainTextByLineStream(FileChannel channel, String charsetName) {
     this.encoding = charsetName;
     this.channel = channel;
-    
+
     // TODO: Why isn't reset called here ?
     in = new BufferedReader(Channels.newReader(channel, encoding));
   }
-  
+
+  /**
+   * @deprecated Use {@link #PlainTextByLineStream(InputStreamFactory, Charset)} instead.
+   */
   public PlainTextByLineStream(FileChannel channel, Charset encoding) {
     this(channel, encoding.name());
   }
-  
+
   public String read() throws IOException {
     return in.readLine();
   }
 
   public void reset() throws IOException {
-    
+
     if (channel == null) {
         in.reset();
     }
@@ -83,13 +110,13 @@ public class PlainTextByLineStream implements ObjectStream<String> {
       in = new BufferedReader(Channels.newReader(channel, encoding));
     }
   }
-  
+
   public void close() throws IOException {
       if (channel == null) {
         in.close();
       }
       else {
-       channel.close(); 
+       channel.close();
       }
   }
 }
