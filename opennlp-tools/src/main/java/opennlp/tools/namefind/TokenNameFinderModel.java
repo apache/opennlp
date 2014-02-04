@@ -77,9 +77,10 @@ public class TokenNameFinderModel extends BaseModel {
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
     
+    // TODO: Add validation for sequence models!
     // if (!isModelValid(nameFinderModel)) {
     //  throw new IllegalArgumentException("Model not compatible with name finder!");
-    //}
+    // }
     
     init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries);
   }
@@ -134,6 +135,7 @@ public class TokenNameFinderModel extends BaseModel {
     }
     checkArtifactMap();
   }
+  
   /**
    * Retrieves the {@link TokenNameFinder} model.
    *
@@ -208,8 +210,16 @@ public class TokenNameFinderModel extends BaseModel {
   
   public TokenNameFinderModel updateFeatureGenerator(byte descriptor[]) {
         
-    TokenNameFinderModel model = new TokenNameFinderModel(getLanguage(), getNameFinderModel(),
-        descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap());
+    TokenNameFinderModel model;
+        
+        if (getNameFinderModel() != null) {
+          model = new TokenNameFinderModel(getLanguage(), getNameFinderModel(),
+              descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap());
+        }
+        else {
+          model = new TokenNameFinderModel(getLanguage(), getNameFinderSequenceModel(),
+              descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap());
+        }
     
     // TODO: Not so nice!
     model.artifactMap.clear();
