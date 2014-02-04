@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
@@ -75,7 +76,7 @@ public class ChunkerMETest {
     String encoding = "UTF-8";
 
     ObjectStream<ChunkSample> sampleStream = new ChunkSampleStream(
-        new PlainTextByLineStream(new InputStreamReader(in, encoding)));
+        new PlainTextByLineStream(new MockInputStreamFactory(in), encoding));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));

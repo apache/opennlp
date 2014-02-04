@@ -27,6 +27,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -59,13 +60,12 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
 
       SentenceDetectorME sdetector = new SentenceDetectorME(model);
 
-      ObjectStream<String> paraStream =
-        new ParagraphStream(new PlainTextByLineStream(new InputStreamReader(System.in)));
-
-      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
-      perfMon.start();
+       ObjectStream<String> paraStream = null;
+      PerformanceMonitor perfMon = null;
 
       try {
+        paraStream = new PlainTextByLineStream(new MockInputStreamFactory(System.in), "UTF-8");
+        perfMon = new PerformanceMonitor(System.err, "sent");
         String para;
         while ((para = paraStream.read()) != null) {
 

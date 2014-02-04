@@ -24,6 +24,7 @@ import java.util.Map;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -151,7 +152,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
       System.exit(1);
     }
     EventStream es = new NameFinderEventStream(new NameSampleDataStream(
-        new PlainTextByLineStream(new java.io.InputStreamReader(System.in))));
+        new PlainTextByLineStream(new MockInputStreamFactory(System.in),"UTF-8")));
     while (es.hasNext()) {
       System.out.println(es.next());
     }

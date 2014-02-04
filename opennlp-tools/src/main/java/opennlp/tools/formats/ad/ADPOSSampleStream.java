@@ -29,6 +29,7 @@ import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -81,10 +82,10 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
 
     try {
       this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-          in, charsetName));
+          new MockInputStreamFactory(in), charsetName));
       this.expandME = expandME;
       this.isIncludeFeatures = includeFeatures;
-    } catch (UnsupportedEncodingException e) {
+    } catch (IOException e) {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
     }

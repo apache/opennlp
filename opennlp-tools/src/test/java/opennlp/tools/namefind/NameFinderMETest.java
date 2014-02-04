@@ -27,6 +27,7 @@ import java.util.Collections;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -68,7 +69,7 @@ public class NameFinderMETest {
 
     ObjectStream<NameSample> sampleStream =
           new NameSampleDataStream(
-          new PlainTextByLineStream(new InputStreamReader(in, encoding)));
+          new PlainTextByLineStream(new MockInputStreamFactory(in), encoding));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -131,7 +132,7 @@ public class NameFinderMETest {
     String encoding = "ISO-8859-1";
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new InputStreamReader(in, encoding)));
+       new PlainTextByLineStream(new MockInputStreamFactory(in), encoding));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -180,7 +181,7 @@ public class NameFinderMETest {
         "opennlp/tools/namefind/OnlyWithNames.train");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new InputStreamReader(in)));
+       new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -219,7 +220,7 @@ public class NameFinderMETest {
         "opennlp/tools/namefind/OnlyWithNamesWithTypes.train");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new InputStreamReader(in)));
+       new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -260,7 +261,7 @@ public class NameFinderMETest {
         "opennlp/tools/namefind/OnlyWithEntitiesWithTypes.train");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new InputStreamReader(in)));
+        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -317,7 +318,7 @@ public class NameFinderMETest {
         "opennlp/tools/namefind/voa1.train");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new InputStreamReader(in)));
+       new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));

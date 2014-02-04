@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 import opennlp.tools.cmdline.chunker.ChunkEvaluationErrorListener;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -58,10 +59,10 @@ public class ChunkerEvaluatorTest {
 		String encoding = "UTF-8";
 
 		DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-				new PlainTextByLineStream(new InputStreamReader(inPredicted, encoding)), true);
+				new PlainTextByLineStream(new MockInputStreamFactory(inPredicted), encoding), true);
 		
 		DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-				new PlainTextByLineStream(new InputStreamReader(inExpected)), false);
+				new PlainTextByLineStream(new MockInputStreamFactory(inExpected),"UTF-8"), false);
 		
 		Chunker dummyChunker = new DummyChunker(predictedSample);
 		
@@ -90,11 +91,11 @@ public class ChunkerEvaluatorTest {
     String encoding = "UTF-8";
 
     DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(new InputStreamReader(inPredicted, encoding)),
+        new PlainTextByLineStream(new  MockInputStreamFactory(inPredicted), encoding),
         true);
 
     DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(new InputStreamReader(inExpected, encoding)),
+        new PlainTextByLineStream(new MockInputStreamFactory(inExpected), encoding),
         true);
 
     Chunker dummyChunker = new DummyChunker(predictedSample);

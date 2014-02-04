@@ -26,6 +26,7 @@ import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.formats.ad.ADChunkSampleStream;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 
 import org.junit.Before;
@@ -71,7 +72,7 @@ public class ADChunkSampleStreamTest {
 	.getResourceAsStream("/opennlp/tools/formats/ad.sample");
 
     ADChunkSampleStream stream = new ADChunkSampleStream(
-    	new PlainTextByLineStream(in, "UTF-8"));
+    	new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     ChunkSample sample = stream.read();
 

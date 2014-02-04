@@ -14,12 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.util;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Allows repeated reads through a stream for certain types of model building.
+ * Use {@link MockInputStreamFactory} MockInputStreamFactory for default
+ * behavior.
+ *
+ * @author Owner
+ */
 public interface InputStreamFactory {
+
   InputStream createInputStream() throws IOException;
 }

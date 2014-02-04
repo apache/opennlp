@@ -28,6 +28,7 @@ import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -43,17 +44,17 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
     if (args.length != 1) {
       System.out.println(getHelp());
     } else {
-    
+          try {
       Detokenizer detokenizer = new DictionaryDetokenizer(
           new DetokenizationDictionaryLoader().load(new File(args[0])));
 
       ObjectStream<String> tokenizedLineStream =
-        new PlainTextByLineStream(new InputStreamReader(System.in));
+        new PlainTextByLineStream(new MockInputStreamFactory(System.in),"UTF-8");
 
       PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
       perfMon.start();
 
-      try {
+
         String tokenizedLine;
         while ((tokenizedLine = tokenizedLineStream.read()) != null) {
 
@@ -64,12 +65,13 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
 
           perfMon.incrementCounter();
         }
+              perfMon.stopAndPrintFinalResult();
       }
       catch (IOException e) {
         CmdLineUtil.handleStdinIoError(e);
       }
 
-      perfMon.stopAndPrintFinalResult();
+
     }
   }
 }

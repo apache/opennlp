@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -54,9 +55,9 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
   
   public BioNLP2004NameSampleStream(InputStream in, int types) {
     try {
-      this.lineStream = new PlainTextByLineStream(in, "UTF-8");
+      this.lineStream = new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8");
       System.setOut(new PrintStream(System.out, true, "UTF-8"));
-    } catch (UnsupportedEncodingException e) {
+    } catch (IOException e) {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
     }

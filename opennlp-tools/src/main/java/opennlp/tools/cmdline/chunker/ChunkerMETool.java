@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.cmdline.chunker;
 
 import java.io.File;
@@ -30,6 +29,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -38,7 +38,7 @@ public class ChunkerMETool extends BasicCmdLineTool {
   public String getShortDescription() {
     return "learnable chunker";
   }
-  
+
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
@@ -51,13 +51,12 @@ public class ChunkerMETool extends BasicCmdLineTool {
 
       ChunkerME chunker = new ChunkerME(model, ChunkerME.DEFAULT_BEAM_SIZE);
 
-      ObjectStream<String> lineStream =
-        new PlainTextByLineStream(new InputStreamReader(System.in));
-
-      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
-      perfMon.start();
+      ObjectStream<String> lineStream = null;
+      PerformanceMonitor perfMon = null;
 
       try {
+        lineStream = new PlainTextByLineStream(new MockInputStreamFactory(System.in), "UTF-8");
+        perfMon = new PerformanceMonitor(System.err, "sent");
         String line;
         while ((line = lineStream.read()) != null) {
 
@@ -71,15 +70,14 @@ public class ChunkerMETool extends BasicCmdLineTool {
           }
 
           String[] chunks = chunker.chunk(posSample.getSentence(),
-              posSample.getTags());
+                  posSample.getTags());
 
           System.out.println(new ChunkSample(posSample.getSentence(),
-              posSample.getTags(), chunks).nicePrint());
+                  posSample.getTags(), chunks).nicePrint());
 
           perfMon.incrementCounter();
         }
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         CmdLineUtil.handleStdinIoError(e);
       }
 

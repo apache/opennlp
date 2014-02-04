@@ -27,6 +27,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import opennlp.tools.util.MockInputStreamFactory;
 
 /**
  * Factory producing OpenNLP {@link SentenceSampleStream}s.
@@ -51,8 +55,13 @@ public class SentenceSampleStreamFactory extends AbstractSampleStreamFactory<Sen
     CmdLineUtil.checkInputFile("Data", params.getData());
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());
 
-    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn.getChannel(),
-        params.getEncoding());
+    ObjectStream<String> lineStream=null;
+    try {
+      lineStream = new PlainTextByLineStream(new MockInputStreamFactory(sampleDataIn),
+params.getEncoding());
+    } catch (IOException ex) {
+      Logger.getLogger(SentenceSampleStreamFactory.class.getName()).log(Level.SEVERE, null, ex);
+    }
 
     return new SentenceSampleStream(lineStream);
   }

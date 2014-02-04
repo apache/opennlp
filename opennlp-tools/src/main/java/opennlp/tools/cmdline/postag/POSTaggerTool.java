@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.cmdline.postag;
 
 import java.io.File;
@@ -29,6 +28,7 @@ import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -37,28 +37,28 @@ public final class POSTaggerTool extends BasicCmdLineTool {
   public String getShortDescription() {
     return "learnable part of speech tagger";
   }
-  
+
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
   public void run(String[] args) {
-    
+
     if (args.length != 1) {
       System.out.println(getHelp());
     } else {
-    
+
       POSModel model = new POSModelLoader().load(new File(args[0]));
 
       POSTaggerME tagger = new POSTaggerME(model);
 
-      ObjectStream<String> lineStream =
-        new PlainTextByLineStream(new InputStreamReader(System.in));
-
-      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
-      perfMon.start();
+      ObjectStream<String> lineStream = null;
+      PerformanceMonitor perfMon = null;
 
       try {
+        lineStream = new PlainTextByLineStream(new MockInputStreamFactory(System.in), "UTF-8");
+        perfMon = new PerformanceMonitor(System.err, "sent");
+        perfMon.start();
         String line;
         while ((line = lineStream.read()) != null) {
 
@@ -70,8 +70,7 @@ public final class POSTaggerTool extends BasicCmdLineTool {
 
           perfMon.incrementCounter();
         }
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         CmdLineUtil.handleStdinIoError(e);
       }
 

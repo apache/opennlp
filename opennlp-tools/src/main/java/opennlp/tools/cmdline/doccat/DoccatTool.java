@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.cmdline.doccat;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
@@ -32,19 +30,23 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.util.MockInputStreamFactory;
 
 public class DoccatTool extends BasicCmdLineTool {
 
+  @Override
   public String getShortDescription() {
     return "learnable document categorizer";
   }
-  
+
+  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < documents";
   }
 
+  @Override
   public void run(String[] args) {
-    
+
     if (0 == args.length) {
       System.out.println(getHelp());
     } else {
@@ -53,13 +55,21 @@ public class DoccatTool extends BasicCmdLineTool {
 
       DocumentCategorizerME doccat = new DocumentCategorizerME(model);
 
-      ObjectStream<String> documentStream = new ParagraphStream(
-          new PlainTextByLineStream(new InputStreamReader(System.in)));
+      //ObjectStream<String> documentStream = new ParagraphStream(
+            //  new PlainTextByLineStream(new InputStreamReader(System.in)));
+      /**
+       * moved initialization to the try block to catch new IOException
+       */
+      ObjectStream<String> documentStream;
+
+
 
       PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "doc");
       perfMon.start();
 
       try {
+        documentStream = new ParagraphStream(
+                new PlainTextByLineStream(new MockInputStreamFactory(System.in), "UTF-8"));
         String document;
         while ((document = documentStream.read()) != null) {
           double prob[] = doccat.categorize(WhitespaceTokenizer.INSTANCE.tokenize(document));
@@ -70,8 +80,7 @@ public class DoccatTool extends BasicCmdLineTool {
 
           perfMon.incrementCounter();
         }
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         CmdLineUtil.handleStdinIoError(e);
       }
 

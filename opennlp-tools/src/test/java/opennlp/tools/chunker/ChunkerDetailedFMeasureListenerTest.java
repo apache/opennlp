@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.util.Locale;
 
 import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 
 import org.junit.Test;
@@ -47,10 +48,10 @@ public class ChunkerDetailedFMeasureListenerTest {
     try {
       DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
           new PlainTextByLineStream(
-              new InputStreamReader(inPredicted, encoding)), true);
+              new MockInputStreamFactory(inPredicted), encoding), true);
 
       DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-          new PlainTextByLineStream(new InputStreamReader(inExpected)), false);
+          new PlainTextByLineStream(new MockInputStreamFactory(inExpected),"UTF-8"), false);
 
       Chunker dummyChunker = new DummyChunker(predictedSample);
 
