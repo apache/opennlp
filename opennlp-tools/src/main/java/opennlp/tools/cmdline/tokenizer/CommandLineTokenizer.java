@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.cmdline.tokenizer;
 
 import java.io.IOException;
@@ -25,39 +24,43 @@ import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerStream;
 import opennlp.tools.tokenize.WhitespaceTokenStream;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 final class CommandLineTokenizer {
 
   private final Tokenizer tokenizer;
-  
+
   CommandLineTokenizer(Tokenizer tokenizer) {
     this.tokenizer = tokenizer;
   }
-  
+
   void process() {
-    
-    ObjectStream<String> untokenizedLineStream =
-        new PlainTextByLineStream(new InputStreamReader(System.in));
-    
-    ObjectStream<String> tokenizedLineStream = new WhitespaceTokenStream(
-        new TokenizerStream(tokenizer, untokenizedLineStream));
-    
-    PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
-    perfMon.start();
-    
+    ObjectStream<String> untokenizedLineStream = null;
+
+    ObjectStream<String> tokenizedLineStream = null;
+    PerformanceMonitor perfMon = null;
     try {
+      untokenizedLineStream =
+              new PlainTextByLineStream(new MockInputStreamFactory(System.in), "UTF-8");
+
+      tokenizedLineStream = new WhitespaceTokenStream(
+              new TokenizerStream(tokenizer, untokenizedLineStream));
+
+      perfMon = new PerformanceMonitor(System.err, "sent");
+      perfMon.start();
+
+
       String tokenizedLine;
       while ((tokenizedLine = tokenizedLineStream.read()) != null) {
         System.out.println(tokenizedLine);
         perfMon.incrementCounter();
       }
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       CmdLineUtil.handleStdinIoError(e);
     }
-    
+
     perfMon.stopAndPrintFinalResult();
   }
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.formats;
 
 import opennlp.tools.chunker.ChunkSample;
@@ -27,6 +26,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import opennlp.tools.util.MockInputStreamFactory;
 
 /**
  * Factory producing OpenNLP {@link ChunkSampleStream}s.
@@ -38,7 +41,7 @@ public class ChunkerSampleStreamFactory extends AbstractSampleStreamFactory<Chun
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(ChunkSample.class,
-        StreamFactoryRegistry.DEFAULT_FORMAT, new ChunkerSampleStreamFactory(Parameters.class));
+            StreamFactoryRegistry.DEFAULT_FORMAT, new ChunkerSampleStreamFactory(Parameters.class));
   }
 
   protected <P> ChunkerSampleStreamFactory(Class<P> params) {
@@ -50,9 +53,13 @@ public class ChunkerSampleStreamFactory extends AbstractSampleStreamFactory<Chun
 
     CmdLineUtil.checkInputFile("Data", params.getData());
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());
+    ObjectStream<String> lineStream = null;
+    try {
+      lineStream = new PlainTextByLineStream(new MockInputStreamFactory(sampleDataIn), params.getEncoding());
 
-    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn
-        .getChannel(), params.getEncoding());
+    } catch (IOException ex) {
+      Logger.getLogger(ChunkerSampleStreamFactory.class.getName()).log(Level.SEVERE, null, ex);
+    }
 
     return new ChunkSampleStream(lineStream);
   }

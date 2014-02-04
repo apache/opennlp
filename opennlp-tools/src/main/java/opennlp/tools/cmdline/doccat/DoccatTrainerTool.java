@@ -40,10 +40,12 @@ public class DoccatTrainerTool
     super(DocumentSample.class, TrainerToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "trainer for the learnable document categorizer";
   }
   
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

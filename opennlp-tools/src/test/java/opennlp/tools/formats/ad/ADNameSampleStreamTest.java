@@ -26,6 +26,7 @@ import java.util.List;
 
 import opennlp.tools.formats.ad.ADNameSampleStream;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -117,7 +118,7 @@ public class ADNameSampleStreamTest {
         .getResourceAsStream("/opennlp/tools/formats/ad.sample");
 
     ADNameSampleStream stream = new ADNameSampleStream(
-        new PlainTextByLineStream(in, "UTF-8"), true);
+        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"), true);
 
     NameSample sample = stream.read();
 

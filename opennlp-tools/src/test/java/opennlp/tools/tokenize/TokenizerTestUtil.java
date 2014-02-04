@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.util.CollectionObjectStream;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -67,7 +68,7 @@ public class TokenizerTestUtil {
         "/opennlp/tools/tokenize/token.train");
     
     ObjectStream<TokenSample> samples = new TokenSampleStream(
-        new PlainTextByLineStream(new InputStreamReader(trainDataIn, "UTF-8")));
+        new PlainTextByLineStream(new MockInputStreamFactory(trainDataIn), "UTF-8"));
     
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));

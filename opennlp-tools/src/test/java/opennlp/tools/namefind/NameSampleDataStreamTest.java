@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import opennlp.tools.util.MockInputStreamFactory;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
@@ -80,7 +81,7 @@ public class NameSampleDataStreamTest {
     String encoding = "ISO-8859-1";
 
     NameSampleDataStream ds = new NameSampleDataStream(
-        new PlainTextByLineStream(new InputStreamReader(in, encoding)));
+        new PlainTextByLineStream(new MockInputStreamFactory(in), encoding));
 
     NameSample ns = ds.read();
 
@@ -177,7 +178,7 @@ public class NameSampleDataStreamTest {
         "opennlp/tools/namefind/voa1.train");
 
     NameSampleDataStream ds = new NameSampleDataStream(
-        new PlainTextByLineStream(new InputStreamReader(in)));
+        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     Map<String, List<String>> names = new HashMap<String, List<String>>();
     Map<String, List<Span>> spans = new HashMap<String, List<Span>>();
@@ -341,7 +342,7 @@ public class NameSampleDataStreamTest {
         "opennlp/tools/namefind/html1.train");
     
     NameSampleDataStream ds = new NameSampleDataStream(
-        new PlainTextByLineStream(new InputStreamReader(in, "UTF-8")));
+        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     NameSample ns = ds.read();
     

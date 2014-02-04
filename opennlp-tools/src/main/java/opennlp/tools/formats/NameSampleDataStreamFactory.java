@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.formats;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -25,6 +27,7 @@ import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -38,7 +41,7 @@ public class NameSampleDataStreamFactory extends AbstractSampleStreamFactory<Nam
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-        StreamFactoryRegistry.DEFAULT_FORMAT, new NameSampleDataStreamFactory(Parameters.class));
+            StreamFactoryRegistry.DEFAULT_FORMAT, new NameSampleDataStreamFactory(Parameters.class));
   }
 
   protected <P> NameSampleDataStreamFactory(Class<P> params) {
@@ -49,11 +52,16 @@ public class NameSampleDataStreamFactory extends AbstractSampleStreamFactory<Nam
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
     CmdLineUtil.checkInputFile("Data", params.getData());
-    
+
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());
 
-    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn.getChannel(),
-        params.getEncoding());
+    ObjectStream<String> lineStream = null;
+    try {
+      lineStream = new PlainTextByLineStream(new MockInputStreamFactory(sampleDataIn),
+              params.getEncoding());
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
+    }
 
     return new NameSampleDataStream(lineStream);
   }

@@ -23,7 +23,7 @@ import opennlp.tools.util.Span;
 /**
  *
  * Returns RegexNameFinders based on multiple methods: 1. A selection of
- * defaults 2. A configuration and a selection of defaults 3.
+ * defaults 2. A configuration and a selection of defaults
  */
 public class RegexNameFinderFactory {
 
@@ -41,7 +41,10 @@ public class RegexNameFinderFactory {
     if (config == null) {
       throw new IllegalArgumentException("config Map cannot be null");
     }
-    Map<String, Pattern[]> defaultsToMap = defaultsToMap(defaults);
+    Map<String, Pattern[]> defaultsToMap = new HashMap<>();
+    if (defaults != null) {
+      defaultsToMap = defaultsToMap(defaults);
+    }
     defaultsToMap.putAll(config);
     return new RegexNameFinder(defaultsToMap);
   }
@@ -109,8 +112,8 @@ public class RegexNameFinderFactory {
       @Override
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
-       // p[0] = Pattern.compile("([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[- \\.]?(\\d){2,})|([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[- \\.]?(\\d){2,})|([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,})", Pattern.CASE_INSENSITIVE);
-        p[0]=Pattern.compile("((\\(\\d{3}\\) ?)|(\\d{3}-))?\\d{3}-\\d{4}");
+        // p[0] = Pattern.compile("([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[- \\.]?(\\d){2,})|([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[- \\.]?(\\d){2,})|([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,})", Pattern.CASE_INSENSITIVE);
+        p[0] = Pattern.compile("((\\(\\d{3}\\) ?)|(\\d{3}-))?\\d{3}-\\d{4}");
         Map<String, Pattern[]> regexMap = new HashMap<>();
         regexMap.put(getType(), p);
         return regexMap;

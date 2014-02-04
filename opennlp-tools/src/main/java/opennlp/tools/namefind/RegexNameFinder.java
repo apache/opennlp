@@ -125,8 +125,9 @@ public final class RegexNameFinder implements TokenNameFinder {
   }
 
   /**
-   * NEW. This method removes the need for tokenization, but returns the Span
-   * with character indices, rather than word.
+   * NEW. This method removes the need for tokenization, but returns the
+   * character spans rather than word spans. Span.spansToStrings will not work
+   * properly on this output.
    *
    * @param text
    * @return

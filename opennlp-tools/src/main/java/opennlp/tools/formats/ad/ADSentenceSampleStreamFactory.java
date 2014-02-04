@@ -19,7 +19,10 @@ package opennlp.tools.formats.ad;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
@@ -28,6 +31,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -71,8 +75,13 @@ public class ADSentenceSampleStreamFactory extends
 
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());
 
-    ObjectStream<String> lineStream = new PlainTextByLineStream(
-        sampleDataIn.getChannel(), params.getEncoding());
+    ObjectStream<String> lineStream=null;
+    try {
+      lineStream = new PlainTextByLineStream(
+new MockInputStreamFactory(sampleDataIn), params.getEncoding());
+    } catch (IOException ex) {
+      Logger.getLogger(ADSentenceSampleStreamFactory.class.getName()).log(Level.SEVERE, null, ex);
+    }
 
     ADSentenceSampleStream sentenceStream = new ADSentenceSampleStream(
         lineStream, includeTitle);

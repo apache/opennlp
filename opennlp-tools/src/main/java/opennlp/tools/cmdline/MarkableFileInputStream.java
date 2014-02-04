@@ -36,7 +36,7 @@ public class MarkableFileInputStream extends InputStream {
   MarkableFileInputStream(File file) throws FileNotFoundException {
     in = new FileInputStream(file);
   }
-  
+
   @Override
   public synchronized void mark(int readlimit) {
     try {

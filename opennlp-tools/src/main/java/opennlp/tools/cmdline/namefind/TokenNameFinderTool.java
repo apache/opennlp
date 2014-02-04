@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.cmdline.namefind;
 
 import java.io.File;
@@ -33,6 +32,7 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -42,17 +42,17 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
   public String getShortDescription() {
     return "learnable name finder";
   }
-  
+
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model1 model2 ... modelN < sentences";
   }
-  
+
   public void run(String[] args) {
-    
+
     if (args.length == 0) {
       System.out.println(getHelp());
     } else {
-    
+
       NameFinderME nameFinders[] = new NameFinderME[args.length];
 
       for (int i = 0; i < nameFinders.length; i++) {
@@ -60,15 +60,17 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
         nameFinders[i] = new NameFinderME(model);
       }
 
-      ObjectStream<String> untokenizedLineStream =
-          new PlainTextByLineStream(new InputStreamReader(System.in));
-
+//      ObjectStream<String> untokenizedLineStream =
+//          new PlainTextByLineStream(new InputStreamReader(System.in));
+      ObjectStream<String> untokenizedLineStream;
       PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
       perfMon.start();
 
       try {
+        untokenizedLineStream =
+                new PlainTextByLineStream(new MockInputStreamFactory(System.in), "UTF-8");
         String line;
-        while((line = untokenizedLineStream.read()) != null) {
+        while ((line = untokenizedLineStream.read()) != null) {
           String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
 
           // A new line indicates a new document,
@@ -89,17 +91,16 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
           // Simple way to drop intersecting spans, otherwise the
           // NameSample is invalid
           Span reducedNames[] = NameFinderME.dropOverlappingSpans(
-              names.toArray(new Span[names.size()]));
+                  names.toArray(new Span[names.size()]));
 
           NameSample nameSample = new NameSample(whitespaceTokenizerLine,
-              reducedNames, false);
+                  reducedNames, false);
 
           System.out.println(nameSample.toString());
 
           perfMon.incrementCounter();
         }
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         CmdLineUtil.handleStdinIoError(e);
       }
 

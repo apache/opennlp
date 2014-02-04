@@ -24,10 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import opennlp.tools.cmdline.AbstractTrainerTool;
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool.TrainerToolParams;
 import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.namefind.NameSample;

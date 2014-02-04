@@ -33,6 +33,7 @@ import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyDictionary;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyEOSScanner;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummySDContextGenerator;
 import opennlp.tools.sentdetect.lang.Factory;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -50,7 +51,7 @@ public class SentenceDetectorFactoryTest {
         .getResourceAsStream("opennlp/tools/sentdetect/Sentences.txt");
 
     return new SentenceSampleStream(new PlainTextByLineStream(
-        new InputStreamReader(in)));
+        new MockInputStreamFactory(in),"UTF-8"));
   }
 
   private static SentenceModel train(SentenceDetectorFactory factory)

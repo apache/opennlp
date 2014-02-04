@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.formats;
 
 import opennlp.tools.cmdline.ArgumentParser;
@@ -27,6 +26,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import opennlp.tools.util.MockInputStreamFactory;
 
 /**
  * Factory producing OpenNLP {@link TokenSampleStream}s.
@@ -38,7 +41,7 @@ public class TokenSampleStreamFactory extends LanguageSampleStreamFactory<TokenS
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
-        StreamFactoryRegistry.DEFAULT_FORMAT, new TokenSampleStreamFactory(Parameters.class));
+            StreamFactoryRegistry.DEFAULT_FORMAT, new TokenSampleStreamFactory(Parameters.class));
   }
 
   protected <P> TokenSampleStreamFactory(Class<P> params) {
@@ -51,8 +54,13 @@ public class TokenSampleStreamFactory extends LanguageSampleStreamFactory<TokenS
     CmdLineUtil.checkInputFile("Data", params.getData());
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());
 
-    ObjectStream<String> lineStream = new PlainTextByLineStream(sampleDataIn.getChannel(),
-        params.getEncoding());
+    ObjectStream<String> lineStream = null;
+    try {
+      lineStream = new PlainTextByLineStream(new MockInputStreamFactory(sampleDataIn),
+              params.getEncoding());
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
+    }
 
     return new TokenSampleStream(lineStream);
   }

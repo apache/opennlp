@@ -36,6 +36,7 @@ import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -379,7 +380,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     if (fun) {
       Parse.useFunctionTags(true);
     }
-    opennlp.tools.ml.model.EventStream es = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))), rules, etype, dict);
+    opennlp.tools.ml.model.EventStream es = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new MockInputStreamFactory(System.in),"UTF-8")), rules, etype, dict);
     while (es.hasNext()) {
       Event e = es.next();
       if (model != null) {

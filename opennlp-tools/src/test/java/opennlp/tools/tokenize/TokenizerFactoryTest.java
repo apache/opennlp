@@ -33,6 +33,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.DummyTokenizerFactory.DummyContextGenerator;
 import opennlp.tools.tokenize.DummyTokenizerFactory.DummyDictionary;
 import opennlp.tools.tokenize.lang.Factory;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -50,7 +51,7 @@ public class TokenizerFactoryTest {
         .getResourceAsStream("opennlp/tools/tokenize/token.train");
 
     return new TokenSampleStream(new PlainTextByLineStream(
-        new InputStreamReader(in)));
+        new MockInputStreamFactory(in),"UTF-8"));
   }
 
   private static TokenizerModel train(TokenizerFactory factory)
