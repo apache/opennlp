@@ -14,15 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package opennlp.tools.namefind;
 
+import java.util.HashMap;
+import java.util.Map;
 import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Pattern;
 
 import opennlp.tools.util.Span;
+import org.junit.Before;
 
 import org.junit.Test;
 
@@ -33,12 +34,19 @@ public class RegexNameFinderTest {
 
   @Test
   public void testFindSingleTokenPattern() {
-    Pattern testPattern = Pattern.compile("test");
 
+    Pattern testPattern = Pattern.compile("test");
     String sentence[] = new String[]{"a", "test", "b", "c"};
 
+
+    Pattern[] patterns = new Pattern[]{testPattern};
+    Map<String, Pattern[]> regexMap = new HashMap<>();
+    String type = "testtype";
+
+    regexMap.put(type, patterns);
+
     RegexNameFinder finder =
-      new RegexNameFinder(new Pattern[]{testPattern});
+            new RegexNameFinder(regexMap);
 
     Span[] result = finder.find(sentence);
 
@@ -54,8 +62,14 @@ public class RegexNameFinderTest {
 
     String sentence[] = new String[]{"a", "80", "year", "b", "c"};
 
+    Pattern[] patterns = new Pattern[]{testPattern};
+    Map<String, Pattern[]> regexMap = new HashMap<>();
+    String type = "match";
+
+    regexMap.put(type, patterns);
+
     RegexNameFinder finder =
-      new RegexNameFinder(new Pattern[]{testPattern}, "match");
+            new RegexNameFinder(regexMap);
 
     Span[] result = finder.find(sentence);
 
@@ -71,9 +85,14 @@ public class RegexNameFinderTest {
     Pattern testPattern = Pattern.compile("[0-8] year"); // does match "0 year"
 
     String sentence[] = new String[]{"a", "80", "year", "c"};
+Pattern[] patterns = new Pattern[]{testPattern};
+    Map<String, Pattern[]> regexMap = new HashMap<>();
+    String type = "testtype";
+
+    regexMap.put(type, patterns);
 
     RegexNameFinder finder =
-      new RegexNameFinder(new Pattern[]{testPattern});
+            new RegexNameFinder(regexMap);
 
     Span[] result = finder.find(sentence);
 

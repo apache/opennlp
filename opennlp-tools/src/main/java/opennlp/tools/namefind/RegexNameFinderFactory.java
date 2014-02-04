@@ -22,8 +22,8 @@ import opennlp.tools.util.Span;
 
 /**
  *
- * Returns RegexNameFinders based on multiple methods: 1. A selection of
- * defaults 2. A configuration and a selection of defaults
+ * Returns a RegexNameFinder based on A selection of
+ * defaults or a configuration and a selection of defaults
  */
 public class RegexNameFinderFactory {
 
@@ -50,7 +50,7 @@ public class RegexNameFinderFactory {
   }
 
   /**
-   * Allows for use of selecte
+   * Reterned a RegexNamefinder that will utilize specified default regexes.
    *
    * @param defaults the OpenNLP default regexes
    * @return
