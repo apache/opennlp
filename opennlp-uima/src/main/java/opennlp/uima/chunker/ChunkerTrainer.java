@@ -24,10 +24,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.model.ModelUtil;
 import opennlp.uima.util.CasConsumerUtil;
 import opennlp.uima.util.ContainingConstraint;
 import opennlp.uima.util.OpennlpUtil;
@@ -203,8 +205,8 @@ public class ChunkerTrainer extends CasConsumer_ImplBase {
       throws ResourceProcessException, IOException {
     GIS.PRINT_MESSAGES = false;
     
-    ChunkerModel chunkerModel = ChunkerME.train(language, ObjectStreamUtils.createObjectStream(mChunkSamples), 100, 5);
-    
+    ChunkerModel chunkerModel = ChunkerME.train(language, ObjectStreamUtils.createObjectStream(mChunkSamples), ModelUtil.createDefaultTrainingParameters(), ChunkerFactory.create(null));
+  
     // dereference to allow garbage collection
     mChunkSamples  = null;
     
