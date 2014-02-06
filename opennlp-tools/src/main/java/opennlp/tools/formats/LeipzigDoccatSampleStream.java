@@ -24,7 +24,6 @@ import java.io.PrintStream;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.util.FilterObjectStream;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
@@ -53,7 +52,7 @@ public class LeipzigDoccatSampleStream extends
    */
   LeipzigDoccatSampleStream(String language, int sentencesPerDocument, 
       InputStream in) throws IOException {
-    super(new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+    super(new PlainTextByLineStream(in, "UTF-8"));
     System.setOut(new PrintStream(System.out, true, "UTF-8"));
     this.language = language;
     this.sentencesPerDocument = sentencesPerDocument;

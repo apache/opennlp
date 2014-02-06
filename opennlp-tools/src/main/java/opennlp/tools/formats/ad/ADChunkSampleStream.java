@@ -29,7 +29,6 @@ import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.StringUtil;
@@ -92,8 +91,8 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 
 		try {
 			this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-					new MockInputStreamFactory(in), charsetName));
-		} catch (IOException e) {
+					in, charsetName));
+		} catch (UnsupportedEncodingException e) {
 			// UTF-8 is available on all JVMs, will never happen
 			throw new IllegalStateException(e);
 		}

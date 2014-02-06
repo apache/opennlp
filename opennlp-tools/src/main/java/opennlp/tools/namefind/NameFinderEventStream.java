@@ -23,10 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.EventStream;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
