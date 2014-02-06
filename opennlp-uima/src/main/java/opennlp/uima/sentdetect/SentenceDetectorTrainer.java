@@ -167,8 +167,8 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
     SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
             null, language, true, null, eos);
     
-    TrainingParameters mlParams = ModelUtil.createTrainingParameters(100, 5);
-    
+  //  TrainingParameters mlParams = ModelUtil.createTrainingParameters(100, 5);
+     TrainingParameters mlParams = ModelUtil.createDefaultTrainingParameters();
     ObjectStream<SentenceSample> samples = ObjectStreamUtils.createObjectStream(sentenceSamples);
     
     Writer samplesOut = null;
