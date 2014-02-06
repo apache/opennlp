@@ -143,18 +143,4 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     return ac;
 
   }
-
-  // Will be removed soon!
-  @Deprecated
-  public static final void main(String[] args) throws java.io.IOException {
-    if (args.length != 0) {
-      System.err.println("Usage: NameFinderEventStream < training files");
-      System.exit(1);
-    }
-    EventStream es = new NameFinderEventStream(new NameSampleDataStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(System.in),"UTF-8")));
-    while (es.hasNext()) {
-      System.out.println(es.next());
-    }
-  }
 }
