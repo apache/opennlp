@@ -17,20 +17,18 @@
 
 package opennlp.tools.formats;
 
+import java.io.IOException;
+
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.SentenceSampleStream;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import opennlp.tools.util.MockInputStreamFactory;
 
 /**
  * Factory producing OpenNLP {@link SentenceSampleStream}s.
@@ -53,14 +51,13 @@ public class SentenceSampleStreamFactory extends AbstractSampleStreamFactory<Sen
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
     CmdLineUtil.checkInputFile("Data", params.getData());
-    FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());
+    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
 
     ObjectStream<String> lineStream=null;
     try {
-      lineStream = new PlainTextByLineStream(new MockInputStreamFactory(sampleDataIn),
-params.getEncoding());
+      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
     } catch (IOException ex) {
-      Logger.getLogger(SentenceSampleStreamFactory.class.getName()).log(Level.SEVERE, null, ex);
+      CmdLineUtil.handleCreateObjectStreamError(ex);
     }
 
     return new SentenceSampleStream(lineStream);

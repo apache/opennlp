@@ -18,11 +18,8 @@
 package opennlp.tools.formats.ad;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
@@ -31,7 +28,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.MockInputStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -76,14 +73,14 @@ public class ADNameSampleStreamFactory extends LanguageSampleStreamFactory<NameS
 
     language = params.getLang();
 
-    FileInputStream sampleDataIn = CmdLineUtil.openInFile(params.getData());
+    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
 
     ObjectStream<String> lineStream=null;
     try {
-      lineStream = new PlainTextByLineStream(
-new MockInputStreamFactory(sampleDataIn), params.getEncoding());
+      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
     } catch (IOException ex) {
-throw new RuntimeException(ex)  ;  }
+      CmdLineUtil.handleCreateObjectStreamError(ex);
+    }
 
     return new ADNameSampleStream(lineStream, params.getSplitHyphenatedTokens());
   }
