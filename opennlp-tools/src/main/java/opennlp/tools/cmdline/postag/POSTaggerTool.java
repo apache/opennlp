@@ -18,17 +18,16 @@ package opennlp.tools.cmdline.postag;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
+import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -56,7 +55,7 @@ public final class POSTaggerTool extends BasicCmdLineTool {
       PerformanceMonitor perfMon = null;
 
       try {
-        lineStream = new PlainTextByLineStream(new MockInputStreamFactory(System.in), "UTF-8");
+        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
         perfMon = new PerformanceMonitor(System.err, "sent");
         perfMon.start();
         String line;

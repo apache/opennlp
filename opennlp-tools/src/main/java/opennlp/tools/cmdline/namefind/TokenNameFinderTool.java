@@ -27,12 +27,12 @@ import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
+import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -68,7 +68,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
 
       try {
         untokenizedLineStream =
-                new PlainTextByLineStream(new MockInputStreamFactory(System.in), "UTF-8");
+                new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
         String line;
         while ((line = untokenizedLineStream.read()) != null) {
           String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);

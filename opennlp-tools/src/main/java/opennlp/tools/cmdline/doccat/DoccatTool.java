@@ -23,6 +23,7 @@ import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
+import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
@@ -30,7 +31,6 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
-import opennlp.tools.util.MockInputStreamFactory;
 
 public class DoccatTool extends BasicCmdLineTool {
 
@@ -69,7 +69,7 @@ public class DoccatTool extends BasicCmdLineTool {
 
       try {
         documentStream = new ParagraphStream(
-                new PlainTextByLineStream(new MockInputStreamFactory(System.in), "UTF-8"));
+                new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding()));
         String document;
         while ((document = documentStream.read()) != null) {
           double prob[] = doccat.categorize(WhitespaceTokenizer.INSTANCE.tokenize(document));
