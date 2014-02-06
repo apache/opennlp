@@ -28,7 +28,7 @@ public class SystemInputStreamFactory implements InputStreamFactory {
   private boolean isTainted = false;
   
   public static Charset encoding() {
-    return Charset.forName("UTF-8");
+    return Charset.defaultCharset();
   }
   
   @Override
