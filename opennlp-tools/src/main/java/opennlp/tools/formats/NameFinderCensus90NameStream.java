@@ -12,15 +12,13 @@
  *  limitations under the License.
  *  under the License.
  */
+
 package opennlp.tools.formats;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import opennlp.tools.util.MockInputStreamFactory;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -29,10 +27,10 @@ import opennlp.tools.util.StringUtil;
 
 /**
  * This class helps to read the US Census data from the files to build a
- * StringList for each dictionary entry in the name-finder dictionary. The
- * entries in the source file are as follows:
+ * StringList for each dictionary entry in the name-finder dictionary.
+ * The entries in the source file are as follows:
  * <p>
- * SMITH 1.006 1.006 1
+ *      SMITH          1.006  1.006      1
  * <p>
  * <ul>
  * <li>The first field is the name (in ALL CAPS).
@@ -47,14 +45,14 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
 
   private final Locale locale;
   private final Charset encoding;
-  private ObjectStream<String> lineStream;
+  private final ObjectStream<String> lineStream;
 
   /**
    * This constructor takes an ObjectStream and initializes the class to handle
    * the stream.
    *
-   * @param lineStream an <code>ObjectSteam<String></code> that represents the
-   *                   input file to be attached to this class.
+   * @param lineStream  an <code>ObjectSteam<String></code> that represents the
+   *                    input file to be attached to this class.
    */
   public NameFinderCensus90NameStream(ObjectStream<String> lineStream) {
     this.locale = new Locale("en");   // locale is English
@@ -64,32 +62,24 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
   }
 
   /**
-   * This constructor takes an
-   * <code>InputStream</code> and a
-   * <code>Charset</code> and opens an associated stream object with the
-   * specified encoding specified.
+   * This constructor takes an <code>InputStream</code> and a <code>Charset</code>
+   * and opens an associated stream object with the specified encoding specified.
    *
-   * @param in       an <code>InputStream</code> for the input file.
-   * @param encoding the <code>Charset</code> to apply to the input stream.
+   * @param in  an <code>InputStream</code> for the input file.
+   * @param encoding  the <code>Charset</code> to apply to the input stream.
    */
   public NameFinderCensus90NameStream(InputStream in, Charset encoding) {
     this.locale = new Locale("en");   // locale is English
     this.encoding = encoding;
-
-    try {
-      this.lineStream = new PlainTextByLineStream(new MockInputStreamFactory(in), this.encoding);
-    } catch (IOException ex) {
-
-      throw new RuntimeException(ex);
-    }
+    this.lineStream = new PlainTextByLineStream(in, this.encoding);
   }
 
   public StringList read() throws IOException {
     String line = lineStream.read();
     StringList name = null;
 
-    if ((line != null)
-            && (!StringUtil.isEmpty(line))) {
+    if ((line != null) &&
+        (!StringUtil.isEmpty(line))) {
       String name2;
       // find the location of the name separator in the line of data.
       int pos = line.indexOf(' ');
@@ -97,15 +87,15 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
         String parsed = line.substring(0, pos);
         // the data is in ALL CAPS ... so the easiest way is to convert
         // back to standard mixed case.
-        if ((parsed.length() > 2)
-                && (parsed.startsWith("MC"))) {
-          name2 = parsed.substring(0, 1).toUpperCase(locale)
-                  + parsed.substring(1, 2).toLowerCase(locale)
-                  + parsed.substring(2, 3).toUpperCase(locale)
-                  + parsed.substring(3).toLowerCase(locale);
+        if ((parsed.length() > 2) &&
+            (parsed.startsWith("MC"))) {
+          name2 = parsed.substring(0,1).toUpperCase(locale) +
+                  parsed.substring(1,2).toLowerCase(locale) +
+                  parsed.substring(2,3).toUpperCase(locale) +
+                  parsed.substring(3).toLowerCase(locale);
         } else {
-          name2 = parsed.substring(0, 1).toUpperCase(locale)
-                  + parsed.substring(1).toLowerCase(locale);
+          name2 = parsed.substring(0,1).toUpperCase(locale) +
+                  parsed.substring(1).toLowerCase(locale);
         }
         name = new StringList(new String[]{name2});
       }
@@ -121,4 +111,5 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
   public void close() throws IOException {
     lineStream.close();
   }
+
 }

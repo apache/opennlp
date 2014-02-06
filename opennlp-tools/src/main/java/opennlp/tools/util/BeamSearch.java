@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.util;
 
 import java.util.Arrays;
 import java.util.List;
 
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.RealValueFileEventStream;
 
 /**
- * Performs k-best search over sequence. This is based on the description in
+ * Performs k-best search over sequence.  This is based on the description in
  * Ratnaparkhi (1998), PhD diss, Univ. of Pennsylvania.
  *
  * @see Sequence
@@ -33,10 +33,12 @@ import opennlp.tools.ml.model.RealValueFileEventStream;
 public class BeamSearch<T> {
 
   private static final Object[] EMPTY_ADDITIONAL_CONTEXT = new Object[0];
+
   protected int size;
   protected BeamSearchContextGenerator<T> cg;
   protected MaxentModel model;
   private SequenceValidator<T> validator;
+
   private double[] probs;
   private Cache contextsCache;
   private static final int zeroLog = -100000;
@@ -44,22 +46,21 @@ public class BeamSearch<T> {
   /**
    * Creates new search object.
    *
-   * @param size  The size of the beam (k).
-   * @param cg    the context generator for the model.
-   * @param model the model for assigning probabilities to the sequence
-   *              outcomes.
+   * @param size The size of the beam (k).
+   * @param cg the context generator for the model.
+   * @param model the model for assigning probabilities to the sequence outcomes.
    */
   public BeamSearch(int size, BeamSearchContextGenerator<T> cg, MaxentModel model) {
     this(size, cg, model, null, 0);
   }
 
   public BeamSearch(int size, BeamSearchContextGenerator<T> cg, MaxentModel model,
-          int cacheSize) {
-    this(size, cg, model, null, cacheSize);
+      int cacheSize) {
+    this (size, cg, model, null, cacheSize);
   }
 
   public BeamSearch(int size, BeamSearchContextGenerator<T> cg, MaxentModel model,
-          SequenceValidator<T> validator, int cacheSize) {
+      SequenceValidator<T> validator, int cacheSize) {
 
     this.size = size;
     this.cg = cg;
@@ -74,7 +75,8 @@ public class BeamSearch<T> {
   }
 
   /**
-   * Note: This method will be private in the future because clients can now
+   * Note:
+   * This method will be private in the future because clients can now
    * pass a validator to validate the sequence.
    *
    * @see SequenceValidator
@@ -83,7 +85,8 @@ public class BeamSearch<T> {
 
     if (validator != null) {
       return validator.validSequence(i, inputSequence, outcomesSequence, outcome);
-    } else {
+    }
+    else {
       return true;
     }
   }
@@ -95,12 +98,10 @@ public class BeamSearch<T> {
   /**
    * Returns the best sequence of outcomes based on model for this object.
    *
-   * @param numSequences      The maximum number of sequences to be returned.
-   * @param sequence          The input sequence.
-   * @param additionalContext An Object[] of additional context. This is passed
-   *                          to the context generator blindly with the
-   *                          assumption that the context are appropiate.
-   * @param minSequenceScore  A lower bound on the score of a returned sequence.
+   * @param numSequences The maximum number of sequences to be returned.
+   * @param sequence The input sequence.
+   * @param additionalContext An Object[] of additional context.  This is passed to the context generator blindly with the assumption that the context are appropiate.
+   * @param minSequenceScore A lower bound on the score of a returned sequence.
    * @return An array of the top ranked sequences of outcomes.
    */
   public Sequence[] bestSequences(int numSequences, T[] sequence, Object[] additionalContext, double minSequenceScore) {
@@ -123,23 +124,15 @@ public class BeamSearch<T> {
         String[] outcomes = tmpOutcomes.toArray(new String[tmpOutcomes.size()]);
         String[] contexts = cg.getContext(i, sequence, outcomes, additionalContext);
         double[] scores;
-      //  float[] realValues = RealValueFileEventStream.parseContexts(contexts);
         if (contextsCache != null) {
           scores = (double[]) contextsCache.get(contexts);
           if (scores == null) {
-           // if (realValues != null) {
-           //   scores = model.eval(contexts, realValues);
-           // } else {
-              scores = model.eval(contexts, probs);
-           // }
-            contextsCache.put(contexts, scores);
-          }
-        } else {
-         // if (realValues != null) {
-         //   scores = model.eval(contexts, realValues);
-         // } else {
             scores = model.eval(contexts, probs);
-          //}
+            contextsCache.put(contexts,scores);
+          }
+        }
+        else {
+          scores = model.eval(contexts, probs);
         }
 
         double[] temp_scores = new double[scores.length];
@@ -149,12 +142,11 @@ public class BeamSearch<T> {
 
         Arrays.sort(temp_scores);
 
-        double min = temp_scores[Math.max(0, scores.length - size)];
+        double min = temp_scores[Math.max(0,scores.length-size)];
 
         for (int p = 0; p < scores.length; p++) {
-          if (scores[p] < min) {
+          if (scores[p] < min)
             continue; //only advance first "size" outcomes
-          }
           String out = model.getOutcome(p);
           if (validSequence(i, sequence, outcomes, out)) {
             Sequence ns = new Sequence(top, out, scores[p]);
@@ -197,21 +189,17 @@ public class BeamSearch<T> {
   /**
    * Returns the best sequence of outcomes based on model for this object.
    *
-   * @param sequence          The input sequence.
-   * @param additionalContext An Object[] of additional context. This is passed
-   *                          to the context generator blindly with the
-   *                          assumption that the context are appropiate.
+   * @param sequence The input sequence.
+   * @param additionalContext An Object[] of additional context.  This is passed to the context generator blindly with the assumption that the context are appropiate.
    *
-   * @return The top ranked sequence of outcomes or null if no sequence could be
-   *         found
+   * @return The top ranked sequence of outcomes or null if no sequence could be found
    */
   public Sequence bestSequence(T[] sequence, Object[] additionalContext) {
-    Sequence sequences[] = bestSequences(1, sequence, additionalContext, zeroLog);
-
-    if (sequences.length > 0) {
+    Sequence sequences[] =  bestSequences(1, sequence, additionalContext,zeroLog);
+    
+    if (sequences.length > 0)
       return sequences[0];
-    } else {
+    else 
       return null;
-    }
   }
 }

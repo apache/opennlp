@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.lang.Factory;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -82,8 +81,8 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
       boolean includeHeadlines) {
     try {
       this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-          new MockInputStreamFactory(in), charsetName));
-    } catch (IOException e) {
+          in, charsetName));
+    } catch (UnsupportedEncodingException e) {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
     }

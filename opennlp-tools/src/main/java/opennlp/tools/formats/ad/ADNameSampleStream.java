@@ -35,7 +35,6 @@ import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -192,9 +191,9 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
     try {
       this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-          new MockInputStreamFactory(in), charsetName));
+          in, charsetName));
       this.splitHyphenatedTokens = splitHyphenatedTokens;
-    } catch (IOException e) {
+    } catch (UnsupportedEncodingException e) {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
     }
