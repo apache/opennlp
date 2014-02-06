@@ -29,11 +29,11 @@ import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
+import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.parser.ParserModel;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -117,7 +117,7 @@ public final class ParserTool extends BasicCmdLineTool {
       ObjectStream<String> lineStream = null;
       PerformanceMonitor perfMon = null;
       try {
-        lineStream = new PlainTextByLineStream(new MockInputStreamFactory(System.in), "UTF-8");
+        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
         perfMon = new PerformanceMonitor(System.err, "sent");
         perfMon.start();
         String line;

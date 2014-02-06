@@ -17,14 +17,13 @@
 package opennlp.tools.cmdline.tokenizer;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
+import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerStream;
 import opennlp.tools.tokenize.WhitespaceTokenStream;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -43,7 +42,7 @@ final class CommandLineTokenizer {
     PerformanceMonitor perfMon = null;
     try {
       untokenizedLineStream =
-              new PlainTextByLineStream(new MockInputStreamFactory(System.in), "UTF-8");
+              new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
 
       tokenizedLineStream = new WhitespaceTokenStream(
               new TokenizerStream(tokenizer, untokenizedLineStream));
