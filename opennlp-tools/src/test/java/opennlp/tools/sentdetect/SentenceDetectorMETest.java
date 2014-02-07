@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import opennlp.tools.util.MockInputStreamFactory;
 
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -48,7 +47,7 @@ public class SentenceDetectorMETest {
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
     
     SentenceModel sentdetectModel = SentenceDetectorME.train(
-        "en", new SentenceSampleStream(new PlainTextByLineStream(new MockInputStreamFactory(in),"UTF-8")), true, null, mlParams);
+        "en", new SentenceSampleStream(new PlainTextByLineStream(new InputStreamReader(in))), true, null, mlParams);
     
     assertEquals("en", sentdetectModel.getLanguage());
     

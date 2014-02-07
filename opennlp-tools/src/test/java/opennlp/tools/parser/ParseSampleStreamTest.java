@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import opennlp.tools.util.MockInputStreamFactory;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -37,7 +36,7 @@ public class ParseSampleStreamTest {
     InputStream in = ParseSampleStreamTest.class.getResourceAsStream(
     "/opennlp/tools/parser/test.parse");
     
-    return new ParseSampleStream(new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+    return new ParseSampleStream(new PlainTextByLineStream(new InputStreamReader(in, "UTF-8")));
   }
   
   @Test
