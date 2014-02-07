@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import opennlp.tools.formats.ad.ADSentenceStream;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 
 import org.junit.Test;
@@ -68,6 +67,6 @@ public class ADParagraphStreamTest {
   private static ADSentenceStream openData() throws IOException {
     InputStream in = ADParagraphStreamTest.class.getResourceAsStream("/opennlp/tools/formats/ad.sample");
     
-    return new ADSentenceStream(new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+    return new ADSentenceStream(new PlainTextByLineStream(in, "UTF-8"));
   }
 }

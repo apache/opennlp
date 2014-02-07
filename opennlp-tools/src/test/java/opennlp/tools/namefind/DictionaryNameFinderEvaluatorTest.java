@@ -28,7 +28,6 @@ import java.util.List;
 
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -73,7 +72,7 @@ public class DictionaryNameFinderEvaluatorTest {
             .toURI()));
 
     return new NameSampleDataStream(new PlainTextByLineStream(
-        new MockInputStreamFactory(sampleDataIn), "ISO-8859-1"));
+        sampleDataIn.getChannel(), "ISO-8859-1"));
   }
 
   /**

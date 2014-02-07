@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.Arrays;
-import opennlp.tools.util.MockInputStreamFactory;
 
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -188,8 +187,8 @@ public class ChunkSampleTest {
 	String encoding = "UTF-8";
 
 	DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-			new PlainTextByLineStream(new MockInputStreamFactory(in),
-					encoding), false);
+			new PlainTextByLineStream(new InputStreamReader(in,
+					encoding)), false);
 
 	ChunkSample cs1 = predictedSample.read();
 	String[] g1 = Span.spansToStrings(cs1.getPhrasesAsSpanList(), cs1.getSentence());

@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -57,7 +56,7 @@ public class ADSentenceSampleStreamTest {
         .getResourceAsStream("/opennlp/tools/formats/ad.sample");
 
     ADSentenceSampleStream stream = new ADSentenceSampleStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"), true);
+        new PlainTextByLineStream(in, "UTF-8"), true);
 
     SentenceSample sample = stream.read();
 
