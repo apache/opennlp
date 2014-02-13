@@ -50,7 +50,7 @@ public class RegexNameFinderFactory {
   }
 
   /**
-   * Reterned a RegexNamefinder that will utilize specified default regexes.
+   * Returns a RegexNamefinder that will utilize specified default regexes.
    *
    * @param defaults the OpenNLP default regexes
    * @return
