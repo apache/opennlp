@@ -30,6 +30,8 @@ import opennlp.tools.util.Span;
  */
 public final class RegexNameFinder implements TokenNameFinder {
 
+  private Pattern mPatterns[];
+  private String sType;
   private Map<String, Pattern[]> regexMap;
 
   public RegexNameFinder(Map<String, Pattern[]> regexMap) {
@@ -38,6 +40,30 @@ public final class RegexNameFinder implements TokenNameFinder {
     }
     this.regexMap = regexMap;
 
+  }
+
+  public RegexNameFinder(Pattern patterns[], String type) {
+    if (patterns == null || patterns.length == 0) {
+      throw new IllegalArgumentException("patterns must not be null or empty!");
+    }
+
+    mPatterns = patterns;
+    sType = type;
+  }
+
+  /**
+   * use constructor {@link #RegexNameFinder(Pattern[], String)}
+   * for single types, and/or constructor 
+   * {@link #RegexNameFinder(Map)}
+   */
+  @Deprecated
+  public RegexNameFinder(Pattern patterns[]) {
+    if (patterns == null || patterns.length == 0) {
+      throw new IllegalArgumentException("patterns must not be null or empty!");
+    }
+
+    mPatterns = patterns;
+    sType = null;
   }
 
   @Override
@@ -63,7 +89,7 @@ public final class RegexNameFinder implements TokenNameFinder {
 
     Collection<Span> annotations = new LinkedList<>();
 
-    if (regexMap != null) {
+    if (mPatterns == null && regexMap != null) {
       for (Map.Entry<String, Pattern[]> entry : regexMap.entrySet()) {
         for (Pattern mPattern : entry.getValue()) {
           Matcher matcher = mPattern.matcher(sentenceString);
@@ -81,8 +107,23 @@ public final class RegexNameFinder implements TokenNameFinder {
           }
         }
       }
-    }
+    } else {
+      for (Pattern mPattern : mPatterns) {
+        Matcher matcher = mPattern.matcher(sentenceString);
 
+        while (matcher.find()) {
+          Integer tokenStartIndex =
+                  sentencePosTokenMap.get(matcher.start());
+          Integer tokenEndIndex =
+                  sentencePosTokenMap.get(matcher.end());
+
+          if (tokenStartIndex != null && tokenEndIndex != null) {
+            Span annotation = new Span(tokenStartIndex, tokenEndIndex, sType);
+            annotations.add(annotation);
+          }
+        }
+      }
+    }
 
 
     return annotations.toArray(
@@ -90,9 +131,8 @@ public final class RegexNameFinder implements TokenNameFinder {
   }
 
   /**
-   * NEW. This method removes the need for tokenization, but returns the
-   * character spans rather than word spans. Span.spansToStrings will not work
-   * properly on this output.
+   * NEW. This method removes the need for tokenization, but returns the Span
+   * with character indices, rather than word.
    *
    * @param text
    * @return
@@ -103,7 +143,7 @@ public final class RegexNameFinder implements TokenNameFinder {
 
   private Span[] getAnnotations(String text) {
     Collection<Span> annotations = new LinkedList<>();
-    if (regexMap != null) {
+    if (mPatterns == null && regexMap != null) {
       for (Map.Entry<String, Pattern[]> entry : regexMap.entrySet()) {
         for (Pattern mPattern : entry.getValue()) {
           Matcher matcher = mPattern.matcher(text);
@@ -117,7 +157,20 @@ public final class RegexNameFinder implements TokenNameFinder {
           }
         }
       }
+    } else {
+      for (Pattern mPattern : mPatterns) {
+        Matcher matcher = mPattern.matcher(text);
+
+        while (matcher.find()) {
+          Integer tokenStartIndex = matcher.start();
+          Integer tokenEndIndex = matcher.end();
+          Span annotation = new Span(tokenStartIndex, tokenEndIndex, sType);
+          annotations.add(annotation);
+
+        }
+      }
     }
+
     return annotations.toArray(
             new Span[annotations.size()]);
   }
@@ -127,5 +180,19 @@ public final class RegexNameFinder implements TokenNameFinder {
     // nothing to clear
   }
 
- 
+  public Pattern[] getmPatterns() {
+    return mPatterns;
+  }
+
+  public void setmPatterns(Pattern[] mPatterns) {
+    this.mPatterns = mPatterns;
+  }
+
+  public String getsType() {
+    return sType;
+  }
+
+  public void setsType(String sType) {
+    this.sType = sType;
+  }
 }
