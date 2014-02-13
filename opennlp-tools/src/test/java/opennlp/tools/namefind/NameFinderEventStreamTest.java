@@ -18,13 +18,13 @@
 package opennlp.tools.namefind;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
 import junit.framework.Assert;
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Span;
 
@@ -56,19 +56,16 @@ public class NameFinderEventStreamTest{
     NameSample nameSample = new NameSample(sentence, 
         new Span[]{new Span(0, 2, "person")}, false);
     
-    EventStream eventStream = new NameFinderEventStream(
+    ObjectStream<Event> eventStream = new NameFinderEventStream(
         ObjectStreamUtils.createObjectStream(nameSample));
     
-    assertTrue(eventStream.hasNext());
-    assertEquals("person-" + NameFinderME.START, eventStream.next().getOutcome());
-    assertTrue(eventStream.hasNext());
-    assertEquals("person-" + NameFinderME.CONTINUE, eventStream.next().getOutcome());
+    assertEquals("person-" + NameFinderME.START, eventStream.read().getOutcome());
+    assertEquals("person-" + NameFinderME.CONTINUE, eventStream.read().getOutcome());
     
     for (int i = 0; i < 10; i++) {
-      Assert.assertTrue(eventStream.hasNext());
-      Assert.assertEquals(NameFinderME.OTHER, eventStream.next().getOutcome());
+      Assert.assertEquals(NameFinderME.OTHER, eventStream.read().getOutcome());
     }
     
-    assertFalse(eventStream.hasNext());
+    assertNull(eventStream.read());
   }
 }

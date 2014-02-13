@@ -19,7 +19,8 @@
 package opennlp.tools.postag;
 
 import junit.framework.Assert;
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 
 import org.junit.Test;
@@ -41,21 +42,13 @@ public class POSSampleEventStreamTest {
     
     POSSample sample = POSSample.parse(sentence);
     
-    EventStream eventStream = new POSSampleEventStream(
+    ObjectStream<Event> eventStream = new POSSampleEventStream(
         ObjectStreamUtils.createObjectStream(sample));
     
-    Assert.assertTrue(eventStream.hasNext());
-    Assert.assertEquals("DT", eventStream.next().getOutcome());
-    
-    Assert.assertTrue(eventStream.hasNext());
-    Assert.assertEquals("VBZ", eventStream.next().getOutcome());
-
-    Assert.assertTrue(eventStream.hasNext());
-    Assert.assertEquals("JJ", eventStream.next().getOutcome());
-
-    Assert.assertTrue(eventStream.hasNext());
-    Assert.assertEquals(".", eventStream.next().getOutcome());
-    
-    Assert.assertFalse(eventStream.hasNext());
+    Assert.assertEquals("DT", eventStream.read().getOutcome());
+    Assert.assertEquals("VBZ", eventStream.read().getOutcome());
+    Assert.assertEquals("JJ", eventStream.read().getOutcome());
+    Assert.assertEquals(".", eventStream.read().getOutcome());
+    Assert.assertNull(eventStream.read());
   }
 }

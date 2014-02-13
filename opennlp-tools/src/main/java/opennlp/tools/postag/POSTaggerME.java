@@ -29,8 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.ngram.NGramModel;
@@ -260,7 +259,7 @@ public class POSTaggerME implements POSTagger {
     
     if (!TrainerFactory.isSupportEventModelSequenceTraining(trainParams.getSettings())) {
       
-      EventStream es = new POSSampleEventStream(samples, contextGenerator);
+      ObjectStream<Event> es = new POSSampleEventStream(samples, contextGenerator);
       
       posModel = TrainUtil.train(es, trainParams.getSettings(), manifestInfoEntries);
     }

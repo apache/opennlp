@@ -20,7 +20,6 @@
 package opennlp.tools.ml.model;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -28,17 +27,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.StringTokenizer;
 
-import opennlp.tools.ml.maxent.GIS;
-import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelWriter;
+import opennlp.tools.util.ObjectStream;
 
 /** 
  * Class for using a file of events as an event stream.  The format of the file is one event perline with
  * each line consisting of outcome followed by contexts (space delimited).
  */
-public class FileEventStream extends  AbstractEventStream implements Closeable {
+public class FileEventStream implements ObjectStream<Event> {
 
-  BufferedReader reader;
-  String line;
+  protected BufferedReader reader;
   
   /**
    * Creates a new file event stream from the specified file name.
@@ -67,25 +64,23 @@ public class FileEventStream extends  AbstractEventStream implements Closeable {
     reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF8"));
   }
   
-  public boolean hasNext() {
-    try {
-      return (null != (line = reader.readLine()));
+  @Override
+  public Event read() throws IOException {
+    String line;
+    if ((line =reader.readLine()) != null) {
+      StringTokenizer st = new StringTokenizer(line);
+      String outcome = st.nextToken();
+      int count = st.countTokens();
+      String[] context = new String[count];
+      for (int ci = 0; ci < count; ci++) {
+        context[ci] = st.nextToken();
+      }
+      
+      return new Event(outcome, context);
     }
-    catch (IOException e) {
-      System.err.println(e);
-      return (false);
+    else {
+      return null;
     }
-  }
-  
-  public Event next() {
-    StringTokenizer st = new StringTokenizer(line);
-    String outcome = st.nextToken();
-    int count = st.countTokens();
-    String[] context = new String[count];
-    for (int ci = 0; ci < count; ci++) {
-      context[ci] = st.nextToken();
-    }
-    return (new Event(outcome, context));
   }
   
   public void close() throws IOException {
@@ -107,34 +102,10 @@ public class FileEventStream extends  AbstractEventStream implements Closeable {
     sb.append(System.getProperty("line.separator"));
     return sb.toString();
   }
-  
-  /**
-   * Trains and writes a model based on the events in the specified event file.
-   * the name of the model created is based on the event file name.
-   * @param args eventfile [iterations cuttoff]
-   * @throws IOException when the eventfile can not be read or the model file can not be written.
-   */
-  public static void main(String[] args) throws IOException {
-    if (args.length == 0) {
-      System.err.println("Usage: FileEventStream eventfile [iterations cutoff]");
-      System.exit(1);
-    }
-    int ai=0;
-    String eventFile = args[ai++];
-    int iterations = 100;
-    int cutoff = 5;
-    if (ai < args.length) {
-      iterations = Integer.parseInt(args[ai++]);
-      cutoff = Integer.parseInt(args[ai++]);
-    }
-    AbstractModel model;
-    FileEventStream es = new FileEventStream(eventFile);
-    try {
-      model = GIS.trainModel(es,iterations,cutoff);
-    } finally {
-      es.close();
-    }
-    new SuffixSensitiveGISModelWriter(model, new File(eventFile+".bin.gz")).persist();
+
+  @Override
+  public void reset() throws IOException, UnsupportedOperationException {
+    throw new UnsupportedOperationException();
   }
 }
 

@@ -36,20 +36,20 @@ public class PlainTextByLineStream implements ObjectStream<String> {
   private final FileChannel channel;
   private final String encoding;
 
+  private InputStreamFactory inputStreamFactory;
+  
   private BufferedReader in;
 
   public PlainTextByLineStream(InputStreamFactory inputStreamFactory, String charsetName) throws IOException {
-    this.in = new BufferedReader(new InputStreamReader(
-        inputStreamFactory.createInputStream(), charsetName));
-    this.channel = null;
-    this.encoding = charsetName;
+    this(inputStreamFactory, Charset.forName(charsetName));
   }
 
   public PlainTextByLineStream(InputStreamFactory inputStreamFactory, Charset charset) throws IOException {
-    this.in = new BufferedReader(new InputStreamReader(
-        inputStreamFactory.createInputStream(), charset));
+    this.inputStreamFactory = inputStreamFactory;
     this.channel = null;
     this.encoding = charset.name();
+    
+    reset();
   }
 
   /**
@@ -102,7 +102,10 @@ public class PlainTextByLineStream implements ObjectStream<String> {
 
   public void reset() throws IOException {
 
-    if (channel == null) {
+    if (inputStreamFactory != null) {
+      in = new BufferedReader(new InputStreamReader(inputStreamFactory.createInputStream(), encoding));
+    }
+    else if (channel == null) {
         in.reset();
     }
     else {
@@ -112,10 +115,11 @@ public class PlainTextByLineStream implements ObjectStream<String> {
   }
 
   public void close() throws IOException {
-      if (channel == null) {
+      
+      if (in != null && channel == null) {
         in.close();
       }
-      else {
+      else if (channel != null) {
        channel.close();
       }
   }

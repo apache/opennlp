@@ -21,11 +21,12 @@ import java.io.IOException;
 import java.util.Map;
 
 import opennlp.tools.ml.model.DataIndexer;
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.HashSumEventStream;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
+import opennlp.tools.util.ObjectStream;
 
 public abstract class AbstractEventTrainer extends AbstractTrainer implements
     EventTrainer {
@@ -61,7 +62,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
 
   public abstract boolean isSortAndMerge();
 
-  public DataIndexer getDataIndexer(EventStream events) throws IOException {
+  public DataIndexer getDataIndexer(ObjectStream<Event> events) throws IOException {
 
     String dataIndexerName = getStringParam(DATA_INDEXER_PARAM,
         DATA_INDEXER_TWO_PASS_VALUE);
@@ -83,7 +84,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
 
   public abstract MaxentModel doTrain(DataIndexer indexer) throws IOException;
 
-  public final MaxentModel train(EventStream events) throws IOException {
+  public final MaxentModel train(ObjectStream<Event> events) throws IOException {
     
     if (!isValid()) {
       throw new IllegalArgumentException("trainParams are not valid!");

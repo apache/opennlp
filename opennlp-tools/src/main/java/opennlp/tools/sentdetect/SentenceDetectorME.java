@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.sentdetect.lang.Factory;
@@ -311,7 +311,7 @@ public class SentenceDetectorME implements SentenceDetector {
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
     // TODO: Fix the EventStream to throw exceptions when training goes wrong
-    EventStream eventStream = new SDEventStream(samples,
+    ObjectStream<Event> eventStream = new SDEventStream(samples,
         sdFactory.getSDContextGenerator(), sdFactory.getEndOfSentenceScanner());
 
     MaxentModel sentModel = TrainUtil.train(eventStream,

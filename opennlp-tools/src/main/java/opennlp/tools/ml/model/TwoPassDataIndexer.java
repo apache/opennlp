@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.util.ObjectStream;
+
 
 /**
  * Collecting event and context counts by making two passes over the events.  The
@@ -52,11 +54,11 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
    * @param eventStream An Event[] which contains the a list of all the Events
    *               seen in the training data.
    */
-  public TwoPassDataIndexer(EventStream eventStream) throws IOException {
+  public TwoPassDataIndexer(ObjectStream<Event> eventStream) throws IOException {
     this(eventStream, 0);
   }
 
-  public TwoPassDataIndexer(EventStream eventStream, int cutoff) throws IOException {
+  public TwoPassDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
     this(eventStream,cutoff,true);
   }
   /**
@@ -67,7 +69,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
    * @param cutoff The minimum number of times a predicate must have been
    *               observed in order to be included in the model.
    */
-  public TwoPassDataIndexer(EventStream eventStream, int cutoff, boolean sort) throws IOException {
+  public TwoPassDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
     Map<String,Integer> predicateIndex = new HashMap<String,Integer>();
     List<ComparableEvent> eventsToCompare;
 
@@ -119,12 +121,13 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
       * @param predicatesInOut a <code>TObjectIntHashMap</code> value
       * @param cutoff an <code>int</code> value
       */
-  private int computeEventCounts(EventStream eventStream, Writer eventStore, Map<String,Integer> predicatesInOut, int cutoff) throws IOException {
+  private int computeEventCounts(ObjectStream<Event> eventStream, Writer eventStore, Map<String,Integer> predicatesInOut, int cutoff) throws IOException {
     Map<String,Integer> counter = new HashMap<String,Integer>();
     int eventCount = 0;
     Set<String> predicateSet = new HashSet<String>();
-    while (eventStream.hasNext()) {
-      Event ev = eventStream.next();
+
+    Event ev;
+    while ((ev = eventStream.read()) != null) {
       eventCount++;
       eventStore.write(FileEventStream.toLine(ev));
       String[] ec = ev.getContext();
@@ -141,13 +144,14 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
     return eventCount;
   }
 
-  private List<ComparableEvent> index(int numEvents, EventStream es, Map<String,Integer> predicateIndex) throws IOException {
+  private List<ComparableEvent> index(int numEvents, ObjectStream<Event> es, Map<String,Integer> predicateIndex) throws IOException {
     Map<String,Integer> omap = new HashMap<String,Integer>();
     int outcomeCount = 0;
     List<ComparableEvent> eventsToCompare = new ArrayList<ComparableEvent>(numEvents);
     List<Integer> indexedContext = new ArrayList<Integer>();
-    while (es.hasNext()) {
-      Event ev = es.next();
+    
+    Event ev;
+    while ((ev = es.read()) != null) {
       String[] econtext = ev.getContext();
       ComparableEvent ce;
 

@@ -19,14 +19,13 @@ package opennlp.tools.ml;
 
 import java.io.IOException;
 
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.util.ObjectStream;
 
 public class MockEventTrainer implements EventTrainer {
 
-  public MaxentModel train(EventStream events) throws IOException {
-    // TODO Auto-generated method stub
+  public MaxentModel train(ObjectStream<Event> events) throws IOException {
     return null;
   }
-
 }

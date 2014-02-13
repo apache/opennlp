@@ -27,6 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.util.ObjectStream;
+
 /**
  * An indexer for maxent model data which handles cutoffs for uncommon
  * contextual predicates and provides a unique integer index for each of the
@@ -36,7 +38,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 
   float[][] values;
   
-  public OnePassRealValueDataIndexer(EventStream eventStream, int cutoff, boolean sort) throws IOException {
+  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
     super(eventStream,cutoff,sort);
   }
   
@@ -47,7 +49,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
    * @param cutoff The minimum number of times a predicate must have been
    *               observed in order to be included in the model.
    */
-  public OnePassRealValueDataIndexer(EventStream eventStream, int cutoff) throws IOException {
+  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
     super(eventStream,cutoff);
   }
   

@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.util.ObjectStream;
+
 /**
  * An indexer for maxent model data which handles cutoffs for uncommon
  * contextual predicates and provides a unique integer index for each of the
@@ -45,11 +47,11 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
    *          An Event[] which contains the a list of all the Events seen in the
    *          training data.
    */
-  public OnePassDataIndexer(EventStream eventStream) throws IOException {
+  public OnePassDataIndexer(ObjectStream<Event> eventStream) throws IOException {
     this(eventStream, 0);
   }
 
-  public OnePassDataIndexer(EventStream eventStream, int cutoff)
+  public OnePassDataIndexer(ObjectStream<Event> eventStream, int cutoff)
       throws IOException {
     this(eventStream, cutoff, true);
   }
@@ -64,7 +66,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
    *          The minimum number of times a predicate must have been observed in
    *          order to be included in the model.
    */
-  public OnePassDataIndexer(EventStream eventStream, int cutoff, boolean sort)
+  public OnePassDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort)
       throws IOException {
     Map<String, Integer> predicateIndex = new HashMap<String, Integer>();
     LinkedList<Event> events;
@@ -104,13 +106,13 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
    *          an <code>int</code> value
    * @return a <code>TLinkedList</code> value
    */
-  private LinkedList<Event> computeEventCounts(EventStream eventStream,
+  private LinkedList<Event> computeEventCounts(ObjectStream<Event> eventStream,
       Map<String, Integer> predicatesInOut, int cutoff) throws IOException {
     Set<String> predicateSet = new HashSet<String>();
     Map<String, Integer> counter = new HashMap<String, Integer>();
     LinkedList<Event> events = new LinkedList<Event>();
-    while (eventStream.hasNext()) {
-      Event ev = eventStream.next();
+    Event ev;
+    while ((ev = eventStream.read()) != null) {
       events.addLast(ev);
       update(ev.getContext(), predicateSet, counter, cutoff);
     }

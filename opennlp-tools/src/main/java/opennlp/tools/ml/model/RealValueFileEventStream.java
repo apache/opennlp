@@ -21,6 +21,7 @@ package opennlp.tools.ml.model;
 
 import java.io.File;
 import java.io.IOException;
+
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelWriter;
 
@@ -77,14 +78,20 @@ public class RealValueFileEventStream extends FileEventStream {
     return values;
   }
 
-  public Event next() {
-    int si = line.indexOf(' ');
-    String outcome = line.substring(0, si);
-    String[] contexts = line.substring(si + 1).split(" ");
-    float[] values = parseContexts(contexts);
-    return (new Event(outcome, contexts, values));
+  @Override
+  public Event read() throws IOException {
+    String line;
+    if ((line = reader.readLine()) != null) {
+      int si = line.indexOf(' ');
+      String outcome = line.substring(0, si);
+      String[] contexts = line.substring(si + 1).split(" ");
+      float[] values = parseContexts(contexts);
+      return (new Event(outcome, contexts, values));
+    }
+    
+    return null;
   }
-
+  
   /**
    * Trains and writes a model based on the events in the specified event file.
    * the name of the model created is based on the event file name.
