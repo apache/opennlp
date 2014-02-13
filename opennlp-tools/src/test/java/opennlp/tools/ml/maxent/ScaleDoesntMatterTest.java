@@ -18,12 +18,14 @@
 package opennlp.tools.ml.maxent;
 
 import java.io.StringReader;
-import junit.framework.TestCase;
 
-import opennlp.tools.ml.model.EventStream;
+import junit.framework.TestCase;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 
 public class ScaleDoesntMatterTest extends TestCase {
 
@@ -45,8 +47,8 @@ public class ScaleDoesntMatterTest extends TestCase {
     String largeTest = "predA=20 predB=20";
 
     StringReader smallReader = new StringReader(smallValues);
-    EventStream smallEventStream = new RealBasicEventStream(
-        new PlainTextByLineDataStream(smallReader));
+    ObjectStream<Event> smallEventStream = new RealBasicEventStream(
+        new PlainTextByLineStream(smallReader));
 
     MaxentModel smallModel = GIS.trainModel(100,
         new OnePassRealValueDataIndexer(smallEventStream, 0), false);
@@ -58,8 +60,8 @@ public class ScaleDoesntMatterTest extends TestCase {
     System.out.println("smallResults: " + smallResultString);
 
     StringReader largeReader = new StringReader(largeValues);
-    EventStream largeEventStream = new RealBasicEventStream(
-        new PlainTextByLineDataStream(largeReader));
+    ObjectStream<Event> largeEventStream = new RealBasicEventStream(
+        new PlainTextByLineStream(largeReader));
 
     MaxentModel largeModel = GIS.trainModel(100,
         new OnePassRealValueDataIndexer(largeEventStream, 0), false);

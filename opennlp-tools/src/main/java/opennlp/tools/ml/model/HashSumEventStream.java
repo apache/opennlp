@@ -24,16 +24,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.util.AbstractObjectStream;
+import opennlp.tools.util.ObjectStream;
 
-public class HashSumEventStream implements EventStream {
+public class HashSumEventStream extends AbstractObjectStream<Event> {
 
-  private final EventStream eventStream;
-  
   private MessageDigest digest;
   
-  public HashSumEventStream(EventStream eventStream) {
-    this.eventStream = eventStream;
+  public HashSumEventStream(ObjectStream<Event> eventStream) {
+    super(eventStream);
     
     try {
       digest = MessageDigest.getInstance("MD5");
@@ -43,19 +42,17 @@ public class HashSumEventStream implements EventStream {
     }
   }
   
-  public boolean hasNext() throws IOException {
-    return eventStream.hasNext();
-  }
-
-  public Event next() throws IOException {
+  @Override
+  public Event read() throws IOException {
+    Event event = super.read();
     
-    Event event = eventStream.next();
-    
-    try {
-      digest.update(event.toString().getBytes("UTF-8"));
-    }
-    catch (UnsupportedEncodingException e) {
-      throw new IllegalStateException("UTF-8 encoding is not available!", e);
+    if (event != null) {
+      try {
+        digest.update(event.toString().getBytes("UTF-8"));
+      }
+      catch (UnsupportedEncodingException e) {
+        throw new IllegalStateException("UTF-8 encoding is not available!", e);
+      }
     }
     
     return event;
@@ -70,10 +67,6 @@ public class HashSumEventStream implements EventStream {
    * completely means that hasNext() returns false
    */
   public BigInteger calculateHashSum() {
-    
-//    if (hasNext())
-//      throw new IllegalStateException("stream must be consumed completely!");
-    
     return new BigInteger(1, digest.digest());
   }
   

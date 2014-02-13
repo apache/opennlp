@@ -23,14 +23,13 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.EventStream;
 
 /**
  * This is a base class for {@link EventStream} classes.
  * It takes an {@link Iterator} of sample objects as input and
  * outputs the events creates by a subclass.
  */
-public abstract class AbstractEventStream<T> extends opennlp.tools.ml.model.AbstractEventStream {
+public abstract class AbstractEventStream<T> implements ObjectStream<Event> {
 
   private ObjectStream<T> samples;
 
@@ -56,26 +55,34 @@ public abstract class AbstractEventStream<T> extends opennlp.tools.ml.model.Abst
    */
   protected abstract Iterator<Event> createEvents(T sample);
 
-  /**
-   * Checks if there are more training events available.
-   *
-   */
-  public final boolean hasNext() throws IOException {
-
+  @Override
+  public final Event read() throws IOException {
+    
     if (events.hasNext()) {
-      return true;
-    } else {
-      // search next event iterator which is not empty
+      return events.next();
+    }
+    else {
       T sample = null;
       while (!events.hasNext() && (sample = samples.read()) != null) {
         events = createEvents(sample);
       }
-  
-      return events.hasNext();
+      
+      if (events.hasNext()) {
+        return read();
+      }
     }
+    
+    return null;
   }
-
-  public final Event next() {
-    return events.next();
+  
+  @Override
+  public void reset() throws IOException, UnsupportedOperationException {
+    events = Collections.emptyIterator();
+    samples.reset();
+  }
+  
+  @Override
+  public void close() throws IOException {
+    samples.close();
   }
 }

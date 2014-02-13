@@ -30,6 +30,7 @@ import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
@@ -456,7 +457,7 @@ public class Parser extends AbstractBottomUpParser {
     
     // build
     System.err.println("Training builder");
-    opennlp.tools.ml.model.EventStream bes = new ParserEventStream(parseSamples, rules,
+    ObjectStream<Event> bes = new ParserEventStream(parseSamples, rules,
         ParserEventTypeEnum.BUILD, mdict);
     Map<String, String> buildReportMap = new HashMap<String, String>();
     MaxentModel buildModel = TrainUtil.train(bes, mlParams.getSettings("build"), buildReportMap);
@@ -466,7 +467,7 @@ public class Parser extends AbstractBottomUpParser {
     
     // check
     System.err.println("Training checker");
-    opennlp.tools.ml.model.EventStream kes = new ParserEventStream(parseSamples, rules,
+    ObjectStream<Event>  kes = new ParserEventStream(parseSamples, rules,
         ParserEventTypeEnum.CHECK);
     Map<String, String> checkReportMap = new HashMap<String, String>();
     MaxentModel checkModel = TrainUtil.train(kes, mlParams.getSettings("check"), checkReportMap);
@@ -476,7 +477,7 @@ public class Parser extends AbstractBottomUpParser {
     
     // attach 
     System.err.println("Training attacher");
-    opennlp.tools.ml.model.EventStream attachEvents = new ParserEventStream(parseSamples, rules,
+    ObjectStream<Event>  attachEvents = new ParserEventStream(parseSamples, rules,
         ParserEventTypeEnum.ATTACH);
     Map<String, String> attachReportMap = new HashMap<String, String>();
     MaxentModel attachModel = TrainUtil.train(attachEvents, mlParams.getSettings("attach"), attachReportMap);
@@ -508,7 +509,7 @@ public class Parser extends AbstractBottomUpParser {
   }
   
   @Deprecated
-  public static AbstractModel train(opennlp.tools.ml.model.EventStream es, int iterations, int cut) throws java.io.IOException {
+  public static AbstractModel train(ObjectStream<Event>  es, int iterations, int cut) throws java.io.IOException {
     return opennlp.tools.ml.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 }

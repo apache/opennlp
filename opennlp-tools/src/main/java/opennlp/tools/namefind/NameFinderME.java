@@ -34,7 +34,7 @@ import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.ml.model.TrainUtil;
@@ -345,7 +345,7 @@ public class NameFinderME implements TokenNameFinder {
      TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
      
      if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
-       EventStream eventStream = new NameFinderEventStream(samples, type,
+       ObjectStream<Event> eventStream = new NameFinderEventStream(samples, type,
            new DefaultNameContextGenerator(featureGenerator));
 
        EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams.getSettings(), manifestInfoEntries);

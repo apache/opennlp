@@ -27,10 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.EventStream;
-import opennlp.tools.ml.model.ListEventStream;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.perceptron.PerceptronPrepAttachTest;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamUtils;
 
 public class PrepAttachDataUtil {
 
@@ -59,12 +59,9 @@ public class PrepAttachDataUtil {
     return events;
   }
   
-  public static EventStream createTrainingStream() throws IOException {
+  public static ObjectStream<Event> createTrainingStream() throws IOException {
     List<Event> trainingEvents = readPpaFile("training");
-
-    EventStream trainingStream = new ListEventStream(trainingEvents);
-    
-    return trainingStream;
+    return ObjectStreamUtils.createObjectStream(trainingEvents);
   }
   
   public static void testModel(MaxentModel model, double expecedAccuracy) throws IOException {

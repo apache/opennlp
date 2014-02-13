@@ -19,45 +19,55 @@
 
 package opennlp.tools.ml.model;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+
+import opennlp.tools.util.ObjectStream;
 
 /**
  * Class which turns a sequence stream into an event stream. 
  *
  */
-public class SequenceStreamEventStream implements EventStream {
+public class SequenceStreamEventStream implements ObjectStream<Event> {
 
-  private Iterator<Sequence> sequenceIterator;
-  int eventIndex = -1;
-  Event[] events;
+  private final SequenceStream sequenceStream;
+  
+  private Iterator<Event> eventIt = Collections.emptyListIterator();
   
   public SequenceStreamEventStream(SequenceStream sequenceStream) {
-    this.sequenceIterator = sequenceStream.iterator();
+    this.sequenceStream = sequenceStream;
   }
   
-  public boolean hasNext() {
-    if (events != null && eventIndex < events.length) {
-      return true;
+  @Override
+  public Event read() throws IOException {
+    
+    if (eventIt.hasNext()) {
+      eventIt.next();
     }
     else {
-      if (sequenceIterator.hasNext()) {
-        Sequence s = sequenceIterator.next();
-        eventIndex = 0;
-        events = s.getEvents();
-        return true;
+      Sequence<?> sequence = sequenceStream.read();
+      
+      if (sequence != null) {
+        eventIt = Arrays.asList(sequence.getEvents()).iterator();
       }
-      else {
-        return false;
+      
+      if (eventIt.hasNext()) {
+        return read();
       }
     }
+    
+    return null;
   }
 
-  public Event next() {
-    return events[eventIndex++];
+  @Override
+  public void reset() throws IOException, UnsupportedOperationException {
+    sequenceStream.reset();
   }
 
-  public void remove() {
-    throw new UnsupportedOperationException();
+  @Override
+  public void close() throws IOException {
+    sequenceStream.close();
   }
-
 }

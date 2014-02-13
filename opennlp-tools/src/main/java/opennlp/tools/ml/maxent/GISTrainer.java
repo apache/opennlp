@@ -30,11 +30,12 @@ import java.util.concurrent.Future;
 
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MutableContext;
 import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.Prior;
 import opennlp.tools.ml.model.UniformPrior;
+import opennlp.tools.util.ObjectStream;
 
 
 /**
@@ -220,7 +221,7 @@ class GISTrainer {
    * @param cutoff The number of times a feature must occur to be included.
    * @return A GIS model trained with specified 
    */
-  public GISModel trainModel(EventStream eventStream, int iterations, int cutoff) throws IOException {
+  public GISModel trainModel(ObjectStream<Event> eventStream, int iterations, int cutoff) throws IOException {
     return trainModel(iterations, new OnePassDataIndexer(eventStream,cutoff),cutoff);
   }
   

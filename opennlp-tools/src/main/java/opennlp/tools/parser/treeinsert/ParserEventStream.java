@@ -379,9 +379,9 @@ public class ParserEventStream extends AbstractParserEventStream {
     if (fun) {
       Parse.useFunctionTags(true);
     }
-    opennlp.tools.ml.model.EventStream es = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))), rules, etype, dict);
-    while (es.hasNext()) {
-      Event e = es.next();
+    ObjectStream<Event> es = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))), rules, etype, dict);
+    Event e;
+    while ((e = es.read()) != null) {
       if (model != null) {
         System.out.print(model.eval(e.getContext())[model.getIndex(e.getOutcome())]+" ");
       }

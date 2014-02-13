@@ -20,7 +20,6 @@
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import opennlp.tools.ml.model.AbstractModel;
@@ -33,8 +32,8 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 public class NameSampleSequenceStream implements SequenceStream {
 
   private NameContextGenerator pcg;
-  private List<NameSample> samples;
   private final boolean useOutcomes;
+  private ObjectStream<NameSample> psi;
   
   public NameSampleSequenceStream(ObjectStream<NameSample> psi) throws IOException {
     this(psi, new DefaultNameContextGenerator((AdaptiveFeatureGenerator) null), true);
@@ -57,19 +56,10 @@ public class NameSampleSequenceStream implements SequenceStream {
 
   public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg, boolean useOutcomes)
       throws IOException {
+    this.psi = psi;
     this.useOutcomes = useOutcomes;
-    samples = new ArrayList<NameSample>();
-    
-    NameSample sample;
-    while((sample = psi.read()) != null) {
-      samples.add(sample);
-    }
-    
-    System.err.println("Got "+samples.size()+" sequences");
-    
     this.pcg = pcg;
   }
-  
   
   @SuppressWarnings("unchecked")
   public Event[] updateContext(Sequence sequence, AbstractModel model) {
@@ -84,57 +74,44 @@ public class NameSampleSequenceStream implements SequenceStream {
     return events;
   }
   
-  @SuppressWarnings("unchecked")
-  public Iterator<Sequence> iterator() {
-    return new NameSampleSequenceIterator(samples.iterator(), useOutcomes);
-  }
+  @Override
+  public Sequence read() throws IOException {
+    NameSample sample = psi.read();
+    if (sample != null) {
+      String sentence[] = sample.getSentence();
+      String tags[] = NameFinderEventStream.generateOutcomes(sample.getNames(), null, sentence.length);
+      Event[] events = new Event[sentence.length];
+      
+      for (int i=0; i < sentence.length; i++) {
 
-}
-
-class NameSampleSequenceIterator implements Iterator<Sequence> {
-
-  private Iterator<NameSample> psi;
-  private NameContextGenerator cg;
-  private boolean useOutcomes;
-  
-  public NameSampleSequenceIterator(Iterator<NameSample> psi, boolean useOutcomes) {
-    this.psi = psi;
-    this.useOutcomes = useOutcomes;
-    cg = new DefaultNameContextGenerator(null);
-  }
-  
-  public boolean hasNext() {
-    return psi.hasNext();
-  }
-
-  public Sequence<NameSample> next() {
-    NameSample sample = psi.next();
-    
-    String sentence[] = sample.getSentence();
-    String tags[] = NameFinderEventStream.generateOutcomes(sample.getNames(), null, sentence.length);
-    Event[] events = new Event[sentence.length];
-    
-    for (int i=0; i < sentence.length; i++) {
-
-      // it is safe to pass the tags as previous tags because
-      // the context generator does not look for non predicted tags
-      String[] context;
-      if (useOutcomes) {
-        context = cg.getContext(i, sentence, tags, null);
+        // it is safe to pass the tags as previous tags because
+        // the context generator does not look for non predicted tags
+        String[] context;
+        if (useOutcomes) {
+          context = pcg.getContext(i, sentence, tags, null);
+        }
+        else {
+          context = pcg.getContext(i, sentence, null, null);
+        }
+        
+        events[i] = new Event(tags[i], context);
+      }
+      Sequence<NameSample> sequence = new Sequence<NameSample>(events,sample);
+      return sequence;
       }
       else {
-        context = cg.getContext(i, sentence, null, null);
+        return null;
       }
-      
-      events[i] = new Event(tags[i], context);
-    }
-    Sequence<NameSample> sequence = new Sequence<NameSample>(events,sample);
-    return sequence;
-  }
-
-  public void remove() {
-    throw new UnsupportedOperationException();
   }
   
+  @Override
+  public void reset() throws IOException, UnsupportedOperationException {
+    psi.reset();
+  }
+  
+  @Override
+  public void close() throws IOException {
+    psi.close();
+  }
 }
 

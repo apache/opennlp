@@ -26,9 +26,10 @@ import java.util.Map;
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.Prior;
 import opennlp.tools.ml.model.UniformPrior;
+import opennlp.tools.util.ObjectStream;
 
 /**
  * A Factory class which uses instances of GISTrainer to create and train
@@ -105,7 +106,7 @@ public class GIS extends AbstractEventTrainer {
    * @return The newly trained model, which can be used immediately or saved to
    *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
-  public static GISModel trainModel(EventStream eventStream) throws IOException {
+  public static GISModel trainModel(ObjectStream<Event> eventStream) throws IOException {
     return trainModel(eventStream, 100, 0, false, PRINT_MESSAGES);
   }
 
@@ -122,7 +123,7 @@ public class GIS extends AbstractEventTrainer {
    * @return The newly trained model, which can be used immediately or saved to
    *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
-  public static GISModel trainModel(EventStream eventStream, boolean smoothing)
+  public static GISModel trainModel(ObjectStream<Event> eventStream, boolean smoothing)
       throws IOException {
     return trainModel(eventStream, 100, 0, smoothing, PRINT_MESSAGES);
   }
@@ -141,7 +142,7 @@ public class GIS extends AbstractEventTrainer {
    * @return The newly trained model, which can be used immediately or saved to
    *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
-  public static GISModel trainModel(EventStream eventStream, int iterations,
+  public static GISModel trainModel(ObjectStream<Event> eventStream, int iterations,
       int cutoff) throws IOException {
     return trainModel(eventStream, iterations, cutoff, false, PRINT_MESSAGES);
   }
@@ -165,7 +166,7 @@ public class GIS extends AbstractEventTrainer {
    * @return The newly trained model, which can be used immediately or saved to
    *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
-  public static GISModel trainModel(EventStream eventStream, int iterations,
+  public static GISModel trainModel(ObjectStream<Event> eventStream, int iterations,
       int cutoff, boolean smoothing, boolean printMessagesWhileTraining)
       throws IOException {
     GISTrainer trainer = new GISTrainer(printMessagesWhileTraining);
@@ -190,7 +191,7 @@ public class GIS extends AbstractEventTrainer {
    * @return The newly trained model, which can be used immediately or saved to
    *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
-  public static GISModel trainModel(EventStream eventStream, int iterations,
+  public static GISModel trainModel(ObjectStream<Event> eventStream, int iterations,
       int cutoff, double sigma) throws IOException {
     GISTrainer trainer = new GISTrainer(PRINT_MESSAGES);
     if (sigma > 0)

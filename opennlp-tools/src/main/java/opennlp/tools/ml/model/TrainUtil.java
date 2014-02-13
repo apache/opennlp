@@ -25,6 +25,7 @@ import java.util.Map;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.util.ObjectStream;
 
 public class TrainUtil {
 
@@ -41,7 +42,7 @@ public class TrainUtil {
    * @deprecated Use {@link TrainerFactory#getEventTrainer(Map, Map)} to get an
    *             {@link EventTrainer} instead.
    */
-  public static MaxentModel train(EventStream events, Map<String, String> trainParams, Map<String, String> reportMap) 
+  public static MaxentModel train(ObjectStream<Event> events, Map<String, String> trainParams, Map<String, String> reportMap) 
       throws IOException {
     
     if(!TrainerFactory.isSupportEvent(trainParams)) {

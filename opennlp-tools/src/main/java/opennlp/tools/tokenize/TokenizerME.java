@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.tokenize.lang.Factory;
@@ -242,7 +242,7 @@ public class TokenizerME extends AbstractTokenizer {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
-    EventStream eventStream = new TokSpanEventStream(samples,
+    ObjectStream<Event> eventStream = new TokSpanEventStream(samples,
         factory.isUseAlphaNumericOptmization(),
         factory.getAlphaNumericPattern(), factory.getContextGenerator());
 
@@ -304,7 +304,7 @@ public class TokenizerME extends AbstractTokenizer {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
-    EventStream eventStream = new TokSpanEventStream(samples,
+    ObjectStream<Event> eventStream = new TokSpanEventStream(samples,
         useAlphaNumericOptimization, factory.getAlphanumeric(languageCode),
         factory.createTokenContextGenerator(languageCode,
             getAbbreviations(abbreviations)));

@@ -19,41 +19,29 @@
 
 package opennlp.tools.ml.maxent;
 
-import opennlp.tools.ml.model.AbstractEventStream;
+import java.io.IOException;
+
 import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.EventStream;
 import opennlp.tools.ml.model.RealValueFileEventStream;
+import opennlp.tools.util.ObjectStream;
 
-public class RealBasicEventStream extends  AbstractEventStream {
+public class RealBasicEventStream implements ObjectStream<Event> {
   ContextGenerator cg = new BasicContextGenerator();
-  DataStream ds;
-  Event next;
+  ObjectStream<String> ds;
   
-  public RealBasicEventStream(DataStream ds) {
+  public RealBasicEventStream(ObjectStream<String> ds) {
     this.ds = ds;
-    if (this.ds.hasNext())
-      next = createEvent((String)this.ds.nextToken());
-    
   }
 
-  public Event next() {
-    while (next == null && this.ds.hasNext())
-      next = createEvent((String)this.ds.nextToken());
+  public Event read() throws IOException {
     
-    Event current = next;
-    if (this.ds.hasNext()) {
-      next = createEvent((String)this.ds.nextToken());
+    String eventString = ds.read();
+    
+    if (eventString != null) {
+      return createEvent(eventString);
     }
-    else {
-      next = null;
-    }
-    return current;
-  }
-
-  public boolean hasNext() {
-    while (next == null && ds.hasNext())
-      next = createEvent((String)ds.nextToken());
-    return next != null;
+    
+    return null;
   }
   
   private Event createEvent(String obs) {
@@ -66,11 +54,15 @@ public class RealBasicEventStream extends  AbstractEventStream {
       return new Event(obs.substring(lastSpace+1),contexts,values);
     }
   }
-
-  public static void main(String[] args) throws java.io.IOException {
-    EventStream es = new RealBasicEventStream(new PlainTextByLineDataStream(new java.io.FileReader(args[0])));
-    while (es.hasNext()) {
-      System.out.println(es.next());
-    }
+  
+  @Override
+  public void reset() throws IOException, UnsupportedOperationException {
+    ds.reset();
   }
+  
+  @Override
+  public void close() throws IOException {
+    ds.close();
+  }
+  
 }

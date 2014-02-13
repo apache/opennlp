@@ -18,12 +18,11 @@
 package opennlp.tools.sentdetect;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
-import opennlp.tools.ml.model.EventStream;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
@@ -47,22 +46,15 @@ public class SDEventStreamTest {
     
     Factory factory = new Factory();
     
-    EventStream eventStream = new SDEventStream(sampleStream,
+    ObjectStream<Event> eventStream = new SDEventStream(sampleStream,
         factory.createSentenceContextGenerator("en"),
         factory.createEndOfSentenceScanner("en"));
     
-    assertTrue(eventStream.hasNext());
-    assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.next().getOutcome());
+    assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.read().getOutcome());
+    assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());
+    assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.read().getOutcome());
+    assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());
     
-    assertTrue(eventStream.hasNext());
-    assertEquals(SentenceDetectorME.SPLIT, eventStream.next().getOutcome());
-
-    assertTrue(eventStream.hasNext());
-    assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.next().getOutcome());
-
-    assertTrue(eventStream.hasNext());
-    assertEquals(SentenceDetectorME.SPLIT, eventStream.next().getOutcome());
-    
-    assertFalse(eventStream.hasNext());
+    assertNull(eventStream.read());
   }
 }

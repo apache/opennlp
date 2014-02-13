@@ -21,31 +21,24 @@ import java.io.IOException;
 import java.io.Writer;
 
 import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.EventStream;
 
-public class EventTraceStream implements EventStream {
+public class EventTraceStream extends FilterObjectStream<Event, Event> {
 
-  private EventStream stream;
   private Writer writer;
   
-  public EventTraceStream(EventStream stream, Writer writer) {
-    this.stream = stream;
+  public EventTraceStream(ObjectStream<Event> stream, Writer writer) {
+    super(stream);
+    
     this.writer = writer;
   }
   
-  public boolean hasNext() throws IOException {
-    return stream.hasNext();
-  }
-
-  public Event next() throws IOException {
-    Event event = stream.next();
+  
+  public Event read() throws IOException {
+    Event event = samples.read();
     
-    try {
+    if (event != null) {
       writer.write(event.toString());
       writer.write("\n");
-    } catch (IOException e) {
-      // TODO: Fix this, we need error handling in event streams
-      e.printStackTrace();
     }
     
     return event;

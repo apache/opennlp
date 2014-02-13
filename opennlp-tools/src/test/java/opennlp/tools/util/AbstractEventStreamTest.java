@@ -18,6 +18,7 @@
 package opennlp.tools.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -102,8 +103,8 @@ public class AbstractEventStreamTest {
     TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<RESULT>(samples));
 
     int eventCounter = 0;
-    while (eventStream.hasNext()) {
-      eventStream.next();
+    
+    while (eventStream.read() != null) {
       eventCounter++;
     }
 
@@ -121,13 +122,13 @@ public class AbstractEventStreamTest {
     samples.add(RESULT.EMPTY);
 
     TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<RESULT>(samples));
-    assertEquals(false, eventStream.hasNext());
+    assertNull(eventStream.read());
 
     // now check if it can handle multiple empty event iterators
     samples.add(RESULT.EMPTY);
     samples.add(RESULT.EMPTY);
 
     eventStream = new TestEventStream(new CollectionObjectStream<RESULT>(samples));
-    assertEquals(false, eventStream.hasNext());
+    assertNull(eventStream.read());
   }
 }

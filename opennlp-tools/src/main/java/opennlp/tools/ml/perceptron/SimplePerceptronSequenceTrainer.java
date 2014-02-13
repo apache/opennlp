@@ -128,9 +128,13 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     this.sequenceStream = sequenceStream;
     DataIndexer di = new OnePassDataIndexer(new SequenceStreamEventStream(sequenceStream),cutoff,false);
     numSequences = 0;
-    for (Sequence s : sequenceStream) {
+    
+    sequenceStream.reset();
+    
+    while (sequenceStream.read() != null) {
       numSequences++;
     }
+    
     outcomeList  = di.getOutcomeList();
     predLabels = di.getPredLabels();
     pmap = new IndexHashTable<String>(predLabels, 0.7d);
@@ -198,7 +202,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     }
   }
 
-  private void findParameters(int iterations) {
+  private void findParameters(int iterations) throws IOException {
     display("Performing " + iterations + " iterations.\n");
     for (int i = 1; i <= iterations; i++) {
       if (i < 10)
@@ -222,7 +226,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
       System.out.print(s);
   }
 
-  public void nextIteration(int iteration) {
+  public void nextIteration(int iteration) throws IOException {
     iteration--; //move to 0-based index
     int numCorrect = 0;
     int oei=0;
@@ -232,7 +236,11 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
       featureCounts[oi] = new HashMap<String,Float>();
     }
     PerceptronModel model = new PerceptronModel(params,predLabels,pmap,outcomeLabels);
-    for (Sequence sequence : sequenceStream) {
+    
+    sequenceStream.reset();
+    
+    Sequence sequence;
+    while ((sequence = sequenceStream.read()) != null) {
       Event[] taggerEvents = sequenceStream.updateContext(sequence, model);
       Event[] events = sequence.getEvents();
       boolean update = false;
@@ -339,10 +347,14 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     display(". ("+numCorrect+"/"+numEvents+") "+((double) numCorrect / numEvents) + "\n");
   }
   
-  private void trainingStats(MutableContext[] params) {
+  private void trainingStats(MutableContext[] params) throws IOException {
     int numCorrect = 0;
     int oei=0;
-    for (Sequence sequence : sequenceStream) {
+    
+    sequenceStream.reset();
+    
+    Sequence sequence;
+    while ((sequence = sequenceStream.read()) != null) {
       Event[] taggerEvents = sequenceStream.updateContext(sequence, new PerceptronModel(params,predLabels,pmap,outcomeLabels));
       for (int ei=0;ei<taggerEvents.length;ei++,oei++) {
         int max = omap.get(taggerEvents[ei].getOutcome());
