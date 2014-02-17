@@ -75,7 +75,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
         }
         
         return new SpanAnnotation(values[BratAnnotationParser.ID_OFFSET], type, 
-            new Span(parseInt(values[BEGIN_OFFSET]), endOffset, type), "");
+            new Span(parseInt(values[BEGIN_OFFSET]), endOffset, type));
       }
       else {
         throw new InvalidFormatException("Line must have at least 5 fields");
