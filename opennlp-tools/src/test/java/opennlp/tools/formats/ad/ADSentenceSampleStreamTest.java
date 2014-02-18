@@ -21,11 +21,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -52,8 +53,8 @@ public class ADSentenceSampleStreamTest {
 
   @Before
   public void setup() throws IOException {
-    InputStream in = ADSentenceSampleStreamTest.class
-        .getResourceAsStream("/opennlp/tools/formats/ad.sample");
+    InputStreamFactory in = new ResourceAsStreamFactory(ADSentenceSampleStreamTest.class,
+        "/opennlp/tools/formats/ad.sample");
 
     ADSentenceSampleStream stream = new ADSentenceSampleStream(
         new PlainTextByLineStream(in, "UTF-8"), true);

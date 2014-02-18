@@ -21,11 +21,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 
 import opennlp.tools.postag.POSSample;
-import opennlp.tools.util.MockInputStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
 import org.junit.Test;
@@ -35,10 +34,10 @@ public class ConllXPOSSampleStreamTest {
   @Test
   public void testParsingSample() throws IOException {
     
-    InputStream in = ConllXPOSSampleStreamTest.class.getResourceAsStream("/opennlp/tools/formats/conllx.sample");
+    InputStreamFactory in = new ResourceAsStreamFactory(ConllXPOSSampleStreamTest.class, 
+        "/opennlp/tools/formats/conllx.sample");
     
-    ObjectStream<POSSample> sampleStream = new ConllXPOSSampleStream(new MockInputStreamFactory(in),
-        Charset.forName("UTF-8"));
+    ObjectStream<POSSample> sampleStream = new ConllXPOSSampleStream(in,Charset.forName("UTF-8"));
     
     POSSample a = sampleStream.read();
     
