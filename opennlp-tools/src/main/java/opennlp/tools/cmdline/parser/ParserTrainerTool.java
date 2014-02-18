@@ -22,8 +22,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -31,6 +29,7 @@ import opennlp.tools.cmdline.params.EncodingParameter;
 import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.cmdline.parser.ParserTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;

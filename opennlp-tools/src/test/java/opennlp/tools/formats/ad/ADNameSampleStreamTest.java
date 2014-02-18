@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.formats.ad.ADNameSampleStream;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;

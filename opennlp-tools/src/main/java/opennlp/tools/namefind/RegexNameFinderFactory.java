@@ -18,6 +18,7 @@ package opennlp.tools.namefind;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+
 import opennlp.tools.util.Span;
 
 /**

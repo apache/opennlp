@@ -22,10 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Collections;
 
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;

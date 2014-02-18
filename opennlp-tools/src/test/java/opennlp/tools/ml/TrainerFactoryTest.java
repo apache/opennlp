@@ -17,7 +17,8 @@
 
 package opennlp.tools.ml;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.util.TrainingParameters;

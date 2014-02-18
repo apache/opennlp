@@ -19,12 +19,11 @@ package opennlp.tools.formats.muc;
 
 import java.io.IOException;
 
-import org.junit.Test;
-
 import junit.framework.Assert;
-
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
+
+import org.junit.Test;
 
 public class DocumentSplitterStreamTest {
 

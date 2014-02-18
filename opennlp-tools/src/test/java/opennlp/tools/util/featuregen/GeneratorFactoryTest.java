@@ -23,10 +23,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import opennlp.tools.util.InvalidFormatException;
 
 public class GeneratorFactoryTest {
 

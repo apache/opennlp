@@ -25,10 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserEventStream;
 import opennlp.tools.parser.HeadRules;

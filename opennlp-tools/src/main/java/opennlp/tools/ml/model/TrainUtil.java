@@ -22,8 +22,8 @@ package opennlp.tools.ml.model;
 import java.io.IOException;
 import java.util.Map;
 
-import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.EventModelSequenceTrainer;
+import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.util.ObjectStream;
 

@@ -17,7 +17,8 @@
 
 package opennlp.tools.namefind;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,7 +31,6 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
-import opennlp.tools.util.model.ModelUtil;
 
 import org.junit.Test;
 

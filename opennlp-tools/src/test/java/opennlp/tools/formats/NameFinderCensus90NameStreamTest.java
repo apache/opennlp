@@ -15,13 +15,18 @@
 
 package opennlp.tools.formats;
 
-import java.nio.charset.Charset;
-import java.io.InputStream;
-import opennlp.tools.util.ObjectStream;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.StringList;
+
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 public class NameFinderCensus90NameStreamTest {
 

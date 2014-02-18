@@ -19,11 +19,10 @@ package opennlp.tools.ml.maxent;
 
 import java.io.IOException;
 
+import junit.framework.TestCase;
 import opennlp.tools.ml.model.FileEventStream;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
-
-import junit.framework.TestCase;
 
 public class RealValueModelTest extends TestCase {
 

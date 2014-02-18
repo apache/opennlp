@@ -19,7 +19,6 @@ package opennlp.tools.formats;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;

@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import opennlp.tools.ml.model.Event;
+import opennlp.tools.ml.model.EventStream;
 
 /**
  * This is a base class for {@link EventStream} classes.

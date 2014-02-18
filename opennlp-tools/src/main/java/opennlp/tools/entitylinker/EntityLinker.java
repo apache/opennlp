@@ -16,6 +16,7 @@
 package opennlp.tools.entitylinker;
 
 import java.util.List;
+
 import opennlp.tools.util.Span;
 
 /**

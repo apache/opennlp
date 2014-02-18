@@ -18,9 +18,7 @@
  package opennlp.tools.namefind;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;

@@ -19,9 +19,9 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.IOException;
 
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;

@@ -25,7 +25,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;

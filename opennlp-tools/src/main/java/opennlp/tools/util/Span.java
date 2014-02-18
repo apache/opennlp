@@ -18,7 +18,6 @@
 
 package opennlp.tools.util;
 
-import opennlp.tools.sentdetect.EndOfSentenceScanner;
 
 /**
  * Class for storing start and end integer offsets.
