@@ -35,7 +35,7 @@ notes.
 
 Requirements
 ------------
-Java 1.5 is required to run OpenNLP
+Java 1.7 is required to run OpenNLP
 Maven 3.0.0 is required for building it
 
 Known OSGi Issues
