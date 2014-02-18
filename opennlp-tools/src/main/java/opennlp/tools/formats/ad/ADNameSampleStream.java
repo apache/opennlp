@@ -35,6 +35,7 @@ import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -186,6 +187,32 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    *          if true hyphenated tokens will be separated: "carros-monstro" >
    *          "carros" "-" "monstro"
    */
+  @Deprecated
+  public ADNameSampleStream(InputStreamFactory in, String charsetName,
+      boolean splitHyphenatedTokens) throws IOException {
+
+    try {
+      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
+          in, charsetName));
+      this.splitHyphenatedTokens = splitHyphenatedTokens;
+    } catch (UnsupportedEncodingException e) {
+      // UTF-8 is available on all JVMs, will never happen
+      throw new IllegalStateException(e);
+    }
+  }
+  
+  /**
+   * Creates a new {@link NameSample} stream from a {@link InputStream}
+   * 
+   * @param in
+   *          the Corpus {@link InputStream}
+   * @param charsetName
+   *          the charset of the Arvores Deitadas Corpus
+   * @param splitHyphenatedTokens
+   *          if true hyphenated tokens will be separated: "carros-monstro" >
+   *          "carros" "-" "monstro"
+   */
+  @Deprecated
   public ADNameSampleStream(InputStream in, String charsetName,
       boolean splitHyphenatedTokens) {
 

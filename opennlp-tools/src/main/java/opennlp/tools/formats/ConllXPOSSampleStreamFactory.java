@@ -17,9 +17,10 @@
 
 package opennlp.tools.formats;
 
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -27,8 +28,8 @@ import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
@@ -52,16 +53,21 @@ public class ConllXPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
   public ObjectStream<POSSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
-    ObjectStream<String> lineStream;
+    InputStreamFactory inFactory = 
+        CmdLineUtil.createInputStreamFactory(params.getData());
+    
     try {
-      lineStream = new PlainTextByLineStream(new InputStreamReader(
-          CmdLineUtil.openInFile(params.getData()), "UTF-8"));
       System.setOut(new PrintStream(System.out, true, "UTF-8"));
 
-      return new ConllXPOSSampleStream(lineStream);
+      return new ConllXPOSSampleStream(inFactory, Charset.forName("UTF-8"));
     } catch (UnsupportedEncodingException e) {
       // this shouldn't happen
       throw new TerminateToolException(-1, "UTF-8 encoding is not supported: " + e.getMessage(), e);
+    }
+    catch (IOException e) {
+      // That will throw an exception
+      CmdLineUtil.handleCreateObjectStreamError(e);
+      return null;
     }
   }
 }

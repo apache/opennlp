@@ -27,7 +27,7 @@ import opennlp.tools.util.InputStreamFactory;
 /**
  * A factory that creates {@link MarkableFileInputStream} from a {@link File}
  */
-public class MarkableFileInputStreamFactory implements InputStreamFactory {
+class MarkableFileInputStreamFactory implements InputStreamFactory {
 
   private File file;
 

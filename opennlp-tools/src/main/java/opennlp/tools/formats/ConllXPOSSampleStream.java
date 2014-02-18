@@ -21,11 +21,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.FilterObjectStream;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
@@ -45,9 +47,8 @@ public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample>
     super(new ParagraphStream(lineStream));
   }
   
-  ConllXPOSSampleStream(Reader in) throws IOException {
-    // encoding is handled by the factory...
-    super(new ParagraphStream(new PlainTextByLineStream(in)));
+  ConllXPOSSampleStream(InputStreamFactory in, Charset charset) throws IOException {
+    super(new ParagraphStream(new PlainTextByLineStream(in, charset)));
   }
 
   public POSSample read() throws IOException {

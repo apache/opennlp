@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.lang.Factory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -77,6 +78,31 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
    * @param includeHeadlines
    *          if true will output the sentences marked as news headlines
    */
+  public ADSentenceSampleStream(InputStreamFactory in, String charsetName,
+      boolean includeHeadlines) throws IOException {
+    try {
+      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
+          in, charsetName));
+    } catch (UnsupportedEncodingException e) {
+      // UTF-8 is available on all JVMs, will never happen
+      throw new IllegalStateException(e);
+    }
+    ptEosCharacters = Factory.ptEosCharacters;
+    Arrays.sort(ptEosCharacters);
+    this.isIncludeTitles = includeHeadlines;
+  }
+  
+  /**
+   * Creates a new {@link SentenceSample} stream from a {@link FileInputStream}
+   * 
+   * @param in
+   *          input stream from the corpus
+   * @param charsetName
+   *          the charset to use while reading the corpus
+   * @param includeHeadlines
+   *          if true will output the sentences marked as news headlines
+   */
+  @Deprecated
   public ADSentenceSampleStream(FileInputStream in, String charsetName,
       boolean includeHeadlines) {
     try {

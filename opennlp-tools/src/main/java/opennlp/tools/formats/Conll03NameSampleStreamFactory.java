@@ -15,6 +15,8 @@
 
 package opennlp.tools.formats;
 
+import java.io.IOException;
+
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -81,8 +83,11 @@ public class Conll03NameSampleStreamFactory extends LanguageSampleStreamFactory<
           Conll02NameSampleStream.GENERATE_MISC_ENTITIES;
     }
 
-
-    return new Conll03NameSampleStream(lang,
-        CmdLineUtil.openInFile(params.getData()), typesToGenerate);
+    try {
+      return new Conll03NameSampleStream(lang,
+          CmdLineUtil.createInputStreamFactory(params.getData()), typesToGenerate);
+    } catch (IOException e) {
+      throw CmdLineUtil.createObjectStreamError(e);
+    }
   }
 }
