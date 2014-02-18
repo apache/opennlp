@@ -27,7 +27,6 @@ import java.io.InputStreamReader;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelType;
 
 import org.junit.Test;
 

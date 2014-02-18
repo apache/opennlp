@@ -27,10 +27,10 @@ import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.tokenize.WhitespaceTokenizer;
 
 public class DoccatTool extends BasicCmdLineTool {
 

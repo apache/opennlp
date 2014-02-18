@@ -17,15 +17,15 @@
 
 package opennlp.tools.formats;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.tokenize.DetokenizationDictionary;
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 
 /**
  * Base class for factories which need detokenizer.

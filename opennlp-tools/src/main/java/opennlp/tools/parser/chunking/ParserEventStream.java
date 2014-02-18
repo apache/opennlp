@@ -20,8 +20,8 @@ package opennlp.tools.parser.chunking;
 import java.io.FileInputStream;
 import java.util.List;
 
-import opennlp.tools.ml.model.Event;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserEventStream;
 import opennlp.tools.parser.HeadRules;

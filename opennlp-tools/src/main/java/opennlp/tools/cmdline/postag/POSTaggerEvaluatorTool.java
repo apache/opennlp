@@ -24,10 +24,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
-import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.cmdline.postag.POSTaggerEvaluatorTool.EvalToolParams;
 import opennlp.tools.postag.POSEvaluator;

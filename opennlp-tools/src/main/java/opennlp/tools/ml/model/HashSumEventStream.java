@@ -23,7 +23,6 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.AbstractObjectStream;
 import opennlp.tools.util.ObjectStream;
 

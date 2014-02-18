@@ -25,8 +25,6 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.Mean;
-import opennlp.tools.util.model.ModelType;
-import opennlp.tools.util.model.ModelUtil;
 
 public class POSTaggerCrossValidator {
 

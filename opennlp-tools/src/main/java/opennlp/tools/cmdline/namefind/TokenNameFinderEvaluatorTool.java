@@ -22,10 +22,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
-import opennlp.tools.cmdline.PerformanceMonitor;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.PerformanceMonitor;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool.EvalToolParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;

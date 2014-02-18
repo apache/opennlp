@@ -23,10 +23,12 @@ import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
+
 import org.junit.Test;
 
 /**

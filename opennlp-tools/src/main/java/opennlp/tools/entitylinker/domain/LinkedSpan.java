@@ -17,6 +17,7 @@ package opennlp.tools.entitylinker.domain;
 
 import java.util.ArrayList;
 import java.util.Objects;
+
 import opennlp.tools.util.Span;
 
 /**

@@ -20,8 +20,8 @@
 package opennlp.tools.ml.model;
 
 import opennlp.tools.util.BeamSearchContextGenerator;
-import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Sequence;
+import opennlp.tools.util.SequenceValidator;
 
 /**
  * A classification model that can label an input sequence.

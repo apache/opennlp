@@ -18,7 +18,6 @@ package opennlp.tools.cmdline.chunker;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerME;

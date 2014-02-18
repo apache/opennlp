@@ -23,9 +23,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.ml.model.Event;
 import opennlp.tools.chunker.ChunkerContextGenerator;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.postag.DefaultPOSContextGenerator;
 import opennlp.tools.postag.POSContextGenerator;

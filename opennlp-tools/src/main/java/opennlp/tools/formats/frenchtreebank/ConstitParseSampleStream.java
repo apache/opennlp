@@ -26,11 +26,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.xml.sax.SAXException;
-
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+
+import org.xml.sax.SAXException;
 
 public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> {
 

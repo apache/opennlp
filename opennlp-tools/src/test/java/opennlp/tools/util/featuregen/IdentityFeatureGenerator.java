@@ -19,8 +19,6 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
-import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
-
 class IdentityFeatureGenerator extends FeatureGeneratorAdapter {
 
   public void createFeatures(List<String> features, String[] tokens, int index,

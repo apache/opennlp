@@ -21,13 +21,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerFactory;
 import opennlp.tools.tokenize.TokenizerModel;

@@ -32,7 +32,6 @@ import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.GenericModelWriter;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.util.TrainingParameters;
 
 /**

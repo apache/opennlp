@@ -17,9 +17,9 @@
 
 package opennlp.tools.cmdline.params;
 
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
-
 import java.io.File;
+
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
  * Common format parameters.
