@@ -73,7 +73,7 @@ public class TrainUtil {
     if(!TrainerFactory.isSupportSequence(trainParams)) {
       throw new IllegalArgumentException("EventTrain is not supported");
     }
-    EventModelSequenceTrainer trainer = TrainerFactory.getSequenceTrainer(trainParams, reportMap);
+    EventModelSequenceTrainer trainer = TrainerFactory.getEventModelSequenceTrainer(trainParams, reportMap);
     
     return trainer.train(events);
   }
