@@ -29,6 +29,7 @@ import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -76,6 +77,35 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
    * @param includeFeatures
    *          if true will combine the POS Tag with the feature tags
    */
+  public ADPOSSampleStream(InputStreamFactory in, String charsetName,
+      boolean expandME, boolean includeFeatures) throws IOException {
+
+    try {
+      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
+          in, charsetName));
+      this.expandME = expandME;
+      this.isIncludeFeatures = includeFeatures;
+    } catch (UnsupportedEncodingException e) {
+      // UTF-8 is available on all JVMs, will never happen
+      throw new IllegalStateException(e);
+    }
+  }
+  
+  /**
+   * Creates a new {@link POSSample} stream from a {@link InputStream}
+   * 
+   * @param in
+   *          the Corpus {@link InputStream}
+   * @param charsetName
+   *          the charset of the Arvores Deitadas Corpus
+   * @param expandME
+   *          if true will expand the multiword expressions, each word of the
+   *          expression will have the POS Tag that was attributed to the
+   *          expression plus the prefix B- or I- (CONLL convention)
+   * @param includeFeatures
+   *          if true will combine the POS Tag with the feature tags
+   */
+  @Deprecated
   public ADPOSSampleStream(InputStream in, String charsetName,
       boolean expandME, boolean includeFeatures) {
 

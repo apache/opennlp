@@ -307,8 +307,12 @@ public final class CmdLineUtil {
     throw new TerminateToolException(-1, "IO Error while reading from stdin: " + e.getMessage(), e);
   }
 
+  public static TerminateToolException createObjectStreamError(IOException e) {
+    return new TerminateToolException(-1, "IO Error while creating an Input Stream: " + e.getMessage(), e);
+  }
+  
   public static void handleCreateObjectStreamError(IOException e) {
-    throw new TerminateToolException(-1, "IO Error while creating an Input Stream: " + e.getMessage(), e);
+    throw createObjectStreamError(e);
   }
   
   // its optional, passing null is allowed

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -78,11 +79,25 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
 	    this.lineStream = lineStream;
 	    this.types = types;
 	  }
+	  
+	  public EvalitaNameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
+	    this.lang = lang;
+	    try {
+	      this.lineStream = new PlainTextByLineStream(in, "UTF-8");
+	      System.setOut(new PrintStream(System.out, true, "UTF-8"));
+	    } catch (UnsupportedEncodingException e) {
+	      // UTF-8 is available on all JVMs, will never happen
+	      throw new IllegalStateException(e);
+	    }
+	    this.types = types;
+	  }
+	  
   /**
    * @param lang
    * @param in an Input Stream to read data.
    * @throws IOException
    */
+  @Deprecated
   public EvalitaNameSampleStream(LANGUAGE lang, InputStream in, int types) {
 
     this.lang = lang;

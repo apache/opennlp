@@ -17,6 +17,8 @@
 
 package opennlp.tools.formats;
 
+import java.io.IOException;
+
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -81,9 +83,12 @@ public class EvalitaNameSampleStreamFactory extends LanguageSampleStreamFactory<
           EvalitaNameSampleStream.GENERATE_GPE_ENTITIES;
     }
 
-
-    return new EvalitaNameSampleStream(lang,
-        CmdLineUtil.openInFile(params.getData()), typesToGenerate);
+    try {
+      return new EvalitaNameSampleStream(lang,
+          CmdLineUtil.createInputStreamFactory(params.getData()), typesToGenerate);
+    } catch (IOException e) {
+      throw CmdLineUtil.createObjectStreamError(e);
+    }
   }
 }
 

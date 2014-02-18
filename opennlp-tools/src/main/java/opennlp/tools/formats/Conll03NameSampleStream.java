@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -57,12 +58,26 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
     this.types = types;
   }
 
+  public Conll03NameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
+
+    this.lang = lang;
+    try {
+      this.lineStream = new PlainTextByLineStream(in, "UTF-8");
+      System.setOut(new PrintStream(System.out, true, "UTF-8"));
+    } catch (UnsupportedEncodingException e) {
+      // UTF-8 is available on all JVMs, will never happen
+      throw new IllegalStateException(e);
+    }
+    this.types = types;
+  }
+  
   /**
    *
    * @param lang
    * @param in
    * @param types
    */
+  @Deprecated
   public Conll03NameSampleStream(LANGUAGE lang, InputStream in, int types) {
 
     this.lang = lang;

@@ -22,9 +22,10 @@ import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
 import org.junit.Test;
@@ -36,7 +37,8 @@ public class ConllXPOSSampleStreamTest {
     
     InputStream in = ConllXPOSSampleStreamTest.class.getResourceAsStream("/opennlp/tools/formats/conllx.sample");
     
-    ObjectStream<POSSample> sampleStream = new ConllXPOSSampleStream(new InputStreamReader(in, "UTF-8"));
+    ObjectStream<POSSample> sampleStream = new ConllXPOSSampleStream(new MockInputStreamFactory(in),
+        Charset.forName("UTF-8"));
     
     POSSample a = sampleStream.read();
     
