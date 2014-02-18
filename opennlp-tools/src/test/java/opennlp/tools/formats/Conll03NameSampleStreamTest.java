@@ -22,10 +22,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
@@ -41,7 +41,8 @@ public class Conll03NameSampleStreamTest {
   
 	
   private static ObjectStream<NameSample> openData(LANGUAGE lang, String name) throws IOException {
-    InputStream in = Conll03NameSampleStreamTest.class.getResourceAsStream("/opennlp/tools/formats/" + name);
+    InputStreamFactory in = new ResourceAsStreamFactory(Conll03NameSampleStreamTest.class, 
+        "/opennlp/tools/formats/" + name);
 
     return new Conll03NameSampleStream(lang, in, Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
   }
@@ -96,5 +97,16 @@ public class Conll03NameSampleStreamTest {
     assertEquals(5, personName.getSentence().length);
     assertEquals(0, personName.getNames().length);
     assertEquals(true, personName.isClearAdaptiveDataSet());
+  }
+  
+  @Test
+  public void testReset() throws IOException {
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, GERMAN_SAMPLE);
+    
+    NameSample sample = sampleStream.read();
+    
+    sampleStream.reset();
+    
+    assertEquals(sample, sampleStream.read());
   }
 }

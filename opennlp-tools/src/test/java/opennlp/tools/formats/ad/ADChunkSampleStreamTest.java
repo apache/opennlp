@@ -20,11 +20,12 @@ package opennlp.tools.formats.ad;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 
 import org.junit.Before;
@@ -66,8 +67,8 @@ public class ADChunkSampleStreamTest {
 
   @Before
   public void setup() throws IOException {
-    InputStream in = ADParagraphStreamTest.class
-	.getResourceAsStream("/opennlp/tools/formats/ad.sample");
+    InputStreamFactory in = new ResourceAsStreamFactory(
+        ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample");
 
     ADChunkSampleStream stream = new ADChunkSampleStream(
     	new PlainTextByLineStream(in, "UTF-8"));

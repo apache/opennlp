@@ -20,8 +20,9 @@ package opennlp.tools.formats.ad;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.io.InputStream;
 
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 
 import org.junit.Test;
@@ -64,7 +65,7 @@ public class ADParagraphStreamTest {
   }
   
   private static ADSentenceStream openData() throws IOException {
-    InputStream in = ADParagraphStreamTest.class.getResourceAsStream("/opennlp/tools/formats/ad.sample");
+    InputStreamFactory in = new ResourceAsStreamFactory(ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample");
     
     return new ADSentenceStream(new PlainTextByLineStream(in, "UTF-8"));
   }

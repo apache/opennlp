@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -32,9 +33,8 @@ public class ADPOSSampleStreamTest {
   public void testSimple() throws IOException {
     // add one sentence with expandME = includeFeats = false
     ADPOSSampleStream stream = new ADPOSSampleStream(
-        new PlainTextByLineStream(
-            ADParagraphStreamTest.class
-                .getResourceAsStream("/opennlp/tools/formats/ad.sample"),
+        new PlainTextByLineStream(new ResourceAsStreamFactory(
+            ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample"),
             "UTF-8"), false, false);
 
     POSSample sample = stream.read();
@@ -58,9 +58,8 @@ public class ADPOSSampleStreamTest {
   public void testExpandME() throws IOException {
     // add one sentence with expandME = true
     ADPOSSampleStream stream = new ADPOSSampleStream(
-        new PlainTextByLineStream(
-            ADParagraphStreamTest.class
-                .getResourceAsStream("/opennlp/tools/formats/ad.sample"),
+        new PlainTextByLineStream(new ResourceAsStreamFactory(
+            ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample"),
             "UTF-8"), true, false);
 
     POSSample sample = stream.read();
@@ -87,9 +86,8 @@ public class ADPOSSampleStreamTest {
   public void testIncludeFeats() throws IOException {
     // add one sentence with includeFeats = true
     ADPOSSampleStream stream = new ADPOSSampleStream(
-        new PlainTextByLineStream(
-            ADParagraphStreamTest.class
-                .getResourceAsStream("/opennlp/tools/formats/ad.sample"),
+        new PlainTextByLineStream(new ResourceAsStreamFactory(
+            ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample"),
             "UTF-8"), false, true);
 
     POSSample sample = stream.read();

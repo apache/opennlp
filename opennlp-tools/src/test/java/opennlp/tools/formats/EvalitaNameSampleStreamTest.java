@@ -22,10 +22,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import opennlp.tools.formats.EvalitaNameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
@@ -39,7 +39,8 @@ import org.junit.Test;
 public class EvalitaNameSampleStreamTest {
   
   private static ObjectStream<NameSample> openData(LANGUAGE lang, String name) throws IOException {
-    InputStream in = EvalitaNameSampleStreamTest.class.getResourceAsStream("/opennlp/tools/formats/" + name);
+    InputStreamFactory in = new ResourceAsStreamFactory(EvalitaNameSampleStreamTest.class, 
+        "/opennlp/tools/formats/" + name);
     
     return new EvalitaNameSampleStream(lang, in, EvalitaNameSampleStream.GENERATE_PERSON_ENTITIES);
   }
@@ -67,4 +68,14 @@ public class EvalitaNameSampleStreamTest {
     assertNull(sampleStream.read());
   }
   
+  @Test
+  public void testReset() throws IOException {
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.IT, "evalita-ner-it.sample");
+    
+    NameSample sample = sampleStream.read();
+    
+    sampleStream.reset();
+    
+    assertEquals(sample, sampleStream.read());
+  }
 }
