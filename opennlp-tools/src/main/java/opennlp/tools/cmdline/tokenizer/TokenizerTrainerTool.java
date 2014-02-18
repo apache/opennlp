@@ -28,6 +28,7 @@ import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerFactory;
 import opennlp.tools.tokenize.TokenizerModel;
@@ -67,7 +68,7 @@ public final class TokenizerTrainerTool
             "' is invalid!");
       }
 
-      if (TrainerFactory.isSupportSequence(mlParams.getSettings())) {
+      if (!TrainerType.EVENT_MODEL_TRAINER.equals(TrainerFactory.getTrainerType(mlParams.getSettings()))) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }

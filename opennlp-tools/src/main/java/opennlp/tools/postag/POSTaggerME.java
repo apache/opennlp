@@ -28,10 +28,12 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.EventModelSequenceTrainer;
+import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.ObjectStream;
@@ -255,18 +257,25 @@ public class POSTaggerME implements POSTagger {
     
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
     
+    TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
+    
     MaxentModel posModel;
     
-    if (!TrainerFactory.isSupportEventModelSequenceTraining(trainParams.getSettings())) {
-      
+    if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new POSSampleEventStream(samples, contextGenerator);
       
-      posModel = TrainUtil.train(es, trainParams.getSettings(), manifestInfoEntries);
+      EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams.getSettings(),
+          manifestInfoEntries);
+      posModel = trainer.train(es);
+    }
+    else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
+      POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
+      EventModelSequenceTrainer trainer = TrainerFactory.getEventModelSequenceTrainer(trainParams.getSettings(),
+          manifestInfoEntries);
+      posModel = trainer.train(ss);
     }
     else {
-      POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
-
-      posModel = TrainUtil.train(ss, trainParams.getSettings(), manifestInfoEntries);
+      throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);  
     }
     
     return new POSModel(languageCode, posModel, manifestInfoEntries, posFactory);

@@ -28,6 +28,7 @@ import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.sentdetect.SentenceDetectorFactory;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
@@ -64,7 +65,7 @@ public final class SentenceDetectorTrainerTool
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
 
     if (mlParams != null) {
-      if (TrainerFactory.isSupportEventModelSequenceTraining(mlParams.getSettings())) {
+      if (!TrainerType.EVENT_MODEL_TRAINER.equals(TrainerFactory.getTrainerType(mlParams.getSettings()))) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }
