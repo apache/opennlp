@@ -31,6 +31,7 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.BinaryFileDataReader;
 import opennlp.tools.ml.model.GenericModelReader;
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
@@ -54,6 +55,14 @@ public class ChunkerModel extends BaseModel {
   public ChunkerModel(String languageCode, MaxentModel chunkerModel, Map<String, String> manifestInfoEntries) {
     this(languageCode, chunkerModel, manifestInfoEntries, new ChunkerFactory());
   }
+  
+  public ChunkerModel(String languageCode, SequenceClassificationModel<String> chunkerModel,
+      Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
+    artifactMap.put(CHUNKER_MODEL_ENTRY_NAME, chunkerModel);
+    checkArtifactMap();
+  }
+
   
   public ChunkerModel(String languageCode, MaxentModel chunkerModel,
       Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
@@ -97,7 +106,21 @@ public class ChunkerModel extends BaseModel {
   }
 
   public MaxentModel getChunkerModel() {
-    return (MaxentModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);
+    if (artifactMap.get(CHUNKER_MODEL_ENTRY_NAME) instanceof MaxentModel) {
+      return (MaxentModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);
+    }
+    else {
+      return null;
+    }
+  }
+  
+  public SequenceClassificationModel<String> getChunkerSequenceModel() {
+    if (artifactMap.get(CHUNKER_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
+      return (SequenceClassificationModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);
+    }
+    else {
+      return null;
+    }
   }
   
   @Override
