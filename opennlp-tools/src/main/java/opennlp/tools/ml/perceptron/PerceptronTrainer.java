@@ -83,15 +83,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   
   private boolean useSkippedlAveraging;
   
-  // >> members related to AbstractSequenceTrainer
-  public PerceptronTrainer(Map<String, String> trainParams,
-      Map<String, String> reportMap) {
-    super(trainParams, reportMap);
-  }
-
   public PerceptronTrainer() {
-    super(Collections.<String, String> emptyMap(), Collections
-        .<String, String> emptyMap());
   }
 
   public boolean isValid() {

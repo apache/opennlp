@@ -33,15 +33,17 @@ public abstract class AbstractTrainer {
   public static final String ITERATIONS_PARAM = "Iterations";
   public static final int ITERATIONS_DEFAULT = 100;
 
-  private final Map<String, String> trainParams;
-  private final Map<String, String> reportMap;
+  private Map<String, String> trainParams;
+  private Map<String, String> reportMap;
 
-  public AbstractTrainer(Map<String, String> trainParams,
-      Map<String, String> reportMap) throws IllegalArgumentException {
+  public AbstractTrainer() {
+  }
+
+  public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
     this.trainParams = trainParams;
     this.reportMap = reportMap;
   }
-
+  
   public String getAlgorithm() {
     return getStringParam(ALGORITHM_PARAM, GIS.MAXENT_VALUE);
   }

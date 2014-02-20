@@ -85,15 +85,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
   private String[] predLabels;
   int numSequences;
 
-  // >> members related to AbstractSequenceTrainer
-  public SimplePerceptronSequenceTrainer(Map<String, String> trainParams,
-      Map<String, String> reportMap) {
-    super(trainParams, reportMap);
-  }
-
   public SimplePerceptronSequenceTrainer() {
-    super(Collections.<String, String> emptyMap(), Collections
-        .<String, String> emptyMap());
   }
 
   public boolean isValid() {

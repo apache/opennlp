@@ -20,8 +20,6 @@ package opennlp.tools.ml.maxent.quasinewton;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.model.AbstractModel;
@@ -48,11 +46,6 @@ public class QNTrainer extends AbstractEventTrainer {
   private QNInfo updateInfo;
   private boolean verbose;
 
-  // default constructor -- no log.
-  public QNTrainer() {
-    this(true);
-  }
-
   // constructor -- to log.
   public QNTrainer(boolean verbose) {
 	this(DEFAULT_M, verbose);
@@ -69,8 +62,6 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   public QNTrainer(int m, int maxFctEval, boolean verbose) {
-    super(Collections.<String, String> emptyMap(), Collections
-        .<String, String> emptyMap());
 
     this.verbose = verbose;
     if (m > MAX_M) {
@@ -88,9 +79,7 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   // >> members related to AbstractEventTrainer
-  public QNTrainer(Map<String, String> trainParams,
-      Map<String, String> reportMap) {
-    super(trainParams, reportMap);
+  public QNTrainer() {
 
     int m = getIntParam("numOfUpdates", DEFAULT_M);
     int maxFctEval = getIntParam("maxFctEval", DEFAULT_MAX_FCT_EVAL);
