@@ -30,10 +30,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.namefind.NameSampleSequenceStream;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.ObjectStream;
@@ -85,27 +88,9 @@ public class POSTaggerME implements POSTagger {
 
   private Sequence bestSequence;
 
-  /**
-   * The search object used for search multiple sequences of tags.
-   */
-  protected BeamSearch<String> beam;
+  private SequenceClassificationModel<String> model;
 
-  /**
-   * Constructor that overrides the {@link SequenceValidator} from the model.
-   * 
-   * @deprecated use {@link #POSTaggerME(POSModel, int, int)} instead. The model
-   *             knows which {@link SequenceValidator} to use.
-   */
-  public POSTaggerME(POSModel model, int beamSize, int cacheSize, SequenceValidator<String> sequenceValidator) {
-    POSTaggerFactory factory = model.getFactory();
-    posModel = model.getPosModel();
-    model.getTagDictionary();
-    contextGen = factory.getPOSContextGenerator(beamSize);
-    tagDictionary = factory.getTagDictionary();
-    size = beamSize;
-    beam = new BeamSearch<String>(size, contextGen, posModel,
-        sequenceValidator, cacheSize);
-  }
+  private SequenceValidator<String> sequenceValidator;
   
   /**
    * Initializes the current instance with the provided
@@ -120,8 +105,16 @@ public class POSTaggerME implements POSTagger {
     contextGen = factory.getPOSContextGenerator(beamSize);
     tagDictionary = factory.getTagDictionary();
     size = beamSize;
-    beam = new BeamSearch<String>(size, contextGen, posModel,
-        factory.getSequenceValidator(), cacheSize);
+    
+    sequenceValidator = factory.getSequenceValidator();
+    
+    if (model.getPosModel() != null) {
+      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
+          model.getPosModel(), cacheSize);
+    }
+    else {
+      this.model = model.getPosSequenceModel();
+    }
   }
   
   /**
@@ -145,7 +138,7 @@ public class POSTaggerME implements POSTagger {
 
   @Deprecated
   public List<String> tag(List<String> sentence) {
-    bestSequence = beam.bestSequence(sentence.toArray(new String[sentence.size()]), null);
+    bestSequence = model.bestSequence(sentence.toArray(new String[sentence.size()]), null, contextGen, sequenceValidator);
     return bestSequence.getOutcomes();
   }
 
@@ -154,7 +147,7 @@ public class POSTaggerME implements POSTagger {
   }
 
   public String[] tag(String[] sentence, Object[] additionaContext) {
-    bestSequence = beam.bestSequence(sentence, additionaContext);
+    bestSequence = model.bestSequence(sentence, additionaContext, contextGen, sequenceValidator);
     List<String> t = bestSequence.getOutcomes();
     return t.toArray(new String[t.size()]);
   }
@@ -168,7 +161,8 @@ public class POSTaggerME implements POSTagger {
    * @return At most the specified number of taggings for the specified sentence.
    */
   public String[][] tag(int numTaggings, String[] sentence) {
-    Sequence[] bestSequences = beam.bestSequences(numTaggings, sentence,null);
+    Sequence[] bestSequences = model.bestSequences(numTaggings, sentence, null,
+        contextGen, sequenceValidator);
     String[][] tags = new String[bestSequences.length][];
     for (int si=0;si<tags.length;si++) {
       List<String> t = bestSequences[si].getOutcomes();
@@ -179,7 +173,8 @@ public class POSTaggerME implements POSTagger {
 
   @Deprecated
   public Sequence[] topKSequences(List<String> sentence) {
-    return beam.bestSequences(size, sentence.toArray(new String[sentence.size()]), null);
+    return model.bestSequences(size, sentence.toArray(new String[sentence.size()]), null,
+        contextGen, sequenceValidator);
   }
 
   public Sequence[] topKSequences(String[] sentence) {
@@ -187,7 +182,7 @@ public class POSTaggerME implements POSTagger {
   }
 
   public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
-    return beam.bestSequences(size, sentence, additionaContext);
+    return model.bestSequences(size, sentence, additionaContext, contextGen, sequenceValidator);
   }
 
   /**
@@ -259,8 +254,8 @@ public class POSTaggerME implements POSTagger {
     
     TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
     
-    MaxentModel posModel;
-    
+    MaxentModel posModel = null;
+    SequenceClassificationModel<String> seqPosModel = null;
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new POSSampleEventStream(samples, contextGenerator);
       
@@ -273,6 +268,15 @@ public class POSTaggerME implements POSTagger {
       EventModelSequenceTrainer trainer = TrainerFactory.getEventModelSequenceTrainer(trainParams.getSettings(),
           manifestInfoEntries);
       posModel = trainer.train(ss);
+    }
+    else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
+      SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
+          trainParams.getSettings(), manifestInfoEntries);
+      
+      // TODO: This will probably cause issue, since the feature generator uses the outcomes array
+      
+      POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
+      seqPosModel = trainer.train(ss);
     }
     else {
       throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);  
