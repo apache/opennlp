@@ -27,6 +27,7 @@ import java.util.Map;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -66,6 +67,18 @@ public final class POSModel extends BaseModel {
     this(languageCode, posModel, null, new POSTaggerFactory(ngramDict,
         tagDictionary));
   }
+
+  public POSModel(String languageCode, SequenceClassificationModel<String> posModel,
+      Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
+
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries, posFactory);
+
+    if (posModel == null)
+        throw new IllegalArgumentException("The maxentPosModel param must not be null!");
+
+    artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
+    checkArtifactMap();
+  }
   
   public POSModel(String languageCode, MaxentModel posModel,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
@@ -77,6 +90,10 @@ public final class POSModel extends BaseModel {
 
     artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
     checkArtifactMap();
+  }
+  
+  private void init() {
+    
   }
   
   public POSModel(InputStream in) throws IOException, InvalidFormatException {
@@ -113,10 +130,25 @@ public final class POSModel extends BaseModel {
     }
   }
 
+  // TODO: This should be deprecated for the release ...
   public MaxentModel getPosModel() {
-    return (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
+    if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof MaxentModel) {
+      return (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
+    }
+    else {
+      return null;
+    }
   }
 
+  public SequenceClassificationModel<String> getPosSequenceModel() {
+    if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
+      return (SequenceClassificationModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
+    }
+    else {
+      return null;
+    }
+  }
+  
   /**
    * Retrieves the tag dictionary.
    * 
