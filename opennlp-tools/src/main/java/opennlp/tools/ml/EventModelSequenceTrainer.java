@@ -18,6 +18,7 @@
 package opennlp.tools.ml;
 
 import java.io.IOException;
+import java.util.Map;
 
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceStream;
@@ -25,6 +26,8 @@ import opennlp.tools.ml.model.SequenceStream;
 public interface EventModelSequenceTrainer {
 
   public static final String SEQUENCE_VALUE = "EventModelSequence";
+
+  public void init(Map<String, String> trainParams, Map<String, String> reportMap);
 
   public MaxentModel train(SequenceStream events) throws IOException;
 

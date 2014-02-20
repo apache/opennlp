@@ -213,10 +213,14 @@ public class TrainerFactory {
     
     if (trainerType != null) {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        return TrainerFactory.<SequenceTrainer> createBuiltinTrainer(
-            BUILTIN_TRAINERS.get(trainerType), trainParams, reportMap);
+        SequenceTrainer trainer =  TrainerFactory.<SequenceTrainer> createBuiltinTrainer(
+            BUILTIN_TRAINERS.get(trainerType));
+        trainer.init(trainParams, reportMap);
+        return trainer;
       } else {
-        return ExtensionLoader.instantiateExtension(SequenceTrainer.class, trainerType);
+        SequenceTrainer trainer = ExtensionLoader.instantiateExtension(SequenceTrainer.class, trainerType);
+        trainer.init(trainParams, reportMap);
+        return trainer;
       }
     }
     else {
@@ -229,10 +233,15 @@ public class TrainerFactory {
     String trainerType = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
     if (trainerType != null) {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        return TrainerFactory.<EventModelSequenceTrainer> createBuiltinTrainer(
-            BUILTIN_TRAINERS.get(trainerType), trainParams, reportMap);
+        EventModelSequenceTrainer trainer = TrainerFactory.<EventModelSequenceTrainer> createBuiltinTrainer(
+            BUILTIN_TRAINERS.get(trainerType));
+        trainer.init(trainParams, reportMap);
+        return trainer;
       } else {
-        return ExtensionLoader.instantiateExtension(EventModelSequenceTrainer.class, trainerType);
+        EventModelSequenceTrainer trainer =
+            ExtensionLoader.instantiateExtension(EventModelSequenceTrainer.class, trainerType);
+        trainer.init(trainParams, reportMap);
+        return trainer;
       }
     }
     else {
@@ -251,14 +260,20 @@ public class TrainerFactory {
     String trainerType = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
     if (trainerType == null) {
       // default to MAXENT
-      return new GIS(trainParams, reportMap);
+      AbstractEventTrainer trainer = new GIS();
+      trainer.init(trainParams, reportMap);
+      return trainer;
     }
     else {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        return TrainerFactory.<EventTrainer> createBuiltinTrainer(
-            BUILTIN_TRAINERS.get(trainerType), trainParams, reportMap);
+        EventTrainer trainer = TrainerFactory.<EventTrainer> createBuiltinTrainer(
+            BUILTIN_TRAINERS.get(trainerType));
+        trainer.init(trainParams, reportMap);
+        return trainer;
       } else {
-        return ExtensionLoader.instantiateExtension(EventTrainer.class, trainerType);
+        EventTrainer trainer = ExtensionLoader.instantiateExtension(EventTrainer.class, trainerType);
+        trainer.init(trainParams, reportMap);
+        return trainer;
       }
     }
   }
@@ -300,14 +315,12 @@ public class TrainerFactory {
     return true;
   }
 
-  private static <T> T createBuiltinTrainer(Class<T> trainerClass,
-      Map<String, String> trainParams, Map<String, String> reportMap) {
+  private static <T> T createBuiltinTrainer(Class<T> trainerClass) {
     T theTrainer = null;
     if (trainerClass != null) {
       try {
-        Constructor<T> contructor = trainerClass.getConstructor(Map.class,
-            Map.class);
-        theTrainer = contructor.newInstance(trainParams, reportMap);
+        Constructor<T> contructor = trainerClass.getConstructor();
+        theTrainer = contructor.newInstance();
       } catch (Exception e) {
         String msg = "Could not instantiate the "
             + trainerClass.getCanonicalName()

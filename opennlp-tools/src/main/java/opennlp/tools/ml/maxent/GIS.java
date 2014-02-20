@@ -20,8 +20,6 @@
 package opennlp.tools.ml.maxent;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
 
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.model.AbstractModel;
@@ -53,14 +51,7 @@ public class GIS extends AbstractEventTrainer {
    */
   public static double SMOOTHING_OBSERVATION = 0.1;
 
-  // >> members related to AbstractEventTrainer
-  public GIS(Map<String, String> trainParams, Map<String, String> reportMap) {
-    super(trainParams, reportMap);
-  }
-
   public GIS() {
-    super(Collections.<String, String> emptyMap(), Collections
-        .<String, String> emptyMap());
   }
 
   public boolean isValid() {

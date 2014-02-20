@@ -18,7 +18,6 @@
 package opennlp.tools.ml;
 
 import java.io.IOException;
-import java.util.Map;
 
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceStream;
@@ -26,9 +25,7 @@ import opennlp.tools.ml.model.SequenceStream;
 public abstract class AbstractEventModelSequenceTrainer extends AbstractTrainer implements
     EventModelSequenceTrainer {
 
-  public AbstractEventModelSequenceTrainer(Map<String, String> trainParams,
-      Map<String, String> reportMap) {
-    super(trainParams, reportMap);
+  public AbstractEventModelSequenceTrainer() {
   }
 
   public abstract MaxentModel doTrain(SequenceStream events)

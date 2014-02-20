@@ -26,9 +26,7 @@ import opennlp.tools.ml.model.SequenceStream;
 public abstract class AbstractSequenceTrainer extends AbstractTrainer implements
     SequenceTrainer {
 
-  public AbstractSequenceTrainer(Map<String, String> trainParams,
-      Map<String, String> reportMap) {
-    super(trainParams, reportMap);
+  public AbstractSequenceTrainer() {
   }
 
   public abstract SequenceClassificationModel doTrain(SequenceStream events)
