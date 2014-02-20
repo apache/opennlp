@@ -80,7 +80,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
    * @return The top ranked sequence of outcomes or null if no sequence could be found
    */
   public Sequence[] bestSequences(int numSequences, T[] sequence,
-      Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
+      Object[] additionalContext, double minSequenceScore, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
 
     Heap<Sequence> prev = new ListHeap<Sequence>(size);
     Heap<Sequence> next = new ListHeap<Sequence>(size);
@@ -126,9 +126,9 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
           String out = model.getOutcome(p);
            if (validator.validSequence(i, sequence, outcomes, out)) {
             Sequence ns = new Sequence(top, out, scores[p]);
-            // if (ns.getScore() > minSequenceScore) {
+            if (ns.getScore() > minSequenceScore) {
               next.add(ns);
-            // }
+            }
            }
         }
 
@@ -137,9 +137,9 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
             String out = model.getOutcome(p);
             if (validator.validSequence(i, sequence, outcomes, out)) {
               Sequence ns = new Sequence(top, out, scores[p]);
-              // if (ns.getScore() > minSequenceScore) {
+              if (ns.getScore() > minSequenceScore) {
                 next.add(ns);
-              //}
+              }
             }
           }
         }
@@ -160,6 +160,11 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
     }
 
     return topSequences;
+  }
+  
+  public Sequence[] bestSequences(int numSequences, T[] sequence,
+      Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
+    return bestSequences(numSequences, sequence, additionalContext, zeroLog, cg, validator);
   }
   
   public Sequence bestSequence(T[] sequence, Object[] additionalContext,

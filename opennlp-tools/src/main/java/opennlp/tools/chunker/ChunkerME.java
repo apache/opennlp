@@ -22,10 +22,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.SequenceTrainer;
+import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.ml.model.TrainUtil;
-import opennlp.tools.util.BeamSearch;
+import opennlp.tools.postag.POSSampleSequenceStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
@@ -40,17 +45,15 @@ public class ChunkerME implements Chunker {
 
   public static final int DEFAULT_BEAM_SIZE = 10;
 
-  /**
-   * The beam used to search for sequences of chunk tag assignments.
-   */
-  protected BeamSearch<String> beam;
-
   private Sequence bestSequence;
 
   /**
    * The model used to assign chunk tags to a sequence of tokens.
    */
-  protected MaxentModel model;
+  protected SequenceClassificationModel<String> model;
+
+  private ChunkerContextGenerator contextGenerator;
+  private SequenceValidator<String> sequenceValidator;
 
   /**
    * Initializes the current instance with the specified model and
@@ -64,10 +67,20 @@ public class ChunkerME implements Chunker {
    * @deprecated Use {@link #ChunkerME(ChunkerModel, int)} instead 
    *    and use the {@link ChunkerFactory} to configure the {@link SequenceValidator} and {@link ChunkerContextGenerator}.
    */
+  @Deprecated
   public ChunkerME(ChunkerModel model, int beamSize, SequenceValidator<String> sequenceValidator,
       ChunkerContextGenerator contextGenerator) {
-    this.model = model.getChunkerModel();
-    beam = new BeamSearch<String>(beamSize, contextGenerator, this.model, sequenceValidator, 0);
+    
+    this.sequenceValidator = sequenceValidator;
+    this.contextGenerator = contextGenerator;
+    
+    if (model.getChunkerModel() != null) {
+      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
+          model.getChunkerModel(), 0);
+    }
+    else {
+      this.model = model.getChunkerSequenceModel();
+    }
   }
   
   /**
@@ -82,12 +95,13 @@ public class ChunkerME implements Chunker {
    * @deprecated Use {@link #ChunkerME(ChunkerModel, int)} instead 
    *    and use the {@link ChunkerFactory} to configure the {@link SequenceValidator}.
    */
+  @Deprecated
   public ChunkerME(ChunkerModel model, int beamSize,
       SequenceValidator<String> sequenceValidator) {
     this(model, beamSize, sequenceValidator,
         new DefaultChunkerContextGenerator());
   }
-
+  
   /**
    * Initializes the current instance with the specified model and
    * the specified beam size.
@@ -96,10 +110,18 @@ public class ChunkerME implements Chunker {
    * @param beamSize The size of the beam that should be used when decoding sequences.
    */
   public ChunkerME(ChunkerModel model, int beamSize) {
-    this.model = model.getChunkerModel();
-    ChunkerContextGenerator contextGenerator = model.getFactory().getContextGenerator();
-    SequenceValidator<String> sequenceValidator = model.getFactory().getSequenceValidator();
-    beam = new BeamSearch<String>(beamSize, contextGenerator, this.model, sequenceValidator, 0);
+    
+   contextGenerator = model.getFactory().getContextGenerator();
+   sequenceValidator = model.getFactory().getSequenceValidator();
+    // beam = new BeamSearch<String>(beamSize, contextGenerator, this.model, sequenceValidator, 0);
+    
+    if (model.getChunkerModel() != null) {
+      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
+          model.getChunkerModel(), 0);
+    }
+    else {
+      this.model = model.getChunkerSequenceModel();
+    }
   }
   
   /**
@@ -115,12 +137,13 @@ public class ChunkerME implements Chunker {
   @Deprecated
   public List<String> chunk(List<String> toks, List<String> tags) {
     bestSequence =
-        beam.bestSequence(toks.toArray(new String[toks.size()]), new Object[] { tags.toArray(new String[tags.size()]) });
+        model.bestSequence(toks.toArray(new String[toks.size()]), new Object[] { tags.toArray(new String[tags.size()]) },
+            contextGenerator, sequenceValidator);
     return bestSequence.getOutcomes();
   }
 
   public String[] chunk(String[] toks, String[] tags) {
-    bestSequence = beam.bestSequence(toks, new Object[] {tags});
+    bestSequence = model.bestSequence(toks, new Object[] {tags}, contextGenerator, sequenceValidator);
     List<String> c = bestSequence.getOutcomes();
     return c.toArray(new String[c.size()]);
   }
@@ -137,12 +160,13 @@ public class ChunkerME implements Chunker {
   }
   
   public Sequence[] topKSequences(String[] sentence, String[] tags) {
-    return beam.bestSequences(DEFAULT_BEAM_SIZE, sentence,
-        new Object[] { tags });
+    return model.bestSequences(DEFAULT_BEAM_SIZE, sentence,
+        new Object[] { tags }, contextGenerator, sequenceValidator);
   }
 
   public Sequence[] topKSequences(String[] sentence, String[] tags, double minSequenceScore) {
-    return beam.bestSequences(DEFAULT_BEAM_SIZE, sentence, new Object[] { tags },minSequenceScore);
+    return model.bestSequences(DEFAULT_BEAM_SIZE, sentence, new Object[] { tags }, minSequenceScore,
+        contextGenerator, sequenceValidator);
   }
 
   /**
@@ -171,12 +195,37 @@ public class ChunkerME implements Chunker {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
-    ObjectStream<Event> es = new ChunkerEventStream(in, factory.getContextGenerator());
+    TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
+    
 
-    MaxentModel maxentModel = TrainUtil.train(es, mlParams.getSettings(),
-        manifestInfoEntries);
-
-    return new ChunkerModel(lang, maxentModel, manifestInfoEntries, factory);
+    MaxentModel chunkerModel = null;
+    SequenceClassificationModel<String> seqChunkerModel = null;
+    
+    if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
+      ObjectStream<Event> es = new ChunkerEventStream(in, factory.getContextGenerator());
+      EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams.getSettings(),
+          manifestInfoEntries);
+      chunkerModel = trainer.train(es);
+    }
+    else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
+      SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
+          mlParams.getSettings(), manifestInfoEntries);
+      
+      // TODO: This will probably cause issue, since the feature generator uses the outcomes array
+      
+      ChunkSampleSequenceStream ss = new ChunkSampleSequenceStream(in, factory.getContextGenerator());
+      seqChunkerModel = trainer.train(ss);
+    }
+    else {
+      throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);  
+    }
+    
+    if (chunkerModel != null) {
+      return new ChunkerModel(lang, chunkerModel, manifestInfoEntries, factory);
+    }
+    else {
+      return new ChunkerModel(lang, seqChunkerModel, manifestInfoEntries, factory);
+    }
   }
 
   /**
