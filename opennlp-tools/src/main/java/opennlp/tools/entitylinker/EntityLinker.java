@@ -30,10 +30,8 @@ import opennlp.tools.util.Span;
  * @param <T> A type that extends Span. LinkedSpan and BaseLink are provided to
  *            provide this signature: EntityLinker<LinkedSpan<BaseLink>> as a
  *            default
- * * @param <I> A type that extends EntityLinkerProperties. This enables
- *               passing external resources into an EntityLinker via the @link EtityLinkerFactory
  */
-public interface EntityLinker<T extends Span, I extends EntityLinkerProperties> {
+public interface EntityLinker<T extends Span> {
 
   /**
    * allows for passing properties through the EntityLinkerFactory into all
@@ -45,7 +43,7 @@ public interface EntityLinker<T extends Span, I extends EntityLinkerProperties> 
    *                           properties needed by the impl, as well as any
    *                           other objects required for the impl
    */
-  void init(I initializationData) throws Exception;
+  void init(EntityLinkerProperties initializationData) throws Exception;
 
   /**
    * Links an entire document of named entities to an external source
@@ -69,21 +67,21 @@ public interface EntityLinker<T extends Span, I extends EntityLinkerProperties> 
 
   /**
    *
-   * @param text      the document text to be used as additional context, and to
+   * @param doctext      the document text to be used as additional context, and to
    *                  derive sentences and tokens String[]
    * @param sentences the list of sentences spans that correspond to the text.
    * @param tokens    the spans that correspond to one of the sentences.
    * @param nameSpans the named entity spans that correspond to the tokens
    * @return
    */
-  List<T> find(String text, Span sentences[], Span tokens[], Span nameSpans[]);
+  List<T> find(String doctext, Span sentences[], Span tokens[], Span nameSpans[]);
 
   /**
    * Links the names that correspond to the tokens[] spans. The sentenceindex
    * can be used to get the sentence text and tokens from the text based on the
    * sentence and token spans. The text is available for additional context.
    *
-   * @param text          the document text to be used as additional context,
+   * @param doctext          the document text to be used as additional context,
    *                      and to derive sentences and tokens String[]
    * @param sentences     the list of sentences spans that correspond to the
    *                      text.
@@ -93,13 +91,13 @@ public interface EntityLinker<T extends Span, I extends EntityLinkerProperties> 
    *                      Span[] corresponds to
    * @return
    */
-  List<T> find(String text, Span sentences[], Span tokens[], Span nameSpans[], int sentenceIndex);
+  List<T> find(String doctext, Span sentences[], Span tokens[], Span nameSpans[], int sentenceIndex);
 
   /**
    * Links the names that correspond to the tokens[]. The Sentences and text are
    * available for additional context.
    *
-   * @param text      the document text to be used as additional context, and to
+   * @param doctext      the document text to be used as additional context, and to
    *                  derive sentences and tokens String[]
    * @param sentences the list of sentences spans that correspond to the text.
    * @param tokens    the actual String[] of tokens that correspond to one of
@@ -107,5 +105,5 @@ public interface EntityLinker<T extends Span, I extends EntityLinkerProperties> 
    * @param nameSpans the named entity spans that correspond to the tokens
    * @return
    */
-  List<T> find(String text, Span sentences[], String tokens[], Span nameSpans[]);
+  List<T> find(String doctext, Span sentences[], String tokens[], Span nameSpans[]);
 }
