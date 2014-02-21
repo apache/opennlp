@@ -32,7 +32,7 @@ public class EntityLinkerFactory {
    *                   init(..) method, so it is an appropriate place to put additional resources.
    * @return an EntityLinker impl
    */
-  public static synchronized <I extends EntityLinkerProperties> EntityLinker getLinker(String entityType, I properties)throws Exception {
+  public static synchronized EntityLinker getLinker(String entityType, EntityLinkerProperties properties)throws Exception {
     if (entityType == null || properties == null) {
       throw new IllegalArgumentException("Null argument in entityLinkerFactory");
     }
