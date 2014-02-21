@@ -15,6 +15,8 @@
  */
 package opennlp.tools.entitylinker;
 
+import opennlp.tools.util.ext.ExtensionLoader;
+
 /**
  * Generates an EntityLinker implementation via properties file configuration
  *
@@ -32,21 +34,19 @@ public class EntityLinkerFactory {
    *                   init(..) method, so it is an appropriate place to put additional resources.
    * @return an EntityLinker impl
    */
-  public static synchronized EntityLinker getLinker(String entityType, EntityLinkerProperties properties)throws Exception {
+  public static synchronized EntityLinker<?> getLinker(String entityType, EntityLinkerProperties properties) throws Exception {
     if (entityType == null || properties == null) {
       throw new IllegalArgumentException("Null argument in entityLinkerFactory");
     }
-    EntityLinker linker = null;
-    try {
-      String linkerImplFullName = properties.getProperty("linker." + entityType, "");
-      Class theClass = Class.forName(linkerImplFullName);
-      linker = (EntityLinker) theClass.newInstance();
-      System.out.println("EntityLinker factory instantiated: " + linker.getClass().getName());
-      linker.init(properties);
-
-    } catch (Exception ex) {
-      throw new Exception("Error in EntityLinker factory. Check the entity linker properties file. The entry must be formatted as linker.<type>=<fullclassname>, i.e linker.person=org.my.company.MyPersonLinker",ex);
+    
+    String linkerImplFullName = properties.getProperty("linker." + entityType, "");
+    
+    if (linkerImplFullName == null) {
+      throw new IllegalArgumentException("linker." + entityType + "  property must be set!");
     }
+    
+    EntityLinker<?> linker = ExtensionLoader.instantiateExtension(EntityLinker.class, linkerImplFullName);
+    linker.init(properties);
     return linker;
   }
 }
