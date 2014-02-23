@@ -123,7 +123,7 @@ public final class ParserTool extends AbstractBasicCmdLineTool {
       try {
         String line;
         while ((line = lineStream.read()) != null) {
-          if (line.length() == 0) {
+          if (line.trim().length() == 0) {
             System.out.println();
           }
           else {
