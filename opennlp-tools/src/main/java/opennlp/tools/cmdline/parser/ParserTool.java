@@ -121,7 +121,7 @@ public final class ParserTool extends BasicCmdLineTool {
         perfMon.start();
         String line;
         while ((line = lineStream.read()) != null) {
-          if (line.length() == 0) {
+          if (line.trim().length() == 0) {
             System.out.println();
           } else {
             Parse[] parses = parseLine(line, parser, numParses);
