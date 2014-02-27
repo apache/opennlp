@@ -38,12 +38,8 @@ public class EntityLinkerProperties {
   public EntityLinkerProperties(File propertiesfile) throws IOException {
     InputStream stream = null;
     try {
-      props = new Properties();
       stream = new FileInputStream(propertiesfile);
-      props.load(stream);
-      stream.close();
-    } catch (Exception e) {
-      throw new IOException(e);
+      init(stream);
     } finally {
       if (stream != null) {
         stream.close();
@@ -58,15 +54,15 @@ public class EntityLinkerProperties {
    * @throws IOException
    *
    */
-  public EntityLinkerProperties(InputStream propertiesfile) throws IOException {
-    try {
-      props = new Properties();
-      props.load(propertiesfile);
-    } catch (IOException e) {
-      throw new IOException(e);
-    }
+  public EntityLinkerProperties(InputStream propertiesIn) throws IOException {
+    init(propertiesIn);
   }
 
+  private void init(InputStream propertiesIn) throws IOException {
+    props = new Properties();
+    props.load(propertiesIn);
+  }
+  
   /**
    * Gets a property from the props file.
    *
