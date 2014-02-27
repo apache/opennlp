@@ -499,6 +499,10 @@ public abstract class AbstractBottomUpParser implements Parser {
   }
   
   private static boolean lastChild(Parse child, Parse parent, Set<String> punctSet) {
+    if (parent == null) {
+      return false;
+    }
+    
     Parse[] kids = collapsePunctuation(parent.getChildren(), punctSet);
     return (kids[kids.length - 1] == child);
   }
@@ -548,7 +552,11 @@ public abstract class AbstractBottomUpParser implements Parser {
       //emulate reductions to produce additional n-grams
       int ci = 0;
       while (ci < chunks.length) {
-        //System.err.println("chunks["+ci+"]="+chunks[ci].getHead().getCoveredText()+" chunks.length="+chunks.length);
+        //System.err.println("chunks["+ci+"]="+chunks[ci].getHead().getCoveredText()+" chunks.length="+chunks.length + "  " + chunks[ci].getParent());
+        
+        if (chunks[ci].getParent() == null) {
+          chunks[ci].show();
+        }
         if (lastChild(chunks[ci], chunks[ci].getParent(),rules.getPunctuationTags())) {
           //perform reduce
           int reduceStart = ci;
