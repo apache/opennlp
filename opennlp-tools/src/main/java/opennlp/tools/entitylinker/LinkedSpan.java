@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opennlp.tools.entitylinker.domain;
+package opennlp.tools.entitylinker;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -107,7 +107,7 @@ public class LinkedSpan<T extends BaseLink> extends Span {
 
   @Override
   public String toString() {
-    return "LinkedSpan{" + "linkedEntries=" + linkedEntries + ", sentenceid=" + sentenceid + ", searchTerm=" + searchTerm + '}';
+    return "LinkedSpan{\n\tsentenceid=" + sentenceid + ", \n\tsearchTerm=" + searchTerm + "\n\tlinkedEntries=\n" + linkedEntries + "\n}";
   }
 
   @Override

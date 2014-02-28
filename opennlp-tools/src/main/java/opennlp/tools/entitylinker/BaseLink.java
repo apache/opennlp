@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opennlp.tools.entitylinker.domain;
+package opennlp.tools.entitylinker;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -122,7 +122,7 @@ public abstract class BaseLink {
 
   @Override
   public String toString() {
-    return "BaseLink{" + "itemParentID=" + itemParentID + ", itemID=" + itemID + ", itemName=" + itemName + ", itemType=" + itemType + ", scoreMap=" + scoreMap + '}';
+    return "BaseLink{\n" + "\nitemParentID=" + itemParentID + ", \nitemID=" + itemID + ", \nitemName=" + itemName + ", \nitemType=" + itemType + ", \nscoreMap=" + scoreMap + "\n}";
   }
 
   @Override
