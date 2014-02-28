@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.postag;
 
 import java.io.File;
@@ -92,10 +91,6 @@ public final class POSModel extends BaseModel {
     checkArtifactMap();
   }
   
-  private void init() {
-    
-  }
-  
   public POSModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
@@ -125,7 +120,7 @@ public final class POSModel extends BaseModel {
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
 
-    if (!(artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
+    if (!(artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof MaxentModel)) {
       throw new InvalidFormatException("POS model is incomplete!");
     }
   }
