@@ -1,0 +1,108 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package opennlp.tools.parser;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
+import opennlp.tools.cmdline.parser.ParserTool;
+import opennlp.tools.util.Span;
+import opennlp.tools.util.eval.Evaluator;
+import opennlp.tools.util.eval.FMeasure;
+
+public class ParserEvaluator extends Evaluator<Parse> {
+
+  private FMeasure fmeasure = new FMeasure();
+  
+  private final Parser parser;
+
+  public ParserEvaluator(Parser parser, ParserEvaluationMonitor... monitors) {
+    super(monitors);
+    this.parser = parser;
+  }
+  
+  private static Span[] getConstituencySpans(Parse parse) {
+    
+    Stack<Parse> stack = new Stack<Parse>();
+    
+    if (parse.getChildCount() > 0) {
+      stack.add(parse.getChildren()[0]);
+    }
+    
+    List<Span> consts = new ArrayList<Span>();
+    
+    while (!stack.isEmpty()) {
+      
+      Parse constSpan = stack.pop();
+      
+      if (!constSpan.isPosTag()) {
+        Span span = constSpan.getSpan();
+        consts.add(new Span(span.getStart(), span.getEnd(), constSpan.getType()));
+        
+        for (Parse child : constSpan.getChildren()) {
+          stack.push(child);
+        }
+      }
+    }
+    
+    return consts.toArray(new Span[consts.size()]);
+  }
+  
+  @Override
+  protected Parse processSample(Parse reference) {
+    
+    String sentenceText = reference.getText();
+    
+    Parse predictions[] = ParserTool.parseLine(sentenceText, parser, 1);
+    
+    Parse prediction = null;
+    if (predictions.length > 0) {
+      prediction = predictions[0];
+    }
+    
+    fmeasure.updateScores(getConstituencySpans(reference), getConstituencySpans(prediction));
+    
+    return prediction;
+  }
+  
+  public FMeasure getFMeasure() {
+    return fmeasure;
+  }
+  
+  public static void main(String[] args) {
+    
+    // TODO: Move this to a test case!
+    
+    String goldParseString = "(TOP (S (NP (NNS Sales) (NNS executives)) (VP (VBD were) (VP (VBG examing) (NP (DT the) (NNS figures)) (PP (IN with) (NP (JJ great) (NN care))) ))  (NP (NN yesterday)) (. .) ))";
+    Span goldConsts[] = getConstituencySpans(Parse.parseParse(goldParseString));
+    
+    String testParseString = "(TOP (S (NP (NNS Sales) (NNS executives)) (VP (VBD were) (VP (VBG examing) (NP (DT the) (NNS figures)) (PP (IN with) (NP (JJ great) (NN care) (NN yesterday))) ))  (. .) ))";
+    Span testConsts[] = getConstituencySpans(Parse.parseParse(testParseString));
+    
+    FMeasure measure = new FMeasure();
+    measure.updateScores(goldConsts, testConsts);
+    
+    // Expected output:
+    // Precision: 0.42857142857142855
+    // Recall: 0.375
+    // F-Measure: 0.39999999999999997
+    
+    System.out.println(measure.toString());
+  }
+}
