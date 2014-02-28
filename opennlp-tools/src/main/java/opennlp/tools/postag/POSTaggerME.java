@@ -36,9 +36,7 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
-import opennlp.tools.namefind.NameSampleSequenceStream;
 import opennlp.tools.ngram.NGramModel;
-import opennlp.tools.util.BeamSearch;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
@@ -282,7 +280,12 @@ public class POSTaggerME implements POSTagger {
       throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);  
     }
     
-    return new POSModel(languageCode, posModel, manifestInfoEntries, posFactory);
+    if (posModel != null) {
+      return new POSModel(languageCode, posModel, manifestInfoEntries, posFactory);
+    }
+    else {
+      return new POSModel(languageCode, seqPosModel, manifestInfoEntries, posFactory);
+    }
   }
 
   /**
