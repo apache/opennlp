@@ -34,6 +34,7 @@ import opennlp.tools.cmdline.dictionary.DictionaryBuilderTool;
 import opennlp.tools.cmdline.doccat.DoccatConverterTool;
 import opennlp.tools.cmdline.doccat.DoccatTool;
 import opennlp.tools.cmdline.doccat.DoccatTrainerTool;
+import opennlp.tools.cmdline.entitylinker.EntityLinkerTool;
 import opennlp.tools.cmdline.namefind.CensusDictionaryCreatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderConverterTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderCrossValidatorTool;
@@ -43,6 +44,7 @@ import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.cmdline.parser.BuildModelUpdaterTool;
 import opennlp.tools.cmdline.parser.CheckModelUpdaterTool;
 import opennlp.tools.cmdline.parser.ParserConverterTool;
+import opennlp.tools.cmdline.parser.ParserEvaluatorTool;
 import opennlp.tools.cmdline.parser.ParserTool;
 import opennlp.tools.cmdline.parser.ParserTrainerTool;
 import opennlp.tools.cmdline.parser.TaggerModelReplacerTool;
@@ -125,10 +127,14 @@ public final class CLI {
     // Parser
     tools.add(new ParserTool());
     tools.add(new ParserTrainerTool()); // trains everything
+    tools.add(new ParserEvaluatorTool());
     tools.add(new ParserConverterTool()); // trains everything
     tools.add(new BuildModelUpdaterTool()); // re-trains  build model
     tools.add(new CheckModelUpdaterTool()); // re-trains  build model
     tools.add(new TaggerModelReplacerTool());
+    
+    // Entity Linker
+    tools.add(new EntityLinkerTool());
     
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);
