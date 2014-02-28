@@ -39,6 +39,7 @@ import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
+import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
@@ -69,6 +70,8 @@ public class NameFinderME implements TokenNameFinder {
   public static final String CONTINUE = "cont";
   public static final String OTHER = "other";
 
+  private static SequenceCodec<String> seqCodec = new BilouCodec();
+  
   protected SequenceClassificationModel<String> model;
   
   protected NameContextGenerator contextGenerator;
@@ -129,6 +132,9 @@ public class NameFinderME implements TokenNameFinder {
     if (this.sequenceValidator == null)
       this.sequenceValidator = new NameFinderSequenceValidator();
 
+    // TODO: Remove this!
+    this.sequenceValidator = seqCodec.createSequenceValidator();
+    
 //    if (this.model != null) {
 //      beam = new BeamSearch<String>(beamSize, contextGenerator, this.model,
 //          sequenceValidator, beamSize);
@@ -202,37 +208,7 @@ public class NameFinderME implements TokenNameFinder {
 
     contextGenerator.updateAdaptiveData(tokens, c.toArray(new String[c.size()]));
 
-    int start = -1;
-    int end = -1;
-    List<Span> spans = new ArrayList<Span>(tokens.length);
-    for (int li = 0; li < c.size(); li++) {
-      String chunkTag = c.get(li);
-      if (chunkTag.endsWith(NameFinderME.START)) {
-        if (start != -1) {
-          spans.add(new Span(start, end, extractNameType(c.get(li - 1))));
-        }
-
-        start = li;
-        end = li + 1;
-
-      }
-      else if (chunkTag.endsWith(NameFinderME.CONTINUE)) {
-        end = li + 1;
-      }
-      else if (chunkTag.endsWith(NameFinderME.OTHER)) {
-        if (start != -1) {
-          spans.add(new Span(start, end, extractNameType(c.get(li - 1))));
-          start = -1;
-          end = -1;
-        }
-      }
-    }
-
-    if (start != -1) {
-      spans.add(new Span(start, end, extractNameType(c.get(c.size() - 1))));
-    }
-
-    return spans.toArray(new Span[spans.size()]);
+    return seqCodec.decode(c);
   }
 
   /**
@@ -322,6 +298,8 @@ public class NameFinderME implements TokenNameFinder {
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources) throws IOException {
 
+     // SequenceCodec seqCodec = new BiolouCodec();
+     
      if (languageCode == null) {
        throw new IllegalArgumentException("languageCode must not be null!");
      }
@@ -343,7 +321,7 @@ public class NameFinderME implements TokenNameFinder {
      
      if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
        ObjectStream<Event> eventStream = new NameFinderEventStream(samples, type,
-           new DefaultNameContextGenerator(featureGenerator));
+           new DefaultNameContextGenerator(featureGenerator), seqCodec);
 
        EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams.getSettings(), manifestInfoEntries);
        nameFinderModel = trainer.train(eventStream);
