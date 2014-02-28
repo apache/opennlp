@@ -24,6 +24,7 @@ import java.util.Map;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
@@ -39,6 +40,8 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   private AdditionalContextFeatureGenerator additionalContextFeatureGenerator = new AdditionalContextFeatureGenerator();
 
   private String type;
+
+  private SequenceCodec<String> codec;
   
   /**
    * Creates a new name finder event stream using the specified data stream and context generator.
@@ -46,8 +49,14 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
    * @param type null or overrides the type parameter in the provided samples
    * @param contextGenerator The context generator used to generate features for the event stream.
    */
-  public NameFinderEventStream(ObjectStream<NameSample> dataStream, String type, NameContextGenerator contextGenerator) {
+  public NameFinderEventStream(ObjectStream<NameSample> dataStream, String type, NameContextGenerator contextGenerator, SequenceCodec codec) {
     super(dataStream);
+    
+    this.codec = codec;
+    
+    if (codec == null) {
+      this.codec = new BioCodec();
+    }
     
     this.contextGenerator = contextGenerator;
     this.contextGenerator.addFeatureGenerator(new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
@@ -59,7 +68,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   }
 
   public NameFinderEventStream(ObjectStream<NameSample> dataStream) {
-    this(dataStream, null, new DefaultNameContextGenerator());
+    this(dataStream, null, new DefaultNameContextGenerator(), null);
   }
 
   /**
@@ -113,7 +122,8 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
       contextGenerator.clearAdaptiveData();
     }
     
-    String outcomes[] = generateOutcomes(sample.getNames(), type, sample.getSentence().length);
+    String outcomes[] = codec.encode(sample.getNames(), sample.getSentence().length);
+//    String outcomes[] = generateOutcomes(sample.getNames(), type, sample.getSentence().length);
     additionalContextFeatureGenerator.setCurrentContext(sample.getAdditionalContext());
     String[] tokens = new String[sample.getSentence().length];
     
