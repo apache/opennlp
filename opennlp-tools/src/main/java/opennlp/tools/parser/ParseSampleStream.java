@@ -33,7 +33,12 @@ public class ParseSampleStream extends FilterObjectStream<String, Parse> {
     String parse = samples.read();
     
     if (parse != null) {
-      return Parse.parseParse(parse);
+      if (!parse.trim().isEmpty()) {
+        return Parse.parseParse(parse);
+      }
+      else {
+        return read();
+      }
     } 
     else {
       return null;
