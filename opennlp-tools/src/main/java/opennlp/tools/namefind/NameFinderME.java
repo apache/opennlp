@@ -70,7 +70,7 @@ public class NameFinderME implements TokenNameFinder {
   public static final String CONTINUE = "cont";
   public static final String OTHER = "other";
 
-  private static SequenceCodec<String> seqCodec = new BilouCodec();
+  private static SequenceCodec<String> seqCodec = new BioCodec();
   
   protected SequenceClassificationModel<String> model;
   
