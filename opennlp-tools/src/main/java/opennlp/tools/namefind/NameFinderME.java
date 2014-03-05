@@ -90,27 +90,28 @@ public class NameFinderME implements TokenNameFinder {
    *
    * @param model
    * @param beamSize
+   * 
+   * @deprecated the beam size is now configured during training time in the trainer parameter
+   * file via beamSearch.beamSize
    */
+  @Deprecated
   public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize,
       SequenceValidator<String> sequenceValidator) {
     
     this.sequenceValidator = sequenceValidator;
-    
-    // TODO: The beam size should be stored in the model and passed in during training in the future.
-    // At this point no assumption can be made about the underlying sequence classification!
-    
+   
     // TODO: getNameFinderModel should be removed! Instead the model should always return
     // a sequence classification model
     // To maintain backward compatibility this should be done later, e.g. for 1.7.0
     
-    if (model.getNameFinderModel() != null) {
+    if (model.getNameFinderSequenceModel() != null) {
+      this.model = model.getNameFinderSequenceModel();
+    }
+    else {
       this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
           model.getNameFinderModel());
     }
-    else {
-      this.model = model.getNameFinderSequenceModel();
-    }
-
+    
     // If generator is provided always use that one
     if (generator != null) {
       contextGenerator = new DefaultNameContextGenerator(generator);
@@ -132,19 +133,24 @@ public class NameFinderME implements TokenNameFinder {
     if (this.sequenceValidator == null)
       this.sequenceValidator = new NameFinderSequenceValidator();
 
-    // TODO: Remove this!
-    this.sequenceValidator = seqCodec.createSequenceValidator();
+    // TODO: How to combine different sequence validators ?!
     
-//    if (this.model != null) {
-//      beam = new BeamSearch<String>(beamSize, contextGenerator, this.model,
-//          sequenceValidator, beamSize);
-//    }
+    this.sequenceValidator = seqCodec.createSequenceValidator();
   }
 
-  public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize) {
+  /**
+   * @deprecated the beam size is now configured during training time in the trainer parameter
+   * file via beamSearch.beamSize
+   */
+  @Deprecated  public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize) {
     this(model, generator, beamSize, null);
   }
 
+  /**
+   * @deprecated the beam size is now configured during training time in the trainer parameter
+   * file via beamSearch.beamSize
+   */
+  @Deprecated
   public NameFinderME(TokenNameFinderModel model, int beamSize) {
     this(model, null, beamSize);
   }
@@ -299,6 +305,13 @@ public class NameFinderME implements TokenNameFinder {
        TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources) throws IOException {
 
      // SequenceCodec seqCodec = new BiolouCodec();
+     String beamSizeString = trainParams.getSettings()
+         .get(TokenNameFinderModel.BEAMSEARCH_BEAM_SIZE_PARAMETER);
+     
+     int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
+     if (beamSizeString != null) {
+       beamSize = Integer.parseInt(beamSizeString);
+     }
      
      if (languageCode == null) {
        throw new IllegalArgumentException("languageCode must not be null!");
@@ -350,7 +363,7 @@ public class NameFinderME implements TokenNameFinder {
            resources, manifestInfoEntries);
      }
      else {
-       return new TokenNameFinderModel(languageCode, nameFinderModel,
+       return new TokenNameFinderModel(languageCode, nameFinderModel, beamSize, null,
            resources, manifestInfoEntries);
      }
    }
@@ -383,9 +396,7 @@ public class NameFinderME implements TokenNameFinder {
     TokenNameFinderModel model = train(languageCode, type, samples, trainParams,
         createFeatureGenerator(featureGeneratorBytes, resources), resources);
 
-    // place the descriptor in the model
     if (featureGeneratorBytes != null) {
-      // TODO: This will not work!!! Method is broken.
       model = model.updateFeatureGenerator(featureGeneratorBytes);
     }
 
