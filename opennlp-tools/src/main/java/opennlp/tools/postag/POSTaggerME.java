@@ -28,6 +28,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.SequenceTrainer;
@@ -36,6 +37,7 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
@@ -106,12 +108,12 @@ public class POSTaggerME implements POSTagger {
     
     sequenceValidator = factory.getSequenceValidator();
     
-    if (model.getPosModel() != null) {
-      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
-          model.getPosModel(), cacheSize);
+    if (model.getPosSequenceModel() != null) {
+      this.model = model.getPosSequenceModel();
     }
     else {
-      this.model = model.getPosSequenceModel();
+      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
+          model.getPosModel(), cacheSize);
     }
   }
   
@@ -245,6 +247,13 @@ public class POSTaggerME implements POSTagger {
   public static POSModel train(String languageCode,
       ObjectStream<POSSample> samples, TrainingParameters trainParams,
       POSTaggerFactory posFactory) throws IOException {
+    
+    String beamSizeString = trainParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
+    
+    int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
+    if (beamSizeString != null) {
+      beamSize = Integer.parseInt(beamSizeString);
+    }
     
     POSContextGenerator contextGenerator = posFactory.getPOSContextGenerator();
     
