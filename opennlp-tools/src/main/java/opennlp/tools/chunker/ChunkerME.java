@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
@@ -30,6 +31,7 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.ml.model.TrainUtil;
+import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.postag.POSSampleSequenceStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
@@ -74,12 +76,12 @@ public class ChunkerME implements Chunker {
     this.sequenceValidator = sequenceValidator;
     this.contextGenerator = contextGenerator;
     
-    if (model.getChunkerModel() != null) {
-      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
-          model.getChunkerModel(), 0);
+    if (model.getChunkerSequenceModel() != null) {
+      this.model = model.getChunkerSequenceModel();
     }
     else {
-      this.model = model.getChunkerSequenceModel();
+      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
+          model.getChunkerModel(), 0);
     }
   }
   
@@ -192,7 +194,14 @@ public class ChunkerME implements Chunker {
   
   public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in,
       TrainingParameters mlParams, ChunkerFactory factory) throws IOException {
-
+    
+    String beamSizeString = mlParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
+    
+    int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
+    if (beamSizeString != null) {
+      beamSize = Integer.parseInt(beamSizeString);
+    }
+    
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
     TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());

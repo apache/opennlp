@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.SequenceTrainer;
@@ -305,8 +306,7 @@ public class NameFinderME implements TokenNameFinder {
        TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources) throws IOException {
 
      // SequenceCodec seqCodec = new BiolouCodec();
-     String beamSizeString = trainParams.getSettings()
-         .get(TokenNameFinderModel.BEAMSEARCH_BEAM_SIZE_PARAMETER);
+     String beamSizeString = trainParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
      
      int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
      if (beamSizeString != null) {

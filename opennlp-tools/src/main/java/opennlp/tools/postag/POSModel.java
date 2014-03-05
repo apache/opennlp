@@ -22,11 +22,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
+import java.util.Properties;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -63,7 +66,7 @@ public final class POSModel extends BaseModel {
    */
   public POSModel(String languageCode, MaxentModel posModel,
       POSDictionary tagDictionary, Dictionary ngramDict) {
-    this(languageCode, posModel, null, new POSTaggerFactory(ngramDict,
+    this(languageCode, posModel, POSTaggerME.DEFAULT_BEAM_SIZE, null, new POSTaggerFactory(ngramDict,
         tagDictionary));
   }
 
@@ -76,10 +79,16 @@ public final class POSModel extends BaseModel {
         throw new IllegalArgumentException("The maxentPosModel param must not be null!");
 
     artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
-    checkArtifactMap();
+    // TODO: This fails probably for the sequence model ... ?! 
+    // checkArtifactMap();
+  }
+
+  public POSModel(String languageCode, MaxentModel posModel,
+      Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
+    this(languageCode, posModel, POSTaggerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, posFactory);
   }
   
-  public POSModel(String languageCode, MaxentModel posModel,
+  public POSModel(String languageCode, MaxentModel posModel, int beamSize,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, posFactory);
@@ -125,7 +134,11 @@ public final class POSModel extends BaseModel {
     }
   }
 
-  // TODO: This should be deprecated for the release ...
+  /**
+   * @deprecated use getPosSequenceModel instead. This method will be removed soon.
+   */
+  @Deprecated
+
   public MaxentModel getPosModel() {
     if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof MaxentModel) {
       return (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
@@ -136,7 +149,20 @@ public final class POSModel extends BaseModel {
   }
 
   public SequenceClassificationModel<String> getPosSequenceModel() {
-    if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
+    
+    Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
+    
+    if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof MaxentModel) {
+      String beamSizeString = manifest.getProperty(BeamSearch.BEAM_SIZE_PARAMETER);
+      
+      int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
+      if (beamSizeString != null) {
+        beamSize = Integer.parseInt(beamSizeString);
+      }
+      
+      return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME));
+    }
+    else if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
       return (SequenceClassificationModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
     }
     else {

@@ -75,8 +75,6 @@ public class TokenNameFinderModel extends BaseModel {
  
   private static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
  
-  public static final String BEAMSEARCH_BEAM_SIZE_PARAMETER = "BeamSize";
-  
   public TokenNameFinderModel(String languageCode, SequenceClassificationModel nameFinderModel,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
@@ -97,9 +95,8 @@ public class TokenNameFinderModel extends BaseModel {
       throw new IllegalArgumentException("Model not compatible with name finder!");
     }
     
-    
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
-    manifest.put(TokenNameFinderModel.BEAMSEARCH_BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
+    manifest.put(BeamSearch.BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
     
     init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries);
   }
@@ -151,10 +148,9 @@ public class TokenNameFinderModel extends BaseModel {
   }
   
   /**
-   * Retrieves the {@link TokenNameFinder} model.
-   *
-   * @return the classification model
+   * @deprecated use getNameFinderSequenceModel instead. This method will be removed soon.
    */
+  @Deprecated
   public MaxentModel getNameFinderModel() {
     
     if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel) {
@@ -170,7 +166,7 @@ public class TokenNameFinderModel extends BaseModel {
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
     
     if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel) {
-      String beamSizeString = manifest.getProperty(BEAMSEARCH_BEAM_SIZE_PARAMETER);
+      String beamSizeString = manifest.getProperty(BeamSearch.BEAM_SIZE_PARAMETER);
       
       int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
       if (beamSizeString != null) {

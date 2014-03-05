@@ -39,6 +39,8 @@ import opennlp.tools.util.SequenceValidator;
  */
 public class BeamSearch<T> implements SequenceClassificationModel<T> {
 
+  public static final String BEAM_SIZE_PARAMETER = "BeamSize";
+      
   private static final Object[] EMPTY_ADDITIONAL_CONTEXT = new Object[0];
 
   protected int size;
