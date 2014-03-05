@@ -25,7 +25,7 @@ public class EntityLinkerFactory {
 
   /**
    *
-   * @param <I>        A type that extends EntityLinkerProperties.
+
    * @param entityType The type of entity being linked to. This value is used to
    *                   retrieve the implementation of the entitylinker from the
    *                   entitylinker properties file.
@@ -41,7 +41,7 @@ public class EntityLinkerFactory {
     
     String linkerImplFullName = properties.getProperty("linker." + entityType, "");
     
-    if (linkerImplFullName == null) {
+    if (linkerImplFullName == null || linkerImplFullName.equals("")) {
       throw new IllegalArgumentException("linker." + entityType + "  property must be set!");
     }
     

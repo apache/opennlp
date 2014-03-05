@@ -49,7 +49,7 @@ public class EntityLinkerProperties {
 
   /**
    *
-   * @param propertiesfile inputstream of properties file. Stream will not be
+   * @param propertiesIn inputstream of properties file. Stream will not be
    *                       closed
    * @throws IOException
    *

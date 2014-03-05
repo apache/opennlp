@@ -107,7 +107,7 @@ public class LinkedSpan<T extends BaseLink> extends Span {
 
   @Override
   public String toString() {
-    return "LinkedSpan{\n\tsentenceid=" + sentenceid + ", \n\tsearchTerm=" + searchTerm + "\n\tlinkedEntries=\n" + linkedEntries + "\n}";
+    return "LinkedSpan\nsentenceid=" + sentenceid + "\nsearchTerm=" + searchTerm + "\nlinkedEntries=\n" + linkedEntries + "\n";
   }
 
   @Override

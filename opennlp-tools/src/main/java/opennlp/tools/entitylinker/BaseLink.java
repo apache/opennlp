@@ -122,7 +122,7 @@ public abstract class BaseLink {
 
   @Override
   public String toString() {
-    return "BaseLink{\n" + "\nitemParentID=" + itemParentID + ", \nitemID=" + itemID + ", \nitemName=" + itemName + ", \nitemType=" + itemType + ", \nscoreMap=" + scoreMap + "\n}";
+    return "\tBaseLink" + "\n\titemParentID=" + itemParentID + ", \n\titemID=" + itemID + ", \n\titemName=" + itemName + ", \n\titemType=" + itemType + ", \n\tscoreMap=" + scoreMap + "\n";
   }
 
   @Override
