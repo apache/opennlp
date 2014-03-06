@@ -56,11 +56,8 @@ import opennlp.tools.util.model.ModelType;
  */
 public class POSTaggerME implements POSTagger {
   
-  /**
-   * The maximum entropy model to use to evaluate contexts.
-   */
-  protected MaxentModel posModel;
-
+  private POSModel modelPackage;
+  
   /**
    * The feature context generator.
    */
@@ -101,7 +98,10 @@ public class POSTaggerME implements POSTagger {
    */
   public POSTaggerME(POSModel model, int beamSize, int cacheSize) {
     POSTaggerFactory factory = model.getFactory();
-    posModel = model.getPosModel();
+    
+    modelPackage = model;
+    
+    // TODO: Why is this the beam size?! not cache size?
     contextGen = factory.getPOSContextGenerator(beamSize);
     tagDictionary = factory.getTagDictionary();
     size = beamSize;
@@ -133,9 +133,15 @@ public class POSTaggerME implements POSTagger {
    * @return the number of different tags predicted by this model.
    */
   public int getNumTags() {
-    return posModel.getNumOutcomes();
+    
+    // TODO: Lets discuss on the dev list how to do this properly!
+    // Nobody needs the number of tags, if the tags are not available.
+    
+    return model.getOutcomes().length;
   }
 
+  // TODO: Add method to get tags ?! 
+  
   @Deprecated
   public List<String> tag(List<String> sentence) {
     bestSequence = model.bestSequence(sentence.toArray(new String[sentence.size()]), null, contextGen, sequenceValidator);
@@ -221,27 +227,35 @@ public class POSTaggerME implements POSTagger {
   }
 
   public String[] getOrderedTags(List<String> words, List<String> tags, int index,double[] tprobs) {
-    double[] probs = posModel.eval(contextGen.getContext(index,
-        words.toArray(new String[words.size()]),
-        tags.toArray(new String[tags.size()]),null));
-
-    String[] orderedTags = new String[probs.length];
-    for (int i = 0; i < probs.length; i++) {
-      int max = 0;
-      for (int ti = 1; ti < probs.length; ti++) {
-        if (probs[ti] > probs[max]) {
-          max = ti;
+    
+    if (modelPackage.getPosModel() != null) {
+      
+      MaxentModel posModel = modelPackage.getPosModel();
+      
+      double[] probs = posModel.eval(contextGen.getContext(index,
+          words.toArray(new String[words.size()]),
+          tags.toArray(new String[tags.size()]),null));
+  
+      String[] orderedTags = new String[probs.length];
+      for (int i = 0; i < probs.length; i++) {
+        int max = 0;
+        for (int ti = 1; ti < probs.length; ti++) {
+          if (probs[ti] > probs[max]) {
+            max = ti;
+          }
         }
+        orderedTags[i] = posModel.getOutcome(max);
+        if (tprobs != null){
+          tprobs[i]=probs[max];
+        }
+        probs[max] = 0;
       }
-      orderedTags[i] = posModel.getOutcome(max);
-      if (tprobs != null){
-        tprobs[i]=probs[max];
-      }
-      probs[max] = 0;
+      return orderedTags;
     }
-    return orderedTags;
-    
-    
+    else {
+      throw new UnsupportedOperationException("This method can only be called if the "
+          + "classifcation model is an event model!");
+    }
   }
   
   public static POSModel train(String languageCode,
