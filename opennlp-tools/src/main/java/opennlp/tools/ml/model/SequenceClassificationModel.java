@@ -68,4 +68,11 @@ public interface SequenceClassificationModel<T> {
    */
   Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
+  
+  /**
+   * Returns all possible outcomes.
+   * 
+   * @return
+   */
+  String[] getOutcomes();
 }
