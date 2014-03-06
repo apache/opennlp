@@ -178,4 +178,15 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
     else 
       return null;
   }
+  
+  @Override
+  public String[] getOutcomes() {
+    String outcomes[] = new String[model.getNumOutcomes()];
+    
+    for (int i = 0; i < model.getNumOutcomes(); i++) {
+      outcomes[i] = model.getOutcome(i);
+    }
+    
+    return outcomes;
+  }
 }
