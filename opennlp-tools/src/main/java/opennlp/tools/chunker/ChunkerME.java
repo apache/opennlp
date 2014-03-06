@@ -110,19 +110,21 @@ public class ChunkerME implements Chunker {
    *
    * @param model The model for this chunker.
    * @param beamSize The size of the beam that should be used when decoding sequences.
+   * 
+   * @deprecated beam size is now stored inside the model
    */
+  @Deprecated
   public ChunkerME(ChunkerModel model, int beamSize) {
     
    contextGenerator = model.getFactory().getContextGenerator();
    sequenceValidator = model.getFactory().getSequenceValidator();
-    // beam = new BeamSearch<String>(beamSize, contextGenerator, this.model, sequenceValidator, 0);
     
-    if (model.getChunkerModel() != null) {
-      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
-          model.getChunkerModel(), 0);
+    if (model.getChunkerSequenceModel() != null) {
+      this.model = model.getChunkerSequenceModel();
     }
     else {
-      this.model = model.getChunkerSequenceModel();
+      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
+          model.getChunkerModel(), 0);
     }
   }
   
