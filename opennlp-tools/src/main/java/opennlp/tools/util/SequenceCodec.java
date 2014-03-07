@@ -21,7 +21,38 @@ import java.util.List;
 
 public interface SequenceCodec<T> {
 
+  /**
+   * Decodes a sequence T objects into Span objects.
+   * 
+   * @param c
+   * 
+   * @return
+   */
   Span[] decode(List<T> c);
+  
+  /**
+   * Encodes Span objects into a sequence of T objects.
+   * 
+   * @param names
+   * @param length
+   * 
+   * @return
+   */
   T[] encode(Span names[], int length);
-  public SequenceValidator<T> createSequenceValidator();
+  
+  /**
+   * Creates a sequence validator which can validate a sequence of outcomes.
+   * 
+   * @return
+   */
+  SequenceValidator<T> createSequenceValidator();
+  
+  /**
+   * Checks if the outcomes of the model are compatible with the codec.
+   * 
+   * @param outcomes all possible model outcomes
+   * 
+   * @return
+   */
+  boolean areOutcomesCompatible(String[] outcomes);
 }

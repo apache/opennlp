@@ -114,4 +114,8 @@ public class BilouCodec implements SequenceCodec<String> {
     return new BilouNameFinderSequenceValidator();
   }
   
+  @Override
+  public boolean areOutcomesCompatible(String[] outcomes) {
+    return true;
+  }
 }
