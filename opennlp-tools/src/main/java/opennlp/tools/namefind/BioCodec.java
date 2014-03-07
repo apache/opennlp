@@ -106,4 +106,43 @@ public class BioCodec implements SequenceCodec<String> {
   public NameFinderSequenceValidator createSequenceValidator() {
     return new NameFinderSequenceValidator();
   }
+  
+  @Override
+  public boolean areOutcomesCompatible(String[] outcomes) {
+    // We should have *optionally* one outcome named "other", some named xyz-start and sometimes 
+    // they have a pair xyz-cont. We should not have any other outcome
+    // To validate the model we check if we have one outcome named "other", at least
+    // one outcome with suffix start. After that we check if all outcomes that ends with
+    // "cont" have a pair that ends with "start".
+    List<String> start = new ArrayList<String>();
+    List<String> cont = new ArrayList<String>();
+
+    for (int i = 0; i < outcomes.length; i++) {
+      String outcome = outcomes[i];
+      if (outcome.endsWith(NameFinderME.START)) {
+        start.add(outcome.substring(0, outcome.length()
+            - NameFinderME.START.length()));
+      } else if (outcome.endsWith(NameFinderME.CONTINUE)) {
+        cont.add(outcome.substring(0, outcome.length()
+            - NameFinderME.CONTINUE.length()));
+      } else if (outcome.equals(NameFinderME.OTHER)) {
+        // don't fail anymore if couldn't find outcome named OTHER
+      } else {
+        // got unexpected outcome
+        return false;
+      }
+    }
+
+    if (start.size() == 0) {
+      return false;
+    } else {
+      for (String contPreffix : cont) {
+        if (!start.contains(contPreffix)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
 }
