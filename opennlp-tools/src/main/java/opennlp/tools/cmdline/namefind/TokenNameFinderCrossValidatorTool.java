@@ -28,10 +28,14 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderCrossValidatorTool.CVToolParams;
 import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
+import opennlp.tools.namefind.BilouCodec;
+import opennlp.tools.namefind.BioCodec;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleTypeFilter;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
+import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -78,10 +82,21 @@ public final class TokenNameFinderCrossValidatorTool
       listeners.add(detailedFListener);
     }
 
+    String sequenceCodecImplName = params.getSequenceCodec();
+    
+    if ("BIO".equals(sequenceCodecImplName)) {
+      sequenceCodecImplName = BioCodec.class.getName();
+    }
+    else if ("BILOU".equals(sequenceCodecImplName)) {
+      sequenceCodecImplName = BilouCodec.class.getName();
+    }
+    
+    SequenceCodec<String> sequenceCodec = TokenNameFinderModel.instantiateSequenceCodec(sequenceCodecImplName);
+    
     TokenNameFinderCrossValidator validator;
     try {
       validator = new TokenNameFinderCrossValidator(params.getLang(),
-          params.getType(), mlParams, featureGeneratorBytes, resources,
+          params.getType(), mlParams, featureGeneratorBytes, resources, sequenceCodec,
           listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
