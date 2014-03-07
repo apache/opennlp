@@ -24,9 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -34,6 +32,8 @@ import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.SequenceCodec;
+import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
 import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
@@ -49,6 +49,7 @@ import opennlp.tools.util.model.ModelUtil;
  *
  * @see NameFinderME
  */
+// TODO: Fix the model validation, on loading via constructors and input streams
 public class TokenNameFinderModel extends BaseModel {
 
   public static class FeatureGeneratorCreationError extends RuntimeException {
@@ -74,38 +75,42 @@ public class TokenNameFinderModel extends BaseModel {
   private static final String MAXENT_MODEL_ENTRY_NAME = "nameFinder.model";
  
   private static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
- 
-  public TokenNameFinderModel(String languageCode, SequenceClassificationModel nameFinderModel,
-      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
+
+  private static final String SEQUENCE_CODEC_CLASS_NAME_PARAMETER = "sequenceCodecImplName";
+
+  public TokenNameFinderModel(String languageCode, SequenceClassificationModel<String> nameFinderModel,
+      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
+      SequenceCodec<String> seqCodec) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
     
-    // TODO: Add validation for sequence models!
-    //if (!isModelValid(nameFinderModel)) {
-    //  throw new IllegalArgumentException("Model not compatible with name finder!");
-    //}
+    init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries, seqCodec);
     
-    init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries);
+    if (!seqCodec.areOutcomesCompatible(nameFinderModel.getOutcomes())) {
+      throw new IllegalArgumentException("Model not compatible with name finder!");
+    }
   }
 
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel, int beamSize,
-      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
+      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
+      SequenceCodec<String> seqCodec) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
     
-    if (!isModelValid(nameFinderModel)) {
-      throw new IllegalArgumentException("Model not compatible with name finder!");
-    }
     
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
     manifest.put(BeamSearch.BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
     
-    init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries);
+    init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries, seqCodec);
+    
+    if (!isModelValid(nameFinderModel)) {
+      throw new IllegalArgumentException("Model not compatible with name finder!");
+    }
   }
   
   // TODO: Extend this one with beam size!
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     this(languageCode, nameFinderModel, NameFinderME.DEFAULT_BEAM_SIZE, 
-        generatorDescriptor, resources, manifestInfoEntries);
+        generatorDescriptor, resources, manifestInfoEntries, new BioCodec());
   }
 
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
@@ -126,7 +131,12 @@ public class TokenNameFinderModel extends BaseModel {
   }
   
   private void init(Object nameFinderModel,
-      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
+      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
+      SequenceCodec<String> seqCodec) {
+    
+    Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
+    manifest.put(SEQUENCE_CODEC_CLASS_NAME_PARAMETER, seqCodec.getClass().getName());
+    
     artifactMap.put(MAXENT_MODEL_ENTRY_NAME, nameFinderModel);
     
     if (generatorDescriptor != null && generatorDescriptor.length > 0)
@@ -183,6 +193,16 @@ public class TokenNameFinderModel extends BaseModel {
     }
   }
   
+  public SequenceCodec<String> createSequenceCodec() {
+    
+    // TODO: Lookup impl name with
+    // SEQUENCE_CODEC_CLASS_NAME_PARAMETER
+    Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
+    
+    String sequeceCodecImplName = manifest.getProperty(SEQUENCE_CODEC_CLASS_NAME_PARAMETER);
+    return instantiateSequenceCodec(sequeceCodecImplName);
+  }
+  
   /**
    * Creates the {@link AdaptiveFeatureGenerator}. Usually this
    * is a set of generators contained in the {@link AggregatedFeatureGenerator}.
@@ -235,16 +255,16 @@ public class TokenNameFinderModel extends BaseModel {
         
     TokenNameFinderModel model;
         
-        if (getNameFinderModel() != null) {
-          model = new TokenNameFinderModel(getLanguage(), getNameFinderModel(),
-              descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap());
-        }
-        else {
-          model = new TokenNameFinderModel(getLanguage(), getNameFinderSequenceModel(),
-              descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap());
-        }
+    if (getNameFinderModel() != null) {
+      model = new TokenNameFinderModel(getLanguage(), getNameFinderModel(), 1,
+          descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), createSequenceCodec());
+    }
+    else {
+      model = new TokenNameFinderModel(getLanguage(), getNameFinderSequenceModel(),
+          descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(),
+          createSequenceCodec());
+    }
     
-    // TODO: Not so nice!
     model.artifactMap.clear();
     model.artifactMap.putAll(artifactMap);
     model.artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, descriptor);
@@ -276,44 +296,15 @@ public class TokenNameFinderModel extends BaseModel {
     return serializers;
   }
   
-  // TODO: Write test for this method
-  public static boolean isModelValid(MaxentModel model) {
+  public boolean isModelValid(MaxentModel model) {
     
-    // We should have *optionally* one outcome named "other", some named xyz-start and sometimes 
-    // they have a pair xyz-cont. We should not have any other outcome
-    // To validate the model we check if we have one outcome named "other", at least
-    // one outcome with suffix start. After that we check if all outcomes that ends with
-    // "cont" have a pair that ends with "start".
-    List<String> start = new ArrayList<String>();
-    List<String> cont = new ArrayList<String>();
-
+    String outcomes[] = new String[model.getNumOutcomes()];
+    
     for (int i = 0; i < model.getNumOutcomes(); i++) {
-      String outcome = model.getOutcome(i);
-      if (outcome.endsWith(NameFinderME.START)) {
-        start.add(outcome.substring(0, outcome.length()
-            - NameFinderME.START.length()));
-      } else if (outcome.endsWith(NameFinderME.CONTINUE)) {
-        cont.add(outcome.substring(0, outcome.length()
-            - NameFinderME.CONTINUE.length()));
-      } else if (outcome.equals(NameFinderME.OTHER)) {
-        // don't fail anymore if couldn't find outcome named OTHER
-      } else {
-        // got unexpected outcome
-        return false;
-      }
+      outcomes[i] = model.getOutcome(i);
     }
-
-    if (start.size() == 0) {
-      return false;
-    } else {
-      for (String contPreffix : cont) {
-        if (!start.contains(contPreffix)) {
-          return false;
-        }
-      }
-    }
-
-    return true;
+    
+    return createSequenceCodec().areOutcomesCompatible(outcomes);
   }
   
   @Override
@@ -328,6 +319,19 @@ public class TokenNameFinderModel extends BaseModel {
     }
     else {
       throw new InvalidFormatException("Token Name Finder model is incomplete!");
+    }
+  }
+
+  public static SequenceCodec<String> instantiateSequenceCodec(
+      String sequenceCodecImplName) {
+    
+    if (sequenceCodecImplName != null) {
+      return ExtensionLoader.instantiateExtension(
+          SequenceCodec.class, sequenceCodecImplName);
+    }
+    else {
+      // If nothing is specified return old default!
+      return new BioCodec();
     }
   }
 }

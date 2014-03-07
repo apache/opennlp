@@ -22,6 +22,7 @@ import java.io.File;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.BasicTrainingParams;
+import opennlp.tools.namefind.BioCodec;
 
 /**
  * TrainingParameters for Name Finder.
@@ -45,4 +46,8 @@ interface TrainingParams extends BasicTrainingParams {
   @OptionalParameter
   @ParameterDescription(valueName = "types", description = "name types to use for training")
   String getNameTypes();
+  
+  @OptionalParameter(defaultValue = "opennlp.tools.namefind.BioCodec")
+  @ParameterDescription(valueName = "codec", description = "sequence codec used to code name spans")
+  String getSequenceCodec();
 }

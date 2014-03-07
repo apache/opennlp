@@ -28,10 +28,13 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool.TrainerToolParams;
 import opennlp.tools.cmdline.params.TrainingToolParams;
+import opennlp.tools.namefind.BilouCodec;
+import opennlp.tools.namefind.BioCodec;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleTypeFilter;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -170,11 +173,22 @@ public final class TokenNameFinderTrainerTool
       sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
     }
     
+    String sequenceCodecImplName = params.getSequenceCodec();
+    
+    if ("BIO".equals(sequenceCodecImplName)) {
+      sequenceCodecImplName = BioCodec.class.getName();
+    }
+    else if ("BILOU".equals(sequenceCodecImplName)) {
+      sequenceCodecImplName = BilouCodec.class.getName();
+    }
+    
+    SequenceCodec<String> sequenceCodec = TokenNameFinderModel.instantiateSequenceCodec(sequenceCodecImplName);
+    
     TokenNameFinderModel model;
     try {
       model = opennlp.tools.namefind.NameFinderME.train(
           params.getLang(), params.getType(), sampleStream,
-          mlParams, featureGeneratorBytes, resources);
+          mlParams, featureGeneratorBytes, resources, sequenceCodec);
     }
     catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "

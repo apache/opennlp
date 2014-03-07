@@ -71,7 +71,7 @@ public class NameFinderME implements TokenNameFinder {
   public static final String CONTINUE = "cont";
   public static final String OTHER = "other";
 
-  private static SequenceCodec<String> seqCodec = new BioCodec();
+  private SequenceCodec<String> seqCodec = new BioCodec();
   
   protected SequenceClassificationModel<String> model;
   
@@ -98,6 +98,8 @@ public class NameFinderME implements TokenNameFinder {
   @Deprecated
   public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize,
       SequenceValidator<String> sequenceValidator) {
+    
+    seqCodec = model.createSequenceCodec();
     
     this.sequenceValidator = sequenceValidator;
    
@@ -303,9 +305,9 @@ public class NameFinderME implements TokenNameFinder {
     * @throws IOException
     */
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
-       TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources) throws IOException {
-
-     // SequenceCodec seqCodec = new BiolouCodec();
+       TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources,
+       SequenceCodec<String> seqCodec) throws IOException {
+     
      String beamSizeString = trainParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
      
      int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
@@ -357,17 +359,26 @@ public class NameFinderME implements TokenNameFinder {
        throw new IllegalStateException("Unexpected trainer type!");
      }
      
+     // TODO: Pass the sequence codec down to the model! We will just store the class
+     // name in the model, and then always use the extension loader to create it!
+     // The cmd line interface, will replace shortcuts with actual class names.
+     
      // depending on which one is not null!
      if (seqModel != null) {
        return new TokenNameFinderModel(languageCode, seqModel, null,
-           resources, manifestInfoEntries);
+           resources, manifestInfoEntries, seqCodec);
      }
      else {
        return new TokenNameFinderModel(languageCode, nameFinderModel, beamSize, null,
-           resources, manifestInfoEntries);
+           resources, manifestInfoEntries, seqCodec);
      }
    }
 
+   public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
+       TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources) throws IOException {
+     return train(languageCode, type, samples, trainParams, generator, resources, new BioCodec());
+   }
+   
   /**
    * Trains a name finder model.
    *
@@ -390,11 +401,11 @@ public class NameFinderME implements TokenNameFinder {
    */
   public static TokenNameFinderModel train(String languageCode, String type,
       ObjectStream<NameSample> samples, TrainingParameters trainParams,
-      byte[] featureGeneratorBytes, final Map<String, Object> resources)
+      byte[] featureGeneratorBytes, final Map<String, Object> resources, SequenceCodec<String> seqCodec)
       throws IOException {
 
     TokenNameFinderModel model = train(languageCode, type, samples, trainParams,
-        createFeatureGenerator(featureGeneratorBytes, resources), resources);
+        createFeatureGenerator(featureGeneratorBytes, resources), resources, seqCodec);
 
     if (featureGeneratorBytes != null) {
       model = model.updateFeatureGenerator(featureGeneratorBytes);
@@ -403,6 +414,13 @@ public class NameFinderME implements TokenNameFinder {
     return model;
   }
 
+  public static TokenNameFinderModel train(String languageCode, String type,
+      ObjectStream<NameSample> samples, TrainingParameters trainParams,
+      byte[] featureGeneratorBytes, final Map<String, Object> resources)
+      throws IOException {
+    return train(languageCode, type, samples, trainParams, featureGeneratorBytes,
+        resources, new BioCodec());
+  }
 
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        final Map<String, Object> resources) throws IOException {
