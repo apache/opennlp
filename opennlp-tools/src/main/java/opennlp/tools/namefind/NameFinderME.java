@@ -466,8 +466,7 @@ public class NameFinderME implements TokenNameFinder {
    @Deprecated
   public static TokenNameFinderModel train(String languageCode, String type,
       ObjectStream<NameSample> samples, TrainingParameters trainParams,
-      byte[] featureGeneratorBytes, final Map<String, Object> resources,
-      TokenNameFinderFactory factory)
+      byte[] featureGeneratorBytes, final Map<String, Object> resources)
       throws IOException {
 
     TokenNameFinderModel model = train(languageCode, type, samples, trainParams,
@@ -478,18 +477,6 @@ public class NameFinderME implements TokenNameFinder {
     }
 
     return model;
-  }
-
-   /**
-    * 
-    * @deprecated use {@link NameFinderME#train(String, String, ObjectStream, TrainingParameters, TokenNameFinderFactory)} instead.
-    */
-   @Deprecated
-  public static TokenNameFinderModel train(String languageCode, String type,
-      ObjectStream<NameSample> samples, TrainingParameters trainParams,
-      byte[] featureGeneratorBytes, final Map<String, Object> resources)
-      throws IOException {
-    return train(languageCode, type, samples, trainParams, featureGeneratorBytes, resources);
   }
 
    /**
