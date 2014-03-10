@@ -138,13 +138,13 @@ public class TokenNameFinderCrossValidator {
   private final String languageCode;
   private final TrainingParameters params;
   private final String type;
-  private final byte[] featureGeneratorBytes;
-  private final Map<String, Object> resources;
+  private byte[] featureGeneratorBytes;
+  private Map<String, Object> resources;
   private TokenNameFinderEvaluationMonitor[] listeners;
-  
 
   private FMeasure fmeasure = new FMeasure();
   private SequenceCodec<String> codec;
+  private TokenNameFinderFactory factory;
 
   /**
    * Name finder cross validator
@@ -184,6 +184,17 @@ public class TokenNameFinderCrossValidator {
       TokenNameFinderEvaluationMonitor... listeners) {
     this(languageCode, type, trainParams, featureGeneratorBytes, resources, new BioCodec(), listeners);
   }
+  
+  public TokenNameFinderCrossValidator(String languageCode, String type,
+      TrainingParameters trainParams, TokenNameFinderFactory factory,
+      TokenNameFinderEvaluationMonitor... listeners) {
+    this.languageCode = languageCode;
+    this.type = type;
+    this.params = trainParams;
+    this.factory = factory;
+    this.listeners = listeners;
+  }
+
   /**
    * Starts the evaluation.
    * 
@@ -206,8 +217,15 @@ public class TokenNameFinderCrossValidator {
       CrossValidationPartitioner.TrainingSampleStream<DocumentSample> trainingSampleStream = partitioner
           .next();
 
-      TokenNameFinderModel model  = opennlp.tools.namefind.NameFinderME.train(languageCode, type,
+      TokenNameFinderModel model;
+      if (factory != null) {
+        model = opennlp.tools.namefind.NameFinderME.train(languageCode, type, samples, params, factory);
+      }
+      else {
+        model  = opennlp.tools.namefind.NameFinderME.train(languageCode, type,
             new DocumentToNameSampleStream(trainingSampleStream), params, featureGeneratorBytes, resources, codec);
+        
+      }
 
       // do testing
       TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(

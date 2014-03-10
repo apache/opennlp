@@ -28,9 +28,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
+import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.ext.ExtensionLoader;
@@ -74,9 +76,9 @@ public class TokenNameFinderModel extends BaseModel {
   private static final String COMPONENT_NAME = "NameFinderME";
   private static final String MAXENT_MODEL_ENTRY_NAME = "nameFinder.model";
  
-  private static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
+  static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
 
-  private static final String SEQUENCE_CODEC_CLASS_NAME_PARAMETER = "sequenceCodecImplName";
+  static final String SEQUENCE_CODEC_CLASS_NAME_PARAMETER = "sequenceCodecImplName";
 
   public TokenNameFinderModel(String languageCode, SequenceClassificationModel<String> nameFinderModel,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
@@ -193,15 +195,17 @@ public class TokenNameFinderModel extends BaseModel {
     }
   }
   
-  public SequenceCodec<String> createSequenceCodec() {
-    
-    // TODO: Lookup impl name with
-    // SEQUENCE_CODEC_CLASS_NAME_PARAMETER
-    Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
-    
-    String sequeceCodecImplName = manifest.getProperty(SEQUENCE_CODEC_CLASS_NAME_PARAMETER);
-    return instantiateSequenceCodec(sequeceCodecImplName);
+  @Override
+  protected Class<? extends BaseToolFactory> getDefaultFactory() {
+    return TokenNameFinderFactory.class;
   }
+  
+  public TokenNameFinderFactory getFactory() {
+    return (TokenNameFinderFactory) this.toolFactory;
+  }
+
+  // TODO: This should be moved to the NameFinderFactory ... !!!
+  // Lets deprecate it!
   
   /**
    * Creates the {@link AdaptiveFeatureGenerator}. Usually this
@@ -211,44 +215,11 @@ public class TokenNameFinderModel extends BaseModel {
    * The generators are created on every call to this method.
    *
    * @return the feature generator or null if there is no descriptor in the model
+   * @deprecated use TokenNameFinderFactory.createFeatureGenerators instead!
    */
+  @Deprecated
   public AdaptiveFeatureGenerator createFeatureGenerators() {
-
-    byte descriptorBytes[] = (byte[]) artifactMap.get(GENERATOR_DESCRIPTOR_ENTRY_NAME);
-    
-    if (descriptorBytes != null) {
-      InputStream descriptorIn = new ByteArrayInputStream(descriptorBytes);
-  
-      AdaptiveFeatureGenerator generator = null;
-      try {
-        generator = GeneratorFactory.create(descriptorIn, new FeatureGeneratorResourceProvider() {
-  
-          public Object getResource(String key) {
-            return artifactMap.get(key);
-          }
-        });
-      } catch (InvalidFormatException e) {
-        // It is assumed that the creation of the feature generation does not
-        // fail after it succeeded once during model loading.
-        
-        // But it might still be possible that such an exception is thrown,
-        // in this case the caller should not be forced to handle the exception
-        // and a Runtime Exception is thrown instead.
-        
-        // If the re-creation of the feature generation fails it is assumed
-        // that this can only be caused by a programming mistake and therefore
-        // throwing a Runtime Exception is reasonable
-        
-        throw new FeatureGeneratorCreationError(e);
-      } catch (IOException e) {
-        throw new IllegalStateException("Reading from mem cannot result in an I/O error", e);
-      }
-  
-      return generator;
-    }
-    else {
-      return null;
-    }
+    return getFactory().createFeatureGenerators();
   }
   
   public TokenNameFinderModel updateFeatureGenerator(byte descriptor[]) {
@@ -257,12 +228,13 @@ public class TokenNameFinderModel extends BaseModel {
         
     if (getNameFinderModel() != null) {
       model = new TokenNameFinderModel(getLanguage(), getNameFinderModel(), 1,
-          descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), createSequenceCodec());
+          descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(),
+          getFactory().createSequenceCodec());
     }
     else {
       model = new TokenNameFinderModel(getLanguage(), getNameFinderSequenceModel(),
           descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(),
-          createSequenceCodec());
+          getFactory().createSequenceCodec());
     }
     
     model.artifactMap.clear();
@@ -296,7 +268,7 @@ public class TokenNameFinderModel extends BaseModel {
     return serializers;
   }
   
-  public boolean isModelValid(MaxentModel model) {
+  boolean isModelValid(MaxentModel model) {
     
     String outcomes[] = new String[model.getNumOutcomes()];
     
@@ -304,7 +276,7 @@ public class TokenNameFinderModel extends BaseModel {
       outcomes[i] = model.getOutcome(i);
     }
     
-    return createSequenceCodec().areOutcomesCompatible(outcomes);
+    return getFactory().createSequenceCodec().areOutcomesCompatible(outcomes);
   }
   
   @Override
@@ -319,19 +291,6 @@ public class TokenNameFinderModel extends BaseModel {
     }
     else {
       throw new InvalidFormatException("Token Name Finder model is incomplete!");
-    }
-  }
-
-  public static SequenceCodec<String> instantiateSequenceCodec(
-      String sequenceCodecImplName) {
-    
-    if (sequenceCodecImplName != null) {
-      return ExtensionLoader.instantiateExtension(
-          SequenceCodec.class, sequenceCodecImplName);
-    }
-    else {
-      // If nothing is specified return old default!
-      return new BioCodec();
     }
   }
 }
