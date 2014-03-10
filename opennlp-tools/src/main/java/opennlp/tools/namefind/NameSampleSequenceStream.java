@@ -25,6 +25,7 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.Sequence;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
 public class NameSampleSequenceStream implements SequenceStream {
@@ -32,6 +33,7 @@ public class NameSampleSequenceStream implements SequenceStream {
   private NameContextGenerator pcg;
   private final boolean useOutcomes;
   private ObjectStream<NameSample> psi;
+  private SequenceCodec<String> seqCodec;
   
   public NameSampleSequenceStream(ObjectStream<NameSample> psi) throws IOException {
     this(psi, new DefaultNameContextGenerator((AdaptiveFeatureGenerator) null), true);
@@ -54,9 +56,16 @@ public class NameSampleSequenceStream implements SequenceStream {
 
   public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg, boolean useOutcomes)
       throws IOException {
+    this(psi, pcg, useOutcomes, new BioCodec());
+  }
+  
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg, boolean useOutcomes,
+      SequenceCodec<String> seqCodec)
+      throws IOException {
     this.psi = psi;
     this.useOutcomes = useOutcomes;
     this.pcg = pcg;
+    this.seqCodec = seqCodec;
   }
   
   @SuppressWarnings("unchecked")
@@ -64,7 +73,7 @@ public class NameSampleSequenceStream implements SequenceStream {
     Sequence<NameSample> pss = sequence;
     TokenNameFinder tagger = new NameFinderME(new TokenNameFinderModel("x-unspecified", model, Collections.<String, Object>emptyMap(), null));
     String[] sentence = pss.getSource().getSentence();
-    String[] tags = NameFinderEventStream.generateOutcomes(tagger.find(sentence), null, sentence.length);
+    String[] tags = seqCodec.encode(tagger.find(sentence), sentence.length);
     Event[] events = new Event[sentence.length];
     
     NameFinderEventStream.generateEvents(sentence,tags,pcg).toArray(events);
@@ -77,7 +86,7 @@ public class NameSampleSequenceStream implements SequenceStream {
     NameSample sample = psi.read();
     if (sample != null) {
       String sentence[] = sample.getSentence();
-      String tags[] = NameFinderEventStream.generateOutcomes(sample.getNames(), null, sentence.length);
+      String tags[] = seqCodec.encode(sample.getNames(), sentence.length);
       Event[] events = new Event[sentence.length];
       
       for (int i=0; i < sentence.length; i++) {

@@ -78,7 +78,10 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
    * @param type null or overrides the type parameter in the provided samples
    * @param length The length of the sentence.
    * @return An array of start, continue, other outcomes based on the specified names and sentence length.
+   * 
+   * @deprecated use the BioCodec implementation of the SequenceValidator instead!
    */
+  @Deprecated
   public static String[] generateOutcomes(Span[] names, String type, int length) {
     String[] outcomes = new String[length];
     for (int i = 0; i < outcomes.length; i++) {

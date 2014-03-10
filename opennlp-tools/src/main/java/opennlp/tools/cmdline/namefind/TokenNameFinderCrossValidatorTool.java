@@ -34,7 +34,9 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleTypeFilter;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
+import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.model.ModelUtil;
@@ -91,12 +93,20 @@ public final class TokenNameFinderCrossValidatorTool
       sequenceCodecImplName = BilouCodec.class.getName();
     }
     
-    SequenceCodec<String> sequenceCodec = TokenNameFinderModel.instantiateSequenceCodec(sequenceCodecImplName);
+    SequenceCodec<String> sequenceCodec = TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
+    
+    TokenNameFinderFactory nameFinderFactory = null;
+    try {
+      nameFinderFactory = TokenNameFinderFactory.create(params.getFactory(),
+          featureGeneratorBytes, resources, sequenceCodec);
+    } catch (InvalidFormatException e) {
+      throw new TerminateToolException(-1, e.getMessage(), e);
+    }
     
     TokenNameFinderCrossValidator validator;
     try {
       validator = new TokenNameFinderCrossValidator(params.getLang(),
-          params.getType(), mlParams, featureGeneratorBytes, resources, sequenceCodec,
+          params.getType(), mlParams, nameFinderFactory,
           listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
