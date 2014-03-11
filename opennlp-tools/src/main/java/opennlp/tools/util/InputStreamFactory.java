@@ -24,7 +24,6 @@ import java.io.InputStream;
  * Use {@link MockInputStreamFactory} MockInputStreamFactory for default
  * behavior.
  *
- * @author Owner
  */
 public interface InputStreamFactory {
 

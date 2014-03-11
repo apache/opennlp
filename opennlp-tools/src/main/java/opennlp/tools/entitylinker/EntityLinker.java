@@ -15,6 +15,7 @@
  */
 package opennlp.tools.entitylinker;
 
+import java.io.IOException;
 import java.util.List;
 
 import opennlp.tools.util.Span;
@@ -42,8 +43,9 @@ public interface EntityLinker<T extends Span> {
    * @param initializationData the EntityLinkerProperties object that contains
    *                           properties needed by the impl, as well as any
    *                           other objects required for the impl
+   * @throws java.io.IOException
    */
-  void init(EntityLinkerProperties initializationData) throws Exception;
+  void init(EntityLinkerProperties initializationData) throws IOException;
 
   /**
    * Links an entire document of named entities to an external source
