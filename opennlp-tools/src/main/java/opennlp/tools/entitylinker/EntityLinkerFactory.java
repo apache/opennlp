@@ -15,6 +15,7 @@
  */
 package opennlp.tools.entitylinker;
 
+import java.io.IOException;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
@@ -33,8 +34,9 @@ public class EntityLinkerFactory {
    *                   object will be passed into the implemented EntityLinker
    *                   init(..) method, so it is an appropriate place to put additional resources.
    * @return an EntityLinker impl
+   * @throws java.io.IOException
    */
-  public static synchronized EntityLinker<?> getLinker(String entityType, EntityLinkerProperties properties) throws Exception {
+  public static synchronized EntityLinker<?> getLinker(String entityType, EntityLinkerProperties properties) throws IOException {
     if (entityType == null || properties == null) {
       throw new IllegalArgumentException("Null argument in entityLinkerFactory");
     }
@@ -45,6 +47,33 @@ public class EntityLinkerFactory {
       throw new IllegalArgumentException("linker." + entityType + "  property must be set!");
     }
     
+    EntityLinker<?> linker = ExtensionLoader.instantiateExtension(EntityLinker.class, linkerImplFullName);
+    linker.init(properties);
+    return linker;
+  }
+
+
+   /**
+   *
+
+
+   * @param properties An object that extends EntityLinkerProperties. This
+   *                   object will be passed into the implemented EntityLinker
+   *                   init(..) method, so it is an appropriate place to put additional resources.
+   * @return an EntityLinker impl
+   * @throws java.io.IOException
+   */
+  public static synchronized EntityLinker<?> getLinker( EntityLinkerProperties properties) throws IOException {
+    if (properties == null) {
+      throw new IllegalArgumentException("Null argument in entityLinkerFactory");
+    }
+
+    String linkerImplFullName = properties.getProperty("linker","");
+
+    if (linkerImplFullName == null || linkerImplFullName.equals("")) {
+      throw new IllegalArgumentException("linker property must be set!");
+    }
+
     EntityLinker<?> linker = ExtensionLoader.instantiateExtension(EntityLinker.class, linkerImplFullName);
     linker.init(properties);
     return linker;
