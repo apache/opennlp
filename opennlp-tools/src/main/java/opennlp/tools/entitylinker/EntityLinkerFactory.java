@@ -71,7 +71,7 @@ public class EntityLinkerFactory {
     String linkerImplFullName = properties.getProperty("linker","");
 
     if (linkerImplFullName == null || linkerImplFullName.equals("")) {
-      throw new IllegalArgumentException("linker property must be set!");
+      throw new IllegalArgumentException("\"linker\" property must be set!");
     }
 
     EntityLinker<?> linker = ExtensionLoader.instantiateExtension(EntityLinker.class, linkerImplFullName);
