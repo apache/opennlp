@@ -18,14 +18,19 @@
 
 package opennlp.tools.util.featuregen;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.featuregen.W2VClassesDictionary.W2VClassesDictionarySerializer;
+import opennlp.tools.util.model.SerializableArtifact;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class GeneratorFactoryTest {
@@ -37,7 +42,7 @@ public class GeneratorFactoryTest {
     
     // If this fails the generator descriptor could not be found
     // at the expected location
-    Assert.assertNotNull(generatorDescriptorIn);
+    assertNotNull(generatorDescriptorIn);
 
     Collection<String> expectedGenerators = new ArrayList<String>();
     expectedGenerators.add(OutcomePriorFeatureGenerator.class.getName());
@@ -57,7 +62,7 @@ public class GeneratorFactoryTest {
 
     // If this fails not all expected generators were found and
     // removed from the expected generators collection
-    Assert.assertEquals(0, expectedGenerators.size());
+    assertEquals(0, expectedGenerators.size());
   }
   
   @Test
@@ -67,17 +72,17 @@ public class GeneratorFactoryTest {
     
     // If this fails the generator descriptor could not be found
     // at the expected location
-    Assert.assertNotNull(generatorDescriptorIn);
+    assertNotNull(generatorDescriptorIn);
     
     AggregatedFeatureGenerator aggregatedGenerator =
       (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
     
     Collection<AdaptiveFeatureGenerator> embeddedGenerator = aggregatedGenerator.getGenerators();
     
-    Assert.assertEquals(1, embeddedGenerator.size());
+    assertEquals(1, embeddedGenerator.size());
     
     for (AdaptiveFeatureGenerator generator : embeddedGenerator) {
-      Assert.assertEquals(TokenFeatureGenerator.class.getName(), generator.getClass().getName());
+      assertEquals(TokenFeatureGenerator.class.getName(), generator.getClass().getName());
     }
   }
   
@@ -96,5 +101,17 @@ public class GeneratorFactoryTest {
     finally {
       descIn.close();
     }
+  }
+  
+  @Test
+  public void testArtifactToSerializerMappingExtraction() throws IOException {
+    // TODO: Define a new one here with custom elements ...
+    InputStream descIn = getClass().getResourceAsStream(
+        "/opennlp/tools/util/featuregen/CustomClassLoadingWithSerializers.xml");
+    
+    Map<String, Class<? extends SerializableArtifact>> mapping =
+        GeneratorFactory.extractCustomArtifactSerializerMappings(descIn, null);
+    
+    assertEquals(W2VClassesDictionary.class, mapping.get("test.resource"));
   }
 }

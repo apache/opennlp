@@ -20,17 +20,24 @@ package opennlp.tools.util.featuregen;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ExtensionLoader;
+import opennlp.tools.util.model.SerializableArtifact;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -477,6 +484,15 @@ public class GeneratorFactory {
     }
   }
   
+  // TODO: We have to support custom resources here. How does it work ?!
+  // Attributes get into a Map<String, String> properties
+  
+  // How can serialization be supported ?!
+  // The model is loaded, and the manifest should contain all serializer classes registered for the
+  // resources by name.
+  // When training, the descriptor could be consulted first to register the serializers, and afterwards
+  // they are stored in the model.
+  
   static class CustomFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
@@ -545,6 +561,29 @@ public class GeneratorFactory {
     return generatorFactory.create(generatorElement, resourceManager);
   }
 
+  private static org.w3c.dom.Document createDOM(InputStream xmlDescriptorIn)
+      throws IOException, InvalidFormatException {
+    DocumentBuilderFactory documentBuilderFacoty = DocumentBuilderFactory.newInstance();
+
+    DocumentBuilder documentBuilder;
+
+    try {
+      documentBuilder = documentBuilderFacoty.newDocumentBuilder();
+    } catch (ParserConfigurationException e) {
+      throw new IllegalStateException(e);
+    }
+
+    org.w3c.dom.Document xmlDescriptorDOM;
+
+    try {
+      xmlDescriptorDOM = documentBuilder.parse(xmlDescriptorIn);
+    } catch (SAXException e) {
+      throw new InvalidFormatException("Descriptor is not valid XML!", e);
+    }
+    
+    return xmlDescriptorDOM;
+  }
+  
   /**
    * Creates an {@link AdaptiveFeatureGenerator} from an provided XML descriptor.
    *
@@ -566,28 +605,45 @@ public class GeneratorFactory {
   public static AdaptiveFeatureGenerator create(InputStream xmlDescriptorIn,
       FeatureGeneratorResourceProvider resourceManager) throws IOException, InvalidFormatException {
 
-    DocumentBuilderFactory documentBuilderFacoty = DocumentBuilderFactory.newInstance();
-
-    DocumentBuilder documentBuilder;
-
-    try {
-      documentBuilder = documentBuilderFacoty.newDocumentBuilder();
-    } catch (ParserConfigurationException e) {
-      throw new IllegalStateException(e);
-    }
-
-    org.w3c.dom.Document xmlDescriptorDOM;
-
-    try {
-      xmlDescriptorDOM = documentBuilder.parse(xmlDescriptorIn);
-    } catch (SAXException e) {
-      throw new InvalidFormatException("Descriptor is not valid XML!", e);
-    }
+    org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
 
     Element generatorElement = xmlDescriptorDOM.getDocumentElement();
 
     return createGenerator(generatorElement, resourceManager);
   }
   
-  // TODO: Add method to extract ArtifactSerializer mapping from feature gen ...
+  public static Map<String, Class<? extends SerializableArtifact>> extractCustomArtifactSerializerMappings(
+      InputStream xmlDescriptorIn, FeatureGeneratorResourceProvider resourceManager)
+      throws IOException, InvalidFormatException {
+    
+    Map<String, Class<? extends SerializableArtifact>> mapping = new HashMap<>();
+    
+    org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
+    
+    XPath xPath = XPathFactory.newInstance().newXPath();
+    
+    NodeList customElements;
+    try {
+      customElements = (NodeList) xPath.evaluate("custom", xmlDescriptorDOM.getDocumentElement(), XPathConstants.NODESET);
+    } catch (XPathExpressionException e) {
+      throw new IllegalStateException("The hard coded XPath expression should always be valid!");
+    }
+    
+    for (int i = 0; i < customElements.getLength(); i++) {
+      
+      if (customElements.item(i) instanceof Element) {
+        Element customElement = (Element) customElements.item(i);
+        
+        AdaptiveFeatureGenerator generator = createGenerator(customElement, resourceManager);
+        
+        if (generator instanceof ArtifactToSerializerMapper) {
+          ArtifactToSerializerMapper mapper = (ArtifactToSerializerMapper) generator;
+          mapping.putAll(mapper.getArtifactSerializerMapping());
+        }
+      }
+      
+    }
+    
+    return mapping;
+  }
 }
