@@ -26,13 +26,14 @@ public class EntityLinkerFactory {
 
   /**
    *
-
+   *
    * @param entityType The type of entity being linked to. This value is used to
    *                   retrieve the implementation of the entitylinker from the
    *                   entitylinker properties file.
    * @param properties An object that extends EntityLinkerProperties. This
    *                   object will be passed into the implemented EntityLinker
-   *                   init(..) method, so it is an appropriate place to put additional resources.
+   *                   init(..) method, so it is an appropriate place to put
+   *                   additional resources.
    * @return an EntityLinker impl
    * @throws java.io.IOException
    */
@@ -40,35 +41,37 @@ public class EntityLinkerFactory {
     if (entityType == null || properties == null) {
       throw new IllegalArgumentException("Null argument in entityLinkerFactory");
     }
-    
+
     String linkerImplFullName = properties.getProperty("linker." + entityType, "");
-    
+
     if (linkerImplFullName == null || linkerImplFullName.equals("")) {
       throw new IllegalArgumentException("linker." + entityType + "  property must be set!");
     }
-    
+
     EntityLinker<?> linker = ExtensionLoader.instantiateExtension(EntityLinker.class, linkerImplFullName);
     linker.init(properties);
     return linker;
   }
 
-
-   /**
+  /**
    *
-
-
+   *
+   *
    * @param properties An object that extends EntityLinkerProperties. This
    *                   object will be passed into the implemented EntityLinker
-   *                   init(..) method, so it is an appropriate place to put additional resources.
+   *                   init(..) method, so it is an appropriate place to put
+   *                   additional resources. In the properties file, the linker implementation must be
+   *                   provided using "linker" as the properties key, and the
+   *                   full class name as value
    * @return an EntityLinker impl
    * @throws java.io.IOException
    */
-  public static synchronized EntityLinker<?> getLinker( EntityLinkerProperties properties) throws IOException {
+  public static synchronized EntityLinker<?> getLinker(EntityLinkerProperties properties) throws IOException {
     if (properties == null) {
       throw new IllegalArgumentException("Null argument in entityLinkerFactory");
     }
 
-    String linkerImplFullName = properties.getProperty("linker","");
+    String linkerImplFullName = properties.getProperty("linker", "");
 
     if (linkerImplFullName == null || linkerImplFullName.equals("")) {
       throw new IllegalArgumentException("\"linker\" property must be set!");
