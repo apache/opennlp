@@ -18,7 +18,7 @@
 
 package opennlp.tools.util.featuregen;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
@@ -29,6 +29,7 @@ import java.util.Map;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.W2VClassesDictionary.W2VClassesDictionarySerializer;
+import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
 import org.junit.Test;
@@ -109,9 +110,9 @@ public class GeneratorFactoryTest {
     InputStream descIn = getClass().getResourceAsStream(
         "/opennlp/tools/util/featuregen/CustomClassLoadingWithSerializers.xml");
     
-    Map<String, Class<? extends SerializableArtifact>> mapping =
-        GeneratorFactory.extractCustomArtifactSerializerMappings(descIn, null);
+    Map<String, ArtifactSerializer<?>> mapping =
+        GeneratorFactory.extractCustomArtifactSerializerMappings(descIn);
     
-    assertEquals(W2VClassesDictionary.class, mapping.get("test.resource"));
+    assertTrue(mapping.get("test.resource") instanceof W2VClassesDictionarySerializer);
   }
 }

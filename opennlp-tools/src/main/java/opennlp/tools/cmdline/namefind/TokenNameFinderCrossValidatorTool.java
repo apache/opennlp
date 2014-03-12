@@ -67,7 +67,7 @@ public final class TokenNameFinderCrossValidatorTool
         TokenNameFinderTrainerTool.openFeatureGeneratorBytes(params.getFeaturegen());
 
     Map<String, Object> resources =
-        TokenNameFinderTrainerTool.loadResources(params.getResources());
+        TokenNameFinderTrainerTool.loadResources(params.getResources(), params.getFeaturegen());
 
     if (params.getNameTypes() != null) {
       String nameTypes[] = params.getNameTypes().split(",");

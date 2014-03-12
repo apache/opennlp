@@ -37,9 +37,11 @@ import javax.xml.xpath.XPathFactory;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ExtensionLoader;
+import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -102,8 +104,6 @@ public class GeneratorFactory {
      */
     AdaptiveFeatureGenerator create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException;
-    
-    //
   }
 
   /**
@@ -503,7 +503,25 @@ public class GeneratorFactory {
       AdaptiveFeatureGenerator generator = ExtensionLoader.instantiateExtension(AdaptiveFeatureGenerator.class,
           featureGeneratorClassName);
       
-      // TODO: User could define artifact mappings ...
+      if (generator instanceof CustomFeatureGenerator) {
+        
+        CustomFeatureGenerator customGenerator = (CustomFeatureGenerator) generator;
+        
+        Map<String, String> properties = new HashMap<>();
+
+        NamedNodeMap attributes = generatorElement.getAttributes();
+        
+        for (int i = 0; i < attributes.getLength(); i++) {
+          Node attribute = attributes.item(i);
+          if (!"class".equals(attribute.getNodeName())) {
+            properties.put(attribute.getNodeName(), attribute.getNodeValue());
+          }
+        }
+        
+        if (resourceManager != null) {
+          customGenerator.init(properties, resourceManager);
+        }
+      }
       
       return generator;
     }
@@ -612,11 +630,11 @@ public class GeneratorFactory {
     return createGenerator(generatorElement, resourceManager);
   }
   
-  public static Map<String, Class<? extends SerializableArtifact>> extractCustomArtifactSerializerMappings(
-      InputStream xmlDescriptorIn, FeatureGeneratorResourceProvider resourceManager)
+  public static Map<String, ArtifactSerializer<?>> extractCustomArtifactSerializerMappings(
+      InputStream xmlDescriptorIn)
       throws IOException, InvalidFormatException {
     
-    Map<String, Class<? extends SerializableArtifact>> mapping = new HashMap<>();
+    Map<String, ArtifactSerializer<?>> mapping = new HashMap<>();
     
     org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
     
@@ -634,14 +652,15 @@ public class GeneratorFactory {
       if (customElements.item(i) instanceof Element) {
         Element customElement = (Element) customElements.item(i);
         
-        AdaptiveFeatureGenerator generator = createGenerator(customElement, resourceManager);
+        // Note: The resource provider is not available at that point, to provide
+        // resources they need to be loaded first!
+        AdaptiveFeatureGenerator generator = createGenerator(customElement, null);
         
         if (generator instanceof ArtifactToSerializerMapper) {
           ArtifactToSerializerMapper mapper = (ArtifactToSerializerMapper) generator;
           mapping.putAll(mapper.getArtifactSerializerMapping());
         }
       }
-      
     }
     
     return mapping;
