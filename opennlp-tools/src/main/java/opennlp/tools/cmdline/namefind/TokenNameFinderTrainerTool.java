@@ -37,6 +37,7 @@ import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
+import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -84,7 +85,7 @@ public final class TokenNameFinderTrainerTool
     return featureGeneratorBytes;
   }
   
-  public static Map<String, Object> loadResources(File resourcePath) {
+  public static Map<String, Object> loadResources(File resourcePath, File featureGenDescriptor) {
     Map<String, Object> resources = new HashMap<String, Object>();
 
     if (resourcePath != null) {
@@ -92,6 +93,20 @@ public final class TokenNameFinderTrainerTool
       Map<String, ArtifactSerializer> artifactSerializers = TokenNameFinderModel
           .createArtifactSerializers();
 
+      
+      // TODO: If there is descriptor file, it should be consulted too 
+      if (featureGenDescriptor != null) {
+        
+        InputStream xmlDescriptorIn = null;
+        
+        try {
+          artifactSerializers.putAll(GeneratorFactory.extractCustomArtifactSerializerMappings(xmlDescriptorIn));
+        } catch (IOException e) {
+          // TODO: Improve error handling!
+          e.printStackTrace();
+        }
+      }
+      
       File resourceFiles[] = resourcePath.listFiles();
 
       // TODO: Filter files, also files with start with a dot
@@ -139,11 +154,12 @@ public final class TokenNameFinderTrainerTool
     return resources;
   }
   
-  static Map<String, Object> loadResources(String resourceDirectory) {
+  static Map<String, Object> loadResources(String resourceDirectory, File featureGeneratorDescriptor) {
 
     if (resourceDirectory != null) {
       File resourcePath = new File(resourceDirectory);
-      return loadResources(resourcePath);
+      
+      return loadResources(resourcePath, featureGeneratorDescriptor);
     }
 
     return new HashMap<String, Object>();
@@ -166,7 +182,7 @@ public final class TokenNameFinderTrainerTool
     //       Must be loaded into memory, or written to tmp file until descriptor 
     //       is loaded which defines parses when model is loaded
     
-    Map<String, Object> resources = loadResources(params.getResources());
+    Map<String, Object> resources = loadResources(params.getResources(), params.getFeaturegen());
         
     CmdLineUtil.checkOutputFile("name finder model", modelOutFile);
 

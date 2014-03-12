@@ -22,9 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.util.model.SerializableArtifact;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.model.ArtifactSerializer;
 
-public class FeatureGenWithSerializerMapping implements AdaptiveFeatureGenerator, ArtifactToSerializerMapper {
+public class FeatureGenWithSerializerMapping extends CustomFeatureGenerator 
+  implements ArtifactToSerializerMapper {
 
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
@@ -40,9 +42,15 @@ public class FeatureGenWithSerializerMapping implements AdaptiveFeatureGenerator
   }
 
   @Override
-  public Map<String, Class<? extends SerializableArtifact>> getArtifactSerializerMapping() {
-    Map<String, Class<? extends SerializableArtifact>> mapping = new HashMap<>();
-    mapping.put("test.resource", W2VClassesDictionary.class);
+  public Map<String, ArtifactSerializer<?>> getArtifactSerializerMapping() {
+    Map<String, ArtifactSerializer<?>> mapping = new HashMap<>();
+    mapping.put("test.resource", new W2VClassesDictionary.W2VClassesDictionarySerializer());
     return Collections.unmodifiableMap(mapping);
+  }
+
+  @Override
+  public void init(Map<String, String> properties,
+      FeatureGeneratorResourceProvider resourceProvider)
+      throws InvalidFormatException {
   }
 }
