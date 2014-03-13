@@ -131,7 +131,9 @@ public class POSTaggerME implements POSTagger {
    * Returns the number of different tags predicted by this model.
    *
    * @return the number of different tags predicted by this model.
+   * @deprecated use getAllPosTags instead!
    */
+  @Deprecated
   public int getNumTags() {
     
     // TODO: Lets discuss on the dev list how to do this properly!
@@ -140,7 +142,15 @@ public class POSTaggerME implements POSTagger {
     return model.getOutcomes().length;
   }
 
-  // TODO: Add method to get tags ?! 
+  /**
+   * Retrieves an array of all possible part-of-speech tags from the
+   * tagger.
+   * 
+   * @return
+   */
+  public String[] getAllPosTags() {
+    return model.getOutcomes();
+  }
   
   @Deprecated
   public List<String> tag(List<String> sentence) {
