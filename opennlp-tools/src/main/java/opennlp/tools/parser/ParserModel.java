@@ -69,19 +69,6 @@ public class ParserModel extends BaseModel {
     }
   }
   
-  private static class HeadRulesSerializer implements ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
-
-    public opennlp.tools.parser.lang.en.HeadRules create(InputStream in) throws IOException,
-        InvalidFormatException {
-      return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
-    }
-
-    public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact, OutputStream out)
-        throws IOException {
-      artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
-    }
-  }
-  
   private static final String COMPONENT_NAME = "Parser";
   
   private static final String BUILD_MODEL_ENTRY_NAME = "build.model";
@@ -100,7 +87,7 @@ public class ParserModel extends BaseModel {
   
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel, 
       MaxentModel attachModel, POSModel parserTagger,
-      ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules,
+      ChunkerModel chunkerTagger, opennlp.tools.parser.HeadRules headRules,
       ParserType modelType, Map<String, String> manifestInfoEntries) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
@@ -135,7 +122,7 @@ public class ParserModel extends BaseModel {
 
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel, 
       MaxentModel attachModel, POSModel parserTagger,
-      ChunkerModel chunkerTagger, opennlp.tools.parser.lang.en.HeadRules headRules,
+      ChunkerModel chunkerTagger, opennlp.tools.parser.HeadRules headRules,
       ParserType modelType) {
     this (languageCode, buildModel, checkModel, attachModel, parserTagger,
         chunkerTagger, headRules, modelType, null);
@@ -143,7 +130,7 @@ public class ParserModel extends BaseModel {
   
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel, 
       POSModel parserTagger, ChunkerModel chunkerTagger, 
-      opennlp.tools.parser.lang.en.HeadRules headRules, ParserType type,
+      opennlp.tools.parser.HeadRules headRules, ParserType type,
       Map<String, String> manifestInfoEntries) {
     this (languageCode, buildModel, checkModel, null, parserTagger, 
         chunkerTagger, headRules, type, manifestInfoEntries);
@@ -169,8 +156,6 @@ public class ParserModel extends BaseModel {
     
     serializers.put("postagger", new POSModelSerializer());
     serializers.put("chunker", new ChunkerModelSerializer());
-    serializers.put("headrules", new HeadRulesSerializer());
-    
   }
   
   public ParserType getParserType () {
@@ -197,8 +182,8 @@ public class ParserModel extends BaseModel {
     return (ChunkerModel) artifactMap.get(CHUNKER_TAGGER_MODEL_ENTRY_NAME);
   }
 
-  public opennlp.tools.parser.lang.en.HeadRules getHeadRules() {
-    return (opennlp.tools.parser.lang.en.HeadRules) 
+  public opennlp.tools.parser.HeadRules getHeadRules() {
+    return (opennlp.tools.parser.HeadRules) 
         artifactMap.get(HEAD_RULES_MODEL_ENTRY_NAME);
   }
 
