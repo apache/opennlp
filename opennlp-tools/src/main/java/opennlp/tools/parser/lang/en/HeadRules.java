@@ -21,6 +21,10 @@ package opennlp.tools.parser.lang.en;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Arrays;
@@ -35,12 +39,28 @@ import opennlp.tools.parser.Constituent;
 import opennlp.tools.parser.GapLabeler;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.chunking.Parser;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.SerializableArtifact;
 
 /**
  * Class for storing the English head rules associated with parsing.
  */
-public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
+public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, SerializableArtifact {
 
+  public static class HeadRulesSerializer implements ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
+
+    public opennlp.tools.parser.lang.en.HeadRules create(InputStream in) throws IOException,
+        InvalidFormatException {
+      return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
+    }
+
+    public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact, OutputStream out)
+        throws IOException {
+      artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
+    }
+  }
+  
   private static class HeadRule {
     public boolean leftToRight;
     public String[] tags;
@@ -274,5 +294,10 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler {
     else {
       return false;
     }
+  }
+
+  @Override
+  public Class<?> getArtifactSerializerClass() {
+    return HeadRulesSerializer.class;
   }
 }
