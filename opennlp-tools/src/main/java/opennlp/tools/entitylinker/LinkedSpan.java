@@ -61,7 +61,6 @@ public class LinkedSpan<T extends BaseLink> extends Span {
    * Sets the n best linked entries from an external data source. For instance,
    * this will hold gazateer entries for a search into a geonames gazateer
    *
-   * @return
    */
   public void setLinkedEntries(ArrayList<T> linkedEntries) {
     this.linkedEntries = linkedEntries;
@@ -79,7 +78,6 @@ public class LinkedSpan<T extends BaseLink> extends Span {
   /**
    * sets the id or index of the sentence from which this span was extracted
    *
-   * @return
    */
   public void setSentenceid(int sentenceid) {
     this.sentenceid = sentenceid;
@@ -89,7 +87,7 @@ public class LinkedSpan<T extends BaseLink> extends Span {
    * Returns the search term that was used to link this span to an external data
    * source
    *
-   * @param searchTerm
+   * @return searchTerm
    */
   public String getSearchTerm() {
     return searchTerm;
