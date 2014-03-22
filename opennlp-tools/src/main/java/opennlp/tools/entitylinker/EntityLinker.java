@@ -29,7 +29,7 @@ import opennlp.tools.util.Span;
  * implemented as deterministic
  *
  * @param <T> A type that extends Span. LinkedSpan and BaseLink are provided to
- *            provide this signature: EntityLinker<LinkedSpan<BaseLink>> as a
+ *            provide this signature: EntityLinker&lt;LinkedSpan&lt;BaseLink&gt;&gt; as a
  *            default
  */
 public interface EntityLinker<T extends Span> {
@@ -62,8 +62,8 @@ public interface EntityLinker<T extends Span> {
    *                         sentence. The outer array refers to the sentence,
    *                         the inner array refers to the tokens that for the
    *                         same sentence.Similar in nature to
-   *                         Map<SentenceIndex,List<Name Spans For This
-   *                         Sentence's Tokens>> @ return
+   *                         Map&lt;SentenceIndex,List&lt;Name Spans For This
+   *                         Sentence's Tokens&gt;&gt; @ return
    */
   List<T> find(String doctext, Span[] sentences, String[][] tokensBySentence, Span[][] namesBySentence);
 
