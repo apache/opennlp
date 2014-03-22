@@ -41,7 +41,7 @@ public abstract class TypedCmdLineTool<T>
   }
 
   /**
-   * Returns stream factory for the type of this tool for the </code>format</code>.
+   * Returns stream factory for the type of this tool for the <code>format</code>.
    *
    * @param format data format name
    * @return stream factory for the type of this tool for the format
