@@ -56,9 +56,9 @@ public class SentenceModel extends BaseModel {
   }
 
   /**
-   * TODO: was added in 1.5.3 -> remove
+   * TODO: was added in 1.5.3 ->&gt; remove
    * @deprecated Use
-   *             {@link #SentenceModel(String, AbstractModel, Map, SentenceDetectorFactory)}
+   *             {@link #SentenceModel(String, MaxentModel, Map, SentenceDetectorFactory)}
    *             instead and pass in a {@link SentenceDetectorFactory}
    */
   public SentenceModel(String languageCode, MaxentModel sentModel,
@@ -69,10 +69,10 @@ public class SentenceModel extends BaseModel {
   }
 
   /**
-   * TODO: was added in 1.5.3 -> remove
+   * TODO: was added in 1.5.3 ->&gt; remove
    * 
    * @deprecated Use
-   *             {@link #SentenceModel(String, AbstractModel, Map, SentenceDetectorFactory)}
+   *             {@link #SentenceModel(String, MaxentModel, Map, SentenceDetectorFactory)}
    *             instead and pass in a {@link SentenceDetectorFactory}
    */
   public SentenceModel(String languageCode, MaxentModel sentModel,
