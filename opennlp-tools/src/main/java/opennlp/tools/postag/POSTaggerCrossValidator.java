@@ -91,7 +91,7 @@ public class POSTaggerCrossValidator {
   
   /**
    * @deprecated use
-   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSDictionary, Integer, String, POSTaggerEvaluationMonitor...)}
+   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
    *             instead and pass in the name of {@link POSTaggerFactory}
    *             sub-class.
    */
