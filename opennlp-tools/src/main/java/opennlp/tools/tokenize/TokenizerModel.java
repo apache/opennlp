@@ -70,7 +70,7 @@ public final class TokenizerModel extends BaseModel {
    * @param useAlphaNumericOptimization
    * 
    * @deprecated Use
-   *             {@link TokenizerModel#TokenizerModel(String, AbstractModel, Map, TokenizerFactory)}
+   *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
    *             instead and pass in a {@link TokenizerFactory}.
    */
   public TokenizerModel(String language, MaxentModel tokenizerMaxentModel,
@@ -89,7 +89,7 @@ public final class TokenizerModel extends BaseModel {
    * @param manifestInfoEntries
    * 
    * @deprecated Use
-   *             {@link TokenizerModel#TokenizerModel(String, AbstractModel, Map, TokenizerFactory)}
+   *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
    *             instead and pass in a {@link TokenizerFactory}.
    */
   public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
@@ -105,7 +105,7 @@ public final class TokenizerModel extends BaseModel {
    * @param useAlphaNumericOptimization
    * 
    * @deprecated Use
-   *             {@link TokenizerModel#TokenizerModel(String, AbstractModel, Map, TokenizerFactory)}
+   *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
    *             instead and pass in a {@link TokenizerFactory}.
    */
   public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
