@@ -30,7 +30,7 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.Span;
 
 /**
- * Class which produces an Iterator<TokenSample> from a file of space delimited token.
+ * Class which produces an Iterator&lt;TokenSample&gt; from a file of space delimited token.
  * This class uses a number of English-specific heuristics to un-separate tokens which
  * are typically found together in text.
  */
