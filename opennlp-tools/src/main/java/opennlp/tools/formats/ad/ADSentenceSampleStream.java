@@ -53,7 +53,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
 
   /**
    * Creates a new {@link SentenceSample} stream from a line stream, i.e.
-   * {@link ObjectStream}< {@link String}>, that could be a
+   * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
    * {@link PlainTextByLineStream} object.
    * 
    * @param lineStream

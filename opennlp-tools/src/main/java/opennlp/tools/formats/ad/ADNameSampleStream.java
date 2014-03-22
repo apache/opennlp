@@ -162,13 +162,13 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   
   /**
    * Creates a new {@link NameSample} stream from a line stream, i.e.
-   * {@link ObjectStream}< {@link String}>, that could be a
+   * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
    * {@link PlainTextByLineStream} object.
    * 
    * @param lineStream
    *          a stream of lines as {@link String}
    * @param splitHyphenatedTokens
-   *          if true hyphenated tokens will be separated: "carros-monstro" >
+   *          if true hyphenated tokens will be separated: "carros-monstro" &gt;
    *          "carros" "-" "monstro"
    */
   public ADNameSampleStream(ObjectStream<String> lineStream, boolean splitHyphenatedTokens) {
@@ -184,7 +184,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @param charsetName
    *          the charset of the Arvores Deitadas Corpus
    * @param splitHyphenatedTokens
-   *          if true hyphenated tokens will be separated: "carros-monstro" >
+   *          if true hyphenated tokens will be separated: "carros-monstro" &gt;
    *          "carros" "-" "monstro"
    */
   @Deprecated
@@ -209,7 +209,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @param charsetName
    *          the charset of the Arvores Deitadas Corpus
    * @param splitHyphenatedTokens
-   *          if true hyphenated tokens will be separated: "carros-monstro" >
+   *          if true hyphenated tokens will be separated: "carros-monstro" &gt;
    *          "carros" "-" "monstro"
    */
   @Deprecated
