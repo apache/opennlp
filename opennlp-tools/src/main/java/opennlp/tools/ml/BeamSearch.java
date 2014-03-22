@@ -54,7 +54,6 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
    * Creates new search object.
    *
    * @param size The size of the beam (k).
-   * @param cg the context generator for the model.
    * @param model the model for assigning probabilities to the sequence outcomes.
    */
   public BeamSearch(int size, MaxentModel model) {
