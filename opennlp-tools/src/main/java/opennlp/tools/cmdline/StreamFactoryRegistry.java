@@ -113,8 +113,8 @@ public final class StreamFactoryRegistry {
   }
 
   /**
-   * Registers <param>factory</param> which reads format named <param>formatName</param> and
-   * instantiates streams producing objects of <param>sampleClass</param> class.
+   * Registers <code>factory</code> which reads format named <code>formatName</code> and
+   * instantiates streams producing objects of <code>sampleClass</code> class.
    *
    * @param sampleClass class of the objects, produced by the streams instantiated by the factory
    * @param formatName  name of the format
@@ -140,8 +140,8 @@ public final class StreamFactoryRegistry {
   }
 
   /**
-   * Unregisters a factory which reads format named <param>formatName</param> and
-   * instantiates streams producing objects of <param>sampleClass</param> class.
+   * Unregisters a factory which reads format named <code>formatName</code> and
+   * instantiates streams producing objects of <code>sampleClass</code> class.
    *
    * @param sampleClass class of the objects, produced by the streams instantiated by the factory
    * @param formatName  name of the format
@@ -156,7 +156,7 @@ public final class StreamFactoryRegistry {
   }
 
   /**
-   * Returns all factories which produce objects of <param>sampleClass</param> class.
+   * Returns all factories which produce objects of <code>sampleClass</code> class.
    *
    * @param sampleClass class of the objects, produced by the streams instantiated by the factory
    * @return formats mapped to factories
@@ -167,8 +167,8 @@ public final class StreamFactoryRegistry {
   }
 
   /**
-   * Returns a factory which reads format named <param>formatName</param> and
-   * instantiates streams producing objects of <param>sampleClass</param> class.
+   * Returns a factory which reads format named <code>formatName</code> and
+   * instantiates streams producing objects of <code>sampleClass</code> class.
    *
    * @param sampleClass class of the objects, produced by the streams instantiated by the factory
    * @param formatName  name of the format, if null, assumes OpenNLP format
