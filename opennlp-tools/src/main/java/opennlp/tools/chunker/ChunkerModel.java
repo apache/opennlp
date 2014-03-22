@@ -52,7 +52,7 @@ public class ChunkerModel extends BaseModel {
 
   /**
    * @deprecated Use
-   *             {@link #ChunkerModel(String, AbstractModel, Map, ChunkerFactory)}
+   *             {@link #ChunkerModel(String, MaxentModel, Map, ChunkerFactory)}
    *             instead.
    */
   public ChunkerModel(String languageCode, MaxentModel chunkerModel, Map<String, String> manifestInfoEntries) {
@@ -84,7 +84,7 @@ public class ChunkerModel extends BaseModel {
   
   /**
    * @deprecated Use
-   *             {@link #ChunkerModel(String, AbstractModel, ChunkerFactory)
+   *             {@link #ChunkerModel(String, MaxentModel, ChunkerFactory)
    *             instead.}
    */
   public ChunkerModel(String languageCode, MaxentModel chunkerModel) {
