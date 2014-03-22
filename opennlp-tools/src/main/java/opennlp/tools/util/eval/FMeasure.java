@@ -64,7 +64,7 @@ public final class FMeasure {
    *
    * f-measure = 2 * precision * recall / (precision + recall)
    *
-   * @return the f-measure or -1 if precision + recall <= 0
+   * @return the f-measure or -1 if precision + recall &lt;= 0
    */
   public double getFMeasure() {
 
