@@ -72,7 +72,7 @@ public class SDCrossValidator {
   }
   
   /**
-   * @deprecated use {@link #SDCrossValidator(String, TrainingParameters, Dictionary, SentenceDetectorEvaluationMonitor...)}
+   * @deprecated use {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
    * instead and pass in a TrainingParameters object.
    */
   public SDCrossValidator(String languageCode) {
