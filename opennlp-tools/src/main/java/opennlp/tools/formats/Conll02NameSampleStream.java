@@ -86,8 +86,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
   
   /**
    * @param lang
-   * @param in an Input Stream to read data.
-   * @throws IOException 
+   * @param in an Input Stream to read data. 
    */
   @Deprecated
   public Conll02NameSampleStream(LANGUAGE lang, InputStream in, int types) {
