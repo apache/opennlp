@@ -45,7 +45,7 @@ public class ChunkerCrossValidator {
     this.listeners = listeners;
   }
   
-  public ChunkerCrossValidator(String languageCode, TrainingParameters params,
+    public ChunkerCrossValidator(String languageCode, TrainingParameters params,
       ChunkerFactory factory, ChunkerEvaluationMonitor... listeners) {
     this.chunkerFactory = factory;
     this.languageCode = languageCode;
@@ -64,7 +64,7 @@ public class ChunkerCrossValidator {
    * @throws IOException
    */
   public void evaluate(ObjectStream<ChunkSample> samples, int nFolds)
-      throws IOException, InvalidFormatException, IOException {
+      throws IOException, InvalidFormatException {
     CrossValidationPartitioner<ChunkSample> partitioner = new CrossValidationPartitioner<ChunkSample>(
         samples, nFolds);
 
@@ -86,7 +86,7 @@ public class ChunkerCrossValidator {
     }
   }
 
-  public FMeasure getFMeasure() {
+    public FMeasure getFMeasure() {
     return fmeasure;
   }
 }
