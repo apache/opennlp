@@ -49,7 +49,7 @@ public final class POSModel extends BaseModel {
 
   /**
    * @deprecated Use
-   *             {@link #POSModel(String, AbstractModel, Map, POSTaggerFactory)}
+   *             {@link #POSModel(String, MaxentModel, Map, POSTaggerFactory)}
    *             instead.
    */
   public POSModel(String languageCode, MaxentModel posModel,
@@ -61,7 +61,7 @@ public final class POSModel extends BaseModel {
 
   /**
    * @deprecated Use
-   *             {@link #POSModel(String, AbstractModel, Map, POSTaggerFactory)}
+   *             {@link #POSModel(String, MaxentModel, Map, POSTaggerFactory)}
    *             instead.
    */
   public POSModel(String languageCode, MaxentModel posModel,
