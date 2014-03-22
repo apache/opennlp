@@ -93,7 +93,7 @@ public class OldFormatGISModelReader extends PlainTextGISModelReader {
    * 
    * <p>
    * If the new_model_name is left unspecified, the new model will be saved in
-   * gzipped, binary format as "<model_name_prefix>.bin.gz".
+   * gzipped, binary format as "&lt;model_name_prefix&gt;.bin.gz".
    */
   public static void main(String[] args) throws IOException {
     if (args.length < 1) {
