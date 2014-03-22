@@ -52,9 +52,10 @@ public final class ModelUtil {
    * @param out the stream the model should be written to
    * 
    * @throws IOException
-   * @throws {@link IllegalArgumentException} in case one of the parameters is null
+   * @throws IllegalArgumentException in case one of the parameters is null
    */
-  public static void writeModel(MaxentModel model, final OutputStream out) throws IOException {
+  public static void writeModel(MaxentModel model, final OutputStream out) 
+          throws IOException, IllegalArgumentException {
     
     if (model == null)
       throw new IllegalArgumentException("model parameter must not be null!");
@@ -136,8 +137,6 @@ public final class ModelUtil {
    * 
    * Note: Do not use this method, internal use only!
    * 
-   * @param iterations number of iterations
-   * @param cutoff cutoff threshold
    * 
    * @return training parameters instance
    */
