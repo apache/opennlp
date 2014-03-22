@@ -140,7 +140,7 @@ public abstract class AbstractModel implements MaxentModel {
    * information.  This method will usually only be needed by
    * GISModelWriters.  The following values are held in the Object array
    * which is returned by this method:
-   *
+   * <ul>
    * <li>index 0: opennlp.tools.ml.maxent.Context[] containing the model
    *            parameters  
    * <li>index 1: java.util.Map containing the mapping of model predicates
@@ -152,7 +152,8 @@ public abstract class AbstractModel implements MaxentModel {
    *            correction constant
    * <li>index 4: java.lang.Double containing the value of the models
    *            correction parameter
-   *
+   * </ul>
+   * 
    * @return An Object[] with the values as described above.
    */
   public final Object[] getDataStructures() {
