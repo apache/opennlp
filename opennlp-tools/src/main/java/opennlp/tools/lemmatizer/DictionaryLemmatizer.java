@@ -23,7 +23,7 @@ public interface DictionaryLemmatizer {
    * Returns the lemma of the specified word with the specified part-of-speech.
    * 
    * @param word The word whose lemmas are desired.
-   * @param pos The part-of-speech of the specified word.
+   * @param postag The part-of-speech of the specified word.
    * @return The lemma of the specified word given the specified part-of-speech.
    */
   public String lemmatize(String word, String postag);
