@@ -42,7 +42,7 @@ import opennlp.tools.util.model.ModelUtil;
  * Maximum Entropy to make its decisions.  The features are loosely
  * based off of Jeff Reynar's UPenn thesis "Topic Segmentation:
  * Algorithms and Applications.", which is available from his
- * homepage: <http://www.cis.upenn.edu/~jcreynar>.
+ * homepage: <a href="http://www.cis.upenn.edu/~jcreynar">http://www.cis.upenn.edu/~jcreynar</a>.
  * <p>
  * This tokenizer needs a statistical model to tokenize a text which reproduces
  * the tokenization observed in the training data used to create the model.
@@ -268,7 +268,7 @@ public class TokenizerME extends AbstractTokenizer {
    * Or if reading from the {@link ObjectStream} fails.
    * 
    * @deprecated Use 
-   *    {@link #train(String, ObjectStream, TokenizerFactory, TrainingParameters)} 
+   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)} 
    *    and pass in a {@link TokenizerFactory}
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
@@ -293,7 +293,7 @@ public class TokenizerME extends AbstractTokenizer {
    * Or if reading from the {@link ObjectStream} fails.
    * 
    * @deprecated Use 
-   *    {@link #train(String, ObjectStream, TokenizerFactory, TrainingParameters)} 
+   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)} 
    *    and pass in a {@link TokenizerFactory}
    */
   public static TokenizerModel train(String languageCode,
@@ -334,7 +334,7 @@ public class TokenizerME extends AbstractTokenizer {
    * 
    * 
    * @deprecated Use 
-   *    {@link #train(String, ObjectStream, TokenizerFactory, TrainingParameters)} 
+   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)} 
    *    and pass in a {@link TokenizerFactory}
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
