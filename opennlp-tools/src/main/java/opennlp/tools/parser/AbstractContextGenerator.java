@@ -93,7 +93,7 @@ public abstract class AbstractContextGenerator {
 
   /**
    * Generates a string representing the grammar rule production that the specified parse
-   * is starting.  The rule is of the form p.type -> c.children[0..n].type.
+   * is starting.  The rule is of the form p.type -&gt; c.children[0..n].type.
    * @param p The parse which stats teh production.
    * @param includePunctuation Whether punctuation should be included in the production.
    * @return a string representing the grammar rule production that the specified parse
