@@ -44,7 +44,7 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
 
   /**
    * Creates a new {@link POSSample} stream from a line stream, i.e.
-   * {@link ObjectStream}&lt;{@link String}&ft;, that could be a
+   * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
    * {@link PlainTextByLineStream} object.
    * 
    * @param lineStream
