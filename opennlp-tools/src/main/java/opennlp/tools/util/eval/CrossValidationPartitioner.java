@@ -34,7 +34,7 @@ import opennlp.tools.util.ObjectStream;
  * The training partition always consists of n -1 parts and one part is used for testing.
  * <p>
  * To use the <code>CrossValidationPartioner</code> a client iterates over the n
- * <code>TrainingSampleStream</code>s. Each </code>TrainingSampleStream</code> represents
+ * <code>TrainingSampleStream</code>s. Each <code>TrainingSampleStream</code> represents
  * one partition and is used first for training and afterwards for testing.
  * The <code>TestSampleStream</code> can be obtained from the <code>TrainingSampleStream</code>
  * with the <code>getTestSampleStream</code> method.
@@ -107,7 +107,7 @@ public class CrossValidationPartitioner<E> {
    * anymore, otherwise a {@link IllegalStateException}
    * is thrown.
    * 
-   * The <code>ObjectStream></code>s must not be used anymore after the
+   * The <code>ObjectStream</code>s must not be used anymore after the
    * <code>CrossValidationPartitioner</code> was moved
    * to one of next partitions. If they are called anyway
    * a {@link IllegalStateException} is thrown.
