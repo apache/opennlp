@@ -91,8 +91,8 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
   /**
    * Adds training events to the event stream for each of the specified tokens.
    *
-   * @param tokens character offsets into the specified text.
-   * @param text The text of the tokens.
+   * @param tokenSample character offsets into the specified text.
+   * @return The text of the tokens.
    */
   @Override
   protected Iterator<Event> createEvents(TokenSample tokenSample) {
