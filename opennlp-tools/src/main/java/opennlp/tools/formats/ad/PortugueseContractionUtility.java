@@ -26,7 +26,7 @@ import opennlp.tools.util.StringUtil;
 /**
  * Utility class to handle Portuguese contractions.
  * <p>
- * Some Corpora splits contractions in its parts, for example, "da" > "de" +
+ * Some Corpora splits contractions in its parts, for example, "da" &gt; "de" +
  * "a", but according to the fase of language processing, NER for instance, we
  * can't decide if to split a contraction or not, specially because contractions
  * inside names are not separated, but outside are.
