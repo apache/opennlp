@@ -51,7 +51,7 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
    * This constructor takes an ObjectStream and initializes the class to handle
    * the stream.
    *
-   * @param lineStream  an <code>ObjectSteam<String></code> that represents the
+   * @param lineStream  an <code>ObjectSteam&lt;String&ft;</code> that represents the
    *                    input file to be attached to this class.
    */
   public NameFinderCensus90NameStream(ObjectStream<String> lineStream) {
