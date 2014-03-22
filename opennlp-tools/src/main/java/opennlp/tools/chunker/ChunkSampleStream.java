@@ -28,7 +28,7 @@ import opennlp.tools.util.ObjectStream;
  * Parses the conll 2000 shared task shallow parser training data.
  * <p>
  * Data format is specified on the conll page:<br>
- * <a hraf="http://www.cnts.ua.ac.be/conll2000/chunking/">
+ * <a href="http://www.cnts.ua.ac.be/conll2000/chunking/">
  * http://www.cnts.ua.ac.be/conll2000/chunking/</a>
  */
 public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
