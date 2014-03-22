@@ -36,9 +36,11 @@ import opennlp.tools.ml.model.AbstractModelWriter;
  * appropriate GISModelWriter depending on the filename's suffixes.
  *
  * <p>The following assumption are made about suffixes:
- *    <li>.gz  --> the file is gzipped (must be the last suffix)
- *    <li>.txt --> the file is plain text
- *    <li>.bin --> the file is binary
+ * <ul>
+ *    <li>.gz  --&gt; the file is gzipped (must be the last suffix)
+ *    <li>.txt --&gt; the file is plain text
+ *    <li>.bin --&gt; the file is binary
+ * </ul>
  */
 public class SuffixSensitivePerceptronModelWriter extends PerceptronModelWriter {
     private final AbstractModelWriter suffixAppropriateWriter;
