@@ -194,7 +194,7 @@ public class ChunkerME implements Chunker {
     return bestSequence.getProbs();
   }
   
-  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in,
+    public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in,
       TrainingParameters mlParams, ChunkerFactory factory) throws IOException {
     
     String beamSizeString = mlParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
@@ -241,7 +241,7 @@ public class ChunkerME implements Chunker {
 
   /**
    * @deprecated Use
-   *             {@link #train(String, ObjectStream, ChunkerContextGenerator, TrainingParameters, ChunkerFactory)}
+   *             {@link train(String, ObjectStream, TrainingParameters, ChunkerFactory)}
    *             instead.
    */
   public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in, 
