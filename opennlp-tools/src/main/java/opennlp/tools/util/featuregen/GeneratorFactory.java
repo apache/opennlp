@@ -50,21 +50,22 @@ import org.xml.sax.SAXException;
  * Creates a set of feature generators based on a provided XML descriptor.
  *
  * Example of an XML descriptor:
- *
- * <generators>
- *   <charngram min = "2" max = "5"/>
- *   <definition/>
- *   <cache>
- *     <window prevLength = "3" nextLength = "3">
- *       <generators>
- *         <prevmap/>
- *         <sentence/>
- *         <tokenclass/>
- *         <tokenpattern/>
- *       </generators>
- *     </window>
- *   </cache>
- * </generators>
+ *<p>
+ * &lt;generators&gt;
+ *   &lt;charngram min = "2" max = "5"/&gt;
+ *   &lt;definition/&gt;
+ *   &lt;cache&gt;
+ *     &lt;window prevLength = "3" nextLength = "3"&gt;
+ *       &lt;generators&gt;
+ *         &lt;prevmap/&gt;
+ *         &lt;sentence/&gt;
+ *         &lt;tokenclass/&gt;
+ *         &lt;tokenpattern/&gt;
+ *       &lt;/generators&gt;
+ *     &lt;/window&gt;
+ *   &lt;/cache&gt;
+ * &lt;/generators&gt;
+ * </p>
  *
  * Each XML element is mapped to a {@link GeneratorFactory.XmlFeatureGeneratorFactory} which
  * is responsible to process the element and create the specified
