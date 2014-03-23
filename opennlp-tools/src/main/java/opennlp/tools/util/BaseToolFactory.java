@@ -28,11 +28,14 @@ import opennlp.tools.util.model.BaseModel;
 /**
  * Base class for all tool factories.
  * 
- * Extensions of this class should: <li>implement an empty constructor (TODO is
- * it necessary?) <li>implement a constructor that takes the
- * {@link ArtifactProvider} and calls {@link #BaseToolFactory(Map)} <li>override
- * {@link #createArtifactMap()} and {@link #createArtifactSerializersMap()}
- * methods if necessary.
+ * Extensions of this class should: 
+ * <ul>
+ *  <li>implement an empty constructor (TODO is it necessary?) 
+ *  <li>implement a constructor that takes the {@link ArtifactProvider} and 
+ *      calls {@code BaseToolFactory(Map)} 
+ *  <li>override {@link #createArtifactMap()} and 
+ *      {@link #createArtifactSerializersMap()} methods if necessary.
+ * </ul>
  */
 public abstract class BaseToolFactory {
 
@@ -54,7 +57,7 @@ public abstract class BaseToolFactory {
   /**
    * Creates a {@link Map} with pairs of keys and {@link ArtifactSerializer}.
    * The models implementation should call this method from
-   * {@link BaseModel#createArtifactSerializersMap}
+   * {@code BaseModel#createArtifactSerializersMap}
    * <p>
    * The base implementation will return a {@link HashMap} that should be
    * populated by sub-classes.
