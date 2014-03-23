@@ -21,7 +21,7 @@ import java.io.InputStream;
 
 /**
  * Allows repeated reads through a stream for certain types of model building.
- * Use {@link MockInputStreamFactory} MockInputStreamFactory for default
+ * Use {@code MockInputStreamFactory} MockInputStreamFactory for default
  * behavior.
  *
  */
