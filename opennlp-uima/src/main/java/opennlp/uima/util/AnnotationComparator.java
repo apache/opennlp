@@ -33,7 +33,7 @@ public class AnnotationComparator implements Comparator<AnnotationFS>
    * @param a - first annotation
    * @param b - second annotation
    * 
-   * @return 0 if equals,  < 0 if before and > 0 if after
+   * @return 0 if equals,  &lt; 0 if before and &gt; 0 if after
    */
   public int compare(AnnotationFS a, AnnotationFS b) {
     return a.getBegin() - b.getBegin();
