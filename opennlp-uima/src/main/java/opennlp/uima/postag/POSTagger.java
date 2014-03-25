@@ -46,6 +46,7 @@ import org.apache.uima.util.Logger;
  * <p>
  * Mandatory parameters
  * <table border=1>
+ *   <caption></caption>
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
  *   <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
@@ -56,6 +57,7 @@ import org.apache.uima.util.Logger;
  * <p>
  * Optional parameters
  * <table border=1>
+ *   <caption></caption>
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
  *   <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double probability feature (not set by default)</td></tr>
  *   <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td> 
