@@ -87,7 +87,7 @@ public final class UimaUtil {
    * by annotations of type containerAnnotationType.
    * 
    * @param cas
-   * @param containerAnnotationType
+   * @param containerAnnotation
    * @param removeAnnotationType
    */
   public static void removeAnnotations(CAS cas,
