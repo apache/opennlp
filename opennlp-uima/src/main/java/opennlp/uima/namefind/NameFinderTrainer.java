@@ -393,7 +393,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
       Map<String, Object> resourceMap;
       
       if (featureGeneratorResourceDir != null) {
-        resourceMap = TokenNameFinderTrainerTool.loadResources(featureGeneratorResourceDir);
+        resourceMap = TokenNameFinderTrainerTool.loadResources(featureGeneratorResourceDir, null);
       }
       else {
         resourceMap = Collections.emptyMap();
