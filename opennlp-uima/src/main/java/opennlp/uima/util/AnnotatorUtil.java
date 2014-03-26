@@ -72,7 +72,7 @@ public final class AnnotatorUtil {
    * @param feature
    * @param expectedType
    * 
-   * @throws AnnotatorConfigurationException - if type does not match
+   * @throws AnalysisEngineProcessException - if type does not match
    */
   private static void checkFeatureType(Feature feature, String expectedType) 
       throws AnalysisEngineProcessException {
@@ -107,7 +107,7 @@ public final class AnnotatorUtil {
    * @param rangeType the expected range type
    * @return the requested parameter
    * 
-   * @throws AnnotatorConfigurationException
+   * @throws AnalysisEngineProcessException
    */
   public static Feature getRequiredFeature(Type type, String featureName,
       String rangeType) throws AnalysisEngineProcessException {
@@ -170,8 +170,7 @@ public final class AnnotatorUtil {
    * @param parameter
    * @return the requested parameter
    * 
-   * @throws AnnotatorConfigurationException
-   * @throws AnnotatorInitializationException 
+   * @throws ResourceInitializationException 
    */
   public static String getRequiredStringParameter(UimaContext context,
       String parameter) 
@@ -191,8 +190,7 @@ public final class AnnotatorUtil {
    * @param parameter
    * @return the requested parameter
    * 
-   * @throws AnnotatorConfigurationException
-   * @throws AnnotatorInitializationException 
+   * @throws ResourceInitializationException 
    */
   public static Integer getRequiredIntegerParameter(UimaContext context,
       String parameter) 
@@ -212,8 +210,7 @@ public final class AnnotatorUtil {
    * @param parameter
    * @return the requested parameter
    * 
-   * @throws AnnotatorConfigurationException
-   * @throws AnnotatorInitializationException 
+   * @throws ResourceInitializationException 
    */
   public static Float getRequiredFloatParameter(UimaContext context,
       String parameter) 
@@ -233,8 +230,7 @@ public final class AnnotatorUtil {
    * @param parameter
    * @return the requested parameter
    * 
-   * @throws AnnotatorConfigurationException
-   * @throws AnnotatorInitializationException 
+   * @throws ResourceInitializationException 
    */
   public static Boolean getRequiredBooleanParameter(UimaContext context,
       String parameter) 
@@ -310,8 +306,7 @@ public final class AnnotatorUtil {
    * @param parameter
    * @return the parameter or null if not set
    * 
-   * @throws AnnotatorConfigurationException
-   * @throws AnnotatorInitializationException 
+   * @throws ResourceInitializationException 
    */
   public static String getOptionalStringParameter(UimaContext context,
       String parameter) 
@@ -355,8 +350,7 @@ public final class AnnotatorUtil {
     * @param parameter
     * @return the parameter or null if not set
     * 
-    * @throws AnnotatorConfigurationException
-    * @throws AnnotatorInitializationException
+    * @throws ResourceInitializationException
     */
   public static Integer getOptionalIntegerParameter(UimaContext context,
       String parameter) 
@@ -384,8 +378,7 @@ public final class AnnotatorUtil {
    * @param parameter
    * @return the parameter or null if not set
    * 
-   * @throws AnnotatorConfigurationException
-   * @throws AnnotatorInitializationException 
+   * @throws ResourceInitializationException 
    */
   public static Float getOptionalFloatParameter(UimaContext context,
       String parameter) 
@@ -414,8 +407,7 @@ public final class AnnotatorUtil {
    * @param parameter
    * @return the parameter or null if not set
    * 
-   * @throws AnnotatorConfigurationException
-   * @throws AnnotatorInitializationException 
+   * @throws ResourceInitializationException 
    */
   public static Boolean getOptionalBooleanParameter(UimaContext context,
       String parameter) 
@@ -459,7 +451,7 @@ public final class AnnotatorUtil {
    * @param name
    * @return the stream
    * 
-   * @throws AnnotatorConfigurationException
+   * @throws ResourceInitializationException
    */
   public static InputStream getResourceAsStream(UimaContext context, String name)
       throws ResourceInitializationException {
