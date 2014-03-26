@@ -61,7 +61,7 @@ public final class CasConsumerUtil {
    * @param name
    * @return the stream
    * 
-   * @throws AnnotatorConfigurationException
+   * @throws ResourceInitializationException
    */
   public static InputStream getResourceAsStream(UimaContext context, 
       String name) throws ResourceInitializationException {
