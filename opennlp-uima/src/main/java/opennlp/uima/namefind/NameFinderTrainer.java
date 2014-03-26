@@ -66,6 +66,7 @@ import org.apache.uima.util.ProcessTrace;
  * <p>
  * Mandatory parameters
  * <table border=1>
+ *   <caption></caption>
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
  *   <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.Language</td> <td>The language code</td></tr>
@@ -76,6 +77,7 @@ import org.apache.uima.util.ProcessTrace;
  *  
  * Optional parameters
  * <table border=1>
+ *   <caption></caption>
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
  *   <tr><td>String</td> <td>opennlp.uima.opennlp.uima.TrainingParamsFile</td> <td>Training Parameters Properties file</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.FeatureGeneratorFile</td> <td>Feature Generator definition file which contain the feature generator configuration</td></tr>
