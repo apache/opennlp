@@ -35,6 +35,10 @@ interface TrainingParams extends BasicTrainingParams {
   @OptionalParameter(defaultValue = "CHUNKING")
   String getParserType();
   
+
+  @ParameterDescription(valueName = "className", description = "head rules artifact serializer class name")
+  @OptionalParameter
+  String getHeadRulesSerializerImpl();
   
   @ParameterDescription(valueName = "headRulesFile", description = "head rules file.")
   File getHeadRules();

@@ -36,6 +36,8 @@ import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ext.ExtensionLoader;
+import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ModelUtil;
 
 public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerToolParams> {
@@ -80,6 +82,31 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     return type;
   }
   
+  static HeadRules creaeHeadRules(TrainerToolParams params) throws IOException {
+    
+    ArtifactSerializer headRulesSerializer = null;
+    
+    if (params.getHeadRulesSerializerImpl() != null) {
+      headRulesSerializer = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, 
+              params.getHeadRulesSerializerImpl());
+    }
+    else {
+      // TODO: Use default, e.g. based on language 
+      // language can be specified in the params ... 
+      
+      headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
+    }
+    
+    Object headRulesObject = headRulesSerializer.create(new FileInputStream(params.getHeadRules()));
+    
+    if (headRulesObject instanceof HeadRules) {
+      return (HeadRules) headRulesObject;
+    }
+    else {
+      throw new TerminateToolException(-1, "HeadRules Artifact Serializer must create an object of type HeadRules!");
+    }
+  }
+  
   // TODO: Add param to train tree insert parser
   public void run(String format, String[] args) {
     super.run(format, args);
@@ -117,11 +144,7 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     
     ParserModel model;
     try {
-
-      // TODO hard-coded language reference
-      HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(
-          new InputStreamReader(new FileInputStream(params.getHeadRules()),
-              params.getEncoding()));
+      HeadRules rules = creaeHeadRules(params);
       
       ParserType type = parseParserType(params.getParserType());
       if(params.getFun()){
