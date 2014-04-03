@@ -54,8 +54,8 @@ public class TokenNameFinderFactory extends BaseToolFactory {
    * of the resources.
    */
   public TokenNameFinderFactory() {
+    this.seqCodec = new BioCodec();
   }
-
   
   public TokenNameFinderFactory(byte[] featureGeneratorBytes, final Map<String, Object> resources,
       SequenceCodec<String> seqCodec) {
