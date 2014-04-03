@@ -47,13 +47,16 @@ import opennlp.tools.ml.perceptron.PerceptronPrepAttachTest;
 import org.junit.Test;
 
 public class QNTrainerTest {
+  
+  private static int ITERATIONS = 10;
+  
   @Test
   public void testTrainModelReturnsAQNModel() throws Exception {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");  
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     // when
-    QNModel trainedModel = new QNTrainer(false).trainModel(testDataIndexer);
+    QNModel trainedModel = new QNTrainer(false).trainModel(ITERATIONS, testDataIndexer);
     // then
     assertNotNull(trainedModel);
   }
@@ -64,7 +67,7 @@ public class QNTrainerTest {
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");  
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     // when
-    QNModel trainedModel = new QNTrainer(15, true).trainModel(testDataIndexer);
+    QNModel trainedModel = new QNTrainer(15, true).trainModel(ITERATIONS, testDataIndexer);
     String[] features2Classify = new String[] {"feature2","feature3", "feature3", "feature3","feature3", "feature3", "feature3","feature3", "feature3", "feature3","feature3", "feature3"};
     double[] eval = trainedModel.eval(features2Classify);
     // then
@@ -73,7 +76,7 @@ public class QNTrainerTest {
 
   @Test
   public void testInBigDevSet() throws IOException {
-    QNModel trainedModel = new QNTrainer(10, 1000, true).trainModel(new TwoPassDataIndexer(createTrainingStream()));
+    QNModel trainedModel = new QNTrainer(10, 1000, true).trainModel(ITERATIONS, new TwoPassDataIndexer(createTrainingStream()));
     // then
     testModel(trainedModel);
   }
@@ -84,7 +87,7 @@ public class QNTrainerTest {
 	    RealValueFileEventStream rvfes1 = new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");  
 	    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
 	    // when
-	    QNModel trainedModel = new QNTrainer(15, true).trainModel(testDataIndexer);
+	    QNModel trainedModel = new QNTrainer(15, true).trainModel(ITERATIONS, testDataIndexer);
 	    
 	    assertTrue(trainedModel.equals(trainedModel));  
 	    assertFalse(trainedModel.equals(null));
@@ -97,7 +100,7 @@ public class QNTrainerTest {
 	    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
 	    // when
 	   // QNModel trainedModel = new QNTrainer(5, 500, true).trainModel(new TwoPassDataIndexer(createTrainingStream()));
-	    QNModel trainedModel = new QNTrainer(5, 700, true).trainModel(testDataIndexer);
+	    QNModel trainedModel = new QNTrainer(5, 700, true).trainModel(ITERATIONS, testDataIndexer);
 	    
 	    ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
 	    GenericModelWriter modelWriter = new GenericModelWriter(trainedModel, new DataOutputStream(modelBytes));

@@ -37,7 +37,8 @@ public class LineSearchTest {
     double[] testDirection = new double[] { 1 };
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
-    double stepSize = LineSearch.doLineSearch(objectiveFunction, testDirection, lsr).getStepSize();
+    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr);
+    double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
     assertTrue(succCond);
@@ -53,7 +54,8 @@ public class LineSearchTest {
     double[] testDirection = new double[] { 1 };
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
-    double stepSize = LineSearch.doLineSearch(objectiveFunction, testDirection, lsr).getStepSize();
+    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr);
+    double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
     assertTrue(succCond);
@@ -69,7 +71,8 @@ public class LineSearchTest {
     double[] testDirection = new double[] { -1 };
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
-    double stepSize = LineSearch.doLineSearch(objectiveFunction, testDirection, lsr).getStepSize();
+    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr);
+    double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
     assertFalse(succCond);
@@ -86,7 +89,8 @@ public class LineSearchTest {
     double[] testDirection = new double[] { -1 };
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
-    double stepSize = LineSearch.doLineSearch(objectiveFunction, testDirection, lsr).getStepSize();
+    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr);
+    double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
     assertFalse(succCond);
@@ -103,7 +107,8 @@ public class LineSearchTest {
     double[] testDirection = new double[] { 1 };
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
-    double stepSize = LineSearch.doLineSearch(objectiveFunction, testDirection, lsr).getStepSize();
+    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr);
+    double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
     assertFalse(succCond);
@@ -120,7 +125,8 @@ public class LineSearchTest {
     double[] testDirection = new double[] { 1 };
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
-    double stepSize = LineSearch.doLineSearch(objectiveFunction, testDirection, lsr).getStepSize();
+    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr);
+    double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
     assertFalse(succCond);
@@ -137,7 +143,8 @@ public class LineSearchTest {
     double[] testDirection = new double[] { -1 };
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
-    double stepSize = LineSearch.doLineSearch(objectiveFunction, testDirection, lsr).getStepSize();
+    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr);
+    double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
     assertFalse(succCond);
@@ -154,7 +161,8 @@ public class LineSearchTest {
     double[] testDirection = new double[] { 1 };
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
-    double stepSize = LineSearch.doLineSearch(objectiveFunction, testDirection, lsr).getStepSize();
+    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr);
+    double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
     assertFalse(succCond);

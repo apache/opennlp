@@ -20,48 +20,26 @@ package opennlp.tools.ml.maxent.quasinewton;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
-import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.UniformPrior;
 
 public class QNModel extends AbstractModel {
-  private static final double SMOOTHING_VALUE = 0.1;
-  private double[] parameters;
-  // FROM trainer
-  public QNModel(LogLikelihoodFunction monitor, double[] parameters) {
-	super(null, monitor.getPredLabels(), monitor.getOutcomeLabels());
-	
-    int[][] outcomePatterns = monitor.getOutcomePatterns();
-    Context[] params = new Context[monitor.getPredLabels().length];
-    for (int ci = 0; ci < params.length; ci++) {
-      int[] outcomePattern = outcomePatterns[ci];
-      double[] alpha = new double[outcomePattern.length];
-      for (int oi = 0; oi < outcomePattern.length; oi++) {
-        alpha[oi] = parameters[ci + (outcomePattern[oi] * monitor.getPredLabels().length)];
-      }
-      params[ci] = new Context(outcomePattern, alpha);
-    }
-    this.evalParams = new EvalParameters(params, monitor.getOutcomeLabels().length);
-    this.prior = new UniformPrior();
-    this.modelType = ModelType.MaxentQn;
-    
-    this.parameters = parameters;
-  }
   
-  // FROM model reader
-  public QNModel(String[] predNames, String[] outcomeNames, Context[] params, double[] parameters) {
-	 super(params, predNames, outcomeNames);
-	 this.prior = new UniformPrior();
-	 this.modelType = ModelType.MaxentQn;
-	 
-	 this.parameters = parameters;
+  public QNModel(Context[] params, String[] predLabels, String[] outcomeNames) {
+	  super(params, predLabels, outcomeNames);
+    this.prior     = new UniformPrior();
+    this.modelType = ModelType.MaxentQn;
+  }
+
+  public int getNumOutcomes() {
+    return this.outcomeNames.length;
+  }
+
+  private int getPredIndex(String predicate) {
+    return pmap.get(predicate);
   }
 
   public double[] eval(String[] context) {
     return eval(context, new double[evalParams.getNumOutcomes()]);
-  }
-  
-  private int getPredIndex(String predicate) {
-	return pmap.get(predicate);
   }
 
   public double[] eval(String[] context, double[] probs) {
@@ -72,46 +50,81 @@ public class QNModel extends AbstractModel {
 	  return eval(context, values, new double[evalParams.getNumOutcomes()]);
   }
   
-  // TODO need implments for handlling with "probs".
+  /**
+   * Model evaluation which should be used during inference.
+   * @param context
+   *          The predicates which have been observed at the present 
+   *          decision point. 
+   * @param values
+   *          Weights of the predicates which have been observed at
+   *          the present decision point.  
+   * @param probs
+   *          Probability for outcomes.
+   * @return Normalized probabilities for the outcomes given the context.
+   */
   private double[] eval(String[] context, float[] values, double[] probs) {
-    double[] result = new double[outcomeNames.length];
-    double[] table = new double[outcomeNames.length + 1];  
-    for (int pi = 0; pi < context.length; pi++) {
-      int predIdx = getPredIndex(context[pi]);
-     
-      for (int oi = 0; oi < outcomeNames.length; oi++) {
-        int paraIdx = oi * pmap.size() + predIdx;
-        
+    Context[] params = evalParams.getParams();
+    
+    for (int ci = 0; ci < context.length; ci++) {
+      int predIdx = getPredIndex(context[ci]);
+
+      if (predIdx >= 0) {
         double predValue = 1.0;
-        if (values != null) predValue = values[pi];
-        if (paraIdx < 0) {
-        	table[oi] += predValue * SMOOTHING_VALUE;
-        } else {
-        	table[oi] += predValue * parameters[paraIdx];
-        }
+        if (values != null) predValue = values[ci];
         
+        double[] parameters = params[predIdx].getParameters();
+        int[] outcomes = params[predIdx].getOutcomes();
+        for (int i = 0; i < outcomes.length; i++) {
+          int oi = outcomes[i];
+          probs[oi] += predValue * parameters[i];
+        }
       }
     }
     
+    double logSumExp = ArrayMath.logSumOfExps(probs);
     for (int oi = 0; oi < outcomeNames.length; oi++) {
-    	table[oi] = Math.exp(table[oi]);
-    	table[outcomeNames.length] += table[oi];
+    	probs[oi] = Math.exp(probs[oi] - logSumExp);
     }
-    for (int oi = 0; oi < outcomeNames.length; oi++) {
-    	result[oi] = table[oi] / table[outcomeNames.length];
-    }
-    return result;
-//    double[] table = new double[outcomeNames.length];
-//    Arrays.fill(table, 1.0 / outcomeNames.length);
-//    return table;
+    return probs;
   }
 
-  public int getNumOutcomes() {
-    return this.outcomeNames.length;
-  }
-  
-  public double[] getParameters() {
-	  return this.parameters;
+  /**
+   * Model evaluation which should be used during training to report model accuracy. 
+   * @param context 
+   *          Indices of the predicates which have been observed at the present 
+   *          decision point. 
+   * @param values
+   *          Weights of the predicates which have been observed at
+   *          the present decision point.  
+   * @param probs
+   *          Probability for outcomes
+   * @param nOutcomes
+   *          Number of outcomes
+   * @param nPredLabels
+   *          Number of unique predicates
+   * @param parameters
+   *          Model parameters
+   * @return Normalized probabilities for the outcomes given the context.
+   */
+  public static double[] eval(int[] context, float[] values, double[] probs, 
+      int nOutcomes, int nPredLabels, double[] parameters) {
+    
+    for (int i = 0; i < context.length; i++) {
+      int predIdx = context[i];
+      double predValue = 1.0;
+      if (values != null) predValue = values[i];
+      
+      for (int oi = 0; oi < nOutcomes; oi++) {
+        probs[oi] += predValue * parameters[oi * nPredLabels + predIdx];
+      }
+    }
+    
+    double logSumExp = ArrayMath.logSumOfExps(probs);
+    for (int oi = 0; oi < nOutcomes; oi++) {
+      probs[oi] = Math.exp(probs[oi] - logSumExp);
+    }
+    
+    return probs;
   }
   
   public boolean equals(Object obj) {

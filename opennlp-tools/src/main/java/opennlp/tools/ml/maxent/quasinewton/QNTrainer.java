@@ -19,84 +19,77 @@
 package opennlp.tools.ml.maxent.quasinewton;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.DataIndexer;
 
 /**
- * maxent model trainer using l-bfgs algorithm.
+ * Maxent model trainer using L-BFGS algorithm.
  */
 public class QNTrainer extends AbstractEventTrainer {
 
   public static final String MAXENT_QN_VALUE = "MAXENT_QN_EXPERIMENTAL";
 
-  // constants for optimization.
-  private static final double CONVERGE_TOLERANCE = 1.0E-10;
-  private static final int MAX_M = 15;
-  public static final int DEFAULT_M = 7;
-  public static final int MAX_FCT_EVAL = 3000;
-  public static final int DEFAULT_MAX_FCT_EVAL = 300;
+  // function change rate tolerance
+  private static final double CONVERGE_TOLERANCE = 1e-4;
+  
+  // relative gradient norm tolerance. Currently not being used.
+  private static final boolean USE_REL_GRAD_NORM = false;
+  private static final double REL_GRAD_NORM_TOL = 1e-8; 
 
+  // minimum step size
+  public static final double MIN_STEP_SIZE = 1e-10;
+  
+  public static final String L2COST_PARAM = "L2Cost";
+  public static final double L2COST_DEFAULT = 1.0; 
+  
+  // number of Hessian updates to store
+  private static final String M_PARAM = "numOfUpdates";
+  private static final int M_DEFAULT = 15;
+  
+  private static final String MAX_FCT_EVAL_PARAM = "maxFctEval";
+  private static final int MAX_FCT_EVAL_DEFAULT = 30000;
+
+  // L2-regularization cost
+  private double l2Cost;
+  
   // settings for objective function and optimizer.
   private int dimension;
   private int m;
   private int maxFctEval;
+  private double initialGradNorm;
   private QNInfo updateInfo;
-  private boolean verbose;
+  private boolean verbose = true;
 
-  // constructor -- to log.
+  // constructor -- to log. For testing purpose
   public QNTrainer(boolean verbose) {
-	this(DEFAULT_M, verbose);
+    this(M_DEFAULT, verbose);
   }
 
-  // constructor -- m : number of hessian updates to store.
+  // constructor -- m : number of hessian updates to store. For testing purpose
   public QNTrainer(int m) {
     this(m, true);
   }
 
-  // constructor -- to log, number of hessian updates to store.
+  // constructor -- to log, number of hessian updates to store. For testing purpose
   public QNTrainer(int m, boolean verbose) {
-	this(m, DEFAULT_MAX_FCT_EVAL, verbose);
+    this(m, MAX_FCT_EVAL_DEFAULT, verbose);
   }
 
+  // for testing purpose
   public QNTrainer(int m, int maxFctEval, boolean verbose) {
-
-    this.verbose = verbose;
-    if (m > MAX_M) {
-      this.m = MAX_M;
-    } else {
-      this.m = m;
-    }
-    if (maxFctEval < 0) {
-      this.maxFctEval = DEFAULT_MAX_FCT_EVAL;
-    } else if (maxFctEval > MAX_FCT_EVAL) {
-      this.maxFctEval = MAX_FCT_EVAL;
-    } else {
-      this.maxFctEval = maxFctEval;
-    }
+    this.verbose    = verbose;
+    this.m          = m < 0? M_DEFAULT: m;
+    this.maxFctEval = maxFctEval < 0? MAX_FCT_EVAL_DEFAULT: maxFctEval;
+    this.l2Cost     = L2COST_DEFAULT;
   }
 
   // >> members related to AbstractEventTrainer
   public QNTrainer() {
-
-    int m = getIntParam("numOfUpdates", DEFAULT_M);
-    int maxFctEval = getIntParam("maxFctEval", DEFAULT_MAX_FCT_EVAL);
-
-    this.verbose = true;
-    if (m > MAX_M) {
-      this.m = MAX_M;
-    } else {
-      this.m = m;
-    }
-    if (maxFctEval < 0) {
-      this.maxFctEval = DEFAULT_MAX_FCT_EVAL;
-    } else if (maxFctEval > MAX_FCT_EVAL) {
-      this.maxFctEval = MAX_FCT_EVAL;
-    } else {
-      this.maxFctEval = maxFctEval;
-    }
   }
 
   public boolean isValid() {
@@ -106,11 +99,31 @@ public class QNTrainer extends AbstractEventTrainer {
     }
 
     String algorithmName = getAlgorithm();
-
     if (algorithmName != null && !(MAXENT_QN_VALUE.equals(algorithmName))) {
       return false;
     }
 
+    // Number of Hessian updates to remember
+    int m = getIntParam(M_PARAM, M_DEFAULT);
+    if (m < 0) {
+      return false;
+    }
+    this.m = m;
+    
+    // Maximum number of function evaluations
+    int maxFctEval = getIntParam(MAX_FCT_EVAL_PARAM, MAX_FCT_EVAL_DEFAULT);
+    if (maxFctEval < 0) {
+      return false;
+    }
+    this.maxFctEval = maxFctEval;
+    
+    // L2-regularization cost must be >= 0
+    double l2Cost = getDoubleParam(L2COST_PARAM, L2COST_DEFAULT); 
+    if (l2Cost < 0) {
+      return false;
+    }
+    this.l2Cost = l2Cost;
+    
     return true;
   }
 
@@ -119,92 +132,213 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   public AbstractModel doTrain(DataIndexer indexer) throws IOException {
-    AbstractModel model;
-
-    model = trainModel(indexer);
-
-    return model;
+    int iterations = getIterations();
+    return trainModel(iterations, indexer);
   }
 
   // << members related to AbstractEventTrainer
 
-  public QNModel trainModel(DataIndexer indexer) {
-    LogLikelihoodFunction objectiveFunction = generateFunction(indexer);
-    this.dimension = objectiveFunction.getDomainDimension();
+  public QNModel trainModel(int iterations, DataIndexer indexer) {
+    NegLogLikelihoodFunction objectiveFunction = new NegLogLikelihoodFunction(indexer, l2Cost);
+    this.dimension  = objectiveFunction.getDomainDimension();
     this.updateInfo = new QNInfo(this.m, this.dimension);
 
-    double[] initialPoint = objectiveFunction.getInitialPoint();
-    double initialValue = objectiveFunction.valueAt(initialPoint);
-    double[] initialGrad = objectiveFunction.gradientAt(initialPoint);
+    // current point is at the origin
+    double[] currPoint = new double[dimension];
+    
+    double currValue = objectiveFunction.valueAt(currPoint);
+    
+    // gradient at the current point
+    double[] currGrad = new double[dimension]; 
+    System.arraycopy(objectiveFunction.gradientAt(currPoint), 0, 
+        currGrad, 0, dimension);
+    
+    // initial L2-norm of the gradient
+    this.initialGradNorm = ArrayMath.norm(currGrad); 
+    
+    LineSearchResult lsr = LineSearchResult.getInitialObject(
+        currValue, currGrad, currPoint, 0);
 
-    LineSearchResult lsr = LineSearchResult.getInitialObject(initialValue, initialGrad, initialPoint, 0);
-
-    int z = 0;
-    while (true) {
-      if (verbose) {
-        System.out.print(z++);
-      }
-      double[] direction = null;
-
-      direction = computeDirection(objectiveFunction, lsr);
-      lsr = LineSearch.doLineSearch(objectiveFunction, direction, lsr, verbose);
-      
+    if (verbose) 
+      display("\nPerforming " + iterations + " iterations with " +
+      		"L2-cost = " + l2Cost + "\n");
+    
+    double[] direction = new double[this.dimension];
+    long startTime = System.currentTimeMillis();
+    
+    for (int iter = 1; iter <= iterations; iter++) {
+      computeDirection(lsr, direction);
+      LineSearch.doLineSearch(objectiveFunction, direction, lsr);
       updateInfo.updateInfo(lsr);
       
-      if (isConverged(lsr)) 
+      if (verbose) {
+        double accurarcy = evaluateModel(indexer, lsr.getNextPoint());
+        if (iter < 10)
+          display("  " + iter + ":  ");
+        else if (iter < 100)
+          display(" " + iter + ":  ");
+        else
+          display(iter + ":  ");
+        
+        display("\t " + lsr.getValueAtCurr());
+        display("\t" + lsr.getFuncChangeRate());
+        display("\t" + accurarcy);
+        display("\n");
+      }
+      if (isConverged(lsr))
         break;
     }
-    return new QNModel(objectiveFunction, lsr.getNextPoint());
+    
+    long endTime = System.currentTimeMillis();
+    long duration = endTime - startTime;
+    display("Training time: " + (duration / 1000.) + "s\n");
+    
+    double[] parameters = lsr.getNextPoint();
+    
+    String[] predLabels = indexer.getPredLabels(); 
+    int nPredLabels = predLabels.length;
+
+    String[] outcomeNames = indexer.getOutcomeLabels();
+    int nOutcomes = outcomeNames.length;
+    
+    Context[] params = new Context[nPredLabels];
+    for (int ci = 0; ci < params.length; ci++) {
+      List<Integer> outcomePattern = new ArrayList<Integer>(nOutcomes);
+      List<Double> alpha = new ArrayList<Double>(nOutcomes); 
+      for (int oi = 0; oi < nOutcomes; oi++) {
+        double val = parameters[oi * nPredLabels + ci];
+        // Only save data corresponding to non-zero values
+        if (val != 0) {
+          outcomePattern.add(oi);
+          alpha.add(val);
+        }
+      }
+      params[ci] = new Context(ArrayMath.toIntArray(outcomePattern), 
+          ArrayMath.toDoubleArray(alpha));
+    }
+    
+    return new QNModel(params, predLabels, outcomeNames);
   }
 
+  /**
+   * L-BFGS two-loop recursion (see Nocedal & Wright 2006, Numerical Optimization, p. 178) 
+   */
+  private void computeDirection(LineSearchResult lsr, double[] direction) {
+    
+    // implemented two-loop Hessian update method.
+    System.arraycopy(lsr.getGradAtNext(), 0, direction, 0, direction.length);
 
-  private LogLikelihoodFunction generateFunction(DataIndexer indexer) {
-    return new LogLikelihoodFunction(indexer);
-  }
-
-  private double[] computeDirection(DifferentiableFunction monitor, LineSearchResult lsr) {
-    // implemented two-loop hessian update method.
-    double[] direction = lsr.getGradAtNext().clone();
-    double[] as = new double[m];
-  
+    int k = updateInfo.kCounter;
+    double[] rho    = updateInfo.rho;
+    double[] alpha  = updateInfo.alpha; // just to avoid recreating alpha
+    double[][] S    = updateInfo.S;
+    double[][] Y    = updateInfo.Y;
+    
     // first loop
-    for (int i = updateInfo.kCounter - 1; i >= 0; i--) {
-      as[i] = updateInfo.getRho(i) * ArrayMath.innerProduct(updateInfo.getS(i), direction);
-      for (int ii = 0; ii < dimension; ii++) {
-        direction[ii] = direction[ii] - as[i] * updateInfo.getY(i)[ii];
+    for (int i = k - 1; i >= 0; i--) {
+      alpha[i] = rho[i] * ArrayMath.innerProduct(S[i], direction);
+      for (int j = 0; j < dimension; j++) {
+        direction[j] = direction[j] - alpha[i] * Y[i][j];
       }
     }
 
     // second loop
-    for (int i = 0; i < updateInfo.kCounter; i++) {
-      double b = updateInfo.getRho(i) * ArrayMath.innerProduct(updateInfo.getY(i), direction);
-      for (int ii = 0; ii < dimension; ii++) {
-        direction[ii] = direction[ii] + (as[i] - b) * updateInfo.getS(i)[ii];
+    for (int i = 0; i < k; i++) {
+      double beta = rho[i] * ArrayMath.innerProduct(Y[i], direction);
+      for (int j = 0; j < dimension; j++) {
+        direction[j] = direction[j] + S[i][j] * (alpha[i] - beta);
       }
     }
 
     for (int i = 0; i < dimension; i++) {
-      direction[i] *= -1.0;
+      direction[i] = -direction[i];
     }
-
-    return direction;
   }
   
-  // FIXME need an improvement in convergence condition
+  // TODO: Need an improvement in convergence condition
   private boolean isConverged(LineSearchResult lsr) {
-    return CONVERGE_TOLERANCE > Math.abs(lsr.getValueAtNext() - lsr.getValueAtCurr())
-        || lsr.getFctEvalCount() > this.maxFctEval;
+    
+      if (lsr.getFuncChangeRate() < CONVERGE_TOLERANCE) {
+        if (verbose)
+          display("Function change rate is smaller than the threshold " 
+                    + CONVERGE_TOLERANCE + ".\nTraining will stop.\n\n");
+        return true;
+      }
+      
+      if (USE_REL_GRAD_NORM) {
+        double gradNorm = ArrayMath.norm(lsr.getGradAtNext());
+        if (gradNorm / initialGradNorm < REL_GRAD_NORM_TOL) {
+          if (verbose)
+            display("Relative L2-norm of the gradient is smaller than the threshold " 
+                + REL_GRAD_NORM_TOL + ".\nTraining will stop.\n\n");
+          return true;
+        }
+      }
+      
+      if (lsr.getStepSize() < MIN_STEP_SIZE) {
+        if (verbose) 
+          display("Step size is smaller than the minimum step size " 
+              + MIN_STEP_SIZE + ".\nTraining will stop.\n\n");
+        return true;
+      }
+        
+      if (lsr.getFctEvalCount() > this.maxFctEval) {
+        if (verbose)
+          display("Maximum number of function evaluations has exceeded the threshold " 
+              + this.maxFctEval + ".\nTraining will stop.\n\n");
+        return true;
+      }
+    
+    return false;  
   }
   
   /**
-   * class to store vectors for hessian approximation update.
+   * Evaluate the current model on training data set 
+   * @return model's training accuracy
+   */
+  private double evaluateModel(DataIndexer indexer, double[] parameters) {
+    int[][] contexts  = indexer.getContexts();
+    float[][] values  = indexer.getValues();
+    int[] nEventsSeen = indexer.getNumTimesEventsSeen();
+    int[] outcomeList = indexer.getOutcomeList(); 
+    int nOutcomes     = indexer.getOutcomeLabels().length;
+    int nPredLabels   = indexer.getPredLabels().length;
+    
+    int nCorrect     = 0;
+    int nTotalEvents = 0;
+    
+    for (int ei = 0; ei < contexts.length; ei++) {
+      int[] context  = contexts[ei];
+      float[] value  = values == null? null: values[ei];
+      
+      double[] probs = new double[nOutcomes];
+      QNModel.eval(context, value, probs, nOutcomes, nPredLabels, parameters);
+      int outcome = ArrayMath.maxIdx(probs);
+      if (outcome == outcomeList[ei]) {
+        nCorrect += nEventsSeen[ei];
+      }
+      nTotalEvents += nEventsSeen[ei];
+    }
+    
+    return (double) nCorrect / nTotalEvents;
+  }
+  
+  /**
+   * Shorthand for System.out.print
+   */
+  private void display(String s) {
+    System.out.print(s);
+  }
+  
+  /**
+   * Class to store vectors for Hessian approximation update.
    */
   private class QNInfo {
     private double[][] S;
     private double[][] Y;
     private double[] rho;
+    private double[] alpha;
     private int m;
-    private double[] diagonal;
 
     private int kCounter;
 
@@ -212,55 +346,47 @@ public class QNTrainer extends AbstractEventTrainer {
     QNInfo(int numCorrection, int dimension) {
       this.m = numCorrection;
       this.kCounter = 0;
-      S = new double[this.m][];
-      Y = new double[this.m][];
-      rho = new double[this.m];
-      Arrays.fill(rho, Double.NaN);
-      diagonal = new double[dimension];
-      Arrays.fill(diagonal, 1.0);
+      S     = new double[this.m][dimension];
+      Y     = new double[this.m][dimension];
+      rho   = new double[this.m];
+      alpha = new double[this.m];
     }
-
+    
     public void updateInfo(LineSearchResult lsr) {
-      double[] s_k = new double[dimension];
-      double[] y_k = new double[dimension];
-      for (int i = 0; i < dimension; i++) {
-        s_k[i] = lsr.getNextPoint()[i] - lsr.getCurrPoint()[i];
-        y_k[i] = lsr.getGradAtNext()[i] - lsr.getGradAtCurr()[i];
-      }
-      this.updateSYRoh(s_k, y_k);
-      kCounter = kCounter < m ? kCounter + 1 : kCounter;
-    }
-
-    private void updateSYRoh(double[] s_k, double[] y_k) {
-      double newRoh = 1.0 / ArrayMath.innerProduct(y_k, s_k);
+      double[] currPoint  = lsr.getCurrPoint();
+      double[] gradAtCurr = lsr.getGradAtCurr(); 
+      double[] nextPoint  = lsr.getNextPoint();
+      double[] gradAtNext = lsr.getGradAtNext(); 
+      
+      // inner product of S_k and Y_k
+      double SYk = 0.0; 
+      
       // add new ones.
       if (kCounter < m) {
-        S[kCounter] = s_k.clone();
-        Y[kCounter] = y_k.clone();
-        rho[kCounter] = newRoh;
-      } else if (m > 0) {
-      // discard oldest vectors and add new ones.
+        for (int j = 0; j < dimension; j++) {
+          S[kCounter][j] = nextPoint[j] - currPoint[j];
+          Y[kCounter][j] = gradAtNext[j] - gradAtCurr[j];
+          SYk += S[kCounter][j] * Y[kCounter][j];
+        }
+        rho[kCounter] = 1.0 / SYk;
+      } 
+      else if (m > 0) {
+        // discard oldest vectors and add new ones.
         for (int i = 0; i < m - 1; i++) {
           S[i] = S[i + 1];
           Y[i] = Y[i + 1];
           rho[i] = rho[i + 1];
         }
-        S[m - 1] = s_k.clone();
-        Y[m - 1] = y_k.clone();
-        rho[m - 1] = newRoh;
+        for (int j = 0; j < dimension; j++) {
+          S[m - 1][j] = nextPoint[j] - currPoint[j];
+          Y[m - 1][j] = gradAtNext[j] - gradAtCurr[j];
+          SYk += S[m - 1][j] * Y[m - 1][j];  
+        }
+        rho[m - 1] = 1.0 / SYk;
       }
-    }
-    
-    public double getRho(int updateIndex) {
-      return this.rho[updateIndex];
-    }
-    
-    public double[] getS(int updateIndex) {
-      return S[updateIndex];
-    }
-    
-    public double[] getY(int updateIndex) {
-      return Y[updateIndex];
+      
+      if (kCounter < m) 
+        kCounter++;
     }
   }
 }
