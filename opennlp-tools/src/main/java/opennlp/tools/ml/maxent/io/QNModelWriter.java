@@ -19,68 +19,52 @@
 package opennlp.tools.ml.maxent.io;
 
 import java.io.IOException;
+import java.util.List;
 
-import opennlp.tools.ml.maxent.quasinewton.QNModel;
 import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.AbstractModelWriter;
-import opennlp.tools.ml.model.Context;
-import opennlp.tools.ml.model.IndexHashTable;
+import opennlp.tools.ml.model.ComparablePredicate;
 
-public abstract class QNModelWriter extends AbstractModelWriter {
-  protected String[] outcomeNames;
-  protected String[] predNames;
-  protected Context[] params;
-  protected double[] predParams;
-  //protected EvalParameters evalParam;
+public abstract class QNModelWriter extends GISModelWriter {
   
-  protected IndexHashTable<String> pmap;
-  protected double[] parameters;
-  
-  @SuppressWarnings("unchecked")
   public QNModelWriter(AbstractModel model) {
-    Object[] data = model.getDataStructures();
-    params = (Context[]) data[0];
-    pmap = (IndexHashTable<String>) data[1];
-    outcomeNames = (String[]) data[2];
-    
-    QNModel qnModel = (QNModel) model;
-    parameters = qnModel.getParameters();
+    super(model);
   }
-  
+
   @Override
   public void persist() throws IOException {
     // the type of model (QN)
     writeUTF("QN");
-    
-    // predNames
-    predNames = new String[pmap.size()];
-    pmap.toArray(predNames);
-    writeInt(predNames.length);
-    for (int i = 0; i < predNames.length; i++)
-      writeUTF(predNames[i]);
- 
-    // outcomeNames
-    writeInt(outcomeNames.length);
-    for (int i = 0; i < outcomeNames.length; i++)
-      writeUTF(outcomeNames[i]);
-    
-    // parameters
-    writeInt(params.length);
-    for (Context currContext : params) {
-    	writeInt(currContext.getOutcomes().length);
-    	for (int i = 0; i < currContext.getOutcomes().length; i++) {
-    		writeInt(currContext.getOutcomes()[i]);
-    	}
-    	writeInt(currContext.getParameters().length);
-    	for (int i = 0; i < currContext.getParameters().length; i++) {
-    		writeDouble(currContext.getParameters()[i]);
-    	}
+  
+    // the mapping from outcomes to their integer indexes
+    writeInt(OUTCOME_LABELS.length);
+  
+    for (int i = 0; i < OUTCOME_LABELS.length; i++)
+      writeUTF(OUTCOME_LABELS[i]);
+  
+    // the mapping from predicates to the outcomes they contributed to.
+    // The sorting is done so that we actually can write this out more
+    // compactly than as the entire list.
+    ComparablePredicate[] sorted = sortValues();
+    List<List<ComparablePredicate>> compressed = compressOutcomes(sorted);
+  
+    writeInt(compressed.size());
+  
+    for (int i = 0; i < compressed.size(); i++) {
+      List<ComparablePredicate> a = compressed.get(i);
+      writeUTF(a.size() + a.get(0).toString());
     }
-    
-    // parameters 2
-    writeInt(parameters.length);
-    for (int i = 0; i < parameters.length; i++)
-      writeDouble(parameters[i]);
+  
+    // the mapping from predicate names to their integer indexes
+    writeInt(PARAMS.length);
+  
+    for (int i = 0; i < sorted.length; i++)
+      writeUTF(sorted[i].name);
+  
+    // write out the parameters
+    for (int i = 0; i < sorted.length; i++)
+      for (int j = 0; j < sorted[i].params.length; j++)
+        writeDouble(sorted[i].params[j]);
+  
     close();
   }
 }

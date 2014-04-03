@@ -18,15 +18,15 @@
  */
 package opennlp.tools.ml.maxent.quasinewton;
 
+import java.util.List;
+
 /**
- * utility class for simple vector arithmetics.
+ * Utility class for simple vector arithmetic.
  */
 public class ArrayMath {
 
   public static double innerProduct(double[] vecA, double[] vecB) {
-    if (vecA == null || vecB == null) 
-      return Double.NaN;
-    if (vecA.length != vecB.length)
+    if (vecA == null || vecB == null || vecA.length != vecB.length)
       return Double.NaN;
 
     double product = 0.0;
@@ -35,18 +35,76 @@ public class ArrayMath {
     }
     return product;
   }
-
-  public static double[] updatePoint(double[] point, double[] vector, double scale) {
-    if (point == null || vector == null)
-      return null;
-    if (point.length != vector.length)
-      return null;
-
-    double[] updated = point.clone();
-    for (int i = 0; i < updated.length; i++) {
-      updated[i] = updated[i] + (vector[i] * scale);
+  
+  /**
+   * L2-norm 
+   */
+  public static double norm(double[] v) {
+    return Math.sqrt(innerProduct(v, v));
+  }
+  
+  /**
+   * Computes \log(\sum_{i=1}^n e^{x_i}) using a maximum-element trick 
+   * to avoid arithmetic overflow.
+   * 
+   * @param x input vector
+   * @return log-sum of exponentials of vector elements
+   */
+  public static double logSumOfExps(double[] x) {
+    double max = max(x);
+    double sum = 0.0;
+    for (int i = 0; i < x.length; i++) {
+      if (x[i] != Double.NEGATIVE_INFINITY)
+        sum += Math.exp(x[i] - max);
     }
-    return updated;
+    return max + Math.log(sum);
+  }
+
+  public static double max(double[] x) {
+    int maxIdx = maxIdx(x);
+    return x[maxIdx];
+  }
+
+  /**
+   * Find index of maximum element in the vector x
+   * @param x input vector
+   * @return index of the maximum element. Index of the first
+   * maximum element is returned if multiple maximums are found.
+   */
+  public static int maxIdx(double[] x) {
+    if (x == null || x.length == 0) {
+      throw new IllegalArgumentException("Vector x is null or empty");
+    }
+    
+    int maxIdx = 0;
+    for (int i = 1; i < x.length; i++) {
+      if (x[maxIdx] < x[i])
+        maxIdx = i;
+    }
+    return maxIdx;
+  }
+  
+  // === Not really related to math ===
+  /**
+   * Convert a list of Double objects into an array of primitive doubles 
+   */
+  public static double[] toDoubleArray(List<Double> list) {
+    double[] arr = new double[list.size()];
+    for (int i = 0; i < arr.length; i++) {
+      arr[i] = list.get(i);
+    }
+    return arr;
+  }
+  
+  /**
+   *  Convert a list of Integer objects into an array of primitive integers
+   */
+  public static int[] toIntArray(List<Integer> list) {
+    int[] arr = new int[list.size()];
+    for (int i = 0; i < arr.length; i++) { 
+      arr[i] = list.get(i);
+    }
+    return arr;
   }
 }
 

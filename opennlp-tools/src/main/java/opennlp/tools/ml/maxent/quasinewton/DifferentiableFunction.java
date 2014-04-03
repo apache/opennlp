@@ -19,7 +19,7 @@
 package opennlp.tools.ml.maxent.quasinewton;
 
 /**
- * interface for a function that can be differentiated once.
+ * Interface for a function that can be differentiated once.
  */
 public interface DifferentiableFunction extends Function {
   public double[] gradientAt(double[] x);

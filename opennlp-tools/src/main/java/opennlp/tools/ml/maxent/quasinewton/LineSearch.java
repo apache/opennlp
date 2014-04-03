@@ -19,83 +19,58 @@
 package opennlp.tools.ml.maxent.quasinewton;
 
 /**
- * class that performs line search.
+ * Class that performs line search to find minimum
  */
 public class LineSearch {
   private static final double INITIAL_STEP_SIZE = 1.0;
-  private static final double MIN_STEP_SIZE = 1.0E-10;
-  private static final double C1 = 0.0001;
-  private static final double C2 = 0.9;
-  private static final double TT = 16.0;
+  private static final double C = 0.0001;
+  private static final double RHO = 0.5; // decrease of step size (must be from 0 to 1)
 
-
-  public static LineSearchResult doLineSearch(DifferentiableFunction function, double[] direction, LineSearchResult lsr) {
-    return doLineSearch(function, direction, lsr, false);
-  }
-
-  public static LineSearchResult doLineSearch(DifferentiableFunction function, double[] direction, LineSearchResult lsr, boolean verbose) {
+  /**
+   * Backtracking line search (see Nocedal & Wright 2006, Numerical Optimization, p. 37)
+   */
+  public static void doLineSearch(DifferentiableFunction function, 
+      double[] direction, LineSearchResult lsr) 
+  {
+    double stepSize      = INITIAL_STEP_SIZE;
     int currFctEvalCount = lsr.getFctEvalCount();
-    double stepSize = INITIAL_STEP_SIZE;
-    double[] x = lsr.getNextPoint();
-    double valueAtX = lsr.getValueAtNext();
-    double[] gradAtX = lsr.getGradAtNext();
-    double[] nextPoint = null;
-    double[] gradAtNextPoint = null;
-    double valueAtNextPoint = 0.0;
+    double[] x           = lsr.getNextPoint();
+    double[] gradAtX     = lsr.getGradAtNext();
+    double valueAtX      = lsr.getValueAtNext();
+    
+    // Retrieve current points and gradient for array reuse purpose
+    double[] nextPoint       = lsr.getCurrPoint();
+    double[] gradAtNextPoint = lsr.getGradAtCurr();
+    double valueAtNextPoint;
 
-    double mu = 0;
-    double upsilon = Double.POSITIVE_INFINITY;
+    double dirGradientAtX = ArrayMath.innerProduct(direction, gradAtX);
 
-    long startTime = System.currentTimeMillis();    
-    while(true) {
-      nextPoint = ArrayMath.updatePoint(x, direction, stepSize);
+    // To avoid recomputing in the loop
+    double cachedProd = C * dirGradientAtX;
+    
+    while (true) {
+      // Get next point
+      for (int i = 0; i < x.length; i++) {
+        nextPoint[i] = x[i] + direction[i] * stepSize;
+      }
+      
       valueAtNextPoint = function.valueAt(nextPoint);
       currFctEvalCount++;
-      gradAtNextPoint = function.gradientAt(nextPoint);
 
-      if (!checkArmijoCond(valueAtX, valueAtNextPoint, gradAtX, direction, stepSize, true)) {
-        upsilon = stepSize;
-      } else if(!checkCurvature(gradAtNextPoint, gradAtX, direction, x.length, true)) {
-        mu = stepSize;
-      } else break;
-
-      if (upsilon < Double.POSITIVE_INFINITY)
-        stepSize = (mu + upsilon) / TT;
-      else
-        stepSize *= TT;
-
-      if (stepSize < MIN_STEP_SIZE + mu) {
-        stepSize = 0.0;
+      // Check Armijo condition
+      if (valueAtNextPoint <= valueAtX + cachedProd * stepSize)
         break;
-      }
-    }
-    long endTime = System.currentTimeMillis();
-    long duration = endTime - startTime;
 
-    if (verbose) {
-      System.out.print("\t" + valueAtX);
-      System.out.print("\t" + (valueAtNextPoint - valueAtX));
-      System.out.print("\t" + (duration / 1000.0) + "\n");
+      // Shrink step size
+      stepSize *= RHO;
     }
 
-    LineSearchResult result = new LineSearchResult(stepSize, valueAtX, valueAtNextPoint, gradAtX, gradAtNextPoint, x, nextPoint, currFctEvalCount);
-    return result;
-  }
-
-  private static boolean checkArmijoCond(double valueAtX, double valueAtNewPoint, 
-      double[] gradAtX, double[] direction, double currStepSize, boolean isMaximizing) {
-    // check Armijo rule;
-    // f(x_k + a_kp_k) <= f(x_k) + c_1a_kp_k^t grad(xk)
-    double armijo = valueAtX + (C1 * ArrayMath.innerProduct(direction, gradAtX) * currStepSize);
-    return isMaximizing ? valueAtNewPoint > armijo: valueAtNewPoint <= armijo;
-  }
-
-  // check weak wolfe condition
-  private static boolean checkCurvature(double[] gradAtNewPoint, double[] gradAtX, 
-      double[] direction, int domainDimension, boolean isMaximizing) {
-    // check curvature condition.
-    double curvature01 = ArrayMath.innerProduct(direction, gradAtNewPoint);
-    double curvature02 = C2 * ArrayMath.innerProduct(direction, gradAtX);
-    return isMaximizing ? curvature01 < curvature02 : curvature01 >= curvature02;
+    // Compute and save gradient at the new point
+    System.arraycopy(function.gradientAt(nextPoint), 0, gradAtNextPoint, 0, 
+        gradAtNextPoint.length);
+    
+    // Update line search result
+    lsr.setAll(stepSize, valueAtX, valueAtNextPoint, 
+        gradAtX, gradAtNextPoint, x, nextPoint, currFctEvalCount);    
   }
 }

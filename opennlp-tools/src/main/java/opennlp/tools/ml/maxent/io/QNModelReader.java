@@ -22,21 +22,18 @@ import java.io.File;
 import java.io.IOException;
 
 import opennlp.tools.ml.maxent.quasinewton.QNModel;
-import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.AbstractModelReader;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.DataReader;
 
-public class QNModelReader extends AbstractModelReader {
-
+public class QNModelReader extends GISModelReader {
   public QNModelReader(DataReader dataReader) {
     super(dataReader);
   }
-
+  
   public QNModelReader(File file) throws IOException {
     super(file);
   }
-
+  
   @Override
   public void checkModelType() throws IOException {
     String modelType = readUTF();
@@ -45,40 +42,12 @@ public class QNModelReader extends AbstractModelReader {
           + " model as a MAXENT_QN model." + " You should expect problems.");
   }
 
-  @Override
-  public AbstractModel constructModel() throws IOException {
-	String[] predNames = getPredicates();
-    String[] outcomeNames = getOutcomes();
-    Context[] params = getParameters();
-    double[] parameters = getDoubleArrayParams();
-    return new QNModel(predNames, outcomeNames, params, parameters);
-  }
-  
-  private double[] getDoubleArrayParams() throws IOException {
-    int numDouble = readInt();
-    double[] doubleArray = new double[numDouble];
-    for (int i=0; i < numDouble; i++) 
-      doubleArray[i] = readDouble();
-    return doubleArray;
-  }
+  public QNModel constructModel() throws IOException {
+    String[] outcomeLabels = getOutcomes();
+    int[][] outcomePatterns = getOutcomePatterns();
+    String[] predLabels = getPredicates();
+    Context[] params = getParameters(outcomePatterns);
 
-  private int[] getIntArrayParams() throws IOException {
-    int numInt = readInt();
-    int[] intArray = new int[numInt];
-    for (int i=0; i < numInt; i++) 
-    	intArray[i] = readInt();
-    return intArray;
-  }
-  
-  protected Context[] getParameters() throws java.io.IOException {
-	int numContext = readInt();
-	Context[] params = new Context[numContext];
-	
-	for (int i = 0; i < numContext; i++) {
-	  int[] outcomePattern = getIntArrayParams();
-	  double[] parameters = getDoubleArrayParams();
-	  params[i] = new Context(outcomePattern, parameters);
-	}
-	return params;
+    return new QNModel(params, predLabels, outcomeLabels);
   }
 }
