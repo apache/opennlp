@@ -91,10 +91,16 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
               params.getHeadRulesSerializerImpl());
     }
     else {
-      // TODO: Use default, e.g. based on language 
-      // language can be specified in the params ... 
-      
-      headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
+      if ("en".equals(params.getLang())) {
+        headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
+      }
+      else if ("es".equals(params.getLang())) {
+        headRulesSerializer = new opennlp.tools.parser.lang.es.AncoraSpanishHeadRules.HeadRulesSerializer();
+      }
+      else {
+        // default for now, this case should probably cause an error ...
+        headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
+      }
     }
     
     Object headRulesObject = headRulesSerializer.create(new FileInputStream(params.getHeadRules()));
