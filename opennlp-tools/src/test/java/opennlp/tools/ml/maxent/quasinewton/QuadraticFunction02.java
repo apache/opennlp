@@ -17,17 +17,17 @@
 package opennlp.tools.ml.maxent.quasinewton;
 
 /**
- * sample function for unit tests of LineSearch
+ * Sample function for unit tests of LineSearch
  */
 public class QuadraticFunction02 implements DifferentiableFunction {
   public double valueAt(double[] x) {
-    // -x^2;
-    return Math.pow(x[0], 2) * -1;	
+    // x^2;
+    return Math.pow(x[0], 2);	
   }
 
   public double[] gradientAt(double[] x) {
-    // -2x
-    return new double[] {-2.0 * x[0]};
+    // 2x
+    return new double[] {2 * x[0]};
   }
 
   public int getDomainDimension() {
