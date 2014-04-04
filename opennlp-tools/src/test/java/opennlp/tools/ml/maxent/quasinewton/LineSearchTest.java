@@ -27,7 +27,7 @@ import org.junit.Test;
 public class LineSearchTest {
   public static final double TOLERANCE = 0.01;
 
-  // @Test
+  @Test
   public void testLineSearchDeterminesSaneStepLength01() {
     DifferentiableFunction objectiveFunction = new QuadraticFunction();
     // given
@@ -44,7 +44,7 @@ public class LineSearchTest {
     assertTrue(succCond);
   }
 
-  // @Test
+  @Test
   public void testLineSearchDeterminesSaneStepLength02() {
     DifferentiableFunction objectiveFunction = new QuadraticFunction02();
     // given
@@ -61,7 +61,7 @@ public class LineSearchTest {
     assertTrue(succCond);
   }
 
-  //@Test
+  @Test
   public void testLineSearchFailsWithWrongDirection01() {
     DifferentiableFunction objectiveFunction = new QuadraticFunction();
     // given
@@ -79,7 +79,7 @@ public class LineSearchTest {
     assertEquals(0.0, stepSize, TOLERANCE);
   }
 
-  // @Test
+  @Test
   public void testLineSearchFailsWithWrongDirection02() {
     DifferentiableFunction objectiveFunction = new QuadraticFunction02();
     // given
@@ -97,7 +97,7 @@ public class LineSearchTest {
     assertEquals(0.0, stepSize, TOLERANCE);
   }
 
-  // @Test
+  @Test
   public void testLineSearchFailsWithWrongDirection03() {
     DifferentiableFunction objectiveFunction = new QuadraticFunction();
     // given
@@ -115,7 +115,7 @@ public class LineSearchTest {
     assertEquals(0.0, stepSize, TOLERANCE);
   }
 
-  // @Test
+  @Test
   public void testLineSearchFailsWithWrongDirection04() {
     DifferentiableFunction objectiveFunction = new QuadraticFunction02();
     // given
@@ -133,8 +133,8 @@ public class LineSearchTest {
     assertEquals(0.0, stepSize, TOLERANCE);
   }
 
-  // @Test
-  public void testLineSearchFailsAtMaxima01() {
+  @Test
+  public void testLineSearchFailsAtMinimum01() {
     DifferentiableFunction objectiveFunction = new QuadraticFunction02();
     // given
     double[] testX = new double[] { 0 };
@@ -151,8 +151,8 @@ public class LineSearchTest {
     assertEquals(0.0, stepSize, TOLERANCE);
   }
 
-  // @Test
-  public void testLineSearchFailsAtMaxima02() {
+  @Test
+  public void testLineSearchFailsAtMinimum02() {
     DifferentiableFunction objectiveFunction = new QuadraticFunction02();
     // given
     double[] testX = new double[] { 0 };

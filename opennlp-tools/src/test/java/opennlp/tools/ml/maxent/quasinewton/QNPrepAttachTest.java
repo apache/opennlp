@@ -52,7 +52,8 @@ public class QNPrepAttachTest {
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
         AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
-    trainParams.put(QNTrainer.L2COST_PARAM, Double.toString(2.0)); // L2-cost higher than the default
+    // use L2-cost higher than the default
+    trainParams.put(QNTrainer.L2COST_PARAM, Double.toString(2.0));
     
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(createTrainingStream());
