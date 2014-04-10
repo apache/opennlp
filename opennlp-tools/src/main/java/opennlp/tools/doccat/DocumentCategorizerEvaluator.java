@@ -18,10 +18,8 @@
 
 package opennlp.tools.doccat;
 
-import java.util.Iterator;
-
-import opennlp.tools.postag.POSSample;
 import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.Mean;
 
 /**
@@ -32,7 +30,7 @@ import opennlp.tools.util.eval.Mean;
  * @see DocumentCategorizer
  * @see DocumentSample
  */
-public class DocumentCategorizerEvaluator {
+public class DocumentCategorizerEvaluator extends Evaluator<DocumentSample>{
 
   private DocumentCategorizer categorizer;
 
@@ -43,7 +41,9 @@ public class DocumentCategorizerEvaluator {
    *
    * @param categorizer
    */
-  public DocumentCategorizerEvaluator(DocumentCategorizer categorizer) {
+  public DocumentCategorizerEvaluator(DocumentCategorizer categorizer,
+      DoccatEvaluationMonitor ... listeners) {
+    super(listeners);
     this.categorizer = categorizer;
   }
 
@@ -56,7 +56,7 @@ public class DocumentCategorizerEvaluator {
    *
    * @param sample the reference {@link TokenSample}.
    */
-  public void evaluteSample(DocumentSample sample) {
+  public DocumentSample processSample(DocumentSample sample) {
 
     String document[] = sample.getText();
 
@@ -70,21 +70,8 @@ public class DocumentCategorizerEvaluator {
     else {
       accuracy.add(0);
     }
-  }
 
-  /**
-   * Reads all {@link DocumentSample} objects from the stream
-   * and evaluates each {@link DocumentSample} object with
-   * {@link #evaluteSample(DocumentSample)} method.
-   *
-   * @param samples the stream of reference {@link POSSample} which
-   * should be evaluated.
-   */
-  public void evaluate(Iterator<DocumentSample> samples) {
-
-    while (samples.hasNext()) {
-      evaluteSample(samples.next());
-    }
+    return new DocumentSample(cat, sample.getText());
   }
 
   /**

@@ -59,10 +59,7 @@ public abstract class Evaluator<T> {
    * 
    * @return the predicted sample
    */
-  protected T processSample(T reference) {
-    // should be overridden by subclass... in the future we will make it abstract.
-    return null;
-  }
+  protected abstract T processSample(T reference);
 
   /**
    * Evaluates the given reference object. The default implementation calls
