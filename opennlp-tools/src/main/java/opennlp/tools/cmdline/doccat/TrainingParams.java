@@ -17,13 +17,19 @@
 
 package opennlp.tools.cmdline.doccat;
 
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
  * TrainingParams for DocCat.
- * 
+ *
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {
-  
+
+  @ParameterDescription(valueName = "fg", description = "Comma separated feature generator classes. Bag of words is used if not specified.")
+  @OptionalParameter
+  String getFeatureGenerators();
+
 }

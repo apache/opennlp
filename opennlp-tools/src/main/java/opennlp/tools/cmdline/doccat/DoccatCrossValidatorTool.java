@@ -32,7 +32,6 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.doccat.DoccatCrossValidatorTool.CVToolParams;
 import opennlp.tools.cmdline.params.CVParams;
-import opennlp.tools.doccat.BagOfWordsFeatureGenerator;
 import opennlp.tools.doccat.DoccatCrossValidator;
 import opennlp.tools.doccat.DoccatEvaluationMonitor;
 import opennlp.tools.doccat.DocumentSample;
@@ -86,8 +85,8 @@ public final class DoccatCrossValidatorTool extends
       }
     }
 
-    FeatureGenerator bagOfWordsFG = new BagOfWordsFeatureGenerator();
-    FeatureGenerator[] featureGenerators = new FeatureGenerator[] { bagOfWordsFG };
+    FeatureGenerator[] featureGenerators = DoccatTrainerTool
+        .createFeatureGenerators(params.getFeatureGenerators());
 
     DoccatEvaluationMonitor[] listenersArr = listeners
         .toArray(new DoccatEvaluationMonitor[listeners.size()]);
