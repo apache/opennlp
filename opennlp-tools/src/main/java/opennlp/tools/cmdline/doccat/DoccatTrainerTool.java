@@ -25,9 +25,12 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.doccat.DoccatTrainerTool.TrainerToolParams;
 import opennlp.tools.cmdline.params.TrainingToolParams;
+import opennlp.tools.doccat.BagOfWordsFeatureGenerator;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
+import opennlp.tools.doccat.FeatureGenerator;
+import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ModelUtil;
 
 public class DoccatTrainerTool
@@ -58,9 +61,13 @@ public class DoccatTrainerTool
 
     CmdLineUtil.checkOutputFile("document categorizer model", modelOutFile);
 
+    FeatureGenerator[] featureGenerators = createFeatureGenerators(params
+        .getFeatureGenerators());
+
     DoccatModel model;
     try {
-      model = DocumentCategorizerME.train(params.getLang(), sampleStream, mlParams);
+      model = DocumentCategorizerME.train(params.getLang(), sampleStream,
+          mlParams, featureGenerators);
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " +
           e.getMessage(), e);
@@ -74,5 +81,19 @@ public class DoccatTrainerTool
     }
     
     CmdLineUtil.writeModel("document categorizer", modelOutFile, model);
+  }
+
+  static FeatureGenerator[] createFeatureGenerators(String featureGeneratorsNames) {
+    if(featureGeneratorsNames == null) {
+      FeatureGenerator[] def = {new BagOfWordsFeatureGenerator()};
+      return def;
+    }
+    String[] classes = featureGeneratorsNames.split(",");
+    FeatureGenerator[] featureGenerators = new FeatureGenerator[classes.length];
+    for (int i = 0; i < featureGenerators.length; i++) {
+      featureGenerators[i] = ExtensionLoader.instantiateExtension(
+          FeatureGenerator.class, classes[i]);
+    }
+    return featureGenerators;
   }
 }
