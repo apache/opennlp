@@ -85,6 +85,10 @@ public class DocumentCategorizerEvaluator extends Evaluator<DocumentSample>{
     return accuracy.mean();
   }
 
+  public long getDocumentCount() {
+    return accuracy.count();
+  }
+
   /**
    * Represents this objects as human readable {@link String}.
    */
