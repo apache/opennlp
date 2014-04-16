@@ -25,34 +25,50 @@ import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 
 public class DoccatModel extends BaseModel {
-  
+
   private static final String COMPONENT_NAME = "DocumentCategorizerME";
   private static final String DOCCAT_MODEL_ENTRY_NAME = "doccat.model";
-  
-  protected DoccatModel(String languageCode, MaxentModel doccatModel,
-      Map<String, String> manifestInfoEntries) {
-    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
-    
+
+  public DoccatModel(String languageCode, MaxentModel doccatModel,
+      Map<String, String> manifestInfoEntries, DoccatFactory factory) {
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
+
     artifactMap.put(DOCCAT_MODEL_ENTRY_NAME, doccatModel);
     checkArtifactMap();
   }
-  
+
+  /**
+   * @deprecated Use
+   *             {@link #DoccatModel(String, MaxentModel, Map, DoccatFactory)}
+   *             instead and pass in a {@link DoccatFactory}
+   */
+  protected DoccatModel(String languageCode, MaxentModel doccatModel,
+      Map<String, String> manifestInfoEntries) {
+    this(languageCode, doccatModel, manifestInfoEntries, new DoccatFactory());
+  }
+
+  /**
+   * @deprecated Use
+   *             {@link #DoccatModel(String, MaxentModel, Map, DoccatFactory)}
+   *             instead and pass in a {@link DoccatFactory}
+   */
   public DoccatModel(String languageCode, MaxentModel doccatModel) {
     this(languageCode, doccatModel, null);
   }
-  
+
   public DoccatModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
-  
+
   public DoccatModel(File modelFile) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelFile);
   }
-  
+
   public DoccatModel(URL modelURL) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelURL);
   }
@@ -66,7 +82,23 @@ public class DoccatModel extends BaseModel {
     }
   }
 
+  public DoccatFactory getFactory() {
+    return (DoccatFactory) this.toolFactory;
+  }
+
+  @Override
+  protected Class<? extends BaseToolFactory> getDefaultFactory() {
+    return DoccatFactory.class;
+  }
+
+  /**
+   * @deprecated Use {@link #getMaxentModel()} instead.
+   */
   public MaxentModel getChunkerModel() {
+    return (MaxentModel) artifactMap.get(DOCCAT_MODEL_ENTRY_NAME);
+  }
+
+  public MaxentModel getMaxentModel() {
     return (MaxentModel) artifactMap.get(DOCCAT_MODEL_ENTRY_NAME);
   }
 }
