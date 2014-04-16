@@ -27,7 +27,6 @@ import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
-import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -55,14 +54,10 @@ public class DoccatTool extends BasicCmdLineTool {
 
       DocumentCategorizerME doccat = new DocumentCategorizerME(model);
 
-      //ObjectStream<String> documentStream = new ParagraphStream(
-            //  new PlainTextByLineStream(new InputStreamReader(System.in)));
       /**
        * moved initialization to the try block to catch new IOException
        */
       ObjectStream<String> documentStream;
-
-
 
       PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "doc");
       perfMon.start();
@@ -72,10 +67,12 @@ public class DoccatTool extends BasicCmdLineTool {
                 new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding()));
         String document;
         while ((document = documentStream.read()) != null) {
-          double prob[] = doccat.categorize(WhitespaceTokenizer.INSTANCE.tokenize(document));
+          String[] tokens = model.getFactory().getTokenizer().tokenize(document);
+
+          double prob[] = doccat.categorize(tokens);
           String category = doccat.getBestCategory(prob);
 
-          DocumentSample sample = new DocumentSample(category, document);
+          DocumentSample sample = new DocumentSample(category, tokens);
           System.out.println(sample.toString());
 
           perfMon.incrementCounter();
