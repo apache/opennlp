@@ -28,7 +28,7 @@ public class NGramFeatureGenerator implements FeatureGenerator {
     List<String> features = new ArrayList<String>();
 
     for (int i = 0; i < text.length - 1; i++) {
-      features.add(text[i] + " " + text[i + 1]);
+      features.add("ng=" + text[i] + ":" + text[i + 1]);
     }
 
     return features;
