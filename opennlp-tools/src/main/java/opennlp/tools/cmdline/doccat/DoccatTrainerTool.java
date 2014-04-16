@@ -26,16 +26,19 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.doccat.DoccatTrainerTool.TrainerToolParams;
 import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.doccat.BagOfWordsFeatureGenerator;
+import opennlp.tools.doccat.DoccatFactory;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.doccat.FeatureGenerator;
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ModelUtil;
 
 public class DoccatTrainerTool
     extends AbstractTrainerTool<DocumentSample, TrainerToolParams> {
-  
+
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 
@@ -47,7 +50,7 @@ public class DoccatTrainerTool
   public String getShortDescription() {
     return "trainer for the learnable document categorizer";
   }
-  
+
   @Override
   public void run(String format, String[] args) {
     super.run(format, args);
@@ -64,10 +67,14 @@ public class DoccatTrainerTool
     FeatureGenerator[] featureGenerators = createFeatureGenerators(params
         .getFeatureGenerators());
 
+    Tokenizer tokenizer = createTokenizer(params.getTokenizer());
+
     DoccatModel model;
     try {
+      DoccatFactory factory = DoccatFactory.create(params.getFactory(),
+          tokenizer, featureGenerators);
       model = DocumentCategorizerME.train(params.getLang(), sampleStream,
-          mlParams, featureGenerators);
+          mlParams, factory);
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " +
           e.getMessage(), e);
@@ -79,8 +86,15 @@ public class DoccatTrainerTool
         // sorry that this can fail
       }
     }
-    
+
     CmdLineUtil.writeModel("document categorizer", modelOutFile, model);
+  }
+
+  static Tokenizer createTokenizer(String tokenizer) {
+    if(tokenizer != null) {
+      return ExtensionLoader.instantiateExtension(Tokenizer.class, tokenizer);
+    }
+    return WhitespaceTokenizer.INSTANCE;
   }
 
   static FeatureGenerator[] createFeatureGenerators(String featureGeneratorsNames) {

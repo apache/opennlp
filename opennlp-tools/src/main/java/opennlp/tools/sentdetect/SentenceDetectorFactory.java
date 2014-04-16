@@ -52,7 +52,7 @@ public class SentenceDetectorFactory extends BaseToolFactory {
   /**
    * Creates a {@link SentenceDetectorFactory}. Use this constructor to
    * programmatically create a factory.
-   * 
+   *
    * @param languageCode
    * @param abbreviationDictionary
    * @param eosCharacters
@@ -61,7 +61,7 @@ public class SentenceDetectorFactory extends BaseToolFactory {
       Dictionary abbreviationDictionary, char[] eosCharacters) {
     this.init(languageCode, useTokenEnd, abbreviationDictionary, eosCharacters);
   }
-  
+
   protected void init(String languageCode, boolean useTokenEnd,
       Dictionary abbreviationDictionary, char[] eosCharacters) {
     this.languageCode = languageCode;

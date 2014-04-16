@@ -34,18 +34,19 @@ public class DoccatCrossValidator {
 
   private DoccatEvaluationMonitor[] listeners;
 
-  private FeatureGenerator[] featureGenarators;
+  private DoccatFactory factory;
+
 
   /**
    * Creates a {@link DoccatCrossValidator} with the given
    * {@link FeatureGenerator}s.
    */
   public DoccatCrossValidator(String languageCode, TrainingParameters mlParams,
-      FeatureGenerator[] featureGenerators, DoccatEvaluationMonitor[] listeners) {
+      DoccatFactory factory, DoccatEvaluationMonitor ... listeners) {
     this.languageCode = languageCode;
     this.params = mlParams;
     this.listeners = listeners;
-    this.featureGenarators = featureGenerators;
+    this.factory = factory;
   }
 
   /**
@@ -70,7 +71,7 @@ public class DoccatCrossValidator {
           .next();
 
       DoccatModel model = DocumentCategorizerME.train(languageCode,
-          trainingSampleStream, params, featureGenarators);
+          trainingSampleStream, params, factory);
 
       DocumentCategorizerEvaluator evaluator = new DocumentCategorizerEvaluator(
           new DocumentCategorizerME(model), listeners);

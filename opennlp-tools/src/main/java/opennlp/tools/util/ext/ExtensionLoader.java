@@ -17,6 +17,8 @@
 
 package opennlp.tools.util.ext;
 
+import java.lang.reflect.Field;
+
 /**
  * The {@link ExtensionLoader} is responsible to load extensions to the OpenNLP library.
  * <p>
@@ -64,6 +66,24 @@ public class ExtensionLoader {
         } catch (InstantiationException e) {
           throw new ExtensionNotLoadedException(e);
         } catch (IllegalAccessException e) {
+          // constructor is private. Try to load using INSTANCE
+          Field instanceField;
+          try {
+            instanceField = extClazz.getDeclaredField("INSTANCE");
+          } catch (NoSuchFieldException e1) {
+            throw new ExtensionNotLoadedException(e1);
+          } catch (SecurityException e1) {
+            throw new ExtensionNotLoadedException(e1);
+          }
+          if(instanceField != null) {
+            try {
+              return (T) instanceField.get(null);
+            } catch (IllegalArgumentException e1) {
+              throw new ExtensionNotLoadedException(e1);
+            } catch (IllegalAccessException e1) {
+              throw new ExtensionNotLoadedException(e1);
+            }
+          }
           throw new ExtensionNotLoadedException(e);
         }
       }
