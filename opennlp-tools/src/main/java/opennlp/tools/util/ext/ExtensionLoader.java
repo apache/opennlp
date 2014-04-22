@@ -45,7 +45,12 @@ public class ExtensionLoader {
    * <p>
    * The extension is either loaded from the class path or if running
    * inside an OSGi environment via an OSGi service.
-   * 
+   * <p>
+   * Initially it tries using the public default
+   * constructor. If it is not found, it will check if the class follows the singleton
+   * pattern: a static field named <code>INSTANCE</code> that returns an object of the type
+   * <code>T</code>.
+   *
    * @param clazz
    * @param extensionClassName
    * 
