@@ -20,13 +20,11 @@ package opennlp.tools.ml.maxent.quasinewton;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
-import opennlp.tools.ml.model.UniformPrior;
 
 public class QNModel extends AbstractModel {
   
   public QNModel(Context[] params, String[] predLabels, String[] outcomeNames) {
 	  super(params, predLabels, outcomeNames);
-    this.prior     = new UniformPrior();
     this.modelType = ModelType.MaxentQn;
   }
 

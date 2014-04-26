@@ -26,9 +26,9 @@ import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 /**
  * Evaluate negative log-likelihood and its gradient from DataIndexer.
  */
-public class NegLogLikelihoodFunction implements DifferentiableFunction {
+public class NegLogLikelihood implements Function {
   
-  private int domainDimension;
+  private int dimension;
   private double[] empiricalCount;
   private int numOutcomes;
   private int numFeatures;
@@ -40,10 +40,7 @@ public class NegLogLikelihoodFunction implements DifferentiableFunction {
   private final int[] outcomeList;
   private final int[] numTimesEventsSeen;
 
-  // L2-regularization cost
-  private double l2Cost;
-  
-  // For computing log-likelihood
+  // For computing negative log-likelihood
   private double[][] voteSum;
   private double[] logSumExp;
   
@@ -51,11 +48,8 @@ public class NegLogLikelihoodFunction implements DifferentiableFunction {
   private double[] gradient;
   private double[] expectedCount;
   
-  public NegLogLikelihoodFunction(DataIndexer indexer) {
-    this(indexer, QNTrainer.L2COST_DEFAULT);
-  }
-  
-  public NegLogLikelihoodFunction(DataIndexer indexer, double l2Cost) {
+  public NegLogLikelihood(DataIndexer indexer) {
+    
     // Get data from indexer.
     if (indexer instanceof OnePassRealValueDataIndexer) {
       this.values = indexer.getValues();
@@ -67,29 +61,27 @@ public class NegLogLikelihoodFunction implements DifferentiableFunction {
     this.outcomeList = indexer.getOutcomeList();
     this.numTimesEventsSeen = indexer.getNumTimesEventsSeen();
 
-    this.numOutcomes = indexer.getOutcomeLabels().length;
-    this.numFeatures = indexer.getPredLabels().length;
-    this.numContexts = this.contexts.length;
-    this.domainDimension = numOutcomes * numFeatures;
-    this.empiricalCount = new double[domainDimension];
+    this.numOutcomes    = indexer.getOutcomeLabels().length;
+    this.numFeatures    = indexer.getPredLabels().length;
+    this.numContexts    = this.contexts.length;
+    this.dimension      = numOutcomes * numFeatures;
+    this.empiricalCount = new double[dimension];
 
-    this.l2Cost = l2Cost;
-    
     this.voteSum   = new double[numContexts][numOutcomes];
     this.logSumExp = new double[numContexts];
     
-    this.gradient      = new double[domainDimension];
-    this.expectedCount = new double[domainDimension];
+    this.gradient      = new double[dimension];
+    this.expectedCount = new double[dimension];
     
-    initEmpCount();
+    computeEmpCount();
   }
 
-  public int getDomainDimension() {
-    return this.domainDimension;
+  public int getDimension() {
+    return this.dimension;
   }
 
   public double[] getInitialPoint() {
-    return new double[domainDimension];
+    return new double[dimension];
   }
   
   /**
@@ -97,57 +89,32 @@ public class NegLogLikelihoodFunction implements DifferentiableFunction {
    */
   public double valueAt(double[] x) {
     
-    if (x.length != this.domainDimension) {
-      throw new IllegalArgumentException("x is invalid, its dimension is not equal to domain dimension.");
-    }
+    if (x.length != this.dimension)
+      throw new IllegalArgumentException(
+          "x is invalid, its dimension is not equal to domain dimension.");
 
-    double negLogLikelihood = 0.0;
-
+    computeSums(x); // Compute voteSum and logSumExp
+    
+    double negLogLikelihood = 0.;
     for (int ci = 0; ci < numContexts; ci++) {
-      for (int oi = 0; oi < numOutcomes; oi++) {
-        double vecProduct = 0.0;
-        for (int af = 0; af < this.contexts[ci].length; af++) {
-          int vectorIndex = indexOf(oi, contexts[ci][af]);
-          double predValue = 1.0;
-          if (values != null) predValue = this.values[ci][af];
-          if (predValue == 0.0) continue;
-          vecProduct += predValue * x[vectorIndex];
-        }
-        voteSum[ci][oi] = vecProduct;
-      }
-
-      // \log(\sum_{c'=1}^{C} e^{w_c'^T x_i})
-      logSumExp[ci] = ArrayMath.logSumOfExps(voteSum[ci]);
-      
       int outcome = this.outcomeList[ci];
       negLogLikelihood += (voteSum[ci][outcome] - logSumExp[ci]) * numTimesEventsSeen[ci];
     }
-
     negLogLikelihood = -negLogLikelihood;
-    
-    if (l2Cost > 0) {
-      for (int i = 0; i < x.length; i++) {
-        negLogLikelihood += l2Cost * x[i] * x[i];
-      }
-    }
     
     return negLogLikelihood;
   }  
 
   /**
-   * Compute gradient. <br>For the same value x, gradientAt(x) must be called after 
-   * valueAt(x) is called. <br>Otherwise, the output will be incorrect.   
+   * Compute gradient
    */
   public double[] gradientAt(double[] x) {
     
-    if (x.length != this.domainDimension) {
-      throw new IllegalArgumentException("x is invalid, its dimension is not equal to the function.");
-    }
+    if (x.length != this.dimension)
+      throw new IllegalArgumentException(
+          "x is invalid, its dimension is not equal to the function.");
     
-    /**
-     * Here, we assume that valueAt(x) is called before this function
-     * so that we can reuse voteSum and logSumExp computed in the function valueAt(x) 
-     */
+    computeSums(x); // Compute voteSum and logSumExp
     
     // Reset
     Arrays.fill(expectedCount, 0);
@@ -155,9 +122,9 @@ public class NegLogLikelihoodFunction implements DifferentiableFunction {
       for (int oi = 0; oi < numOutcomes; oi++) {
         for (int af = 0; af < contexts[ci].length; af++) {
           int vectorIndex = indexOf(oi, this.contexts[ci][af]);
-          double predValue = 1.0;
+          double predValue = 1.;
           if (values != null) predValue = this.values[ci][af];
-          if (predValue == 0.0) continue;
+          if (predValue == 0.) continue;
 
           expectedCount[vectorIndex] += 
               predValue * Math.exp(voteSum[ci][oi] - logSumExp[ci]) * this.numTimesEventsSeen[ci];
@@ -165,15 +132,8 @@ public class NegLogLikelihoodFunction implements DifferentiableFunction {
       }
     }
 
-    if (l2Cost > 0) {
-      for (int i = 0; i < domainDimension; i++) { 
-        gradient[i] = expectedCount[i] - this.empiricalCount[i] + 2 * l2Cost * x[i];
-      }
-    } 
-    else {
-      for (int i = 0; i < domainDimension; i++) { 
-        gradient[i] = expectedCount[i] - this.empiricalCount[i];
-      }
+    for (int i = 0; i < dimension; i++) { 
+      gradient[i] = expectedCount[i] - this.empiricalCount[i];
     }
     
     return gradient;
@@ -183,14 +143,39 @@ public class NegLogLikelihoodFunction implements DifferentiableFunction {
     return outcomeId * numFeatures + featureId;
   }
 
-  private void initEmpCount() {
+  /**
+   * Compute temporary values
+   */
+  private void computeSums(double[] x) {
+    for (int ci = 0; ci < numContexts; ci++) {
+      for (int oi = 0; oi < numOutcomes; oi++) {
+        double vecProduct = 0.;
+        for (int af = 0; af < this.contexts[ci].length; af++) {
+          int vectorIndex = indexOf(oi, contexts[ci][af]);
+          double predValue = 1.;
+          if (values != null) predValue = this.values[ci][af];
+          if (predValue == 0.) continue;
+          vecProduct += predValue * x[vectorIndex];
+        }
+        voteSum[ci][oi] = vecProduct;
+      }
+
+      // \log(\sum_{c'=1}^{C} e^{w_c'^T x_i})
+      logSumExp[ci] = ArrayMath.logSumOfExps(voteSum[ci]);
+    }
+  }
+  
+  /**
+   * Compute empirical count
+   */
+  private void computeEmpCount() {
     for (int ci = 0; ci < numContexts; ci++) {
       for (int af = 0; af < this.contexts[ci].length; af++) {
         int vectorIndex = indexOf(this.outcomeList[ci], contexts[ci][af]);
         if (values != null) {
           empiricalCount[vectorIndex] += this.values[ci][af] * numTimesEventsSeen[ci];
         } else {
-          empiricalCount[vectorIndex] += 1.0 * numTimesEventsSeen[ci];
+          empiricalCount[vectorIndex] += 1. * numTimesEventsSeen[ci];
         }
       }
     }

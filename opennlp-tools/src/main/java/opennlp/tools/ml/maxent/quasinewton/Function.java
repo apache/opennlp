@@ -19,11 +19,13 @@
 package opennlp.tools.ml.maxent.quasinewton;
 
 /**
- * Interface for a function.
+ * Interface for a function
  */
 public interface Function {
 
-  public double valueAt(double[] x);
+  int getDimension();
 
-  public int getDomainDimension();
+  double valueAt(double[] x);
+
+  double[] gradientAt(double[] x);
 }
