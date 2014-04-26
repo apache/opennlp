@@ -37,10 +37,27 @@ public class ArrayMath {
   }
   
   /**
+   * L1-norm
+   */
+  public static double l1norm(double[] v) {
+    double norm = 0;
+    for (int i = 0; i < v.length; i++)
+      norm += Math.abs(v[i]);
+    return norm;
+  }
+  
+  /**
    * L2-norm 
    */
-  public static double norm(double[] v) {
+  public static double l2norm(double[] v) {
     return Math.sqrt(innerProduct(v, v));
+  }
+  
+  /**
+   * Inverse L2-norm
+   */
+  public static double invL2norm(double[] v) {
+    return 1 / l2norm(v);
   }
   
   /**
