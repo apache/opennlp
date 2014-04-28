@@ -69,6 +69,21 @@ public class ParserModel extends BaseModel {
     }
   }
   
+  private static class HeadRulesSerializer implements
+      ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
+
+    public opennlp.tools.parser.lang.en.HeadRules create(InputStream in)
+        throws IOException, InvalidFormatException {
+      return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(
+          new InputStreamReader(in, "UTF-8")));
+    }
+
+    public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact,
+        OutputStream out) throws IOException {
+      artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
+    }
+  }
+  
   private static final String COMPONENT_NAME = "Parser";
   
   private static final String BUILD_MODEL_ENTRY_NAME = "build.model";
@@ -153,6 +168,16 @@ public class ParserModel extends BaseModel {
       Map<String, ArtifactSerializer> serializers) {
 
     super.createArtifactSerializers(serializers);
+    
+    // In 1.6.x the headrules artifact is serialized with the new API
+    // which uses the Serializeable interface
+    // This change is not backward compatible with the 1.5.x models.
+    // In order to laod 1.5.x model the English headrules serializer must be
+    // put on the serializer map.
+    
+    if (getVersion().getMajor() == 1 && getVersion().getMinor() == 5) {
+    	serializers.put("headrules", new HeadRulesSerializer());
+    }
     
     serializers.put("postagger", new POSModelSerializer());
     serializers.put("chunker", new ChunkerModelSerializer());
