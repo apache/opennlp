@@ -14,14 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package opennlp.tools.doccat;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TrainUtil;
@@ -52,7 +55,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @param featureGenerators
    *
    * @deprecated train a {@link DoccatModel} with a specific
-   *             {@link DoccatFactory} to customize the {@link FeatureGenerator}s
+   * {@link DoccatFactory} to customize the {@link FeatureGenerator}s
    */
   public DocumentCategorizerME(DoccatModel model, FeatureGenerator... featureGenerators) {
     this.model = model;
@@ -60,14 +63,15 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   }
 
   /**
-   * Initializes the current instance with a doccat model. Default feature generation is used.
+   * Initializes the current instance with a doccat model. Default feature
+   * generation is used.
    *
    * @param model
    */
   public DocumentCategorizerME(DoccatModel model) {
     this.model = model;
     this.mContextGenerator = new DocumentCategorizerContextGenerator(this.model
-        .getFactory().getFeatureGenerators());
+            .getFactory().getFeatureGenerators());
   }
 
   /**
@@ -80,12 +84,52 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   }
 
   /**
-   * Categorizes the given text. The text is tokenized with the SimpleTokenizer before it
-   * is passed to the feature generation.
+   * Categorizes the given text. The text is tokenized with the SimpleTokenizer
+   * before it is passed to the feature generation.
    */
   public double[] categorize(String documentText) {
     Tokenizer tokenizer = model.getFactory().getTokenizer();
     return categorize(tokenizer.tokenize(documentText));
+  }
+/**
+ * Returns a map in which the key is the category name and the value is the score
+ * @param text the input text to classify
+ * @return 
+ */
+  public Map<String, Double> scoreMap(String text) {
+    Map<String, Double> probDist = new HashMap<String, Double>();
+
+    double[] categorize = categorize(text);
+    int catSize = getNumberOfCategories();
+    for (int i = 0; i < catSize; i++) {
+      String category = getCategory(i);
+      probDist.put(category, categorize[getIndex(category)]);
+    }
+    return probDist;
+
+  }
+/**
+ * Returns a map with the score as a key in ascendng order. The value is a Set of categories with the score. 
+ * Many categories can have the same score, hence the Set as value
+ * @param text the input text to classify
+ * @return 
+ */
+  public SortedMap<Double, Set<String>> sortedScoreMap(String text) {
+    SortedMap<Double, Set<String>> descendingMap = new TreeMap<Double, Set<String>>();
+    double[] categorize = categorize(text);
+    int catSize = getNumberOfCategories();
+    for (int i = 0; i < catSize; i++) {
+      String category = getCategory(i);
+      double score = categorize[getIndex(category)];
+      if (descendingMap.containsKey(score)) {
+        descendingMap.get(score).add(category);
+      } else {
+        Set<String> newset = new HashSet<>();
+        newset.add(category);
+        descendingMap.put(score, newset);
+      }
+    }
+    return descendingMap;
   }
 
   public String getBestCategory(double[] outcome) {
@@ -108,40 +152,40 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     return model.getMaxentModel().getAllOutcomes(results);
   }
 
-   /**
+  /**
    * @deprecated Use
-   *             {@link #train(String, ObjectStream, TrainingParameters, DoccatFactory)}
-   *             instead.
+   * {@link #train(String, ObjectStream, TrainingParameters, DoccatFactory)}
+   * instead.
    */
-   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
-       TrainingParameters mlParams, FeatureGenerator... featureGenerators)
-   throws IOException {
+  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
+          TrainingParameters mlParams, FeatureGenerator... featureGenerators)
+          throws IOException {
 
-     if (featureGenerators.length == 0) {
-       featureGenerators = new FeatureGenerator[]{defaultFeatureGenerator};
-     }
+    if (featureGenerators.length == 0) {
+      featureGenerators = new FeatureGenerator[]{defaultFeatureGenerator};
+    }
 
-     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
-     MaxentModel model = TrainUtil.train(
-         new DocumentCategorizerEventStream(samples, featureGenerators),
-         mlParams.getSettings(), manifestInfoEntries);
+    MaxentModel model = TrainUtil.train(
+            new DocumentCategorizerEventStream(samples, featureGenerators),
+            mlParams.getSettings(), manifestInfoEntries);
 
-     return new DoccatModel(languageCode, model, manifestInfoEntries);
-   }
+    return new DoccatModel(languageCode, model, manifestInfoEntries);
+  }
 
-   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
-       TrainingParameters mlParams, DoccatFactory factory)
-   throws IOException {
+  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
+          TrainingParameters mlParams, DoccatFactory factory)
+          throws IOException {
 
-     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
-     MaxentModel model = TrainUtil.train(
-         new DocumentCategorizerEventStream(samples, factory.getFeatureGenerators()),
-         mlParams.getSettings(), manifestInfoEntries);
+    MaxentModel model = TrainUtil.train(
+            new DocumentCategorizerEventStream(samples, factory.getFeatureGenerators()),
+            mlParams.getSettings(), manifestInfoEntries);
 
-     return new DoccatModel(languageCode, model, manifestInfoEntries, factory);
-   }
+    return new DoccatModel(languageCode, model, manifestInfoEntries, factory);
+  }
 
   /**
    * Trains a doccat model with default feature generation.
@@ -155,8 +199,8 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @throws ObjectStreamException
    *
    * @deprecated Use
-   *             {@link #train(String, ObjectStream, TrainingParameters, DoccatFactory)}
-   *             instead.
+   * {@link #train(String, ObjectStream, TrainingParameters, DoccatFactory)}
+   * instead.
    */
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples) throws IOException {
     return train(languageCode, samples, ModelUtil.createDefaultTrainingParameters(), defaultFeatureGenerator);

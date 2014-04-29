@@ -18,6 +18,12 @@
 
 package opennlp.tools.doccat;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.SortedMap;
+
 /**
  * Interface for classes which categorize documents.
  */
@@ -41,5 +47,10 @@ public interface DocumentCategorizer {
   public double[] categorize(String documentText);
 
   public String getAllResults(double results[]);
+  
+  public Map<String, Double> scoreMap(String text); 
+
+  public SortedMap<Double, Set<String>> sortedScoreMap(String text);
+  
 }
 
