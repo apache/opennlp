@@ -63,14 +63,14 @@ under the License.
 		</legalnotice>
 
 		<copyright>
-			<year><?eval ${project.inceptionYear}?></year>
-			<year><?eval ${project.properties.buildYear}?></year>
+			<year>2011</year>
+			<year>2014</year>
 			<holder>The Apache Software Foundation</holder>
 		</copyright>
 		
-		<pubdate><?eval ${project.properties.buildMonth}?>
+		<!-- pubdate><?eval ${project.properties.buildMonth}?>
 			, <?eval ${project.properties.buildYear}?>
-		</pubdate>
+		</pubdate -->
 	</bookinfo>
 
 	<title>Apache OpenNLP Developer Documentation</title>
