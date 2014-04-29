@@ -529,4 +529,84 @@ dk	Danskerne skal betale for den økonomiske krise ved at blive længere på arb
 	</programlisting>
 	</para>
 	</section>
+		<section id="tools.corpora.ontonotes">
+		<title>OntoNotes Release 4.0</title>
+	<para>
+		"OntoNotes Release 4.0, Linguistic Data Consortium (LDC) catalog number
+		LDC2011T03 and isbn 1-58563-574-X, was developed as part of the
+		OntoNotes project, a collaborative effort between BBN Technologies,
+		the University of Colorado, the University of Pennsylvania and the
+		University of Southern Californias Information Sciences Institute. The
+		goal of the project is to annotate a large corpus comprising various
+		genres of text (news, conversational telephone speech, weblogs, usenet
+		newsgroups, broadcast, talk shows) in three languages (English,
+		Chinese, and Arabic) with structural information (syntax and predicate
+		argument structure) and shallow semantics (word sense linked to an
+		ontology and coreference). OntoNotes Release 4.0 is supported by the
+		Defense Advance Research Project Agency, GALE Program Contract No.
+		HR0011-06-C-0022.
+	</para>
+	<para>
+		OntoNotes Release 4.0 contains the content of earlier releases -- OntoNotes
+		Release 1.0 LDC2007T21, OntoNotes Release 2.0 LDC2008T04 and OntoNotes
+		Release 3.0 LDC2009T24 -- and adds newswire, broadcast news, broadcast
+		conversation and web data in English and Chinese and newswire data in
+		Arabic. This cumulative publication consists of 2.4 million words as
+		follows: 300k words of Arabic newswire 250k words of Chinese newswire,
+		250k words of Chinese broadcast news, 150k words of Chinese broadcast
+		conversation and 150k words of Chinese web text and 600k words of
+		English newswire, 200k word of English broadcast news, 200k words of
+		English broadcast conversation and 300k words of English web text.
+	</para>
+	<para>
+		The OntoNotes project builds on two time-tested resources, following the
+		Penn Treebank for syntax and the Penn PropBank for predicate-argument
+		structure. Its semantic representation will include word sense
+		disambiguation for nouns and verbs, with each word sense connected to
+		an ontology, and coreference. The current goals call for annotation of
+		over a million words each of English and Chinese, and half a million
+		words of Arabic over five years." (http://catalog.ldc.upenn.edu/LDC2011T03)
+	</para>
+		<section id="tools.corpora.ontonotes.namefinder">
+		<title>Name Finder Training</title>
+	<para>
+		The OntoNotes corpus can be used to train the Name Finder. The corpus
+		contains many different name types
+		to train a model for a specific type only the built-in type filter
+		option should be used.
+	</para>
+		<para>
+		The sample shows how to train a model to detect person names.		
+			<programlisting>
+			<![CDATA[
+$ bin/opennlp TokenNameFinderTrainer.ontonotes -lang en -model en-ontonotes.bin \
+			 -nameTypes person -ontoNotesDir ontonotes-release-4.0/data/files/data/english/
+			 
+Indexing events using cutoff of 5
+
+	Computing event counts...  done. 1953446 events
+	Indexing...  done.
+Sorting and merging events... done. Reduced 1953446 events to 1822037.
+Done indexing.
+Incorporating indexed data for training...  
+done.
+	Number of Event Tokens: 1822037
+	    Number of Outcomes: 3
+	  Number of Predicates: 298263
+...done.
+Computing model parameters ...
+Performing 100 iterations.
+  1:  ... loglikelihood=-2146079.7808976253	0.976677625078963
+  2:  ... loglikelihood=-195016.59754190338	0.976677625078963
+... cut lots of iterations ...			 
+ 99:  ... loglikelihood=-10269.902459614596	0.9987299367374374
+100:  ... loglikelihood=-10227.160010853702	0.9987314724850341
+Writing name finder model ... done (2.315s)
+
+Wrote name finder model to
+path: /dev/opennlp/trunk/opennlp-tools/en-ontonotes.bin]]>	
+	</programlisting>
+		</para>
+		</section>
+	</section>
 </chapter>
