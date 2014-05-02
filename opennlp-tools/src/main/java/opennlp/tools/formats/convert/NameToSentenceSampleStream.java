@@ -29,7 +29,7 @@ public class NameToSentenceSampleStream extends AbstractToSentenceSampleStream<N
   public NameToSentenceSampleStream(Detokenizer detokenizer, ObjectStream<NameSample> samples, int chunkSize) {
     super(detokenizer, samples, chunkSize);
   }
-  
+
   @Override
   protected String[] toSentence(NameSample sample) {
     return sample.getSentence();

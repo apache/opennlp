@@ -56,26 +56,26 @@ public class DocumentSample {
   public String[] getText() {
     return text.toArray(new String[text.size()]);
   }
-  
+
   @Override
   public String toString() {
-    
+
     StringBuilder sampleString = new StringBuilder();
-    
+
     sampleString.append(category).append('\t');
 
     for (String s : text) {
       sampleString.append(s).append(' ');
     }
-    
+
     if (sampleString.length() > 0) {
       // remove last space
       sampleString.setLength(sampleString.length() - 1);
     }
-    
+
     return sampleString.toString();
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {

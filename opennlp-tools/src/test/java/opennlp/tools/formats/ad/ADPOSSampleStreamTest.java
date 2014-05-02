@@ -38,22 +38,22 @@ public class ADPOSSampleStreamTest {
             "UTF-8"), false, false);
 
     POSSample sample = stream.read();
-    
+
     assertEquals(23, sample.getSentence().length);
-    
+
     assertEquals("Inicia", sample.getSentence()[0]);
     assertEquals("v-fin", sample.getTags()[0]);
-    
+
     assertEquals("em", sample.getSentence()[1]);
     assertEquals("prp", sample.getTags()[1]);
-    
+
     assertEquals("o", sample.getSentence()[2]);
     assertEquals("art", sample.getTags()[2]);
-    
+
     assertEquals("Porto_Poesia", sample.getSentence()[9]);
     assertEquals("prop", sample.getTags()[9]);
   }
-  
+
   @Test
   public void testExpandME() throws IOException {
     // add one sentence with expandME = true
@@ -63,25 +63,25 @@ public class ADPOSSampleStreamTest {
             "UTF-8"), true, false);
 
     POSSample sample = stream.read();
-    
+
     assertEquals(27, sample.getSentence().length);
-    
+
     assertEquals("Inicia", sample.getSentence()[0]);
     assertEquals("v-fin", sample.getTags()[0]);
-    
+
     assertEquals("em", sample.getSentence()[1]);
     assertEquals("prp", sample.getTags()[1]);
-    
+
     assertEquals("o", sample.getSentence()[2]);
     assertEquals("art", sample.getTags()[2]);
-    
+
     assertEquals("Porto", sample.getSentence()[9]);
     assertEquals("B-prop", sample.getTags()[9]);
-    
+
     assertEquals("Poesia", sample.getSentence()[10]);
     assertEquals("I-prop", sample.getTags()[10]);
   }
-  
+
   @Test
   public void testIncludeFeats() throws IOException {
     // add one sentence with includeFeats = true
@@ -91,18 +91,18 @@ public class ADPOSSampleStreamTest {
             "UTF-8"), false, true);
 
     POSSample sample = stream.read();
-    
+
     assertEquals(23, sample.getSentence().length);
-    
+
     assertEquals("Inicia", sample.getSentence()[0]);
     assertEquals("v-fin=PR=3S=IND=VFIN", sample.getTags()[0]);
-    
+
     assertEquals("em", sample.getSentence()[1]);
     assertEquals("prp", sample.getTags()[1]);
-    
+
     assertEquals("o", sample.getSentence()[2]);
     assertEquals("art=DET=M=S", sample.getTags()[2]);
-    
+
     assertEquals("Porto_Poesia", sample.getSentence()[9]);
     assertEquals("prop=M=S", sample.getTags()[9]);
   }

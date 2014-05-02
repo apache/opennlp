@@ -29,50 +29,50 @@ public class CLITest {
 
   private static class ExitException extends SecurityException {
     private final int status;
-    
+
     public ExitException(int status) {
       this.status = status;
     }
-    
+
     int status() {
       return status;
     }
   }
-  
+
   /**
    * A <code>SecurityManager</code> which prevents System.exit anything else is allowed.
    */
   private static class NoExitSecurityManager extends SecurityManager {
-    
+
     @Override
     public void checkPermission(Permission perm) {
     }
-    
+
     @Override
     public void checkPermission(Permission perm, Object context) {
     }
-    
+
     @Override
     public void checkExit(int status){
       super.checkExit(status);
-      
+
       throw new ExitException(status);
     }
   }
-  
+
   private final SecurityManager originalSecurityManager = System.getSecurityManager();
-  
+
  @Before
   public void installNoExitSecurityManager() {
     System.setSecurityManager(new NoExitSecurityManager());
   }
-  
+
   /**
    * Ensure the main method does not fail to print help message.
    */
   @Test
   public void testMainHelpMessage() {
-    
+
     try {
       CLI.main(new String[]{});
     } catch (ExitException e) {
@@ -115,14 +115,14 @@ public class CLITest {
       assertEquals(-1, e.status());
     }
   }
-  
-  
+
+
   /**
    * Ensure all tools do not fail printing help message;
    */
   @Test
   public void testHelpMessageOfTools() {
-    
+
     for (String toolName : CLI.getToolNames()) {
       try {
         CLI.main(new String[]{toolName, "help"});
@@ -131,10 +131,10 @@ public class CLITest {
       }
     }
   }
-  
+
   @After
   public void restoreSecurityManager() {
     System.setSecurityManager(originalSecurityManager);
   }
-  
+
 }

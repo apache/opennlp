@@ -58,7 +58,7 @@ public class PorterStemmer implements Stemmer {
     j, k, k0;
   private boolean dirty = false;
   private static final int INC = 50;
-  
+
   public PorterStemmer() {
     b = new char[INC];
     i = 0;
@@ -77,7 +77,7 @@ public class PorterStemmer implements Stemmer {
    */
   public void add(char ch) {
     if (b.length == i) {
-      
+
       char[] new_b = new char[i+INC];
       for (int c = 0; c < i; c++) new_b[c] = b[c]; {
         b = new_b;
@@ -439,7 +439,7 @@ public class PorterStemmer implements Stemmer {
   public CharSequence stem(CharSequence word) {
     return stem(word.toString());
   }
-  
+
   /** Stem a word contained in a char[].  Returns true if the stemming process
    * resulted in a word different from the input.  You can retrieve the
    * result with getResultLength()/getResultBuffer() or toString().

@@ -64,17 +64,17 @@ import opennlp.tools.util.Span;
  */
 public class ADNameSampleStream implements ObjectStream<NameSample> {
 
-  /** 
-   * Pattern of a NER tag in Arvores Deitadas 
+  /**
+   * Pattern of a NER tag in Arvores Deitadas
    */
   private static final Pattern tagPattern = Pattern.compile("<(NER:)?(.*?)>");
-  
+
   private static final Pattern whitespacePattern = Pattern.compile("\\s+");
   private static final Pattern underlinePattern = Pattern.compile("[_]+");
   private static final Pattern hyphenPattern = Pattern.compile("((\\p{L}+)-$)|(^-(\\p{L}+)(.*))|((\\p{L}+)-(\\p{L}+)(.*))");
   private static final Pattern alphanumericPattern = Pattern.compile("^[\\p{L}\\p{Nd}]+$");
 
-  /** 
+  /**
    * Map to the Arvores Deitadas types to our types. It is read-only.
    */
   private static final Map<String, String> HAREM;
@@ -150,21 +150,21 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
     HAREM = Collections.unmodifiableMap(harem);
   }
-  
+
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
 
-  /** 
+  /**
    * To keep the last left contraction part
    */
   private String leftContractionPart = null;
 
   private final boolean splitHyphenatedTokens;
-  
+
   /**
    * Creates a new {@link NameSample} stream from a line stream, i.e.
    * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
    * {@link PlainTextByLineStream} object.
-   * 
+   *
    * @param lineStream
    *          a stream of lines as {@link String}
    * @param splitHyphenatedTokens
@@ -178,7 +178,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   /**
    * Creates a new {@link NameSample} stream from a {@link InputStream}
-   * 
+   *
    * @param in
    *          the Corpus {@link InputStream}
    * @param charsetName
@@ -200,10 +200,10 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       throw new IllegalStateException(e);
     }
   }
-  
+
   /**
    * Creates a new {@link NameSample} stream from a {@link InputStream}
-   * 
+   *
    * @param in
    *          the Corpus {@link InputStream}
    * @param charsetName
@@ -227,20 +227,20 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   }
 
   int textID = -1;
-  
+
   public NameSample read() throws IOException {
 
     Sentence paragraph;
     // we should look for text here.
     while ((paragraph = this.adSentenceStream.read()) != null) {
-      
+
       int currentTextID = getTextID(paragraph);
       boolean clearData = false;
       if(currentTextID != textID) {
         clearData = true;
         textID = currentTextID;
       }
-      
+
       Node root = paragraph.getRoot();
       List<String> sentence = new ArrayList<String>();
       List<Span> names = new ArrayList<Span>();
@@ -254,7 +254,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   /**
    * Recursive method to process a node in Arvores Deitadas format.
-   * 
+   *
    * @param node
    *          the node to be processed
    * @param sentence
@@ -276,7 +276,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   /**
    * Process a Leaf of Arvores Detaitadas format
-   * 
+   *
    * @param leaf
    *          the leaf to be processed
    * @param sentence
@@ -286,7 +286,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    */
   private void processLeaf(Leaf leaf, List<String> sentence,
       List<Span> names) {
-    
+
     boolean alreadyAdded = false;
 
     if (leftContractionPart != null) {
@@ -336,7 +336,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       if(!alreadyAdded) {
         sentence.addAll(processLexeme(leaf.getLexeme()));
       }
-      
+
       if (namedEntityTag != null) {
         names
             .add(new Span(startOfNamedEntity, sentence.size(), namedEntityTag));
@@ -397,7 +397,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       suffix.add(Character.toString(last));
       tok = tok.substring(0, tok.length() - 1);
     }
-    
+
     // lets split all hyphens
     if (this.splitHyphenatedTokens && tok.contains("-") && tok.length() > 1) {
       Matcher matcher = hyphenPattern.matcher(tok);
@@ -446,7 +446,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   /**
    * Parse a NER tag in Arvores Deitadas format.
-   * 
+   *
    * @param tags
    *          the NER tag in Arvores Deitadas format
    * @return the NER tag, or null if not a NER tag in Arvores Deitadas format
@@ -475,7 +475,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   public void close() throws IOException {
     adSentenceStream.close();
   }
-  
+
   enum Type {
     ama, cie, lit
   }
@@ -483,15 +483,15 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   private Type corpusType = null;
 
   private Pattern metaPattern;
-  
+
   // works for Amazonia
 //  private static final Pattern meta1 = Pattern
 //      .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
-//  
+//
 //  // works for selva cie
 //  private static final Pattern meta2 = Pattern
 //    .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
-  
+
   private int textIdMeta2 = -1;
   private String textMeta2 = "";
 

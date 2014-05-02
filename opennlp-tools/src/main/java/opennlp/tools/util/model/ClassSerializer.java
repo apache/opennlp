@@ -28,16 +28,16 @@ import opennlp.tools.util.InvalidFormatException;
 public class ClassSerializer implements ArtifactSerializer<Class<?>> {
 
   private static final String CLASS_SEARCH_NAME = "ClassSearchName";
-  
+
   private byte[] classBytes;
-  
+
   private static Class<?> loadClass(final byte[] classBytes)
       throws InvalidFormatException {
 
     ClassLoader loader = new ClassLoader() {
       @Override
       protected Class<?> findClass(String name) throws ClassNotFoundException {
-        if (CLASS_SEARCH_NAME.equals(name)) 
+        if (CLASS_SEARCH_NAME.equals(name))
           return defineClass(null, classBytes, 0, classBytes.length);
         else
           return super.findClass(name);

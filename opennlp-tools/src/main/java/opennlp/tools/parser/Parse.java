@@ -44,7 +44,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   public static final String BRACKET_RCB = "}";
   public static final String BRACKET_LSB = "[";
   public static final String BRACKET_RSB = "]";
-  
+
   /**
    * The text string on which this parse is based.
    * This object is shared among all parses for the same sentence.
@@ -433,9 +433,9 @@ public class Parse implements Cloneable, Comparable<Parse> {
   public String getCoveredText() {
     return text.substring(span.getStart(), span.getEnd());
   }
-  
+
   /**
-   * Represents this parse in a human readable way.  
+   * Represents this parse in a human readable way.
    */
   @Override
   public String toString() {
@@ -604,7 +604,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     return parts.indexOf(child);
   }
 
-  /** 
+  /**
    * Returns the head constituent associated with this constituent.
    *
    * @return The head constituent associated with this constituent.
@@ -661,7 +661,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     else if (rest.startsWith("-LSB-")) {
       return "-LSB-";
     }
-    
+
     else if (rest.startsWith("-NONE-")) {
       return "-NONE-";
     }
@@ -701,10 +701,10 @@ public class Parse implements Cloneable, Comparable<Parse> {
     else if (BRACKET_RSB.equals(token)) {
       return "-RSB-";
     }
-    
+
     return token;
   }
-  
+
   private static String decodeToken(String token) {
     if ("-LRB-".equals(token)) {
       return BRACKET_LRB;
@@ -724,10 +724,10 @@ public class Parse implements Cloneable, Comparable<Parse> {
     else if ("-RSB-".equals(token)) {
       return BRACKET_RSB;
     }
-    
+
     return token;
   }
-  
+
   /**
    * Returns the string containing the token for the specified portion of the parse string or
    * null if the portion of the parse string does not represent a token.
@@ -992,7 +992,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     return null;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (o instanceof Parse) {
@@ -1023,7 +1023,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     return false;
   }
-  
+
   @Override
   public int hashCode() {
     int result = 17;
@@ -1092,7 +1092,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * Utility method to inserts named entities.
-   * 
+   *
    * @param tag
    * @param names
    * @param tokens
@@ -1132,7 +1132,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
       }
     }
   }
-  
+
   /**
    * Reads training parses (one-sentence-per-line) and displays parse structure.
    *

@@ -22,7 +22,7 @@ import java.util.List;
 public class PrefixFeatureGenerator extends FeatureGeneratorAdapter {
 
   private static final int PREFIX_LENGTH = 4;
-  
+
   public static String[] getPrefixes(String lex) {
     String[] prefs = new String[PREFIX_LENGTH];
     for (int li = 0, ll = PREFIX_LENGTH; li < ll; li++) {
@@ -30,7 +30,7 @@ public class PrefixFeatureGenerator extends FeatureGeneratorAdapter {
     }
     return prefs;
   }
-  
+
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
     String[] prefs = PrefixFeatureGenerator.getPrefixes(tokens[index]);

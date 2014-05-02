@@ -36,10 +36,10 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " detokenizerDictionary";
   }
-  
+
   public void run(String[] args) {
-    
-    
+
+
     if (args.length != 1) {
       System.out.println(getHelp());
     } else {

@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 
 package opennlp.uima.parser;
 
@@ -68,28 +68,28 @@ import org.apache.uima.util.Logger;
  * </table>
  */
 public class Parser extends CasAnnotator_ImplBase {
- 
+
   private static class ParseConverter {
     private Map<Integer, Integer> mIndexMap = new HashMap<Integer, Integer>();
-    
+
     private Parse mParseForTagger;
-    
+
     private final String mSentence;
-    
+
     /**
      * Initializes a new instance.
-     * 
+     *
      * @param sentence
      * @param tokens
      */
     public ParseConverter(String sentence, Span tokens[]) {
-      
+
       mSentence = sentence;
-      
+
       StringBuilder sentenceStringBuilder = new StringBuilder();
-      
+
       String tokenList[] = new String[tokens.length];
-      
+
       for (int i = 0; i < tokens.length; i++) {
         String tokenString = tokens[i].getCoveredText(sentence).toString();
         String escapedToken = escape(tokenString);
@@ -107,18 +107,18 @@ public class Parser extends CasAnnotator_ImplBase {
 
         sentenceStringBuilder.append(' ');
       }
-      
+
       // remove last space
       if (sentenceStringBuilder.length() > 0)
         sentenceStringBuilder.setLength(sentenceStringBuilder.length() - 1);
-      
+
       String tokenizedSentence = sentenceStringBuilder.toString();
-      
-      mParseForTagger = new Parse(tokenizedSentence, 
+
+      mParseForTagger = new Parse(tokenizedSentence,
           new Span(0, tokenizedSentence.length()), "INC", 1, null);
-      
+
       int start = 0;
-      
+
       for (String token : tokenList) {
         mParseForTagger.insert(new Parse(tokenizedSentence, new Span(start,
             start + token.length()),
@@ -127,23 +127,23 @@ public class Parser extends CasAnnotator_ImplBase {
         start += token.length() + 1;
       }
     }
-    
+
     private static String escape(String text) {
       return text;
     }
-    
+
     /**
      * Creates the parse for the tagger.
-     *  
+     *
      * @return the parse which can be passed to the tagger
      */
     Parse getParseForTagger() {
       return mParseForTagger;
     }
-    
+
     /**
      * Converts the parse from the tagger back.
-     * 
+     *
      * @param parseFromTagger
      * @return the final parse
      */
@@ -164,20 +164,20 @@ public class Parser extends CasAnnotator_ImplBase {
       return transformedParse;
     }
   }
-  
+
   public static final String PARSE_TYPE_PARAMETER = "opennlp.uima.ParseType";
 
-  public static final String TYPE_FEATURE_PARAMETER = 
+  public static final String TYPE_FEATURE_PARAMETER =
       "opennlp.uima.TypeFeature";
-  
-  public static final String CHILDREN_FEATURE_PARAMETER = 
+
+  public static final String CHILDREN_FEATURE_PARAMETER =
       "opennlp.uima.ChildrenFeature";
-  
+
   public static final String PROBABILITY_FEATURE_PARAMETER =
       "opennlp.uima.ProbabilityFeature";
-  
+
   protected UimaContext context;
-  
+
   protected Logger mLogger;
 
   private Type mSentenceType;
@@ -189,11 +189,11 @@ public class Parser extends CasAnnotator_ImplBase {
   private Type mParseType;
 
   private Feature mTypeFeature;
-  
+
   private Feature childrenFeature;
 
   private Feature probabilityFeature;
-  
+
   /**
    * Initializes the current instance with the given context.
    */
@@ -223,7 +223,7 @@ public class Parser extends CasAnnotator_ImplBase {
 
     mParser = ParserFactory.create(model);
   }
-  
+
   /**
    * Initializes the type system.
    */
@@ -241,14 +241,14 @@ public class Parser extends CasAnnotator_ImplBase {
 
     mTypeFeature = AnnotatorUtil.getRequiredFeatureParameter(context,
         mParseType, TYPE_FEATURE_PARAMETER, CAS.TYPE_NAME_STRING);
-    
+
     childrenFeature = AnnotatorUtil.getRequiredFeatureParameter(context,
         mParseType, CHILDREN_FEATURE_PARAMETER, CAS.TYPE_NAME_FS_ARRAY);
-    
+
     probabilityFeature = AnnotatorUtil.getOptionalFeatureParameter(context,
         mParseType, PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_DOUBLE);
   }
-  
+
   /**
    * Performs parsing on the given {@link CAS} object.
    */
@@ -259,77 +259,77 @@ public class Parser extends CasAnnotator_ImplBase {
       process(cas, sentence);
     }
   }
-  
+
   protected void process(CAS cas, AnnotationFS sentenceAnnotation) {
     FSIndex<AnnotationFS> allTokens = cas.getAnnotationIndex(mTokenType);
-    
-    ContainingConstraint containingConstraint = 
+
+    ContainingConstraint containingConstraint =
         new ContainingConstraint(sentenceAnnotation);
-    
+
     String sentence = sentenceAnnotation.getCoveredText();
 
     Iterator<AnnotationFS> containingTokens = cas.createFilteredIterator(
         allTokens.iterator(), containingConstraint);
-   
+
     List<Span> tokenSpans = new LinkedList<Span>();
-    
+
     while(containingTokens.hasNext()) {
       AnnotationFS token = (AnnotationFS) containingTokens.next();
 
-      tokenSpans.add(new Span(token.getBegin() - sentenceAnnotation.getBegin(), 
+      tokenSpans.add(new Span(token.getBegin() - sentenceAnnotation.getBegin(),
           token.getEnd() - sentenceAnnotation.getBegin()));
     }
-    
-    ParseConverter converter = new ParseConverter(sentence,(Span[]) 
+
+    ParseConverter converter = new ParseConverter(sentence,(Span[])
         tokenSpans.toArray(new Span[tokenSpans.size()]));
-   
+
     Parse unparsedTree = converter.getParseForTagger();
-   
+
     if (unparsedTree.getChildCount() > 0) {
-      
+
       Parse parse = mParser.parse(unparsedTree);
-  
+
       // TODO: We need a strategy to handle the case that a full
       //       parse could not be found. What to do in this case?
-      
+
       parse = converter.transformParseFromTagger(parse);
-   
+
       if (mLogger.isLoggable(Level.INFO)) {
         StringBuffer parseString = new StringBuffer();
         parse.show(parseString);
-     
+
         mLogger.log(Level.INFO, parseString.toString());
       }
-   
+
       createAnnotation(cas, sentenceAnnotation.getBegin(), parse);
     }
   }
-  
+
   protected AnnotationFS createAnnotation(CAS cas, int offset, Parse parse) {
-    
+
     Parse parseChildren[] = parse.getChildren();
     AnnotationFS parseChildAnnotations[] = new AnnotationFS[parseChildren.length];
-    
+
     // do this for all children
     for (int i = 0; i < parseChildren.length; i++) {
       parseChildAnnotations[i] = createAnnotation(cas, offset, parseChildren[i]);
     }
-    
-    AnnotationFS parseAnnotation = cas.createAnnotation(mParseType, offset + 
+
+    AnnotationFS parseAnnotation = cas.createAnnotation(mParseType, offset +
         parse.getSpan().getStart(), offset + parse.getSpan().getEnd());
-    
+
     parseAnnotation.setStringValue(mTypeFeature, parse.getType());
-    
+
     if (probabilityFeature != null) {
       parseAnnotation.setDoubleValue(probabilityFeature, parse.getProb());
     }
-    
+
     ArrayFS childrenArray = cas.createArrayFS(parseChildAnnotations.length);
     childrenArray.copyFromArray(parseChildAnnotations, 0, 0, parseChildAnnotations.length);
     parseAnnotation.setFeatureValue(childrenFeature, childrenArray);
-    
+
     cas.getIndexRepository().addFS(parseAnnotation);
-    
+
     return parseAnnotation;
   }
   /**

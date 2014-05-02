@@ -41,7 +41,7 @@ public class StringDictionary {
 
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param in
    * @throws IOException
    * @throws InvalidFormatException
@@ -70,7 +70,7 @@ public class StringDictionary {
 
   /**
    * Writes the ngram instance to the given {@link OutputStream}.
-   * 
+   *
    * @param out
    * @throws IOException
    *           if an I/O Error during writing occures

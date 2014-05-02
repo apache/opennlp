@@ -43,19 +43,19 @@ import opennlp.tools.util.eval.FMeasure;
 public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
 
   private FMeasure fmeasure = new FMeasure();
-  
+
   /**
    * The {@link TokenNameFinder} used to create the predicted
    * {@link NameSample} objects.
    */
   private TokenNameFinder nameFinder;
-  
+
   /**
    * Initializes the current instance with the given
    * {@link TokenNameFinder}.
    *
    * @param nameFinder the {@link TokenNameFinder} to evaluate.
-   * @param listeners evaluation sample listeners 
+   * @param listeners evaluation sample listeners
    */
   public TokenNameFinderEvaluator(TokenNameFinder nameFinder, TokenNameFinderEvaluationMonitor ... listeners) {
     super(listeners);
@@ -71,17 +71,17 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    * calculate and update the scores.
    *
    * @param reference the reference {@link NameSample}.
-   * 
+   *
    * @return the predicted {@link NameSample}.
    */
   @Override
   protected NameSample processSample(NameSample reference) {
-    
+
     if (reference.isClearAdaptiveDataSet()) {
       nameFinder.clearAdaptiveData();
     }
-    
-    Span predictedNames[] = nameFinder.find(reference.getSentence());    
+
+    Span predictedNames[] = nameFinder.find(reference.getSentence());
     Span references[] = reference.getNames();
 
     // OPENNLP-396 When evaluating with a file in the old format
@@ -92,59 +92,59 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
         references[i] = new Span(references[i].getStart(), references[i].getEnd(), "default");
       }
     }
-    
+
     fmeasure.updateScores(references, predictedNames);
-    
+
     return new NameSample(reference.getSentence(), predictedNames, reference.isClearAdaptiveDataSet());
   }
-  
+
   public FMeasure getFMeasure() {
     return fmeasure;
   }
-  
+
   @Deprecated
-  public static void main(String[] args) throws IOException, 
+  public static void main(String[] args) throws IOException,
       InvalidFormatException {
-    
+
     if (args.length == 4) {
-      
+
       System.out.println("Loading name finder model ...");
       InputStream modelIn = new FileInputStream(args[3]);
-      
+
       TokenNameFinderModel model = new TokenNameFinderModel(modelIn);
-      
+
       TokenNameFinder nameFinder = new NameFinderME(model);
-      
+
       System.out.println("Performing evaluation ...");
       TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(nameFinder);
-      
+
       final NameSampleDataStream sampleStream = new NameSampleDataStream(
           new PlainTextByLineStream(new InputStreamReader(new FileInputStream(args[2]), args[1])));
-      
+
       final PerformanceMonitor monitor = new PerformanceMonitor("sent");
-      
+
       monitor.startAndPrintThroughput();
-      
+
       ObjectStream<NameSample> iterator = new ObjectStream<NameSample>() {
 
         public NameSample read() throws IOException {
           monitor.incrementCounter();
           return sampleStream.read();
         }
-        
+
         public void reset() throws IOException {
           sampleStream.reset();
         }
-        
+
         public void close() throws IOException {
           sampleStream.close();
         }
       };
-      
+
       evaluator.evaluate(iterator);
-      
+
       monitor.stopAndPrintFinalResult();
-      
+
       System.out.println();
       System.out.println("F-Measure: " + evaluator.getFMeasure().getFMeasure());
       System.out.println("Recall: " + evaluator.getFMeasure().getRecallScore());

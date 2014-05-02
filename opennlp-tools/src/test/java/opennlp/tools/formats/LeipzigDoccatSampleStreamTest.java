@@ -34,22 +34,22 @@ public class LeipzigDoccatSampleStreamTest {
   public void testParsingSample() throws IOException {
     InputStream in = LeipzigDoccatSampleStreamTest.class.getResourceAsStream(
         "/opennlp/tools/formats/leipzig-en.sample");
-    
-    ObjectStream<DocumentSample> sampleStream = 
+
+    ObjectStream<DocumentSample> sampleStream =
         new LeipzigDoccatSampleStream("en", 2, in);
-    
+
     DocumentSample doc1 = sampleStream.read();
     assertEquals("en", doc1.getCategory());
-    
+
     DocumentSample doc2 = sampleStream.read();
     assertEquals("en", doc2.getCategory());
-    
+
     DocumentSample doc3 = sampleStream.read();
     assertEquals("en", doc3.getCategory());
 
     DocumentSample doc4 = sampleStream.read();
     assertEquals("en", doc4.getCategory());
-    
+
     assertNull(sampleStream.read());
   }
 }

@@ -30,44 +30,44 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class DetokenizationDictionaryTest{
-  
+
   private String tokens[];
   private Operation operations[];
   private DetokenizationDictionary dict;
-  
+
   @Before
   public void setUp() throws Exception {
-    
+
     tokens = new String[]{"\"", "(", ")", "-"};
-    
+
     operations = new Operation[]{ Operation.RIGHT_LEFT_MATCHING,
         Operation.MOVE_RIGHT, Operation.MOVE_LEFT, Operation.MOVE_BOTH };
-    
+
     dict = new DetokenizationDictionary(tokens, operations);
   }
-  
+
   private static void testEntries(DetokenizationDictionary dict) {
     assertEquals(Operation.RIGHT_LEFT_MATCHING, dict.getOperation("\""));
     assertEquals(Operation.MOVE_RIGHT, dict.getOperation("("));
     assertEquals(Operation.MOVE_LEFT, dict.getOperation(")"));
     assertEquals(Operation.MOVE_BOTH, dict.getOperation("-"));
   }
-  
+
   @Test
   public void testSimpleDict() {
     testEntries(dict);
   }
-  
+
   @Test
   public void testSerialization() throws IOException, InvalidFormatException {
-    
+
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    
+
     dict.serialize(out);
-    
+
     DetokenizationDictionary parsedDict = new DetokenizationDictionary(
         new ByteArrayInputStream(out.toByteArray()));
-   
+
     // should contain the same entries like the original
     testEntries(parsedDict);
   }

@@ -35,24 +35,24 @@ import org.apache.uima.cas.text.AnnotationFS;
  * </table>
  */
 public final class SimpleTokenizer extends AbstractTokenizer {
-  
+
   /**
    * The OpenNLP simple tokenizer.
    */
-  private opennlp.tools.tokenize.SimpleTokenizer tokenizer = 
+  private opennlp.tools.tokenize.SimpleTokenizer tokenizer =
       opennlp.tools.tokenize.SimpleTokenizer.INSTANCE;
 
   /**
    * Initializes the current instance.
    *
-   * Note: Use {@link #initialize(UimaContext) } to initialize 
+   * Note: Use {@link #initialize(UimaContext) } to initialize
    * this instance. Not use the constructor.
    */
   public SimpleTokenizer() {
 	  super("OpenNLP Simple Tokenizer");
     // must not be implemented !
   }
-  
+
   @Override
   protected Span[] tokenize(CAS cas, AnnotationFS sentence) {
     return tokenizer.tokenizePos(sentence.getCoveredText());

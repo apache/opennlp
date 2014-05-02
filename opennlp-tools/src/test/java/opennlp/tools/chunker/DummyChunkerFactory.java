@@ -20,7 +20,7 @@ package opennlp.tools.chunker;
 import opennlp.tools.util.SequenceValidator;
 
 public class DummyChunkerFactory extends ChunkerFactory {
-  
+
   public DummyChunkerFactory() {
   }
 
@@ -33,7 +33,7 @@ public class DummyChunkerFactory extends ChunkerFactory {
   public SequenceValidator<String> getSequenceValidator() {
     return new DummySequenceValidator();
   }
-  
+
   static class DummyContextGenerator extends DefaultChunkerContextGenerator {
 
     @Override

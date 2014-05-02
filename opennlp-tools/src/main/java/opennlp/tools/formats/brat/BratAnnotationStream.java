@@ -34,16 +34,16 @@ import opennlp.tools.util.Span;
  * Reads the annotations from the brat .ann annotation file.
  */
 public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
-  
+
   static abstract class BratAnnotationParser {
-    
+
     static final int ID_OFFSET = 0;
     static final int TYPE_OFFSET = 1;
-    
+
     BratAnnotation parse(Span tokens[], CharSequence line) throws IOException {
       return null;
     }
-    
+
     protected int parseInt(String intString) throws InvalidFormatException {
       try {
         return Integer.parseInt(intString);
@@ -53,22 +53,22 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
       }
     }
   }
-  
+
   static class SpanAnnotationParser extends BratAnnotationParser {
-    
+
     private static final int BEGIN_OFFSET = 2;
     private static final int END_OFFSET = 3;
-    
+
     @Override
     BratAnnotation parse(Span values[], CharSequence line) throws IOException {
-      
+
       if (values.length > 4) {
         String type = values[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString();
-        
+
         int endOffset = -1;
-        
+
         int firstTextTokenIndex = -1;
-        
+
         for (int i = END_OFFSET; i < values.length; i++) {
           if (!values[i].getCoveredText(line).toString().contains(";")) {
             endOffset = parseInt(values[i].getCoveredText(line).toString());
@@ -76,13 +76,13 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
             break;
           }
         }
-        
+
         String id = values[BratAnnotationParser.ID_OFFSET].getCoveredText(line).toString();
 
         String coveredText = line.subSequence(values[firstTextTokenIndex].getStart(),
             values[values.length - 1].getEnd()).toString();
-        
-        return new SpanAnnotation(id, type, 
+
+        return new SpanAnnotation(id, type,
             new Span(parseInt(values[BEGIN_OFFSET]
                 .getCoveredText(line).toString()), endOffset, type), coveredText);
       }
@@ -91,12 +91,12 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
       }
     }
   }
-  
+
   static class RelationAnnotationParser extends BratAnnotationParser {
-    
+
     private static final int ARG1_OFFSET = 2;
     private static final int ARG2_OFFSET = 3;
-    
+
     private String parseArg(String arg) throws InvalidFormatException {
       if (arg.length() > 4) {
         return arg.substring(5).trim();
@@ -105,58 +105,58 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
         throw new InvalidFormatException("Failed to parse argument: " + arg);
       }
     }
-    
+
     @Override
     BratAnnotation parse(Span tokens[], CharSequence line) throws IOException {
-      return new RelationAnnotation(tokens[BratAnnotationParser.ID_OFFSET].getCoveredText(line).toString(), 
+      return new RelationAnnotation(tokens[BratAnnotationParser.ID_OFFSET].getCoveredText(line).toString(),
           tokens[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString(),
           parseArg(tokens[ARG1_OFFSET].getCoveredText(line).toString()),
           parseArg(tokens[ARG2_OFFSET].getCoveredText(line).toString()));
     }
   }
-  
+
   private final Map<String, BratAnnotationParser> parsers =
       new HashMap<String, BratAnnotationParser>();
   private final AnnotationConfiguration config;
   private final BufferedReader reader;
   private final String id;
-  
+
   BratAnnotationStream(AnnotationConfiguration config, String id, InputStream in) {
     this.config = config;
     this.id = id;
-    
+
     reader = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
-    
+
     parsers.put(AnnotationConfiguration.SPAN_TYPE, new SpanAnnotationParser());
     parsers.put(AnnotationConfiguration.ENTITY_TYPE, new SpanAnnotationParser());
     parsers.put(AnnotationConfiguration.RELATION_TYPE, new RelationAnnotationParser());
   }
 
   public BratAnnotation read() throws IOException {
-    
+
     String line = reader.readLine();
-    
+
     if (line != null) {
       Span tokens[] = WhitespaceTokenizer.INSTANCE.tokenizePos(line);
 
       if (tokens.length > 2) {
         String typeClass = config.getTypeClass(tokens[BratAnnotationParser.TYPE_OFFSET]
             .getCoveredText(line).toString());
-        
+
         BratAnnotationParser parser = parsers.get(typeClass);
-        
+
         if (parser == null) {
-          throw new IOException("Failed to parse ann document with id " + id + 
+          throw new IOException("Failed to parse ann document with id " + id +
               " type class, no parser registered: " + tokens[BratAnnotationParser.TYPE_OFFSET]);
         }
-        
+
         return parser.parse(tokens, line);
       }
     }
     else {
       return null;
     }
-    
+
     return null;
   }
 

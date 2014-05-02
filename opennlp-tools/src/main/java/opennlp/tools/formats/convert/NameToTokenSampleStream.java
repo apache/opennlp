@@ -31,22 +31,22 @@ import opennlp.tools.util.ObjectStream;
 public class NameToTokenSampleStream extends FilterObjectStream<NameSample, TokenSample> {
 
   private final Detokenizer detokenizer;
-  
+
   public NameToTokenSampleStream(Detokenizer detokenizer, ObjectStream<NameSample> samples) {
     super(samples);
-    
+
     this.detokenizer = detokenizer;
   }
-  
+
   public TokenSample read() throws IOException {
     NameSample nameSample = samples.read();
-    
+
     TokenSample tokenSample = null;
-    
+
     if (nameSample != null ) {
       tokenSample = new TokenSample(detokenizer, nameSample.getSentence());
     }
-    
+
     return tokenSample;
   }
 

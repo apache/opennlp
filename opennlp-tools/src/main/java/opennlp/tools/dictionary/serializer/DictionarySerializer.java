@@ -58,7 +58,7 @@ public class DictionarySerializer {
 //    private boolean mIsInsideEntryElement;
     private boolean mIsInsideTokenElement;
     private boolean mIsCaseSensitiveDictionary;
-    
+
     private List<String> mTokenList = new LinkedList<String>();
 
     private StringBuilder token = new StringBuilder();
@@ -87,16 +87,16 @@ public class DictionarySerializer {
        if (DICTIONARY_ELEMENT.equals(localName)) {
 
          mAttributes = new Attributes();
-         
+
          for (int i = 0; i < atts.getLength(); i++) {
            mAttributes.setValue(atts.getLocalName(i), atts.getValue(i));
          }
          /* get the attribute here ... */
          if (mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE) != null) {
-           mIsCaseSensitiveDictionary = Boolean.valueOf(mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE));   
+           mIsCaseSensitiveDictionary = Boolean.valueOf(mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE));
          }
          mAttributes = null;
-       } 
+       }
        else if (ENTRY_ELEMENT.equals(localName)) {
 
          mAttributes = new Attributes();
@@ -193,7 +193,7 @@ public class DictionarySerializer {
   private static final String TOKEN_ELEMENT = "token";
   private static final String ATTRIBUTE_CASE_SENSITIVE = "case_sensitive";
 
-  
+
   /**
    * Creates {@link Entry}s from the given {@link InputStream} and
    * forwards these {@link Entry}s to the {@link EntryInserter}.
@@ -204,7 +204,7 @@ public class DictionarySerializer {
    * @param inserter inserter to forward entries to
    *
    * @return isCaseSensitive attribute for Dictionary
-   * 
+   *
    * @throws IOException
    * @throws InvalidFormatException
    */
@@ -240,11 +240,11 @@ public class DictionarySerializer {
    * @deprecated Use {@link DictionarySerializer#serialize(java.io.OutputStream, java.util.Iterator, boolean)} instead
    */
   @Deprecated
-  public static void serialize(OutputStream out, Iterator<Entry> entries) 
+  public static void serialize(OutputStream out, Iterator<Entry> entries)
           throws IOException {
       DictionarySerializer.serialize(out, entries, true);
   }
-  
+
   /**
    * Serializes the given entries to the given {@link OutputStream}.
    *
@@ -253,12 +253,12 @@ public class DictionarySerializer {
    *
    * @param out stream to serialize to
    * @param entries entries to serialize
-   * @param casesensitive indicates if the written dictionary 
+   * @param casesensitive indicates if the written dictionary
    *        should be case sensitive or case insensitive.
    *
    * @throws IOException If an I/O error occurs
    */
-  public static void serialize(OutputStream out, Iterator<Entry> entries, 
+  public static void serialize(OutputStream out, Iterator<Entry> entries,
           boolean casesensitive)
       throws IOException {
     StreamResult streamResult = new StreamResult(out);

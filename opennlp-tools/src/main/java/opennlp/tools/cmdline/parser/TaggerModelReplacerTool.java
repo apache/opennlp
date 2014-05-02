@@ -32,17 +32,17 @@ public final class TaggerModelReplacerTool extends BasicCmdLineTool {
   public String getShortDescription() {
     return "replaces the tagger model in a parser model";
   }
-  
+
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " parser.model tagger.model";
   }
 
   public void run(String[] args) {
-    
+
     if (args.length != 2) {
       System.out.println(getHelp());
     } else {
-    
+
       File parserModelInFile = new File(args[0]);
       ParserModel parserModel = new ParserModelLoader().load(parserModelInFile);
 

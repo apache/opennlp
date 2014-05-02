@@ -38,33 +38,33 @@ public class TokenNameFinderEvaluatorTest {
   public void testPositive() {
     OutputStream stream = new ByteArrayOutputStream();
     TokenNameFinderEvaluationMonitor listener = new NameEvaluationErrorListener(stream);
-    
+
     Span[] pred = createSimpleNameSampleA().getNames();
     TokenNameFinderEvaluator eval = new TokenNameFinderEvaluator(new DummyNameFinder(pred), listener);
-    
+
     eval.evaluateSample(createSimpleNameSampleA());
-    
+
     assertEquals(1.0, eval.getFMeasure().getFMeasure());
-    
+
     assertEquals(0, stream.toString().length());
   }
-  
+
   @Test
   public void testNegative() {
     OutputStream stream = new ByteArrayOutputStream();
     TokenNameFinderEvaluationMonitor listener = new NameEvaluationErrorListener(stream);
-    
+
     Span[] pred = createSimpleNameSampleB().getNames();
     TokenNameFinderEvaluator eval = new TokenNameFinderEvaluator(new DummyNameFinder(pred), listener);
-    
+
     eval.evaluateSample(createSimpleNameSampleA());
-    
+
     assertEquals(0.8, eval.getFMeasure().getFMeasure());
-    
+
     assertNotSame(0, stream.toString().length());
   }
-  
-  
+
+
 
   private static String[] sentence = {"U", ".", "S", ".", "President", "Barack", "Obama", "is",
       "considering", "sending", "additional", "American", "forces",
@@ -90,10 +90,10 @@ public class TokenNameFinderEvaluatorTest {
 
     return nameSample;
   }
-  
+
   /** a dummy name finder that always return something expected */
   class DummyNameFinder implements TokenNameFinder {
-    
+
     private Span[] ret;
 
     public DummyNameFinder(Span[] ret) {

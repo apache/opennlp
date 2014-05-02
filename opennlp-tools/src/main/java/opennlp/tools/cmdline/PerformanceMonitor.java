@@ -36,19 +36,19 @@ import java.util.concurrent.TimeUnit;
  */
 public class PerformanceMonitor {
 
-  private ScheduledExecutorService scheduler = 
+  private ScheduledExecutorService scheduler =
     Executors.newScheduledThreadPool(1);
 
   private final String unit;
-  
+
   private ScheduledFuture<?> beeperHandle;
-    
+
   private volatile long startTime = -1;
-  
+
   private volatile int counter;
-  
+
   private final PrintStream out;
-  
+
   public PerformanceMonitor(PrintStream out, String unit) {
     this.out = out;
     this.unit = unit;
@@ -57,44 +57,44 @@ public class PerformanceMonitor {
   public PerformanceMonitor(String unit) {
     this(System.out, unit);
   }
-  
+
   public boolean isStarted() {
     return startTime != -1;
   }
-  
+
   public void incrementCounter(int increment) {
-    
+
     if (!isStarted())
       throw new IllegalStateException("Must be started first!");
-    
-    if (increment < 0) 
+
+    if (increment < 0)
       throw new IllegalArgumentException("increment must be zero or positive but was " + increment + "!");
-    
+
     counter += increment;
   }
-  
+
   public void incrementCounter() {
     incrementCounter(1);
   }
-  
+
   public void start() {
-    
-    if (isStarted()) 
+
+    if (isStarted())
       throw new IllegalStateException("Already started!");
-    
+
     startTime = System.currentTimeMillis();
   }
-  
-  
+
+
   public void startAndPrintThroughput() {
-    
+
     start();
-    
+
     final Runnable beeper = new Runnable() {
-      
+
       private long lastTimeStamp = startTime;
       private int lastCount = counter;
-      
+
       public void run() {
 
         int deltaCount = counter - lastCount;
@@ -111,7 +111,7 @@ public class PerformanceMonitor {
         }
 
         long totalTimePassed = System.currentTimeMillis() - startTime;
-        
+
         double averageThroughput;
         if (totalTimePassed > 0) {
           averageThroughput = counter / (((double) totalTimePassed) / 1000);
@@ -119,33 +119,33 @@ public class PerformanceMonitor {
         else {
           averageThroughput = 0;
         }
-        
+
         out.printf("current: %.1f " + unit + "/s avg: %.1f " + unit + "/s total: %d " + unit + "%n", currentThroughput,
             averageThroughput, counter);
 
         lastTimeStamp = System.currentTimeMillis();
         lastCount = counter;
       }
-    }; 
-    
+    };
+
    beeperHandle = scheduler.scheduleAtFixedRate(beeper, 1, 1, TimeUnit.SECONDS);
   }
-  
+
   public void stopAndPrintFinalResult() {
-    
+
     if (!isStarted())
       throw new IllegalStateException("Must be started first!");
-    
+
     if (beeperHandle != null) {
       // yeah we have time to finish current
       // printing if there is one
       beeperHandle.cancel(false);
     }
-    
+
     scheduler.shutdown();
-    
+
     long timePassed = System.currentTimeMillis() - startTime;
-    
+
     double average;
     if (timePassed > 0) {
       average = counter / (timePassed / 1000d);
@@ -153,10 +153,10 @@ public class PerformanceMonitor {
     else {
       average = 0;
     }
-    
+
     out.println();
     out.println();
-    
+
     out.printf("Average: %.1f " + unit +"/s %n", average);
     out.println("Total: " + counter + " " + unit);
     out.println("Runtime: " + timePassed / 1000d + "s");

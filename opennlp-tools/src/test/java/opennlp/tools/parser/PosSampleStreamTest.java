@@ -29,15 +29,15 @@ import opennlp.tools.util.ObjectStreamUtils;
 import org.junit.Test;
 
 public class PosSampleStreamTest {
-  
+
   @Test
   public void testConvertParseToPosSample() throws IOException {
-    
+
     ObjectStream<POSSample> posSampleStream = new PosSampleStream(new ParseSampleStream(
         ObjectStreamUtils.createObjectStream(ParseTest.PARSE_STRING)));
-    
+
     POSSample sample = posSampleStream.read();
-    
+
     assertEquals("PRP", sample.getTags()[0]);
     assertEquals("She", sample.getSentence()[0]);
     assertEquals("VBD", sample.getTags()[1]);
@@ -74,7 +74,7 @@ public class PosSampleStreamTest {
     assertEquals("name", sample.getSentence()[16]);
     assertEquals(".", sample.getTags()[17]);
     assertEquals(".", sample.getSentence()[17]);
-    
+
     assertNull(posSampleStream.read());
   }
 }

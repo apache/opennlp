@@ -26,7 +26,7 @@ public class AbstractObjectStream<T> implements ObjectStream<T> {
   protected AbstractObjectStream(ObjectStream<T> stream) {
     this.stream = stream;
   }
-  
+
   @Override
   public T read() throws IOException {
     return stream.read();

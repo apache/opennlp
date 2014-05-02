@@ -59,7 +59,7 @@ public class DictionaryNameFinderEvaluatorTest {
 
   /**
    * Creates a NameSample stream using an annotated corpus
-   * 
+   *
    * @return
    * @throws IOException
    * @throws URISyntaxException
@@ -77,7 +77,7 @@ public class DictionaryNameFinderEvaluatorTest {
 
   /**
    * Creates a dictionary with all names from the sample data.
-   * 
+   *
    * @return a dictionary
    * @throws IOException
    * @throws URISyntaxException

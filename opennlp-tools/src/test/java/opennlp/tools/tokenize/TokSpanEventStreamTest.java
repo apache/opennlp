@@ -39,20 +39,20 @@ public class TokSpanEventStreamTest {
    */
   @Test
   public void testEventOutcomes() throws IOException {
-    
-    ObjectStream<String> sentenceStream = 
+
+    ObjectStream<String> sentenceStream =
       ObjectStreamUtils.createObjectStream("\"<SPLIT>out<SPLIT>.<SPLIT>\"");
-  
+
     ObjectStream<TokenSample> tokenSampleStream = new TokenSampleStream(sentenceStream);
-    
+
     ObjectStream<Event> eventStream = new TokSpanEventStream(tokenSampleStream, false);
-    
+
     assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
     assertEquals(TokenizerME.NO_SPLIT, eventStream.read().getOutcome());
     assertEquals(TokenizerME.NO_SPLIT, eventStream.read().getOutcome());
     assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
     assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
- 
+
     assertNull(eventStream.read());
     assertNull(eventStream.read());
   }

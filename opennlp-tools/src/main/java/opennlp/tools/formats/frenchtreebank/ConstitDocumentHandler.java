@@ -31,16 +31,16 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 class ConstitDocumentHandler extends DefaultHandler {
-  
+
   private static final String SENT_ELEMENT_NAME = "SENT";
   private static final String WORD_ELEMENT_NAME = "w";
-  
+
   private static final String SENT_TYPE_NAME = "S";
-  
+
   private final List<Parse> parses;
 
   private boolean insideSentenceElement;
-  
+
   /**
    * A token buffer, a token might be build up by multiple
    * {@link #characters(char[], int, int)} calls.
@@ -48,22 +48,22 @@ class ConstitDocumentHandler extends DefaultHandler {
   private final StringBuilder tokenBuffer = new StringBuilder();
 
   private final StringBuilder text = new StringBuilder();
-  
+
   private int offset;
   private final Stack<Constituent> stack = new Stack<Constituent>();
   private final List<Constituent> cons = new LinkedList<Constituent>();
-  
+
   ConstitDocumentHandler(List<Parse> parses) {
     this.parses = parses;
   }
-  
+
   private String cat;
   private String subcat;
-  
+
   @Override
   public void startElement(String uri, String localName, String qName,
       Attributes attributes) throws SAXException {
-    
+
     String type = qName;
 
     if (SENT_ELEMENT_NAME.equals(qName)) {
@@ -72,17 +72,17 @@ class ConstitDocumentHandler extends DefaultHandler {
       offset = 0;
       stack.clear();
       cons.clear();
-      
+
       type = SENT_TYPE_NAME;
-      
+
       insideSentenceElement = true;
     }
     else if (WORD_ELEMENT_NAME.equals(qName)) {
-      
+
       // Note:
       // If there are compound words they are represented in a couple
       // of ways in the training data.
-      // Many of them are marked with the compound attribute, but not 
+      // Many of them are marked with the compound attribute, but not
       // all of them. Thats why it is not used in the code to detect
       // a compound word.
       // Compounds are detected by the fact that a w tag is appearing
@@ -94,17 +94,17 @@ class ConstitDocumentHandler extends DefaultHandler {
       // case they have an empty cat attribute.
       //
       // This implementation hopefully decodes these cases correctly!
-      
+
       String newCat = attributes.getValue("cat");
       if (newCat != null && newCat.length() > 0) {
         cat = newCat;
       }
-      
+
       String newSubcat = attributes.getValue("subcat");
       if (newSubcat != null && newSubcat.length() > 0) {
         subcat = newSubcat;
       }
-      
+
       if (cat != null) {
         type = cat + (subcat != null ? subcat : "");
       }
@@ -118,31 +118,31 @@ class ConstitDocumentHandler extends DefaultHandler {
         }
       }
     }
-    
+
     stack.push(new Constituent(type, new Span(offset, offset)));
-    
+
     tokenBuffer.setLength(0);
   }
-  
+
   @Override
   public void characters(char[] ch, int start, int length) throws SAXException {
     tokenBuffer.append(ch, start, length);
   }
-  
+
   @Override
   public void endElement(String uri, String localName, String qName)
       throws SAXException {
-    
+
     boolean isCreateConstituent = true;
-    
+
     if (insideSentenceElement) {
       if (WORD_ELEMENT_NAME.equals(qName)) {
         String token = tokenBuffer.toString().trim();
-        
+
         if (token.length() > 0) {
           cons.add(new Constituent(AbstractBottomUpParser.TOK_NODE,
               new Span(offset, offset + token.length())));
-          
+
           text.append(token).append(" ");
           offset += token.length() + 1;
         }
@@ -150,20 +150,20 @@ class ConstitDocumentHandler extends DefaultHandler {
           isCreateConstituent = false;
         }
       }
-      
+
       Constituent unfinishedCon = stack.pop();
-      
+
       if (isCreateConstituent) {
         int start = unfinishedCon.getSpan().getStart();
         if (start < offset) {
           cons.add(new Constituent(unfinishedCon.getLabel(), new Span(start, offset - 1)));
         }
       }
-      
+
       if (SENT_ELEMENT_NAME.equals(qName)) {
         // Finished parsing sentence, now put everything together and create
         // a Parse object
-        
+
         String txt = text.toString();
         int tokenIndex = -1;
         Parse p = new Parse(txt, new Span(0, txt.length()), AbstractBottomUpParser.TOP_NODE, 1,0);
@@ -179,10 +179,10 @@ class ConstitDocumentHandler extends DefaultHandler {
           }
         }
         parses.add(p);
-        
+
         insideSentenceElement = false;
       }
-      
+
       tokenBuffer.setLength(0);
     }
   }

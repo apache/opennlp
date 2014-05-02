@@ -111,11 +111,11 @@ public abstract class DetailedFMeasureListener<T> implements
       + ";  recall: " + PERCENT + "; F1: " + PERCENT + ".";
   private static final String FORMAT_EXTRA = FORMAT
       + " [target: %3d; tp: %3d; fp: %3d]";
-  
+
   public String createReport() {
     return createReport(Locale.getDefault());
   }
-  
+
   public String createReport(Locale locale) {
     StringBuilder ret = new StringBuilder();
     int tp = generalStats.getTruePositives();
@@ -222,7 +222,7 @@ public abstract class DetailedFMeasureListener<T> implements
     /**
      * Retrieves the arithmetic mean of the precision scores calculated for each
      * evaluated sample.
-     * 
+     *
      * @return the arithmetic mean of all precision scores
      */
     public double getPrecisionScore() {
@@ -234,7 +234,7 @@ public abstract class DetailedFMeasureListener<T> implements
     /**
      * Retrieves the arithmetic mean of the recall score calculated for each
      * evaluated sample.
-     * 
+     *
      * @return the arithmetic mean of all recall scores
      */
     public double getRecallScore() {
@@ -245,9 +245,9 @@ public abstract class DetailedFMeasureListener<T> implements
 
     /**
      * Retrieves the f-measure score.
-     * 
+     *
      * f-measure = 2 * precision * recall / (precision + recall)
-     * 
+     *
      * @return the f-measure or -1 if precision + recall <= 0
      */
     public double getFMeasure() {

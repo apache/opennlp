@@ -51,21 +51,21 @@ public class SDEventStream extends AbstractEventStream<SentenceSample> {
 
     for (Span sentenceSpan : sample.getSentences()) {
       String sentenceString = sentenceSpan.getCoveredText(sample.getDocument()).toString();
-      
+
       for (Iterator<Integer> it = scanner.getPositions(
           sentenceString).iterator(); it.hasNext();) {
-        
+
         int candidate = it.next();
         String type = SentenceDetectorME.NO_SPLIT;
         if (!it.hasNext()) {
           type = SentenceDetectorME.SPLIT;
         }
-        
+
         events.add(new Event(type, cg.getContext(sample.getDocument(),
             sentenceSpan.getStart() + candidate)));
       }
     }
-    
+
 
     return events.iterator();
   }

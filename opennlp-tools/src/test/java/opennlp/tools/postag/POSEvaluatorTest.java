@@ -33,41 +33,41 @@ import org.junit.Test;
 
 
 public class POSEvaluatorTest {
-  
+
 
   @Test
   public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
     POSTaggerEvaluationMonitor listener = new POSEvaluationErrorListener(stream);
-    
+
     POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(
         POSSampleTest.createGoldSample()), listener);
-    
+
     eval.evaluateSample(POSSampleTest.createGoldSample());
-    
+
     assertEquals(1.0, eval.getWordAccuracy());
-    
+
     assertEquals(0, stream.toString().length());
   }
-  
+
   @Test
   public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
     POSTaggerEvaluationMonitor listener = new POSEvaluationErrorListener(stream);
-    
+
     POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(POSSampleTest.createGoldSample()), listener);
-    
+
     eval.evaluateSample(POSSampleTest.createPredSample());
-    
+
     assertEquals(.7, eval.getWordAccuracy(), .1d);
-    
+
     assertNotSame(0, stream.toString().length());
   }
-  
+
   class DummyPOSTagger implements POSTagger {
-    
+
     private POSSample sample;
-    
+
     public DummyPOSTagger(POSSample sample) {
       this.sample = sample;
     }
@@ -99,7 +99,7 @@ public class POSEvaluatorTest {
     public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
       return topKSequences(sentence);
     }
-    
+
   }
 
 }

@@ -25,31 +25,31 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
  * TrainingParameters for Name Finder.
- * 
+ *
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {
-  
+
   @ParameterDescription(valueName = "modelType", description = "The type of the token name finder model")
   @OptionalParameter(defaultValue = "default")
   String getType();
-  
+
   @ParameterDescription(valueName = "resourcesDir", description = "The resources directory")
   @OptionalParameter
   File getResources();
-  
+
   @ParameterDescription(valueName = "featuregenFile", description = "The feature generator descriptor file")
   @OptionalParameter
-  File getFeaturegen();  
-  
+  File getFeaturegen();
+
   @OptionalParameter
   @ParameterDescription(valueName = "types", description = "name types to use for training")
   String getNameTypes();
-  
+
   @OptionalParameter(defaultValue = "opennlp.tools.namefind.BioCodec")
   @ParameterDescription(valueName = "codec", description = "sequence codec used to code name spans")
   String getSequenceCodec();
-  
+
   @ParameterDescription(valueName = "factoryName", description = "A sub-class of TokenNameFinderFactory")
   @OptionalParameter
   String getFactory();

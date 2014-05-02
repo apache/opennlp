@@ -177,7 +177,7 @@ public class SentenceDetectorME implements SentenceDetector {
         continue;
       }
       if(positions.size() > 0 && cint < positions.get(positions.size()-1)) continue;
-      
+
       double[] probs = model.eval(cgen.getContext(sb, cint));
       String bestOutcome = model.getBestOutcome(probs);
 
@@ -202,40 +202,40 @@ public class SentenceDetectorME implements SentenceDetector {
 
     // string does not contain sentence end positions
     if (starts.length == 0) {
-      
+
         // remove leading and trailing whitespace
         int start = 0;
         int end = s.length();
 
         while (start < s.length() && StringUtil.isWhitespace(s.charAt(start)))
           start++;
-        
+
         while (end > 0 && StringUtil.isWhitespace(s.charAt(end - 1)))
           end--;
-        
+
         if ((end - start) > 0) {
           sentProbs.add(1d);
           return new Span[] {new Span(start, end)};
         }
-        else 
+        else
           return new Span[0];
     }
-    
+
     // Convert the sentence end indexes to spans
-    
+
     boolean leftover = starts[starts.length - 1] != s.length();
     Span[] spans = new Span[leftover? starts.length + 1 : starts.length];
-    
+
     for (int si=0; si < starts.length; si++) {
       int start;
-      
+
       if (si==0) {
         start = 0;
       }
       else {
         start = starts[si-1];
       }
-      
+
       // A span might contain only white spaces, in this case the length of
       // the span will be zero after trimming and should be ignored.
       Span span = new Span(start, starts[si]).trim(s);
@@ -246,7 +246,7 @@ public class SentenceDetectorME implements SentenceDetector {
         sentProbs.remove(si);
       }
     }
-    
+
     if (leftover) {
       Span span = new Span(starts[starts.length-1],s.length()).trim(s);
       if (span.length() > 0) {
@@ -254,7 +254,7 @@ public class SentenceDetectorME implements SentenceDetector {
         sentProbs.add(1d);
       }
     }
-    
+
     return spans;
   }
 

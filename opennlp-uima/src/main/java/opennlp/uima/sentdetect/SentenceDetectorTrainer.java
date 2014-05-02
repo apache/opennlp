@@ -66,71 +66,71 @@ import org.apache.uima.util.ProcessTrace;
  * </table>
  */
 public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
-  
+
   private List<SentenceSample> sentenceSamples = new ArrayList<SentenceSample>();
 
   private Type mSentenceType;
 
   private String mModelName;
-  
+
   private String language = "en";
-  
+
   private Logger mLogger;
 
   private UimaContext mContext;
-  
+
   private String eosChars;
 
   private File sampleTraceFile;
 
   private String sampleTraceFileEncoding;
-  
+
   /**
    * Initializes the current instance.
    */
   public void initialize() throws ResourceInitializationException {
-    
+
     super.initialize();
-    
+
     mContext = getUimaContext();
-    
+
     mLogger = mContext.getLogger();
-    
+
     if (mLogger.isLoggable(Level.INFO)) {
       mLogger.log(Level.INFO, "Initializing the OpenNLP SentenceDetector " +
           "trainer.");
-    } 
-    
-    mModelName = CasConsumerUtil.getRequiredStringParameter(mContext, 
+    }
+
+    mModelName = CasConsumerUtil.getRequiredStringParameter(mContext,
         UimaUtil.MODEL_PARAMETER);
-    
+
     language = CasConsumerUtil.getRequiredStringParameter(mContext,
         UimaUtil.LANGUAGE_PARAMETER);
-    
+
     eosChars = CasConsumerUtil.getOptionalStringParameter(mContext, "opennlp.uima.EOSChars");
-    
-    
+
+
     String sampleTraceFileName = CasConsumerUtil.getOptionalStringParameter(
             getUimaContext(), "opennlp.uima.SampleTraceFile");
-        
+
     if (sampleTraceFileName != null) {
       sampleTraceFile = new File(getUimaContextAdmin().getResourceManager()
           .getDataPath() + File.separatorChar + sampleTraceFileName);
       sampleTraceFileEncoding = CasConsumerUtil.getRequiredStringParameter(
           getUimaContext(), "opennlp.uima.SampleTraceFileEncoding");
-    }    
+    }
   }
-  
+
   /**
    * Initializes the current instance with the given type system.
    */
   public void typeSystemInit(TypeSystem typeSystem)
       throws ResourceInitializationException {
-    
-    String sentenceTypeName = 
+
+    String sentenceTypeName =
         CasConsumerUtil.getRequiredStringParameter(mContext,
         UimaUtil.SENTENCE_TYPE_PARAMETER);
-    
+
     mSentenceType = CasConsumerUtil.getType(typeSystem, sentenceTypeName);
   }
 
@@ -159,32 +159,32 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
   public void collectionProcessComplete(ProcessTrace trace)
       throws ResourceProcessException, IOException {
     GIS.PRINT_MESSAGES = false;
-    
-    char eos[] = null; 
+
+    char eos[] = null;
     if (eosChars != null) {
       eos = eosChars.toCharArray();
     }
-    
+
     SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
             null, language, true, null, eos);
-    
+
   //  TrainingParameters mlParams = ModelUtil.createTrainingParameters(100, 5);
      TrainingParameters mlParams = ModelUtil.createDefaultTrainingParameters();
     ObjectStream<SentenceSample> samples = ObjectStreamUtils.createObjectStream(sentenceSamples);
-    
+
     Writer samplesOut = null;
-    
+
     if (sampleTraceFile != null) {
         samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
         samples = new SampleTraceStream<SentenceSample>(samples, samplesOut);
     }
-    
+
     SentenceModel sentenceModel = SentenceDetectorME.train(language, samples,
          sdFactory, mlParams);
-    
+
     // dereference to allow garbage collection
     sentenceSamples = null;
-    
+
     File modelFile = new File(getUimaContextAdmin().getResourceManager()
         .getDataPath() + File.separatorChar + mModelName);
 
@@ -197,7 +197,7 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
   public boolean isStateless() {
     return false;
   }
-  
+
   /**
    * Releases allocated resources.
    */

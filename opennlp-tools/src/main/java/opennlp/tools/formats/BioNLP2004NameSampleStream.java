@@ -49,11 +49,11 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
   public static final int GENERATE_CELLTYPE_ENTITIES = 0x01 << 2;
   public static final int GENERATE_CELLLINE_ENTITIES = 0x01 << 3;
   public static final int GENERATE_RNA_ENTITIES = 0x01 << 4;
-  
+
   private final int types;
-  
+
   private final ObjectStream<String> lineStream;
-  
+
   public BioNLP2004NameSampleStream(InputStreamFactory in, int types) throws IOException {
     try {
       this.lineStream = new PlainTextByLineStream(in, Charset.forName("UTF-8"));
@@ -62,11 +62,11 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
     }
-    
+
     this.types = types;
-    
+
   }
-  
+
   @Deprecated
   public BioNLP2004NameSampleStream(InputStream in, int types) {
     try {
@@ -76,33 +76,33 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
     }
-    
+
     this.types = types;
   }
-  
+
   public NameSample read() throws IOException {
 
     List<String> sentence = new ArrayList<String>();
     List<String> tags = new ArrayList<String>();
-    
+
     boolean isClearAdaptiveData = false;
-    
+
     // Empty line indicates end of sentence
-    
+
     String line;
     while ((line = lineStream.read()) != null && !StringUtil.isEmpty(line.trim())) {
-      
+
       if (line.startsWith("###MEDLINE:")) {
         isClearAdaptiveData = true;
         lineStream.read();
         continue;
       }
-      
+
       if (line.contains("ABSTRACT TRUNCATED"))
         continue;
-      
+
       String fields[] = line.split("\t");
-      
+
       if (fields.length == 2) {
         sentence.add(fields[0]);
         tags.add(fields[1]);
@@ -112,40 +112,40 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
             fields.length + " for line '" + line + "'!");
       }
     }
-    
+
     if (sentence.size() > 0) {
-      
+
       // convert name tags into spans
       List<Span> names = new ArrayList<Span>();
-      
+
       int beginIndex = -1;
       int endIndex = -1;
       for (int i = 0; i < tags.size(); i++) {
-        
+
         String tag = tags.get(i);
-        
-        if (tag.endsWith("DNA") && (types & GENERATE_DNA_ENTITIES) == 0) 
-          tag = "O";
-        
-        if (tag.endsWith("protein") && (types & GENERATE_PROTEIN_ENTITIES) == 0) 
-          tag = "O";
-        
-        if (tag.endsWith("cell_type") && (types & GENERATE_CELLTYPE_ENTITIES) == 0) 
+
+        if (tag.endsWith("DNA") && (types & GENERATE_DNA_ENTITIES) == 0)
           tag = "O";
 
-        if (tag.endsWith("cell_line") && (types & GENERATE_CELLTYPE_ENTITIES) == 0) 
+        if (tag.endsWith("protein") && (types & GENERATE_PROTEIN_ENTITIES) == 0)
           tag = "O";
-        if (tag.endsWith("RNA") && (types & GENERATE_RNA_ENTITIES) == 0) 
+
+        if (tag.endsWith("cell_type") && (types & GENERATE_CELLTYPE_ENTITIES) == 0)
           tag = "O";
-        
+
+        if (tag.endsWith("cell_line") && (types & GENERATE_CELLTYPE_ENTITIES) == 0)
+          tag = "O";
+        if (tag.endsWith("RNA") && (types & GENERATE_RNA_ENTITIES) == 0)
+          tag = "O";
+
         if (tag.startsWith("B-")) {
-          
+
           if (beginIndex != -1) {
             names.add(new Span(beginIndex, endIndex, tags.get(beginIndex).substring(2)));
             beginIndex = -1;
             endIndex = -1;
           }
-          
+
           beginIndex = i;
           endIndex = i +1;
         }
@@ -163,11 +163,11 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
           throw new IOException("Invalid tag: " + tag);
         }
       }
-      
+
       // if one span remains, create it here
       if (beginIndex != -1)
         names.add(new Span(beginIndex, endIndex, tags.get(beginIndex).substring(2)));
-      
+
       return new NameSample(sentence.toArray(new String[sentence.size()]), names.toArray(new Span[names.size()]), isClearAdaptiveData);
     }
     else if (line != null) {

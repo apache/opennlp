@@ -70,21 +70,21 @@ public final class StreamFactoryRegistry {
     SentenceSampleStreamFactory.registerFactory();
     TokenSampleStreamFactory.registerFactory();
     WordTagSampleStreamFactory.registerFactory();
-    
+
     NameToSentenceSampleStreamFactory.registerFactory();
     NameToTokenSampleStreamFactory.registerFactory();
-    
+
     POSToSentenceSampleStreamFactory.registerFactory();
     POSToTokenSampleStreamFactory.registerFactory();
 
     ParseToPOSSampleStreamFactory.registerFactory();
     ParseToSentenceSampleStreamFactory.registerFactory();
     ParseToTokenSampleStreamFactory.registerFactory();
-    
+
     OntoNotesNameSampleStreamFactory.registerFactory();
     OntoNotesParseSampleStreamFactory.registerFactory();
     OntoNotesPOSSampleStreamFactory.registerFactory();
-    
+
     BioNLP2004NameSampleStreamFactory.registerFactory();
     Conll02NameSampleStreamFactory.registerFactory();
     Conll03NameSampleStreamFactory.registerFactory();
@@ -98,11 +98,11 @@ public final class StreamFactoryRegistry {
     ADSentenceSampleStreamFactory.registerFactory();
     ADPOSSampleStreamFactory.registerFactory();
     ADTokenSampleStreamFactory.registerFactory();
-    
+
     Muc6NameSampleStreamFactory.registerFactory();
-    
+
     ConstitParseSampleStreamFactory.registerFactory();
-    
+
     BratNameSampleStreamFactory.registerFactory();
   }
 
@@ -180,20 +180,20 @@ public final class StreamFactoryRegistry {
     if (null == formatName) {
       formatName = DEFAULT_FORMAT;
     }
-    
+
     ObjectStreamFactory<T> factory = registry.containsKey(sampleClass) ?
         registry.get(sampleClass).get(formatName) : null;
-    
+
     if (factory != null) {
       return factory;
     }
     else {
       try {
         Class<?> factoryClazz = Class.forName(formatName);
-        
+
         // TODO: Need to check if it can produce the desired output
         // Otherwise there will be class cast exceptions later in the flow
-        
+
         try {
           return (ObjectStreamFactory<T>) factoryClazz.newInstance();
         } catch (InstantiationException e) {
@@ -201,7 +201,7 @@ public final class StreamFactoryRegistry {
         } catch (IllegalAccessException e) {
           return null;
         }
-        
+
       } catch (ClassNotFoundException e) {
         return null;
       }

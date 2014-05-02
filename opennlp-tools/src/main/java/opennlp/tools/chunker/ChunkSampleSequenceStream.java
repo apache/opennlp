@@ -39,24 +39,24 @@ public class ChunkSampleSequenceStream implements SequenceStream {
   @Override
   public Sequence read() throws IOException {
     ChunkSample sample = samples.read();
-    
+
     if (sample != null) {
       String sentence[] = sample.getSentence();
       String tags[] = sample.getTags();
       Event[] events = new Event[sentence.length];
-      
+
       for (int i=0; i < sentence.length; i++) {
-  
+
         // it is safe to pass the tags as previous tags because
         // the context generator does not look for non predicted tags
         String[] context = contextGenerator.getContext(i, sentence, tags, null);
-  
+
         events[i] = new Event(tags[i], context);
       }
       return new Sequence<ChunkSample>(events,sample);
     }
-    
-    return null;  
+
+    return null;
   }
 
   @Override
@@ -64,7 +64,7 @@ public class ChunkSampleSequenceStream implements SequenceStream {
     // TODO: Should be implemented for Perceptron sequence learning ...
     return null;
   }
-  
+
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
     samples.reset();

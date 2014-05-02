@@ -29,9 +29,9 @@ import opennlp.tools.util.eval.Mean;
 public class POSTaggerCrossValidator {
 
   private final String languageCode;
-  
+
   private final TrainingParameters params;
-  
+
   private Integer ngramCutoff;
 
   private Mean wordAccuracy = new Mean();
@@ -44,7 +44,7 @@ public class POSTaggerCrossValidator {
 
   private Integer tagdicCutoff = null;
   private File tagDictionaryFile;
-  
+
   /**
    * Creates a {@link POSTaggerCrossValidator} that builds a ngram dictionary
    * dynamically. It instantiates a sub-class of {@link POSTaggerFactory} using
@@ -77,7 +77,7 @@ public class POSTaggerCrossValidator {
     this.ngramCutoff = null;
     this.tagdicCutoff = null;
   }
-  
+
   /**
    * @deprecated use
    *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
@@ -88,7 +88,7 @@ public class POSTaggerCrossValidator {
       POSTaggerEvaluationMonitor... listeners) {
     this(languageCode, trainParam, create(null, tagDictionary), listeners);
   }
-  
+
   /**
    * @deprecated use
    *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
@@ -112,19 +112,19 @@ public class POSTaggerCrossValidator {
       Dictionary ngramDictionary, POSTaggerEvaluationMonitor... listeners) {
     this(languageCode, trainParam, create(ngramDictionary, tagDictionary), listeners);
   }
-  
+
   /**
    * Starts the evaluation.
-   * 
+   *
    * @param samples
    *          the data to train and test
    * @param nFolds
    *          number of folds
-   * 
+   *
    * @throws IOException
    */
   public void evaluate(ObjectStream<POSSample> samples, int nFolds) throws IOException {
-    
+
     CrossValidationPartitioner<POSSample> partitioner = new CrossValidationPartitioner<POSSample>(
         samples, nFolds);
 
@@ -132,7 +132,7 @@ public class POSTaggerCrossValidator {
 
       CrossValidationPartitioner.TrainingSampleStream<POSSample> trainingSampleStream = partitioner
           .next();
-      
+
       if (this.factory == null) {
         this.factory = POSTaggerFactory.create(this.factoryClassName, null,
             null);
@@ -149,7 +149,7 @@ public class POSTaggerCrossValidator {
         }
         this.factory.setDictionary(ngramDict);
       }
-      
+
       if (this.tagDictionaryFile != null
           && this.factory.getTagDictionary() == null) {
         this.factory.setTagDictionary(this.factory
@@ -170,12 +170,12 @@ public class POSTaggerCrossValidator {
         }
         trainingSampleStream.reset();
       }
-      
+
       POSModel model = POSTaggerME.train(languageCode, trainingSampleStream,
           params, this.factory);
 
       POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model), listeners);
-      
+
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 
       wordAccuracy.add(evaluator.getWordAccuracy(), evaluator.getWordCount());
@@ -186,27 +186,27 @@ public class POSTaggerCrossValidator {
 
     }
   }
-  
+
   /**
    * Retrieves the accuracy for all iterations.
-   * 
+   *
    * @return the word accuracy
    */
   public double getWordAccuracy() {
     return wordAccuracy.mean();
   }
-  
+
   /**
    * Retrieves the number of words which where validated
    * over all iterations. The result is the amount of folds
    * multiplied by the total number of words.
-   * 
+   *
    * @return the word count
    */
   public long getWordCount() {
     return wordAccuracy.count();
   }
-  
+
   private static POSTaggerFactory create(Dictionary ngram, TagDictionary pos) {
     return new POSTaggerFactory(ngram, pos);
   }

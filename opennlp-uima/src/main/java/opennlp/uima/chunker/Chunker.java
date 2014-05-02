@@ -59,18 +59,18 @@ import org.apache.uima.util.Logger;
  *   </table>
  */
 public final class Chunker extends CasAnnotator_ImplBase {
-  
+
   /**
    * The chunk type parameter.
    */
   public static final String CHUNK_TYPE_PARAMETER = "opennlp.uima.ChunkType";
-  
+
   /**
    * The chunk tag feature parameter
    */
-  public static final String CHUNK_TAG_FEATURE_PARAMETER = 
+  public static final String CHUNK_TAG_FEATURE_PARAMETER =
       "opennlp.uima.ChunkTagFeature";
-  
+
   private Type mTokenType;
 
   private Type mChunkType;
@@ -78,53 +78,53 @@ public final class Chunker extends CasAnnotator_ImplBase {
   private Feature mPosFeature;
 
   private ChunkerME mChunker;
-  
+
   private UimaContext context;
-  
+
   private Logger mLogger;
 
   private Feature mChunkFeature;
-  
+
   /**
    * Initializes a new instance.
    *
-   * Note: Use {@link #initialize(UimaContext) } to initialize 
+   * Note: Use {@link #initialize(UimaContext) } to initialize
    * this instance. Not use the constructor.
    */
   public Chunker() {
     // must not be implemented !
   }
-  
+
   /**
    * Initializes the current instance with the given context.
-   * 
+   *
    * Note: Do all initialization in this method, do not use the constructor.
    */
   public void initialize(UimaContext context)
       throws ResourceInitializationException {
 
     super.initialize(context);
-    
+
 	this.context = context;
-	  
-    mLogger = context.getLogger();  
-    
+
+    mLogger = context.getLogger();
+
     if (mLogger.isLoggable(Level.INFO)) {
       mLogger.log(Level.INFO, "Initializing the OpenNLP Chunker annotator.");
-    }    
-    
+    }
+
     ChunkerModel model;
-    
+
     try {
-      ChunkerModelResource modelResource = 
+      ChunkerModelResource modelResource =
             (ChunkerModelResource) context.getResourceObject(UimaUtil.MODEL_PARAMETER);
-        
+
         model = modelResource.getModel();
     }
     catch (ResourceAccessException e) {
         throw new ResourceInitializationException(e);
     }
-    
+
     mChunker = new ChunkerME(model);
   }
 
@@ -133,21 +133,21 @@ public final class Chunker extends CasAnnotator_ImplBase {
    */
   public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
-    
-    // chunk type 
+
+    // chunk type
 	mChunkType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         CHUNK_TYPE_PARAMETER);
-    
+
     // chunk feature
     mChunkFeature = AnnotatorUtil.getRequiredFeatureParameter(context, mChunkType,
     		CHUNK_TAG_FEATURE_PARAMETER, CAS.TYPE_NAME_STRING);
-    
+
     // token type
     mTokenType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         UimaUtil.TOKEN_TYPE_PARAMETER);
 
     // pos feature
-    mPosFeature = AnnotatorUtil.getRequiredFeatureParameter(context, mTokenType, UimaUtil.POS_FEATURE_PARAMETER, 
+    mPosFeature = AnnotatorUtil.getRequiredFeatureParameter(context, mTokenType, UimaUtil.POS_FEATURE_PARAMETER,
     		CAS.TYPE_NAME_STRING);
   }
 
@@ -160,12 +160,12 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
     tcas.getIndexRepository().addFS(chunk);
   }
-  
+
   /**
    * Performs chunking on the given tcas object.
    */
   public void process(CAS tcas) {
-    
+
     FSIndex<AnnotationFS> tokenAnnotationIndex = tcas.getAnnotationIndex(mTokenType);
 
     String tokens[] = new String[tokenAnnotationIndex.size()];
@@ -190,9 +190,9 @@ public final class Chunker extends CasAnnotator_ImplBase {
     int start = -1;
     int end = -1;
     for (int i = 0; i < result.length; i++) {
-    	
-      String chunkTag = result[i];	
-    
+
+      String chunkTag = result[i];
+
       if (chunkTag.startsWith("B")) {
         if (start != -1) {
           addChunkAnnotation(tcas, tokenAnnotations, result[i - 1].substring(2),
@@ -207,9 +207,9 @@ public final class Chunker extends CasAnnotator_ImplBase {
       }
       else if (chunkTag.startsWith("O")){
         if (start != -1) {
-          
+
           addChunkAnnotation(tcas, tokenAnnotations, result[i - 1].substring(2), start, end);
-        	
+
           start = -1;
           end = -1;
         }
@@ -218,17 +218,17 @@ public final class Chunker extends CasAnnotator_ImplBase {
     	  System.out.println("Unexpected tag: " + result[i]);
       }
     }
-    
+
     if (start != -1) {
       addChunkAnnotation(tcas, tokenAnnotations, result[result.length - 1].substring(2), start, end);
-    }      
+    }
   }
 
   /**
    * Releases allocated resources.
    */
   public void destroy() {
-    // dereference model to allow garbage collection 
+    // dereference model to allow garbage collection
     mChunker = null;
   }
 }

@@ -33,12 +33,12 @@ public class InvalidFormatException extends IOException {
   public InvalidFormatException(String message) {
     super(message);
   }
-  
+
   public InvalidFormatException(Throwable t) {
     super();
     initCause(t);
   }
-  
+
   public InvalidFormatException(String message, Throwable t) {
     super(message);
     initCause(t);

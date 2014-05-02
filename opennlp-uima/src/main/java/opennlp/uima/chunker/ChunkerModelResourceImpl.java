@@ -23,7 +23,7 @@ import java.io.InputStream;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.uima.util.AbstractModelResource;
 
-public class ChunkerModelResourceImpl extends AbstractModelResource<ChunkerModel> 
+public class ChunkerModelResourceImpl extends AbstractModelResource<ChunkerModel>
     implements ChunkerModelResource {
 
   public ChunkerModel getModel() {

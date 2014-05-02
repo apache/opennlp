@@ -44,7 +44,7 @@ public class ADSentenceSampleStreamTest {
 
   @Test
   public void testSentences() throws IOException {
-    
+
     assertNotNull(samples.get(0).getDocument());
     assertEquals(3, samples.get(0).getSentences().length);
     assertEquals(new Span(0, 119), samples.get(0).getSentences()[0]);

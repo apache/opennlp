@@ -34,11 +34,11 @@ import org.junit.Test;
 
 /**
  * Tests for {@link ChunkerEvaluator}.
- * 
+ *
  * @see ChunkerEvaluator
  */
 public class ChunkerEvaluatorTest {
-	
+
 	private static final double DELTA = 1.0E-9d;
 
 	/**
@@ -59,27 +59,27 @@ public class ChunkerEvaluatorTest {
 
 		DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
 				new PlainTextByLineStream(new InputStreamReader(inPredicted, encoding)), true);
-		
+
 		DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
 				new PlainTextByLineStream(new InputStreamReader(inExpected)), false);
-		
+
 		Chunker dummyChunker = new DummyChunker(predictedSample);
-		
+
 		OutputStream stream = new ByteArrayOutputStream();
 		ChunkerEvaluationMonitor listener = new ChunkEvaluationErrorListener(stream);
 		ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, listener);
-		
+
 		evaluator.evaluate(expectedSample);
-		
+
 		FMeasure fm = evaluator.getFMeasure();
-		
+
 		assertEquals(0.8d, fm.getPrecisionScore(), DELTA);
 		assertEquals(0.875d, fm.getRecallScore(), DELTA);
-		
+
 		assertNotSame(stream.toString().length(), 0);
-		
+
 	}
-	
+
   @Test
   public void testEvaluatorNoError() throws IOException {
     InputStream inPredicted = getClass().getClassLoader().getResourceAsStream(

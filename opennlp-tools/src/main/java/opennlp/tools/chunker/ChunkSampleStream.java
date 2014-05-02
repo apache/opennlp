@@ -35,19 +35,19 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
 
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param samples a plain text line stream
    */
   public ChunkSampleStream(ObjectStream<String> samples) {
     super(samples);
   }
-  
+
   public ChunkSample read() throws IOException {
-    
+
     List<String> toks = new ArrayList<String>();
     List<String> tags = new ArrayList<String>();
     List<String> preds = new ArrayList<String>();
-    
+
     for (String line = samples.read(); line !=null && !line.equals(""); line = samples.read()) {
       String[] parts = line.split(" ");
       if (parts.length != 3) {
@@ -59,9 +59,9 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
         preds.add(parts[2]);
       }
     }
-    
+
     if (toks.size() > 0) {
-      return new ChunkSample(toks.toArray(new String[toks.size()]), 
+      return new ChunkSample(toks.toArray(new String[toks.size()]),
           tags.toArray(new String[tags.size()]), preds.toArray(new String[preds.size()]));
     }
     else {

@@ -31,23 +31,23 @@ public class BratDocumentTest {
 
   @Test
   public void testDocumentWithEntitiesParsing() throws IOException {
-    
+
     Map<String, String> typeToClassMap = new HashMap<String, String>();
     BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
-    
+
     InputStream txtIn = BratDocumentTest.class.getResourceAsStream(
         "/opennlp/tools/formats/brat/voa-with-entities.txt");
-    
+
     InputStream annIn = BratDocumentTest.class.getResourceAsStream(
         "/opennlp/tools/formats/brat/voa-with-entities.ann");
-    
+
     BratDocument doc = BratDocument.parseDocument(config, "voa-with-entities", txtIn, annIn);
 
     assertEquals("voa-with-entities", doc.getId());
     assertTrue(doc.getText().startsWith(" U . S .  President "));
     assertTrue(doc.getText().endsWith("multinational process . \n"));
-    
+
     assertEquals(18, doc.getAnnotations().size());
   }
 }

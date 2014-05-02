@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 
 package opennlp.uima.util;
 
@@ -30,7 +30,7 @@ import org.apache.uima.cas.text.AnnotationFS;
 public final class ContainingConstraint implements FSMatchConstraint {
   private static final long serialVersionUID = 1;
 
-  private Collection<AnnotationFS> mContainingAnnotations = 
+  private Collection<AnnotationFS> mContainingAnnotations =
       new LinkedList<AnnotationFS>();
 
   /**
@@ -42,13 +42,13 @@ public final class ContainingConstraint implements FSMatchConstraint {
 
   /**
    * Initializes a new instance.
-   * 
-   * @param containingAnnotation 
+   *
+   * @param containingAnnotation
    */
   public ContainingConstraint(AnnotationFS containingAnnotation) {
     mContainingAnnotations.add(containingAnnotation);
   }
-  
+
   /**
    * Checks if the given FeatureStructure match the constraint.
    */

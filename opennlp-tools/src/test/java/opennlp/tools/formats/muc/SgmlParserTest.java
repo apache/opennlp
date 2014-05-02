@@ -29,7 +29,7 @@ public class SgmlParserTest {
   public void testParse1() throws IOException {
 
     Reader in = new InputStreamReader(SgmlParserTest.class.getResourceAsStream("parsertest1.sgml"), "UTF-8");
-    
+
     try {
       SgmlParser parser = new SgmlParser();
       parser.parse(in, new SgmlParser.ContentHandler() {
@@ -38,7 +38,7 @@ public class SgmlParserTest {
     finally {
       in.close();
     }
-    
+
   }
-  
+
 }

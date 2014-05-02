@@ -53,25 +53,25 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
     NL,
     ES
   }
-  
+
   public static final int GENERATE_PERSON_ENTITIES = 0x01;
   public static final int GENERATE_ORGANIZATION_ENTITIES = 0x01 << 1;
   public static final int GENERATE_LOCATION_ENTITIES = 0x01 << 2;
   public static final int GENERATE_MISC_ENTITIES = 0x01 << 3;
-  
+
   public static final String DOCSTART = "-DOCSTART-";
-	
+
   private final LANGUAGE lang;
   private final ObjectStream<String> lineStream;
-  
+
   private final int types;
-  
+
   public Conll02NameSampleStream(LANGUAGE lang, ObjectStream<String> lineStream, int types) {
     this.lang = lang;
     this.lineStream = lineStream;
     this.types = types;
   }
-  
+
   public Conll02NameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
     this.lang = lang;
     try {
@@ -80,13 +80,13 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
     } catch (UnsupportedEncodingException e) {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
-    } 
+    }
     this.types = types;
   }
-  
+
   /**
    * @param lang
-   * @param in an Input Stream to read data. 
+   * @param in an Input Stream to read data.
    */
   @Deprecated
   public Conll02NameSampleStream(LANGUAGE lang, InputStream in, int types) {
@@ -97,14 +97,14 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
     } catch (UnsupportedEncodingException e) {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
-    } 
+    }
     this.types = types;
   }
-  
+
   static final Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
-    
+
     String type = beginTag.substring(2);
-    
+
     if ("PER".equals(type)) {
       type = "person";
     }
@@ -120,30 +120,30 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
     else {
       throw new InvalidFormatException("Unknown type: " + type);
     }
-    
+
     return new Span(begin, end, type);
   }
 
-  
+
   public NameSample read() throws IOException {
 
     List<String> sentence = new ArrayList<String>();
     List<String> tags = new ArrayList<String>();
-    
+
     boolean isClearAdaptiveData = false;
-    
+
     // Empty line indicates end of sentence
-    
+
     String line;
     while ((line = lineStream.read()) != null && !StringUtil.isEmpty(line)) {
-      
+
       if (LANGUAGE.NL.equals(lang) && line.startsWith(DOCSTART)) {
         isClearAdaptiveData = true;
         continue;
       }
-      
+
       String fields[] = line.split(" ");
-      
+
       if (fields.length == 3) {
         sentence.add(fields[0]);
         tags.add(fields[2]);
@@ -153,42 +153,42 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
             fields.length + " for line '" + line + "'!");
       }
     }
-    
+
     // Always clear adaptive data for spanish
     if (LANGUAGE.ES.equals(lang))
       isClearAdaptiveData = true;
-    
+
     if (sentence.size() > 0) {
-      
+
       // convert name tags into spans
       List<Span> names = new ArrayList<Span>();
-      
+
       int beginIndex = -1;
       int endIndex = -1;
       for (int i = 0; i < tags.size(); i++) {
-        
+
         String tag = tags.get(i);
-        
-        if (tag.endsWith("PER") && (types & GENERATE_PERSON_ENTITIES) == 0) 
+
+        if (tag.endsWith("PER") && (types & GENERATE_PERSON_ENTITIES) == 0)
           tag = "O";
-        
-        if (tag.endsWith("ORG") && (types & GENERATE_ORGANIZATION_ENTITIES) == 0) 
+
+        if (tag.endsWith("ORG") && (types & GENERATE_ORGANIZATION_ENTITIES) == 0)
           tag = "O";
-        
-        if (tag.endsWith("LOC") && (types & GENERATE_LOCATION_ENTITIES) == 0) 
+
+        if (tag.endsWith("LOC") && (types & GENERATE_LOCATION_ENTITIES) == 0)
           tag = "O";
-        
-        if (tag.endsWith("MISC") && (types & GENERATE_MISC_ENTITIES) == 0) 
+
+        if (tag.endsWith("MISC") && (types & GENERATE_MISC_ENTITIES) == 0)
           tag = "O";
-        
+
         if (tag.startsWith("B-")) {
-          
+
           if (beginIndex != -1) {
             names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
             beginIndex = -1;
             endIndex = -1;
           }
-          
+
           beginIndex = i;
           endIndex = i +1;
         }
@@ -206,11 +206,11 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
           throw new IOException("Invalid tag: " + tag);
         }
       }
-      
+
       // if one span remains, create it here
       if (beginIndex != -1)
         names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
-      
+
       return new NameSample(sentence.toArray(new String[sentence.size()]), names.toArray(new Span[names.size()]), isClearAdaptiveData);
     }
     else if (line != null) {

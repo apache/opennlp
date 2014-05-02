@@ -34,7 +34,7 @@ public final class POSModelLoader extends ModelLoader<POSModel>{
   public POSModelLoader() {
     super("POS Tagger");
   }
-  
+
   @Override
   protected POSModel loadModel(InputStream modelIn) throws IOException,
       InvalidFormatException {

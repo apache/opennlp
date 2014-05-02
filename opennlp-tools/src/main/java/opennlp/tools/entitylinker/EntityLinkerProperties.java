@@ -62,7 +62,7 @@ public class EntityLinkerProperties {
     props = new Properties();
     props.load(propertiesIn);
   }
-  
+
   /**
    * Gets a property from the props file.
    *

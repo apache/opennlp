@@ -25,99 +25,99 @@ public class ObjectStreamUtils {
 
   /**
    * Creates an {@link ObjectStream} form an array.
-   * 
+   *
    * @param <T>
    * @param array
-   * 
+   *
    * @return the object stream over the array elements
    */
   public static <T> ObjectStream<T> createObjectStream(final T... array) {
-    
+
     return new ObjectStream<T>() {
 
       private int index = 0;
-      
+
       public T read() {
-        if (index < array.length) 
+        if (index < array.length)
           return array[index++];
-        else 
+        else
           return null;
       }
 
       public void reset() {
         index = 0;
       }
-      
+
       public void close() {
       }
     };
   }
-  
+
   /**
    * Creates an {@link ObjectStream} form a collection.
-   * 
+   *
    * @param <T>
    * @param collection
-   * 
+   *
    * @return the object stream over the collection elements
    */
   public static <T> ObjectStream<T> createObjectStream(final Collection<T> collection) {
-    
+
     return new ObjectStream<T>() {
-      
+
       private Iterator<T> iterator = collection.iterator();
-      
+
       public T read() {
         if (iterator.hasNext())
           return iterator.next();
         else
           return null;
       }
-      
+
       public void reset() {
         iterator = collection.iterator();
       }
-      
+
       public void close() {
       }
     };
   }
-  
+
   public static <T> ObjectStream<T> createObjectStream(final ObjectStream<T>... streams) {
-    
+
     for (ObjectStream<T> stream : streams) {
       if (stream == null)
         throw new NullPointerException("stream cannot be null");
     }
-    
+
     return new ObjectStream<T>() {
-      
+
       private int streamIndex = 0;
-      
+
       public T read() throws IOException {
-        
+
         T object = null;
-        
+
         while (streamIndex < streams.length && object == null) {
           object = streams[streamIndex].read();
-          
+
           if (object == null)
               streamIndex++;
         }
-        
+
         return object;
       }
 
       public void reset() throws IOException, UnsupportedOperationException {
         streamIndex = 0;
-        
+
         for (ObjectStream<T> stream : streams) {
           stream.reset();
         }
       }
 
       public void close() throws IOException {
-        
+
         for (ObjectStream<T> stream : streams) {
           stream.close();
         }

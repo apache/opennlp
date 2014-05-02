@@ -31,20 +31,20 @@ import org.junit.Test;
 public class POSSampleEventStreamTest {
 
   /**
-   * Tests that the outcomes for a single sentence match the 
+   * Tests that the outcomes for a single sentence match the
    * expected outcomes.
-   * 
+   *
    * @throws Exception
    */
   @Test
   public void testOutcomesForSingleSentence() throws Exception {
     String sentence = "That_DT sounds_VBZ good_JJ ._.";
-    
+
     POSSample sample = POSSample.parse(sentence);
-    
+
     ObjectStream<Event> eventStream = new POSSampleEventStream(
         ObjectStreamUtils.createObjectStream(sample));
-    
+
     Assert.assertEquals("DT", eventStream.read().getOutcome());
     Assert.assertEquals("VBZ", eventStream.read().getOutcome());
     Assert.assertEquals("JJ", eventStream.read().getOutcome());

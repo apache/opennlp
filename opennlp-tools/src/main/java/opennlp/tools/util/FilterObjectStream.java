@@ -22,7 +22,7 @@ import java.io.IOException;
 /**
  * Abstract base class for filtering {@link ObjectStream}s.
  * <p>
- * Filtering streams take an existing stream and convert 
+ * Filtering streams take an existing stream and convert
  * its output to something else.
  *
  * @param <S> the type of the source/input stream
@@ -31,14 +31,14 @@ import java.io.IOException;
 public abstract class FilterObjectStream<S, T> implements ObjectStream<T> {
 
   protected final ObjectStream<S> samples;
-  
+
   protected FilterObjectStream(ObjectStream<S> samples) {
     if (samples == null)
       throw new IllegalArgumentException("samples must not be null!");
-    
+
     this.samples = samples;
   }
-  
+
   public void reset() throws IOException, UnsupportedOperationException {
     samples.reset();
   }

@@ -14,16 +14,16 @@ public class OntoNotesParseSampleStream extends FilterObjectStream<String, Parse
   }
 
   public Parse read() throws IOException {
-    
+
     StringBuilder parseString = new StringBuilder();
-    
+
     while(true) {
       String parse = samples.read();
-      
+
       if (parse != null) {
         parse = parse.trim();
       }
-      
+
       if (parse == null || parse.isEmpty()) {
         if (parseString.length() > 0) {
           return Parse.parseParse(parseString.toString());
@@ -32,7 +32,7 @@ public class OntoNotesParseSampleStream extends FilterObjectStream<String, Parse
           return null;
         }
       }
-      
+
       parseString.append(parse + " ");
     }
   }

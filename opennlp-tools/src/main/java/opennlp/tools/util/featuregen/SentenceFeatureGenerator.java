@@ -26,13 +26,13 @@ public class SentenceFeatureGenerator extends FeatureGeneratorAdapter {
 
   private final boolean isGenerateFirstWordFeature;
   private final boolean isGenerateLastWordFeature;
-  
+
   public SentenceFeatureGenerator(boolean isGenerateFirstWordFeature,
       boolean isGenerateLastWordFeature) {
     this.isGenerateFirstWordFeature = isGenerateFirstWordFeature;
     this.isGenerateLastWordFeature = isGenerateLastWordFeature;
   }
-  
+
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 

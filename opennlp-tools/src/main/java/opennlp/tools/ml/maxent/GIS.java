@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -90,7 +90,7 @@ public class GIS extends AbstractEventTrainer {
   /**
    * Train a model using the GIS algorithm, assuming 100 iterations and no
    * cutoff.
-   * 
+   *
    * @param eventStream
    *          The EventStream holding the data on which this model will be
    *          trained.
@@ -104,7 +104,7 @@ public class GIS extends AbstractEventTrainer {
   /**
    * Train a model using the GIS algorithm, assuming 100 iterations and no
    * cutoff.
-   * 
+   *
    * @param eventStream
    *          The EventStream holding the data on which this model will be
    *          trained.
@@ -121,7 +121,7 @@ public class GIS extends AbstractEventTrainer {
 
   /**
    * Train a model using the GIS algorithm.
-   * 
+   *
    * @param eventStream
    *          The EventStream holding the data on which this model will be
    *          trained.
@@ -140,7 +140,7 @@ public class GIS extends AbstractEventTrainer {
 
   /**
    * Train a model using the GIS algorithm.
-   * 
+   *
    * @param eventStream
    *          The EventStream holding the data on which this model will be
    *          trained.
@@ -168,7 +168,7 @@ public class GIS extends AbstractEventTrainer {
 
   /**
    * Train a model using the GIS algorithm.
-   * 
+   *
    * @param eventStream
    *          The EventStream holding the data on which this model will be
    *          trained.
@@ -192,7 +192,7 @@ public class GIS extends AbstractEventTrainer {
 
   /**
    * Train a model using the GIS algorithm.
-   * 
+   *
    * @param iterations
    *          The number of GIS iterations to perform.
    * @param indexer
@@ -210,7 +210,7 @@ public class GIS extends AbstractEventTrainer {
 
   /**
    * Train a model using the GIS algorithm.
-   * 
+   *
    * @param iterations
    *          The number of GIS iterations to perform.
    * @param indexer
@@ -225,7 +225,7 @@ public class GIS extends AbstractEventTrainer {
   /**
    * Train a model using the GIS algorithm with the specified number of
    * iterations, data indexer, and prior.
-   * 
+   *
    * @param iterations
    *          The number of GIS iterations to perform.
    * @param indexer
@@ -242,7 +242,7 @@ public class GIS extends AbstractEventTrainer {
 
   /**
    * Train a model using the GIS algorithm.
-   * 
+   *
    * @param iterations
    *          The number of GIS iterations to perform.
    * @param indexer
@@ -265,10 +265,10 @@ public class GIS extends AbstractEventTrainer {
     return trainModel(iterations, indexer, printMessagesWhileTraining,
         smoothing, modelPrior, cutoff, 1);
   }
-  
+
   /**
    * Train a model using the GIS algorithm.
-   * 
+   *
    * @param iterations
    *          The number of GIS iterations to perform.
    * @param indexer
@@ -294,7 +294,7 @@ public class GIS extends AbstractEventTrainer {
     if (modelPrior == null) {
       modelPrior = new UniformPrior();
     }
-    
+
     return trainer.trainModel(iterations, indexer, modelPrior, cutoff, threads);
   }
 }

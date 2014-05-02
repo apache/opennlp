@@ -25,7 +25,7 @@ public final class SimpleTokenizerTool extends BasicCmdLineTool {
   public String getShortDescription() {
     return "character class tokenizer";
   }
-  
+
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " < sentences";
   }
@@ -39,7 +39,7 @@ public final class SimpleTokenizerTool extends BasicCmdLineTool {
     if (args.length != 0) {
       System.out.println(getHelp());
     } else {
-    
+
       CommandLineTokenizer tokenizer =
         new CommandLineTokenizer(opennlp.tools.tokenize.SimpleTokenizer.INSTANCE);
 

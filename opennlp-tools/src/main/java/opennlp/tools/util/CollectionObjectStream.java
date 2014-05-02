@@ -22,12 +22,12 @@ import java.util.Iterator;
 
 public class CollectionObjectStream<E> implements ObjectStream<E> {
   private Collection<E> collection;
-  
+
   private Iterator<E> iterator;
 
   public CollectionObjectStream(Collection<E> collection) {
     this.collection = collection;
-    
+
     reset();
   }
 
@@ -37,11 +37,11 @@ public class CollectionObjectStream<E> implements ObjectStream<E> {
     else
       return null;
   }
-  
+
   public void reset() {
     this.iterator = collection.iterator();
   }
-  
+
   public void close() {
   }
 }

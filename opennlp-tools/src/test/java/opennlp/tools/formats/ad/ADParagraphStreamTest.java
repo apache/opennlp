@@ -34,9 +34,9 @@ public class ADParagraphStreamTest {
   @Test
   public void testSimpleReading() throws IOException {
     int count = 0;
-    
+
     ADSentenceStream stream = openData();
-    
+
     ADSentenceStream.Sentence paragraph = stream.read();
     paragraph.getRoot();
     while(paragraph != null) {
@@ -44,29 +44,29 @@ public class ADParagraphStreamTest {
       paragraph = stream.read();
 //      paragraph.getRoot();
     }
-    
+
     assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
   }
-  
+
   @Test
   public void testLeadingWithContraction() throws IOException {
     int count = 0;
-    
+
     ADSentenceStream stream = openData();
-    
+
     ADSentenceStream.Sentence paragraph = stream.read();
     while(paragraph != null) {
-      
+
       count++;
       paragraph = stream.read();
     }
-    
+
     assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
   }
-  
+
   private static ADSentenceStream openData() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample");
-    
+
     return new ADSentenceStream(new PlainTextByLineStream(in, "UTF-8"));
   }
 }

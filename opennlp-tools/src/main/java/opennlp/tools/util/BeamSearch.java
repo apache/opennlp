@@ -196,10 +196,10 @@ public class BeamSearch<T> {
    */
   public Sequence bestSequence(T[] sequence, Object[] additionalContext) {
     Sequence sequences[] =  bestSequences(1, sequence, additionalContext,zeroLog);
-    
+
     if (sequences.length > 0)
       return sequences[0];
-    else 
+    else
       return null;
   }
 }

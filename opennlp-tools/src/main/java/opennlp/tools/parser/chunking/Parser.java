@@ -81,7 +81,7 @@ public class Parser extends AbstractBottomUpParser {
             new ChunkContextGenerator(ChunkerME.DEFAULT_BEAM_SIZE)),
             model.getHeadRules(), beamSize, advancePercentage);
   }
-  
+
   public Parser(ParserModel model) {
     this(model, defaultBeamSize, defaultAdvancePercentage);
   }
@@ -258,47 +258,47 @@ public class Parser extends AbstractBottomUpParser {
     return opennlp.tools.ml.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 
-  public static void mergeReportIntoManifest(Map<String, String> manifest, 
+  public static void mergeReportIntoManifest(Map<String, String> manifest,
       Map<String, String> report, String namespace) {
-    
+
     for (Map.Entry<String, String> entry : report.entrySet()) {
       manifest.put(namespace + "." + entry.getKey(), entry.getValue());
     }
   }
-  
+
   public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, TrainingParameters mlParams)
           throws IOException {
-    
+
     System.err.println("Building dictionary");
-    
+
     Dictionary mdict = buildDictionary(parseSamples, rules, mlParams);
-    
+
     parseSamples.reset();
-    
+
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    
+
     // build
     System.err.println("Training builder");
     ObjectStream<Event> bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
     Map<String, String> buildReportMap = new HashMap<String, String>();
     MaxentModel buildModel = TrainUtil.train(bes, mlParams.getSettings("build"), buildReportMap);
     mergeReportIntoManifest(manifestInfoEntries, buildReportMap, "build");
-    
+
     parseSamples.reset();
-    
+
     // tag
-    POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(parseSamples), 
+    POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(parseSamples),
         mlParams.getParameters("tagger"), null, null);
-    
+
     parseSamples.reset();
-    
+
     // chunk
-    ChunkerModel chunkModel = ChunkerME.train(languageCode, 
+    ChunkerModel chunkModel = ChunkerME.train(languageCode,
         new ChunkSampleStream(parseSamples),
         new ChunkContextGenerator(), mlParams.getParameters("chunker"));
-    
+
     parseSamples.reset();
-    
+
     // check
     System.err.println("Training checker");
     ObjectStream<Event> kes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.CHECK);
@@ -319,7 +319,7 @@ public class Parser extends AbstractBottomUpParser {
   @Deprecated
   public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
       throws IOException {
-    
+
     TrainingParameters params = new TrainingParameters();
     params.put("dict", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
 

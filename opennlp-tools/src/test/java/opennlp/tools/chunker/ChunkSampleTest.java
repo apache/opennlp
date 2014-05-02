@@ -41,7 +41,7 @@ public class ChunkSampleTest {
     new ChunkSample(new String[]{""}, new String[]{""},
         new String[]{"test", "one element to much"});
   }
-  
+
   private static String[] createSentence() {
     return new String[] {
         "Forecasts",
@@ -62,9 +62,9 @@ public class ChunkSampleTest {
         "."
     };
   }
-  
+
   private static String[] createTags() {
-    
+
     return new String[]{
         "NNS",
         "IN",
@@ -84,7 +84,7 @@ public class ChunkSampleTest {
         "."
     };
   }
-  
+
   private static String[] createChunks() {
     return new String[]{
         "B-NP",
@@ -105,24 +105,24 @@ public class ChunkSampleTest {
         "O"
     };
   }
-  
+
   @Test
   public void testRetrievingContent() {
     ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
-    
+
     assertArrayEquals(createSentence(), sample.getSentence());
     assertArrayEquals(createTags(), sample.getTags());
     assertArrayEquals(createChunks(), sample.getPreds());
   }
-  
+
   @Test
   public void testToString() throws IOException {
-    
+
     ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
     String[] sentence = createSentence();
     String[] tags = createTags();
     String[] chunks = createChunks();
-    
+
     StringReader sr = new StringReader(sample.toString());
     BufferedReader reader = new BufferedReader(sr);
     for (int i = 0; i < sentence.length; i++) {
@@ -134,17 +134,17 @@ public class ChunkSampleTest {
     	assertEquals(chunks[i], parts[2]);
 		}
   }
-  
+
   @Test
   public void testNicePrint() {
-    
+
     ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
-    
+
     assertEquals(" [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] " +
     		"[VP range_VBP ] [ADVP widely_RB ] ,_, [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] " +
             "[VP range_VBP ] [ADVP widely_RB ] ._.", sample.nicePrint());
   }
-	
+
   @Test
   public void testAsSpan() {
 	ChunkSample sample = new ChunkSample(createSentence(), createTags(),
@@ -163,7 +163,7 @@ public class ChunkSampleTest {
     assertEquals(new Span(13, 14, "VP"), spans[8]);
     assertEquals(new Span(14, 15, "ADVP"), spans[9]);
   }
-  
+
 	@Test
 	public void testPhraseAsSpan() {
 		Span[] spans = ChunkSample.phrasesAsSpanList(createSentence(),
@@ -196,11 +196,11 @@ public class ChunkSampleTest {
 	ChunkSample cs1 = predictedSample.read();
 	String[] g1 = Span.spansToStrings(cs1.getPhrasesAsSpanList(), cs1.getSentence());
 	assertEquals(15, g1.length);
-	
+
 	ChunkSample cs2 = predictedSample.read();
 	String[] g2 = Span.spansToStrings(cs2.getPhrasesAsSpanList(), cs2.getSentence());
 	assertEquals(10, g2.length);
-	
+
 	ChunkSample cs3 = predictedSample.read();
 	String[] g3 = Span.spansToStrings(cs3.getPhrasesAsSpanList(), cs3.getSentence());
 	assertEquals(7, g3.length);
@@ -212,7 +212,7 @@ public class ChunkSampleTest {
 	assertEquals("lifetime access", g3[5]);
 	assertEquals("to", g3[6]);
 	}
-  
+
 
   // following are some tests to check the argument validation. Since all uses
   // the same validateArguments method, we do a deeper test only once
@@ -242,7 +242,7 @@ public class ChunkSampleTest {
     new ChunkSample(Arrays.asList(new String[1]), Arrays.asList(new String[1]),
         Arrays.asList(new String[2]));
   }
-  
+
   @Test
   public void testEquals() {
     assertFalse(createGoldSample() == createGoldSample());
@@ -250,15 +250,15 @@ public class ChunkSampleTest {
     assertFalse(createPredSample().equals(createGoldSample()));
     assertFalse(createPredSample().equals(new Object()));
   }
-  
+
   public static ChunkSample createGoldSample() {
       return new ChunkSample(createSentence(), createTags(), createChunks());
   }
-  
+
   public static ChunkSample createPredSample() {
       String[] chunks = createChunks();
       chunks[5] = "B-NP";
       return new ChunkSample(createSentence(), createTags(), chunks);
   }
-  
+
 }

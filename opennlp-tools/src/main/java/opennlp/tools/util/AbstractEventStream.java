@@ -58,7 +58,7 @@ public abstract class AbstractEventStream<T> implements ObjectStream<Event> {
 
   @Override
   public final Event read() throws IOException {
-    
+
     if (events.hasNext()) {
       return events.next();
     }
@@ -67,21 +67,21 @@ public abstract class AbstractEventStream<T> implements ObjectStream<Event> {
       while (!events.hasNext() && (sample = samples.read()) != null) {
         events = createEvents(sample);
       }
-      
+
       if (events.hasNext()) {
         return read();
       }
     }
-    
+
     return null;
   }
-  
+
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
     events = Collections.emptyIterator();
     samples.reset();
   }
-  
+
   @Override
   public void close() throws IOException {
     samples.close();

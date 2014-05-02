@@ -36,19 +36,19 @@ public class ParseToPOSSampleStream extends FilterObjectStream<Parse, POSSample>
   }
 
   public POSSample read() throws IOException {
-    
+
     Parse parse = samples.read();
-    
+
     if (parse != null) {
-      
+
       List<String> sentence = new ArrayList<String>();
       List<String> tags = new ArrayList<String>();
-      
+
       for(Parse tagNode : parse.getTagNodes()) {
         sentence.add(tagNode.getCoveredText());
         tags.add(tagNode.getType());
       }
-      
+
       return new POSSample(sentence, tags);
     }
     else {

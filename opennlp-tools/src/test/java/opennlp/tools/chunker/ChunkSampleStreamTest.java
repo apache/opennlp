@@ -32,9 +32,9 @@ public class ChunkSampleStreamTest{
 
   @Test
   public void testReadingEvents() throws IOException {
-    
+
     StringBuilder sample = new StringBuilder();
-    
+
     // First sample sentence
     sample.append("word11 tag11 pred11");
     sample.append('\n');
@@ -42,10 +42,10 @@ public class ChunkSampleStreamTest{
     sample.append('\n');
     sample.append("word13 tag13 pred13");
     sample.append('\n');
-    
+
     // Start next sample sentence
     sample.append('\n');
-    
+
     // Second sample sentence
     sample.append("word21 tag21 pred21");
     sample.append('\n');
@@ -53,11 +53,11 @@ public class ChunkSampleStreamTest{
     sample.append('\n');
     sample.append("word23 tag23 pred23");
     sample.append('\n');
-    
+
     ObjectStream<String> stringStream = new PlainTextByLineStream(new StringReader(sample.toString()));
-    
+
     ObjectStream<ChunkSample> chunkStream = new ChunkSampleStream(stringStream);
-    
+
     // read first sample
     ChunkSample firstSample = chunkStream.read();
     assertEquals("word11", firstSample.getSentence()[0]);
@@ -69,8 +69,8 @@ public class ChunkSampleStreamTest{
     assertEquals("word13", firstSample.getSentence()[2]);
     assertEquals("tag13", firstSample.getTags()[2]);
     assertEquals("pred13", firstSample.getPreds()[2]);
-    
-    
+
+
     // read second sample
     ChunkSample secondSample = chunkStream.read();
     assertEquals("word21", secondSample.getSentence()[0]);
@@ -82,7 +82,7 @@ public class ChunkSampleStreamTest{
     assertEquals("word23", secondSample.getSentence()[2]);
     assertEquals("tag23", secondSample.getTags()[2]);
     assertEquals("pred23", secondSample.getPreds()[2]);
-    
+
     assertNull(chunkStream.read());
   }
 }

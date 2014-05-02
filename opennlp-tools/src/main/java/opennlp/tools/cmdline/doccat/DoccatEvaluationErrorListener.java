@@ -27,7 +27,7 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 /**
  * A default implementation of {@link EvaluationMonitor} that prints to an
  * output stream.
- * 
+ *
  */
 public class DoccatEvaluationErrorListener extends
     EvaluationErrorPrinter<DocumentSample> implements DoccatEvaluationMonitor {

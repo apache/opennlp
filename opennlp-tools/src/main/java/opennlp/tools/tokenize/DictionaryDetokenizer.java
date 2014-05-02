@@ -23,29 +23,29 @@ import java.util.Set;
 /**
  * A rule based detokenizer. Simple rules which indicate in which direction a token should be
  * moved are looked up in a {@link DetokenizationDictionary} object.
- * 
+ *
  * @see Detokenizer
  * @see DetokenizationDictionary
  */
 public class DictionaryDetokenizer implements Detokenizer {
 
   private final DetokenizationDictionary dict;
-  
+
   public DictionaryDetokenizer(DetokenizationDictionary dict) {
     this.dict = dict;
   }
-  
+
   public DetokenizationOperation[] detokenize(String[] tokens) {
-    
-    DetokenizationOperation operations[] = 
+
+    DetokenizationOperation operations[] =
         new DetokenizationOperation[tokens.length];
-    
+
     Set<String> matchingTokens = new HashSet<String>();
-    
+
     for (int i = 0; i < tokens.length; i++) {
-      DetokenizationDictionary.Operation dictOperation = 
+      DetokenizationDictionary.Operation dictOperation =
         dict.getOperation(tokens[i]);
-      
+
       if (dictOperation == null) {
         operations[i] = Detokenizer.DetokenizationOperation.NO_OPERATION;
       }
@@ -59,7 +59,7 @@ public class DictionaryDetokenizer implements Detokenizer {
         operations[i] = Detokenizer.DetokenizationOperation.MERGE_BOTH;
       }
       else if (DetokenizationDictionary.Operation.RIGHT_LEFT_MATCHING.equals(dictOperation)) {
-        
+
         if (matchingTokens.contains(tokens[i])) {
           // The token already occurred once, move it to the left
           // and clear the occurrence flag
@@ -77,29 +77,29 @@ public class DictionaryDetokenizer implements Detokenizer {
         throw new IllegalStateException("Unknown operation: " + dictOperation);
       }
     }
-    
+
     return operations;
   }
-  
+
   public String detokenize(String tokens[], String splitMarker) {
-    
+
     DetokenizationOperation operations[] = detokenize(tokens);
-    
+
     if (tokens.length != operations.length)
       throw new IllegalArgumentException("tokens and operations array must have same length: tokens=" +
           tokens.length + ", operations=" + operations.length + "!");
-    
-    
+
+
     StringBuilder untokenizedString = new StringBuilder();
-    
+
     for (int i = 0; i < tokens.length; i++) {
-      
+
       // attach token to string buffer
       untokenizedString.append(tokens[i]);
-      
+
       boolean isAppendSpace;
       boolean isAppendSplitMarker;
-      
+
       // if this token is the last token do not attach a space
       if (i + 1 == operations.length) {
         isAppendSpace = false;
@@ -112,7 +112,7 @@ public class DictionaryDetokenizer implements Detokenizer {
         isAppendSpace = false;
         isAppendSplitMarker = true;
       }
-      // if this token is move right, no space 
+      // if this token is move right, no space
       else if (operations[i].equals(DetokenizationOperation.MERGE_TO_RIGHT)
           || operations[i].equals(DetokenizationOperation.MERGE_BOTH)) {
         isAppendSpace = false;
@@ -122,16 +122,16 @@ public class DictionaryDetokenizer implements Detokenizer {
         isAppendSpace = true;
         isAppendSplitMarker = false;
       }
-      
+
       if (isAppendSpace) {
         untokenizedString.append(' ');
       }
-      
+
       if (isAppendSplitMarker && splitMarker != null) {
         untokenizedString.append(splitMarker);
       }
     }
-    
+
     return untokenizedString.toString();
   }
 }

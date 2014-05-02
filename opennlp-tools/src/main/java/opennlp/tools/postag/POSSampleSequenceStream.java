@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
  package opennlp.tools.postag;
 
 import java.io.IOException;
@@ -29,17 +29,17 @@ public class POSSampleSequenceStream implements SequenceStream {
 
   private POSContextGenerator pcg;
   private ObjectStream<POSSample> psi;
-  
+
   public POSSampleSequenceStream(ObjectStream<POSSample> psi) throws IOException {
     this(psi, new DefaultPOSContextGenerator(null));
   }
-  
-  public POSSampleSequenceStream(ObjectStream<POSSample> psi, POSContextGenerator pcg) 
+
+  public POSSampleSequenceStream(ObjectStream<POSSample> psi, POSContextGenerator pcg)
       throws IOException {
     this.psi = psi;
     this.pcg = pcg;
   }
-  
+
   @SuppressWarnings("unchecked")
   public Event[] updateContext(Sequence sequence, AbstractModel model) {
     Sequence<POSSample> pss = sequence;
@@ -52,37 +52,37 @@ public class POSSampleSequenceStream implements SequenceStream {
         .toArray(events);
     return events;
   }
-  
+
   @Override
   public Sequence read() throws IOException {
-    
+
     POSSample sample = psi.read();
-    
+
     if (sample != null) {
       String sentence[] = sample.getSentence();
       String tags[] = sample.getTags();
       Event[] events = new Event[sentence.length];
-      
+
       for (int i=0; i < sentence.length; i++) {
-  
+
         // it is safe to pass the tags as previous tags because
         // the context generator does not look for non predicted tags
         String[] context = pcg.getContext(i, sentence, tags, null);
-  
+
         events[i] = new Event(tags[i], context);
       }
       Sequence<POSSample> sequence = new Sequence<POSSample>(events,sample);
       return sequence;
     }
-    
+
     return null;
   }
-  
+
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
     psi.reset();
   }
-  
+
   @Override
   public void close() throws IOException {
     psi.close();

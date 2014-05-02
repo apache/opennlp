@@ -23,16 +23,16 @@ package opennlp.tools.util.featuregen;
  * <p>
  * <b>Note:</b><br>
  * All implementing classes must be thread safe.
- * 
+ *
  * @see AdaptiveFeatureGenerator
  * @see FeatureGeneratorResourceProvider
- * 
- * 
+ *
+ *
  * @deprecated do not use this interface, will be removed!
  */
 @Deprecated
 public interface FeatureGeneratorFactory {
-  
+
   /**
    * Constructs a new {@link AdaptiveFeatureGenerator}.
    * <p>
@@ -41,9 +41,9 @@ public interface FeatureGeneratorFactory {
    * between multiple instances of feature generators. If that is not the
    * case the implementor should make a copy of the resource object.
    * All resource objects that are included in OpenNLP can be assumed to be thread safe.
-   * 
+   *
    * @param resourceProvider provides access to resources which are needed for feature generation.
-   * 
+   *
    * @return the newly created feature generator
    */
   @Deprecated

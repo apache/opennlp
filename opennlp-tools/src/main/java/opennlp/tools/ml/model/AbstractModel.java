@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -31,12 +31,12 @@ public abstract class AbstractModel implements MaxentModel {
   protected EvalParameters evalParams;
   /** Prior distribution for this model. */
   protected Prior prior;
-  
+
   public enum ModelType {Maxent,Perceptron,MaxentQn};
-  
+
   /** The type of the model. */
   protected ModelType modelType;
-  
+
   public AbstractModel(Context[] params, String[] predLabels, IndexHashTable<String> pmap, String[] outcomeNames) {
     this.pmap = pmap;
     this.outcomeNames =  outcomeNames;
@@ -52,7 +52,7 @@ public abstract class AbstractModel implements MaxentModel {
     init(predLabels,outcomeNames);
     this.evalParams = new EvalParameters(params,correctionParam,correctionConstant,outcomeNames.length);
   }
-  
+
   private void init(String[] predLabels, String[] outcomeNames){
     this.pmap = new IndexHashTable<String>(predLabels, 0.7d);
     this.outcomeNames =  outcomeNames;
@@ -73,7 +73,7 @@ public abstract class AbstractModel implements MaxentModel {
           if (ocs[i] > ocs[best]) best = i;
       return outcomeNames[best];
   }
-  
+
   public ModelType getModelType(){
     return modelType;
   }
@@ -142,7 +142,7 @@ public abstract class AbstractModel implements MaxentModel {
    * which is returned by this method:
    * <ul>
    * <li>index 0: opennlp.tools.ml.maxent.Context[] containing the model
-   *            parameters  
+   *            parameters
    * <li>index 1: java.util.Map containing the mapping of model predicates
    *            to unique integers
    * <li>index 2: java.lang.String[] containing the names of the outcomes,
@@ -153,7 +153,7 @@ public abstract class AbstractModel implements MaxentModel {
    * <li>index 4: java.lang.Double containing the value of the models
    *            correction parameter
    * </ul>
-   * 
+   *
    * @return An Object[] with the values as described above.
    */
   public final Object[] getDataStructures() {

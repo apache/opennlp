@@ -28,25 +28,25 @@ import org.junit.Test;
 public class ParseTest {
 
   public static final String PARSE_STRING = "(TOP  (S (S (NP-SBJ (PRP She)  )(VP (VBD was)  (ADVP (RB just)  )(NP-PRD (NP (DT another)  (NN freighter)  )(PP (IN from)  (NP (DT the)  (NNPS States)  )))))(, ,)  (CC and) (S (NP-SBJ (PRP she)  )(VP (VBD seemed)  (ADJP-PRD (ADJP (RB as)  (JJ commonplace)  )(PP (IN as)  (NP (PRP$ her)  (NN name)  )))))(. .)  ))";
-  
+
   @Test
   public void testToHashCode() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
     p1.hashCode();
   }
-  
+
   @Test
   public void testToString() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
     p1.toString();
   }
-  
+
   @Test
   public void testEquals() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
     assertTrue(p1.equals(p1));
   }
-  
+
   @Test
   public void testParseClone() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
@@ -54,26 +54,26 @@ public class ParseTest {
     assertTrue(p1.equals(p2));
     assertTrue(p2.equals(p1));
   }
-  
+
   @Test
   public void testGetText() {
     Parse p = Parse.parseParse(PARSE_STRING);
-    
+
     // TODO: Why does parse attaches a space to the end of the text ???
     String expectedText = "She was just another freighter from the States , and she seemed as commonplace as her name . ";
-    
+
     assertEquals(expectedText, p.getText());
   }
-  
+
   @Test
   public void testShow() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
-    
+
     StringBuffer parseString = new StringBuffer();
     p1.show(parseString);
-    
+
     Parse p2 = Parse.parseParse(parseString.toString());
-    
+
     assertEquals(p1, p2);
   }
 
@@ -89,25 +89,25 @@ public class ParseTest {
     		" )))(SBAR (WHNP-1 (WDT that)  )(S (VP (VBD put) " +
     		" (NP (DT the)  (NN spotlight)  )(PP (IN on)  (NP (DT the) " +
     		" (JJ international)  (NN play-girl)  ))))))(. .)  ))");
-    
+
     StringBuffer parseString = new StringBuffer();
     p1.show(parseString);
-    
+
     Parse p2 = Parse.parseParse(parseString.toString());
-    
+
     assertEquals(p1, p2);
   }
-  
+
   @Test
   public void testGetTagNodes() {
     Parse p = Parse.parseParse(PARSE_STRING);
-    
+
     Parse tags[] = p.getTagNodes();
-    
+
     for (Parse node : tags) {
       assertTrue(node.isPosTag());
     }
-    
+
     assertEquals("PRP", tags[0].getType());
     assertEquals("VBD", tags[1].getType());
     assertEquals("RB", tags[2].getType());

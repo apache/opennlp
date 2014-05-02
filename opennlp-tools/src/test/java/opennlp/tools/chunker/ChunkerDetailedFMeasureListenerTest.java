@@ -38,7 +38,7 @@ public class ChunkerDetailedFMeasureListenerTest {
         "opennlp/tools/chunker/output.txt");
     InputStream inExpected = getClass().getClassLoader().getResourceAsStream(
         "opennlp/tools/chunker/output.txt");
-    
+
     InputStream detailedOutputStream = getClass().getClassLoader().getResourceAsStream(
     "opennlp/tools/chunker/detailedOutput.txt");
 
@@ -62,7 +62,7 @@ public class ChunkerDetailedFMeasureListenerTest {
       StringBuilder expected = new StringBuilder();
       BufferedReader reader = new BufferedReader(new InputStreamReader(detailedOutputStream, encoding));
       String line = reader.readLine();
-      
+
       while(line != null ) {
         expected.append(line);
         expected.append("\n");

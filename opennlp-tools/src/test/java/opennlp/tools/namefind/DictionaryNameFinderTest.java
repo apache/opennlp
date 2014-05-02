@@ -47,7 +47,7 @@ public class DictionaryNameFinderTest{
 
     StringList max = new StringList(new String[]{"Max"});
     mDictionary.put(max);
-    
+
     StringList michaelJordan = new
         StringList(new String[]{"Michael", "Jordan"});
     mDictionary.put(michaelJordan);
@@ -127,13 +127,13 @@ public class DictionaryNameFinderTest{
     assertTrue(names.length == 1);
     assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
   }
-  
+
   @Test
   public void testCaseLongerEntry() {
     String sentence[] = {"a", "b", "michael", "jordan"};
-    
+
     Span names[] = mNameFinder.find(sentence);
-    
+
     assertTrue(names.length == 1);
     assertTrue(names[0].length() == 2);
   }

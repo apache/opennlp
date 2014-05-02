@@ -29,19 +29,19 @@ import opennlp.tools.util.StringUtil;
  * Generate events for maxent decisions for tokenization.
  */
 public class DefaultTokenContextGenerator implements TokenContextGenerator {
-  
+
   protected final Set<String> inducedAbbreviations;
-  
+
   /**
    * Creates a default context generator for tokenizer.
    */
   public DefaultTokenContextGenerator() {
     this(Collections.<String>emptySet());
   }
-  
+
   /**
    * Creates a default context generator for tokenizer.
-   * 
+   *
    * @param inducedAbbreviations the induced abbreviations
    */
   public DefaultTokenContextGenerator(Set<String> inducedAbbreviations) {
@@ -62,7 +62,7 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
    * Returns an {@link ArrayList} of features for the specified sentence string
    * at the specified index. Extensions of this class can override this method
    * to create a customized {@link TokenContextGenerator}
-   * 
+   *
    * @param sentence
    *          the token been analyzed
    * @param index
@@ -101,7 +101,7 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
     if (sentence.charAt(0) == '&' && sentence.charAt(sentence.length() - 1) == ';') {
       preds.add("cc");//character code
     }
-    
+
     if(index == sentence.length() - 1 && inducedAbbreviations.contains(sentence)) {
       preds.add("pabb");
     }

@@ -29,7 +29,7 @@ public final class NumberUtil {
 
   /**
    * Checks if the language is supported.
-   * 
+   *
    * @param languageCode language code, e.g. "en", "pt"
    * @return true if the language is supported
    */
@@ -72,7 +72,7 @@ public final class NumberUtil {
 
   /**
    * Gives its best to parse the provided number.
-   * 
+   *
    * @param number number to parse
    * @param languageCode language code, e.g. "en", "pt"
    * @return parsed number

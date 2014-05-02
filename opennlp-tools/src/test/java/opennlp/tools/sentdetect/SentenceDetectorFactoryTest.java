@@ -182,16 +182,16 @@ public class SentenceDetectorFactoryTest {
     assertTrue(Arrays.equals(factory.getEOSCharacters(),
         sdModel.getEosCharacters()));
   }
-  
+
   @Test
   public void testCreateDummyFactory() throws IOException {
     Dictionary dic = loadAbbDictionary();
     char[] eos = { '.', '?' };
-    
+
     SentenceDetectorFactory factory = SentenceDetectorFactory.create(
         DummySentenceDetectorFactory.class.getCanonicalName(), "es", false,
         dic, eos);
-    
+
     assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
     assertTrue(factory.getSDContextGenerator() instanceof DummySDContextGenerator);
     assertTrue(factory.getEndOfSentenceScanner() instanceof DummyEOSScanner);

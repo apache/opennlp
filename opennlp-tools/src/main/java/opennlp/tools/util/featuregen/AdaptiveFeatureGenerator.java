@@ -34,7 +34,7 @@ import java.util.List;
  * which are called from many threads and have to be thread safe.
  * If that is not possible the {@link FeatureGeneratorFactory} must make a copy
  * of the resource object for each feature generator instance.
- * 
+ *
  * @see FeatureGeneratorAdapter
  * @see FeatureGeneratorFactory
  */

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -35,11 +35,11 @@ import opennlp.tools.ml.model.UniformPrior;
  * Iterative Scaling procedure (implemented in GIS.java).
  */
 public final class GISModel extends AbstractModel {
-  
+
   /**
    * Creates a new model with the specified parameters, outcome names, and
    * predicate/feature labels.
-   * 
+   *
    * @param params
    *          The parameters of the model.
    * @param predLabels
@@ -60,7 +60,7 @@ public final class GISModel extends AbstractModel {
   /**
    * Creates a new model with the specified parameters, outcome names, and
    * predicate/feature labels.
-   * 
+   *
    * @param params
    *          The parameters of the model.
    * @param predLabels
@@ -85,7 +85,7 @@ public final class GISModel extends AbstractModel {
   /**
    * Use this model to evaluate a context and return an array of the likelihood
    * of each outcome given that context.
-   * 
+   *
    * @param context
    *          The names of the predicates which have been observed at the
    *          present decision point.
@@ -105,11 +105,11 @@ public final class GISModel extends AbstractModel {
   public final double[] eval(String[] context, double[] outsums) {
     return eval(context, null, outsums);
   }
-    
+
   /**
    * Use this model to evaluate a context and return an array of the likelihood
    * of each outcome given that context.
-   * 
+   *
    * @param context
    *          The names of the predicates which have been observed at the
    *          present decision point.
@@ -130,11 +130,11 @@ public final class GISModel extends AbstractModel {
     return GISModel.eval(scontexts, values, outsums, evalParams);
   }
 
-    
+
   /**
    * Use this model to evaluate a context and return an array of the likelihood
    * of each outcome given the specified context and the specified parameters.
-   * 
+   *
    * @param context
    *          The integer values of the predicates which have been observed at
    *          the present decision point.
@@ -151,11 +151,11 @@ public final class GISModel extends AbstractModel {
       EvalParameters model) {
     return eval(context, null, prior, model);
   }
-    
+
   /**
    * Use this model to evaluate a context and return an array of the likelihood
    * of each outcome given the specified context and the specified parameters.
-   * 
+   *
    * @param context
    *          The integer values of the predicates which have been observed at
    *          the present decision point.
@@ -212,7 +212,7 @@ public final class GISModel extends AbstractModel {
     }
     return prior;
   }
-        
+
   public static void main(String[] args) throws java.io.IOException {
     if (args.length == 0) {
       System.err.println("Usage: GISModel modelname < contexts");

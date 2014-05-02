@@ -26,30 +26,30 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 
 class DocumentSplitterStream extends FilterObjectStream<String, String> {
-  
+
   private static final String DOC_START_ELEMENT = "<DOC>";
   private static final String DOC_END_ELEMENT = "</DOC>";
-  
+
   private List<String> docs = new ArrayList<String>();
-  
+
   DocumentSplitterStream(ObjectStream<String> samples) {
     super(samples);
   }
 
   public String read() throws IOException {
-    
+
     if (docs.isEmpty()) {
       String newDocs = samples.read();
-      
+
       if (newDocs != null) {
         int docStartOffset = 0;
-        
+
         while (true) {
           int startDocElement = newDocs.indexOf(DOC_START_ELEMENT, docStartOffset);
           int endDocElement = newDocs.indexOf(DOC_END_ELEMENT, docStartOffset);
-          
+
           if (startDocElement != -1 && endDocElement != -1) {
-            
+
             if (startDocElement < endDocElement) {
               docs.add(newDocs.substring(startDocElement, endDocElement + DOC_END_ELEMENT.length()));
               docStartOffset = endDocElement + DOC_END_ELEMENT.length();
@@ -59,7 +59,7 @@ class DocumentSplitterStream extends FilterObjectStream<String, String> {
             }
           }
           else if (startDocElement != endDocElement) {
-            throw new InvalidFormatException("Missing <DOC> or </DOC> element!");            
+            throw new InvalidFormatException("Missing <DOC> or </DOC> element!");
           }
           else {
             break;
@@ -67,7 +67,7 @@ class DocumentSplitterStream extends FilterObjectStream<String, String> {
         }
       }
     }
-    
+
     if (docs.size() > 0) {
       return docs.remove(0);
     }

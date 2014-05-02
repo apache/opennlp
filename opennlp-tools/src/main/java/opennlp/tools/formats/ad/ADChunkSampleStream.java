@@ -72,7 +72,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 	 * Creates a new {@link NameSample} stream from a line stream, i.e.
 	 * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
 	 * {@link PlainTextByLineStream} object.
-	 * 
+	 *
 	 * @param lineStream
 	 *          a stream of lines as {@link String}
 	 */
@@ -90,10 +90,10 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
         throw new IllegalStateException(e);
       }
     }
-	   
+
 	/**
 	 * Creates a new {@link NameSample} stream from a {@link InputStream}
-	 * 
+	 *
 	 * @param in
 	 *          the Corpus {@link InputStream}
 	 * @param charsetName
@@ -160,7 +160,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
     private void processNode(Node node, List<String> sentence, List<String> tags,
         List<String> target, String inheritedTag) {
     String phraseTag = getChunkTag(node);
-    
+
     boolean inherited = false;
     if(phraseTag.equals(OTHER) && inheritedTag != null) {
       phraseTag = inheritedTag;
@@ -173,12 +173,12 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
             boolean isIntermediate = false;
             String tag = phraseTag;
             Leaf leaf = (Leaf) elements[i];
-            
+
             String localChunk = getChunkTag(leaf);
             if(localChunk != null && !tag.equals(localChunk)) {
               tag = localChunk;
             }
-            
+
             if(isIntermediate(tags, target, tag) && (inherited || i > 0)) {
                   isIntermediate = true;
             }
@@ -186,7 +186,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
                 (
                     !( i + 1 < elements.length && elements[i+1].isLeaf() ) ||
                     !( i > 0 && elements[i - 1].isLeaf() )
-                ) 
+                )
               ){
               isIntermediate = false;
               tag = OTHER;
@@ -196,7 +196,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
         } else {
             int before = target.size();
             processNode((Node) elements[i], sentence, tags, target, phraseTag);
-            
+
             // if the child node was of a different type we should break the chunk sequence
             for (int j = target.size() - 1; j >= before; j--) {
               if(!target.get(j).endsWith("-" + phraseTag)) {
@@ -212,7 +212,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
   protected void processLeaf(Leaf leaf, boolean isIntermediate, String phraseTag,
 			List<String> sentence, List<String> tags, List<String> target) {
 		String chunkTag;
-		
+
 		if (leaf.getFunctionalTag() != null
 				&& phraseTag.equals(OTHER)) {
 		  phraseTag = getPhraseTagFromPosTag(leaf.getFunctionalTag());
@@ -254,7 +254,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
     }
     return t;
   }
-  
+
   protected String getChunkTag(Leaf leaf) {
     String tag = leaf.getSyntacticTag();
     if("P".equals(tag)) {
@@ -265,7 +265,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 
   protected String getChunkTag(Node node) {
     String tag = node.getSyntacticTag();
-    
+
     String phraseTag = tag.substring(tag.lastIndexOf(":") + 1);
 
     while (phraseTag.endsWith("-")) {
@@ -298,7 +298,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 	public void close() throws IOException {
 		adSentenceStream.close();
 	}
-	
+
   protected boolean isIncludePunctuations() {
     return false;
   }

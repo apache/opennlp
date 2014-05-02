@@ -32,17 +32,17 @@ import org.junit.Test;
 public class ParseSampleStreamTest {
 
   static ObjectStream<Parse> createParseSampleStream() throws IOException {
-    
+
     InputStream in = ParseSampleStreamTest.class.getResourceAsStream(
     "/opennlp/tools/parser/test.parse");
-    
+
     return new ParseSampleStream(new PlainTextByLineStream(new InputStreamReader(in, "UTF-8")));
   }
-  
+
   @Test
   public void testReadTestStream() throws IOException {
     ObjectStream<Parse> parseStream = createParseSampleStream();
-    
+
     assertNotNull(parseStream.read());
     assertNotNull(parseStream.read());
     assertNotNull(parseStream.read());

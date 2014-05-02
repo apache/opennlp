@@ -23,7 +23,7 @@ import java.util.List;
  * of strings
  */
 public class NGramGenerator {
- 
+
 
   /**
    * Creates an ngram separated

@@ -33,10 +33,10 @@ package opennlp.tools.cmdline;
 public class TerminateToolException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
-  
+
   private final int code;
   private final String message;
-  
+
   public TerminateToolException(int code, String message, Throwable t) {
     super(t);
     this.code = code;
@@ -47,15 +47,15 @@ public class TerminateToolException extends RuntimeException {
     this.code = code;
     this.message = message;
   }
-  
+
   public TerminateToolException(int code) {
     this(code, null);
   }
-  
+
   public int getCode() {
     return code;
   }
-  
+
   @Override
   public String getMessage() {
     return message;

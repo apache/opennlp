@@ -22,11 +22,11 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
  * Common training parameters.
- * 
+ *
  * Note: Do not use this class, internal use only!
  */
 public interface BasicTrainingParams extends LanguageParams {
-  
+
   @ParameterDescription(valueName = "paramsFile", description = "training parameters file.")
   @OptionalParameter()
   String getParams();

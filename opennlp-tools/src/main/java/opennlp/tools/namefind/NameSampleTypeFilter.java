@@ -40,26 +40,26 @@ public class NameSampleTypeFilter extends FilterObjectStream<NameSample, NameSam
     super(samples);
     this.types = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(types)));
   }
-  
+
   public NameSampleTypeFilter(Set<String> types, ObjectStream<NameSample> samples) {
     super(samples);
     this.types = Collections.unmodifiableSet(new HashSet<String>(types));
   }
 
   public NameSample read() throws IOException {
-    
+
     NameSample sample = samples.read();
-    
+
     if (sample != null) {
-      
+
       List<Span> filteredNames = new ArrayList<Span>();
-      
+
       for (Span name : sample.getNames()) {
         if (types.contains(name.getType())) {
           filteredNames.add(name);
         }
       }
-      
+
       return new NameSample(sample.getId(), sample.getSentence(),
           filteredNames.toArray(new Span[filteredNames.size()]), null, sample.isClearAdaptiveDataSet());
     }

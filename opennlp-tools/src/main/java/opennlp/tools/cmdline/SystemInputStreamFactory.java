@@ -26,14 +26,14 @@ import opennlp.tools.util.InputStreamFactory;
 public class SystemInputStreamFactory implements InputStreamFactory {
 
   private boolean isTainted = false;
-  
+
   public static Charset encoding() {
     return Charset.defaultCharset();
   }
-  
+
   @Override
   public InputStream createInputStream() throws IOException {
-    
+
     if (!isTainted) {
       isTainted = true;
       return System.in;

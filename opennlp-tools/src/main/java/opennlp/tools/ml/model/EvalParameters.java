@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -20,12 +20,12 @@
 package opennlp.tools.ml.model;
 
  /**
- * This class encapsulates the varibales used in producing probabilities from a model 
+ * This class encapsulates the varibales used in producing probabilities from a model
  * and facilitaes passing these variables to the eval method.
  */
 public class EvalParameters {
-  
- /** Mapping between outcomes and paramater values for each context. 
+
+ /** Mapping between outcomes and paramater values for each context.
    * The integer representation of the context can be found using <code>pmap</code>.*/
   private Context[] params;
   /** The number of outcomes being predicted. */
@@ -33,12 +33,12 @@ public class EvalParameters {
   /** The maximum number of feattures fired in an event. Usually refered to a C.
    * This is used to normalize the number of features which occur in an event. */
   private double correctionConstant;
-  
+
   /**  Stores inverse of the correction constant, 1/C. */
   private final double constantInverse;
   /** The correction parameter of the model. */
   private double correctionParam;
-  
+
   /**
    * Creates a set of paramters which can be evaulated with the eval method.
    * @param params The parameters of the model.
@@ -53,11 +53,11 @@ public class EvalParameters {
     this.correctionConstant = correctionConstant;
     this.constantInverse = 1.0 / correctionConstant;
   }
-  
+
   public EvalParameters(Context[] params, int numOutcomes) {
     this(params,0,0,numOutcomes);
   }
-  
+
   /* (non-Javadoc)
    * @see opennlp.tools.ml.model.EvalParameters#getParams()
    */
@@ -83,7 +83,7 @@ public class EvalParameters {
   public double getCorrectionParam() {
     return correctionParam;
   }
-  
+
   public void setCorrectionParam(double correctionParam) {
     this.correctionParam = correctionParam;
   }

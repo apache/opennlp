@@ -69,26 +69,26 @@ import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool;
 import opennlp.tools.util.Version;
 
 public final class CLI {
-  
+
   public static final String CMD = "opennlp";
-  
+
   private static Map<String, CmdLineTool> toolLookupMap;
-  
+
   static {
     toolLookupMap = new LinkedHashMap<String, CmdLineTool>();
-    
+
     List<CmdLineTool> tools = new LinkedList<CmdLineTool>();
-    
+
     // Document Categorizer
     tools.add(new DoccatTool());
     tools.add(new DoccatTrainerTool());
     tools.add(new DoccatEvaluatorTool());
     tools.add(new DoccatCrossValidatorTool());
     tools.add(new DoccatConverterTool());
-    
+
     // Dictionary Builder
     tools.add(new DictionaryBuilderTool());
-    
+
     // Tokenizer
     tools.add(new SimpleTokenizerTool());
     tools.add(new TokenizerMETool());
@@ -97,14 +97,14 @@ public final class CLI {
     tools.add(new TokenizerCrossValidatorTool());
     tools.add(new TokenizerConverterTool());
     tools.add(new DictionaryDetokenizerTool());
-    
+
     // Sentence detector
     tools.add(new SentenceDetectorTool());
     tools.add(new SentenceDetectorTrainerTool());
     tools.add(new SentenceDetectorEvaluatorTool());
     tools.add(new SentenceDetectorCrossValidatorTool());
     tools.add(new SentenceDetectorConverterTool());
-    
+
     // Name Finder
     tools.add(new TokenNameFinderTool());
     tools.add(new TokenNameFinderTrainerTool());
@@ -112,22 +112,22 @@ public final class CLI {
     tools.add(new TokenNameFinderCrossValidatorTool());
     tools.add(new TokenNameFinderConverterTool());
     tools.add(new CensusDictionaryCreatorTool());
-    
-    
+
+
     // POS Tagger
     tools.add(new opennlp.tools.cmdline.postag.POSTaggerTool());
     tools.add(new POSTaggerTrainerTool());
     tools.add(new POSTaggerEvaluatorTool());
     tools.add(new POSTaggerCrossValidatorTool());
     tools.add(new POSTaggerConverterTool());
-    
+
     // Chunker
     tools.add(new ChunkerMETool());
     tools.add(new ChunkerTrainerTool());
     tools.add(new ChunkerEvaluatorTool());
     tools.add(new ChunkerCrossValidatorTool());
     tools.add(new ChunkerConverterTool());
-    
+
     // Parser
     tools.add(new ParserTool());
     tools.add(new ParserTrainerTool()); // trains everything
@@ -136,29 +136,29 @@ public final class CLI {
     tools.add(new BuildModelUpdaterTool()); // re-trains  build model
     tools.add(new CheckModelUpdaterTool()); // re-trains  build model
     tools.add(new TaggerModelReplacerTool());
-    
+
     // Entity Linker
     tools.add(new EntityLinkerTool());
-    
+
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);
     }
-    
+
     toolLookupMap = Collections.unmodifiableMap(toolLookupMap);
   }
-  
+
   /**
    * @return a set which contains all tool names
    */
   public static Set<String> getToolNames() {
     return toolLookupMap.keySet();
   }
-  
+
   private static void usage() {
     System.out.print("OpenNLP " + Version.currentVersion().toString() + ". ");
     System.out.println("Usage: " + CMD + " TOOL");
     System.out.println("where TOOL is one of:");
-    
+
     // distance of tool name from line start
     int numberOfSpaces = -1;
     for (String toolName : toolLookupMap.keySet()) {
@@ -167,29 +167,29 @@ public final class CLI {
       }
     }
     numberOfSpaces = numberOfSpaces + 4;
-    
+
     for (CmdLineTool tool : toolLookupMap.values()) {
-      
+
       System.out.print("  " + tool.getName());
-      
+
       for (int i = 0; i < Math.abs(tool.getName().length() - numberOfSpaces); i++) {
         System.out.print(" ");
       }
-      
+
       System.out.println(tool.getShortDescription());
     }
-    
+
     System.out.println("All tools print help when invoked with help parameter");
     System.out.println("Example: opennlp SimpleTokenizer help");
   }
-  
+
   public static void main(String[] args) {
-    
+
     if (args.length == 0) {
       usage();
       System.exit(0);
     }
-    
+
     String toolArguments[] = new String[args.length -1];
     System.arraycopy(args, 1, toolArguments, 0, toolArguments.length);
 
@@ -203,7 +203,7 @@ public final class CLI {
       toolName = toolName.substring(0, idx);
     }
     CmdLineTool tool = toolLookupMap.get(toolName);
-    
+
     try {
       if (null == tool) {
         throw new TerminateToolException(1, "Tool " + toolName + " is not found.");
@@ -233,7 +233,7 @@ public final class CLI {
       }
     }
     catch (TerminateToolException e) {
-      
+
       if (e.getMessage() != null) {
         System.err.println(e.getMessage());
       }
@@ -242,7 +242,7 @@ public final class CLI {
         System.err.println(e.getCause().getMessage());
         e.getCause().printStackTrace(System.err);
       }
-      
+
       System.exit(e.getCode());
     }
   }

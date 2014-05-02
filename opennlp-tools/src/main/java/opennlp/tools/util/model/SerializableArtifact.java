@@ -18,14 +18,14 @@
 package opennlp.tools.util.model;
 
 public interface SerializableArtifact {
-  
+
   /**
    * Retrieves the class which can serialize and recreate this artifact.
    * <br>
-   * Note: 
-   * The serializer class must have a public zero argument constructor or 
+   * Note:
+   * The serializer class must have a public zero argument constructor or
    * an exception is thrown during model serialization/loading.
-   * 
+   *
    * @return the corresponding ArtifactSerializer class.
    */
   Class<?> getArtifactSerializerClass();

@@ -22,10 +22,10 @@ import java.util.Map;
 import opennlp.tools.util.InvalidFormatException;
 
 public abstract class CustomFeatureGenerator implements AdaptiveFeatureGenerator {
-  
+
   /**
    * Initialized the Custom Feature Generator with defined properties and loaded resources.
-   * 
+   *
    * @param properties
    * @param resourceProvider
    */

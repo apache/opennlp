@@ -27,10 +27,10 @@ public interface ObjectStreamFactory<T> {
    * @return interface with parameters description
    */
   <P> Class<P> getParameters();
-  
+
   /**
    * Creates the <code>ObjectStream</code>.
-   * 
+   *
    * @param args arguments
    * @return ObjectStream instance
    */

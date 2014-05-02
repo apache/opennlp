@@ -31,24 +31,24 @@ import opennlp.tools.util.PlainTextByLineStream;
 public class ParserTestUtil {
 
    public static HeadRules createTestHeadRules() throws IOException {
-     InputStream headRulesIn = 
+     InputStream headRulesIn =
        ParserTestUtil.class.getResourceAsStream("/opennlp/tools/parser/en_head_rules");
-   
+
      HeadRules headRules = new HeadRules(new BufferedReader(
          new InputStreamReader(headRulesIn, "UTF-8")));
-     
+
      headRulesIn.close();
-     
+
      return headRules;
    }
-   
-   public static ObjectStream<Parse> openTestTrainingData() 
+
+   public static ObjectStream<Parse> openTestTrainingData()
        throws IOException {
-     
+
      ObjectStream<Parse> resetableSampleStream = new ObjectStream<Parse> () {
-       
+
        private ObjectStream<Parse> samples;
-       
+
        public void close() throws IOException {
          samples.close();
        }
@@ -61,7 +61,7 @@ public class ParserTestUtil {
          try {
            if (samples != null)
              samples.close();
-           
+
           samples = new ParseSampleStream(new PlainTextByLineStream(
                new InputStreamReader(
                ParserTestUtil.class.getResourceAsStream("/opennlp/tools/parser/parser.train"), "UTF-8")));
@@ -71,9 +71,9 @@ public class ParserTestUtil {
         }
        }
      };
-     
+
      resetableSampleStream.reset();
-     
+
      return resetableSampleStream;
-   }  
+   }
 }

@@ -63,7 +63,7 @@ public abstract class CmdLineTool {
    * @return a description on how to use the tool
    */
   public abstract String getHelp();
-  
+
   protected <T> T validateAndParseParams(String[] args, Class<T> argProxyInterface) {
     String errorMessage = ArgumentParser.validateArgumentsLoudly(args, argProxyInterface);
     if (null != errorMessage) {

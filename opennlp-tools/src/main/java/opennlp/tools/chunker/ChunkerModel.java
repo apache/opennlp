@@ -58,7 +58,7 @@ public class ChunkerModel extends BaseModel {
   public ChunkerModel(String languageCode, MaxentModel chunkerModel, Map<String, String> manifestInfoEntries) {
     this(languageCode, chunkerModel, ChunkerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, new ChunkerFactory());
   }
-  
+
   public ChunkerModel(String languageCode, SequenceClassificationModel<String> chunkerModel,
       Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
@@ -70,18 +70,18 @@ public class ChunkerModel extends BaseModel {
       Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
     this(languageCode, chunkerModel, ChunkerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, factory);
   }
-  
+
   public ChunkerModel(String languageCode, MaxentModel chunkerModel, int beamSize,
       Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
     artifactMap.put(CHUNKER_MODEL_ENTRY_NAME, chunkerModel);
-    
+
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
     manifest.put(BeamSearch.BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
-    
+
     checkArtifactMap();
   }
-  
+
   /**
    * @deprecated Use
    *             {@link #ChunkerModel(String, MaxentModel, ChunkerFactory)
@@ -94,7 +94,7 @@ public class ChunkerModel extends BaseModel {
   public ChunkerModel(String languageCode, MaxentModel chunkerModel, ChunkerFactory factory) {
     this(languageCode, chunkerModel, null, factory);
   }
-  
+
   public ChunkerModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
@@ -102,11 +102,11 @@ public class ChunkerModel extends BaseModel {
   public ChunkerModel(File modelFile) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelFile);
   }
-  
+
   public ChunkerModel(URL modelURL) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelURL);
   }
-  
+
   @Override
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
@@ -128,19 +128,19 @@ public class ChunkerModel extends BaseModel {
       return null;
     }
   }
-  
+
   public SequenceClassificationModel<String> getChunkerSequenceModel() {
-    
+
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
-    
+
     if (artifactMap.get(CHUNKER_MODEL_ENTRY_NAME) instanceof MaxentModel) {
       String beamSizeString = manifest.getProperty(BeamSearch.BEAM_SIZE_PARAMETER);
-      
+
       int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
       if (beamSizeString != null) {
         beamSize = Integer.parseInt(beamSizeString);
       }
-      
+
       return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME));
     }
     else if (artifactMap.get(CHUNKER_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
@@ -150,19 +150,19 @@ public class ChunkerModel extends BaseModel {
       return null;
     }
   }
-  
+
   @Override
   protected Class<? extends BaseToolFactory> getDefaultFactory() {
     return ChunkerFactory.class;
   }
 
-  
+
   public ChunkerFactory getFactory() {
     return (ChunkerFactory) this.toolFactory;
   }
-  
+
   public static void main(String[] args) throws FileNotFoundException, IOException {
-    
+
     if (args.length != 4){
       System.err.println("ChunkerModel -lang code packageName modelName");
       System.exit(1);

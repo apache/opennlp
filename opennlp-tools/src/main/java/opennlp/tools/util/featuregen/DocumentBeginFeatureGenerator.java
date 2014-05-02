@@ -22,19 +22,19 @@ import java.util.List;
 public class DocumentBeginFeatureGenerator extends FeatureGeneratorAdapter {
 
   private String firstSentence[];
-  
+
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
-    
+
     if (firstSentence == null) {
       firstSentence = tokens;
     }
-    
+
     if (firstSentence == tokens && index == 0) {
       features.add("D=begin");
     }
   }
-  
+
   @Override
   public void clearAdaptiveData() {
     firstSentence = null;

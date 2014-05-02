@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 
 package opennlp.uima.util;
 
@@ -30,11 +30,11 @@ import org.apache.uima.cas.text.AnnotationFS;
  * This is a util class for uima operations.
  */
 public final class UimaUtil {
-  
+
   private UimaUtil(){
     // this is util class must not be instantiated
   }
-  
+
   /**
    * The token type parameter.
    */
@@ -54,12 +54,12 @@ public final class UimaUtil {
    * The sentence type parameter.
    */
   public static String SENTENCE_TYPE_PARAMETER = "opennlp.uima.SentenceType";
-  
+
   /**
    * The beam size parameter.
    */
   public static final String BEAM_SIZE_PARAMETER = "opennlp.uima.BeamSize";
-  
+
   public static final String LANGUAGE_PARAMETER = "opennlp.uima.Language";
 
   public static final String DICTIONARY_PARAMETER = "opennlp.uima.Dictionary";
@@ -67,25 +67,25 @@ public final class UimaUtil {
   public static final String TRAINING_PARAMS_FILE_PARAMETER = "opennlp.uima.TrainingParamsFile";
 
   public static final String CUTOFF_PARAMETER = "opennlp.uima.Cutoff";
-  
+
   public static final String ITERATIONS_PARAMETER = "opennlp.uima.Iterations";
-  
+
   public static final String PROBABILITY_FEATURE_PARAMETER =
       "opennlp.uima.ProbabilityFeature";
 
   public static final String IS_REMOVE_EXISTINGS_ANNOTAIONS =
 	  "opennlp.uima.IsRemoveExistingAnnotations";
-  
+
   public static final String ADDITIONAL_TRAINING_DATA_FILE =
       "opennlp.uima.AdditionalTrainingDataFile";
-  
+
   public static final String ADDITIONAL_TRAINING_DATA_ENCODING =
       "opennlp.uima.AdditionalTrainingDataEncoding";
-  
+
   /**
    * Removes all annotations of type removeAnnotationType which are contained
    * by annotations of type containerAnnotationType.
-   * 
+   *
    * @param cas
    * @param containerAnnotation
    * @param removeAnnotationType

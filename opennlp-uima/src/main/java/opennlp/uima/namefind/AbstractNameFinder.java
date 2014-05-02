@@ -40,26 +40,26 @@ import org.apache.uima.util.Logger;
 abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
 
   protected final String name;
-  
+
   protected Type mSentenceType;
 
   protected Type mTokenType;
 
   protected Type mNameType;
-  
+
   protected UimaContext context;
-  
+
   protected Logger mLogger;
-  
+
   private Boolean isRemoveExistingAnnotations;
-  
+
   AbstractNameFinder(String name) {
     this.name = name;
   }
-  
+
   protected void initialize() throws ResourceInitializationException {
   }
-  
+
   public final void initialize(UimaContext context) throws ResourceInitializationException {
 
 	super.initialize(context);
@@ -69,9 +69,9 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
     mLogger = context.getLogger();
 
     if (mLogger.isLoggable(Level.INFO)) {
-      mLogger.log(Level.INFO, 
+      mLogger.log(Level.INFO,
       "Initializing the " + name + ".");
-    } 
+    }
 
     isRemoveExistingAnnotations = AnnotatorUtil.getOptionalBooleanParameter(
         context, UimaUtil.IS_REMOVE_EXISTINGS_ANNOTAIONS);
@@ -82,7 +82,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
 
     initialize();
   }
-  
+
   /**
    * Initializes the type system.
    */
@@ -101,19 +101,19 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
     mNameType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         NameFinder.NAME_TYPE_PARAMETER);
   }
-  
-  protected void postProcessAnnotations(Span detectedNames[], 
+
+  protected void postProcessAnnotations(Span detectedNames[],
 		  AnnotationFS[] nameAnnotations) {
   }
-  
+
   /**
-   * Called if the current document is completely processed. 
+   * Called if the current document is completely processed.
    */
   protected void documentDone(CAS cas) {
   }
-  
+
   protected abstract Span[] find(CAS cas, String[] tokens);
-  
+
   /**
    * Performs name finding on the given cas object.
    */
@@ -122,24 +122,24 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
     if (isRemoveExistingAnnotations) {
       final AnnotationComboIterator sentenceNameCombo = new AnnotationComboIterator(cas,
           mSentenceType, mNameType);
-      
+
       List<AnnotationFS> removeAnnotations = new LinkedList<AnnotationFS>();
       for (AnnotationIteratorPair annotationIteratorPair : sentenceNameCombo) {
         for (AnnotationFS nameAnnotation : annotationIteratorPair.getSubIterator()) {
           removeAnnotations.add(nameAnnotation);
         }
       }
-      
+
       for (AnnotationFS annotation : removeAnnotations) {
         cas.removeFsFromIndexes(annotation);
       }
     }
-    
+
     final AnnotationComboIterator sentenceTokenCombo = new AnnotationComboIterator(cas,
         mSentenceType, mTokenType);
-	
+
     for (AnnotationIteratorPair annotationIteratorPair : sentenceTokenCombo) {
-      
+
       final List<AnnotationFS> sentenceTokenAnnotationList = new LinkedList<AnnotationFS>();
 
       final List<String> sentenceTokenList = new LinkedList<String>();
@@ -150,29 +150,29 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
 
         sentenceTokenList.add(tokenAnnotation.getCoveredText());
       }
-      
-      Span[] names  = find(cas, 
+
+      Span[] names  = find(cas,
           (String[]) sentenceTokenList.toArray(new String[sentenceTokenList.size()]));
-    
+
       AnnotationFS nameAnnotations[] = new AnnotationFS[names.length];
-      
+
       for (int i = 0; i < names.length; i++) {
-        
+
         int startIndex = ((AnnotationFS) sentenceTokenAnnotationList.get(
             names[i].getStart())).getBegin();
 
         int endIndex = ((AnnotationFS) sentenceTokenAnnotationList.get(
             names[i].getEnd() - 1)).getEnd();
-        
-        nameAnnotations[i] = 
+
+        nameAnnotations[i] =
             cas.createAnnotation(mNameType, startIndex, endIndex);
-        
+
         cas.getIndexRepository().addFS(nameAnnotations[i]);
       }
-      
+
       postProcessAnnotations(names, nameAnnotations);
     }
-        
+
     documentDone(cas);
   }
 }

@@ -20,7 +20,7 @@ package opennlp.tools.stemmer.snowball;
 import opennlp.tools.stemmer.Stemmer;
 
 public class SnowballStemmer implements Stemmer {
-  
+
   public enum ALGORITHM {
     DANISH,
     DUTCH,
@@ -39,13 +39,13 @@ public class SnowballStemmer implements Stemmer {
     SWEDISH,
     TURKISH
   }
-  
+
   private final AbstractSnowballStemmer stemmer;
   private final int repeat;
-  
+
   public SnowballStemmer(ALGORITHM algorithm, int repeat) {
     this.repeat = repeat;
-    
+
     if (ALGORITHM.DANISH.equals(algorithm)) {
       stemmer = new danishStemmer();
     }
@@ -66,34 +66,34 @@ public class SnowballStemmer implements Stemmer {
     }
     else if (ALGORITHM.HUNGARIAN.equals(algorithm)) {
       stemmer = new hungarianStemmer();
-    }    
+    }
     else if (ALGORITHM.ITALIAN.equals(algorithm)) {
       stemmer = new italianStemmer();
-    }    
+    }
     else if (ALGORITHM.NORWEGIAN.equals(algorithm)) {
       stemmer = new norwegianStemmer();
     }
     else if (ALGORITHM.PORTER.equals(algorithm)) {
       stemmer = new porterStemmer();
-    }    
+    }
     else if (ALGORITHM.PORTUGUESE.equals(algorithm)) {
       stemmer = new portugueseStemmer();
-    }    
+    }
     else if (ALGORITHM.ROMANIAN.equals(algorithm)) {
       stemmer = new romanianStemmer();
-    }    
+    }
     else if (ALGORITHM.RUSSIAN.equals(algorithm)) {
       stemmer = new russianStemmer();
-    }    
+    }
     else if (ALGORITHM.SPANISH.equals(algorithm)) {
       stemmer = new spanishStemmer();
-    }    
+    }
     else if (ALGORITHM.SWEDISH.equals(algorithm)) {
       stemmer = new swedishStemmer();
-    } 
+    }
     else if (ALGORITHM.TURKISH.equals(algorithm)) {
       stemmer = new turkishStemmer();
-    } 
+    }
     else {
       throw new IllegalStateException("Unexpected stemmer algorithm: " + algorithm.toString());
     }
@@ -102,15 +102,15 @@ public class SnowballStemmer implements Stemmer {
   public SnowballStemmer(ALGORITHM algorithm) {
     this(algorithm, 1);
   }
-  
+
   public CharSequence stem(CharSequence word) {
-    
+
     stemmer.setCurrent(word.toString());
-    
+
     for (int i = 0; i < repeat; i++) {
       stemmer.stem();
     }
-    
+
     return stemmer.getCurrent();
   }
 }

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -31,7 +31,7 @@ import java.util.zip.GZIPInputStream;
 public class PlainTextFileDataReader implements DataReader {
 
   private BufferedReader input;
-  
+
   public PlainTextFileDataReader(File f) throws IOException {
     if (f.getName().endsWith(".gz")) {
       input = new BufferedReader(new InputStreamReader(new BufferedInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(f))))));
@@ -40,15 +40,15 @@ public class PlainTextFileDataReader implements DataReader {
       input = new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(f))));
     }
   }
-  
+
   public PlainTextFileDataReader(InputStream in) {
     input = new BufferedReader(new InputStreamReader(in));
   }
-  
+
   public PlainTextFileDataReader(BufferedReader in) {
     input = in;
   }
-  
+
   public double readDouble() throws IOException {
     return Double.parseDouble(input.readLine());
   }

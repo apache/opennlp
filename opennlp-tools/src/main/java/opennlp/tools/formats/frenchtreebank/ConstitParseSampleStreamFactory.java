@@ -29,22 +29,22 @@ import opennlp.tools.util.ObjectStream;
 public class ConstitParseSampleStreamFactory extends AbstractSampleStreamFactory<Parse> {
 
   // TODO: The parameters have an encoding, but the data is in xml
-  interface Parameters extends BasicFormatParams {    
+  interface Parameters extends BasicFormatParams {
   }
-  
+
   private ConstitParseSampleStreamFactory() {
     super(Parameters.class);
   }
-  
+
   public ObjectStream<Parse> create(String[] args) {
-    
+
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
-    
+
     return new ConstitParseSampleStream(new FileToByteArraySampleStream(new DirectorySampleStream(params.getData(),
         null, false)));
   }
-  
+
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(Parse.class, "frenchtreebank",
         new ConstitParseSampleStreamFactory());

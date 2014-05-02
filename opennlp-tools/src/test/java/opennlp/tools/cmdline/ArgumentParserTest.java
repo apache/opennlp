@@ -34,35 +34,35 @@ public class ArgumentParserTest {
 
   interface ZeroMethods {
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void testZeroMethods() {
     ArgumentParser.createUsage(ZeroMethods.class);
   }
-  
+
   interface InvalidMethodName {
     String invalidMethodName();
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidMethodName() {
     ArgumentParser.createUsage(InvalidMethodName.class);
   }
-  
+
   interface InvalidReturnType {
     Exception getTest();
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidReturnType() {
     ArgumentParser.createUsage(InvalidReturnType.class);
   }
-  
+
   interface SimpleArguments extends AllOptionalArguments {
-    
+
     @ParameterDescription(valueName = "charset", description = "a charset encoding")
     String getEncoding();
-    
+
     @OptionalParameter
     Integer getCutoff();
   }
@@ -78,24 +78,24 @@ public class ArgumentParserTest {
     Boolean getAlphaNumOpt();
   }
 
-  
+
   @Test
   public void testSimpleArguments() {
-    
+
     String argsString = "-encoding UTF-8 -alphaNumOpt false";
-    
+
     SimpleArguments args = ArgumentParser.parse(argsString.split(" "), SimpleArguments.class);
-    
+
     assertEquals("UTF-8", args.getEncoding());
     assertEquals(Integer.valueOf(100), args.getIterations());
     assertEquals(null, args.getCutoff());
     assertEquals(false, args.getAlphaNumOpt());
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void testSimpleArgumentsMissingEncoding() {
     String argsString = "-alphaNumOpt false";
-    
+
     assertFalse(ArgumentParser.validateArguments(argsString.split(" "), SimpleArguments.class));
     ArgumentParser.parse(argsString.split(" "), SimpleArguments.class);
   }
@@ -126,46 +126,46 @@ public class ArgumentParserTest {
 
   @Test
   public void testSimpleArgumentsUsage() {
-    
-    String arguments[] = new String[] {"-encoding charset", 
-    		"[-iterations num]", 
+
+    String arguments[] = new String[] {"-encoding charset",
+    		"[-iterations num]",
     		"[-alphaNumOpt true|false]"};
-    
+
     String usage = ArgumentParser.createUsage(SimpleArguments.class);
-    
+
     int expectedLength = 2;
     for (String arg : arguments) {
       assertTrue(usage.contains(arg));
       expectedLength += arg.length();
     }
-    
+
     assertTrue(usage.contains("a charset encoding"));
-    
+
     assertTrue(expectedLength < usage.length());
   }
-  
+
   interface ExtendsEncodingParameter extends EncodingParameter {
-    
+
     @ParameterDescription(valueName = "value")
     String getSomething();
 
   }
-  
-  
+
+
   @Test
   public void testDefaultEncodingParameter() {
-    
+
     String args[] = "-something aValue".split(" ");
     assertTrue(ArgumentParser.validateArguments(args, ExtendsEncodingParameter.class));
-    
+
     ExtendsEncodingParameter params = ArgumentParser.parse(args, ExtendsEncodingParameter.class);
     assertEquals(Charset.defaultCharset(), params.getEncoding());
-    
+
   }
-  
+
   @Test
   public void testSetEncodingParameter() {
-    
+
     Collection<Charset> availableCharset = Charset.availableCharsets().values();
     String notTheDefaultCharset = "UTF-8";
     for (Charset charset : availableCharset) {
@@ -174,12 +174,12 @@ public class ArgumentParserTest {
         break;
       }
     }
-    
+
     String args[] = ("-something aValue -encoding " + notTheDefaultCharset).split(" ");
     assertTrue(ArgumentParser.validateArguments(args, ExtendsEncodingParameter.class));
-    
+
     ExtendsEncodingParameter params = ArgumentParser.parse(args, ExtendsEncodingParameter.class);
     assertEquals(Charset.forName(notTheDefaultCharset), params.getEncoding());
-    
+
   }
 }

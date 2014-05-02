@@ -39,7 +39,7 @@ public class TokenizerEvaluatorTest {
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
         TokenSampleTest.createGoldSample()), listener);
-    
+
     eval.evaluateSample(TokenSampleTest.createGoldSample());
 
     assertEquals(1.0, eval.getFMeasure().getFMeasure());
@@ -55,7 +55,7 @@ public class TokenizerEvaluatorTest {
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
         TokenSampleTest.createGoldSample()), listener);
-    
+
     eval.evaluateSample(TokenSampleTest.createPredSample());
 
     assertEquals(.5d, eval.getFMeasure().getFMeasure(), .1d);

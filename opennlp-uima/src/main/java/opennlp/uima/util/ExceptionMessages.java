@@ -22,7 +22,7 @@ package opennlp.uima.util;
  * massage catalog.
  */
 public class ExceptionMessages {
-    
+
   public static final String MESSAGE_CATALOG = "opennlp.uima.util.ExceptionMessages";
 
   public static final String IO_ERROR_MODEL_READING = "io_error_model_reading";

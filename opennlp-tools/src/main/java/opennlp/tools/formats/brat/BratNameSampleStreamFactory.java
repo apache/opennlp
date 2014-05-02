@@ -41,60 +41,60 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 
 public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<NameSample> {
-  
+
   interface Parameters {
     @ParameterDescription(valueName = "bratDataDir", description = "location of brat data dir")
     File getBratDataDir();
 
     @ParameterDescription(valueName = "annConfFile")
     File getAnnotationConfig();
-    
+
     @ParameterDescription(valueName = "modelFile")
     @OptionalParameter
     File getSentenceDetectorModel();
-    
+
     @ParameterDescription(valueName = "modelFile")
     @OptionalParameter
     File getTokenizerModel();
-    
+
     @ParameterDescription(valueName = "name")
     @OptionalParameter
     String getRuleBasedTokenizer();
-    
+
     @ParameterDescription(valueName = "value")
     @OptionalParameter(defaultValue = "false")
     Boolean getRecursive();
-    
+
   }
-  
+
   protected BratNameSampleStreamFactory() {
     super(Parameters.class);
   }
-  
+
   /**
    * Checks that non of the passed values are null.
-   * 
+   *
    * @param objects
    * @return
    */
   private boolean notNull(Object... objects) {
-    
+
     for (Object obj : objects) {
       if (obj == null)
         return false;
     }
-    
+
     return true;
   }
-  
+
   public ObjectStream<NameSample> create(String[] args) {
-    
+
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    
+
     if (notNull(params.getRuleBasedTokenizer(), params.getTokenizerModel())) {
       throw new TerminateToolException(-1, "Either use rule based or statistical tokenizer!");
     }
-    
+
     // TODO: Provide the file name to the annotation.conf file and implement the parser ...
     AnnotationConfiguration annConfig;
     InputStream annConfIn = null;
@@ -112,19 +112,19 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
         } catch (IOException e) {}
       }
     }
-    
+
     // TODO: Add an optional parameter to search recursive
     // TODO: How to handle the error here ? terminate the tool? not nice if used by API!
     ObjectStream<BratDocument> samples;
     try {
-      samples = new BratDocumentStream(annConfig, 
+      samples = new BratDocumentStream(annConfig,
           params.getBratDataDir(), params.getRecursive(), null);
     } catch (IOException e) {
       throw new TerminateToolException(-1, e.getMessage());
     }
-    
+
     SentenceDetector sentDetector;
-    
+
     if (params.getSentenceDetectorModel() != null) {
       try {
         sentDetector = new SentenceDetectorME(new SentenceModel(params.getSentenceDetectorModel()));
@@ -135,9 +135,9 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
     else {
       sentDetector = new NewlineSentenceDetector();
     }
-        
+
     Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
-    
+
     if (params.getTokenizerModel() != null) {
       try {
         tokenizer = new TokenizerME(new TokenizerModel(params.getTokenizerModel()));
@@ -147,7 +147,7 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
     }
     else if (params.getRuleBasedTokenizer() != null) {
       String tokenizerName = params.getRuleBasedTokenizer();
-      
+
       if ("simple".equals(tokenizerName)) {
         tokenizer = SimpleTokenizer.INSTANCE;
       }
@@ -158,10 +158,10 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
         throw new TerminateToolException(-1, "Unkown tokenizer: " + tokenizerName);
       }
     }
-    
+
     return new BratNameSampleStream(sentDetector, tokenizer, samples);
   }
-  
+
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class, "brat",
         new BratNameSampleStreamFactory());

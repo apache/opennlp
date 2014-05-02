@@ -29,7 +29,7 @@ public interface TokenizerModelResource {
 
   /**
    * Retrieves the shared model instance.
-   * 
+   *
    * @return the shared model instance
    */
   TokenizerModel getModel();

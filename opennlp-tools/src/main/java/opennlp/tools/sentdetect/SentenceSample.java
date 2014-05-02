@@ -47,25 +47,25 @@ public class SentenceSample {
   }
 
   public SentenceSample(Detokenizer detokenizer, String[][] sentences) {
-    
+
     List<Span> spans = new ArrayList<Span>(sentences.length);
-    
+
     StringBuilder documentBuilder = new StringBuilder();
-    
+
     for (String sentenceTokens[] : sentences) {
-      
+
       String sampleSentence = detokenizer.detokenize(sentenceTokens, null);
-      
+
       int beginIndex = documentBuilder.length();
       documentBuilder.append(sampleSentence);
-      
+
       spans.add(new Span(beginIndex, documentBuilder.length()));
     }
-    
+
     document = documentBuilder.toString();
     this.sentences = Collections.unmodifiableList(spans);
   }
-  
+
   /**
    * Retrieves the document.
    *
@@ -84,29 +84,29 @@ public class SentenceSample {
   public Span[] getSentences() {
     return sentences.toArray(new Span[sentences.size()]);
   }
-  
+
   // TODO: This one must output the tags!
   @Override
   public String toString() {
-    
+
     StringBuilder documentBuilder = new StringBuilder();
-    
+
     for (Span sentSpan : sentences) {
       documentBuilder.append(sentSpan.getCoveredText(document).toString()
           .replace("\r", "<CR>").replace("\n", "<LF>"));
       documentBuilder.append("\n");
     }
-    
+
     return documentBuilder.toString();
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
     } else if (obj instanceof SentenceSample) {
       SentenceSample a = (SentenceSample) obj;
-      
+
       return getDocument().equals(a.getDocument())
           && Arrays.equals(getSentences(), a.getSentences());
     } else {

@@ -21,26 +21,26 @@ package opennlp.tools.util.ext;
  * Exception indicates that an OpenNLP extension could not be loaded.
  */
 public class ExtensionNotLoadedException extends RuntimeException {
-  
+
   private static final long serialVersionUID = 1L;
 
   private final boolean isOSGiEnvironment;
-  
+
   public ExtensionNotLoadedException(String message) {
     super(message);
-    
+
     isOSGiEnvironment = ExtensionLoader.isOSGiAvailable();
   }
 
   public ExtensionNotLoadedException(Throwable t) {
     super(t);
-    
+
     isOSGiEnvironment = ExtensionLoader.isOSGiAvailable();
   }
-  
+
   /**
    * Indicates if OpenNLP is running in an OSGi environment or not.
-   * 
+   *
    * @return
    */
   public boolean isOSGiEnvironment() {

@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TrainerFactoryTest {
-  
+
   private TrainingParameters mlParams;
 
   @Before

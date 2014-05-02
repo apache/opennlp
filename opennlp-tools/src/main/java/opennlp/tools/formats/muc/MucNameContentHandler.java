@@ -79,13 +79,13 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
   }
 
   @Override
-  public void startElement(String name, Map<String, String> attributes) 
+  public void startElement(String name, Map<String, String> attributes)
       throws InvalidFormatException {
-    
+
     if (MucElementNames.DOC_ELEMENT.equals(name)) {
       isClearAdaptiveData = true;
     }
-    
+
     if (MucElementNames.CONTENT_ELEMENTS.contains(name)) {
       isInsideContentElement = true;
     }
@@ -123,7 +123,7 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
     if (MucElementNames.CONTENT_ELEMENTS.contains(name)) {
       storedSamples.add(new NameSample(text.toArray(new String[text.size()]),
           names.toArray(new Span[names.size()]), isClearAdaptiveData));
-      
+
       if (isClearAdaptiveData) {
         isClearAdaptiveData = false;
       }

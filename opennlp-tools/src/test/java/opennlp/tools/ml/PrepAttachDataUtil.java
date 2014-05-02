@@ -40,7 +40,7 @@ public class PrepAttachDataUtil {
 
     InputStream in = PerceptronPrepAttachTest.class.getResourceAsStream("/data/ppa/" +
         filename);
-    
+
     try {
       BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
       String line;
@@ -55,15 +55,15 @@ public class PrepAttachDataUtil {
     finally {
       in.close();
     }
-    
+
     return events;
   }
-  
+
   public static ObjectStream<Event> createTrainingStream() throws IOException {
     List<Event> trainingEvents = readPpaFile("training");
     return ObjectStreamUtils.createObjectStream(trainingEvents);
   }
-  
+
   public static void testModel(MaxentModel model, double expecedAccuracy) throws IOException {
 
     List<Event> devEvents = readPpaFile("devset");

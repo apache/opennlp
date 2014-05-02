@@ -26,14 +26,14 @@ import opennlp.tools.util.Span;
 
 public class BilouNameFinderSequenceValidator implements
     SequenceValidator<String> {
-  
+
   public boolean validSequence(int i, String[] inputSequence,
       String[] outcomesSequence, String outcome) {
-    
+
     if (outcome.endsWith(NameFinderME.CONTINUE) || outcome.endsWith(BilouCodec.LAST)) {
-      
+
       int li = outcomesSequence.length - 1;
-      
+
       if (li == -1) {
         return false;
       } else if (outcomesSequence[li].endsWith(NameFinderME.OTHER) ||
@@ -41,7 +41,7 @@ public class BilouNameFinderSequenceValidator implements
         return false;
       } else if (outcomesSequence[li].endsWith(NameFinderME.CONTINUE) ||
           outcomesSequence[li].endsWith(NameFinderME.START)) {
-        // if it is continue, we have to check if previous match was of the same type 
+        // if it is continue, we have to check if previous match was of the same type
         String previousNameType = NameFinderME.extractNameType(outcomesSequence[li]);
         String nameType = NameFinderME.extractNameType(outcome);
         if( previousNameType != null || nameType != null ) {
@@ -54,7 +54,7 @@ public class BilouNameFinderSequenceValidator implements
         }
       }
     }
-    
+
     if (outcomesSequence.length - 1 > 0) {
       if (outcome.endsWith(NameFinderME.OTHER)) {
         if (outcomesSequence[outcomesSequence.length - 1].endsWith(NameFinderME.START) || outcomesSequence[outcomesSequence.length - 1].endsWith(NameFinderME.CONTINUE)) {
@@ -62,23 +62,23 @@ public class BilouNameFinderSequenceValidator implements
         }
       }
     }
-    
+
     return true;
   }
-  
+
   public static void main(String[] args) {
-    
+
     SequenceCodec codec = new BilouCodec();
-    
+
     List<String> outcomes = new ArrayList<String>();
     outcomes.add("default-start");
     outcomes.add("default-cont");
     outcomes.add("default-last");
     outcomes.add("default-unit");
-    
+
     Span spans[] = codec.decode(outcomes);
-    
-    
+
+
     System.out.println();
   }
 }

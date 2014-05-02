@@ -32,13 +32,13 @@ public final class FMeasure {
 	/** |selected| = true positives + false positives <br>
 	 * the count of selected (or retrieved) items  */
 	private long selected;
-	
+
 	/** |target| = true positives + false negatives <br>
 	 * the count of target (or correct) items */
 	private long target;
-	
+
 	private long truePositive;
-  
+
   /**
    * Retrieves the arithmetic mean of the precision scores
    * calculated for each evaluated sample.
@@ -58,7 +58,7 @@ public final class FMeasure {
   public double getRecallScore() {
     return target > 0 ? (double)truePositive / (double)target : 0;
   }
-  
+
   /**
    * Retrieves the f-measure score.
    *
@@ -77,20 +77,20 @@ public final class FMeasure {
       return -1;
     }
   }
- 
+
   public void updateScores(Object references[], Object predictions[]) {
-	  
+
 	  truePositive += countTruePositives(references, predictions);
 	  selected += predictions.length;
 	  target += references.length;
   }
-  
+
   public void mergeInto(FMeasure measure) {
     this.selected += measure.selected;
     this.target += measure.target;
     this.truePositive += measure.truePositive;
   }
-  
+
   /**
    * Creates a human read-able {@link String} representation.
    */
@@ -100,7 +100,7 @@ public final class FMeasure {
         "Recall: " + Double.toString(getRecallScore()) + "\n" +
         "F-Measure: " + Double.toString(getFMeasure());
   }
-  
+
   /**
    * This method counts the number of objects which are equal and
    * occur in the references and predictions arrays.

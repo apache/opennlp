@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 
 package opennlp.uima.sentdetect;
 
@@ -42,7 +42,7 @@ import org.apache.uima.resource.ResourceInitializationException;
  *   <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
  * </table>
- * <p>  
+ * <p>
  * Optional parameters
  * <table border=1>
  *   <caption></caption>
@@ -60,20 +60,20 @@ public final class SentenceDetector extends AbstractSentenceDetector {
   private SentenceDetectorME sentenceDetector;
 
   private Feature probabilityFeature;
-  
+
   /**
    * Initializes a new instance.
    *
-   * Note: Use {@link #initialize(UimaContext) } to initialize 
+   * Note: Use {@link #initialize(UimaContext) } to initialize
    * this instance. Not use the constructor.
    */
   public SentenceDetector() {
     // must not be implemented !
   }
-  
+
   /**
    * Initializes the current instance with the given context.
-   * 
+   *
    * Note: Do all initialization in this method, do not use the constructor.
    */
   public void initialize(UimaContext context)
@@ -112,24 +112,24 @@ public final class SentenceDetector extends AbstractSentenceDetector {
   protected Span[] detectSentences(String text) {
     return sentenceDetector.sentPosDetect(text);
   }
-  
+
   @Override
   protected void postProcessAnnotations(AnnotationFS sentences[]) {
-    
+
     if (probabilityFeature != null) {
-      double sentenceProbabilities[] = sentenceDetector.getSentenceProbabilities(); 
-      
+      double sentenceProbabilities[] = sentenceDetector.getSentenceProbabilities();
+
       for (int i = 0; i < sentences.length; i++) {
         sentences[i].setDoubleValue(probabilityFeature, sentenceProbabilities[i]);
       }
     }
   }
-  
+
   /**
    * Releases allocated resources.
    */
   public void destroy() {
-    // dereference model to allow garbage collection 
+    // dereference model to allow garbage collection
     sentenceDetector = null;
   }
 }

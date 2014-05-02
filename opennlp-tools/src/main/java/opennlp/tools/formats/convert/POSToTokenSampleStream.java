@@ -31,27 +31,27 @@ import opennlp.tools.util.ObjectStream;
 public class POSToTokenSampleStream extends FilterObjectStream<POSSample, TokenSample> {
 
   private final Detokenizer detokenizer;
-  
+
   public POSToTokenSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples) {
-    
+
     super(samples);
-    
+
     if (detokenizer == null)
       throw new IllegalArgumentException("detokenizer must not be null!");
-    
+
     this.detokenizer = detokenizer;
   }
-  
+
   public TokenSample read() throws IOException {
-    
+
     POSSample posSample = samples.read();
-    
+
     TokenSample tokenSample = null;
-    
+
     if (posSample != null ) {
       tokenSample = new TokenSample(detokenizer, posSample.getSentence());
     }
-    
+
     return tokenSample;
   }
 }

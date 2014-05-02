@@ -46,7 +46,7 @@ public class DummyChunkSampleStream extends
 	/**
 	 * Returns a pair representing the expected and the predicted at 0: the
 	 * chunk tag according to the corpus at 1: the chunk tag predicted
-	 * 
+	 *
 	 * @see opennlp.tools.util.ObjectStream#read()
 	 */
 	public ChunkSample read() throws IOException {

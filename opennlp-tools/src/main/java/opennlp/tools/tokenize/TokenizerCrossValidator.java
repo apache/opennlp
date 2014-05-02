@@ -27,13 +27,13 @@ import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
 
 public class TokenizerCrossValidator {
-  
+
   private final TrainingParameters params;
-  
+
   private FMeasure fmeasure = new FMeasure();
   private TokenizerEvaluationMonitor[] listeners;
   private final TokenizerFactory factory;
-  
+
   public TokenizerCrossValidator(TrainingParameters params,
       TokenizerFactory factory, TokenizerEvaluationMonitor... listeners) {
     this.params = params;
@@ -52,7 +52,7 @@ public class TokenizerCrossValidator {
     this(params, new TokenizerFactory(language, abbreviations,
         alphaNumericOptimization, null), listeners);
   }
-  
+
   /**
    * @deprecated use
    *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
@@ -61,7 +61,7 @@ public class TokenizerCrossValidator {
   public TokenizerCrossValidator(String language, boolean alphaNumericOptimization) {
     this(language, alphaNumericOptimization, ModelUtil.createDefaultTrainingParameters());
   }
-  
+
   /**
    * @deprecated use
    *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
@@ -76,36 +76,36 @@ public class TokenizerCrossValidator {
 
   /**
    * Starts the evaluation.
-   * 
+   *
    * @param samples
    *          the data to train and test
    * @param nFolds
    *          number of folds
-   * 
+   *
    * @throws IOException
    */
   public void evaluate(ObjectStream<TokenSample> samples, int nFolds) throws IOException {
-    
-    CrossValidationPartitioner<TokenSample> partitioner = 
+
+    CrossValidationPartitioner<TokenSample> partitioner =
       new CrossValidationPartitioner<TokenSample>(samples, nFolds);
-  
+
      while (partitioner.hasNext()) {
-       
+
        CrossValidationPartitioner.TrainingSampleStream<TokenSample> trainingSampleStream =
          partitioner.next();
-       
+
        // Maybe throws IOException if temporary file handling fails ...
        TokenizerModel model;
-       
+
       model = TokenizerME.train(trainingSampleStream, this.factory, params);
-       
+
        TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model), listeners);
-       
+
        evaluator.evaluate(trainingSampleStream.getTestSampleStream());
        fmeasure.mergeInto(evaluator.getFMeasure());
      }
   }
-  
+
   public FMeasure getFMeasure() {
     return fmeasure;
   }

@@ -25,26 +25,26 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
  * TrainingParams for Parser.
- * 
+ *
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {
-  
+
   @ParameterDescription(valueName = "CHUNKING|TREEINSERT",
       description = "one of CHUNKING or TREEINSERT, default is CHUNKING.")
   @OptionalParameter(defaultValue = "CHUNKING")
   String getParserType();
-  
+
 
   @ParameterDescription(valueName = "className", description = "head rules artifact serializer class name")
   @OptionalParameter
   String getHeadRulesSerializerImpl();
-  
+
   @ParameterDescription(valueName = "headRulesFile", description = "head rules file.")
   File getHeadRules();
-  
+
   @ParameterDescription(valueName = "true|false", description = "Learn to generate function tags.")
   @OptionalParameter(defaultValue = "false")
   Boolean getFun();
-  
+
 }

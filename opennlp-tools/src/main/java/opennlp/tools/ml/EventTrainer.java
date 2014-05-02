@@ -25,7 +25,7 @@ import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.ObjectStream;
 
 public interface EventTrainer {
-  
+
   public static final String EVENT_VALUE = "Event";
 
   public void init(Map<String, String> trainParams, Map<String, String> reportMap);

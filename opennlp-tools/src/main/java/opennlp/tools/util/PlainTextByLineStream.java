@@ -37,7 +37,7 @@ public class PlainTextByLineStream implements ObjectStream<String> {
   private final String encoding;
 
   private InputStreamFactory inputStreamFactory;
-  
+
   private BufferedReader in;
 
   public PlainTextByLineStream(InputStreamFactory inputStreamFactory, String charsetName) throws IOException {
@@ -48,7 +48,7 @@ public class PlainTextByLineStream implements ObjectStream<String> {
     this.inputStreamFactory = inputStreamFactory;
     this.channel = null;
     this.encoding = charset.name();
-    
+
     reset();
   }
 
@@ -115,7 +115,7 @@ public class PlainTextByLineStream implements ObjectStream<String> {
   }
 
   public void close() throws IOException {
-      
+
       if (in != null && channel == null) {
         in.close();
       }

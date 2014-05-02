@@ -35,18 +35,18 @@ import org.apache.uima.cas.text.AnnotationFS;
  * </table>
  */
 public final class WhitespaceTokenizer extends AbstractTokenizer {
-  
+
   /**
    * Initializes the current instance.
    *
-   * Note: Use {@link #initialize(UimaContext) } to initialize 
+   * Note: Use {@link #initialize(UimaContext) } to initialize
    * this instance. Not use the constructor.
    */
   public WhitespaceTokenizer() {
       super("OpenNLP Whitespace Tokenizer");
     // must not be implemented !
   }
-  
+
   @Override
   protected Span[] tokenize(CAS cas, AnnotationFS sentence) {
     return opennlp.tools.tokenize.WhitespaceTokenizer.INSTANCE.

@@ -79,18 +79,18 @@ public class ConstitParseSampleStreamTest {
       "Allemagne",
       "."
   };
-  
+
   /**
    * Reads sample1.xml into a byte array.
-   * 
+   *
    * @return byte array containing sample1.xml.
    */
   static byte[] getSample1() throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    
+
     InputStream sampleIn =
         ConstitParseSampleStreamTest.class.getResourceAsStream("sample1.xml");
-    
+
     byte buffer[] = new byte[1024];
     int length;
     try {
@@ -100,34 +100,34 @@ public class ConstitParseSampleStreamTest {
     } finally {
       sampleIn.close();
     }
-    
+
     return out.toByteArray();
   }
 
   @Test
   public void testThereIsExactlyOneSent() throws IOException {
-    ObjectStream<Parse> samples = 
+    ObjectStream<Parse> samples =
         new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()));
-    
+
     Assert.assertNotNull(samples.read());
     Assert.assertNull(samples.read());
     Assert.assertNull(samples.read());
   }
-  
+
   @Test
   public void testTokensAreCorrect() throws IOException {
-    
-    ObjectStream<Parse> samples = 
+
+    ObjectStream<Parse> samples =
         new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()));
-    
+
     Parse p = samples.read();
-    
+
     Parse[] tagNodes = p.getTagNodes();
     String[] tokens = new String[tagNodes.length];
     for (int ti=0;ti<tagNodes.length;ti++){
       tokens[ti] = tagNodes[ti].getCoveredText();
     }
-    
+
     Assert.assertArrayEquals(sample1Tokens, tokens);
   }
 }

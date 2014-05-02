@@ -25,14 +25,14 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
  * TrainingParameters for Tokenizer.
- * 
+ *
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {
   @ParameterDescription(valueName = "isAlphaNumOpt", description = "Optimization flag to skip alpha numeric tokens for further tokenization")
   @OptionalParameter(defaultValue = "false")
   Boolean getAlphaNumOpt();
-  
+
   @ParameterDescription(valueName = "path", description = "abbreviation dictionary in XML format.")
   @OptionalParameter
   File getAbbDict();

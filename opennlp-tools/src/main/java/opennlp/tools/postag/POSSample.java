@@ -39,7 +39,7 @@ public class POSSample {
   public POSSample(String sentence[], String tags[]) {
     this(sentence, tags, null);
   }
-  
+
   public POSSample(List<String> sentence, List<String> tags) {
     this(sentence, tags, null);
   }
@@ -64,12 +64,12 @@ public class POSSample {
     }
     this.additionalContext = ac;
   }
-  
+
   public POSSample(String sentence[], String tags[],
       String[][] additionalContext) {
     this(Arrays.asList(sentence), Arrays.asList(tags), additionalContext);
   }
-  
+
   private void checkArguments() {
     if (sentence.size() != tags.size()) {
       throw new IllegalArgumentException(
@@ -84,7 +84,7 @@ public class POSSample {
         throw new IllegalArgumentException("null elements are not allowed in tags!");
       }
   }
-  
+
   public String[] getSentence() {
     return sentence.toArray(new String[sentence.size()]);
   }

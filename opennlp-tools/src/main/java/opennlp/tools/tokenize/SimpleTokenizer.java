@@ -29,13 +29,13 @@ import opennlp.tools.util.StringUtil;
  * Performs tokenization using character classes.
  */
 public class SimpleTokenizer extends AbstractTokenizer {
-  
+
   public static final SimpleTokenizer INSTANCE;
-  
+
   static {
     INSTANCE = new SimpleTokenizer();
   }
-  
+
   /**
    * @deprecated Use INSTANCE field instead to obtain an instance, constructor
    * will be made private in the future.
@@ -43,7 +43,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
   @Deprecated
   public SimpleTokenizer() {
   }
-  
+
   public Span[] tokenizePos(String s) {
     CharacterEnum charType = CharacterEnum.WHITESPACE;
     CharacterEnum state = charType;

@@ -24,7 +24,7 @@ import java.util.Iterator;
  * This interface makes an {@link Iterator} resetable.
  */
 public interface ResetableIterator<E> extends Iterator<E> {
-  
+
   /**
    * Sets the {@link Iterator} back to the first retrieved element,
    * the seen sequence of elements must be repeated.

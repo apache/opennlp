@@ -33,7 +33,7 @@ public class DoccatModelLoader extends ModelLoader<DoccatModel> {
   public DoccatModelLoader() {
     super("Document Categorizer");
   }
-  
+
   @Override
   protected DoccatModel loadModel(InputStream modelIn) throws IOException {
     return new DoccatModel(modelIn);

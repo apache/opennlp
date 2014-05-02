@@ -72,7 +72,7 @@ public class NameFinderMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
-    
+
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
         params, (byte[]) null, Collections.<String, Object>emptyMap());
 
@@ -135,10 +135,10 @@ public class NameFinderMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
-    
+
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
         params, (byte[]) null, Collections.<String, Object>emptyMap());
-    
+
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
@@ -184,10 +184,10 @@ public class NameFinderMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
-    
+
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
         params, (byte[]) null, Collections.<String, Object>emptyMap());
-    
+
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
@@ -223,10 +223,10 @@ public class NameFinderMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
-    
+
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
         params, (byte[]) null, Collections.<String, Object>emptyMap());
-    
+
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
@@ -264,7 +264,7 @@ public class NameFinderMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
-    
+
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
         params, (byte[]) null, Collections.<String, Object>emptyMap());
 
@@ -321,7 +321,7 @@ public class NameFinderMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
-    
+
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
         params, (byte[]) null, Collections.<String, Object>emptyMap());
 

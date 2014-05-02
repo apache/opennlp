@@ -28,16 +28,16 @@ public final class TokenizerMETool extends BasicCmdLineTool {
   public String getShortDescription() {
     return "learnable tokenizer";
   }
-  
+
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
-  
+
   public void run(String[] args) {
     if (args.length != 1) {
       System.out.println(getHelp());
     } else {
-    
+
       TokenizerModel model = new TokenizerModelLoader().load(new File(args[0]));
 
       CommandLineTokenizer tokenizer =

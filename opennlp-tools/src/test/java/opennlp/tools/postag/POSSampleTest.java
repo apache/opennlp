@@ -30,7 +30,7 @@ import org.junit.Test;
  * Tests for the {@link POSSample} class.
  */
 public class POSSampleTest {
-  
+
   @Test
   public void testEquals() throws InvalidFormatException {
     assertFalse(createGoldSample() == createGoldSample());
@@ -38,7 +38,7 @@ public class POSSampleTest {
     assertFalse(createPredSample().equals(createGoldSample()));
     assertFalse(createPredSample().equals(new Object()));
   }
-  
+
   public static POSSample createGoldSample() throws InvalidFormatException {
     String sentence = "the_DT stories_NNS about_IN well-heeled_JJ "
         + "communities_NNS and_CC developers_NNS";

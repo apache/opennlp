@@ -22,18 +22,18 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
  * Common cross validator parameters.
- * 
+ *
  * Note: Do not use this class, internal use only!
  */
 public interface CVParams {
-    
+
   @ParameterDescription(valueName = "true|false",
       description = "if true will print false negatives and false positives.")
   @OptionalParameter(defaultValue="false")
   Boolean getMisclassified();
-  
+
   @ParameterDescription(valueName = "num", description = "number of folds, default is 10.")
   @OptionalParameter(defaultValue="10")
   Integer getFolds();
-  
+
 }

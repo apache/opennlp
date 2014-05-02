@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 
 package opennlp.uima.namefind;
 
@@ -74,7 +74,7 @@ import org.apache.uima.util.ProcessTrace;
  *   <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.NameType</td> <td>The full name of the name type</td></tr>
  *  </table>
- *  
+ *
  * Optional parameters
  * <table border=1>
  *   <caption></caption>
@@ -90,95 +90,95 @@ import org.apache.uima.util.ProcessTrace;
  * <p>
  */
 public final class NameFinderTrainer extends CasConsumer_ImplBase {
-    
+
   private static final String FEATURE_GENERATOR_DEFINITION_FILE_PARAMETER = "opennlp.uima.FeatureGeneratorFile";
   private static final String FEATURE_GENERATOR_RESOURCES_PARAMETER = "opennlp.uima.FeatureGeneratorResources";
-  
+
   private Logger logger;
-  
+
   private String modelPath;
-  
+
   private byte featureGeneratorDefinition[];
-  
+
   private File featureGeneratorResourceDir;
-  
+
   private String additionalTrainingDataFile;
-  
+
   private String additionalTrainingDataEncoding;
-  
+
   private File sampleTraceFile = null;
-  
+
   private String sampleTraceFileEncoding = null;
-  
+
   private Type sentenceType;
 
   private Type tokenType;
 
   private Type nameType;
-  
+
   private String language;
-  
+
   // TODO: Keeping all events in memory limits the size of the training corpus
   // Possible solutions:
   // - Write all events to disk
   // - Directly start indexing with a blocking sample stream, the indexer will then write everything
   //   to disk or could store the events much more space efficient in memory
-  
+
   private List<NameSample> nameFinderSamples = new ArrayList<NameSample>();
   private TrainingParameters trainingParams;
-  
+
   /**
    * Initializes the current instance.
    */
   public void initialize() throws ResourceInitializationException {
-    
+
     super.initialize();
-    
+
     logger = getUimaContext().getLogger();
-    
+
     if (logger.isLoggable(Level.INFO)) {
       logger.log(Level.INFO, "Initializing the OpenNLP Name Trainer.");
-    } 
-    
+    }
+
     modelPath = CasConsumerUtil.getRequiredStringParameter(getUimaContext(),
         UimaUtil.MODEL_PARAMETER);
-    
+
     language = CasConsumerUtil.getRequiredStringParameter(getUimaContext(),
         UimaUtil.LANGUAGE_PARAMETER);
-    
+
     trainingParams = OpennlpUtil.loadTrainingParams(CasConsumerUtil.getOptionalStringParameter(
         getUimaContext(), UimaUtil.TRAINING_PARAMS_FILE_PARAMETER), true);
 
     String featureGeneratorDefinitionFile = CasConsumerUtil.getOptionalStringParameter(
         getUimaContext(), FEATURE_GENERATOR_DEFINITION_FILE_PARAMETER);
-    
+
     if (featureGeneratorDefinitionFile != null) {
       try {
         featureGeneratorDefinition = OpennlpUtil.loadBytes(new File(featureGeneratorDefinitionFile));
       } catch (IOException e) {
         throw new ResourceInitializationException(e);
       }
-      
+
       String featureGeneratorResourcesDirName = CasConsumerUtil.getOptionalStringParameter(
           getUimaContext(), FEATURE_GENERATOR_RESOURCES_PARAMETER);
-      
+
       if (featureGeneratorResourcesDirName != null) {
         featureGeneratorResourceDir = new File(featureGeneratorResourcesDirName);
       }
     }
-    
+
     additionalTrainingDataFile = CasConsumerUtil.getOptionalStringParameter(
         getUimaContext(), UimaUtil.ADDITIONAL_TRAINING_DATA_FILE);
-    
+
     // If the additional training data is specified, the encoding must be provided!
     if (additionalTrainingDataFile != null) {
       additionalTrainingDataEncoding = CasConsumerUtil.getRequiredStringParameter(
           getUimaContext(), UimaUtil.ADDITIONAL_TRAINING_DATA_ENCODING);
     }
-    
+
     String sampleTraceFileName = CasConsumerUtil.getOptionalStringParameter(
         getUimaContext(), "opennlp.uima.SampleTraceFile");
-    
+
     if (sampleTraceFileName != null) {
       sampleTraceFile = new File(getUimaContextAdmin().getResourceManager()
           .getDataPath() + File.separatorChar + sampleTraceFileName);
@@ -193,7 +193,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
   public void typeSystemInit(TypeSystem typeSystem)
       throws ResourceInitializationException {
 
-    String sentenceTypeName = 
+    String sentenceTypeName =
         CasConsumerUtil.getRequiredStringParameter(getUimaContext(),
         UimaUtil.SENTENCE_TYPE_PARAMETER);
 
@@ -206,24 +206,24 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
 
     String nameTypeName = CasConsumerUtil.getRequiredStringParameter(getUimaContext(),
         NameFinder.NAME_TYPE_PARAMETER);
-    
+
     nameType = CasConsumerUtil.getType(typeSystem, nameTypeName);
   }
 
   /**
    * Creates a {@link List} from an {@link Iterator}.
-   * 
+   *
    * @param <T>
    * @param it
    * @return
    */
   private static <T> List<T> iteratorToList(Iterator<T> it) {
     List<T> list = new LinkedList<T>();
-    
+
     while (it.hasNext()) {
       list.add(it.next());
     }
-    
+
     return list;
   }
 
@@ -243,13 +243,13 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
 
     return true;
   }
-  
+
   /**
    * Creates the name spans out of a list of token annotations and a list of entity annotations.
    * <p>
    * The name spans for the name finder use a token index and not on a character index which
    * is used by the entity annotations.
-   * 
+   *
    * @param tokenList
    * @param entityAnnotations
    * @return
@@ -296,7 +296,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
 
     return nameList.toArray(new Span[nameList.size()]);
   }
-  
+
   /**
    * Process the given CAS object.
    */
@@ -305,9 +305,9 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
    */
   public void processCas(CAS cas) {
     FSIndex<AnnotationFS> sentenceIndex = cas.getAnnotationIndex(sentenceType);
-    
+
     boolean isClearAdaptiveData = true;
-    
+
     for (AnnotationFS sentenceAnnotation : sentenceIndex) {
       ContainingConstraint sentenceContainingConstraint = new ContainingConstraint(
           sentenceAnnotation);
@@ -337,7 +337,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
 
       if (trainingSentence.getSentence().length != 0) {
         nameFinderSamples.add(trainingSentence);
-        
+
         if (isClearAdaptiveData) {
           isClearAdaptiveData = false;
         }
@@ -349,39 +349,39 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
       }
     }
   }
-  
+
   /**
    * Called if the processing is finished, this method
    * does the training.
    */
   public void collectionProcessComplete(ProcessTrace trace)
       throws ResourceProcessException, IOException {
-   
+
     if (logger.isLoggable(Level.INFO)) {
-      logger.log(Level.INFO, "Collected " + nameFinderSamples.size() + 
+      logger.log(Level.INFO, "Collected " + nameFinderSamples.size() +
           " name samples.");
     }
-    
+
     GIS.PRINT_MESSAGES = false;
-    
-    // create training stream ... 
+
+    // create training stream ...
     ObjectStream<NameSample> samples = ObjectStreamUtils.createObjectStream(nameFinderSamples);
-    
+
     InputStream additionalTrainingDataIn = null;
     Writer samplesOut = null;
     TokenNameFinderModel nameModel;
     try {
       if (additionalTrainingDataFile != null) {
-        
+
         if (logger.isLoggable(Level.INFO)) {
           logger.log(Level.INFO, "Using additional training data file: " + additionalTrainingDataFile);
         }
-        
+
         additionalTrainingDataIn = new FileInputStream(additionalTrainingDataFile);
-        
+
         ObjectStream<NameSample> additionalSamples = new NameSampleDataStream(
             new PlainTextByLineStream(new InputStreamReader(additionalTrainingDataIn, additionalTrainingDataEncoding)));
-        
+
         samples = ObjectStreamUtils.createObjectStream(samples, additionalSamples);
       }
 
@@ -389,16 +389,16 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
         samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
         samples = new SampleTraceStream<NameSample>(samples, samplesOut);
       }
-      
+
       Map<String, Object> resourceMap;
-      
+
       if (featureGeneratorResourceDir != null) {
         resourceMap = TokenNameFinderTrainerTool.loadResources(featureGeneratorResourceDir, null);
       }
       else {
         resourceMap = Collections.emptyMap();
       }
-      
+
       nameModel = NameFinderME.train(language, null,
           samples, trainingParams, featureGeneratorDefinition, resourceMap);
     }
@@ -406,12 +406,12 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
       if (additionalTrainingDataIn != null) {
         additionalTrainingDataIn.close();
       }
-      
+
       if (samplesOut != null) {
         samplesOut.close();
       }
     }
-    
+
     // dereference to allow garbage collection
     nameFinderSamples = null;
 
@@ -419,19 +419,19 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
         .getDataPath() + File.separatorChar + modelPath);
 
     OpennlpUtil.serialize(nameModel, modelFile);
-    
+
     if (logger.isLoggable(Level.INFO)) {
       logger.log(Level.INFO, "Model was written to: " + modelFile.getAbsolutePath());
     }
   }
-  
+
   /**
    * The trainer is not stateless.
    */
   public boolean isStateless() {
     return false;
   }
-  
+
   /**
    * Destroys the current instance.
    */

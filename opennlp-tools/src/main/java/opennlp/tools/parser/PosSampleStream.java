@@ -30,22 +30,22 @@ public class PosSampleStream extends FilterObjectStream<Parse, POSSample> {
   }
 
   public POSSample read() throws IOException {
-    
+
     Parse parse = samples.read();
-    
+
     if (parse != null) {
-      
+
       Parse[] nodes = parse.getTagNodes();
-      
+
       String toks[] = new String[nodes.length];
       String preds[] = new String[nodes.length];
-      
+
       for (int ti=0; ti < nodes.length; ti++) {
         Parse tok = nodes[ti];
         toks[ti] = tok.getCoveredText();
         preds[ti] = tok.getType();
       }
-      
+
       return new POSSample(toks, preds);
     }
     else {

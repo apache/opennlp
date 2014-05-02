@@ -33,7 +33,7 @@ import opennlp.tools.util.eval.FMeasure;
 public class ChunkerEvaluator extends Evaluator<ChunkSample> {
 
   private FMeasure fmeasure = new FMeasure();
-  
+
   /**
    * The {@link Chunker} used to create the predicted
    * {@link ChunkSample} objects.
@@ -51,7 +51,7 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
     super(listeners);
     this.chunker = chunker;
   }
-  
+
   /**
    * Evaluates the given reference {@link ChunkSample} object.
    *
@@ -61,7 +61,7 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
    * calculate and update the scores.
    *
    * @param reference the reference {@link ChunkSample}.
-   * 
+   *
    * @return the predicted sample
    */
   @Override
@@ -70,10 +70,10 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
     ChunkSample result = new ChunkSample(reference.getSentence(), reference.getTags(), preds);
 
     fmeasure.updateScores(reference.getPhrasesAsSpanList(), result.getPhrasesAsSpanList());
-    
+
     return result;
   }
-  
+
   public FMeasure getFMeasure() {
     return fmeasure;
   }

@@ -25,7 +25,7 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
  * TrainingParams for Sentence Detector.
- * 
+ *
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {

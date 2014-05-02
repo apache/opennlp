@@ -29,9 +29,9 @@ public class ParseSampleStream extends FilterObjectStream<String, Parse> {
   }
 
   public Parse read() throws IOException {
-    
+
     String parse = samples.read();
-    
+
     if (parse != null) {
       if (!parse.trim().isEmpty()) {
         return Parse.parseParse(parse);
@@ -39,7 +39,7 @@ public class ParseSampleStream extends FilterObjectStream<String, Parse> {
       else {
         return read();
       }
-    } 
+    }
     else {
       return null;
     }

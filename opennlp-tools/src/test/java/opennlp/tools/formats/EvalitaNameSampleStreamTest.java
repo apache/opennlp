@@ -32,50 +32,50 @@ import opennlp.tools.util.Span;
 import org.junit.Test;
 
 /**
- * 
+ *
  * Note:
  * Sample training data must be UTF-8 encoded and uncompressed!
  */
 public class EvalitaNameSampleStreamTest {
-  
+
   private static ObjectStream<NameSample> openData(LANGUAGE lang, String name) throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(EvalitaNameSampleStreamTest.class, 
+    InputStreamFactory in = new ResourceAsStreamFactory(EvalitaNameSampleStreamTest.class,
         "/opennlp/tools/formats/" + name);
-    
+
     return new EvalitaNameSampleStream(lang, in, EvalitaNameSampleStream.GENERATE_PERSON_ENTITIES);
   }
-  
+
   @Test
   public void testParsingItalianSample() throws IOException {
-    
+
     ObjectStream<NameSample> sampleStream = openData(LANGUAGE.IT, "evalita-ner-it.sample");
-    
+
     NameSample personName = sampleStream.read();
-    
+
     assertNotNull(personName);
-    
+
     assertEquals(11, personName.getSentence().length);
     assertEquals(1, personName.getNames().length);
     assertEquals(true, personName.isClearAdaptiveDataSet());
-    
+
     Span nameSpan = personName.getNames()[0];
     assertEquals(8, nameSpan.getStart());
     assertEquals(10, nameSpan.getEnd());
     assertEquals(true, personName.isClearAdaptiveDataSet());
-    
+
     assertEquals(0, sampleStream.read().getNames().length);
-    
+
     assertNull(sampleStream.read());
   }
-  
+
   @Test
   public void testReset() throws IOException {
     ObjectStream<NameSample> sampleStream = openData(LANGUAGE.IT, "evalita-ner-it.sample");
-    
+
     NameSample sample = sampleStream.read();
-    
+
     sampleStream.reset();
-    
+
     assertEquals(sample, sampleStream.read());
   }
 }

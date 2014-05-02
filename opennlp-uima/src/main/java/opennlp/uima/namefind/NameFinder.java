@@ -52,89 +52,89 @@ import org.apache.uima.resource.ResourceInitializationException;
  * <table border=1>
  *   <caption></caption>
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double 
+ *   <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double
  *       probability feature (not set by default)</td></tr>
  *   <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.DocumentConfidenceType</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.DocumentConfidenceType</td></tr>
- *   
+ *
  * </table>
  */
 public final class NameFinder extends AbstractNameFinder {
-    
+
   public static final String NAME_TYPE_PARAMETER = "opennlp.uima.NameType";
 
-  public static final String TOKEN_PATTERN_OPTIMIZATION = 
+  public static final String TOKEN_PATTERN_OPTIMIZATION =
       "opennlp.uima.TokenPatternOptimization";
 
-  // Token feature 
-  public static final String TOKEN_FEATURE_PARAMETER = 
+  // Token feature
+  public static final String TOKEN_FEATURE_PARAMETER =
       "opennlp.uima.namefinder.TokenFeature";
-  
-  public static final String TOKEN_FEATURE_PREV_WINDOW_SIZE_PARAMETER = 
+
+  public static final String TOKEN_FEATURE_PREV_WINDOW_SIZE_PARAMETER =
       TOKEN_FEATURE_PARAMETER + ".previousWindowSize";
-  
+
   public static final String TOKEN_FEATURE_NEXT_WINDOW_SIZE_PARAMETER =
       TOKEN_FEATURE_PARAMETER + ".nextWindowSize";
-  
+
   // Token class feature
-  public static final String TOKEN_CLASS_FEATURE_PARAMETER = 
+  public static final String TOKEN_CLASS_FEATURE_PARAMETER =
       "opennlp.uima.namefinder.TokenClassFeature";
-  
+
   public static final String TOKEN_CLASS_FEATURE_PREV_WINDOW_SIZE_PARAMETER =
       TOKEN_CLASS_FEATURE_PARAMETER + ".previousWindowSize";
-  
+
   public static final String TOKEN_CLASS_FEATURE_NEXT_WINDOW_SIZE_PARAMETER =
       TOKEN_CLASS_FEATURE_PARAMETER + ".nextWindowSize";
-  
+
   private NameFinderME mNameFinder;
 
   private Feature probabilityFeature;
-  
+
   private Type documentConfidenceType;
   private Feature documentConfidenceNameTypeFeature;
   private Feature documentConfidenceFeature;
-  
+
   private Mean documentConfidence = new Mean();
-  
+
   /**
    * Initializes a new instance.
    *
-   * Note: Use {@link #initialize(UimaContext) } to initialize 
+   * Note: Use {@link #initialize(UimaContext) } to initialize
    * this instance. Not use the constructor.
    */
   public NameFinder() {
     super("OpenNLP Maxent Name annotator");
   }
-  
+
   /**
    * Initializes the current instance with the given context.
-   * 
+   *
    * Note: Do all initialization in this method, do not use the constructor.
    */
   public void initialize()
-      throws ResourceInitializationException {  
+      throws ResourceInitializationException {
 
     super.initialize();
-    
+
     TokenNameFinderModel model;
-    
+
     try {
-      TokenNameFinderModelResource modelResource = 
+      TokenNameFinderModelResource modelResource =
             (TokenNameFinderModelResource) context.getResourceObject(UimaUtil.MODEL_PARAMETER);
-        
+
         model = modelResource.getModel();
     }
     catch (ResourceAccessException e) {
         throw new ResourceInitializationException(e);
     }
 
-    Integer beamSize = AnnotatorUtil.getOptionalIntegerParameter(context, 
+    Integer beamSize = AnnotatorUtil.getOptionalIntegerParameter(context,
         UimaUtil.BEAM_SIZE_PARAMETER);
 
     if (beamSize == null)
       beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
-    
+
     mNameFinder = new NameFinderME(model, beamSize);
   }
 
@@ -145,12 +145,12 @@ public final class NameFinder extends AbstractNameFinder {
       throws AnalysisEngineProcessException {
 
     super.typeSystemInit(typeSystem);
-    
+
     probabilityFeature = AnnotatorUtil.getOptionalFeatureParameter(context, mNameType,
     		UimaUtil.PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_DOUBLE);
-    
+
     documentConfidenceType = AnnotatorUtil.getOptionalTypeParameter(context, typeSystem,
-        "opennlp.uima.DocumentConfidenceType");    
+        "opennlp.uima.DocumentConfidenceType");
     if (documentConfidenceType != null) {
       documentConfidenceNameTypeFeature = AnnotatorUtil.getRequiredFeature(
           documentConfidenceType, "nameType");
@@ -171,7 +171,7 @@ public final class NameFinder extends AbstractNameFinder {
 
     return names;
   }
-  
+
   protected void postProcessAnnotations(Span detectedNames[],
       AnnotationFS[] nameAnnotations) {
 
@@ -203,7 +203,7 @@ public final class NameFinder extends AbstractNameFinder {
 
     documentConfidence = new Mean();
   }
-  
+
   /**
    * Releases allocated resources.
    */

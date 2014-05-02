@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -40,17 +40,17 @@ public class IndexHashTable<T> {
   private final int values[];
 
   private final int size;
-	
+
   /**
    * Initializes the current instance. The specified array is copied into the
    * table and later changes to the array do not affect this table in any way.
-   * 
+   *
    * @param mapping
    *          the values to be indexed, all values must be unique otherwise a
    *          well-defined mapping of an entry to an index is not possible
    * @param loadfactor
    *          the load factor, usually 0.7
-   * 
+   *
    * @throws IllegalArgumentException
    *           if the entries are not unique
    */
@@ -86,7 +86,7 @@ public class IndexHashTable<T> {
   }
 
   private int searchKey(int startIndex, Object key, boolean insert) {
-		
+
     for (int index = startIndex; true; index = (index + 1) % keys.length) {
 
       // The keys array contains at least one null element, which guarantees
@@ -109,7 +109,7 @@ public class IndexHashTable<T> {
 
   /**
    * Retrieves the index for the specified key.
-   * 
+   *
    * @param key
    * @return the index or -1 if there is no entry to the keys
    */
@@ -128,7 +128,7 @@ public class IndexHashTable<T> {
 
   /**
    * Retrieves the size.
-   * 
+   *
    * @return the number of elements in this map.
    */
   public int size() {

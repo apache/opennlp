@@ -55,7 +55,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
    * Creates a new {@link SentenceSample} stream from a line stream, i.e.
    * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
    * {@link PlainTextByLineStream} object.
-   * 
+   *
    * @param lineStream
    *          a stream of lines as {@link String}
    * @param includeHeadlines
@@ -70,7 +70,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
 
   /**
    * Creates a new {@link SentenceSample} stream from a {@link FileInputStream}
-   * 
+   *
    * @param in
    *          input stream from the corpus
    * @param charsetName
@@ -91,10 +91,10 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     Arrays.sort(ptEosCharacters);
     this.isIncludeTitles = includeHeadlines;
   }
-  
+
   /**
    * Creates a new {@link SentenceSample} stream from a {@link FileInputStream}
-   * 
+   *
    * @param in
    *          input stream from the corpus
    * @param charsetName

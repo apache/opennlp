@@ -30,14 +30,14 @@ import opennlp.tools.util.StringUtil;
  * "a", but according to the fase of language processing, NER for instance, we
  * can't decide if to split a contraction or not, specially because contractions
  * inside names are not separated, but outside are.
- * 
+ *
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
 public class PortugueseContractionUtility {
 
   protected static final Map<String, String> CONTRACTIONS;
-  
+
   static {
     Map<String, String> elems = new HashMap<String, String>();
     // 103 CONTRACTIONS.
@@ -153,7 +153,7 @@ public class PortugueseContractionUtility {
 
   /**
    * Merges a contraction
-   * 
+   *
    * @param left
    *          the left component
    * @param right
@@ -202,7 +202,7 @@ public class PortugueseContractionUtility {
         return sb.toString();
       }
     }
-    
+
     return null;
   }
 }

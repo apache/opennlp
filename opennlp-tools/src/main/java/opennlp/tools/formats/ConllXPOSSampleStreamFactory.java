@@ -37,7 +37,7 @@ import opennlp.tools.util.ObjectStream;
 public class ConllXPOSSampleStreamFactory extends AbstractSampleStreamFactory<POSSample> {
 
   public static final String CONLLX_FORMAT = "conllx";
-  
+
   interface Parameters extends BasicFormatParams {
   }
 
@@ -53,9 +53,9 @@ public class ConllXPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
   public ObjectStream<POSSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
-    InputStreamFactory inFactory = 
+    InputStreamFactory inFactory =
         CmdLineUtil.createInputStreamFactory(params.getData());
-    
+
     try {
       System.setOut(new PrintStream(System.out, true, "UTF-8"));
 

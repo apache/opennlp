@@ -80,7 +80,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     if (p1 != null) {
       punct2s=p1.getNextPunctuationSet();
     }
-    
+
 
     List<Parse> rf;
     if (index == 0) {
@@ -98,7 +98,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     if (p_1 != null) {
       punct_2s = p_1.getPreviousPunctuationSet();
     }
-    
+
     String consp_2 = cons(p_2, -2);
     String consp_1 = cons(p_1, -1);
     String consp0 = cons(p0, 0);

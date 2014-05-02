@@ -37,11 +37,11 @@ import java.util.Properties;
 public class Version {
 
   private static final String DEV_VERSION_STRING = "0.0.0-SNAPSHOT";
-  
+
   public static final Version DEV_VERSION = Version.parse(DEV_VERSION_STRING);
-  
+
   private static final String SNAPSHOT_MARKER = "-SNAPSHOT";
-  
+
   private final int major;
 
   private final int minor;
@@ -49,7 +49,7 @@ public class Version {
   private final int revision;
 
   private final boolean snapshot;
-  
+
   /**
    * Initializes the current instance with the provided
    * versions.
@@ -75,10 +75,10 @@ public class Version {
    * @param revision
    */
   public Version(int major, int minor, int revision) {
-   this(major, minor, revision, false); 
+   this(major, minor, revision, false);
   }
 
-  
+
   /**
    * Retrieves the major version.
    *
@@ -109,7 +109,7 @@ public class Version {
   public boolean isSnapshot() {
     return snapshot;
   }
-  
+
   /**
    * Retrieves the version string.
    *
@@ -163,7 +163,7 @@ public class Version {
     }
 
     int indexFirstDash = version.indexOf('-');
-    
+
     int versionEnd;
     if (indexFirstDash == -1) {
       versionEnd = version.length();
@@ -171,9 +171,9 @@ public class Version {
     else {
       versionEnd = indexFirstDash;
     }
-    
+
     boolean snapshot = version.endsWith(SNAPSHOT_MARKER);
-    
+
     return new Version(Integer.parseInt(version.substring(0, indexFirstDot)),
         Integer.parseInt(version.substring(indexFirstDot + 1, indexSecondDot)),
         Integer.parseInt(version.substring(indexSecondDot + 1, versionEnd)), snapshot);
@@ -185,14 +185,14 @@ public class Version {
    * @return the current version
    */
   public static Version currentVersion() {
-    
+
     Properties manifest = new Properties();
-    
+
     // Try to read the version from the version file if it is available,
     // otherwise set the version to the development version
-    
+
     InputStream versionIn = Version.class.getResourceAsStream("opennlp.version");
-    
+
     if (versionIn != null) {
       try {
         manifest.load(versionIn);
@@ -207,13 +207,13 @@ public class Version {
         }
       }
     }
-    
-    String versionString = 
+
+    String versionString =
       manifest.getProperty("OpenNLP-Version", DEV_VERSION_STRING);
-    
+
     if (versionString.equals("${pom.version}"))
       versionString = DEV_VERSION_STRING;
-    
+
     return Version.parse(versionString);
   }
 }

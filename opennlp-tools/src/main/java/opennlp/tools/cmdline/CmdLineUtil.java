@@ -310,11 +310,11 @@ public final class CmdLineUtil {
   public static TerminateToolException createObjectStreamError(IOException e) {
     return new TerminateToolException(-1, "IO Error while creating an Input Stream: " + e.getMessage(), e);
   }
-  
+
   public static void handleCreateObjectStreamError(IOException e) {
     throw createObjectStreamError(e);
   }
-  
+
   // its optional, passing null is allowed
   public static TrainingParameters loadTrainingParameters(String paramFile,
       boolean supportSequenceTraining) {

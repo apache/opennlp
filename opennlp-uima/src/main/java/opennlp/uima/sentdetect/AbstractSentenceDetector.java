@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 
 package opennlp.uima.sentdetect;
 
@@ -43,11 +43,11 @@ public abstract class AbstractSentenceDetector extends CasAnnotator_ImplBase {
   protected Logger logger;
 
   protected Type containerType;
-  
+
   protected Type sentenceType;
 
   private Boolean isRemoveExistingAnnotations;
-  
+
   @Override
   public void initialize(UimaContext context)
       throws ResourceInitializationException {
@@ -68,7 +68,7 @@ public abstract class AbstractSentenceDetector extends CasAnnotator_ImplBase {
       isRemoveExistingAnnotations = false;
     }
   }
-  
+
   @Override
   public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
@@ -84,12 +84,12 @@ public abstract class AbstractSentenceDetector extends CasAnnotator_ImplBase {
     sentenceType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         UimaUtil.SENTENCE_TYPE_PARAMETER);
   }
-  
+
   protected abstract Span[] detectSentences(String text);
-  
+
   protected void postProcessAnnotations(AnnotationFS sentences[]) {
   }
-  
+
   @Override
   public void process(CAS cas) throws AnalysisEngineProcessException {
 

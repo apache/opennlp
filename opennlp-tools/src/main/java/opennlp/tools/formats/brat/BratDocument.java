@@ -36,13 +36,13 @@ public class BratDocument {
   private final String id;
   private final String text;
   private final Map<String, BratAnnotation> annotationMap;
-  
+
   public BratDocument(AnnotationConfiguration config, String id, String text,
       Collection<BratAnnotation> annotations) {
     this.config = config;
     this.id = id;
     this.text = text;
-    
+
     Map<String, BratAnnotation> annMap = new HashMap<String, BratAnnotation>();
     for (BratAnnotation annotation : annotations) {
       annMap.put(annotation.getId(), annotation);
@@ -50,51 +50,51 @@ public class BratDocument {
 
     annotationMap = Collections.unmodifiableMap(annMap);
   }
-  
+
   public AnnotationConfiguration getConfig() {
     return config;
   }
-  
+
   public String getId() {
     return id;
   }
-  
+
   public String getText() {
     return text;
   }
-  
+
   public BratAnnotation getAnnotation(String id) {
     return annotationMap.get(id);
   }
-  
+
   public Collection<BratAnnotation> getAnnotations() {
     return annotationMap.values();
   }
-  
+
   public static BratDocument parseDocument(AnnotationConfiguration config, String id,
       InputStream txtIn, InputStream annIn)
       throws IOException {
-    
+
     Reader txtReader = new InputStreamReader(txtIn, Charset.forName("UTF-8"));
-    
+
     StringBuilder text = new StringBuilder();
-    
+
     char cbuf[] = new char[1024];
-    
+
     int len;
     while ((len = txtReader.read(cbuf)) > 0) {
       text.append(cbuf, 0, len);
     }
-    
+
     Collection<BratAnnotation> annotations = new ArrayList<BratAnnotation>();
-    
+
     ObjectStream<BratAnnotation> annStream = new BratAnnotationStream(config, id, annIn);
-    
+
     BratAnnotation ann;
     while ((ann = annStream.read()) != null) {
       annotations.add(ann);
     }
-    
+
     return new BratDocument(config, id, text.toString(), annotations);
   }
 }

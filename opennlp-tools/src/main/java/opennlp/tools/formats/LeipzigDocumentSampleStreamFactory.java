@@ -46,7 +46,7 @@ public class LeipzigDocumentSampleStreamFactory extends LanguageSampleStreamFact
   }
 
   public ObjectStream<DocumentSample> create(String[] args) {
-    
+
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     language = params.getLang();
 

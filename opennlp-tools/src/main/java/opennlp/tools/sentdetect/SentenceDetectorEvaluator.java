@@ -33,7 +33,7 @@ import opennlp.tools.util.eval.FMeasure;
 public class SentenceDetectorEvaluator extends Evaluator<SentenceSample> {
 
   private FMeasure fmeasure = new FMeasure();
-  
+
   /**
    * The {@link SentenceDetector} used to predict sentences.
    */
@@ -53,24 +53,24 @@ public class SentenceDetectorEvaluator extends Evaluator<SentenceSample> {
 
   private Span[] trimSpans(String document, Span spans[]) {
     Span trimedSpans[] = new Span[spans.length];
-    
+
     for (int i = 0; i < spans.length; i++) {
       trimedSpans[i] = spans[i].trim(document);
     }
-    
+
     return trimedSpans;
   }
-  
+
   @Override
   protected SentenceSample processSample(SentenceSample sample) {
     Span predictions[] = trimSpans(sample.getDocument(), sentenceDetector.sentPosDetect(sample.getDocument()));
     Span[] references = trimSpans(sample.getDocument(), sample.getSentences());
 
     fmeasure.updateScores(references, predictions);
-    
+
     return new SentenceSample(sample.getDocument(), predictions);
   }
-  
+
   public FMeasure getFMeasure() {
     return fmeasure;
   }

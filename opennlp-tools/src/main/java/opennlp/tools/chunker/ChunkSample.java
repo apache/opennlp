@@ -28,14 +28,14 @@ import opennlp.tools.util.Span;
  * Class for holding chunks for a single unit of text.
  */
 public class ChunkSample {
-	
+
   private final List<String> sentence;
   private final List<String> tags;
   private final List<String> preds;
 
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param sentence
    *          training sentence
    * @param tags
@@ -44,9 +44,9 @@ public class ChunkSample {
    *          Chunk tags in B-* I-* notation
    */
   public ChunkSample(String[] sentence, String[] tags, String[] preds) {
-    
+
     validateArguments(sentence.length, tags.length, preds.length);
-    
+
     this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
     this.tags = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tags)));
     this.preds = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(preds)));
@@ -54,7 +54,7 @@ public class ChunkSample {
 
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param sentence
    *          training sentence
    * @param tags
@@ -63,14 +63,14 @@ public class ChunkSample {
    *          Chunk tags in B-* I-* notation
    */
   public ChunkSample(List<String> sentence, List<String> tags, List<String> preds) {
-    
+
     validateArguments(sentence.size(), tags.size(), preds.size());
-    
+
     this.sentence = Collections.unmodifiableList(new ArrayList<String>((sentence)));
     this.tags = Collections.unmodifiableList(new ArrayList<String>((tags)));
     this.preds = Collections.unmodifiableList(new ArrayList<String>((preds)));
   }
- 
+
   /** Gets the training sentence */
   public String[] getSentence() {
     return sentence.toArray(new String[sentence.size()]);
@@ -80,27 +80,27 @@ public class ChunkSample {
   public String[] getTags() {
     return tags.toArray(new String[tags.size()]);
   }
-  
+
   /** Gets the Chunk tags in B-* I-* notation */
   public String[] getPreds() {
     return preds.toArray(new String[preds.size()]);
   }
-  
+
   /** Gets the phrases as an array of spans */
   public Span[] getPhrasesAsSpanList() {
     return phrasesAsSpanList(getSentence(), getTags(), getPreds());
   }
-  
+
   /**
    * Static method to create arrays of spans of phrases
-   * 
+   *
    * @param aSentence
    *          training sentence
    * @param aTags
    *          POS Tags for the sentence
    * @param aPreds
    *          Chunk tags in B-* I-* notation
-   * 
+   *
    * @return the phrases as an array of spans
    */
   public static Span[] phrasesAsSpanList(String[] aSentence, String[] aTags,
@@ -109,7 +109,7 @@ public class ChunkSample {
     validateArguments(aSentence.length, aTags.length, aPreds.length);
 
     // initialize with the list maximum size
-    List<Span> phrases = new ArrayList<Span>(aSentence.length); 
+    List<Span> phrases = new ArrayList<Span>(aSentence.length);
     String startTag = "";
     int startIndex = 0;
     boolean foundPhrase = false;
@@ -138,7 +138,7 @@ public class ChunkSample {
 
     return phrases.toArray(new Span[phrases.size()]);
   }
-  
+
   private static void validateArguments(int sentenceSize, int tagsSize, int predsSize) throws IllegalArgumentException {
     if (sentenceSize != tagsSize || tagsSize != predsSize)
       throw new IllegalArgumentException(
@@ -147,21 +147,21 @@ public class ChunkSample {
               ", tagsSize: " + tagsSize +
               ", predsSize: " + predsSize + "!");
   }
-  
+
   /**
    * Creates a nice to read string for the phrases formatted as following: <br>
    * <code>
    * [NP Rockwell_NNP ] [VP said_VBD ] [NP the_DT agreement_NN ] [VP calls_VBZ ] [SBAR for_IN ] [NP it_PRP ] [VP to_TO supply_VB ] [NP 200_CD additional_JJ so-called_JJ shipsets_NNS ] [PP for_IN ] [NP the_DT planes_NNS ] ._.
    * </code>
-   * 
+   *
    * @return a nice to read string representation of the chunk phases
    */
   public String nicePrint() {
-  	
+
   	Span[] spans = getPhrasesAsSpanList();
- 	
+
   	StringBuilder result = new StringBuilder(" ");
-    
+
     for (int tokenIndex = 0; tokenIndex < sentence.size(); tokenIndex++) {
       for (int nameIndex = 0; nameIndex < spans.length; nameIndex++) {
         if (spans[nameIndex].getStart() == tokenIndex) {
@@ -178,7 +178,7 @@ public class ChunkSample {
 
     if (sentence.size() > 1)
       result.setLength(result.length() - 1);
-    
+
     for (int nameIndex = 0; nameIndex < spans.length; nameIndex++) {
       if (spans[nameIndex].getEnd() == sentence.size()) {
         result.append(']');
@@ -187,18 +187,18 @@ public class ChunkSample {
 
     return result.toString();
   }
-  
+
   @Override
   public String toString() {
-	    
+
 	    StringBuilder chunkString = new StringBuilder();
-	    
+
 	    for (int ci=0; ci < preds.size(); ci++) {
         chunkString.append(sentence.get(ci)).append(" ").append(tags.get(ci)).append(" ").append(preds.get(ci)).append("\n");
 	    }
 	    return chunkString.toString();
 	  }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -213,5 +213,5 @@ public class ChunkSample {
       return false;
     }
   }
-  
+
 }

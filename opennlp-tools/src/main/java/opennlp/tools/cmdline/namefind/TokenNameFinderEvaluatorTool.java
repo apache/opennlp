@@ -59,7 +59,7 @@ public final class TokenNameFinderEvaluatorTool
     super.run(format, args);
 
     TokenNameFinderModel model = new TokenNameFinderModelLoader().load(params.getModel());
-    
+
     List<EvaluationMonitor<NameSample>> listeners = new LinkedList<EvaluationMonitor<NameSample>>();
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
@@ -74,7 +74,7 @@ public final class TokenNameFinderEvaluatorTool
       String nameTypes[] = params.getNameTypes().split(",");
       sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
     }
-    
+
     TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
         new NameFinderME(model),
         listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));

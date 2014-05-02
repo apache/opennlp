@@ -33,18 +33,18 @@ public class ParserEvaluatorTool extends AbstractEvaluatorTool<Parse, EvaluatorP
   public ParserEvaluatorTool() {
     super(Parse.class, EvaluatorParams.class);
   }
-  
+
   @Override
   public void run(String format, String[] args) {
-    
+
     super.run(format, args);
-    
+
     ParserModel model = new ParserModelLoader().load(params.getModel());
-    
+
     Parser parser = ParserFactory.create(model);
-    
+
     ParserEvaluator evaluator = new ParserEvaluator(parser);
-    
+
     System.out.print("Evaluating ... ");
     try {
       evaluator.evaluate(sampleStream);
@@ -60,7 +60,7 @@ public class ParserEvaluatorTool extends AbstractEvaluatorTool<Parse, EvaluatorP
       }
     }
     System.out.println("done");
-    
+
     System.out.println();
 
     System.out.println(evaluator.getFMeasure());

@@ -38,10 +38,10 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
- * The factory that provides POS Tagger default implementations and resources 
+ * The factory that provides POS Tagger default implementations and resources
  */
 public class POSTaggerFactory extends BaseToolFactory {
-  
+
   private static final String TAG_DICTIONARY_ENTRY_NAME = "tags.tagdict";
   private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram.dictionary";
 
@@ -58,7 +58,7 @@ public class POSTaggerFactory extends BaseToolFactory {
   /**
    * Creates a {@link POSTaggerFactory}. Use this constructor to
    * programmatically create a factory.
-   * 
+   *
    * @param ngramDictionary
    * @param posDictionary
    */
@@ -66,12 +66,12 @@ public class POSTaggerFactory extends BaseToolFactory {
       TagDictionary posDictionary) {
     this.init(ngramDictionary, posDictionary);
   }
-  
+
   protected void init(Dictionary ngramDictionary, TagDictionary posDictionary) {
     this.ngramDictionary = ngramDictionary;
     this.posDictionary = posDictionary;
   }
-  
+
   @Override
   @SuppressWarnings("rawtypes")
   public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
@@ -80,17 +80,17 @@ public class POSTaggerFactory extends BaseToolFactory {
     // the ngram Dictionary uses a base serializer, we don't need to add it here.
     return serializers;
   }
-  
+
   @Override
   public Map<String, Object> createArtifactMap() {
     Map<String, Object> artifactMap = super.createArtifactMap();
-    
+
     if (posDictionary != null)
       artifactMap.put(TAG_DICTIONARY_ENTRY_NAME, posDictionary);
 
     if (ngramDictionary != null)
       artifactMap.put(NGRAM_DICTIONARY_ENTRY_NAME, ngramDictionary);
-    
+
     return artifactMap;
   }
 
@@ -117,7 +117,7 @@ public class POSTaggerFactory extends BaseToolFactory {
       this.posDictionary = artifactProvider.getArtifact(TAG_DICTIONARY_ENTRY_NAME);
     return this.posDictionary;
   }
-  
+
   public Dictionary getDictionary() {
     if(this.ngramDictionary == null && artifactProvider != null)
       this.ngramDictionary = artifactProvider.getArtifact(NGRAM_DICTIONARY_ENTRY_NAME);
@@ -135,7 +135,7 @@ public class POSTaggerFactory extends BaseToolFactory {
   public POSContextGenerator getPOSContextGenerator() {
     return new DefaultPOSContextGenerator(0, getDictionary());
   }
-  
+
   public POSContextGenerator getPOSContextGenerator(int cacheSize) {
     return new DefaultPOSContextGenerator(cacheSize, getDictionary());
   }
@@ -143,7 +143,7 @@ public class POSTaggerFactory extends BaseToolFactory {
   public SequenceValidator<String> getSequenceValidator() {
     return new DefaultPOSSequenceValidator(getTagDictionary());
   }
-  
+
   static class POSDictionarySerializer implements ArtifactSerializer<POSDictionary> {
 
     public POSDictionary create(InputStream in) throws IOException,
@@ -188,12 +188,12 @@ public class POSTaggerFactory extends BaseToolFactory {
           + unknownTag.toString());
     }
   }
-  
+
   @Override
   public void validateArtifactMap() throws InvalidFormatException {
-    
+
     // Ensure that the tag dictionary is compatible with the model
-    
+
     Object tagdictEntry = this.artifactProvider
         .getArtifact(TAG_DICTIONARY_ENTRY_NAME);
 
@@ -202,7 +202,7 @@ public class POSTaggerFactory extends BaseToolFactory {
         if(!this.artifactProvider.isLoadedFromSerialized()) {
           AbstractModel posModel = this.artifactProvider
               .getArtifact(POSModel.POS_MODEL_ENTRY_NAME);
-          POSDictionary posDict = (POSDictionary) tagdictEntry; 
+          POSDictionary posDict = (POSDictionary) tagdictEntry;
           validatePOSDictionary(posDict, posModel);
         }
       } else {
@@ -217,9 +217,9 @@ public class POSTaggerFactory extends BaseToolFactory {
     if (ngramDictEntry != null && !(ngramDictEntry instanceof Dictionary)) {
       throw new InvalidFormatException("NGram dictionary has wrong type!");
     }
-    
+
   }
-  
+
   public static POSTaggerFactory create(String subclassName,
       Dictionary ngramDictionary, TagDictionary posDictionary)
       throws InvalidFormatException {

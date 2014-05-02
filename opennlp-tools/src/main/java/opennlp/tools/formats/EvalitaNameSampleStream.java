@@ -79,7 +79,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
 	    this.lineStream = lineStream;
 	    this.types = types;
 	  }
-	  
+
 	  public EvalitaNameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
 	    this.lang = lang;
 	    try {
@@ -91,7 +91,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
 	    }
 	    this.types = types;
 	  }
-	  
+
   /**
    * @param lang
    * @param in an Input Stream to read data.
@@ -167,7 +167,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
           throw new IOException("Incorrect number of fields per line for language: '" + line + "'!");
         }
     }
-    
+
     // Always clear adaptive data for Italian
     if (LANGUAGE.IT.equals(lang))
       isClearAdaptiveData = true;

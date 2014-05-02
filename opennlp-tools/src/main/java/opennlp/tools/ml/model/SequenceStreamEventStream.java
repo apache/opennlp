@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -27,37 +27,37 @@ import java.util.Iterator;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * Class which turns a sequence stream into an event stream. 
+ * Class which turns a sequence stream into an event stream.
  *
  */
 public class SequenceStreamEventStream implements ObjectStream<Event> {
 
   private final SequenceStream sequenceStream;
-  
+
   private Iterator<Event> eventIt = Collections.emptyListIterator();
-  
+
   public SequenceStreamEventStream(SequenceStream sequenceStream) {
     this.sequenceStream = sequenceStream;
   }
-  
+
   @Override
   public Event read() throws IOException {
-    
+
     if (eventIt.hasNext()) {
       eventIt.next();
     }
     else {
       Sequence<?> sequence = sequenceStream.read();
-      
+
       if (sequence != null) {
         eventIt = Arrays.asList(sequence.getEvents()).iterator();
       }
-      
+
       if (eventIt.hasNext()) {
         return read();
       }
     }
-    
+
     return null;
   }
 

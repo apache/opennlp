@@ -30,33 +30,33 @@ import opennlp.tools.util.ObjectStream;
  * @param <T>
  */
 public class SampleTraceStream<T> extends FilterObjectStream<T, T> {
-  
+
   private final Writer out;
-  
+
   private boolean wasReseted = false;
-  
+
   public SampleTraceStream(ObjectStream<T> samples, Writer out) {
     super(samples);
-    
+
     this.out = out;
   }
-  
+
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
     super.reset();
-    
+
     wasReseted = true;
   }
-  
+
   public T read() throws IOException {
-    
+
     T sample = samples.read();
-    
+
     if (sample != null && !wasReseted) {
       out.append(sample.toString());
       out.append('\n');
     }
-    
+
     return sample;
   }
 }

@@ -32,12 +32,12 @@ public class StringUtilTest {
     assertTrue(StringUtil.isWhitespace(0x00A0));
     assertTrue(StringUtil.isWhitespace(0x2007));
     assertTrue(StringUtil.isWhitespace(0x202F));
-    
+
     assertTrue(StringUtil.isWhitespace((char) 0x00A0));
     assertTrue(StringUtil.isWhitespace((char) 0x2007));
     assertTrue(StringUtil.isWhitespace((char) 0x202F));
   }
-  
+
   @Test
   public void testToLowerCase() {
     assertEquals("test", StringUtil.toLowerCase("TEST"));
@@ -49,16 +49,16 @@ public class StringUtilTest {
     assertEquals("TEST", StringUtil.toUpperCase("test"));
     assertEquals("SIMPLE", StringUtil.toUpperCase("simple"));
   }
-  
+
   @Test
   public void testIsEmpty() {
     assertTrue(StringUtil.isEmpty(""));
     assertTrue(!StringUtil.isEmpty("a"));
   }
-  
+
   @Test(expected=NullPointerException.class)
   public void testIsEmptyWithNullString() {
-	// should raise a NPE  
+	// should raise a NPE
     StringUtil.isEmpty(null);
   }
 

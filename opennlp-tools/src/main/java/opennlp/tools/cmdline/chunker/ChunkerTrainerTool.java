@@ -33,7 +33,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public class ChunkerTrainerTool
     extends AbstractTrainerTool<ChunkSample, TrainerToolParams> {
-  
+
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 
@@ -77,7 +77,7 @@ public class ChunkerTrainerTool
         // sorry that this can fail
       }
     }
-    
+
     CmdLineUtil.writeModel("chunker", modelOutFile, model);
   }
 }

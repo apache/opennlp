@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 
 package opennlp.uima.postag;
 
@@ -60,7 +60,7 @@ import org.apache.uima.util.Logger;
  *   <caption></caption>
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
  *   <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double probability feature (not set by default)</td></tr>
- *   <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td> 
+ *   <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td>
  *   <tr><td>String</td> <td>opennlp.uima.DictionaryName</td> <td>The name of the dictionary file</td></tr>
  * </table>
  */
@@ -82,7 +82,7 @@ public final class POSTagger extends CasAnnotator_ImplBase {
 
   /**
    * Initializes a new instance.
-   * 
+   *
    * Note: Use {@link #initialize(UimaContext) } to initialize this instance. Not use the
    * constructor.
    */
@@ -92,7 +92,7 @@ public final class POSTagger extends CasAnnotator_ImplBase {
 
   /**
    * Initializes the current instance with the given context.
-   * 
+   *
    * Note: Do all initialization in this method, do not use the constructor.
    */
   @Override
@@ -162,7 +162,7 @@ public final class POSTagger extends CasAnnotator_ImplBase {
         this.sentenceType, this.tokenType);
 
     for (AnnotationIteratorPair annotationIteratorPair : comboIterator) {
-      
+
       final List<AnnotationFS> sentenceTokenAnnotationList = new LinkedList<AnnotationFS>();
 
       final List<String> sentenceTokenList = new LinkedList<String>();
@@ -216,7 +216,7 @@ public final class POSTagger extends CasAnnotator_ImplBase {
         // delete last whitespace
         if (sentenceWithPos.length() > 1) // not 0 because it contains already the " char
           sentenceWithPos.setLength(sentenceWithPos.length() - 1);
-        
+
         sentenceWithPos.append("\"");
 
         this.logger.log(Level.FINER, sentenceWithPos.toString());

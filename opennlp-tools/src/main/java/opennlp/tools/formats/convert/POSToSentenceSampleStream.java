@@ -25,12 +25,12 @@ import opennlp.tools.util.ObjectStream;
  * <b>Note:</b> Do not use this class, internal use only!
  */
 public class POSToSentenceSampleStream extends AbstractToSentenceSampleStream<POSSample> {
-  
+
   public POSToSentenceSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples, int chunkSize) {
-    
+
     super(detokenizer, samples, chunkSize);
   }
-  
+
   @Override
   protected String[] toSentence(POSSample sample) {
     return sample.getSentence();

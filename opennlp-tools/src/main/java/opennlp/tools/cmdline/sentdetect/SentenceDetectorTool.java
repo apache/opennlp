@@ -39,7 +39,7 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
   public String getShortDescription() {
     return "learnable sentence detector";
   }
-  
+
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
@@ -50,7 +50,7 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
    * A newline will be treated as a paragraph boundary.
    */
   public void run(String[] args) {
-    
+
     if (args.length != 1) {
       System.out.println(getHelp());
     } else {
@@ -64,7 +64,7 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
       try {
         ObjectStream<String> paraStream = new ParagraphStream(new PlainTextByLineStream(new SystemInputStreamFactory(),
             SystemInputStreamFactory.encoding()));
-        
+
         String para;
         while ((para = paraStream.read()) != null) {
 

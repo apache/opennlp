@@ -34,7 +34,7 @@ final class SentenceModelLoader extends ModelLoader<SentenceModel> {
   public SentenceModelLoader() {
     super("Sentence Detector");
   }
-  
+
   @Override
   protected SentenceModel loadModel(InputStream modelIn) throws IOException,
       InvalidFormatException {

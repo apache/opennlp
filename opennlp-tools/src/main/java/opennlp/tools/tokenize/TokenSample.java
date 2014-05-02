@@ -32,9 +32,9 @@ import opennlp.tools.util.Span;
 public class TokenSample {
 
   public static final String DEFAULT_SEPARATOR_CHARS = "<SPLIT>";
-  
+
   private final String separatorChars = DEFAULT_SEPARATOR_CHARS;
-  
+
   private final String text;
 
   private final List<Span> tokenSpans;
@@ -46,13 +46,13 @@ public class TokenSample {
    * @param tokenSpans the spans which mark the begin and end of the tokens.
    */
   public TokenSample(String text, Span tokenSpans[]) {
-    
+
     if (text == null)
       throw new IllegalArgumentException("text must not be null!");
-    
+
     if (tokenSpans == null)
       throw new IllegalArgumentException("tokenSpans must not be null! ");
-    
+
     this.text = text;
     this.tokenSpans = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(tokenSpans)));
 
@@ -66,37 +66,37 @@ public class TokenSample {
   }
 
   public TokenSample(Detokenizer detokenizer, String tokens[]) {
-    
+
     StringBuilder sentence = new StringBuilder();
-    
+
     DetokenizationOperation[] operations = detokenizer.detokenize(tokens);
-    
+
     List<Span> mergedTokenSpans = new ArrayList<Span>();
-    
+
     for (int i = 0; i < operations.length; i++) {
-      
-      boolean isSeparateFromPreviousToken = i > 0 && 
-          !isMergeToRight(operations[i - 1]) && 
+
+      boolean isSeparateFromPreviousToken = i > 0 &&
+          !isMergeToRight(operations[i - 1]) &&
           !isMergeToLeft(operations[i]);
-      
+
       if (isSeparateFromPreviousToken) {
         sentence.append(' ');
       }
-      
+
       int beginIndex = sentence.length();
       sentence.append(tokens[i]);
       mergedTokenSpans.add(new Span(beginIndex, sentence.length()));
     }
-    
+
     text = sentence.toString();
     tokenSpans = Collections.unmodifiableList(mergedTokenSpans);
   }
-  
+
   private boolean isMergeToRight(DetokenizationOperation operation) {
     return DetokenizationOperation.MERGE_TO_RIGHT.equals(operation)
         || DetokenizationOperation.MERGE_BOTH.equals(operation);
   }
-  
+
   private boolean isMergeToLeft(DetokenizationOperation operation) {
     return DetokenizationOperation.MERGE_TO_LEFT.equals(operation)
         || DetokenizationOperation.MERGE_BOTH.equals(operation);
@@ -118,49 +118,49 @@ public class TokenSample {
 
   @Override
   public String toString() {
-    
+
     StringBuilder sentence = new StringBuilder();
-    
+
     int lastEndIndex = -1;
     for (Span token : tokenSpans) {
-      
+
       if (lastEndIndex != -1) {
 
         // If there are no chars between last token
         // and this token insert the separator chars
         // otherwise insert a space
-        
+
         String separator = "";
         if (lastEndIndex == token.getStart())
           separator = separatorChars;
         else
           separator = " ";
-        
+
         sentence.append(separator);
       }
-      
+
       sentence.append(token.getCoveredText(text));
-      
+
       lastEndIndex = token.getEnd();
     }
-    
+
     return sentence.toString();
   }
-  
+
   private static void addToken(StringBuilder sample, List<Span> tokenSpans, String token, boolean isNextMerged) {
-    
+
     int tokenSpanStart = sample.length();
     sample.append(token);
     int tokenSpanEnd = sample.length();
-    
+
     tokenSpans.add(new Span(tokenSpanStart, tokenSpanEnd));
-    
+
     if (!isNextMerged)
         sample.append(" ");
   }
-  
+
   public static TokenSample parse(String sampleString, String separatorChars) {
-    
+
     if (sampleString == null) {
         throw new IllegalArgumentException("sampleString must not be null!");
     }
@@ -169,48 +169,48 @@ public class TokenSample {
     }
 
     Span whitespaceTokenSpans[] = WhitespaceTokenizer.INSTANCE.tokenizePos(sampleString);
-    
+
     // Pre-allocate 20% for newly created tokens
     List<Span> realTokenSpans = new ArrayList<Span>((int) (whitespaceTokenSpans.length * 1.2d));
-    
+
     StringBuilder untaggedSampleString = new StringBuilder();
-    
+
     for (Span whiteSpaceTokenSpan : whitespaceTokenSpans) {
       String whitespaceToken = whiteSpaceTokenSpan.getCoveredText(sampleString).toString();
-      
+
       boolean wasTokenReplaced = false;
-      
+
       int tokStart = 0;
       int tokEnd = -1;
       while ((tokEnd = whitespaceToken.indexOf(separatorChars, tokStart)) > -1) {
-        
+
         String token = whitespaceToken.substring(tokStart, tokEnd);
-        
+
         addToken(untaggedSampleString, realTokenSpans, token, true);
-        
+
         tokStart = tokEnd + separatorChars.length();
         wasTokenReplaced = true;
       }
-      
+
       if (wasTokenReplaced) {
         // If the token contains the split chars at least once
         // a span for the last token must still be added
         String token = whitespaceToken.substring(tokStart);
-        
+
         addToken(untaggedSampleString, realTokenSpans, token, false);
       }
       else {
         // If it does not contain the split chars at lest once
         // just copy the original token span
-        
+
         addToken(untaggedSampleString, realTokenSpans, whitespaceToken, false);
       }
     }
-    
+
     return new TokenSample(untaggedSampleString.toString(), realTokenSpans.toArray(
         new Span[realTokenSpans.size()]));
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {

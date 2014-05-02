@@ -45,9 +45,9 @@ public class DefaultChunkerSequenceValidator implements SequenceValidator<String
     }
     return validOutcome(outcome,prevOutcome);
   }
-  
+
   public boolean validSequence(int i, String[] sequence, String[] s, String outcome) {
     return validOutcome(outcome, s);
   }
-  
+
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
  package opennlp.tools.namefind;
 
 import java.io.IOException;
@@ -34,21 +34,21 @@ public class NameSampleSequenceStream implements SequenceStream {
   private final boolean useOutcomes;
   private ObjectStream<NameSample> psi;
   private SequenceCodec<String> seqCodec;
-  
+
   public NameSampleSequenceStream(ObjectStream<NameSample> psi) throws IOException {
     this(psi, new DefaultNameContextGenerator((AdaptiveFeatureGenerator) null), true);
   }
-  
-  public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen) 
+
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen)
   throws IOException {
     this(psi, new DefaultNameContextGenerator(featureGen), true);
   }
 
-  public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen, boolean useOutcomes) 
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen, boolean useOutcomes)
   throws IOException {
     this(psi, new DefaultNameContextGenerator(featureGen), useOutcomes);
   }
-  
+
   public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg)
       throws IOException {
     this(psi, pcg, true);
@@ -58,7 +58,7 @@ public class NameSampleSequenceStream implements SequenceStream {
       throws IOException {
     this(psi, pcg, useOutcomes, new BioCodec());
   }
-  
+
   public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg, boolean useOutcomes,
       SequenceCodec<String> seqCodec)
       throws IOException {
@@ -67,7 +67,7 @@ public class NameSampleSequenceStream implements SequenceStream {
     this.pcg = pcg;
     this.seqCodec = seqCodec;
   }
-  
+
   @SuppressWarnings("unchecked")
   public Event[] updateContext(Sequence sequence, AbstractModel model) {
     Sequence<NameSample> pss = sequence;
@@ -75,12 +75,12 @@ public class NameSampleSequenceStream implements SequenceStream {
     String[] sentence = pss.getSource().getSentence();
     String[] tags = seqCodec.encode(tagger.find(sentence), sentence.length);
     Event[] events = new Event[sentence.length];
-    
+
     NameFinderEventStream.generateEvents(sentence,tags,pcg).toArray(events);
-    
+
     return events;
   }
-  
+
   @Override
   public Sequence read() throws IOException {
     NameSample sample = psi.read();
@@ -88,7 +88,7 @@ public class NameSampleSequenceStream implements SequenceStream {
       String sentence[] = sample.getSentence();
       String tags[] = seqCodec.encode(sample.getNames(), sentence.length);
       Event[] events = new Event[sentence.length];
-      
+
       for (int i=0; i < sentence.length; i++) {
 
         // it is safe to pass the tags as previous tags because
@@ -100,7 +100,7 @@ public class NameSampleSequenceStream implements SequenceStream {
         else {
           context = pcg.getContext(i, sentence, null, null);
         }
-        
+
         events[i] = new Event(tags[i], context);
       }
       Sequence<NameSample> sequence = new Sequence<NameSample>(events,sample);
@@ -110,12 +110,12 @@ public class NameSampleSequenceStream implements SequenceStream {
         return null;
       }
   }
-  
+
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
     psi.reset();
   }
-  
+
   @Override
   public void close() throws IOException {
     psi.close();

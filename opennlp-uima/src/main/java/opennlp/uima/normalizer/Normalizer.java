@@ -46,19 +46,19 @@ import org.apache.uima.util.Logger;
 /**
  * The Normalizer tries the structure annotations. The structured value
  * is than assigned to a field of the annotation.
- * 
- * The process depends on the 
- * 
+ *
+ * The process depends on the
+ *
  * string Tokens must be (fuzzy) mapped to categories eg. a month, a day or a
  * year (use dictionary) integer, float tokens must be parsed eg. for percentage
  * or period boolean tokens must be parsed eg is there any ???
- * 
- * 
+ *
+ *
  * restricted set of outcomes throw error if not matched or silently fail
  * unrestricted set of outcomes
  */
 public class Normalizer extends CasAnnotator_ImplBase {
-    
+
   /**
    * This set contains all supported range types.
    */
@@ -89,7 +89,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
 
   /**
    * The target type which the text should have. This type must be primitive.
-   * 
+   *
    * It should not be possible to assign something to this feature with is not
    * structured. The feature should define allowed values.
    */
@@ -98,10 +98,10 @@ public class Normalizer extends CasAnnotator_ImplBase {
   // private Type mSentenceType;
 
   private StringDictionary mLookupDictionary;
-    
+
   /**
    * Initializes a new instance.
-   * 
+   *
    * Note: Use {@link #initialize(UimaContext) } to initialize this instance. Not
    * use the constructor.
    */
@@ -111,7 +111,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
 
   /**
    * Initializes the current instance with the given context.
-   * 
+   *
    * Note: Do all initialization in this method, do not use the constructor.
    */
   public void initialize(UimaContext context)

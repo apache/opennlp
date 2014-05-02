@@ -36,7 +36,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class TokenizerTrainerTool
     extends AbstractTrainerTool<TokenSample, TrainerToolParams> {
-  
+
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 

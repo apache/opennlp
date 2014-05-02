@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -55,7 +55,7 @@ import opennlp.tools.ml.model.MaxentModel;
  *	  replacementManager.replaceModel(newmod);
  *    }
  *     </pre>
- * 
+ *
  * Then, in the code that uses the model, you need to inform the
  * ModelReplacementManager when a thread is beginning to use the model and when
  * it no longer needs to be sure that the same model is being used.  For
@@ -120,7 +120,7 @@ public class ModelReplacementManager {
   /**
    * Replace the old model with a new one, forcing the replacement to wait until
    * all threads using the old model have finished using it.
-   * 
+   *
    * @param model
    *          The new model which is being swapped in.
    */
@@ -131,5 +131,5 @@ public class ModelReplacementManager {
     setter.setModel(model);
     replacementThread = null;
   }
-    
+
 }

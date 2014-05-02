@@ -33,11 +33,11 @@ import opennlp.tools.util.ObjectStream;
  * <b>Note:</b> Do not use this class, internal use only!
  */
 public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
-  
+
   interface Parameters extends BasicFormatParams {
     @ParameterDescription(valueName = "es|nl")
     String getLang();
-    
+
     @ParameterDescription(valueName = "per,loc,org,misc")
     String getTypes();
   }
@@ -52,9 +52,9 @@ public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<
   }
 
   public ObjectStream<NameSample> create(String[] args) {
-    
+
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    
+
     LANGUAGE lang;
     if ("nl".equals(params.getLang())) {
       lang = LANGUAGE.NL;
@@ -67,27 +67,27 @@ public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<
     else {
       throw new TerminateToolException(1, "Unsupported language: " + params.getLang());
     }
-    
+
     int typesToGenerate = 0;
-    
+
     if (params.getTypes().contains("per")) {
-      typesToGenerate = typesToGenerate | 
+      typesToGenerate = typesToGenerate |
           Conll02NameSampleStream.GENERATE_PERSON_ENTITIES;
     }
     if (params.getTypes().contains("org")) {
-      typesToGenerate = typesToGenerate | 
+      typesToGenerate = typesToGenerate |
           Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES;
     }
     if (params.getTypes().contains("loc")) {
-      typesToGenerate = typesToGenerate | 
+      typesToGenerate = typesToGenerate |
           Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES;
     }
     if (params.getTypes().contains("misc")) {
-      typesToGenerate = typesToGenerate | 
+      typesToGenerate = typesToGenerate |
           Conll02NameSampleStream.GENERATE_MISC_ENTITIES;
     }
 
-    
+
     try {
       return new Conll02NameSampleStream(lang,
           CmdLineUtil.createInputStreamFactory(params.getData()), typesToGenerate);

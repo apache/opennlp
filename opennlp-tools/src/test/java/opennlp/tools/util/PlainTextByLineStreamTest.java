@@ -40,10 +40,10 @@ public class PlainTextByLineStreamTest {
     testString.append("\r\n");
     testString.append("line4");
     testString.append('\n');
-    
-    ObjectStream<String> stream = 
+
+    ObjectStream<String> stream =
         new PlainTextByLineStream(new StringReader(testString.toString()));
-    
+
     assertEquals("line1", stream.read());
     assertEquals("line2", stream.read());
     assertEquals("line3", stream.read());

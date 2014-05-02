@@ -48,36 +48,36 @@ import org.apache.uima.resource.ResourceInitializationException;
  * <table border=1>
  *   <caption></caption>
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double 
+ *   <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double
  *       probability feature (not set by default)</td>
  * </table>
  *
  * @see TokenizerME
  */
 public final class Tokenizer extends AbstractTokenizer {
-  
+
   /**
    * The OpenNLP tokenizer.
    */
   private TokenizerME tokenizer;
-  
+
   private Feature probabilityFeature;
-  
+
   /**
    * Initializes a new instance.
    *
-   * Note: Use {@link #initialize(UimaContext) } to initialize 
+   * Note: Use {@link #initialize(UimaContext) } to initialize
    * this instance. Not use the constructor.
    */
   public Tokenizer() {
     super("OpenNLP Tokenizer");
-	  
+
     // must not be implemented !
   }
-  
+
   /**
    * Initializes the current instance with the given context.
-   * 
+   *
    * Note: Do all initialization in this method, do not use the constructor.
    */
   public void initialize(UimaContext context)
@@ -112,12 +112,12 @@ public final class Tokenizer extends AbstractTokenizer {
             UimaUtil.PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_DOUBLE);
   }
 
-  
+
   @Override
   protected Span[] tokenize(CAS cas, AnnotationFS sentence) {
     return tokenizer.tokenizePos(sentence.getCoveredText());
   }
-  
+
   @Override
   protected void postProcessAnnotations(Span[] tokens,
       AnnotationFS[] tokenAnnotations) {
@@ -131,12 +131,12 @@ public final class Tokenizer extends AbstractTokenizer {
       }
     }
   }
-  
+
   /**
    * Releases allocated resources.
    */
   public void destroy() {
-    // dereference model to allow garbage collection 
+    // dereference model to allow garbage collection
     tokenizer = null;
   }
 }

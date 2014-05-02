@@ -33,22 +33,22 @@ public class ParseToSentenceSampleStreamFactory extends DetokenizerSampleStreamF
 
   interface Parameters extends ParseSampleStreamFactory.Parameters, DetokenizerParameter {
   }
-  
+
   private ParseToSentenceSampleStreamFactory() {
     super(Parameters.class);
   }
 
   public ObjectStream<SentenceSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    
+
     ObjectStream<Parse> parseSampleStream = StreamFactoryRegistry.getFactory(Parse.class,
         StreamFactoryRegistry.DEFAULT_FORMAT).create(
         ArgumentParser.filter(args, ParseSampleStreamFactory.Parameters.class));
-    
+
     return new POSToSentenceSampleStream(createDetokenizer(params),
         new ParseToPOSSampleStream(parseSampleStream), 30);
   }
-  
+
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         "parse", new ParseToSentenceSampleStreamFactory());

@@ -24,13 +24,13 @@ import opennlp.tools.tokenize.DefaultTokenContextGenerator;
 import opennlp.tools.tokenize.TokenContextGenerator;
 
 public class Factory {
-  
+
   public static final String DEFAULT_ALPHANUMERIC = "^[A-Za-z0-9]+$";
-  
+
   /**
    * Gets the alpha numeric pattern for the language. Please save the value
    * locally because this call is expensive.
-   * 
+   *
    * @param languageCode
    *          the language code. If null or unknow the default pattern will be
    *          returned.
@@ -40,10 +40,10 @@ public class Factory {
     if("pt".equals(languageCode)) {
       return Pattern.compile("^[0-9a-záãâàéêíóõôúüçA-ZÁÃÂÀÉÊÍÓÕÔÚÜÇ]+$");
     }
-    
+
     return Pattern.compile(DEFAULT_ALPHANUMERIC);
   }
-  
+
   public TokenContextGenerator createTokenContextGenerator(String languageCode, Set<String> abbreviations) {
     return new DefaultTokenContextGenerator(abbreviations);
   }

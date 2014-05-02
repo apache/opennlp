@@ -46,22 +46,22 @@ public class POSModelTest {
 
     // TODO: add equals to pos model
   }
-  
+
   @Test
   public void testPOSModelSerializationPerceptron() throws IOException, InvalidFormatException {
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.PERCEPTRON);
-    
+
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    
+
     try {
       posModel.serialize(out);
     }
     finally {
       out.close();
     }
-    
+
     POSModel recreatedPosModel = new POSModel(new ByteArrayInputStream(out.toByteArray()));
-    
+
     // TODO: add equals to pos model
   }
 }
