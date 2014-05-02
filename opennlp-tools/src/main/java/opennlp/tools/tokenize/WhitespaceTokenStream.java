@@ -28,32 +28,32 @@ import opennlp.tools.util.Span;
  * separated token strings.
  */
 public class WhitespaceTokenStream extends FilterObjectStream<TokenSample, String> {
-  
+
   public WhitespaceTokenStream(ObjectStream<TokenSample> tokens) {
     super(tokens);
   }
 
   public String read() throws IOException {
     TokenSample tokenSample = samples.read();
-    
+
     if (tokenSample != null) {
       StringBuilder whitespaceSeparatedTokenString = new StringBuilder();
-      
+
       for (Span token : tokenSample.getTokenSpans()) {
         whitespaceSeparatedTokenString.append(
             token.getCoveredText(tokenSample.getText()));
         whitespaceSeparatedTokenString.append(' ');
       }
-      
+
       // Shorten string by one to get rid of last space
       if (whitespaceSeparatedTokenString.length() > 0) {
         whitespaceSeparatedTokenString.setLength(
             whitespaceSeparatedTokenString.length() -1 );
       }
-      
+
       return whitespaceSeparatedTokenString.toString();
     }
-    
+
     return null;
   }
 }

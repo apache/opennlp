@@ -103,7 +103,7 @@ public class AbstractEventStreamTest {
     TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<RESULT>(samples));
 
     int eventCounter = 0;
-    
+
     while (eventStream.read() != null) {
       eventCounter++;
     }

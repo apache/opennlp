@@ -31,7 +31,7 @@ public class POSEvaluator extends Evaluator<POSSample> {
   private POSTagger tagger;
 
   private Mean wordAccuracy = new Mean();
-  
+
   /**
    * Initializes the current instance.
    *
@@ -42,7 +42,7 @@ public class POSEvaluator extends Evaluator<POSSample> {
     super(listeners);
     this.tagger = tagger;
   }
-  
+
   /**
    * Evaluates the given reference {@link POSSample} object.
    *
@@ -51,15 +51,15 @@ public class POSEvaluator extends Evaluator<POSSample> {
    * tags are then used to update the word accuracy score.
    *
    * @param reference the reference {@link POSSample}.
-   * 
+   *
    * @return the predicted {@link POSSample}.
    */
   @Override
   protected POSSample processSample(POSSample reference) {
-    
+
     String predictedTags[] = tagger.tag(reference.getSentence(), reference.getAddictionalContext());
     String referenceTags[] = reference.getTags();
-    
+
     for (int i = 0; i < referenceTags.length; i++) {
       if (referenceTags[i].equals(predictedTags[i])) {
         wordAccuracy.add(1);
@@ -68,7 +68,7 @@ public class POSEvaluator extends Evaluator<POSSample> {
         wordAccuracy.add(0);
       }
     }
-    
+
     return new POSSample(reference.getSentence(), predictedTags);
   }
 
@@ -87,13 +87,13 @@ public class POSEvaluator extends Evaluator<POSSample> {
   /**
    * Retrieves the total number of words considered
    * in the evaluation.
-   * 
+   *
    * @return the word count
    */
   public long getWordCount() {
     return wordAccuracy.count();
   }
-  
+
   /**
    * Represents this objects as human readable {@link String}.
    */

@@ -35,75 +35,75 @@ import opennlp.tools.util.eval.FMeasure;
 public class TokenNameFinderCrossValidator {
 
   private class DocumentSample {
-    
+
     private NameSample samples[];
-    
+
     DocumentSample(NameSample samples[]) {
       this.samples = samples;
     }
-    
+
     private NameSample[] getSamples() {
       return samples;
     }
   }
-  
+
   /**
    * Reads Name Samples to group them as a document based on the clear adaptive data flag.
    */
   private class NameToDocumentSampleStream extends FilterObjectStream<NameSample, DocumentSample> {
 
     private NameSample beginSample;
-    
+
     protected NameToDocumentSampleStream(ObjectStream<NameSample> samples) {
       super(samples);
     }
 
     public DocumentSample read() throws IOException {
-      
+
       List<NameSample> document = new ArrayList<NameSample>();
-      
+
       if (beginSample == null) {
         // Assume that the clear flag is set
         beginSample = samples.read();
       }
-      
-      // Underlying stream is exhausted! 
+
+      // Underlying stream is exhausted!
       if (beginSample == null) {
         return null;
       }
-      
+
       document.add(beginSample);
-      
+
       NameSample sample;
       while ((sample = samples.read()) != null) {
-        
+
         if (sample.isClearAdaptiveDataSet()) {
           beginSample = sample;
           break;
         }
-        
+
         document.add(sample);
       }
-      
+
       // Underlying stream is exhausted,
       // next call must return null
       if (sample == null) {
         beginSample = null;
       }
-      
+
       return new DocumentSample(document.toArray(new NameSample[document.size()]));
     }
-    
+
     @Override
     public void reset() throws IOException, UnsupportedOperationException {
       super.reset();
-      
+
       beginSample = null;
     }
   }
-  
+
   /**
-   * Splits DocumentSample into NameSamples. 
+   * Splits DocumentSample into NameSamples.
    */
   private class DocumentToNameSampleStream extends FilterObjectStream<DocumentSample, NameSample>{
 
@@ -148,7 +148,7 @@ public class TokenNameFinderCrossValidator {
 
   /**
    * Name finder cross validator
-   * 
+   *
    * @param languageCode
    *          the language of the training data
    * @param type
@@ -166,16 +166,16 @@ public class TokenNameFinderCrossValidator {
       TrainingParameters trainParams, byte[] featureGeneratorBytes,
       Map<String, Object> resources, SequenceCodec<String> codec,
       TokenNameFinderEvaluationMonitor... listeners) {
-    
+
     this.languageCode = languageCode;
     this.type = type;
     this.featureGeneratorBytes = featureGeneratorBytes;
     this.resources = resources;
 
     this.params = trainParams;
-    
+
     this.listeners = listeners;
-    this.codec = codec; 
+    this.codec = codec;
   }
 
   public TokenNameFinderCrossValidator(String languageCode, String type,
@@ -184,7 +184,7 @@ public class TokenNameFinderCrossValidator {
       TokenNameFinderEvaluationMonitor... listeners) {
     this(languageCode, type, trainParams, featureGeneratorBytes, resources, new BioCodec(), listeners);
   }
-  
+
   public TokenNameFinderCrossValidator(String languageCode, String type,
       TrainingParameters trainParams, TokenNameFinderFactory factory,
       TokenNameFinderEvaluationMonitor... listeners) {
@@ -197,7 +197,7 @@ public class TokenNameFinderCrossValidator {
 
   /**
    * Starts the evaluation.
-   * 
+   *
    * @param samples
    *          the data to train and test
    * @param nFolds
@@ -224,7 +224,7 @@ public class TokenNameFinderCrossValidator {
       else {
         model  = opennlp.tools.namefind.NameFinderME.train(languageCode, type,
             new DocumentToNameSampleStream(trainingSampleStream), params, featureGeneratorBytes, resources);
-        
+
       }
 
       // do testing

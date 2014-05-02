@@ -23,14 +23,14 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
  * EvaluatorParams for Chunker.
- * 
+ *
  * Note: Do not use this class, internal use only!
  */
 public interface DetailedFMeasureEvaluatorParams {
-  
+
   @ParameterDescription(valueName = "true|false",
       description = "if true will print detailed FMeasure results.")
   @OptionalParameter(defaultValue="false")
   Boolean getDetailedF();
-  
+
 }

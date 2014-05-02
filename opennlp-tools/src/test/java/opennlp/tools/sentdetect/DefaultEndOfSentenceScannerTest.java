@@ -32,16 +32,16 @@ public class DefaultEndOfSentenceScannerTest {
   public void testScanning() {
     EndOfSentenceScanner scanner = new DefaultEndOfSentenceScanner(
         new char[]{'.', '!', '?'});
-    
-    List<Integer> eosPositions = 
+
+    List<Integer> eosPositions =
         scanner.getPositions("... um die Wertmarken zu auswählen !?");
-    
+
     assertEquals(0, eosPositions.get(0).intValue());
     assertEquals(1, eosPositions.get(1).intValue());
     assertEquals(2, eosPositions.get(2).intValue());
-    
+
     assertEquals(35, eosPositions.get(3).intValue());
     assertEquals(36, eosPositions.get(4).intValue());
   }
-  
+
 }

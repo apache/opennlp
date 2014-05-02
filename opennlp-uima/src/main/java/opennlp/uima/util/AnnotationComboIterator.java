@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -29,13 +29,13 @@ import org.apache.uima.cas.text.AnnotationFS;
 
 /**
  * UIMA Annotation iterator combination of super- and subiterator.
- * 
+ *
  * <p>
  * This class supports a common idiom in UIMA annotation iteration, where you need to iterate over
  * two kinds of annotations in lock-step. For example, you often want to iterate over all sentences,
  * then do something on each sentence and all tokens in that sentence. Here's how to do this with
  * this class.
- * 
+ *
  * <pre>
  * CAS cas = ...
  * Type sentenceType = ..., tokenType = ...
@@ -46,19 +46,19 @@ import org.apache.uima.cas.text.AnnotationFS;
  *   // Obtain sentence annotation
  *   AnnotationFS sentence = aiPair.getAnnotation();
  *   // Do something with sentence...
- * 
+ *
  *   // Iterate over tokens
  *   for (AnnotationFS token : aiPair.getSubIterator()) {
  *     // Do something with tokens...
  *   }
  * }
  * </pre>
- * 
+ *
  * The combo iterator returns in its <code>next()</code> method a pair of an annotation of the upper
  * type (e.g., sentence), and an iterator over annotations of the lower type (e.g., tokens). Note
  * that both the upper and lower iterator also implement the Iterable interface and can be use
  * directly in for-loops.
- * 
+ *
  * <p>
  * Note that only this usage is safe. To keep the implementation efficient, the combo iterator keeps
  * two iterators internally that it increments in lock-step. Do not attempt, for example, to collect
@@ -146,7 +146,7 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
 
   /**
    * Create a new combo iterator.
-   * 
+   *
    * @param cas
    *          The CAS we're operating on.
    * @param upper

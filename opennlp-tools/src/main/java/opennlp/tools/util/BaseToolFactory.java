@@ -27,13 +27,13 @@ import opennlp.tools.util.model.BaseModel;
 
 /**
  * Base class for all tool factories.
- * 
- * Extensions of this class should: 
+ *
+ * Extensions of this class should:
  * <ul>
- *  <li>implement an empty constructor (TODO is it necessary?) 
- *  <li>implement a constructor that takes the {@link ArtifactProvider} and 
- *      calls {@code BaseToolFactory(Map)} 
- *  <li>override {@link #createArtifactMap()} and 
+ *  <li>implement an empty constructor (TODO is it necessary?)
+ *  <li>implement a constructor that takes the {@link ArtifactProvider} and
+ *      calls {@code BaseToolFactory(Map)}
+ *  <li>override {@link #createArtifactMap()} and
  *      {@link #createArtifactSerializersMap()} methods if necessary.
  * </ul>
  */
@@ -78,16 +78,16 @@ public abstract class BaseToolFactory {
   public Map<String, Object> createArtifactMap() {
     return new HashMap<String, Object>();
   }
-  
+
   /**
    * Creates the manifest entries that will be added to the model manifest
-   * 
+   *
    * @return the manifest entries to added to the model manifest
    */
   public Map<String, String> createManifestEntries() {
     return new HashMap<String, String>();
   }
-  
+
   /**
    * Validates the parsed artifacts. If something is not
    * valid subclasses should throw an {@link InvalidFormatException}.
@@ -103,7 +103,7 @@ public abstract class BaseToolFactory {
   public static BaseToolFactory create(String subclassName,
       ArtifactProvider artifactProvider) throws InvalidFormatException {
     BaseToolFactory theFactory = null;
-    
+
     try {
       // load the ToolFactory using the default constructor
       theFactory = ExtensionLoader.instantiateExtension(

@@ -56,7 +56,7 @@ public final class POSTaggerEvaluatorTool
     super.run(format, args);
 
     POSModel model = new POSModelLoader().load(params.getModel());
-    
+
     POSTaggerEvaluationMonitor missclassifiedListener = null;
     if (params.getMisclassified()) {
       missclassifiedListener = new POSEvaluationErrorListener();

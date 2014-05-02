@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -32,12 +32,12 @@ public interface SequenceClassificationModel<T> {
 
   /**
    * Finds the sequence with the highest probability.
-   * 
+   *
    * @param sequence
    * @param additionalContext
    * @param cg
    * @param validator
-   * 
+   *
    * @return
    */
   Sequence bestSequence(T[] sequence, Object[] additionalContext,
@@ -45,33 +45,33 @@ public interface SequenceClassificationModel<T> {
 
   /**
    * Finds the n most probable sequences.
-   * 
+   *
    * @param sequence
    * @param additionalContext
    * @param cg
    * @param validator
-   * 
+   *
    * @return
    */
   Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, double minSequenceScore, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
-  
+
   /**
    * Finds the n most probable sequences.
-   * 
+   *
    * @param sequence
    * @param additionalContext
    * @param cg
    * @param validator
-   * 
+   *
    * @return
    */
   Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
-  
+
   /**
    * Returns all possible outcomes.
-   * 
+   *
    * @return
    */
   String[] getOutcomes();

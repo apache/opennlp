@@ -45,7 +45,7 @@ import opennlp.tools.util.eval.Mean;
  * <p>
  * It is possible to use it from an API and access the statistics using the
  * provided getters
- * 
+ *
  */
 public class DoccatFineGrainedReportListener implements DoccatEvaluationMonitor {
 
@@ -396,7 +396,7 @@ public class DoccatFineGrainedReportListener implements DoccatEvaluationMonitor 
 
     /**
      * Includes a new evaluation data
-     * 
+     *
      * @param tok
      *          the evaluated token
      * @param ref
@@ -703,7 +703,7 @@ public class DoccatFineGrainedReportListener implements DoccatEvaluationMonitor 
 
     /**
      * Creates a new {@link ConfusionMatrixLine}
-     * 
+     *
      * @param ref
      *          the reference column
      */
@@ -713,7 +713,7 @@ public class DoccatFineGrainedReportListener implements DoccatEvaluationMonitor 
 
     /**
      * Increments the counter for the given column and updates the statistics.
-     * 
+     *
      * @param column
      *          the column to be incremented
      */
@@ -729,7 +729,7 @@ public class DoccatFineGrainedReportListener implements DoccatEvaluationMonitor 
 
     /**
      * Gets the calculated accuracy of this element
-     * 
+     *
      * @return the accuracy
      */
     public double getAccuracy() {
@@ -744,7 +744,7 @@ public class DoccatFineGrainedReportListener implements DoccatEvaluationMonitor 
 
     /**
      * Gets the value given a column
-     * 
+     *
      * @param column
      *          the column
      * @return the counter value

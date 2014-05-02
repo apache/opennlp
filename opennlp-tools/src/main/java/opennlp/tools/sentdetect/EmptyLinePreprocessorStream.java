@@ -24,7 +24,7 @@ import opennlp.tools.util.ObjectStream;
 
 /**
  * Stream to to clean up empty lines for empty line separated document streams.<br>
- * 
+ *
  * - Skips empty line at training data start<br>
  * - Transforms multiple empty lines in a row into one <br>
  * - Replaces white space lines with empty lines <br>
@@ -37,34 +37,34 @@ import opennlp.tools.util.ObjectStream;
  * Do not use this class, internal use only!
  */
 public class EmptyLinePreprocessorStream extends FilterObjectStream<String, String> {
-  
+
   private boolean lastLineWasEmpty = true;
-  
+
   public EmptyLinePreprocessorStream(ObjectStream<String> in) {
     super(in);
   }
-  
+
   private static boolean isLineEmpty(String line) {
     return line.trim().length() == 0;
   }
-  
+
   public String read() throws IOException {
-    
+
     String line = samples.read();
-    
+
     if (lastLineWasEmpty) {
       lastLineWasEmpty = false;
-      
+
       while (line != null && isLineEmpty(line)) {
         line = samples.read();
       }
     }
- 
+
     if (line != null && isLineEmpty(line)) {
       lastLineWasEmpty = true;
       line = "";
     }
-    
+
     return line;
   }
 }

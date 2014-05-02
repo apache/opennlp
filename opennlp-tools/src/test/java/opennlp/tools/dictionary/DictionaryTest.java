@@ -42,14 +42,14 @@ public class DictionaryTest {
   private Dictionary getCaseSensitive() {
       return new Dictionary(true);
   }
-  
+
   /**
    * @return a case insensitive Dictionary
    */
   private Dictionary getCaseInsensitive() {
       return new Dictionary(false);
   }
-  
+
   /**
    * Tests a basic lookup.
    */
@@ -86,7 +86,7 @@ public class DictionaryTest {
     assertTrue(!dict.contains(entry1u));
     assertTrue(!dict.contains(entry2));
   }
-  
+
   /**
    * Tests serialization and deserailization of the {@link Dictionary}.
    *
@@ -158,7 +158,7 @@ public class DictionaryTest {
     Dictionary dictB = getCaseInsensitive();
     dictB.put(entry1);
     dictB.put(entry2);
-    
+
     Dictionary dictC = getCaseSensitive();
     dictC.put(entry1);
     dictC.put(entry2);
@@ -181,10 +181,10 @@ public class DictionaryTest {
 
     Dictionary dictB = getCaseInsensitive();
     dictB.put(entry2);
-    
+
     Dictionary dictC = getCaseSensitive();
     dictC.put(entry1);
-    
+
     Dictionary dictD = getCaseSensitive();
     dictD.put(entry2);
 

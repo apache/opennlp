@@ -29,14 +29,14 @@ import opennlp.tools.util.featuregen.StringPattern;
 public class BagOfWordsFeatureGenerator implements FeatureGenerator {
 
   private boolean useOnlyAllLetterTokens = false;
-  
+
   public BagOfWordsFeatureGenerator() {
   }
-  
+
   BagOfWordsFeatureGenerator(boolean useOnlyAllLetterTokens) {
     this.useOnlyAllLetterTokens = useOnlyAllLetterTokens;
   }
-  
+
   @Override
   public Collection<String> extractFeatures(String[] text) {
 
@@ -45,7 +45,7 @@ public class BagOfWordsFeatureGenerator implements FeatureGenerator {
     for (String word : text) {
       if (useOnlyAllLetterTokens) {
         StringPattern pattern = StringPattern.recognize(word);
-        
+
         if (pattern.isAllLetter())
           bagOfWords.add("bow=" + word);
       }

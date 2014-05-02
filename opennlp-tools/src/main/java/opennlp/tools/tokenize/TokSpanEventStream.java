@@ -43,9 +43,9 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
   private TokenContextGenerator cg;
 
   private boolean skipAlphaNumerics;
-  
+
   private final Pattern alphaNumeric;
-  
+
   /**
    * Initializes the current instance.
    *

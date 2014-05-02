@@ -32,84 +32,84 @@ import org.junit.Test;
  * Tests for the {@link TokenSampleStream} class.
  */
 public class TokenSampleStreamTest {
-  
+
   /**
    * Tests if the {@link TokenSample} correctly tokenizes tokens which
    * are separated by a whitespace.
-   * 
+   *
    * @throws ObjectStreamException
    */
   @Test
   public void testParsingWhitespaceSeparatedTokens() throws IOException {
     String sampleTokens = "Slave to the wage";
-    
+
     ObjectStream<TokenSample> sampleTokenStream = new TokenSampleStream(
       ObjectStreamUtils.createObjectStream(sampleTokens));
-    
+
     TokenSample tokenSample = sampleTokenStream.read();
-    
+
     Span tokenSpans[] = tokenSample.getTokenSpans();
-   
+
     assertEquals(4, tokenSpans.length);
-    
+
     assertEquals("Slave", tokenSpans[0].getCoveredText(sampleTokens));
     assertEquals("to", tokenSpans[1].getCoveredText(sampleTokens));
     assertEquals("the", tokenSpans[2].getCoveredText(sampleTokens));
     assertEquals("wage", tokenSpans[3].getCoveredText(sampleTokens));
   }
-  
+
   /**
    * Tests if the {@link TokenSample} correctly tokenizes tokens which
    * are separated by the split chars.
-   * 
+   *
    * @throws ObjectStreamException
    */
   @Test
   public void testParsingSeparatedString() throws IOException {
     String sampleTokens = "a<SPLIT>b<SPLIT>c<SPLIT>d";
-    
+
     ObjectStream<TokenSample> sampleTokenStream = new TokenSampleStream(
       ObjectStreamUtils.createObjectStream(sampleTokens));
-    
+
     TokenSample tokenSample = sampleTokenStream.read();
-    
+
     Span tokenSpans[] = tokenSample.getTokenSpans();
-    
+
     assertEquals(4, tokenSpans.length);
-    
+
     assertEquals("a", tokenSpans[0].getCoveredText(tokenSample.getText()));
     assertEquals(new Span(0,1), tokenSpans[0]);
-    
+
     assertEquals("b", tokenSpans[1].getCoveredText(tokenSample.getText()));
     assertEquals(new Span(1,2), tokenSpans[1]);
 
     assertEquals("c", tokenSpans[2].getCoveredText(tokenSample.getText()));
     assertEquals(new Span(2,3), tokenSpans[2]);
-    
+
     assertEquals("d", tokenSpans[3].getCoveredText(tokenSample.getText()));
     assertEquals(new Span(3,4), tokenSpans[3]);
 
   }
-  
+
   /**
    * Tests if the {@link TokenSample} correctly tokenizes tokens which
    * are separated by whitespace and by the split chars.
-   * 
+   *
    * @throws ObjectStreamException
    */
   @Test
   public void testParsingWhitespaceAndSeparatedString() throws IOException {
     String sampleTokens = "a b<SPLIT>c d<SPLIT>e";
-    
+
     ObjectStream<TokenSample> sampleTokenStream = new TokenSampleStream(
       ObjectStreamUtils.createObjectStream(sampleTokens));
-    
+
     TokenSample tokenSample = sampleTokenStream.read();
-    
+
     Span tokenSpans[] = tokenSample.getTokenSpans();
-    
+
     assertEquals(5, tokenSpans.length);
-    
+
     assertEquals("a", tokenSpans[0].getCoveredText(tokenSample.getText()));
     assertEquals("b", tokenSpans[1].getCoveredText(tokenSample.getText()));
     assertEquals("c", tokenSpans[2].getCoveredText(tokenSample.getText()));

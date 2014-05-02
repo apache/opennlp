@@ -48,18 +48,18 @@ public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
    * Create a list of expected parameters.
    */
   interface Parameters {
-    
+
     @ParameterDescription(valueName = "code")
     @OptionalParameter(defaultValue = "en")
     String getLang();
-    
+
     @ParameterDescription(valueName = "charsetName")
     @OptionalParameter(defaultValue="UTF-8")
     String getEncoding();
-    
+
     @ParameterDescription(valueName = "censusDict")
     String getCensusData();
-    
+
     @ParameterDescription(valueName = "dict")
     String getDict();
   }
@@ -107,9 +107,9 @@ public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
     CmdLineUtil.checkOutputFile("Dictionary file", dictOutFile);
 
     FileInputStream sampleDataIn = CmdLineUtil.openInFile(testData);
-    ObjectStream<StringList> sampleStream = new NameFinderCensus90NameStream(sampleDataIn, 
+    ObjectStream<StringList> sampleStream = new NameFinderCensus90NameStream(sampleDataIn,
         Charset.forName(params.getEncoding()));
-    
+
     Dictionary mDictionary;
     try {
       System.out.println("Creating Dictionary...");
@@ -126,9 +126,9 @@ public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
     }
 
     System.out.println("Saving Dictionary...");
-    
+
     OutputStream out = null;
-    
+
     try {
       out = new FileOutputStream(dictOutFile);
       mDictionary.serialize(out);

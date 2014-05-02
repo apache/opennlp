@@ -41,7 +41,7 @@ public class NameSampleDataStream extends FilterObjectStream<String, NameSample>
 
   public NameSample read() throws IOException {
       String token = samples.read();
-      
+
       boolean isClearAdaptiveData = false;
 
       // An empty line indicates the begin of a new article
@@ -51,7 +51,7 @@ public class NameSampleDataStream extends FilterObjectStream<String, NameSample>
           isClearAdaptiveData = true;
           token = samples.read();
       }
-      
+
       if (token != null) {
         return NameSample.parse(token, isClearAdaptiveData);
       }

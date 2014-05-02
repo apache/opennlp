@@ -37,7 +37,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class ChunkerCrossValidatorTool
     extends AbstractCrossValidatorTool<ChunkSample, CVToolParams> {
-  
+
   interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams {
   }
 
@@ -48,7 +48,7 @@ public final class ChunkerCrossValidatorTool
   public String getShortDescription() {
     return "K-fold cross validator for the chunker";
   }
-  
+
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -89,7 +89,7 @@ public final class ChunkerCrossValidatorTool
         // sorry that this can fail
       }
     }
-    
+
     if (detailedFMeasureListener == null) {
       FMeasure result = validator.getFMeasure();
       System.out.println(result.toString());

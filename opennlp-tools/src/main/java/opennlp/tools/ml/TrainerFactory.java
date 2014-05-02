@@ -36,7 +36,7 @@ public class TrainerFactory {
     EVENT_MODEL_SEQUENCE_TRAINER,
     SEQUENCE_TRAINER
   }
-  
+
   // built-in trainers
   private static final Map<String, Class> BUILTIN_TRAINERS;
 
@@ -56,7 +56,7 @@ public class TrainerFactory {
     try {
       Class<?> trainerClass = Class.forName(className);
       if(trainerClass != null) {
-        
+
         if (EventTrainer.class.isAssignableFrom(trainerClass)) {
           return EventTrainer.EVENT_VALUE;
         }
@@ -69,29 +69,29 @@ public class TrainerFactory {
       }
     } catch (ClassNotFoundException e) {
     }
-    
+
     return null;
   }
-  
+
   /**
    * Determines the trainer type based on the ALGORITHM_PARAM value.
-   * 
+   *
    * @param trainParams
    * @return the trainer type or null if type couldn't be determined.
    */
   public static TrainerType getTrainerType(Map<String, String> trainParams){
 
-    String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM); 
-    
+    String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
+
     // Check if it is defaulting to the MAXENT trainer
     if (alogrithmValue == null) {
       return TrainerType.EVENT_MODEL_TRAINER;
     }
-    
+
     Class<?> trainerClass = BUILTIN_TRAINERS.get(alogrithmValue);
-    
+
     if(trainerClass != null) {
-      
+
       if (EventTrainer.class.isAssignableFrom(trainerClass)) {
         return TrainerType.EVENT_MODEL_TRAINER;
       }
@@ -104,14 +104,14 @@ public class TrainerFactory {
     }
 
     // Try to load the different trainers, and return the type on success
-    
+
     try {
       ExtensionLoader.instantiateExtension(EventTrainer.class, alogrithmValue);
-      return TrainerType.EVENT_MODEL_TRAINER; 
+      return TrainerType.EVENT_MODEL_TRAINER;
     }
     catch (ExtensionNotLoadedException e) {
     }
-    
+
     try {
       ExtensionLoader.instantiateExtension(EventModelSequenceTrainer.class, alogrithmValue);
       return TrainerType.EVENT_MODEL_SEQUENCE_TRAINER;
@@ -128,29 +128,29 @@ public class TrainerFactory {
 
     return null;
   }
-  
+
   /**
    * @deprecated use getTrainerType instead!
    */
   @Deprecated
   public static boolean isSupportEvent(Map<String, String> trainParams) {
-    
+
     String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
-    
+
     if (trainerType == null) {
       String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
       if (alogrithmValue != null) {
         trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
       }
     }
-    
+
     if (trainerType != null) {
       return EventTrainer.EVENT_VALUE.equals(trainerType);
-    } 
-    
+    }
+
     return true;
   }
-  
+
   /**
    * @deprecated use getTrainerType instead!
    */
@@ -158,46 +158,46 @@ public class TrainerFactory {
   public static boolean isSupportSequence(Map<String, String> trainParams) {
     return isSupportEventModelSequenceTraining(trainParams);
   }
-  
+
   /**
    * @deprecated use getTrainerType instead!
    */
   @Deprecated
   public static boolean isSupportEventModelSequenceTraining(Map<String, String> trainParams) {
-    
+
     String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
-    
+
     if (trainerType == null) {
       String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
       if (alogrithmValue != null) {
         trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
       }
     }
-    
+
     return EventModelSequenceTrainer.SEQUENCE_VALUE.equals(trainerType);
   }
-  
+
   /**
    * @deprecated use getTrainerType instead!
    */
   @Deprecated
   public static boolean isSupportSequenceTraining(Map<String, String> trainParams) {
     String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
-    
+
     if (trainerType == null) {
       String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
       if (alogrithmValue != null) {
         trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
       }
     }
-    
+
     return SequenceTrainer.SEQUENCE_VALUE.equals(trainerType);
   }
-  
+
   // TODO: How to do the testing ?!
   // is support event sequence ?
   // is support sequence ?
-  
+
   /**
    * @deprecated use getTrainerType instead!
    */
@@ -206,11 +206,11 @@ public class TrainerFactory {
     return SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE
         .equals(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
   }
-  
+
   public static SequenceTrainer getSequenceModelTrainer(Map<String, String> trainParams,
       Map<String, String> reportMap) {
     String trainerType = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
-    
+
     if (trainerType != null) {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
         SequenceTrainer trainer =  TrainerFactory.<SequenceTrainer> createBuiltinTrainer(
@@ -227,7 +227,7 @@ public class TrainerFactory {
       throw new IllegalArgumentException("Trainer type couldn't be determined!");
     }
   }
-  
+
   public static EventModelSequenceTrainer getEventModelSequenceTrainer(Map<String, String> trainParams,
       Map<String, String> reportMap) {
     String trainerType = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
@@ -248,7 +248,7 @@ public class TrainerFactory {
       throw new IllegalArgumentException("Trainer type couldn't be determined!");
     }
   }
-  
+
   @Deprecated
   public static EventModelSequenceTrainer getSequenceTrainer(
       Map<String, String> trainParams, Map<String, String> reportMap) {
@@ -277,15 +277,15 @@ public class TrainerFactory {
       }
     }
   }
-  
+
   public static boolean isValid(Map<String, String> trainParams) {
 
     // TODO: Need to validate all parameters correctly ... error prone?!
-    
+
     String algorithmName = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
-    
+
     // If a trainer type can be determined, then the trainer is valid!
-    if (algorithmName != null && 
+    if (algorithmName != null &&
         !(BUILTIN_TRAINERS.containsKey(algorithmName) || getTrainerType(trainParams) != null)) {
       return false;
     }
@@ -293,25 +293,25 @@ public class TrainerFactory {
     try {
       String cutoffString = trainParams.get(AbstractTrainer.CUTOFF_PARAM);
       if (cutoffString != null) Integer.parseInt(cutoffString);
-      
+
       String iterationsString = trainParams.get(AbstractTrainer.ITERATIONS_PARAM);
       if (iterationsString != null) Integer.parseInt(iterationsString);
     }
     catch (NumberFormatException e) {
       return false;
     }
-    
+
     String dataIndexer = trainParams.get(AbstractEventTrainer.DATA_INDEXER_PARAM);
-    
+
     if (dataIndexer != null) {
-      if (!(AbstractEventTrainer.DATA_INDEXER_ONE_PASS_VALUE.equals(dataIndexer) 
+      if (!(AbstractEventTrainer.DATA_INDEXER_ONE_PASS_VALUE.equals(dataIndexer)
           || AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE.equals(dataIndexer))) {
         return false;
       }
     }
-    
-    // TODO: Check data indexing ... 
-     
+
+    // TODO: Check data indexing ...
+
     return true;
   }
 
@@ -330,7 +330,7 @@ public class TrainerFactory {
         throw new IllegalArgumentException(msg, e);
       }
     }
-    
+
     return theTrainer;
   }
 }

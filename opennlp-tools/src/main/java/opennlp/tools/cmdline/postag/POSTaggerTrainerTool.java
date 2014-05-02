@@ -40,7 +40,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class POSTaggerTrainerTool
     extends AbstractTrainerTool<POSSample, TrainerToolParams> {
-  
+
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 
@@ -51,7 +51,7 @@ public final class POSTaggerTrainerTool
   public String getShortDescription() {
     return "trains a model for the part-of-speech tagger";
   }
-  
+
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -70,9 +70,9 @@ public final class POSTaggerTrainerTool
     CmdLineUtil.checkOutputFile("pos tagger model", modelOutFile);
 
     Dictionary ngramDict = null;
-    
+
     Integer ngramCutoff = params.getNgram();
-    
+
     if (ngramCutoff != null) {
       System.err.print("Building ngram dictionary ... ");
       try {
@@ -140,23 +140,23 @@ public final class POSTaggerTrainerTool
         // sorry that this can fail
       }
     }
-    
+
     CmdLineUtil.writeModel("pos tagger", modelOutFile, model);
   }
-  
+
   static ModelType getModelType(String modelString) {
     ModelType model;
     if (modelString == null)
       modelString = "maxent";
-    
+
     if (modelString.equals("maxent")) {
-      model = ModelType.MAXENT; 
+      model = ModelType.MAXENT;
     }
     else if (modelString.equals("perceptron")) {
-      model = ModelType.PERCEPTRON; 
+      model = ModelType.PERCEPTRON;
     }
     else if (modelString.equals("perceptron_sequence")) {
-      model = ModelType.PERCEPTRON_SEQUENCE; 
+      model = ModelType.PERCEPTRON_SEQUENCE;
     }
     else {
       model = null;

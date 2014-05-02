@@ -40,7 +40,7 @@ import opennlp.tools.util.SequenceValidator;
 public class BeamSearch<T> implements SequenceClassificationModel<T> {
 
   public static final String BEAM_SIZE_PARAMETER = "BeamSize";
-      
+
   private static final Object[] EMPTY_ADDITIONAL_CONTEXT = new Object[0];
 
   protected int size;
@@ -162,30 +162,30 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
 
     return topSequences;
   }
-  
+
   public Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
     return bestSequences(numSequences, sequence, additionalContext, zeroLog, cg, validator);
   }
-  
+
   public Sequence bestSequence(T[] sequence, Object[] additionalContext,
       BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
     Sequence sequences[] =  bestSequences(1, sequence, additionalContext, cg, validator);
-    
+
     if (sequences.length > 0)
       return sequences[0];
-    else 
+    else
       return null;
   }
-  
+
   @Override
   public String[] getOutcomes() {
     String outcomes[] = new String[model.getNumOutcomes()];
-    
+
     for (int i = 0; i < model.getNumOutcomes(); i++) {
       outcomes[i] = model.getOutcome(i);
     }
-    
+
     return outcomes;
   }
 }

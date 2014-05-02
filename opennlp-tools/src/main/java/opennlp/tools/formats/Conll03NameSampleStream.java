@@ -2,9 +2,9 @@
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,7 +40,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
     EN,
     DE
   }
-  
+
   private final LANGUAGE lang;
   private final ObjectStream<String> lineStream;
 
@@ -70,7 +70,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
     }
     this.types = types;
   }
-  
+
   /**
    *
    * @param lang
@@ -106,10 +106,10 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
       if (line.startsWith(Conll02NameSampleStream.DOCSTART)) {
         isClearAdaptiveData = true;
         String emptyLine = lineStream.read();
-        
+
         if (!StringUtil.isEmpty(emptyLine))
           throw new IOException("Empty line after -DOCSTART- not empty: '" + emptyLine +"'!");
-        
+
         continue;
       }
 
@@ -141,19 +141,19 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
 
         String tag = tags.get(i);
 
-        if (tag.endsWith("PER") && 
+        if (tag.endsWith("PER") &&
         		(types & Conll02NameSampleStream.GENERATE_PERSON_ENTITIES) == 0)
           tag = "O";
 
-        if (tag.endsWith("ORG") && 
+        if (tag.endsWith("ORG") &&
         		(types & Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES) == 0)
           tag = "O";
 
-        if (tag.endsWith("LOC") && 
+        if (tag.endsWith("LOC") &&
         		(types & Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES) == 0)
           tag = "O";
 
-        if (tag.endsWith("MISC") && 
+        if (tag.endsWith("MISC") &&
         		(types & Conll02NameSampleStream.GENERATE_MISC_ENTITIES) == 0)
           tag = "O";
 

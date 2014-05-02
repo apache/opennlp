@@ -39,25 +39,25 @@ public class DocumentSampleStream extends FilterObjectStream<String, DocumentSam
 
   public DocumentSample read() throws IOException {
     String sampleString = samples.read();
-    
+
     if (sampleString != null) {
-      
+
       // Whitespace tokenize entire string
       String tokens[] = WhitespaceTokenizer.INSTANCE.tokenize(sampleString);
-      
+
       DocumentSample sample;
-      
+
       if (tokens.length > 1) {
         String category = tokens[0];
         String docTokens[] = new String[tokens.length - 1];
         System.arraycopy(tokens, 1, docTokens, 0, tokens.length -1);
-        
+
         sample = new DocumentSample(category, docTokens);
       }
       else {
         throw new IOException("Empty lines, or lines with only a category string are not allowed!");
       }
-      
+
       return sample;
     }
     else {

@@ -26,7 +26,7 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringUtil;
 
 /**
- * SAX style SGML parser. 
+ * SAX style SGML parser.
  * <p>
  * Note:<br>
  * The implementation is very limited, but good enough to
@@ -36,55 +36,55 @@ import opennlp.tools.util.StringUtil;
 public class SgmlParser {
 
   public static abstract class ContentHandler {
-  
+
     public void startElement(String name, Map<String, String> attributes) throws InvalidFormatException {
     }
-    
+
     public void characters(CharSequence chars) throws InvalidFormatException{
     }
-    
+
     public void endElement(String name) throws InvalidFormatException {
     }
   }
-  
+
   private static String extractTagName(CharSequence tagChars) throws InvalidFormatException {
-    
+
     int fromOffset = 1;
 
     if (tagChars.length() > 1 && tagChars.charAt(1) == '/') {
       fromOffset = 2;
     }
-    
+
     for (int ci = 1; ci < tagChars.length(); ci++) {
-      
+
       if (tagChars.charAt(ci) == '>' || StringUtil.isWhitespace(tagChars.charAt(ci))) {
         return tagChars.subSequence(fromOffset, ci).toString();
       }
     }
-    
+
     throw new InvalidFormatException("Failed to extract tag name!");
   }
-  
+
   private static Map<String, String> getAttributes(CharSequence tagChars) {
-    
+
     // format:
     // space
     // key
-    // = 
+    // =
     // " <- begin
     // value chars
     // " <- end
 
     Map<String, String> attributes = new HashMap<String, String>();
-    
+
     StringBuilder key = new StringBuilder();
     StringBuilder value = new StringBuilder();
-    
+
     boolean extractKey = false;
     boolean extractValue = false;
-    
+
     for (int i = 0; i < tagChars.length(); i++) {
-      
+
       // White space indicates begin of new key name
       if (StringUtil.isWhitespace(tagChars.charAt(i)) && !extractValue) {
         extractKey = true;
@@ -99,15 +99,15 @@ public class SgmlParser {
       }
       // " Indicates begin or end of value chars
       else if ('"' == tagChars.charAt(i)) {
-        
+
         if (extractValue) {
           attributes.put(key.toString(), value.toString());
-          
+
           // clear key and value buffers
           key.setLength(0);
           value.setLength(0);
         }
-        
+
         extractValue = !extractValue;
       }
       // Inside value, extract all chars
@@ -115,65 +115,65 @@ public class SgmlParser {
         value.append(tagChars.charAt(i));
       }
     }
-    
+
     return attributes;
   }
-  
+
   public void parse(Reader in, ContentHandler handler) throws IOException {
-    
+
     StringBuilder buffer = new StringBuilder();
-    
+
     boolean isInsideTag = false;
     boolean isStartTag = true;
-    
+
     int lastChar = -1;
     int c;
     while ((c = in.read()) != -1) {
-      
+
       if ('<' == c) {
         if (isInsideTag) {
           throw new InvalidFormatException("Did not expect < char!");
         }
-        
+
         if (buffer.toString().trim().length() > 0) {
           handler.characters(buffer.toString().trim());
         }
-        
+
         buffer.setLength(0);
-        
+
         isInsideTag = true;
         isStartTag = true;
       }
-      
+
       buffer.appendCodePoint(c);
-        
+
       if ('/' == c && lastChar == '<') {
         isStartTag = false;
       }
-          
+
       if ('>' == c) {
-        
+
         if (!isInsideTag) {
           throw new InvalidFormatException("Did not expect > char!");
         }
-        
+
         if (isStartTag) {
           handler.startElement(extractTagName(buffer), getAttributes(buffer));
         }
         else {
           handler.endElement(extractTagName(buffer));
         }
-        
+
         buffer.setLength(0);
-        
+
         isInsideTag = false;
       }
-      
+
       lastChar = c;
     }
-    
+
     if (isInsideTag) {
-      throw new InvalidFormatException("Did not find matching > char!"); 
+      throw new InvalidFormatException("Did not find matching > char!");
     }
   }
 }

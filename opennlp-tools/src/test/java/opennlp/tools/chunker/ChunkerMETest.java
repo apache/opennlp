@@ -83,7 +83,7 @@ public class ChunkerMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
-    
+
     ChunkerModel chunkerModel = ChunkerME.train("en", sampleStream, params, new ChunkerFactory());
 
     this.chunker = new ChunkerME(chunkerModel);
@@ -139,7 +139,7 @@ public class ChunkerMETest {
     assertEquals(Arrays.asList(expect1), preds[0].getOutcomes());
     assertNotSame(Arrays.asList(expect1), preds[1].getOutcomes());
   }
-  
+
   @Test
   public void testTokenProbArray() throws Exception {
 

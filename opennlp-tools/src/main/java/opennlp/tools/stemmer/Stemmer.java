@@ -21,6 +21,6 @@ package opennlp.tools.stemmer;
  * The stemmer is reducing a word to its stem.
  */
 public interface Stemmer {
-  
+
   public CharSequence stem(CharSequence word);
 }

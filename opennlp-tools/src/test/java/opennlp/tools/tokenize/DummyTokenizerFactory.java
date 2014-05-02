@@ -35,14 +35,14 @@ public class DummyTokenizerFactory extends TokenizerFactory {
 
   public DummyTokenizerFactory() {
   }
-  
+
   public DummyTokenizerFactory(String languageCode,
       Dictionary abbreviationDictionary, boolean useAlphaNumericOptimization,
       Pattern alphaNumericPattern) {
     super(languageCode, abbreviationDictionary, useAlphaNumericOptimization,
         alphaNumericPattern);
   }
-  
+
   @Override
   protected void init(String languageCode, Dictionary abbreviationDictionary,
       boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {

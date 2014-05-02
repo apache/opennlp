@@ -24,7 +24,7 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
  * Encoding parameter. The DEFAULT_CHARSET is handled by ArgumentParser.Parse().
- * 
+ *
  * Note: Do not use this class, internal use only!
  */
 public interface EncodingParameter {

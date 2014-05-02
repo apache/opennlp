@@ -27,7 +27,7 @@ import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
-  
+
   public ChunkSampleStream(ObjectStream<Parse> in) {
     super(in);
   }
@@ -61,11 +61,11 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
     getInitialChunks(p, chunks);
     return chunks.toArray(new Parse[chunks.size()]);
   }
-  
+
   public ChunkSample read() throws IOException {
-    
+
     Parse parse = samples.read();
-    
+
     if (parse != null) {
       Parse[] chunks = getInitialChunks(parse);
       List<String> toks = new ArrayList<String>();
@@ -96,9 +96,9 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
           }
         }
       }
-      
-      return new ChunkSample(toks.toArray(new String[toks.size()]), 
-          tags.toArray(new String[tags.size()]), 
+
+      return new ChunkSample(toks.toArray(new String[toks.size()]),
+          tags.toArray(new String[tags.size()]),
           preds.toArray(new String[preds.size()]));
     }
     else {

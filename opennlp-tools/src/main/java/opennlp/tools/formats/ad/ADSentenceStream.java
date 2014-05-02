@@ -38,8 +38,8 @@ import opennlp.tools.util.ObjectStream;
  * Susana Afonso.
  * "Árvores deitadas: Descrição do formato e das opções de análise na Floresta Sintáctica"
  * .<br>
- * 12 de Fevereiro de 2006. 
- * http://www.linguateca.pt/documentos/Afonso2006ArvoresDeitadas.pdf 
+ * 12 de Fevereiro de 2006.
+ * http://www.linguateca.pt/documentos/Afonso2006ArvoresDeitadas.pdf
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
@@ -51,7 +51,7 @@ public class ADSentenceStream extends
     private String text;
     private Node root;
     private String metadata;
-    
+
     public static final String META_LABEL_FINAL = "final";
 
     public String getText() {
@@ -94,11 +94,11 @@ public class ADSentenceStream extends
     private Pattern bizarreLeafPattern = Pattern
     		.compile("^([=-]*)([^:=]+=[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
     private Pattern punctuationPattern = Pattern.compile("^(=*)(\\W+)$");
-    
+
     private String text,meta;
 
-    /** 
-     * Parse the sentence 
+    /**
+     * Parse the sentence
      */
     public Sentence parse(String sentenceString, int para, boolean isTitle, boolean isBox) {
       BufferedReader reader = new BufferedReader(new StringReader(
@@ -108,9 +108,9 @@ public class ADSentenceStream extends
       try {
         // first line is <s ...>
         String line = reader.readLine();
-        
+
         boolean useSameTextAndMeta = false; // to handle cases where there are diff sug of parse (&&)
-        
+
           // should find the source source
           while (!line.startsWith("SOURCE")) {
         	  if(line.equals("&&")) {
@@ -152,21 +152,21 @@ public class ADSentenceStream extends
         while(line != null && line.startsWith("###")) {
         	line = reader.readLine();
         }
-        
+
         // got the root. Add it to the stack
         Stack<Node> nodeStack = new Stack<Node>();
 
         root.setSyntacticTag("ROOT");
         root.setLevel(0);
         nodeStack.add(root);
-        
-        
+
+
         /* now we have to take care of the lastLevel. Every time it raises, we will add the
         leaf to the node at the top. If it decreases, we remove the top. */
-        
+
         while (line != null && line.length() != 0 && line.startsWith("</s>") == false && !line.equals("&&")) {
           TreeElement element = this.getElement(line);
-          
+
           if(element != null) {
             // The idea here is to keep a stack of nodes that are candidates for
             // parenting the following elements (nodes and leafs).
@@ -177,14 +177,14 @@ public class ADSentenceStream extends
                 && element.getLevel() <= nodeStack.peek().getLevel()) {
               Node nephew = nodeStack.pop();
             }
-            
+
             if( element.isLeaf() ) {
               // 2a) If the element is a leaf and there is no parent candidate,
-              // add it as a daughter of the root.  
+              // add it as a daughter of the root.
               if (nodeStack.isEmpty()) {
                 root.addElement(element);
               } else {
-                // 2b) There are parent candidates. 
+                // 2b) There are parent candidates.
                 // look for the node with the correct level
                 Node peek = nodeStack.peek();
                 if (element.level == 0) { // add to the root
@@ -209,7 +209,7 @@ public class ADSentenceStream extends
               }
             } else {
               // 3) Check if the element that is at the top of the stack is this
-              // node parent, if yes add it as a son 
+              // node parent, if yes add it as a son
               if (!nodeStack.isEmpty() && nodeStack.peek().getLevel() < element.getLevel()) {
                   nodeStack.peek().addElement(element);
               } else {
@@ -217,7 +217,7 @@ public class ADSentenceStream extends
               }
               // 4) Add it to the stack so it is a parent candidate.
               nodeStack.push((Node) element);
-              
+
             }
           }
           line = reader.readLine();
@@ -241,14 +241,14 @@ public class ADSentenceStream extends
 
     /**
      * Parse a tree element from a AD line
-     * 
+     *
      * @param line
      *          the AD line
      * @return the tree element
      */
     public TreeElement getElement(String line) {
       // Note: all levels are higher than 1, because 0 is reserved for the root.
-      
+
       // try node
       Matcher nodeMatcher = nodePattern.matcher(line);
       if (nodeMatcher.matches()) {
@@ -295,7 +295,7 @@ public class ADSentenceStream extends
       if(line.equals("_") || line.startsWith("<lixo") || line.startsWith("pause")) {
       	return null;
       }
-      
+
       if(line.startsWith("=")) {
       	Matcher bizarreLeafMatcher = bizarreLeafPattern.matcher(line);
         if (bizarreLeafMatcher.matches()) {
@@ -320,21 +320,21 @@ public class ADSentenceStream extends
         } else {
         	int level = line.lastIndexOf("=") + 1;
         	String lexeme = line.substring(level + 1);
-        	
+
         	if(lexeme.matches("\\w.*?[\\.<>].*")) {
         	  return null;
         	}
-        	
+
         	 Leaf leaf = new Leaf();
            leaf.setLevel(level + 1);
            leaf.setSyntacticTag("");
            leaf.setMorphologicalTag("");
            leaf.setLexeme(lexeme);
-           
+
            return leaf;
         }
       }
-      
+
       System.err.println("Couldn't parse leaf: " + line);
       Leaf leaf = new Leaf();
       leaf.setLevel(1);
@@ -351,7 +351,7 @@ public class ADSentenceStream extends
       private String syntacticTag;
       private String morphologicalTag;
       private int level;
-      
+
       public boolean isLeaf() {return false;}
 
       public void setSyntacticTag(String syntacticTag) {
@@ -420,11 +420,11 @@ public class ADSentenceStream extends
 
       @Override
       public boolean isLeaf() {return true;}
-      
+
       public void setFunctionalTag(String funcTag) {
         this.functionalTag = funcTag;
       }
-      
+
       public String getFunctionalTag(){
         return this.functionalTag;
       }
@@ -432,7 +432,7 @@ public class ADSentenceStream extends
       public void setSecondaryTag(String secondaryTag) {
         this.secondaryTag = secondaryTag;
       }
-      
+
       public String getSecondaryTag() {
         return this.secondaryTag;
       }
@@ -444,7 +444,7 @@ public class ADSentenceStream extends
       public String getLexeme() {
         return word;
       }
-      
+
       private String emptyOrString(String value, String prefix, String suffix) {
         if(value == null) return "";
         return prefix + value + suffix;
@@ -478,46 +478,46 @@ public class ADSentenceStream extends
     }
 
   }
-  
-  /** 
-   * The start sentence pattern 
+
+  /**
+   * The start sentence pattern
    */
   private static final Pattern sentStart = Pattern.compile("<s[^>]*>");
 
-  /** 
-   * The end sentence pattern 
+  /**
+   * The end sentence pattern
    */
   private static final Pattern sentEnd = Pattern.compile("</s>");
   private static final Pattern extEnd = Pattern.compile("</ext>");
-  
-  /** 
-   * The start sentence pattern 
+
+  /**
+   * The start sentence pattern
    */
   private static final Pattern titleStart = Pattern.compile("<t[^>]*>");
 
-  /** 
-   * The end sentence pattern 
+  /**
+   * The end sentence pattern
    */
   private static final Pattern titleEnd = Pattern.compile("</t>");
-  
-  /** 
-   * The start sentence pattern 
+
+  /**
+   * The start sentence pattern
    */
   private static final Pattern boxStart = Pattern.compile("<caixa[^>]*>");
 
-  /** 
-   * The end sentence pattern 
+  /**
+   * The end sentence pattern
    */
   private static final Pattern boxEnd = Pattern.compile("</caixa>");
-  
-  
-  /** 
-   * The start sentence pattern 
+
+
+  /**
+   * The start sentence pattern
    */
   private static final Pattern paraStart = Pattern.compile("<p[^>]*>");
 
-  /** 
-   * The start sentence pattern 
+  /**
+   * The start sentence pattern
    */
   private static final Pattern textStart = Pattern.compile("<ext[^>]*>");
 
@@ -526,12 +526,12 @@ public class ADSentenceStream extends
   private int paraID = 0;
   private boolean isTitle = false;
   private boolean isBox = false;
-  
+
   public ADSentenceStream(ObjectStream<String> lineStream) {
     super(lineStream);
     parser = new SentenceParser();
   }
-  
+
 
   public Sentence read() throws IOException {
 
@@ -542,7 +542,7 @@ public class ADSentenceStream extends
       String line = samples.read();
 
       if (line != null) {
-    	  
+
     	  if(sentenceStarted) {
     		  if (sentEnd.matcher(line).matches() || extEnd.matcher(line).matches()) {
 		          sentenceStarted = false;

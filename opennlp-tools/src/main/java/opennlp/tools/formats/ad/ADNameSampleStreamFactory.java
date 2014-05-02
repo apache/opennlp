@@ -49,7 +49,7 @@ public class ADNameSampleStreamFactory extends LanguageSampleStreamFactory<NameS
 
     @ParameterDescription(valueName = "sampleData", description = "data to be used, usually a file name.")
     File getData();
-    
+
     @ParameterDescription(valueName = "split", description = "if true all hyphenated tokens will be separated (default true)")
     @OptionalParameter(defaultValue = "true")
     Boolean getSplitHyphenatedTokens();

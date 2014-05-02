@@ -31,7 +31,7 @@ public class TokenizerStream implements ObjectStream<TokenSample> {
 
   private Tokenizer tokenizer;
   private ObjectStream<String> input;
-  
+
   public TokenizerStream(Tokenizer tokenizer, ObjectStream<String> input) {
     this.tokenizer = tokenizer;
     this.input = input;
@@ -39,16 +39,16 @@ public class TokenizerStream implements ObjectStream<TokenSample> {
 
   public TokenSample read() throws IOException {
     String inputString = input.read();
-    
+
     if (inputString != null) {
       Span tokens[] = tokenizer.tokenizePos(inputString);
-      
+
       return new TokenSample(inputString, tokens);
     }
-    
+
     return null;
   }
-  
+
   public void close() throws IOException {
     input.close();
   }

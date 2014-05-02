@@ -45,7 +45,7 @@ public class StringList implements Iterable<String> {
 
   /**
    * Initializes the current instance.
-   * 
+   *
    * Note: <br>
    * Token Strings will be replaced by identical internal String object.
    *

@@ -34,7 +34,7 @@ final public class TokenNameFinderModelLoader extends ModelLoader<TokenNameFinde
   public TokenNameFinderModelLoader() {
     super("Token Name Finder");
   }
-  
+
   @Override
   protected TokenNameFinderModel loadModel(InputStream modelIn)
       throws IOException, InvalidFormatException {

@@ -44,7 +44,7 @@ import org.junit.Test;
  * This is the test class for {@link NameSampleDataStream}..
  */
 public class NameSampleDataStreamTest {
-  
+
   final String person = "person";
   final String date = "date";
   final String location = "location";
@@ -52,7 +52,7 @@ public class NameSampleDataStreamTest {
 
   /**
    * Create a string from a array section.
-   * 
+   *
    * @param tokens the tokens
    * @param nameSpan the section
    * @return the string
@@ -65,11 +65,11 @@ public class NameSampleDataStreamTest {
 
     return sb.toString().trim();
   }
-  
+
   /**
    * Create a NameSampleDataStream from a corpus with entities annotated but
    * without nameType and validate it.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -85,10 +85,10 @@ public class NameSampleDataStreamTest {
     NameSample ns = ds.read();
 
     String[] expectedNames = { "Alan McKennedy", "Julie", "Marie Clara",
-        "Stefanie Schmidt", "Mike", "Stefanie Schmidt", "George", "Luise", 
-        "George Bauer", "Alisa Fernandes", "Alisa", "Mike Sander", 
-        "Stefan Miller", "Stefan Miller", "Stefan Miller", "Elenor Meier", 
-        "Gina Schneider", "Bruno Schulz", "Michel Seile", "George Miller", 
+        "Stefanie Schmidt", "Mike", "Stefanie Schmidt", "George", "Luise",
+        "George Bauer", "Alisa Fernandes", "Alisa", "Mike Sander",
+        "Stefan Miller", "Stefan Miller", "Stefan Miller", "Elenor Meier",
+        "Gina Schneider", "Bruno Schulz", "Michel Seile", "George Miller",
         "Miller", "Peter Schubert", "Natalie" };
 
     List<String> names = new ArrayList<String>();
@@ -127,7 +127,7 @@ public class NameSampleDataStreamTest {
     assertEquals(createDefaultSpan(2,4), spans.get(21));
     assertEquals(createDefaultSpan(5,6), spans.get(22));
   }
-  
+
   private Span createDefaultSpan(int s, int e) {
     return new Span(s, e, NameSample.DEFAULT_TYPE);
   }
@@ -139,36 +139,36 @@ public class NameSampleDataStreamTest {
   public void testWithoutNameTypeAndInvalidData() {
     NameSampleDataStream sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START> <START> Name <END>"));
-    
+
     try {
       sampleStream.read();
       fail();
     } catch (IOException e) {
     }
-    
+
     sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START> Name <END> <END>"));
-    
+
     try {
       sampleStream.read();
       fail();
     } catch (IOException e) {
     }
-    
+
     sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START> <START> Person <END> Street <END>"));
-    
+
     try {
       sampleStream.read();
       fail();
     } catch (IOException e) {
     }
   }
-  
+
   /**
    * Create a NameSampleDataStream from a corpus with entities annotated
    * with multiple nameTypes, like person, date, location and organization, and validate it.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -181,7 +181,7 @@ public class NameSampleDataStreamTest {
 
     Map<String, List<String>> names = new HashMap<String, List<String>>();
     Map<String, List<Span>> spans = new HashMap<String, List<Span>>();
-    
+
     NameSample ns;
     while ((ns = ds.read()) != null) {
       Span[] nameSpans = ns.getNames();
@@ -197,7 +197,7 @@ public class NameSampleDataStreamTest {
             .add(nameSpan);
       }
     }
-    
+
     String[] expectedPerson = { "Barack Obama", "Obama", "Obama",
         "Lee Myung - bak", "Obama", "Obama", "Scott Snyder", "Snyder", "Obama",
         "Obama", "Obama", "Tim Peters", "Obama", "Peters" };
@@ -208,14 +208,14 @@ public class NameSampleDataStreamTest {
         "China", "South Korea", "North Korea", "North Korea", "U . S .",
         "South Korea", "United States", "Pyongyang", "North Korea",
         "South Korea", "Afghanistan", "Seoul", "U . S .", "China" };
-    
+
     String[] expectedOrganization = {"Center for U . S . Korea Policy"};
-    
+
     assertEquals(expectedPerson.length, names.get(person).size());
     assertEquals(expectedDate.length, names.get(date).size());
     assertEquals(expectedLocation.length, names.get(location).size());
     assertEquals(expectedOrganization.length, names.get(organization).size());
-    
+
     assertEquals(new Span(5,7, person), spans.get(person).get(0));
     assertEquals(expectedPerson[0], names.get(person).get(0));
     assertEquals(new Span(10,11, person), spans.get(person).get(1));
@@ -251,7 +251,7 @@ public class NameSampleDataStreamTest {
     assertEquals(expectedDate[1], names.get(date).get(1));
     assertEquals(new Span(15,16, date), spans.get(date).get(2));
     assertEquals(expectedDate[2], names.get(date).get(2));
-    
+
     assertEquals(new Span(0, 4, location), spans.get(location).get(0));
     assertEquals(expectedLocation[0], names.get(location).get(0));
     assertEquals(new Span(10,12, location), spans.get(location).get(1));
@@ -286,34 +286,34 @@ public class NameSampleDataStreamTest {
     assertEquals(expectedLocation[15], names.get(location).get(15));
     assertEquals(new Span(11,12, location), spans.get(location).get(16));
     assertEquals(expectedLocation[16], names.get(location).get(16));
-    
+
     assertEquals(new Span(7,15, organization), spans.get(organization).get(0));
     assertEquals(expectedOrganization[0], names.get(organization).get(0));
-    
+
   }
-  
+
   @Test
   public void testWithNameTypeAndInvalidData() {
-    
+
     NameSampleDataStream sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START:> Name <END>"));
-    
+
     try {
       sampleStream.read();
       fail();
     } catch (IOException e) {
     }
-    
+
     sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START:street> <START:person> Name <END> <END>"));
-    
+
     try {
       sampleStream.read();
       fail();
     } catch (IOException e) {
     }
   }
-  
+
   @Test
   public void testClearAdaptiveData() throws IOException {
     StringBuilder trainingData = new StringBuilder();
@@ -322,36 +322,36 @@ public class NameSampleDataStreamTest {
     trainingData.append("c\n");
     trainingData.append("\n");
     trainingData.append("d\n");
-    
+
     ObjectStream<String> untokenizedLineStream =
       new PlainTextByLineStream(new StringReader(trainingData.toString()));
-    
+
     ObjectStream<NameSample> trainingStream = new NameSampleDataStream(untokenizedLineStream);
-    
+
     assertFalse(trainingStream.read().isClearAdaptiveDataSet());
     assertFalse(trainingStream.read().isClearAdaptiveDataSet());
     assertFalse(trainingStream.read().isClearAdaptiveDataSet());
     assertTrue(trainingStream.read().isClearAdaptiveDataSet());
     assertNull(trainingStream.read());
   }
-  
+
   @Test
   public void testHtmlNameSampleParsing() throws IOException {
     InputStream in = getClass().getClassLoader().getResourceAsStream(
         "opennlp/tools/namefind/html1.train");
-    
+
     NameSampleDataStream ds = new NameSampleDataStream(
         new PlainTextByLineStream(new InputStreamReader(in, "UTF-8")));
 
     NameSample ns = ds.read();
-    
+
     assertEquals(1, ns.getSentence().length);
     assertEquals("<html>", ns.getSentence()[0]);
-    
+
     ns = ds.read();
     assertEquals(1, ns.getSentence().length);
     assertEquals("<head/>", ns.getSentence()[0]);
-    
+
     ns = ds.read();
     assertEquals(1, ns.getSentence().length);
     assertEquals("<body>", ns.getSentence()[0]);
@@ -359,7 +359,7 @@ public class NameSampleDataStreamTest {
     ns = ds.read();
     assertEquals(1, ns.getSentence().length);
     assertEquals("<ul>", ns.getSentence()[0]);
-    
+
     // <li> <START:organization> Advanced Integrated Pest Management <END> </li>
     ns = ds.read();
     assertEquals(6, ns.getSentence().length);
@@ -370,7 +370,7 @@ public class NameSampleDataStreamTest {
     assertEquals("Management", ns.getSentence()[4]);
     assertEquals("</li>", ns.getSentence()[5]);
     assertEquals(new Span(1, 5, organization), ns.getNames()[0]);
-    
+
     // <li> <START:organization> Bay Cities Produce Co., Inc. <END> </li>
     ns = ds.read();
     assertEquals(7, ns.getSentence().length);
@@ -382,19 +382,19 @@ public class NameSampleDataStreamTest {
     assertEquals("Inc.", ns.getSentence()[5]);
     assertEquals("</li>", ns.getSentence()[6]);
     assertEquals(new Span(1, 6, organization), ns.getNames()[0]);
-    
+
     ns = ds.read();
     assertEquals(1, ns.getSentence().length);
     assertEquals("</ul>", ns.getSentence()[0]);
-    
+
     ns = ds.read();
     assertEquals(1, ns.getSentence().length);
     assertEquals("</body>", ns.getSentence()[0]);
-    
+
     ns = ds.read();
     assertEquals(1, ns.getSentence().length);
     assertEquals("</html>", ns.getSentence()[0]);
-    
+
     assertNull(ds.read());
   }
 }

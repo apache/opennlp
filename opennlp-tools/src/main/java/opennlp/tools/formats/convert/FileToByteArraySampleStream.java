@@ -34,11 +34,11 @@ public class FileToByteArraySampleStream extends FilterObjectStream<File, byte[]
   }
 
   private static byte[] readFile(File file) throws IOException {
-    
+
     InputStream in = new BufferedInputStream(new FileInputStream(file));
 
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-    
+
     try {
       byte buffer[] = new byte[1024];
       int length;
@@ -54,14 +54,14 @@ public class FileToByteArraySampleStream extends FilterObjectStream<File, byte[]
         // sorry that this can fail!
       }
     }
-    
+
     return bytes.toByteArray();
   }
-  
+
   public byte[] read() throws IOException {
-    
+
     File sampleFile = samples.read();
-    
+
     if (sampleFile != null) {
       return readFile(sampleFile);
     }

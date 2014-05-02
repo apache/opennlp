@@ -24,7 +24,7 @@ import opennlp.tools.ml.maxent.GIS;
 public abstract class AbstractTrainer {
 
   public static final String ALGORITHM_PARAM = "Algorithm";
-  
+
   public static final String TRAINER_TYPE_PARAM = "TrainerType";
 
   public static final String CUTOFF_PARAM = "Cutoff";
@@ -43,7 +43,7 @@ public abstract class AbstractTrainer {
     this.trainParams = trainParams;
     this.reportMap = reportMap;
   }
-  
+
   public String getAlgorithm() {
     return getStringParam(ALGORITHM_PARAM, GIS.MAXENT_VALUE);
   }

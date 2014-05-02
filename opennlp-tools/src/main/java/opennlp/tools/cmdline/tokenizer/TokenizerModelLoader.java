@@ -33,7 +33,7 @@ public final class TokenizerModelLoader extends ModelLoader<TokenizerModel> {
   public TokenizerModelLoader() {
     super("Tokenizer");
   }
-  
+
   @Override
   protected TokenizerModel loadModel(InputStream modelIn) throws IOException {
     return new TokenizerModel(modelIn);

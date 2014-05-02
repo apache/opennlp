@@ -40,10 +40,10 @@ public class ADNameSampleStreamTest {
   public void testSimpleCount() throws IOException {
     assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
   }
-  
+
   @Test
   public void testCheckMergedContractions() throws IOException {
-    
+
     assertEquals("no", samples.get(0).getSentence()[1]);
     assertEquals("no", samples.get(0).getSentence()[11]);
     assertEquals("Com", samples.get(1).getSentence()[0]);
@@ -53,9 +53,9 @@ public class ADNameSampleStreamTest {
     assertEquals("de", samples.get(2).getSentence()[5]);
     assertEquals("da", samples.get(2).getSentence()[8]);
     assertEquals("num", samples.get(3).getSentence()[26]);
-    
+
   }
-  
+
   @Test
   public void testSize() throws IOException {
     assertEquals(25, samples.get(0).getSentence().length);
@@ -63,7 +63,7 @@ public class ADNameSampleStreamTest {
     assertEquals(59, samples.get(2).getSentence().length);
     assertEquals(33, samples.get(3).getSentence().length);
   }
-  
+
   @Test
   public void testNames() throws IOException {
 
@@ -74,7 +74,7 @@ public class ADNameSampleStreamTest {
     assertEquals(new Span(18, 19, "numeric"), samples.get(0).getNames()[4]);
     assertEquals(new Span(20, 22, "place"), samples.get(0).getNames()[5]);
     assertEquals(new Span(23, 24, "place"), samples.get(0).getNames()[6]);
-    
+
     assertEquals(new Span(22, 24, "person"), samples.get(2).getNames()[0]);//    22..24
     assertEquals(new Span(25, 27, "person"), samples.get(2).getNames()[1]);//    25..27
     assertEquals(new Span(28, 30, "person"), samples.get(2).getNames()[2]);//    28..30
@@ -86,24 +86,24 @@ public class ADNameSampleStreamTest {
     assertEquals(new Span(47, 49, "person"), samples.get(2).getNames()[8]);//    47..49
     assertEquals(new Span(50, 52, "person"), samples.get(2).getNames()[9]);//    50..52
     assertEquals(new Span(53, 55, "person"), samples.get(2).getNames()[10]);//    53..55
-    
+
     assertEquals(new Span(0, 1, "place"), samples.get(3).getNames()[0]);//    0..1
     assertEquals(new Span(6, 7, "event"), samples.get(3).getNames()[1]);//    6..7
     assertEquals(new Span(15, 16, "organization"), samples.get(3).getNames()[2]);//    15..16
     assertEquals(new Span(18, 19, "event"), samples.get(3).getNames()[3]);//    18..19
     assertEquals(new Span(27, 28, "event"), samples.get(3).getNames()[4]);//    27..28
     assertEquals(new Span(29, 30, "event"), samples.get(3).getNames()[5]);//    29..30
-    
+
     assertEquals(new Span(1, 6, "time"), samples.get(4).getNames()[0]);//    0..1
-    
+
     assertEquals(new Span(0, 3, "person"), samples.get(5).getNames()[0]);//    0..1
   }
-  
+
   @Test
   public void testSmallSentence() throws IOException {
     assertEquals(2, samples.get(6).getSentence().length);
   }
-  
+
   @Test
   public void testMissingRightContraction() throws IOException {
     assertEquals(new Span(0, 1, "person"), samples.get(7).getNames()[0]);

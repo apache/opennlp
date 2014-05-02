@@ -46,12 +46,12 @@ import opennlp.tools.util.model.ModelUtil;
 public final class TokenizerModel extends BaseModel {
 
   private static final String COMPONENT_NAME = "TokenizerME";
-  
+
   private static final String TOKENIZER_MODEL_ENTRY = "token.model";
 
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param tokenizerModel the model
    * @param manifestInfoEntries the manifest
    * @param tokenizerFactory the factory
@@ -68,7 +68,7 @@ public final class TokenizerModel extends BaseModel {
    *
    * @param tokenizerMaxentModel
    * @param useAlphaNumericOptimization
-   * 
+   *
    * @deprecated Use
    *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
    *             instead and pass in a {@link TokenizerFactory}.
@@ -76,7 +76,7 @@ public final class TokenizerModel extends BaseModel {
   public TokenizerModel(String language, MaxentModel tokenizerMaxentModel,
       Dictionary abbreviations, boolean useAlphaNumericOptimization,
       Map<String, String> manifestInfoEntries) {
-    this(tokenizerMaxentModel, manifestInfoEntries, 
+    this(tokenizerMaxentModel, manifestInfoEntries,
         new TokenizerFactory(language, abbreviations, useAlphaNumericOptimization, null));
   }
 
@@ -87,7 +87,7 @@ public final class TokenizerModel extends BaseModel {
    * @param tokenizerMaxentModel
    * @param useAlphaNumericOptimization
    * @param manifestInfoEntries
-   * 
+   *
    * @deprecated Use
    *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
    *             instead and pass in a {@link TokenizerFactory}.
@@ -103,7 +103,7 @@ public final class TokenizerModel extends BaseModel {
    * @param language
    * @param tokenizerMaxentModel
    * @param useAlphaNumericOptimization
-   * 
+   *
    * @deprecated Use
    *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
    *             instead and pass in a {@link TokenizerFactory}.
@@ -112,7 +112,7 @@ public final class TokenizerModel extends BaseModel {
       boolean useAlphaNumericOptimization) {
     this(language, tokenizerMaxentModel, useAlphaNumericOptimization, null);
   }
-  
+
   /**
    * Initializes the current instance.
    *
@@ -124,11 +124,11 @@ public final class TokenizerModel extends BaseModel {
   public TokenizerModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
-  
+
   public TokenizerModel(File modelFile) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelFile);
   }
-  
+
   public TokenizerModel(URL modelURL) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelURL);
   }
@@ -168,7 +168,7 @@ public final class TokenizerModel extends BaseModel {
   public MaxentModel getMaxentModel() {
     return (MaxentModel) artifactMap.get(TOKENIZER_MODEL_ENTRY);
   }
-  
+
   public Dictionary getAbbreviations() {
     if (getFactory() != null) {
       return getFactory().getAbbreviationDictionary();

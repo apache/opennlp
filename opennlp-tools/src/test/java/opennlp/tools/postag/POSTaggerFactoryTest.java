@@ -83,7 +83,7 @@ public class POSTaggerFactoryTest {
     assertTrue(factory.getSequenceValidator() instanceof DummyPOSSequenceValidator);
     assertTrue(factory.getDictionary() instanceof Dictionary);
   }
-  
+
   @Test
   public void testPOSTaggerWithDefaultFactory() throws IOException {
     POSDictionary posDict = POSDictionary.create(POSDictionaryTest.class
@@ -111,7 +111,7 @@ public class POSTaggerFactoryTest {
     assertTrue(factory.getSequenceValidator() instanceof DefaultPOSSequenceValidator);
     assertTrue(factory.getDictionary() instanceof Dictionary);
   }
-  
+
   @Test(expected = InvalidFormatException.class)
   public void testCreateWithInvalidName() throws InvalidFormatException {
     BaseToolFactory.create("X", null);

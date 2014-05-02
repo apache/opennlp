@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -34,8 +34,8 @@ public abstract class AbstractModelReader {
    */
   protected int NUM_PREDS;
   protected DataReader dataReader;
-  
-  public AbstractModelReader(File f) throws IOException { 
+
+  public AbstractModelReader(File f) throws IOException {
     String filename = f.getName();
     InputStream input;
     // handle the zipped/not zipped distinction
@@ -60,7 +60,7 @@ public abstract class AbstractModelReader {
     super();
     this.dataReader = dataReader;
   }
-  
+
   /**
    * Implement as needed for the format the model is stored in.
    */
@@ -81,14 +81,14 @@ public abstract class AbstractModelReader {
   public String readUTF() throws java.io.IOException {
     return dataReader.readUTF();
   }
-      
+
   public AbstractModel getModel() throws IOException {
     checkModelType();
     return constructModel();
   }
 
   public abstract void checkModelType() throws java.io.IOException;
-  
+
   public abstract AbstractModel constructModel() throws java.io.IOException;
 
   protected String[] getOutcomes() throws java.io.IOException {
@@ -122,10 +122,10 @@ public abstract class AbstractModelReader {
 
   /**
    * Reads the parameters from a file and populates an array of context objects.
-   * @param outcomePatterns The outcomes patterns for the model.  The first index refers to which 
+   * @param outcomePatterns The outcomes patterns for the model.  The first index refers to which
    * outcome pattern (a set of outcomes that occurs with a context) is being specified.  The
    * second index specifies the number of contexts which use this pattern at index 0, and the
-   * index of each outcomes which make up this pattern in indicies 1-n.  
+   * index of each outcomes which make up this pattern in indicies 1-n.
    * @return An array of context objects.
    * @throws java.io.IOException when the model file does not match the outcome patterns or can not be read.
    */
@@ -139,7 +139,7 @@ public abstract class AbstractModelReader {
         outcomePattern[k-1] = outcomePatterns[i][k];
       }
       //System.err.println("outcomePattern "+i+" of "+outcomePatterns.length+" with "+outcomePatterns[i].length+" outcomes ");
-      //populate parameters for each context which uses this outcome pattern. 
+      //populate parameters for each context which uses this outcome pattern.
       for (int j=0; j<outcomePatterns[i][0]; j++) {
         double[] contextParameters = new double[outcomePatterns[i].length-1];
         for (int k=1; k<outcomePatterns[i].length; k++) {

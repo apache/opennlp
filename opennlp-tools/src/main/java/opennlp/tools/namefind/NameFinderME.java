@@ -73,25 +73,25 @@ public class NameFinderME implements TokenNameFinder {
   public static final String OTHER = "other";
 
   private SequenceCodec<String> seqCodec = new BioCodec();
-  
+
   protected SequenceClassificationModel<String> model;
-  
+
   protected NameContextGenerator contextGenerator;
   private Sequence bestSequence;
-  
+
   private AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
       new AdditionalContextFeatureGenerator();
   private SequenceValidator<String> sequenceValidator;
 
   public NameFinderME(TokenNameFinderModel model) {
-    
+
     TokenNameFinderFactory factory = model.getFactory();
-    
+
     seqCodec = factory.createSequenceCodec();
     sequenceValidator = seqCodec.createSequenceValidator();
     this.model = model.getNameFinderSequenceModel();
     contextGenerator = factory.createContextGenerator();
-    
+
     // TODO: We should deprecate this. And come up with a better solution!
     contextGenerator.addFeatureGenerator(
           new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
@@ -102,25 +102,25 @@ public class NameFinderME implements TokenNameFinder {
    *
    * @param model
    * @param beamSize
-   * 
+   *
    * @deprecated the beam size is now configured during training time in the trainer parameter
    * file via beamSearch.beamSize
-   * 
+   *
    * @deprecated Use {@link #NameFinderME(TokenNameFinderModel)} instead and use
    * the {@link TokenNameFinderFactory} to configure it.
    */
   @Deprecated
   public NameFinderME(TokenNameFinderModel model, AdaptiveFeatureGenerator generator, int beamSize,
       SequenceValidator<String> sequenceValidator) {
-    
+
     seqCodec = model.getFactory().createSequenceCodec();
-    
+
     this.sequenceValidator = sequenceValidator;
-   
+
     // TODO: getNameFinderModel should be removed! Instead the model should always return
     // a sequence classification model
     // To maintain backward compatibility this should be done later, e.g. for 1.7.0
-    
+
     if (model.getNameFinderSequenceModel() != null) {
       this.model = model.getNameFinderSequenceModel();
     }
@@ -128,7 +128,7 @@ public class NameFinderME implements TokenNameFinder {
       this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
           model.getNameFinderModel());
     }
-    
+
     // If generator is provided always use that one
     if (generator != null) {
       contextGenerator = new DefaultNameContextGenerator(generator);
@@ -218,11 +218,11 @@ public class NameFinderME implements TokenNameFinder {
    * @return an array of spans for each of the names identified.
    */
   public Span[] find(String[] tokens, String[][] additionalContext) {
-    
+
     additionalContextFeatureGenerator.setCurrentContext(additionalContext);
-    
+
     bestSequence = model.bestSequence(tokens, additionalContext, contextGenerator, sequenceValidator);
-    
+
     List<String> c = bestSequence.getOutcomes();
 
     contextGenerator.updateAdaptiveData(tokens, c.toArray(new String[c.size()]));
@@ -294,24 +294,24 @@ public class NameFinderME implements TokenNameFinder {
      return sprobs;
    }
 
-   public static TokenNameFinderModel train(String languageCode, String type, 
+   public static TokenNameFinderModel train(String languageCode, String type,
        ObjectStream<NameSample> samples, TrainingParameters trainParams,
        TokenNameFinderFactory factory) throws IOException {
      String beamSizeString = trainParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
-     
+
      int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
      if (beamSizeString != null) {
        beamSize = Integer.parseInt(beamSizeString);
      }
-     
+
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
      MaxentModel nameFinderModel = null;
-     
+
      SequenceClassificationModel<String> seqModel = null;
-     
+
      TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
-     
+
      if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
        ObjectStream<Event> eventStream = new NameFinderEventStream(samples, type,
            factory.createContextGenerator(), factory.createSequenceCodec());
@@ -331,14 +331,14 @@ public class NameFinderME implements TokenNameFinder {
      else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
        SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
            trainParams.getSettings(), manifestInfoEntries);
-       
+
        NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, factory.createContextGenerator(), false);
        seqModel = trainer.train(ss);
      }
      else {
        throw new IllegalStateException("Unexpected trainer type!");
      }
-     
+
      if (seqModel != null) {
        return new TokenNameFinderModel(languageCode, seqModel, null,
            factory.getResources(), manifestInfoEntries, factory.getSequenceCodec());
@@ -348,7 +348,7 @@ public class NameFinderME implements TokenNameFinder {
            factory.getResources(), manifestInfoEntries, factory.getSequenceCodec());
      }
    }
-   
+
    /**
     * Trains a name finder model.
     *
@@ -374,19 +374,19 @@ public class NameFinderME implements TokenNameFinder {
    public static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
        TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources)
            throws IOException {
-     
+
      if (languageCode == null) {
        throw new IllegalArgumentException("languageCode must not be null!");
      }
-     
+
      String beamSizeString = trainParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
-     
+
      int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
      if (beamSizeString != null) {
        beamSize = Integer.parseInt(beamSizeString);
      }
-     
-     
+
+
      Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
      AdaptiveFeatureGenerator featureGenerator;
@@ -397,11 +397,11 @@ public class NameFinderME implements TokenNameFinder {
        featureGenerator = createFeatureGenerator();
 
      MaxentModel nameFinderModel = null;
-     
+
      SequenceClassificationModel<String> seqModel = null;
-     
+
      TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
-     
+
      if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
        ObjectStream<Event> eventStream = new NameFinderEventStream(samples, type,
            new DefaultNameContextGenerator(featureGenerator), new BioCodec());
@@ -419,18 +419,18 @@ public class NameFinderME implements TokenNameFinder {
      else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
        SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
            trainParams.getSettings(), manifestInfoEntries);
-       
+
        NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, featureGenerator, false);
        seqModel = trainer.train(ss);
      }
      else {
        throw new IllegalStateException("Unexpected trainer type!");
      }
-     
+
      // TODO: Pass the sequence codec down to the model! We will just store the class
      // name in the model, and then always use the extension loader to create it!
      // The cmd line interface, will replace shortcuts with actual class names.
-     
+
      // depending on which one is not null!
      if (seqModel != null) {
        return new TokenNameFinderModel(languageCode, seqModel, null,
@@ -441,7 +441,7 @@ public class NameFinderME implements TokenNameFinder {
            resources, manifestInfoEntries, new BioCodec());
      }
    }
-   
+
   /**
    * Trains a name finder model.
    *

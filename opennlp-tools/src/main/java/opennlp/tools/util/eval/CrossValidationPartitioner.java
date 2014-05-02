@@ -30,7 +30,7 @@ import opennlp.tools.util.ObjectStream;
  * <p>
  * Cross validation is used to evaluate the performance of a classifier when only
  * training data is available. The training set is split into n parts
- * and the training / evaluation is performed n times on these parts. 
+ * and the training / evaluation is performed n times on these parts.
  * The training partition always consists of n -1 parts and one part is used for testing.
  * <p>
  * To use the <code>CrossValidationPartioner</code> a client iterates over the n
@@ -47,87 +47,87 @@ public class CrossValidationPartitioner<E> {
    * @param <E>
    */
   private static class TestSampleStream<E> implements ObjectStream<E> {
-    
+
     private ObjectStream<E> sampleStream;
-    
+
     private final int numberOfPartitions;
-    
+
     private final int testIndex;
-    
+
     private int index;
-    
+
     private boolean isPoisened;
-    
+
     private TestSampleStream(ObjectStream<E> sampleStream, int numberOfPartitions, int testIndex) {
       this.numberOfPartitions = numberOfPartitions;
       this.sampleStream = sampleStream;
       this.testIndex = testIndex;
     }
-    
+
     public E read() throws IOException {
       if (isPoisened) {
         throw new IllegalStateException();
       }
-      
+
       // skip training samples
       while (index % numberOfPartitions != testIndex) {
         sampleStream.read();
         index++;
       }
-      
+
       index++;
-      
+
       return sampleStream.read();
     }
-    
+
     /**
      * Throws <code>UnsupportedOperationException</code>
      */
     public void reset() {
       throw new UnsupportedOperationException();
     }
-    
+
     public void close() throws IOException {
       sampleStream.close();
       isPoisened = true;
     }
-    
+
     void poison() {
       isPoisened = true;
     }
   }
-  
+
   /**
    * The <code>TrainingSampleStream</code> which iterates over
    * all training elements.
-   * 
+   *
    * Note:
    * After the <code>TestSampleStream</code> was obtained
    * the <code>TrainingSampleStream</code> must not be used
    * anymore, otherwise a {@link IllegalStateException}
    * is thrown.
-   * 
+   *
    * The <code>ObjectStream</code>s must not be used anymore after the
    * <code>CrossValidationPartitioner</code> was moved
    * to one of next partitions. If they are called anyway
    * a {@link IllegalStateException} is thrown.
-   * 
+   *
    * @param <E>
    */
   public static class TrainingSampleStream<E> implements ObjectStream<E> {
 
     private ObjectStream<E> sampleStream;
-    
+
     private final int numberOfPartitions;
-    
+
     private final int testIndex;
-    
+
     private int index;
-    
+
     private boolean isPoisened;
-    
+
     private TestSampleStream<E> testSampleStream;
-    
+
     TrainingSampleStream(ObjectStream<E> sampleStream, int numberOfPartitions, int testIndex) {
       this.numberOfPartitions = numberOfPartitions;
       this.sampleStream = sampleStream;
@@ -135,20 +135,20 @@ public class CrossValidationPartitioner<E> {
     }
 
     public E read() throws IOException {
-      
+
       if (testSampleStream != null || isPoisened) {
         throw new IllegalStateException();
       }
-      
+
       // If the test element is reached skip over it to not include it in
       // the training data
       if (index % numberOfPartitions == testIndex) {
         sampleStream.read();
         index++;
       }
-      
+
       index++;
-      
+
       return sampleStream.read();
     }
 
@@ -156,7 +156,7 @@ public class CrossValidationPartitioner<E> {
      * Resets the training sample. Use this if you need to collect things before
      * training, for example, to collect induced abbreviations or create a POS
      * Dictionary.
-     * 
+     *
      * @throws IOException
      */
     public void reset() throws IOException {
@@ -171,48 +171,48 @@ public class CrossValidationPartitioner<E> {
       sampleStream.close();
       poison();
     }
-    
+
     void poison() {
       isPoisened = true;
       if (testSampleStream != null)
         testSampleStream.poison();
     }
-    
+
     /**
      * Retrieves the <code>ObjectStream</code> over the test/evaluations
      * elements and poisons this <code>TrainingSampleStream</code>.
      * From now on calls to the hasNext and next methods are forbidden
      * and will raise an<code>IllegalArgumentException</code>.
-     *  
+     *
      * @return the test sample stream
      */
     public ObjectStream<E> getTestSampleStream() throws IOException {
-      
+
       if (isPoisened) {
         throw new IllegalStateException();
       }
-      
+
       if (testSampleStream == null) {
-      
+
         sampleStream.reset();
         testSampleStream =  new TestSampleStream<E>(sampleStream, numberOfPartitions, testIndex);
       }
-      
+
       return testSampleStream;
     }
   }
-  
+
   /**
    * An <code>ObjectStream</code> over the whole set of data samples which
    * are used for the cross validation.
    */
   private ObjectStream<E> sampleStream;
-  
+
   /**
    * The number of parts the data is divided into.
    */
   private final int numberOfPartitions;
-  
+
   /**
    * The index of test part.
    */
@@ -224,10 +224,10 @@ public class CrossValidationPartitioner<E> {
    * despite the fact that it is forbidden!.
    */
   private TrainingSampleStream<E> lastTrainingSampleStream;
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param inElements
    * @param numberOfPartitions
    */
@@ -235,10 +235,10 @@ public class CrossValidationPartitioner<E> {
     this.sampleStream = inElements;
     this.numberOfPartitions = numberOfPartitions;
   }
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param elements
    * @param numberOfPartitions
    */
@@ -260,23 +260,23 @@ public class CrossValidationPartitioner<E> {
     if (hasNext()) {
       if (lastTrainingSampleStream != null)
         lastTrainingSampleStream.poison();
-      
+
       sampleStream.reset();
-      
+
       TrainingSampleStream<E> trainingSampleStream = new TrainingSampleStream<E>(sampleStream,
           numberOfPartitions, testIndex);
-      
+
       testIndex++;
-      
+
       lastTrainingSampleStream = trainingSampleStream;
-      
+
       return trainingSampleStream;
     }
     else {
       throw new NoSuchElementException();
     }
   }
-  
+
   @Override
   public String toString() {
     return "At partition" + Integer.toString(testIndex + 1) +

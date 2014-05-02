@@ -25,7 +25,7 @@ import java.util.TreeSet;
  * An implementation of the Heap interface based on {@link java.util.SortedSet}.
  * This implementation will not allow multiple objects which are equal to be added to the heap.
  * Only use this implementation when object in the heap can be totally ordered (no duplicates).
- * 
+ *
  * @deprecated not used anymore, when there is need for a heap use ListHeap instead
  */
 @Deprecated

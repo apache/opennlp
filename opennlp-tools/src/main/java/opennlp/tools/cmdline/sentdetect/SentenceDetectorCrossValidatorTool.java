@@ -35,7 +35,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class SentenceDetectorCrossValidatorTool
     extends AbstractCrossValidatorTool<SentenceSample, CVToolParams> {
-  
+
   interface CVToolParams extends TrainingParams, CVParams {
   }
 
@@ -46,7 +46,7 @@ public final class SentenceDetectorCrossValidatorTool
   public String getShortDescription() {
     return "K-fold cross validator for the learnable sentence detector";
   }
-  
+
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -56,7 +56,7 @@ public final class SentenceDetectorCrossValidatorTool
     }
 
     SDCrossValidator validator;
-    
+
     SentenceDetectorEvaluationMonitor errorListener = null;
     if (params.getMisclassified()) {
       errorListener = new SentenceEvaluationErrorListener();
@@ -74,7 +74,7 @@ public final class SentenceDetectorCrossValidatorTool
           params.getFactory(), params.getLang(), true, abbreviations, eos);
       validator = new SDCrossValidator(params.getLang(), mlParams, sdFactory,
           errorListener);
-      
+
       validator.evaluate(sampleStream, params.getFolds());
     }
     catch (IOException e) {
@@ -88,9 +88,9 @@ public final class SentenceDetectorCrossValidatorTool
         // sorry that this can fail
       }
     }
-    
+
     FMeasure result = validator.getFMeasure();
-    
+
     System.out.println(result.toString());
   }
 }

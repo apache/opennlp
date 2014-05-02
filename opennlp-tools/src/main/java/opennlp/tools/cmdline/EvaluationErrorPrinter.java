@@ -67,7 +67,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
       if (id != null) {
         printStream.println("Id: {" + id + "}");
       }
-      
+
       printSamples(referenceSample, predictedSample);
 
       printErrors(falsePositives, falseNegatives, sentenceTokens);
@@ -79,7 +79,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
       T referenceSample, T predictedSample, String[] sentenceTokens) {
     printError(null, references, predictions, referenceSample, predictedSample, sentenceTokens);
   }
-  
+
   // for pos tagger
   protected void printError(String references[], String predictions[],
       T referenceSample, T predictedSample, String[] sentenceTokens) {
@@ -112,7 +112,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
 
   /**
    * Auxiliary method to print tag errors
-   * 
+   *
    * @param filteredDoc
    *          the document tokens which were tagged wrong
    * @param filteredRefs
@@ -134,7 +134,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
 
   /**
    * Auxiliary method to print span errors
-   * 
+   *
    * @param falsePositives
    *          false positives span
    * @param falseNegatives
@@ -157,7 +157,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
 
   /**
    * Auxiliary method to print span errors
-   * 
+   *
    * @param falsePositives
    *          false positives span
    * @param falseNegatives
@@ -176,7 +176,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
 
   /**
    * Auxiliary method to print spans
-   * 
+   *
    * @param spans
    *          the span list
    * @param toks
@@ -190,7 +190,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
 
   /**
    * Auxiliary method to print expected and predicted samples.
-   * 
+   *
    * @param referenceSample
    *          the reference sample
    * @param predictedSample
@@ -205,7 +205,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   /**
    * Outputs falseNegatives and falsePositives spans from the references and
    * predictions list.
-   * 
+   *
    * @param references
    * @param predictions
    * @param falseNegatives

@@ -94,7 +94,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
 /**
  * Returns a map in which the key is the category name and the value is the score
  * @param text the input text to classify
- * @return 
+ * @return
  */
   public Map<String, Double> scoreMap(String text) {
     Map<String, Double> probDist = new HashMap<String, Double>();
@@ -109,10 +109,10 @@ public class DocumentCategorizerME implements DocumentCategorizer {
 
   }
 /**
- * Returns a map with the score as a key in ascendng order. The value is a Set of categories with the score. 
+ * Returns a map with the score as a key in ascendng order. The value is a Set of categories with the score.
  * Many categories can have the same score, hence the Set as value
  * @param text the input text to classify
- * @return 
+ * @return
  */
   public SortedMap<Double, Set<String>> sortedScoreMap(String text) {
     SortedMap<Double, Set<String>> descendingMap = new TreeMap<Double, Set<String>>();

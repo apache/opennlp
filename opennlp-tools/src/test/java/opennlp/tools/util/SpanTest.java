@@ -201,9 +201,9 @@ public class SpanTest {
 
     assertEquals(true, a.compareTo(b) == 0);
   }
-  
+
   ///
-  
+
   /**
    * Test for {@link Span#compareTo(Object)}.
    */
@@ -214,7 +214,7 @@ public class SpanTest {
 
     assertEquals(true, a.compareTo(b) == 0);
   }
-  
+
   /**
    * Test for {@link Span#compareTo(Object)}.
    */
@@ -225,7 +225,7 @@ public class SpanTest {
 
     assertEquals(true, a.compareTo(b) == -1);
   }
-  
+
   /**
    * Test for {@link Span#compareTo(Object)}.
    */
@@ -236,7 +236,7 @@ public class SpanTest {
 
     assertEquals(true, a.compareTo(b) == 1);
   }
-  
+
   /**
    * Test for {@link Span#compareTo(Object)}.
    */
@@ -247,7 +247,7 @@ public class SpanTest {
 
     assertEquals(true, a.compareTo(b) == 1);
   }
-  
+
   /**
    * Test for {@link Span#compareTo(Object)}.
    */
@@ -258,7 +258,7 @@ public class SpanTest {
 
     assertEquals(true, a.compareTo(b) == -1);
   }
-  
+
   ///
 
   /**
@@ -288,20 +288,20 @@ public class SpanTest {
     Span a2 = new Span(100, 1000, "test");
 
     assertTrue(a1.equals(a2));
-    
+
     // end is different
     Span b1 = new Span(100, 100, "test");
     assertFalse(a1.equals(b1));
-    
+
     // type is different
     Span c1 = new Span(100, 1000, "Test");
     assertFalse(a1.equals(c1));
-    
+
     Span d1 = new Span(100, 1000);
-    
+
     assertFalse(d1.equals(a1));
     assertFalse(a1.equals(d1));
-    
+
   }
 
   /**
@@ -311,14 +311,14 @@ public class SpanTest {
   public void testToString() {
     new Span(50, 100).toString();
   }
-  
+
   @Test
   public void testTrim() {
     String string1 = "  12 34  ";
     Span span1 = new Span(0, string1.length());
     assertEquals("12 34", span1.trim(string1).getCoveredText(string1));
   }
-  
+
   @Test
   public void testTrimWhitespaceSpan() {
     String string1 = "              ";

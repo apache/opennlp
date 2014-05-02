@@ -32,7 +32,7 @@ import opennlp.tools.util.ObjectStream;
 public class ChunkerEventStream extends AbstractEventStream<ChunkSample> {
 
   private ChunkerContextGenerator cg;
-  
+
   /**
    * Creates a new event stream based on the specified data stream using the specified context generator.
    * @param d The data stream for this event stream.
@@ -42,20 +42,20 @@ public class ChunkerEventStream extends AbstractEventStream<ChunkSample> {
     super(d);
     this.cg = cg;
   }
-  
+
   /**
    * Creates a new event stream based on the specified data stream.
    * @param d The data stream for this event stream.
-   * 
+   *
    * @deprecated Use {@link #ChunkerEventStream(ObjectStream, ChunkerContextGenerator)} instead.
    */
   public ChunkerEventStream(ObjectStream<ChunkSample> d) {
     this(d, new DefaultChunkerContextGenerator());
   }
-  
+
   @Override
   protected Iterator<Event> createEvents(ChunkSample sample) {
-    
+
     if (sample != null) {
       List<Event> events = new ArrayList<Event>();
       String[] toksArray = sample.getSentence();
@@ -64,7 +64,7 @@ public class ChunkerEventStream extends AbstractEventStream<ChunkSample> {
       for (int ei = 0, el = sample.getSentence().length; ei < el; ei++) {
         events.add(new Event(predsArray[ei], cg.getContext(ei,toksArray,tagsArray,predsArray)));
       }
-      
+
       return events.iterator();
     }
     else {

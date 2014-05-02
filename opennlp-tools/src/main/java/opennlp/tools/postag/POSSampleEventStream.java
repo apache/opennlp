@@ -69,7 +69,7 @@ public class POSSampleEventStream extends AbstractEventStream<POSSample> {
     List<Event> events = generateEvents(sentence, tags, ac, cg);
     return events.iterator();
   }
-  
+
   public static List<Event> generateEvents(String[] sentence, String[] tags,
       Object[] additionalContext, POSContextGenerator cg) {
     List<Event> events = new ArrayList<Event>(sentence.length);

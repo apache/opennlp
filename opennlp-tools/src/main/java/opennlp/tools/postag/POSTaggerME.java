@@ -55,9 +55,9 @@ import opennlp.tools.util.model.ModelType;
  *
  */
 public class POSTaggerME implements POSTagger {
-  
+
   private POSModel modelPackage;
-  
+
   /**
    * The feature context generator.
    */
@@ -88,7 +88,7 @@ public class POSTaggerME implements POSTagger {
   private SequenceClassificationModel<String> model;
 
   private SequenceValidator<String> sequenceValidator;
-  
+
   /**
    * Initializes the current instance with the provided
    * model and provided beam size.
@@ -98,16 +98,16 @@ public class POSTaggerME implements POSTagger {
    */
   public POSTaggerME(POSModel model, int beamSize, int cacheSize) {
     POSTaggerFactory factory = model.getFactory();
-    
+
     modelPackage = model;
-    
+
     // TODO: Why is this the beam size?! not cache size?
     contextGen = factory.getPOSContextGenerator(beamSize);
     tagDictionary = factory.getTagDictionary();
     size = beamSize;
-    
+
     sequenceValidator = factory.getSequenceValidator();
-    
+
     if (model.getPosSequenceModel() != null) {
       this.model = model.getPosSequenceModel();
     }
@@ -116,7 +116,7 @@ public class POSTaggerME implements POSTagger {
           model.getPosModel(), cacheSize);
     }
   }
-  
+
   /**
    * Initializes the current instance with the provided model
    * and the default beam size of 3.
@@ -135,23 +135,23 @@ public class POSTaggerME implements POSTagger {
    */
   @Deprecated
   public int getNumTags() {
-    
+
     // TODO: Lets discuss on the dev list how to do this properly!
     // Nobody needs the number of tags, if the tags are not available.
-    
+
     return model.getOutcomes().length;
   }
 
   /**
    * Retrieves an array of all possible part-of-speech tags from the
    * tagger.
-   * 
+   *
    * @return
    */
   public String[] getAllPosTags() {
     return model.getOutcomes();
   }
-  
+
   @Deprecated
   public List<String> tag(List<String> sentence) {
     bestSequence = model.bestSequence(sentence.toArray(new String[sentence.size()]), null, contextGen, sequenceValidator);
@@ -237,15 +237,15 @@ public class POSTaggerME implements POSTagger {
   }
 
   public String[] getOrderedTags(List<String> words, List<String> tags, int index,double[] tprobs) {
-    
+
     if (modelPackage.getPosModel() != null) {
-      
+
       MaxentModel posModel = modelPackage.getPosModel();
-      
+
       double[] probs = posModel.eval(contextGen.getContext(index,
           words.toArray(new String[words.size()]),
           tags.toArray(new String[tags.size()]),null));
-  
+
       String[] orderedTags = new String[probs.length];
       for (int i = 0; i < probs.length; i++) {
         int max = 0;
@@ -267,29 +267,29 @@ public class POSTaggerME implements POSTagger {
           + "classifcation model is an event model!");
     }
   }
-  
+
   public static POSModel train(String languageCode,
       ObjectStream<POSSample> samples, TrainingParameters trainParams,
       POSTaggerFactory posFactory) throws IOException {
-    
+
     String beamSizeString = trainParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
-    
+
     int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
     if (beamSizeString != null) {
       beamSize = Integer.parseInt(beamSizeString);
     }
-    
+
     POSContextGenerator contextGenerator = posFactory.getPOSContextGenerator();
-    
+
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-    
+
     TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
-    
+
     MaxentModel posModel = null;
     SequenceClassificationModel<String> seqPosModel = null;
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new POSSampleEventStream(samples, contextGenerator);
-      
+
       EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams.getSettings(),
           manifestInfoEntries);
       posModel = trainer.train(es);
@@ -303,16 +303,16 @@ public class POSTaggerME implements POSTagger {
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
       SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
           trainParams.getSettings(), manifestInfoEntries);
-      
+
       // TODO: This will probably cause issue, since the feature generator uses the outcomes array
-      
+
       POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
       seqPosModel = trainer.train(ss);
     }
     else {
-      throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);  
+      throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);
     }
-    
+
     if (posModel != null) {
       return new POSModel(languageCode, posModel, manifestInfoEntries, posFactory);
     }
@@ -326,13 +326,13 @@ public class POSTaggerME implements POSTagger {
    *             {@link #train(String, ObjectStream, TrainingParameters, POSTaggerFactory)}
    *             instead and pass in a {@link POSTaggerFactory}.
    */
-  public static POSModel train(String languageCode, ObjectStream<POSSample> samples, TrainingParameters trainParams, 
+  public static POSModel train(String languageCode, ObjectStream<POSSample> samples, TrainingParameters trainParams,
       POSDictionary tagDictionary, Dictionary ngramDictionary) throws IOException {
-    
+
     return train(languageCode, samples, trainParams, new POSTaggerFactory(
         ngramDictionary, tagDictionary));
   }
-  
+
   /**
    * @deprecated use
    *             {@link #train(String, ObjectStream, TrainingParameters, POSTaggerFactory)}
@@ -343,30 +343,30 @@ public class POSTaggerME implements POSTagger {
   public static POSModel train(String languageCode, ObjectStream<POSSample> samples, ModelType modelType, POSDictionary tagDictionary,
       Dictionary ngramDictionary, int cutoff, int iterations) throws IOException {
 
-    TrainingParameters params = new TrainingParameters(); 
-    
+    TrainingParameters params = new TrainingParameters();
+
     params.put(TrainingParameters.ALGORITHM_PARAM, modelType.toString());
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
-    
+
     return train(languageCode, samples, params, tagDictionary, ngramDictionary);
   }
-  
+
   public static Dictionary buildNGramDictionary(ObjectStream<POSSample> samples, int cutoff)
       throws IOException {
-    
+
     NGramModel ngramModel = new NGramModel();
-    
+
     POSSample sample;
     while((sample = samples.read()) != null) {
       String[] words = sample.getSentence();
-      
+
       if (words.length > 0)
         ngramModel.add(new StringList(words), 1, 1);
     }
-    
+
     ngramModel.cutoff(cutoff, Integer.MAX_VALUE);
-    
+
     return ngramModel.toDictionary(true);
   }
 
@@ -416,9 +416,9 @@ public class POSTaggerME implements POSTagger {
         }
       }
     }
-    
+
     // now we check if the word + tag pairs have enough occurrences, if yes we
-    // add it to the dictionary 
+    // add it to the dictionary
     for (Entry<String, Map<String, AtomicInteger>> wordEntry : newEntries
         .entrySet()) {
       List<String> tagsForWord = new ArrayList<String>();

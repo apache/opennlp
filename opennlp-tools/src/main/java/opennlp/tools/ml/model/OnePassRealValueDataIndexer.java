@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -32,16 +32,16 @@ import opennlp.tools.util.ObjectStream;
 /**
  * An indexer for maxent model data which handles cutoffs for uncommon
  * contextual predicates and provides a unique integer index for each of the
- * predicates and maintains event values.  
+ * predicates and maintains event values.
  */
 public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 
   float[][] values;
-  
+
   public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
     super(eventStream,cutoff,sort);
   }
-  
+
   /**
    * Two argument constructor for DataIndexer.
    * @param eventStream An Event[] which contains the a list of all the Events
@@ -52,7 +52,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
   public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
     super(eventStream,cutoff);
   }
-  
+
   public float[][] getValues() {
     return values;
   }
@@ -70,23 +70,23 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     }
     return numUniqueEvents;
   }
-  
+
   protected List index(LinkedList<Event> events, Map<String,Integer> predicateIndex) {
     Map<String,Integer> omap = new HashMap<String,Integer>();
-    
+
     int numEvents = events.size();
     int outcomeCount = 0;
     List<ComparableEvent> eventsToCompare = new ArrayList<ComparableEvent>(numEvents);
     List<Integer> indexedContext = new ArrayList<Integer>();
-    
+
     for (int eventIndex=0; eventIndex<numEvents; eventIndex++) {
       Event ev = events.removeFirst();
       String[] econtext = ev.getContext();
       ComparableEvent ce;
-      
+
       int ocID;
       String oc = ev.getOutcome();
-      
+
       if (omap.containsKey(oc)) {
         ocID = omap.get(oc);
       } else {
@@ -99,7 +99,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
           indexedContext.add(predicateIndex.get(pred));
         }
       }
-      
+
       //drop events with no active features
       if (indexedContext.size() > 0) {
         int[] cons = new int[indexedContext.size()];

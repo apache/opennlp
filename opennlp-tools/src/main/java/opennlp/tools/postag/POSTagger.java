@@ -28,11 +28,11 @@ public interface POSTagger {
 
   /**
    * Assigns the sentence of tokens pos tags.
-   * 
+   *
    * @param sentence
    *          The sentence of tokens to be tagged.
    * @return a list of pos tags for each token provided in sentence.
-   * 
+   *
    * @deprecated call <code> tag(String[]) </code> instead
    */
   @Deprecated
@@ -51,7 +51,7 @@ public interface POSTagger {
    * Assigns the sentence of space-delimied tokens pos tags.
    * @param sentence The sentece of space-delimited tokens to be tagged.
    * @return a string of space-delimited pos tags for each token provided in sentence.
-   * 
+   *
    * @deprecated call <code> tag(String[]) instead </code> use WhiteSpaceTokenizer.INSTANCE.tokenize
    * to obtain the String array.
    */

@@ -34,27 +34,27 @@ import org.junit.Test;
  * Tests for the {@link SDEventStream} class.
  */
 public class SDEventStreamTest {
-  
+
   @Test
   public void testEventOutcomes() throws IOException {
     // Sample with two sentences
-    SentenceSample sample = new SentenceSample("Test sent. one. Test sent. 2?", 
+    SentenceSample sample = new SentenceSample("Test sent. one. Test sent. 2?",
         new Span(0, 15), new Span(16, 29));
-    
-    ObjectStream<SentenceSample> sampleStream = 
+
+    ObjectStream<SentenceSample> sampleStream =
       ObjectStreamUtils.createObjectStream(sample);
-    
+
     Factory factory = new Factory();
-    
+
     ObjectStream<Event> eventStream = new SDEventStream(sampleStream,
         factory.createSentenceContextGenerator("en"),
         factory.createEndOfSentenceScanner("en"));
-    
+
     assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.read().getOutcome());
     assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());
     assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.read().getOutcome());
     assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());
-    
+
     assertNull(eventStream.read());
   }
 }

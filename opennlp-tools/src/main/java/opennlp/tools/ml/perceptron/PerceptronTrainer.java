@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -41,16 +41,16 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
   public static final String PERCEPTRON_VALUE = "PERCEPTRON";
   public static final double TOLERANCE_DEFAULT = .00001;
-  
+
   /** Number of unique events which occurred in the event set. */
   private int numUniqueEvents;
   /** Number of events in the event set. */
   private int numEvents;
-  
+
   /** Number of predicates. */
-  private int numPreds; 
+  private int numPreds;
   /** Number of outcomes. */
-  private int numOutcomes; 
+  private int numOutcomes;
   /** Records the array of predicates seen in each event. */
   private int[][] contexts;
 
@@ -62,7 +62,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
   /** Records the num of times an event has been seen for each event i, in context[i]. */
   private int[] numTimesEventsSeen;
-  
+
   /** Stores the String names of the outcomes.  The GIS only tracks outcomes
   as ints, and so this array is needed to save the model to disk and
   thereby allow users to know what the outcome was in human
@@ -76,13 +76,13 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   private String[] predLabels;
 
   private boolean printMessages = true;
-  
+
   private double tolerance = TOLERANCE_DEFAULT;
-  
+
   private Double stepSizeDecrease;
-  
+
   private boolean useSkippedlAveraging;
-  
+
   public PerceptronTrainer() {
   }
 
@@ -140,58 +140,58 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   /**
    * Specifies the tolerance. If the change in training set accuracy
    * is less than this, stop iterating.
-   * 
+   *
    * @param tolerance
    */
   public void setTolerance(double tolerance) {
-    
+
     if (tolerance < 0) {
       throw new
           IllegalArgumentException("tolerance must be a positive number but is " + tolerance + "!");
     }
-    
+
     this.tolerance = tolerance;
   }
 
   /**
    * Enables and sets step size decrease. The step size is
    * decreased every iteration by the specified value.
-   * 
+   *
    * @param decrease - step size decrease in percent
    */
   public void setStepSizeDecrease(double decrease) {
-    
+
     if (decrease < 0 || decrease > 100) {
       throw new
           IllegalArgumentException("decrease must be between 0 and 100 but is " + decrease + "!");
     }
-    
+
     stepSizeDecrease = decrease;
   }
-  
+
   /**
    * Enables skipped averaging, this flag changes the standard
    * averaging to special averaging instead.
    * <p>
    * If we are doing averaging, and the current iteration is one
    * of the first 20 or it is a perfect square, then updated the
-   * summed parameters. 
+   * summed parameters.
    * <p>
    * The reason we don't take all of them is that the parameters change
    * less toward the end of training, so they drown out the contributions
    * of the more volatile early iterations. The use of perfect
    * squares allows us to sample from successively farther apart iterations.
-   *  
+   *
    * @param averaging averaging flag
    */
   public void setSkippedAveraging(boolean averaging) {
     useSkippedlAveraging = averaging;
   }
-  
+
   public AbstractModel trainModel(int iterations, DataIndexer di, int cutoff) {
     return trainModel(iterations,di,cutoff,true);
   }
-  
+
   public AbstractModel trainModel(int iterations, DataIndexer di, int cutoff, boolean useAverage) {
     display("Incorporating indexed data for training...  \n");
     contexts = di.getContexts();
@@ -206,13 +206,13 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     predLabels = di.getPredLabels();
     numPreds = predLabels.length;
     numOutcomes = outcomeLabels.length;
-    
+
     display("done.\n");
-    
+
     display("\tNumber of Event Tokens: " + numUniqueEvents + "\n");
     display("\t    Number of Outcomes: " + numOutcomes + "\n");
     display("\t  Number of Predicates: " + numPreds + "\n");
-    
+
     display("Computing model parameters...\n");
 
     MutableContext[] finalParameters = findParameters(iterations, useAverage);
@@ -222,13 +222,13 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     /*************** Create and return the model ******************/
     return new PerceptronModel(finalParameters, predLabels, outcomeLabels);
   }
-  
+
   private MutableContext[] findParameters (int iterations, boolean useAverage) {
 
     display("Performing " + iterations + " iterations.\n");
 
     int[] allOutcomesPattern= new int[numOutcomes];
-    for (int oi = 0; oi < numOutcomes; oi++) 
+    for (int oi = 0; oi < numOutcomes; oi++)
       allOutcomesPattern[oi] = oi;
 
     /** Stores the estimated parameter value of each predicate during iteration. */
@@ -240,7 +240,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     }
 
     EvalParameters evalParams = new EvalParameters(params,numOutcomes);
-  
+
     /** Stores the sum of parameter values of each predicate over many iterations. */
     MutableContext[] summedParams = new MutableContext[numPreds];
     if (useAverage) {
@@ -267,7 +267,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       // Decrease the stepsize by a small amount.
       if (stepSizeDecrease != null)
         stepsize *= 1 - stepSizeDecrease;
-      
+
       displayIteration(i);
 
       int numCorrect = 0;
@@ -304,7 +304,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
           }
 
           // Update the counts for accuracy.
-          if (maxOutcome == targetOutcome) 
+          if (maxOutcome == targetOutcome)
             numCorrect++;
         }
       }
@@ -313,11 +313,11 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       double trainingAccuracy = (double) numCorrect / numEvents;
       if (i < 10 || (i%10) == 0)
         display(". (" + numCorrect + "/" + numEvents+") " + trainingAccuracy + "\n");
-          
+
       // TODO: Make averaging configurable !!!
-      
+
       boolean doAveraging;
-      
+
       if (useAverage && useSkippedlAveraging && (i < 20 || isPerfectSquare(i))) {
         doAveraging = true;
       }
@@ -327,10 +327,10 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       else {
         doAveraging = false;
       }
-      
+
       if (doAveraging) {
         numTimesSummed++;
-        for (int pi = 0; pi < numPreds; pi++) 
+        for (int pi = 0; pi < numPreds; pi++)
           for (int aoi=0;aoi<numOutcomes;aoi++)
             summedParams[pi].updateParameter(aoi, params[pi].getParameters()[aoi]);
       }
@@ -344,7 +344,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
         display("Stopping: change in training set accuracy less than " + tolerance + "\n");
         break;
       }
-      
+
       // Update the previous training accuracies.
       prevAccuracy1 = prevAccuracy2;
       prevAccuracy2 = prevAccuracy3;
@@ -356,7 +356,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
     // Create averaged parameters
     if (useAverage) {
-      for (int pi = 0; pi < numPreds; pi++) 
+      for (int pi = 0; pi < numPreds; pi++)
         for (int aoi=0;aoi<numOutcomes;aoi++)
           summedParams[pi].setParameter(aoi, summedParams[pi].getParameters()[aoi]/numTimesSummed);
 
@@ -367,9 +367,9 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       return params;
 
     }
-        
+
   }
-  
+
   private double trainingStats (EvalParameters evalParams) {
     int numCorrect = 0;
 

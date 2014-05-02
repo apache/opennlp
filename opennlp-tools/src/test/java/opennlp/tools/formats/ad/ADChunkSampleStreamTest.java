@@ -58,7 +58,7 @@ public class ADChunkSampleStreamTest {
     assertEquals("próximo", samples.get(0).getSentence()[3]);
     assertEquals("adj", samples.get(0).getTags()[3]);
     assertEquals("I-NP", samples.get(0).getPreds()[3]);
-    
+
     assertEquals("Casas", samples.get(3).getSentence()[0]);
     assertEquals("n", samples.get(3).getTags()[0]);
     assertEquals("B-NP", samples.get(3).getPreds()[0]);

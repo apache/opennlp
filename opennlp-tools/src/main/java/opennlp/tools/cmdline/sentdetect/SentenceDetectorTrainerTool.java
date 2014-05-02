@@ -38,7 +38,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class SentenceDetectorTrainerTool
     extends AbstractTrainerTool<SentenceSample, TrainerToolParams> {
-  
+
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 
@@ -49,7 +49,7 @@ public final class SentenceDetectorTrainerTool
   public String getShortDescription() {
     return "trainer for the learnable sentence detector";
   }
-  
+
   static Dictionary loadDict(File f) throws IOException {
     Dictionary dict = null;
     if (f != null) {
@@ -58,7 +58,7 @@ public final class SentenceDetectorTrainerTool
     }
     return dict;
   }
-  
+
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -103,7 +103,7 @@ public final class SentenceDetectorTrainerTool
         // sorry that this can fail
       }
     }
-    
+
     CmdLineUtil.writeModel("sentence detector", modelOutFile, model);
   }
 }

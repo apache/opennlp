@@ -109,7 +109,7 @@ public abstract class TypedCmdLineTool<T>
   public String getHelp() {
     return getHelp("");
   }
-  
+
   /**
    * Executes the tool with the given parameters.
    *

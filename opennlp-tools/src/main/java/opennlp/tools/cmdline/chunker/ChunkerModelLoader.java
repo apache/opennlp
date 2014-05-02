@@ -33,7 +33,7 @@ public class ChunkerModelLoader extends ModelLoader<ChunkerModel> {
   public ChunkerModelLoader() {
     super("Chunker");
   }
-  
+
   @Override
   protected ChunkerModel loadModel(InputStream modelIn) throws IOException {
     return new ChunkerModel(modelIn);

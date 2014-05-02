@@ -39,7 +39,7 @@ public class POSDictionaryTest {
   private static POSDictionary loadDictionary(String name) throws IOException {
     return POSDictionary.create(POSDictionaryTest.class.getResourceAsStream(name));
   }
-  
+
   private static POSDictionary serializeDeserializeDict(POSDictionary dict) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -59,10 +59,10 @@ public class POSDictionaryTest {
     finally {
         in.close();
     }
-    
+
     return serializedDictionary;
   }
-  
+
   @Test
   public void testSerialization() throws IOException, InvalidFormatException {
     POSDictionary dictionary = new POSDictionary();
@@ -74,11 +74,11 @@ public class POSDictionaryTest {
 
     assertTrue(dictionary.equals(serializeDeserializeDict(dictionary)));
   }
-  
+
   @Test
   public void testLoadingDictionaryWithoutCaseAttribute() throws IOException {
     POSDictionary dict = loadDictionary("TagDictionaryWithoutCaseAttribute.xml");
-    
+
     assertArrayEquals(new String[]{"NNP"}, dict.getTags("McKinsey"));
     assertNull(dict.getTags("Mckinsey"));
   }
@@ -89,28 +89,28 @@ public class POSDictionaryTest {
 
     assertArrayEquals(new String[]{"NNP"}, dict.getTags("McKinsey"));
     assertNull(dict.getTags("Mckinsey"));
-    
+
     dict = serializeDeserializeDict(dict);
-    
+
     assertArrayEquals(new String[]{"NNP"}, dict.getTags("McKinsey"));
     assertNull(dict.getTags("Mckinsey"));
   }
-  
+
   @Test
   public void testCaseInsensitiveDictionary() throws IOException {
     POSDictionary dict = loadDictionary("TagDictionaryCaseInsensitive.xml");
-    
+
     assertArrayEquals(new String[]{"NNP"}, dict.getTags("McKinsey"));
     assertArrayEquals(new String[]{"NNP"}, dict.getTags("Mckinsey"));
     assertArrayEquals(new String[]{"NNP"}, dict.getTags("MCKINSEY"));
     assertArrayEquals(new String[]{"NNP"}, dict.getTags("mckinsey"));
-    
+
     dict = serializeDeserializeDict(dict);
-    
+
     assertArrayEquals(new String[]{"NNP"}, dict.getTags("McKinsey"));
     assertArrayEquals(new String[]{"NNP"}, dict.getTags("Mckinsey"));
   }
-  
+
   @Test
   public void testToString() throws IOException {
     POSDictionary dict = loadDictionary("TagDictionaryCaseInsensitive.xml");

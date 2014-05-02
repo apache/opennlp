@@ -56,7 +56,7 @@ public abstract class AbstractTokenizer extends CasAnnotator_ImplBase {
   protected AbstractTokenizer(String name) {
     this.name = name;
   }
-	
+
   @Override
   public void initialize(UimaContext context)
       throws ResourceInitializationException {
@@ -94,7 +94,7 @@ public abstract class AbstractTokenizer extends CasAnnotator_ImplBase {
   protected void postProcessAnnotations(Span tokens[],
       AnnotationFS tokenAnnotations[]) {
   }
-	
+
   protected abstract Span[] tokenize(CAS cas, AnnotationFS sentence);
 
   @Override

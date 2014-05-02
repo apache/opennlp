@@ -17,6 +17,6 @@
 
 Algorithm=MAXENT_QN_EXPERIMENTAL
 Iterations=100
-Cutoff=5
+Cutoff=0
 L1Cost=0.5
 L2Cost=0.5

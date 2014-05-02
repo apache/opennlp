@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 
 package opennlp.uima.doccat;
 
@@ -29,46 +29,46 @@ import org.apache.uima.cas.text.AnnotationFS;
 
 /**
  * OpenNLP Document Categorizer.
- * 
+ *
  * Mandatory parameters:
  */
 public class DocumentCategorizer extends AbstractDocumentCategorizer {
-  
+
   private Type mCategoryType;
 
   private Feature mCategoryFeature;
-  
 
-  
-  public void typeSystemInit(TypeSystem typeSystem) 
+
+
+  public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
-    
+
     // get category type and feature (it a document propery, one object with a feature)
     mCategoryType = AnnotatorUtil.getRequiredTypeParameter(getContext(), typeSystem,
         "opennlp.uima.doccat.CategoryType");
-    
+
     // get feature name
-    mCategoryFeature = AnnotatorUtil.getRequiredFeatureParameter(getContext(), mCategoryType, 
+    mCategoryFeature = AnnotatorUtil.getRequiredFeatureParameter(getContext(), mCategoryType,
     		"opennlp.uima.doccat.CategoryFeature", CAS.TYPE_NAME_STRING);
   }
-  
+
   @Override
   protected void setBestCategory(CAS tcas, String bestCategory) {
     FSIndex<AnnotationFS> categoryIndex = tcas.getAnnotationIndex(mCategoryType);
-    
-    AnnotationFS categoryAnnotation = (AnnotationFS) (categoryIndex.size() > 0 ? 
+
+    AnnotationFS categoryAnnotation = (AnnotationFS) (categoryIndex.size() > 0 ?
         categoryIndex.iterator().next() : null);
-    
+
     if (categoryIndex.size() > 0) {
       categoryAnnotation = (AnnotationFS) categoryIndex.iterator().next();
     }
     else {
-      categoryAnnotation = tcas.createAnnotation(mCategoryType, 0, 
+      categoryAnnotation = tcas.createAnnotation(mCategoryType, 0,
           tcas.getDocumentText().length());
-      
+
       tcas.getIndexRepository().addFS(categoryAnnotation);
-    }    
-    
+    }
+
     categoryAnnotation.setStringValue(mCategoryFeature, bestCategory);
   }
 }

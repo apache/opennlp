@@ -44,9 +44,9 @@ public class NameSample {
 
   public NameSample(String id, String[] sentence, Span[] names,
       String[][] additionalContext, boolean clearAdaptiveData) {
-    
+
     this.id = id;
-    
+
     if (sentence == null) {
       throw new IllegalArgumentException("sentence must not be null!");
     }
@@ -57,10 +57,10 @@ public class NameSample {
 
     this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
     this.names = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(names)));
-    
+
     if (additionalContext != null) {
       this.additionalContext = new String[additionalContext.length][];
-      
+
       for (int i = 0; i < additionalContext.length; i++) {
         this.additionalContext[i] = new String[additionalContext[i].length];
         System.arraycopy(additionalContext[i], 0, this.additionalContext[i], 0, additionalContext[i].length);
@@ -70,17 +70,17 @@ public class NameSample {
       this.additionalContext = null;
     }
     isClearAdaptiveData = clearAdaptiveData;
-    
+
     // TODO: Check that name spans are not overlapping, otherwise throw exception
   }
-  
+
   /**
    * Initializes the current instance.
    *
    * @param sentence training sentence
    * @param names
    * @param additionalContext
-   * @param clearAdaptiveData if true the adaptive data of the 
+   * @param clearAdaptiveData if true the adaptive data of the
    *     feature generators is cleared
    */
   public NameSample(String[] sentence, Span[] names,
@@ -91,11 +91,11 @@ public class NameSample {
   public NameSample(String[] sentence, Span[] names, boolean clearAdaptiveData) {
     this(sentence, names, null, clearAdaptiveData);
   }
-  
+
   public String getId() {
     return id;
   }
-  
+
   public String[] getSentence() {
     return sentence.toArray(new String[sentence.size()]);
   }
@@ -114,13 +114,13 @@ public class NameSample {
 
   @Override
   public boolean equals(Object obj) {
-    
+
     if (this == obj) {
       return true;
     }
     else if (obj instanceof NameSample) {
       NameSample a = (NameSample) obj;
-      
+
       return Arrays.equals(getSentence(), a.getSentence()) &&
           Arrays.equals(getNames(), a.getNames()) &&
           Arrays.equals(getAdditionalContext(), a.getAdditionalContext()) &&
@@ -129,9 +129,9 @@ public class NameSample {
     else {
       return false;
     }
-    
+
   }
-  
+
   @Override
   public String toString() {
     StringBuilder result = new StringBuilder();
@@ -140,7 +140,7 @@ public class NameSample {
     // before the sample sentence line
     if (isClearAdaptiveDataSet())
       result.append("\n");
-    
+
     for (int tokenIndex = 0; tokenIndex < sentence.size(); tokenIndex++) {
       // token
 
@@ -175,40 +175,40 @@ public class NameSample {
 
     return result.toString();
   }
-  
+
   private static String errorTokenWithContext(String sentence[], int index) {
-    
+
     StringBuilder errorString = new StringBuilder();
-    
+
     // two token before
     if (index > 1)
       errorString.append(sentence[index -2]).append(" ");
-    
+
     if (index > 0)
       errorString.append(sentence[index -1]).append(" ");
-    
+
     // token itself
     errorString.append("###");
     errorString.append(sentence[index]);
     errorString.append("###").append(" ");
-    
+
     // two token after
     if (index + 1 < sentence.length)
       errorString.append(sentence[index + 1]).append(" ");
 
     if (index + 2 < sentence.length)
       errorString.append(sentence[index + 2]);
-    
+
     return errorString.toString();
   }
-  
+
   private static final Pattern START_TAG_PATTERN = Pattern.compile("<START(:([^:>\\s]*))?>");
 
   public static NameSample parse(String taggedTokens,
       boolean isClearAdaptiveData) throws IOException {
     return parse(taggedTokens, DEFAULT_TYPE, isClearAdaptiveData);
   }
-  
+
   public static NameSample parse(String taggedTokens, String defaultType,
       boolean isClearAdaptiveData)
     // TODO: Should throw another exception, and then convert it into an IOException in the stream
@@ -221,16 +221,16 @@ public class NameSample {
     String nameType = defaultType;
     int startIndex = -1;
     int wordIndex = 0;
-    
+
     // we check if at least one name has the a type. If no one has, we will
     // leave the NameType property of NameSample null.
     boolean catchingName = false;
-    
+
     for (int pi = 0; pi < parts.length; pi++) {
       Matcher startMatcher = START_TAG_PATTERN.matcher(parts[pi]);
       if (startMatcher.matches()) {
         if(catchingName) {
-          throw new IOException("Found unexpected annotation" + 
+          throw new IOException("Found unexpected annotation" +
               " while handling a name sequence: " + errorTokenWithContext(parts, pi));
         }
         catchingName = true;
@@ -242,7 +242,7 @@ public class NameSample {
           }
           nameType = nameTypeFromSample;
         }
-          
+
       }
       else if (parts[pi].equals(NameSampleDataStream.END_TAG)) {
         if(catchingName == false) {
@@ -251,7 +251,7 @@ public class NameSample {
         catchingName = false;
         // create name
         nameList.add(new Span(startIndex, wordIndex, nameType));
-        
+
       }
       else {
         tokenList.add(parts[pi]);
@@ -260,7 +260,7 @@ public class NameSample {
     }
     String[] sentence = tokenList.toArray(new String[tokenList.size()]);
     Span[] names = nameList.toArray(new Span[nameList.size()]);
-    
+
     return new NameSample(sentence, names, isClearAdaptiveData);
   }
 }

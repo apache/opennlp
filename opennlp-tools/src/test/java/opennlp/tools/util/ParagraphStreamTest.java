@@ -27,23 +27,23 @@ public class ParagraphStreamTest {
 
   @Test
   public void testSimpleReading() throws IOException {
-    
+
     String line1 = "1";
     String line2 = "2";
     String line3 = "";
     String line4 = "4";
     String line5 = "5";
     String line6 = "";
-    
+
     ParagraphStream paraStream = new ParagraphStream(
         ObjectStreamUtils.createObjectStream(line1, line2, line3, line4, line5));
-    
+
     assertEquals("1\n2\n", paraStream.read());
     assertEquals("4\n5\n", paraStream.read());
-    
+
     paraStream = new ParagraphStream(
         ObjectStreamUtils.createObjectStream(line1, line2, line3, line4, line5, line6));
-    
+
     assertEquals("1\n2\n", paraStream.read());
     assertEquals("4\n5\n", paraStream.read());
   }

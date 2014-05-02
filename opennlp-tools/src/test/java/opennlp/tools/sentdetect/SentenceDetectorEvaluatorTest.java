@@ -31,41 +31,41 @@ import org.junit.Test;
 
 
 public class SentenceDetectorEvaluatorTest {
-  
+
   @Test
   public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
     SentenceDetectorEvaluationMonitor listener = new SentenceEvaluationErrorListener(stream);
-    
+
     SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(
         SentenceSampleTest.createGoldSample()), listener);
-    
+
     eval.evaluateSample(SentenceSampleTest.createGoldSample());
-    
+
     assertEquals(1.0, eval.getFMeasure().getFMeasure());
-    
+
     assertEquals(0, stream.toString().length());
   }
-  
+
   @Test
   public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
     SentenceDetectorEvaluationMonitor listener = new SentenceEvaluationErrorListener(stream);
-    
+
     SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(
         SentenceSampleTest.createGoldSample()), listener);
-    
+
     eval.evaluateSample(SentenceSampleTest.createPredSample());
-    
+
     assertEquals(-1.0, eval.getFMeasure().getFMeasure(), .1d);
-    
+
     assertNotSame(0, stream.toString().length());
   }
-  
-  
+
+
   /** a dummy sentence detector that always return something expected */
   class DummySD implements SentenceDetector {
-    
+
     private SentenceSample sample;
 
     public DummySD(SentenceSample sample) {
@@ -79,6 +79,6 @@ public class SentenceDetectorEvaluatorTest {
     public Span[] sentPosDetect(String s) {
       return sample.getSentences();
     }
-    
+
   }
 }

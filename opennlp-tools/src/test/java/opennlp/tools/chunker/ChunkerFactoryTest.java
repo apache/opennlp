@@ -48,13 +48,13 @@ public class ChunkerFactoryTest {
         sentences));
     return stream;
   }
-  
+
   static ChunkerModel trainModel(ModelType type, ChunkerFactory factory)
       throws IOException {
     return ChunkerME.train("en", createSampleStream(),
         TrainingParameters.defaultParams(), factory);
   }
-  
+
   @Test
   public void testDefaultFactory() throws IOException {
 
@@ -75,7 +75,7 @@ public class ChunkerFactoryTest {
     assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
   }
 
-  
+
   @Test
   public void testDummyFactory() throws IOException {
 
@@ -85,8 +85,8 @@ public class ChunkerFactoryTest {
     assertTrue(factory instanceof DummyChunkerFactory);
     assertTrue(factory.getContextGenerator() instanceof DummyChunkerFactory.DummyContextGenerator);
     assertTrue(factory.getSequenceValidator() instanceof DummyChunkerFactory.DummySequenceValidator);
-    
-    
+
+
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
     ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -96,19 +96,19 @@ public class ChunkerFactoryTest {
     factory = (DummyChunkerFactory)fromSerialized.getFactory();
     assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
     assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
-    
-    
+
+
     ChunkerME chunker = new ChunkerME(model);
-    
+
     String[] toks1 = { "Rockwell", "said", "the", "agreement", "calls", "for",
         "it", "to", "supply", "200", "additional", "so-called", "shipsets",
         "for", "the", "planes", "." };
 
     String[] tags1 = { "NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
         "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "." };
-    
-    
+
+
     chunker.chunk(toks1, tags1);
-    
+
   }
 }

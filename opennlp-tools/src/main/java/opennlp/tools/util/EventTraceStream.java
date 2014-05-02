@@ -25,22 +25,22 @@ import opennlp.tools.ml.model.Event;
 public class EventTraceStream extends FilterObjectStream<Event, Event> {
 
   private Writer writer;
-  
+
   public EventTraceStream(ObjectStream<Event> stream, Writer writer) {
     super(stream);
-    
+
     this.writer = writer;
   }
-  
-  
+
+
   public Event read() throws IOException {
     Event event = samples.read();
-    
+
     if (event != null) {
       writer.write(event.toString());
       writer.write("\n");
     }
-    
+
     return event;
   }
 

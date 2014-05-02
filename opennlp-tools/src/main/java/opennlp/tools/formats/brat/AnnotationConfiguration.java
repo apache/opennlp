@@ -27,15 +27,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AnnotationConfiguration {
-  
+
   public static final String SPAN_TYPE = "Span";
   public static final String ENTITY_TYPE = "Entity";
   public static final String RELATION_TYPE = "Relation";
-  
+
   private final Map<String, String> typeToClassMap;
-  
+
   public AnnotationConfiguration(Map<String, String> typeToClassMap) {
-    
+
     this.typeToClassMap = Collections.unmodifiableMap(
         new HashMap<String, String>(typeToClassMap));
   }
@@ -43,20 +43,20 @@ public class AnnotationConfiguration {
   public String getTypeClass(String type) {
     return typeToClassMap.get(type);
   }
-  
-  
+
+
   public static AnnotationConfiguration parse(InputStream in) throws IOException {
     Map<String, String> typeToClassMap = new HashMap<String, String>();
-    
+
     BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
-    
+
     // Note: This only supports entities and relations section
     String line = null;
     String sectionType = null;
-    
+
     while ((line = reader.readLine())!= null) {
       line = line.trim();
-      
+
       if (line.length() == 0) {
         continue;
       } else if (line.startsWith("#")) {
@@ -73,7 +73,7 @@ public class AnnotationConfiguration {
         }
       }
     }
-    
+
     return new AnnotationConfiguration(typeToClassMap);
   }
 }

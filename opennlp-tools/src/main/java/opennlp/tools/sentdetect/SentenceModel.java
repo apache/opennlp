@@ -45,7 +45,7 @@ import opennlp.tools.util.model.ModelUtil;
 public class SentenceModel extends BaseModel {
 
   private static final String COMPONENT_NAME = "SentenceDetectorME";
-  
+
   private static final String MAXENT_MODEL_ENTRY_NAME = "sent.model";
 
   public SentenceModel(String languageCode, MaxentModel sentModel,
@@ -70,7 +70,7 @@ public class SentenceModel extends BaseModel {
 
   /**
    * TODO: was added in 1.5.3 -&gt; remove
-   * 
+   *
    * @deprecated Use
    *             {@link #SentenceModel(String, MaxentModel, Map, SentenceDetectorFactory)}
    *             instead and pass in a {@link SentenceDetectorFactory}
@@ -80,7 +80,7 @@ public class SentenceModel extends BaseModel {
     this(languageCode, sentModel, useTokenEnd, abbreviations, eosCharacters,
         null);
   }
-  
+
   public SentenceModel(String languageCode, MaxentModel sentModel,
       boolean useTokenEnd, Dictionary abbreviations, Map<String, String> manifestInfoEntries) {
     this(languageCode, sentModel, useTokenEnd, abbreviations, null,
@@ -95,11 +95,11 @@ public class SentenceModel extends BaseModel {
   public SentenceModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
-  
+
   public SentenceModel(File modelFile) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelFile);
   }
-  
+
   public SentenceModel(URL modelURL) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelURL);
   }
@@ -123,7 +123,7 @@ public class SentenceModel extends BaseModel {
   public SentenceDetectorFactory getFactory() {
     return (SentenceDetectorFactory) this.toolFactory;
   }
-  
+
   @Override
   protected Class<? extends BaseToolFactory> getDefaultFactory() {
     return SentenceDetectorFactory.class;

@@ -31,43 +31,43 @@ import org.junit.Test;
 public class BeamSearchTest {
 
   static class IdentityFeatureGenerator implements BeamSearchContextGenerator<String> {
-    
+
     private String[] outcomeSequence;
-    
+
     IdentityFeatureGenerator(String outcomeSequence[]) {
       this.outcomeSequence = outcomeSequence;
     }
-    
+
     public String[] getContext(int index, String[] sequence,
         String[] priorDecisions, Object[] additionalContext) {
       return new String[] {outcomeSequence[index]};
     }
   }
-  
-  
+
+
   static class IdentityModel implements MaxentModel {
 
     private String[] outcomes;
-    
+
     private Map<String, Integer> outcomeIndexMap = new HashMap<String, Integer>();
-    
+
     private double bestOutcomeProb = 0.8d;
     private double otherOutcomeProb;
-    
+
     IdentityModel(String outcomes[]) {
       this.outcomes = outcomes;
-      
+
       for (int i = 0; i < outcomes.length; i++) {
         outcomeIndexMap.put(outcomes[i], i);
       }
-      
+
       otherOutcomeProb = 0.2d / (outcomes.length - 1);
     }
-    
+
     public double[] eval(String[] context) {
-      
+
       double probs[] = new double[outcomes.length];
-      
+
       for (int i = 0; i < probs.length; i++) {
         if (outcomes[i].equals(context[0])) {
           probs[i] = bestOutcomeProb;
@@ -76,7 +76,7 @@ public class BeamSearchTest {
           probs[i] = otherOutcomeProb;
         }
       }
-      
+
       return probs;
     }
 
@@ -112,26 +112,26 @@ public class BeamSearchTest {
       return outcomes[i];
     }
   }
-  
+
   /**
    * Tests that beam search does not fail to detect an empty sequence.
    */
   @Test
   public void testBestSequenceZeroLengthInput() {
-    
+
     String sequence[] = new String[0];
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
-    
+
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
-    
+
     BeamSearch<String> bs = new BeamSearch<String>(3, cg, model);
-    
+
     Sequence seq = bs.bestSequence(sequence, null);
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());
   }
-  
+
   /**
    * Tests finding a sequence of length one.
    */
@@ -139,18 +139,18 @@ public class BeamSearchTest {
   public void testBestSequenceOneElementInput() {
     String sequence[] = {"1"};
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
-    
+
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
-    
+
     BeamSearch<String> bs = new BeamSearch<String>(3, cg, model);
-    
+
     Sequence seq = bs.bestSequence(sequence, null);
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());
     assertEquals("1", seq.getOutcomes().get(0));
   }
-  
+
   /**
    * Tests finding the best sequence on a short input sequence.
    */
@@ -158,12 +158,12 @@ public class BeamSearchTest {
   public void testBestSequence() {
     String sequence[] = {"1", "2", "3", "2", "1"};
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
-    
+
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
-    
+
     BeamSearch<String> bs = new BeamSearch<String>(2, cg, model);
-    
+
     Sequence seq = bs.bestSequence(sequence, null);
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());
@@ -173,7 +173,7 @@ public class BeamSearchTest {
     assertEquals("2", seq.getOutcomes().get(3));
     assertEquals("1", seq.getOutcomes().get(4));
   }
-  
+
   /**
    * Tests finding the best sequence on a short input sequence.
    */
@@ -181,17 +181,17 @@ public class BeamSearchTest {
   public void testBestSequenceWithValidator() {
     String sequence[] = {"1", "2", "3", "2", "1"};
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
-    
+
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
-    
+
     BeamSearch<String> bs = new BeamSearch<String>(2, cg, model, new SequenceValidator<String>(){
 
       public boolean validSequence(int i, String[] inputSequence,
           String[] outcomesSequence, String outcome) {
         return !"2".equals(outcome);
       }}, 0);
-    
+
     Sequence seq = bs.bestSequence(sequence, null);
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());

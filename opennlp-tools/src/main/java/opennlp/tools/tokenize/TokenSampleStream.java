@@ -36,14 +36,14 @@ import opennlp.tools.util.ObjectStream;
  * The sequence must be unique in the input string and is not escaped.
  */
 public class TokenSampleStream extends FilterObjectStream<String, TokenSample> {
-  
+
   private final String separatorChars;
-  
-  
+
+
   public TokenSampleStream(ObjectStream<String> sampleStrings, String separatorChars) {
-    
+
     super(sampleStrings);
-    
+
     if (sampleStrings == null) {
       throw new IllegalArgumentException("sampleStrings must not be null!");
     }
@@ -53,14 +53,14 @@ public class TokenSampleStream extends FilterObjectStream<String, TokenSample> {
 
     this.separatorChars= separatorChars;
   }
-  
+
   public TokenSampleStream(ObjectStream<String> sentences) {
     this(sentences, TokenSample.DEFAULT_SEPARATOR_CHARS);
   }
-  
+
   public TokenSample read() throws IOException {
     String sampleString = samples.read();
-    
+
     if (sampleString != null) {
       return TokenSample.parse(sampleString, separatorChars);
     }

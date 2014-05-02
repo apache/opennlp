@@ -38,26 +38,26 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class LeipzigDoccatSampleStream extends
     FilterObjectStream<String, DocumentSample> {
-  
+
   private final String language;
   private final int sentencesPerDocument;
 
   /**
    * Creates a new LeipzigDoccatSampleStream with the specified parameters.
-   * 
+   *
    * @param language the Leipzig input sentences.txt file
    * @param sentencesPerDocument the number of sentences which should be grouped into once {@link DocumentSample}
    * @param in the InputStream pointing to the contents of the sentences.txt input file
    * @throws IOException IOException
    */
-  LeipzigDoccatSampleStream(String language, int sentencesPerDocument, 
+  LeipzigDoccatSampleStream(String language, int sentencesPerDocument,
       InputStream in) throws IOException {
     super(new PlainTextByLineStream(in, "UTF-8"));
     System.setOut(new PrintStream(System.out, true, "UTF-8"));
     this.language = language;
     this.sentencesPerDocument = sentencesPerDocument;
   }
-  
+
   public DocumentSample read() throws IOException {
 
     int count = 0;
@@ -68,25 +68,25 @@ public class LeipzigDoccatSampleStream extends
     while (count < sentencesPerDocument && (line = samples.read()) != null) {
 
       String tokens[] = SimpleTokenizer.INSTANCE.tokenize(line);
-      
+
       if (tokens.length == 0) {
         throw new IOException("Empty lines are not allowed!");
       }
-        
+
       // Always skip first token, that is the sentence number!
       for (int i = 1; i < tokens.length; i++) {
         sampleText.append(tokens[i]);
         sampleText.append(' ');
       }
-      
+
       count++;
     }
 
-    
+
     if (sampleText.length() > 0) {
       return new DocumentSample(language, sampleText.toString());
     }
-  
+
     return null;
   }
 }

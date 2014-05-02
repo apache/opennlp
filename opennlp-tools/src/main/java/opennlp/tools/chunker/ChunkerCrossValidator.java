@@ -35,7 +35,7 @@ public class ChunkerCrossValidator {
   private ChunkerFactory chunkerFactory;
 
   /**
-   * @deprecated Use {@link #ChunkerCrossValidator(String, TrainingParameters, ChunkerFactory, ChunkerEvaluationMonitor...)} instead. 
+   * @deprecated Use {@link #ChunkerCrossValidator(String, TrainingParameters, ChunkerFactory, ChunkerEvaluationMonitor...)} instead.
    */
   public ChunkerCrossValidator(String languageCode, TrainingParameters params,
       ChunkerEvaluationMonitor... listeners) {
@@ -44,7 +44,7 @@ public class ChunkerCrossValidator {
     this.params = params;
     this.listeners = listeners;
   }
-  
+
     public ChunkerCrossValidator(String languageCode, TrainingParameters params,
       ChunkerFactory factory, ChunkerEvaluationMonitor... listeners) {
     this.chunkerFactory = factory;
@@ -55,12 +55,12 @@ public class ChunkerCrossValidator {
 
   /**
    * Starts the evaluation.
-   * 
+   *
    * @param samples
    *          the data to train and test
    * @param nFolds
    *          number of folds
-   * 
+   *
    * @throws IOException
    */
   public void evaluate(ObjectStream<ChunkSample> samples, int nFolds)

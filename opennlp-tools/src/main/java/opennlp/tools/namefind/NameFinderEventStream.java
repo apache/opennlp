@@ -42,7 +42,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   private String type;
 
   private SequenceCodec<String> codec;
-  
+
   /**
    * Creates a new name finder event stream using the specified data stream and context generator.
    * @param dataStream The data stream of events.
@@ -51,16 +51,16 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
    */
   public NameFinderEventStream(ObjectStream<NameSample> dataStream, String type, NameContextGenerator contextGenerator, SequenceCodec codec) {
     super(dataStream);
-    
+
     this.codec = codec;
-    
+
     if (codec == null) {
       this.codec = new BioCodec();
     }
-    
+
     this.contextGenerator = contextGenerator;
     this.contextGenerator.addFeatureGenerator(new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
-    
+
     if (type != null)
       this.type = type;
     else
@@ -78,7 +78,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
    * @param type null or overrides the type parameter in the provided samples
    * @param length The length of the sentence.
    * @return An array of start, continue, other outcomes based on the specified names and sentence length.
-   * 
+   *
    * @deprecated use the BioCodec implementation of the SequenceValidator instead!
    */
   @Deprecated
@@ -112,28 +112,28 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     for (int i = 0; i < outcomes.length; i++) {
       events.add(new Event(outcomes[i], cg.getContext(i, sentence, outcomes,null)));
     }
-    
+
     cg.updateAdaptiveData(sentence, outcomes);
 
     return events;
   }
-  
+
   @Override
   protected Iterator<Event> createEvents(NameSample sample) {
-    
+
     if (sample.isClearAdaptiveDataSet()) {
       contextGenerator.clearAdaptiveData();
     }
-    
+
     String outcomes[] = codec.encode(sample.getNames(), sample.getSentence().length);
 //    String outcomes[] = generateOutcomes(sample.getNames(), type, sample.getSentence().length);
     additionalContextFeatureGenerator.setCurrentContext(sample.getAdditionalContext());
     String[] tokens = new String[sample.getSentence().length];
-    
+
     for (int i = 0; i < sample.getSentence().length; i++) {
       tokens[i] = sample.getSentence()[i];
     }
-    
+
     return generateEvents(tokens, outcomes, contextGenerator).iterator();
   }
 

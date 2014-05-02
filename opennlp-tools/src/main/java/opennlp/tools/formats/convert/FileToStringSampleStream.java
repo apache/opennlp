@@ -31,19 +31,19 @@ import opennlp.tools.util.ObjectStream;
 public class FileToStringSampleStream extends FilterObjectStream<File, String> {
 
   private final Charset encoding;
-  
+
   public FileToStringSampleStream(ObjectStream<File> samples, Charset encoding) {
     super(samples);
-    
+
     this.encoding = encoding;
   }
-  
+
   private static String readFile(File textFile, Charset encoding) throws IOException {
-    
+
     Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(textFile), encoding));
 
     StringBuilder text = new StringBuilder();
-    
+
     try {
       char buffer[] = new char[1024];
       int length;
@@ -59,14 +59,14 @@ public class FileToStringSampleStream extends FilterObjectStream<File, String> {
         // sorry that this can fail!
       }
     }
-    
+
     return text.toString();
   }
 
   public String read() throws IOException {
-    
+
     File sampleFile = samples.read();
-    
+
     if (sampleFile != null) {
       return readFile(sampleFile, encoding);
     }

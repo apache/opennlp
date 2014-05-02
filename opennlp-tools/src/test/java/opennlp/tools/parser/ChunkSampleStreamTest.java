@@ -34,9 +34,9 @@ public class ChunkSampleStreamTest {
   public void testConvertParseToPosSample() throws IOException {
     ObjectStream<ChunkSample> chunkSampleStream = new ChunkSampleStream(new ParseSampleStream(
         ObjectStreamUtils.createObjectStream(ParseTest.PARSE_STRING)));
-    
+
     ChunkSample sample = chunkSampleStream.read();
-    
+
     assertEquals("She", sample.getSentence()[0]);
     assertEquals("PRP", sample.getTags()[0]);
     assertEquals("S-NP", sample.getPreds()[0]);
@@ -91,7 +91,7 @@ public class ChunkSampleStreamTest {
     assertEquals(".", sample.getSentence()[17]);
     assertEquals(".", sample.getTags()[17]);
     assertEquals("O", sample.getPreds()[17]);
-    
+
     assertNull(chunkSampleStream.read());
   }
 }

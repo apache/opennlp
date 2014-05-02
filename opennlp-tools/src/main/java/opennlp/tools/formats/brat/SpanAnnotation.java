@@ -29,7 +29,7 @@ public class SpanAnnotation extends BratAnnotation {
     this.span = span;
     this.coveredText = coveredText;
   }
-  
+
   public Span getSpan() {
     return span;
   }
@@ -37,7 +37,7 @@ public class SpanAnnotation extends BratAnnotation {
   public String getCoveredText() {
     return coveredText;
   }
-  
+
   @Override
   public String toString() {
     return super.toString() + " " + span.getStart() + " " + span.getEnd() + " " + getCoveredText();

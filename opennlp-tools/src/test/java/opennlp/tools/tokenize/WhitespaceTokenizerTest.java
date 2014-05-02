@@ -34,7 +34,7 @@ public class WhitespaceTokenizerTest {
     assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize(" one")[0]);
     assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one ")[0]);
   }
-  
+
   /**
    * Tests if it can tokenize whitespace separated tokens.
    */
@@ -54,7 +54,7 @@ public class WhitespaceTokenizerTest {
 
     assertTrue(tokenizedText.length == 6);
   }
-  
+
   @Test
   public void testTokenizationOfStringWithoutTokens() {
     assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("").length); // empty

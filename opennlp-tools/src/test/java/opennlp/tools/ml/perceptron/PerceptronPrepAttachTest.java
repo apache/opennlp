@@ -38,51 +38,51 @@ public class PerceptronPrepAttachTest {
 
   @Test
   public void testPerceptronOnPrepAttachData() throws IOException {
-    MaxentModel model = 
-        new PerceptronTrainer().trainModel(400, 
+    MaxentModel model =
+        new PerceptronTrainer().trainModel(400,
         new TwoPassDataIndexer(createTrainingStream(), 1, false), 1);
 
     testModel(model, 0.7650408516959644);
   }
-  
+
   @Test
   public void testPerceptronOnPrepAttachDataWithSkippedAveraging() throws IOException {
-    
+
     Map<String, String> trainParams = new HashMap<String, String>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put("UseSkippedAveraging", Boolean.toString(true));
-    
+
     MaxentModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
-    
+
     testModel(model, 0.773706362961129);
   }
-  
+
   @Test
   public void testPerceptronOnPrepAttachDataWithTolerance() throws IOException {
-    
+
     Map<String, String> trainParams = new HashMap<String, String>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put(AbstractTrainer.ITERATIONS_PARAM, Integer.toString(500));
     trainParams.put("Tolerance", Double.toString(0.0001d));
-    
+
     MaxentModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
-    
+
     testModel(model, 0.7677642980935875);
   }
-  
+
   @Test
   public void testPerceptronOnPrepAttachDataWithStepSizeDecrease() throws IOException {
-    
+
     Map<String, String> trainParams = new HashMap<String, String>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put(AbstractTrainer.ITERATIONS_PARAM, Integer.toString(500));
     trainParams.put("StepSizeDecrease", Double.toString(0.06d));
-    
+
     MaxentModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
-    
+
     testModel(model, 0.7756870512503095);
   }
 }

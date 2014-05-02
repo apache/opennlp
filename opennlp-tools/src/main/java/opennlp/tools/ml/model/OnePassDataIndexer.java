@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -42,7 +42,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
   /**
    * One argument constructor for DataIndexer which calls the two argument
    * constructor assuming no cutoff.
-   * 
+   *
    * @param eventStream
    *          An Event[] which contains the a list of all the Events seen in the
    *          training data.
@@ -58,7 +58,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
 
   /**
    * Two argument constructor for DataIndexer.
-   * 
+   *
    * @param eventStream
    *          An Event[] which contains the a list of all the Events seen in the
    *          training data.
@@ -97,7 +97,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
    * associated with each event are counted and any which occur at least
    * <tt>cutoff</tt> times are added to the <tt>predicatesInOut</tt> map along
    * with a unique integer index.
-   * 
+   *
    * @param eventStream
    *          an <code>EventStream</code> value
    * @param predicatesInOut

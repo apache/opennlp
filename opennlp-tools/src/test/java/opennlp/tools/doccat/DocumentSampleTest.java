@@ -24,7 +24,7 @@ import org.junit.Test;
 
 
 public class DocumentSampleTest {
-  
+
   @Test
   public void testEquals() {
     assertFalse(createGoldSample() == createGoldSample());
@@ -40,5 +40,5 @@ public class DocumentSampleTest {
   public static DocumentSample createPredSample() {
     return new DocumentSample("anotherCategory", "a small text");
   }
-  
+
 }

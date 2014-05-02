@@ -30,7 +30,7 @@ import opennlp.tools.util.ObjectStream;
  * Reads a plain text file and return each line as a <code>String</code> object.
  */
 public class DocumentToLineStream extends SegmenterObjectStream<String, String> {
-  
+
   public DocumentToLineStream(ObjectStream<String> samples) {
     super(samples);
   }
@@ -38,13 +38,13 @@ public class DocumentToLineStream extends SegmenterObjectStream<String, String> 
   @Override
   protected List<String> read(String sample) throws IOException {
     List<String> lines = Arrays.asList(sample.split("\n"));
-    
+
     // documents must be empty line terminated
     if (!lines.get(lines.size() - 1).trim().isEmpty()) {
       lines = new ArrayList<String>(lines);
       lines.add("");
     }
-    
+
     return lines;
   }
 }

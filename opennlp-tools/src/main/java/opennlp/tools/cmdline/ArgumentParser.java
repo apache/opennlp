@@ -36,9 +36,9 @@ import java.util.Set;
 /**
  * Parser for command line arguments. The parser creates a dynamic proxy which
  * can be access via a command line argument interface.
- * 
+ *
  * <p>
- * 
+ *
  * The command line argument proxy interface must follow these conventions:<br>
  * - Methods do not define arguments<br>
  * - Method names must start with get<br>
@@ -53,26 +53,26 @@ public class ArgumentParser {
     public static final String DEFAULT_CHARSET = "DEFAULT_CHARSET";
     public String defaultValue() default "";
   }
-  
+
   public @Retention(RetentionPolicy.RUNTIME)
   @interface ParameterDescription {
     public String valueName();
     public String description() default "";
   }
-  
+
   private interface ArgumentFactory {
-    
+
     static final String INVALID_ARG = "Invalid argument: %s %s \n";
-    
+
     Object parseArgument(Method method, String argName, String argValue);
   }
- 
+
   private static class IntegerArgumentFactory  implements ArgumentFactory {
 
     public Object parseArgument(Method method, String argName, String argValue) {
-      
+
       Object value;
-      
+
       try {
         value = Integer.parseInt(argValue);
       }
@@ -80,36 +80,36 @@ public class ArgumentParser {
         throw new TerminateToolException(1, String.format(INVALID_ARG, argName, argValue) +
             "Value must be an integer!", e);
       }
-      
+
       return value;
     }
   }
- 
+
   private static class BooleanArgumentFactory implements ArgumentFactory {
 
     public Object parseArgument(Method method, String argName, String argValue) {
       return Boolean.parseBoolean(argValue);
     }
-  } 
-  
+  }
+
   private static class StringArgumentFactory implements ArgumentFactory {
-    
+
     public Object parseArgument(Method method, String argName, String argValue) {
       return argValue;
     }
-  } 
-  
+  }
+
   private static class FileArgumentFactory implements ArgumentFactory {
-    
+
     public Object parseArgument(Method method, String argName, String argValue) {
       return new File(argValue);
     }
-  } 
-  
+  }
+
   private static class CharsetArgumentFactory implements ArgumentFactory {
-    
+
     public Object parseArgument(Method method, String argName, String charsetName) {
-      
+
       try {
         if(OptionalParameter.DEFAULT_CHARSET.equals(charsetName)) {
           return Charset.defaultCharset();
@@ -124,28 +124,28 @@ public class ArgumentParser {
             "Illegal encoding name.");
       }
     }
-  } 
-  
+  }
+
   private static class ArgumentProxy implements InvocationHandler {
-    
+
     private final Map<String, Object> arguments;
-    
+
     ArgumentProxy(Map<String, Object> arguments) {
       this.arguments = arguments;
     }
-    
+
     public Object invoke(Object proxy, Method method, Object[] args)
         throws Throwable {
-      
+
       if (args != null)
         throw new IllegalStateException();
-      
+
       return arguments.get(method.getName());
     }
   }
-  
+
   private static final Map<Class<?>, ArgumentFactory> argumentFactories;
-  
+
   static {
     Map<Class<?>, ArgumentFactory> factories = new HashMap<Class<?>, ArgumentParser.ArgumentFactory>();
     factories.put(Integer.class, new IntegerArgumentFactory());
@@ -153,13 +153,13 @@ public class ArgumentParser {
     factories.put(String.class, new StringArgumentFactory());
     factories.put(File.class, new FileArgumentFactory());
     factories.put(Charset.class, new CharsetArgumentFactory());
-    
+
     argumentFactories = Collections.unmodifiableMap(factories);
   }
-  
+
   private ArgumentParser() {
   }
-  
+
   private static <T> void checkProxyInterfaces(Class<T>... proxyInterfaces) {
     for (Class<T> proxyInterface : proxyInterfaces) {
       if (null != proxyInterface) {
@@ -196,11 +196,11 @@ public class ArgumentParser {
       }
     }
   }
-  
+
   private static String methodNameToParameter(String methodName) {
     // remove get from method name
     char parameterNameChars[] = methodName.toCharArray();
-    
+
     // name length is checked to be at least 4 prior
     parameterNameChars[3] = Character.toLowerCase(parameterNameChars[3]);
 
@@ -222,13 +222,13 @@ public class ArgumentParser {
     return createUsage(new Class[]{argProxyInterface});
   }
 
-  
+
   /**
    * Creates a usage string which can be printed in case the user did specify the arguments
    * incorrectly. Incorrectly is defined as {@link ArgumentParser#validateArguments(String[],
    * Class[])}
    * returns false.
-   * 
+   *
    * @param argProxyInterfaces interfaces with parameter descriptions
    * @return the help message usage string
    */
@@ -236,7 +236,7 @@ public class ArgumentParser {
     checkProxyInterfaces(argProxyInterfaces);
 
     Set<String> duplicateFilter = new HashSet<String>();
-    
+
     StringBuilder usage = new StringBuilder();
     StringBuilder details = new StringBuilder();
     for (Class<T> argProxyInterface : argProxyInterfaces) {
@@ -256,7 +256,7 @@ public class ArgumentParser {
             else {
               duplicateFilter.add(paramName);
             }
-            
+
             if (optional != null)
               usage.append('[');
 
@@ -327,7 +327,7 @@ public class ArgumentParser {
 
   /**
    * Tests if the arguments are correct or incorrect.
-   * 
+   *
    * @param args command line arguments
    * @param argProxyInterfaces interfaces with parameters description
    * @return null, if arguments are valid or error message otherwise
@@ -373,63 +373,63 @@ public class ArgumentParser {
 
     return null;
   }
-  
+
   /**
    * Parses the passed arguments and creates an instance of the proxy interface.
    * <p>
    * In case an argument value cannot be parsed a {@link TerminateToolException} is
    * thrown which contains an error message which explains the problems.
-   * 
+   *
    * @param args arguments
    * @param argProxyInterface interface with parameters description
-   * 
+   *
    * @return parsed parameters
-   * 
+   *
    * @throws TerminateToolException if an argument value cannot be parsed.
    * @throws IllegalArgumentException if validateArguments returns false, if the proxy interface is not compatible.
    */
   @SuppressWarnings("unchecked")
   public static <T> T parse(String args[], Class<T> argProxyInterface) {
-    
+
     checkProxyInterfaces(argProxyInterface);
-    
+
     if (!validateArguments(args, argProxyInterface))
       throw new IllegalArgumentException("Passed args must be valid!");
-    
+
     Map<String, Object> arguments = new HashMap<String, Object>();
-    
+
     for (Method method : argProxyInterface.getMethods()) {
-      
+
       String parameterName = methodNameToParameter(method.getName());
       String valueString = CmdLineUtil.getParameter(parameterName, args);
-      
+
       if (valueString == null) {
         OptionalParameter optionalParam = method.getAnnotation(OptionalParameter.class);
-        
+
         if (optionalParam.defaultValue().length() > 0)
           valueString = optionalParam.defaultValue();
         else
           valueString = null;
       }
-      
+
       Class<?> returnType = method.getReturnType();
-      
+
       Object value;
-      
+
       if (valueString != null) {
         ArgumentFactory factory = argumentFactories.get(returnType);
-        
+
         if (factory == null)
           throw new IllegalStateException("factory for '" + returnType + "' must not be null");
-        
+
         value = factory.parseArgument(method, parameterName, valueString);
       }
       else
         value = null;
-      
+
       arguments.put(method.getName(), value);
     }
-    
+
     return (T) java.lang.reflect.Proxy.newProxyInstance(
         argProxyInterface.getClassLoader(),
         new Class[]{argProxyInterface},

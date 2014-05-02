@@ -32,30 +32,30 @@ import opennlp.tools.util.StringList;
 public class DictionaryNameFinder implements TokenNameFinder {
 
   private static final String DEFAULT_TYPE = "default";
-  
+
   private Dictionary mDictionary;
   private final String type;
 
   /**
    * Initialized the current instance with he provided dictionary
    * and a type.
-   * 
+   *
    * @param dictionary
    * @param type the name type used for the produced spans
    */
   public DictionaryNameFinder(Dictionary dictionary, String type) {
     mDictionary = dictionary;
-    
+
     if (type == null) {
       throw new IllegalArgumentException("type cannot be null!");
     }
-    
+
     this.type = type;
   }
-  
+
   /**
    * Initializes the current instance with the provided dictionary.
-   * 
+   *
    * @param dictionary
    */
   public DictionaryNameFinder(Dictionary dictionary) {

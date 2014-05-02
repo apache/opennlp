@@ -32,7 +32,7 @@ public class BilouCodec implements SequenceCodec<String> {
   public static final String LAST = "last";
   public static final String UNIT = "unit";
   public static final String OTHER = "other";
-  
+
   @Override
   public Span[] decode(List<String> c) {
     int start = -1;
@@ -52,7 +52,7 @@ public class BilouCodec implements SequenceCodec<String> {
           spans.add(new Span(start, end + 1, BioCodec.extractNameType(c.get(li - 1))));
           start = -1;
           end = -1;
-        }        
+        }
       }
       else if (chunkTag.endsWith(UNIT)) {
         spans.add(new Span(li, li + 1, BioCodec.extractNameType(c.get(li))));
@@ -69,9 +69,9 @@ public class BilouCodec implements SequenceCodec<String> {
   public String[] encode(Span[] names, int length) {
     String[] outcomes = new String[length];
     Arrays.fill(outcomes, BioCodec.OTHER);
-    
+
     for (Span name : names) {
-      
+
       if (name.length() > 1) {
         if (name.getType() == null) {
           outcomes[name.getStart()] = "default" + "-" + BioCodec.START;
@@ -88,7 +88,7 @@ public class BilouCodec implements SequenceCodec<String> {
             outcomes[i] = name.getType() + "-" + BioCodec.CONTINUE;
           }
         }
-        
+
         if (name.getType() == null) {
           outcomes[name.getEnd() - 1] = "default" + "-" + BilouCodec.LAST;
         }
@@ -105,15 +105,15 @@ public class BilouCodec implements SequenceCodec<String> {
         }
       }
     }
-    
+
     return outcomes;
   }
-  
+
   @Override
   public SequenceValidator<String> createSequenceValidator() {
     return new BilouNameFinderSequenceValidator();
   }
-  
+
   @Override
   public boolean areOutcomesCompatible(String[] outcomes) {
     return true;

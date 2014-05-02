@@ -34,12 +34,12 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
 
   public DummySentenceDetectorFactory() {
   }
-  
+
   public DummySentenceDetectorFactory(String languageCode, boolean useTokenEnd,
       Dictionary abbreviationDictionary, char[] eosCharacters) {
     super(languageCode, useTokenEnd, abbreviationDictionary, eosCharacters);
   }
-  
+
   @Override
   protected void init(String languageCode, boolean useTokenEnd,
       Dictionary abbreviationDictionary, char[] eosCharacters) {
@@ -60,7 +60,7 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
     return new DummySDContextGenerator(getAbbreviationDictionary()
         .asStringSet(), getEOSCharacters());
   }
-  
+
   @Override
   public EndOfSentenceScanner getEndOfSentenceScanner() {
     return new DummyEOSScanner(getEOSCharacters());
@@ -126,13 +126,13 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
     }
 
   }
-  
+
   static class DummyEOSScanner extends DefaultEndOfSentenceScanner {
 
     public DummyEOSScanner(char[] eosCharacters) {
       super(eosCharacters);
     }
-    
+
   }
 
 }

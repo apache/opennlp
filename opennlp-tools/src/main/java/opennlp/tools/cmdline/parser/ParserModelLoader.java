@@ -34,7 +34,7 @@ public final class ParserModelLoader extends ModelLoader<ParserModel> {
   public ParserModelLoader() {
     super("Parser");
   }
-  
+
   @Override
   protected ParserModel loadModel(InputStream modelIn) throws IOException,
       InvalidFormatException {

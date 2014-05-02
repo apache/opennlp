@@ -41,59 +41,59 @@ import opennlp.tools.util.ext.ExtensionLoader;
 /**
  * This model is a common based which can be used by the components
  * model classes.
- * 
+ *
  * TODO:
  * Provide sub classes access to serializers already in constructor
  */
 public abstract class BaseModel implements ArtifactProvider {
 
   private static int MODEL_BUFFER_SIZE_LIMIT = Integer.MAX_VALUE;
-  
+
   protected static final String MANIFEST_ENTRY = "manifest.properties";
   protected static final String FACTORY_NAME = "factory";
-  
+
   private static final String MANIFEST_VERSION_PROPERTY = "Manifest-Version";
   private static final String COMPONENT_NAME_PROPERTY = "Component-Name";
   private static final String VERSION_PROPERTY = "OpenNLP-Version";
   private static final String TIMESTAMP_PROPERTY = "Timestamp";
   private static final String LANGUAGE_PROPERTY = "Language";
-  
+
   public static final String TRAINING_CUTOFF_PROPERTY = "Training-Cutoff";
   public static final String TRAINING_ITERATIONS_PROPERTY = "Training-Iterations";
   public static final String TRAINING_EVENTHASH_PROPERTY = "Training-Eventhash";
-  
+
   private static String SERIALIZER_CLASS_NAME_PREFIX = "serializer-class-";
-  
+
   private Map<String, ArtifactSerializer> artifactSerializers =
       new HashMap<String, ArtifactSerializer>();
 
   protected final Map<String, Object> artifactMap = new HashMap<String, Object>();
-  
+
   protected BaseToolFactory toolFactory;
-  
+
   private final String componentName;
 
   private boolean subclassSerializersInitiated = false;
   private boolean finishedLoadingArtifacts = false;
-  
+
   private final boolean isLoadedFromSerialized;
 
   private BaseModel(String componentName, boolean isLoadedFromSerialized) {
     this.isLoadedFromSerialized = isLoadedFromSerialized;
-    
+
     if (componentName == null)
       throw new IllegalArgumentException("componentName must not be null!");
-    
+
     this.componentName = componentName;
   }
-  
+
   /**
    * Initializes the current instance. The sub-class constructor should call the
    * method {@link #checkArtifactMap()} to check the artifact map is OK.
    * <p>
    * Sub-classes will have access to custom artifacts and serializers provided
    * by the factory.
-   * 
+   *
    * @param componentName
    *          the component name
    * @param languageCode
@@ -112,24 +112,24 @@ public abstract class BaseModel implements ArtifactProvider {
         throw new IllegalArgumentException("languageCode must not be null!");
 
     createBaseArtifactSerializers(artifactSerializers);
-    
+
     Properties manifest = new Properties();
     manifest.setProperty(MANIFEST_VERSION_PROPERTY, "1.0");
     manifest.setProperty(LANGUAGE_PROPERTY, languageCode);
     manifest.setProperty(VERSION_PROPERTY, Version.currentVersion().toString());
-    manifest.setProperty(TIMESTAMP_PROPERTY, 
+    manifest.setProperty(TIMESTAMP_PROPERTY,
         Long.toString(System.currentTimeMillis()));
     manifest.setProperty(COMPONENT_NAME_PROPERTY, componentName);
-    
+
     if (manifestInfoEntries != null) {
       for (Map.Entry<String, String> entry : manifestInfoEntries.entrySet()) {
         manifest.setProperty(entry.getKey(), entry.getValue());
       }
     }
-      
+
     artifactMap.put(MANIFEST_ENTRY, manifest);
     finishedLoadingArtifacts = true;
-    
+
     if (factory!=null) {
       setManifestProperty(FACTORY_NAME, factory.getClass().getCanonicalName());
       artifactMap.putAll(factory.createArtifactMap());
@@ -140,7 +140,7 @@ public abstract class BaseModel implements ArtifactProvider {
         setManifestProperty(key, entries.get(key));
       }
     }
-    
+
     try {
       initializeFactory();
     } catch (InvalidFormatException e) {
@@ -152,7 +152,7 @@ public abstract class BaseModel implements ArtifactProvider {
   /**
    * Initializes the current instance. The sub-class constructor should call the
    * method {@link #checkArtifactMap()} to check the artifact map is OK.
-   * 
+   *
    * @param componentName
    *          the component name
    * @param languageCode
@@ -163,10 +163,10 @@ public abstract class BaseModel implements ArtifactProvider {
   protected BaseModel(String componentName, String languageCode, Map<String, String> manifestInfoEntries) {
     this(componentName, languageCode, manifestInfoEntries, null);
   }
-  
+
   /**
    * Initializes the current instance.
-   * 
+   *
    * @param componentName the component name
    * @param in the input stream containing the model
    *
@@ -175,15 +175,15 @@ public abstract class BaseModel implements ArtifactProvider {
    */
   protected BaseModel(String componentName, InputStream in) throws IOException, InvalidFormatException {
     this(componentName, true);
-    
+
     loadModel(in);
   }
 
   protected BaseModel(String componentName, File modelFile) throws IOException, InvalidFormatException  {
     this(componentName, true);
-    
+
     InputStream in = new BufferedInputStream(new FileInputStream(modelFile));
-    
+
     try {
       loadModel(in);
     }
@@ -194,7 +194,7 @@ public abstract class BaseModel implements ArtifactProvider {
 
   protected BaseModel(String componentName, URL modelURL) throws IOException, InvalidFormatException  {
     this(componentName, true);
-    
+
     InputStream in = new BufferedInputStream(modelURL.openStream());
 
     try {
@@ -206,32 +206,32 @@ public abstract class BaseModel implements ArtifactProvider {
   }
 
   private void loadModel(InputStream in) throws IOException, InvalidFormatException {
-    
+
     if (in == null) {
       throw new IllegalArgumentException("in must not be null!");
     }
-    
+
     createBaseArtifactSerializers(artifactSerializers);
 
     if (!in.markSupported()) {
       in = new BufferedInputStream(in);
     }
-    
-    // TODO: Discuss this solution, the buffering should 
+
+    // TODO: Discuss this solution, the buffering should
     in.mark(MODEL_BUFFER_SIZE_LIMIT);
-    
+
     final ZipInputStream zip = new ZipInputStream(in);
-    
+
     // The model package can contain artifacts which are serialized with 3rd party
     // serializers which are configured in the manifest file. To be able to load
-    // the model the manifest must be read first, and afterwards all the artifacts 
+    // the model the manifest must be read first, and afterwards all the artifacts
     // can be de-serialized.
-    
+
     // The ordering of artifacts in a zip package is not guaranteed. The stream is first
     // read until the manifest appears, reseted, and read again to load all artifacts.
-    
+
     boolean isSearchingForManifest = true;
-    
+
     ZipEntry entry;
     while((entry = zip.getNextEntry()) != null && isSearchingForManifest) {
 
@@ -244,20 +244,20 @@ public abstract class BaseModel implements ArtifactProvider {
 
       zip.closeEntry();
     }
-    
+
     initializeFactory();
-    
+
     loadArtifactSerializers();
 
     // The Input Stream should always be reset-able because if markSupport returns
     // false it is wrapped before hand into an Buffered InputStream
     in.reset();
-    
+
     finishLoadingArtifacts(in);
-    
+
     checkArtifactMap();
   }
-  
+
   private void initializeFactory() throws InvalidFormatException {
     String factoryName = getManifestProperty(FACTORY_NAME);
     if (factoryName == null) {
@@ -274,17 +274,17 @@ public abstract class BaseModel implements ArtifactProvider {
       }
     }
   }
-  
+
   /**
    * Sub-classes should override this method if their module has a default
    * BaseToolFactory sub-class.
-   * 
+   *
    * @return the default {@link BaseToolFactory} for the module, or null if none.
    */
   protected Class<? extends BaseToolFactory> getDefaultFactory() {
     return null;
   }
-  
+
   /**
    * Loads the artifact serializers.
    */
@@ -299,23 +299,23 @@ public abstract class BaseModel implements ArtifactProvider {
    */
   private void finishLoadingArtifacts(InputStream in)
       throws InvalidFormatException, IOException {
-    
+
     final ZipInputStream zip = new ZipInputStream(in);
-    
+
     Map<String, Object> artifactMap = new HashMap<String, Object>();
-    
+
     ZipEntry entry;
     while((entry = zip.getNextEntry()) != null ) {
-      
+
       // Note: The manifest.properties file will be read here again,
       // there should be no need to prevent that.
-      
+
       String entryName = entry.getName();
       String extension = getEntryExtension(entryName);
 
       ArtifactSerializer factory = artifactSerializers.get(extension);
 
-      String artifactSerializerClazzName = 
+      String artifactSerializerClazzName =
           getManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + entryName);
 
       if (artifactSerializerClazzName != null) {
@@ -323,18 +323,18 @@ public abstract class BaseModel implements ArtifactProvider {
           factory = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerClazzName);
         }
       }
-      
+
       if (factory != null) {
         artifactMap.put(entryName, factory.create(zip));
       } else {
         throw new InvalidFormatException("Unknown artifact format: " + extension);
       }
-      
+
       zip.closeEntry();
     }
 
     this.artifactMap.putAll(artifactMap);
-    
+
     finishedLoadingArtifacts = true;
   }
 
@@ -364,30 +364,30 @@ public abstract class BaseModel implements ArtifactProvider {
       throw new IllegalStateException(e);
     }
 
-    return artifactSerializers.get(extension);  
+    return artifactSerializers.get(extension);
   }
-  
+
   protected static Map<String, ArtifactSerializer> createArtifactSerializers() {
     Map<String, ArtifactSerializer> serializers = new HashMap<String, ArtifactSerializer>();
-    
+
     GenericModelSerializer.register(serializers);
     PropertiesSerializer.register(serializers);
     DictionarySerializer.register(serializers);
-    
+
     return serializers;
   }
-  
+
   /**
    * Registers all {@link ArtifactSerializer} for their artifact file name extensions.
    * The registered {@link ArtifactSerializer} are used to create and serialize
    * resources in the model package.
-   * 
+   *
    * Override this method to register custom {@link ArtifactSerializer}s.
    *
    * Note:
    * Subclasses should generally invoke super.createArtifactSerializers at the beginning
    * of this method.
-   * 
+   *
    * This method is called during construction.
    *
    * @param serializers the key of the map is the file extension used to lookup
@@ -403,7 +403,7 @@ public abstract class BaseModel implements ArtifactProvider {
       Map<String, ArtifactSerializer> serializers) {
     serializers.putAll(createArtifactSerializers());
   }
-  
+
   /**
    * Validates the parsed artifacts. If something is not
    * valid subclasses should throw an {@link InvalidFormatException}.
@@ -420,29 +420,29 @@ public abstract class BaseModel implements ArtifactProvider {
 
     // First check version, everything else might change in the future
     String versionString = getManifestProperty(VERSION_PROPERTY);
-    
+
     if (versionString != null) {
       Version version;
-      
+
       try {
         version = Version.parse(versionString);
       }
       catch (NumberFormatException e) {
         throw new InvalidFormatException("Unable to parse model version '" + versionString + "'!", e);
       }
-      
+
       // Version check is only performed if current version is not the dev/debug version
       if (!Version.currentVersion().equals(Version.DEV_VERSION)) {
-        // Major and minor version must match, revision might be 
+        // Major and minor version must match, revision might be
         if (Version.currentVersion().getMajor() != version.getMajor() ||
             Version.currentVersion().getMinor() != version.getMinor()) {
           //this check allows for the use of models one minor release behind current minor release
           if(Version.currentVersion().getMajor() == version.getMajor() && (Version.currentVersion().getMinor()-1) != version.getMinor()){
-          throw new InvalidFormatException("Model version " + version + " is not supported by this (" 
+          throw new InvalidFormatException("Model version " + version + " is not supported by this ("
               + Version.currentVersion() +") version of OpenNLP!");
           }
         }
-        
+
         // Reject loading a snapshot model with a non-snapshot version
         if (!Version.currentVersion().isSnapshot() && version.isSnapshot()) {
           throw new InvalidFormatException("Model version " + version + " is a snapshot - snapshot models are not " +
@@ -454,21 +454,21 @@ public abstract class BaseModel implements ArtifactProvider {
       throw new InvalidFormatException("Missing " + VERSION_PROPERTY + " property in " +
             MANIFEST_ENTRY + "!");
     }
-    
+
     if (getManifestProperty(COMPONENT_NAME_PROPERTY) == null)
       throw new InvalidFormatException("Missing " + COMPONENT_NAME_PROPERTY + " property in " +
             MANIFEST_ENTRY + "!");
-   
-    if (!getManifestProperty(COMPONENT_NAME_PROPERTY).equals(componentName)) 
-        throw new InvalidFormatException("The " + componentName + " cannot load a model for the " + 
+
+    if (!getManifestProperty(COMPONENT_NAME_PROPERTY).equals(componentName))
+        throw new InvalidFormatException("The " + componentName + " cannot load a model for the " +
             getManifestProperty(COMPONENT_NAME_PROPERTY) + "!");
-    
+
     if (getManifestProperty(LANGUAGE_PROPERTY) == null)
       throw new InvalidFormatException("Missing " + LANGUAGE_PROPERTY + " property in " +
       		MANIFEST_ENTRY + "!");
-    
+
     // Validate the factory. We try to load it using the ExtensionLoader. It
-    // will return the factory, null or raise an exception 
+    // will return the factory, null or raise an exception
     String factoryName = getManifestProperty(FACTORY_NAME);
     if (factoryName != null) {
       try {
@@ -484,7 +484,7 @@ public abstract class BaseModel implements ArtifactProvider {
                 + factoryName, e);
       }
     }
-    
+
     // validate artifacts declared by the factory
     if(toolFactory != null) {
       toolFactory.validateArtifactMap();
@@ -492,7 +492,7 @@ public abstract class BaseModel implements ArtifactProvider {
   }
 
   /**
-   * Checks the artifact map. 
+   * Checks the artifact map.
    * <p>
    * A subclass should call this method from a constructor which accepts the individual
    * artifact map items, to validate that these items form a valid model.
@@ -509,7 +509,7 @@ public abstract class BaseModel implements ArtifactProvider {
       throw new IllegalArgumentException(e);
     }
   }
-  
+
   /**
    * Retrieves the value to the given key from the manifest.properties
    * entry.
@@ -558,7 +558,7 @@ public abstract class BaseModel implements ArtifactProvider {
 
     return Version.parse(version);
   }
-  
+
   /**
    * Serializes the model to the given {@link OutputStream}.
    *
@@ -585,40 +585,40 @@ public abstract class BaseModel implements ArtifactProvider {
             artifactSerializerName);
       }
     }
-    
+
     ZipOutputStream zip = new ZipOutputStream(out);
 
     for (String name : artifactMap.keySet()) {
       zip.putNextEntry(new ZipEntry(name));
 
       Object artifact = artifactMap.get(name);
-      
+
       ArtifactSerializer serializer = getArtifactSerializer(name);
 
       // If model is serialize-able always use the provided serializer
       if (artifact instanceof SerializableArtifact) {
-        
+
         SerializableArtifact serializableArtifact = (SerializableArtifact) artifact;
 
         String artifactSerializerName =
             serializableArtifact.getArtifactSerializerClass().getName();
-        
+
         serializer = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerName);
       }
-      
+
       if (serializer == null) {
         throw new IllegalStateException("Missing serializer for " + name);
       }
-      
+
       serializer.serialize(artifactMap.get(name), zip);
 
       zip.closeEntry();
     }
-    
+
     zip.finish();
     zip.flush();
   }
-  
+
   @SuppressWarnings("unchecked")
   public <T> T getArtifact(String key) {
     Object artifact = artifactMap.get(key);
@@ -626,7 +626,7 @@ public abstract class BaseModel implements ArtifactProvider {
       return null;
     return (T) artifact;
   }
-  
+
   private static byte[] toByteArray(InputStream input) throws IOException {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     byte[] buffer = new byte[1024 * 4];
@@ -642,27 +642,27 @@ public abstract class BaseModel implements ArtifactProvider {
   public boolean isLoadedFromSerialized() {
     return isLoadedFromSerialized;
   }
-  
+
   public static void main(String[] args) throws Exception {
-    
-    // create a stream which can be reset, enclose it in a buffered stream which supports reseting 
+
+    // create a stream which can be reset, enclose it in a buffered stream which supports reseting
     InputStream in = new FileInputStream("annotation.conf");
-    
+
     System.out.println("Is mark supported: " + in.markSupported());
-    
+
     in = new BufferedInputStream(in);
-    
+
     System.out.println("Is mark supported: " + in.markSupported());
-    
-    // 2 GB limit 
+
+    // 2 GB limit
     in.mark(4096);
-    
+
     in.read();
-    
+
     in.reset();
-    
+
     // the mark support can be used to test if reseting is supported, we shoudl use this test anyway
     // to fail gracefully in the cross validators ...
-    
+
   }
 }

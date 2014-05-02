@@ -45,16 +45,16 @@ import opennlp.tools.util.model.SerializableArtifact;
 /**
  * Class for storing the Ancora Spanish head rules associated with parsing. The headrules
  * are specified in $src/main/resources/es-head-rules
- *  
+ *
  * NOTE: This class has been adapted from opennlp.tools.parser.lang.en.HeadRules
- * 
+ *
  * The main change is the constituents search direction in the first for loop.
- * 
+ *
  * Note also the change in the return of the getHead() method: In Apache OpenNLP
  * lang.en.HeadRules class: return constituents[ci].getHead(); Now: return constituents[ci];
- * 
- * Other changes include removal of deprecated methods we do not need to use. 
- * 
+ *
+ * Other changes include removal of deprecated methods we do not need to use.
+ *
  */
 public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, SerializableArtifact {
 
@@ -83,7 +83,7 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
 
       this.tags = tags;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
       if (obj == this) {
@@ -91,8 +91,8 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
       }
       else if (obj instanceof HeadRule) {
         HeadRule rule = (HeadRule) obj;
-        
-        return (rule.leftToRight == leftToRight) && 
+
+        return (rule.leftToRight == leftToRight) &&
             Arrays.equals(rule.tags, tags);
       }
       else {
@@ -104,7 +104,7 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
   private Map<String, HeadRule> headRules;
   private Set<String> punctSet;
 
-  
+
 
   /**
    * Creates a new set of head rules based on the specified reader.
@@ -136,7 +136,7 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
     HeadRule hr;
       if (type.equals("SN") || type.equals("GRUP.NOM")) {
       String[] tags1 = {"AQA.*","AQC.*","GRUP\\.A","S\\.A","NC.*S.*", "NP.*","NC.*P.*", "GRUP\\.NOM"};
-      
+
       for (int i = 0; i < constituents.length; i++) {
         for (int t = tags1.length - 1; t >= 0; t--) {
           if (constituents[i].getType().matches(tags1[t])) {
@@ -241,10 +241,10 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
    * Writes the head rules to the writer in a format suitable for loading
    * the head rules again with the constructor. The encoding must be
    * taken into account while working with the writer and reader.
-   * <p> 
+   * <p>
    * After the entries have been written, the writer is flushed.
    * The writer remains open after this method returns.
-   * 
+   *
    * @param writer
    * @throws IOException
    */
@@ -276,10 +276,10 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
 
       writer.write('\n');
     }
-    
+
     writer.flush();
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (obj == this) {
@@ -287,7 +287,7 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
     }
     else if (obj instanceof AncoraSpanishHeadRules) {
       AncoraSpanishHeadRules rules = (AncoraSpanishHeadRules) obj;
-      
+
       return rules.headRules.equals(headRules) &&
           rules.punctSet.equals(punctSet);
     }

@@ -50,19 +50,19 @@ public final class ModelUtil {
    *
    * @param model the model to be written
    * @param out the stream the model should be written to
-   * 
+   *
    * @throws IOException
    * @throws IllegalArgumentException in case one of the parameters is null
    */
-  public static void writeModel(MaxentModel model, final OutputStream out) 
+  public static void writeModel(MaxentModel model, final OutputStream out)
           throws IOException, IllegalArgumentException {
-    
+
     if (model == null)
       throw new IllegalArgumentException("model parameter must not be null!");
-    
+
     if (out == null)
       throw new IllegalArgumentException("out parameter must not be null!");
-    
+
     GenericModelWriter modelWriter = new GenericModelWriter((AbstractModel) model, new DataOutputStream(new OutputStream() {
       @Override
       public void write(int b) throws IOException {
@@ -102,14 +102,14 @@ public final class ModelUtil {
 
     return result;
   }
-  
+
   /**
    * Writes the provided {@link InputStream} into a byte array
    * which is returned
-   * 
+   *
    * @param in stream to read data for the byte array from
    * @return byte array with the contents of the stream
-   * 
+   *
    * @throws IOException if an exception is thrown while reading
    *     from the provided {@link InputStream}
    */
@@ -125,19 +125,19 @@ public final class ModelUtil {
 
     return byteArrayOut.toByteArray();
   }
-  
+
   public static void addCutoffAndIterations(Map<String, String> manifestInfoEntries,
       int cutoff, int iterations) {
     manifestInfoEntries.put(BaseModel.TRAINING_CUTOFF_PROPERTY, Integer.toString(cutoff));
     manifestInfoEntries.put(BaseModel.TRAINING_ITERATIONS_PROPERTY, Integer.toString(iterations));
   }
-  
+
   /**
    * Creates the default training parameters in case they are not provided.
-   * 
+   *
    * Note: Do not use this method, internal use only!
-   * 
-   * 
+   *
+   *
    * @return training parameters instance
    */
   public static TrainingParameters createDefaultTrainingParameters() {
@@ -145,7 +145,7 @@ public final class ModelUtil {
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, GIS.MAXENT_VALUE);
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(5));
-    
+
     return mlParams;
   }
 }

@@ -42,17 +42,17 @@ public final class SentenceDetectorEvaluatorTool
   public String getShortDescription() {
     return "evaluator for the learnable sentence detector";
   }
-  
+
   public void run(String format, String[] args) {
     super.run(format, args);
 
     SentenceModel model = new SentenceModelLoader().load(params.getModel());
-    
+
     SentenceDetectorEvaluationMonitor errorListener = null;
     if (params.getMisclassified()) {
       errorListener = new SentenceEvaluationErrorListener();
     }
-    
+
     SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
         new SentenceDetectorME(model), errorListener);
 

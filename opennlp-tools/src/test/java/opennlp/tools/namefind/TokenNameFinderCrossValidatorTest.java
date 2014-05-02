@@ -54,7 +54,7 @@ public class TokenNameFinderCrossValidatorTest {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
-    
+
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
 
@@ -65,7 +65,7 @@ public class TokenNameFinderCrossValidatorTest {
 
     assertNotNull(cv.getFMeasure());
   }
-  
+
   @Test
   /**
    * Test that tries to reproduce jira OPENNLP-466
@@ -82,19 +82,19 @@ public class TokenNameFinderCrossValidatorTest {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
-    
+
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
-    
+
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    NameEvaluationErrorListener listener = new NameEvaluationErrorListener(out); 
+    NameEvaluationErrorListener listener = new NameEvaluationErrorListener(out);
 
     Map<String, Object> resources = Collections.emptyMap();
     TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en",
         TYPE, mlParams, null, resources, listener);
 
     cv.evaluate(sampleStream, 2);
-    
+
     assertTrue(out.size() > 0);
     assertNotNull(cv.getFMeasure());
   }

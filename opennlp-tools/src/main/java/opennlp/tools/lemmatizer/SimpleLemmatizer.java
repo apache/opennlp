@@ -31,11 +31,11 @@ import java.util.Set;
 import opennlp.tools.util.StringUtil;
 
 public class SimpleLemmatizer implements DictionaryLemmatizer {
-  
+
   public final Set<String> constantTags = new HashSet<String>(Arrays.asList("NNP","NP00000"));
   private HashMap<List<String>,String> dictMap;
 
-  
+
   public SimpleLemmatizer(InputStream dictionary) {
         dictMap = new HashMap<List<String>,String>();
         BufferedReader breader = new BufferedReader(new InputStreamReader(dictionary));
@@ -48,13 +48,13 @@ public class SimpleLemmatizer implements DictionaryLemmatizer {
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }    
+        }
   }
-  
-  
+
+
   private List<String> getDictKeys(String word, String postag) {
         List<String> keys = new ArrayList<String>();
-        if (constantTags.contains(postag)) { 
+        if (constantTags.contains(postag)) {
             keys.addAll(Arrays.asList(word,postag));
         }
         else {
@@ -62,25 +62,25 @@ public class SimpleLemmatizer implements DictionaryLemmatizer {
         }
         return keys;
     }
-     
+
   public String lemmatize(String word, String postag) {
     String lemma = null;
     List<String> keys = getDictKeys(word, postag);
     //lookup lemma as value of the map
     String keyValue = dictMap.get(keys);
-    if (keyValue != null) { 
+    if (keyValue != null) {
         lemma = keyValue;
     }
-    else if (keyValue == null && constantTags.contains(postag)) { 
+    else if (keyValue == null && constantTags.contains(postag)) {
         lemma = word;
     }
-    else if (keyValue == null && word.toUpperCase() == word) { 
+    else if (keyValue == null && word.toUpperCase() == word) {
         lemma = word;
     }
     else {
         lemma = StringUtil.toLowerCase(word);
     }
-    return lemma;  
+    return lemma;
   }
 
 }

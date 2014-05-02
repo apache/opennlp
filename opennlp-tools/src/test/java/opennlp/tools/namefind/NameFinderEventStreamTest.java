@@ -52,20 +52,20 @@ public class NameFinderEventStreamTest{
         "traditional",
         "meal",
         "."};
-    
-    NameSample nameSample = new NameSample(sentence, 
+
+    NameSample nameSample = new NameSample(sentence,
         new Span[]{new Span(0, 2, "person")}, false);
-    
+
     ObjectStream<Event> eventStream = new NameFinderEventStream(
         ObjectStreamUtils.createObjectStream(nameSample));
-    
+
     assertEquals("person-" + NameFinderME.START, eventStream.read().getOutcome());
     assertEquals("person-" + NameFinderME.CONTINUE, eventStream.read().getOutcome());
-    
+
     for (int i = 0; i < 10; i++) {
       Assert.assertEquals(NameFinderME.OTHER, eventStream.read().getOutcome());
     }
-    
+
     assertNull(eventStream.read());
   }
 }

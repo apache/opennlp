@@ -45,7 +45,7 @@ final public class OpennlpUtil {
   /**
    * Serializes a {@link GISModel} and writes it to the given
    * {@link OutputStream}.
-   * 
+   *
    * @param model model to serialize
    * @throws IOException IOException
    */
@@ -61,17 +61,17 @@ final public class OpennlpUtil {
         modelOut.close();
     }
   }
-  
+
   public static final byte[] loadBytes(File inFile) throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-    
+
     InputStream in = null;
     try {
       in = new FileInputStream(inFile);
-      
+
       byte buffer[] = new byte[1024];
       int len;
-      
+
       while ((len = in.read(buffer)) > 0) {
         bytes.write(buffer, 0, len);
       }
@@ -80,7 +80,7 @@ final public class OpennlpUtil {
       if (in != null)
         in.close();
     }
-    
+
     return bytes.toByteArray();
   }
 

@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 
 package opennlp.uima.util;
 
@@ -36,38 +36,38 @@ import org.apache.uima.util.Logger;
  * This is a util class for cas consumer.
  */
 public final class CasConsumerUtil {
-  
+
   private CasConsumerUtil(){
     // this is a util class must not be instanciated
   }
-   
-  public static InputStream getOptionalResourceAsStream(UimaContext context, 
+
+  public static InputStream getOptionalResourceAsStream(UimaContext context,
 	      String name) throws ResourceInitializationException {
       try {
 	      return context.getResourceAsStream(name);
 	    } catch (ResourceAccessException e) {
 	      throw new ResourceInitializationException(
 	          ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-	          new Object[] { "There is an internal error in the UIMA SDK: " + 
+	          new Object[] { "There is an internal error in the UIMA SDK: " +
 	          e.getMessage(),
 	          e });
-	    }   
+	    }
   }
-  
+
   /**
    * Retrieves a resource as stream from the given context.
-   * 
+   *
    * @param context
    * @param name
    * @return the stream
-   * 
+   *
    * @throws ResourceInitializationException
    */
-  public static InputStream getResourceAsStream(UimaContext context, 
+  public static InputStream getResourceAsStream(UimaContext context,
       String name) throws ResourceInitializationException {
-    
-    InputStream inResource = getOptionalResourceAsStream(context, name); 
-    
+
+    InputStream inResource = getOptionalResourceAsStream(context, name);
+
     if (inResource == null) {
       throw new ResourceInitializationException(
           ResourceAccessException.STANDARD_MESSAGE_CATALOG,
@@ -76,36 +76,36 @@ public final class CasConsumerUtil {
 
     return inResource;
   }
-  
+
   /**
    * Retrieves a type from the given type system.
-   * 
+   *
    * @param typeSystem
    * @param name
    * @return the type
-   * 
+   *
    * @throws ResourceInitializationException
    */
   public static Type getType(TypeSystem typeSystem, String name)
       throws ResourceInitializationException {
     Type type = getOptionalType(typeSystem, name);
-    
+
     if (type == null) {
       throw new ResourceInitializationException(
           ResourceInitializationException.INCOMPATIBLE_RANGE_TYPES,
           new Object[] { "Unable to retrieve " + name + " type!" });
     }
-    
+
     return type;
   }
-  
+
   /**
    * Retrieves a type from the given type system.
-   * 
+   *
    * @param typeSystem
    * @param name
    * @return the type
-   * 
+   *
    * @throws ResourceInitializationException
    */
   public static Type getOptionalType(TypeSystem typeSystem, String name)
@@ -114,104 +114,104 @@ public final class CasConsumerUtil {
   }
   /**
    * Retrieves a required parameter form the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the parameter
-   * 
+   *
    * @throws ResourceInitializationException
    */
   public static String getRequiredStringParameter(UimaContext context,
       String parameter) throws ResourceInitializationException {
 
     String value = getOptionalStringParameter(context, parameter);
-    
+
     checkForNull(value, parameter);
-    
+
     return value;
   }
 
   /**
    * Retrieves a required parameter form the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the parameter
-   * 
+   *
    * @throws ResourceInitializationException
    */
   public static Integer getRequiredIntegerParameter(UimaContext context,
       String parameter) throws ResourceInitializationException {
 
     Integer value = getOptionalIntegerParameter(context, parameter);
-    
+
     checkForNull(value, parameter);
 
     return value;
   }
-  
+
   /**
    * Retrieves a required parameter form the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the parameter
-   * 
+   *
    * @throws ResourceInitializationException
    */
   public static Float getRequiredFloatParameter(UimaContext context,
       String parameter) throws ResourceInitializationException {
 
     Float value = getOptionalFloatParameter(context, parameter);
-    
+
     checkForNull(value, parameter);
 
     return value;
   }
-  
+
   /**
    * Retrieves a required boolean parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the boolean parameter
-   * 
+   *
    * @throws ResourceInitializationException
    */
-  public static Boolean getRequiredBooleanParameter(UimaContext context, 
+  public static Boolean getRequiredBooleanParameter(UimaContext context,
       String parameter) throws ResourceInitializationException {
-    
+
     Boolean value = getOptionalBooleanParameter(context, parameter);
-    
+
     checkForNull(value, parameter);
 
     return value;
   }
 
-  private static void checkForNull(Object value, String parameterName) 
+  private static void checkForNull(Object value, String parameterName)
       throws ResourceInitializationException{
-    
+
     if (value == null) {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] { "The " + parameterName + " is a " + 
+          new Object[] { "The " + parameterName + " is a " +
           "required parameter!" });
     }
   }
-  
+
   /**
    * Retrieves an optional boolean parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the boolean parameter or null if not set
-   * @throws ResourceInitializationException 
+   * @throws ResourceInitializationException
    */
   public static String getOptionalStringParameter(UimaContext context,
       String parameter) throws ResourceInitializationException {
-    
+
     Object value = getOptionalParameter(context, parameter);
-    
+
     if (value == null) {
       return null;
     }
@@ -225,7 +225,7 @@ public final class CasConsumerUtil {
           " the expected type String"});
     }
   }
-  
+
   public static String[] getOptionalStringArrayParameter(UimaContext context,
 	    String parameter) throws ResourceInitializationException {
 
@@ -242,10 +242,10 @@ public final class CasConsumerUtil {
 			    + " does not have the expected type String array" });
 	}
     }
-  
+
   /**
     * Retrieves an optional boolean parameter from the given context.
-    * 
+    *
     * @param context
     * @param parameter
     * @return the boolean parameter or null if not set
@@ -253,9 +253,9 @@ public final class CasConsumerUtil {
     */
   public static Integer getOptionalIntegerParameter(UimaContext context,
       String parameter) throws ResourceInitializationException {
-    
+
     Object value = getOptionalParameter(context, parameter);
-    
+
     if (value == null) {
       return null;
     }
@@ -269,41 +269,41 @@ public final class CasConsumerUtil {
           "the expected type Integer"});
     }
   }
-  
+
   /**
    * Retrieves an optional boolean parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @param defaultValue value to use if the optional parameter is not set
-   * 
+   *
    * @return the boolean parameter or null if not set
    * @throws ResourceInitializationException
    */
   public static Integer getOptionalIntegerParameter(UimaContext context, String parameter,
       int defaultValue) throws ResourceInitializationException {
-    
+
     Integer value = getOptionalIntegerParameter(context, parameter);
-    
+
     if (value == null)
       value = defaultValue;
-    
+
     return value;
   }
-  
+
   /**
    * Retrieves an optional boolean parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the boolean parameter or null if not set
-   * @throws ResourceInitializationException 
+   * @throws ResourceInitializationException
    */
   public static Float getOptionalFloatParameter(UimaContext context,
       String parameter) throws ResourceInitializationException {
-    
+
     Object value = getOptionalParameter(context, parameter);
-    
+
     if (value == null) {
       return null;
     }
@@ -317,20 +317,20 @@ public final class CasConsumerUtil {
           " the expected type Float"});
     }
   }
-  
+
   /**
    * Retrieves an optional boolean parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the boolean parameter or null if not set
-   * @throws ResourceInitializationException 
+   * @throws ResourceInitializationException
    */
   public static Boolean getOptionalBooleanParameter(UimaContext context,
       String parameter) throws ResourceInitializationException {
-    
+
     Object value = getOptionalParameter(context, parameter);
-    
+
     if (value == null) {
       return null;
     }
@@ -344,47 +344,47 @@ public final class CasConsumerUtil {
           " the expected type Boolean"});
     }
   }
-  
-  private static Object getOptionalParameter(UimaContext context, 
+
+  private static Object getOptionalParameter(UimaContext context,
       String parameter) {
-    
+
     Object value =  context.getConfigParameterValue(parameter);
 
     Logger logger = context.getLogger();
-    
+
     if (logger.isLoggable(Level.INFO)) {
-      logger.log(Level.INFO, parameter + " = " + 
+      logger.log(Level.INFO, parameter + " = " +
           (value != null ? value.toString() : "not set"));
     }
-    
+
     return value;
   }
- 
+
   /**
    * Checks if the given feature has the expected type otherwise
    * an exception is thrown.
-   * 
+   *
    * @param feature
    * @param expectedType
-   * 
+   *
    * @throws ResourceInitializationException - if type does not match
    */
-  public static void checkFeatureType(Feature feature, String expectedType) 
+  public static void checkFeatureType(Feature feature, String expectedType)
   throws ResourceInitializationException {
     if (!feature.getRange().getName().equals(expectedType)) {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] { "The Feature " + feature.getName() + 
+          new Object[] { "The Feature " + feature.getName() +
               " must be of type " + expectedType + " !"
           });
     }
   }
-  
-  public static Dictionary createOptionalDictionary(UimaContext context, String parameter) 
+
+  public static Dictionary createOptionalDictionary(UimaContext context, String parameter)
   	throws ResourceInitializationException {
 	String dictionaryName = CasConsumerUtil.getOptionalStringParameter(
 		context, parameter);
-	
+
 	Dictionary dictionary = null;
 
 	if (dictionaryName != null) {
@@ -397,23 +397,23 @@ public final class CasConsumerUtil {
 			dictionaryName);
 
 		if (dictIn == null) {
-			String message = "The dictionary file " + dictionaryName + 
+			String message = "The dictionary file " + dictionaryName +
 			" does not exist!";
 
 			if (logger.isLoggable(Level.WARNING)) {
 			    logger.log(Level.WARNING, message);
 			}
-			
+
 			return null;
 		}
-		
+
 		dictionary = new Dictionary(dictIn);
 
 	    } catch (IOException e) {
 			// if this fails just print error message and continue
 			String message = "IOException during dictionary reading, "
 				+ "running without dictionary: " + e.getMessage();
-	
+
 			if (logger.isLoggable(Level.WARNING)) {
 			    logger.log(Level.WARNING, message);
 			}

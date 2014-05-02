@@ -33,13 +33,13 @@ import org.osgi.util.tracker.ServiceTracker;
 public class OSGiExtensionLoader implements BundleActivator {
 
   private static OSGiExtensionLoader instance;
-  
+
   private BundleContext context;
-  
+
   public void start(BundleContext context) throws Exception {
     instance = this;
     this.context = context;
-    
+
     ExtensionLoader.setOSGiAvailable();
   }
 
@@ -49,18 +49,18 @@ public class OSGiExtensionLoader implements BundleActivator {
   }
 
   /**
-   * Retrieves the 
-   * 
+   * Retrieves the
+   *
    * @param clazz
    * @param id
    * @return
    */
   <T> T getExtension(Class<T> clazz, String id) {
-    
+
     if (context == null) {
       throw new IllegalStateException("OpenNLP Tools Bundle is not active!");
     }
-    
+
     Filter filter;
     try {
       filter = FrameworkUtil.createFilter("(&(objectclass=" + clazz.getName() + ")(" +
@@ -69,15 +69,15 @@ public class OSGiExtensionLoader implements BundleActivator {
       // Might happen when the provided IDs are invalid in some way.
       throw new ExtensionNotLoadedException(e);
     }
-    
+
     // NOTE: In 4.3 the parameters are <T, T>
     ServiceTracker extensionTracker = new ServiceTracker(context, filter, null);
-    
+
     T extension = null;
-    
+
     try {
       extensionTracker.open();
-      
+
       try {
         extension = (T) extensionTracker.waitForService(30000);
       } catch (InterruptedException e) {
@@ -86,11 +86,11 @@ public class OSGiExtensionLoader implements BundleActivator {
     } finally {
       extensionTracker.close();
     }
-    
+
     if (extension == null) {
       throw new ExtensionNotLoadedException("No suitable extension found. Extension name: " + id);
     }
-    
+
     return extension;
   }
 

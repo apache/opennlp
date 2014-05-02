@@ -41,7 +41,7 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ModelUtil;
 
 public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerToolParams> {
-  
+
   interface TrainerToolParams extends TrainingParams, TrainingToolParams, EncodingParameter {
   }
 
@@ -52,10 +52,10 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
   public String getShortDescription() {
     return "trains the learnable parser";
   }
-  
+
   static Dictionary buildDictionary(ObjectStream<Parse> parseSamples, HeadRules headRules, int cutoff) {
     System.err.print("Building dictionary ...");
-    
+
     Dictionary mdict;
     try {
       mdict = Parser.
@@ -65,10 +65,10 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
       mdict = null;
     }
     System.err.println("done");
-    
+
     return mdict;
   }
-  
+
   static ParserType parseParserType(String typeAsString) {
     ParserType type = null;
     if(typeAsString != null && typeAsString.length() > 0) {
@@ -78,16 +78,16 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
             "' is invalid!");
       }
     }
-    
+
     return type;
   }
-  
+
   static HeadRules creaeHeadRules(TrainerToolParams params) throws IOException {
-    
+
     ArtifactSerializer headRulesSerializer = null;
-    
+
     if (params.getHeadRulesSerializerImpl() != null) {
-      headRulesSerializer = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, 
+      headRulesSerializer = ExtensionLoader.instantiateExtension(ArtifactSerializer.class,
               params.getHeadRulesSerializerImpl());
     }
     else {
@@ -102,9 +102,9 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
         headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
       }
     }
-    
+
     Object headRulesObject = headRulesSerializer.create(new FileInputStream(params.getHeadRules()));
-    
+
     if (headRulesObject instanceof HeadRules) {
       return (HeadRules) headRulesObject;
     }
@@ -112,30 +112,30 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
       throw new TerminateToolException(-1, "HeadRules Artifact Serializer must create an object of type HeadRules!");
     }
   }
-  
+
   // TODO: Add param to train tree insert parser
   public void run(String format, String[] args) {
     super.run(format, args);
 
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
-    
+
     if (mlParams != null) {
       if (!TrainerFactory.isValid(mlParams.getSettings("build"))) {
         throw new TerminateToolException(1, "Build training parameters are invalid!");
       }
-      
+
       if (!TrainerFactory.isValid(mlParams.getSettings("check"))) {
         throw new TerminateToolException(1, "Check training parameters are invalid!");
       }
-      
+
       if (!TrainerFactory.isValid(mlParams.getSettings("attach"))) {
         throw new TerminateToolException(1, "Attach training parameters are invalid!");
       }
-      
+
       if (!TrainerFactory.isValid(mlParams.getSettings("tagger"))) {
         throw new TerminateToolException(1, "Tagger training parameters are invalid!");
       }
-      
+
       if (!TrainerFactory.isValid(mlParams.getSettings("chunker"))) {
         throw new TerminateToolException(1, "Chunker training parameters are invalid!");
       }
@@ -147,16 +147,16 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
 
     File modelOutFile = params.getModel();
     CmdLineUtil.checkOutputFile("parser model", modelOutFile);
-    
+
     ParserModel model;
     try {
       HeadRules rules = creaeHeadRules(params);
-      
+
       ParserType type = parseParserType(params.getParserType());
       if(params.getFun()){
     	  Parse.useFunctionTags(true);
       }
-      
+
       if (ParserType.CHUNKING.equals(type)) {
         model = opennlp.tools.parser.chunking.Parser.train(
             params.getLang(), sampleStream, rules,
@@ -181,7 +181,7 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
         // sorry that this can fail
       }
     }
-    
+
     CmdLineUtil.writeModel("parser", modelOutFile, model);
   }
 }

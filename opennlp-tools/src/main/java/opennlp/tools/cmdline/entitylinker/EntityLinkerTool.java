@@ -42,10 +42,10 @@ public class EntityLinkerTool extends BasicCmdLineTool {
   public String getShortDescription() {
     return "links an entity to an external data set";
   }
-  
+
   @Override
   public void run(String[] args) {
-    
+
     if (0 == args.length) {
       System.out.println(getHelp());
     }
@@ -53,10 +53,10 @@ public class EntityLinkerTool extends BasicCmdLineTool {
       // TODO: Ask Mark if we can remove the type, the user knows upfront if he tries
       // to link place names or company mentions ...
       String entityType = "location";
-      
+
       // Load the properties, they should contain everything that is necessary to instantiate
       // the component
-      
+
       // TODO: Entity Linker Properties constructor should not duplicate code
       EntityLinkerProperties properties;
       try {
@@ -65,9 +65,9 @@ public class EntityLinkerTool extends BasicCmdLineTool {
       catch (IOException e) {
         throw new TerminateToolException(-1, "Failed to load the properties file!");
       }
-      
+
       // TODO: It should not just throw Exception.
-      
+
       EntityLinker entityLinker;
       try {
         entityLinker = EntityLinkerFactory.getLinker(entityType, properties);
@@ -75,36 +75,36 @@ public class EntityLinkerTool extends BasicCmdLineTool {
       catch (Exception e) {
         throw new TerminateToolException(-1, "Failed to instantiate the Entity Linker: " + e.getMessage());
       }
-      
+
       PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
       perfMon.start();
-      
+
       try {
-        
+
         ObjectStream<String> untokenizedLineStream = new PlainTextByLineStream(
             new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
-        
+
         List<NameSample> document = new ArrayList<NameSample>();
-        
+
         String line;
         while ((line = untokenizedLineStream.read()) != null) {
 
           if (line.trim().isEmpty()) {
             // Run entity linker ... and output result ...
-            
+
             StringBuilder text = new StringBuilder();
             Span sentences[] = new Span[document.size()];
             List<Span> tokens = new ArrayList<Span>();
             List<Span> names = new ArrayList<Span>();
-            
+
             for (int i = 0; i < document.size(); i++) {
-              
+
               NameSample sample = document.get(i);
-              
+
               int sentenceBegin = text.length();
-              
+
               int tokenSentOffset = tokens.size();
-                  
+
               // for all tokens
               for (String token : sample.getSentence()) {
                 int tokenBegin = text.length();
@@ -112,22 +112,22 @@ public class EntityLinkerTool extends BasicCmdLineTool {
                 Span tokenSpan = new Span(tokenBegin, text.length());
                 text.append(" ");
               }
-              
+
               for (Span name : sample.getNames()) {
                 names.add(new Span(tokenSentOffset + name.getStart(), tokenSentOffset + name.getEnd(), name.getType()));
               }
-              
+
               sentences[i] = new Span(sentenceBegin, text.length());
               text.append("\n");
             }
-            
+
             List<Span> linkedSpans = entityLinker.find(text.toString(), sentences, tokens.toArray(new Span[tokens.size()]),
                 names.toArray(new Span[names.size()]));
-            
+
             for (int i = 0; i < linkedSpans.size(); i++) {
               System.out.println(linkedSpans.get(i));
             }
-            
+
             perfMon.incrementCounter(document.size());
             document.clear();
           }
@@ -139,7 +139,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
       catch (IOException e) {
         CmdLineUtil.handleStdinIoError(e);
       }
-      
+
       perfMon.stopAndPrintFinalResult();
     }
   }

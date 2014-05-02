@@ -56,24 +56,24 @@ public class TokenizerTestUtil {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
-    
+
     return TokenizerME.train("en", new CollectionObjectStream<TokenSample>(samples), true,
         mlParams);
   }
 
   static TokenizerModel createMaxentTokenModel() throws IOException {
-    
+
     InputStream trainDataIn = TokenizerTestUtil.class.getResourceAsStream(
         "/opennlp/tools/tokenize/token.train");
-    
+
     ObjectStream<TokenSample> samples = new TokenSampleStream(
         new PlainTextByLineStream(new InputStreamReader(trainDataIn, "UTF-8")));
-    
+
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
-    
+
     return TokenizerME.train("en", samples, true, mlParams);
   }
-  
+
 }

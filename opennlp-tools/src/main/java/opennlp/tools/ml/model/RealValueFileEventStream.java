@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -34,7 +34,7 @@ public class RealValueFileEventStream extends FileEventStream {
   public RealValueFileEventStream(String fileName, String encoding) throws IOException {
     super(fileName, encoding);
   }
-  
+
   public RealValueFileEventStream(File file) throws IOException {
     super(file);
   }
@@ -43,7 +43,7 @@ public class RealValueFileEventStream extends FileEventStream {
    * Parses the specified contexts and re-populates context array with features
    * and returns the values for these features. If all values are unspecified,
    * then null is returned.
-   * 
+   *
    * @param contexts The contexts with real values specified.
    * @return The value for each context or null if all values are unspecified.
    */
@@ -88,14 +88,14 @@ public class RealValueFileEventStream extends FileEventStream {
       float[] values = parseContexts(contexts);
       return (new Event(outcome, contexts, values));
     }
-    
+
     return null;
   }
-  
+
   /**
    * Trains and writes a model based on the events in the specified event file.
    * the name of the model created is based on the event file name.
-   * 
+   *
    * @param args eventfile [iterations cuttoff]
    * @throws IOException when the eventfile can not be read or the model file can not be written.
    */

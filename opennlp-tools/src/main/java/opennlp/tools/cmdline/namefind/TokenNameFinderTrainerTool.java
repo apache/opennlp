@@ -43,7 +43,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class TokenNameFinderTrainerTool
     extends AbstractTrainerTool<NameSample, TrainerToolParams> {
-  
+
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
 
   }
@@ -55,14 +55,14 @@ public final class TokenNameFinderTrainerTool
   public String getShortDescription() {
     return "trainer for the learnable name finder";
   }
-  
+
   static byte[] openFeatureGeneratorBytes(String featureGenDescriptorFile) {
     if(featureGenDescriptorFile != null) {
       return openFeatureGeneratorBytes(new File(featureGenDescriptorFile));
     }
     return null;
   }
-  
+
   static byte[] openFeatureGeneratorBytes(File featureGenDescriptorFile) {
     byte featureGeneratorBytes[] = null;
     // load descriptor file into memory
@@ -84,7 +84,7 @@ public final class TokenNameFinderTrainerTool
     }
     return featureGeneratorBytes;
   }
-  
+
   public static Map<String, Object> loadResources(File resourcePath, File featureGenDescriptor) {
     Map<String, Object> resources = new HashMap<String, Object>();
 
@@ -93,12 +93,12 @@ public final class TokenNameFinderTrainerTool
       Map<String, ArtifactSerializer> artifactSerializers = TokenNameFinderModel
           .createArtifactSerializers();
 
-      
-      // TODO: If there is descriptor file, it should be consulted too 
+
+      // TODO: If there is descriptor file, it should be consulted too
       if (featureGenDescriptor != null) {
-        
+
         InputStream xmlDescriptorIn = null;
-        
+
         try {
           artifactSerializers.putAll(GeneratorFactory.extractCustomArtifactSerializerMappings(xmlDescriptorIn));
         } catch (IOException e) {
@@ -106,7 +106,7 @@ public final class TokenNameFinderTrainerTool
           e.printStackTrace();
         }
       }
-      
+
       File resourceFiles[] = resourcePath.listFiles();
 
       // TODO: Filter files, also files with start with a dot
@@ -153,18 +153,18 @@ public final class TokenNameFinderTrainerTool
     }
     return resources;
   }
-  
+
   static Map<String, Object> loadResources(String resourceDirectory, File featureGeneratorDescriptor) {
 
     if (resourceDirectory != null) {
       File resourcePath = new File(resourceDirectory);
-      
+
       return loadResources(resourcePath, featureGeneratorDescriptor);
     }
 
     return new HashMap<String, Object>();
   }
-  
+
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -176,32 +176,32 @@ public final class TokenNameFinderTrainerTool
     File modelOutFile = params.getModel();
 
     byte featureGeneratorBytes[] = openFeatureGeneratorBytes(params.getFeaturegen());
-    
+
 
     // TODO: Support Custom resources:
-    //       Must be loaded into memory, or written to tmp file until descriptor 
+    //       Must be loaded into memory, or written to tmp file until descriptor
     //       is loaded which defines parses when model is loaded
-    
+
     Map<String, Object> resources = loadResources(params.getResources(), params.getFeaturegen());
-        
+
     CmdLineUtil.checkOutputFile("name finder model", modelOutFile);
 
     if (params.getNameTypes() != null) {
       String nameTypes[] = params.getNameTypes().split(",");
       sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
     }
-    
+
     String sequenceCodecImplName = params.getSequenceCodec();
-    
+
     if ("BIO".equals(sequenceCodecImplName)) {
       sequenceCodecImplName = BioCodec.class.getName();
     }
     else if ("BILOU".equals(sequenceCodecImplName)) {
       sequenceCodecImplName = BilouCodec.class.getName();
     }
-    
+
     SequenceCodec<String> sequenceCodec = TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
-    
+
     TokenNameFinderFactory nameFinderFactory = null;
     try {
       nameFinderFactory = TokenNameFinderFactory.create(params.getFactory(),
@@ -209,7 +209,7 @@ public final class TokenNameFinderTrainerTool
     } catch (InvalidFormatException e) {
       throw new TerminateToolException(-1, e.getMessage(), e);
     }
-    
+
     TokenNameFinderModel model;
     try {
       model = opennlp.tools.namefind.NameFinderME.train(
@@ -227,7 +227,7 @@ public final class TokenNameFinderTrainerTool
         // sorry that this can fail
       }
     }
-    
+
     CmdLineUtil.writeModel("name finder", modelOutFile, model);
   }
 }

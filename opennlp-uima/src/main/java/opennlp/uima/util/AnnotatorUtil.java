@@ -38,53 +38,53 @@ import org.apache.uima.util.Logger;
  * This is a utility class for Annotators.
  */
 public final class AnnotatorUtil {
-  
+
   private AnnotatorUtil(){
     // util class not must not instantiated
   }
-  
+
   /**
    * Retrieves a type of the given name from the given type system.
-   * 
+   *
    * @param typeSystem
    * @param name
    * @return the type
-   * 
+   *
    * @throws AnalysisEngineProcessException
    */
   public static Type getType(TypeSystem typeSystem, String name)
       throws AnalysisEngineProcessException {
     Type type = typeSystem.getType(name);
-    
+
     if (type == null) {
       throw new OpenNlpAnnotatorProcessException(
           ExceptionMessages.TYPE_NOT_FOUND,
           new Object[] {name});
     }
-    
+
     return type;
   }
-  
+
   /**
    * Checks if the given feature has the expected type otherwise
    * an exception is thrown.
-   * 
+   *
    * @param feature
    * @param expectedType
-   * 
+   *
    * @throws AnalysisEngineProcessException - if type does not match
    */
-  private static void checkFeatureType(Feature feature, String expectedType) 
+  private static void checkFeatureType(Feature feature, String expectedType)
       throws AnalysisEngineProcessException {
     if (!feature.getRange().getName().equals(expectedType)) {
       throw new OpenNlpAnnotatorProcessException(
           ExceptionMessages.WRONG_FEATURE_TYPE,
-          new Object[] {feature.getName(), 
+          new Object[] {feature.getName(),
               expectedType
           });
     }
   }
-  
+
   public static Feature getRequiredFeature(Type type, String featureName)
       throws AnalysisEngineProcessException {
 
@@ -98,15 +98,15 @@ public final class AnnotatorUtil {
 
     return feature;
   }
-  
+
   /**
    * Retrieves a required feature from the given type.
-   * 
+   *
    * @param type the type
    * @param featureName the name of the feature
    * @param rangeType the expected range type
    * @return the requested parameter
-   * 
+   *
    * @throws AnalysisEngineProcessException
    */
   public static Feature getRequiredFeature(Type type, String featureName,
@@ -119,21 +119,21 @@ public final class AnnotatorUtil {
     return feature;
   }
 
-  public static Feature getRequiredFeatureParameter(UimaContext context, Type type, 
+  public static Feature getRequiredFeatureParameter(UimaContext context, Type type,
 		  String featureNameParameter)
   		throws AnalysisEngineProcessException {
-	  
+
 	String featureName;
-	
+
 	try {
 		featureName = getRequiredStringParameter(context, featureNameParameter);
 	} catch (ResourceInitializationException e) {
 		throw new OpenNlpAnnotatorProcessException(e);
 	}
-	  
+
 	return getRequiredFeature(type, featureName);
   }
-  
+
   public static Feature getRequiredFeatureParameter(UimaContext context,
       Type type, String featureNameParameter, String rangeTypeName)
       throws AnalysisEngineProcessException {
@@ -147,7 +147,7 @@ public final class AnnotatorUtil {
 
     return getRequiredFeature(type, featureName, rangeTypeName);
   }
-  
+
   public static Type getRequiredTypeParameter(UimaContext context,
       TypeSystem typeSystem, String parameter)
       throws AnalysisEngineProcessException {
@@ -162,88 +162,88 @@ public final class AnnotatorUtil {
 
     return getType(typeSystem, typeName);
   }
-  
+
   /**
    * Retrieves a required parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the requested parameter
-   * 
-   * @throws ResourceInitializationException 
+   *
+   * @throws ResourceInitializationException
    */
   public static String getRequiredStringParameter(UimaContext context,
-      String parameter) 
+      String parameter)
       throws ResourceInitializationException {
-    
+
     String value = getOptionalStringParameter(context, parameter);
-    
+
     checkForNull(value, parameter);
-    
+
     return value;
   }
 
   /**
    * Retrieves a required parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the requested parameter
-   * 
-   * @throws ResourceInitializationException 
+   *
+   * @throws ResourceInitializationException
    */
   public static Integer getRequiredIntegerParameter(UimaContext context,
-      String parameter) 
+      String parameter)
       throws ResourceInitializationException {
-    
+
     Integer value = getOptionalIntegerParameter(context, parameter);
-    
+
     checkForNull(value, parameter);
-    
+
     return value;
-  }  
-  
+  }
+
   /**
    * Retrieves a required parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the requested parameter
-   * 
-   * @throws ResourceInitializationException 
+   *
+   * @throws ResourceInitializationException
    */
   public static Float getRequiredFloatParameter(UimaContext context,
-      String parameter) 
+      String parameter)
       throws ResourceInitializationException {
-    
+
     Float value = getOptionalFloatParameter(context, parameter);
-    
+
     checkForNull(value, parameter);
-    
+
     return value;
   }
-  
+
   /**
    * Retrieves a required parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the requested parameter
-   * 
-   * @throws ResourceInitializationException 
+   *
+   * @throws ResourceInitializationException
    */
   public static Boolean getRequiredBooleanParameter(UimaContext context,
-      String parameter) 
+      String parameter)
       throws ResourceInitializationException {
-    
+
     Boolean value = getOptionalBooleanParameter(context, parameter);
-    
+
     checkForNull(value, parameter);
-    
+
     return value;
   }
-  
-  private static void checkForNull(Object value, String parameterName) 
+
+  private static void checkForNull(Object value, String parameterName)
     throws ResourceInitializationException {
     if (value == null) {
       throw new ResourceInitializationException(
@@ -252,8 +252,8 @@ public final class AnnotatorUtil {
           new Object[] {parameterName});
     }
   }
-  
-  
+
+
   public static Feature getOptionalFeatureParameter(UimaContext context,
       Type nameType, String featureNameParameter, String rangeTypeName)
       throws AnalysisEngineProcessException {
@@ -271,17 +271,17 @@ public final class AnnotatorUtil {
       return null;
     }
   }
-  
-  public static Feature getOptionalFeature(Type type, String featureName, String rangeType) 
+
+  public static Feature getOptionalFeature(Type type, String featureName, String rangeType)
     throws AnalysisEngineProcessException{
 
     Feature feature = type.getFeatureByBaseName(featureName);
-    
+
     checkFeatureType(feature, rangeType);
-    
+
     return feature;
   }
-  
+
   public static Type getOptionalTypeParameter(UimaContext context,
       TypeSystem typeSystem, String parameter)
       throws AnalysisEngineProcessException {
@@ -301,18 +301,18 @@ public final class AnnotatorUtil {
 
   /**
    * Retrieves an optional parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the parameter or null if not set
-   * 
-   * @throws ResourceInitializationException 
+   *
+   * @throws ResourceInitializationException
    */
   public static String getOptionalStringParameter(UimaContext context,
-      String parameter) 
+      String parameter)
       throws ResourceInitializationException {
     Object value = getOptionalParameter(context, parameter);
-    
+
     if (value instanceof String) {
       return (String) value;
     }
@@ -342,21 +342,21 @@ public final class AnnotatorUtil {
               "String array" });
     }
   }
-  
+
   /**
     * Retrieves an optional parameter from the given context.
-    * 
+    *
     * @param context
     * @param parameter
     * @return the parameter or null if not set
-    * 
+    *
     * @throws ResourceInitializationException
     */
   public static Integer getOptionalIntegerParameter(UimaContext context,
-      String parameter) 
+      String parameter)
       throws ResourceInitializationException {
     Object value = getOptionalParameter(context, parameter);
-    
+
     if (value instanceof Integer) {
       return (Integer) value;
     }
@@ -373,19 +373,19 @@ public final class AnnotatorUtil {
 
   /**
    * Retrieves an optional parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the parameter or null if not set
-   * 
-   * @throws ResourceInitializationException 
+   *
+   * @throws ResourceInitializationException
    */
   public static Float getOptionalFloatParameter(UimaContext context,
-      String parameter) 
+      String parameter)
       throws ResourceInitializationException {
 
     Object value = getOptionalParameter(context, parameter);
-    
+
     if (value instanceof Float) {
       return (Float) value;
     }
@@ -399,21 +399,21 @@ public final class AnnotatorUtil {
               new Object[] {parameter, "Float"});
     }
   }
-  
+
   /**
    * Retrieves an optional parameter from the given context.
-   * 
+   *
    * @param context
    * @param parameter
    * @return the parameter or null if not set
-   * 
-   * @throws ResourceInitializationException 
+   *
+   * @throws ResourceInitializationException
    */
   public static Boolean getOptionalBooleanParameter(UimaContext context,
-      String parameter) 
+      String parameter)
       throws ResourceInitializationException {
     Object value = getOptionalParameter(context, parameter);
-    
+
     if (value instanceof Boolean) {
       return (Boolean) value;
     }
@@ -428,29 +428,29 @@ public final class AnnotatorUtil {
     }
   }
 
-  private static Object getOptionalParameter(UimaContext context, 
-      String parameter) 
+  private static Object getOptionalParameter(UimaContext context,
+      String parameter)
       throws ResourceInitializationException {
-    
+
     Object value = context.getConfigParameterValue(parameter);
-    
+
     Logger logger = context.getLogger();
-    
+
     if (logger.isLoggable(Level.INFO)) {
-      logger.log(Level.INFO, parameter + " = " + 
+      logger.log(Level.INFO, parameter + " = " +
           (value != null ? value.toString() : "not set"));
     }
-    
+
     return value;
   }
-  
+
   /**
    * Retrieves a resource as stream from the given context.
-   * 
+   *
    * @param context
    * @param name
    * @return the stream
-   * 
+   *
    * @throws ResourceInitializationException
    */
   public static InputStream getResourceAsStream(UimaContext context, String name)
@@ -480,7 +480,7 @@ public final class AnnotatorUtil {
 
     return inResource;
   }
-  
+
   public static Dictionary createOptionalDictionary(UimaContext context,
       String dictionaryParameter) throws ResourceInitializationException {
 

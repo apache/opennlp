@@ -44,7 +44,7 @@ import opennlp.tools.util.model.BaseModel;
 public final class POSModel extends BaseModel {
 
   private static final String COMPONENT_NAME = "POSTaggerME";
-  
+
   public static final String POS_MODEL_ENTRY_NAME = "pos.model";
 
   /**
@@ -79,7 +79,7 @@ public final class POSModel extends BaseModel {
         throw new IllegalArgumentException("The maxentPosModel param must not be null!");
 
     artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
-    // TODO: This fails probably for the sequence model ... ?! 
+    // TODO: This fails probably for the sequence model ... ?!
     // checkArtifactMap();
   }
 
@@ -87,7 +87,7 @@ public final class POSModel extends BaseModel {
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
     this(languageCode, posModel, POSTaggerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, posFactory);
   }
-  
+
   public POSModel(String languageCode, MaxentModel posModel, int beamSize,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
@@ -99,15 +99,15 @@ public final class POSModel extends BaseModel {
     artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
     checkArtifactMap();
   }
-  
+
   public POSModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
-  
+
   public POSModel(File modelFile) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelFile);
   }
-  
+
   public POSModel(URL modelURL) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelURL);
   }
@@ -149,17 +149,17 @@ public final class POSModel extends BaseModel {
   }
 
   public SequenceClassificationModel<String> getPosSequenceModel() {
-    
+
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
-    
+
     if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof MaxentModel) {
       String beamSizeString = manifest.getProperty(BeamSearch.BEAM_SIZE_PARAMETER);
-      
+
       int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
       if (beamSizeString != null) {
         beamSize = Integer.parseInt(beamSizeString);
       }
-      
+
       return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME));
     }
     else if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
@@ -169,17 +169,17 @@ public final class POSModel extends BaseModel {
       return null;
     }
   }
-  
+
   /**
    * Retrieves the tag dictionary.
-   * 
+   *
    * @return tag dictionary or null if not used
-   * 
+   *
    * @deprecated Use {@link POSModel#getFactory()} to get a
    *             {@link POSTaggerFactory} and
    *             {@link POSTaggerFactory#getTagDictionary()} to get a
    *             {@link TagDictionary}.
-   * 
+   *
    * @throws IllegalStateException
    *           if the TagDictionary is not an instance of POSDictionary
    */
@@ -200,7 +200,7 @@ public final class POSModel extends BaseModel {
     }
     return null;
   }
-  
+
   public POSTaggerFactory getFactory() {
     return (POSTaggerFactory) this.toolFactory;
   }

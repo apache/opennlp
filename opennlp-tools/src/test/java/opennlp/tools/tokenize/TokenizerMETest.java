@@ -48,7 +48,7 @@ public class TokenizerMETest {
     assertEquals("test", tokens[0]);
     assertEquals(",", tokens[1]);
   }
-  
+
   @Test
   public void testTokenizer() throws IOException {
     TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();

@@ -34,55 +34,55 @@ import opennlp.tools.util.ObjectStream;
 public class DirectorySampleStream implements ObjectStream<File> {
 
   private final List<File> inputDirectories;
-  
+
   private final boolean isRecursiveScan;
-  
+
   private final FileFilter fileFilter;
-  
+
   private Stack<File> directories = new Stack<File>();
-  
+
   private Stack<File> textFiles = new Stack<File>();
-  
+
   public DirectorySampleStream(File dirs[], FileFilter fileFilter, boolean recursive) {
 
-    this.fileFilter= fileFilter; 
+    this.fileFilter= fileFilter;
     isRecursiveScan = recursive;
-    
+
     List<File> inputDirectoryList = new ArrayList<File>(dirs.length);
-    
+
     for (File dir : dirs) {
       if (!dir.isDirectory()) {
         throw new IllegalArgumentException(
             "All passed in directories must be directories, but \""
             + dir.toString() + "\" is not!");
       }
-      
+
       inputDirectoryList.add(dir);
     }
-    
+
     inputDirectories = Collections.unmodifiableList(inputDirectoryList);
-    
+
     directories.addAll(inputDirectories);
   }
-  
+
   public DirectorySampleStream(File dir, FileFilter fileFilter, boolean recursive) {
     this(new File[]{dir}, fileFilter, recursive);
   }
-  
+
   public File read() throws IOException {
 
     while(textFiles.isEmpty() && !directories.isEmpty()) {
       File dir = directories.pop();
-      
+
       File files[];
-      
+
       if (fileFilter != null) {
         files = dir.listFiles(fileFilter);
       }
       else {
         files = dir.listFiles();
       }
-      
+
       for (File file : files) {
         if (file.isFile()) {
           textFiles.push(file);
@@ -92,7 +92,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
         }
       }
     }
-    
+
     if (!textFiles.isEmpty()) {
       return textFiles.pop();
     }
@@ -104,7 +104,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
   public void reset() {
     directories.clear();
     textFiles.clear();
-    
+
     directories.addAll(inputDirectories);
   }
 

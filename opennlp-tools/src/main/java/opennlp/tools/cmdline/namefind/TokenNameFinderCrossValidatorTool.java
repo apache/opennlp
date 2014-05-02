@@ -43,7 +43,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class TokenNameFinderCrossValidatorTool
     extends AbstractCrossValidatorTool<NameSample, CVToolParams> {
-  
+
   interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams {
   }
 
@@ -73,7 +73,7 @@ public final class TokenNameFinderCrossValidatorTool
       String nameTypes[] = params.getNameTypes().split(",");
       sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
     }
-    
+
     List<EvaluationMonitor<NameSample>> listeners = new LinkedList<EvaluationMonitor<NameSample>>();
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
@@ -85,16 +85,16 @@ public final class TokenNameFinderCrossValidatorTool
     }
 
     String sequenceCodecImplName = params.getSequenceCodec();
-    
+
     if ("BIO".equals(sequenceCodecImplName)) {
       sequenceCodecImplName = BioCodec.class.getName();
     }
     else if ("BILOU".equals(sequenceCodecImplName)) {
       sequenceCodecImplName = BilouCodec.class.getName();
     }
-    
+
     SequenceCodec<String> sequenceCodec = TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
-    
+
     TokenNameFinderFactory nameFinderFactory = null;
     try {
       nameFinderFactory = TokenNameFinderFactory.create(params.getFactory(),
@@ -102,7 +102,7 @@ public final class TokenNameFinderCrossValidatorTool
     } catch (InvalidFormatException e) {
       throw new TerminateToolException(-1, e.getMessage(), e);
     }
-    
+
     TokenNameFinderCrossValidator validator;
     try {
       validator = new TokenNameFinderCrossValidator(params.getLang(),
@@ -123,7 +123,7 @@ public final class TokenNameFinderCrossValidatorTool
     System.out.println("done");
 
     System.out.println();
-    
+
     if(detailedFListener == null) {
       System.out.println(validator.getFMeasure());
     } else {

@@ -27,12 +27,12 @@ public interface MutableTagDictionary extends TagDictionary {
    * Associates the specified tags with the specified word. If the dictionary
    * previously contained keys for the word, the old tags are replaced by the
    * specified tags.
-   * 
+   *
    * @param word
    *          word with which the specified tags is to be associated
    * @param tags
    *          tags to be associated with the specified word
-   * 
+   *
    * @return the previous tags associated with the word, or null if there was no
    *         mapping for word.
    */
@@ -40,7 +40,7 @@ public interface MutableTagDictionary extends TagDictionary {
 
   /**
    * Whether if the dictionary is case sensitive or not
-   * 
+   *
    * @return true if the dictionary is case sensitive
    */
   // TODO: move to TagDictionary, can't do it now because of backward

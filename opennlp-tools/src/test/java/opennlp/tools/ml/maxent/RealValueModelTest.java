@@ -63,7 +63,7 @@ public class RealValueModelTest extends TestCase {
     for(int i=0; i<realResults.length; i++) {
       System.out.println(String.format("classifiy with realModel: %1$s = %2$f", realModel.getOutcome(i), realResults[i]));
       System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f", repeatModel.getOutcome(i), repeatResults[i]));
-      assertEquals(realResults[i], repeatResults[i], 0.01f);      
+      assertEquals(realResults[i], repeatResults[i], 0.01f);
     }
 
   }

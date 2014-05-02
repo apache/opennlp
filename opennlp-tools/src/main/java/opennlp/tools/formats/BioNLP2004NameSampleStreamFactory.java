@@ -42,29 +42,29 @@ public class BioNLP2004NameSampleStreamFactory extends AbstractSampleStreamFacto
   }
 
   public ObjectStream<NameSample> create(String[] args) {
-    
+
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
     int typesToGenerate = 0;
-    
+
     if (params.getTypes().contains("DNA")) {
-      typesToGenerate = typesToGenerate | 
+      typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_DNA_ENTITIES;
     }
     else if (params.getTypes().contains("protein")) {
-      typesToGenerate = typesToGenerate | 
+      typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_PROTEIN_ENTITIES;
     }
     else if (params.getTypes().contains("cell_type")) {
-      typesToGenerate = typesToGenerate | 
+      typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_CELLTYPE_ENTITIES;
     }
     else if (params.getTypes().contains("cell_line")) {
-      typesToGenerate = typesToGenerate | 
+      typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_CELLLINE_ENTITIES;
     }
     else if (params.getTypes().contains("RNA")) {
-      typesToGenerate = typesToGenerate | 
+      typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_RNA_ENTITIES;
     }
 

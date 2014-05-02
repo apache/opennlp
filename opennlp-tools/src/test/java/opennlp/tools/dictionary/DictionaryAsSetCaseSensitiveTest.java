@@ -37,7 +37,7 @@ public class DictionaryAsSetCaseSensitiveTest {
   private Dictionary getDict() {
     return new Dictionary(true);
   }
-  
+
   private StringList asSL(String str) {
     return new StringList(str);
   }
@@ -54,12 +54,12 @@ public class DictionaryAsSetCaseSensitiveTest {
     Dictionary dict = getDict();
 
     dict.put(asSL(a));
-    
+
     Set<String> set = dict.asStringSet();
 
     assertTrue(set.contains(a));
     assertFalse(set.contains(b));
-    
+
     assertFalse(set.contains(a.toUpperCase()));
   }
 
@@ -76,13 +76,13 @@ public class DictionaryAsSetCaseSensitiveTest {
 
     dict.put(asSL(a));
     dict.put(asSL(a1));
-    
+
     Set<String> set = dict.asStringSet();
 
     assertTrue(set.contains(a));
     assertEquals(1, set.size());
   }
-  
+
   /**
    * Tests set.
    */
@@ -96,7 +96,7 @@ public class DictionaryAsSetCaseSensitiveTest {
 
     dict.put(asSL(a));
     dict.put(asSL(a1));
-    
+
     Set<String> set = dict.asStringSet();
 
     assertTrue(set.contains(a));
@@ -114,18 +114,18 @@ public class DictionaryAsSetCaseSensitiveTest {
     Dictionary dictA = getDict();
     dictA.put(asSL(entry1));
     dictA.put(asSL(entry2));
-    
+
     Set<String> setA = dictA.asStringSet();
 
     Dictionary dictB = getDict();
     dictB.put(asSL(entry1));
     dictB.put(asSL(entry2));
-    
+
     Set<String> setB = dictB.asStringSet();
 
     assertTrue(setA.equals(setB));
   }
-  
+
   /**
    * Tests for the {@link Dictionary#equals(Object)} method.
    */
@@ -135,13 +135,13 @@ public class DictionaryAsSetCaseSensitiveTest {
     Dictionary dictA = getDict();
     dictA.put(asSL("1a"));
     dictA.put(asSL("1b"));
-    
+
     Set<String> setA = dictA.asStringSet();
 
     Dictionary dictB = getDict();
     dictB.put(asSL("1A"));
     dictB.put(asSL("1B"));
-    
+
     Set<String> setB = dictB.asStringSet();
 
     // should fail in case sensitive dict
@@ -157,7 +157,7 @@ public class DictionaryAsSetCaseSensitiveTest {
 
     Dictionary dictA = getDict();
     dictA.put(asSL(entry1));
-    
+
     Set<String> setA = dictA.asStringSet();
 
     Dictionary dictB = getDict();
@@ -167,7 +167,7 @@ public class DictionaryAsSetCaseSensitiveTest {
 
     assertEquals(setA.hashCode(), setB.hashCode());
   }
-  
+
   /**
    * Tests the {@link Dictionary#hashCode()} method.
    */
@@ -177,12 +177,12 @@ public class DictionaryAsSetCaseSensitiveTest {
 
     Dictionary dictA = getDict();
     dictA.put(asSL(entry1));
-    
+
     Set<String> setA = dictA.asStringSet();
 
     Dictionary dictB = getDict();
     dictB.put(asSL(entry1.toUpperCase()));
-    
+
     Set<String> setB = dictB.asStringSet();
 
     // TODO: should it be equal??
@@ -202,19 +202,19 @@ public class DictionaryAsSetCaseSensitiveTest {
     Dictionary dict = getDict();
 
     dict.put(asSL(entry1));
-    
+
     Set<String> set = dict.asStringSet();
 
     // should return false because 1a != 1A in a case sensitive lookup
     assertFalse(set.contains(entry2));
   }
-  
+
   /**
    * Tests the iterator implementation
    */
   @Test
   public void testIterator() {
-    
+
     String entry1 = "1a";
     String entry2 = "1b";
 
@@ -223,18 +223,18 @@ public class DictionaryAsSetCaseSensitiveTest {
     dictA.put(asSL(entry2));
     dictA.put(asSL(entry1.toUpperCase()));
     dictA.put(asSL(entry2.toUpperCase()));
-    
+
     Iterator<String> it = dictA.asStringSet().iterator();
     List<String> elements = new ArrayList<String>();
     while (it.hasNext()) {
       elements.add(it.next());
     }
-    
+
     assertEquals(4, elements.size());
     assertTrue(elements.contains(entry1));
     assertTrue(elements.contains(entry2));
     assertTrue(elements.contains(entry1.toUpperCase()));
     assertTrue(elements.contains(entry2.toUpperCase()));
-    
+
   }
 }

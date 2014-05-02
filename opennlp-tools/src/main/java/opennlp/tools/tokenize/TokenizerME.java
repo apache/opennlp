@@ -47,7 +47,7 @@ import opennlp.tools.util.model.ModelUtil;
  * This tokenizer needs a statistical model to tokenize a text which reproduces
  * the tokenization observed in the training data used to create the model.
  * The {@link TokenizerModel} class encapsulates the model and provides
- * methods to create it from the binary representation. 
+ * methods to create it from the binary representation.
  * <p>
  * A tokenizer instance is not thread safe. For each thread one tokenizer
  * must be instantiated which can share one <code>TokenizerModel</code> instance
@@ -69,7 +69,7 @@ import opennlp.tools.util.model.ModelUtil;
  * <br>
  * String tokens[] = tokenizer.tokenize("A sentence to be tokenized.");
  * </code>
- * 
+ *
  * @see Tokenizer
  * @see TokenizerModel
  * @see TokenSample
@@ -92,7 +92,7 @@ public class TokenizerME extends AbstractTokenizer {
    */
   @Deprecated
   public static final Pattern alphaNumeric = Pattern.compile(Factory.DEFAULT_ALPHANUMERIC);
-  
+
   private final Pattern alphanumeric;
 
   /**
@@ -147,7 +147,7 @@ public class TokenizerME extends AbstractTokenizer {
     newTokens = new ArrayList<Span>();
     tokProbs = new ArrayList<Double>(50);
   }
-  
+
   private static Set<String> getAbbreviations(Dictionary abbreviations) {
     if(abbreviations == null) {
       return Collections.<String>emptySet();
@@ -220,10 +220,10 @@ public class TokenizerME extends AbstractTokenizer {
     newTokens.toArray(spans);
     return spans;
   }
-  
+
   /**
    * Trains a model for the {@link TokenizerME}.
-   * 
+   *
    * @param samples
    *          the samples used for the training.
    * @param factory
@@ -260,15 +260,15 @@ public class TokenizerME extends AbstractTokenizer {
    * @param samples the samples used for the training.
    * @param useAlphaNumericOptimization - if true alpha numerics are skipped
    * @param mlParams the machine learning train parameters
-   * 
+   *
    * @return the trained {@link TokenizerModel}
    *
    * @throws IOException it throws an {@link IOException} if an {@link IOException}
    * is thrown during IO operations on a temp file which is created during training.
    * Or if reading from the {@link ObjectStream} fails.
-   * 
-   * @deprecated Use 
-   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)} 
+   *
+   * @deprecated Use
+   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)}
    *    and pass in a {@link TokenizerFactory}
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
@@ -276,7 +276,7 @@ public class TokenizerME extends AbstractTokenizer {
     return train(languageCode, samples, null, useAlphaNumericOptimization,
         mlParams);
   }
-  
+
   /**
    * Trains a model for the {@link TokenizerME}.
    *
@@ -285,15 +285,15 @@ public class TokenizerME extends AbstractTokenizer {
    * @param abbreviations an abbreviations dictionary
    * @param useAlphaNumericOptimization - if true alpha numerics are skipped
    * @param mlParams the machine learning train parameters
-   * 
+   *
    * @return the trained {@link TokenizerModel}
    *
    * @throws IOException it throws an {@link IOException} if an {@link IOException}
    * is thrown during IO operations on a temp file which is created during training.
    * Or if reading from the {@link ObjectStream} fails.
-   * 
-   * @deprecated Use 
-   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)} 
+   *
+   * @deprecated Use
+   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)}
    *    and pass in a {@link TokenizerFactory}
    */
   public static TokenizerModel train(String languageCode,
@@ -315,7 +315,7 @@ public class TokenizerME extends AbstractTokenizer {
     return new TokenizerModel(languageCode, maxentModel, abbreviations,
         useAlphaNumericOptimization, manifestInfoEntries);
   }
-  
+
 
   /**
    * Trains a model for the {@link TokenizerME} with a default cutoff of 5 and 100 iterations.
@@ -328,20 +328,20 @@ public class TokenizerME extends AbstractTokenizer {
    *
    * @throws IOException it throws an {@link IOException} if an {@link IOException}
    * is thrown during IO operations on a temp file which is
-   * 
+   *
    * @throws ObjectStreamException if reading from the {@link ObjectStream} fails
    * created during training.
-   * 
-   * 
-   * @deprecated Use 
-   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)} 
+   *
+   *
+   * @deprecated Use
+   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)}
    *    and pass in a {@link TokenizerFactory}
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization) throws IOException, ObjectStreamException {
     return train(languageCode, samples, useAlphaNumericOptimization, ModelUtil.createDefaultTrainingParameters());
   }
-  
+
   /**
    * Returns the value of the alpha-numeric optimization flag.
    *

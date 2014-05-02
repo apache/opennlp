@@ -34,7 +34,7 @@ import opennlp.tools.util.ObjectStream;
 public abstract class Evaluator<T> {
 
   private List<EvaluationMonitor<T>> listeners;
-  
+
   public Evaluator(EvaluationMonitor<T>... aListeners) {
     if (aListeners != null) {
       List<EvaluationMonitor<T>> listenersList = new ArrayList<EvaluationMonitor<T>>(
@@ -49,14 +49,14 @@ public abstract class Evaluator<T> {
       listeners = Collections.emptyList();
     }
   }
-  
+
   /**
    * Evaluates the given reference sample object.
-   * 
+   *
    * The implementation has to update the score after every invocation.
    *
    * @param reference the reference sample.
-   * 
+   *
    * @return the predicted sample
    */
   protected abstract T processSample(T reference);
@@ -64,14 +64,14 @@ public abstract class Evaluator<T> {
   /**
    * Evaluates the given reference object. The default implementation calls
    * {@link Evaluator#processSample(Object)}
-   * 
+   *
    * <p>
    * <b>note:</b> this method will be changed to private in the future.
    * Implementations should override {@link Evaluator#processSample(Object)} instead.
    * If this method is override, the implementation has to update the score
    * after every invocation.
    * </p>
-   * 
+   *
    * @param sample
    *          the sample to be evaluated
    */
@@ -85,11 +85,11 @@ public abstract class Evaluator<T> {
       } else {
         for (EvaluationMonitor<T> listener : listeners) {
           listener.missclassified(sample, predicted);
-        } 
+        }
       }
     }
   }
-  
+
   /**
    * Reads all sample objects from the stream
    * and evaluates each sample object with

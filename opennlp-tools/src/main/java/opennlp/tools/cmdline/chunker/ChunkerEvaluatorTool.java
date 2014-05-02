@@ -37,7 +37,7 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 
 public final class ChunkerEvaluatorTool
     extends AbstractEvaluatorTool<ChunkSample, EvalToolParams> {
-  
+
   interface EvalToolParams extends EvaluatorParams, DetailedFMeasureEvaluatorParams {
   }
 
@@ -53,7 +53,7 @@ public final class ChunkerEvaluatorTool
     super.run(format, args);
 
     ChunkerModel model = new ChunkerModelLoader().load(params.getModel());
-    
+
     List<EvaluationMonitor<ChunkSample>> listeners = new LinkedList<EvaluationMonitor<ChunkSample>>();
     ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
     if(params.getMisclassified()) {
@@ -67,7 +67,7 @@ public final class ChunkerEvaluatorTool
     ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model,
         ChunkerME.DEFAULT_BEAM_SIZE),
         listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
-    
+
     final PerformanceMonitor monitor = new PerformanceMonitor("sent");
 
     ObjectStream<ChunkSample> measuredSampleStream = new ObjectStream<ChunkSample>() {

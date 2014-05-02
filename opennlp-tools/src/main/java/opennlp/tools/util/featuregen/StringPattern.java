@@ -38,7 +38,7 @@ public class StringPattern {
   private final int pattern;
 
   private final int digits;
-  
+
   private StringPattern(int pattern, int digits) {
     this.pattern = pattern;
     this.digits = digits;
@@ -50,7 +50,7 @@ public class StringPattern {
   public boolean isAllLetter() {
     return (pattern & ALL_LETTERS) > 0;
   }
-  
+
   /**
    * @return true if first letter is capital.
    */
@@ -64,14 +64,14 @@ public class StringPattern {
   public boolean isAllCapitalLetter() {
     return (pattern & ALL_CAPITAL_LETTER) > 0;
   }
-  
+
   /**
    * @return true if all letters are lower case.
    */
   public boolean isAllLowerCaseLetter() {
     return (pattern & ALL_LOWERCASE_LETTER) > 0;
   }
-  
+
   /**
    * @return true if all chars are digits.
    */
@@ -85,7 +85,7 @@ public class StringPattern {
   public int digits() {
     return digits;
   }
-  
+
   public boolean containsPeriod() {
     return (pattern & CONTAINS_PERIOD) > 0;
   }
@@ -113,9 +113,9 @@ public class StringPattern {
   public static StringPattern recognize(String token) {
 
     int pattern = ALL_CAPITAL_LETTER | ALL_LOWERCASE_LETTER | ALL_DIGIT | ALL_LETTERS;
-    
+
     int digits = 0;
-    
+
     for (int i = 0; i < token.length(); i++) {
       final char ch = token.charAt(i);
 

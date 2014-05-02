@@ -31,9 +31,9 @@ public class DictionaryDetokenizerTest{
 
   @Test
   public void testDetokenizer() {
-    
+
     String tokens[] = new String[]{".", "!", "(", ")", "\"", "-"};
-    
+
     Operation operations[] = new Operation[]{
         Operation.MOVE_LEFT,
         Operation.MOVE_LEFT,
@@ -42,13 +42,13 @@ public class DictionaryDetokenizerTest{
         Operation.RIGHT_LEFT_MATCHING,
         Operation.MOVE_BOTH
       };
-    
+
     DetokenizationDictionary dict = new DetokenizationDictionary(tokens, operations);
     Detokenizer detokenizer = new DictionaryDetokenizer(dict);
-    
-    DetokenizationOperation detokenizeOperations[] = 
+
+    DetokenizationOperation detokenizeOperations[] =
       detokenizer.detokenize(new String[]{"Simple",  "test", ".", "co", "-", "worker"});
-    
+
     assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[0]);
     assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[1]);
     assertEquals(DetokenizationOperation.MERGE_TO_LEFT, detokenizeOperations[2]);
@@ -56,39 +56,39 @@ public class DictionaryDetokenizerTest{
     assertEquals(DetokenizationOperation.MERGE_BOTH, detokenizeOperations[4]);
     assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[5]);
   }
-  
+
   static Detokenizer createLatinDetokenizer() throws IOException {
     InputStream dictIn = DictionaryDetokenizerTest.class.getResourceAsStream(
     "/opennlp/tools/tokenize/latin-detokenizer.xml");
-    
+
     DetokenizationDictionary dict = new DetokenizationDictionary(dictIn);
-    
+
     dictIn.close();
-    
+
     return new DictionaryDetokenizer(dict);
   }
-  
+
   @Test
   public void testDetokenizeToString() throws IOException {
-    
+
     Detokenizer detokenizer = createLatinDetokenizer();
-    
+
     String tokens[] = new String[]{"A", "test", ",", "(", "string", ")", "."};
-      
+
     String sentence = detokenizer.detokenize(tokens, null);
-      
+
     assertEquals("A test, (string).", sentence);
   }
-  
+
   @Test
   public void testDetokenizeToString2() throws IOException {
-    
+
     Detokenizer detokenizer = createLatinDetokenizer();
-    
+
     String tokens[] = new String[]{"A", "co", "-", "worker", "helped", "."};
-      
+
     String sentence = detokenizer.detokenize(tokens, null);
-      
+
     assertEquals("A co-worker helped.", sentence);
   }
 }

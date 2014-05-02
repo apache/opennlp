@@ -59,12 +59,12 @@ public class TokenNameFinderModel extends BaseModel {
       super(t);
     }
   }
-  
+
   private static class ByteArraySerializer implements ArtifactSerializer<byte[]> {
 
     public byte[] create(InputStream in) throws IOException,
         InvalidFormatException {
-      
+
       return ModelUtil.read(in);
     }
 
@@ -72,10 +72,10 @@ public class TokenNameFinderModel extends BaseModel {
       out.write(artifact);
     }
   }
-  
+
   private static final String COMPONENT_NAME = "NameFinderME";
   private static final String MAXENT_MODEL_ENTRY_NAME = "nameFinder.model";
- 
+
   static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
 
   static final String SEQUENCE_CODEC_CLASS_NAME_PARAMETER = "sequenceCodecImplName";
@@ -84,9 +84,9 @@ public class TokenNameFinderModel extends BaseModel {
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
       SequenceCodec<String> seqCodec) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
-    
+
     init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries, seqCodec);
-    
+
     if (!seqCodec.areOutcomesCompatible(nameFinderModel.getOutcomes())) {
       throw new IllegalArgumentException("Model not compatible with name finder!");
     }
@@ -96,22 +96,22 @@ public class TokenNameFinderModel extends BaseModel {
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
       SequenceCodec<String> seqCodec) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
-    
-    
+
+
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
     manifest.put(BeamSearch.BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
-    
+
     init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries, seqCodec);
-    
+
     if (!isModelValid(nameFinderModel)) {
       throw new IllegalArgumentException("Model not compatible with name finder!");
     }
   }
-  
+
   // TODO: Extend this one with beam size!
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
-    this(languageCode, nameFinderModel, NameFinderME.DEFAULT_BEAM_SIZE, 
+    this(languageCode, nameFinderModel, NameFinderME.DEFAULT_BEAM_SIZE,
         generatorDescriptor, resources, manifestInfoEntries, new BioCodec());
   }
 
@@ -119,31 +119,31 @@ public class TokenNameFinderModel extends BaseModel {
       Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     this(languageCode, nameFinderModel, null, resources, manifestInfoEntries);
   }
-      
+
   public TokenNameFinderModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
-  
+
   public TokenNameFinderModel(File modelFile) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelFile);
   }
-  
+
   public TokenNameFinderModel(URL modelURL) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelURL);
   }
-  
+
   private void init(Object nameFinderModel,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
       SequenceCodec<String> seqCodec) {
-    
+
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
     manifest.put(SEQUENCE_CODEC_CLASS_NAME_PARAMETER, seqCodec.getClass().getName());
-    
+
     artifactMap.put(MAXENT_MODEL_ENTRY_NAME, nameFinderModel);
-    
+
     if (generatorDescriptor != null && generatorDescriptor.length > 0)
       artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, generatorDescriptor);
-    
+
     if (resources != null) {
       // The resource map must not contain key which are already taken
       // like the name finder maxent model name
@@ -151,20 +151,20 @@ public class TokenNameFinderModel extends BaseModel {
           resources.containsKey(GENERATOR_DESCRIPTOR_ENTRY_NAME)) {
         throw new IllegalArgumentException();
       }
-      
+
       // TODO: Add checks to not put resources where no serializer exists,
       // make that case fail here, should be done in the BaseModel
-      artifactMap.putAll(resources); 
+      artifactMap.putAll(resources);
     }
     checkArtifactMap();
   }
-  
+
   /**
    * @deprecated use getNameFinderSequenceModel instead. This method will be removed soon.
    */
   @Deprecated
   public MaxentModel getNameFinderModel() {
-    
+
     if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel) {
       return (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
     }
@@ -174,17 +174,17 @@ public class TokenNameFinderModel extends BaseModel {
   }
 
   public SequenceClassificationModel<String> getNameFinderSequenceModel() {
-    
+
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
-    
+
     if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel) {
       String beamSizeString = manifest.getProperty(BeamSearch.BEAM_SIZE_PARAMETER);
-      
+
       int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
       if (beamSizeString != null) {
         beamSize = Integer.parseInt(beamSizeString);
       }
-      
+
       return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME));
     }
     else if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
@@ -194,19 +194,19 @@ public class TokenNameFinderModel extends BaseModel {
       return null;
     }
   }
-  
+
   @Override
   protected Class<? extends BaseToolFactory> getDefaultFactory() {
     return TokenNameFinderFactory.class;
   }
-  
+
   public TokenNameFinderFactory getFactory() {
     return (TokenNameFinderFactory) this.toolFactory;
   }
 
   // TODO: This should be moved to the NameFinderFactory ... !!!
   // Lets deprecate it!
-  
+
   /**
    * Creates the {@link AdaptiveFeatureGenerator}. Usually this
    * is a set of generators contained in the {@link AggregatedFeatureGenerator}.
@@ -221,11 +221,11 @@ public class TokenNameFinderModel extends BaseModel {
   public AdaptiveFeatureGenerator createFeatureGenerators() {
     return getFactory().createFeatureGenerators();
   }
-  
+
   public TokenNameFinderModel updateFeatureGenerator(byte descriptor[]) {
-        
+
     TokenNameFinderModel model;
-        
+
     if (getNameFinderModel() != null) {
       model = new TokenNameFinderModel(getLanguage(), getNameFinderModel(), 1,
           descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(),
@@ -236,53 +236,53 @@ public class TokenNameFinderModel extends BaseModel {
           descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(),
           getFactory().createSequenceCodec());
     }
-    
+
     model.artifactMap.clear();
     model.artifactMap.putAll(artifactMap);
     model.artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, descriptor);
-    
+
     return model;
   }
-  
+
   @Override
   protected void createArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
     super.createArtifactSerializers(serializers);
-    
+
     serializers.put("featuregen", new ByteArraySerializer());
   }
-  
+
   public static Map<String, ArtifactSerializer> createArtifactSerializers()  {
-    
+
     // TODO: Not so nice, because code cannot really be reused by the other create serializer method
     //       Has to be redesigned, we need static access to default serializers
-    //       and these should be able to extend during runtime ?! 
+    //       and these should be able to extend during runtime ?!
     //
     //       The XML feature generator factory should provide these mappings.
     //       Usually the feature generators should know what type of resource they expect.
-    
+
     Map<String, ArtifactSerializer> serializers = BaseModel.createArtifactSerializers();
-    
+
     serializers.put("featuregen", new ByteArraySerializer());
     serializers.put("w2vclasses", new W2VClassesDictionary.W2VClassesDictionarySerializer());
-    
+
     return serializers;
   }
-  
+
   boolean isModelValid(MaxentModel model) {
-    
+
     String outcomes[] = new String[model.getNumOutcomes()];
-    
+
     for (int i = 0; i < model.getNumOutcomes(); i++) {
       outcomes[i] = model.getOutcome(i);
     }
-    
+
     return getFactory().createSequenceCodec().areOutcomesCompatible(outcomes);
   }
-  
+
   @Override
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
-    
+
     if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel ||
         artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
       // TODO: Check should be performed on the possible outcomes!

@@ -31,7 +31,7 @@ import opennlp.tools.util.ObjectStream;
 public class ConllXSentenceSampleStreamFactory extends
     DetokenizerSampleStreamFactory<SentenceSample> {
 
-  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {    
+  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {
     // TODO: make chunk size configurable
   }
 

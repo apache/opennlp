@@ -31,11 +31,11 @@ public class VersionTest {
   public void testParse() {
     Version referenceVersion = Version.currentVersion();
     assertEquals(referenceVersion, Version.parse(referenceVersion.toString()));
-    
+
     assertEquals(new Version(1,5,2, false), Version.parse("1.5.2-incubating"));
     assertEquals(new Version(1,5,2, false), Version.parse("1.5.2"));
   }
-  
+
   @Test
   public void testParseSnapshot() {
     assertEquals(new Version(1,5,2, true), Version.parse("1.5.2-incubating-SNAPSHOT"));

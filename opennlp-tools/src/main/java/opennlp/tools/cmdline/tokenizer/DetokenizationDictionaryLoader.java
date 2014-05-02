@@ -28,7 +28,7 @@ final class DetokenizationDictionaryLoader extends ModelLoader<DetokenizationDic
   DetokenizationDictionaryLoader() {
     super("detokenizer dictionary");
   }
-  
+
   @Override
   protected DetokenizationDictionary loadModel(InputStream modelIn) throws IOException {
     return new DetokenizationDictionary(modelIn);

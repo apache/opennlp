@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -26,15 +26,15 @@ import java.util.Set;
 
 
 /**
- * Abstract class for collecting event and context counts used in training. 
+ * Abstract class for collecting event and context counts used in training.
  *
  */
 public abstract class AbstractDataIndexer implements DataIndexer {
 
   private int numEvents;
-  /** The integer contexts associated with each unique event. */ 
+  /** The integer contexts associated with each unique event. */
   protected int[][] contexts;
-  /** The integer outcome associated with each unique event. */ 
+  /** The integer outcome associated with each unique event. */
   protected int[] outcomeList;
   /** The number of times an event occured in the training data. */
   protected int[] numTimesEventsSeen;
@@ -64,8 +64,8 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   public String[] getOutcomeLabels() {
     return outcomeLabels;
   }
-  
-  
+
+
 
   public int[] getPredCounts() {
     return predCounts;
@@ -93,7 +93,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
       for (int i = 1; i < numEvents; i++) {
         ComparableEvent ce2 = eventsToCompare.get(i);
 
-        if (ce.compareTo(ce2) == 0) { 
+        if (ce.compareTo(ce2) == 0) {
           ce.seen++; // increment the seen count
           eventsToCompare.set(i, null); // kill the duplicate
         }
@@ -124,14 +124,14 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     }
     return numUniqueEvents;
   }
-  
-  
+
+
   public int getNumEvents() {
     return numEvents;
   }
-  
+
   /**
-   * Updates the set of predicated and counter with the specified event contexts and cutoff. 
+   * Updates the set of predicated and counter with the specified event contexts and cutoff.
    * @param ec The contexts/features which occur in a event.
    * @param predicateSet The set of predicates which will be used for model building.
    * @param counter The predicate counters.

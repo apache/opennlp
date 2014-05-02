@@ -30,12 +30,12 @@ import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.util.ObjectStream;
 
-/** 
+/**
  * Abstract base class for tools which update the parser model.
  */
 abstract class ModelUpdaterTool
     extends AbstractTypedParamTool<Parse, ModelUpdaterTool.ModelUpdaterParams> {
-  
+
   interface ModelUpdaterParams extends TrainingToolParams {
   }
 
@@ -50,7 +50,7 @@ abstract class ModelUpdaterTool
   public final void run(String format, String[] args) {
     ModelUpdaterParams params = validateAndParseParams(
         ArgumentParser.filter(args, ModelUpdaterParams.class), ModelUpdaterParams.class);
-    
+
     // Load model to be updated
     File modelFile = params.getModel();
     ParserModel originalParserModel = new ParserModelLoader().load(modelFile);
@@ -59,7 +59,7 @@ abstract class ModelUpdaterTool
     String[] fargs = ArgumentParser.filter(args, factory.getParameters());
     validateFactoryArgs(factory, fargs);
     ObjectStream<Parse> sampleStream = factory.create(fargs);
-    
+
     ParserModel updatedParserModel;
     try {
       updatedParserModel = trainAndUpdate(originalParserModel, sampleStream, params);
@@ -75,7 +75,7 @@ abstract class ModelUpdaterTool
         // sorry that this can fail
       }
     }
-    
+
     CmdLineUtil.writeModel("parser", modelFile, updatedParserModel);
   }
 }

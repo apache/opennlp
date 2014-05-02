@@ -37,7 +37,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class POSTaggerCrossValidatorTool
     extends AbstractCrossValidatorTool<POSSample, CVToolParams> {
-  
+
   interface CVToolParams extends CVParams, TrainingParams {
     @ParameterDescription(valueName = "outputFile",
         description = "the path of the fine-grained report file.")
@@ -87,7 +87,7 @@ public final class POSTaggerCrossValidatorTool
       validator = new POSTaggerCrossValidator(params.getLang(), mlParams,
           params.getDict(), params.getNgram(), params.getTagDictCutoff(),
           params.getFactory(), missclassifiedListener, reportListener);
-      
+
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "

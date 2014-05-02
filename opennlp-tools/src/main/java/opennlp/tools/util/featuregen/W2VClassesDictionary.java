@@ -47,7 +47,7 @@ public class W2VClassesDictionary implements SerializableArtifact {
       artifact.serialize(out);
     }
   }
-  
+
   private Map<String, String> tokenToClusterMap = new HashMap<String, String>();
 
   public W2VClassesDictionary(InputStream in) throws IOException {
@@ -70,11 +70,11 @@ public class W2VClassesDictionary implements SerializableArtifact {
 
   public void serialize(OutputStream out) throws IOException {
     Writer writer = new BufferedWriter(new OutputStreamWriter(out));
-    
+
     for (Map.Entry<String, String> entry : tokenToClusterMap.entrySet()) {
       writer.write(entry.getKey() + " " + entry.getValue() + "\n");
     }
-    
+
     writer.flush();
   }
 

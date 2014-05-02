@@ -33,33 +33,33 @@ public class NewlineSentenceDetector implements SentenceDetector {
   }
 
   public Span[] sentPosDetect(String s) {
-    
+
     List<Span> sentences = new ArrayList<Span>();
-    
+
     int start = 0;
-    
+
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
-      
+
       if (c == '\n' || c == '\r') {
         if (start - i > 0) {
           Span span = new Span(start, i).trim(s);
           if (span.length() > 0) {
             sentences.add(span);
           }
-          
+
           start = i + 1;
         }
       }
     }
-    
+
     if (s.length() - start > 0) {
       Span span = new Span(start, s.length()).trim(s);
       if (span.length() > 0) {
         sentences.add(span);
       }
     }
-    
+
     return sentences.toArray(new Span[sentences.size()]);
   }
 }

@@ -30,11 +30,11 @@ import opennlp.tools.util.model.ModelUtil;
  * A cross validator for the sentence detector.
  */
 public class SDCrossValidator {
-  
+
   private final String languageCode;
-  
+
   private final TrainingParameters params;
-  
+
   private FMeasure fmeasure = new FMeasure();
 
   private SentenceDetectorEvaluationMonitor[] listeners;
@@ -49,7 +49,7 @@ public class SDCrossValidator {
     this.listeners = listeners;
     this.sdFactory = sdFactory;
   }
-  
+
   /**
    * @deprecated Use
    *             {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
@@ -59,7 +59,7 @@ public class SDCrossValidator {
     this(languageCode, params, new SentenceDetectorFactory(languageCode, true,
         null, null));
   }
-  
+
   /**
    * @deprecated use
    *             {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
@@ -70,7 +70,7 @@ public class SDCrossValidator {
     this(languageCode, params, new SentenceDetectorFactory(languageCode, true,
         null, null), listeners);
   }
-  
+
   /**
    * @deprecated use {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
    * instead and pass in a TrainingParameters object.
@@ -81,39 +81,39 @@ public class SDCrossValidator {
 
   /**
    * Starts the evaluation.
-   * 
+   *
    * @param samples
    *          the data to train and test
    * @param nFolds
    *          number of folds
-   * 
+   *
    * @throws IOException
    */
   public void evaluate(ObjectStream<SentenceSample> samples, int nFolds) throws IOException {
 
-    CrossValidationPartitioner<SentenceSample> partitioner = 
+    CrossValidationPartitioner<SentenceSample> partitioner =
         new CrossValidationPartitioner<SentenceSample>(samples, nFolds);
-    
+
    while (partitioner.hasNext()) {
-     
+
      CrossValidationPartitioner.TrainingSampleStream<SentenceSample> trainingSampleStream =
          partitioner.next();
-     
-      SentenceModel model; 
-      
+
+      SentenceModel model;
+
       model = SentenceDetectorME.train(languageCode, trainingSampleStream,
           sdFactory, params);
-      
+
       // do testing
       SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
           new SentenceDetectorME(model), listeners);
 
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
-      
+
       fmeasure.mergeInto(evaluator.getFMeasure());
     }
   }
-  
+
   public FMeasure getFMeasure() {
     return fmeasure;
   }

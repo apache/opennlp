@@ -26,25 +26,25 @@ import opennlp.tools.util.StringUtil;
 
 /**
  * Generates features for different for the class of the token.
- * 
+ *
  * @deprecated Use {@link TokenClassFeatureGenerator} instead!
  */
-@Deprecated 
+@Deprecated
 public class FastTokenClassFeatureGenerator extends FeatureGeneratorAdapter {
 
   private static final String TOKEN_CLASS_PREFIX = "wc";
   private static final String TOKEN_AND_CLASS_PREFIX = "w&c";
 
   private static Pattern capPeriod;
-  
+
   static {
     capPeriod = Pattern.compile("^[A-Z]\\.$");
   }
-  
+
   private boolean generateWordAndClassFeature;
 
-  
-  
+
+
   public FastTokenClassFeatureGenerator() {
     this(false);
   }
@@ -53,11 +53,11 @@ public class FastTokenClassFeatureGenerator extends FeatureGeneratorAdapter {
     this.generateWordAndClassFeature = genearteWordAndClassFeature;
   }
 
-  
+
   public static String tokenFeature(String token) {
 
     StringPattern pattern = StringPattern.recognize(token);
-    
+
     String feat;
     if (pattern.isAllLowerCaseLetter()) {
       feat = "lc";
@@ -106,8 +106,8 @@ public class FastTokenClassFeatureGenerator extends FeatureGeneratorAdapter {
 
     return (feat);
   }
-  
-  
+
+
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
     String wordClass = tokenFeature(tokens[index]);
     features.add(TOKEN_CLASS_PREFIX + "=" + wordClass);

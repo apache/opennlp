@@ -31,14 +31,14 @@ import java.util.Stack;
 import opennlp.tools.util.ObjectStream;
 
 public class BratDocumentStream implements ObjectStream<BratDocument> {
-  
+
   private AnnotationConfiguration config;
   private List<String> documentIds = new LinkedList<String>();
   private Iterator<String> documentIdIterator;
 
   /**
    * Creates a BratDocumentStream which reads the documents from the given input directory.
-   * 
+   *
    * @param bratCorpusDirectory the directory containing all the brat training data files
    * @param searchRecursive specifies if the corpus directory should be traversed recursively
    * to find training data files.
@@ -46,29 +46,29 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
    */
   public BratDocumentStream(AnnotationConfiguration config, File bratCorpusDirectory,
       boolean searchRecursive, FileFilter fileFilter) throws IOException {
-  
+
     if (!bratCorpusDirectory.isDirectory()) {
       throw new IOException("Input corpus directory must be a directory " +
       		"according to File.isDirectory()!");
     }
-    
+
     this.config = config;
-    
+
     Stack<File> directoryStack = new Stack<File>();
     directoryStack.add(bratCorpusDirectory);
-    
+
     while (!directoryStack.isEmpty()) {
       for (File file : directoryStack.pop().listFiles(fileFilter)) {
-        
+
         if (file.isFile()) {
-          String annFilePath = file.getAbsolutePath(); 
+          String annFilePath = file.getAbsolutePath();
           if (annFilePath.endsWith(".ann")) {
-            
+
             // cutoff last 4 chars ...
             String documentId = annFilePath.substring(0, annFilePath.length() - 4);
-            
+
             File txtFile = new File(documentId + ".txt");
-            
+
             if (txtFile.exists() && txtFile.isFile()) {
               documentIds.add(documentId);
             }
@@ -79,24 +79,24 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
         }
       }
     }
-    
+
     reset();
   }
-  
+
   public BratDocument read() throws IOException {
-    
+
     BratDocument doc = null;
-    
+
     if (documentIdIterator.hasNext()) {
       String id = documentIdIterator.next();
-      
+
       InputStream txtIn = null;
       InputStream annIn = null;
-      
+
       try {
         txtIn = new BufferedInputStream(new FileInputStream(id + ".txt"));
         annIn = new BufferedInputStream(new FileInputStream(id + ".ann"));
-        
+
         doc = BratDocument.parseDocument(config, id, txtIn, annIn);
       }
       finally{
@@ -107,7 +107,7 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
           catch (IOException e) {
           }
         }
-        
+
         if (annIn!= null) {
           try {
             annIn.close();
@@ -117,7 +117,7 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
         }
       }
     }
-    
+
     return doc;
   }
 

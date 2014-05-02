@@ -46,7 +46,7 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
    * Creates a new {@link POSSample} stream from a line stream, i.e.
    * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
    * {@link PlainTextByLineStream} object.
-   * 
+   *
    * @param lineStream
    *          a stream of lines as {@link String}
    * @param expandME
@@ -65,7 +65,7 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
 
   /**
    * Creates a new {@link POSSample} stream from a {@link InputStream}
-   * 
+   *
    * @param in
    *          the Corpus {@link InputStream}
    * @param charsetName
@@ -90,10 +90,10 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
       throw new IllegalStateException(e);
     }
   }
-  
+
   /**
    * Creates a new {@link POSSample} stream from a {@link InputStream}
-   * 
+   *
    * @param in
    *          the Corpus {@link InputStream}
    * @param charsetName

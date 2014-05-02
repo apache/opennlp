@@ -54,7 +54,7 @@ public class TokenizerFactory extends BaseToolFactory {
   /**
    * Creates a {@link TokenizerFactory}. Use this constructor to
    * programmatically create a factory.
-   * 
+   *
    * @param languageCode
    *          the language of the natural text
    * @param abbreviationDictionary
@@ -71,7 +71,7 @@ public class TokenizerFactory extends BaseToolFactory {
     this.init(languageCode, abbreviationDictionary,
         useAlphaNumericOptimization, alphaNumericPattern);
   }
-  
+
   protected void init(String languageCode, Dictionary abbreviationDictionary,
       boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {
     this.languageCode = languageCode;
@@ -152,7 +152,7 @@ public class TokenizerFactory extends BaseToolFactory {
 
   /**
    * Gets the alpha numeric pattern.
-   * 
+   *
    * @return the user specified alpha numeric pattern or a default.
    */
   public Pattern getAlphaNumericPattern() {
@@ -186,7 +186,7 @@ public class TokenizerFactory extends BaseToolFactory {
 
   /**
    * Gets the abbreviation dictionary
-   * 
+   *
    * @return null or the abbreviation dictionary
    */
   public Dictionary getAbbreviationDictionary() {

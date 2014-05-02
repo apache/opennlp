@@ -41,7 +41,7 @@ public final class TokenizerMEEvaluatorTool
   public String getShortDescription() {
     return "evaluator for the learnable tokenizer";
   }
-  
+
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -69,7 +69,7 @@ public final class TokenizerMEEvaluatorTool
         // sorry that this can fail
       }
     }
-    
+
     System.out.println("done");
 
     System.out.println();

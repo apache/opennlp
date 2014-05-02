@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 
 package opennlp.uima.postag;
 
@@ -71,7 +71,7 @@ import org.apache.uima.util.ProcessTrace;
 public class POSTaggerTrainer extends CasConsumer_ImplBase {
 
   public static final String TAG_DICTIONARY_NAME = "opennlp.uima.TagDictionaryName";
-  
+
   private UimaContext mContext;
 
   private Type mSentenceType;
@@ -81,37 +81,37 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
   private String mModelName;
 
   private Feature mPOSFeature;
-  
+
   private Logger mLogger;
-  
+
   private List<POSSample> mPOSSamples = new ArrayList<POSSample>();
-  
+
   private String language;
-  
+
   private POSDictionary tagDictionary;
-  
+
   /**
    * Initializes the current instance.
    */
   public void initialize() throws ResourceInitializationException {
-    
+
     super.initialize();
-    
+
     mContext = getUimaContext();
-    
+
     mLogger = mContext.getLogger();
-    
+
     if (mLogger.isLoggable(Level.INFO)) {
       mLogger.log(Level.INFO, "Initializing the OpenNLP " +
           "POSTagger trainer.");
-    } 
-    
+    }
+
     mModelName = CasConsumerUtil.getRequiredStringParameter(mContext,
         UimaUtil.MODEL_PARAMETER);
-    
+
     language = CasConsumerUtil.getRequiredStringParameter(mContext,
         UimaUtil.LANGUAGE_PARAMETER);
-    
+
     String tagDictionaryName = CasConsumerUtil.getOptionalStringParameter(mContext,
         TAG_DICTIONARY_NAME);
 
@@ -132,16 +132,16 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
         }
       }
     }
-  }  
-  
+  }
+
   /**
    * Initialize the current instance with the given type system.
    */
-  public void typeSystemInit(TypeSystem typeSystem) 
+  public void typeSystemInit(TypeSystem typeSystem)
       throws ResourceInitializationException {
     String sentenceTypeName = CasConsumerUtil.getRequiredStringParameter(mContext,
         UimaUtil.SENTENCE_TYPE_PARAMETER);
-    
+
     if (mLogger.isLoggable(Level.INFO)) {
       mLogger.log(Level.INFO, UimaUtil.SENTENCE_TYPE_PARAMETER + ": " +
           sentenceTypeName);
@@ -151,15 +151,15 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
 
     String tokenTypeName = CasConsumerUtil.getRequiredStringParameter(mContext,
         UimaUtil.TOKEN_TYPE_PARAMETER);
-    
+
     mTokenType = CasConsumerUtil.getType(typeSystem, tokenTypeName);
-    
+
     String posFeatureName = CasConsumerUtil.getRequiredStringParameter(mContext,
         UimaUtil.POS_FEATURE_PARAMETER);
-    
+
     mPOSFeature = mTokenType.getFeatureByBaseName(posFeatureName);
   }
-  
+
   /**
    * Process the given CAS object.
    */
@@ -171,62 +171,62 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
       process(cas, sentence);
     }
   }
-  
+
   private void process(CAS tcas, AnnotationFS sentence) {
-    
+
     FSIndex<AnnotationFS> allTokens = tcas.getAnnotationIndex(mTokenType);
 
-    ContainingConstraint containingConstraint = 
+    ContainingConstraint containingConstraint =
         new ContainingConstraint(sentence);
-    
+
     List<String> tokens = new ArrayList<String>();
     List<String> tags = new ArrayList<String>();
-    
+
     Iterator<AnnotationFS> containingTokens = tcas.createFilteredIterator(
         allTokens.iterator(), containingConstraint);
-    
+
     while (containingTokens.hasNext()) {
-      
+
       AnnotationFS tokenAnnotation = (AnnotationFS) containingTokens.next();
-      
+
       String tag = tokenAnnotation.getFeatureValueAsString(mPOSFeature);
-      
+
       tokens.add(tokenAnnotation.getCoveredText().trim());
       tags.add(tag);
     }
-    
+
     mPOSSamples.add(new POSSample(tokens, tags));
   }
-  
+
   /**
    * Called if the processing is finished, this method
    * does the training.
    */
-  public void collectionProcessComplete(ProcessTrace trace) 
+  public void collectionProcessComplete(ProcessTrace trace)
       throws ResourceProcessException, IOException {
-    
+
     GIS.PRINT_MESSAGES = false;
 
-    POSModel posTaggerModel = POSTaggerME.train(language, 
+    POSModel posTaggerModel = POSTaggerME.train(language,
         ObjectStreamUtils.createObjectStream(mPOSSamples),
         ModelType.MAXENT, tagDictionary, null, 100, 5);
-    
+
     // dereference to allow garbage collection
     mPOSSamples = null;
-    
+
     File modelFile = new File(getUimaContextAdmin().getResourceManager()
         .getDataPath() + File.separatorChar + mModelName);
 
     OpennlpUtil.serialize(posTaggerModel, modelFile);
   }
-  
+
   /**
    * The trainer is not stateless.
    */
   public boolean isStateless() {
     return false;
   }
-  
+
   /**
    * Releases allocated resources.
    */

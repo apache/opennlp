@@ -45,7 +45,7 @@ import opennlp.tools.util.eval.Mean;
  * <p>
  * It is possible to use it from an API and access the statistics using the
  * provided getters
- * 
+ *
  */
 public class POSTaggerFineGrainedReportListener implements
     POSTaggerEvaluationMonitor {
@@ -532,7 +532,7 @@ public class POSTaggerFineGrainedReportListener implements
 
     /**
      * Includes a new evaluation data
-     * 
+     *
      * @param tok
      *          the evaluated token
      * @param ref
@@ -839,7 +839,7 @@ public class POSTaggerFineGrainedReportListener implements
 
     /**
      * Creates a new {@link ConfusionMatrixLine}
-     * 
+     *
      * @param ref
      *          the reference column
      */
@@ -849,7 +849,7 @@ public class POSTaggerFineGrainedReportListener implements
 
     /**
      * Increments the counter for the given column and updates the statistics.
-     * 
+     *
      * @param column
      *          the column to be incremented
      */
@@ -865,7 +865,7 @@ public class POSTaggerFineGrainedReportListener implements
 
     /**
      * Gets the calculated accuracy of this element
-     * 
+     *
      * @return the accuracy
      */
     public double getAccuracy() {
@@ -880,7 +880,7 @@ public class POSTaggerFineGrainedReportListener implements
 
     /**
      * Gets the value given a column
-     * 
+     *
      * @param column
      *          the column
      * @return the counter value

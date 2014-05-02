@@ -53,7 +53,7 @@ public final class RegexNameFinder implements TokenNameFinder {
 
   /**
    * use constructor {@link #RegexNameFinder(Pattern[], String)}
-   * for single types, and/or constructor 
+   * for single types, and/or constructor
    * {@link #RegexNameFinder(Map)}
    */
   @Deprecated

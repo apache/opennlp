@@ -73,19 +73,19 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
 
     mCategorizer = new DocumentCategorizerME(model);
   }
-  
-  public void typeSystemInit(TypeSystem typeSystem) 
+
+  public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
     mTokenType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         UimaUtil.SENTENCE_TYPE_PARAMETER);
   }
-  
+
   protected abstract void setBestCategory(CAS cas, String bestCategory);
-  
+
   public void process(CAS cas) {
-    
+
     double result[];
-    
+
     if (mTokenType != null) {
       // TODO:
       // count tokens
@@ -97,9 +97,9 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
     else {
       result = mCategorizer.categorize(cas.getDocumentText());
     }
-    
+
     String bestCategory = mCategorizer.getBestCategory(result);
-    
+
     setBestCategory(cas, bestCategory);
   }
 }

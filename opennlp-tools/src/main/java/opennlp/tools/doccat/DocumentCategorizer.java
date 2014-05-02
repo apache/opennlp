@@ -47,10 +47,10 @@ public interface DocumentCategorizer {
   public double[] categorize(String documentText);
 
   public String getAllResults(double results[]);
-  
-  public Map<String, Double> scoreMap(String text); 
+
+  public Map<String, Double> scoreMap(String text);
 
   public SortedMap<Double, Set<String>> sortedScoreMap(String text);
-  
+
 }
 

@@ -125,12 +125,12 @@ public class Dictionary implements Iterable<StringList> {
 
   /**
    * Loads a Dictionary from a XML file.
-   * 
+   *
    * @deprecated This constructor is deprecated. Passing the case sensitivity
    *             flag has no effect. Use
    *             {@link Dictionary#Dictionary(InputStream)} instead and set the
    *             case sensitivity during the dictionary creation.
-   * 
+   *
    * @param in
    *          the dictionary in its XML format
    * @param caseSensitive
@@ -152,17 +152,17 @@ public class Dictionary implements Iterable<StringList> {
       minTokenCount = Math.min(minTokenCount, tokens.size());
       maxTokenCount = Math.max(maxTokenCount, tokens.size());
   }
-  
+
   /**
-   * 
+   *
    * @return minimum token count in the dictionary
    */
   public int getMinTokenCount() {
       return minTokenCount;
   }
-  
+
   /**
-   * 
+   *
    * @return maximum token count in the dictionary
    */
   public int getMaxTokenCount() {
@@ -240,7 +240,7 @@ public class Dictionary implements Iterable<StringList> {
         public Entry next() {
 
           StringList tokens = dictionaryIterator.next();
-          
+
           return new Entry(tokens, new Attributes());
         }
 
@@ -321,10 +321,10 @@ public class Dictionary implements Iterable<StringList> {
   /**
    * Gets this dictionary as a {@code Set<String>}. Only {@code iterator()},
    * {@code size()} and {@code contains(Object)} methods are implemented.
-   * 
+   *
    * If this dictionary entries are multi tokens only the first token of the
    * entry will be part of the Set.
-   * 
+   *
    * @return a Set containing the entries of this dictionary
    */
   public Set<String> asStringSet() {

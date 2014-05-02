@@ -20,7 +20,7 @@ package opennlp.tools.parser;
 public enum ParserType {
   CHUNKING,
   TREEINSERT;
-  
+
   public static ParserType parse(String type) {
     if (ParserType.CHUNKING.name().equals(type)) {
       return ParserType.CHUNKING;

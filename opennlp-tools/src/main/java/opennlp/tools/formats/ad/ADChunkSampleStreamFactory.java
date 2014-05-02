@@ -56,7 +56,7 @@ public class ADChunkSampleStreamFactory extends LanguageSampleStreamFactory<Chun
     @ParameterDescription(valueName = "start", description = "index of first sentence")
     @OptionalParameter
     Integer getStart();
-    
+
     @ParameterDescription(valueName = "end", description = "index of last sentence")
     @OptionalParameter
     Integer getEnd();
@@ -78,7 +78,7 @@ public class ADChunkSampleStreamFactory extends LanguageSampleStreamFactory<Chun
     language = params.getLang();
 
     InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-    
+
     ObjectStream<String> lineStream=null;
     try {
       lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
@@ -91,11 +91,11 @@ public class ADChunkSampleStreamFactory extends LanguageSampleStreamFactory<Chun
     if(params.getStart() != null && params.getStart() > -1) {
       sampleStream.setStart(params.getStart());
     }
-    
+
     if(params.getEnd() != null && params.getEnd() > -1) {
       sampleStream.setEnd(params.getEnd());
     }
-    
+
     return sampleStream;
   }
 }

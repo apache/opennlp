@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -41,7 +41,7 @@ public class DomainToModelMap {
 
   /**
    * Sets the model for the given domain.
-   * 
+   *
    * @param domain
    *          The ModelDomain object which keys to the model.
    * @param model
@@ -53,7 +53,7 @@ public class DomainToModelMap {
 
   /**
    * Get the model mapped to by the given ModelDomain key.
-   * 
+   *
    * @param domain
    *          The ModelDomain object which keys to the desired model.
    * @return The MaxentModel corresponding to the given domain.
@@ -69,7 +69,7 @@ public class DomainToModelMap {
 
   /**
    * Removes the mapping for this ModelDomain key from this map if present.
-   * 
+   *
    * @param domain
    *          The ModelDomain key whose mapping is to be removed from the map.
    */
@@ -79,7 +79,7 @@ public class DomainToModelMap {
 
   /**
    * A set view of the ModelDomain keys contained in this map.
-   * 
+   *
    * @return a set view of the ModelDomain keys contained in this map
    */
   public Set keySet() {

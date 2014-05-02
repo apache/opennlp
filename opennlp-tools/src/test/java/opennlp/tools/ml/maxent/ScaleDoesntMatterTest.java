@@ -34,7 +34,7 @@ public class ScaleDoesntMatterTest extends TestCase {
    * predicates doesn't matter when it comes the probability assigned to each
    * outcome. Strangely, if we use (1,2) and (10,20) there's no difference. If
    * we use (0.1,0.2) and (10,20) there is a difference.
-   * 
+   *
    * @throws Exception
    */
   public void testScaleResults() throws Exception {

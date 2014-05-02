@@ -25,11 +25,11 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.SharedResourceObject;
 
 public abstract class AbstractModelResource<T> implements SharedResourceObject {
-	
+
 	protected T model;
-	
+
 	protected abstract T loadModel(InputStream in) throws IOException;
-	
+
 	public void load(DataResource resource) throws ResourceInitializationException {
 		try {
 		    model = loadModel(resource.getInputStream());

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -32,19 +32,19 @@ import opennlp.tools.ml.model.DataReader;
  *
  */
 public class PerceptronModelReader extends AbstractModelReader {
-  
+
     public PerceptronModelReader(File file) throws IOException {
       super(file);
     }
-  
+
     public PerceptronModelReader(DataReader dataReader) {
       super(dataReader);
     }
-    
+
     /**
      * Retrieve a model from disk. It assumes that models are saved in the
      * following sequence:
-     * 
+     *
      * <br>Perceptron (model type identifier)
      * <br>1. # of parameters (int)
      * <br>2. # of outcomes (int)
@@ -67,7 +67,7 @@ public class PerceptronModelReader extends AbstractModelReader {
       int[][] outcomePatterns = getOutcomePatterns();
       String[] predLabels = getPredicates();
       Context[] params = getParameters(outcomePatterns);
-    
+
       return new PerceptronModel(params,
                           predLabels,
                           outcomeLabels);

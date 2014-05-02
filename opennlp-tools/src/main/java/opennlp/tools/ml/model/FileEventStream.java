@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -29,14 +29,14 @@ import java.util.StringTokenizer;
 
 import opennlp.tools.util.ObjectStream;
 
-/** 
+/**
  * Class for using a file of events as an event stream.  The format of the file is one event perline with
  * each line consisting of outcome followed by contexts (space delimited).
  */
 public class FileEventStream implements ObjectStream<Event> {
 
   protected BufferedReader reader;
-  
+
   /**
    * Creates a new file event stream from the specified file name.
    * @param fileName the name fo the file containing the events.
@@ -50,11 +50,11 @@ public class FileEventStream implements ObjectStream<Event> {
       reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName),encoding));
     }
   }
-  
+
   public FileEventStream(String fileName) throws IOException {
     this(fileName,null);
   }
-    
+
   /**
    * Creates a new file event stream from the specified file.
    * @param file the file containing the events.
@@ -63,7 +63,7 @@ public class FileEventStream implements ObjectStream<Event> {
   public FileEventStream(File file) throws IOException {
     reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF8"));
   }
-  
+
   @Override
   public Event read() throws IOException {
     String line;
@@ -75,14 +75,14 @@ public class FileEventStream implements ObjectStream<Event> {
       for (int ci = 0; ci < count; ci++) {
         context[ci] = st.nextToken();
       }
-      
+
       return new Event(outcome, context);
     }
     else {
       return null;
     }
   }
-  
+
   public void close() throws IOException {
     reader.close();
   }

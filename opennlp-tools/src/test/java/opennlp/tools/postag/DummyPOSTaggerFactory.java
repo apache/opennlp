@@ -29,11 +29,11 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.UncloseableInputStream;
 
 public class DummyPOSTaggerFactory extends POSTaggerFactory {
-  
+
 
   private static final String DUMMY_POSDICT = "DUMMY_POSDICT";
   private DummyPOSDictionary dict;
-  
+
   public DummyPOSTaggerFactory() {
   }
 
@@ -41,31 +41,31 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
     super(ngramDictionary, null);
     this.dict = posDictionary;
   }
-  
+
   @Override
   public SequenceValidator<String> getSequenceValidator() {
     return new DummyPOSSequenceValidator();
   }
-  
+
   @Override
   public DummyPOSDictionary getTagDictionary() {
     return (DummyPOSDictionary) artifactProvider.getArtifact(DUMMY_POSDICT);
   }
-  
+
   @Override
   public POSContextGenerator getPOSContextGenerator() {
     return new DummyPOSContextGenerator(this.ngramDictionary);
   }
-  
+
   @Override
   @SuppressWarnings("rawtypes")
   public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
     Map<String, ArtifactSerializer> serializers = super.createArtifactSerializersMap();
-    
+
     serializers.put(DUMMY_POSDICT, new DummyPOSDictionarySerializer());
     return serializers;
   }
-  
+
   @Override
   public Map<String, Object> createArtifactMap() {
     Map<String, Object> artifactMap = super.createArtifactMap();
@@ -73,15 +73,15 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
       artifactMap.put(DUMMY_POSDICT, this.dict);
     return artifactMap;
   }
-  
+
   static class DummyPOSContextGenerator extends DefaultPOSContextGenerator {
 
     public DummyPOSContextGenerator(Dictionary dict) {
       super(dict);
     }
-    
+
   }
-  
+
   static class DummyPOSDictionarySerializer implements ArtifactSerializer<DummyPOSDictionary> {
 
     public DummyPOSDictionary create(InputStream in) throws IOException,
@@ -94,20 +94,20 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
       artifact.serialize(out);
     }
   }
-  
+
   static class DummyPOSSequenceValidator implements SequenceValidator<String> {
 
     public boolean validSequence(int i, String[] inputSequence,
         String[] outcomesSequence, String outcome) {
       return true;
     }
-    
+
   }
-  
+
   static class DummyPOSDictionary extends POSDictionary {
 
-    private POSDictionary dict; 
-    
+    private POSDictionary dict;
+
     public DummyPOSDictionary(POSDictionary dict) {
       this.dict = dict;
     }
@@ -126,5 +126,5 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
     }
 
   }
-  
+
 }

@@ -24,17 +24,17 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
  * Common evaluation parameters.
- * 
+ *
  * Note: Do not use this class, internal use only!
  */
 public interface EvaluatorParams {
-  
+
   @ParameterDescription(valueName = "model", description = "the model file to be evaluated.")
   File getModel();
-  
+
   @ParameterDescription(valueName = "true|false",
       description = "if true will print false negatives and false positives.")
   @OptionalParameter(defaultValue="false")
   Boolean getMisclassified();
-  
+
 }

@@ -37,10 +37,10 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
   private SAXParser saxParser;
 
   private List<Parse> parses = new ArrayList<Parse>();
-  
+
   protected ConstitParseSampleStream(ObjectStream<byte[]> samples) {
     super(samples);
-    
+
     SAXParserFactory factory = SAXParserFactory.newInstance();
     try {
       saxParser = factory.newSAXParser();
@@ -52,13 +52,13 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
   }
 
   public Parse read() throws IOException {
-    
-    
+
+
     if (parses.isEmpty()) {
       byte[] xmlbytes = samples.read();
-      
+
       if (xmlbytes != null) {
-      
+
         List<Parse> producedParses = new ArrayList<Parse>();
         try {
           saxParser.parse(new ByteArrayInputStream(xmlbytes), new ConstitDocumentHandler(producedParses));
@@ -66,11 +66,11 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
           //TODO update after Java6 upgrade
           throw (IOException) new IOException(e.getMessage()).initCause(e);
         }
-        
+
         parses.addAll(producedParses);
       }
     }
-    
+
     if (parses.size() > 0) {
       return parses.remove(0);
     }

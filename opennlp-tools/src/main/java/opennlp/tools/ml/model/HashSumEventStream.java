@@ -29,10 +29,10 @@ import opennlp.tools.util.ObjectStream;
 public class HashSumEventStream extends AbstractObjectStream<Event> {
 
   private MessageDigest digest;
-  
+
   public HashSumEventStream(ObjectStream<Event> eventStream) {
     super(eventStream);
-    
+
     try {
       digest = MessageDigest.getInstance("MD5");
     } catch (NoSuchAlgorithmException e) {
@@ -40,11 +40,11 @@ public class HashSumEventStream extends AbstractObjectStream<Event> {
      throw new IllegalStateException(e);
     }
   }
-  
+
   @Override
   public Event read() throws IOException {
     Event event = super.read();
-    
+
     if (event != null) {
       try {
         digest.update(event.toString().getBytes("UTF-8"));
@@ -53,14 +53,14 @@ public class HashSumEventStream extends AbstractObjectStream<Event> {
         throw new IllegalStateException("UTF-8 encoding is not available!", e);
       }
     }
-    
+
     return event;
   }
-  
+
   /**
    * Calculates the hash sum of the stream. The method must be
    * called after the stream is completely consumed.
-   * 
+   *
    * @return the hash sum
    * @throws IllegalStateException if the stream is not consumed completely,
    * completely means that hasNext() returns false
@@ -68,7 +68,7 @@ public class HashSumEventStream extends AbstractObjectStream<Event> {
   public BigInteger calculateHashSum() {
     return new BigInteger(1, digest.digest());
   }
-  
+
   public void remove() {
   }
 }

@@ -60,7 +60,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
       artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
     }
   }
-  
+
   private static class HeadRule {
     public boolean leftToRight;
     public String[] tags;
@@ -74,7 +74,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
 
       this.tags = tags;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
       if (obj == this) {
@@ -82,8 +82,8 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
       }
       else if (obj instanceof HeadRule) {
         HeadRule rule = (HeadRule) obj;
-        
-        return (rule.leftToRight == leftToRight) && 
+
+        return (rule.leftToRight == leftToRight) &&
             Arrays.equals(rule.tags, tags);
       }
       else {
@@ -241,10 +241,10 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
    * Writes the head rules to the writer in a format suitable for loading
    * the head rules again with the constructor. The encoding must be
    * taken into account while working with the writer and reader.
-   * <p> 
+   * <p>
    * After the entries have been written, the writer is flushed.
    * The writer remains open after this method returns.
-   * 
+   *
    * @param writer
    * @throws IOException
    */
@@ -276,10 +276,10 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
 
       writer.write('\n');
     }
-    
+
     writer.flush();
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (obj == this) {
@@ -287,7 +287,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
     }
     else if (obj instanceof HeadRules) {
       HeadRules rules = (HeadRules) obj;
-      
+
       return rules.headRules.equals(headRules) &&
           rules.punctSet.equals(punctSet);
     }

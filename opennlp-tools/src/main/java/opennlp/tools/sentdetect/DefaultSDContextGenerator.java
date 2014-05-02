@@ -79,15 +79,15 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     if (c == '\r') {
       return "<CR>";
     }
-    
+
     return new String(new char[]{c});
   }
-  
+
   /* (non-Javadoc)
    * @see opennlp.tools.sentdetect.SDContextGenerator#getContext(java.lang.StringBuffer, int)
    */
   public String[] getContext(CharSequence sb, int position) {
-    
+
     /**
      * String preceding the eos character in the eos token.
      */
@@ -172,7 +172,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    * @param suffix String following the eos character in the eos token.
    * @param previous Space delimited token preceding token containing eos character.
    * @param next Space delimited token following token containing eos character.
-   * 
+   *
    * @deprecated use {@link #collectFeatures(String, String, String, String, Character)} instead.
    */
   protected void collectFeatures(String prefix, String suffix, String previous, String next) {
@@ -266,7 +266,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     }
     return 0;
   }
-  
+
   /**
    * Finds the index of the nearest space after a specified index.
    *

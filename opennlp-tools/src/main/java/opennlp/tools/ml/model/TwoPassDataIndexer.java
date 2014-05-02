@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -40,7 +40,7 @@ import opennlp.tools.util.ObjectStream;
 /**
  * Collecting event and context counts by making two passes over the events.  The
  * first pass determines which contexts will be used by the model, and the
- * second pass creates the events in memory containing only the contexts which 
+ * second pass creates the events in memory containing only the contexts which
  * will be used.  This greatly reduces the amount of memory required for storing
  * the events.  During the first pass a temporary event file is created which
  * is read during the second pass.
@@ -96,7 +96,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
       tmp.delete();
       System.out.println("done.");
 
-      if (sort) { 
+      if (sort) {
         System.out.print("Sorting and merging events... ");
       }
       else {
@@ -149,7 +149,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
     int outcomeCount = 0;
     List<ComparableEvent> eventsToCompare = new ArrayList<ComparableEvent>(numEvents);
     List<Integer> indexedContext = new ArrayList<Integer>();
-    
+
     Event ev;
     while ((ev = es.read()) != null) {
       String[] econtext = ev.getContext();

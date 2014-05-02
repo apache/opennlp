@@ -47,7 +47,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
   private Map<String, String[]> dictionary;
 
   private boolean caseSensitive = true;
-  
+
   /**
    * Initializes an empty case sensitive {@link POSDictionary}.
    */
@@ -70,7 +70,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
    * @param file The file name for the tag dictionary.
    *
    * @throws IOException when the specified file can not be read.
-   * 
+   *
    * @deprecated Use {@link POSDictionary#create(InputStream)} instead, old format might removed.
    */
   @Deprecated
@@ -86,7 +86,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
    * @param caseSensitive Specifies whether the tag dictionary is case sensitive or not.
    *
    * @throws IOException when the specified file can not be read.
-   * 
+   *
    * @deprecated Use {@link POSDictionary#create(InputStream)} instead, old format might removed.
    */
   @Deprecated
@@ -103,7 +103,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
    * @param caseSensitive Specifies whether the tag dictionary is case sensitive or not.
    *
    * @throws IOException when the specified file can not be read.
-   * 
+   *
    * @deprecated Use {@link POSDictionary#create(InputStream)} instead, old format might removed.
    */
   @Deprecated
@@ -118,7 +118,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
    * @param caseSensitive Specifies whether the tag dictionary is case sensitive or not.
    *
    * @throws IOException when the specified file can not be read.
-   * 
+   *
    * @deprecated Use {@link POSDictionary#create(InputStream)} instead, old format might removed.
    */
   @Deprecated
@@ -161,12 +161,12 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
    * Associates the specified tags with the specified word. If the dictionary
    * previously contained the word, the old tags are replaced by the specified
    * ones.
-   * 
+   *
    * @param word
    *          The word to be added to the dictionary.
    * @param tags
    *          The set of tags associated with the specified word.
-   * 
+   *
    * @deprecated Use {@link #put(String, String[])} instead
    */
   void addTags(String word, String... tags) {
@@ -306,18 +306,18 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
       }});
 
     newPosDict.caseSensitive = isCaseSensitive;
-    
+
     // TODO: The dictionary API needs to be improved to do this better!
     if (!isCaseSensitive) {
       Map<String, String[]> lowerCasedDictionary = new HashMap<String, String[]>();
-      
+
       for (Map.Entry<String, String[]> entry : newPosDict.dictionary.entrySet()) {
         lowerCasedDictionary.put(StringUtil.toLowerCase(entry.getKey()), entry.getValue());
       }
-      
+
       newPosDict.dictionary = lowerCasedDictionary;
     }
-    
+
     return newPosDict;
   }
 

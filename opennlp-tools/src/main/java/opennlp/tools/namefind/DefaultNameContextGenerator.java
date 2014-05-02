@@ -108,7 +108,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
    * @param tokens The tokens of the sentence.  The <code>toString</code> methods of these objects should return the token text.
    * @param preds The previous decisions made in the tagging of this sequence.  Only indices less than i will be examined.
    * @param additionalContext Addition features which may be based on a context outside of the sentence.
-   * 
+   *
    * @return the context for finding names at the specified index.
    */
   public String[] getContext(int index, String[] tokens, String[] preds, Object[] additionalContext) {
@@ -127,7 +127,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
       if (index > 1){
         ppo = preds[index-2];
       }
-  
+
       if (index > 0) {
         po = preds[index-1];
       }
@@ -136,7 +136,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
       features.add("powf=" + po + "," + FeatureGeneratorUtil.tokenFeature(tokens[index]));
       features.add("ppo=" + ppo);
     }
-    
+
     return features.toArray(new String[features.size()]);
   }
 }

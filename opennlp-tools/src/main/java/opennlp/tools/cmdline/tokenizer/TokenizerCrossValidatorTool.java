@@ -34,7 +34,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class TokenizerCrossValidatorTool
     extends AbstractCrossValidatorTool<TokenSample, CVToolParams> {
-  
+
   interface CVToolParams extends CVParams, TrainingParams {
   }
 
@@ -45,7 +45,7 @@ public final class TokenizerCrossValidatorTool
   public String getShortDescription() {
     return "K-fold cross validator for the learnable tokenizer";
   }
-  
+
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -55,12 +55,12 @@ public final class TokenizerCrossValidatorTool
     }
 
     TokenizerCrossValidator validator;
-    
+
     TokenizerEvaluationMonitor listener = null;
     if (params.getMisclassified()) {
       listener = new TokenEvaluationErrorListener();
     }
-    
+
     try {
       Dictionary dict = TokenizerTrainerTool.loadDict(params.getAbbDict());
 
@@ -83,9 +83,9 @@ public final class TokenizerCrossValidatorTool
         // sorry that this can fail
       }
     }
-    
+
     FMeasure result = validator.getFMeasure();
-    
+
     System.out.println(result.toString());
   }
 }

@@ -49,7 +49,7 @@ public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
   public WordTagSampleStream(ObjectStream<String> sentences) {
     super(sentences);
   }
-  
+
   /**
    * Parses the next sentence and return the next
    * {@link POSSample} object.
@@ -57,7 +57,7 @@ public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
    * If an error occurs an empty {@link POSSample} object is returned
    * and an warning message is logged. Usually it does not matter if one
    * of many sentences is ignored.
-   * 
+   *
    * TODO: An exception in error case should be thrown.
    */
   public POSSample read() throws IOException {
@@ -69,14 +69,14 @@ public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
       try {
         sample = POSSample.parse(sentence);
       } catch (InvalidFormatException e) {
-  
+
         if (logger.isLoggable(Level.WARNING)) {
           logger.warning("Error during parsing, ignoring sentence: " + sentence);
         }
-  
+
         sample = new POSSample(new String[]{}, new String[]{});
       }
-  
+
       return sample;
     }
     else {

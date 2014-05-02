@@ -23,5 +23,5 @@ public interface LanguageParams {
 
   @ParameterDescription(valueName = "language", description = "language which is being processed.")
   String getLang();
-  
+
 }

@@ -37,10 +37,10 @@ public class POSTaggerMETest {
   private static ObjectStream<POSSample> createSampleStream() throws IOException {
     InputStream in = POSTaggerMETest.class.getClassLoader().getResourceAsStream(
         "opennlp/tools/postag/AnnotatedSentences.txt");
-    
+
     return new WordTagSampleStream((new InputStreamReader(in)));
   }
-  
+
   /**
    * Trains a POSModel from the annotated test data.
    *
@@ -75,11 +75,11 @@ public class POSTaggerMETest {
     assertEquals("VBN", tags[4]);
     assertEquals(".", tags[5]);
   }
-  
+
   @Test
   public void testBuildNGramDictionary() throws IOException {
     ObjectStream<POSSample> samples = createSampleStream();
-    
+
     POSTaggerME.buildNGramDictionary(samples, 0);
   }
 }

@@ -35,47 +35,47 @@ public class DictionaryNameFinder extends AbstractNameFinder {
   /**
    * Initializes a new instance.
    *
-   * Note: Use {@link #initialize() } to initialize 
+   * Note: Use {@link #initialize() } to initialize
    * this instance. Not use the constructor.
    */
   public DictionaryNameFinder() {
       super("OpenNLP Dictionary Name annotator");
   }
-  
+
   /**
    * Initializes the current instance with the given context.
-   * 
+   *
    * Note: Do all initialization in this method, do not use the constructor.
    */
   public void initialize()
       throws ResourceInitializationException {
-  
+
     Dictionary nameFinderDictionary;
-    
+
     try {
       String modelName = AnnotatorUtil.getRequiredStringParameter(context,
           UimaUtil.DICTIONARY_PARAMETER);
-      
+
       InputStream inModel = AnnotatorUtil
           .getResourceAsStream(context, modelName);
-      
+
       nameFinderDictionary = new Dictionary(inModel);
 
     } catch (IOException e) {
       throw new ResourceInitializationException(
-	      ExceptionMessages.MESSAGE_CATALOG, 
+	      ExceptionMessages.MESSAGE_CATALOG,
 	      ExceptionMessages.IO_ERROR_DICTIONARY_READING,
 	      new Object[] {e.getMessage()});
     }
-    
-    mNameFinder = 
+
+    mNameFinder =
         new opennlp.tools.namefind.DictionaryNameFinder(nameFinderDictionary);
   }
-  
+
   protected Span[] find(CAS cas, String[] tokens) {
     return mNameFinder.find(tokens);
   }
-  
+
   /**
    * Releases allocated resources.
    */
