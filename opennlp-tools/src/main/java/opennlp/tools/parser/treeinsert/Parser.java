@@ -486,7 +486,7 @@ public class Parser extends AbstractBottomUpParser {
     // TODO: Remove cast for HeadRules
     return new ParserModel(languageCode, buildModel, checkModel,
         attachModel, posModel, chunkModel,
-        (opennlp.tools.parser.lang.en.HeadRules) rules, ParserType.TREEINSERT, manifestInfoEntries);
+        (opennlp.tools.parser.HeadRules) rules, ParserType.TREEINSERT, manifestInfoEntries);
   }
 
   public static ParserModel train(String languageCode,
