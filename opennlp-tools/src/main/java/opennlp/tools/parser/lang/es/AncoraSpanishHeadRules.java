@@ -1,18 +1,18 @@
 /*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
- *Copyright 2013 Rodrigo Agerri
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -43,17 +43,19 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
 /**
- * Class for storing the Ancora Spanish head rules associated with parsing. The headrules
- * are specified in $src/main/resources/es-head-rules
+ * Class for storing the Ancora Spanish head rules associated with parsing. In this class 
+ * headrules for noun phrases are specified. The rest of the rules are 
+ * in opennlp-tools/lang/es/parser/es-head-rules
  *
  * NOTE: This class has been adapted from opennlp.tools.parser.lang.en.HeadRules
  *
  * The main change is the constituents search direction in the first for loop.
  *
- * Note also the change in the return of the getHead() method: In Apache OpenNLP
- * lang.en.HeadRules class: return constituents[ci].getHead(); Now: return constituents[ci];
+ * Note also the change in the return of the getHead() method: 
+ * In the lang.en.HeadRules class: return constituents[ci].getHead(); 
+ * Now: return constituents[ci];
  *
- * Other changes include removal of deprecated methods we do not need to use.
+ * Other changes include removal of deprecated methods.
  *
  */
 public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, SerializableArtifact {
