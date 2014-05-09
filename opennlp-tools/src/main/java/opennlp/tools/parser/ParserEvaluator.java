@@ -23,28 +23,49 @@ import java.util.Stack;
 
 import opennlp.tools.cmdline.parser.ParserTool;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.eval.ParseEval;
 import opennlp.tools.util.eval.Evaluator;
-import opennlp.tools.util.eval.FMeasure;
 
+/**
+ * Class for Parsing Evaluation. Hopefully to be merged
+ * into FMeasure soon.
+ *
+ */
 public class ParserEvaluator extends Evaluator<Parse> {
 
-  private FMeasure fmeasure = new FMeasure();
-
+  /**
+   * fmeasure.
+   */
+  private ParseEval fmeasure = new ParseEval();
+  /**
+   * The parser to evaluate.
+   */
   private final Parser parser;
 
-  public ParserEvaluator(Parser parser, ParserEvaluationMonitor... monitors) {
+  /**
+   * Construct a parser with some evaluation monitors.
+   * @param aParser
+   * @param monitors the evaluation monitors
+   */
+  public ParserEvaluator(final Parser aParser, final ParserEvaluationMonitor... monitors) {
     super(monitors);
-    this.parser = parser;
+    this.parser = aParser;
   }
 
-  private static Span[] getConstituencySpans(Parse parse) {
+  /**
+   * Obtain {@code Span}s for every parse in the sentence.
+   * @param parse
+   * @return an array containing every span for the parse
+   */
+  private static Span[] getConstituencySpans(final Parse parse) {
 
     Stack<Parse> stack = new Stack<Parse>();
 
     if (parse.getChildCount() > 0) {
-      stack.add(parse.getChildren()[0]);
+      for (Parse child : parse.getChildren()) {
+        stack.push(child);
+      }
     }
-
     List<Span> consts = new ArrayList<Span>();
 
     while (!stack.isEmpty()) {
@@ -65,11 +86,11 @@ public class ParserEvaluator extends Evaluator<Parse> {
   }
 
   @Override
-  protected Parse processSample(Parse reference) {
+  protected final Parse processSample(final Parse reference) {
 
     String sentenceText = reference.getText();
 
-    Parse predictions[] = ParserTool.parseLine(sentenceText, parser, 1);
+    Parse[] predictions = ParserTool.parseLine(sentenceText, parser, 1);
 
     Parse prediction = null;
     if (predictions.length > 0) {
@@ -81,21 +102,29 @@ public class ParserEvaluator extends Evaluator<Parse> {
     return prediction;
   }
 
-  public FMeasure getFMeasure() {
+  /**
+   * It returns the fmeasure result.
+   * @return the fmeasure value
+   */
+  public final ParseEval getFMeasure() {
     return fmeasure;
   }
 
-  public static void main(String[] args) {
-
-    // TODO: Move this to a test case!
+  /**
+   * Main method to show the example of running the evaluator.
+   * Moved to a test case soon, hopefully.
+   * @param args
+   */
+  // TODO: Move this to a test case!
+  public static void main(final String[] args) {
 
     String goldParseString = "(TOP (S (NP (NNS Sales) (NNS executives)) (VP (VBD were) (VP (VBG examing) (NP (DT the) (NNS figures)) (PP (IN with) (NP (JJ great) (NN care))) ))  (NP (NN yesterday)) (. .) ))";
-    Span goldConsts[] = getConstituencySpans(Parse.parseParse(goldParseString));
+    Span[] goldConsts = getConstituencySpans(Parse.parseParse(goldParseString));
 
     String testParseString = "(TOP (S (NP (NNS Sales) (NNS executives)) (VP (VBD were) (VP (VBG examing) (NP (DT the) (NNS figures)) (PP (IN with) (NP (JJ great) (NN care) (NN yesterday))) ))  (. .) ))";
-    Span testConsts[] = getConstituencySpans(Parse.parseParse(testParseString));
+    Span[] testConsts = getConstituencySpans(Parse.parseParse(testParseString));
 
-    FMeasure measure = new FMeasure();
+    ParseEval measure = new ParseEval();
     measure.updateScores(goldConsts, testConsts);
 
     // Expected output:
