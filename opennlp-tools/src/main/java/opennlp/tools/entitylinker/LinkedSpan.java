@@ -24,6 +24,7 @@ import opennlp.tools.util.Span;
  * An "default" extended span that holds additional information about the Span
  *
  *
+ * @param <T>
  */
 public class LinkedSpan<T extends BaseLink> extends Span {
 
@@ -33,6 +34,11 @@ public class LinkedSpan<T extends BaseLink> extends Span {
 
   public LinkedSpan(ArrayList<T> linkedEntries, int s, int e, String type) {
     super(s, e, type);
+    this.linkedEntries = linkedEntries;
+  }
+
+  public LinkedSpan(ArrayList<T> linkedEntries, int s, int e, String type, double prob) {
+    super(s, e, type, prob);
     this.linkedEntries = linkedEntries;
   }
 
@@ -78,6 +84,7 @@ public class LinkedSpan<T extends BaseLink> extends Span {
   /**
    * sets the id or index of the sentence from which this span was extracted
    *
+   * @param sentenceid
    */
   public void setSentenceid(int sentenceid) {
     this.sentenceid = sentenceid;

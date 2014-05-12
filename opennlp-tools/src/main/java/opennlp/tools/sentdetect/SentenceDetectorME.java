@@ -254,6 +254,14 @@ public class SentenceDetectorME implements SentenceDetector {
         sentProbs.add(1d);
       }
     }
+    /**
+     * set the prob for each span
+     */
+    for (int i = 0; i < spans.length; i++) {
+      double prob = sentProbs.get(i);
+      spans[i].setProb(prob);      
+      
+    }
 
     return spans;
   }
