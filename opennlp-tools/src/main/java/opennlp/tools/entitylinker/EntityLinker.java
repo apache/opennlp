@@ -64,6 +64,7 @@ public interface EntityLinker<T extends Span> {
    *                         same sentence.Similar in nature to
    *                         Map&lt;SentenceIndex,List&lt;Name Spans For This
    *                         Sentence's Tokens&gt;&gt; @ return
+   * @return 
    */
   List<T> find(String doctext, Span[] sentences, String[][] tokensBySentence, Span[][] namesBySentence);
 

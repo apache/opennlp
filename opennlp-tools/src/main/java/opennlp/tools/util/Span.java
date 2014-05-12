@@ -26,7 +26,7 @@ public class Span implements Comparable<Span> {
 
   private final int start;
   private final int end;
-
+  private double prob=0d;//default is 0
   private final String type;
 
   /**
@@ -53,7 +53,24 @@ public class Span implements Comparable<Span> {
     end = e;
     this.type = type;
   }
+ public Span(int s, int e, String type, double prob) {
 
+    if (s < 0) {
+      throw new IllegalArgumentException("start index must be zero or greater: " + s);
+    }
+    if (e < 0) {
+      throw new IllegalArgumentException("end index must be zero or greater: " + e);
+    }
+    if (s > e) {
+      throw new IllegalArgumentException("start index must not be larger than end index: " +
+          "start=" + s + ", end=" + e);
+    }
+
+    start = s;
+    end = e;
+    this.prob=prob;
+    this.type = type;
+  }
   /**
    * Initializes a new Span Object.
    *
@@ -72,7 +89,7 @@ public class Span implements Comparable<Span> {
    * @param offset
    */
   public Span(Span span, int offset) {
-    this(span.start + offset, span.end + offset, span.getType());
+    this(span.start + offset, span.end + offset, span.getType(), span.getProb());
   }
 
   /**
@@ -354,5 +371,13 @@ public class Span implements Comparable<Span> {
       chunks[si]=cb.substring(0, cb.length()-1);
     }
     return chunks;
+  }
+
+  public double getProb() {
+    return prob;
+  }
+
+  public void setProb(double prob) {
+    this.prob = prob;
   }
 }
