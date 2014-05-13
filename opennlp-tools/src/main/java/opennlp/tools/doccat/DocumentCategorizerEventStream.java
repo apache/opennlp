@@ -73,7 +73,7 @@ public class DocumentCategorizerEventStream extends AbstractEventStream<Document
         isVirgin = false;
 
         return new Event(sample.getCategory(),
-            mContextGenerator.getContext(sample.getText()));
+            mContextGenerator.getContext(sample.getText(), sample.getExtraInformation()));
       }
 
       public void remove() {

@@ -20,6 +20,7 @@ package opennlp.tools.doccat;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  *
@@ -32,13 +33,13 @@ class DocumentCategorizerContextGenerator {
     mFeatureGenerators = featureGenerators;
   }
 
-  public String[] getContext(String text[]) {
+  public String[] getContext(String text[], Map<String, Object> extraInformation) {
 
     Collection<String> context = new LinkedList<String>();
 
     for (int i = 0; i < mFeatureGenerators.length; i++) {
       Collection<String> extractedFeatures =
-          mFeatureGenerators[i].extractFeatures(text);
+          mFeatureGenerators[i].extractFeatures(text, extraInformation);
       context.addAll(extractedFeatures);
     }
 

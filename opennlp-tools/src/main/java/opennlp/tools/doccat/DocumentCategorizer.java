@@ -36,6 +36,8 @@ public interface DocumentCategorizer {
    */
   public double[] categorize(String text[]);
 
+  public double[] categorize(String text[], Map<String, Object> extraInformation);
+
   public String getBestCategory(double[] outcome);
 
   public int getIndex(String category);
@@ -45,6 +47,8 @@ public interface DocumentCategorizer {
   public int getNumberOfCategories();
 
   public double[] categorize(String documentText);
+
+  public double[] categorize(String documentText, Map<String, Object> extraInformation);
 
   public String getAllResults(double results[]);
 

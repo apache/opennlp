@@ -20,10 +20,11 @@ package opennlp.tools.doccat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class NGramFeatureGenerator implements FeatureGenerator {
 
-  public Collection<String> extractFeatures(String[] text) {
+  public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInfo) {
 
     List<String> features = new ArrayList<String>();
 

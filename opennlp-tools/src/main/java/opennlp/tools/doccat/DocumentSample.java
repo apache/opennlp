@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 
@@ -32,12 +33,17 @@ public class DocumentSample {
 
   private final String category;
   private final List<String> text;
+  private final Map<String, Object> extraInformation;
 
   public DocumentSample(String category, String text) {
     this(category, WhitespaceTokenizer.INSTANCE.tokenize(text));
   }
 
   public DocumentSample(String category, String text[]) {
+    this(category, text, null);
+  }
+
+  public DocumentSample(String category, String text[], Map<String, Object> extraInformation) {
     if (category == null) {
       throw new IllegalArgumentException("category must not be null");
     }
@@ -47,6 +53,12 @@ public class DocumentSample {
 
     this.category = category;
     this.text = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(text)));
+
+    if(extraInformation == null) {
+      this.extraInformation = Collections.emptyMap();
+    } else {
+      this.extraInformation = extraInformation;
+    }
   }
 
   public String getCategory() {
@@ -55,6 +67,10 @@ public class DocumentSample {
 
   public String[] getText() {
     return text.toArray(new String[text.size()]);
+  }
+
+  public Map<String, Object> getExtraInformation() {  
+    return extraInformation;
   }
 
   @Override
@@ -72,10 +88,10 @@ public class DocumentSample {
       // remove last space
       sampleString.setLength(sampleString.length() - 1);
     }
-
+    
     return sampleString.toString();
   }
-
+  
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
