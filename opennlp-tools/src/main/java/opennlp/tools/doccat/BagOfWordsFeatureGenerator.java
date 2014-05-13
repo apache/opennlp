@@ -20,6 +20,7 @@ package opennlp.tools.doccat;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 import opennlp.tools.util.featuregen.StringPattern;
 
@@ -38,7 +39,7 @@ public class BagOfWordsFeatureGenerator implements FeatureGenerator {
   }
 
   @Override
-  public Collection<String> extractFeatures(String[] text) {
+  public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInformation) {
 
     Collection<String> bagOfWords = new ArrayList<String>(text.length);
 

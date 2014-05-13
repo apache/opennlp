@@ -60,7 +60,7 @@ public class DocumentCategorizerEvaluator extends Evaluator<DocumentSample>{
 
     String document[] = sample.getText();
 
-    double probs[] = categorizer.categorize(document);
+    double probs[] = categorizer.categorize(document, sample.getExtraInformation());
 
     String cat = categorizer.getBestCategory(probs);
 

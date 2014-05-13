@@ -18,16 +18,17 @@ package opennlp.tools.doccat;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TrainUtil;
+import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
@@ -74,13 +75,31 @@ public class DocumentCategorizerME implements DocumentCategorizer {
             .getFactory().getFeatureGenerators());
   }
 
+  @Override
+  public double[] categorize(String[] text, Map<String, Object> extraInformation) {
+    return model.getMaxentModel().eval(
+        mContextGenerator.getContext(text, extraInformation));
+  }
+
   /**
    * Categorizes the given text.
    *
    * @param text
    */
   public double[] categorize(String text[]) {
-    return model.getMaxentModel().eval(mContextGenerator.getContext(text));
+    return this.categorize(text, Collections.<String, Object>emptyMap());
+  }
+
+  /**
+   * Categorizes the given text. The Tokenizer is obtained from
+   * {@link DoccatFactory#getTokenizer()} and defaults to
+   * {@link SimpleTokenizer}.
+   */
+  @Override
+  public double[] categorize(String documentText,
+      Map<String, Object> extraInformation) {
+    Tokenizer tokenizer = model.getFactory().getTokenizer();
+    return categorize(tokenizer.tokenize(documentText), extraInformation);
   }
 
   /**
@@ -89,8 +108,10 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    */
   public double[] categorize(String documentText) {
     Tokenizer tokenizer = model.getFactory().getTokenizer();
-    return categorize(tokenizer.tokenize(documentText));
+    return categorize(tokenizer.tokenize(documentText),
+        Collections.<String, Object> emptyMap());
   }
+
 /**
  * Returns a map in which the key is the category name and the value is the score
  * @param text the input text to classify
