@@ -42,11 +42,11 @@ public class QNTrainer extends AbstractEventTrainer {
   public static final double L2COST_DEFAULT = 0.5; 
   
   // Number of Hessian updates to store
-  public static final String M_PARAM = "numOfUpdates";
+  public static final String M_PARAM = "NumOfUpdates";
   public static final int M_DEFAULT = 15;
   
   // Maximum number of function evaluations
-  public static final String MAX_FCT_EVAL_PARAM = "maxFctEval";
+  public static final String MAX_FCT_EVAL_PARAM = "MaxFctEval";
   public static final int MAX_FCT_EVAL_DEFAULT = 30000;
 
   // L1-regularization cost
