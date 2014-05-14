@@ -18,5 +18,20 @@
 Algorithm=MAXENT_QN_EXPERIMENTAL
 Iterations=100
 Cutoff=0
+
+# Costs for L1- and L2-regularization. These parameters must be larger or
+# equal to zero. The higher they are, the more penalty will be imposed to 
+# avoid overfitting. The parameters can be set as follows:
+#    if L1Cost = 0 and L2Cost = 0, no regularization will be used,
+#    if L1Cost > 0 and L2Cost = 0, L1 will be used,
+#    if L1Cost = 0 and L2Cost > 0, L2 will be used,
+#    if both paramters are set to be larger than 0, Elastic Net 
+#       (i.e. L1 and L2 combined) will be used.
 L1Cost=0.5
 L2Cost=0.5
+
+# Number of Hessian updates to store
+NumOfUpdates=15
+
+# Maximum number of objective function's evaluations
+MaxFctEval=30000
