@@ -17,6 +17,7 @@
 
 package opennlp.tools.cmdline;
 
+import opennlp.tools.util.MarkableFileInputStreamFactory;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
