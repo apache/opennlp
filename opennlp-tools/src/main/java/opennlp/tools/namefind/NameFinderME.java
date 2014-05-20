@@ -276,7 +276,7 @@ public class NameFinderME implements TokenNameFinder {
        
       for (int i = 0; i < probs.length; i++) {
         double prob = probs[i];
-        spans[i].setProb(prob);
+        spans[i]= new Span(spans[i], prob);
       }
     }
     return spans;

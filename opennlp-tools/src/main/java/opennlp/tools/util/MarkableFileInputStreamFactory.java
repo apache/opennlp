@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline;
+package opennlp.tools.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;

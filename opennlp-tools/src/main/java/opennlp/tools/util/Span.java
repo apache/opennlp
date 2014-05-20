@@ -14,23 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package opennlp.tools.util;
-
 
 /**
  * Class for storing start and end integer offsets.
- **/
+ *
+ */
 public class Span implements Comparable<Span> {
 
   private final int start;
   private final int end;
-  private double prob=0d;//default is 0
+  private final double prob;//default is 0
   private final String type;
 
   /**
-   * Initializes a new Span Object.
+   * Initializes a new Span Object. Sets the prob to 0 as default.
    *
    * @param s start of span.
    * @param e end of span, which is +1 more than the last element in the span.
@@ -45,15 +43,17 @@ public class Span implements Comparable<Span> {
       throw new IllegalArgumentException("end index must be zero or greater: " + e);
     }
     if (s > e) {
-      throw new IllegalArgumentException("start index must not be larger than end index: " +
-          "start=" + s + ", end=" + e);
+      throw new IllegalArgumentException("start index must not be larger than end index: "
+              + "start=" + s + ", end=" + e);
     }
 
     start = s;
     end = e;
     this.type = type;
+    this.prob = 0d;
   }
- public Span(int s, int e, String type, double prob) {
+
+  public Span(int s, int e, String type, double prob) {
 
     if (s < 0) {
       throw new IllegalArgumentException("start index must be zero or greater: " + s);
@@ -62,28 +62,39 @@ public class Span implements Comparable<Span> {
       throw new IllegalArgumentException("end index must be zero or greater: " + e);
     }
     if (s > e) {
-      throw new IllegalArgumentException("start index must not be larger than end index: " +
-          "start=" + s + ", end=" + e);
+      throw new IllegalArgumentException("start index must not be larger than end index: "
+              + "start=" + s + ", end=" + e);
     }
 
     start = s;
     end = e;
-    this.prob=prob;
+    this.prob = prob;
     this.type = type;
   }
+
   /**
-   * Initializes a new Span Object.
+   * Initializes a new Span Object. Sets the prob to 0 as default
    *
    * @param s start of span.
    * @param e end of span.
    */
   public Span(int s, int e) {
-    this(s, e, null);
+    this(s, e, null, 0d);
   }
 
   /**
-   * Initializes a new Span object with an existing Span
-   * which is shifted by an offset.
+   *
+   * @param s the start of the span (the token index, not the char index)
+   * @param e the end of the span (the token index, not the char index)
+   * @param prob
+   */
+  public Span(int s, int e, double prob) {
+    this(s, e, null, prob);
+  }
+
+  /**
+   * Initializes a new Span object with an existing Span which is shifted by an
+   * offset.
    *
    * @param span
    * @param offset
@@ -91,12 +102,21 @@ public class Span implements Comparable<Span> {
   public Span(Span span, int offset) {
     this(span.start + offset, span.end + offset, span.getType(), span.getProb());
   }
+/**
+ * Creates a new immutable span based on an existing span, where the existing span did not include the prob
+ * @param span the span that has no prob or the prob is incorrect and a new Span must be generated
+ * @param prob the probability of the span
+ */
+  public Span(Span span, double prob) {
+    this(span.start, span.end, span.getType(), prob);
+  }
 
   /**
    * Return the start of a span.
    *
    * @return the start of a span.
-   **/
+   *
+   */
   public int getStart() {
     return start;
   }
@@ -104,12 +124,12 @@ public class Span implements Comparable<Span> {
   /**
    * Return the end of a span.
    *
-   * Note: that the returned index is one past the
-   * actual end of the span in the text, or the first
-   * element past the end of the span.
+   * Note: that the returned index is one past the actual end of the span in the
+   * text, or the first element past the end of the span.
    *
    * @return the end of a span.
-   **/
+   *
+   */
   public int getEnd() {
     return end;
   }
@@ -129,30 +149,29 @@ public class Span implements Comparable<Span> {
    * @return the length of the span.
    */
   public int length() {
-    return end-start;
+    return end - start;
   }
 
   /**
-   * Returns true if the specified span is contained by this span.
-   * Identical spans are considered to contain each other.
+   * Returns true if the specified span is contained by this span. Identical
+   * spans are considered to contain each other.
    *
    * @param s The span to compare with this span.
    *
-   * @return true is the specified span is contained by this span;
-   * false otherwise.
+   * @return true is the specified span is contained by this span; false
+   * otherwise.
    */
   public boolean contains(Span s) {
     return start <= s.getStart() && s.getEnd() <= end;
   }
 
   /**
-   * Returns true if the specified index is contained inside this span.
-   * An index with the value of end is considered outside the span.
+   * Returns true if the specified index is contained inside this span. An index
+   * with the value of end is considered outside the span.
    *
    * @param index the index to test with this span.
    *
-   * @return true if the span contains this specified index;
-   * false otherwise.
+   * @return true if the span contains this specified index; false otherwise.
    */
   public boolean contains(int index) {
     return start <= index && index < end;
@@ -164,8 +183,8 @@ public class Span implements Comparable<Span> {
    *
    * @param s The span to compare with this span.
    *
-   * @return true if the specified span starts with this span and is
-   * contained in this span; false otherwise
+   * @return true if the specified span starts with this span and is contained
+   * in this span; false otherwise
    */
   public boolean startsWith(Span s) {
     return getStart() == s.getStart() && contains(s);
@@ -181,9 +200,9 @@ public class Span implements Comparable<Span> {
   public boolean intersects(Span s) {
     int sstart = s.getStart();
     //either s's start is in this or this' start is in s
-    return this.contains(s) || s.contains(this) ||
-	   getStart() <= sstart && sstart < getEnd() ||
-	   sstart <= getStart() && getStart() < s.getEnd();
+    return this.contains(s) || s.contains(this)
+            || getStart() <= sstart && sstart < getEnd()
+            || sstart <= getStart() && getStart() < s.getEnd();
   }
 
   /**
@@ -197,9 +216,9 @@ public class Span implements Comparable<Span> {
   public boolean crosses(Span s) {
     int sstart = s.getStart();
     //either s's start is in this or this' start is in s
-    return !this.contains(s) && !s.contains(this) &&
-	   (getStart() <= sstart && sstart < getEnd() ||
-	   sstart <= getStart() && getStart() < s.getEnd());
+    return !this.contains(s) && !s.contains(this)
+            && (getStart() <= sstart && sstart < getEnd()
+            || sstart <= getStart() && getStart() < s.getEnd());
   }
 
   /**
@@ -211,8 +230,8 @@ public class Span implements Comparable<Span> {
    */
   public CharSequence getCoveredText(CharSequence text) {
     if (getEnd() > text.length()) {
-      throw new IllegalArgumentException("The span " + toString() +
-          " is outside the given text which has length " + text.length() + "!");
+      throw new IllegalArgumentException("The span " + toString()
+              + " is outside the given text which has length " + text.length() + "!");
     }
 
     return text.subSequence(getStart(), getEnd());
@@ -239,11 +258,9 @@ public class Span implements Comparable<Span> {
 
     if (newStartOffset == getStart() && newEndOffset == getEnd()) {
       return this;
-    }
-    else if (newStartOffset > newEndOffset) {
+    } else if (newStartOffset > newEndOffset) {
       return new Span(getStart(), getStart(), getType());
-    }
-    else {
+    } else {
       return new Span(newStartOffset, newEndOffset, getType());
     }
   }
@@ -254,28 +271,24 @@ public class Span implements Comparable<Span> {
   public int compareTo(Span s) {
     if (getStart() < s.getStart()) {
       return -1;
-    }
-    else if (getStart() == s.getStart()) {
+    } else if (getStart() == s.getStart()) {
       if (getEnd() > s.getEnd()) {
         return -1;
-      }
-      else if (getEnd() < s.getEnd()) {
+      } else if (getEnd() < s.getEnd()) {
         return 1;
-      }
-      else {
+      } else {
         // compare the type
         if (getType() == null && s.getType() == null) {
           return 0;
         } else if (getType() != null && s.getType() != null) {
           // use type lexicography order
           return getType().compareTo(s.getType());
-        } else if(getType() != null) {
+        } else if (getType() != null) {
           return -1;
         }
         return 1;
       }
-    }
-    else {
+    } else {
       return 1;
     }
   }
@@ -288,10 +301,9 @@ public class Span implements Comparable<Span> {
     int res = 23;
     res = res * 37 + getStart();
     res = res * 37 + getEnd();
-    if ( getType() == null) {
+    if (getType() == null) {
       res = res * 37;
-    }
-    else {
+    } else {
       res = res * 37 + getType().hashCode();
     }
 
@@ -308,16 +320,14 @@ public class Span implements Comparable<Span> {
 
     if (o == this) {
       result = true;
-    }
-    else if (o instanceof Span) {
+    } else if (o instanceof Span) {
       Span s = (Span) o;
 
-      result = (getStart() == s.getStart()) &&
-          (getEnd() == s.getEnd()) &&
-          (getType() != null ? type.equals(s.getType()) : true) &&
-          (s.getType() != null ? s.getType().equals(getType()) : true);
-    }
-    else {
+      result = (getStart() == s.getStart())
+              && (getEnd() == s.getEnd())
+              && (getType() != null ? type.equals(s.getType()) : true)
+              && (s.getType() != null ? s.getType().equals(getType()) : true);
+    } else {
       result = false;
     }
 
@@ -336,8 +346,8 @@ public class Span implements Comparable<Span> {
     toStringBuffer.append(getEnd());
     toStringBuffer.append(")");
     if (getType() != null) {
-        toStringBuffer.append(" ");
-        toStringBuffer.append(getType());
+      toStringBuffer.append(" ");
+      toStringBuffer.append(getType());
     }
 
     return toStringBuffer.toString();
@@ -365,10 +375,10 @@ public class Span implements Comparable<Span> {
     StringBuilder cb = new StringBuilder();
     for (int si = 0, sl = spans.length; si < sl; si++) {
       cb.setLength(0);
-      for (int ti=spans[si].getStart();ti<spans[si].getEnd();ti++) {
+      for (int ti = spans[si].getStart(); ti < spans[si].getEnd(); ti++) {
         cb.append(tokens[ti]).append(" ");
       }
-      chunks[si]=cb.substring(0, cb.length()-1);
+      chunks[si] = cb.substring(0, cb.length() - 1);
     }
     return chunks;
   }
@@ -377,7 +387,4 @@ public class Span implements Comparable<Span> {
     return prob;
   }
 
-  public void setProb(double prob) {
-    this.prob = prob;
-  }
 }
