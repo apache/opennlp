@@ -23,12 +23,16 @@ import java.util.Stack;
 
 import opennlp.tools.cmdline.parser.ParserTool;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.eval.ParseEval;
 import opennlp.tools.util.eval.Evaluator;
+import opennlp.tools.util.eval.FMeasure;
 
 /**
- * Class for Parsing Evaluation. Hopefully to be merged
- * into FMeasure soon.
+ * Class for ParserEvaluator.
+ * This ParserEvaluator behaves like EVALB with no exceptions, e.g, 
+ * without removing punctuation tags, or equality between ADVP and PRT 
+ * (as in COLLINS convention). To follow parsing evaluation conventions
+ * (Bikel, Collins, Charniak, etc.) as in EVALB, options are to be added 
+ * to the {@code ParserEvaluatorTool}.
  *
  */
 public class ParserEvaluator extends Evaluator<Parse> {
@@ -36,7 +40,7 @@ public class ParserEvaluator extends Evaluator<Parse> {
   /**
    * fmeasure.
    */
-  private ParseEval fmeasure = new ParseEval();
+  private FMeasure fmeasure = new FMeasure();
   /**
    * The parser to evaluate.
    */
@@ -54,7 +58,7 @@ public class ParserEvaluator extends Evaluator<Parse> {
 
   /**
    * Obtain {@code Span}s for every parse in the sentence.
-   * @param parse
+   * @param parse the parse from which to obtain the spans
    * @return an array containing every span for the parse
    */
   private static Span[] getConstituencySpans(final Parse parse) {
@@ -85,6 +89,9 @@ public class ParserEvaluator extends Evaluator<Parse> {
     return consts.toArray(new Span[consts.size()]);
   }
 
+  /* (non-Javadoc)
+   * @see opennlp.tools.util.eval.Evaluator#processSample(java.lang.Object)
+   */
   @Override
   protected final Parse processSample(final Parse reference) {
 
@@ -106,7 +113,7 @@ public class ParserEvaluator extends Evaluator<Parse> {
    * It returns the fmeasure result.
    * @return the fmeasure value
    */
-  public final ParseEval getFMeasure() {
+  public final FMeasure getFMeasure() {
     return fmeasure;
   }
 
@@ -124,7 +131,7 @@ public class ParserEvaluator extends Evaluator<Parse> {
     String testParseString = "(TOP (S (NP (NNS Sales) (NNS executives)) (VP (VBD were) (VP (VBG examing) (NP (DT the) (NNS figures)) (PP (IN with) (NP (JJ great) (NN care) (NN yesterday))) ))  (. .) ))";
     Span[] testConsts = getConstituencySpans(Parse.parseParse(testParseString));
 
-    ParseEval measure = new ParseEval();
+    FMeasure measure = new FMeasure();
     measure.updateScores(goldConsts, testConsts);
 
     // Expected output:

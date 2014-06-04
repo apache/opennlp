@@ -17,6 +17,10 @@
 
 package opennlp.tools.util.eval;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 
 /**
  * The {@link FMeasure} is an utility class for evaluators
@@ -28,64 +32,79 @@ package opennlp.tools.util.eval;
  * each reference sample.
  */
 public final class FMeasure {
-
-	/** |selected| = true positives + false positives <br>
-	 * the count of selected (or retrieved) items  */
-	private long selected;
-
-	/** |target| = true positives + false negatives <br>
-	 * the count of target (or correct) items */
-	private long target;
-
-	private long truePositive;
+  /**
+   * |selected| = true positives + false positives <br>
+   * the count of selected (or retrieved) items.
+   */
+  private long selected;
 
   /**
-   * Retrieves the arithmetic mean of the precision scores
-   * calculated for each evaluated sample.
+   * |target| = true positives + false negatives <br>
+   * the count of target (or correct) items.
+   */
+  private long target;
+
+  /**
+   * Storing the number of true positives found.
+   */
+  private long truePositive;
+
+  /**
+   * Retrieves the arithmetic mean of the precision scores calculated for each
+   * evaluated sample.
    *
    * @return the arithmetic mean of all precision scores
    */
   public double getPrecisionScore() {
-    return selected > 0 ? (double)truePositive / (double)selected : 0;
+    return selected > 0 ? (double) truePositive / (double) selected : 0;
   }
 
   /**
-   * Retrieves the arithmetic mean of the recall score
-   * calculated for each evaluated sample.
+   * Retrieves the arithmetic mean of the recall score calculated for each
+   * evaluated sample.
    *
    * @return the arithmetic mean of all recall scores
    */
   public double getRecallScore() {
-    return target > 0 ? (double)truePositive / (double)target : 0;
+    return target > 0 ? (double) truePositive / (double) target : 0;
   }
 
   /**
    * Retrieves the f-measure score.
    *
    * f-measure = 2 * precision * recall / (precision + recall)
-   *
    * @return the f-measure or -1 if precision + recall &lt;= 0
    */
   public double getFMeasure() {
 
     if (getPrecisionScore() + getRecallScore() > 0) {
-      return 2 * (getPrecisionScore() * getRecallScore()) /
-          (getPrecisionScore() + getRecallScore());
-    }
-    else {
+      return 2 * (getPrecisionScore() * getRecallScore())
+          / (getPrecisionScore() + getRecallScore());
+    } else {
       // cannot divide by zero, return error code
       return -1;
     }
   }
 
-  public void updateScores(Object references[], Object predictions[]) {
+  /**
+   * Updates the score based on the number of true positives and
+   * the number of predictions and references.
+   *
+   * @param references the provided references
+   * @param predictions the predicted spans
+   */
+  public void updateScores(final Object[] references, final Object[] predictions) {
 
-	  truePositive += countTruePositives(references, predictions);
-	  selected += predictions.length;
-	  target += references.length;
+    truePositive += countTruePositives(references, predictions);
+    selected += predictions.length;
+    target += references.length;
   }
 
-  public void mergeInto(FMeasure measure) {
+  /**
+   * Merge results into fmeasure metric.
+   * @param measure the fmeasure
+   */
+  public void mergeInto(final FMeasure measure) {
     this.selected += measure.selected;
     this.target += measure.target;
     this.truePositive += measure.truePositive;
@@ -93,84 +112,87 @@ public final class FMeasure {
 
   /**
    * Creates a human read-able {@link String} representation.
+   * @return the results
    */
   @Override
   public String toString() {
-    return "Precision: " + Double.toString(getPrecisionScore()) + "\n" +
-        "Recall: " + Double.toString(getRecallScore()) + "\n" +
-        "F-Measure: " + Double.toString(getFMeasure());
+    return "Precision: " + Double.toString(getPrecisionScore()) + "\n"
+        + "Recall: " + Double.toString(getRecallScore()) + "\n" + "F-Measure: "
+        + Double.toString(getFMeasure());
   }
 
   /**
-   * This method counts the number of objects which are equal and
-   * occur in the references and predictions arrays.
+   * This method counts the number of objects which are equal and occur in the
+   * references and predictions arrays.
+   * Matched items are removed from the prediction list.
    *
-   * These are the number of true positives.
-   *
-   * @param references the gold standard
-   * @param predictions the predictions
-   *
+   * @param references
+   *          the gold standard
+   * @param predictions
+   *          the predictions
    * @return number of true positives
    */
-  static int countTruePositives(Object references[],
-      Object predictions[]) {
+  static int countTruePositives(final Object[] references, final Object[] predictions) {
 
+    List<Object> predListSpans = new ArrayList<Object>(predictions.length);
+    Collections.addAll(predListSpans, predictions);
     int truePositives = 0;
+    Object matchedItem = null;
 
-    // Note: Maybe a map should be used to improve performance
-    for (int referenceIndex = 0; referenceIndex < references.length;
-        referenceIndex++) {
-
+    for (int referenceIndex = 0; referenceIndex < references.length; referenceIndex++) {
       Object referenceName = references[referenceIndex];
 
-      for (int predictedIndex = 0; predictedIndex < predictions.length;
-          predictedIndex++) {
-        if (referenceName.equals(predictions[predictedIndex])) {
+      for (int predIndex = 0; predIndex < predListSpans.size(); predIndex++) {
+
+        if (referenceName.equals(predListSpans.get(predIndex))) {
+          matchedItem = predListSpans.get(predIndex);
           truePositives++;
         }
       }
+      if (matchedItem != null) {
+        predListSpans.remove(matchedItem);
+      }
     }
-
     return truePositives;
   }
 
+
   /**
-   * Calculates the precision score for the given reference and
-   * predicted spans.
+   * Calculates the precision score for the given reference and predicted spans.
    *
-   * @param references the gold standard spans
-   * @param predictions the predicted spans
-   *
+   * @param references
+   *          the gold standard spans
+   * @param predictions
+   *          the predicted spans
    * @return the precision score or NaN if there are no predicted spans
    */
-  public static double precision(Object references[], Object predictions[]) {
+  public static double precision(final Object[] references, final Object[] predictions) {
 
     if (predictions.length > 0) {
-      return countTruePositives(references, predictions) /
-          (double) predictions.length;
-    }
-    else {
+      return countTruePositives(references, predictions)
+          / (double) predictions.length;
+    } else {
       return Double.NaN;
     }
   }
 
   /**
-   * Calculates the recall score for the given reference and
-   * predicted spans.
+   * Calculates the recall score for the given reference and predicted spans.
    *
-   * @param references the gold standard spans
-   * @param predictions the predicted spans
+   * @param references
+   *          the gold standard spans
+   * @param predictions
+   *          the predicted spans
    *
    * @return the recall score or NaN if there are no reference spans
    */
-  public static double recall(Object references[], Object predictions[]) {
+  public static double recall(final Object[] references, final Object[] predictions) {
 
     if (references.length > 0) {
-      return countTruePositives(references, predictions) /
-          (double) references.length;
-    }
-    else {
-        return Double.NaN;
+      return countTruePositives(references, predictions)
+          / (double) references.length;
+    } else {
+      return Double.NaN;
     }
   }
 }
