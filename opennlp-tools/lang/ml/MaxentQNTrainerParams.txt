@@ -15,7 +15,7 @@
 
 # Sample machine learning properties file
 
-Algorithm=MAXENT_QN_EXPERIMENTAL
+Algorithm=MAXENT_QN
 Iterations=100
 Cutoff=0
 
@@ -27,8 +27,8 @@ Cutoff=0
 #    if L1Cost = 0 and L2Cost > 0, L2 will be used,
 #    if both paramters are set to be larger than 0, Elastic Net 
 #       (i.e. L1 and L2 combined) will be used.
-L1Cost=0.5
-L2Cost=0.5
+L1Cost=0.1
+L2Cost=0.1
 
 # Number of Hessian updates to store
 NumOfUpdates=15
