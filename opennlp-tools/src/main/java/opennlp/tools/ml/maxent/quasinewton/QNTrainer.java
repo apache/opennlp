@@ -33,13 +33,13 @@ import opennlp.tools.ml.model.DataIndexer;
  */
 public class QNTrainer extends AbstractEventTrainer {
 
-  public static final String MAXENT_QN_VALUE = "MAXENT_QN_EXPERIMENTAL";
+  public static final String MAXENT_QN_VALUE = "MAXENT_QN";
   
   public static final String L1COST_PARAM = "L1Cost";
-  public static final double L1COST_DEFAULT = 0.5; 
+  public static final double L1COST_DEFAULT = 0.1; 
   
   public static final String L2COST_PARAM = "L2Cost";
-  public static final double L2COST_DEFAULT = 0.5; 
+  public static final double L2COST_DEFAULT = 0.1; 
   
   // Number of Hessian updates to store
   public static final String M_PARAM = "NumOfUpdates";

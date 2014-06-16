@@ -41,7 +41,7 @@ public class QNPrepAttachTest {
         new QNTrainer(true).trainModel(
             100, new TwoPassDataIndexer(createTrainingStream(), 1));
 
-    testModel(model, 0.8229759841544937);
+    testModel(model, 0.8155484030700668);
   }
   
   @Test
@@ -53,7 +53,7 @@ public class QNPrepAttachTest {
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(createTrainingStream());
     
-    testModel(model, 0.8150532309977717);
+    testModel(model, 0.8115870264917059);
   }
 
   @Test
