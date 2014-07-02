@@ -33,6 +33,10 @@ public class ParserEvaluatorTool extends AbstractEvaluatorTool<Parse, EvaluatorP
   public ParserEvaluatorTool() {
     super(Parse.class, EvaluatorParams.class);
   }
+  
+  public String getShortDescription() {
+    return "Measures the performance of the Parser model with the reference data";
+  }
 
   @Override
   public void run(String format, String[] args) {
