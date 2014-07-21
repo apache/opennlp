@@ -170,7 +170,7 @@ public class QNMinimizer {
   }
 
   /**
-   * Find the parameters that minimizes the objective function
+   * Find the parameters that minimize the objective function
    * @param function objective function 
    * @return minimizing parameters
    */
@@ -211,7 +211,7 @@ public class QNMinimizer {
       display("\nSolving convex optimization problem.");
       display("\nObjective function has " + dimension + " variable(s).");
       display("\n\nPerforming " + iterations + " iterations with " +
-          "L1-cost = " + l1Cost + " and L2-cost = " + l2Cost + ".\n");
+          "L1Cost=" + l1Cost + " and L2Cost=" + l2Cost + "\n");
     }
     
     double[] direction = new double[dimension];
@@ -260,10 +260,12 @@ public class QNMinimizer {
           display(iter + ":  ");
 
         if (evaluator != null) {
-          display("\t " + lsr.getValueAtCurr() + "\t" + lsr.getFuncChangeRate()
+          display("\t" + lsr.getValueAtNext()
+                + "\t" + lsr.getFuncChangeRate()
                 + "\t" + evaluator.evaluate(lsr.getNextPoint()) + "\n");
         } else {
-          display("\t " + lsr.getValueAtCurr() + "\t" + lsr.getFuncChangeRate() + "\n");
+          display("\t " + lsr.getValueAtNext() + 
+                  "\t" + lsr.getFuncChangeRate() + "\n");
         }
       }
       if (isConverged(lsr))

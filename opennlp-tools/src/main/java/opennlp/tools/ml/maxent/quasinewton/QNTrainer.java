@@ -35,20 +35,26 @@ public class QNTrainer extends AbstractEventTrainer {
 
   public static final String MAXENT_QN_VALUE = "MAXENT_QN";
   
-  public static final String L1COST_PARAM = "L1Cost";
+  public static final String THREADS_PARAM = "Threads";
+  public static final int THREADS_DEFAULT  = 1;
+  
+  public static final String L1COST_PARAM   = "L1Cost";
   public static final double L1COST_DEFAULT = 0.1; 
   
-  public static final String L2COST_PARAM = "L2Cost";
+  public static final String L2COST_PARAM   = "L2Cost";
   public static final double L2COST_DEFAULT = 0.1; 
   
   // Number of Hessian updates to store
   public static final String M_PARAM = "NumOfUpdates";
-  public static final int M_DEFAULT = 15;
+  public static final int M_DEFAULT  = 15;
   
   // Maximum number of function evaluations
   public static final String MAX_FCT_EVAL_PARAM = "MaxFctEval";
-  public static final int MAX_FCT_EVAL_DEFAULT = 30000;
+  public static final int MAX_FCT_EVAL_DEFAULT  = 30000;
 
+  // Number of threads
+  private int threads;
+  
   // L1-regularization cost
   private double l1Cost;
   
@@ -80,6 +86,7 @@ public class QNTrainer extends AbstractEventTrainer {
     this.verbose    = verbose;
     this.m          = m < 0? M_DEFAULT: m;
     this.maxFctEval = maxFctEval < 0? MAX_FCT_EVAL_DEFAULT: maxFctEval;
+    this.threads    = THREADS_DEFAULT;
     this.l1Cost     = L1COST_DEFAULT;
     this.l2Cost     = L2COST_DEFAULT;
   }
@@ -113,6 +120,13 @@ public class QNTrainer extends AbstractEventTrainer {
     }
     this.maxFctEval = maxFctEval;
     
+    // Number of threads must be >= 1
+    int threads = getIntParam(THREADS_PARAM, THREADS_DEFAULT);
+    if (threads < 1) {
+      return false;
+    }
+    this.threads = threads;
+    
     // Regularization costs must be >= 0
     double l1Cost = getDoubleParam(L1COST_PARAM, L1COST_DEFAULT);
     if (l1Cost < 0) {
@@ -139,11 +153,17 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   // << Members related to AbstractEventTrainer
-
   public QNModel trainModel(int iterations, DataIndexer indexer) {
     
     // Train model's parameters
-    Function objectiveFunction = new NegLogLikelihood(indexer);
+    Function objectiveFunction = null;
+    if (threads == 1) {
+      System.out.println("Computing model parameters ...");
+      objectiveFunction = new NegLogLikelihood(indexer);
+    } else {
+      System.out.println("Computing model parameters in " + threads + " threads ...");
+      objectiveFunction = new ParallelNegLogLikelihood(indexer, threads);
+    }
     
     QNMinimizer minimizer = new QNMinimizer(
         l1Cost, l2Cost, iterations, m, maxFctEval, verbose);

@@ -106,5 +106,18 @@ public class QNPrepAttachTest {
     
     testModel(model, 0.8227283981183461);
   }
+  
+  @Test
+  public void testQNOnPrepAttachDataInParallel() throws IOException {
+    
+    Map<String, String> trainParams = new HashMap<String, String>();
+    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
+    trainParams.put("Threads", Integer.toString(2));
+    
+    MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
+                                      .train(createTrainingStream());
+    
+    testModel(model, 0.8115870264917059);
+  }
 }
 
