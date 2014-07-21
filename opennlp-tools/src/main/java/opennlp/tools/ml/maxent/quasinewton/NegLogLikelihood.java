@@ -28,25 +28,22 @@ import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
  */
 public class NegLogLikelihood implements Function {
   
-  private int dimension;
-  private double[] empiricalCount;
-  private int numOutcomes;
-  private int numFeatures;
-  private int numContexts;
+  protected int dimension;
+  protected int numOutcomes;
+  protected int numFeatures;
+  protected int numContexts;
 
   // Information from data index
-  private final float[][] values;
-  private final int[][] contexts;
-  private final int[] outcomeList;
-  private final int[] numTimesEventsSeen;
+  protected final float[][] values;
+  protected final int[][] contexts;
+  protected final int[] outcomeList;
+  protected final int[] numTimesEventsSeen;
 
-  // For computing negative log-likelihood
-  private double[][] voteSum;
-  private double[] logSumExp;
+  // For calculating negLogLikelihood and gradient 
+  protected double[] tempSums;
+  protected double[] expectation;
   
-  // For gradient computation
-  private double[] gradient;
-  private double[] expectedCount;
+  protected double[] gradient;
   
   public NegLogLikelihood(DataIndexer indexer) {
     
@@ -61,19 +58,14 @@ public class NegLogLikelihood implements Function {
     this.outcomeList = indexer.getOutcomeList();
     this.numTimesEventsSeen = indexer.getNumTimesEventsSeen();
 
-    this.numOutcomes    = indexer.getOutcomeLabels().length;
-    this.numFeatures    = indexer.getPredLabels().length;
-    this.numContexts    = this.contexts.length;
-    this.dimension      = numOutcomes * numFeatures;
-    this.empiricalCount = new double[dimension];
-
-    this.voteSum   = new double[numContexts][numOutcomes];
-    this.logSumExp = new double[numContexts];
+    this.numOutcomes = indexer.getOutcomeLabels().length;
+    this.numFeatures = indexer.getPredLabels().length;
+    this.numContexts = this.contexts.length;
+    this.dimension   = numOutcomes * numFeatures;
     
-    this.gradient      = new double[dimension];
-    this.expectedCount = new double[dimension];
-    
-    computeEmpCount();
+    this.expectation = new double[numOutcomes];
+    this.tempSums    = new double[numOutcomes];
+    this.gradient    = new double[dimension];
   }
 
   public int getDimension() {
@@ -83,101 +75,86 @@ public class NegLogLikelihood implements Function {
   public double[] getInitialPoint() {
     return new double[dimension];
   }
-  
+
   /**
    * Negative log-likelihood
    */
   public double valueAt(double[] x) {
     
-    if (x.length != this.dimension)
+    if (x.length != dimension)
       throw new IllegalArgumentException(
           "x is invalid, its dimension is not equal to domain dimension.");
 
-    computeSums(x); // Compute voteSum and logSumExp
+    int ci, oi, ai, vectorIndex, outcome;
+    double predValue, logSumOfExps;
+    double negLogLikelihood = 0;
     
-    double negLogLikelihood = 0.;
-    for (int ci = 0; ci < numContexts; ci++) {
-      int outcome = this.outcomeList[ci];
-      negLogLikelihood += (voteSum[ci][outcome] - logSumExp[ci]) * numTimesEventsSeen[ci];
+    for (ci = 0; ci < numContexts; ci++) {
+      for (oi = 0; oi < numOutcomes; oi++) {
+        tempSums[oi] = 0;
+        for (ai = 0; ai < contexts[ci].length; ai++) {
+          vectorIndex = indexOf(oi, contexts[ci][ai]);
+          predValue = values != null? values[ci][ai] : 1.0;
+          tempSums[oi] += predValue * x[vectorIndex];
+        }
+      }
+      
+      logSumOfExps = ArrayMath.logSumOfExps(tempSums);
+      
+      outcome = outcomeList[ci];
+      negLogLikelihood -= (tempSums[outcome] - logSumOfExps) * numTimesEventsSeen[ci];
     }
-    negLogLikelihood = -negLogLikelihood;
     
     return negLogLikelihood;
   }  
-
+  
   /**
    * Compute gradient
    */
   public double[] gradientAt(double[] x) {
     
-    if (x.length != this.dimension)
+    if (x.length != dimension)
       throw new IllegalArgumentException(
           "x is invalid, its dimension is not equal to the function.");
     
-    computeSums(x); // Compute voteSum and logSumExp
+    int ci, oi, ai, vectorIndex;
+    double predValue, logSumOfExps;
+    int empirical;
     
-    // Reset
-    Arrays.fill(expectedCount, 0);
-    for (int ci = 0; ci < numContexts; ci++) {
-      for (int oi = 0; oi < numOutcomes; oi++) {
-        for (int af = 0; af < contexts[ci].length; af++) {
-          int vectorIndex = indexOf(oi, this.contexts[ci][af]);
-          double predValue = 1.;
-          if (values != null) predValue = this.values[ci][af];
-          if (predValue == 0.) continue;
-
-          expectedCount[vectorIndex] += 
-              predValue * Math.exp(voteSum[ci][oi] - logSumExp[ci]) * this.numTimesEventsSeen[ci];
+    // Reset gradient
+    Arrays.fill(gradient, 0);
+    
+    for (ci = 0; ci < numContexts; ci++) {
+      for (oi = 0; oi < numOutcomes; oi++) {
+        expectation[oi] = 0;
+        for (ai = 0; ai < contexts[ci].length; ai++) {
+          vectorIndex = indexOf(oi, contexts[ci][ai]);
+          predValue = values != null? values[ci][ai] : 1.0;
+          expectation[oi] += predValue * x[vectorIndex];
         }
       }
-    }
-
-    for (int i = 0; i < dimension; i++) { 
-      gradient[i] = expectedCount[i] - this.empiricalCount[i];
+      
+      logSumOfExps = ArrayMath.logSumOfExps(expectation);
+      
+      for (oi = 0; oi < numOutcomes; oi++) {
+        expectation[oi] = Math.exp(expectation[oi] - logSumOfExps);
+      }
+      
+      for (oi = 0; oi < numOutcomes; oi++) {
+        empirical = outcomeList[ci] == oi? 1 : 0;
+        for (ai = 0; ai < contexts[ci].length; ai++) {
+          vectorIndex = indexOf(oi, contexts[ci][ai]);
+          predValue = values != null? values[ci][ai] : 1.0;
+          gradient[vectorIndex] += 
+              predValue * (expectation[oi] - empirical) * numTimesEventsSeen[ci];
+        }
+      }
     }
     
     return gradient;
   }
-
-  private int indexOf(int outcomeId, int featureId) {
-    return outcomeId * numFeatures + featureId;
-  }
-
-  /**
-   * Compute temporary values
-   */
-  private void computeSums(double[] x) {
-    for (int ci = 0; ci < numContexts; ci++) {
-      for (int oi = 0; oi < numOutcomes; oi++) {
-        double vecProduct = 0.;
-        for (int af = 0; af < this.contexts[ci].length; af++) {
-          int vectorIndex = indexOf(oi, contexts[ci][af]);
-          double predValue = 1.;
-          if (values != null) predValue = this.values[ci][af];
-          if (predValue == 0.) continue;
-          vecProduct += predValue * x[vectorIndex];
-        }
-        voteSum[ci][oi] = vecProduct;
-      }
-
-      // \log(\sum_{c'=1}^{C} e^{w_c'^T x_i})
-      logSumExp[ci] = ArrayMath.logSumOfExps(voteSum[ci]);
-    }
-  }
   
-  /**
-   * Compute empirical count
-   */
-  private void computeEmpCount() {
-    for (int ci = 0; ci < numContexts; ci++) {
-      for (int af = 0; af < this.contexts[ci].length; af++) {
-        int vectorIndex = indexOf(this.outcomeList[ci], contexts[ci][af]);
-        if (values != null) {
-          empiricalCount[vectorIndex] += this.values[ci][af] * numTimesEventsSeen[ci];
-        } else {
-          empiricalCount[vectorIndex] += 1. * numTimesEventsSeen[ci];
-        }
-      }
-    }
+  protected int indexOf(int outcomeId, int featureId) {
+    return outcomeId * numFeatures + featureId;
   }
 }
