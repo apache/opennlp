@@ -109,15 +109,14 @@ public class QNModel extends AbstractModel {
     
     for (int i = 0; i < context.length; i++) {
       int predIdx = context[i];
-      double predValue = 1.0;
-      if (values != null) predValue = values[i];
-      
+      double predValue = values != null? values[i] : 1.0;
       for (int oi = 0; oi < nOutcomes; oi++) {
         probs[oi] += predValue * parameters[oi * nPredLabels + predIdx];
       }
     }
     
     double logSumExp = ArrayMath.logSumOfExps(probs);
+    
     for (int oi = 0; oi < nOutcomes; oi++) {
       probs[oi] = Math.exp(probs[oi] - logSumExp);
     }

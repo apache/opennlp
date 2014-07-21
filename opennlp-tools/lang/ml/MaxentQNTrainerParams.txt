@@ -19,6 +19,9 @@ Algorithm=MAXENT_QN
 Iterations=100
 Cutoff=0
 
+# Number of threads
+Threads=1
+
 # Costs for L1- and L2-regularization. These parameters must be larger or
 # equal to zero. The higher they are, the more penalty will be imposed to 
 # avoid overfitting. The parameters can be set as follows:
