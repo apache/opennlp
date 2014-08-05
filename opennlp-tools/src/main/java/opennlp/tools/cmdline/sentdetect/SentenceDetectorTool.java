@@ -60,6 +60,7 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
       SentenceDetectorME sdetector = new SentenceDetectorME(model);
 
       PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+      perfMon.start();
 
       try {
         ObjectStream<String> paraStream = new ParagraphStream(new PlainTextByLineStream(new SystemInputStreamFactory(),
