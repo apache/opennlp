@@ -178,6 +178,7 @@ where TOOL is one of:
   ChunkerConverter                  converts ad data format to native OpenNLP format
   Parser                            performs full syntactic parsing
   ParserTrainer                     trains the learnable parser
+  ParserEvaluator					Measures the performance of the Parser model with the reference data
   BuildModelUpdater                 trains and updates the build model in a parser model
   CheckModelUpdater                 trains and updates the check model in a parser model
   TaggerModelReplacer               replaces the tagger model in a parser model
