@@ -35,7 +35,7 @@ under the License.
 		<para>
 		The easiest way to try out the Parser is the command line tool.
 		The tool is only intended for demonstration and testing.
-		Download the english chunking parser model from the our website and start the Parse
+		Download the English chunking parser model from the our website and start the Parse
  		Tool with the following command.
 				<screen>
 				<![CDATA[
@@ -59,7 +59,7 @@ The quick brown fox jumps over the lazy dog .]]>
 $ opennlp Parser en-parser.bin en-parser-chunking.bin < article-tokenized.txt > article-parsed.txt.]]>
 		</screen>
 		The article-tokenized.txt file must contain one sentence per line which is
-		tokenized with the english tokenizer model from our website.
+		tokenized with the English tokenizer model from our website.
 		See the Tokenizer documentation for further details.
 		</para>
 		</section>
@@ -207,6 +207,54 @@ $ opennlp TaggerModelReplacer en-parser-chunking.bin en-pos-maxent.bin]]>
 			  are very welcome. If you want to contribute please contact us on the mailing list
 			  or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-219">OPENNLP-219</ulink>.
 		</para>
+		</section>
+	</section>
+	<section id="tools.parser.evaluation">
+		<title>Parser Evaluation</title>
+		<para>
+			The built in evaluation can measure the parser performance. The
+			performance is measured
+			on a test dataset.
+		</para>
+		<section id="tools.parser.evaluation.tool">
+			<title>Parser Evaluation Tool</title>
+			<para>
+				The following command shows how the tool can be run:
+				<screen>
+				<![CDATA[
+$ opennlp ParserEvaluator
+Usage: opennlp ParserEvaluator[.ontonotes|frenchtreebank] [-misclassified true|false] -model model \
+               -data sampleData [-encoding charsetName]]]>
+		</screen>
+				A sample of the command considering you have a data sample named
+				en-parser-chunking.eval
+				and you trained a model called en-parser-chunking.bin:
+				<screen>
+				<![CDATA[
+$ opennlp ParserEvaluator -model en-parser-chunking.bin -lang en -data en-parser-chunking.eval -encoding UTF-8]]>
+		</screen>
+				and here is a sample output:
+				<screen>
+		<![CDATA[
+Precision: 0.9009744742967609
+Recall: 0.8962012400910446
+F-Measure: 0.8985815184245214]]>
+		</screen>
+			</para>
+			<para>
+				The Parser Evaluation tool reimplements the PARSEVAL scoring method
+				as implemented by the
+				<ulink url=http://nlp.cs.nyu.edu/evalb />EVALB</ulink>
+				script, which is the most widely used evaluation
+				tool for constituent parsing. Note however that currently the Parser
+				Evaluation tool does not allow
+				to make exceptions in the constituents to be evaluated, in the way
+				Collins or Bikel usually do. Any
+				contributions are very welcome. If you want to contribute please contact us on
+				the mailing list or comment
+				on the jira issue
+				<ulink url="https://issues.apache.org/jira/browse/OPENNLP-688">OPENNLP-688</ulink>
+			</para>
 		</section>
 	</section>
 </chapter>
