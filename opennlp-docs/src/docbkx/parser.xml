@@ -244,7 +244,7 @@ F-Measure: 0.8985815184245214]]>
 			<para>
 				The Parser Evaluation tool reimplements the PARSEVAL scoring method
 				as implemented by the
-				<ulink url=http://nlp.cs.nyu.edu/evalb />EVALB</ulink>
+				<ulink url="http://nlp.cs.nyu.edu/evalb/">EVALB</ulink>
 				script, which is the most widely used evaluation
 				tool for constituent parsing. Note however that currently the Parser
 				Evaluation tool does not allow
@@ -253,7 +253,7 @@ F-Measure: 0.8985815184245214]]>
 				contributions are very welcome. If you want to contribute please contact us on
 				the mailing list or comment
 				on the jira issue
-				<ulink url="https://issues.apache.org/jira/browse/OPENNLP-688">OPENNLP-688</ulink>
+				<ulink url="https://issues.apache.org/jira/browse/OPENNLP-688">OPENNLP-688</ulink>.
 			</para>
 		</section>
 	</section>
