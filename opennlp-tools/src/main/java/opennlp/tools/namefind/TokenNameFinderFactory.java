@@ -21,20 +21,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Properties;
 
-import opennlp.tools.chunker.ChunkerContextGenerator;
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.namefind.TokenNameFinderModel.FeatureGeneratorCreationError;
-import opennlp.tools.postag.POSTaggerFactory;
-import opennlp.tools.postag.TagDictionary;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
-import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
-import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
 import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
 import opennlp.tools.util.featuregen.GeneratorFactory;
@@ -74,6 +67,10 @@ public class TokenNameFinderFactory extends BaseToolFactory {
 
   protected Map<String, Object> getResources() {
     return resources;
+  }
+  
+  protected byte[] getFeatureGenerator() {
+    return featureGeneratorBytes;
   }
 
   public static TokenNameFinderFactory create(String subclassName, byte[] featureGeneratorBytes, final Map<String, Object> resources,
