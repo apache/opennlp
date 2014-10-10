@@ -76,22 +76,25 @@ public class TokenNameFinderFactory extends BaseToolFactory {
   public static TokenNameFinderFactory create(String subclassName, byte[] featureGeneratorBytes, final Map<String, Object> resources,
       SequenceCodec<String> seqCodec)
       throws InvalidFormatException {
+    TokenNameFinderFactory theFactory;
     if (subclassName == null) {
       // will create the default factory
-      return new TokenNameFinderFactory();
+      theFactory = new TokenNameFinderFactory();
+    } else {
+      try {
+        theFactory = ExtensionLoader.instantiateExtension(
+            TokenNameFinderFactory.class, subclassName);
+        return theFactory;
+      } catch (Exception e) {
+        String msg = "Could not instantiate the " + subclassName
+            + ". The initialization throw an exception.";
+        System.err.println(msg);
+        e.printStackTrace();
+        throw new InvalidFormatException(msg, e);
+      }
     }
-    try {
-      TokenNameFinderFactory theFactory = ExtensionLoader.instantiateExtension(
-          TokenNameFinderFactory.class, subclassName);
-      theFactory.init(featureGeneratorBytes, resources, seqCodec);
-      return theFactory;
-    } catch (Exception e) {
-      String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
-      throw new InvalidFormatException(msg, e);
-    }
+    theFactory.init(featureGeneratorBytes, resources, seqCodec);
+    return theFactory;
   }
 
   @Override
