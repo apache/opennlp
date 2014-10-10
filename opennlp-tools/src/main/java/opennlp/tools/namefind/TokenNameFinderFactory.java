@@ -84,7 +84,6 @@ public class TokenNameFinderFactory extends BaseToolFactory {
       try {
         theFactory = ExtensionLoader.instantiateExtension(
             TokenNameFinderFactory.class, subclassName);
-        return theFactory;
       } catch (Exception e) {
         String msg = "Could not instantiate the " + subclassName
             + ". The initialization throw an exception.";
