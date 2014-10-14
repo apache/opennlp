@@ -48,9 +48,9 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
 
   /**
    *
-   * @param lang
-   * @param lineStream
-   * @param types
+   * @param lang the language of the CONLL 03 data
+   * @param lineStream an Object Stream over the lines in the CONLL 03 data file
+   * @param types the entity types to include in the Name Sample object stream
    */
   public Conll03NameSampleStream(LANGUAGE lang, ObjectStream<String> lineStream, int types) {
     this.lang = lang;
@@ -73,9 +73,9 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
 
   /**
    *
-   * @param lang
-   * @param in
-   * @param types
+   * @param lang the language of the CONLL 03 data
+   * @param in the Input Stream to read the data file
+   * @param types the entity types to include in the Name Sample object stream
    */
   @Deprecated
   public Conll03NameSampleStream(LANGUAGE lang, InputStream in, int types) {
