@@ -31,7 +31,6 @@ import opennlp.tools.util.StringUtil;
  * The entries in the source file are as follows:
  * <p>
  *      SMITH          1.006  1.006      1
- * <p>
  * <ul>
  * <li>The first field is the name (in ALL CAPS).
  * <li>The next field is a frequency in percent.

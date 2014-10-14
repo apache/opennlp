@@ -49,7 +49,7 @@ import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
  *  QNMinimizer minimizer = new QNMinimizer(); 
  *  double[] x = minimizer.minimize(f);
  *  double min = f.valueAt(x);
- * <pre></blockquote>
+ * </pre></blockquote>
  */
 public class QNMinimizer {
   

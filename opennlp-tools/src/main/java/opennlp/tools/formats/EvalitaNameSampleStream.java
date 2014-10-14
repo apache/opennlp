@@ -93,8 +93,9 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
 	  }
 
   /**
-   * @param lang
+   * @param lang the language of the Evalita data file
    * @param in an Input Stream to read data.
+   * @param types the types of the entities which are included in the Name Sample stream
    */
   @Deprecated
   public EvalitaNameSampleStream(LANGUAGE lang, InputStream in, int types) {
