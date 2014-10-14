@@ -66,8 +66,11 @@ public final class TokenizerModel extends BaseModel {
   /**
    * Initializes the current instance.
    *
-   * @param tokenizerMaxentModel
-   * @param useAlphaNumericOptimization
+   * @param language the language the tokenizer should use
+   * @param tokenizerMaxentModel the statistical model of the tokenizer
+   * @param abbreviations the dictionary containing the abbreviations
+   * @param useAlphaNumericOptimization if true alpha numeric optimization is enabled, otherwise not
+   * @param manifestInfoEntries the additional meta data which should be written into manifest
    *
    * @deprecated Use
    *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
@@ -83,10 +86,10 @@ public final class TokenizerModel extends BaseModel {
   /**
    * Initializes the current instance.
    *
-   * @param language
-   * @param tokenizerMaxentModel
-   * @param useAlphaNumericOptimization
-   * @param manifestInfoEntries
+   * @param language the language the tokenizer should use
+   * @param tokenizerMaxentModel the statistical model of the tokenizer
+   * @param useAlphaNumericOptimization if true alpha numeric optimization is enabled, otherwise not
+   * @param manifestInfoEntries the additional meta data which should be written into manifest
    *
    * @deprecated Use
    *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
@@ -100,9 +103,9 @@ public final class TokenizerModel extends BaseModel {
   /**
    * Initializes the current instance.
    *
-   * @param language
-   * @param tokenizerMaxentModel
-   * @param useAlphaNumericOptimization
+   * @param language the language the tokenizer should use
+   * @param tokenizerMaxentModel the statistical model of the tokenizer
+   * @param useAlphaNumericOptimization if true alpha numeric optimization is enabled, otherwise not
    *
    * @deprecated Use
    *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
@@ -116,19 +119,35 @@ public final class TokenizerModel extends BaseModel {
   /**
    * Initializes the current instance.
    *
-   * @param in
+   * @param in the Input Stream to load the model from
    *
-   * @throws IOException
-   * @throws InvalidFormatException
+   * @throws IOException if reading from the stream fails in anyway
+   * @throws InvalidFormatException if the stream doesn't have the expected format
    */
   public TokenizerModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
 
+  /**
+   * Initializes the current instance.
+   *
+   * @param modelFile the file containing the tokenizer model
+   *
+   * @throws IOException if reading from the stream fails in anyway
+   * @throws InvalidFormatException if the stream doesn't have the expected format
+   */
   public TokenizerModel(File modelFile) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelFile);
   }
 
+  /**
+   * Initializes the current instance.
+   *
+   * @param modelURL the URL pointing to the tokenizer model
+   *
+   * @throws IOException if reading from the stream fails in anyway
+   * @throws InvalidFormatException if the stream doesn't have the expected format
+   */
   public TokenizerModel(URL modelURL) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelURL);
   }
