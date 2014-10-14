@@ -41,7 +41,7 @@ public class ExtensionNotLoadedException extends RuntimeException {
   /**
    * Indicates if OpenNLP is running in an OSGi environment or not.
    *
-   * @return
+   * @return true if running in an OSGi environment
    */
   public boolean isOSGiEnvironment() {
     return isOSGiEnvironment;
