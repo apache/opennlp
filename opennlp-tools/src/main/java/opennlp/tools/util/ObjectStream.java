@@ -50,6 +50,8 @@ public interface ObjectStream<T> {
    * null will return each object from the underlying source exactly once.
    *
    * @return the next object or null to signal that the stream is exhausted
+   * 
+   * @throws IOException if there is an error during reading
    */
   T read() throws IOException;
 
@@ -59,6 +61,8 @@ public interface ObjectStream<T> {
    * the stream if multiple passes over the objects are required.
    *
    * The implementation of this method is optional.
+   * 
+   * @throws IOException if there is an error during reseting the stream
    */
   void reset() throws IOException, UnsupportedOperationException;
 
@@ -67,7 +71,7 @@ public interface ObjectStream<T> {
    * resources. After close was called its not allowed to call
    * read or reset.
    *
-   * @throws IOException
+   * @throws IOException if there is an error during closing the stream
    */
   void close() throws IOException;
 }
