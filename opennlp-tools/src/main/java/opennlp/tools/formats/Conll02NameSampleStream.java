@@ -85,8 +85,9 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
   }
 
   /**
-   * @param lang
+   * @param lang the language of the CONLL 02 data
    * @param in an Input Stream to read data.
+   * @param types the entity types to include in the Name Samples
    */
   @Deprecated
   public Conll02NameSampleStream(LANGUAGE lang, InputStream in, int types) {
