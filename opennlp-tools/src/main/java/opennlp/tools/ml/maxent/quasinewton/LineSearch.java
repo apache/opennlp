@@ -26,7 +26,7 @@ public class LineSearch {
   private static final double RHO = 0.5; // decrease of step size (must be from 0 to 1)
 
   /**
-   * Backtracking line search (see Nocedal & Wright 2006, Numerical Optimization, p. 37)
+   * Backtracking line search (see Nocedal &amp; Wright 2006, Numerical Optimization, p. 37)
    */
   public static void doLineSearch(Function function, 
       double[] direction, LineSearchResult lsr, double initialStepSize) 

@@ -64,10 +64,10 @@ public interface Detokenizer {
    * are connected without a space inbetween can be separated by
    * a split marker.
    *
-   * @param tokens
+   * @param tokens the token which should be concatenated
    * @param splitMarker the split marker or null
    *
-   * @return
+   * @return the concatenated tokens
    */
   String detokenize(String tokens[], String splitMarker);
 }

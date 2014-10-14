@@ -78,11 +78,13 @@ public class DetokenizationDictionary {
 
   private final Map<String, DetokenizationDictionary.Operation> operationTable =
       new HashMap<String, DetokenizationDictionary.Operation>();
+  
   /**
    * Initializes the current instance.
    *
-   * @param tokens
-   * @param operations
+   * @param tokens an array of tokens that should be detokenized according to an operation
+   * @param operations an array of operations which specifies which operation
+   *        should be used for the provided tokens
    */
   public DetokenizationDictionary(String tokens[],
       DetokenizationDictionary.Operation operations[]) {
