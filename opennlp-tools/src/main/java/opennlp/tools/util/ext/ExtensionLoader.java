@@ -54,7 +54,7 @@ public class ExtensionLoader {
    * @param clazz
    * @param extensionClassName
    *
-   * @return
+   * @return the instance of the extension class
    */
   // TODO: Throw custom exception if loading fails ...
   @SuppressWarnings("unchecked")
