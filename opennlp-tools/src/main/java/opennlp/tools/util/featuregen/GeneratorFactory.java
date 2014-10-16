@@ -31,6 +31,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
@@ -599,7 +600,6 @@ public class GeneratorFactory {
     } catch (SAXException e) {
       throw new InvalidFormatException("Descriptor is not valid XML!", e);
     }
-
     return xmlDescriptorDOM;
   }
 
@@ -640,10 +640,12 @@ public class GeneratorFactory {
     org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
 
     XPath xPath = XPathFactory.newInstance().newXPath();
+    
 
     NodeList customElements;
     try {
-      customElements = (NodeList) xPath.evaluate("custom", xmlDescriptorDOM.getDocumentElement(), XPathConstants.NODESET);
+      XPathExpression exp = xPath.compile("//custom");
+      customElements = (NodeList) exp.evaluate(xmlDescriptorDOM.getDocumentElement(), XPathConstants.NODESET);
     } catch (XPathExpressionException e) {
       throw new IllegalStateException("The hard coded XPath expression should always be valid!");
     }
@@ -663,7 +665,6 @@ public class GeneratorFactory {
         }
       }
     }
-
     return mapping;
   }
 }
