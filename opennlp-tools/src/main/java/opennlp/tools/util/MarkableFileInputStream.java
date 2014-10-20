@@ -26,7 +26,7 @@ import java.io.InputStream;
 /**
  * A markable File Input Stream.
  */
-public class MarkableFileInputStream extends InputStream {
+class MarkableFileInputStream extends InputStream {
 
   private FileInputStream in;
 
