@@ -187,10 +187,11 @@ public class SentenceDetectorME implements SentenceDetector {
             positions.add(getFirstNonWS(s, getFirstWS(s,cint + 1)));
           }
           else {
-            positions.add(getFirstNonWS(s,cint));
+            positions.add(getFirstNonWS(s, cint + 1));
           }
           sentProbs.add(probs[model.getIndex(bestOutcome)]);
         }
+
         index = cint + 1;
       }
     }
