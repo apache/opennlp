@@ -35,11 +35,11 @@ public class ComparableEvent implements Comparable<ComparableEvent> {
 
   public ComparableEvent(int oc, int[] pids, float[] values) {
     outcome = oc;
-    if (values == null) {
-      Arrays.sort(pids);
-    } else {
-      sort(pids, values);
-    }
+//    if (values == null) {
+//      Arrays.sort(pids);
+//    } else {
+//      sort(pids, values);
+//    }
     this.values = values; // needs to be sorted like pids
     predIndexes = pids;
   }

@@ -83,6 +83,6 @@ public class PerceptronPrepAttachTest {
 
     MaxentModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
 
-    testModel(model, 0.7756870512503095);
+    testModel(model, 0.7791532557563754);
   }
 }
