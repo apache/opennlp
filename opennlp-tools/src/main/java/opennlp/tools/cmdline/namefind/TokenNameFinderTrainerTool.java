@@ -97,7 +97,7 @@ public final class TokenNameFinderTrainerTool
       // TODO: If there is descriptor file, it should be consulted too
       if (featureGenDescriptor != null) {
 
-        InputStream xmlDescriptorIn = null;
+        InputStream xmlDescriptorIn = CmdLineUtil.openInFile(featureGenDescriptor);
 
         try {
           artifactSerializers.putAll(GeneratorFactory.extractCustomArtifactSerializerMappings(xmlDescriptorIn));
