@@ -263,7 +263,7 @@ public class TokenNameFinderModel extends BaseModel {
     Map<String, ArtifactSerializer> serializers = BaseModel.createArtifactSerializers();
 
     serializers.put("featuregen", new ByteArraySerializer());
-    serializers.put("w2vclasses", new W2VClassesDictionary.W2VClassesDictionarySerializer());
+    serializers.put("w2vwordcluster", new W2VClassesDictionary.W2VClassesDictionarySerializer());
 
     return serializers;
   }
