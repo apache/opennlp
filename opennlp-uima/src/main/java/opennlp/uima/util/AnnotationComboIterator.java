@@ -91,7 +91,7 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
         while (lowerBegin < AnnotationComboIterator.this.upperBegin) {
           AnnotationComboIterator.this.lowerIt.moveToNext();
           if (AnnotationComboIterator.this.lowerIt.isValid()) {
-            lowerFS = (AnnotationFS) AnnotationComboIterator.this.lowerIt.next();
+            lowerFS = (AnnotationFS) AnnotationComboIterator.this.lowerIt.get();
             lowerBegin = lowerFS.getBegin();
           } else {
             return false;
