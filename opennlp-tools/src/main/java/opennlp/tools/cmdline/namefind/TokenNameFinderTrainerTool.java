@@ -20,7 +20,9 @@ package opennlp.tools.cmdline.namefind;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.cmdline.AbstractTrainerTool;
@@ -34,12 +36,13 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleTypeFilter;
 import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.namefind.TokenNameFinderModel;
-import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ModelUtil;
+
+import org.w3c.dom.Element;
 
 public final class TokenNameFinderTrainerTool
     extends AbstractTrainerTool<NameSample, TrainerToolParams> {
@@ -92,6 +95,8 @@ public final class TokenNameFinderTrainerTool
 
       Map<String, ArtifactSerializer> artifactSerializers = TokenNameFinderModel
           .createArtifactSerializers();
+      List<Element> elements = new ArrayList<Element>();
+      ArtifactSerializer serializer = null;
 
 
       // TODO: If there is descriptor file, it should be consulted too
@@ -105,38 +110,34 @@ public final class TokenNameFinderTrainerTool
           // TODO: Improve error handling!
           e.printStackTrace();
         }
+        InputStream inputStreamXML = CmdLineUtil.openInFile(featureGenDescriptor);
+        try {
+          elements = GeneratorFactory.getDescriptorElements(inputStreamXML);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
       }
 
       File resourceFiles[] = resourcePath.listFiles();
-
-      // TODO: Filter files, also files with start with a dot
+      
       for (File resourceFile : resourceFiles) {
-
-        // TODO: Move extension extracting code to method and
-        // write unit test for it
-
-        // extract file ending
         String resourceName = resourceFile.getName();
-
-        int lastDot = resourceName.lastIndexOf('.');
-
-        if (lastDot == -1) {
-          continue;
+        //gettting the serializer key from the element tag name
+        //if the element contains a dict attribute
+        for (Element xmlElement : elements) {
+          String dictName = xmlElement.getAttribute("dict");
+          if (dictName != null && dictName.equals(resourceName)) {
+            serializer = artifactSerializers.get(xmlElement.getTagName());
+          }
         }
-
-        String ending = resourceName.substring(lastDot + 1);
-
-        // lookup serializer from map
-        ArtifactSerializer serializer = artifactSerializers.get(ending);
-
         // TODO: Do different? For now just ignore ....
         if (serializer == null)
           continue;
 
-        InputStream resoruceIn = CmdLineUtil.openInFile(resourceFile);
+        InputStream resourceIn = CmdLineUtil.openInFile(resourceFile);
 
         try {
-          resources.put(resourceName, serializer.create(resoruceIn));
+          resources.put(resourceName, serializer.create(resourceIn));
         } catch (InvalidFormatException e) {
           // TODO: Fix exception handling
           e.printStackTrace();
@@ -145,7 +146,7 @@ public final class TokenNameFinderTrainerTool
           e.printStackTrace();
         } finally {
           try {
-            resoruceIn.close();
+            resourceIn.close();
           } catch (IOException e) {
           }
         }

@@ -19,10 +19,12 @@ package opennlp.tools.util.featuregen;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
@@ -666,5 +668,29 @@ public class GeneratorFactory {
       }
     }
     return mapping;
+  }
+  
+  public static List<Element> getDescriptorElements(
+      InputStream xmlDescriptorIn)
+      throws IOException, InvalidFormatException {
+    
+    List<Element> elements = new ArrayList<Element>();
+    org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
+    XPath xPath = XPathFactory.newInstance().newXPath();
+    NodeList allElements;
+    try {
+      XPathExpression exp = xPath.compile("//*");
+      allElements = (NodeList) exp.evaluate(xmlDescriptorDOM.getDocumentElement(), XPathConstants.NODESET);
+    } catch (XPathExpressionException e) {
+      throw new IllegalStateException("The hard coded XPath expression should always be valid!");
+    }
+
+    for (int i = 0; i < allElements.getLength(); i++) {
+      if (allElements.item(i) instanceof Element) {
+        Element customElement = (Element) allElements.item(i);
+        elements.add(customElement);
+        }
+      }
+    return elements;
   }
 }
