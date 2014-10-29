@@ -51,9 +51,7 @@ public interface EntityLinker<T extends Span> {
    * Links an entire document of named entities to an external source
    *
    * @param doctext          the full text of the document
-   * @param sentences        the list of sentences spans that correspond to the
-   *                         text.
-   * @param tokensBySentence a list of tokens that correspond to each sentence.
+   * @param tokensBySentence a list of tokens spans that correspond to each sentence.
    *                         The outer array refers to the sentence, the inner
    *                         array is the tokens for the outer sentence. Similar
    *                         in nature to Map of SentenceIndex keys to Listof
@@ -66,47 +64,29 @@ public interface EntityLinker<T extends Span> {
    *                         Sentence's Tokens&gt;&gt; @ return
    * @return 
    */
-  List<T> find(String doctext, Span[] sentences, String[][] tokensBySentence, Span[][] namesBySentence);
+  List<T> find(String doctext, Span[] sentences, Span[][] tokensBySentence, Span[][] namesBySentence);
 
-  /**
-   *
-   * @param doctext      the document text to be used as additional context, and to
-   *                  derive sentences and tokens String[]
-   * @param sentences the list of sentences spans that correspond to the text.
-   * @param tokens    the spans that correspond to one of the sentences.
-   * @param nameSpans the named entity spans that correspond to the tokens
-   * @return
-   */
-  List<T> find(String doctext, Span sentences[], Span tokens[], Span nameSpans[]);
 
   /**
    * Links the names that correspond to the tokens[] spans. The sentenceindex
    * can be used to get the sentence text and tokens from the text based on the
    * sentence and token spans. The text is available for additional context.
    *
-   * @param doctext          the document text to be used as additional context,
-   *                      and to derive sentences and tokens String[]
-   * @param sentences     the list of sentences spans that correspond to the
-   *                      text.
-   * @param tokens        the spans that correspond to one of the sentences.
-   * @param nameSpans     the named entity spans that correspond to the tokens
+   * @param doctext          the full text of the document
+   * @param tokensBySentence a list of tokens spans that correspond to each sentence.
+   *                         The outer array refers to the sentence, the inner
+   *                         array is the tokens for the outer sentence. Similar
+   *                         in nature to Map of SentenceIndex keys to Listof
+   *                         tokens as values
+   * @param namesBySentence  a list of name spans that correspond to each
+   *                         sentence. The outer array refers to the sentence,
+   *                         the inner array refers to the tokens that for the
+   *                         same sentence.Similar in nature to
+   *                         Map&lt;SentenceIndex,List&lt;Name Spans For This
+   *                         Sentence's Tokens&gt;&gt; @ return
    * @param sentenceIndex the index to the sentence span that the tokens[]
    *                      Span[] corresponds to
    * @return
    */
-  List<T> find(String doctext, Span sentences[], Span tokens[], Span nameSpans[], int sentenceIndex);
-
-  /**
-   * Links the names that correspond to the tokens[]. The Sentences and text are
-   * available for additional context.
-   *
-   * @param doctext      the document text to be used as additional context, and to
-   *                  derive sentences and tokens String[]
-   * @param sentences the list of sentences spans that correspond to the text.
-   * @param tokens    the actual String[] of tokens that correspond to one of
-   *                  the sentences.
-   * @param nameSpans the named entity spans that correspond to the tokens
-   * @return
-   */
-  List<T> find(String doctext, Span sentences[], String tokens[], Span nameSpans[]);
+  List<T> find(String doctext, Span[] sentences, Span[][] tokensBySentence, Span[][] namesBySentence, int sentenceIndex);
 }
