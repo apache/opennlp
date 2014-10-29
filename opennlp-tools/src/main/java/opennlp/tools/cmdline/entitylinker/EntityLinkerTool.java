@@ -94,35 +94,34 @@ public class EntityLinkerTool extends BasicCmdLineTool {
 
             StringBuilder text = new StringBuilder();
             Span sentences[] = new Span[document.size()];
-            List<Span> tokens = new ArrayList<Span>();
-            List<Span> names = new ArrayList<Span>();
+            Span[][] tokensBySentence = new Span[document.size()][];
+            Span[][] namesBySentence = new Span[document.size()][];
 
             for (int i = 0; i < document.size(); i++) {
 
               NameSample sample = document.get(i);
-
+              
+              namesBySentence[i] = sample.getNames();
+              
               int sentenceBegin = text.length();
-
-              int tokenSentOffset = tokens.size();
+              
+              Span[] tokens = new Span[sample.getSentence().length];
 
               // for all tokens
-              for (String token : sample.getSentence()) {
+              for (int ti = 0; ti < sample.getSentence().length; ti++) {
                 int tokenBegin = text.length();
-                text.append(token);
-                Span tokenSpan = new Span(tokenBegin, text.length());
+                text.append(sample.getSentence()[ti]);
                 text.append(" ");
+                tokens[i] = new Span(tokenBegin, text.length());
               }
-
-              for (Span name : sample.getNames()) {
-                names.add(new Span(tokenSentOffset + name.getStart(), tokenSentOffset + name.getEnd(), name.getType()));
-              }
-
+              
+              tokensBySentence[i] = tokens;
+              
               sentences[i] = new Span(sentenceBegin, text.length());
               text.append("\n");
             }
 
-            List<Span> linkedSpans = entityLinker.find(text.toString(), sentences, tokens.toArray(new Span[tokens.size()]),
-                names.toArray(new Span[names.size()]));
+            List<Span> linkedSpans = entityLinker.find(text.toString(), sentences, tokensBySentence, namesBySentence);
 
             for (int i = 0; i < linkedSpans.size(); i++) {
               System.out.println(linkedSpans.get(i));
