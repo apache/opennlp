@@ -88,6 +88,13 @@ public final class TokenNameFinderTrainerTool
     return featureGeneratorBytes;
   }
 
+  /**
+   * Load the resources, such as dictionaries, by reading the feature xml descriptor
+   * and looking into the directory passed as argument.
+   * @param resourcePath the directory in which the resources are to be found
+   * @param featureGenDescriptor the feature xml descriptor
+   * @return a map consisting of the file name of the resource and its corresponding Object
+   */
   public static Map<String, Object> loadResources(File resourcePath, File featureGenDescriptor) {
     Map<String, Object> resources = new HashMap<String, Object>();
 
@@ -155,6 +162,12 @@ public final class TokenNameFinderTrainerTool
     return resources;
   }
 
+  /**
+   * Calls a loadResources method above to load any external resource required for training.
+   * @param resourceDirectory the directory where the resources are to be found
+   * @param featureGeneratorDescriptor the xml feature generator
+   * @return a map containing the file name of the resource and its mapped Object
+   */
   static Map<String, Object> loadResources(String resourceDirectory, File featureGeneratorDescriptor) {
 
     if (resourceDirectory != null) {
