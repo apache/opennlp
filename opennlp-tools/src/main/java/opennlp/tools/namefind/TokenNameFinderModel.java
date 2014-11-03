@@ -251,6 +251,15 @@ public class TokenNameFinderModel extends BaseModel {
     serializers.put("featuregen", new ByteArraySerializer());
   }
 
+  /**
+   * Create the artifact serializers. Currently for serializers related to
+   * features that require external resources, such as {@code W2VClassesDictionary}
+   * objects, the convention is to add its element tag name as key of the serializer map.
+   * For example, the element tag name for the {@code WordClusterFeatureGenerator} which
+   * uses {@code W2VClassesDictionary} objects serialized by the {@code W2VClassesDictionarySerializer}
+   * is 'w2vwordcluster', which is the key used to add the serializer to the map.
+   * @return the map containing the added serializers
+   */
   public static Map<String, ArtifactSerializer> createArtifactSerializers()  {
 
     // TODO: Not so nice, because code cannot really be reused by the other create serializer method

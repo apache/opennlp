@@ -21,13 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -41,7 +39,6 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.SerializableArtifact;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -670,6 +667,13 @@ public class GeneratorFactory {
     return mapping;
   }
   
+  /**
+   * Provides a list with all the elements in the xml feature descriptor.
+   * @param xmlDescriptorIn the xml feature descriptor
+   * @return a list containing all elements
+   * @throws IOException if inputstream cannot be open
+   * @throws InvalidFormatException if xml is not well-formed
+   */
   public static List<Element> getDescriptorElements(
       InputStream xmlDescriptorIn)
       throws IOException, InvalidFormatException {
