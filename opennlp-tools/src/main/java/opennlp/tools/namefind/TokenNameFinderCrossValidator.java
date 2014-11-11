@@ -219,7 +219,7 @@ public class TokenNameFinderCrossValidator {
 
       TokenNameFinderModel model;
       if (factory != null) {
-        model = opennlp.tools.namefind.NameFinderME.train(languageCode, type, samples, params, factory);
+        model = opennlp.tools.namefind.NameFinderME.train(languageCode, type, new DocumentToNameSampleStream(trainingSampleStream), params, factory);
       }
       else {
         model  = opennlp.tools.namefind.NameFinderME.train(languageCode, type,
