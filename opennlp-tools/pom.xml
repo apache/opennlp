@@ -124,19 +124,39 @@
             <id>default-cli</id>
             <configuration>
               <excludes>
-                <exclude>src/test/resources/opennlp/tools/chunker/*.txt</exclude> <!-- test data -->
-                <exclude>src/test/resources/opennlp/tools/formats/*.sample</exclude> <!-- test data -->
-                <exclude>src/test/resources/opennlp/tools/namefind/*.txt</exclude> <!-- test data -->
-                <exclude>src/test/resources/opennlp/tools/namefind/*.train</exclude> <!-- test data -->
-                <exclude>src/test/resources/opennlp/tools/parser/en_head_rules</exclude> <!-- test data -->
-                <exclude>src/test/resources/opennlp/tools/parser/en_head_rules</exclude> <!-- test data -->
-                <exclude>src/test/resources/opennlp/tools/parser/parser.train</exclude> <!-- test data -->
-                <exclude>src/test/resources/opennlp/tools/parser/test.parse</exclude> <!-- test data -->
-                <exclude>src/test/resources/opennlp/tools/postag/AnnotatedSentences.txt</exclude> <!-- test data -->
-                <exclude>src/test/resources/opennlp/tools/sentdetect/Sentences.txt</exclude> <!-- test data -->
-                <exclude>src/test/resources/opennlp/tools/tokenize/token.train</exclude> <!-- test data -->
-                <exclude>lang/en/parser/en-head_rules</exclude> <!-- head rule file, format does not allow AL header -->
-		<exclude>src/main/java/opennlp/tools/stemmer/snowball/*.java</exclude>
+                <!-- test data -->
+                <exclude>src/test/resources/opennlp/tools/chunker/*.txt</exclude>
+                <exclude>src/test/resources/opennlp/tools/formats/*.sample</exclude>
+                <exclude>src/test/resources/opennlp/tools/namefind/*.txt</exclude>
+                <exclude>src/test/resources/opennlp/tools/namefind/*.train</exclude>
+                <exclude>src/test/resources/opennlp/tools/parser/en_head_rules</exclude>
+                <exclude>src/test/resources/opennlp/tools/parser/en_head_rules</exclude>
+                <exclude>src/test/resources/opennlp/tools/parser/parser.train</exclude>
+                <exclude>src/test/resources/opennlp/tools/parser/test.parse</exclude>
+                <exclude>src/test/resources/opennlp/tools/postag/AnnotatedSentences.txt</exclude>
+                <exclude>src/test/resources/opennlp/tools/sentdetect/Sentences.txt</exclude>
+                <exclude>src/test/resources/opennlp/tools/tokenize/token.train</exclude>
+                <exclude>src/main/java/opennlp/tools/ml/maxent/AllEnglishAffixes.txt</exclude>
+                <exclude>src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-broken.txt</exclude>
+                <exclude>src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-ok.txt</exclude>
+                <exclude>src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt</exclude>
+                <exclude>src/test/resources/data/opennlp/maxent/repeat-weighting-training-data.txt</exclude>
+                <exclude>src/test/resources/data/ppa/bitstrings</exclude>
+                <exclude>src/test/resources/data/ppa/devset</exclude>
+                <exclude>src/test/resources/data/ppa/test</exclude>
+                <exclude>src/test/resources/data/ppa/training</exclude>
+                <exclude>src/test/resources/opennlp/tools/doccat/DoccatSample.txt</exclude>
+                <exclude>src/test/resources/opennlp/tools/formats/brat/voa-with-entities.ann</exclude>
+                <exclude>src/test/resources/opennlp/tools/formats/brat/voa-with-entities.txt</exclude>
+                <exclude>src/test/resources/opennlp/tools/formats/brat/voa-with-relations.ann</exclude>
+                <exclude>src/test/resources/opennlp/tools/formats/brat/voa-with-relations.txt</exclude>
+                
+                <!-- head rule files, format does not allow AL header -->
+                <exclude>lang/en/parser/en-head_rules</exclude>
+                <exclude>lang/es/parser/es-head-rules</exclude>
+
+                <!-- other licence -->
+		            <exclude>src/main/java/opennlp/tools/stemmer/snowball/*.java</exclude>
               </excludes>
             </configuration>
           </execution>
