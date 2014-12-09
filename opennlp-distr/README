@@ -7,28 +7,32 @@ Building from the Source Distribution
 
 At least Maven 3.0.0 is required for building.
 
-To build everything go into the opennlp directory and run the following command:
+To build everything execute the following command in the root folder:
     mvn clean install
-   
+
 The results of the build will be placed  in:
     opennlp-distr/target/apache-opennlp-[version]-bin.tar-gz (or .zip)
 
 What is new in Apache OpenNLP ${pom.version}
 ---------------------------------------
 
-This release contains a couple of new features, improvements and bug fixes. The CLI
-has been improved for a better consistency. Now the tools supports extensions that
-can be configured from the model, including customized context generators and
-validators.
+This release introduces many new features, improvements and bug fixes. The API
+has been improved for a better consistency and 1.4 deprecated methods were
+removed. Now Java 1.7 is required.
 
 Additionally the release contains the following noteworthy changes:
 
-- Porter Stemmer tool
-- L-BFGS parameter estimation
-- Improved documentation
-- Fine-grained POSTagger evaluation report
-- Improved support to load user provided feature generator and context validation
-  classes from OSGi environment
+- Added evalutation support to the parser and doccat components
+- Added support to Evalita 07/09, Brat and OntoNotes corpus formats
+- Now L-BFGS is stable
+- Added Snowball to the Stemmer package
+- NameFinder now supports a user defined factory
+- Added pluggable machine learning support
+- Added a lemmatizer module
+- Added Cluster, Document Begin and Clark feature generators to the Name Finder
+- Added Liblinear as a Machine Learning addon
+- Entity Linker now has a command line interface
+- Added sequence classification support
 
 A detailed list of the issues related to this release can be found in the release
 notes.
@@ -42,9 +46,3 @@ Known OSGi Issues
 ------------
 In an OSGi environment the following things are not supported:
 - The coreference resolution component
-
-Note
-----
-The current API contains still many deprecated methods, these
-will be removed in one of our next releases, please
-migrate to our new API.
