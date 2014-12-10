@@ -16,7 +16,7 @@
    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
    KIND, either express or implied.  See the License for the
    specific language governing permissions and limitations
-   under the License.    
+   under the License.
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -39,13 +39,13 @@
 	<prerequisites>
 		<maven>3.0</maven>
 	</prerequisites>
-	
+
 	<scm>
-		<connection>scm:svn:http://svn.apache.org/repos/asf/opennlp/trunk/opennlp/</connection>
-		<developerConnection>scm:svn:https://svn.apache.org/repos/asf/opennlp/trunk/opennlp/</developerConnection>
-		<url>http://svn.apache.org/viewvc/opennlp/trunk/opennlp/</url>
+		<connection>scm:svn:http://svn.apache.org/repos/asf/opennlp/trunk/</connection>
+		<developerConnection>scm:svn:https://svn.apache.org/repos/asf/opennlp/trunk/</developerConnection>
+		<url>http://svn.apache.org/viewvc/opennlp/trunk/</url>
 	</scm>
-	
+
 	<mailingLists>
 		<mailingList>
 			<name>Apache OpenNLP Users</name>
@@ -77,7 +77,7 @@
 			<archive>http://mail-archives.apache.org/mod_mbox/opennlp-issues/</archive>
 		</mailingList>
 	</mailingLists>
-	
+
 	<issueManagement>
 		<system>jira</system>
 		<url>https://issues.apache.org/jira/browse/OPENNLP</url>
@@ -93,7 +93,7 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -104,7 +104,7 @@
 						<useReleaseProfile>false</useReleaseProfile>
 						<goals>deploy</goals>
 						<arguments>-Papache-release</arguments>
-						<mavenExecutorId>forked-path</mavenExecutorId> 
+						<mavenExecutorId>forked-path</mavenExecutorId>
 					</configuration>
 				</plugin>
 
@@ -148,7 +148,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<executions>
@@ -166,7 +166,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
 				<executions>
@@ -192,7 +192,7 @@
 
 		</plugins>
 	</build>
-	
+
 	<profiles>
 		<profile>
 		<id>apache-release</id>
