@@ -56,6 +56,7 @@ public class ChunkerMETool extends BasicCmdLineTool {
       try {
         lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
         perfMon = new PerformanceMonitor(System.err, "sent");
+        perfMon.start();
         String line;
         while ((line = lineStream.read()) != null) {
 
