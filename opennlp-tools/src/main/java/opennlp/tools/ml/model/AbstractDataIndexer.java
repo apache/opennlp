@@ -85,9 +85,6 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     numEvents = eventsToCompare.size();
     if (sort) {
       Collections.sort(eventsToCompare);
-      if (numEvents <= 1) {
-        return numUniqueEvents; // nothing to do; edge case (see assertion)
-      }
 
       ComparableEvent ce = eventsToCompare.get(0);
       for (int i = 1; i < numEvents; i++) {
