@@ -44,7 +44,7 @@ public class SequenceStreamEventStream implements ObjectStream<Event> {
   public Event read() throws IOException {
 
     if (eventIt.hasNext()) {
-      eventIt.next();
+      return eventIt.next();
     }
     else {
       Sequence<?> sequence = sequenceStream.read();
