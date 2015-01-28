@@ -43,7 +43,7 @@ import java.io.ObjectStreamException;
  *
  * @see ObjectStreamException
  */
-public interface ObjectStream<T> {
+public interface ObjectStream<T> extends AutoCloseable {
 
   /**
    * Returns the next object. Calling this method repeatedly until it returns
