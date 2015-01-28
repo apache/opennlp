@@ -115,6 +115,32 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     }
   }
 
+  static class AttributeAnnotationParser extends BratAnnotationParser {
+    
+    private static final int ATTACHED_TO_OFFSET = 2;
+    private static final int VALUE_OFFSET = 3;
+    
+    @Override
+    BratAnnotation parse(Span[] values, CharSequence line) throws IOException {
+      
+      if (values.length == 3 || values.length == 4) {
+        
+        String value = null;
+        
+        if (values.length == 4) {
+          value = values[VALUE_OFFSET].getCoveredText(line).toString();
+        }
+        
+        return new AttributeAnnotation(values[ID_OFFSET].getCoveredText(line).toString(),
+            values[TYPE_OFFSET].getCoveredText(line).toString(),
+            values[ATTACHED_TO_OFFSET].getCoveredText(line).toString(), value);
+      }
+      else {
+        throw new InvalidFormatException("Line must have 3 or 4 fields");
+      }
+    }
+  }
+  
   private final Map<String, BratAnnotationParser> parsers =
       new HashMap<String, BratAnnotationParser>();
   private final AnnotationConfiguration config;
@@ -130,6 +156,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     parsers.put(AnnotationConfiguration.SPAN_TYPE, new SpanAnnotationParser());
     parsers.put(AnnotationConfiguration.ENTITY_TYPE, new SpanAnnotationParser());
     parsers.put(AnnotationConfiguration.RELATION_TYPE, new RelationAnnotationParser());
+    parsers.put(AnnotationConfiguration.ATTRIBUTE_TYPE, new AttributeAnnotationParser());
   }
 
   public BratAnnotation read() throws IOException {
@@ -147,7 +174,8 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
 
         if (parser == null) {
           throw new IOException("Failed to parse ann document with id " + id +
-              " type class, no parser registered: " + tokens[BratAnnotationParser.TYPE_OFFSET]);
+              " type class, no parser registered: " + tokens[BratAnnotationParser.TYPE_OFFSET]
+              .getCoveredText(line).toString());
         }
 
         return parser.parse(tokens, line);
