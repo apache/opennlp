@@ -31,6 +31,7 @@ public class AnnotationConfiguration {
   public static final String SPAN_TYPE = "Span";
   public static final String ENTITY_TYPE = "Entity";
   public static final String RELATION_TYPE = "Relation";
+  public static final String ATTRIBUTE_TYPE = "Attribute";
 
   private final Map<String, String> typeToClassMap;
 
@@ -65,11 +66,22 @@ public class AnnotationConfiguration {
         sectionType = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
       }
       else {
-        if ("entities".equals(sectionType)) {
+        
+        switch (sectionType) {
+        case "entities":
           typeToClassMap.put(line, AnnotationConfiguration.ENTITY_TYPE);
-        }
-        else if ("relations".equals(sectionType)) {
+          break;
+
+        case "relations":
           typeToClassMap.put(line.substring(0, line.indexOf(' ')), AnnotationConfiguration.RELATION_TYPE);
+          break;
+          
+        case "attributes":
+          typeToClassMap.put(line.substring(0, line.indexOf(' ')), AnnotationConfiguration.ATTRIBUTE_TYPE);
+          break;
+          
+        default:
+          break;
         }
       }
     }
