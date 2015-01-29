@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.StringList;
 import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -172,6 +173,7 @@ public class NGramModelTest {
     assertEquals(3, dictionary.getMaxTokenCount());
   }
 
+  @Ignore
   @Test
   public void testSerialize() throws Exception {
     NGramModel ngramModel = new NGramModel();
