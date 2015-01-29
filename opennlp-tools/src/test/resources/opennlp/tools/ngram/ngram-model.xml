@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dictionary case_sensitive="false">
+    <entry count="1">
+        <token>brown</token>
+        <token>fox</token>
+    </entry>
+    <entry count="1">
+        <token>fox</token>
+    </entry>
+    <entry count="1">
+        <token>brown</token>
+        <token>fox</token>
+        <token>jumped</token>
+    </entry>
+    <entry count="2">
+        <token>the</token>
+    </entry>
+    <entry count="1">
+        <token>the</token>
+        <token>brown</token>
+        <token>fox</token>
+    </entry>
+    <entry count="1">
+        <token>the</token>
+        <token>brown</token>
+        <token>Fox</token>
+    </entry>
+    <entry count="2">
+        <token>jumped</token>
+    </entry>
+    <entry count="2">
+        <token>brown</token>
+    </entry>
+    <entry count="1">
+        <token>brown</token>
+        <token>Fox</token>
+        <token>jumped</token>
+    </entry>
+    <entry count="1">
+        <token>Fox</token>
+    </entry>
+    <entry count="1">
+        <token>fox</token>
+        <token>jumped</token>
+    </entry>
+    <entry count="2">
+        <token>the</token>
+        <token>brown</token>
+    </entry>
+    <entry count="1">
+        <token>brown</token>
+        <token>Fox</token>
+    </entry>
+    <entry count="1">
+        <token>Fox</token>
+        <token>jumped</token>
+    </entry>
+</dictionary>
