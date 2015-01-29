@@ -184,7 +184,12 @@ public class NGramModelTest {
     assertNotNull(out);
     InputStream nGramModelStream = getClass().getResourceAsStream("/opennlp/tools/ngram/ngram-model.xml");
     String modelString = IOUtils.toString(nGramModelStream);
-    String outputString = out.toString(Charset.defaultCharset().name());
+    // remove AL header
+    int start = modelString.indexOf("<!--");
+    int end = modelString.indexOf("-->");
+    String asfHeaderString = modelString.substring(start, end +3);
+    modelString = modelString.replace(asfHeaderString, "");
+    String outputString = out.toString(Charset.forName("UTF-8").name());
     assertEquals(modelString.replaceAll("\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", ""),
             outputString.replaceAll("\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", ""));
   }
