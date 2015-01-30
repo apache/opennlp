@@ -112,7 +112,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
                 int tokenBegin = text.length();
                 text.append(sample.getSentence()[ti]);
                 text.append(" ");
-                tokens[i] = new Span(tokenBegin, text.length());
+                tokens[ti] = new Span(tokenBegin, text.length());
               }
               
               tokensBySentence[i] = tokens;
