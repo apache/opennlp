@@ -37,7 +37,6 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
-import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
@@ -56,6 +55,8 @@ import opennlp.tools.util.model.ModelType;
  */
 public class POSTaggerME implements POSTagger {
 
+  public static final int DEFAULT_BEAM_SIZE = 3;
+  
   private POSModel modelPackage;
 
   /**
@@ -76,7 +77,6 @@ public class POSTaggerME implements POSTagger {
    */
   protected boolean useClosedClassTagsFilter = false;
 
-  public static final int DEFAULT_BEAM_SIZE = 3;
 
   /**
    * The size of the beam to be used in determining the best sequence of pos tags.
@@ -95,7 +95,10 @@ public class POSTaggerME implements POSTagger {
    *
    * @param model
    * @param beamSize
+   * 
+   * @deprecated the beam size should be specified in the params during training
    */
+  @Deprecated
   public POSTaggerME(POSModel model, int beamSize, int cacheSize) {
     POSTaggerFactory factory = model.getFactory();
 
@@ -124,7 +127,32 @@ public class POSTaggerME implements POSTagger {
    * @param model
    */
   public POSTaggerME(POSModel model) {
-    this(model, DEFAULT_BEAM_SIZE, 0);
+    POSTaggerFactory factory = model.getFactory();
+
+    int beamSize = POSTaggerME.DEFAULT_BEAM_SIZE;
+    
+    String beamSizeString = model.getManifestProperty(BeamSearch.BEAM_SIZE_PARAMETER);
+    
+    if (beamSizeString != null) {
+      beamSize = Integer.parseInt(beamSizeString);
+    }
+    
+    modelPackage = model;
+
+    contextGen = factory.getPOSContextGenerator(beamSize);
+    tagDictionary = factory.getTagDictionary();
+    size = beamSize;
+
+    sequenceValidator = factory.getSequenceValidator();
+
+    if (model.getPosSequenceModel() != null) {
+      this.model = model.getPosSequenceModel();
+    }
+    else {
+      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
+          model.getPosModel(), 0);
+    }
+
   }
 
   /**
@@ -274,7 +302,7 @@ public class POSTaggerME implements POSTagger {
 
     String beamSizeString = trainParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
 
-    int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
+    int beamSize = POSTaggerME.DEFAULT_BEAM_SIZE;
     if (beamSizeString != null) {
       beamSize = Integer.parseInt(beamSizeString);
     }
@@ -314,7 +342,7 @@ public class POSTaggerME implements POSTagger {
     }
 
     if (posModel != null) {
-      return new POSModel(languageCode, posModel, manifestInfoEntries, posFactory);
+      return new POSModel(languageCode, posModel, beamSize, manifestInfoEntries, posFactory);
     }
     else {
       return new POSModel(languageCode, seqPosModel, manifestInfoEntries, posFactory);

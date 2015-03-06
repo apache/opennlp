@@ -29,7 +29,6 @@ import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
-import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -96,6 +95,9 @@ public final class POSModel extends BaseModel {
     if (posModel == null)
         throw new IllegalArgumentException("The maxentPosModel param must not be null!");
 
+    Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
+    manifest.setProperty(BeamSearch.BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
+    
     artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
     checkArtifactMap();
   }
@@ -155,7 +157,7 @@ public final class POSModel extends BaseModel {
     if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof MaxentModel) {
       String beamSizeString = manifest.getProperty(BeamSearch.BEAM_SIZE_PARAMETER);
 
-      int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
+      int beamSize = POSTaggerME.DEFAULT_BEAM_SIZE;
       if (beamSizeString != null) {
         beamSize = Integer.parseInt(beamSizeString);
       }
