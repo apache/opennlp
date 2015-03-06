@@ -64,8 +64,7 @@ public final class ChunkerEvaluatorTool
       listeners.add(detailedFMeasureListener);
     }
 
-    ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model,
-        ChunkerME.DEFAULT_BEAM_SIZE),
+    ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model),
         listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
 
     final PerformanceMonitor monitor = new PerformanceMonitor("sent");

@@ -48,7 +48,7 @@ public class ChunkerMETool extends BasicCmdLineTool {
     } else {
       ChunkerModel model = new ChunkerModelLoader().load(new File(args[0]));
 
-      ChunkerME chunker = new ChunkerME(model, ChunkerME.DEFAULT_BEAM_SIZE);
+      ChunkerME chunker = new ChunkerME(model);
 
       ObjectStream<String> lineStream = null;
       PerformanceMonitor perfMon = null;
