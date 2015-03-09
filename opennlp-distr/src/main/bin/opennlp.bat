@@ -42,6 +42,6 @@ IF "%OPENNLP_HOME%" == "" (
 REM #  Get the library JAR file name (JIRA OPENNLP-554)
 FOR %%A IN ("%OPENNLP_HOME%\lib\opennlp-tools-*.jar") DO SET JAR_FILE=%%A
 
-%JAVA_CMD% -Xmx4096m -jar %JAR_FILE% %*
+%JAVA_CMD% -Xmx1024m -jar %JAR_FILE% %*
 
 ENDLOCAL
