@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.featuregen.W2VClassesDictionary.W2VClassesDictionarySerializer;
+import opennlp.tools.util.featuregen.WordClusterDictionary.WordClusterDictionarySerializer;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
@@ -113,6 +113,6 @@ public class GeneratorFactoryTest {
     Map<String, ArtifactSerializer<?>> mapping =
         GeneratorFactory.extractCustomArtifactSerializerMappings(descIn);
     
-    assertTrue(mapping.get("test.resource") instanceof W2VClassesDictionarySerializer);
+    assertTrue(mapping.get("test.resource") instanceof WordClusterDictionarySerializer);
   }
 }

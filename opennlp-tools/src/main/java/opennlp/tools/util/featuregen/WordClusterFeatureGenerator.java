@@ -21,10 +21,10 @@ import java.util.List;
 
 public class WordClusterFeatureGenerator extends FeatureGeneratorAdapter {
 
-  private W2VClassesDictionary tokenDictionary;
+  private WordClusterDictionary tokenDictionary;
   private String resourceName;
 
-  public WordClusterFeatureGenerator(W2VClassesDictionary dict, String dictResourceKey) {
+  public WordClusterFeatureGenerator(WordClusterDictionary dict, String dictResourceKey) {
       tokenDictionary = dict;
       resourceName = dictResourceKey;
   }
