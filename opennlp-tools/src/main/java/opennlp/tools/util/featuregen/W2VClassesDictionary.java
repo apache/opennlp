@@ -50,6 +50,11 @@ public class W2VClassesDictionary implements SerializableArtifact {
 
   private Map<String, String> tokenToClusterMap = new HashMap<String, String>();
 
+  /**
+   * Read word2vec and clark clustering style lexicons.
+   * @param in the inputstream
+   * @throws IOException the io exception
+   */
   public W2VClassesDictionary(InputStream in) throws IOException {
 
     BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
@@ -57,8 +62,9 @@ public class W2VClassesDictionary implements SerializableArtifact {
     String line;
     while ((line = reader.readLine()) != null) {
       String parts[] = line.split(" ");
-
-      if (parts.length == 2) {
+      if (parts.length == 3) {
+        tokenToClusterMap.put(parts[0], parts[1]);
+      } else if (parts.length == 2) {
         tokenToClusterMap.put(parts[0], parts[1]);
       }
     }
