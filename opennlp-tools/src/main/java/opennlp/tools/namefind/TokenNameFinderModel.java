@@ -36,7 +36,7 @@ import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
 import opennlp.tools.util.featuregen.BrownCluster;
-import opennlp.tools.util.featuregen.W2VClassesDictionary;
+import opennlp.tools.util.featuregen.WordClusterDictionary;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
@@ -253,7 +253,7 @@ public class TokenNameFinderModel extends BaseModel {
    * objects, the convention is to add its element tag name as key of the serializer map.
    * For example, the element tag name for the {@code WordClusterFeatureGenerator} which
    * uses {@code W2VClassesDictionary} objects serialized by the {@code W2VClassesDictionarySerializer}
-   * is 'w2vwordcluster', which is the key used to add the serializer to the map.
+   * is 'wordcluster', which is the key used to add the serializer to the map.
    * @return the map containing the added serializers
    */
   public static Map<String, ArtifactSerializer> createArtifactSerializers()  {
@@ -268,7 +268,7 @@ public class TokenNameFinderModel extends BaseModel {
     Map<String, ArtifactSerializer> serializers = BaseModel.createArtifactSerializers();
 
     serializers.put("featuregen", new ByteArraySerializer());
-    serializers.put("w2vwordcluster", new W2VClassesDictionary.W2VClassesDictionarySerializer());
+    serializers.put("wordcluster", new WordClusterDictionary.WordClusterDictionarySerializer());
     serializers.put("brownclustertoken", new BrownCluster.BrownClusterSerializer());
     serializers.put("brownclustertokenclass", new BrownCluster.BrownClusterSerializer());
     serializers.put("brownclusterbigram", new BrownCluster.BrownClusterSerializer());

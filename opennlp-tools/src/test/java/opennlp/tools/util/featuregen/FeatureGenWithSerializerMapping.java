@@ -44,7 +44,7 @@ public class FeatureGenWithSerializerMapping extends CustomFeatureGenerator
   @Override
   public Map<String, ArtifactSerializer<?>> getArtifactSerializerMapping() {
     Map<String, ArtifactSerializer<?>> mapping = new HashMap<>();
-    mapping.put("test.resource", new W2VClassesDictionary.W2VClassesDictionarySerializer());
+    mapping.put("test.resource", new WordClusterDictionary.WordClusterDictionarySerializer());
     return Collections.unmodifiableMap(mapping);
   }
 

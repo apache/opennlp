@@ -278,7 +278,7 @@ public class GeneratorFactory {
    * 'w2vwordcluster' as a tag name; these clusters are typically produced by
    * word2vec or clark pos induction systems.
    */
-  static class W2VClassesFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
+  static class WordClusterFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
@@ -288,15 +288,15 @@ public class GeneratorFactory {
       Object dictResource = resourceManager.getResource(dictResourceKey);
 
 
-      if (!(dictResource instanceof W2VClassesDictionary)) {
-        throw new InvalidFormatException("Not a W2VClassesDictionary resource for key: " + dictResourceKey);
+      if (!(dictResource instanceof WordClusterDictionary)) {
+        throw new InvalidFormatException("Not a WordClusterDictionary resource for key: " + dictResourceKey);
       }
 
-      return new WordClusterFeatureGenerator((W2VClassesDictionary) dictResource, dictResourceKey);
+      return new WordClusterFeatureGenerator((WordClusterDictionary) dictResource, dictResourceKey);
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
-      factoryMap.put("w2vwordcluster", new W2VClassesFeatureGeneratorFactory());
+      factoryMap.put("wordcluster", new WordClusterFeatureGeneratorFactory());
     }
   }
   
@@ -628,7 +628,7 @@ public class GeneratorFactory {
     PrefixFeatureGeneratorFactory.register(factories);
     SuffixFeatureGeneratorFactory.register(factories);
     WindowFeatureGeneratorFactory.register(factories);
-    W2VClassesFeatureGeneratorFactory.register(factories);
+    WordClusterFeatureGeneratorFactory.register(factories);
     BrownClusterTokenFeatureGeneratorFactory.register(factories);
     BrownClusterTokenClassFeatureGeneratorFactory.register(factories);
     BrownClusterBigramFeatureGeneratorFactory.register(factories);
