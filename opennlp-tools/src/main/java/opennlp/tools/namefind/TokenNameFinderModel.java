@@ -38,6 +38,7 @@ import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
+import opennlp.tools.util.featuregen.BrownCluster;
 import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
 import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.featuregen.W2VClassesDictionary;
@@ -273,7 +274,10 @@ public class TokenNameFinderModel extends BaseModel {
 
     serializers.put("featuregen", new ByteArraySerializer());
     serializers.put("w2vwordcluster", new W2VClassesDictionary.W2VClassesDictionarySerializer());
-
+    serializers.put("brownclustertoken", new BrownCluster.BrownClusterSerializer());
+    serializers.put("brownclustertokenclass", new BrownCluster.BrownClusterSerializer());
+    serializers.put("brownclusterbigram", new BrownCluster.BrownClusterSerializer());
+    
     return serializers;
   }
 

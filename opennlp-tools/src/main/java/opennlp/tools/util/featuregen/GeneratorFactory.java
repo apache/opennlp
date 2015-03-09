@@ -297,6 +297,81 @@ public class GeneratorFactory {
       factoryMap.put("w2vwordcluster", new W2VClassesFeatureGeneratorFactory());
     }
   }
+  
+  /**
+   * Generates Brown clustering features for current token.
+   */
+  static class BrownClusterTokenFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
+
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+        FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
+
+      String dictResourceKey = generatorElement.getAttribute("dict");
+
+      Object dictResource = resourceManager.getResource(dictResourceKey);
+
+
+      if (!(dictResource instanceof BrownCluster)) {
+        throw new InvalidFormatException("Not a BrownLexicon resource for key: " + dictResourceKey);
+      }
+
+      return new BrownTokenFeatureGenerator((BrownCluster) dictResource);
+    }
+
+    static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("brownclustertoken", new BrownClusterTokenFeatureGeneratorFactory());
+    }
+  }
+  
+  /**
+   * Generates Brown clustering features for token classes.
+   */
+  static class BrownClusterTokenClassFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
+
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+        FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
+
+      String dictResourceKey = generatorElement.getAttribute("dict");
+
+      Object dictResource = resourceManager.getResource(dictResourceKey);
+
+
+      if (!(dictResource instanceof BrownCluster)) {
+        throw new InvalidFormatException("Not a BrownLexicon resource for key: " + dictResourceKey);
+      }
+
+      return new BrownTokenClassFeatureGenerator((BrownCluster) dictResource);
+    }
+
+    static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("brownclustertokenclass", new BrownClusterTokenClassFeatureGeneratorFactory());
+    }
+  }
+  
+  /**
+   * Generates Brown clustering features for token bigrams.
+   */
+  static class BrownClusterBigramFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
+
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+        FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
+
+      String dictResourceKey = generatorElement.getAttribute("dict");
+
+      Object dictResource = resourceManager.getResource(dictResourceKey);
+
+
+      if (!(dictResource instanceof BrownCluster)) {
+        throw new InvalidFormatException("Not a BrownLexicon resource for key: " + dictResourceKey);
+      }
+
+      return new BrownBigramFeatureGenerator((BrownCluster) dictResource);
+    }
+
+    static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("brownclusterbigram", new BrownClusterBigramFeatureGeneratorFactory());
+    }
+  }
 
   /**
    * @see PreviousMapFeatureGenerator
@@ -552,6 +627,9 @@ public class GeneratorFactory {
     SuffixFeatureGeneratorFactory.register(factories);
     WindowFeatureGeneratorFactory.register(factories);
     W2VClassesFeatureGeneratorFactory.register(factories);
+    BrownClusterTokenFeatureGeneratorFactory.register(factories);
+    BrownClusterTokenClassFeatureGeneratorFactory.register(factories);
+    BrownClusterBigramFeatureGeneratorFactory.register(factories);
     CustomFeatureGeneratorFactory.register(factories);
   }
 
