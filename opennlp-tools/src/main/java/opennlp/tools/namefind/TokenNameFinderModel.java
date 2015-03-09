@@ -18,7 +18,6 @@
 
 package opennlp.tools.namefind;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,19 +27,15 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
-import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
-import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
 import opennlp.tools.util.featuregen.BrownCluster;
-import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
-import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.featuregen.W2VClassesDictionary;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
