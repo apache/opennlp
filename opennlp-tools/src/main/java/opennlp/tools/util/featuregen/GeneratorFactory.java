@@ -274,7 +274,9 @@ public class GeneratorFactory {
   }
 
   /**
-   * @see DictionaryFeatureGenerator
+   * Defines a word cluster generator factory; it reads an element containing
+   * 'w2vwordcluster' as a tag name; these clusters are typically produced by
+   * word2vec or clark pos induction systems.
    */
   static class W2VClassesFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
@@ -290,7 +292,7 @@ public class GeneratorFactory {
         throw new InvalidFormatException("Not a W2VClassesDictionary resource for key: " + dictResourceKey);
       }
 
-      return new WordClusterFeatureGenerator((W2VClassesDictionary) dictResource);
+      return new WordClusterFeatureGenerator((W2VClassesDictionary) dictResource, dictResourceKey);
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {

@@ -22,9 +22,11 @@ import java.util.List;
 public class WordClusterFeatureGenerator extends FeatureGeneratorAdapter {
 
   private W2VClassesDictionary tokenDictionary;
+  private String resourceName;
 
-  public WordClusterFeatureGenerator(W2VClassesDictionary dict) {
+  public WordClusterFeatureGenerator(W2VClassesDictionary dict, String dictResourceKey) {
       tokenDictionary = dict;
+      resourceName = dictResourceKey;
   }
 
   public void createFeatures(List<String> features, String[] tokens, int index,
@@ -33,7 +35,7 @@ public class WordClusterFeatureGenerator extends FeatureGeneratorAdapter {
     String clusterId = tokenDictionary.lookupToken(tokens[index]);
 
     if (clusterId != null) {
-      features.add("cluster=" + clusterId);
+      features.add(resourceName + clusterId);
     }
   }
 }
