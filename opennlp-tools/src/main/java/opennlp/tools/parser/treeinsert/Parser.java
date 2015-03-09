@@ -39,6 +39,7 @@ import opennlp.tools.parser.ChunkContextGenerator;
 import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
+import opennlp.tools.parser.ParserChunkerFactory;
 import opennlp.tools.parser.ParserChunkerSequenceValidator;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
@@ -46,6 +47,7 @@ import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.PosSampleStream;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
+import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
@@ -101,10 +103,7 @@ public class Parser extends AbstractBottomUpParser {
   public Parser(ParserModel model, int beamSize, double advancePercentage) {
     this(model.getBuildModel(), model.getAttachModel(), model.getCheckModel(),
         new POSTaggerME(model.getParserTaggerModel()),
-        new ChunkerME(model.getParserChunkerModel(),
-        ChunkerME.DEFAULT_BEAM_SIZE,
-        new ParserChunkerSequenceValidator(model.getParserChunkerModel()),
-        new ChunkContextGenerator(ChunkerME.DEFAULT_BEAM_SIZE)),
+        new ChunkerME(model.getParserChunkerModel()),
         model.getHeadRules(),
         beamSize, advancePercentage);
   }
@@ -445,13 +444,13 @@ public class Parser extends AbstractBottomUpParser {
 
     // tag
     POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(
-        parseSamples), mlParams.getParameters("tagger"), null, null);
+        parseSamples), mlParams.getParameters("tagger"), new POSTaggerFactory());
 
     parseSamples.reset();
 
     // chunk
     ChunkerModel chunkModel = ChunkerME.train(languageCode, new ChunkSampleStream(
-        parseSamples), new ChunkContextGenerator(), mlParams.getParameters("chunker"));
+        parseSamples), mlParams.getParameters("chunker"), new ParserChunkerFactory());
 
     parseSamples.reset();
 
