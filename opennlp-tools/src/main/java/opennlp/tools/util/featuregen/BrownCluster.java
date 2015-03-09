@@ -64,7 +64,7 @@ public class BrownCluster implements SerializableArtifact {
 
   /**
    * Generates the token to cluster map from Brown cluster input file.
-   * NOTE: we only add those tokens with frequency > 5.
+   * NOTE: we only add those tokens with frequency bigger than 5.
    * @param in the inputstream
    * @throws IOException the io exception
    */
@@ -87,7 +87,7 @@ public class BrownCluster implements SerializableArtifact {
   }
 
   /**
-   * Check if a token is in the Brown<paths, token> map.
+   * Check if a token is in the Brown:paths, token map.
    * @param string the token to look-up
    * @return the brown class if such token is in the brown cluster map
    */
