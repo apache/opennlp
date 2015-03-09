@@ -28,6 +28,7 @@ import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
@@ -38,6 +39,7 @@ import opennlp.tools.parser.ChunkContextGenerator;
 import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
+import opennlp.tools.parser.ParserChunkerFactory;
 import opennlp.tools.parser.ParserChunkerSequenceValidator;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
@@ -45,6 +47,7 @@ import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.PosSampleStream;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
+import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
@@ -74,11 +77,8 @@ public class Parser extends AbstractBottomUpParser {
 
   public Parser(ParserModel model, int beamSize, double advancePercentage) {
     this(model.getBuildModel(), model.getCheckModel(),
-        new POSTaggerME(model.getParserTaggerModel(), 10, 0),
-        new ChunkerME(model.getParserChunkerModel(),
-            ChunkerME.DEFAULT_BEAM_SIZE,
-            new ParserChunkerSequenceValidator(model.getParserChunkerModel()),
-            new ChunkContextGenerator(ChunkerME.DEFAULT_BEAM_SIZE)),
+        new POSTaggerME(model.getParserTaggerModel()),
+        new ChunkerME(model.getParserChunkerModel()),
             model.getHeadRules(), beamSize, advancePercentage);
   }
 
@@ -287,15 +287,21 @@ public class Parser extends AbstractBottomUpParser {
     parseSamples.reset();
 
     // tag
+    TrainingParameters posTaggerParams = mlParams.getParameters("tagger");
+        
+    if (!posTaggerParams.getSettings().containsKey(BeamSearch.BEAM_SIZE_PARAMETER)) {
+      mlParams.put("tagger", BeamSearch.BEAM_SIZE_PARAMETER,
+          Integer.toString(10));
+    }
+    
     POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(parseSamples),
-        mlParams.getParameters("tagger"), null, null);
+        mlParams.getParameters("tagger"), new POSTaggerFactory());
 
     parseSamples.reset();
 
     // chunk
     ChunkerModel chunkModel = ChunkerME.train(languageCode,
-        new ChunkSampleStream(parseSamples),
-        new ChunkContextGenerator(), mlParams.getParameters("chunker"));
+        new ChunkSampleStream(parseSamples), mlParams.getParameters("chunker"), new ParserChunkerFactory());
 
     parseSamples.reset();
 

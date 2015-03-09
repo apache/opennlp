@@ -20,7 +20,6 @@ package opennlp.tools.parser;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.SequenceValidator;
 
@@ -28,12 +27,12 @@ public class ParserChunkerSequenceValidator implements SequenceValidator<String>
 
   private Map<String, String> continueStartMap;
 
-  public ParserChunkerSequenceValidator(ChunkerModel model) {
+  public ParserChunkerSequenceValidator(String outcomes[]) {
 
     continueStartMap =
-        new HashMap<String, String>(model.getChunkerModel().getNumOutcomes());
-    for (int oi=0, on = model.getChunkerModel().getNumOutcomes(); oi<on; oi++) {
-      String outcome = model.getChunkerModel().getOutcome(oi);
+        new HashMap<String, String>(outcomes.length);
+    for (int oi=0, on = outcomes.length; oi<on; oi++) {
+      String outcome = outcomes[oi];
       if (outcome.startsWith(Parser.CONT)){
         continueStartMap.put(outcome,Parser.START+outcome.substring(
             Parser.CONT.length()));
