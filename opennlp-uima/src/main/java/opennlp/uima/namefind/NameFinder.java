@@ -169,8 +169,6 @@ public final class NameFinder extends AbstractNameFinder {
       documentConfidence.add(prob);
     }
 
-    mNameFinder.clearAdaptiveData();
-
     return names;
   }
 
