@@ -31,7 +31,6 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.ml.model.TrainUtil;
-import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.postag.POSSampleSequenceStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
@@ -199,7 +198,7 @@ public class ChunkerME implements Chunker {
 
     String beamSizeString = mlParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
 
-    int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
+    int beamSize = ChunkerME.DEFAULT_BEAM_SIZE;
     if (beamSizeString != null) {
       beamSize = Integer.parseInt(beamSizeString);
     }
@@ -232,7 +231,7 @@ public class ChunkerME implements Chunker {
     }
 
     if (chunkerModel != null) {
-      return new ChunkerModel(lang, chunkerModel, manifestInfoEntries, factory);
+      return new ChunkerModel(lang, chunkerModel, beamSize, manifestInfoEntries, factory);
     }
     else {
       return new ChunkerModel(lang, seqChunkerModel, manifestInfoEntries, factory);
