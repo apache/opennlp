@@ -34,7 +34,6 @@ import opennlp.tools.ml.model.BinaryFileDataReader;
 import opennlp.tools.ml.model.GenericModelReader;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
-import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
@@ -136,7 +135,7 @@ public class ChunkerModel extends BaseModel {
     if (artifactMap.get(CHUNKER_MODEL_ENTRY_NAME) instanceof MaxentModel) {
       String beamSizeString = manifest.getProperty(BeamSearch.BEAM_SIZE_PARAMETER);
 
-      int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
+      int beamSize = ChunkerME.DEFAULT_BEAM_SIZE;
       if (beamSizeString != null) {
         beamSize = Integer.parseInt(beamSizeString);
       }
