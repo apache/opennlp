@@ -46,7 +46,7 @@ public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample>
     super(new ParagraphStream(lineStream));
   }
 
-  ConllXPOSSampleStream(InputStreamFactory in, Charset charset) throws IOException {
+  public ConllXPOSSampleStream(InputStreamFactory in, Charset charset) throws IOException {
     super(new ParagraphStream(new PlainTextByLineStream(in, charset)));
   }
 
