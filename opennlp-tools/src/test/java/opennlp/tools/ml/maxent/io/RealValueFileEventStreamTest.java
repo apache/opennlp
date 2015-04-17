@@ -28,7 +28,7 @@ public class RealValueFileEventStreamTest extends TestCase {
   public void testLastLineBug() throws IOException {
     OnePassRealValueDataIndexer indexer;
     RealValueFileEventStream rvfes;
-    
+
     rvfes = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-ok.txt");
     try {

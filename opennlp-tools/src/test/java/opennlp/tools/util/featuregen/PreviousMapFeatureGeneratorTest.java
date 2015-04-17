@@ -31,28 +31,28 @@ public class PreviousMapFeatureGeneratorTest {
 
   @Test
   public void testFeatureGeneration() {
-    
+
     AdaptiveFeatureGenerator fg = new PreviousMapFeatureGenerator();
-    
+
     String sentence[] = new String[] {"a", "b", "c"};
-    
+
     List<String> features = new ArrayList<String>();
-    
+
     // this should generate the pd=null feature
     fg.createFeatures(features, sentence, 0, null);
     assertEquals(1, features.size());
     assertEquals("pd=null", features.get(0));
-    
+
     features.clear();
-    
+
     // this should generate the pd=1 feature
     fg.updateAdaptiveData(sentence, new String[] {"1", "2", "3"});
     fg.createFeatures(features, sentence, 0, null);
     assertEquals(1, features.size());
     assertEquals("pd=1", features.get(0));
-    
+
     features.clear();
-    
+
     // this should generate the pd=null feature again after
     // the adaptive data was cleared
     fg.clearAdaptiveData();

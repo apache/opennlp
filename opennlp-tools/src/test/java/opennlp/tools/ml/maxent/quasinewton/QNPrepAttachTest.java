@@ -37,28 +37,28 @@ public class QNPrepAttachTest {
 
   @Test
   public void testQNOnPrepAttachData() throws IOException {
-    AbstractModel model = 
+    AbstractModel model =
         new QNTrainer(true).trainModel(
             100, new TwoPassDataIndexer(createTrainingStream(), 1));
 
     testModel(model, 0.8155484030700668);
   }
-  
+
   @Test
   public void testQNOnPrepAttachDataWithParamsDefault() throws IOException {
-    
+
     Map<String, String> trainParams = new HashMap<String, String>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
-    
+
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(createTrainingStream());
-    
+
     testModel(model, 0.8115870264917059);
   }
 
   @Test
   public void testQNOnPrepAttachDataWithElasticNetParams() throws IOException {
-    
+
     Map<String, String> trainParams = new HashMap<String, String>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
@@ -66,16 +66,16 @@ public class QNPrepAttachTest {
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put(QNTrainer.L1COST_PARAM, Double.toString(0.25));
     trainParams.put(QNTrainer.L2COST_PARAM, Double.toString(1.0));
-    
+
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(createTrainingStream());
-    
+
     testModel(model, 0.8229759841544937);
   }
-  
+
   @Test
   public void testQNOnPrepAttachDataWithL1Params() throws IOException {
-    
+
     Map<String, String> trainParams = new HashMap<String, String>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
@@ -83,16 +83,16 @@ public class QNPrepAttachTest {
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put(QNTrainer.L1COST_PARAM, Double.toString(1.0));
     trainParams.put(QNTrainer.L2COST_PARAM, Double.toString(0));
-    
+
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(createTrainingStream());
-    
+
     testModel(model, 0.8180242634315424);
   }
-  
+
   @Test
   public void testQNOnPrepAttachDataWithL2Params() throws IOException {
-    
+
     Map<String, String> trainParams = new HashMap<String, String>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
@@ -100,23 +100,23 @@ public class QNPrepAttachTest {
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put(QNTrainer.L1COST_PARAM, Double.toString(0));
     trainParams.put(QNTrainer.L2COST_PARAM, Double.toString(1.0));
-    
+
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(createTrainingStream());
-    
+
     testModel(model, 0.8227283981183461);
   }
-  
+
   @Test
   public void testQNOnPrepAttachDataInParallel() throws IOException {
-    
+
     Map<String, String> trainParams = new HashMap<String, String>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put("Threads", Integer.toString(2));
-    
+
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(createTrainingStream());
-    
+
     testModel(model, 0.8115870264917059);
   }
 }

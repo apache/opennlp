@@ -40,7 +40,7 @@ public class GeneratorFactoryTest {
   public void testCreationWihtSimpleDescriptor() throws Exception {
     InputStream generatorDescriptorIn = getClass().getResourceAsStream(
         "/opennlp/tools/util/featuregen/TestFeatureGeneratorConfig.xml");
-    
+
     // If this fails the generator descriptor could not be found
     // at the expected location
     assertNotNull(generatorDescriptorIn);
@@ -65,28 +65,28 @@ public class GeneratorFactoryTest {
     // removed from the expected generators collection
     assertEquals(0, expectedGenerators.size());
   }
-  
+
   @Test
   public void testCreationWithCustomGenerator() throws Exception {
     InputStream generatorDescriptorIn = getClass().getResourceAsStream(
         "/opennlp/tools/util/featuregen/CustomClassLoading.xml");
-    
+
     // If this fails the generator descriptor could not be found
     // at the expected location
     assertNotNull(generatorDescriptorIn);
-    
+
     AggregatedFeatureGenerator aggregatedGenerator =
       (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
-    
+
     Collection<AdaptiveFeatureGenerator> embeddedGenerator = aggregatedGenerator.getGenerators();
-    
+
     assertEquals(1, embeddedGenerator.size());
-    
+
     for (AdaptiveFeatureGenerator generator : embeddedGenerator) {
       assertEquals(TokenFeatureGenerator.class.getName(), generator.getClass().getName());
     }
   }
-  
+
   /**
    * Tests the creation from a descriptor which contains an unkown element.
    * The creation should fail with an {@link InvalidFormatException}
@@ -95,7 +95,7 @@ public class GeneratorFactoryTest {
   public void testCreationWithUnkownElement() throws IOException {
     InputStream descIn = getClass().getResourceAsStream(
         "/opennlp/tools/util/featuregen/FeatureGeneratorConfigWithUnkownElement.xml");
-    
+
     try {
       GeneratorFactory.create(descIn, null);
     }
@@ -103,16 +103,16 @@ public class GeneratorFactoryTest {
       descIn.close();
     }
   }
-  
+
   @Test
   public void testArtifactToSerializerMappingExtraction() throws IOException {
     // TODO: Define a new one here with custom elements ...
     InputStream descIn = getClass().getResourceAsStream(
         "/opennlp/tools/util/featuregen/CustomClassLoadingWithSerializers.xml");
-    
+
     Map<String, ArtifactSerializer<?>> mapping =
         GeneratorFactory.extractCustomArtifactSerializerMappings(descIn);
-    
+
     assertTrue(mapping.get("test.resource") instanceof WordClusterDictionarySerializer);
   }
 }

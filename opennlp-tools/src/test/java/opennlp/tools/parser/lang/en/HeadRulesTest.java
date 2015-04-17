@@ -32,18 +32,18 @@ public class HeadRulesTest {
 
   @Test
   public void testSerialization() throws IOException {
-    InputStream headRulesIn = 
+    InputStream headRulesIn =
         HeadRulesTest.class.getResourceAsStream("/opennlp/tools/parser/en_head_rules");
-    
+
     HeadRules headRulesOrginal = new HeadRules(new InputStreamReader(headRulesIn, "UTF-8"));
-    
+
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     headRulesOrginal.serialize(new OutputStreamWriter(out, "UTF-8"));
     out.close();
-    
+
     HeadRules headRulesRecreated = new HeadRules(new InputStreamReader(
         new ByteArrayInputStream(out.toByteArray()), "UTF-8"));
-    
+
     assertEquals(headRulesOrginal, headRulesRecreated);
   }
 }

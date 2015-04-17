@@ -33,33 +33,33 @@ import org.junit.Test;
  * Tests for the {@link Parser} class.
  */
 public class ParserTest {
-  
+
   /**
    * Verify that training and tagging does not cause
    * runtime problems.
    */
   @Test
   public void testTreeInsertParserTraining() throws Exception {
-    
+
     ObjectStream<Parse> parseSamples = ParserTestUtil.openTestTrainingData();
     HeadRules headRules = ParserTestUtil.createTestHeadRules();
-    
+
     ParserModel model = Parser.train("en", parseSamples, headRules, 100, 0);
-    
+
     opennlp.tools.parser.Parser parser = ParserFactory.create(model);
-    
+
     // Tests parsing to make sure the code does not has
     // a bug which fails always with a runtime exception
     parser.parse(Parse.parseParse("She was just another freighter from the " +
           "States and she seemed as commonplace as her name ."));
-    
+
     // Test serializing and de-serializing model
     ByteArrayOutputStream outArray = new ByteArrayOutputStream();
     model.serialize(outArray);
     outArray.close();
-    
+
     new ParserModel(new ByteArrayInputStream(outArray.toByteArray()));
-    
+
     // TODO: compare both models
   }
 }
