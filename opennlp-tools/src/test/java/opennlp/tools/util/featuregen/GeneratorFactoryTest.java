@@ -18,8 +18,9 @@
 
 package opennlp.tools.util.featuregen;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +31,6 @@ import java.util.Map;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.WordClusterDictionary.WordClusterDictionarySerializer;
 import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.SerializableArtifact;
 
 import org.junit.Test;
 
