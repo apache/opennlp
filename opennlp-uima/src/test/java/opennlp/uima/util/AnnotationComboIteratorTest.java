@@ -38,7 +38,7 @@ public class AnnotationComboIteratorTest {
    * <p>
    * The iterator was either crashing with a NoSuchElementException or it just left
    * out the first token in the next sentence.
-   * 
+   *
    * @throws IOException
    */
   @Test
