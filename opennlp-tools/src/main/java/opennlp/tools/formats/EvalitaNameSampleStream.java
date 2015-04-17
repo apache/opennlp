@@ -58,39 +58,39 @@ import opennlp.tools.util.StringUtil;
  */
 public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
 
-	public enum LANGUAGE {
-	    IT
-	  }
+  public enum LANGUAGE {
+    IT
+  }
 
-	  public static final int GENERATE_PERSON_ENTITIES = 0x01;
-	  public static final int GENERATE_ORGANIZATION_ENTITIES = 0x01 << 1;
-	  public static final int GENERATE_LOCATION_ENTITIES = 0x01 << 2;
-	  public static final int GENERATE_GPE_ENTITIES = 0x01 << 3;
+  public static final int GENERATE_PERSON_ENTITIES = 0x01;
+  public static final int GENERATE_ORGANIZATION_ENTITIES = 0x01 << 1;
+  public static final int GENERATE_LOCATION_ENTITIES = 0x01 << 2;
+  public static final int GENERATE_GPE_ENTITIES = 0x01 << 3;
 
-	  public static final String DOCSTART = "-DOCSTART-";
+  public static final String DOCSTART = "-DOCSTART-";
 
-	  private final LANGUAGE lang;
-	  private final ObjectStream<String> lineStream;
+  private final LANGUAGE lang;
+  private final ObjectStream<String> lineStream;
 
-	  private final int types;
+  private final int types;
 
-	  public EvalitaNameSampleStream(LANGUAGE lang, ObjectStream<String> lineStream, int types) {
-	    this.lang = lang;
-	    this.lineStream = lineStream;
-	    this.types = types;
-	  }
+  public EvalitaNameSampleStream(LANGUAGE lang, ObjectStream<String> lineStream, int types) {
+    this.lang = lang;
+    this.lineStream = lineStream;
+    this.types = types;
+  }
 
-	  public EvalitaNameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
-	    this.lang = lang;
-	    try {
-	      this.lineStream = new PlainTextByLineStream(in, "UTF-8");
-	      System.setOut(new PrintStream(System.out, true, "UTF-8"));
-	    } catch (UnsupportedEncodingException e) {
-	      // UTF-8 is available on all JVMs, will never happen
-	      throw new IllegalStateException(e);
-	    }
-	    this.types = types;
-	  }
+  public EvalitaNameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
+    this.lang = lang;
+    try {
+      this.lineStream = new PlainTextByLineStream(in, "UTF-8");
+      System.setOut(new PrintStream(System.out, true, "UTF-8"));
+    } catch (UnsupportedEncodingException e) {
+      // UTF-8 is available on all JVMs, will never happen
+      throw new IllegalStateException(e);
+    }
+    this.types = types;
+  }
 
   /**
    * @param lang the language of the Evalita data file
@@ -152,21 +152,21 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
         String emptyLine = lineStream.read();
 
         if (!StringUtil.isEmpty(emptyLine))
-            throw new IOException("Empty line after -DOCSTART- not empty: '" + emptyLine +"'!");
+          throw new IOException("Empty line after -DOCSTART- not empty: '" + emptyLine +"'!");
 
         continue;
       }
 
       String fields[] = line.split(" ");
 
-     // For Italian: WORD  POS-TAG SC-TAG NE-TAG
+      // For Italian: WORD  POS-TAG SC-TAG NE-TAG
       if (LANGUAGE.IT.equals(lang) && (fields.length == 4)) {
         sentence.add(fields[0]);
         tags.add(fields[3]); // 3 is NE-TAG
       }
       else {
-          throw new IOException("Incorrect number of fields per line for language: '" + line + "'!");
-        }
+        throw new IOException("Incorrect number of fields per line for language: '" + line + "'!");
+      }
     }
 
     // Always clear adaptive data for Italian
@@ -198,45 +198,45 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
 
         if (tag.startsWith("B-")) {
 
-            if (beginIndex != -1) {
-              names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
-              beginIndex = -1;
-              endIndex = -1;
-            }
+          if (beginIndex != -1) {
+            names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
+            beginIndex = -1;
+            endIndex = -1;
+          }
 
-            beginIndex = i;
-            endIndex = i +1;
-          }
-          else if (tag.startsWith("I-")) {
-            endIndex++;
-          }
-          else if (tag.equals("O")) {
-            if (beginIndex != -1) {
-              names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
-              beginIndex = -1;
-              endIndex = -1;
-            }
-          }
-          else {
-            throw new IOException("Invalid tag: " + tag);
+          beginIndex = i;
+          endIndex = i +1;
+        }
+        else if (tag.startsWith("I-")) {
+          endIndex++;
+        }
+        else if (tag.equals("O")) {
+          if (beginIndex != -1) {
+            names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
+            beginIndex = -1;
+            endIndex = -1;
           }
         }
+        else {
+          throw new IOException("Invalid tag: " + tag);
+        }
+      }
 
-        // if one span remains, create it here
-        if (beginIndex != -1)
-          names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
+      // if one span remains, create it here
+      if (beginIndex != -1)
+        names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
 
-        return new NameSample(sentence.toArray(new String[sentence.size()]), names.toArray(new Span[names.size()]), isClearAdaptiveData);
-      }
-      else if (line != null) {
-        // Just filter out empty events, if two lines in a row are empty
-        return read();
-      }
-      else {
-        // source stream is not returning anymore lines
-        return null;
-      }
+      return new NameSample(sentence.toArray(new String[sentence.size()]), names.toArray(new Span[names.size()]), isClearAdaptiveData);
     }
+    else if (line != null) {
+      // Just filter out empty events, if two lines in a row are empty
+      return read();
+    }
+    else {
+      // source stream is not returning anymore lines
+      return null;
+    }
+  }
 
   public void reset() throws IOException, UnsupportedOperationException {
     lineStream.reset();
