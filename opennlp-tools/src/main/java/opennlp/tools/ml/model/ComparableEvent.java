@@ -19,7 +19,6 @@
 
 package opennlp.tools.ml.model;
 
-import java.util.Arrays;
 
 /**
  * A maxent event representation which we can use to sort based on the

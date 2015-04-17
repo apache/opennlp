@@ -35,7 +35,6 @@ import opennlp.tools.namefind.NameSampleTypeFilter;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.namefind.TokenNameFinderFactory;
-import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.eval.EvaluationMonitor;

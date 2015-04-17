@@ -18,9 +18,7 @@
 
 package opennlp.tools.doccat;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
 

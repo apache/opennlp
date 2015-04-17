@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
