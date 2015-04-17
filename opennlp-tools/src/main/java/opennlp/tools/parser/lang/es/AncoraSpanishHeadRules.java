@@ -43,16 +43,16 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
 /**
- * Class for storing the Ancora Spanish head rules associated with parsing. In this class 
- * headrules for noun phrases are specified. The rest of the rules are 
+ * Class for storing the Ancora Spanish head rules associated with parsing. In this class
+ * headrules for noun phrases are specified. The rest of the rules are
  * in opennlp-tools/lang/es/parser/es-head-rules
  *
  * NOTE: This class has been adapted from opennlp.tools.parser.lang.en.HeadRules
  *
  * The main change is the constituents search direction in the first for loop.
  *
- * Note also the change in the return of the getHead() method: 
- * In the lang.en.HeadRules class: return constituents[ci].getHead(); 
+ * Note also the change in the return of the getHead() method:
+ * In the lang.en.HeadRules class: return constituents[ci].getHead();
  * Now: return constituents[ci];
  *
  * Other changes include removal of deprecated methods.

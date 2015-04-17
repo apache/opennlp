@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * This class works exactly like the SuffisSensitiveGISModelReader except that it 
+ * This class works exactly like the SuffisSensitiveGISModelReader except that it
  * attempts to pool all context strings.  This is useful when loading models which
  * share many context strings.
  *
@@ -40,7 +40,7 @@ public class PooledGISModelReader extends SuffixSensitiveGISModelReader {
    *    <li>.txt --&gt; the file is plain text</li>
    *    <li>.bin --&gt; the file is binary</li>
    * </ul>
-   * 
+   *
    * @param f
    * @throws IOException
    */

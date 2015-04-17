@@ -66,7 +66,7 @@ public class AnnotationConfiguration {
         sectionType = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
       }
       else {
-        
+
         switch (sectionType) {
         case "entities":
           typeToClassMap.put(line, AnnotationConfiguration.ENTITY_TYPE);
@@ -75,11 +75,11 @@ public class AnnotationConfiguration {
         case "relations":
           typeToClassMap.put(line.substring(0, line.indexOf(' ')), AnnotationConfiguration.RELATION_TYPE);
           break;
-          
+
         case "attributes":
           typeToClassMap.put(line.substring(0, line.indexOf(' ')), AnnotationConfiguration.ATTRIBUTE_TYPE);
           break;
-          
+
         default:
           break;
         }

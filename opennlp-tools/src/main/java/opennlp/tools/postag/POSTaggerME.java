@@ -56,7 +56,7 @@ import opennlp.tools.util.model.ModelType;
 public class POSTaggerME implements POSTagger {
 
   public static final int DEFAULT_BEAM_SIZE = 3;
-  
+
   private POSModel modelPackage;
 
   /**
@@ -95,7 +95,7 @@ public class POSTaggerME implements POSTagger {
    *
    * @param model
    * @param beamSize
-   * 
+   *
    * @deprecated the beam size should be specified in the params during training
    */
   @Deprecated
@@ -130,13 +130,13 @@ public class POSTaggerME implements POSTagger {
     POSTaggerFactory factory = model.getFactory();
 
     int beamSize = POSTaggerME.DEFAULT_BEAM_SIZE;
-    
+
     String beamSizeString = model.getManifestProperty(BeamSearch.BEAM_SIZE_PARAMETER);
-    
+
     if (beamSizeString != null) {
       beamSize = Integer.parseInt(beamSizeString);
     }
-    
+
     modelPackage = model;
 
     contextGen = factory.getPOSContextGenerator(beamSize);

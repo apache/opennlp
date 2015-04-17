@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -22,7 +22,7 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
 
 public class QNModel extends AbstractModel {
-  
+
   public QNModel(Context[] params, String[] predLabels, String[] outcomeNames) {
 	  super(params, predLabels, outcomeNames);
     this.modelType = ModelType.MaxentQn;
@@ -43,33 +43,33 @@ public class QNModel extends AbstractModel {
   public double[] eval(String[] context, double[] probs) {
     return eval(context, null, probs);
   }
-  
+
   public double[] eval(String[] context, float[] values) {
 	  return eval(context, values, new double[evalParams.getNumOutcomes()]);
   }
-  
+
   /**
    * Model evaluation which should be used during inference.
    * @param context
-   *          The predicates which have been observed at the present 
-   *          decision point. 
+   *          The predicates which have been observed at the present
+   *          decision point.
    * @param values
    *          Weights of the predicates which have been observed at
-   *          the present decision point.  
+   *          the present decision point.
    * @param probs
    *          Probability for outcomes.
    * @return Normalized probabilities for the outcomes given the context.
    */
   private double[] eval(String[] context, float[] values, double[] probs) {
     Context[] params = evalParams.getParams();
-    
+
     for (int ci = 0; ci < context.length; ci++) {
       int predIdx = getPredIndex(context[ci]);
 
       if (predIdx >= 0) {
         double predValue = 1.0;
         if (values != null) predValue = values[ci];
-        
+
         double[] parameters = params[predIdx].getParameters();
         int[] outcomes = params[predIdx].getOutcomes();
         for (int i = 0; i < outcomes.length; i++) {
@@ -78,7 +78,7 @@ public class QNModel extends AbstractModel {
         }
       }
     }
-    
+
     double logSumExp = ArrayMath.logSumOfExps(probs);
     for (int oi = 0; oi < outcomeNames.length; oi++) {
     	probs[oi] = Math.exp(probs[oi] - logSumExp);
@@ -87,13 +87,13 @@ public class QNModel extends AbstractModel {
   }
 
   /**
-   * Model evaluation which should be used during training to report model accuracy. 
-   * @param context 
-   *          Indices of the predicates which have been observed at the present 
-   *          decision point. 
+   * Model evaluation which should be used during training to report model accuracy.
+   * @param context
+   *          Indices of the predicates which have been observed at the present
+   *          decision point.
    * @param values
    *          Weights of the predicates which have been observed at
-   *          the present decision point.  
+   *          the present decision point.
    * @param probs
    *          Probability for outcomes
    * @param nOutcomes
@@ -104,9 +104,9 @@ public class QNModel extends AbstractModel {
    *          Model parameters
    * @return Normalized probabilities for the outcomes given the context.
    */
-  public static double[] eval(int[] context, float[] values, double[] probs, 
+  public static double[] eval(int[] context, float[] values, double[] probs,
       int nOutcomes, int nPredLabels, double[] parameters) {
-    
+
     for (int i = 0; i < context.length; i++) {
       int predIdx = context[i];
       double predValue = values != null? values[i] : 1.0;
@@ -114,20 +114,20 @@ public class QNModel extends AbstractModel {
         probs[oi] += predValue * parameters[oi * nPredLabels + predIdx];
       }
     }
-    
+
     double logSumExp = ArrayMath.logSumOfExps(probs);
-    
+
     for (int oi = 0; oi < nOutcomes; oi++) {
       probs[oi] = Math.exp(probs[oi] - logSumExp);
     }
-    
+
     return probs;
   }
-  
+
   public boolean equals(Object obj) {
     if (!(obj instanceof QNModel))
       return false;
-    
+
     QNModel objModel = (QNModel) obj;
     if (this.outcomeNames.length != objModel.outcomeNames.length)
       return false;
@@ -135,7 +135,7 @@ public class QNModel extends AbstractModel {
       if (!this.outcomeNames[i].equals(objModel.outcomeNames[i]))
         return false;
     }
-    
+
     if (this.pmap.size() != objModel.pmap.size())
       return false;
     String[] pmapArray = new String[pmap.size()];
@@ -144,7 +144,7 @@ public class QNModel extends AbstractModel {
       if (i != objModel.pmap.get(pmapArray[i]))
         return false;
     }
-    
+
     // compare evalParameters
     Context[] contextComparing = objModel.evalParams.getParams();
     if (this.evalParams.getParams().length != contextComparing.length)
@@ -156,14 +156,14 @@ public class QNModel extends AbstractModel {
     	  if (this.evalParams.getParams()[i].getOutcomes()[j] != contextComparing[i].getOutcomes()[j])
     	    return false;
       }
-      
+
       if (this.evalParams.getParams()[i].getParameters().length != contextComparing[i].getParameters().length)
         return false;
       for (int j = 0; i < this.evalParams.getParams()[i].getParameters().length; i++) {
     	  if (this.evalParams.getParams()[i].getParameters()[j] != contextComparing[i].getParameters()[j])
     	    return false;
       }
-    }   
+    }
     return true;
   }
 }

@@ -116,21 +116,21 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
   }
 
   static class AttributeAnnotationParser extends BratAnnotationParser {
-    
+
     private static final int ATTACHED_TO_OFFSET = 2;
     private static final int VALUE_OFFSET = 3;
-    
+
     @Override
     BratAnnotation parse(Span[] values, CharSequence line) throws IOException {
-      
+
       if (values.length == 3 || values.length == 4) {
-        
+
         String value = null;
-        
+
         if (values.length == 4) {
           value = values[VALUE_OFFSET].getCoveredText(line).toString();
         }
-        
+
         return new AttributeAnnotation(values[ID_OFFSET].getCoveredText(line).toString(),
             values[TYPE_OFFSET].getCoveredText(line).toString(),
             values[ATTACHED_TO_OFFSET].getCoveredText(line).toString(), value);
@@ -140,7 +140,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
       }
     }
   }
-  
+
   private final Map<String, BratAnnotationParser> parsers =
       new HashMap<String, BratAnnotationParser>();
   private final AnnotationConfiguration config;

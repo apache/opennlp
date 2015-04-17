@@ -28,12 +28,12 @@ import opennlp.tools.sentdetect.SDContextGenerator;
 import opennlp.tools.sentdetect.lang.th.SentenceContextGenerator;
 
 public class Factory {
-  
+
   public static final char[] ptEosCharacters = new char[] { '.', '?', '!', ';',
       ':', '(', ')', '«', '»', '\'', '"' };
 
   public static final char[] defaultEosCharacters = new char[] { '.', '!', '?' };
-  
+
   public static final char[] thEosCharacters = new char[] { ' ','\n' };
 
   public EndOfSentenceScanner createEndOfSentenceScanner(String languageCode) {

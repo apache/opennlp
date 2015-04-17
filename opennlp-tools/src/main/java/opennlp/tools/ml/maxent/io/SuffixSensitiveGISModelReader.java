@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -41,14 +41,14 @@ public class SuffixSensitiveGISModelReader extends GISModelReader {
   /**
    * Constructor which takes a File and invokes the GISModelReader appropriate
    * for the suffix.
-   * 
+   *
    * @param f
    *          The File in which the model is stored.
    */
   public SuffixSensitiveGISModelReader(File f) throws IOException {
     super(f);
   }
-    
+
   // activate this if adding another type of reader which can't read model
   // information in the way that the default getModel() method in
   // GISModelReader does.
@@ -58,18 +58,18 @@ public class SuffixSensitiveGISModelReader extends GISModelReader {
 
   /**
    * To convert between different formats of the new style.
-   * 
+   *
    * <p>
    * java opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader old_model_name
    * new_model_name
-   * 
+   *
    * <p>
    * For example, to convert a model called "model.bin.gz" (which is thus saved
    * in gzipped binary format) to one in (unzipped) text format:
-   * 
+   *
    * <p>
    * java opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader model.bin.gz model.txt
-   * 
+   *
    * <p>
    * This particular example would of course be useful when you generally want
    * to create models which take up less space (.bin.gz), but want to be able to

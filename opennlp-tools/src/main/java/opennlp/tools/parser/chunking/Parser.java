@@ -286,12 +286,12 @@ public class Parser extends AbstractBottomUpParser {
 
     // tag
     TrainingParameters posTaggerParams = mlParams.getParameters("tagger");
-        
+
     if (!posTaggerParams.getSettings().containsKey(BeamSearch.BEAM_SIZE_PARAMETER)) {
       mlParams.put("tagger", BeamSearch.BEAM_SIZE_PARAMETER,
           Integer.toString(10));
     }
-    
+
     POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(parseSamples),
         mlParams.getParameters("tagger"), new POSTaggerFactory());
 

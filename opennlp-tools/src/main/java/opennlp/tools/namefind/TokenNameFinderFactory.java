@@ -68,7 +68,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
   protected Map<String, Object> getResources() {
     return resources;
   }
-  
+
   protected byte[] getFeatureGenerator() {
     return featureGeneratorBytes;
   }

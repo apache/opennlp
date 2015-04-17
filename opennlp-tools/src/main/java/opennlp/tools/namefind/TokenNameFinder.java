@@ -37,5 +37,5 @@ public interface TokenNameFinder {
    * This method is typical called at the end of a document.
    */
   public void clearAdaptiveData();
-  
+
 }

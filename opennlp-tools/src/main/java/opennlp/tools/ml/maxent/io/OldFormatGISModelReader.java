@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -49,7 +49,7 @@ public class OldFormatGISModelReader extends PlainTextGISModelReader {
 
   /**
    * Reads the parameters from a file and populates an array of context objects.
-   * 
+   *
    * @param outcomePatterns
    *          The outcomes patterns for the model. The first index refers to
    *          which outcome pattern (a set of outcomes that occurs with a
@@ -86,11 +86,11 @@ public class OldFormatGISModelReader extends PlainTextGISModelReader {
 
   /**
    * Convert a model created with Maxent 1.0 to a format used with Maxent 1.2.
-   * 
+   *
    * <p>
    * Usage: java opennlp.tools.ml.maxent.io.OldFormatGISModelReader model_name_prefix
    * (new_model_name)");
-   * 
+   *
    * <p>
    * If the new_model_name is left unspecified, the new model will be saved in
    * gzipped, binary format as "&lt;model_name_prefix&gt;.bin.gz".

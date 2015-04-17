@@ -96,7 +96,7 @@ public final class POSModel extends BaseModel {
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
     manifest.setProperty(BeamSearch.BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
-    
+
     artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
     checkArtifactMap();
   }

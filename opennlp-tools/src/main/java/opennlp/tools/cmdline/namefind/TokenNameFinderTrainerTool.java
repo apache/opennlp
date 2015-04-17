@@ -126,7 +126,7 @@ public final class TokenNameFinderTrainerTool
       }
 
       File resourceFiles[] = resourcePath.listFiles();
-      
+
       for (File resourceFile : resourceFiles) {
         String resourceName = resourceFile.getName();
         //gettting the serializer key from the element tag name

@@ -23,21 +23,21 @@ import java.util.List;
  * Generates Brown cluster features for current token.
  */
 public class BrownTokenFeatureGenerator extends FeatureGeneratorAdapter {
-  
+
   private BrownCluster brownLexicon;
-  
+
   public BrownTokenFeatureGenerator(BrownCluster dict){
     this.brownLexicon = dict;
   }
-  
+
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
-    
+
     List<String> wordClasses = BrownTokenClasses.getWordClasses(tokens[index], brownLexicon);
-    
+
     for (int i = 0; i < wordClasses.size(); i++) {
       features.add("browncluster" + "=" + wordClasses.get(i));
     }
   }
-  
+
 }

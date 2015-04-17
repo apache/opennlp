@@ -28,10 +28,10 @@ import opennlp.tools.util.eval.FMeasure;
 
 /**
  * Class for ParserEvaluator.
- * This ParserEvaluator behaves like EVALB with no exceptions, e.g, 
- * without removing punctuation tags, or equality between ADVP and PRT 
+ * This ParserEvaluator behaves like EVALB with no exceptions, e.g,
+ * without removing punctuation tags, or equality between ADVP and PRT
  * (as in COLLINS convention). To follow parsing evaluation conventions
- * (Bikel, Collins, Charniak, etc.) as in EVALB, options are to be added 
+ * (Bikel, Collins, Charniak, etc.) as in EVALB, options are to be added
  * to the {@code ParserEvaluatorTool}.
  *
  */

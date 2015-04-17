@@ -241,7 +241,7 @@ public class Span implements Comparable<Span> {
    * Return a copy of this span with leading and trailing white spaces removed.
    *
    * @param text
-   * 
+   *
    * @return the trimmed span or the same object if already trimmed
    */
   public Span trim(CharSequence text) {

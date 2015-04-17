@@ -29,18 +29,18 @@ public class ParserChunkerFactory extends ChunkerFactory {
   public ChunkerContextGenerator getContextGenerator() {
     return new ChunkContextGenerator(ChunkerME.DEFAULT_BEAM_SIZE);
   }
-  
+
   @Override
   public SequenceValidator<String> getSequenceValidator() {
-    
+
     MaxentModel model = (MaxentModel) artifactProvider.getArtifact("chunker.model");
-    
+
     String outcomes[] = new String[model.getNumOutcomes()];
     for (int i = 0; i < outcomes.length; i++) {
       outcomes[i] = model.getOutcome(i);
     }
-    
+
     return new ParserChunkerSequenceValidator(outcomes);
   }
-  
+
 }
