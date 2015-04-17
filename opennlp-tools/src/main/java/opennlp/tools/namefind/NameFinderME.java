@@ -271,8 +271,8 @@ public class NameFinderME implements TokenNameFinder {
    */
   private Span[] setProbs(Span[] spans) {
      double[] probs = probs(spans);
-     if (probs != null) {    
-       
+     if (probs != null) {
+
       for (int i = 0; i < probs.length; i++) {
         double prob = probs[i];
         spans[i]= new Span(spans[i], prob);

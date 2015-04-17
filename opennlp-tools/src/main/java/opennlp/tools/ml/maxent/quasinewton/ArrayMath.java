@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -35,7 +35,7 @@ public class ArrayMath {
     }
     return product;
   }
-  
+
   /**
    * L1-norm
    */
@@ -45,25 +45,25 @@ public class ArrayMath {
       norm += Math.abs(v[i]);
     return norm;
   }
-  
+
   /**
-   * L2-norm 
+   * L2-norm
    */
   public static double l2norm(double[] v) {
     return Math.sqrt(innerProduct(v, v));
   }
-  
+
   /**
    * Inverse L2-norm
    */
   public static double invL2norm(double[] v) {
     return 1 / l2norm(v);
   }
-  
+
   /**
-   * Computes \log(\sum_{i=1}^n e^{x_i}) using a maximum-element trick 
+   * Computes \log(\sum_{i=1}^n e^{x_i}) using a maximum-element trick
    * to avoid arithmetic overflow.
-   * 
+   *
    * @param x input vector
    * @return log-sum of exponentials of vector elements
    */
@@ -92,7 +92,7 @@ public class ArrayMath {
     if (x == null || x.length == 0) {
       throw new IllegalArgumentException("Vector x is null or empty");
     }
-    
+
     int maxIdx = 0;
     for (int i = 1; i < x.length; i++) {
       if (x[maxIdx] < x[i])
@@ -100,10 +100,10 @@ public class ArrayMath {
     }
     return maxIdx;
   }
-  
+
   // === Not really related to math ===
   /**
-   * Convert a list of Double objects into an array of primitive doubles 
+   * Convert a list of Double objects into an array of primitive doubles
    */
   public static double[] toDoubleArray(List<Double> list) {
     double[] arr = new double[list.size()];
@@ -112,13 +112,13 @@ public class ArrayMath {
     }
     return arr;
   }
-  
+
   /**
    *  Convert a list of Integer objects into an array of primitive integers
    */
   public static int[] toIntArray(List<Integer> list) {
     int[] arr = new int[list.size()];
-    for (int i = 0; i < arr.length; i++) { 
+    for (int i = 0; i < arr.length; i++) {
       arr[i] = list.get(i);
     }
     return arr;

@@ -78,7 +78,7 @@ public class DetokenizationDictionary {
 
   private final Map<String, DetokenizationDictionary.Operation> operationTable =
       new HashMap<String, DetokenizationDictionary.Operation>();
-  
+
   /**
    * Initializes the current instance.
    *

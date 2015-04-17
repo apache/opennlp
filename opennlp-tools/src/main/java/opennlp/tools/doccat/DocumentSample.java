@@ -69,7 +69,7 @@ public class DocumentSample {
     return text.toArray(new String[text.size()]);
   }
 
-  public Map<String, Object> getExtraInformation() {  
+  public Map<String, Object> getExtraInformation() {
     return extraInformation;
   }
 
@@ -88,10 +88,10 @@ public class DocumentSample {
       // remove last space
       sampleString.setLength(sampleString.length() - 1);
     }
-    
+
     return sampleString.toString();
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {

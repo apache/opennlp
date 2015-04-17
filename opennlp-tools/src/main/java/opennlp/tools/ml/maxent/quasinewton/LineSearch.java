@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -28,8 +28,8 @@ public class LineSearch {
   /**
    * Backtracking line search (see Nocedal &amp; Wright 2006, Numerical Optimization, p. 37)
    */
-  public static void doLineSearch(Function function, 
-      double[] direction, LineSearchResult lsr, double initialStepSize) 
+  public static void doLineSearch(Function function,
+      double[] direction, LineSearchResult lsr, double initialStepSize)
   {
     double stepSize      = initialStepSize;
     int currFctEvalCount = lsr.getFctEvalCount();
@@ -37,7 +37,7 @@ public class LineSearch {
     double[] gradAtX     = lsr.getGradAtNext();
     double valueAtX      = lsr.getValueAtNext();
     int dimension        = x.length;
-    
+
     // Retrieve current points and gradient for array reuse purpose
     double[] nextPoint       = lsr.getCurrPoint();
     double[] gradAtNextPoint = lsr.getGradAtCurr();
@@ -47,16 +47,16 @@ public class LineSearch {
 
     // To avoid recomputing in the loop
     double cachedProd = C * dirGradientAtX;
-    
+
     while (true) {
       // Get next point
       for (int i = 0; i < dimension; i++) {
         nextPoint[i] = x[i] + direction[i] * stepSize;
       }
-      
+
       // New value
       valueAtNextPoint = function.valueAt(nextPoint);
-      
+
       currFctEvalCount++;
 
       // Check Armijo condition
@@ -68,20 +68,20 @@ public class LineSearch {
     }
 
     // Compute and save gradient at the new point
-    System.arraycopy(function.gradientAt(nextPoint), 0, gradAtNextPoint, 0, 
+    System.arraycopy(function.gradientAt(nextPoint), 0, gradAtNextPoint, 0,
         gradAtNextPoint.length);
-    
+
     // Update line search result
-    lsr.setAll(stepSize, valueAtX, valueAtNextPoint, 
-        gradAtX, gradAtNextPoint, x, nextPoint, currFctEvalCount);    
+    lsr.setAll(stepSize, valueAtX, valueAtNextPoint,
+        gradAtX, gradAtNextPoint, x, nextPoint, currFctEvalCount);
   }
 
   /**
-   * Constrained line search (see section 3.2 in the paper "Scalable Training 
+   * Constrained line search (see section 3.2 in the paper "Scalable Training
    * of L1-Regularized Log-Linear Models", Andrew et al. 2007)
    */
-  public static void doConstrainedLineSearch(Function function, 
-      double[] direction, LineSearchResult lsr, double l1Cost, double initialStepSize) 
+  public static void doConstrainedLineSearch(Function function,
+      double[] direction, LineSearchResult lsr, double l1Cost, double initialStepSize)
   {
     double stepSize        = initialStepSize;
     int currFctEvalCount   = lsr.getFctEvalCount();
@@ -96,37 +96,37 @@ public class LineSearch {
     double[] nextPoint       = lsr.getCurrPoint();
     double[] gradAtNextPoint = lsr.getGradAtCurr();
     double valueAtNextPoint;
-    
+
     double dirGradientAtX;
-    
-    // New sign vector 
+
+    // New sign vector
     for (int i = 0; i < dimension; i++) {
       signX[i] = x[i] == 0? -pseudoGradAtX[i] : x[i];
     }
-    
+
     while (true) {
       // Get next point
       for (int i = 0; i < dimension; i++) {
         nextPoint[i] = x[i] + direction[i] * stepSize;
       }
-      
+
       // Projection
       for (int i = 0; i < dimension; i++) {
-        if (nextPoint[i] * signX[i] <= 0) 
+        if (nextPoint[i] * signX[i] <= 0)
           nextPoint[i] = 0;
       }
 
       // New value
-      valueAtNextPoint = function.valueAt(nextPoint) + 
+      valueAtNextPoint = function.valueAt(nextPoint) +
           l1Cost * ArrayMath.l1norm(nextPoint);
-      
+
       currFctEvalCount++;
 
       dirGradientAtX = 0;
       for (int i = 0; i < dimension; i++) {
         dirGradientAtX += (nextPoint[i] - x[i]) * pseudoGradAtX[i];
       }
-      
+
       // Check the sufficient decrease condition
       if (valueAtNextPoint <= valueAtX + C * dirGradientAtX)
         break;
@@ -136,21 +136,21 @@ public class LineSearch {
     }
 
     // Compute and save gradient at the new point
-    System.arraycopy(function.gradientAt(nextPoint), 0, gradAtNextPoint, 0, 
+    System.arraycopy(function.gradientAt(nextPoint), 0, gradAtNextPoint, 0,
         gradAtNextPoint.length);
-    
+
     // Update line search result
     lsr.setAll(stepSize, valueAtX, valueAtNextPoint, gradAtX,
-        gradAtNextPoint, pseudoGradAtX, x, nextPoint, signX, currFctEvalCount);      
+        gradAtNextPoint, pseudoGradAtX, x, nextPoint, signX, currFctEvalCount);
   }
-  
+
   // ------------------------------------------------------------------------------------- //
-  
+
   /**
    * Class to store lineSearch result
    */
   public static class LineSearchResult {
-    
+
     private int fctEvalCount;
     private double stepSize;
     private double valueAtCurr;
@@ -166,16 +166,16 @@ public class LineSearch {
      * Constructor
      */
     public LineSearchResult(
-        double stepSize, 
-        double valueAtCurr, 
-        double valueAtNext, 
-        double[] gradAtCurr, 
-        double[] gradAtNext, 
-        double[] currPoint, 
-        double[] nextPoint, 
-        int fctEvalCount) 
+        double stepSize,
+        double valueAtCurr,
+        double valueAtNext,
+        double[] gradAtCurr,
+        double[] gradAtNext,
+        double[] currPoint,
+        double[] nextPoint,
+        int fctEvalCount)
     {
-      setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext, 
+      setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext,
         currPoint, nextPoint, fctEvalCount);
     }
 
@@ -183,18 +183,18 @@ public class LineSearch {
      * Constructor with sign vector
      */
     public LineSearchResult(
-        double stepSize, 
-        double valueAtCurr, 
-        double valueAtNext, 
-        double[] gradAtCurr, 
+        double stepSize,
+        double valueAtCurr,
+        double valueAtNext,
+        double[] gradAtCurr,
         double[] gradAtNext,
         double[] pseudoGradAtNext,
-        double[] currPoint, 
-        double[] nextPoint, 
-        double[] signVector, 
-        int fctEvalCount) 
+        double[] currPoint,
+        double[] nextPoint,
+        double[] signVector,
+        int fctEvalCount)
     {
-      setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext, 
+      setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext,
         pseudoGradAtNext, currPoint, nextPoint, signVector, fctEvalCount);
     }
 
@@ -202,16 +202,16 @@ public class LineSearch {
      * Update line search elements
      */
     public void setAll(
-        double stepSize, 
-        double valueAtCurr, 
-        double valueAtNext, 
-        double[] gradAtCurr, 
-        double[] gradAtNext, 
-        double[] currPoint, 
-        double[] nextPoint, 
-        int fctEvalCount) 
+        double stepSize,
+        double valueAtCurr,
+        double valueAtNext,
+        double[] gradAtCurr,
+        double[] gradAtNext,
+        double[] currPoint,
+        double[] nextPoint,
+        int fctEvalCount)
     {
-      setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext, 
+      setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext,
           null, currPoint, nextPoint, null, fctEvalCount);
     }
 
@@ -219,16 +219,16 @@ public class LineSearch {
      * Update line search elements
      */
     public void setAll(
-        double stepSize, 
-        double valueAtCurr, 
-        double valueAtNext, 
-        double[] gradAtCurr, 
+        double stepSize,
+        double valueAtCurr,
+        double valueAtNext,
+        double[] gradAtCurr,
         double[] gradAtNext,
         double[] pseudoGradAtNext,
-        double[] currPoint, 
-        double[] nextPoint, 
-        double[] signVector, 
-        int fctEvalCount) 
+        double[] currPoint,
+        double[] nextPoint,
+        double[] signVector,
+        int fctEvalCount)
     {
       this.stepSize         = stepSize;
       this.valueAtCurr      = valueAtCurr;
@@ -241,46 +241,46 @@ public class LineSearch {
       this.signVector       = signVector;
       this.fctEvalCount     = fctEvalCount;
     }
-    
+
     public double getFuncChangeRate() {
       return (valueAtCurr - valueAtNext) / valueAtCurr;
     }
-    
+
     public double getStepSize() {
       return stepSize;
     }
     public void setStepSize(double stepSize) {
       this.stepSize = stepSize;
     }
-    
+
     public double getValueAtCurr() {
       return valueAtCurr;
     }
     public void setValueAtCurr(double valueAtCurr) {
       this.valueAtCurr = valueAtCurr;
     }
-    
+
     public double getValueAtNext() {
       return valueAtNext;
     }
     public void setValueAtNext(double valueAtNext) {
       this.valueAtNext = valueAtNext;
     }
-    
+
     public double[] getGradAtCurr() {
       return gradAtCurr;
     }
     public void setGradAtCurr(double[] gradAtCurr) {
       this.gradAtCurr = gradAtCurr;
     }
-    
+
     public double[] getGradAtNext() {
       return gradAtNext;
     }
     public void setGradAtNext(double[] gradAtNext) {
       this.gradAtNext = gradAtNext;
     }
-    
+
     public double[] getPseudoGradAtNext() {
       return pseudoGradAtNext;
     }
@@ -294,14 +294,14 @@ public class LineSearch {
     public void setCurrPoint(double[] currPoint) {
       this.currPoint = currPoint;
     }
-    
+
     public double[] getNextPoint() {
       return nextPoint;
     }
     public void setNextPoint(double[] nextPoint) {
       this.nextPoint = nextPoint;
     }
-    
+
     public double[] getSignVector() {
       return signVector;
     }
@@ -315,39 +315,39 @@ public class LineSearch {
     public void setFctEvalCount(int fctEvalCount) {
       this.fctEvalCount = fctEvalCount;
     }
-    
+
     /**
-     * Initial linear search object 
+     * Initial linear search object
      */
     public static LineSearchResult getInitialObject(
-        double valueAtX, 
+        double valueAtX,
         double[] gradAtX,
-        double[] x) 
+        double[] x)
     {
       return getInitialObject(valueAtX, gradAtX, null, x, null, 0);
     }
-    
+
     /**
      * Initial linear search object for L1-regularization
      */
     public static LineSearchResult getInitialObjectForL1(
-        double valueAtX, 
+        double valueAtX,
         double[] gradAtX,
-        double[] pseudoGradAtX, 
-        double[] x) 
+        double[] pseudoGradAtX,
+        double[] x)
     {
       return getInitialObject(valueAtX, gradAtX, pseudoGradAtX, x, new double[x.length], 0);
     }
-    
+
     public static LineSearchResult getInitialObject(
-        double valueAtX, 
+        double valueAtX,
         double[] gradAtX,
         double[] pseudoGradAtX,
-        double[] x, 
-        double[] signX, 
-        int fctEvalCount) 
+        double[] x,
+        double[] signX,
+        int fctEvalCount)
     {
-      return new LineSearchResult(0.0, 0.0, valueAtX, new double[x.length], gradAtX, 
+      return new LineSearchResult(0.0, 0.0, valueAtX, new double[x.length], gradAtX,
           pseudoGradAtX, new double[x.length], x, signX, fctEvalCount);
     }
   }

@@ -272,7 +272,7 @@ public class TokenNameFinderModel extends BaseModel {
     serializers.put("brownclustertoken", new BrownCluster.BrownClusterSerializer());
     serializers.put("brownclustertokenclass", new BrownCluster.BrownClusterSerializer());
     serializers.put("brownclusterbigram", new BrownCluster.BrownClusterSerializer());
-    
+
     return serializers;
   }
 

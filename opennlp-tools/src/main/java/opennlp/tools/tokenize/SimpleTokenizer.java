@@ -88,11 +88,11 @@ public class SimpleTokenizer extends AbstractTokenizer {
 
 
   /**
-   * 
+   *
    * @param args the command line arguments
    *
    * @throws IOException if reading or writing from stdin or stdout fails in anyway
-   * 
+   *
    * @deprecated this method will be removed, use the new command line interface instead!
    */
   @Deprecated

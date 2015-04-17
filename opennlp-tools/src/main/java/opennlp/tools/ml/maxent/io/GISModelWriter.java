@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -60,7 +60,7 @@ public abstract class GISModelWriter extends AbstractModelWriter {
   /**
    * Writes the model to disk, using the <code>writeX()</code> methods provided
    * by extending classes.
-   * 
+   *
    * <p>
    * If you wish to create a GISModelWriter which uses a different structure, it
    * will be necessary to override the persist method in addition to
@@ -125,7 +125,7 @@ public abstract class GISModelWriter extends AbstractModelWriter {
       numParams += numActive;
       /*
        * double[] activeParams = new double[numActive];
-       * 
+       *
        * int id = 0; for (int i=0; i < predkeys.length; i++) { int oid =
        * predkeys[i]; activeOutcomes[id] = oid; activeParams[id] =
        * PARAMS[pid].getParams(oid); id++; }

@@ -100,11 +100,11 @@ public class EntityLinkerTool extends BasicCmdLineTool {
             for (int i = 0; i < document.size(); i++) {
 
               NameSample sample = document.get(i);
-              
+
               namesBySentence[i] = sample.getNames();
-              
+
               int sentenceBegin = text.length();
-              
+
               Span[] tokens = new Span[sample.getSentence().length];
 
               // for all tokens
@@ -114,9 +114,9 @@ public class EntityLinkerTool extends BasicCmdLineTool {
                 text.append(" ");
                 tokens[ti] = new Span(tokenBegin, text.length());
               }
-              
+
               tokensBySentence[i] = tokens;
-              
+
               sentences[i] = new Span(sentenceBegin, text.length());
               text.append("\n");
             }

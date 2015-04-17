@@ -23,23 +23,23 @@ import java.util.List;
  * Generates Brown cluster features for token bigrams.
  */
 public class BrownBigramFeatureGenerator extends FeatureGeneratorAdapter {
-  
+
   private BrownCluster brownLexicon;
-  
+
   public BrownBigramFeatureGenerator(BrownCluster dict){
     this.brownLexicon = dict;
   }
-  
+
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
-    
+
     List<String> wordClasses = BrownTokenClasses.getWordClasses(tokens[index], brownLexicon);
     if (index > 0) {
       List<String> prevWordClasses = BrownTokenClasses.getWordClasses(tokens[index - 1], brownLexicon);
       for (int i = 0; i < wordClasses.size() && i < prevWordClasses.size(); i++)
       features.add("p" + "browncluster" + "," + "browncluster" + "=" + prevWordClasses.get(i) + "," + wordClasses.get(i));
     }
-    
+
     if (index + 1 < tokens.length) {
       List<String> nextWordClasses = BrownTokenClasses.getWordClasses(tokens[index + 1], brownLexicon);
       for (int i = 0; i < wordClasses.size() && i < nextWordClasses.size(); i++) {
@@ -47,6 +47,6 @@ public class BrownBigramFeatureGenerator extends FeatureGeneratorAdapter {
       }
     }
   }
-  
+
 }
 

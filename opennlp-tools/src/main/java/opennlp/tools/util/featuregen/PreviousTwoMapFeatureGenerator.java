@@ -32,7 +32,7 @@ public class PreviousTwoMapFeatureGenerator implements AdaptiveFeatureGenerator 
    * Generates previous decision features for the token based on contents of the previous map.
    */
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
-    
+
     if (index > 0) {
       features.add("ppd=" + previousMap.get(tokens[index]) + "," + previousMap.get(tokens[index - 1]));
     }

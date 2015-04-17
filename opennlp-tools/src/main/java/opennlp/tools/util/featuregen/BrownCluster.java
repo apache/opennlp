@@ -35,16 +35,16 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
 /**
- * 
+ *
  * Class to load a Brown cluster document: word\tword_class\tprob
  * http://metaoptimize.com/projects/wordreprs/
- * 
- * The file containing the clustering lexicon has to be passed as the 
+ *
+ * The file containing the clustering lexicon has to be passed as the
  * value of the dict attribute of each BrownCluster feature generator.
- * 
+ *
  */
 public class BrownCluster implements SerializableArtifact {
-  
+
   private static final Pattern tabPattern = Pattern.compile("\t");
 
   public static class BrownClusterSerializer implements ArtifactSerializer<BrownCluster> {
@@ -59,7 +59,7 @@ public class BrownCluster implements SerializableArtifact {
       artifact.serialize(out);
     }
   }
-  
+
   private Map<String, String> tokenToClusterMap = new HashMap<String, String>();
 
   /**

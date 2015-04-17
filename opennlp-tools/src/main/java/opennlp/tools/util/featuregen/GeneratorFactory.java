@@ -299,7 +299,7 @@ public class GeneratorFactory {
       factoryMap.put("wordcluster", new WordClusterFeatureGeneratorFactory());
     }
   }
-  
+
   /**
    * Generates Brown clustering features for current token.
    */
@@ -324,7 +324,7 @@ public class GeneratorFactory {
       factoryMap.put("brownclustertoken", new BrownClusterTokenFeatureGeneratorFactory());
     }
   }
-  
+
   /**
    * Generates Brown clustering features for token classes.
    */
@@ -349,7 +349,7 @@ public class GeneratorFactory {
       factoryMap.put("brownclustertokenclass", new BrownClusterTokenClassFeatureGeneratorFactory());
     }
   }
-  
+
   /**
    * Generates Brown clustering features for token bigrams.
    */
@@ -719,7 +719,7 @@ public class GeneratorFactory {
     org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
 
     XPath xPath = XPathFactory.newInstance().newXPath();
-    
+
 
     NodeList customElements;
     try {
@@ -746,7 +746,7 @@ public class GeneratorFactory {
     }
     return mapping;
   }
-  
+
   /**
    * Provides a list with all the elements in the xml feature descriptor.
    * @param xmlDescriptorIn the xml feature descriptor
@@ -757,7 +757,7 @@ public class GeneratorFactory {
   public static List<Element> getDescriptorElements(
       InputStream xmlDescriptorIn)
       throws IOException, InvalidFormatException {
-    
+
     List<Element> elements = new ArrayList<Element>();
     org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
     XPath xPath = XPathFactory.newInstance().newXPath();

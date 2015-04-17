@@ -26,13 +26,13 @@ import java.util.List;
  *
  */
 public class BrownTokenClasses {
-  
+
   public static final int[] pathLengths = { 4, 6, 10, 20 };
-  
+
   /**
    * It provides a list containing the pathLengths for a token if found
    * in the Map:token,BrownClass.
-   * 
+   *
    * @param token the token to be looked up in the brown clustering map
    * @param brownLexicon the Brown clustering map
    * @return the list of the paths for a token
@@ -54,6 +54,6 @@ public class BrownTokenClasses {
       return pathLengthsList;
     }
   }
-  
+
 }
 

@@ -39,12 +39,12 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
   /**
    * Creates a BratDocumentStream which reads the documents from the given input directory.
    *
-   * @param config the annotation.conf from the brat project as an Annotation Configuration object 
+   * @param config the annotation.conf from the brat project as an Annotation Configuration object
    * @param bratCorpusDirectory the directory containing all the brat training data files
    * @param searchRecursive specifies if the corpus directory should be traversed recursively
    * to find training data files.
    * @param fileFilter  a custom file filter to filter out certain files or null to accept all files
-   * 
+   *
    * @throws IOException if reading from the brat directory fails in anyway
    */
   public BratDocumentStream(AnnotationConfiguration config, File bratCorpusDirectory,
