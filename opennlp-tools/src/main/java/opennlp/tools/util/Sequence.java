@@ -44,14 +44,14 @@ public class Sequence implements Comparable<Sequence> {
   }
 
   public Sequence(Sequence s,String outcome, double p) {
-      outcomes = new ArrayList<String>(s.outcomes.size()+1);
-      outcomes.addAll(s.outcomes);
-      outcomes.add(outcome);
-      probs = new ArrayList<Double>(s.probs.size()+1);
-      probs.addAll(s.probs);
-      probs.add(p);
-      score = s.score+Math.log(p);
-    }
+    outcomes = new ArrayList<String>(s.outcomes.size()+1);
+    outcomes.addAll(s.outcomes);
+    outcomes.add(outcome);
+    probs = new ArrayList<Double>(s.probs.size()+1);
+    probs.addAll(s.probs);
+    probs.add(p);
+    score = s.score+Math.log(p);
+  }
 
   public Sequence(List<String> outcomes) {
     this.outcomes = outcomes;
