@@ -23,7 +23,6 @@ import java.util.Map;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.BaseModel;
 
 /**
  * Base class for all tool factories.

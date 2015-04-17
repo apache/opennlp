@@ -17,7 +17,6 @@
 
 package opennlp.tools.cmdline;
 
-import opennlp.tools.util.MarkableFileInputStreamFactory;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +32,7 @@ import java.util.Locale;
 
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 

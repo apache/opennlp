@@ -20,8 +20,6 @@
 package opennlp.tools.ml.perceptron;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
 
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.model.AbstractModel;

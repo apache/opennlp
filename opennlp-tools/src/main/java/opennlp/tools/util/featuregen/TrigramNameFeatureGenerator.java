@@ -19,8 +19,6 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
-import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
-
 /**
  * Adds trigram features based on tokens and token classes.
  * 

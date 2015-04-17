@@ -22,8 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import opennlp.tools.util.InputStreamFactory;
-
 /**
  * A factory that creates {@link MarkableFileInputStream} from a {@link File}
  */

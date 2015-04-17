@@ -26,11 +26,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.doccat.DoccatEvaluatorTool.EvalToolParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.doccat.DoccatEvaluationMonitor;

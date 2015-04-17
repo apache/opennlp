@@ -16,6 +16,7 @@
 package opennlp.tools.entitylinker;
 
 import java.io.IOException;
+
 import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
