@@ -105,7 +105,7 @@ public class CachedFeatureGeneratorTest {
 
     assertTrue(features.contains(expectedToken));
   }
-  
+
   /**
    * Tests if the cache was cleared after the sentence changed.
    */

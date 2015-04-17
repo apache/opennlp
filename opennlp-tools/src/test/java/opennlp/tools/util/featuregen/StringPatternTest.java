@@ -33,7 +33,7 @@ public class StringPatternTest {
     assertTrue(StringPattern.recognize("grün").isAllLetter());
     assertTrue(StringPattern.recognize("üäöæß").isAllLetter());
   }
-  
+
   @Test
   public void testIsInitialCapitalLetter() {
     assertTrue(StringPattern.recognize("Test").isInitialCapitalLetter());
@@ -41,7 +41,7 @@ public class StringPatternTest {
     assertTrue(StringPattern.recognize("TesT").isInitialCapitalLetter());
     assertTrue(StringPattern.recognize("Üäöæß").isInitialCapitalLetter());
   }
-  
+
   @Test
   public void testIsAllCapitalLetter() {
     assertTrue(StringPattern.recognize("TEST").isAllCapitalLetter());
@@ -49,7 +49,7 @@ public class StringPatternTest {
     assertFalse(StringPattern.recognize("ÄÄÄÜÜÜÖÖä").isAllCapitalLetter());
     assertFalse(StringPattern.recognize("ÄÄÄÜÜdÜÖÖ").isAllCapitalLetter());
   }
-  
+
   @Test
   public void testIsAllLowerCaseLetter() {
     assertTrue(StringPattern.recognize("test").isAllLowerCaseLetter());
@@ -60,42 +60,42 @@ public class StringPatternTest {
     assertFalse(StringPattern.recognize("testT").isAllLowerCaseLetter());
     assertFalse(StringPattern.recognize("tesÖt").isAllLowerCaseLetter());
   }
-  
+
   @Test
   public void testIsAllDigit() {
     assertTrue(StringPattern.recognize("123456").isAllDigit());
     assertFalse(StringPattern.recognize("123,56").isAllDigit());
     assertFalse(StringPattern.recognize("12356f").isAllDigit());
   }
-  
+
   @Test
   public void testDigits() {
     assertEquals(6, StringPattern.recognize("123456").digits());
     assertEquals(3, StringPattern.recognize("123fff").digits());
     assertEquals(0, StringPattern.recognize("test").digits());
   }
-  
+
   @Test
   public void testContainsPeriod() {
     assertTrue(StringPattern.recognize("test.").containsPeriod());
     assertTrue(StringPattern.recognize("23.5").containsPeriod());
     assertFalse(StringPattern.recognize("test,/-1").containsPeriod());
   }
-  
+
   @Test
   public void testContainsComma() {
     assertTrue(StringPattern.recognize("test,").containsComma());
     assertTrue(StringPattern.recognize("23,5").containsComma());
     assertFalse(StringPattern.recognize("test./-1").containsComma());
   }
-  
+
   @Test
   public void testContainsSlash() {
     assertTrue(StringPattern.recognize("test/").containsSlash());
     assertTrue(StringPattern.recognize("23/5").containsSlash());
     assertFalse(StringPattern.recognize("test.1-,").containsSlash());
   }
-  
+
   @Test
   public void testContainsDigit() {
     assertTrue(StringPattern.recognize("test1").containsDigit());
@@ -109,12 +109,12 @@ public class StringPatternTest {
     assertTrue(StringPattern.recognize("23-5").containsHyphen());
     assertFalse(StringPattern.recognize("test.1/,").containsHyphen());
   }
-  
+
   @Test
   public void testContainsLetters() {
     assertTrue(StringPattern.recognize("test--").containsLetters());
     assertTrue(StringPattern.recognize("23h5ßm").containsLetters());
     assertFalse(StringPattern.recognize("---.1/,").containsLetters());
   }
-  
+
 }

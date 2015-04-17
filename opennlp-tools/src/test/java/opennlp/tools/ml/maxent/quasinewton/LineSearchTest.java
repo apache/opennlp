@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -169,7 +169,7 @@ public class LineSearchTest {
     assertFalse(succCond);
     assertEquals(0.0, stepSize, TOLERANCE);
   }
-  
+
   /**
    * Quadratic function: f(x) = (x-2)^2 + 4
    */
@@ -189,15 +189,15 @@ public class LineSearchTest {
       return 1;
     }
   }
-  
+
   /**
    * Quadratic function: f(x) = x^2
    */
   public class QuadraticFunction2 implements Function {
-    
+
     public double valueAt(double[] x) {
       // x^2;
-      return Math.pow(x[0], 2); 
+      return Math.pow(x[0], 2);
     }
 
     public double[] gradientAt(double[] x) {

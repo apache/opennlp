@@ -25,7 +25,7 @@ import java.util.Map;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 
-public class FeatureGenWithSerializerMapping extends CustomFeatureGenerator 
+public class FeatureGenWithSerializerMapping extends CustomFeatureGenerator
   implements ArtifactToSerializerMapper {
 
   @Override

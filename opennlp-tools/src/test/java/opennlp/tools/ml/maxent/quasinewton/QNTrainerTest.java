@@ -37,14 +37,14 @@ import opennlp.tools.ml.model.RealValueFileEventStream;
 import org.junit.Test;
 
 public class QNTrainerTest {
-  
+
   private static int ITERATIONS = 50;
-  
+
   @Test
   public void testTrainModelReturnsAQNModel() throws Exception {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");  
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     // when
     QNModel trainedModel = new QNTrainer(false).trainModel(ITERATIONS, testDataIndexer);
@@ -56,64 +56,64 @@ public class QNTrainerTest {
   public void testInTinyDevSet() throws Exception {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");  
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
     DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
     // when
     QNModel trainedModel = new QNTrainer(15, true).trainModel(ITERATIONS, testDataIndexer);
     String[] features2Classify = new String[] {
-        "feature2","feature3", "feature3", 
-        "feature3","feature3", "feature3", 
-        "feature3","feature3", "feature3", 
+        "feature2","feature3", "feature3",
+        "feature3","feature3", "feature3",
+        "feature3","feature3", "feature3",
         "feature3","feature3", "feature3"};
     double[] eval = trainedModel.eval(features2Classify);
     // then
     assertNotNull(eval);
   }
-  
+
   @Test
   public void testModel() throws IOException {
 	    // given
 	    RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-	        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");  
+	        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
 	    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
 	    // when
 	    QNModel trainedModel = new QNTrainer(15, true).trainModel(
 	        ITERATIONS, testDataIndexer);
-	    
-	    assertTrue(trainedModel.equals(trainedModel));  
+
+	    assertTrue(trainedModel.equals(trainedModel));
 	    assertFalse(trainedModel.equals(null));
   }
-  
+
   @Test
   public void testSerdeModel() throws IOException {
 	    // given
 	    RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-	        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");  
+	        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
 	    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
 	    // when
 	    QNModel trainedModel = new QNTrainer(5, 700, true).trainModel(ITERATIONS, testDataIndexer);
-	    
+
 	    ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
-	    GenericModelWriter modelWriter = new GenericModelWriter(trainedModel, 
+	    GenericModelWriter modelWriter = new GenericModelWriter(trainedModel,
 	        new DataOutputStream(modelBytes));
 	    modelWriter.persist();
 	    modelWriter.close();
-	    
+
 	    GenericModelReader modelReader = new GenericModelReader(new BinaryFileDataReader(
 	        new ByteArrayInputStream(modelBytes.toByteArray())));
 	    AbstractModel readModel = modelReader.getModel();
 	    QNModel deserModel = (QNModel) readModel;
-	    
-	    assertTrue(trainedModel.equals(deserModel)); 
-	    
+
+	    assertTrue(trainedModel.equals(deserModel));
+
 	    String[] features2Classify = new String[] {
-	        "feature2","feature3", "feature3", 
-	        "feature3","feature3", "feature3", 
-	        "feature3","feature3", "feature3", 
+	        "feature2","feature3", "feature3",
+	        "feature3","feature3", "feature3",
+	        "feature3","feature3", "feature3",
 	        "feature3","feature3", "feature3"};
 	    double[] eval01 = trainedModel.eval(features2Classify);
 	    double[] eval02 = deserModel.eval(features2Classify);
-	    
+
 	    assertEquals(eval01.length, eval02.length);
 	    for (int i = 0; i < eval01.length; i++) {
 	    	assertEquals(eval01[i], eval02[i], 0.00000001);
