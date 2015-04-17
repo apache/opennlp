@@ -18,19 +18,21 @@
  */
 package opennlp.tools.ngram;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.StringList;
-import org.apache.commons.io.IOUtils;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.StringList;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Tests for {@link opennlp.tools.ngram.NGramModel}
