@@ -44,7 +44,7 @@ public class OntoNotesNameSampleStream extends
 
   private List<NameSample> nameSamples = new LinkedList<NameSample>();
 
-  protected OntoNotesNameSampleStream(ObjectStream<String> samples) {
+  public OntoNotesNameSampleStream(ObjectStream<String> samples) {
     super(samples);
 
     Map<String, String> tokenConversionMap = new HashMap<String, String>();
