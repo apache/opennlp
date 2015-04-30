@@ -77,6 +77,6 @@ public class OntoNotes4ParserEval {
           new InputStreamReader(headRulesIn, "UTF-8"));
     }
 
-    crossEval(ModelUtil.createDefaultTrainingParameters(), headRules, -0.0d);
+    crossEval(ModelUtil.createDefaultTrainingParameters(), headRules, 0.937987617163142d);
   }
 }
