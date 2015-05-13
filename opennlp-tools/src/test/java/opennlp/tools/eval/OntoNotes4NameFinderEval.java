@@ -74,15 +74,15 @@ public class OntoNotes4NameFinderEval {
     crossEval(params, "person", 0.8269650989441869d);
   }
 
-  // organization
-  // location
-  // date
-  // duration
-  // all types
+  @Test
+  public void evalEnglishDateNameFinder() throws IOException {
+    TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
+    crossEval(params, "date", 0.8065329969459567);
+  }
 
   @Test
   public void evalAllTypesNameFinder() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-    crossEval(params, null, 0.8269650989441869d);
+    crossEval(params, null, 0.8061722553169423d);
   }
 }
