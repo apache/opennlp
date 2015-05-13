@@ -32,7 +32,7 @@ import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.formats.ontonotes.DocumentToLineStream;
 import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStream;
 import opennlp.tools.parser.HeadRules;
-import opennlp.tools.parser.ParserCrossEvaluator;
+import opennlp.tools.parser.ParserCrossValidator;
 import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.lang.en.HeadRulesTest;
 import opennlp.tools.util.ObjectStream;
@@ -60,7 +60,7 @@ public class OntoNotes4ParserEval {
         new DocumentToLineStream(new FileToStringSampleStream(
         documentStream, Charset.forName("UTF-8"))));
 
-    ParserCrossEvaluator cv = new ParserCrossEvaluator("en", params, rules, ParserType.CHUNKING);
+    ParserCrossValidator cv = new ParserCrossValidator("en", params, rules, ParserType.CHUNKING);
 
     cv.evaluate(samples, 10);
 

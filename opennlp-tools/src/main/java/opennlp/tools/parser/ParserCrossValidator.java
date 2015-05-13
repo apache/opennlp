@@ -24,7 +24,7 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
 
-public class ParserCrossEvaluator {
+public class ParserCrossValidator {
 
   private final String languageCode;
 
@@ -38,7 +38,7 @@ public class ParserCrossEvaluator {
 
   private ParserEvaluationMonitor[] monitors;
 
-  public ParserCrossEvaluator(String languageCode, TrainingParameters params, HeadRules rules, ParserType parserType,
+  public ParserCrossValidator(String languageCode, TrainingParameters params, HeadRules rules, ParserType parserType,
       ParserEvaluationMonitor... monitors) {
     this.languageCode = languageCode;
     this.params = params;
