@@ -29,10 +29,12 @@ import java.net.URL;
 import java.util.Map;
 
 import opennlp.tools.chunker.ChunkerModel;
+import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.Version;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.UncloseableInputStream;
@@ -47,7 +49,20 @@ public class ParserModel extends BaseModel {
 
     public POSModel create(InputStream in) throws IOException,
         InvalidFormatException {
-      return new POSModel(new UncloseableInputStream(in));
+      POSModel posModel = new POSModel(new UncloseableInputStream(in));
+
+      // The 1.6.x models write the non-default beam size into the model itself.
+      // In 1.5.x the parser configured the beam size when the model was loaded,
+      // this is not possible anymore with the new APIs
+      Version version = posModel.getVersion();
+      if (version.getMajor() == 1 && version.getMinor() == 5) {
+        if (posModel.getManifestProperty(BeamSearch.BEAM_SIZE_PARAMETER) == null) {
+          posModel = new POSModel(posModel.getLanguage(), posModel.getPosModel(), 10,
+              null, posModel.getFactory());
+        }
+      }
+
+      return posModel;
     }
 
     public void serialize(POSModel artifact, OutputStream out)
@@ -60,7 +75,17 @@ public class ParserModel extends BaseModel {
 
     public ChunkerModel create(InputStream in) throws IOException,
         InvalidFormatException {
-      return new ChunkerModel(new UncloseableInputStream(in));
+
+      ChunkerModel model = new ChunkerModel(new UncloseableInputStream(in));
+
+      Version version = model.getVersion();
+      if (version.getMajor() == 1 && version.getMinor() == 5) {
+
+        model = new ChunkerModel(model.getLanguage(), model.getChunkerModel(), new ParserChunkerFactory());
+
+      }
+
+      return model;
     }
 
     public void serialize(ChunkerModel artifact, OutputStream out)
