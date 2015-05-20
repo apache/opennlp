@@ -642,27 +642,4 @@ public abstract class BaseModel implements ArtifactProvider {
   public boolean isLoadedFromSerialized() {
     return isLoadedFromSerialized;
   }
-
-  public static void main(String[] args) throws Exception {
-
-    // create a stream which can be reset, enclose it in a buffered stream which supports reseting
-    InputStream in = new FileInputStream("annotation.conf");
-
-    System.out.println("Is mark supported: " + in.markSupported());
-
-    in = new BufferedInputStream(in);
-
-    System.out.println("Is mark supported: " + in.markSupported());
-
-    // 2 GB limit
-    in.mark(4096);
-
-    in.read();
-
-    in.reset();
-
-    // the mark support can be used to test if reseting is supported, we shoudl use this test anyway
-    // to fail gracefully in the cross validators ...
-
-  }
 }
