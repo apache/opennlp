@@ -88,7 +88,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
     }
 
     HashSumEventStream hses = new HashSumEventStream(events);
-    DataIndexer indexer = getDataIndexer(events);
+    DataIndexer indexer = getDataIndexer(hses);
 
     MaxentModel model = doTrain(indexer);
 
