@@ -284,6 +284,7 @@ public class GeneratorFactory {
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
 
       String dictResourceKey = generatorElement.getAttribute("dict");
+      boolean lowerCaseDictionary = "true".equals(generatorElement.getAttribute("lowerCase"));
 
       Object dictResource = resourceManager.getResource(dictResourceKey);
 
@@ -292,7 +293,7 @@ public class GeneratorFactory {
         throw new InvalidFormatException("Not a WordClusterDictionary resource for key: " + dictResourceKey);
       }
 
-      return new WordClusterFeatureGenerator((WordClusterDictionary) dictResource, dictResourceKey);
+      return new WordClusterFeatureGenerator((WordClusterDictionary) dictResource, dictResourceKey, lowerCaseDictionary);
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
