@@ -116,7 +116,7 @@
         <configuration>
           <instructions>
             <Bundle-Activator>opennlp.tools.util.ext.OSGiExtensionLoader</Bundle-Activator>
-            <Bundle-RequiredExecutionEnvironment>J2SE-1.5</Bundle-RequiredExecutionEnvironment>
+            <Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
             <Export-Package>
               !opennlp.tools.cmdline.*,
               opennlp.tools.*
