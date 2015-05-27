@@ -42,7 +42,3 @@ Requirements
 Java 1.7 is required to run OpenNLP
 Maven 3.0.0 is required for building it
 
-Known OSGi Issues
-------------
-In an OSGi environment the following things are not supported:
-- The coreference resolution component
