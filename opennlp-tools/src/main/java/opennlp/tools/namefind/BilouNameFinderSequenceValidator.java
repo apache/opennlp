@@ -17,12 +17,7 @@
 
 package opennlp.tools.namefind;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.SequenceValidator;
-import opennlp.tools.util.Span;
 
 public class BilouNameFinderSequenceValidator implements
     SequenceValidator<String> {
@@ -64,21 +59,5 @@ public class BilouNameFinderSequenceValidator implements
     }
 
     return true;
-  }
-
-  public static void main(String[] args) {
-
-    SequenceCodec codec = new BilouCodec();
-
-    List<String> outcomes = new ArrayList<String>();
-    outcomes.add("default-start");
-    outcomes.add("default-cont");
-    outcomes.add("default-last");
-    outcomes.add("default-unit");
-
-    Span spans[] = codec.decode(outcomes);
-
-
-    System.out.println();
   }
 }
