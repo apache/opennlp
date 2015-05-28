@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 
 public class AnnotationConfiguration {
 
@@ -58,7 +59,7 @@ public class AnnotationConfiguration {
     while ((line = reader.readLine())!= null) {
       line = line.trim();
 
-      if (line.length() == 0) {
+      if (line.isEmpty()) {
         continue;
       } else if (line.startsWith("#")) {
         continue;
@@ -66,18 +67,19 @@ public class AnnotationConfiguration {
         sectionType = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
       }
       else {
+        String typeName = WhitespaceTokenizer.INSTANCE.tokenize(line)[0];
 
         switch (sectionType) {
         case "entities":
-          typeToClassMap.put(line, AnnotationConfiguration.ENTITY_TYPE);
+          typeToClassMap.put(typeName, AnnotationConfiguration.ENTITY_TYPE);
           break;
 
         case "relations":
-          typeToClassMap.put(line.substring(0, line.indexOf(' ')), AnnotationConfiguration.RELATION_TYPE);
+          typeToClassMap.put(typeName, AnnotationConfiguration.RELATION_TYPE);
           break;
 
         case "attributes":
-          typeToClassMap.put(line.substring(0, line.indexOf(' ')), AnnotationConfiguration.ATTRIBUTE_TYPE);
+          typeToClassMap.put(typeName, AnnotationConfiguration.ATTRIBUTE_TYPE);
           break;
 
         default:
