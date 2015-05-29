@@ -355,10 +355,10 @@ public class NameFinderME implements TokenNameFinder {
 
     if (seqModel != null) {
       return new TokenNameFinderModel(languageCode, seqModel, factory.getFeatureGenerator(),
-              factory.getResources(), manifestInfoEntries, factory.getSequenceCodec());
+              factory.getResources(), manifestInfoEntries, factory.getSequenceCodec(), factory);
     } else {
       return new TokenNameFinderModel(languageCode, nameFinderModel, beamSize, factory.getFeatureGenerator(),
-              factory.getResources(), manifestInfoEntries, factory.getSequenceCodec());
+              factory.getResources(), manifestInfoEntries, factory.getSequenceCodec(), factory);
     }
   }
 
@@ -439,10 +439,10 @@ public class NameFinderME implements TokenNameFinder {
     // depending on which one is not null!
     if (seqModel != null) {
       return new TokenNameFinderModel(languageCode, seqModel, null,
-              resources, manifestInfoEntries, new BioCodec());
+              resources, manifestInfoEntries, new BioCodec(), new TokenNameFinderFactory());
     } else {
       return new TokenNameFinderModel(languageCode, nameFinderModel, beamSize, null,
-              resources, manifestInfoEntries, new BioCodec());
+              resources, manifestInfoEntries, new BioCodec(), new TokenNameFinderFactory());
     }
   }
 
