@@ -78,8 +78,8 @@ public class TokenNameFinderModel extends BaseModel {
 
   public TokenNameFinderModel(String languageCode, SequenceClassificationModel<String> nameFinderModel,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
-      SequenceCodec<String> seqCodec) {
-    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
+      SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
 
     init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries, seqCodec);
 
@@ -90,8 +90,8 @@ public class TokenNameFinderModel extends BaseModel {
 
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel, int beamSize,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
-      SequenceCodec<String> seqCodec) {
-    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
+      SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
 
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
@@ -108,7 +108,7 @@ public class TokenNameFinderModel extends BaseModel {
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     this(languageCode, nameFinderModel, NameFinderME.DEFAULT_BEAM_SIZE,
-        generatorDescriptor, resources, manifestInfoEntries, new BioCodec());
+        generatorDescriptor, resources, manifestInfoEntries, new BioCodec(), new TokenNameFinderFactory());
   }
 
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
@@ -225,12 +225,12 @@ public class TokenNameFinderModel extends BaseModel {
     if (getNameFinderModel() != null) {
       model = new TokenNameFinderModel(getLanguage(), getNameFinderModel(), 1,
           descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(),
-          getFactory().createSequenceCodec());
+          getFactory().createSequenceCodec(), getFactory());
     }
     else {
       model = new TokenNameFinderModel(getLanguage(), getNameFinderSequenceModel(),
           descriptor, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(),
-          getFactory().createSequenceCodec());
+          getFactory().createSequenceCodec(), getFactory());
     }
 
     model.artifactMap.clear();
