@@ -63,9 +63,9 @@ public class WordClusterDictionary implements SerializableArtifact {
     while ((line = reader.readLine()) != null) {
       String parts[] = line.split(" ");
       if (parts.length == 3) {
-        tokenToClusterMap.put(parts[0], parts[1]);
+        tokenToClusterMap.put(parts[0], parts[1].intern());
       } else if (parts.length == 2) {
-        tokenToClusterMap.put(parts[0], parts[1]);
+        tokenToClusterMap.put(parts[0], parts[1].intern());
       }
     }
   }
