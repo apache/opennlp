@@ -31,7 +31,7 @@
 
 	<groupId>org.apache.opennlp</groupId>
 	<artifactId>opennlp</artifactId>
-	<version>1.6.0</version>
+	<version>1.6.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Apache OpenNLP Reactor</name>
@@ -41,9 +41,9 @@
 	</prerequisites>
 
 	<scm>
-		<connection>scm:svn:http://svn.apache.org/repos/asf/opennlp/tags/opennlp-1.6.0-rc6</connection>
-		<developerConnection>scm:svn:https://svn.apache.org/repos/asf/opennlp/tags/opennlp-1.6.0-rc6</developerConnection>
-		<url>http://svn.apache.org/viewvc/opennlp/tags/opennlp-1.6.0-rc6</url>
+		<connection>scm:svn:http://svn.apache.org/repos/asf/opennlp/trunk/</connection>
+		<developerConnection>scm:svn:https://svn.apache.org/repos/asf/opennlp/trunk/</developerConnection>
+		<url>http://svn.apache.org/viewvc/opennlp/trunk/</url>
 	</scm>
 
 	<mailingLists>
