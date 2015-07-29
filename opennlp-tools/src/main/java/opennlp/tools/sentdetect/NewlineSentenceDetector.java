@@ -42,7 +42,7 @@ public class NewlineSentenceDetector implements SentenceDetector {
       char c = s.charAt(i);
 
       if (c == '\n' || c == '\r') {
-        if (start - i > 0) {
+        if (i - start > 0) {
           Span span = new Span(start, i).trim(s);
           if (span.length() > 0) {
             sentences.add(span);
