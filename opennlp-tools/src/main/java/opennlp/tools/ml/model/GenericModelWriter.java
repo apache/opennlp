@@ -32,6 +32,8 @@ import opennlp.tools.ml.maxent.io.BinaryGISModelWriter;
 import opennlp.tools.ml.maxent.io.BinaryQNModelWriter;
 import opennlp.tools.ml.maxent.io.PlainTextGISModelWriter;
 import opennlp.tools.ml.model.AbstractModel.ModelType;
+import opennlp.tools.ml.naivebayes.BinaryNaiveBayesModelWriter;
+import opennlp.tools.ml.naivebayes.PlainTextNaiveBayesModelWriter;
 import opennlp.tools.ml.perceptron.BinaryPerceptronModelWriter;
 import opennlp.tools.ml.perceptron.PlainTextPerceptronModelWriter;
 
@@ -45,43 +47,44 @@ public class GenericModelWriter extends AbstractModelWriter {
     // handle the zipped/not zipped distinction
     if (filename.endsWith(".gz")) {
       os = new GZIPOutputStream(new FileOutputStream(file));
-      filename = filename.substring(0,filename.length()-3);
-    }
-    else {
+      filename = filename.substring(0, filename.length() - 3);
+    } else {
       os = new FileOutputStream(file);
     }
 
     // handle the different formats
     if (filename.endsWith(".bin")) {
-      init(model,new DataOutputStream(os));
-    }
-    else {  // filename ends with ".txt"
-      init(model,new BufferedWriter(new OutputStreamWriter(os)));
+      init(model, new DataOutputStream(os));
+    } else {  // filename ends with ".txt"
+      init(model, new BufferedWriter(new OutputStreamWriter(os)));
     }
   }
 
   public GenericModelWriter(AbstractModel model, DataOutputStream dos) {
-    init(model,dos);
+    init(model, dos);
   }
 
   private void init(AbstractModel model, DataOutputStream dos) {
     if (model.getModelType() == ModelType.Perceptron) {
-      delegateWriter = new BinaryPerceptronModelWriter(model,dos);
+      delegateWriter = new BinaryPerceptronModelWriter(model, dos);
+    } else if (model.getModelType() == ModelType.Maxent) {
+      delegateWriter = new BinaryGISModelWriter(model, dos);
+    } else if (model.getModelType() == ModelType.MaxentQn) {
+      delegateWriter = new BinaryQNModelWriter(model, dos);
     }
-    else if (model.getModelType() == ModelType.Maxent) {
-      delegateWriter = new BinaryGISModelWriter(model,dos);
-    }
-    else if (model.getModelType() == ModelType.MaxentQn) {
-        delegateWriter = new BinaryQNModelWriter(model,dos);
+    if (model.getModelType() == ModelType.NaiveBayes) {
+      delegateWriter = new BinaryNaiveBayesModelWriter(model, dos);
     }
   }
 
   private void init(AbstractModel model, BufferedWriter bw) {
     if (model.getModelType() == ModelType.Perceptron) {
-      delegateWriter = new PlainTextPerceptronModelWriter(model,bw);
+      delegateWriter = new PlainTextPerceptronModelWriter(model, bw);
+    } else if (model.getModelType() == ModelType.Maxent) {
+      delegateWriter = new PlainTextGISModelWriter(model, bw);
     }
-    else if (model.getModelType() == ModelType.Maxent) {
-      delegateWriter = new PlainTextGISModelWriter(model,bw);
+    if (model.getModelType() == ModelType.NaiveBayes) {
+      delegateWriter = new PlainTextNaiveBayesModelWriter(model, bw);
     }
   }
 

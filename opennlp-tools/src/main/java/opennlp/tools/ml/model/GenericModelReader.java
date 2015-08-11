@@ -24,6 +24,7 @@ import java.io.IOException;
 
 import opennlp.tools.ml.maxent.io.GISModelReader;
 import opennlp.tools.ml.maxent.io.QNModelReader;
+import opennlp.tools.ml.naivebayes.NaiveBayesModelReader;
 import opennlp.tools.ml.perceptron.PerceptronModelReader;
 
 public class GenericModelReader extends AbstractModelReader {
@@ -48,6 +49,9 @@ public class GenericModelReader extends AbstractModelReader {
     }
     else if (modelType.equals("QN")) {
         delegateModelReader = new QNModelReader(this.dataReader);
+    }
+    else if (modelType.equals("NaiveBayes")) {
+        delegateModelReader = new NaiveBayesModelReader(this.dataReader);
     }
     else {
       throw new IOException("Unknown model format: "+modelType);
