@@ -155,6 +155,7 @@
                 <exclude>src/test/resources/data/ppa/devset</exclude>
                 <exclude>src/test/resources/data/ppa/test</exclude>
                 <exclude>src/test/resources/data/ppa/training</exclude>
+                <exclude>src/test/resources/data/ppa/NOTICE</exclude>
                 <exclude>src/test/resources/opennlp/tools/doccat/DoccatSample.txt</exclude>
                 <exclude>src/test/resources/opennlp/tools/formats/brat/voa-with-entities.ann</exclude>
                 <exclude>src/test/resources/opennlp/tools/formats/brat/voa-with-entities.txt</exclude>

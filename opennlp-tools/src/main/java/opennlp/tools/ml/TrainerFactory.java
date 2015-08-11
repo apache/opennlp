@@ -24,6 +24,7 @@ import java.util.Map;
 
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
+import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
 import opennlp.tools.ml.perceptron.PerceptronTrainer;
 import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.util.ext.ExtensionLoader;
@@ -47,6 +48,7 @@ public class TrainerFactory {
     _trainers.put(PerceptronTrainer.PERCEPTRON_VALUE, PerceptronTrainer.class);
     _trainers.put(SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE,
         SimplePerceptronSequenceTrainer.class);
+    _trainers.put(NaiveBayesTrainer.NAIVE_BAYES_VALUE, NaiveBayesTrainer.class);
 
     BUILTIN_TRAINERS = Collections.unmodifiableMap(_trainers);
   }
