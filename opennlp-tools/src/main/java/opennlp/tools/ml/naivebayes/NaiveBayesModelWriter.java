@@ -114,7 +114,7 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
   /**
    * Writes the model to disk, using the <code>writeX()</code> methods
    * provided by extending classes.
-   * <p/>
+   *
    * <p>If you wish to create a NaiveBayesModelWriter which uses a different
    * structure, it will be necessary to override the persist method in
    * addition to implementing the <code>writeX()</code> methods.
