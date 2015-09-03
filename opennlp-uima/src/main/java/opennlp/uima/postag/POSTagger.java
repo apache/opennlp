@@ -193,7 +193,7 @@ public final class POSTagger extends CasAnnotator_ImplBase {
         tokenAnnotation.setStringValue(this.posFeature, posTag);
 
         if (posProbabilities != null) {
-          tokenAnnotation.setDoubleValue(this.posFeature, posProbabilities[index]);
+          tokenAnnotation.setDoubleValue(this.probabilityFeature, posProbabilities[index]);
         }
 
         index++;
