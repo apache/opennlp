@@ -202,7 +202,8 @@ Mr . <START:person> Vinken <END> is chairman of Elsevier N.V. , the Dutch publis
 			<screen>
 				<![CDATA[
 $ opennlp TokenNameFinderTrainer
-Usage: opennlp TokenNameFinderTrainer[.evalita|.ad|.conll03|.bionlp2004|.conll02|.muc6|.ontonotes|.brat] [-featuregen featuregenFile] [-nameTypes types] [-sequenceCodec codec] [-factory factoryName] [-resources resourcesDir] [-type modelType] [-params paramsFile] -lang language -model modelFile -data sampleData [-encoding charsetName]
+Usage: opennlp TokenNameFinderTrainer[.evalita|.ad|.conll03|.bionlp2004|.conll02|.muc6|.ontonotes|.brat] [-featuregen featuregenFile] [-nameTypes types] [-sequenceCodec codec] [-factory factoryName] 
+[-resources resourcesDir] [-type modelType] [-params paramsFile] -lang language -model modelFile -data sampleData [-encoding charsetName]
 
 Arguments description:
         -featuregen featuregenFile
@@ -252,7 +253,7 @@ The example above will train models with a pre-defined feature set. It is also p
 			 the cutoff and to overwrite all types in the training data with a single type. Finally, the -sequenceCodec parameter allows to specify a BIO (Begin, Inside, Out) or BILOU (Begin, Inside, Last, Out, Unit) encoding to represent the Named Entities. An example of one such command would be as follows:
 			 <screen>
 			   <![CDATA[
-$ opennlp TokenNameFinderTrainer -featuregen brown.xml -sequenceCodec BILOU -resources clusters/ -params lang/ml/PerceptronTrainerParams.txt -lang en -model ner-test.bin -data en-train.opennlp -encoding UTF-8]]>
+$ opennlp TokenNameFinderTrainer -featuregen brown.xml -sequenceCodec BILOU -resources clusters/ -params PerceptronTrainerParams.txt -lang en -model ner-test.bin -data en-train.opennlp -encoding UTF-8]]>
 			 </screen>
 		</para>
 		</section>
@@ -384,7 +385,7 @@ new NameFinderME(model);]]>
 </generators>]]>
 				 </programlisting>
 		    The root element must be generators, each sub-element adds a feature generator to the configuration.
-		    The sample xml is equivalent to the generators defined by the API above.
+		    The sample xml is constains aditional feature generators with respect to the API defined above.
 			</para>
 			<para>
 			The following table shows the supported elements:
