@@ -256,5 +256,39 @@ F-Measure: 0.8985815184245214]]>
 				<ulink url="https://issues.apache.org/jira/browse/OPENNLP-688">OPENNLP-688</ulink>.
 			</para>
 		</section>
+		<section id="tools.parser.evaluation.api">
+		<title>Evaluation API</title>
+		<para>
+		The evaluation can be performed on a pre-trained model and a test dataset or via cross validation.
+		In the first case the model must be loaded and a Parse ObjectStream must be created (see code samples above),
+		assuming these two objects exist the following code shows how to perform the evaluation:
+			<programlisting language="java">
+			  <![CDATA[
+Parser parser = ParserFactory.create(model);
+ParserEvaluator evaluator = new ParserEvaluator(parser);
+evaluator.evaluate(sampleStream);
+
+FMeasure result = evaluator.getFMeasure();
+
+System.out.println(result.toString());]]>
+			</programlisting>
+			In the cross validation case all the training arguments must be
+			provided (see the Training API section above).
+			To perform cross validation the ObjectStream must be resettable.
+			<programlisting language="java">
+				<![CDATA[
+InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("parsing.train"));
+ObjectStream<String> stringStream = new PlainTextByLineStream(inputStreamFactory, "UTF-8");
+ObjectStream<Parse> sampleStream = new ParseSample(stringStream);
+ParserCrossValidator evaluator = new ParserCrossValidator("en", trainParameters, headRules, \
+parserType, listeners.toArray(new ParserEvaluationMonitor[listeners.size()])));
+evaluator.evaluate(sampleStream, 10);
+
+FMeasure result = evaluator.getFMeasure();
+
+System.out.println(result.toString());]]>
+			</programlisting>
+		</para>
+		</section>
 	</section>
 </chapter>
