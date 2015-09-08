@@ -201,11 +201,99 @@ $ opennlp TaggerModelReplacer en-parser-chunking.bin en-pos-maxent.bin]]>
 		Additionally there are tools to just retrain the build or the check model.
 		</para>
 		</section>
+
 		<section id="tools.parser.training.api">
-		<title>Training API</title>
-		<para>TODO: Write documentation about the parser training api. Any contributions
-			  are very welcome. If you want to contribute please contact us on the mailing list
-			  or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-219">OPENNLP-219</ulink>.
+		  <title>Training API</title>
+		  <para>
+		The Parser training API supports the training of a new parser model.
+		Four steps are necessary to train it:
+		<itemizedlist>
+		  <listitem>
+			  <para>A HeadRules class needs to be instantiated: currently EnglishHeadRules and AncoraSpanishHeadRules are available.</para>
+			</listitem>
+			<listitem>
+				<para>The application must open a sample data stream.</para>
+			</listitem>
+			<listitem>
+				<para>Call a Parser train method: This can be either the CHUNKING or the TREEINSERT parser.</para>
+			</listitem>
+			<listitem>
+				<para>Save the ParseModel to a file or database.</para>
+			</listitem>
+		</itemizedlist>
+		The following code snippet shows how to instantiate the HeadRules:
+		<programlisting language="java">
+				<![CDATA[
+static HeadRules createHeadRules(TrainerToolParams params) throws IOException {
+
+    ArtifactSerializer headRulesSerializer = null;
+
+    if (params.getHeadRulesSerializerImpl() != null) {
+      headRulesSerializer = ExtensionLoader.instantiateExtension(ArtifactSerializer.class,
+              params.getHeadRulesSerializerImpl());
+    }
+    else {
+      if ("en".equals(params.getLang())) {
+        headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
+      }
+      else if ("es".equals(params.getLang())) {
+        headRulesSerializer = new opennlp.tools.parser.lang.es.AncoraSpanishHeadRules.HeadRulesSerializer();
+      }
+      else {
+        // default for now, this case should probably cause an error ...
+        headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
+      }
+    }
+
+    Object headRulesObject = headRulesSerializer.create(new FileInputStream(params.getHeadRules()));
+
+    if (headRulesObject instanceof HeadRules) {
+      return (HeadRules) headRulesObject;
+    }
+    else {
+      throw new TerminateToolException(-1, "HeadRules Artifact Serializer must create an object of type HeadRules!");
+    }
+}]]>
+	</programlisting>
+		The following code illustrates the three other steps, namely, opening the data, training
+	the model and saving the ParserModel into an output file.
+		<programlisting language="java">
+				<![CDATA[
+ParserModel model = null;
+File modelOutFile = params.getModel();
+CmdLineUtil.checkOutputFile("parser model", modelOutFile);
+
+try {
+  HeadRules rules = createHeadRules(params);
+  InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("parsing.train"));
+  ObjectStream<String> stringStream = new PlainTextByLineStream(inputStreamFactory, "UTF-8");
+  ObjectStream<Parse> sampleStream = new ParseSample(stringStream);
+
+  ParserType type = parseParserType(params.getParserType());
+  if (ParserType.CHUNKING.equals(type)) {
+    model = opennlp.tools.parser.chunking.Parser.train(
+            params.getLang(), sampleStream, rules,
+            mlParams);
+  } else if (ParserType.TREEINSERT.equals(type)) {
+    model = opennlp.tools.parser.treeinsert.Parser.train(params.getLang(), sampleStream, rules,
+            mlParams);
+    }
+  }
+  catch (IOException e) {
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
+          + e.getMessage(), e);
+  }
+  finally {
+      try {
+        sampleStream.close();
+      }
+      catch (IOException e) {
+        // sorry that this can fail
+      }
+  }
+  CmdLineUtil.writeModel("parser", modelOutFile, model);
+]]>
+	</programlisting>
 		</para>
 		</section>
 	</section>
