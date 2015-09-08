@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter id="tools.lemmatizer">
+<title>Lemmatizer</title>
+	<section id="tools.lemmatizer.tagging">
+		<title>Lemmatization</title>
+		<para>
+		  The lemmatizer returns, for a given word form (token) and Part of Speech tag,
+		  the dictionary form of a word, which is usually referred to as its lemma. A token could
+		  ambiguously be derived from several basic forms or dictionary words which is why the
+		  postag of the word is required to find the lemma. For example, the form `show' may refer
+		  to either the verb "to show" or to the noun "show".
+		  Currently OpenNLP implements a dictionary lookup lemmatizer, although the implementation of
+		  rule-based and probabilistic lemmatizers are pending
+		  (<ulink url="https://issues.apache.org/jira/browse/OPENNLP-683">OPENNLP-683</ulink> and
+		  <ulink url="https://issues.apache.org/jira/browse/OPENNLP-760">OPENNLP-760</ulink>).
+		  Contributions are very welcome!
+		</para>
+			<section id="tools.lemmatizer.tagging.cmdline">
+		<title>Lemmatizer Tool</title>
+		<para>
+		  TODO: a command line tool for the lemmatizer is pending:
+		  <ulink url="https://issues.apache.org/jira/browse/OPENNLP-814">OPENNLP-814</ulink>
+		  Contributions welcome!
+		</para>
+      </section>
+
+		<section id="tools.lemmatizer.tagging.api">
+		<title>Lemmatizer API</title>
+		<para>
+		  The Lemmatizer can be embedded into an application via its API. Currently only a
+		  dictionary-based SimpleLemmatizer is available. The SimpleLemmatizer is constructed
+		  by passing the InputStream of a lemmatizer dictionary. Such dictionary consists of a
+		  text file containing, for each row, a word, its postag and the corresponding lemma:
+		  <screen>
+		<![CDATA[
+show    NN      show
+showcase        NN      showcase
+showcases       NNS     showcase
+showdown        NN      showdown
+showdowns       NNS     showdown
+shower  NN      shower
+showers NNS     shower
+showman NN      showman
+showmanship     NN      showmanship
+showmen NNS     showman
+showroom        NN      showroom
+showrooms       NNS     showroom
+shows   NNS     show
+showstopper     NN      showstopper
+showstoppers    NNS     showstopper
+shrapnel        NN      shrapnel
+		]]>
+		</screen>
+			First the dictionary must be loaded into memory from disk or another source.
+			In the sample below it is loaded from disk.
+			<programlisting language="java">
+				<![CDATA[
+InputStream dictLemmatizer = null;
+
+try {
+  dictLemmatizer = new FileInputStream("english-lemmatizer.txt");
+}
+catch (IOException e) {
+  // dictionary loading failed, handle the error
+  e.printStackTrace();
+}
+finally {
+  if (dictLemmatizer != null) {
+    try {
+      dictLemmatizer.close();
+    }
+    catch (IOException e) {
+    }
+  }
+}]]>
+			</programlisting>
+			After the dictionary is loaded the SimpleLemmatizer can be instantiated.
+			<programlisting language="java">
+			  <![CDATA[
+SimpleLemmatizer lemmatizer = new SimpleLemmatizer(dictLemmatizer);]]>
+			</programlisting>
+			The SimpleLemmatizer instance is now ready. It expects two String objects as input,
+			a token and its postag.
+	   </para>
+	   <para>
+	   The following code shows how to find a lemma for a token postag pair and store them in an ArrayList.
+	   	<programlisting language="java">
+		  <![CDATA[
+String sent[] = new String[]{"Most", "large", "cities", "in", "the", "US", "had",
+                             "morning", "and", "afternoon", "newspapers", "."};
+String tags[] = tagger.tag(sent);
+List<String> lemmas = new ArrayList<String>();
+for (int i = 0; i < sent.length; i++) {
+  lemmas.add(lemmatizer.lemmatize(sent[i], tags[i]));
+}
+]]>
+			</programlisting>
+			The tags array contains one part-of-speech tag for each token in the input array. The corresponding
+			tag and lemmas can be found at the same index as the token has in the input array.
+	  		 </para>
+	</section>
+	</section>
+</chapter>
