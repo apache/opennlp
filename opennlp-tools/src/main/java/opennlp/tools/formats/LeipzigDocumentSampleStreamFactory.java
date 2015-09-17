@@ -17,23 +17,32 @@
 
 package opennlp.tools.formats;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.cmdline.params.EncodingParameter;
 import opennlp.tools.cmdline.params.LanguageParams;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamUtils;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class LeipzigDocumentSampleStreamFactory extends LanguageSampleStreamFactory<DocumentSample> {
+public class LeipzigDocumentSampleStreamFactory
+    extends AbstractSampleStreamFactory<DocumentSample> {
 
-  interface Parameters extends BasicFormatParams, LanguageParams {
+  interface Parameters extends EncodingParameter {
+    @ParameterDescription(valueName = "sentencesDir",
+        description = "dir with Leipig sentences to be used")
+    File getSentencesDir();
   }
 
   public static void registerFactory() {
@@ -48,13 +57,28 @@ public class LeipzigDocumentSampleStreamFactory extends LanguageSampleStreamFact
   public ObjectStream<DocumentSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-    language = params.getLang();
+    File sentencesFileDir = params.getSentencesDir();
+    
+    File sentencesFiles[] = sentencesFileDir.listFiles(new FilenameFilter() {
+      @Override
+      public boolean accept(File dir, String name) {
+        return name.contains("sentences") && name.endsWith(".txt");
+      }
+    });
+    
+    @SuppressWarnings("unchecked")
+    ObjectStream<DocumentSample> sampleStreams[] = 
+        new ObjectStream[sentencesFiles.length];
 
-    try {
-      return new LeipzigDoccatSampleStream(params.getLang(), 20,
-          CmdLineUtil.openInFile(params.getData()));
-    } catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while opening sample data: " + e.getMessage(), e);
+    for (int i = 0; i < sentencesFiles.length; i++) {
+      try {
+        sampleStreams[i] = new LeipzigDoccatSampleStream(sentencesFiles[i].getName().substring(0, 3), 20,
+            CmdLineUtil.openInFile(sentencesFiles[i]));
+      } catch (IOException e) {
+        throw new TerminateToolException(-1, "IO error while opening sample data: " + e.getMessage(), e);
+      }
     }
+    
+    return ObjectStreamUtils.createObjectStream(sampleStreams);
   }
 }
