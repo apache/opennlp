@@ -83,6 +83,13 @@ public class ObjectStreamUtils {
     };
   }
 
+  /**
+   * Creates a single concatenated ObjectStream from multiple individual
+   * ObjectStreams with the same type.
+   * 
+   * @param streams
+   * @return
+   */
   public static <T> ObjectStream<T> createObjectStream(final ObjectStream<T>... streams) {
 
     for (ObjectStream<T> stream : streams) {
