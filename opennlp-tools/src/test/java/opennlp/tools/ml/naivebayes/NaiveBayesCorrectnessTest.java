@@ -39,7 +39,7 @@ public class NaiveBayesCorrectnessTest {
   @Test
   public void testNaiveBayes1() throws IOException {
 
-    NaiveBayesModel.setSmoothed(false); // Naive Bayes should always be run with smoothing, but I am taking it out here just for mathematical verification
+    NaiveBayesModel.setSmoothed(false); // Naive Bayes should always be run with smoothing, taken out here for mathematical verification
 
     NaiveBayesModel model =
         (NaiveBayesModel)new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
@@ -57,7 +57,7 @@ public class NaiveBayesCorrectnessTest {
   @Test
   public void testNaiveBayes2() throws IOException {
 
-    NaiveBayesModel.setSmoothed(false); // Naive Bayes should always be run with smoothing, but I am taking it out here just for mathematical verification
+    NaiveBayesModel.setSmoothed(false); // Naive Bayes should always be run with smoothing, taken out here for mathematical verification
 
     NaiveBayesModel model =
         (NaiveBayesModel)new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));

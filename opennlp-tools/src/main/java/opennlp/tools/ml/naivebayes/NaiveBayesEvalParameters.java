@@ -19,6 +19,9 @@ package opennlp.tools.ml.naivebayes;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.EvalParameters;
 
+/**
+ * Parameters for the evalution of a naive bayes classifier
+ */
 public class NaiveBayesEvalParameters extends EvalParameters {
 
   protected double[] outcomeTotals;
