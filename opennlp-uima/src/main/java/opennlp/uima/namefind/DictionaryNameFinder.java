@@ -21,11 +21,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.Span;
+import opennlp.uima.dictionary.DictionaryResource;
 import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.ExceptionMessages;
 import opennlp.uima.util.UimaUtil;
 
 import org.apache.uima.cas.CAS;
+import org.apache.uima.resource.ResourceAccessException;
 import org.apache.uima.resource.ResourceInitializationException;
 
 public class DictionaryNameFinder extends AbstractNameFinder {
@@ -47,29 +49,37 @@ public class DictionaryNameFinder extends AbstractNameFinder {
    *
    * Note: Do all initialization in this method, do not use the constructor.
    */
-  public void initialize()
-      throws ResourceInitializationException {
+  public void initialize() throws ResourceInitializationException {
 
     Dictionary nameFinderDictionary;
 
     try {
-      String modelName = AnnotatorUtil.getRequiredStringParameter(context,
-          UimaUtil.DICTIONARY_PARAMETER);
+      DictionaryResource modelResource = (DictionaryResource) context
+          .getResourceObject(UimaUtil.DICTIONARY_PARAMETER);
 
-      InputStream inModel = AnnotatorUtil
-          .getResourceAsStream(context, modelName);
+      nameFinderDictionary = modelResource.getDictionary();
+    } catch (ResourceAccessException e) {
 
-      nameFinderDictionary = new Dictionary(inModel);
+      try {
+        String modelName = AnnotatorUtil.getRequiredStringParameter(context,
+            UimaUtil.DICTIONARY_PARAMETER);
 
-    } catch (IOException e) {
-      throw new ResourceInitializationException(
-	      ExceptionMessages.MESSAGE_CATALOG,
-	      ExceptionMessages.IO_ERROR_DICTIONARY_READING,
-	      new Object[] {e.getMessage()});
+        InputStream inModel = AnnotatorUtil.getResourceAsStream(context,
+            modelName);
+
+        nameFinderDictionary = new Dictionary(inModel);
+
+      } catch (IOException ie) {
+        throw new ResourceInitializationException(
+            ExceptionMessages.MESSAGE_CATALOG,
+            ExceptionMessages.IO_ERROR_DICTIONARY_READING,
+            new Object[] { ie.getMessage() });
+      }
+
     }
 
-    mNameFinder =
-        new opennlp.tools.namefind.DictionaryNameFinder(nameFinderDictionary);
+    mNameFinder = new opennlp.tools.namefind.DictionaryNameFinder(
+        nameFinderDictionary);
   }
 
   protected Span[] find(CAS cas, String[] tokens) {

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmlns:tcas="http:///uima/tcas.ecore" xmlns:xmi="http://www.omg.org/XMI" xmlns:cas="http:///uima/cas.ecore" xmlns:uima="http:///opennlp/uima.ecore" xmi:version="2.0">
+    <cas:NULL xmi:id="0"/>
+    <cas:Sofa xmi:id="1" sofaNum="1" sofaID="_InitialView" mimeType="text" sofaString="Nordic cities could be Copenhagen in Denmark and Stockholm in Sweden. Some cities in english speaking countries could be London in England and New York in United States of America."/>
+    <tcas:DocumentAnnotation xmi:id="8" sofa="1" begin="0" end="180" language="x-unspecified"/>
+    <uima:Sentence xmi:id="33" sofa="1" begin="0" end="69"/>
+    <uima:Sentence xmi:id="37" sofa="1" begin="70" end="180"/>
+    <uima:Token xmi:id="41" sofa="1" begin="0" end="6"/>
+    <uima:Token xmi:id="46" sofa="1" begin="7" end="13"/>
+    <uima:Token xmi:id="51" sofa="1" begin="14" end="19"/>
+    <uima:Token xmi:id="56" sofa="1" begin="20" end="22"/>
+    <uima:Token xmi:id="61" sofa="1" begin="23" end="33"/>
+    <uima:Token xmi:id="66" sofa="1" begin="34" end="36"/>
+    <uima:Token xmi:id="71" sofa="1" begin="37" end="44"/>
+    <uima:Token xmi:id="76" sofa="1" begin="45" end="48"/>
+    <uima:Token xmi:id="81" sofa="1" begin="49" end="58"/>
+    <uima:Token xmi:id="86" sofa="1" begin="59" end="61"/>
+    <uima:Token xmi:id="91" sofa="1" begin="62" end="68"/>
+    <uima:Token xmi:id="96" sofa="1" begin="68" end="69"/>
+    <uima:Token xmi:id="101" sofa="1" begin="70" end="74"/>
+    <uima:Token xmi:id="106" sofa="1" begin="75" end="81"/>
+    <uima:Token xmi:id="111" sofa="1" begin="82" end="84"/>
+    <uima:Token xmi:id="116" sofa="1" begin="85" end="92"/>
+    <uima:Token xmi:id="121" sofa="1" begin="93" end="101"/>
+    <uima:Token xmi:id="126" sofa="1" begin="102" end="111"/>
+    <uima:Token xmi:id="136" sofa="1" begin="118" end="120"/>
+    <uima:Token xmi:id="141" sofa="1" begin="112" end="117"/>
+    <uima:Token xmi:id="146" sofa="1" begin="121" end="127"/>
+    <uima:Token xmi:id="151" sofa="1" begin="128" end="130"/>
+    <uima:Token xmi:id="156" sofa="1" begin="131" end="138"/>
+    <uima:Token xmi:id="161" sofa="1" begin="139" end="142"/>
+    <uima:Token xmi:id="166" sofa="1" begin="143" end="146"/>
+    <uima:Token xmi:id="171" sofa="1" begin="147" end="151"/>
+    <uima:Token xmi:id="176" sofa="1" begin="152" end="154"/>
+    <uima:Token xmi:id="181" sofa="1" begin="155" end="161"/>
+    <uima:Token xmi:id="186" sofa="1" begin="162" end="168"/>
+    <uima:Token xmi:id="191" sofa="1" begin="169" end="171"/>
+    <uima:Token xmi:id="196" sofa="1" begin="172" end="179"/>
+    <cas:View sofa="1" members="8 33 37 41 46 51 56 61 66 71 76 81 86 91 96 101 106 111 116 121 126 136 141 146 151 156 161 166 171 176 181 186 191 196"/>
+</xmi:XMI>
