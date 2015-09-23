@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dictionary xmlns="http://incubator.apache.org/uima" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="dictionary.xsd">
+    <typeCollection>
+        <dictionaryMetaData caseNormalization="true" multiWordEntries="true" multiWordSeparator=" "/>
+        <languageId>en</languageId>
+        <typeDescription>
+            <typeName>org.apache.uima.DictionaryEntry</typeName>
+        </typeDescription>
+        <entries>
+            <entry>
+                <token>New</token>
+                <token>York</token>
+            </entry>
+            <entry>
+                <token>Copenhagen</token>
+            </entry>
+            <entry>
+                <token>Berlin</token>
+            </entry>
+            <entry>
+                <token>Stockholm</token>
+            </entry>
+            <entry>
+                <token>Paris</token>
+            </entry>
+            <entry>
+                <token>London</token>
+            </entry>
+        </entries>
+    </typeCollection>
+</dictionary>
