@@ -165,6 +165,11 @@ public class NameFinderME implements TokenNameFinder {
     this(model, null, beamSize);
   }
 
+  @Deprecated
+  /**
+   * @deprecated the default feature generation is now always included in the models and loaded
+   * if not by the factory. Subclasses using this methods should do the same.
+   */
   static AdaptiveFeatureGenerator createFeatureGenerator() {
     return new CachedFeatureGenerator(
             new AdaptiveFeatureGenerator[]{
