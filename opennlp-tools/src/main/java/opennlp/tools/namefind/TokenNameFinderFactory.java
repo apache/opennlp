@@ -18,6 +18,7 @@
 package opennlp.tools.namefind;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -48,6 +49,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
    */
   public TokenNameFinderFactory() {
     this.seqCodec = new BioCodec();
+    featureGeneratorBytes = loadDefaultFeatureGeneratorBytes();
   }
 
   public TokenNameFinderFactory(byte[] featureGeneratorBytes, final Map<String, Object> resources,
@@ -59,8 +61,35 @@ public class TokenNameFinderFactory extends BaseToolFactory {
     this.featureGeneratorBytes = featureGeneratorBytes;
     this.resources = resources;
     this.seqCodec = seqCodec;
+    
+    if (this.featureGeneratorBytes == null) {
+      this.featureGeneratorBytes = loadDefaultFeatureGeneratorBytes();
+    }
   }
 
+  private static byte[] loadDefaultFeatureGeneratorBytes() {
+    
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (InputStream in = TokenNameFinderFactory.class.getResourceAsStream(
+        "/opennlp/tools/namefind/ner-default-features.xml")) {
+      
+      if (in == null) {
+        throw new IllegalStateException("Classpath must contain ner-default-features.xml file!");
+      }
+      
+      byte buf[] = new byte[1024];
+      int len;
+      while ((len = in.read(buf)) > 0) {
+        bytes.write(buf, 0, len);
+      }
+    }
+    catch (IOException e) {
+      throw new IllegalStateException("Failed reading from ner-default-features.xml file on classpath!");
+    }
+    
+    return bytes.toByteArray();
+  }
+  
   protected SequenceCodec<String> getSequenceCodec() {
     return seqCodec;
   }
