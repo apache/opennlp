@@ -49,7 +49,6 @@ public class TokenNameFinderFactory extends BaseToolFactory {
    */
   public TokenNameFinderFactory() {
     this.seqCodec = new BioCodec();
-    featureGeneratorBytes = loadDefaultFeatureGeneratorBytes();
   }
 
   public TokenNameFinderFactory(byte[] featureGeneratorBytes, final Map<String, Object> resources,
@@ -61,10 +60,6 @@ public class TokenNameFinderFactory extends BaseToolFactory {
     this.featureGeneratorBytes = featureGeneratorBytes;
     this.resources = resources;
     this.seqCodec = seqCodec;
-    
-    if (this.featureGeneratorBytes == null) {
-      this.featureGeneratorBytes = loadDefaultFeatureGeneratorBytes();
-    }
   }
 
   private static byte[] loadDefaultFeatureGeneratorBytes() {
@@ -162,56 +157,50 @@ public class TokenNameFinderFactory extends BaseToolFactory {
    *
    * @return the feature generator or null if there is no descriptor in the model
    */
-  // TODO: During training time the resources need to be loaded from the resources map!
   public AdaptiveFeatureGenerator createFeatureGenerators() {
 
-    byte descriptorBytes[] = null;
     if (featureGeneratorBytes == null && artifactProvider != null) {
-      descriptorBytes = (byte[]) artifactProvider.getArtifact(
+      featureGeneratorBytes = (byte[]) artifactProvider.getArtifact(
           TokenNameFinderModel.GENERATOR_DESCRIPTOR_ENTRY_NAME);
     }
-    else {
-      descriptorBytes = featureGeneratorBytes;
+    
+    if (featureGeneratorBytes == null) {
+      featureGeneratorBytes = loadDefaultFeatureGeneratorBytes();
     }
 
-    if (descriptorBytes != null) {
-      InputStream descriptorIn = new ByteArrayInputStream(descriptorBytes);
+    InputStream descriptorIn = new ByteArrayInputStream(featureGeneratorBytes);
 
-      AdaptiveFeatureGenerator generator = null;
-      try {
-        generator = GeneratorFactory.create(descriptorIn, new FeatureGeneratorResourceProvider() {
+    AdaptiveFeatureGenerator generator = null;
+    try {
+      generator = GeneratorFactory.create(descriptorIn, new FeatureGeneratorResourceProvider() {
 
-          public Object getResource(String key) {
-            if (artifactProvider != null) {
-              return artifactProvider.getArtifact(key);
-            }
-            else {
-              return resources.get(key);
-            }
+        public Object getResource(String key) {
+          if (artifactProvider != null) {
+            return artifactProvider.getArtifact(key);
           }
-        });
-      } catch (InvalidFormatException e) {
-        // It is assumed that the creation of the feature generation does not
-        // fail after it succeeded once during model loading.
+          else {
+            return resources.get(key);
+          }
+        }
+      });
+    } catch (InvalidFormatException e) {
+      // It is assumed that the creation of the feature generation does not
+      // fail after it succeeded once during model loading.
 
-        // But it might still be possible that such an exception is thrown,
-        // in this case the caller should not be forced to handle the exception
-        // and a Runtime Exception is thrown instead.
+      // But it might still be possible that such an exception is thrown,
+      // in this case the caller should not be forced to handle the exception
+      // and a Runtime Exception is thrown instead.
 
-        // If the re-creation of the feature generation fails it is assumed
-        // that this can only be caused by a programming mistake and therefore
-        // throwing a Runtime Exception is reasonable
+      // If the re-creation of the feature generation fails it is assumed
+      // that this can only be caused by a programming mistake and therefore
+      // throwing a Runtime Exception is reasonable
 
-        throw new FeatureGeneratorCreationError(e);
-      } catch (IOException e) {
-        throw new IllegalStateException("Reading from mem cannot result in an I/O error", e);
-      }
-
-      return generator;
+      throw new FeatureGeneratorCreationError(e);
+    } catch (IOException e) {
+      throw new IllegalStateException("Reading from mem cannot result in an I/O error", e);
     }
-    else {
-      return null;
-    }
+
+    return generator;
   }
 
   public static SequenceCodec<String> instantiateSequenceCodec(
