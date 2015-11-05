@@ -129,13 +129,7 @@ public final class NameFinder extends AbstractNameFinder {
         throw new ResourceInitializationException(e);
     }
 
-    Integer beamSize = AnnotatorUtil.getOptionalIntegerParameter(context,
-        UimaUtil.BEAM_SIZE_PARAMETER);
-
-    if (beamSize == null)
-      beamSize = NameFinderME.DEFAULT_BEAM_SIZE;
-
-    mNameFinder = new NameFinderME(model, beamSize);
+    mNameFinder = new NameFinderME(model);
   }
 
   /**
