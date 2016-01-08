@@ -26,10 +26,9 @@ import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
 
 /**
  * Test for naive bayes classification correctness without smoothing
@@ -39,72 +38,59 @@ public class NaiveBayesCorrectnessTest {
   @Test
   public void testNaiveBayes1() throws IOException {
 
-    NaiveBayesModel.setSmoothed(false); // Naive Bayes should always be run with smoothing, taken out here for mathematical verification
-
     NaiveBayesModel model =
-        (NaiveBayesModel)new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
 
     String label = "politics";
-    String[] context = { "bow=united", "bow=nations" };
+    String[] context = {"bow=united", "bow=nations"};
     Event event = new Event(label, context);
 
-    testModel(model, event, 1.0);
-
-    NaiveBayesModel.setSmoothed(true); // Turning smoothing back on to avoid interfering with other tests
+    // testModel(model, event, 1.0);  // Expected value without smoothing
+    testModel(model, event, 0.9681650180264167);   // Expected value with smoothing
 
   }
 
   @Test
   public void testNaiveBayes2() throws IOException {
 
-    NaiveBayesModel.setSmoothed(false); // Naive Bayes should always be run with smoothing, taken out here for mathematical verification
-
     NaiveBayesModel model =
-        (NaiveBayesModel)new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
 
     String label = "sports";
-    String[] context = { "bow=manchester", "bow=united" };
+    String[] context = {"bow=manchester", "bow=united"};
     Event event = new Event(label, context);
 
-    testModel(model, event, 1.0);
-
-    NaiveBayesModel.setSmoothed(true); // Turning smoothing back on to avoid interfering with other tests
+    // testModel(model, event, 1.0);  // Expected value without smoothing
+    testModel(model, event, 0.9658833555831029);   // Expected value with smoothing
 
   }
 
   @Test
   public void testNaiveBayes3() throws IOException {
 
-    NaiveBayesModel.setSmoothed(false); // Naive Bayes should always be run with smoothing, but I am taking it out here just for mathematical verification
-
     NaiveBayesModel model =
-        (NaiveBayesModel)new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
 
     String label = "politics";
-    String[] context = { "bow=united" };
+    String[] context = {"bow=united"};
     Event event = new Event(label, context);
 
-    testModel(model, event, 2.0/3.0);
-
-    NaiveBayesModel.setSmoothed(true); // Turning smoothing back on to avoid interfering with other tests
+    //testModel(model, event, 2.0/3.0);  // Expected value without smoothing
+    testModel(model, event, 0.6655036407766989);  // Expected value with smoothing
 
   }
 
   @Test
   public void testNaiveBayes4() throws IOException {
 
-    NaiveBayesModel.setSmoothed(false); // Naive Bayes should always be run with smoothing, but I am taking it out here just for mathematical verification
-
     NaiveBayesModel model =
-        (NaiveBayesModel)new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
 
     String label = "politics";
-    String[] context = { };
+    String[] context = {};
     Event event = new Event(label, context);
 
-    testModel(model, event, 7.0/12.0);
-
-    NaiveBayesModel.setSmoothed(true); // Turning smoothing back on to avoid interfering with other tests
+    testModel(model, event, 7.0 / 12.0);
 
   }
 
@@ -131,19 +117,19 @@ public class NaiveBayesCorrectnessTest {
     List<Event> trainingEvents = new ArrayList<Event>();
 
     String label1 = "politics";
-    String[] context1 = { "bow=the", "bow=united", "bow=nations" };
+    String[] context1 = {"bow=the", "bow=united", "bow=nations"};
     trainingEvents.add(new Event(label1, context1));
 
     String label2 = "politics";
-    String[] context2 = { "bow=the", "bow=united", "bow=states", "bow=and" };
+    String[] context2 = {"bow=the", "bow=united", "bow=states", "bow=and"};
     trainingEvents.add(new Event(label2, context2));
 
     String label3 = "sports";
-    String[] context3 = { "bow=manchester", "bow=united" };
+    String[] context3 = {"bow=manchester", "bow=united"};
     trainingEvents.add(new Event(label3, context3));
 
     String label4 = "sports";
-    String[] context4 = { "bow=manchester", "bow=and", "bow=barca" };
+    String[] context4 = {"bow=manchester", "bow=and", "bow=barca"};
     trainingEvents.add(new Event(label4, context4));
 
     return ObjectStreamUtils.createObjectStream(trainingEvents);

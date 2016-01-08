@@ -32,14 +32,11 @@ import opennlp.tools.ml.model.IndexHashTable;
 
 /**
  * Class implementing the multinomial Naive Bayes classifier model.
- *
- *
  */
 public class NaiveBayesModel extends AbstractModel {
 
   protected double[] outcomeTotals;
   protected long vocabulary;
-  private static boolean isSmoothed = true; // Turn this off only for testing/validation
 
   public NaiveBayesModel(Context[] params, String[] predLabels, IndexHashTable<String> pmap, String[] outcomeNames) {
     super(params, predLabels, pmap, outcomeNames);
@@ -126,7 +123,7 @@ public class NaiveBayesModel extends AbstractModel {
           int oid = activeOutcomes[ai];
           double numerator = oid == i ? activeParameters[ai++] * value : 0;
           double denominator = outcomeTotals[i];
-          probabilities.addIn(i, getProbability(numerator, denominator, vocabulary), 1);
+          probabilities.addIn(i, getProbability(numerator, denominator, vocabulary, true), 1);
         }
       }
     }
@@ -145,21 +142,13 @@ public class NaiveBayesModel extends AbstractModel {
     return prior;
   }
 
-  private static double getProbability(double numerator, double denominator, double vocabulary) {
+  private static double getProbability(double numerator, double denominator, double vocabulary, boolean isSmoothed) {
     if (isSmoothed)
       return getSmoothedProbability(numerator, denominator, vocabulary);
     else if (denominator == 0 || denominator < Double.MIN_VALUE)
       return 0;
     else
       return 1.0 * (numerator) / (denominator);
-  }
-
-  static void setSmoothed(boolean flag) {
-    isSmoothed = flag;
-  }
-
-  static boolean isSmoothed() {
-    return isSmoothed;
   }
 
   private static double getSmoothedProbability(double numerator, double denominator, double vocabulary) {

@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
 
+import opennlp.tools.ml.AbstractTrainer;
+import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.TrainingParameters;
@@ -43,11 +45,12 @@ public class DocumentCategorizerNBTest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
+    params.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
 
-    DoccatModel model = DocumentCategorizerNB.train("x-unspecified", samples,
+    DoccatModel model = DocumentCategorizerME.train("x-unspecified", samples,
         params, new BagOfWordsFeatureGenerator());
 
-    DocumentCategorizer doccat = new DocumentCategorizerNB(model);
+    DocumentCategorizer doccat = new DocumentCategorizerME(model);
 
     double aProbs[] = doccat.categorize("a");
     assertEquals("1", doccat.getBestCategory(aProbs));
