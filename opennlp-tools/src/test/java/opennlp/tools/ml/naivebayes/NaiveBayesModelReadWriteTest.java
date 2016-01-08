@@ -31,13 +31,11 @@ import static org.junit.Assert.assertNotNull;
  * Tests for persisting and reading naive bayes models
  */
 public class NaiveBayesModelReadWriteTest {
-
   @Test
   public void testBinaryModelPersistence() throws Exception {
     NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(
         NaiveBayesCorrectnessTest.createTrainingStream(), 1, false));
-    Path path = Paths.get(getClass().getResource("/").getFile());
-    Path tempFile = Files.createTempFile(path, "bnb-", ".bin");
+    Path tempFile = Files.createTempFile("bnb-", ".bin");
     File file = tempFile.toFile();
     NaiveBayesModelWriter modelWriter = new BinaryNaiveBayesModelWriter(model, file);
     modelWriter.persist();
@@ -51,8 +49,7 @@ public class NaiveBayesModelReadWriteTest {
   public void testTextModelPersistence() throws Exception {
     NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(
         NaiveBayesCorrectnessTest.createTrainingStream(), 1, false));
-    Path path = Paths.get(getClass().getResource("/").getFile());
-    Path tempFile = Files.createTempFile(path, "ptnb-", ".txt");
+    Path tempFile = Files.createTempFile("ptnb-", ".txt");
     File file = tempFile.toFile();
     NaiveBayesModelWriter modelWriter = new PlainTextNaiveBayesModelWriter(model, file);
     modelWriter.persist();
@@ -61,6 +58,4 @@ public class NaiveBayesModelReadWriteTest {
     AbstractModel abstractModel = reader.constructModel();
     assertNotNull(abstractModel);
   }
-
-
 }
