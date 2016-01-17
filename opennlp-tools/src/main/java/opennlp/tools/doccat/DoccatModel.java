@@ -29,6 +29,9 @@ import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 
+/**
+ * A model for document categorization
+ */
 public class DoccatModel extends BaseModel {
 
   private static final String COMPONENT_NAME = "DocumentCategorizerME";
