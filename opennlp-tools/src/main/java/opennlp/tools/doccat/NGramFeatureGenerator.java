@@ -22,6 +22,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * n-gram {@link FeatureGenerator}
+ */
 public class NGramFeatureGenerator implements FeatureGenerator {
 
   public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInfo) {

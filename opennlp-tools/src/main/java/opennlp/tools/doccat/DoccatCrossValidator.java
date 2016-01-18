@@ -24,6 +24,9 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.Mean;
 
+/**
+ * Cross validator for document categorization
+ */
 public class DoccatCrossValidator {
 
   private final String languageCode;
