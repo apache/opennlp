@@ -14,8 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package opennlp.tools.doccat;
 
 import opennlp.tools.tokenize.TokenSample;
@@ -39,7 +37,7 @@ public class DocumentCategorizerEvaluator extends Evaluator<DocumentSample>{
   /**
    * Initializes the current instance.
    *
-   * @param categorizer
+   * @param categorizer the document categorizer instance
    */
   public DocumentCategorizerEvaluator(DocumentCategorizer categorizer,
       DoccatEvaluationMonitor ... listeners) {
