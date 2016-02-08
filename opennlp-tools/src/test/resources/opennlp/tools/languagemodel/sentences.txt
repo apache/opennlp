@@ -1,0 +1,52 @@
+The word2vec software of Tomas Mikolov and colleagues has gained a lot of traction lately and provides state-of-the-art word embeddings
+The learning models behind the software are described in two research papers
+We found the description of the models in these papers to be somewhat cryptic and hard to follow
+While the motivations and presentation may be obvious to the neural-networks language-mofdeling crowd we had to struggle quite a bit to figure out the rationale behind the equations
+This note is an attempt to explain the negative sampling equation in Distributed Representations of Words and Phrases and their Compositionality by Tomas Mikolov Ilya Sutskever Kai Chen Greg Corrado and Jeffrey Dean
+The departure point of the paper is the skip-gram model
+In this model we are given a corpus of words w and their contexts c
+We consider the conditional probabilities p(c|w) and given a corpus Text the goal is to set the parameters θ of p(c|w;θ) so as to maximize the corpus probability
+The recently introduced continuous Skip-gram model is an efficient method for learning high-quality distributed vector representations that capture a large number of precise syntactic and semantic word relationships
+In this paper we present several extensions that improve both the quality of the vectors and the training speed
+By subsampling of the frequent words we obtain significant speedup and also learn more regular word representations
+We also describe a simple alternative to the hierarchical softmax called negative sampling
+An inherent limitation of word representations is their indifference to word order and their inability to represent idiomatic phrases
+For example the meanings of Canada and Air cannot be easily combined to obtain Air Canada
+Motivated by this example we present a simple method for finding phrases in text and show that learning good vector representations for millions of phrases is possible
+The similarity metrics used for nearest neighbor evaluations produce a single scalar that quantifies the relatedness of two words
+This simplicity can be problematic since two given words almost always exhibit more intricate relationships than can be captured by a single number
+For example man may be regarded as similar to woman in that both words describe human beings on the other hand the two words are often considered opposites since they highlight a primary axis along which humans differ from one another
+In order to capture in a quantitative way the nuance necessary to distinguish man from woman it is necessary for a model to associate more than a single number to the word pair
+A natural and simple candidate for an enlarged set of discriminative numbers is the vector difference between the two word vectors
+GloVe is designed in order that such vector differences capture as much as possible the meaning specified by the juxtaposition of two words
+Unsupervised word representations are very useful in NLP tasks both as inputs to learning algorithms and as extra word features in NLP systems
+However most of these models are built with only local context and one representation per word
+This is problematic because words are often polysemous and global context can also provide useful information for learning word meanings
+We present a new neural network architecture which 1) learns word embeddings that better capture the semantics of words by incorporating both local and global document context and 2) accounts for homonymy and polysemy by learning multiple embeddings per word
+We introduce a new dataset with human judgments on pairs of words in sentential context and evaluate our model on it showing that our model outperforms competitive baselines and other neural language models
+Information Retrieval (IR) models need to deal with two difficult issues vocabulary mismatch and term dependencies
+Vocabulary mismatch corresponds to the difficulty of retrieving relevant documents that do not contain exact query terms but semantically related terms
+Term dependencies refers to the need of considering the relationship between the words of the query when estimating the relevance of a document
+A multitude of solutions has been proposed to solve each of these two problems but no principled model solve both
+In parallel in the last few years language models based on neural networks have been used to cope with complex natural language processing tasks like emotion and paraphrase detection
+Although they present good abilities to cope with both term dependencies and vocabulary mismatch problems thanks to the distributed representation of words they are based upon such models could not be used readily in IR where the estimation of one language model per document (or query) is required
+This is both computationally unfeasible and prone to over-fitting
+Based on a recent work that proposed to learn a generic language model that can be modified through a set of document-specific parameters we explore use of new neural network models that are adapted to ad-hoc IR tasks
+Within the language model IR framework we propose and study the use of a generic language model as well as a document-specific language model
+Both can be used as a smoothing component but the latter is more adapted to the document at hand and has the potential of being used as a full document language model
+We experiment with such models and analyze their results on TREC-1 to 8 datasets
+The word2vec model and application by Mikolov et al have attracted a great amount of attention in recent two years
+The vector representations of words learned by word2vec models have been proven to be able to carry semantic meanings and are useful in various NLP tasks
+As an increasing number of researchers would like to experiment with word2vec I notice that there lacks a material that comprehensively explains the parameter learning process of word2vec in details thus preventing many people with less neural network experience from understanding how exactly word2vec works
+This note provides detailed derivations and explanations of the parameter update equations for the word2vec models including the original continuous bag-of-word (CBOW) and skip-gram models as well as advanced tricks hierarchical soft-max and negative sampling
+In the appendix a review is given on the basics of neuron network models and backpropagation
+To avoid the inaccuracy caused by classifying the example into several categories given by TREC manually we take the word2vec to represent all attractions and user contexts in the continuous vector space learnt by neural network language models
+The base of NNML is using neural networks for the probability function
+The model learns simultaneously a distributed representation for each word along with the probability function for word sequences expressed in terms of these representations
+Training such large models we propose continuous bag of words as our framework and soft-max as the active function
+So we use the word2vec to train wikitravel corpus and got the word vector
+To avoid the curse of dimensionality by learning a distributed representation for words as our word vector we define a test set that compare different dimensionality of vectors for our task using the same training data and using the same model architecture
+We extend the word2vec framework to capture meaning across languages
+The input consists of a source text and a word-aligned parallel text in a second language
+The joint word2vec tool then represents words in both languages within a common “semantic” vector space
+The result can be used to enrich lexicons of under-resourced languages to identify ambiguities and to perform clustering and classification

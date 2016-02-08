@@ -55,7 +55,7 @@ public class NGramModel implements Iterable<StringList>{
   /**
    * Initializes the current instance.
    *
-   * @param in
+   * @param in the serialized model stream
    * @throws IOException
    * @throws InvalidFormatException
    */
@@ -89,8 +89,7 @@ public class NGramModel implements Iterable<StringList>{
   /**
    * Retrieves the count of the given ngram.
    *
-   * @param ngram
-   *
+   * @param ngram an ngram
    * @return count of the ngram or 0 if it is not contained
    *
    */
@@ -129,8 +128,7 @@ public class NGramModel implements Iterable<StringList>{
   public void add(StringList ngram) {
     if (contains(ngram)) {
       setCount(ngram, getCount(ngram) + 1);
-    }
-    else {
+    } else {
       mNGrams.put(ngram, 1);
     }
   }
@@ -153,8 +151,7 @@ public class NGramModel implements Iterable<StringList>{
         throw new IllegalArgumentException("minLength param must not be larger than " +
             "maxLength param. minLength=" + minLength + ", maxLength= " + maxLength);
 
-    for (int lengthIndex = minLength; lengthIndex < maxLength + 1;
-    lengthIndex++) {
+    for (int lengthIndex = minLength; lengthIndex < maxLength + 1; lengthIndex++) {
       for (int textIndex = 0;
           textIndex + lengthIndex - 1 < ngram.size(); textIndex++) {
 
@@ -178,8 +175,7 @@ public class NGramModel implements Iterable<StringList>{
    */
   public void add(String chars, int minLength, int maxLength) {
 
-    for (int lengthIndex = minLength; lengthIndex < maxLength + 1;
-    lengthIndex++) {
+    for (int lengthIndex = minLength; lengthIndex < maxLength + 1; lengthIndex++) {
       for (int textIndex = 0;
           textIndex + lengthIndex - 1 < chars.length(); textIndex++) {
 
@@ -255,7 +251,7 @@ public class NGramModel implements Iterable<StringList>{
 
     if (cutoffUnder > 0 || cutoffOver < Integer.MAX_VALUE) {
 
-      for (Iterator<StringList> it = iterator(); it.hasNext();) {
+      for (Iterator<StringList> it = iterator(); it.hasNext(); ) {
 
         StringList ngram = it.next();
 
