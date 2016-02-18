@@ -232,6 +232,78 @@ public static void computeShortestEditScript(String wordForm, String lemma, int[
 }
 
 /**
+ * Read predicted SES by the lemmatizer model and apply the
+ * permutations to obtain the lemma from the wordForm.
+ * @param wordForm the wordForm
+ * @param permutations the permutations predicted by the lemmatizer model
+ * @return the lemma
+ */
+public static String decodeShortestEditScript(String wordForm, String permutations) {
+  
+  StringBuffer lemma = new StringBuffer(wordForm).reverse();
+  
+  int permIndex = 0;
+  while(true) {
+      if (permutations.length() <= permIndex) {
+        break;
+      }
+      //read first letter of permutation string
+      char nextOperation = permutations.charAt(permIndex);
+      //System.err.println("-> NextOP: " + nextOperation);
+      //go to the next permutation letter
+      permIndex++;
+      if (nextOperation == 'R') {
+          String charAtPerm = Character.toString(permutations.charAt(permIndex));
+          int charIndex = Integer.parseInt(charAtPerm);
+          // go to the next character in the permutation buffer
+          // which is the replacement character
+          permIndex++;
+          char replace = permutations.charAt(permIndex);
+          //go to the next char in the permutation buffer
+          // which is the candidate character
+          permIndex++;
+          char with = permutations.charAt(permIndex);
+          
+          if (lemma.length() <= charIndex) {
+            return wordForm; 
+          }
+          if (lemma.charAt(charIndex) == replace) {
+            lemma.setCharAt(charIndex, with);
+          }
+          //System.err.println("-> ROP: " + lemma.toString());
+          //go to next permutation
+          permIndex++;
+          
+      } else if (nextOperation == 'I') {
+          String charAtPerm = Character.toString(permutations.charAt(permIndex));
+          int charIndex = Integer.parseInt(charAtPerm);
+          permIndex++;
+          //character to be inserted
+          char in = permutations.charAt(permIndex);
+      
+          if (lemma.length() < charIndex) {
+            return wordForm; 
+          }
+          lemma.insert(charIndex, in);
+          //System.err.println("-> IOP " + lemma.toString());
+          //go to next permutation
+          permIndex++;
+      } else if (nextOperation == 'D') {
+          String charAtPerm = Character.toString(permutations.charAt(permIndex));
+          int charIndex = Integer.parseInt(charAtPerm);
+          if (lemma.length() <= charIndex) {
+            return wordForm;
+          }
+          lemma.deleteCharAt(charIndex);
+          permIndex++;
+          // go to next permutation
+          permIndex++;
+      }
+  }
+  return lemma.reverse().toString();
+}
+
+/**
  * Get the SES required to go from a word to a lemma.
  * @param wordForm the word
  * @param lemma the lemma
