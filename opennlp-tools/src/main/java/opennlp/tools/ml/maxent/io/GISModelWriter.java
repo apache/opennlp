@@ -139,20 +139,22 @@ public abstract class GISModelWriter extends AbstractModelWriter {
   }
 
   protected List<List<ComparablePredicate>> compressOutcomes(ComparablePredicate[] sorted) {
-    ComparablePredicate cp = sorted[0];
     List<List<ComparablePredicate>> outcomePatterns = new ArrayList<List<ComparablePredicate>>();
-    List<ComparablePredicate> newGroup = new ArrayList<ComparablePredicate>();
-    for (int i = 0; i < sorted.length; i++) {
-      if (cp.compareTo(sorted[i]) == 0) {
-        newGroup.add(sorted[i]);
-      } else {
-        cp = sorted[i];
+    if(sorted.length > 0) {
+        ComparablePredicate cp = sorted[0];    
+        List<ComparablePredicate> newGroup = new ArrayList<ComparablePredicate>();
+        for (int i = 0; i < sorted.length; i++) {
+          if (cp.compareTo(sorted[i]) == 0) {
+            newGroup.add(sorted[i]);
+          } else {
+            cp = sorted[i];
+            outcomePatterns.add(newGroup);
+            newGroup = new ArrayList<ComparablePredicate>();
+            newGroup.add(sorted[i]);
+          }
+        }
         outcomePatterns.add(newGroup);
-        newGroup = new ArrayList<ComparablePredicate>();
-        newGroup.add(sorted[i]);
-      }
     }
-    outcomePatterns.add(newGroup);
     return outcomePatterns;
   }
 }

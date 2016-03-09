@@ -83,7 +83,8 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   protected int sortAndMerge(List<ComparableEvent> eventsToCompare, boolean sort) {
     int numUniqueEvents = 1;
     numEvents = eventsToCompare.size();
-    if (sort) {
+    if (sort && eventsToCompare.size() > 0) {
+
       Collections.sort(eventsToCompare);
 
       ComparableEvent ce = eventsToCompare.get(0);
