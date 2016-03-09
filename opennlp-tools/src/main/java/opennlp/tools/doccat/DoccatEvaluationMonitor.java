@@ -19,6 +19,9 @@ package opennlp.tools.doccat;
 
 import opennlp.tools.util.eval.EvaluationMonitor;
 
+/**
+ * {@link EvaluationMonitor} for doccat.
+ */
 public interface DoccatEvaluationMonitor extends
     EvaluationMonitor<DocumentSample> {
 

@@ -50,8 +50,8 @@ public class DoccatFactory extends BaseToolFactory {
    * Creates a {@link DoccatFactory}. Use this constructor to programmatically
    * create a factory.
    *
-   * @param tokenizer
-   * @param featureGenerators
+   * @param tokenizer         the tokenizer
+   * @param featureGenerators the feature generators
    */
   public DoccatFactory(Tokenizer tokenizer, FeatureGenerator[] featureGenerators) {
     this.init(tokenizer, featureGenerators);
@@ -98,7 +98,7 @@ public class DoccatFactory extends BaseToolFactory {
   }
 
   public static DoccatFactory create(String subclassName, Tokenizer tokenizer,
-      FeatureGenerator[] featureGenerators) throws InvalidFormatException {
+                                     FeatureGenerator[] featureGenerators) throws InvalidFormatException {
     if (subclassName == null) {
       // will create the default factory
       return new DoccatFactory(tokenizer, featureGenerators);
@@ -140,7 +140,7 @@ public class DoccatFactory extends BaseToolFactory {
       }
       if (featureGenerators == null) { // could not load using artifact provider
         // load bag of words as default
-        FeatureGenerator[] bow = { new BagOfWordsFeatureGenerator() };
+        FeatureGenerator[] bow = {new BagOfWordsFeatureGenerator()};
         this.featureGenerators = bow;
       }
     }
