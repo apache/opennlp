@@ -48,13 +48,12 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   private DocumentCategorizerContextGenerator mContextGenerator;
 
   /**
-   * Initializes a the current instance with a doccat model and custom feature
+   * Initializes the current instance with a doccat model and custom feature
    * generation. The feature generation must be identical to the configuration
    * at training time.
    *
-   * @param model
-   * @param featureGenerators
-   *
+   * @param model             the doccat model
+   * @param featureGenerators the feature generators
    * @deprecated train a {@link DoccatModel} with a specific
    * {@link DoccatFactory} to customize the {@link FeatureGenerator}s
    */
@@ -67,12 +66,12 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * Initializes the current instance with a doccat model. Default feature
    * generation is used.
    *
-   * @param model
+   * @param model the doccat model
    */
   public DocumentCategorizerME(DoccatModel model) {
     this.model = model;
     this.mContextGenerator = new DocumentCategorizerContextGenerator(this.model
-            .getFactory().getFeatureGenerators());
+        .getFactory().getFeatureGenerators());
   }
 
   @Override
@@ -84,7 +83,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   /**
    * Categorizes the given text.
    *
-   * @param text
+   * @param text the text to categorize
    */
   public double[] categorize(String text[]) {
     return this.categorize(text, Collections.<String, Object>emptyMap());
@@ -97,7 +96,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    */
   @Override
   public double[] categorize(String documentText,
-      Map<String, Object> extraInformation) {
+                             Map<String, Object> extraInformation) {
     Tokenizer tokenizer = model.getFactory().getTokenizer();
     return categorize(tokenizer.tokenize(documentText), extraInformation);
   }
@@ -109,14 +108,15 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   public double[] categorize(String documentText) {
     Tokenizer tokenizer = model.getFactory().getTokenizer();
     return categorize(tokenizer.tokenize(documentText),
-        Collections.<String, Object> emptyMap());
+        Collections.<String, Object>emptyMap());
   }
 
-/**
- * Returns a map in which the key is the category name and the value is the score
- * @param text the input text to classify
- * @return
- */
+  /**
+   * Returns a map in which the key is the category name and the value is the score
+   *
+   * @param text the input text to classify
+   * @return the score map
+   */
   public Map<String, Double> scoreMap(String text) {
     Map<String, Double> probDist = new HashMap<String, Double>();
 
@@ -129,12 +129,14 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     return probDist;
 
   }
-/**
- * Returns a map with the score as a key in ascendng order. The value is a Set of categories with the score.
- * Many categories can have the same score, hence the Set as value
- * @param text the input text to classify
- * @return
- */
+
+  /**
+   * Returns a map with the score as a key in ascendng order. The value is a Set of categories with the score.
+   * Many categories can have the same score, hence the Set as value
+   *
+   * @param text the input text to classify
+   * @return the sorted score map
+   */
   public SortedMap<Double, Set<String>> sortedScoreMap(String text) {
     SortedMap<Double, Set<String>> descendingMap = new TreeMap<Double, Set<String>>();
     double[] categorize = categorize(text);
@@ -179,8 +181,8 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * instead.
    */
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
-          TrainingParameters mlParams, FeatureGenerator... featureGenerators)
-          throws IOException {
+                                  TrainingParameters mlParams, FeatureGenerator... featureGenerators)
+      throws IOException {
 
     if (featureGenerators.length == 0) {
       featureGenerators = new FeatureGenerator[]{defaultFeatureGenerator};
@@ -189,21 +191,21 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
     MaxentModel model = TrainUtil.train(
-            new DocumentCategorizerEventStream(samples, featureGenerators),
-            mlParams.getSettings(), manifestInfoEntries);
+        new DocumentCategorizerEventStream(samples, featureGenerators),
+        mlParams.getSettings(), manifestInfoEntries);
 
     return new DoccatModel(languageCode, model, manifestInfoEntries);
   }
 
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
-          TrainingParameters mlParams, DoccatFactory factory)
-          throws IOException {
+                                  TrainingParameters mlParams, DoccatFactory factory)
+      throws IOException {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
     MaxentModel model = TrainUtil.train(
-            new DocumentCategorizerEventStream(samples, factory.getFeatureGenerators()),
-            mlParams.getSettings(), manifestInfoEntries);
+        new DocumentCategorizerEventStream(samples, factory.getFeatureGenerators()),
+        mlParams.getSettings(), manifestInfoEntries);
 
     return new DoccatModel(languageCode, model, manifestInfoEntries, factory);
   }
@@ -211,14 +213,11 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   /**
    * Trains a doccat model with default feature generation.
    *
-   * @param languageCode
-   * @param samples
-   *
+   * @param languageCode the language code
+   * @param samples      the samples
    * @return the trained doccat model
-   *
    * @throws IOException
    * @throws ObjectStreamException
-   *
    * @deprecated Use
    * {@link #train(String, ObjectStream, TrainingParameters, DoccatFactory)}
    * instead.

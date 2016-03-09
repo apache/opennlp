@@ -35,9 +35,9 @@ class DocumentCategorizerContextGenerator {
 
     Collection<String> context = new LinkedList<String>();
 
-    for (int i = 0; i < mFeatureGenerators.length; i++) {
+    for (FeatureGenerator mFeatureGenerator : mFeatureGenerators) {
       Collection<String> extractedFeatures =
-          mFeatureGenerators[i].extractFeatures(text, extraInformation);
+          mFeatureGenerator.extractFeatures(text, extraInformation);
       context.addAll(extractedFeatures);
     }
 

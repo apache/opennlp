@@ -25,5 +25,13 @@ import java.util.Map;
  * Interface for generating features for document categorization.
  */
 public interface FeatureGenerator {
-  public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInformation);
+
+  /**
+   * Extract features from given text fragments
+   *
+   * @param text             the text fragments to extract features from
+   * @param extraInformation optional extra information to be used by the feature generator
+   * @return a collection of features
+   */
+  Collection<String> extractFeatures(String[] text, Map<String, Object> extraInformation);
 }
