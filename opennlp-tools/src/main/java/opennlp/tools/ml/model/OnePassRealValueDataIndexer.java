@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
 
 /**
@@ -57,7 +58,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     return values;
   }
 
-  protected int sortAndMerge(List<ComparableEvent> eventsToCompare,boolean sort) {
+  protected int sortAndMerge(List<ComparableEvent> eventsToCompare,boolean sort) throws InsufficientTrainingDataException {
     int numUniqueEvents = super.sortAndMerge(eventsToCompare,sort);
     values = new float[numUniqueEvents][];
     int numEvents = eventsToCompare.size();
@@ -71,7 +72,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     return numUniqueEvents;
   }
 
-  protected List index(LinkedList<Event> events, Map<String,Integer> predicateIndex) {
+  protected List<ComparableEvent> index(LinkedList<Event> events, Map<String,Integer> predicateIndex) {
     Map<String,Integer> omap = new HashMap<String,Integer>();
 
     int numEvents = events.size();
