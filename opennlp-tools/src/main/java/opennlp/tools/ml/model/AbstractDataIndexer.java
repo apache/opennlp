@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.util.InsufficientTrainingDataException;
+
 
 /**
  * Abstract class for collecting event and context counts used in training.
@@ -78,15 +80,16 @@ public abstract class AbstractDataIndexer implements DataIndexer {
    *
    * @param eventsToCompare a <code>ComparableEvent[]</code> value
    * @return The number of unique events in the specified list.
+   * @throws InsufficientTrainingDataException if not enough events are provided
    * @since maxent 1.2.6
    */
-  protected int sortAndMerge(List<ComparableEvent> eventsToCompare, boolean sort) {
+  protected int sortAndMerge(List<ComparableEvent> eventsToCompare, boolean sort) throws InsufficientTrainingDataException {
     int numUniqueEvents = 1;
     numEvents = eventsToCompare.size();
     if (sort && eventsToCompare.size() > 0) {
 
       Collections.sort(eventsToCompare);
-
+      
       ComparableEvent ce = eventsToCompare.get(0);
       for (int i = 1; i < numEvents; i++) {
         ComparableEvent ce2 = eventsToCompare.get(i);
@@ -100,10 +103,16 @@ public abstract class AbstractDataIndexer implements DataIndexer {
           numUniqueEvents++; // increment the # of unique events
         }
       }
+
     }
     else {
       numUniqueEvents = eventsToCompare.size();
     }
+    
+    if(numUniqueEvents == 0) {
+      throw new InsufficientTrainingDataException("Insufficient training data to create model.");
+    }
+    
     if (sort) System.out.println("done. Reduced " + numEvents + " events to " + numUniqueEvents + ".");
 
     contexts = new int[numUniqueEvents][];
