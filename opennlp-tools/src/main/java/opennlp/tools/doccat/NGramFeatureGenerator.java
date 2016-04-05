@@ -17,6 +17,8 @@
 
 package opennlp.tools.doccat;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,11 +36,24 @@ public class NGramFeatureGenerator implements FeatureGenerator {
   public NGramFeatureGenerator() {
   }
 
-  public void NGramFeatureGenerator(int minGram, int maxGram) {
-    this.minGram = minGram;
-    this.maxGram = maxGram;
+  public void NGramFeatureGenerator(int minGram, int maxGram) throws InvalidFormatException {
+    if (minGram <= maxGram) {
+      this.minGram = minGram;
+      this.maxGram = maxGram;
+    } else {
+      throw new InvalidFormatException("minimum range value (minGram) should be less than or equal to maximum range value (maxGram)!");
+    }
   }
 
+  /**
+   * Extract N-Grams from the given text fragments according to the N-Gram range,
+   * i.e. a,b,c,d with minGram = 2 & maxGram = 3 then features would be a:b, a:b:c, b:c, b:c:d, c:d
+   * i.e. a,b,c,d with minGram = 2 & maxGram = 2 then features would be a:b, b:c, c:d
+   *
+   * @param text      the text fragments to extract features from
+   * @param extraInfo optional extra information to be used by the feature generator
+   * @return a collection of features
+   */
   public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInfo) {
 
     List<String> features = new ArrayList<String>();
