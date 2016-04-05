@@ -36,12 +36,16 @@ public class NGramFeatureGenerator implements FeatureGenerator {
   public NGramFeatureGenerator() {
   }
 
-  public void NGramFeatureGenerator(int minGram, int maxGram) throws InvalidFormatException {
-    if (minGram <= maxGram) {
-      this.minGram = minGram;
-      this.maxGram = maxGram;
+  public NGramFeatureGenerator(int minGram, int maxGram) throws InvalidFormatException {
+    if (minGram > 0 && maxGram > 0) {
+      if (minGram <= maxGram) {
+        this.minGram = minGram;
+        this.maxGram = maxGram;
+      } else {
+        throw new InvalidFormatException("Minimum range value (minGram) should be less than or equal to maximum range value (maxGram)!");
+      }
     } else {
-      throw new InvalidFormatException("minimum range value (minGram) should be less than or equal to maximum range value (maxGram)!");
+      throw new InvalidFormatException("Both minimum range value (minGram) & maximum range value (maxGram) should be greater than or equal to 1!");
     }
   }
 
