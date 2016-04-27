@@ -28,7 +28,6 @@ import opennlp.tools.util.ObjectStream;
 
 /**
  * Class which turns a sequence stream into an event stream.
- *
  */
 public class SequenceStreamEventStream implements ObjectStream<Event> {
 
@@ -42,32 +41,25 @@ public class SequenceStreamEventStream implements ObjectStream<Event> {
 
   @Override
   public Event read() throws IOException {
-
-    if (eventIt.hasNext()) {
-      return eventIt.next();
-    }
-    else {
+    while (!eventIt.hasNext()) {
       Sequence<?> sequence = sequenceStream.read();
-
-      if (sequence != null) {
-        eventIt = Arrays.asList(sequence.getEvents()).iterator();
+      if (sequence == null) {
+        return null;
       }
-
-      if (eventIt.hasNext()) {
-        return read();
-      }
+      eventIt = Arrays.asList(sequence.getEvents()).iterator();
     }
-
-    return null;
+    return eventIt.next();
   }
 
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
+    eventIt = Collections.emptyListIterator();
     sequenceStream.reset();
   }
 
   @Override
   public void close() throws IOException {
+    eventIt = Collections.emptyListIterator();
     sequenceStream.close();
   }
 }
