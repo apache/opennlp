@@ -34,9 +34,11 @@ import java.util.Map;
 
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.namefind.BioCodec;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
+import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
@@ -399,8 +401,8 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
         resourceMap = Collections.emptyMap();
       }
 
-      nameModel = NameFinderME.train(language, null,
-          samples, trainingParams, featureGeneratorDefinition, resourceMap);
+      nameModel = NameFinderME.train(language, null, samples, trainingParams,
+          new TokenNameFinderFactory(featureGeneratorDefinition, resourceMap, new BioCodec()));
     }
     finally {
       if (additionalTrainingDataIn != null) {
