@@ -84,7 +84,7 @@ public class DoccatFactoryTest {
   @Test
   public void testCustom() throws IOException {
     FeatureGenerator[] featureGenerators = { new BagOfWordsFeatureGenerator(),
-        new NGramFeatureGenerator() };
+        new NGramFeatureGenerator(), new NGramFeatureGenerator(2,3) };
     DoccatFactory factory = new DoccatFactory(SimpleTokenizer.INSTANCE,
         featureGenerators);
 
@@ -102,11 +102,12 @@ public class DoccatFactoryTest {
 
     assertNotNull(factory);
 
-    assertEquals(2, factory.getFeatureGenerators().length);
+    assertEquals(3, factory.getFeatureGenerators().length);
     assertEquals(BagOfWordsFeatureGenerator.class,
         factory.getFeatureGenerators()[0].getClass());
     assertEquals(NGramFeatureGenerator.class,
         factory.getFeatureGenerators()[1].getClass());
+    assertEquals(NGramFeatureGenerator.class,factory.getFeatureGenerators()[2].getClass());
 
     assertEquals(SimpleTokenizer.INSTANCE.getClass(), factory.getTokenizer()
         .getClass());
