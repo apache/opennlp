@@ -70,19 +70,12 @@ public final class TokenNameFinderTrainerTool
     byte featureGeneratorBytes[] = null;
     // load descriptor file into memory
     if (featureGenDescriptorFile != null) {
-      InputStream bytesIn = CmdLineUtil.openInFile(featureGenDescriptorFile);
 
-      try {
+      try (InputStream bytesIn = CmdLineUtil.openInFile(featureGenDescriptorFile)) {
         featureGeneratorBytes = ModelUtil.read(bytesIn);
       } catch (IOException e) {
         throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
             + e.getMessage(), e);
-      } finally {
-        try {
-          bytesIn.close();
-        } catch (IOException e) {
-          // sorry that this can fail
-        }
       }
     }
     return featureGeneratorBytes;
@@ -109,16 +102,14 @@ public final class TokenNameFinderTrainerTool
       // TODO: If there is descriptor file, it should be consulted too
       if (featureGenDescriptor != null) {
 
-        InputStream xmlDescriptorIn = CmdLineUtil.openInFile(featureGenDescriptor);
-
-        try {
+        try (InputStream xmlDescriptorIn = CmdLineUtil.openInFile(featureGenDescriptor)) {
           artifactSerializers.putAll(GeneratorFactory.extractCustomArtifactSerializerMappings(xmlDescriptorIn));
         } catch (IOException e) {
           // TODO: Improve error handling!
           e.printStackTrace();
         }
-        InputStream inputStreamXML = CmdLineUtil.openInFile(featureGenDescriptor);
-        try {
+        
+        try (InputStream inputStreamXML = CmdLineUtil.openInFile(featureGenDescriptor)) {
           elements = GeneratorFactory.getDescriptorElements(inputStreamXML);
         } catch (IOException e) {
           e.printStackTrace();
@@ -141,9 +132,7 @@ public final class TokenNameFinderTrainerTool
         if (serializer == null)
           continue;
 
-        InputStream resourceIn = CmdLineUtil.openInFile(resourceFile);
-
-        try {
+        try (InputStream resourceIn = CmdLineUtil.openInFile(resourceFile)) {
           resources.put(resourceName, serializer.create(resourceIn));
         } catch (InvalidFormatException e) {
           // TODO: Fix exception handling
@@ -151,11 +140,6 @@ public final class TokenNameFinderTrainerTool
         } catch (IOException e) {
           // TODO: Fix exception handling
           e.printStackTrace();
-        } finally {
-          try {
-            resourceIn.close();
-          } catch (IOException e) {
-          }
         }
       }
     }
