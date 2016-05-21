@@ -224,6 +224,9 @@ public final class TokenNameFinderTrainerTool
       throw new TerminateToolException(-1, e.getMessage(), e);
     }
 
+    NameSampleCountersStream counters = new NameSampleCountersStream(sampleStream);
+    sampleStream = counters;
+    
     TokenNameFinderModel model;
     try {
       model = opennlp.tools.namefind.NameFinderME.train(
@@ -241,7 +244,12 @@ public final class TokenNameFinderTrainerTool
         // sorry that this can fail
       }
     }
-
+    
+    System.out.println();
+    counters.printSummary();
+    System.out.println();
+    
     CmdLineUtil.writeModel("name finder", modelOutFile, model);
+    
   }
 }
