@@ -23,12 +23,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelWriter;
 import opennlp.tools.ml.model.ComparablePredicate;
 import opennlp.tools.ml.model.Context;
-import opennlp.tools.ml.model.IndexHashTable;
 
 /**
  * Abstract parent class for NaiveBayes writers.  It provides the persist method
@@ -46,11 +46,11 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
     Object[] data = model.getDataStructures();
     this.numOutcomes = model.getNumOutcomes();
     PARAMS = (Context[]) data[0];
-    IndexHashTable<String> pmap = (IndexHashTable<String>) data[1];
+    Map<String, Integer> pmap = (Map<String, Integer>) data[1];
     OUTCOME_LABELS = (String[]) data[2];
 
     PRED_LABELS = new String[pmap.size()];
-    pmap.toArray(PRED_LABELS);
+    pmap.keySet().toArray(PRED_LABELS);
   }
 
   protected ComparablePredicate[] sortValues() {

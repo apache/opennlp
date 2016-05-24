@@ -32,7 +32,11 @@ public class QNModel extends AbstractModel {
     return this.outcomeNames.length;
   }
 
-  private int getPredIndex(String predicate) {
+  private Integer getPredIndex(String predicate) {
+    
+    if (predicate == null) throw new RuntimeException("ASDASFAS");
+    if (pmap == null) throw new RuntimeException("ASDASFAXXXXXXXS");
+    
     return pmap.get(predicate);
   }
 
@@ -64,9 +68,9 @@ public class QNModel extends AbstractModel {
     Context[] params = evalParams.getParams();
 
     for (int ci = 0; ci < context.length; ci++) {
-      int predIdx = getPredIndex(context[ci]);
+      Integer predIdx = getPredIndex(context[ci]);
 
-      if (predIdx >= 0) {
+      if (predIdx != null) {
         double predValue = 1.0;
         if (values != null) predValue = values[ci];
 
@@ -139,7 +143,8 @@ public class QNModel extends AbstractModel {
     if (this.pmap.size() != objModel.pmap.size())
       return false;
     String[] pmapArray = new String[pmap.size()];
-    pmap.toArray(pmapArray);
+    pmap.keySet().toArray(pmapArray);
+    
     for (int i = 0; i < this.pmap.size(); i++) {
       if (i != objModel.pmap.get(pmapArray[i]))
         return false;
