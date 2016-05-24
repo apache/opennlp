@@ -28,21 +28,11 @@ import java.util.Map;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.EvalParameters;
-import opennlp.tools.ml.model.IndexHashTable;
 
 public class PerceptronModel extends AbstractModel {
 
-  public PerceptronModel(Context[] params, String[] predLabels, IndexHashTable<String> pmap, String[] outcomeNames) {
+  public PerceptronModel(Context[] params, String[] predLabels, Map<String, Integer> pmap, String[] outcomeNames) {
     super(params,predLabels,pmap,outcomeNames);
-    modelType = ModelType.Perceptron;
-  }
-
-  /**
-   * @deprecated use the constructor with the {@link IndexHashTable} instead!
-   */
-  @Deprecated
-  public PerceptronModel(Context[] params, String[] predLabels, Map<String,Integer> pmap, String[] outcomeNames) {
-    super(params,predLabels,outcomeNames);
     modelType = ModelType.Perceptron;
   }
 

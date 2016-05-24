@@ -27,7 +27,6 @@ import opennlp.tools.ml.AbstractEventModelSequenceTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.IndexHashTable;
 import opennlp.tools.ml.model.MutableContext;
 import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.Sequence;
@@ -68,7 +67,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
   private MutableContext[] averageParams;
 
   /** Mapping between context and an integer */
-  private IndexHashTable<String> pmap;
+  private Map<String, Integer> pmap;
 
   private Map<String,Integer> omap;
 
@@ -128,8 +127,12 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
 
     outcomeList  = di.getOutcomeList();
     predLabels = di.getPredLabels();
-    pmap = new IndexHashTable<String>(predLabels, 0.7d);
+    pmap = new HashMap<String, Integer>();
 
+    for (int i = 0; i < predLabels.length; i++) {
+      pmap.put(predLabels[i], i);
+    }
+    
     display("Incorporating indexed data for training...  \n");
     this.useAverage = useAverage;
     numEvents = di.getNumEvents();
