@@ -66,7 +66,13 @@ import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool;
+import opennlp.tools.cmdline.BasicCmdLineTool;
+import opennlp.tools.cmdline.CmdLineTool;
+import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.TypedCmdLineTool;
+import opennlp.tools.formats.SentimentSampleStreamFactory;
 import opennlp.tools.util.Version;
+import edu.usc.ir.sentiment.analysis.cmdline.SentimentTrainerTool;
 
 public final class CLI {
 
@@ -139,6 +145,9 @@ public final class CLI {
 
     // Entity Linker
     tools.add(new EntityLinkerTool());
+	
+	// Sentiment Analysis Parser
+    tools.add(new SentimentTrainerTool());
 
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);
