@@ -19,7 +19,6 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 
-import edu.usc.ir.sentiment.analysis.cmdline.CLI;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -77,7 +76,7 @@ public class SentimentSampleStreamFactory
    */
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentimentSample.class,
-        CLI.DEFAULT_FORMAT,
+        StreamFactoryRegistry.DEFAULT_FORMAT,
         new SentimentSampleStreamFactory(BasicFormatParams.class));
   }
 

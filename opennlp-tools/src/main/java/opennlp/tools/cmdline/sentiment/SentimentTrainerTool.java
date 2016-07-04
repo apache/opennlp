@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.usc.ir.sentiment.analysis.cmdline;
+package opennlp.tools.cmdline.sentiment;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class SentimentTrainerTool
   /**
    * Constructor
    */
-  protected SentimentTrainerTool() {
+  public SentimentTrainerTool() {
     super(SentimentSample.class, TrainingToolParams.class);
   }
 

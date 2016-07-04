@@ -59,6 +59,7 @@ import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidatorTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluatorTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainerTool;
+import opennlp.tools.cmdline.sentiment.SentimentTrainerTool;
 import opennlp.tools.cmdline.tokenizer.DictionaryDetokenizerTool;
 import opennlp.tools.cmdline.tokenizer.SimpleTokenizerTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerConverterTool;
@@ -66,13 +67,7 @@ import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool;
-import opennlp.tools.cmdline.BasicCmdLineTool;
-import opennlp.tools.cmdline.CmdLineTool;
-import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.TypedCmdLineTool;
-import opennlp.tools.formats.SentimentSampleStreamFactory;
 import opennlp.tools.util.Version;
-import edu.usc.ir.sentiment.analysis.cmdline.SentimentTrainerTool;
 
 public final class CLI {
 
