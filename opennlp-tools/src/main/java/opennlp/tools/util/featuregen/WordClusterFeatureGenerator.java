@@ -33,6 +33,7 @@ public class WordClusterFeatureGenerator extends FeatureGeneratorAdapter {
       this.lowerCaseDictionary = lowerCaseDictionary;
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 

@@ -40,6 +40,7 @@ public class TokenClassFeatureGenerator extends FeatureGeneratorAdapter {
     this.generateWordAndClassFeature = genearteWordAndClassFeature;
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
     String wordClass = FeatureGeneratorUtil.tokenFeature(tokens[index]);
     features.add(TOKEN_CLASS_PREFIX + "=" + wordClass);

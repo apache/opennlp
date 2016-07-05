@@ -30,6 +30,7 @@ public class BrownBigramFeatureGenerator extends FeatureGeneratorAdapter {
     this.brownLexicon = dict;
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 

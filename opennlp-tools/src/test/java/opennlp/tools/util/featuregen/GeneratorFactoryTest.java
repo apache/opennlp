@@ -53,7 +53,7 @@ public class GeneratorFactoryTest {
 
 
 
-    for (AdaptiveFeatureGenerator generator :
+    for (FeatureGeneratorAdapter generator :
         aggregatedGenerator.getGenerators()) {
 
         expectedGenerators.remove(generator.getClass().getName());
@@ -78,11 +78,11 @@ public class GeneratorFactoryTest {
     AggregatedFeatureGenerator aggregatedGenerator =
       (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
 
-    Collection<AdaptiveFeatureGenerator> embeddedGenerator = aggregatedGenerator.getGenerators();
+    Collection<FeatureGeneratorAdapter> embeddedGenerator = aggregatedGenerator.getGenerators();
 
     assertEquals(1, embeddedGenerator.size());
 
-    for (AdaptiveFeatureGenerator generator : embeddedGenerator) {
+    for (FeatureGeneratorAdapter generator : embeddedGenerator) {
       assertEquals(TokenFeatureGenerator.class.getName(), generator.getClass().getName());
     }
   }

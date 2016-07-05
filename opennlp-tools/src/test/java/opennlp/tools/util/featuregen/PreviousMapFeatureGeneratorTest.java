@@ -32,7 +32,7 @@ public class PreviousMapFeatureGeneratorTest {
   @Test
   public void testFeatureGeneration() {
 
-    AdaptiveFeatureGenerator fg = new PreviousMapFeatureGenerator();
+    FeatureGeneratorAdapter fg = new PreviousMapFeatureGenerator();
 
     String sentence[] = new String[] {"a", "b", "c"};
 

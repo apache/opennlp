@@ -31,6 +31,7 @@ public class SuffixFeatureGenerator extends FeatureGeneratorAdapter {
     return suffs;
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
     String[] suffs = SuffixFeatureGenerator.getSuffixes(tokens[index]);

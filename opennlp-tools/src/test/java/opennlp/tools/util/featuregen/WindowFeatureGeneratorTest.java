@@ -48,7 +48,7 @@ public class WindowFeatureGeneratorTest {
   @Test
   public void testWithoutWindow() {
 
-    AdaptiveFeatureGenerator windowFeatureGenerator = new WindowFeatureGenerator(
+    FeatureGeneratorAdapter windowFeatureGenerator = new WindowFeatureGenerator(
           new IdentityFeatureGenerator(), 0, 0);
 
     int testTokenIndex = 2;
@@ -62,7 +62,7 @@ public class WindowFeatureGeneratorTest {
 
   @Test
   public void testWindowSizeOne() {
-    AdaptiveFeatureGenerator windowFeatureGenerator = new WindowFeatureGenerator(
+    FeatureGeneratorAdapter windowFeatureGenerator = new WindowFeatureGenerator(
         new IdentityFeatureGenerator(), 1, 1);
 
     int testTokenIndex = 2;
@@ -74,7 +74,7 @@ public class WindowFeatureGeneratorTest {
 
   @Test
   public void testWindowAtBeginOfSentence() {
-    AdaptiveFeatureGenerator windowFeatureGenerator = new WindowFeatureGenerator(
+    FeatureGeneratorAdapter windowFeatureGenerator = new WindowFeatureGenerator(
         new IdentityFeatureGenerator(), 1, 0);
 
     int testTokenIndex = 0;
@@ -88,7 +88,7 @@ public class WindowFeatureGeneratorTest {
 
   @Test
   public void testWindowAtEndOfSentence() {
-    AdaptiveFeatureGenerator windowFeatureGenerator = new WindowFeatureGenerator(
+    FeatureGeneratorAdapter windowFeatureGenerator = new WindowFeatureGenerator(
         new IdentityFeatureGenerator(), 0, 1);
 
     int testTokenIndex = testSentence.length - 1;
@@ -105,7 +105,7 @@ public class WindowFeatureGeneratorTest {
    */
   @Test
   public void testForCorrectFeatures() {
-    AdaptiveFeatureGenerator windowFeatureGenerator = new WindowFeatureGenerator(
+    FeatureGeneratorAdapter windowFeatureGenerator = new WindowFeatureGenerator(
         new IdentityFeatureGenerator(), 2, 2);
 
     int testTokenIndex = 3;

@@ -37,7 +37,13 @@ import java.util.List;
  *
  * @see FeatureGeneratorAdapter
  * @see FeatureGeneratorFactory
+ * 
+ * This interface is deprecated. Feature generators should extend
+ * {@link FeatureGeneratorAdapter} instead. The empty default functions
+ * are provided to ensure backward compatibility.
+ * 
  */
+@Deprecated
 public interface AdaptiveFeatureGenerator {
 
   /**
@@ -58,11 +64,20 @@ public interface AdaptiveFeatureGenerator {
    * @param tokens The tokens of the sentence or other text unit which has been processed.
    * @param outcomes The outcomes associated with the specified tokens.
    */
-   void updateAdaptiveData(String[] tokens, String[] outcomes);
+   default public void updateAdaptiveData(String[] tokens, String[] outcomes) {
 
-  /**
-   * Informs the feature generator that the context of the adaptive data (typically a document)
-   * is no longer valid.
-   */
-   void clearAdaptiveData();
+	   // Empty method to provide backward compatibility.
+	   
+   }
+   
+   /**
+    * Informs the feature generator that the context of the adaptive data (typically a document)
+    * is no longer valid.
+    */
+   default public void clearAdaptiveData() {
+
+	// Empty method to provide backward compatibility.
+	   
+   }
+   
 }

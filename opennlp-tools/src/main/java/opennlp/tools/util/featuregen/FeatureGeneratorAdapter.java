@@ -17,18 +17,56 @@
 
 package opennlp.tools.util.featuregen;
 
+import java.util.List;
 
 /**
- * This class provides empty implementations of some of the optional methods in
- * {@link AdditionalContextFeatureGenerator} to make implementing feature generators
- * easier.
+ * An interface for generating features for name entity identification and for
+ * updating document level contexts.
+ * <p>
+ * Most implementors do not need the adaptive functionality of this
+ * interface, they should extend the {@link FeatureGeneratorAdapter} class instead.
+ * <p>
+ * <b>Note:</b><br>
+ * Feature generation is not thread safe and a instance of a feature generator
+ * must only be called from one thread. The resources used by a feature
+ * generator are typically shared between man instances of features generators
+ * which are called from many threads and have to be thread safe.
+ * If that is not possible the {@link FeatureGeneratorFactory} must make a copy
+ * of the resource object for each feature generator instance.
+ *
+ * @see FeatureGeneratorAdapter
+ * @see FeatureGeneratorFactory
  */
-public abstract class FeatureGeneratorAdapter implements AdaptiveFeatureGenerator {
+public abstract class FeatureGeneratorAdapter {
+  
+  /**
+   * Adds the appropriate features for the token at the specified index with the
+   * specified array of previous outcomes to the specified list of features.
+   *
+   * @param features The list of features to be added to.
+   * @param tokens The tokens of the sentence or other text unit being processed.
+   * @param index The index of the token which is currently being processed.
+   * @param previousOutcomes The outcomes for the tokens prior to the specified index.
+   */
+  public abstract void createFeatures(List<String> features, String[] tokens, int index, String[] previousOutcomes);
 
-  public void updateAdaptiveData(String[] tokens, String[] outcomes) {
-  }
+  /**
+   * Informs the feature generator that the specified tokens have been classified with the
+   * corresponding set of specified outcomes.
+   *
+   * @param tokens The tokens of the sentence or other text unit which has been processed.
+   * @param outcomes The outcomes associated with the specified tokens.
+   */
+   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
+	   
+   }
 
-  public void clearAdaptiveData() {
-  }
+  /**
+   * Informs the feature generator that the context of the adaptive data (typically a document)
+   * is no longer valid.
+   */
+   public void clearAdaptiveData() {
+	   
+   }
 
 }

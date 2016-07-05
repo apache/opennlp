@@ -28,7 +28,7 @@ import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.ext.ExtensionLoader;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
+import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
 import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
 import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
 import opennlp.tools.util.featuregen.GeneratorFactory;
@@ -139,7 +139,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
 
   public NameContextGenerator createContextGenerator() {
 
-    AdaptiveFeatureGenerator featureGenerator = createFeatureGenerators();
+    FeatureGeneratorAdapter featureGenerator = createFeatureGenerators();
 
     if (featureGenerator == null) {
       featureGenerator = NameFinderME.createFeatureGenerator();
@@ -149,7 +149,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
   }
 
   /**
-   * Creates the {@link AdaptiveFeatureGenerator}. Usually this
+   * Creates the {@link FeatureGeneratorAdapter}. Usually this
    * is a set of generators contained in the {@link AggregatedFeatureGenerator}.
    *
    * Note:
@@ -157,7 +157,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
    *
    * @return the feature generator or null if there is no descriptor in the model
    */
-  public AdaptiveFeatureGenerator createFeatureGenerators() {
+  public FeatureGeneratorAdapter createFeatureGenerators() {
 
     if (featureGeneratorBytes == null && artifactProvider != null) {
       featureGeneratorBytes = (byte[]) artifactProvider.getArtifact(
@@ -170,7 +170,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
 
     InputStream descriptorIn = new ByteArrayInputStream(featureGeneratorBytes);
 
-    AdaptiveFeatureGenerator generator = null;
+    FeatureGeneratorAdapter generator = null;
     try {
       generator = GeneratorFactory.create(descriptorIn, new FeatureGeneratorResourceProvider() {
 

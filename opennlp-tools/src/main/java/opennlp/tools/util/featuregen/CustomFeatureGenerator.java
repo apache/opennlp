@@ -21,7 +21,7 @@ import java.util.Map;
 
 import opennlp.tools.util.InvalidFormatException;
 
-public abstract class CustomFeatureGenerator implements AdaptiveFeatureGenerator {
+public abstract class CustomFeatureGenerator extends FeatureGeneratorAdapter {
 
   /**
    * Initialized the Custom Feature Generator with defined properties and loaded resources.

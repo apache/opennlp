@@ -20,7 +20,7 @@ package opennlp.tools.namefind;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
+import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
 import opennlp.tools.util.featuregen.BigramNameFeatureGenerator;
 import opennlp.tools.util.featuregen.CachedFeatureGenerator;
 import opennlp.tools.util.featuregen.FeatureGeneratorUtil;
@@ -36,11 +36,11 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  */
 public class DefaultNameContextGenerator implements NameContextGenerator {
 
-  private AdaptiveFeatureGenerator featureGenerators[];
+  private FeatureGeneratorAdapter featureGenerators[];
 
   @Deprecated
-  private static AdaptiveFeatureGenerator windowFeatures = new CachedFeatureGenerator(
-      new AdaptiveFeatureGenerator[]{
+  private static FeatureGeneratorAdapter windowFeatures = new CachedFeatureGenerator(
+      new FeatureGeneratorAdapter[]{
       new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
       new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
       new OutcomePriorFeatureGenerator(),
@@ -54,13 +54,13 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
    */
   @Deprecated
   public DefaultNameContextGenerator() {
-    this((AdaptiveFeatureGenerator[]) null);
+    this((FeatureGeneratorAdapter[]) null);
   }
 
   /**
    * Creates a name context generator with the specified cache size.
    */
-  public DefaultNameContextGenerator(AdaptiveFeatureGenerator... featureGenerators) {
+  public DefaultNameContextGenerator(FeatureGeneratorAdapter... featureGenerators) {
 
     if (featureGenerators != null) {
       this.featureGenerators = featureGenerators;
@@ -68,16 +68,16 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
     else {
       // use defaults
 
-      this.featureGenerators = new AdaptiveFeatureGenerator[]{
+      this.featureGenerators = new FeatureGeneratorAdapter[]{
           windowFeatures,
           new PreviousMapFeatureGenerator()};
     }
   }
 
-  public void addFeatureGenerator(AdaptiveFeatureGenerator generator) {
-      AdaptiveFeatureGenerator generators[] = featureGenerators;
+  public void addFeatureGenerator(FeatureGeneratorAdapter generator) {
+      FeatureGeneratorAdapter generators[] = featureGenerators;
 
-      featureGenerators = new AdaptiveFeatureGenerator[featureGenerators.length + 1];
+      featureGenerators = new FeatureGeneratorAdapter[featureGenerators.length + 1];
 
       System.arraycopy(generators, 0, featureGenerators, 0, generators.length);
 
@@ -91,13 +91,13 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
             "The tokens and outcome arrays MUST have the same size!");
       }
 
-    for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
+    for (FeatureGeneratorAdapter featureGenerator : featureGenerators) {
       featureGenerator.updateAdaptiveData(tokens, outcomes);
     }
   }
 
   public void clearAdaptiveData() {
-    for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
+    for (FeatureGeneratorAdapter featureGenerator : featureGenerators) {
       featureGenerator.clearAdaptiveData();
     }
   }
@@ -114,7 +114,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
   public String[] getContext(int index, String[] tokens, String[] preds, Object[] additionalContext) {
     List<String> features = new ArrayList<String>();
 
-    for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
+    for (FeatureGeneratorAdapter featureGenerator : featureGenerators) {
       featureGenerator.createFeatures(features, tokens, index, preds);
     }
 

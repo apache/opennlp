@@ -25,79 +25,82 @@ import java.util.List;
 
 /**
  * The {@link AggregatedFeatureGenerator} aggregates a set of
- * {@link AdaptiveFeatureGenerator}s and calls them to generate the features.
+ * {@link FeatureGeneratorAdapter}s and calls them to generate the features.
  */
-public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
+public class AggregatedFeatureGenerator extends FeatureGeneratorAdapter {
 
   /**
-   * Contains all aggregated {@link AdaptiveFeatureGenerator}s.
+   * Contains all aggregated {@link FeatureGeneratorAdapter}s.
    */
-  private Collection<AdaptiveFeatureGenerator> generators;
+  private Collection<FeatureGeneratorAdapter> generators;
 
   /**
    * Initializes the current instance.
    *
    * @param generators array of generators, null values are not permitted
    */
-  public AggregatedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
+  public AggregatedFeatureGenerator(FeatureGeneratorAdapter... generators) {
 
-    for (AdaptiveFeatureGenerator generator : generators) {
+    for (FeatureGeneratorAdapter generator : generators) {
       if (generator == null)
         throw new IllegalArgumentException("null values in generators are not permitted!");
     }
 
-    this.generators = new ArrayList<AdaptiveFeatureGenerator>(generators.length);
+    this.generators = new ArrayList<FeatureGeneratorAdapter>(generators.length);
 
     Collections.addAll(this.generators, generators);
 
     this.generators = Collections.unmodifiableCollection(this.generators);
   }
 
-  public AggregatedFeatureGenerator(Collection<AdaptiveFeatureGenerator> generators) {
-    this(generators.toArray(new AdaptiveFeatureGenerator[generators.size()]));
+  public AggregatedFeatureGenerator(Collection<FeatureGeneratorAdapter> generators) {
+    this(generators.toArray(new FeatureGeneratorAdapter[generators.size()]));
   }
 
   /**
-   * Calls the {@link AdaptiveFeatureGenerator#clearAdaptiveData()} method
-   * on all aggregated {@link AdaptiveFeatureGenerator}s.
+   * Calls the {@link FeatureGeneratorAdapter#clearAdaptiveData()} method
+   * on all aggregated {@link FeatureGeneratorAdapter}s.
    */
+  @Override
   public void clearAdaptiveData() {
 
-    for (AdaptiveFeatureGenerator generator : generators) {
+    for (FeatureGeneratorAdapter generator : generators) {
       generator.clearAdaptiveData();
     }
   }
 
   /**
-   * Calls the {@link AdaptiveFeatureGenerator#createFeatures(List, String[], int, String[])}
-   * method on all aggregated {@link AdaptiveFeatureGenerator}s.
+   * Calls the {@link FeatureGeneratorAdapter#createFeatures(List, String[], int, String[])}
+   * method on all aggregated {@link FeatureGeneratorAdapter}s.
    */
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 
-    for (AdaptiveFeatureGenerator generator : generators) {
+    for (FeatureGeneratorAdapter generator : generators) {
       generator.createFeatures(features, tokens, index, previousOutcomes);
     }
   }
 
   /**
-   * Calls the {@link AdaptiveFeatureGenerator#updateAdaptiveData(String[], String[])}
-   * method on all aggregated {@link AdaptiveFeatureGenerator}s.
+   * Calls the {@link FeatureGeneratorAdapter#updateAdaptiveData(String[], String[])}
+   * method on all aggregated {@link FeatureGeneratorAdapter}s.
    */
+  @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
 
-    for (AdaptiveFeatureGenerator generator : generators) {
+    for (FeatureGeneratorAdapter generator : generators) {
       generator.updateAdaptiveData(tokens, outcomes);
     }
   }
 
   /**
    * Retrieves a {@link Collections} of all aggregated
-   * {@link AdaptiveFeatureGenerator}s.
+   * {@link FeatureGeneratorAdapter}s.
    *
    * @return all aggregated generators
    */
-  public Collection<AdaptiveFeatureGenerator> getGenerators() {
+  public Collection<FeatureGeneratorAdapter> getGenerators() {
     return generators;
   }
 }

@@ -38,6 +38,7 @@ public class TokenFeatureGenerator extends FeatureGeneratorAdapter {
     this(true);
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
     if (lowercase) {
       features.add(WORD_PREFIX + "=" + StringUtil.toLowerCase(tokens[index]));
