@@ -31,7 +31,7 @@ import org.junit.Test;
  */
 public class CachedFeatureGeneratorTest {
 
-  private AdaptiveFeatureGenerator identityGenerator[] = new AdaptiveFeatureGenerator[] {
+  private FeatureGeneratorAdapter identityGenerator[] = new FeatureGeneratorAdapter[] {
       new IdentityFeatureGenerator()};
 
   private String testSentence1[];

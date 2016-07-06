@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * This {@link FeatureGeneratorAdapter} generates features indicating the outcome associated with a previously occuring word.
  */
-public class PreviousMapFeatureGenerator implements AdaptiveFeatureGenerator {
+public class PreviousMapFeatureGenerator extends FeatureGeneratorAdapter {
 
   private Map<String, String> previousMap = new HashMap<String, String>();
 
@@ -35,6 +35,7 @@ public class PreviousMapFeatureGenerator implements AdaptiveFeatureGenerator {
   /**
    * Generates previous decision features for the token based on contents of the previous map.
    */
+  @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
 
     for (int i = 0; i < tokens.length; i++) {
@@ -45,6 +46,7 @@ public class PreviousMapFeatureGenerator implements AdaptiveFeatureGenerator {
   /**
    * Clears the previous map.
    */
+  @Override
   public void clearAdaptiveData() {
     previousMap.clear();
   }

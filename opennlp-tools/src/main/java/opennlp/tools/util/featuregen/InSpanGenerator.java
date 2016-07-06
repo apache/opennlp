@@ -57,6 +57,7 @@ public class InSpanGenerator extends FeatureGeneratorAdapter {
     this.finder = finder;
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
         String[] preds) {
     // cache results for sentence

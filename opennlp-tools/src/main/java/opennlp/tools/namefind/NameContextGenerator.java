@@ -18,7 +18,7 @@
 package opennlp.tools.namefind;
 
 import opennlp.tools.util.BeamSearchContextGenerator;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
+import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
 
 /**
  * Interface for generating the context for an name finder by specifying a set of geature generators.
@@ -30,7 +30,7 @@ public interface NameContextGenerator extends BeamSearchContextGenerator<String>
    * Adds a feature generator to this set of feature generators.
    * @param generator The feature generator to add.
    */
-  public void addFeatureGenerator(AdaptiveFeatureGenerator generator);
+  public void addFeatureGenerator(FeatureGeneratorAdapter generator);
 
   /**
    * Informs all the feature generators for a name finder that the specified tokens have been classified with the coorisponds set of specified outcomes.

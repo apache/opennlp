@@ -19,12 +19,12 @@
 package opennlp.tools.util.featuregen;
 
 /**
- * The {@link FeatureGeneratorFactory} interface is factory for {@link AdaptiveFeatureGenerator}s.
+ * The {@link FeatureGeneratorFactory} interface is factory for {@link FeatureGeneratorAdapter}s.
  * <p>
  * <b>Note:</b><br>
  * All implementing classes must be thread safe.
  *
- * @see AdaptiveFeatureGenerator
+ * @see FeatureGeneratorAdapter
  * @see FeatureGeneratorResourceProvider
  *
  *
@@ -34,7 +34,7 @@ package opennlp.tools.util.featuregen;
 public interface FeatureGeneratorFactory {
 
   /**
-   * Constructs a new {@link AdaptiveFeatureGenerator}.
+   * Constructs a new {@link FeatureGeneratorAdapter}.
    * <p>
    * <b>Note:</b><br>
    * It is assumed that all resource objects are thread safe and can be shared
@@ -47,5 +47,5 @@ public interface FeatureGeneratorFactory {
    * @return the newly created feature generator
    */
   @Deprecated
-  AdaptiveFeatureGenerator createFeatureGenerator(FeatureGeneratorResourceProvider resourceProvider);
+  FeatureGeneratorAdapter createFeatureGenerator(FeatureGeneratorResourceProvider resourceProvider);
 }

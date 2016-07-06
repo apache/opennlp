@@ -24,11 +24,11 @@ import java.util.List;
 import opennlp.tools.util.Cache;
 
 /**
- * Caches features of the aggregated {@link AdaptiveFeatureGenerator}s.
+ * Caches features of the aggregated {@link FeatureGeneratorAdapter}s.
  */
-public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
+public class CachedFeatureGenerator extends FeatureGeneratorAdapter {
 
-  private final AdaptiveFeatureGenerator generator;
+  private final FeatureGeneratorAdapter generator;
 
   private String[] prevTokens;
 
@@ -37,12 +37,13 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
   private long numberOfCacheHits;
   private long numberOfCacheMisses;
 
-  public CachedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
+  public CachedFeatureGenerator(FeatureGeneratorAdapter... generators) {
     this.generator = new AggregatedFeatureGenerator(generators);
     contextsCache = new Cache(100);
   }
 
   @SuppressWarnings("unchecked")
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 
@@ -72,10 +73,12 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
     features.addAll(cacheFeatures);
   }
 
+  @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
     generator.updateAdaptiveData(tokens, outcomes);
   }
 
+  @Override
   public void clearAdaptiveData() {
     generator.clearAdaptiveData();
   }

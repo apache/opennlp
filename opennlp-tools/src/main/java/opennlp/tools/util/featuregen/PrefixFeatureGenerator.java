@@ -31,6 +31,7 @@ public class PrefixFeatureGenerator extends FeatureGeneratorAdapter {
     return prefs;
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
     String[] prefs = PrefixFeatureGenerator.getPrefixes(tokens[index]);

@@ -26,7 +26,7 @@ import opennlp.tools.ml.model.Sequence;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.SequenceCodec;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
+import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
 
 public class NameSampleSequenceStream implements SequenceStream {
 
@@ -36,15 +36,15 @@ public class NameSampleSequenceStream implements SequenceStream {
   private SequenceCodec<String> seqCodec;
 
   public NameSampleSequenceStream(ObjectStream<NameSample> psi) throws IOException {
-    this(psi, new DefaultNameContextGenerator((AdaptiveFeatureGenerator) null), true);
+    this(psi, new DefaultNameContextGenerator((FeatureGeneratorAdapter) null), true);
   }
 
-  public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen)
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi, FeatureGeneratorAdapter featureGen)
   throws IOException {
     this(psi, new DefaultNameContextGenerator(featureGen), true);
   }
 
-  public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen, boolean useOutcomes)
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi, FeatureGeneratorAdapter featureGen, boolean useOutcomes)
   throws IOException {
     this(psi, new DefaultNameContextGenerator(featureGen), useOutcomes);
   }

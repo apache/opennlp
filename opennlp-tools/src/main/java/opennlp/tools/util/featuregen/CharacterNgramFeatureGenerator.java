@@ -45,6 +45,7 @@ public class CharacterNgramFeatureGenerator extends FeatureGeneratorAdapter {
     this(2, 5);
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
 
     NGramModel model = new NGramModel();

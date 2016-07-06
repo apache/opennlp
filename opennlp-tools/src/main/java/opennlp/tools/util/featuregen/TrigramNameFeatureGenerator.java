@@ -25,6 +25,7 @@ import java.util.List;
  */
 public class TrigramNameFeatureGenerator extends FeatureGeneratorAdapter {
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
     String wc = FeatureGeneratorUtil.tokenFeature(tokens[index]);

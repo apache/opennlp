@@ -33,7 +33,7 @@ import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
+import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
 import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
 import opennlp.tools.util.featuregen.BrownCluster;
 import opennlp.tools.util.featuregen.WordClusterDictionary;
@@ -204,7 +204,7 @@ public class TokenNameFinderModel extends BaseModel {
   // Lets deprecate it!
 
   /**
-   * Creates the {@link AdaptiveFeatureGenerator}. Usually this
+   * Creates the {@link FeatureGeneratorAdapter}. Usually this
    * is a set of generators contained in the {@link AggregatedFeatureGenerator}.
    *
    * Note:
@@ -214,7 +214,7 @@ public class TokenNameFinderModel extends BaseModel {
    * @deprecated use TokenNameFinderFactory.createFeatureGenerators instead!
    */
   @Deprecated
-  public AdaptiveFeatureGenerator createFeatureGenerators() {
+  public FeatureGeneratorAdapter createFeatureGenerators() {
     return getFactory().createFeatureGenerators();
   }
 

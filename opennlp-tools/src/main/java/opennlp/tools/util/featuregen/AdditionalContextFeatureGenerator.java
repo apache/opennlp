@@ -28,9 +28,7 @@ public class AdditionalContextFeatureGenerator extends FeatureGeneratorAdapter {
 
   private String[][] additionalContext;
 
-//  public AdditionalContextFeatureGenerator() {
-//  }
-
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
 
     if (additionalContext != null && additionalContext.length != 0) {

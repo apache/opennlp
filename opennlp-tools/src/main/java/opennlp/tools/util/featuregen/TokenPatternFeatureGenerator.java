@@ -51,6 +51,7 @@ public class TokenPatternFeatureGenerator extends FeatureGeneratorAdapter {
         tokenizer = supportTokenizer;
     }
 
+    @Override
     public void createFeatures(List<String> feats, String[] toks, int index, String[] preds) {
 
       String[] tokenized = tokenizer.tokenize(toks[index]);

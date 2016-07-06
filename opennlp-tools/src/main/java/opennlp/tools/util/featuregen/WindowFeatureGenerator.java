@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Generates previous and next features for a given {@link AdaptiveFeatureGenerator}.
+ * Generates previous and next features for a given {@link FeatureGeneratorAdapter}.
  * The window size can be specified.
  *
  * Features:
@@ -30,12 +30,12 @@ import java.util.List;
  * Previous tokens are prefixed with p distance
  * Next tokens are prefix with n distance
  */
-public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
+public class WindowFeatureGenerator extends FeatureGeneratorAdapter {
 
   public static final String PREV_PREFIX = "p";
   public static final String NEXT_PREFIX = "n";
 
-  private final AdaptiveFeatureGenerator generator;
+  private final FeatureGeneratorAdapter generator;
 
   private final int prevWindowSize;
   private final int nextWindowSize;
@@ -47,7 +47,7 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
    * @param prevWindowSize Size of the window to the left of the current token.
    * @param nextWindowSize Size of the window to the right of the current token.
    */
-  public WindowFeatureGenerator(AdaptiveFeatureGenerator generator, int prevWindowSize,  int nextWindowSize) {
+  public WindowFeatureGenerator(FeatureGeneratorAdapter generator, int prevWindowSize,  int nextWindowSize) {
     this.generator = generator;
     this.prevWindowSize = prevWindowSize;
     this.nextWindowSize = nextWindowSize;
@@ -60,7 +60,7 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
    * @param nextWindowSize
    * @param generators
    */
-  public WindowFeatureGenerator(int prevWindowSize, int nextWindowSize, AdaptiveFeatureGenerator... generators) {
+  public WindowFeatureGenerator(int prevWindowSize, int nextWindowSize, FeatureGeneratorAdapter... generators) {
     this(new AggregatedFeatureGenerator(generators), prevWindowSize, nextWindowSize);
   }
 
@@ -69,7 +69,7 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
    *
    * @param generator feature generator
    */
-  public WindowFeatureGenerator(AdaptiveFeatureGenerator generator) {
+  public WindowFeatureGenerator(FeatureGeneratorAdapter generator) {
     this(generator, 5, 5);
   }
 
@@ -78,10 +78,11 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
    *
    * @param generators array of feature generators
    */
-  public WindowFeatureGenerator(AdaptiveFeatureGenerator... generators) {
+  public WindowFeatureGenerator(FeatureGeneratorAdapter... generators) {
     this(new AggregatedFeatureGenerator(generators), 5, 5);
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
     // current features
     generator.createFeatures(features, tokens, index, preds);
@@ -115,10 +116,12 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
     }
   }
 
+  @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
     generator.updateAdaptiveData(tokens, outcomes);
   }
 
+  @Override
   public void clearAdaptiveData() {
       generator.clearAdaptiveData();
   }

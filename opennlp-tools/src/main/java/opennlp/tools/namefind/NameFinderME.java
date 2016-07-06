@@ -42,7 +42,7 @@ import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
+import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.BigramNameFeatureGenerator;
 import opennlp.tools.util.featuregen.CachedFeatureGenerator;
@@ -99,9 +99,9 @@ public class NameFinderME implements TokenNameFinder {
    * @deprecated the default feature generation is now always included in the models and loaded
    * if not by the factory. Subclasses using this methods should do the same.
    */
-  static AdaptiveFeatureGenerator createFeatureGenerator() {
+  static FeatureGeneratorAdapter createFeatureGenerator() {
     return new CachedFeatureGenerator(
-            new AdaptiveFeatureGenerator[]{
+            new FeatureGeneratorAdapter[]{
               new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
               new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
               new OutcomePriorFeatureGenerator(),
@@ -111,10 +111,10 @@ public class NameFinderME implements TokenNameFinder {
             });
   }
 
-  private static AdaptiveFeatureGenerator createFeatureGenerator(
+  private static FeatureGeneratorAdapter createFeatureGenerator(
           byte[] generatorDescriptor, final Map<String, Object> resources)
           throws IOException {
-    AdaptiveFeatureGenerator featureGenerator;
+    FeatureGeneratorAdapter featureGenerator;
 
     if (generatorDescriptor != null) {
       featureGenerator = GeneratorFactory.create(new ByteArrayInputStream(
@@ -315,7 +315,7 @@ public class NameFinderME implements TokenNameFinder {
    */
   @Deprecated
   static TokenNameFinderModel train(String languageCode, String type, ObjectStream<NameSample> samples,
-          TrainingParameters trainParams, AdaptiveFeatureGenerator generator, final Map<String, Object> resources)
+          TrainingParameters trainParams, FeatureGeneratorAdapter generator, final Map<String, Object> resources)
           throws IOException {
 
     if (languageCode == null) {
@@ -331,7 +331,7 @@ public class NameFinderME implements TokenNameFinder {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
-    AdaptiveFeatureGenerator featureGenerator;
+    FeatureGeneratorAdapter featureGenerator;
 
     if (generator != null) {
       featureGenerator = generator;

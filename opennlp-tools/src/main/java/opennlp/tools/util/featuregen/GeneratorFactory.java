@@ -69,7 +69,7 @@ import org.xml.sax.SAXException;
  *
  * Each XML element is mapped to a {@link GeneratorFactory.XmlFeatureGeneratorFactory} which
  * is responsible to process the element and create the specified
- * {@link AdaptiveFeatureGenerator}. Elements can contain other
+ * {@link FeatureGeneratorAdapter}. Elements can contain other
  * elements in this case it is the responsibility of the mapped factory to process
  * the child elements correctly. In some factories this leads to recursive
  * calls the
@@ -78,7 +78,7 @@ import org.xml.sax.SAXException;
  *
  * In the example above the generators element is mapped to the
  * {@link GeneratorFactory.AggregatedFeatureGeneratorFactory} which then
- * creates all the aggregated {@link AdaptiveFeatureGenerator}s to
+ * creates all the aggregated {@link FeatureGeneratorAdapter}s to
  * accomplish this it evaluates the mapping with the same mechanism
  * and gives the child element to the corresponding factories. All
  * created generators are added to a new instance of the
@@ -88,22 +88,22 @@ public class GeneratorFactory {
 
   /**
    * The {@link XmlFeatureGeneratorFactory} is responsible to construct
-   * an {@link AdaptiveFeatureGenerator} from an given XML {@link Element}
+   * an {@link FeatureGeneratorAdapter} from an given XML {@link Element}
    * which contains all necessary configuration if any.
    */
   static interface XmlFeatureGeneratorFactory {
 
     /**
-     * Creates an {@link AdaptiveFeatureGenerator} from a the describing
+     * Creates an {@link FeatureGeneratorAdapter} from a the describing
      * XML element.
      *
      * @param generatorElement the element which contains the configuration
      * @param resourceManager the resource manager which could be used
      *     to access referenced resources
      *
-     * @return the configured {@link AdaptiveFeatureGenerator}
+     * @return the configured {@link FeatureGeneratorAdapter}
      */
-    AdaptiveFeatureGenerator create(Element generatorElement,
+    FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException;
   }
 
@@ -112,11 +112,11 @@ public class GeneratorFactory {
    */
   static class AggregatedFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager)  throws InvalidFormatException {
 
-      Collection<AdaptiveFeatureGenerator> aggregatedGenerators =
-          new LinkedList<AdaptiveFeatureGenerator>();
+      Collection<FeatureGeneratorAdapter> aggregatedGenerators =
+          new LinkedList<FeatureGeneratorAdapter>();
 
       NodeList childNodes = generatorElement.getChildNodes();
 
@@ -132,7 +132,7 @@ public class GeneratorFactory {
       }
 
       return new AggregatedFeatureGenerator(aggregatedGenerators.toArray(
-              new AdaptiveFeatureGenerator[aggregatedGenerators.size()]));
+              new FeatureGeneratorAdapter[aggregatedGenerators.size()]));
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
@@ -148,7 +148,7 @@ public class GeneratorFactory {
     private CachedFeatureGeneratorFactory() {
     }
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
 
       Element cachedGeneratorElement = null;
@@ -168,7 +168,7 @@ public class GeneratorFactory {
         throw new InvalidFormatException("Could not find containing generator element!");
       }
 
-      AdaptiveFeatureGenerator cachedGenerator =
+      FeatureGeneratorAdapter cachedGenerator =
           GeneratorFactory.createGenerator(cachedGeneratorElement, resourceManager);
 
       return new CachedFeatureGenerator(cachedGenerator);
@@ -184,7 +184,7 @@ public class GeneratorFactory {
    */
   static class CharacterNgramFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
 
       String minString = generatorElement.getAttribute("min");
@@ -225,7 +225,7 @@ public class GeneratorFactory {
     private DefinitionFeatureGeneratorFactory() {
     }
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
       return new OutcomePriorFeatureGenerator();
     }
@@ -240,7 +240,7 @@ public class GeneratorFactory {
    */
   static class DictionaryFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
 
       String dictResourceKey = generatorElement.getAttribute("dict");
@@ -263,7 +263,7 @@ public class GeneratorFactory {
 
   static class DocumentBeginFeatureGenerator implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
       return new PreviousMapFeatureGenerator();
     }
@@ -280,7 +280,7 @@ public class GeneratorFactory {
    */
   static class WordClusterFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
 
       String dictResourceKey = generatorElement.getAttribute("dict");
@@ -306,7 +306,7 @@ public class GeneratorFactory {
    */
   static class BrownClusterTokenFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
 
       String dictResourceKey = generatorElement.getAttribute("dict");
@@ -331,7 +331,7 @@ public class GeneratorFactory {
    */
   static class BrownClusterTokenClassFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
 
       String dictResourceKey = generatorElement.getAttribute("dict");
@@ -356,7 +356,7 @@ public class GeneratorFactory {
    */
   static class BrownClusterBigramFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
 
       String dictResourceKey = generatorElement.getAttribute("dict");
@@ -381,7 +381,7 @@ public class GeneratorFactory {
    */
   static class PreviousMapFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
       return new PreviousMapFeatureGenerator();
     }
@@ -398,7 +398,7 @@ public class GeneratorFactory {
    */
   static class SentenceFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
 
       String beginFeatureString = generatorElement.getAttribute("begin");
@@ -425,7 +425,7 @@ public class GeneratorFactory {
    */
   static class TokenClassFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
       // TODO: Make it configurable ...
       return new TokenClassFeatureGenerator(true);
@@ -438,7 +438,7 @@ public class GeneratorFactory {
 
   static class TokenFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
 
       return new TokenFeatureGenerator();
@@ -451,7 +451,7 @@ public class GeneratorFactory {
 
   static class BigramNameFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
 
       return new BigramNameFeatureGenerator();
@@ -467,7 +467,7 @@ public class GeneratorFactory {
    */
   static class TokenPatternFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
       return new TokenPatternFeatureGenerator();
     }
@@ -482,7 +482,7 @@ public class GeneratorFactory {
    */
   static class WindowFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager)  throws InvalidFormatException {
 
       Element nestedGeneratorElement = null;
@@ -503,7 +503,7 @@ public class GeneratorFactory {
         		" an aggregator element");
       }
 
-      AdaptiveFeatureGenerator nestedGenerator = GeneratorFactory.createGenerator(nestedGeneratorElement, resourceManager);
+      FeatureGeneratorAdapter nestedGenerator = GeneratorFactory.createGenerator(nestedGeneratorElement, resourceManager);
 
       String prevLengthString = generatorElement.getAttribute("prevLength");
 
@@ -538,7 +538,7 @@ public class GeneratorFactory {
    */
   static class PrefixFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
       return new PrefixFeatureGenerator();
     }
@@ -553,7 +553,7 @@ public class GeneratorFactory {
    */
   static class SuffixFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
       return new SuffixFeatureGenerator();
     }
@@ -574,12 +574,12 @@ public class GeneratorFactory {
 
   static class CustomFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
-    public AdaptiveFeatureGenerator create(Element generatorElement,
+    public FeatureGeneratorAdapter create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
 
       String featureGeneratorClassName = generatorElement.getAttribute("class");
 
-      AdaptiveFeatureGenerator generator = ExtensionLoader.instantiateExtension(AdaptiveFeatureGenerator.class,
+      FeatureGeneratorAdapter generator = ExtensionLoader.instantiateExtension(FeatureGeneratorAdapter.class,
           featureGeneratorClassName);
 
       if (generator instanceof CustomFeatureGenerator) {
@@ -637,7 +637,7 @@ public class GeneratorFactory {
   }
 
   /**
-   * Creates a {@link AdaptiveFeatureGenerator} for the provided element.
+   * Creates a {@link FeatureGeneratorAdapter} for the provided element.
    * To accomplish this it looks up the corresponding factory by the
    * element tag name. The factory is then responsible for the creation
    * of the generator from the element.
@@ -647,7 +647,7 @@ public class GeneratorFactory {
    *
    * @return
    */
-  static AdaptiveFeatureGenerator createGenerator(Element generatorElement,
+  static FeatureGeneratorAdapter createGenerator(Element generatorElement,
       FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
 
     String elementName = generatorElement.getTagName();
@@ -684,7 +684,7 @@ public class GeneratorFactory {
   }
 
   /**
-   * Creates an {@link AdaptiveFeatureGenerator} from an provided XML descriptor.
+   * Creates an {@link FeatureGeneratorAdapter} from an provided XML descriptor.
    *
    * Usually this XML descriptor contains a set of nested feature generators
    * which are then used to generate the features by one of the opennlp
@@ -701,7 +701,7 @@ public class GeneratorFactory {
    * @throws IOException if an error occurs during reading from the descriptor
    *     {@link InputStream}
    */
-  public static AdaptiveFeatureGenerator create(InputStream xmlDescriptorIn,
+  public static FeatureGeneratorAdapter create(InputStream xmlDescriptorIn,
       FeatureGeneratorResourceProvider resourceManager) throws IOException, InvalidFormatException {
 
     org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
@@ -737,7 +737,7 @@ public class GeneratorFactory {
 
         // Note: The resource provider is not available at that point, to provide
         // resources they need to be loaded first!
-        AdaptiveFeatureGenerator generator = createGenerator(customElement, null);
+        FeatureGeneratorAdapter generator = createGenerator(customElement, null);
 
         if (generator instanceof ArtifactToSerializerMapper) {
           ArtifactToSerializerMapper mapper = (ArtifactToSerializerMapper) generator;
