@@ -17,10 +17,11 @@
 
 package opennlp.morfologik.cmdline.builder;
 
+import static opennlp.morfologik.util.MorfologikUtil.getExpectedPropertiesFile;
+
 import java.io.File;
 import java.nio.charset.Charset;
 
-import morfologik.stemming.Dictionary;
 import opennlp.morfologik.builder.MorfologikDictionayBuilder;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -54,18 +55,11 @@ public class MorfologikDictionaryBuilderTool extends BasicCmdLineTool {
     MorfologikDictionayBuilder builder = new MorfologikDictionayBuilder();
     try {
       builder.build(dictInFile, dictOutFile, propertiesFile, encoding,
-          params.getFSADictSeparator(), params.getUsesPrefixes(),
-          params.getUsesInfixes());
+          params.getFSADictSeparator(), params.getEncoderType());
     } catch (Exception e) {
       throw new TerminateToolException(-1,
           "Error while creating Morfologik POS Dictionay: " + e.getMessage(), e);
     }
 
   }
-
-  private File getExpectedPropertiesFile(File dictFile) {
-    return new File(Dictionary.getExpectedFeaturesName(dictFile
-        .getAbsolutePath()));
-  }
-
 }

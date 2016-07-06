@@ -17,6 +17,8 @@
 
 package opennlp.morfologik.tagdict;
 
+import static opennlp.morfologik.util.MorfologikUtil.getExpectedPropertiesFile;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -72,8 +74,8 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
     // now we try to load it...
     try {
       this.dictData = Files.readAllBytes(Paths.get(path));
-      this.dictInfo = Files.readAllBytes(Paths
-          .get(morfologik.stemming.Dictionary.getExpectedFeaturesName(path)));
+      this.dictInfo = Files.readAllBytes(getExpectedPropertiesFile(path)
+          .toPath());
 
       this.dict = createMorfologikDictionary(dictData, dictInfo);
 
@@ -163,7 +165,7 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
   private TagDictionary createMorfologikDictionary(byte[] data, byte[] info)
       throws IOException {
     morfologik.stemming.Dictionary dict = morfologik.stemming.Dictionary
-        .readAndClose(new ByteArrayInputStream(data), new ByteArrayInputStream(
+        .read(new ByteArrayInputStream(data), new ByteArrayInputStream(
             info));
     return new MorfologikTagDictionary(dict);
   }

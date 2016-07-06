@@ -19,6 +19,7 @@ package opennlp.morfologik.cmdline.builder;
 
 import java.io.File;
 
+import morfologik.stemming.EncoderType;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.EncodingParameter;
@@ -37,13 +38,9 @@ interface MorfologikDictionaryBuilderParams extends EncodingParameter {
   @ParameterDescription(valueName = "sep", description = "The FSA dictionary separator. Default is '+'.")
   @OptionalParameter(defaultValue = "+")
   String getFSADictSeparator();
-
-  @ParameterDescription(valueName = "true|false", description = "Compact using prefixes.")
-  @OptionalParameter(defaultValue = "true")
-  Boolean getUsesPrefixes();
-
-  @ParameterDescription(valueName = "true|false", description = "Compact using infixes.")
-  @OptionalParameter(defaultValue = "true")
-  Boolean getUsesInfixes();
+  
+  @ParameterDescription(valueName = "sep", description = "The type of lemma-inflected form encoding compression that precedes automaton construction. Allowed values: [suffix, infix, prefix, none]. Details are in Daciuk's paper and in the code. ")
+  @OptionalParameter(defaultValue = "prefix")
+  EncoderType getEncoderType();
 
 }

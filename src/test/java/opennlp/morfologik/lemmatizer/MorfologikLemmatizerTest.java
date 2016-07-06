@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.nio.charset.Charset;
 
+import morfologik.stemming.EncoderType;
 import opennlp.morfologik.builder.MorfologikDictionayBuilder;
 import opennlp.morfologik.builder.POSDictionayBuilderTest;
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
@@ -34,8 +35,7 @@ public class MorfologikLemmatizerTest {
     File dictOutFile = File.createTempFile(
         POSDictionayBuilderTest.class.getName(), ".dict");
 
-    builder.build(dictInFile, dictOutFile, Charset.forName("UTF-8"), "+", true,
-        true);
+    builder.build(dictInFile, dictOutFile, Charset.forName("UTF-8"), "+", EncoderType.PREFIX);
 
     MorfologikLemmatizer ml = new MorfologikLemmatizer(dictOutFile.toURI()
         .toURL());

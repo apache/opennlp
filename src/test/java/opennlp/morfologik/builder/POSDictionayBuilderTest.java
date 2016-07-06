@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.util.Properties;
 
 import junit.framework.TestCase;
+import morfologik.stemming.EncoderType;
 import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
 
 import org.junit.Test;
@@ -40,8 +41,7 @@ public class POSDictionayBuilderTest extends TestCase {
     File dictOutFile = File.createTempFile(
         POSDictionayBuilderTest.class.getName(), ".dict");
 
-    builder.build(dictInFile, dictOutFile, Charset.forName("UTF-8"), "+", true,
-        true);
+    builder.build(dictInFile, dictOutFile, Charset.forName("UTF-8"), "+", EncoderType.PREFIX);
 
     MorfologikLemmatizer ml = new MorfologikLemmatizer(dictOutFile.toURI()
         .toURL());
@@ -54,40 +54,28 @@ public class POSDictionayBuilderTest extends TestCase {
 
     Charset c = Charset.forName("iso-8859-1");
     String sep = "_";
-    boolean pref = true;
-    boolean inf = true;
-    Properties p = createPropertiesHelper(c, sep, pref, inf);
+    
+    EncoderType encoderType = EncoderType.PREFIX;
+    Properties p = createPropertiesHelper(c, sep, encoderType);
 
     assertEquals(c.name(), p.getProperty("fsa.dict.encoding"));
     assertEquals(sep, p.getProperty("fsa.dict.separator"));
-    assertEquals(pref,
-        Boolean.parseBoolean(p.getProperty("fsa.dict.uses-prefixes")));
-    assertEquals(inf,
-        Boolean.parseBoolean(p.getProperty("fsa.dict.uses-infixes")));
+    assertEquals(encoderType,
+        EncoderType.valueOf(p.getProperty("fsa.dict.encoder")));
+    
+    encoderType = EncoderType.SUFFIX;
+    p = createPropertiesHelper(c, sep, encoderType);
+    assertEquals(encoderType,
+        EncoderType.valueOf(p.getProperty("fsa.dict.encoder")));
 
-    pref = false;
-    inf = true;
-    p = createPropertiesHelper(c, sep, pref, inf);
-    assertEquals(pref,
-        Boolean.parseBoolean(p.getProperty("fsa.dict.uses-prefixes")));
-    assertEquals(inf,
-        Boolean.parseBoolean(p.getProperty("fsa.dict.uses-infixes")));
-
-    pref = true;
-    inf = false;
-    p = createPropertiesHelper(c, sep, pref, inf);
-    assertEquals(pref,
-        Boolean.parseBoolean(p.getProperty("fsa.dict.uses-prefixes")));
-    assertEquals(inf,
-        Boolean.parseBoolean(p.getProperty("fsa.dict.uses-infixes")));
   }
 
   private Properties createPropertiesHelper(Charset c, String sep,
-      boolean pref, boolean inf) throws IOException {
+      EncoderType encoderType) throws IOException {
     MorfologikDictionayBuilder builder = new MorfologikDictionayBuilder();
     File f = File.createTempFile(POSDictionayBuilderTest.class.getName(),
         ".info");
-    builder.createProperties(c, sep, pref, inf, f);
+    builder.createProperties(c, sep, encoderType, f);
 
     InputStream is = new FileInputStream(f);
 

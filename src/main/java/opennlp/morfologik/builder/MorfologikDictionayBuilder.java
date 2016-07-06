@@ -23,12 +23,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import morfologik.stemming.Dictionary;
-import morfologik.tools.FSABuildTool;
+import morfologik.stemming.DictionaryMetadata;
+import morfologik.stemming.EncoderType;
+import morfologik.tools.FSACompile;
 import morfologik.tools.Launcher;
 
 /**
@@ -50,20 +52,20 @@ public class MorfologikDictionayBuilder {
    * @param separator
    *          a field separator, the default is '+'. If your tags contains '+'
    *          change to something else
-   * @param isUsePrefixes
-   *          if to compact using prefixes
+   * @param encoderType
+   *          the Morfologik enconder type
    * @param isUseInfixes
    *          if to compact using infixes
    * @throws Exception
    */
   public void build(File dictInFile, File dictOutFile, Charset encoding,
-      String separator, boolean isUsePrefixes, boolean isUseInfixes)
+      String separator, EncoderType encoderType)
       throws Exception {
-
-    File propertiesFile = new File(
-        Dictionary.getExpectedFeaturesName(dictOutFile.getAbsolutePath()));
-    this.build(dictInFile, dictOutFile, propertiesFile, encoding, separator,
-        isUsePrefixes, isUseInfixes);
+    Path propertiesPath = DictionaryMetadata
+        .getExpectedMetadataLocation(dictOutFile.toPath()); 
+    
+    this.build(dictInFile, dictOutFile, propertiesPath.toFile(), encoding, separator,
+        encoderType);
   }
 
   /**
@@ -87,33 +89,29 @@ public class MorfologikDictionayBuilder {
    * @throws Exception
    */
   public void build(File dictInFile, File dictOutFile, File propertiesOutFile,
-      Charset encoding, String separator, boolean isUsePrefixes,
-      boolean isUseInfixes) throws Exception {
+      Charset encoding, String separator, EncoderType encoderType) throws Exception {
 
     // we need to execute tab2morph followed by fsa_build
 
-    File morph = tab2morph(dictInFile, separator, isUsePrefixes, isUseInfixes);
+    File morph = tab2morph(dictInFile, separator, encoderType);
 
     fsaBuild(morph, dictOutFile);
 
     morph.delete();
 
     // now we create the properties files using the passed parameters
-    createProperties(encoding, separator, isUsePrefixes, isUseInfixes,
+    createProperties(encoding, separator, encoderType,
         propertiesOutFile);
   }
 
   void createProperties(Charset encoding, String separator,
-      boolean isUsePrefixes, boolean isUseInfixes, File propertiesFile)
+		  EncoderType encoderType, File propertiesFile)
       throws FileNotFoundException, IOException {
 
     Properties properties = new Properties();
     properties.setProperty("fsa.dict.separator", separator);
     properties.setProperty("fsa.dict.encoding", encoding.name());
-    properties.setProperty("fsa.dict.uses-prefixes",
-        Boolean.toString(isUsePrefixes));
-    properties.setProperty("fsa.dict.uses-infixes",
-        Boolean.toString(isUseInfixes));
+    properties.setProperty("fsa.dict.encoder", encoderType.name());
 
     OutputStream os = new FileOutputStream(propertiesFile);
     properties.store(os, "Morfologik POS Dictionary properties");
@@ -124,11 +122,12 @@ public class MorfologikDictionayBuilder {
   private void fsaBuild(File morph, File dictOutFile) throws Exception {
     String[] params = { "-f", "cfsa2", "-i", morph.getAbsolutePath(), "-o",
         dictOutFile.getAbsolutePath() };
-    FSABuildTool.main(params);
+    FSACompile.main(params);
+    // FSABuildTool.main(params);
   }
 
   private File tab2morph(File dictInFile, String separator,
-      boolean isUsePrefixes, boolean isUseInfixes) throws Exception {
+      EncoderType encoderType) throws Exception {
 
     // create tab2morph parameters
     List<String> tag2morphParams = new ArrayList<String>();
@@ -136,14 +135,9 @@ public class MorfologikDictionayBuilder {
 
     tag2morphParams.add("--annotation");
     tag2morphParams.add(separator);
-
-    if (isUsePrefixes) {
-      tag2morphParams.add("-pre");
-    }
-
-    if (isUseInfixes) {
-      tag2morphParams.add("-inf");
-    }
+    
+    tag2morphParams.add("--e");
+    tag2morphParams.add(encoderType.name());
 
     tag2morphParams.add("-i");
     tag2morphParams.add(dictInFile.getAbsolutePath());

@@ -94,71 +94,71 @@ public final class CLI {
 				.println("Example: opennlp-morfologik-addon POSDictionaryBuilder help");
 	}
 
-  public static void main(String[] args) {
 
-		if (args.length == 0) {
-			usage();
-			System.exit(0);
-		}
+	  @SuppressWarnings("rawtypes")
+    public static void main(String[] args) {
 
-		String toolArguments[] = new String[args.length - 1];
-		System.arraycopy(args, 1, toolArguments, 0, toolArguments.length);
+	    if (args.length == 0) {
+	      usage();
+	      System.exit(0);
+	    }
 
-		String toolName = args[0];
+	    String toolArguments[] = new String[args.length -1];
+	    System.arraycopy(args, 1, toolArguments, 0, toolArguments.length);
 
-		// check for format
-		String formatName = StreamFactoryRegistry.DEFAULT_FORMAT;
-		int idx = toolName.indexOf(".");
-		if (-1 < idx) {
-			formatName = toolName.substring(idx + 1);
-			toolName = toolName.substring(0, idx);
-		}
-		CmdLineTool tool = toolLookupMap.get(toolName);
+	    String toolName = args[0];
 
-		try {
-			if (null == tool) {
-				throw new TerminateToolException(1, "Tool " + toolName
-						+ " is not found.");
-			}
+	    //check for format
+	    String formatName = StreamFactoryRegistry.DEFAULT_FORMAT;
+	    int idx = toolName.indexOf(".");
+	    if (-1 < idx) {
+	      formatName = toolName.substring(idx + 1);
+	      toolName = toolName.substring(0, idx);
+	    }
+	    CmdLineTool tool = toolLookupMap.get(toolName);
 
-			if ((0 == toolArguments.length && tool.hasParams())
-					|| 0 < toolArguments.length
-					&& "help".equals(toolArguments[0])) {
-				if (tool instanceof TypedCmdLineTool) {
-					System.out.println(((TypedCmdLineTool) tool)
-							.getHelp(formatName));
-				} else if (tool instanceof BasicCmdLineTool) {
-					System.out.println(tool.getHelp());
-				}
+	    try {
+	      if (null == tool) {
+	        throw new TerminateToolException(1, "Tool " + toolName + " is not found.");
+	      }
 
-				System.exit(0);
-			}
+	      if ((0 == toolArguments.length && tool.hasParams()) ||
+	          0 < toolArguments.length && "help".equals(toolArguments[0])) {
+	          if (tool instanceof TypedCmdLineTool) {
+	            System.out.println(((TypedCmdLineTool) tool).getHelp(formatName));
+	          } else if (tool instanceof BasicCmdLineTool) {
+	            System.out.println(tool.getHelp());
+	          }
 
-			if (tool instanceof TypedCmdLineTool) {
-				((TypedCmdLineTool) tool).run(formatName, toolArguments);
-			} else if (tool instanceof BasicCmdLineTool) {
-				if (-1 == idx) {
-					((BasicCmdLineTool) tool).run(toolArguments);
-				} else {
-					throw new TerminateToolException(1, "Tool " + toolName
-							+ " does not support formats.");
-				}
-			} else {
-				throw new TerminateToolException(1, "Tool " + toolName
-						+ " is not supported.");
-			}
-		} catch (TerminateToolException e) {
+	          System.exit(0);
+	      }
 
-			if (e.getMessage() != null) {
-				System.err.println(e.getMessage());
-			}
+	      if (tool instanceof TypedCmdLineTool) {
+	        ((TypedCmdLineTool) tool).run(formatName, toolArguments);
+	      } else if (tool instanceof BasicCmdLineTool) {
+	        if (-1 == idx) {
+	          ((BasicCmdLineTool) tool).run(toolArguments);
+	        } else {
+	          throw new TerminateToolException(1, "Tool " + toolName + " does not support formats.");
+	        }
+	      } else {
+	        throw new TerminateToolException(1, "Tool " + toolName + " is not supported.");
+	      }
+	    }
+	    catch (TerminateToolException e) {
 
-			if (e.getCause() != null) {
-				System.err.println(e.getCause().getMessage());
-				e.getCause().printStackTrace(System.err);
-			}
+	      if (e.getMessage() != null) {
+	        System.err.println(e.getMessage());
+	      }
 
-			System.exit(e.getCode());
-		}
-	}
+	      if (e.getCause() != null) {
+	        System.err.println(e.getCause().getMessage());
+	        e.getCause().printStackTrace(System.err);
+	      }
+
+	      System.exit(e.getCode());
+	    }
+	  }
+
+
 }

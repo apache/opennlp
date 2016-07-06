@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import morfologik.stemming.Dictionary;
+import morfologik.stemming.EncoderType;
 import opennlp.morfologik.builder.MorfologikDictionayBuilder;
 import opennlp.morfologik.builder.POSDictionayBuilderTest;
 import opennlp.morfologik.tagdict.MorfologikTagDictionary;
@@ -80,8 +81,7 @@ public class MorfologikTagDictionaryTest {
     File dictOutFile = File.createTempFile(
         POSDictionayBuilderTest.class.getName(), ".dict");
 
-    builder.build(dictInFile, dictOutFile, Charset.forName("UTF-8"), "+", true,
-        true);
+    builder.build(dictInFile, dictOutFile, Charset.forName("UTF-8"), "+", EncoderType.PREFIX);
 
     MorfologikTagDictionary ml = new MorfologikTagDictionary(
         Dictionary.read(dictOutFile.toURI().toURL()), caseSensitive);
