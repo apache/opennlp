@@ -18,7 +18,7 @@
 package opennlp.morfologik.lemmatizer;
 
 import java.io.IOException;
-import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,11 +26,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import morfologik.stemming.Dictionary;
 import morfologik.stemming.DictionaryLookup;
 import morfologik.stemming.IStemmer;
 import morfologik.stemming.WordData;
+import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 
 public class MorfologikLemmatizer implements DictionaryLemmatizer {
 
@@ -38,9 +38,9 @@ public class MorfologikLemmatizer implements DictionaryLemmatizer {
   public final Set<String> constantTags = new HashSet<String>(Arrays.asList(
       "NNP", "NP00000"));
 
-  public MorfologikLemmatizer(URL dictURL) throws IllegalArgumentException,
+  public MorfologikLemmatizer(Path dictionaryPath) throws IllegalArgumentException,
       IOException {
-    dictLookup = new DictionaryLookup(Dictionary.read(dictURL));
+    dictLookup = new DictionaryLookup(Dictionary.read(dictionaryPath));
   }
 
   private HashMap<List<String>, String> getLemmaTagsDict(String word) {

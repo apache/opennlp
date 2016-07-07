@@ -17,21 +17,15 @@
 
 package opennlp.morfologik.builder;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import morfologik.stemming.DictionaryMetadata;
 import morfologik.stemming.EncoderType;
-import morfologik.tools.FSACompile;
-import morfologik.tools.Launcher;
+import morfologik.tools.DictCompile;
 
 /**
  * Utility class to build Morfologik dictionaries from a tab separated values
@@ -41,117 +35,69 @@ import morfologik.tools.Launcher;
 public class MorfologikDictionayBuilder {
 
   /**
-   * Build a Morfologik binary dictionary
-   *
-   * @param dictInFile
-   *          the 3 column TSV dictionary file
-   * @param dictOutFile
-   *          where to store the binary Morfologik dictionary
-   * @param encoding
-   *          the encoding to be used while reading and writing
-   * @param separator
-   *          a field separator, the default is '+'. If your tags contains '+'
-   *          change to something else
-   * @param encoderType
-   *          the Morfologik enconder type
-   * @param isUseInfixes
-   *          if to compact using infixes
+   * Helper to compile a morphological dictionary automaton.
+   * 
+   * @param input
+   *          The input file (base,inflected,tag). An associated metadata
+   *          (*.info) file must exist.
+   * @param overwrite
+   *          Overwrite the output file if it exists.
+   * @param validate
+   *          Validate input to make sure it makes sense.
+   * @param acceptBom
+   *          Accept leading BOM bytes (UTF-8).
+   * @param acceptCr
+   *          Accept CR bytes in input sequences (\r).
+   * @param ignoreEmpty
+   *          Ignore empty lines in the input.
+   * @return the dictionary path
+   * 
    * @throws Exception
    */
-  public void build(File dictInFile, File dictOutFile, Charset encoding,
-      String separator, EncoderType encoderType)
+  public Path build(Path input, boolean overwrite, boolean validate,
+      boolean acceptBom, boolean acceptCr, boolean ignoreEmpty)
       throws Exception {
-    Path propertiesPath = DictionaryMetadata
-        .getExpectedMetadataLocation(dictOutFile.toPath()); 
+
+    DictCompile compiler = new DictCompile(input, overwrite, validate,
+        acceptBom, acceptCr, ignoreEmpty);
+    compiler.call();
+
     
-    this.build(dictInFile, dictOutFile, propertiesPath.toFile(), encoding, separator,
-        encoderType);
+    Path metadataPath = DictionaryMetadata
+        .getExpectedMetadataLocation(input);
+    
+    return metadataPath.resolveSibling(
+        metadataPath.getFileName().toString().replaceAll(
+            "\\." + DictionaryMetadata.METADATA_FILE_EXTENSION + "$", ".dict"));
   }
 
   /**
-   * Build a Morfologik binary dictionary
-   *
-   * @param dictInFile
-   *          the 3 column TSV dictionary file
-   * @param dictOutFile
-   *          where to store the binary Morfologik dictionary
-   * @param propertiesOutFile
-   *          where to store the properties of the Morfologik dictionary
-   * @param encoding
-   *          the encoding to be used while reading and writing
-   * @param separator
-   *          a field separator, the default is '+'. If your tags contains '+'
-   *          change to something else
-   * @param isUsePrefixes
-   *          if to compact using prefixes
-   * @param isUseInfixes
-   *          if to compact using infixes
+   * Helper to compile a morphological dictionary automaton using default
+   * parameters.
+   * 
+   * @param input
+   *          The input file (base,inflected,tag). An associated metadata
+   *          (*.info) file must exist.
+   *          
+   *  @return the dictionary path
+   * 
    * @throws Exception
    */
-  public void build(File dictInFile, File dictOutFile, File propertiesOutFile,
-      Charset encoding, String separator, EncoderType encoderType) throws Exception {
+  public Path build(Path input) throws Exception {
 
-    // we need to execute tab2morph followed by fsa_build
+    return build(input, true, true, false, false, false);
 
-    File morph = tab2morph(dictInFile, separator, encoderType);
-
-    fsaBuild(morph, dictOutFile);
-
-    morph.delete();
-
-    // now we create the properties files using the passed parameters
-    createProperties(encoding, separator, encoderType,
-        propertiesOutFile);
   }
 
-  void createProperties(Charset encoding, String separator,
-		  EncoderType encoderType, File propertiesFile)
-      throws FileNotFoundException, IOException {
+  Properties createProperties(Charset encoding, String separator,
+      EncoderType encoderType) throws FileNotFoundException, IOException {
 
     Properties properties = new Properties();
     properties.setProperty("fsa.dict.separator", separator);
     properties.setProperty("fsa.dict.encoding", encoding.name());
     properties.setProperty("fsa.dict.encoder", encoderType.name());
 
-    OutputStream os = new FileOutputStream(propertiesFile);
-    properties.store(os, "Morfologik POS Dictionary properties");
-    os.close();
+    return properties;
 
   }
-
-  private void fsaBuild(File morph, File dictOutFile) throws Exception {
-    String[] params = { "-f", "cfsa2", "-i", morph.getAbsolutePath(), "-o",
-        dictOutFile.getAbsolutePath() };
-    FSACompile.main(params);
-    // FSABuildTool.main(params);
-  }
-
-  private File tab2morph(File dictInFile, String separator,
-      EncoderType encoderType) throws Exception {
-
-    // create tab2morph parameters
-    List<String> tag2morphParams = new ArrayList<String>();
-    tag2morphParams.add("tab2morph");
-
-    tag2morphParams.add("--annotation");
-    tag2morphParams.add(separator);
-    
-    tag2morphParams.add("--e");
-    tag2morphParams.add(encoderType.name());
-
-    tag2morphParams.add("-i");
-    tag2morphParams.add(dictInFile.getAbsolutePath());
-
-    // we need a temporary file to store the intermediate output
-    File tmp = File.createTempFile("tab2morph", ".txt");
-    tmp.deleteOnExit();
-
-    tag2morphParams.add("-o");
-    tag2morphParams.add(tmp.getAbsolutePath());
-
-    Launcher.main(tag2morphParams.toArray(new String[tag2morphParams.size()]));
-
-    return tmp;
-  }
-
 }

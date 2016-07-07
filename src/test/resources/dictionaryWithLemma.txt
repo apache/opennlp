@@ -1,10 +1,11 @@
-casa	casa	NOUN
-casa	casar	V
-Casa	Casa	PROP
-casinha	casa	NOUN
-casona	casa	NOUN
-menina	menino	NOUN
-menino	menino	NOUN
-meninão	menino	NOUN
-menininho	menino	NOUN
-carro		NOUN
+casa,casa,NOUN
+casar,casa,V
+casar,casar,V-INF
+Casa,Casa,PROP
+casa,casinha,NOUN
+casa,casona,NOUN
+menino,menina,NOUN
+menino,menino,NOUN
+menino,meninão,NOUN
+menino,menininho,NOUN
+carro,carro,NOUN

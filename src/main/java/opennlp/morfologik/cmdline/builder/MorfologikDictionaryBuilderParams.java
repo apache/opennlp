@@ -19,7 +19,6 @@ package opennlp.morfologik.cmdline.builder;
 
 import java.io.File;
 
-import morfologik.stemming.EncoderType;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.EncodingParameter;
@@ -29,18 +28,30 @@ import opennlp.tools.cmdline.params.EncodingParameter;
  */
 interface MorfologikDictionaryBuilderParams extends EncodingParameter {
 
-  @ParameterDescription(valueName = "in", description = "Plain file with one entry per line")
+  @ParameterDescription(valueName = "in", description = "The input file (base,inflected,tag). An associated metadata (*.info) file must exist.")
   File getInputFile();
-
-  @ParameterDescription(valueName = "out", description = "The generated dictionary file.")
-  File getOutputFile();
-
-  @ParameterDescription(valueName = "sep", description = "The FSA dictionary separator. Default is '+'.")
-  @OptionalParameter(defaultValue = "+")
-  String getFSADictSeparator();
   
-  @ParameterDescription(valueName = "sep", description = "The type of lemma-inflected form encoding compression that precedes automaton construction. Allowed values: [suffix, infix, prefix, none]. Details are in Daciuk's paper and in the code. ")
-  @OptionalParameter(defaultValue = "prefix")
-  EncoderType getEncoderType();
-
+  @ParameterDescription(valueName = "true|false", description = "Accept leading BOM bytes (UTF-8).")
+  @OptionalParameter(defaultValue="false")
+  Boolean getAcceptBOM();
+  
+  @ParameterDescription(valueName = "true|false", description = "Accept CR bytes in input sequences (\r).")
+  @OptionalParameter(defaultValue="false")
+  Boolean getAcceptCR();
+  
+  @ParameterDescription(valueName = "FSA5|CFSA2", description = "Automaton serialization format.")
+  @OptionalParameter(defaultValue="FSA5")
+  String getFormat();
+  
+  @ParameterDescription(valueName = "true|false", description = "Ignore empty lines in the input.")
+  @OptionalParameter(defaultValue="false")
+  Boolean getIgnoreEmpty();
+  
+  @ParameterDescription(valueName = "true|false", description = "Overwrite the output file if it exists.")
+  @OptionalParameter(defaultValue="false")
+  Boolean getOverwrite();
+  
+  @ParameterDescription(valueName = "true|false", description = "Validate input to make sure it makes sense.")
+  @OptionalParameter(defaultValue="false")
+  Boolean getValidate();
 }

@@ -17,11 +17,10 @@
 
 package opennlp.morfologik.cmdline.builder;
 
-import static opennlp.morfologik.util.MorfologikUtil.getExpectedPropertiesFile;
-
 import java.io.File;
-import java.nio.charset.Charset;
+import java.nio.file.Path;
 
+import morfologik.stemming.DictionaryMetadata;
 import opennlp.morfologik.builder.MorfologikDictionayBuilder;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -44,18 +43,16 @@ public class MorfologikDictionaryBuilderTool extends BasicCmdLineTool {
     Params params = validateAndParseParams(args, Params.class);
 
     File dictInFile = params.getInputFile();
-    File dictOutFile = params.getOutputFile();
-    File propertiesFile = getExpectedPropertiesFile(dictOutFile);
-    Charset encoding = params.getEncoding();
 
     CmdLineUtil.checkInputFile("dictionary input file", dictInFile);
-    CmdLineUtil.checkOutputFile("dictionary output file", dictOutFile);
-    CmdLineUtil.checkOutputFile("properties output file", propertiesFile);
+    Path metadataPath = DictionaryMetadata.getExpectedMetadataLocation(dictInFile.toPath());
+    CmdLineUtil.checkInputFile("dictionary metadata (.info) input file", metadataPath.toFile());
 
     MorfologikDictionayBuilder builder = new MorfologikDictionayBuilder();
     try {
-      builder.build(dictInFile, dictOutFile, propertiesFile, encoding,
-          params.getFSADictSeparator(), params.getEncoderType());
+      builder.build(dictInFile.toPath(), params.getOverwrite(),
+          params.getValidate(), params.getAcceptBOM(), params.getAcceptCR(),
+          params.getIgnoreEmpty());
     } catch (Exception e) {
       throw new TerminateToolException(-1,
           "Error while creating Morfologik POS Dictionay: " + e.getMessage(), e);

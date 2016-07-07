@@ -3,16 +3,11 @@ package opennlp.morfologik.tagdict;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
 import morfologik.stemming.Dictionary;
-import morfologik.stemming.EncoderType;
-import opennlp.morfologik.builder.MorfologikDictionayBuilder;
 import opennlp.morfologik.builder.POSDictionayBuilderTest;
-import opennlp.morfologik.tagdict.MorfologikTagDictionary;
 import opennlp.tools.postag.TagDictionary;
 
 import org.junit.Test;
@@ -74,17 +69,8 @@ public class MorfologikTagDictionaryTest {
   private MorfologikTagDictionary createDictionary(boolean caseSensitive,
       List<String> constant) throws Exception {
 
-    MorfologikDictionayBuilder builder = new MorfologikDictionayBuilder();
-    File dictInFile = new File(POSDictionayBuilderTest.class.getResource(
-        "/dictionaryWithLemma.txt").getFile());
-
-    File dictOutFile = File.createTempFile(
-        POSDictionayBuilderTest.class.getName(), ".dict");
-
-    builder.build(dictInFile, dictOutFile, Charset.forName("UTF-8"), "+", EncoderType.PREFIX);
-
-    MorfologikTagDictionary ml = new MorfologikTagDictionary(
-        Dictionary.read(dictOutFile.toURI().toURL()), caseSensitive);
+    Dictionary dic = Dictionary.read(POSDictionayBuilderTest.createMorfologikDictionary());
+    MorfologikTagDictionary ml = new MorfologikTagDictionary(dic, caseSensitive);
 
     return ml;
   }

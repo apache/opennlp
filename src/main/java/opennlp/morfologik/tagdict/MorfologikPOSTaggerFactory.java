@@ -54,9 +54,21 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
   public MorfologikPOSTaggerFactory() {
   }
 
+  /**
+   * Creates a new {@link POSTaggerFactory} that uses the a Morfologik based {@link TagDictionary}.
+   * 
+   * @param ngramDictionary a ngramDictionary 
+   * @param morfologikDictionary a Morfologik dictionary
+   * @param morfologikDictionaryMetadata the dictionary metadata
+   * @throws IOException invalid Morfologik dictionary
+   */
   public MorfologikPOSTaggerFactory(Dictionary ngramDictionary,
-      TagDictionary posDictionary) {
+      byte[] morfologikDictionary, byte[] morfologikDictionaryMetadata) throws IOException {
     super(ngramDictionary, null);
+    this.dictData = morfologikDictionary;
+    this.dictInfo = morfologikDictionaryMetadata;
+    
+    this.dict = createMorfologikDictionary(dictData, dictInfo);
   }
 
   @Override
