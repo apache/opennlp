@@ -17,8 +17,6 @@
 
 package opennlp.morfologik.tagdict;
 
-import static opennlp.morfologik.util.MorfologikUtil.getExpectedPropertiesFile;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +25,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 import morfologik.stemming.DictionaryMetadata;
@@ -81,29 +78,6 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
   protected void init(Dictionary ngramDictionary, TagDictionary posDictionary) {
     super.init(ngramDictionary, null);
     this.dict = posDictionary;
-
-    // get the dictionary path
-    String path = System.getProperty("morfologik.dict");
-    if (path == null) {
-      throw new IllegalArgumentException(
-          "The property fsa.dict is missing! -Dmorfologik.dict=path");
-    }
-
-    // now we try to load it...
-    try {
-      this.dictData = Files.readAllBytes(Paths.get(path));
-      this.dictInfo = Files.readAllBytes(getExpectedPropertiesFile(path)
-          .toPath());
-
-      this.dict = createMorfologikDictionary(dictData, dictInfo);
-
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException(
-          "The file is not a Morfologik dictionary!", e);
-    } catch (IOException e) {
-      throw new IllegalArgumentException(
-          "Could not open the Morfologik dictionary or the .info file", e);
-    }
   }
 
   @Override

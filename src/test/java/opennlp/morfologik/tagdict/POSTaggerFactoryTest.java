@@ -17,7 +17,7 @@
 
 package opennlp.morfologik.tagdict;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -71,6 +71,8 @@ public class POSTaggerFactoryTest {
     POSTaggerFactory factory = posModel.getFactory();
     assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
 
+    factory = null;
+    
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     posModel.serialize(out);
     ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -79,6 +81,8 @@ public class POSTaggerFactoryTest {
 
     factory = fromSerialized.getFactory();
     assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
+    
+    assertEquals(2, factory.getTagDictionary().getTags("casa").length);
   }
 
 }
