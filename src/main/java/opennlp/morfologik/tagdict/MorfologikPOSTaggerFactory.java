@@ -26,9 +26,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
+import morfologik.stemming.DictionaryMetadata;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.TagDictionary;
@@ -53,23 +55,27 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
 
   public MorfologikPOSTaggerFactory() {
   }
-
-  /**
-   * Creates a new {@link POSTaggerFactory} that uses the a Morfologik based {@link TagDictionary}.
-   * 
-   * @param ngramDictionary a ngramDictionary 
-   * @param morfologikDictionary a Morfologik dictionary
-   * @param morfologikDictionaryMetadata the dictionary metadata
-   * @throws IOException invalid Morfologik dictionary
-   */
-  public MorfologikPOSTaggerFactory(Dictionary ngramDictionary,
-      byte[] morfologikDictionary, byte[] morfologikDictionaryMetadata) throws IOException {
-    super(ngramDictionary, null);
-    this.dictData = morfologikDictionary;
-    this.dictInfo = morfologikDictionaryMetadata;
+  
+  public TagDictionary createTagDictionary(File dictionary)
+      throws InvalidFormatException, FileNotFoundException, IOException {
     
-    this.dict = createMorfologikDictionary(dictData, dictInfo);
+    if(!dictionary.canRead()) {
+      throw new FileNotFoundException("Could not read dictionary: " + dictionary.getAbsolutePath());
+    }
+    
+    Path dictionaryMeta = DictionaryMetadata.getExpectedMetadataLocation(dictionary.toPath());
+    
+    if(dictionaryMeta == null || !dictionaryMeta.toFile().canRead()) {
+      throw new FileNotFoundException("Could not read dictionary metadata: " + dictionaryMeta.getFileName());
+    }
+    
+    this.dictData = Files.readAllBytes(dictionary.toPath());
+    this.dictInfo = Files.readAllBytes(dictionaryMeta);
+    
+    return createMorfologikDictionary(dictData, dictInfo);
+    
   }
+  
 
   @Override
   protected void init(Dictionary ngramDictionary, TagDictionary posDictionary) {
@@ -130,19 +136,11 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
 
   @Override
   public void setTagDictionary(TagDictionary dictionary) {
-    throw new UnsupportedOperationException(
-        "Morfologik POS Tagger factory does not support this operation");
+    this.dict = dictionary;
   }
 
   @Override
   public TagDictionary createEmptyTagDictionary() {
-    throw new UnsupportedOperationException(
-        "Morfologik POS Tagger factory does not support this operation");
-  }
-
-  @Override
-  public TagDictionary createTagDictionary(File dictionary)
-      throws InvalidFormatException, FileNotFoundException, IOException {
     throw new UnsupportedOperationException(
         "Morfologik POS Tagger factory does not support this operation");
   }
