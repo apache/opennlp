@@ -29,6 +29,8 @@ public class SentimentSample {
 
   private final String sentiment;
   private final List<String> sentence;
+  private final boolean isClearAdaptiveData;
+  private final String id = null;
 
   /**
    * Initializes the current instance.
@@ -39,6 +41,11 @@ public class SentimentSample {
    *          training sentence
    */
   public SentimentSample(String sentiment, String[] sentence) {
+    this(sentiment, sentence, true);
+  }
+
+  public SentimentSample(String sentiment, String[] sentence,
+      boolean clearAdaptiveData) {
     if (sentiment == null) {
       throw new IllegalArgumentException("sentiment must not be null");
     }
@@ -49,6 +56,7 @@ public class SentimentSample {
     this.sentiment = sentiment;
     this.sentence = Collections
         .unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
+    this.isClearAdaptiveData = clearAdaptiveData;
   }
 
   /**
@@ -68,4 +76,13 @@ public class SentimentSample {
   public String[] getSentence() {
     return sentence.toArray(new String[0]);
   }
+
+  public String getId() {
+    return id;
+  }
+
+  public boolean isClearAdaptiveDataSet() {
+    return isClearAdaptiveData;
+  }
+
 }

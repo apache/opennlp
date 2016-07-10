@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.cmdline;
 
 import java.util.Collections;
@@ -59,6 +58,8 @@ import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidatorTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluatorTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainerTool;
+import opennlp.tools.cmdline.sentiment.SentimentCrossValidatorTool;
+import opennlp.tools.cmdline.sentiment.SentimentEvaluatorTool;
 import opennlp.tools.cmdline.sentiment.SentimentTrainerTool;
 import opennlp.tools.cmdline.tokenizer.DictionaryDetokenizerTool;
 import opennlp.tools.cmdline.tokenizer.SimpleTokenizerTool;
@@ -114,7 +115,6 @@ public final class CLI {
     tools.add(new TokenNameFinderConverterTool());
     tools.add(new CensusDictionaryCreatorTool());
 
-
     // POS Tagger
     tools.add(new opennlp.tools.cmdline.postag.POSTaggerTool());
     tools.add(new POSTaggerTrainerTool());
@@ -134,15 +134,17 @@ public final class CLI {
     tools.add(new ParserTrainerTool()); // trains everything
     tools.add(new ParserEvaluatorTool());
     tools.add(new ParserConverterTool()); // trains everything
-    tools.add(new BuildModelUpdaterTool()); // re-trains  build model
-    tools.add(new CheckModelUpdaterTool()); // re-trains  build model
+    tools.add(new BuildModelUpdaterTool()); // re-trains build model
+    tools.add(new CheckModelUpdaterTool()); // re-trains build model
     tools.add(new TaggerModelReplacerTool());
 
     // Entity Linker
     tools.add(new EntityLinkerTool());
-	
-	// Sentiment Analysis Parser
+
+    // Sentiment Analysis Parser
     tools.add(new SentimentTrainerTool());
+    tools.add(new SentimentEvaluatorTool());
+    tools.add(new SentimentCrossValidatorTool());
 
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);
@@ -176,7 +178,8 @@ public final class CLI {
 
       System.out.print("  " + tool.getName());
 
-      for (int i = 0; i < Math.abs(tool.getName().length() - numberOfSpaces); i++) {
+      for (int i = 0; i < Math
+          .abs(tool.getName().length() - numberOfSpaces); i++) {
         System.out.print(" ");
       }
 
@@ -194,12 +197,12 @@ public final class CLI {
       System.exit(0);
     }
 
-    String toolArguments[] = new String[args.length -1];
+    String toolArguments[] = new String[args.length - 1];
     System.arraycopy(args, 1, toolArguments, 0, toolArguments.length);
 
     String toolName = args[0];
 
-    //check for format
+    // check for format
     String formatName = StreamFactoryRegistry.DEFAULT_FORMAT;
     int idx = toolName.indexOf(".");
     if (-1 < idx) {
@@ -210,18 +213,19 @@ public final class CLI {
 
     try {
       if (null == tool) {
-        throw new TerminateToolException(1, "Tool " + toolName + " is not found.");
+        throw new TerminateToolException(1,
+            "Tool " + toolName + " is not found.");
       }
 
-      if ((0 == toolArguments.length && tool.hasParams()) ||
-          0 < toolArguments.length && "help".equals(toolArguments[0])) {
-          if (tool instanceof TypedCmdLineTool) {
-            System.out.println(((TypedCmdLineTool) tool).getHelp(formatName));
-          } else if (tool instanceof BasicCmdLineTool) {
-            System.out.println(tool.getHelp());
-          }
+      if ((0 == toolArguments.length && tool.hasParams())
+          || 0 < toolArguments.length && "help".equals(toolArguments[0])) {
+        if (tool instanceof TypedCmdLineTool) {
+          System.out.println(((TypedCmdLineTool) tool).getHelp(formatName));
+        } else if (tool instanceof BasicCmdLineTool) {
+          System.out.println(tool.getHelp());
+        }
 
-          System.exit(0);
+        System.exit(0);
       }
 
       if (tool instanceof TypedCmdLineTool) {
@@ -230,13 +234,14 @@ public final class CLI {
         if (-1 == idx) {
           ((BasicCmdLineTool) tool).run(toolArguments);
         } else {
-          throw new TerminateToolException(1, "Tool " + toolName + " does not support formats.");
+          throw new TerminateToolException(1,
+              "Tool " + toolName + " does not support formats.");
         }
       } else {
-        throw new TerminateToolException(1, "Tool " + toolName + " is not supported.");
+        throw new TerminateToolException(1,
+            "Tool " + toolName + " is not supported.");
       }
-    }
-    catch (TerminateToolException e) {
+    } catch (TerminateToolException e) {
 
       if (e.getMessage() != null) {
         System.err.println(e.getMessage());

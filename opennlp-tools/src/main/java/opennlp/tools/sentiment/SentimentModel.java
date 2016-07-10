@@ -19,6 +19,7 @@ package opennlp.tools.sentiment;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
@@ -75,6 +76,11 @@ public class SentimentModel extends BaseModel {
    */
   public SentimentModel(File file) throws InvalidFormatException, IOException {
     super(COMPONENT_NAME, file);
+  }
+
+  public SentimentModel(InputStream modelIn)
+      throws InvalidFormatException, IOException {
+    super(COMPONENT_NAME, modelIn);
   }
 
   /**

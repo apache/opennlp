@@ -18,12 +18,24 @@
 package opennlp.tools.sentiment;
 
 import opennlp.tools.util.BeamSearchContextGenerator;
+import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
 /**
  * Class for using a Context Generator for Sentiment Analysis.
  */
 public class SentimentContextGenerator
     implements BeamSearchContextGenerator<String> {
+
+  private AdaptiveFeatureGenerator[] featureGenerators;
+
+  public SentimentContextGenerator() {
+    this(new AdaptiveFeatureGenerator[0]);
+  }
+
+  public SentimentContextGenerator(
+      AdaptiveFeatureGenerator[] featureGenerators) {
+    this.featureGenerators = featureGenerators;
+  }
 
   /**
    * Returns the context
@@ -53,6 +65,19 @@ public class SentimentContextGenerator
   public String[] getContext(int index, String[] sequence,
       String[] priorDecisions, Object[] additionalContext) {
     return new String[] {};
+  }
+
+  public void updateAdaptiveData(String[] tokens, String[] outcomes) {
+
+    if (tokens != null && outcomes != null
+        && tokens.length != outcomes.length) {
+      throw new IllegalArgumentException(
+          "The tokens and outcome arrays MUST have the same size!");
+    }
+
+    for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
+      featureGenerator.updateAdaptiveData(tokens, outcomes);
+    }
   }
 
 }

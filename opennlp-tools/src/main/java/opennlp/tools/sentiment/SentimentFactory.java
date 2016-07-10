@@ -21,7 +21,6 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 /**

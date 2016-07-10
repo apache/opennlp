@@ -18,29 +18,24 @@
 package opennlp.tools.sentiment;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.namefind.BioCodec;
-import opennlp.tools.namefind.NameContextGenerator;
-import opennlp.tools.namefind.TokenNameFinderFactory;
-import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
-import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 /**
  * Class for creating a maximum-entropy-based Sentiment Analysis model.
@@ -62,6 +57,7 @@ public class SentimentME {
   private SentimentFactory factory;
   private MaxentModel maxentModel;
   private SequenceCodec<String> seqCodec = new BioCodec();
+  private AdaptiveFeatureGenerator featureGenerators[];
 
   /**
    * Constructor, initialises
@@ -100,11 +96,6 @@ public class SentimentME {
 
     MaxentModel sentimentModel = null;
 
-    SequenceClassificationModel<String> seqModel = null;
-
-    TrainerType trainerType = TrainerFactory
-        .getTrainerType(trainParams.getSettings());
-
     ObjectStream<Event> eventStream = new SentimentEventStream(samples,
         factory.createContextGenerator());
 
@@ -128,6 +119,11 @@ public class SentimentME {
    */
   public String predict(String sentence) {
     String[] tokens = factory.getTokenizer().tokenize(sentence);
+
+    return predict(tokens);
+  }
+
+  public String predict(String[] tokens) {
 
     double prob[] = probabilities(tokens);
     String sentiment = getBestSentiment(prob);
@@ -154,6 +150,72 @@ public class SentimentME {
    */
   public double[] probabilities(String text[]) {
     return maxentModel.eval(contextGenerator.getContext(text));
+  }
+
+  public double[] probs(Span[] spans) {
+
+    double[] sprobs = new double[spans.length];
+    double[] probs = bestSequence.getProbs();
+
+    for (int si = 0; si < spans.length; si++) {
+
+      double p = 0;
+
+      for (int oi = spans[si].getStart(); oi < spans[si].getEnd(); oi++) {
+        p += probs[oi];
+      }
+
+      p /= spans[si].length();
+
+      sprobs[si] = p;
+    }
+
+    return sprobs;
+  }
+
+  private Span[] setProbs(Span[] spans) {
+    double[] probs = probs(spans);
+    if (probs != null) {
+
+      for (int i = 0; i < probs.length; i++) {
+        double prob = probs[i];
+        spans[i] = new Span(spans[i], prob);
+      }
+    }
+    return spans;
+  }
+
+  public Span[] find(String[] tokens) {
+    return find(tokens, EMPTY);
+  }
+
+  /**
+   * Generates name tags for the given sequence, typically a sentence, returning
+   * token spans for any identified names.
+   *
+   * @param tokens
+   *          an array of the tokens or words of the sequence, typically a
+   *          sentence.
+   * @param additionalContext
+   *          features which are based on context outside of the sentence but
+   *          which should also be used.
+   *
+   * @return an array of spans for each of the names identified.
+   */
+  public Span[] find(String[] tokens, String[][] additionalContext) {
+
+    additionalContextFeatureGenerator.setCurrentContext(additionalContext);
+
+    bestSequence = model.bestSequence(tokens, additionalContext,
+        contextGenerator, sequenceValidator);
+
+    List<String> c = bestSequence.getOutcomes();
+
+    contextGenerator.updateAdaptiveData(tokens,
+        c.toArray(new String[c.size()]));
+    Span[] spans = seqCodec.decode(c);
+    spans = setProbs(spans);
+    return spans;
   }
 
   /**
