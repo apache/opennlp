@@ -26,6 +26,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.perceptron.PerceptronPrepAttachTest;
@@ -33,6 +36,8 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 
 public class PrepAttachDataUtil {
+	
+  private static final Logger LOGGER = LogManager.getLogger(PrepAttachDataUtil.class);
 
   private static List<Event> readPpaFile(String filename) throws IOException {
 
@@ -87,7 +92,7 @@ public class PrepAttachDataUtil {
     }
 
     double accuracy = correct/(double)total;
-    System.out.println("Accuracy on PPA devset: (" + correct + "/" + total + ") " + accuracy);
+    LOGGER.info("Accuracy on PPA devset: (" + correct + "/" + total + ") " + accuracy);
 
     assertEquals(expecedAccuracy, accuracy, .00001);
   }

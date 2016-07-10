@@ -30,10 +30,14 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ADSentenceSampleStreamTest {
+	
+  private static final Logger LOGGER = LogManager.getLogger(ADSentenceSampleStreamTest.class);
 
   List<SentenceSample> samples = new ArrayList<SentenceSample>();
 
@@ -62,8 +66,8 @@ public class ADSentenceSampleStreamTest {
     SentenceSample sample = stream.read();
 
     while (sample != null) {
-      System.out.println(sample.getDocument());
-      System.out.println("<fim>");
+      LOGGER.info(sample.getDocument());
+      LOGGER.info("<fim>");
       samples.add(sample);
       sample = stream.read();
     }

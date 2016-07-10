@@ -19,6 +19,9 @@ package opennlp.tools.ml.maxent;
 
 import java.io.StringReader;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import junit.framework.TestCase;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
@@ -29,6 +32,8 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public class ScaleDoesntMatterTest extends TestCase {
 
+	private static final Logger LOGGER = LogManager.getLogger(ScaleDoesntMatterTest.class);
+	
   /**
    * This test sets out to prove that the scale you use on real valued
    * predicates doesn't matter when it comes the probability assigned to each
@@ -57,7 +62,7 @@ public class ScaleDoesntMatterTest extends TestCase {
     double[] smallResults = smallModel.eval(contexts, values);
 
     String smallResultString = smallModel.getAllOutcomes(smallResults);
-    System.out.println("smallResults: " + smallResultString);
+    LOGGER.info("smallResults: " + smallResultString);
 
     StringReader largeReader = new StringReader(largeValues);
     ObjectStream<Event> largeEventStream = new RealBasicEventStream(
@@ -70,14 +75,14 @@ public class ScaleDoesntMatterTest extends TestCase {
     double[] largeResults = largeModel.eval(contexts, values);
 
     String largeResultString = smallModel.getAllOutcomes(largeResults);
-    System.out.println("largeResults: " + largeResultString);
+    LOGGER.info("largeResults: " + largeResultString);
 
     assertEquals(smallResults.length, largeResults.length);
     for (int i = 0; i < smallResults.length; i++) {
-      System.out.println(String.format(
+      LOGGER.info(String.format(
           "classifiy with smallModel: %1$s = %2$f", smallModel.getOutcome(i),
           smallResults[i]));
-      System.out.println(String.format(
+      LOGGER.info(String.format(
           "classifiy with largeModel: %1$s = %2$f", largeModel.getOutcome(i),
           largeResults[i]));
       assertEquals(smallResults[i], largeResults[i], 0.01f);

@@ -35,6 +35,8 @@ import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,6 +56,8 @@ import org.junit.Test;
  * from the training sentences.
  */
 public class ChunkerMETest {
+
+  private static final Logger LOGGER = LogManager.getLogger(ChunkerMETest.class);
 
   private Chunker chunker;
 
@@ -101,7 +105,7 @@ public class ChunkerMETest {
   public void testChunkAsSpan() throws Exception {
 
     Span[] preds = chunker.chunkAsSpans(toks1, tags1);
-    System.out.println(Arrays.toString(preds));
+    LOGGER.info(Arrays.toString(preds));
 
     assertEquals(10, preds.length);
     assertEquals(new Span(0, 1, "NP"), preds[0]);

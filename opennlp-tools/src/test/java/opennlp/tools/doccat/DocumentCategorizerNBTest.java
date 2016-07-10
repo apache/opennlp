@@ -28,10 +28,12 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.TrainingParameters;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 public class DocumentCategorizerNBTest {
-
+	
   @Test
   public void testSimpleTraining() throws IOException {
 
@@ -64,7 +66,6 @@ public class DocumentCategorizerNBTest {
       assertEquals("1", cat);
       break;
     }
-    System.out.println("");
 
   }
 }
