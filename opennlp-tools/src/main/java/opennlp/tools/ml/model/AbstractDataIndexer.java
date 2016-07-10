@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.util.InsufficientTrainingDataException;
 
 
@@ -32,6 +35,8 @@ import opennlp.tools.util.InsufficientTrainingDataException;
  *
  */
 public abstract class AbstractDataIndexer implements DataIndexer {
+
+  private static final Logger LOGGER = LogManager.getLogger(AbstractDataIndexer.class);
 
   private int numEvents;
   /** The integer contexts associated with each unique event. */
@@ -113,7 +118,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
       throw new InsufficientTrainingDataException("Insufficient training data to create model.");
     }
     
-    if (sort) System.out.println("done. Reduced " + numEvents + " events to " + numUniqueEvents + ".");
+    if (sort) LOGGER.info("done. Reduced " + numEvents + " events to " + numUniqueEvents + ".");
 
     contexts = new int[numUniqueEvents][];
     outcomeList = new int[numUniqueEvents];

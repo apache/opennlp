@@ -21,6 +21,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.BaseToolFactory;
@@ -32,6 +35,8 @@ import opennlp.tools.util.ext.ExtensionLoader;
  * resources
  */
 public class SentenceDetectorFactory extends BaseToolFactory {
+
+  private static final Logger LOGGER = LogManager.getLogger(SentenceDetectorFactory.class);
 
   private String languageCode;
   private char[] eosCharacters;
@@ -131,8 +136,7 @@ public class SentenceDetectorFactory extends BaseToolFactory {
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
           + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
+      LOGGER.error(msg, e);
       throw new InvalidFormatException(msg, e);
     }
   }

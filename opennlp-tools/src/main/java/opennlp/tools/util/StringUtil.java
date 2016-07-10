@@ -17,7 +17,12 @@
 
 package opennlp.tools.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class StringUtil {
+	
+  private static final Logger LOGGER = LogManager.getLogger(StringUtil.class);
 
   /**
    * Determines if the specified character is a whitespace.
@@ -249,7 +254,7 @@ public static String decodeShortestEditScript(String wordForm, String permutatio
       }
       //read first letter of permutation string
       char nextOperation = permutations.charAt(permIndex);
-      //System.err.println("-> NextOP: " + nextOperation);
+      //LOGGER.debug("-> NextOP: " + nextOperation);
       //go to the next permutation letter
       permIndex++;
       if (nextOperation == 'R') {
@@ -270,7 +275,7 @@ public static String decodeShortestEditScript(String wordForm, String permutatio
           if (lemma.charAt(charIndex) == replace) {
             lemma.setCharAt(charIndex, with);
           }
-          //System.err.println("-> ROP: " + lemma.toString());
+          //LOGGER.debug("-> ROP: " + lemma.toString());
           //go to next permutation
           permIndex++;
           
@@ -285,7 +290,7 @@ public static String decodeShortestEditScript(String wordForm, String permutatio
             return wordForm; 
           }
           lemma.insert(charIndex, in);
-          //System.err.println("-> IOP " + lemma.toString());
+          //LOGGER.debug("-> IOP " + lemma.toString());
           //go to next permutation
           permIndex++;
       } else if (nextOperation == 'D') {

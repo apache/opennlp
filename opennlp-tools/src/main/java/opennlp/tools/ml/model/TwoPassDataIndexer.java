@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.util.ObjectStream;
 
 
@@ -47,6 +50,8 @@ import opennlp.tools.util.ObjectStream;
  */
 public class TwoPassDataIndexer extends AbstractDataIndexer{
 
+  private static final Logger LOGGER = LogManager.getLogger(TwoPassDataIndexer.class);
+			
   /**
    * One argument constructor for DataIndexer which calls the two argument
    * constructor assuming no cutoff.
@@ -73,17 +78,17 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
     Map<String,Integer> predicateIndex = new HashMap<String,Integer>();
     List<ComparableEvent> eventsToCompare;
 
-    System.out.println("Indexing events using cutoff of " + cutoff + "\n");
+    LOGGER.info("Indexing events using cutoff of " + cutoff + "\n");
 
-    System.out.print("\tComputing event counts...  ");
+    LOGGER.info("\tComputing event counts...  ");
     try {
       File tmp = File.createTempFile("events", null);
       tmp.deleteOnExit();
       Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
       int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
-      System.out.println("done. " + numEvents + " events");
+      LOGGER.info("done. " + numEvents + " events");
 
-      System.out.print("\tIndexing...  ");
+      LOGGER.info("\tIndexing...  ");
 
       FileEventStream fes = new FileEventStream(tmp);
       try {
@@ -94,19 +99,19 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
       // done with predicates
       predicateIndex = null;
       tmp.delete();
-      System.out.println("done.");
+      LOGGER.info("done.");
 
       if (sort) {
-        System.out.print("Sorting and merging events... ");
+        LOGGER.info("Sorting and merging events... ");
       }
       else {
-        System.out.print("Collecting events... ");
+        LOGGER.info("Collecting events... ");
       }
       sortAndMerge(eventsToCompare,sort);
-      System.out.println("Done indexing.");
+      LOGGER.info("Done indexing.");
     }
     catch(IOException e) {
-      System.err.println(e);
+      LOGGER.error(e);
     }
   }
 
@@ -182,7 +187,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
         eventsToCompare.add(ce);
       }
       else {
-        System.err.println("Dropped event " + ev.getOutcome() + ":" + Arrays.asList(ev.getContext()));
+        LOGGER.warn("Dropped event " + ev.getOutcome() + ":" + Arrays.asList(ev.getContext()));
       }
       // recycle the TIntArrayList
       indexedContext.clear();

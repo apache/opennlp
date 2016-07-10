@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -56,6 +59,8 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class Parser extends AbstractBottomUpParser {
 
+  private static final Logger LOGGER = LogManager.getLogger(Parser.class);
+	
   private MaxentModel buildModel;
   private MaxentModel checkModel;
 
@@ -267,7 +272,7 @@ public class Parser extends AbstractBottomUpParser {
   public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, TrainingParameters mlParams)
           throws IOException {
 
-    System.err.println("Building dictionary");
+    LOGGER.trace("Building dictionary");
 
     Dictionary mdict = buildDictionary(parseSamples, rules, mlParams);
 
@@ -276,7 +281,7 @@ public class Parser extends AbstractBottomUpParser {
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
     // build
-    System.err.println("Training builder");
+    LOGGER.trace("Training builder");
     ObjectStream<Event> bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
     Map<String, String> buildReportMap = new HashMap<String, String>();
     MaxentModel buildModel = TrainUtil.train(bes, mlParams.getSettings("build"), buildReportMap);
@@ -304,7 +309,7 @@ public class Parser extends AbstractBottomUpParser {
     parseSamples.reset();
 
     // check
-    System.err.println("Training checker");
+    LOGGER.trace("Training checker");
     ObjectStream<Event> kes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.CHECK);
     Map<String, String> checkReportMap = new HashMap<String, String>();
     MaxentModel checkModel = TrainUtil.train(kes, mlParams.getSettings("check"), checkReportMap);

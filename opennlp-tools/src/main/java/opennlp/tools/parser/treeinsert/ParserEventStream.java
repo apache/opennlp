@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader;
 import opennlp.tools.ml.model.AbstractModel;
@@ -41,6 +44,8 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 public class ParserEventStream extends AbstractParserEventStream {
+
+  private static final Logger LOGGER = LogManager.getLogger(ParserEventStream.class);
 
   protected AttachContextGenerator attachContextGenerator;
   protected BuildContextGenerator buildContextGenerator;
@@ -156,7 +161,7 @@ public class ParserEventStream extends AbstractParserEventStream {
       while (!parent.getType().equals(AbstractBottomUpParser.TOP_NODE) && parent.getLabel() == null) {
         if (parent.getLabel() == null && !prevParent.getType().equals(parent.getType())) {
           //build level
-          if (debug) System.err.println("Build: "+parent.getType()+" for: "+currentChunks[ci]);
+          LOGGER.debug("Build: "+parent.getType()+" for: "+currentChunks[ci]);
           if (etype == ParserEventTypeEnum.BUILD) {
             parseEvents.add(new Event(parent.getType(), buildContextGenerator.getContext(currentChunks, ci)));
           }
@@ -219,7 +224,7 @@ public class ParserEventStream extends AbstractParserEventStream {
           Parse cfn = currentRightFrontier.get(cfi);
           if (!Parser.checkComplete || !Parser.COMPLETE.equals(cfn.getLabel())) {
             Integer i = parents.get(frontierNode);
-            if (debug) System.err.println("Looking at attachment site ("+cfi+"): "+cfn.getType()+" ci="+i+" cs="+nonPunctChildCount(cfn)+", "+cfn+" :for "+currentChunks[ci].getType()+" "+currentChunks[ci]+" -> "+parents);
+            LOGGER.debug("Looking at attachment site ("+cfi+"): "+cfn.getType()+" ci="+i+" cs="+nonPunctChildCount(cfn)+", "+cfn+" :for "+currentChunks[ci].getType()+" "+currentChunks[ci]+" -> "+parents);
             if (attachNode == null &&  i != null && i == nonPunctChildCount(cfn)) {
               attachType = Parser.ATTACH_DAUGHTER;
               attachNodeIndex = cfi;
@@ -231,11 +236,11 @@ public class ParserEventStream extends AbstractParserEventStream {
             }
           }
           else {
-            if (debug) System.err.println("Skipping ("+cfi+"): "+cfn.getType()+","+cfn.getPreviousPunctuationSet()+" "+cfn+" :for "+currentChunks[ci].getType()+" "+currentChunks[ci]+" -> "+parents);
+            LOGGER.debug("Skipping ("+cfi+"): "+cfn.getType()+","+cfn.getPreviousPunctuationSet()+" "+cfn+" :for "+currentChunks[ci].getType()+" "+currentChunks[ci]+" -> "+parents);
           }
           // Can't attach past first incomplete node.
           if (Parser.checkComplete && cfn.getLabel().equals(Parser.INCOMPLETE)) {
-            if (debug) System.err.println("breaking on incomplete:"+cfn.getType()+" "+cfn);
+            LOGGER.debug("breaking on incomplete:"+cfn.getType()+" "+cfn);
             break;
           }
         }
@@ -265,7 +270,7 @@ public class ParserEventStream extends AbstractParserEventStream {
           }
           //Can't attach past first incomplete node.
           if (Parser.checkComplete && cfn.getLabel().equals(Parser.INCOMPLETE)) {
-            if (debug) System.err.println("breaking on incomplete:"+cfn.getType()+" "+cfn);
+            LOGGER.debug("breaking on incomplete:"+cfn.getType()+" "+cfn);
             break;
           }
         }
@@ -273,7 +278,7 @@ public class ParserEventStream extends AbstractParserEventStream {
         if (attachNode != null) {
           if (attachType == Parser.ATTACH_DAUGHTER) {
             Parse daughter = currentChunks[ci];
-            if (debug) System.err.println("daughter attach a="+attachNode.getType()+":"+attachNode+" d="+daughter+" com="+lastChild(chunks[ci], rightFrontier.get(attachNodeIndex)));
+            LOGGER.debug("daughter attach a="+attachNode.getType()+":"+attachNode+" d="+daughter+" com="+lastChild(chunks[ci], rightFrontier.get(attachNodeIndex)));
             attachNode.add(daughter,rules);
             daughter.setParent(attachNode);
             if (lastChild(chunks[ci], rightFrontier.get(attachNodeIndex))) {
@@ -292,7 +297,7 @@ public class ParserEventStream extends AbstractParserEventStream {
             Parse frontierNode = rightFrontier.get(attachNodeIndex);
             rightFrontier.set(attachNodeIndex,frontierNode.getParent());
             Parse sister = currentChunks[ci];
-            if (debug) System.err.println("sister attach a="+attachNode.getType()+":"+attachNode+" s="+sister+" ap="+attachNode.getParent()+" com="+lastChild(chunks[ci], rightFrontier.get(attachNodeIndex)));
+            LOGGER.debug("sister attach a="+attachNode.getType()+":"+attachNode+" s="+sister+" ap="+attachNode.getParent()+" com="+lastChild(chunks[ci], rightFrontier.get(attachNodeIndex)));
             Parse newParent = attachNode.getParent().adjoin(sister,rules);
 
             newParent.setParent(attachNode.getParent());

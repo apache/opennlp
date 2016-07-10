@@ -22,6 +22,9 @@ package opennlp.tools.ml.maxent.io;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.ml.maxent.GISModel;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelReader;
@@ -32,6 +35,8 @@ import opennlp.tools.ml.model.DataReader;
  * Abstract parent class for readers of GISModels.
  */
 public class GISModelReader extends AbstractModelReader {
+
+  private static final Logger LOGGER = LogManager.getLogger(GISModelReader.class);
 
   public GISModelReader(File file) throws IOException {
     super(file);
@@ -81,7 +86,7 @@ public class GISModelReader extends AbstractModelReader {
   public void checkModelType() throws java.io.IOException {
     String modelType = readUTF();
     if (!modelType.equals("GIS"))
-      System.out.println("Error: attempting to load a " + modelType
+      LOGGER.warn("Error: attempting to load a " + modelType
           + " model as a GIS model." + " You should expect problems.");
   }
 

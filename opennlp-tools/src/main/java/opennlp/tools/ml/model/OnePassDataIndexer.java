@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.util.ObjectStream;
 
 /**
@@ -38,6 +41,8 @@ import opennlp.tools.util.ObjectStream;
  * predicates.
  */
 public class OnePassDataIndexer extends AbstractDataIndexer {
+
+  private static final Logger LOGGER = LogManager.getLogger(OnePassDataIndexer.class);
 
   /**
    * One argument constructor for DataIndexer which calls the two argument
@@ -72,24 +77,24 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
     LinkedList<Event> events;
     List<ComparableEvent> eventsToCompare;
 
-    System.out.println("Indexing events using cutoff of " + cutoff + "\n");
+    LOGGER.info("Indexing events using cutoff of " + cutoff + "\n");
 
-    System.out.print("\tComputing event counts...  ");
+    LOGGER.info("\tComputing event counts...  ");
     events = computeEventCounts(eventStream, predicateIndex, cutoff);
-    System.out.println("done. " + events.size() + " events");
+    LOGGER.info("done. " + events.size() + " events");
 
-    System.out.print("\tIndexing...  ");
+    LOGGER.info("\tIndexing...  ");
     eventsToCompare = index(events, predicateIndex);
     // done with event list
     events = null;
     // done with predicates
     predicateIndex = null;
 
-    System.out.println("done.");
+    LOGGER.info("done.");
 
-    System.out.print("Sorting and merging events... ");
+    LOGGER.info("Sorting and merging events... ");
     sortAndMerge(eventsToCompare, sort);
-    System.out.println("Done indexing.");
+    LOGGER.info("Done indexing.");
   }
 
   /**
@@ -165,7 +170,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
         ce = new ComparableEvent(ocID, cons);
         eventsToCompare.add(ce);
       } else {
-        System.err.println("Dropped event " + ev.getOutcome() + ":"
+        LOGGER.warn("Dropped event " + ev.getOutcome() + ":"
             + Arrays.asList(ev.getContext()));
       }
       // recycle the TIntArrayList

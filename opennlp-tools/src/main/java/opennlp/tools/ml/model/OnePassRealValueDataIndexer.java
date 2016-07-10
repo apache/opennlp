@@ -27,6 +27,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
 
@@ -36,7 +39,9 @@ import opennlp.tools.util.ObjectStream;
  * predicates and maintains event values.
  */
 public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
-
+	
+  private static final Logger LOGGER = LogManager.getLogger(OnePassRealValueDataIndexer.class);
+	
   float[][] values;
 
   public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
@@ -111,7 +116,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
         eventsToCompare.add(ce);
       }
       else {
-        System.err.println("Dropped event "+ev.getOutcome()+":"+Arrays.asList(ev.getContext()));
+        LOGGER.warn("Dropped event "+ev.getOutcome()+":"+Arrays.asList(ev.getContext()));
       }
 //    recycle the TIntArrayList
       indexedContext.clear();

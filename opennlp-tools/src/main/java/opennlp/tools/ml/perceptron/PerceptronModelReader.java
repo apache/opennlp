@@ -22,6 +22,9 @@ package opennlp.tools.ml.perceptron;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelReader;
 import opennlp.tools.ml.model.Context;
@@ -32,6 +35,8 @@ import opennlp.tools.ml.model.DataReader;
  *
  */
 public class PerceptronModelReader extends AbstractModelReader {
+
+    private static final Logger LOGGER = LogManager.getLogger(PerceptronModelReader.class);
 
     public PerceptronModelReader(File file) throws IOException {
       super(file);
@@ -76,7 +81,7 @@ public class PerceptronModelReader extends AbstractModelReader {
     public void checkModelType() throws java.io.IOException {
       String modelType = readUTF();
       if (!modelType.equals("Perceptron"))
-          System.out.println("Error: attempting to load a "+modelType+
+         LOGGER.warn("Error: attempting to load a "+modelType+
                              " model as a Perceptron model."+
                              " You should expect problems.");
     }

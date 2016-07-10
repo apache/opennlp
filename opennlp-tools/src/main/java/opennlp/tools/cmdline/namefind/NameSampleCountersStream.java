@@ -22,6 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
@@ -32,6 +35,8 @@ import opennlp.tools.util.Span;
  */
 public class NameSampleCountersStream
     extends FilterObjectStream<NameSample, NameSample> {
+
+  private static final Logger LOGGER = LogManager.getLogger(NameSampleCountersStream.class);
 
   private int sentenceCount;
   private int tokenCount;
@@ -87,13 +92,13 @@ public class NameSampleCountersStream
   }
 
   public void printSummary() {
-    System.out.println("Training data summary:");
-    System.out.println("#Sentences: " + getSentenceCount());
-    System.out.println("#Tokens: " + getTokenCount());
+    LOGGER.info("Training data summary:");
+    LOGGER.info("#Sentences: " + getSentenceCount());
+    LOGGER.info("#Tokens: " + getTokenCount());
     
     int totalNames = 0;
     for (Map.Entry<String, Integer> counter : getNameCounters().entrySet()) {
-      System.out.println("#" + counter.getKey() + " entities: " + counter.getValue());
+      LOGGER.info("#" + counter.getKey() + " entities: " + counter.getValue());
       totalNames += counter.getValue();
     }
   }

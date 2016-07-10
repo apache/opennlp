@@ -31,12 +31,17 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import opennlp.tools.util.Span;
 
 /**
  * Data structure for holding parse constituents.
  */
 public class Parse implements Cloneable, Comparable<Parse> {
+
+  private static final Logger LOGGER = LogManager.getLogger(Parse.class);
 
   public static final String BRACKET_LRB = "(";
   public static final String BRACKET_RRB = ")";
@@ -323,31 +328,31 @@ public class Parse implements Cloneable, Comparable<Parse> {
       int pn = parts.size();
       for (; pi < pn; pi++) {
         Parse subPart = parts.get(pi);
-        //System.err.println("Parse.insert:con="+constituent+" sp["+pi+"] "+subPart+" "+subPart.getType());
+        //LOGGER.error("Parse.insert:con="+constituent+" sp["+pi+"] "+subPart+" "+subPart.getType());
         Span sp = subPart.span;
         if (sp.getStart() >= ic.getEnd()) {
           break;
         }
         // constituent contains subPart
         else if (ic.contains(sp)) {
-          //System.err.println("Parse.insert:con contains subPart");
+          //LOGGER.error("Parse.insert:con contains subPart");
           parts.remove(pi);
           pi--;
           constituent.parts.add(subPart);
           subPart.setParent(constituent);
-          //System.err.println("Parse.insert: "+subPart.hashCode()+" -> "+subPart.getParent().hashCode());
+          //LOGGER.error("Parse.insert: "+subPart.hashCode()+" -> "+subPart.getParent().hashCode());
           pn = parts.size();
         }
         else if (sp.contains(ic)) {
-          //System.err.println("Parse.insert:subPart contains con");
+          //LOGGER.error("Parse.insert:subPart contains con");
           subPart.insert(constituent);
           return;
         }
       }
-      //System.err.println("Parse.insert:adding con="+constituent+" to "+this);
+      //LOGGER.error("Parse.insert:adding con="+constituent+" to "+this);
       parts.add(pi, constituent);
       constituent.setParent(this);
-      //System.err.println("Parse.insert: "+constituent.hashCode()+" -> "+constituent.getParent().hashCode());
+      //LOGGER.error("Parse.insert: "+constituent.hashCode()+" -> "+constituent.getParent().hashCode());
     }
     else {
       throw new IllegalArgumentException("Inserting constituent not contained in the sentence!");
@@ -403,13 +408,13 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * @return The probability associated with the pos-tag sequence assigned to this parse.
    */
   public double getTagSequenceProb() {
-    //System.err.println("Parse.getTagSequenceProb: "+type+" "+this);
+    //LOGGER.error("Parse.getTagSequenceProb: "+type+" "+this);
     if (parts.size() == 1 && (parts.get(0)).type.equals(AbstractBottomUpParser.TOK_NODE)) {
-      //System.err.println(this+" "+prob);
+      //LOGGER.error(this+" "+prob);
       return (Math.log(prob));
     }
     else if (parts.size() == 0) {
-      System.err.println("Parse.getTagSequenceProb: Wrong base case!");
+      LOGGER.error("Parse.getTagSequenceProb: Wrong base case!");
       return (0.0);
     }
     else {
@@ -513,7 +518,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     this.span = new Span(span.getStart(),daughter.getSpan().getEnd());
     this.head = rules.getHead(getChildren(),type);
     if (head == null) {
-      System.err.println(parts);
+      LOGGER.error(parts);
     }
     this.headIndex = head.headIndex;
   }
@@ -564,7 +569,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   public void expandTopNode(Parse root) {
     boolean beforeRoot = true;
-    //System.err.println("expandTopNode: parts="+parts);
+    //LOGGER.error("expandTopNode: parts="+parts);
     for (int pi=0,ai=0;pi<parts.size();pi++,ai++) {
       Parse node = parts.get(pi);
       if (node == root) {
@@ -851,13 +856,13 @@ public class Parse implements Cloneable, Comparable<Parse> {
         String rest = parse.substring(ci + 1);
         String type = getType(rest);
         if (type == null) {
-          System.err.println("null type for: " + rest);
+          LOGGER.error("null type for: " + rest);
         }
         String token = getToken(rest);
         stack.push(new Constituent(type, new Span(offset,offset)));
         if (token != null) {
           if (type.equals("-NONE-") && gl != null) {
-            //System.err.println("stack.size="+stack.size());
+            //LOGGER.error("stack.size="+stack.size());
             gl.labelGaps(stack);
           }
           else {
@@ -887,7 +892,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
           tokenIndex++;
         }
         Parse c = new Parse(txt, con.getSpan(), type, 1,tokenIndex);
-        //System.err.println("insert["+ci+"] "+type+" "+c.toString()+" "+c.hashCode());
+        //LOGGER.error("insert["+ci+"] "+type+" "+c.toString()+" "+c.hashCode());
         p.insert(c);
         //codeTree(p);
       }
@@ -1075,7 +1080,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     for (int ki=0;ki<kids.length;ki++) {
       nlevels[levels.length] = ki;
-      System.out.println(levelsBuff.toString() + ki + "] "+ kids[ki].getType() +
+      LOGGER.info(levelsBuff.toString() + ki + "] "+ kids[ki].getType() +
           " " + kids[ki].hashCode() + " -> " + kids[ki].getParent().hashCode() +
           " " + kids[ki].getParent().getType() + " " + kids[ki].getCoveredText());
       codeTree(kids[ki],nlevels);
@@ -1103,7 +1108,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
       Parse startToken = tokens[nameTokenSpan.getStart()];
       Parse endToken = tokens[nameTokenSpan.getEnd() - 1];
       Parse commonParent = startToken.getCommonParent(endToken);
-      //System.err.println("addNames: "+startToken+" .. "+endToken+" commonParent = "+commonParent);
+      //LOGGER.error("addNames: "+startToken+" .. "+endToken+" commonParent = "+commonParent);
       if (commonParent != null) {
         Span nameSpan = new Span(startToken.getSpan().getStart(),endToken.getSpan().getEnd());
         if (nameSpan.equals(commonParent.getSpan())) {
@@ -1143,7 +1148,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   @Deprecated
   public static void main(String[] args) throws java.io.IOException {
     if (args.length == 0) {
-      System.err.println("Usage: Parse -fun -pos head_rules < train_parses");
+      System.err.print("Usage: Parse -fun -pos head_rules < train_parses");
       System.err.println("Reads training parses (one-sentence-per-line) and displays parse structure.");
       System.exit(1);
     }
