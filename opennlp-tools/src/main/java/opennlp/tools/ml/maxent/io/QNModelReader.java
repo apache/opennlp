@@ -21,11 +21,17 @@ package opennlp.tools.ml.maxent.io;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.ml.maxent.quasinewton.QNModel;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.DataReader;
 
 public class QNModelReader extends GISModelReader {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(QNModelReader.class);
+
   public QNModelReader(DataReader dataReader) {
     super(dataReader);
   }
@@ -38,7 +44,7 @@ public class QNModelReader extends GISModelReader {
   public void checkModelType() throws IOException {
     String modelType = readUTF();
     if (!modelType.equals("QN"))
-      System.out.println("Error: attempting to load a " + modelType
+      LOGGER.warn("Error: attempting to load a " + modelType
           + " model as a MAXENT_QN model." + " You should expect problems.");
   }
 

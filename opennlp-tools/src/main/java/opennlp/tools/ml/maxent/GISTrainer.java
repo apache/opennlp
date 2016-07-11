@@ -28,6 +28,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.Event;
@@ -36,7 +39,6 @@ import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.Prior;
 import opennlp.tools.ml.model.UniformPrior;
 import opennlp.tools.util.ObjectStream;
-
 
 /**
  * An implementation of Generalized Iterative Scaling.  The reference paper
@@ -56,6 +58,8 @@ import opennlp.tools.util.ObjectStream;
  * data and the specified prior.  By default, the uniform distribution is used as the prior.
  */
 class GISTrainer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(GISTrainer.class);
 
   /**
    * Specifies whether unseen context/outcome pairs should be estimated as occur very infrequently.
@@ -416,7 +420,7 @@ class GISTrainer {
       currLL = nextIteration(correctionConstant);
       if (i > 1) {
         if (prevLL > currLL) {
-          System.err.println("Model Diverging: loglikelihood decreased");
+          LOGGER.error("Model Diverging: loglikelihood decreased");
           break;
         }
         if (currLL - prevLL < LLThreshold) {
@@ -619,7 +623,7 @@ class GISTrainer {
         }
         else {
           if (model[aoi] == 0) {
-            System.err.println("Model expects == 0 for "+predLabels[pi]+" "+outcomeLabels[aoi]);
+            LOGGER.error("Model expects == 0 for "+predLabels[pi]+" "+outcomeLabels[aoi]);
           }
           //params[pi].updateParameter(aoi,(Math.log(observed[aoi]) - Math.log(model[aoi])));
           params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi]))/correctionConstant));

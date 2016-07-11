@@ -16,12 +16,17 @@
  */
 package opennlp.tools.lemmatizer;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 public class LemmatizerFactory extends BaseToolFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(LemmatizerFactory.class);
 
   /**
    * Creates a {@link LemmatizerFactory} that provides the default implementation
@@ -43,8 +48,7 @@ public class LemmatizerFactory extends BaseToolFactory {
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
           + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
+      LOGGER.error(msg, e);
       throw new InvalidFormatException(msg, e);
     }
   }

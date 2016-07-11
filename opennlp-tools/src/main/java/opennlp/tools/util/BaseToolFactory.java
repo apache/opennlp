@@ -20,6 +20,9 @@ package opennlp.tools.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -38,6 +41,8 @@ import opennlp.tools.util.model.ArtifactSerializer;
  */
 public abstract class BaseToolFactory {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseToolFactory.class);	
+	
   protected ArtifactProvider artifactProvider;
 
   /**
@@ -114,8 +119,7 @@ public abstract class BaseToolFactory {
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
           + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
+      LOGGER.error(msg, e);
       throw new InvalidFormatException(msg, e);
     }
     return theFactory;
@@ -132,8 +136,7 @@ public abstract class BaseToolFactory {
         String msg = "Could not instantiate the "
             + factoryClass.getCanonicalName()
             + ". The initialization throw an exception.";
-        System.err.println(msg);
-        e.printStackTrace();
+        LOGGER.error(msg, e);
         throw new InvalidFormatException(msg, e);
       }
     }

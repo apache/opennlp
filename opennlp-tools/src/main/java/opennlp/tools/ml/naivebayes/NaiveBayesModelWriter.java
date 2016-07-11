@@ -25,6 +25,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelWriter;
 import opennlp.tools.ml.model.ComparablePredicate;
@@ -36,6 +39,9 @@ import opennlp.tools.ml.model.Context;
  * extending class to define precisely how the data should be stored.
  */
 public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(NaiveBayesModelWriter.class);
+	
   protected Context[] PARAMS;
   protected String[] OUTCOME_LABELS;
   protected String[] PRED_LABELS;
@@ -84,7 +90,7 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
         numPreds++;
       }
     }
-    System.err.println("Compressed " + PARAMS.length + " parameters to " + numPreds);
+    LOGGER.info("Compressed " + PARAMS.length + " parameters to " + numPreds);
     sortPreds = new ComparablePredicate[numPreds];
     System.arraycopy(tmpPreds, 0, sortPreds, 0, numPreds);
     Arrays.sort(sortPreds);
@@ -107,7 +113,7 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
       }
     }
     outcomePatterns.add(newGroup);
-    System.err.println(outcomePatterns.size() + " outcome patterns");
+    LOGGER.info(outcomePatterns.size() + " outcome patterns");
     return outcomePatterns;
   }
 

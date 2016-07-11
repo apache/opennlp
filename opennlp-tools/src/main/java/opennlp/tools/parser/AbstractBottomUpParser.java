@@ -23,6 +23,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
@@ -47,6 +50,8 @@ import opennlp.tools.util.TrainingParameters;
  * calls.<br>
  */
 public abstract class AbstractBottomUpParser implements Parser {
+	
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBottomUpParser.class);
 
   /**
    * The maximum number of parses advanced from all preceding
@@ -167,11 +172,6 @@ public abstract class AbstractBottomUpParser implements Parser {
    */
   protected boolean createDerivationString = false;
 
-  /**
-   * Turns debug print on or off.
-   */
-  protected boolean debugOn = false;
-
   public AbstractBottomUpParser(POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
     this.tagger = tagger;
     this.chunker = chunker;
@@ -288,7 +288,7 @@ public abstract class AbstractBottomUpParser implements Parser {
         if (guess == null && derivationStage == 2) {
           guess = tp;
         }
-        if (debugOn) {
+        if (LOGGER.isDebugEnabled()) {
           System.out.print(derivationStage + " " + derivationRank + " "+tp.getProb());
           tp.show();
           System.out.println();
@@ -329,7 +329,7 @@ public abstract class AbstractBottomUpParser implements Parser {
         }
         else {
           if (reportFailedParse) {
-            System.err.println("Couldn't advance parse "+derivationStage+" stage "+derivationRank+"!\n");
+            LOGGER.error("Couldn't advance parse "+derivationStage+" stage "+derivationRank+"!\n");
           }
           advanceTop(tp);
           completeParses.add(tp);
@@ -339,7 +339,7 @@ public abstract class AbstractBottomUpParser implements Parser {
       odh = ndh;
     }
     if (completeParses.size() == 0) {
-      if (reportFailedParse) System.err.println("Couldn't find parse for: " + tokens);
+      if (reportFailedParse) LOGGER.error("Couldn't find parse for: " + tokens);
       //Parse r = (Parse) odh.first();
       //r.show();
       //System.out.println();
@@ -461,7 +461,7 @@ public abstract class AbstractBottomUpParser implements Parser {
     }
     Sequence[] ts = tagger.topKSequences(words);
     if (ts.length == 0) {
-      System.err.println("no tag sequence");
+      LOGGER.error("no tag sequence");
     }
     Parse[] newParses = new Parse[ts.length];
     for (int i = 0; i < ts.length; i++) {

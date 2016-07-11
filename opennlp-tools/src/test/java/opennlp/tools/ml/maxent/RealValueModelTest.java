@@ -19,12 +19,17 @@ package opennlp.tools.ml.maxent;
 
 import java.io.IOException;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import junit.framework.TestCase;
 import opennlp.tools.ml.model.FileEventStream;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
 
 public class RealValueModelTest extends TestCase {
+	
+  private static final Logger LOGGER = LoggerFactory.getLogger(RealValueModelTest.class);
 
   public void testRealValuedWeightsVsRepeatWeighting() throws IOException {
     GISModel realModel;
@@ -49,8 +54,8 @@ public class RealValueModelTest extends TestCase {
 
     assertEquals(realResults.length, repeatResults.length);
     for(int i=0; i<realResults.length; i++) {
-      System.out.println(String.format("classifiy with realModel: %1$s = %2$f", realModel.getOutcome(i), realResults[i]));
-      System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f", repeatModel.getOutcome(i), repeatResults[i]));
+      LOGGER.info(String.format("classifiy with realModel: %1$s = %2$f", realModel.getOutcome(i), realResults[i]));
+      LOGGER.info(String.format("classifiy with repeatModel: %1$s = %2$f", repeatModel.getOutcome(i), repeatResults[i]));
       assertEquals(realResults[i], repeatResults[i], 0.01f);
     }
 
@@ -58,11 +63,10 @@ public class RealValueModelTest extends TestCase {
     realResults = realModel.eval(features2Classify, new float[] {5.5f, 6.1f, 9.1f, 4.0f, 1.8f});
     repeatResults = repeatModel.eval(features2Classify, new float[] {5.5f, 6.1f, 9.1f, 4.0f, 1.8f});
 
-    System.out.println();
     assertEquals(realResults.length, repeatResults.length);
     for(int i=0; i<realResults.length; i++) {
-      System.out.println(String.format("classifiy with realModel: %1$s = %2$f", realModel.getOutcome(i), realResults[i]));
-      System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f", repeatModel.getOutcome(i), repeatResults[i]));
+      LOGGER.info(String.format("classifiy with realModel: %1$s = %2$f", realModel.getOutcome(i), realResults[i]));
+      LOGGER.info(String.format("classifiy with repeatModel: %1$s = %2$f", repeatModel.getOutcome(i), repeatResults[i]));
       assertEquals(realResults[i], repeatResults[i], 0.01f);
     }
 

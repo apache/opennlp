@@ -43,6 +43,9 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -65,6 +68,8 @@ import org.junit.Test;
  */
 public class ArvoresDeitadasEval {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(ArvoresDeitadasEval.class);
+	
   private static final String BOSQUE = "ad/Bosque_CF_8.0.ad.txt";
   private static final String FLORESTA_VIRGEM = "ad/FlorestaVirgem_CF_3.0_ad.txt";
 
@@ -99,7 +104,7 @@ public class ArvoresDeitadasEval {
 
     cv.evaluate(samples, 10);
 
-    System.out.println(cv.getFMeasure());
+    LOGGER.info(cv.getFMeasure().toString());
     Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);
   }
 
@@ -125,7 +130,7 @@ public class ArvoresDeitadasEval {
 
     validator.evaluate(samples, 10);
 
-    System.out.println(validator.getFMeasure());
+    LOGGER.info(validator.getFMeasure().toString());
     Assert.assertEquals(expectedScore, validator.getFMeasure().getFMeasure(),
         0.0001d);
   }

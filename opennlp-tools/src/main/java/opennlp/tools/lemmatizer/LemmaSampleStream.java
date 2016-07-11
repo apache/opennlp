@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.StringUtil;
@@ -31,7 +34,9 @@ import opennlp.tools.util.StringUtil;
  * @version 2016-02-16
  */
 public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
-
+  
+  private static final Logger LOGGER = LoggerFactory.getLogger(LemmaSampleStream.class);
+  
   public LemmaSampleStream(ObjectStream<String> samples) {
     super(samples);
   }
@@ -45,7 +50,7 @@ public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
     for (String line = samples.read(); line != null && !line.equals(""); line = samples.read()) {
       String[] parts = line.split("\t");
       if (parts.length != 3) {
-        System.err.println("Skipping corrupt line: " + line);
+        LOGGER.warn("Skipping corrupt line: " + line);
       }
       else {
         toks.add(parts[0]);

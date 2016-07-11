@@ -22,6 +22,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.BaseToolFactory;
@@ -34,6 +37,8 @@ import opennlp.tools.util.ext.ExtensionLoader;
  * overriding the {@link TokenContextGenerator}, {@link Dictionary} etc.
  */
 public class TokenizerFactory extends BaseToolFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TokenizerFactory.class);
 
   private String languageCode;
   private Dictionary abbreviationDictionary;
@@ -154,8 +159,7 @@ public class TokenizerFactory extends BaseToolFactory {
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
           + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
+      LOGGER.error(msg, e);
       throw new InvalidFormatException(msg, e);
     }
   }

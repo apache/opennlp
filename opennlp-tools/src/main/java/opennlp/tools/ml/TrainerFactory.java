@@ -22,6 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
@@ -31,6 +34,8 @@ import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.ext.ExtensionNotLoadedException;
 
 public class TrainerFactory {
+	
+  private static final Logger LOGGER = LoggerFactory.getLogger(TrainerFactory.class);
 
   public enum TrainerType {
     EVENT_MODEL_TRAINER,
@@ -327,8 +332,7 @@ public class TrainerFactory {
         String msg = "Could not instantiate the "
             + trainerClass.getCanonicalName()
             + ". The initialization throw an exception.";
-        System.err.println(msg);
-        e.printStackTrace();
+        LOGGER.error(msg, e);
         throw new IllegalArgumentException(msg, e);
       }
     }

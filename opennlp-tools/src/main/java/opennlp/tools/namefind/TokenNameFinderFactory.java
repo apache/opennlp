@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.namefind.TokenNameFinderModel.FeatureGeneratorCreationError;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
@@ -39,6 +42,8 @@ import opennlp.tools.util.featuregen.GeneratorFactory;
 
 public class TokenNameFinderFactory extends BaseToolFactory {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(TokenNameFinderFactory.class);
+	
   private byte[] featureGeneratorBytes;
   private Map<String, Object> resources;
   private SequenceCodec<String> seqCodec;
@@ -111,8 +116,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
       } catch (Exception e) {
         String msg = "Could not instantiate the " + subclassName
             + ". The initialization throw an exception.";
-        System.err.println(msg);
-        e.printStackTrace();
+        LOGGER.error(msg, e);
         throw new InvalidFormatException(msg, e);
       }
     }

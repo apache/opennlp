@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.maxent.quasinewton.QNMinimizer.Evaluator;
 import opennlp.tools.ml.model.AbstractModel;
@@ -33,6 +36,8 @@ import opennlp.tools.ml.model.DataIndexer;
  */
 public class QNTrainer extends AbstractEventTrainer {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(QNTrainer.class);
+	
   public static final String MAXENT_QN_VALUE = "MAXENT_QN";
 
   public static final String THREADS_PARAM = "Threads";
@@ -158,10 +163,10 @@ public class QNTrainer extends AbstractEventTrainer {
     // Train model's parameters
     Function objectiveFunction = null;
     if (threads == 1) {
-      System.out.println("Computing model parameters ...");
+      LOGGER.info("Computing model parameters ...");
       objectiveFunction = new NegLogLikelihood(indexer);
     } else {
-      System.out.println("Computing model parameters in " + threads + " threads ...");
+      LOGGER.info("Computing model parameters in " + threads + " threads ...");
       objectiveFunction = new ParallelNegLogLikelihood(indexer, threads);
     }
 

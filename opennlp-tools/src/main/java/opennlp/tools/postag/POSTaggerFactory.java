@@ -28,6 +28,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.util.BaseToolFactory;
@@ -41,6 +44,8 @@ import opennlp.tools.util.model.UncloseableInputStream;
  * The factory that provides POS Tagger default implementations and resources
  */
 public class POSTaggerFactory extends BaseToolFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(POSTaggerFactory.class);
 
   private static final String TAG_DICTIONARY_ENTRY_NAME = "tags.tagdict";
   private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram.dictionary";
@@ -235,8 +240,7 @@ public class POSTaggerFactory extends BaseToolFactory {
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
           + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
+      LOGGER.error(msg, e);
       throw new InvalidFormatException(msg, e);
     }
 

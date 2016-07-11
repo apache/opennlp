@@ -27,6 +27,9 @@ import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
@@ -54,6 +57,8 @@ import opennlp.tools.util.model.ModelType;
  *
  */
 public class POSTaggerME implements POSTagger {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(POSTaggerME.class);
 
   public static final int DEFAULT_BEAM_SIZE = 3;
 
@@ -400,7 +405,7 @@ public class POSTaggerME implements POSTagger {
 
   public static void populatePOSDictionary(ObjectStream<POSSample> samples,
       MutableTagDictionary dict, int cutoff) throws IOException {
-    System.out.println("Expanding POS Dictionary ...");
+    LOGGER.trace("Expanding POS Dictionary ...");
     long start = System.nanoTime();
 
     // the data structure will store the word, the tag, and the number of
@@ -461,7 +466,7 @@ public class POSTaggerME implements POSTagger {
       }
     }
 
-    System.out.println("... finished expanding POS Dictionary. ["
+    LOGGER.trace("... finished expanding POS Dictionary. ["
         + (System.nanoTime() - start) / 1000000 + "ms]");
   }
 }

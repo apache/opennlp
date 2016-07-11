@@ -64,7 +64,6 @@ public class DocumentCategorizerMETest {
       assertEquals("1", cat);
       break;
     }
-    System.out.println("");
 
   }
 }

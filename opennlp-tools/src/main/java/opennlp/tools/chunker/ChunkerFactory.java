@@ -17,12 +17,17 @@
 
 package opennlp.tools.chunker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 public class ChunkerFactory extends BaseToolFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ChunkerFactory.class);
 
   /**
    * Creates a {@link ChunkerFactory} that provides the default implementation
@@ -42,10 +47,8 @@ public class ChunkerFactory extends BaseToolFactory {
           ChunkerFactory.class, subclassName);
       return theFactory;
     } catch (Exception e) {
-      String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
+      String msg = "Could not instantiate the " + subclassName + ". The initialization throw an exception.";
+      LOGGER.error(msg, e);
       throw new InvalidFormatException(msg, e);
     }
   }

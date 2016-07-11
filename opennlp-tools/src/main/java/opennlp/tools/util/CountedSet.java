@@ -29,12 +29,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 /**
  * Set which counts the number of times a values are added to it.
  * This value can be accessed with the #getCount method.
  */
 public class CountedSet<E> implements Set<E> {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(CountedSet.class);
+	
   private Map<E, Integer> cset;
 
   /**
@@ -166,7 +171,7 @@ public class CountedSet<E> implements Set<E> {
       out.close();
     }
     catch (IOException e) {
-      System.err.println(e);
+      LOGGER.error("Unable to write.", e);
     }
   }
 

@@ -20,6 +20,9 @@ package opennlp.tools.postag;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
@@ -27,7 +30,9 @@ import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.Mean;
 
 public class POSTaggerCrossValidator {
-
+	
+  private static final Logger LOGGER = LoggerFactory.getLogger(POSTaggerCrossValidator.class);
+	
   private final String languageCode;
 
   private final TrainingParameters params;
@@ -141,11 +146,11 @@ public class POSTaggerCrossValidator {
       Dictionary ngramDict = this.factory.getDictionary();
       if (ngramDict == null) {
         if(this.ngramCutoff != null) {
-          System.err.print("Building ngram dictionary ... ");
+          LOGGER.trace("Building ngram dictionary ... ");
           ngramDict = POSTaggerME.buildNGramDictionary(trainingSampleStream,
               this.ngramCutoff);
           trainingSampleStream.reset();
-          System.err.println("done");
+          LOGGER.trace("done");
         }
         this.factory.setDictionary(ngramDict);
       }
