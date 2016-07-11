@@ -20,18 +20,31 @@ package opennlp.tools.sentiment;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
+/**
+ * Class for performing evaluation on the Sentiment Analysis Parser.
+ */
 public class SentimentEvaluator extends Evaluator<SentimentSample> {
 
   private FMeasure fmeasure = new FMeasure();
 
   private SentimentME sentiment;
 
+  /**
+   * Constructor
+   */
   public SentimentEvaluator(SentimentME sentiment,
       SentimentEvaluationMonitor... listeners) {
     super(listeners);
     this.sentiment = sentiment;
   }
 
+  /**
+   * Returns the short description of the tool
+   *
+   * @param reference
+   *          the reference to the SentimentSample to be processed
+   * @return the processed samples
+   */
   @Override
   protected SentimentSample processSample(SentimentSample reference) {
     String prediction = sentiment.predict(reference.getSentence());
@@ -42,6 +55,11 @@ public class SentimentEvaluator extends Evaluator<SentimentSample> {
     return new SentimentSample(prediction, reference.getSentence());
   }
 
+  /**
+   * Returns the F-Measure
+   *
+   * @return the F-Measure
+   */
   public FMeasure getFMeasure() {
     return fmeasure;
   }

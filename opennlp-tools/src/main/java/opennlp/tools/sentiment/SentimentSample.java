@@ -77,10 +77,20 @@ public class SentimentSample {
     return sentence.toArray(new String[0]);
   }
 
+  /**
+   * Returns the id
+   *
+   * @return the id
+   */
   public String getId() {
     return id;
   }
 
+  /**
+   * Returns the value of isClearAdaptiveData
+   *
+   * @return true or false
+   */
   public boolean isClearAdaptiveDataSet() {
     return isClearAdaptiveData;
   }

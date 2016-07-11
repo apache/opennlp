@@ -152,6 +152,15 @@ public class SentimentME {
     return maxentModel.eval(contextGenerator.getContext(text));
   }
 
+  /**
+   * Returns an array of probabilities for each of the specified spans which is
+   * the arithmetic mean of the probabilities for each of the outcomes which
+   * make up the span.
+   *
+   * @param spans
+   *          The spans of the sentiments for which probabilities are desired.
+   * @return an array of probabilities for each of the specified spans.
+   */
   public double[] probs(Span[] spans) {
 
     double[] sprobs = new double[spans.length];
@@ -173,6 +182,13 @@ public class SentimentME {
     return sprobs;
   }
 
+  /**
+   * Sets the probs for the spans
+   *
+   * @param spans
+   *          the spans to be analysed
+   * @return the span of probs
+   */
   private Span[] setProbs(Span[] spans) {
     double[] probs = probs(spans);
     if (probs != null) {
@@ -185,13 +201,22 @@ public class SentimentME {
     return spans;
   }
 
+  /**
+   * Generates sentiment tags for the given sequence, typically a sentence,
+   * returning token spans for any identified sentiments.
+   *
+   * @param tokens
+   *          an array of the tokens or words of the sequence, typically a
+   *          sentence
+   * @return an array of spans for each of the names identified.
+   */
   public Span[] find(String[] tokens) {
     return find(tokens, EMPTY);
   }
 
   /**
-   * Generates name tags for the given sequence, typically a sentence, returning
-   * token spans for any identified names.
+   * Generates sentiment tags for the given sequence, typically a sentence,
+   * returning token spans for any identified sentiments.
    *
    * @param tokens
    *          an array of the tokens or words of the sequence, typically a

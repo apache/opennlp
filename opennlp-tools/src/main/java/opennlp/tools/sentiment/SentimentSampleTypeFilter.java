@@ -18,22 +18,25 @@
 package opennlp.tools.sentiment;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
+/**
+ * Class for creating a type filter
+ */
 public class SentimentSampleTypeFilter
     extends FilterObjectStream<SentimentSample, SentimentSample> {
 
   private final Set<String> types;
 
+  /**
+   * Constructor
+   */
   public SentimentSampleTypeFilter(String[] types,
       ObjectStream<SentimentSample> samples) {
     super(samples);
@@ -41,37 +44,25 @@ public class SentimentSampleTypeFilter
         .unmodifiableSet(new HashSet<String>(Arrays.asList(types)));
   }
 
+  /**
+   * Constructor
+   */
   public SentimentSampleTypeFilter(Set<String> types,
       ObjectStream<SentimentSample> samples) {
     super(samples);
     this.types = Collections.unmodifiableSet(new HashSet<String>(types));
   }
 
+  /**
+   * Reads and returns sentiment samples.
+   *
+   * @return the sentiment sample read
+   */
   @Override
   public SentimentSample read() throws IOException {
     SentimentSample sample = samples.read();
-
-//    if (sample != null) {
-//
-//      List<Span> filteredNames = new ArrayList<Span>();
-//
-//      for (Span name : sample.getNames()) {
-//        if (types.contains(name.getType())) {
-//          filteredNames.add(name);
-//        }
-//      }
-//
-//      return new SentimentSample(sample.getId(),
-//          sample.getSentence()/*
-//                               * , filteredNames.toArray(new
-//                               * Span[filteredNames.size()]), null,
-//                               * sample.isClearAdaptiveDataSet()
-//                               */);
-//    } else {
-//      return null;
-//    }
     return sample;
-    
+
   }
 
 }

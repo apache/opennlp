@@ -22,13 +22,22 @@ import opennlp.tools.sentiment.SentimentEvaluationMonitor;
 import opennlp.tools.sentiment.SentimentSample;
 import opennlp.tools.util.Span;
 
+/**
+ * Class for creating a detailed F-Measure listener
+ */
 public class SentimentDetailedFMeasureListener
     extends DetailedFMeasureListener<SentimentSample>
     implements SentimentEvaluationMonitor {
 
+  /**
+   * Returns the sentiment sample as a span array
+   *
+   * @param sample
+   *          the sentiment sample to be returned
+   * @return span array of the sample
+   */
   @Override
   protected Span[] asSpanArray(SentimentSample sample) {
     return null;
-    // return sample.getNames();
   }
 }

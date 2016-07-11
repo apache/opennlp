@@ -30,31 +30,57 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
 
+/**
+ * Class for performing cross validation on the Sentiment Analysis Parser.
+ */
 public class SentimentCrossValidator {
 
+  /**
+   * Class for creating a document sample
+   */
   private class DocumentSample {
 
     private SentimentSample samples[];
 
+    /**
+     * Constructor
+     */
     DocumentSample(SentimentSample samples[]) {
       this.samples = samples;
     }
 
+    /**
+     * Returns the short description of the tool
+     *
+     * @return the samples
+     */
     private SentimentSample[] getSamples() {
       return samples;
     }
   }
 
+  /**
+   * Reads Sentiment Samples to group them as a document based on the clear
+   * adaptive data flag.
+   */
   private class SentimentToDocumentSampleStream
       extends FilterObjectStream<SentimentSample, DocumentSample> {
 
     private SentimentSample beginSample;
 
+    /**
+     * Constructor
+     */
     protected SentimentToDocumentSampleStream(
         ObjectStream<SentimentSample> samples) {
       super(samples);
     }
 
+    /**
+     * Reads Sentiment Samples to group them as a document
+     *
+     * @return the resulting DocumentSample
+     */
     public DocumentSample read() throws IOException {
 
       List<SentimentSample> document = new ArrayList<SentimentSample>();
@@ -92,17 +118,27 @@ public class SentimentCrossValidator {
           document.toArray(new SentimentSample[document.size()]));
     }
 
+    /**
+     * Performs a reset
+     *
+     * @return the resulting DocumentSample
+     */
     @Override
     public void reset() throws IOException, UnsupportedOperationException {
       super.reset();
-
       beginSample = null;
     }
   }
 
+  /**
+   * Splits DocumentSample into SentimentSamples.
+   */
   private class DocumentToSentimentSampleStream
       extends FilterObjectStream<DocumentSample, SentimentSample> {
 
+    /**
+     * Constructor
+     */
     protected DocumentToSentimentSampleStream(
         ObjectStream<DocumentSample> samples) {
       super(samples);
@@ -111,6 +147,11 @@ public class SentimentCrossValidator {
     private Iterator<SentimentSample> documentSamples = Collections
         .<SentimentSample> emptyList().iterator();
 
+    /**
+     * Reads Document Sample into SentimentSample
+     *
+     * @return the resulting DocumentSample
+     */
     public SentimentSample read() throws IOException {
 
       // Note: Empty document samples should be skipped
@@ -138,6 +179,9 @@ public class SentimentCrossValidator {
   private SentimentFactory factory;
   private FMeasure fmeasure = new FMeasure();
 
+  /**
+   * Constructor
+   */
   public SentimentCrossValidator(String lang, TrainingParameters params,
       SentimentFactory factory, SentimentEvaluationMonitor[] monitors) {
 
@@ -147,6 +191,14 @@ public class SentimentCrossValidator {
     this.listeners = monitors;
   }
 
+  /**
+   * Performs evaluation
+   *
+   * @param samples
+   *          stream of SentimentSamples
+   * @param nFolds
+   *          the number of folds to be used in cross validation
+   */
   public void evaluate(ObjectStream<SentimentSample> samples, int nFolds)
       throws IOException {
 
@@ -179,6 +231,11 @@ public class SentimentCrossValidator {
     }
   }
 
+  /**
+   * Returns the F-Measure
+   *
+   * @return the F-Measure
+   */
   public FMeasure getFMeasure() {
     return fmeasure;
   }

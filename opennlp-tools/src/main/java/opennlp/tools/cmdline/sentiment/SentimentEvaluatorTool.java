@@ -5,12 +5,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.sentiment.SentimentEvaluatorTool.EvalToolParams;
 import opennlp.tools.sentiment.SentimentEvaluationMonitor;
 import opennlp.tools.sentiment.SentimentEvaluator;
@@ -21,9 +21,15 @@ import opennlp.tools.sentiment.SentimentSampleTypeFilter;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
+/**
+ * Class for creating an evaluation tool for sentiment analysis.
+ */
 public class SentimentEvaluatorTool
     extends AbstractEvaluatorTool<SentimentSample, EvalToolParams> {
 
+  /**
+   * Interface for parameters to be used in evaluation
+   */
   interface EvalToolParams
       extends EvaluatorParams, DetailedFMeasureEvaluatorParams {
     @OptionalParameter
@@ -31,14 +37,30 @@ public class SentimentEvaluatorTool
     String getNameTypes();
   }
 
+  /**
+   * Constructor
+   */
   public SentimentEvaluatorTool() {
     super(SentimentSample.class, EvalToolParams.class);
   }
 
+  /**
+   * Returns the short description of the tool
+   *
+   * @return short description
+   */
   public String getShortDescription() {
     return "Measures the performance of the Sentiment model with the reference data";
   }
 
+  /**
+   * Runs the tool
+   *
+   * @param format
+   *          the format to be used
+   * @param args
+   *          the arguments
+   */
   public void run(String format, String[] args) {
     super.run(format, args);
 

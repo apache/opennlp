@@ -35,22 +35,44 @@ import opennlp.tools.sentiment.SentimentSample;
 import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.model.ModelUtil;
 
+/**
+ * Class for helping perform cross validation on the Sentiment Analysis Parser.
+ */
 public class SentimentCrossValidatorTool
     extends AbstractCrossValidatorTool<SentimentSample, CVToolParams> {
 
+  /**
+   * Interface for parameters
+   */
   interface CVToolParams
       extends BasicTrainingParams, CVParams, DetailedFMeasureEvaluatorParams {
 
   }
 
+  /**
+   * Constructor
+   */
   public SentimentCrossValidatorTool() {
     super(SentimentSample.class, CVToolParams.class);
   }
 
+  /**
+   * Returns the short description of the tool
+   *
+   * @return short description
+   */
   public String getShortDescription() {
     return "K-fold cross validator for the learnable Sentiment Analysis Parser";
   }
 
+  /**
+   * Runs the tool
+   *
+   * @param format
+   *          the format to be used
+   * @param args
+   *          the arguments
+   */
   public void run(String format, String[] args) {
     super.run(format, args);
 
