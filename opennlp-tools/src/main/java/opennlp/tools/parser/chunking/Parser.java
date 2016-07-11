@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
@@ -59,7 +59,7 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class Parser extends AbstractBottomUpParser {
 
-  private static final Logger LOGGER = LogManager.getLogger(Parser.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Parser.class);
 	
   private MaxentModel buildModel;
   private MaxentModel checkModel;

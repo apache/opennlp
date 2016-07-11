@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.maxent.quasinewton.QNMinimizer.Evaluator;
@@ -36,7 +36,7 @@ import opennlp.tools.ml.model.DataIndexer;
  */
 public class QNTrainer extends AbstractEventTrainer {
 
-  private static final Logger LOGGER = LogManager.getLogger(QNTrainer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(QNTrainer.class);
 	
   public static final String MAXENT_QN_VALUE = "MAXENT_QN";
 

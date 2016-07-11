@@ -19,8 +19,8 @@ package opennlp.tools.ml.maxent;
 
 import java.io.StringReader;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import junit.framework.TestCase;
 import opennlp.tools.ml.model.Event;
@@ -32,7 +32,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public class ScaleDoesntMatterTest extends TestCase {
 
-	private static final Logger LOGGER = LogManager.getLogger(ScaleDoesntMatterTest.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ScaleDoesntMatterTest.class);
 	
   /**
    * This test sets out to prove that the scale you use on real valued

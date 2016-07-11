@@ -22,15 +22,15 @@ package opennlp.tools.ml.model;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelWriter;
 
 public class RealValueFileEventStream extends FileEventStream {
 
-  private static final Logger LOGGER = LogManager.getLogger(RealValueFileEventStream.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RealValueFileEventStream.class);
 
   public RealValueFileEventStream(String fileName) throws IOException {
     super(fileName);

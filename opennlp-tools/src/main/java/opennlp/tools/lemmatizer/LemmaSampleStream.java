@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
@@ -35,7 +35,7 @@ import opennlp.tools.util.StringUtil;
  */
 public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
   
-  private static final Logger LOGGER = LogManager.getLogger(LemmaSampleStream.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LemmaSampleStream.class);
   
   public LemmaSampleStream(ObjectStream<String> samples) {
     super(samples);

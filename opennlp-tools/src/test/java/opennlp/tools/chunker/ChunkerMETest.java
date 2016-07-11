@@ -35,8 +35,9 @@ import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,7 +58,7 @@ import org.junit.Test;
  */
 public class ChunkerMETest {
 
-  private static final Logger LOGGER = LogManager.getLogger(ChunkerMETest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ChunkerMETest.class);
 
   private Chunker chunker;
 

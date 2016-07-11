@@ -31,8 +31,8 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.util.Span;
 
@@ -41,7 +41,7 @@ import opennlp.tools.util.Span;
  */
 public class Parse implements Cloneable, Comparable<Parse> {
 
-  private static final Logger LOGGER = LogManager.getLogger(Parse.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Parse.class);
 
   public static final String BRACKET_LRB = "(";
   public static final String BRACKET_RRB = ")";
@@ -518,7 +518,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     this.span = new Span(span.getStart(),daughter.getSpan().getEnd());
     this.head = rules.getHead(getChildren(),type);
     if (head == null) {
-      LOGGER.error(parts);
+      LOGGER.warn("Unable to add part: " + parts.toString());
     }
     this.headIndex = head.headIndex;
   }

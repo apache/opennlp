@@ -27,8 +27,8 @@ import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
@@ -58,7 +58,7 @@ import opennlp.tools.util.model.ModelType;
  */
 public class POSTaggerME implements POSTagger {
 
-  private static final Logger LOGGER = LogManager.getLogger(POSTaggerME.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(POSTaggerME.class);
 
   public static final int DEFAULT_BEAM_SIZE = 3;
 

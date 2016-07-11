@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.util.InsufficientTrainingDataException;
 
@@ -36,7 +36,7 @@ import opennlp.tools.util.InsufficientTrainingDataException;
  */
 public abstract class AbstractDataIndexer implements DataIndexer {
 
-  private static final Logger LOGGER = LogManager.getLogger(AbstractDataIndexer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDataIndexer.class);
 
   private int numEvents;
   /** The integer contexts associated with each unique event. */

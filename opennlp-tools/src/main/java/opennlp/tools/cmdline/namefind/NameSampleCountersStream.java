@@ -22,8 +22,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.FilterObjectStream;
@@ -36,7 +36,7 @@ import opennlp.tools.util.Span;
 public class NameSampleCountersStream
     extends FilterObjectStream<NameSample, NameSample> {
 
-  private static final Logger LOGGER = LogManager.getLogger(NameSampleCountersStream.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(NameSampleCountersStream.class);
 
   private int sentenceCount;
   private int tokenCount;

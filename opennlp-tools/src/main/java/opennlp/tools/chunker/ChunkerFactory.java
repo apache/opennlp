@@ -17,8 +17,8 @@
 
 package opennlp.tools.chunker;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
@@ -27,7 +27,7 @@ import opennlp.tools.util.ext.ExtensionLoader;
 
 public class ChunkerFactory extends BaseToolFactory {
 
-  private static final Logger LOGGER = LogManager.getLogger(ChunkerFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ChunkerFactory.class);
 
   /**
    * Creates a {@link ChunkerFactory} that provides the default implementation

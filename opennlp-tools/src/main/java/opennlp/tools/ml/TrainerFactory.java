@@ -22,8 +22,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
@@ -35,7 +35,7 @@ import opennlp.tools.util.ext.ExtensionNotLoadedException;
 
 public class TrainerFactory {
 	
-  private static final Logger LOGGER = LogManager.getLogger(TrainerFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TrainerFactory.class);
 
   public enum TrainerType {
     EVENT_MODEL_TRAINER,

@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.util.ObjectStream;
 
@@ -42,7 +42,7 @@ import opennlp.tools.util.ObjectStream;
  */
 public class OnePassDataIndexer extends AbstractDataIndexer {
 
-  private static final Logger LOGGER = LogManager.getLogger(OnePassDataIndexer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OnePassDataIndexer.class);
 
   /**
    * One argument constructor for DataIndexer which calls the two argument

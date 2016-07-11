@@ -21,8 +21,8 @@ package opennlp.tools.ml.maxent.io;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.ml.maxent.quasinewton.QNModel;
 import opennlp.tools.ml.model.Context;
@@ -30,7 +30,7 @@ import opennlp.tools.ml.model.DataReader;
 
 public class QNModelReader extends GISModelReader {
 
-  private static final Logger LOGGER = LogManager.getLogger(QNModelReader.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(QNModelReader.class);
 
   public QNModelReader(DataReader dataReader) {
     super(dataReader);

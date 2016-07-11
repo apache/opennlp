@@ -26,8 +26,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
@@ -37,7 +37,7 @@ import opennlp.tools.util.ObjectStreamUtils;
 
 public class PrepAttachDataUtil {
 	
-  private static final Logger LOGGER = LogManager.getLogger(PrepAttachDataUtil.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PrepAttachDataUtil.class);
 
   private static List<Event> readPpaFile(String filename) throws IOException {
 

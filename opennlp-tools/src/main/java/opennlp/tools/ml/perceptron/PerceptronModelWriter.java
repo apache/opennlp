@@ -25,8 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelWriter;
@@ -41,7 +41,7 @@ import opennlp.tools.ml.model.Context;
  */
 public abstract class PerceptronModelWriter extends AbstractModelWriter {
 	
-    private static final Logger LOGGER = LogManager.getLogger(PerceptronModelWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PerceptronModelWriter.class);
 	
     protected Context[] PARAMS;
     protected String[] OUTCOME_LABELS;

@@ -23,13 +23,14 @@ import java.util.Map;
 
 import opennlp.tools.util.ObjectStream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import org.junit.Test;
 
 public class BratAnnotationStreamTest {
 	
-  private static final Logger LOGGER = LogManager.getLogger(BratAnnotationStreamTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BratAnnotationStreamTest.class);
 
   private ObjectStream<BratAnnotation> creatBratAnnotationStream(
       AnnotationConfiguration conf, String file) {
@@ -63,7 +64,7 @@ public class BratAnnotationStreamTest {
 
     BratAnnotation ann;
     while ((ann = annStream.read()) != null) {
-      LOGGER.info(ann);
+      LOGGER.info(ann.toString());
     }
   }
 
@@ -83,7 +84,7 @@ public class BratAnnotationStreamTest {
 
     BratAnnotation ann;
     while ((ann = annStream.read()) != null) {
-      LOGGER.info(ann);
+      LOGGER.info(ann.toString());
     }
   }
 }
