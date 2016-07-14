@@ -40,7 +40,7 @@ IF "%OPENNLP_HOME%" == "" (
 )
 
 REM #  Get the library JAR file name (JIRA OPENNLP-554)
-FOR %%A IN ("%OPENNLP_HOME%\lib\apache-opennlp-morfologik-addon-*.jar") DO SET JAR_FILE=%%A
+FOR %%A IN ("%OPENNLP_HOME%\lib\*.jar") DO SET JAR_FILE=%%A
 
 %JAVA_CMD% -Xmx1024m -jar %JAR_FILE% %*
 
