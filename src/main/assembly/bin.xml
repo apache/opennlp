@@ -24,11 +24,23 @@
   <formats>
     <format>tar.gz</format>
     <format>zip</format>
+    <format>dir</format>
   </formats>
   
     <includeBaseDirectory>true</includeBaseDirectory>
 	<baseDirectory>/apache-opennlp-morfologik-addon-${project.version}</baseDirectory>
   
+	<dependencySets>
+		<dependencySet>
+			<scope>runtime</scope>
+			<unpack>false</unpack>
+			<useProjectArtifact>false</useProjectArtifact>
+			<fileMode>644</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>lib</outputDirectory>
+			<useTransitiveDependencies>true</useTransitiveDependencies>
+		</dependencySet>
+	</dependencySets>
 	
 	<fileSets>
 	    <fileSet>
