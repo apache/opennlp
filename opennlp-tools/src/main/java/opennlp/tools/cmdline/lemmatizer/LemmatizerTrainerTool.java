@@ -63,10 +63,10 @@ public class LemmatizerTrainerTool
 
     LemmatizerModel model;
     try {
-      LemmatizerFactory chunkerFactory = LemmatizerFactory
+      LemmatizerFactory lemmatizerFactory = LemmatizerFactory
           .create(params.getFactory());
       model = LemmatizerME.train(params.getLang(), sampleStream, mlParams,
-          chunkerFactory);
+          lemmatizerFactory);
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " +
           e.getMessage(), e);
@@ -78,6 +78,6 @@ public class LemmatizerTrainerTool
         // sorry that this can fail
       }
     }
-    CmdLineUtil.writeModel("chunker", modelOutFile, model);
+    CmdLineUtil.writeModel("lemmatizer", modelOutFile, model);
   }
 }

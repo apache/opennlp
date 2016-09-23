@@ -37,6 +37,9 @@ import opennlp.tools.cmdline.doccat.DoccatEvaluatorTool;
 import opennlp.tools.cmdline.doccat.DoccatTool;
 import opennlp.tools.cmdline.doccat.DoccatTrainerTool;
 import opennlp.tools.cmdline.entitylinker.EntityLinkerTool;
+import opennlp.tools.cmdline.lemmatizer.LemmatizerEvaluatorTool;
+import opennlp.tools.cmdline.lemmatizer.LemmatizerMETool;
+import opennlp.tools.cmdline.lemmatizer.LemmatizerTrainerTool;
 import opennlp.tools.cmdline.namefind.CensusDictionaryCreatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderConverterTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderCrossValidatorTool;
@@ -120,6 +123,11 @@ public final class CLI {
     tools.add(new POSTaggerEvaluatorTool());
     tools.add(new POSTaggerCrossValidatorTool());
     tools.add(new POSTaggerConverterTool());
+    
+    //Lemmatizer
+    tools.add(new LemmatizerMETool());
+    tools.add(new LemmatizerTrainerTool());
+    tools.add(new LemmatizerEvaluatorTool());
 
     // Chunker
     tools.add(new ChunkerMETool());
