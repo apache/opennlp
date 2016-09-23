@@ -127,7 +127,7 @@ public final class CLI {
     //Lemmatizer
     tools.add(new LemmatizerMETool());
     tools.add(new LemmatizerTrainerTool());
-    //tools.add(new LemmatizerEvaluatorTool());
+    tools.add(new LemmatizerEvaluatorTool());
 
     // Chunker
     tools.add(new ChunkerMETool());
