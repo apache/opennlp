@@ -30,6 +30,7 @@ import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
 import opennlp.tools.formats.DocumentSampleStreamFactory;
 import opennlp.tools.formats.EvalitaNameSampleStreamFactory;
 import opennlp.tools.formats.LeipzigDocumentSampleStreamFactory;
+import opennlp.tools.formats.LemmatizerSampleStreamFactory;
 import opennlp.tools.formats.NameSampleDataStreamFactory;
 import opennlp.tools.formats.ParseSampleStreamFactory;
 import opennlp.tools.formats.SentenceSampleStreamFactory;
@@ -70,6 +71,7 @@ public final class StreamFactoryRegistry {
     SentenceSampleStreamFactory.registerFactory();
     TokenSampleStreamFactory.registerFactory();
     WordTagSampleStreamFactory.registerFactory();
+    LemmatizerSampleStreamFactory.registerFactory();
 
     NameToSentenceSampleStreamFactory.registerFactory();
     NameToTokenSampleStreamFactory.registerFactory();
