@@ -41,21 +41,21 @@ import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.eval.Mean;
 
 /**
- * Generates a detailed report for the POS Tagger.
+ * Generates a detailed report for the Lemmatizer.
  * <p>
  * It is possible to use it from an API and access the statistics using the
- * provided getters
+ * provided getters.
  *
  */
-public class LemmatizerFineGrainedReportListener implements
-    LemmatizerEvaluationMonitor {
+public class LemmatizerFineGrainedReportListener
+    implements LemmatizerEvaluationMonitor {
 
   private final PrintStream printStream;
   private final Stats stats = new Stats();
 
   private static final char[] alpha = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-      'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-      'w', 'x', 'y', 'z' };
+      'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
+      'x', 'y', 'z' };
 
   /**
    * Creates a listener that will print to {@link System#err}
@@ -77,7 +77,8 @@ public class LemmatizerFineGrainedReportListener implements
     stats.add(reference, prediction);
   }
 
-  public void correctlyClassified(LemmaSample reference, LemmaSample prediction) {
+  public void correctlyClassified(LemmaSample reference,
+      LemmaSample prediction) {
     stats.add(reference, prediction);
   }
 
@@ -227,9 +228,8 @@ public class LemmatizerFineGrainedReportListener implements
           sb.append(String.format(cellFormat, matrix[i][j]));
         }
       }
-      sb.append(
-          String.format("|   %-6s |   %3s = ", matrix[i][j],
-              generateAlphaLabel(i - initialIndex))).append(tags[i]);
+      sb.append(String.format("|   %-6s |   %3s = ", matrix[i][j],
+          generateAlphaLabel(i - initialIndex))).append(tags[i]);
       sb.append("\n");
     }
     return sb.toString();
@@ -237,26 +237,25 @@ public class LemmatizerFineGrainedReportListener implements
 
   private void printGeneralStatistics() {
     printHeader("Evaluation summary");
-    printStream.append(
-        String.format("%21s: %6s", "Number of sentences",
-            Long.toString(getNumberOfSentences()))).append("\n");
+    printStream.append(String.format("%21s: %6s", "Number of sentences",
+        Long.toString(getNumberOfSentences()))).append("\n");
     printStream.append(
         String.format("%21s: %6s", "Min sentence size", getMinSentenceSize()))
         .append("\n");
     printStream.append(
         String.format("%21s: %6s", "Max sentence size", getMaxSentenceSize()))
         .append("\n");
-    printStream.append(
-        String.format("%21s: %6s", "Average sentence size",
+    printStream
+        .append(String.format("%21s: %6s", "Average sentence size",
             MessageFormat.format("{0,number,#.##}", getAverageSentenceSize())))
         .append("\n");
-    printStream.append(
-        String.format("%21s: %6s", "Tags count", getNumberOfTags())).append(
-        "\n");
-    printStream.append(
-        String.format("%21s: %6s", "Accuracy",
-            MessageFormat.format("{0,number,#.##%}", getAccuracy()))).append(
-        "\n");
+    printStream
+        .append(String.format("%21s: %6s", "Tags count", getNumberOfTags()))
+        .append("\n");
+    printStream
+        .append(String.format("%21s: %6s", "Accuracy",
+            MessageFormat.format("{0,number,#.##%}", getAccuracy())))
+        .append("\n");
     printFooter("Evaluation Corpus Statistics");
   }
 
@@ -281,8 +280,8 @@ public class LemmatizerFineGrainedReportListener implements
     String format = "| %3s | %6s | %" + maxTokSize + "s |";
 
     printLine(tableSize);
-    printStream.append(String.format(format, "Pos", "Count", "Token")).append(
-        "\n");
+    printStream.append(String.format(format, "Pos", "Count", "Token"))
+        .append("\n");
     printLine(tableSize);
 
     // get the first 20 errors
@@ -321,8 +320,8 @@ public class LemmatizerFineGrainedReportListener implements
     String format = "| %" + maxTokenSize + "s | %6s | %5s | %7s |\n";
 
     printLine(tableSize);
-    printStream.append(String.format(format, "Token", "Errors", "Count",
-        "% Err"));
+    printStream
+        .append(String.format(format, "Token", "Errors", "Count", "% Err"));
     printLine(tableSize);
 
     // get the first 20 errors
@@ -332,8 +331,8 @@ public class LemmatizerFineGrainedReportListener implements
       String tok = tokIterator.next();
       int ocurrencies = getTokenFrequency(tok);
       int errors = getTokenErrors(tok);
-      String rate = MessageFormat.format("{0,number,#.##%}", (double) errors
-          / ocurrencies);
+      String rate = MessageFormat.format("{0,number,#.##%}",
+          (double) errors / ocurrencies);
 
       printStream.append(String.format(format, tok, errors, ocurrencies, rate)
 
@@ -373,8 +372,8 @@ public class LemmatizerFineGrainedReportListener implements
       String tag = tagIterator.next();
       int ocurrencies = getTagFrequency(tag);
       int errors = getTagErrors(tag);
-      String rate = MessageFormat.format("{0,number,#.###}", (double) errors
-          / ocurrencies);
+      String rate = MessageFormat.format("{0,number,#.###}",
+          (double) errors / ocurrencies);
 
       double p = getTagPrecision(tag);
       double r = getTagRecall(tag);
@@ -425,20 +424,14 @@ public class LemmatizerFineGrainedReportListener implements
     for (String t : toks) {
       double acc = getTokenAccuracy(t);
       if (acc < 1) {
-        printStream
-            .append("\n[")
-            .append(t)
-            .append("]\n")
-            .append(
-                String.format("%12s: %-8s", "Accuracy",
-                    MessageFormat.format("{0,number,#.##%}", acc)))
+        printStream.append("\n[")
+            .append(t).append("]\n").append(String.format("%12s: %-8s",
+                "Accuracy", MessageFormat.format("{0,number,#.##%}", acc)))
             .append("\n");
-        printStream.append(
-            String.format("%12s: %-8s", "Ocurrencies",
-                Integer.toString(getTokenFrequency(t)))).append("\n");
-        printStream.append(
-            String.format("%12s: %-8s", "Errors",
-                Integer.toString(getTokenErrors(t)))).append("\n");
+        printStream.append(String.format("%12s: %-8s", "Ocurrencies",
+            Integer.toString(getTokenFrequency(t)))).append("\n");
+        printStream.append(String.format("%12s: %-8s", "Errors",
+            Integer.toString(getTokenErrors(t)))).append("\n");
 
         SortedSet<String> labels = getConfusionMatrixTagset(t);
 
@@ -761,13 +754,13 @@ public class LemmatizerFineGrainedReportListener implements
       for (String ref : tagset) {
         int column = 0;
         for (String pred : tagset) {
-          matrix[line][column] = (double) (data.get(ref) != null ? data
-              .get(ref).getValue(pred) : 0);
+          matrix[line][column] = (double) (data.get(ref) != null
+              ? data.get(ref).getValue(pred) : 0);
           column++;
         }
         // set accuracy
-        matrix[line][column] = (double) (data.get(ref) != null ? data.get(ref)
-            .getAccuracy() : 0);
+        matrix[line][column] = (double) (data.get(ref) != null
+            ? data.get(ref).getAccuracy() : 0);
         line++;
       }
 
@@ -776,7 +769,8 @@ public class LemmatizerFineGrainedReportListener implements
 
     private SortedSet<String> getConfusionMatrixTagset(
         Map<String, ConfusionMatrixLine> data) {
-      SortedSet<String> tags = new TreeSet<String>(new CategoryComparator(data));
+      SortedSet<String> tags = new TreeSet<String>(
+          new CategoryComparator(data));
       tags.addAll(data.keySet());
       List<String> col = new LinkedList<String>();
       for (String t : tags) {
@@ -795,7 +789,8 @@ public class LemmatizerFineGrainedReportListener implements
 
     private Map<String, ConfusionMatrixLine> confusionMatrix;
 
-    public CategoryComparator(Map<String, ConfusionMatrixLine> confusionMatrix) {
+    public CategoryComparator(
+        Map<String, ConfusionMatrixLine> confusionMatrix) {
       this.confusionMatrix = confusionMatrix;
     }
 

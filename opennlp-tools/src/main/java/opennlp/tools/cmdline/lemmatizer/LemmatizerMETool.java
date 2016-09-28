@@ -46,7 +46,8 @@ public class LemmatizerMETool extends BasicCmdLineTool {
     if (args.length != 1) {
       System.out.println(getHelp());
     } else {
-      LemmatizerModel model = new LemmatizerModelLoader().load(new File(args[0]));
+      LemmatizerModel model = new LemmatizerModelLoader()
+          .load(new File(args[0]));
 
       LemmatizerME lemmatizer = new LemmatizerME(model);
 
@@ -54,7 +55,8 @@ public class LemmatizerMETool extends BasicCmdLineTool {
       PerformanceMonitor perfMon = null;
 
       try {
-        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
+        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
+            SystemInputStreamFactory.encoding());
         perfMon = new PerformanceMonitor(System.err, "sent");
         perfMon.start();
         String line;
@@ -70,11 +72,12 @@ public class LemmatizerMETool extends BasicCmdLineTool {
           }
 
           String[] preds = lemmatizer.lemmatize(posSample.getSentence(),
-                  posSample.getTags());
-          String[] lemmas = lemmatizer.decodeLemmas(posSample.getSentence(), preds);
+              posSample.getTags());
+          String[] lemmas = lemmatizer.decodeLemmas(posSample.getSentence(),
+              preds);
 
           System.out.println(new LemmaSample(posSample.getSentence(),
-                  posSample.getTags(), lemmas).toString());
+              posSample.getTags(), lemmas).toString());
 
           perfMon.incrementCounter();
         }
@@ -86,4 +89,3 @@ public class LemmatizerMETool extends BasicCmdLineTool {
     }
   }
 }
-

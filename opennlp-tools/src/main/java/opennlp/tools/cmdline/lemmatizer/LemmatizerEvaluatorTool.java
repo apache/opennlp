@@ -79,16 +79,16 @@ public final class LemmatizerEvaluatorTool
     }
 
     LemmatizerEvaluator evaluator = new LemmatizerEvaluator(
-        new opennlp.tools.lemmatizer.LemmatizerME(model), missclassifiedListener,
-        reportListener);
+        new opennlp.tools.lemmatizer.LemmatizerME(model),
+        missclassifiedListener, reportListener);
 
     System.out.print("Evaluating ... ");
     try {
       evaluator.evaluate(sampleStream);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       System.err.println("failed");
-      throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage(), e);
+      throw new TerminateToolException(-1,
+          "IO error while reading test data: " + e.getMessage(), e);
     } finally {
       try {
         sampleStream.close();
