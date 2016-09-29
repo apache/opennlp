@@ -31,26 +31,105 @@ under the License.
 		  ambiguously be derived from several basic forms or dictionary words which is why the
 		  postag of the word is required to find the lemma. For example, the form `show' may refer
 		  to either the verb "to show" or to the noun "show".
-		  Currently OpenNLP implements a dictionary lookup lemmatizer, although the implementation of
-		  rule-based and probabilistic lemmatizers are pending
-		  (<ulink url="https://issues.apache.org/jira/browse/OPENNLP-683">OPENNLP-683</ulink> and
-		  <ulink url="https://issues.apache.org/jira/browse/OPENNLP-760">OPENNLP-760</ulink>).
-		  Contributions are very welcome!
+		  Currently OpenNLP implement statistical and dictionary-based lemmatizers.
 		</para>
-			<section id="tools.lemmatizer.tagging.cmdline">
+		<section id="tools.lemmatizer.tagging.cmdline">
 		<title>Lemmatizer Tool</title>
 		<para>
-		  TODO: a command line tool for the lemmatizer is pending:
-		  <ulink url="https://issues.apache.org/jira/browse/OPENNLP-814">OPENNLP-814</ulink>
-		  Contributions welcome!
+		  The easiest way to try out the Lemmatizer is the command line tool, which provides access to the statistical
+		  lemmatizer. Note that the tool is only intended for demonstration and testing.
 		</para>
-      </section>
-
+		<para>
+		  Once you have trained a lemmatizer model (see below for instructions), you can start the Lemmatizer Tool with this command:
+		</para>
+		<para>
+		  <screen>
+		   <![CDATA[$ opennlp LemmatizerME en-lemmatizer.bin < sentences]]>
+		  </screen>
+		  The Lemmatizer now reads a pos tagged sentence(s) per line from standard input. For example, you can copy this sentence to the console:
+		  <screen>
+		    <![CDATA[
+Rockwell_NNP International_NNP Corp._NNP 's_POS Tulsa_NNP unit_NN said_VBD it_PRP signed_VBD a_DT tentative_JJ agreement_NN extending_VBG its_PRP$ contract_NN with_IN Boeing_NNP Co._NNP to_TO provide_VB structural_JJ parts_NNS for_IN Boeing_NNP 's_POS 747_CD jetliners_NNS ._.]]>
+		  </screen>
+		  The Lemmatizer will now echo the lemmas for each word postag pair to the console:
+		  <screen>
+		    <![CDATA[
+		    Rockwell NNP rockwell
+		    International NNP international
+		    Corp. NNP corp.
+		    's POS 's
+		    Tulsa NNP tulsa
+		    unit NN unit
+		    said VBD say
+		    it PRP it
+		    signed VBD sign
+		    ...
+		    ]]>
+		  </screen>
+		</para>
+		</section>
 		<section id="tools.lemmatizer.tagging.api">
 		<title>Lemmatizer API</title>
 		<para>
-		  The Lemmatizer can be embedded into an application via its API. Currently only a
-		  dictionary-based SimpleLemmatizer is available. The SimpleLemmatizer is constructed
+		  The Lemmatizer can be embedded into an application via its API. Currently a statistical
+		  and DictionaryLemmatizer are available. Note that these two methods are complementary and
+		  the DictionaryLemmatizer can also be used as a way of post-processing the output of the statistical
+		  lemmatizer.
+		</para>
+		<para>
+		  The statistical lemmatizer requires that a trained model is loaded into memory from disk or from another source.
+		  In the example below it is loaded from disk:
+		  <programlisting language="java">
+		<![CDATA[
+			 InputStream modelIn = null;
+			 LemmatizerModel model = null;
+			 try {
+			   modelIn = new FileInputStream("en-lemmatizer.bin");
+			   model = new LemmatizerModel(modelIn);
+			 } catch (IOException e) {
+			 // Model loading failed, handle the error
+			   e.printStackTrace();
+			   } finally {
+			     if (modelIn != null) {
+			       try {
+			         modelIn.close();
+			       } catch (IOException e) {
+			         }
+			     }
+			 }]]>
+			</programlisting>
+			After the model is loaded a LemmatizerME can be instantiated.
+			<programlisting language="java">
+				<![CDATA[
+LemmatizerME lemmatizer = new LemmatizerME(model);]]>
+			</programlisting>
+			The Lemmatizer instance is now ready to lemmatize data. It expects a tokenized sentence
+			as input, which is represented as a String array, each String object in the array
+			is one token, and the POS tags associated with each token.
+		</para>
+		<para>
+		  The following code shows how to determine the most likely lemma for a sentence.
+	   	<programlisting language="java">
+		  <![CDATA[
+String[] tokens = new String[] { "Rockwell", "International", "Corp.", "'s",
+    "Tulsa", "unit", "said", "it", "signed", "a", "tentative", "agreement",
+    "extending", "its", "contract", "with", "Boeing", "Co.", "to",
+    "provide", "structural", "parts", "for", "Boeing", "'s", "747",
+    "jetliners", "." };
+
+String[] postags = new String[] { "NNP", "NNP", "NNP", "POS", "NNP", "NN",
+    "VBD", "PRP", "VBD", "DT", "JJ", "NN", "VBG", "PRP$", "NN", "IN",
+    "NNP", "NNP", "TO", "VB", "JJ", "NNS", "IN", "NNP", "POS", "CD", "NNS",
+    "." };
+
+String[] lemmas = lemmatizer.lemmatize(tokens, postags);
+String[] decodedLemmas = lemmatizer.decodeLemmas(tokens, lemmas);]]>
+		</programlisting>
+		The decodedLemmas array contains one lemma for each token in the input array. The corresponding
+		tag and lemma can be found at the same index as the token has in the input array.
+		</para>
+
+		<para>The DictionaryLemmatizer is constructed
 		  by passing the InputStream of a lemmatizer dictionary. Such dictionary consists of a
 		  text file containing, for each row, a word, its postag and the corresponding lemma:
 		  <screen>
@@ -96,30 +175,175 @@ finally {
   }
 }]]>
 			</programlisting>
-			After the dictionary is loaded the SimpleLemmatizer can be instantiated.
+			After the dictionary is loaded the DictionaryLemmatizer can be instantiated.
 			<programlisting language="java">
 			  <![CDATA[
-SimpleLemmatizer lemmatizer = new SimpleLemmatizer(dictLemmatizer);]]>
+DictionaryLemmatizer lemmatizer = new DictionaryLemmatizer(dictLemmatizer);]]>
 			</programlisting>
-			The SimpleLemmatizer instance is now ready. It expects two String objects as input,
+			The DictionaryLemmatizer instance is now ready. It expects two String objects as input,
 			a token and its postag.
 	   </para>
 	   <para>
-	   The following code shows how to find a lemma for a token postag pair and store them in an ArrayList.
+	     The following code shows how to find a lemma using a DictionaryLemmatizer. There is no need to decode the
+	     lemmas when using the DictionaryLemmatizer.
 	   	<programlisting language="java">
 		  <![CDATA[
-String sent[] = new String[]{"Most", "large", "cities", "in", "the", "US", "had",
+String[] tokens = new String[]{"Most", "large", "cities", "in", "the", "US", "had",
                              "morning", "and", "afternoon", "newspapers", "."};
-String tags[] = tagger.tag(sent);
-List<String> lemmas = new ArrayList<String>();
-for (int i = 0; i < sent.length; i++) {
-  lemmas.add(lemmatizer.lemmatize(sent[i], tags[i]));
-}
+String[] tags = tagger.tag(sent);
+String[] lemmas = lemmatizer.lemmatize(tokens, postags);
 ]]>
 			</programlisting>
 			The tags array contains one part-of-speech tag for each token in the input array. The corresponding
 			tag and lemmas can be found at the same index as the token has in the input array.
 	  		 </para>
+		       </section>
+	<section id="tools.lemmatizer.training">
+		<title>Lemmatizer Training</title>
+		<para>
+		The training data consist of three columns separated by spaces. Each word has been put on a
+		separate line and there is an empty line after each sentence. The first column contains
+		the current word, the second its part-of-speech tag and the third its lemma.
+		Here is an example of the file format:
+		</para>
+		<para>
+		Sample sentence of the training data:
+		<screen>
+		<![CDATA[
+He        PRP  he
+reckons   VBZ  reckon
+the       DT   the
+current   JJ   current
+accounts  NNS  account
+deficit   NN   deficit
+will      MD   will
+narrow    VB   narrow
+to        TO   to
+only      RB   only
+#         #    #
+1.8       CD   1.8
+millions  CD   million
+in        IN   in
+September NNP  september
+.         .    O]]>
+		</screen>
+		The Universal Dependencies Treebank and the CoNLL 2009 datasets distribute training data for many languages.
+		</para>
+		<section id="tools.lemmatizer.training.tool">
+		<title>Training Tool</title>
+		<para>
+		OpenNLP has a command line tool which is used to train the models on various corpora.
+		</para>
+		<para>
+		    Usage of the tool:
+		<screen>
+		<![CDATA[
+$ opennlp LemmatizerTrainerME
+Usage: opennlp LemmatizerTrainerME [-factory factoryName] [-params paramsFile] -lang language -model modelFile -data sampleData [-encoding charsetName]
+
+Arguments description:
+	-factory factoryName
+		A sub-class of LemmatizerFactory where to get implementation and resources.
+	-params paramsFile
+		training parameters file.
+	-lang language
+		language which is being processed.
+	-model modelFile
+		output model file.
+	-data sampleData
+		data to be used, usually a file name.
+	-encoding charsetName
+	encoding for reading and writing text, if absent the system default is used.
+		]]>
+		</screen>
+		Its now assumed that the english lemmatizer model should be trained from a file called
+		en-lemmatizer.train which is encoded as UTF-8. The following command will train the
+		lemmatizer and write the model to en-lemmatizer.bin:
+		<screen>
+		<![CDATA[
+$ opennlp LemmatizerTrainerME -model en-lemmatizer.bin -params PerceptronTrainerParams.txt -lang en -data en-lemmatizer.train -encoding UTF-8]]>
+		</screen>
+		</para>
+		</section>
+        <section id="tools.lemmatizer.training.api">
+		<title>Training API</title>
+            <para>
+              The Lemmatizer offers an API to train a new lemmatizer model. First a training parameters
+	      file needs to be instantiated:
+                <programlisting language="java">
+                    <![CDATA[
+ TrainingParameters mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+ if (mlParams == null) {
+   mlParams = ModelUtil.createDefaultTrainingParameters();
+ }
+]]>
+                </programlisting>
+		Then we read the training data:
+		<programlisting language="java">
+                    <![CDATA[
+InputStreamFactory inputStreamFactory = null;
+    try {
+      inputStreamFactory = new MarkableFileInputStreamFactory(
+          new File(en-lemmatizer.train));
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+    ObjectStream<String> lineStream = null;
+    LemmaSampleStream lemmaStream = null;
+    try {
+      lineStream = new PlainTextByLineStream(
+      (inputStreamFactory), "UTF-8");
+      lemmaStream = new LemmaSampleStream(lineStream);
+    } catch (IOException e) {
+      CmdLineUtil.handleCreateObjectStreamError(e);
+    }
+]]>
+                </programlisting>
+		The following step proceeds to train the model:
+		<programlisting>
+    LemmatizerModel model;
+    try {
+      LemmatizerFactory lemmatizerFactory = LemmatizerFactory
+          .create(params.getFactory());
+      model = LemmatizerME.train(params.getLang(), lemmaStream, mlParams,
+          lemmatizerFactory);
+    } catch (IOException e) {
+      throw new TerminateToolException(-1,
+          "IO error while reading training data or indexing data: "
+              + e.getMessage(),
+          e);
+    } finally {
+      try {
+        sampleStream.close();
+      } catch (IOException e) {
+      }
+    }
+		</programlisting>
+            </para>
 	</section>
+
+	<section id="tools.lemmatizer.evaluation">
+		<title>Lemmatizer Evaluation</title>
+		<para>
+		The built in evaluation can measure the accuracy of the statistical lemmatizer.
+		The accuracy can be measured on a test data set.
+		</para>
+		<para>
+		There is a command line tool to evaluate a given model on a test data set.
+		The following command shows how the tool can be run:
+		<screen>
+				<![CDATA[
+$ opennlp LemmatizerEvaluator -model en-lemmatizer.bin -lang en -data en-lemmatizer.test -encoding utf-8]]>
+			 </screen>
+			 This will display the resulting accuracy score, e.g.:
+			 <screen>
+				<![CDATA[
+Loading model ... done
+Evaluating ... done
+
+Accuracy: 0.9659110277825124]]>
+			 </screen>
+		</para>
 	</section>
+      </section>
 </chapter>
