@@ -38,40 +38,47 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class LemmatizerEvaluatorTest {
 
-	private static final double DELTA = 1.0E-9d;
+  private static final double DELTA = 1.0E-9d;
 
-	/**
-	 * Checks the evaluator results against the results got using the conlleval,
-	 * available at http://www.cnts.ua.ac.be/conll2000/chunking/output.html
-	 * but containing lemmas instead of chunks.
-	 * @throws IOException
-	 */
-	@Test
-	public void testEvaluator() throws IOException {
-		InputStream inPredicted = getClass().getClassLoader().getResourceAsStream(
-				"opennlp/tools/lemmatizer/output.txt");
-		InputStream inExpected = getClass().getClassLoader().getResourceAsStream(
-		"opennlp/tools/lemmatizer/output.txt");
+  /**
+   * Checks the evaluator results against the results got using the conlleval,
+   * available at http://www.cnts.ua.ac.be/conll2000/chunking/output.html but
+   * containing lemmas instead of chunks.
+   * 
+   * @throws IOException
+   */
+  @Test
+  public void testEvaluator() throws IOException {
+    InputStream inPredicted = getClass().getClassLoader()
+        .getResourceAsStream("opennlp/tools/lemmatizer/output.txt");
+    InputStream inExpected = getClass().getClassLoader()
+        .getResourceAsStream("opennlp/tools/lemmatizer/output.txt");
 
-		String encoding = "UTF-8";
+    String encoding = "UTF-8";
 
-		DummyLemmaSampleStream predictedSample = new DummyLemmaSampleStream(
-				new PlainTextByLineStream(new MockInputStreamFactory(inPredicted), encoding), true);
+    DummyLemmaSampleStream predictedSample = new DummyLemmaSampleStream(
+        new PlainTextByLineStream(new MockInputStreamFactory(inPredicted),
+            encoding),
+        true);
 
-		DummyLemmaSampleStream expectedSample = new DummyLemmaSampleStream(
-				new PlainTextByLineStream(new MockInputStreamFactory(inExpected), encoding), false);
+    DummyLemmaSampleStream expectedSample = new DummyLemmaSampleStream(
+        new PlainTextByLineStream(new MockInputStreamFactory(inExpected),
+            encoding),
+        false);
 
-		Lemmatizer dummyLemmatizer = new DummyLemmatizer(predictedSample);
+    Lemmatizer dummyLemmatizer = new DummyLemmatizer(predictedSample);
 
-		OutputStream stream = new ByteArrayOutputStream();
-		LemmatizerEvaluationMonitor listener = new LemmaEvaluationErrorListener(stream);
-		LemmatizerEvaluator evaluator = new LemmatizerEvaluator(dummyLemmatizer, listener);
+    OutputStream stream = new ByteArrayOutputStream();
+    LemmatizerEvaluationMonitor listener = new LemmaEvaluationErrorListener(
+        stream);
+    LemmatizerEvaluator evaluator = new LemmatizerEvaluator(dummyLemmatizer,
+        listener);
 
-		evaluator.evaluate(expectedSample);
+    evaluator.evaluate(expectedSample);
 
-		assertEquals(0.9877049180327869, evaluator.getWordAccuracy(), DELTA);
-		assertNotSame(stream.toString().length(), 0);
+    assertEquals(0.9877049180327869, evaluator.getWordAccuracy(), DELTA);
+    assertNotSame(stream.toString().length(), 0);
 
-	}
+  }
 
 }

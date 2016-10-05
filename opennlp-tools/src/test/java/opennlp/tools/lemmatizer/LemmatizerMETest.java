@@ -50,22 +50,22 @@ public class LemmatizerMETest {
   private LemmatizerME lemmatizer;
 
   String[] tokens = { "Rockwell", "said", "the", "agreement", "calls", "for",
-      "it", "to", "supply", "200", "additional", "so-called", "shipsets",
-      "for", "the", "planes", "." };
+      "it", "to", "supply", "200", "additional", "so-called", "shipsets", "for",
+      "the", "planes", "." };
 
   String[] postags = { "NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
       "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "." };
 
   String[] expect = { "rockwell", "say", "the", "agreement", "call", "for",
-	      "it", "to", "supply", "200", "additional", "so-called", "shipset",
-	      "for", "the", "plane", "." };
+      "it", "to", "supply", "200", "additional", "so-called", "shipset", "for",
+      "the", "plane", "." };
 
   @Before
   public void startup() throws IOException {
     // train the lemmatizer
 
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/lemmatizer/trial.old.tsv");
+    InputStream in = getClass().getClassLoader()
+        .getResourceAsStream("opennlp/tools/lemmatizer/trial.old.tsv");
 
     ObjectStream<LemmaSample> sampleStream = new LemmaSampleStream(
         new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
@@ -74,7 +74,8 @@ public class LemmatizerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(5));
 
-    LemmatizerModel lemmatizerModel = LemmatizerME.train("en", sampleStream, params, new LemmatizerFactory());
+    LemmatizerModel lemmatizerModel = LemmatizerME.train("en", sampleStream,
+        params, new LemmatizerFactory());
 
     this.lemmatizer = new LemmatizerME(lemmatizerModel);
   }
@@ -89,4 +90,3 @@ public class LemmatizerMETest {
   }
 
 }
-
