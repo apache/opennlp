@@ -21,11 +21,11 @@ import static org.junit.Assert.assertArrayEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -67,10 +67,8 @@ public class LemmatizerMETest {
     InputStream in = getClass().getClassLoader().getResourceAsStream(
         "opennlp/tools/lemmatizer/trial.old.tsv");
 
-    String encoding = "UTF-8";
-
     ObjectStream<LemmaSample> sampleStream = new LemmaSampleStream(
-        new PlainTextByLineStream(new InputStreamReader(in, encoding)));
+        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
