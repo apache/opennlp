@@ -91,7 +91,7 @@ public LemmaSample(String[] tokens, String[] tags, String[] lemmas) {
         StringBuilder lemmaString = new StringBuilder();
 
         for (int ci = 0; ci < lemmas.size(); ci++) {
-        lemmaString.append(tokens.get(ci)).append(" ").append(tags.get(ci)).append(" ").append(lemmas.get(ci)).append("\n");
+        lemmaString.append(tokens.get(ci)).append("\t").append(tags.get(ci)).append("\t").append(lemmas.get(ci)).append("\n");
         }
         return lemmaString.toString();
       }
