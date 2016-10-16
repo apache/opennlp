@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -221,7 +222,92 @@ public class ArgumentParser {
   public static <T> String createUsage(Class<T> argProxyInterface) {
     return createUsage(new Class[]{argProxyInterface});
   }
+  
+  /**
+   * Auxiliary class that holds information about an argument. This is used by the
+   * GenerateManualTool, which creates a Docbook for the CLI automatically.
+   */
+  static class Argument {
+    private final String argument;
+    private final String value;
+    private final String description;
+    private final boolean optional;
+    
+    public Argument(String argument, String value, String description,
+        boolean optional) {
+      super();
+      this.argument = argument;
+      this.value = value;
+      this.description = description;
+      this.optional = optional;
+    }
 
+    public String getArgument() {
+      return argument;
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    public String getDescription() {
+      return description;
+    }
+
+    public boolean getOptional() {
+      return optional;
+    } 
+  }
+  
+
+
+  /**
+   * Outputs the arguments as a data structure so it can be used to create documentation.
+   *
+   * @param argProxyInterfaces interfaces with parameter descriptions
+   * @return the help message usage string
+   */
+  public static <T> List<Argument> createArguments(Class<T>... argProxyInterfaces) {
+    checkProxyInterfaces(argProxyInterfaces);
+
+    Set<String> duplicateFilter = new HashSet<String>();
+
+    List<Argument> arguments = new LinkedList<Argument>();
+
+    for (Class<T> argProxyInterface : argProxyInterfaces) {
+      if (null != argProxyInterface) {
+        for (Method method : argProxyInterface.getMethods()) {
+
+          ParameterDescription desc = method.getAnnotation(ParameterDescription.class);
+
+          OptionalParameter optional = method.getAnnotation(OptionalParameter.class);
+
+          if (desc != null) {
+            String paramName = methodNameToParameter(method.getName());
+
+            if (duplicateFilter.contains(paramName)) {
+              continue;
+            }
+            else {
+              duplicateFilter.add(paramName);
+            }
+            
+            boolean isOptional = false;
+
+            if (optional != null)
+              isOptional = true;
+            
+            Argument arg = new Argument(paramName.substring(1), desc.valueName(), desc.description(), isOptional);
+
+            arguments.add(arg);
+            
+          }
+        }
+      }
+    }
+
+    return arguments;
+  }
 
   /**
    * Creates a usage string which can be printed in case the user did specify the arguments
