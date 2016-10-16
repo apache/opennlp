@@ -111,6 +111,14 @@ String output[] = toolName.executeTask("This is a sample text.");]]>
                 compatible systems: opennlp.
             </para>
         </section>
+        
+        <section id="intro.cli.toolslist">
+            <title>List of tools</title>
+            <para>
+               	The list of command line tools for Apache OpenNLP <?eval ${project.version}?>,
+               	as well as a description of its arguments, is available at section <xref linkend="tools.cli"/>.
+            </para>
+        </section>
 
         <section id="intro.cli.setup">
             <title>Setting up</title>
