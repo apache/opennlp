@@ -161,6 +161,13 @@ public final class CLI {
   public static Set<String> getToolNames() {
     return toolLookupMap.keySet();
   }
+  
+  /**
+   * @return a read only map with tool names and instances
+   */
+  public static Map<String, CmdLineTool> getToolLookupMap() {
+    return toolLookupMap;
+  }
 
   private static void usage() {
     System.out.print("OpenNLP " + Version.currentVersion().toString() + ". ");
