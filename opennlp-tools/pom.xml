@@ -162,6 +162,10 @@
                 <exclude>src/test/resources/opennlp/tools/formats/brat/voa-with-relations.ann</exclude>
                 <exclude>src/test/resources/opennlp/tools/formats/brat/voa-with-relations.txt</exclude>
                 
+		<exclude>src/test/resources/opennlp/tools/languagemodel/sentences.txt</exclude>
+		<exclude>src/test/resources/opennlp/tools/lemmatizer/trial.old.tsv</exclude>
+		<exclude>src/test/resources/opennlp/tools/lemmatizer/output.txt</exclude>
+
                 <!-- head rule files, format does not allow AL header -->
                 <exclude>lang/en/parser/en-head_rules</exclude>
                 <exclude>lang/es/parser/es-head-rules</exclude>
