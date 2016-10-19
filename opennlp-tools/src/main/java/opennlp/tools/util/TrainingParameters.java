@@ -35,7 +35,8 @@ public class TrainingParameters {
 
   public static final String ITERATIONS_PARAM = "Iterations";
   public static final String CUTOFF_PARAM = "Cutoff";
-
+  public static final String THREADS_PARAM = "Threads";
+  
   private Map<String, String> parameters = new HashMap<String, String>();
 
   public TrainingParameters() {

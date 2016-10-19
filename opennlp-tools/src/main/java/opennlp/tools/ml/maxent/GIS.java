@@ -28,6 +28,7 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.Prior;
 import opennlp.tools.ml.model.UniformPrior;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * A Factory class which uses instances of GISTrainer to create and train
@@ -78,7 +79,7 @@ public class GIS extends AbstractEventTrainer {
 
     AbstractModel model;
 
-    int threads = getIntParam("Threads", 1);
+    int threads = getIntParam(TrainingParameters.THREADS_PARAM, 1);
 
     model = trainModel(iterations, indexer, true, false, null, 0, threads);
 

@@ -112,7 +112,7 @@ public class QNPrepAttachTest {
 
     Map<String, String> trainParams = new HashMap<String, String>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
-    trainParams.put("Threads", Integer.toString(2));
+    trainParams.put(QNTrainer.THREADS_PARAM, Integer.toString(2));
 
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(createTrainingStream());
