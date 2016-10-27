@@ -460,9 +460,9 @@ public abstract class AbstractBottomUpParser implements Parser {
       words[i] = children[i].getCoveredText();
     }
     Sequence[] ts = tagger.topKSequences(words);
-    if (ts.length == 0) {
-      System.err.println("no tag sequence");
-    }
+//    if (ts.length == 0) {
+//      System.err.println("no tag sequence");
+//    }
     Parse[] newParses = new Parse[ts.length];
     for (int i = 0; i < ts.length; i++) {
       String[] tags = ts[i].getOutcomes().toArray(new String[words.length]);
