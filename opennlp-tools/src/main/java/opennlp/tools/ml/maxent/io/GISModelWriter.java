@@ -47,13 +47,17 @@ public abstract class GISModelWriter extends AbstractModelWriter {
     Object[] data = model.getDataStructures();
 
     PARAMS = (Context[]) data[0];
+
+    @SuppressWarnings("unchecked")
     Map<String, Integer> pmap = (Map<String, Integer>) data[1];
     OUTCOME_LABELS = (String[]) data[2];
     CORRECTION_CONSTANT = (Integer) data[3];
     CORRECTION_PARAM = (Double) data[4];
 
     PRED_LABELS = new String[pmap.size()];
-    pmap.keySet().toArray(PRED_LABELS);
+    for (String pred : pmap.keySet()) {
+      PRED_LABELS[pmap.get(pred)] = pred;
+    }
   }
 
 

@@ -40,9 +40,6 @@ public abstract class AbstractModel implements MaxentModel {
   protected ModelType modelType;
 
   public AbstractModel(Context[] params, String[] predLabels, Map<String, Integer> pmap, String[] outcomeNames) {
-    
-    if (pmap == null) throw new RuntimeException("");
-    
     this.pmap = pmap;
     this.outcomeNames =  outcomeNames;
     this.evalParams = new EvalParameters(params,outcomeNames.length);

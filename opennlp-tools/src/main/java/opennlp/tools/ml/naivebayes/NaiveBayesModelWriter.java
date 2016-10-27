@@ -46,11 +46,15 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
     Object[] data = model.getDataStructures();
     this.numOutcomes = model.getNumOutcomes();
     PARAMS = (Context[]) data[0];
+
+    @SuppressWarnings("unchecked")
     Map<String, Integer> pmap = (Map<String, Integer>) data[1];
     OUTCOME_LABELS = (String[]) data[2];
 
     PRED_LABELS = new String[pmap.size()];
-    pmap.keySet().toArray(PRED_LABELS);
+    for (String pred : pmap.keySet()) {
+      PRED_LABELS[pmap.get(pred)] = pred;
+    }
   }
 
   protected ComparablePredicate[] sortValues() {
