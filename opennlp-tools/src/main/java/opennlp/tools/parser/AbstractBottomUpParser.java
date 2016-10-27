@@ -328,9 +328,9 @@ public abstract class AbstractBottomUpParser implements Parser {
           }
         }
         else {
-          if (reportFailedParse) {
-            System.err.println("Couldn't advance parse "+derivationStage+" stage "+derivationRank+"!\n");
-          }
+          //if (reportFailedParse) {
+          //  System.err.println("Couldn't advance parse "+derivationStage+" stage "+derivationRank+"!\n");
+          //}
           advanceTop(tp);
           completeParses.add(tp);
         }
@@ -339,7 +339,7 @@ public abstract class AbstractBottomUpParser implements Parser {
       odh = ndh;
     }
     if (completeParses.size() == 0) {
-      if (reportFailedParse) System.err.println("Couldn't find parse for: " + tokens);
+      // if (reportFailedParse) System.err.println("Couldn't find parse for: " + tokens);
       //Parse r = (Parse) odh.first();
       //r.show();
       //System.out.println();
