@@ -38,18 +38,18 @@ public class DocumentSplitterStreamTest {
       docsString.append("</DOC>\n");
     }
 
-    ObjectStream<String> docs = new DocumentSplitterStream(
-        ObjectStreamUtils.createObjectStream(docsString.toString()));
-
-    String doc1 = docs.read();
-    Assert.assertEquals(docsString.length() / 2, doc1.length() + 1);
-    Assert.assertTrue(doc1.contains("#0"));
-
-    String doc2 = docs.read();
-    Assert.assertEquals(docsString.length() / 2, doc2.length() + 1);
-    Assert.assertTrue(doc2.contains("#1"));
-
-    Assert.assertNull(docs.read());
-    Assert.assertNull(docs.read());
+    try (ObjectStream<String> docs = new DocumentSplitterStream(
+        ObjectStreamUtils.createObjectStream(docsString.toString()))) {
+      String doc1 = docs.read();
+      Assert.assertEquals(docsString.length() / 2, doc1.length() + 1);
+      Assert.assertTrue(doc1.contains("#0"));
+  
+      String doc2 = docs.read();
+      Assert.assertEquals(docsString.length() / 2, doc2.length() + 1);
+      Assert.assertTrue(doc2.contains("#1"));
+  
+      Assert.assertNull(docs.read());
+      Assert.assertNull(docs.read());
+    }
   }
 }

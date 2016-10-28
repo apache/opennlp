@@ -17,7 +17,10 @@
 
 package opennlp.tools.formats.brat;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -89,5 +92,11 @@ public class AnnotationConfiguration {
     }
 
     return new AnnotationConfiguration(typeToClassMap);
+  }
+  
+  public static AnnotationConfiguration parse(File annConfigFile) throws IOException {
+    try (InputStream in = new BufferedInputStream(new FileInputStream(annConfigFile))) {
+      return parse(in);
+    }
   }
 }

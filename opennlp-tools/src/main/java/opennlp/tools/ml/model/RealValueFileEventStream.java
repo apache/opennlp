@@ -113,11 +113,8 @@ public class RealValueFileEventStream extends FileEventStream {
       cutoff = Integer.parseInt(args[ai++]);
     }
     AbstractModel model;
-    RealValueFileEventStream es = new RealValueFileEventStream(eventFile);
-    try {
+    try (RealValueFileEventStream es = new RealValueFileEventStream(eventFile)) {
       model = GIS.trainModel(iterations, new OnePassRealValueDataIndexer(es, cutoff));
-    } finally {
-      es.close();
     }
     new SuffixSensitiveGISModelWriter(model, new File(eventFile + ".bin.gz")).persist();
   }

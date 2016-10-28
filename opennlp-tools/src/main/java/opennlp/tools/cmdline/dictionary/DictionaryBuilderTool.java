@@ -53,26 +53,14 @@ public class DictionaryBuilderTool extends BasicCmdLineTool {
     CmdLineUtil.checkInputFile("dictionary input file", dictInFile);
     CmdLineUtil.checkOutputFile("dictionary output file", dictOutFile);
 
-    InputStreamReader in = null;
-    OutputStream out = null;
-    try {
-      in = new InputStreamReader(new FileInputStream(dictInFile), encoding);
-      out = new FileOutputStream(dictOutFile);
+    try (InputStreamReader in = new InputStreamReader(new FileInputStream(dictInFile), encoding);
+        OutputStream out = new FileOutputStream(dictOutFile)) {
 
       Dictionary dict = Dictionary.parseOneEntryPerLine(in);
       dict.serialize(out);
 
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage(), e);
-    } finally {
-      try {
-        in.close();
-        out.close();
-      } catch (IOException e) {
-        // sorry that this can fail
-      }
     }
-
   }
-
 }

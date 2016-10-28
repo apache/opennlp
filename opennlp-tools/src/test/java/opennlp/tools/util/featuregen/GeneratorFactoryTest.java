@@ -93,14 +93,10 @@ public class GeneratorFactoryTest {
    */
   @Test(expected = IOException.class)
   public void testCreationWithUnkownElement() throws IOException {
-    InputStream descIn = getClass().getResourceAsStream(
-        "/opennlp/tools/util/featuregen/FeatureGeneratorConfigWithUnkownElement.xml");
 
-    try {
+    try (InputStream descIn = getClass().getResourceAsStream(
+            "/opennlp/tools/util/featuregen/FeatureGeneratorConfigWithUnkownElement.xml")) {
       GeneratorFactory.create(descIn, null);
-    }
-    finally {
-      descIn.close();
     }
   }
 

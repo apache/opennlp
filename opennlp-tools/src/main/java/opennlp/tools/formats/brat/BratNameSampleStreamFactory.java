@@ -97,20 +97,11 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
 
     // TODO: Provide the file name to the annotation.conf file and implement the parser ...
     AnnotationConfiguration annConfig;
-    InputStream annConfIn = null;
     try {
-      annConfIn = new FileInputStream(params.getAnnotationConfig());
-      annConfig = AnnotationConfiguration.parse(annConfIn);
+      annConfig = AnnotationConfiguration.parse(params.getAnnotationConfig());
     }
     catch (IOException e) {
       throw new TerminateToolException(1, "Failed to parse annotation.conf file!");
-    }
-    finally {
-      if (annConfIn != null) {
-        try {
-          annConfIn.close();
-        } catch (IOException e) {}
-      }
     }
 
     // TODO: Add an optional parameter to search recursive

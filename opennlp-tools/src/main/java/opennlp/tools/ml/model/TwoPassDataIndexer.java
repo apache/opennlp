@@ -85,11 +85,8 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
 
       System.out.print("\tIndexing...  ");
 
-      FileEventStream fes = new FileEventStream(tmp);
-      try {
+      try (FileEventStream fes = new FileEventStream(tmp)) {
         eventsToCompare = index(numEvents, fes, predicateIndex);
-      } finally {
-        fes.close();
       }
       // done with predicates
       predicateIndex = null;

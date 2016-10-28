@@ -182,26 +182,16 @@ public abstract class BaseModel implements ArtifactProvider {
   protected BaseModel(String componentName, File modelFile) throws IOException, InvalidFormatException  {
     this(componentName, true);
 
-    InputStream in = new BufferedInputStream(new FileInputStream(modelFile));
-
-    try {
+    try (InputStream in = new BufferedInputStream(new FileInputStream(modelFile))) {
       loadModel(in);
-    }
-    finally {
-      in.close();
     }
   }
 
   protected BaseModel(String componentName, URL modelURL) throws IOException, InvalidFormatException  {
     this(componentName, true);
 
-    InputStream in = new BufferedInputStream(modelURL.openStream());
-
-    try {
+    try (InputStream in = new BufferedInputStream(modelURL.openStream())) {
       loadModel(in);
-    }
-    finally {
-      in.close();
     }
   }
 

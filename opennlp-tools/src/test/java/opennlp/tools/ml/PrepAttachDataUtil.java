@@ -38,22 +38,17 @@ public class PrepAttachDataUtil {
 
     List<Event> events = new ArrayList<Event>();
 
-    InputStream in = PerceptronPrepAttachTest.class.getResourceAsStream("/data/ppa/" +
-        filename);
-
-    try {
+    try (InputStream in = PerceptronPrepAttachTest.class.getResourceAsStream("/data/ppa/" +
+            filename)) {
       BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
       String line;
       while ((line = reader.readLine()) != null) {
         String[] items = line.split("\\s+");
         String label = items[5];
-        String[] context = { "verb=" + items[1], "noun=" + items[2],
-            "prep=" + items[3], "prep_obj=" + items[4] };
+        String[] context = {"verb=" + items[1], "noun=" + items[2],
+                "prep=" + items[3], "prep_obj=" + items[4]};
         events.add(new Event(label, context));
       }
-    }
-    finally {
-      in.close();
     }
 
     return events;

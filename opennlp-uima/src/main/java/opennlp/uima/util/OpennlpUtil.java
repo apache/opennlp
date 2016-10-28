@@ -30,7 +30,6 @@ import org.apache.uima.resource.ResourceInitializationException;
 
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.maxent.GISModel;
-import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 
@@ -51,34 +50,22 @@ final public class OpennlpUtil {
    */
   public static void serialize(BaseModel model, File modelFile)
       throws IOException {
-    OutputStream modelOut = null;
-
-    try {
-      modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+    try (OutputStream fileOut = new FileOutputStream(modelFile);
+        OutputStream modelOut = new BufferedOutputStream(fileOut)) {
       model.serialize(modelOut);
-    } finally {
-      if (modelOut != null)
-        modelOut.close();
     }
   }
 
   public static final byte[] loadBytes(File inFile) throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
-    InputStream in = null;
-    try {
-      in = new FileInputStream(inFile);
+    try (InputStream in = new FileInputStream(inFile)) {
 
       byte buffer[] = new byte[1024];
       int len;
-
       while ((len = in.read(buffer)) > 0) {
         bytes.write(buffer, 0, len);
       }
-    }
-    finally {
-      if (in != null)
-        in.close();
     }
 
     return bytes.toByteArray();
@@ -89,20 +76,10 @@ final public class OpennlpUtil {
 
     TrainingParameters params;
     if (inFileValue != null) {
-      InputStream paramsIn = null;
-      try {
-        paramsIn = new FileInputStream(new File(inFileValue));
-
+      try (InputStream paramsIn = new FileInputStream(new File(inFileValue))) {
         params = new opennlp.tools.util.TrainingParameters(paramsIn);
       } catch (IOException e) {
         throw new ResourceInitializationException(e);
-      }
-      finally {
-        try {
-          if (paramsIn != null)
-            paramsIn.close();
-        } catch (IOException e) {
-        }
       }
 
       if (!TrainerFactory.isValid(params.getSettings())) {

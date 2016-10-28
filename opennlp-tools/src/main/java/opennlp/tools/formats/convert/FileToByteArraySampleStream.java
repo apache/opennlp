@@ -35,23 +35,13 @@ public class FileToByteArraySampleStream extends FilterObjectStream<File, byte[]
 
   private static byte[] readFile(File file) throws IOException {
 
-    InputStream in = new BufferedInputStream(new FileInputStream(file));
-
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
-    try {
+    try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
       byte buffer[] = new byte[1024];
       int length;
       while ((length = in.read(buffer, 0, buffer.length)) > 0) {
         bytes.write(buffer, 0, length);
-      }
-    }
-    finally {
-      try {
-        in.close();
-      }
-      catch (IOException e) {
-        // sorry that this can fail!
       }
     }
 

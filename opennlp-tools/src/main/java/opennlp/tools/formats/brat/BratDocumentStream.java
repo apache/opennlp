@@ -93,31 +93,9 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
     if (documentIdIterator.hasNext()) {
       String id = documentIdIterator.next();
 
-      InputStream txtIn = null;
-      InputStream annIn = null;
-
-      try {
-        txtIn = new BufferedInputStream(new FileInputStream(id + ".txt"));
-        annIn = new BufferedInputStream(new FileInputStream(id + ".ann"));
-
+      try (InputStream txtIn = new BufferedInputStream(new FileInputStream(id + ".txt"));
+          InputStream annIn = new BufferedInputStream(new FileInputStream(id + ".ann"))) {
         doc = BratDocument.parseDocument(config, id, txtIn, annIn);
-      }
-      finally{
-        if (txtIn != null) {
-          try {
-            txtIn.close();
-          }
-          catch (IOException e) {
-          }
-        }
-
-        if (annIn!= null) {
-          try {
-            annIn.close();
-          }
-          catch (IOException e) {
-          }
-        }
       }
     }
 

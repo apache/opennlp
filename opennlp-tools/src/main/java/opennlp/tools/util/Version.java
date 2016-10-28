@@ -191,21 +191,13 @@ public class Version {
     // Try to read the version from the version file if it is available,
     // otherwise set the version to the development version
 
-    InputStream versionIn = Version.class.getResourceAsStream("opennlp.version");
-
-    if (versionIn != null) {
-      try {
+    try (InputStream versionIn = 
+        Version.class.getResourceAsStream("opennlp.version")) {
+      if (versionIn != null) {
         manifest.load(versionIn);
-      } catch (IOException e) {
-        // ignore error
       }
-      finally {
-        try {
-          versionIn.close();
-        } catch (IOException e) {
-          // ignore error
-        }
-      }
+    } catch (IOException e) {
+      // ignore error
     }
 
     String versionString =

@@ -50,14 +50,9 @@ public class POSDictionaryTest {
        out.close();
     }
 
-    InputStream in = new ByteArrayInputStream(out.toByteArray());
-
     POSDictionary serializedDictionary = null;
-    try {
+    try (InputStream in = new ByteArrayInputStream(out.toByteArray())) {
       serializedDictionary = POSDictionary.create(in);
-    }
-    finally {
-        in.close();
     }
 
     return serializedDictionary;

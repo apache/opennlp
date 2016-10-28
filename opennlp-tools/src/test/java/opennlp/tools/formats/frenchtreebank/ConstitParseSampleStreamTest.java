@@ -88,17 +88,13 @@ public class ConstitParseSampleStreamTest {
   static byte[] getSample1() throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-    InputStream sampleIn =
-        ConstitParseSampleStreamTest.class.getResourceAsStream("sample1.xml");
-
     byte buffer[] = new byte[1024];
     int length;
-    try {
+    try (InputStream sampleIn =
+        ConstitParseSampleStreamTest.class.getResourceAsStream("sample1.xml")) {
       while ((length = sampleIn.read(buffer)) > 0) {
         out.write(buffer, 0, length);
       }
-    } finally {
-      sampleIn.close();
     }
 
     return out.toByteArray();

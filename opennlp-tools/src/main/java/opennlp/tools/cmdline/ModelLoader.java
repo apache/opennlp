@@ -54,11 +54,9 @@ public abstract class ModelLoader<T> {
 
     System.err.print("Loading " + modelName + " model ... ");
 
-    InputStream modelIn = new BufferedInputStream(CmdLineUtil.openInFile(modelFile), CmdLineUtil.IO_BUFFER_SIZE);
-
     T model;
-
-    try {
+    try (InputStream modelIn = new BufferedInputStream(
+        CmdLineUtil.openInFile(modelFile), CmdLineUtil.IO_BUFFER_SIZE)) {
       model = loadModel(modelIn);
     }
     catch (InvalidFormatException e) {
@@ -68,15 +66,6 @@ public abstract class ModelLoader<T> {
     catch (IOException e) {
       System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while loading model file '" + modelFile + "'", e);
-    }
-    finally {
-      // will not be null because openInFile would
-      // terminate in this case
-      try {
-        modelIn.close();
-      } catch (IOException e) {
-        // sorry that this can fail
-      }
     }
 
     long modelLoadingDuration = System.currentTimeMillis() - beginModelLoadingTime;

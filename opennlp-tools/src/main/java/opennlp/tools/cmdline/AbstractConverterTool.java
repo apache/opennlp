@@ -103,9 +103,7 @@ public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
         throw new TerminateToolException(1, errorMessage + "\n" + helpString);
       }
 
-      ObjectStream<T> sampleStream = streamFactory.create(formatArgs);
-
-      try {
+      try (ObjectStream<T> sampleStream = streamFactory.create(formatArgs)) {
         Object sample;
         while((sample = sampleStream.read()) != null) {
           System.out.println(sample.toString());
@@ -113,14 +111,6 @@ public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
       }
       catch (IOException e) {
         throw new TerminateToolException(-1, "IO error while converting data : " + e.getMessage(), e);
-      }
-      finally {
-        if (sampleStream != null)
-          try {
-            sampleStream.close();
-          } catch (IOException e) {
-            // sorry that this can fail
-          }
       }
     }
   }

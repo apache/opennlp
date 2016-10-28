@@ -34,23 +34,21 @@ public class ChunkerDetailedFMeasureListenerTest {
 
   @Test
   public void testEvaluator() throws IOException {
-    InputStream inPredicted = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/chunker/output.txt");
-    InputStream inExpected = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/chunker/output.txt");
-
-    InputStream detailedOutputStream = getClass().getClassLoader().getResourceAsStream(
-    "opennlp/tools/chunker/detailedOutput.txt");
 
     String encoding = "UTF-8";
 
-    try {
+    try (InputStream inPredicted = getClass().getClassLoader().getResourceAsStream(
+         "opennlp/tools/chunker/output.txt");
+         InputStream inExpected = getClass().getClassLoader().getResourceAsStream(
+         "opennlp/tools/chunker/output.txt");
+         InputStream detailedOutputStream = getClass().getClassLoader().getResourceAsStream(
+         "opennlp/tools/chunker/detailedOutput.txt")) {
       DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-          new PlainTextByLineStream(
-              new InputStreamReader(inPredicted, encoding)), true);
+              new PlainTextByLineStream(
+                      new InputStreamReader(inPredicted, encoding)), true);
 
       DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-          new PlainTextByLineStream(new InputStreamReader(inExpected)), false);
+              new PlainTextByLineStream(new InputStreamReader(inExpected)), false);
 
       Chunker dummyChunker = new DummyChunker(predictedSample);
 
@@ -63,16 +61,12 @@ public class ChunkerDetailedFMeasureListenerTest {
       BufferedReader reader = new BufferedReader(new InputStreamReader(detailedOutputStream, encoding));
       String line = reader.readLine();
 
-      while(line != null ) {
+      while (line != null) {
         expected.append(line);
         expected.append("\n");
         line = reader.readLine();
       }
       assertEquals(expected.toString().trim(), listener.createReport(Locale.ENGLISH).trim());
-    } finally {
-      inPredicted.close();
-      inExpected.close();
-      detailedOutputStream.close();
     }
   }
 }
