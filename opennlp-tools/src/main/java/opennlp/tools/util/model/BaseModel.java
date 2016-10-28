@@ -24,7 +24,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +48,7 @@ import opennlp.tools.util.ext.ExtensionLoader;
  * TODO:
  * Provide sub classes access to serializers already in constructor
  */
-public abstract class BaseModel implements ArtifactProvider {
+public abstract class BaseModel implements ArtifactProvider, Serializable {
 
   private static int MODEL_BUFFER_SIZE_LIMIT = Integer.MAX_VALUE;
 
@@ -64,19 +67,18 @@ public abstract class BaseModel implements ArtifactProvider {
 
   private static String SERIALIZER_CLASS_NAME_PREFIX = "serializer-class-";
 
-  private Map<String, ArtifactSerializer> artifactSerializers =
-      new HashMap<String, ArtifactSerializer>();
+  private Map<String, ArtifactSerializer> artifactSerializers = new HashMap<>();
 
-  protected final Map<String, Object> artifactMap = new HashMap<String, Object>();
+  protected Map<String, Object> artifactMap = new HashMap<>();
 
   protected BaseToolFactory toolFactory;
 
-  private final String componentName;
+  private String componentName;
 
   private boolean subclassSerializersInitiated = false;
   private boolean finishedLoadingArtifacts = false;
 
-  private final boolean isLoadedFromSerialized;
+  private boolean isLoadedFromSerialized;
 
   private BaseModel(String componentName, boolean isLoadedFromSerialized) {
     this.isLoadedFromSerialized = isLoadedFromSerialized;
@@ -631,5 +633,27 @@ public abstract class BaseModel implements ArtifactProvider {
 
   public boolean isLoadedFromSerialized() {
     return isLoadedFromSerialized;
+  }
+
+  // These methods are required to serialize/deserialize the model because
+  // many of the included objects in this model are not Serializable.
+  // An alternative to this solution is to make all included objects
+  // Serializable and remove the writeObject and readObject methods.
+  // This will allow the usage of final for fields that should not change.
+
+  private void writeObject(ObjectOutputStream out) throws IOException {
+    out.writeUTF(componentName);
+    this.serialize(out);
+  }
+
+  private void readObject(final ObjectInputStream in) throws IOException {
+
+    isLoadedFromSerialized = true;
+    artifactSerializers = new HashMap<>();
+    artifactMap = new HashMap<>();
+
+    componentName = in.readUTF();
+
+    this.loadModel(in);
   }
 }
