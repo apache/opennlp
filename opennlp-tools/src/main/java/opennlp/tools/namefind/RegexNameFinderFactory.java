@@ -193,6 +193,6 @@ public class RegexNameFinderFactory {
       public String getType() {
         return "DEGREES_MIN_SEC_LAT_LON";
       }
-    };
+    }
   }
 }

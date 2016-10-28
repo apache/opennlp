@@ -34,7 +34,7 @@ public abstract class AbstractModel implements MaxentModel {
   /** Prior distribution for this model. */
   protected Prior prior;
 
-  public enum ModelType {Maxent,Perceptron,MaxentQn,NaiveBayes};
+  public enum ModelType {Maxent,Perceptron,MaxentQn,NaiveBayes}
 
   /** The type of the model. */
   protected ModelType modelType;

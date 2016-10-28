@@ -59,4 +59,4 @@ class Among {
     public final int result; /* result of the lookup */
     public final Method method; /* method to use if substring matches */
     public final SnowballProgram methodobject; /* object to invoke method on */
-};
+}

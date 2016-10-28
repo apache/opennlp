@@ -43,7 +43,7 @@ public class SentenceSample {
    */
   public SentenceSample(String document, Span... sentences) {
     this.document = document;
-    this.sentences = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(sentences)));;
+    this.sentences = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(sentences)));
   }
 
   public SentenceSample(Detokenizer detokenizer, String[][] sentences) {

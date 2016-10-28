@@ -385,7 +385,7 @@ public class ADSentenceStream extends
 
       public void addElement(TreeElement element) {
         elems.add(element);
-      };
+      }
 
       public TreeElement[] getElements() {
         return elems.toArray(new TreeElement[elems.size()]);

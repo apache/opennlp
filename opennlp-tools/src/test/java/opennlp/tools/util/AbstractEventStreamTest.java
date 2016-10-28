@@ -39,7 +39,7 @@ public class AbstractEventStreamTest {
   private enum RESULT {
     EVENTS,
     EMPTY
-  };
+  }
 
 
   /**

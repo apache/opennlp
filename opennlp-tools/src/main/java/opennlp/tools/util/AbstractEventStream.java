@@ -28,7 +28,7 @@ public abstract class AbstractEventStream<T> implements ObjectStream<Event> {
 
   private ObjectStream<T> samples;
 
-  private Iterator<Event> events = Collections.<Event>emptyList().iterator();;
+  private Iterator<Event> events = Collections.<Event>emptyList().iterator();
 
   /**
    * Initializes the current instance with a sample {@link Iterator}.
