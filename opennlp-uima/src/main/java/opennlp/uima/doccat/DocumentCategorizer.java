@@ -56,11 +56,11 @@ public class DocumentCategorizer extends AbstractDocumentCategorizer {
   protected void setBestCategory(CAS tcas, String bestCategory) {
     FSIndex<AnnotationFS> categoryIndex = tcas.getAnnotationIndex(mCategoryType);
 
-    AnnotationFS categoryAnnotation = (AnnotationFS) (categoryIndex.size() > 0 ?
-        categoryIndex.iterator().next() : null);
+    AnnotationFS categoryAnnotation = categoryIndex.size() > 0 ?
+        categoryIndex.iterator().next() : null;
 
     if (categoryIndex.size() > 0) {
-      categoryAnnotation = (AnnotationFS) categoryIndex.iterator().next();
+      categoryAnnotation = categoryIndex.iterator().next();
     }
     else {
       categoryAnnotation = tcas.createAnnotation(mCategoryType, 0,

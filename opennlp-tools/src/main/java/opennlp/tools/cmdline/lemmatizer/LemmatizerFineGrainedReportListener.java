@@ -754,13 +754,13 @@ public class LemmatizerFineGrainedReportListener
       for (String ref : tagset) {
         int column = 0;
         for (String pred : tagset) {
-          matrix[line][column] = (double) (data.get(ref) != null
-              ? data.get(ref).getValue(pred) : 0);
+          matrix[line][column] = data.get(ref) != null
+              ? data.get(ref).getValue(pred) : 0;
           column++;
         }
         // set accuracy
-        matrix[line][column] = (double) (data.get(ref) != null
-            ? data.get(ref).getAccuracy() : 0);
+        matrix[line][column] = data.get(ref) != null
+            ? data.get(ref).getAccuracy() : 0;
         line++;
       }
 

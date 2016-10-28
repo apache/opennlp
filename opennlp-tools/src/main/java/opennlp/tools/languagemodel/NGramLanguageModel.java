@@ -122,7 +122,7 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
   }
 
   private double getLaplaceSmoothingProbability(StringList ngram, StringList nMinusOneToken) {
-    return (getCount(ngram) + k) / ((double) getCount(nMinusOneToken) + k * size());
+    return (getCount(ngram) + k) / (getCount(nMinusOneToken) + k * size());
   }
 
   private double getStupidBackoffProbability(StringList ngram, StringList nMinusOneToken) {

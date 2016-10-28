@@ -44,7 +44,7 @@ public class BasicContextGenerator implements ContextGenerator {
    */
   public String[] getContext(Object o) {
     String s = (String) o;
-    return (String[]) s.split(separator);
+    return s.split(separator);
   }
 
 }

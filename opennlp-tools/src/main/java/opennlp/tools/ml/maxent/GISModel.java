@@ -199,7 +199,7 @@ public final class GISModel extends AbstractModel {
         prior[oid] = Math
             .exp(prior[oid]
                 * model.getConstantInverse()
-                + ((1.0 - ((double) numfeats[oid] / model
+                + ((1.0 - (numfeats[oid] / model
                     .getCorrectionConstant())) * model.getCorrectionParam()));
       } else {
         prior[oid] = Math.exp(prior[oid] * model.getConstantInverse());

@@ -274,14 +274,13 @@ public class Parser extends CasAnnotator_ImplBase {
     List<Span> tokenSpans = new LinkedList<Span>();
 
     while(containingTokens.hasNext()) {
-      AnnotationFS token = (AnnotationFS) containingTokens.next();
+      AnnotationFS token = containingTokens.next();
 
       tokenSpans.add(new Span(token.getBegin() - sentenceAnnotation.getBegin(),
           token.getEnd() - sentenceAnnotation.getBegin()));
     }
 
-    ParseConverter converter = new ParseConverter(sentence,(Span[])
-        tokenSpans.toArray(new Span[tokenSpans.size()]));
+    ParseConverter converter = new ParseConverter(sentence,tokenSpans.toArray(new Span[tokenSpans.size()]));
 
     Parse unparsedTree = converter.getParseForTagger();
 

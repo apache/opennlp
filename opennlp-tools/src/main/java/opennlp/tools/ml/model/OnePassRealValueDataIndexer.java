@@ -63,7 +63,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     values = new float[numUniqueEvents][];
     int numEvents = eventsToCompare.size();
     for (int i = 0, j = 0; i < numEvents; i++) {
-      ComparableEvent evt = (ComparableEvent) eventsToCompare.get(i);
+      ComparableEvent evt = eventsToCompare.get(i);
       if (null == evt) {
         continue; // this was a dupe, skip over it.
       }

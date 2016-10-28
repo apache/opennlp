@@ -181,7 +181,7 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
 
     while (containingTokens.hasNext()) {
 
-      AnnotationFS tokenAnnotation = (AnnotationFS) containingTokens.next();
+      AnnotationFS tokenAnnotation = containingTokens.next();
 
       String tag = tokenAnnotation.getFeatureValueAsString(mPOSFeature);
 

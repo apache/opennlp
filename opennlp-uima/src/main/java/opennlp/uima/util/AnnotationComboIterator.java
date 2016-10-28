@@ -86,12 +86,12 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
       AnnotationComboIterator.this.nextLowerChecked = true;
       AnnotationComboIterator.this.nextLowerAvailable = false;
       if (AnnotationComboIterator.this.lowerIt.isValid()) {
-        AnnotationFS lowerFS = (AnnotationFS) AnnotationComboIterator.this.lowerIt.get();
+        AnnotationFS lowerFS = AnnotationComboIterator.this.lowerIt.get();
         int lowerBegin = lowerFS.getBegin();
         while (lowerBegin < AnnotationComboIterator.this.upperBegin) {
           AnnotationComboIterator.this.lowerIt.moveToNext();
           if (AnnotationComboIterator.this.lowerIt.isValid()) {
-            lowerFS = (AnnotationFS) AnnotationComboIterator.this.lowerIt.get();
+            lowerFS = AnnotationComboIterator.this.lowerIt.get();
             lowerBegin = lowerFS.getBegin();
           } else {
             return false;
@@ -113,7 +113,7 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
         throw new NoSuchElementException();
       }
       AnnotationComboIterator.this.nextLowerChecked = false;
-      final AnnotationFS rv = (AnnotationFS) AnnotationComboIterator.this.lowerIt.get();
+      final AnnotationFS rv = AnnotationComboIterator.this.lowerIt.get();
       AnnotationComboIterator.this.lowerIt.moveToNext();
       return rv;
     }
@@ -160,7 +160,7 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
     this.upperIt.moveToFirst();
     this.lowerIt.moveToFirst();
     if (this.upperIt.isValid()) {
-      final AnnotationFS upperFS = (AnnotationFS) this.upperIt.get();
+      final AnnotationFS upperFS = this.upperIt.get();
       this.upperBegin = upperFS.getBegin();
       this.upperEnd = upperFS.getEnd();
     } else {
@@ -176,7 +176,7 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
     if (!this.upperIt.hasNext()) {
       throw new NoSuchElementException();
     }
-    final AnnotationFS upperFS = (AnnotationFS) this.upperIt.next();
+    final AnnotationFS upperFS = this.upperIt.next();
     this.upperBegin = upperFS.getBegin();
     this.upperEnd = upperFS.getEnd();
     this.nextLowerChecked = false;

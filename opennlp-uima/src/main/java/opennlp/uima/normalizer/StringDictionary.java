@@ -57,7 +57,7 @@ public class StringDictionary {
   }
 
   public String get(StringList key) {
-    return (String) entries.get(key);
+    return entries.get(key);
   }
 
   public void put(StringList key, String value) {
