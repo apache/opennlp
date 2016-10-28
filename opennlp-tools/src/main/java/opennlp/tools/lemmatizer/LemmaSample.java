@@ -58,9 +58,9 @@ public LemmaSample(String[] tokens, String[] tags, String[] lemmas) {
 
     validateArguments(tokens.size(), tags.size(), lemmas.size());
 
-    this.tokens = Collections.unmodifiableList(new ArrayList<String>((tokens)));
-    this.tags = Collections.unmodifiableList(new ArrayList<String>((tags)));
-    this.lemmas = Collections.unmodifiableList(new ArrayList<String>((lemmas)));
+    this.tokens = Collections.unmodifiableList(new ArrayList<String>(tokens));
+    this.tags = Collections.unmodifiableList(new ArrayList<String>(tags));
+    this.lemmas = Collections.unmodifiableList(new ArrayList<String>(lemmas));
   }
 
   public String[] getTokens() {

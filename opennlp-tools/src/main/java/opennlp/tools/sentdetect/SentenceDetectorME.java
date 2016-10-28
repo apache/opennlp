@@ -215,7 +215,7 @@ public class SentenceDetectorME implements SentenceDetector {
         while (end > 0 && StringUtil.isWhitespace(s.charAt(end - 1)))
           end--;
 
-        if ((end - start) > 0) {
+        if (end - start > 0) {
           sentProbs.add(1d);
           return new Span[] {new Span(start, end)};
         }

@@ -59,6 +59,6 @@ public class MutableContext extends Context {
   }
 
   public boolean contains(int outcome) {
-    return(Arrays.binarySearch(outcomes,outcome) >= 0);
+    return Arrays.binarySearch(outcomes,outcome) >= 0;
   }
 }

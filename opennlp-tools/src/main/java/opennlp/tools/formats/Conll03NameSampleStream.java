@@ -116,12 +116,12 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
       String fields[] = line.split(" ");
 
       // For English: WORD  POS-TAG SC-TAG NE-TAG
-      if (LANGUAGE.EN.equals(lang) && (fields.length == 4)) {
+      if (LANGUAGE.EN.equals(lang) && fields.length == 4) {
         sentence.add(fields[0]);
         tags.add(fields[3]); // 3 is NE-TAG
       }
       // For German: WORD  LEMA-TAG POS-TAG SC-TAG NE-TAG
-      else if (LANGUAGE.DE.equals(lang) && (fields.length == 5)) {
+      else if (LANGUAGE.DE.equals(lang) && fields.length == 5) {
         sentence.add(fields[0]);
         tags.add(fields[4]); // 4 is NE-TAG
       }

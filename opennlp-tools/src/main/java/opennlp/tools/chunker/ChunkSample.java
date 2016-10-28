@@ -66,9 +66,9 @@ public class ChunkSample {
 
     validateArguments(sentence.size(), tags.size(), preds.size());
 
-    this.sentence = Collections.unmodifiableList(new ArrayList<String>((sentence)));
-    this.tags = Collections.unmodifiableList(new ArrayList<String>((tags)));
-    this.preds = Collections.unmodifiableList(new ArrayList<String>((preds)));
+    this.sentence = Collections.unmodifiableList(new ArrayList<String>(sentence));
+    this.tags = Collections.unmodifiableList(new ArrayList<String>(tags));
+    this.preds = Collections.unmodifiableList(new ArrayList<String>(preds));
   }
 
   /** Gets the training sentence */
@@ -117,7 +117,7 @@ public class ChunkSample {
     for (int ci = 0, cn = aPreds.length; ci < cn; ci++) {
       String pred = aPreds[ci];
       if (pred.startsWith("B-")
-          || (!pred.equals("I-" + startTag) && !pred.equals("O"))) { // start
+          || !pred.equals("I-" + startTag) && !pred.equals("O")) { // start
         if (foundPhrase) { // handle the last
           phrases.add(new Span(startIndex, ci, startTag));
         }

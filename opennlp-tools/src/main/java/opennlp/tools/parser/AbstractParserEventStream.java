@@ -199,7 +199,7 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
    */
   protected boolean lastChild(Parse child, Parse parent) {
     Parse[] kids = AbstractBottomUpParser.collapsePunctuation(parent.getChildren(),punctSet);
-    return (kids[kids.length - 1] == child);
+    return kids[kids.length - 1] == child;
   }
 
 }

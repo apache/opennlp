@@ -167,7 +167,7 @@ public class ChunkerTrainer extends CasConsumer_ImplBase {
 
     while (chunkIterator.hasNext()) {
       AnnotationFS chunkAnnotation = chunkIterator.next();
-      processChunk(tcas, (chunkAnnotation));
+      processChunk(tcas, chunkAnnotation);
     }
   }
 

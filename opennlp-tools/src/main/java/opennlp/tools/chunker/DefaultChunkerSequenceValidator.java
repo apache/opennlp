@@ -24,14 +24,14 @@ public class DefaultChunkerSequenceValidator implements SequenceValidator<String
   private boolean validOutcome(String outcome, String prevOutcome) {
     if (outcome.startsWith("I-")) {
       if (prevOutcome == null) {
-        return (false);
+        return false;
       }
       else {
         if (prevOutcome.equals("O")) {
-          return (false);
+          return false;
         }
         if (!prevOutcome.substring(2).equals(outcome.substring(2))) {
-          return (false);
+          return false;
         }
       }
     }

@@ -86,7 +86,7 @@ public class RealValueFileEventStream extends FileEventStream {
       String outcome = line.substring(0, si);
       String[] contexts = line.substring(si + 1).split(" ");
       float[] values = parseContexts(contexts);
-      return (new Event(outcome, contexts, values));
+      return new Event(outcome, contexts, values);
     }
 
     return null;

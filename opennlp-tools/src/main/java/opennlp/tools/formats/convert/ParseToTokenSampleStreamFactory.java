@@ -46,8 +46,8 @@ public class ParseToTokenSampleStreamFactory extends DetokenizerSampleStreamFact
         StreamFactoryRegistry.DEFAULT_FORMAT).create(
         ArgumentParser.filter(args, WordTagSampleStreamFactory.Parameters.class));
 
-    return (new POSToTokenSampleStream(createDetokenizer(params),
-        new ParseToPOSSampleStream(parseSampleStream)));
+    return new POSToTokenSampleStream(createDetokenizer(params),
+        new ParseToPOSSampleStream(parseSampleStream));
   }
 
   public static void registerFactory() {

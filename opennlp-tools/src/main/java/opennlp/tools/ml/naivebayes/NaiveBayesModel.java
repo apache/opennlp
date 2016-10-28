@@ -136,7 +136,7 @@ public class NaiveBayesModel extends AbstractModel {
     else if (denominator == 0 || denominator < Double.MIN_VALUE)
       return 0;
     else
-      return 1.0 * (numerator) / (denominator);
+      return 1.0 * numerator / denominator;
   }
 
   private static double getSmoothedProbability(double numerator, double denominator, double vocabulary) {

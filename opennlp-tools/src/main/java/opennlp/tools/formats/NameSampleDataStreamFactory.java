@@ -54,7 +54,7 @@ public class NameSampleDataStreamFactory extends AbstractSampleStreamFactory<Nam
 
     ObjectStream<String> lineStream = null;
     try {
-      lineStream = new PlainTextByLineStream((sampleDataIn), params.getEncoding());
+      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
     } catch (IOException ex) {
       CmdLineUtil.handleCreateObjectStreamError(ex);
     }

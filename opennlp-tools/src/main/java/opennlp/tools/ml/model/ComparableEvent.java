@@ -49,8 +49,8 @@ public class ComparableEvent implements Comparable<ComparableEvent> {
     else if (outcome > ce.outcome)
       return 1;
 
-    int smallerLength = (predIndexes.length > ce.predIndexes.length ? ce.predIndexes.length
-        : predIndexes.length);
+    int smallerLength = predIndexes.length > ce.predIndexes.length ? ce.predIndexes.length
+        : predIndexes.length;
 
     for (int i = 0; i < smallerLength; i++) {
       if (predIndexes[i] < ce.predIndexes[i])

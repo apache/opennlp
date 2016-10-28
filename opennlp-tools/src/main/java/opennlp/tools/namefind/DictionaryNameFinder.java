@@ -90,7 +90,7 @@ public class DictionaryNameFinder implements TokenNameFinder {
       if (nameFound != null) {
         namesFound.add(nameFound);
         // skip over the found tokens for the next search
-        offsetFrom += (nameFound.length() - 1);
+        offsetFrom += nameFound.length() - 1;
       }
     }
     return namesFound.toArray(new Span[namesFound.size()]);

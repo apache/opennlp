@@ -164,7 +164,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     if (contextsCache != null) {
       contextsCache.put(cacheKey,contexts);
     }
-    return (contexts);
+    return contexts;
   }
 
   private String chunkandpostag(int i, String tok, String tag, String chunk) {
@@ -173,7 +173,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     if (i < 0) {
       feat.append("|").append(chunk);
     }
-    return (feat.toString());
+    return feat.toString();
   }
 
   private String chunkandpostagbo(int i, String tag, String chunk) {
@@ -182,6 +182,6 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     if (i < 0) {
       feat.append("|").append(chunk);
     }
-    return (feat.toString());
+    return feat.toString();
   }
 }

@@ -58,7 +58,7 @@ public abstract class AbstractContextGenerator {
     StringBuilder feat = new StringBuilder(5);
     feat.append(i).append("=");
     feat.append(punct.getType());
-    return (feat.toString());
+    return feat.toString();
   }
 
   protected String cons(Parse p, int i) {
@@ -73,7 +73,7 @@ public abstract class AbstractContextGenerator {
     else {
       feat.append(EOS);
     }
-    return (feat.toString());
+    return feat.toString();
   }
 
   protected String consbo(Parse p, int i) { //cons back-off
@@ -88,7 +88,7 @@ public abstract class AbstractContextGenerator {
     else {
       feat.append(EOS);
     }
-    return (feat.toString());
+    return feat.toString();
   }
 
   /**

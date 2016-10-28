@@ -160,7 +160,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
       String fields[] = line.split(" ");
 
       // For Italian: WORD  POS-TAG SC-TAG NE-TAG
-      if (LANGUAGE.IT.equals(lang) && (fields.length == 4)) {
+      if (LANGUAGE.IT.equals(lang) && fields.length == 4) {
         sentence.add(fields[0]);
         tags.add(fields[3]); // 3 is NE-TAG
       }

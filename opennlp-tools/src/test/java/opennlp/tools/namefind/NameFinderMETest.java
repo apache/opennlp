@@ -272,7 +272,7 @@ public class NameFinderMETest {
 
     // now test if it can detect the sample sentences
 
-    String[] sentence = ("NATO United States Barack Obama").split("\\s+");
+    String[] sentence = "NATO United States Barack Obama".split("\\s+");
 
     Span[] names1 = nameFinder.find(sentence);
 

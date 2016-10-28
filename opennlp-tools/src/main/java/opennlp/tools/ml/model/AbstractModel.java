@@ -139,7 +139,7 @@ public abstract class AbstractModel implements MaxentModel {
   }
 
   public int getNumOutcomes() {
-    return(evalParams.getNumOutcomes());
+    return evalParams.getNumOutcomes();
   }
 
   /**
