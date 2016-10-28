@@ -33,7 +33,7 @@ import opennlp.tools.util.StringList;
 
 public class DetokenizationDictionary {
 
-  public static enum Operation {
+  public enum Operation {
 
     /**
      * Attaches the token to the token on the right side.

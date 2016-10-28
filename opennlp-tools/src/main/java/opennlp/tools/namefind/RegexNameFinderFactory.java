@@ -107,7 +107,7 @@ public class RegexNameFinderFactory {
     public String getType();
   }
 
-  public static enum DEFAULT_REGEX_NAME_FINDER implements RegexAble {
+  public enum DEFAULT_REGEX_NAME_FINDER implements RegexAble {
 
     USA_PHONE_NUM {
       @Override
