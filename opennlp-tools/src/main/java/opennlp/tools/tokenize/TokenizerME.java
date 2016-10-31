@@ -28,9 +28,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
@@ -246,8 +247,10 @@ public class TokenizerME extends AbstractTokenizer {
         factory.isUseAlphaNumericOptmization(),
         factory.getAlphaNumericPattern(), factory.getContextGenerator());
 
-    MaxentModel maxentModel = TrainUtil.train(eventStream,
+    EventTrainer trainer = TrainerFactory.getEventTrainer(
         mlParams.getSettings(), manifestInfoEntries);
+
+    MaxentModel maxentModel = trainer.train(eventStream);
 
     return new TokenizerModel(maxentModel, manifestInfoEntries,
         factory);
@@ -309,8 +312,10 @@ public class TokenizerME extends AbstractTokenizer {
         factory.createTokenContextGenerator(languageCode,
             getAbbreviations(abbreviations)));
 
-    MaxentModel maxentModel = TrainUtil.train(eventStream,
-        mlParams.getSettings(), manifestInfoEntries);
+    EventTrainer trainer = TrainerFactory.getEventTrainer(
+            mlParams.getSettings(), manifestInfoEntries);
+
+    MaxentModel maxentModel = trainer.train(eventStream);
 
     return new TokenizerModel(languageCode, maxentModel, abbreviations,
         useAlphaNumericOptimization, manifestInfoEntries);

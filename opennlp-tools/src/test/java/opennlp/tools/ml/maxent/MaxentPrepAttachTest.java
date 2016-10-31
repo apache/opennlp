@@ -26,9 +26,10 @@ import java.util.Map;
 
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.AbstractTrainer;
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.ml.model.UniformPrior;
 
@@ -64,7 +65,8 @@ public class MaxentPrepAttachTest {
         AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
 
-    MaxentModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
+    EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
+    MaxentModel model = trainer.train(createTrainingStream());
 
     testModel(model, 0.7997028967566229);
   }
@@ -75,9 +77,9 @@ public class MaxentPrepAttachTest {
     Map<String, String> trainParams = new HashMap<String, String>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GIS.MAXENT_VALUE);
 
-    MaxentModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
+    EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
+    MaxentModel model = trainer.train(createTrainingStream());
 
     testModel(model, 0.8086159940579352 );
   }
-
 }

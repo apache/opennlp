@@ -27,9 +27,10 @@ import java.util.Map;
 import java.util.Set;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
@@ -323,8 +324,9 @@ public class SentenceDetectorME implements SentenceDetector {
     ObjectStream<Event> eventStream = new SDEventStream(samples,
         sdFactory.getSDContextGenerator(), sdFactory.getEndOfSentenceScanner());
 
-    MaxentModel sentModel = TrainUtil.train(eventStream,
-        mlParams.getSettings(), manifestInfoEntries);
+    EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams.getSettings(), manifestInfoEntries);
+
+    MaxentModel sentModel = trainer.train(eventStream);
 
     return new SentenceModel(languageCode, sentModel, manifestInfoEntries,
         sdFactory);

@@ -86,7 +86,8 @@ final public class OpennlpUtil {
         throw new ResourceInitializationException(new Exception("Training parameters file is invalid!"));
       }
 
-      if (!isSequenceTrainingAllowed && TrainerFactory.isSequenceTraining(params.getSettings())) {
+      TrainerFactory.TrainerType trainerType = TrainerFactory.getTrainerType(params.getSettings());
+      if (!isSequenceTrainingAllowed && TrainerFactory.TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
         throw new ResourceInitializationException(new Exception("Sequence training is not supported!"));
       }
     }

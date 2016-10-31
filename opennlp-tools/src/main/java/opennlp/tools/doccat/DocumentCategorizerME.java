@@ -26,8 +26,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
@@ -190,9 +191,11 @@ public class DocumentCategorizerME implements DocumentCategorizer {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
-    MaxentModel model = TrainUtil.train(
-        new DocumentCategorizerEventStream(samples, featureGenerators),
-        mlParams.getSettings(), manifestInfoEntries);
+    EventTrainer trainer = TrainerFactory.getEventTrainer(
+            mlParams.getSettings(), manifestInfoEntries);
+
+    MaxentModel model = trainer.train(
+        new DocumentCategorizerEventStream(samples, featureGenerators));
 
     return new DoccatModel(languageCode, model, manifestInfoEntries);
   }
@@ -203,9 +206,11 @@ public class DocumentCategorizerME implements DocumentCategorizer {
 
     Map<String, String> manifestInfoEntries = new HashMap<String, String>();
 
-    MaxentModel model = TrainUtil.train(
-        new DocumentCategorizerEventStream(samples, factory.getFeatureGenerators()),
-        mlParams.getSettings(), manifestInfoEntries);
+    EventTrainer trainer = TrainerFactory.getEventTrainer(
+         mlParams.getSettings(), manifestInfoEntries);
+
+    MaxentModel model = trainer.train(
+        new DocumentCategorizerEventStream(samples, factory.getFeatureGenerators()));
 
     return new DoccatModel(languageCode, model, manifestInfoEntries, factory);
   }

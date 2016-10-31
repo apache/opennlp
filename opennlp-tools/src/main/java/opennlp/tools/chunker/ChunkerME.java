@@ -30,7 +30,6 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
-import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
@@ -192,7 +191,7 @@ public class ChunkerME implements Chunker {
     return bestSequence.getProbs();
   }
 
-    public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in,
+  public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in,
       TrainingParameters mlParams, ChunkerFactory factory) throws IOException {
 
     String beamSizeString = mlParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
@@ -239,7 +238,7 @@ public class ChunkerME implements Chunker {
 
   /**
    * @deprecated Use
-   *             {@link train(String, ObjectStream, TrainingParameters, ChunkerFactory)}
+   *             {@link ChunkerME#train(String, ObjectStream, TrainingParameters, ChunkerFactory)}
    *             instead.
    */
   public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in,
@@ -250,7 +249,10 @@ public class ChunkerME implements Chunker {
 
     ObjectStream<Event> es = new ChunkerEventStream(in, contextGenerator);
 
-    MaxentModel maxentModel = TrainUtil.train(es, mlParams.getSettings(), manifestInfoEntries);
+    EventTrainer trainer = TrainerFactory.getEventTrainer(
+            mlParams.getSettings(), manifestInfoEntries);
+
+    MaxentModel maxentModel = trainer.train(es);
 
     return new ChunkerModel(lang, maxentModel, manifestInfoEntries);
   }

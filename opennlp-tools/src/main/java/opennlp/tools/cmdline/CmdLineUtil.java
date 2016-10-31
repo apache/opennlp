@@ -326,7 +326,9 @@ public final class CmdLineUtil {
         throw new TerminateToolException(1, "Training parameters file '" + paramFile + "' is invalid!");
       }
 
-      if (!supportSequenceTraining && TrainerFactory.isSupportEventModelSequenceTraining(params.getSettings())) {
+      TrainerFactory.TrainerType trainerType = TrainerFactory.getTrainerType(params.getSettings());
+
+      if (!supportSequenceTraining && trainerType.equals(TrainerFactory.TrainerType.EVENT_MODEL_SEQUENCE_TRAINER)) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }

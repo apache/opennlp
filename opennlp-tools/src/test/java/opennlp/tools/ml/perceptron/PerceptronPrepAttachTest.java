@@ -25,8 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import opennlp.tools.ml.AbstractTrainer;
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.TrainUtil;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 
 import org.junit.Test;
@@ -53,7 +54,8 @@ public class PerceptronPrepAttachTest {
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put("UseSkippedAveraging", Boolean.toString(true));
 
-    MaxentModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
+    EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
+    MaxentModel model = trainer.train(createTrainingStream());
 
     testModel(model, 0.773706362961129);
   }
@@ -67,7 +69,8 @@ public class PerceptronPrepAttachTest {
     trainParams.put(AbstractTrainer.ITERATIONS_PARAM, Integer.toString(500));
     trainParams.put("Tolerance", Double.toString(0.0001d));
 
-    MaxentModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
+    EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
+    MaxentModel model = trainer.train(createTrainingStream());
 
     testModel(model, 0.7677642980935875);
   }
@@ -81,7 +84,8 @@ public class PerceptronPrepAttachTest {
     trainParams.put(AbstractTrainer.ITERATIONS_PARAM, Integer.toString(500));
     trainParams.put("StepSizeDecrease", Double.toString(0.06d));
 
-    MaxentModel model = TrainUtil.train(createTrainingStream(), trainParams, null);
+    EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
+    MaxentModel model = trainer.train(createTrainingStream());
 
     testModel(model, 0.7791532557563754);
   }
