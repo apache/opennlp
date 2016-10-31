@@ -45,7 +45,7 @@ public class ChunkerCrossValidator {
     this.listeners = listeners;
   }
 
-    public ChunkerCrossValidator(String languageCode, TrainingParameters params,
+  public ChunkerCrossValidator(String languageCode, TrainingParameters params,
       ChunkerFactory factory, ChunkerEvaluationMonitor... listeners) {
     this.chunkerFactory = factory;
     this.languageCode = languageCode;
@@ -77,8 +77,7 @@ public class ChunkerCrossValidator {
           params, chunkerFactory);
 
       // do testing
-      ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model,
-          ChunkerME.DEFAULT_BEAM_SIZE), listeners);
+      ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model), listeners);
 
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 
@@ -86,7 +85,7 @@ public class ChunkerCrossValidator {
     }
   }
 
-    public FMeasure getFMeasure() {
+  public FMeasure getFMeasure() {
     return fmeasure;
   }
 }
