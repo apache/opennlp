@@ -53,28 +53,6 @@ public class TrainerFactory {
     BUILTIN_TRAINERS = Collections.unmodifiableMap(_trainers);
   }
 
-  @Deprecated
-  private static String getPluggableTrainerType(String className) {
-    try {
-      Class<?> trainerClass = Class.forName(className);
-      if(trainerClass != null) {
-
-        if (EventTrainer.class.isAssignableFrom(trainerClass)) {
-          return EventTrainer.EVENT_VALUE;
-        }
-        else if (EventModelSequenceTrainer.class.isAssignableFrom(trainerClass)) {
-          return EventModelSequenceTrainer.SEQUENCE_VALUE;
-        }
-        else if (SequenceTrainer.class.isAssignableFrom(trainerClass)) {
-          return SequenceTrainer.SEQUENCE_VALUE;
-        }
-      }
-    } catch (ClassNotFoundException e) {
-    }
-
-    return null;
-  }
-
   /**
    * Determines the trainer type based on the ALGORITHM_PARAM value.
    *
@@ -131,84 +109,6 @@ public class TrainerFactory {
     return null;
   }
 
-  /**
-   * @deprecated use getTrainerType instead!
-   */
-  @Deprecated
-  public static boolean isSupportEvent(Map<String, String> trainParams) {
-
-    String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
-
-    if (trainerType == null) {
-      String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
-      if (alogrithmValue != null) {
-        trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
-      }
-    }
-
-    if (trainerType != null) {
-      return EventTrainer.EVENT_VALUE.equals(trainerType);
-    }
-
-    return true;
-  }
-
-  /**
-   * @deprecated use getTrainerType instead!
-   */
-  @Deprecated
-  public static boolean isSupportSequence(Map<String, String> trainParams) {
-    return isSupportEventModelSequenceTraining(trainParams);
-  }
-
-  /**
-   * @deprecated use getTrainerType instead!
-   */
-  @Deprecated
-  public static boolean isSupportEventModelSequenceTraining(Map<String, String> trainParams) {
-
-    String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
-
-    if (trainerType == null) {
-      String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
-      if (alogrithmValue != null) {
-        trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
-      }
-    }
-
-    return EventModelSequenceTrainer.SEQUENCE_VALUE.equals(trainerType);
-  }
-
-  /**
-   * @deprecated use getTrainerType instead!
-   */
-  @Deprecated
-  public static boolean isSupportSequenceTraining(Map<String, String> trainParams) {
-    String trainerType = trainParams.get(AbstractTrainer.TRAINER_TYPE_PARAM);
-
-    if (trainerType == null) {
-      String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
-      if (alogrithmValue != null) {
-        trainerType = getPluggableTrainerType(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
-      }
-    }
-
-    return SequenceTrainer.SEQUENCE_VALUE.equals(trainerType);
-  }
-
-  // TODO: How to do the testing ?!
-  // is support event sequence ?
-  // is support sequence ?
-
-  /**
-   * @deprecated use getTrainerType instead!
-   */
-  @Deprecated
-  public static boolean isSequenceTraining(Map<String, String> trainParams) {
-    return SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE
-        .equals(trainParams.get(AbstractTrainer.ALGORITHM_PARAM));
-  }
-
   public static SequenceTrainer getSequenceModelTrainer(Map<String, String> trainParams,
       Map<String, String> reportMap) {
     String trainerType = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
@@ -249,12 +149,6 @@ public class TrainerFactory {
     else {
       throw new IllegalArgumentException("Trainer type couldn't be determined!");
     }
-  }
-
-  @Deprecated
-  public static EventModelSequenceTrainer getSequenceTrainer(
-      Map<String, String> trainParams, Map<String, String> reportMap) {
-    return getEventModelSequenceTrainer(trainParams, reportMap);
   }
 
   public static EventTrainer getEventTrainer(Map<String, String> trainParams,
