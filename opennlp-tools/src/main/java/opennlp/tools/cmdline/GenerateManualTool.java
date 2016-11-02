@@ -160,8 +160,8 @@ public class GenerateManualTool {
       for (Argument argument : arguments) {
         sb.append("<row>\n");
         if (i == 0) {
-          sb.append("<entry morerows='" + (arguments.size() - 1)
-              + "' valign='middle'>").append(format).append("</entry>\n");
+          sb.append("<entry morerows='").append(arguments.size() - 1)
+              .append("' valign='middle'>").append(format).append("</entry>\n");
         }
         sb.append("<entry>").append(argument.getArgument())
             .append("</entry>\n");
@@ -229,8 +229,8 @@ public class GenerateManualTool {
   }
 
   private static void appendCode(String help, StringBuilder sb) {
-    sb.append("<screen>\n" + "<![CDATA[\n" + splitLongLines(help) + "\n"
-        + "]]>\n" + "</screen> \n");
+    sb.append("<screen>\n" + "<![CDATA[\n").append(splitLongLines(help))
+        .append("\n").append("]]>\n").append("</screen> \n");
   }
 
   /**

@@ -120,9 +120,9 @@ public abstract class DetailedFMeasureListener<T> implements
     StringBuilder ret = new StringBuilder();
     int tp = generalStats.getTruePositives();
     int found = generalStats.getFalsePositives() + tp;
-    ret.append("Evaluated " + samples + " samples with "
-        + generalStats.getTarget() + " entities; found: " + found
-        + " entities; correct: " + tp + ".\n");
+    ret.append("Evaluated ").append(samples).append(" samples with ")
+        .append(generalStats.getTarget()).append(" entities; found: ")
+        .append(found).append(" entities; correct: ").append(tp).append(".\n");
 
     ret.append(String.format(locale, FORMAT, "TOTAL",
         zeroOrPositive(generalStats.getPrecisionScore() * 100),

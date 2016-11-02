@@ -51,7 +51,7 @@ public class OntoNotesParseSampleStream extends FilterObjectStream<String, Parse
         }
       }
 
-      parseString.append(parse + " ");
+      parseString.append(parse).append(" ");
     }
   }
 }
