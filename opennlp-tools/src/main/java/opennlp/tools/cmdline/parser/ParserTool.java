@@ -18,10 +18,9 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import opennlp.tools.cmdline.BasicCmdLineTool;
@@ -29,10 +28,16 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.SystemInputStreamFactory;
+import opennlp.tools.cmdline.tokenizer.TokenizerModelLoader;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.Parse;
+import opennlp.tools.parser.Parser;
 import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.parser.ParserModel;
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.TokenizerME;
+import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -44,26 +49,31 @@ public final class ParserTool extends BasicCmdLineTool {
   }
 
   public String getHelp() {
-    return "Usage: " + CLI.CMD + " " + getName() + " [-bs n -ap n -k n] model < sentences \n"
+    return "Usage: " + CLI.CMD + " " + getName() + " [-bs n -ap n -k n -tk tok_model] model < sentences \n"
             + "-bs n: Use a beam size of n.\n"
             + "-ap f: Advance outcomes in with at least f% of the probability mass.\n"
-            + "-k n: Show the top n parses.  This will also display their log-probablities.";
+            + "-k n: Show the top n parses.  This will also display their log-probablities.\n"
+            + "-tk tok_model: Use the specified tokenizer model to tokenize the sentences. Defaults to a WhitespaceTokenizer.";
   }
   private static Pattern untokenizedParenPattern1 = Pattern.compile("([^ ])([({)}])");
   private static Pattern untokenizedParenPattern2 = Pattern.compile("([({)}])([^ ])");
 
-  public static Parse[] parseLine(String line, opennlp.tools.parser.Parser parser, int numParses) {
+  public static Parse[] parseLine(String line, Parser parser, int numParses) {
+    return parseLine( line, parser, WhitespaceTokenizer.INSTANCE, numParses );
+  }
+
+  public static Parse[] parseLine(String line, Parser parser, Tokenizer tokenizer, int numParses) {
+    // fix some parens patterns
     line = untokenizedParenPattern1.matcher(line).replaceAll("$1 $2");
     line = untokenizedParenPattern2.matcher(line).replaceAll("$1 $2");
-    StringTokenizer str = new StringTokenizer(line);
+
+    // tokenize
+    List<String> tokens = Arrays.asList( tokenizer.tokenize(line));
     StringBuilder sb = new StringBuilder();
-    List<String> tokens = new ArrayList<String>();
-    while (str.hasMoreTokens()) {
-      String tok = str.nextToken();
-      tokens.add(tok);
+    for (String tok : tokens) {
       sb.append(tok).append(" ");
     }
-    String text = sb.substring(0, sb.length() - 1);
+    String text = sb.substring(0, sb.length());
     Parse p = new Parse(text, new Span(0, text.length()), AbstractBottomUpParser.INC_NODE, 0, 0);
     int start = 0;
     int i = 0;
@@ -109,9 +119,14 @@ public final class ParserTool extends BasicCmdLineTool {
         advancePercentage = AbstractBottomUpParser.defaultAdvancePercentage;
       }
 
-      opennlp.tools.parser.Parser parser =
-              ParserFactory.create(model, beamSize, advancePercentage);
+      Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
+      String tokenizerModelName = CmdLineUtil.getParameter( "-tk", args );
+      if( tokenizerModelName != null ){
+        TokenizerModel tokenizerModel = new TokenizerModelLoader().load( new File( tokenizerModelName ) );
+        tokenizer = new TokenizerME( tokenizerModel );
+      }
 
+      Parser parser = ParserFactory.create(model, beamSize, advancePercentage);
 
       ObjectStream<String> lineStream = null;
       PerformanceMonitor perfMon = null;
@@ -124,7 +139,7 @@ public final class ParserTool extends BasicCmdLineTool {
           if (line.trim().length() == 0) {
             System.out.println();
           } else {
-            Parse[] parses = parseLine(line, parser, numParses);
+            Parse[] parses = parseLine(line, parser, tokenizer, numParses);
 
             for (int pi = 0, pn = parses.length; pi < pn; pi++) {
               if (showTopK) {
