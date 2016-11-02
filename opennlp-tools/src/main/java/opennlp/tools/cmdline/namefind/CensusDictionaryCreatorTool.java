@@ -127,24 +127,11 @@ public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
 
     System.out.println("Saving Dictionary...");
 
-    OutputStream out = null;
-
-    try {
-      out = new FileOutputStream(dictOutFile);
+    try (OutputStream out = new FileOutputStream(dictOutFile)) {
       mDictionary.serialize(out);
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while writing dictionary file: "
           + e.getMessage(), e);
-    }
-    finally {
-      if (out != null)
-        try {
-          out.close();
-        } catch (IOException e) {
-          // file might be damaged
-          throw new TerminateToolException(-1, "Attention: Failed to correctly write dictionary:" +
-              e.getMessage(), e);
-        }
     }
   }
 }
