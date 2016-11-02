@@ -121,7 +121,7 @@
               <phase>generate-resources</phase> 
               <goals><goal>jira-report</goal></goals>
                 <configuration>
-                  <fixVersionIds>12316450</fixVersionIds>
+                  <fixVersionIds>12326268</fixVersionIds>
                   <outputDirectory>${basedir}/target/issuesFixed/</outputDirectory>
                   <maxEntries>1000</maxEntries> <!-- hopefully, bigger than ever needed -->
                 </configuration>
