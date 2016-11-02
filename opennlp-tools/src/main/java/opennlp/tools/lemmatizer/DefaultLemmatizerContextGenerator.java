@@ -67,7 +67,7 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
     // Previous prediction
     String p_1;
 
-    String lex = toks[index].toString();
+    String lex = toks[index];
     if (index < 1) {
       p_1 = "p_1=bos";
     }

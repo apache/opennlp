@@ -34,7 +34,7 @@ public class DefaultPOSSequenceValidator implements SequenceValidator<String> {
     if (tagDictionary == null) {
       return true;
     } else {
-      String[] tags = tagDictionary.getTags(inputSequence[i].toString());
+      String[] tags = tagDictionary.getTags(inputSequence[i]);
       if (tags == null) {
         return true;
       } else {
