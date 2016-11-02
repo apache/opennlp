@@ -75,17 +75,13 @@ public class ExtensionLoader {
           Field instanceField;
           try {
             instanceField = extClazz.getDeclaredField("INSTANCE");
-          } catch (NoSuchFieldException e1) {
-            throw new ExtensionNotLoadedException(e1);
-          } catch (SecurityException e1) {
+          } catch (NoSuchFieldException | SecurityException e1) {
             throw new ExtensionNotLoadedException(e1);
           }
           if(instanceField != null) {
             try {
               return (T) instanceField.get(null);
-            } catch (IllegalArgumentException e1) {
-              throw new ExtensionNotLoadedException(e1);
-            } catch (IllegalAccessException e1) {
+            } catch (IllegalArgumentException | IllegalAccessException e1) {
               throw new ExtensionNotLoadedException(e1);
             }
           }

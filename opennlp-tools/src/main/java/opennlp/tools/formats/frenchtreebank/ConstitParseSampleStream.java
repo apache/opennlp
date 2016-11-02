@@ -44,9 +44,7 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
     SAXParserFactory factory = SAXParserFactory.newInstance();
     try {
       saxParser = factory.newSAXParser();
-    } catch (ParserConfigurationException e) {
-      throw new IllegalStateException(e);
-    } catch (SAXException e) {
+    } catch (ParserConfigurationException | SAXException e) {
       throw new IllegalStateException(e);
     }
   }
