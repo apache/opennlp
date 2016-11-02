@@ -367,22 +367,20 @@ public class LemmatizerFineGrainedReportListener
         "% Err", "Precision", "Recall", "F-Measure"));
     printLine(tableSize);
 
-    Iterator<String> tagIterator = tags.iterator();
-    while (tagIterator.hasNext()) {
-      String tag = tagIterator.next();
+    for (String tag : tags) {
       int ocurrencies = getTagFrequency(tag);
       int errors = getTagErrors(tag);
       String rate = MessageFormat.format("{0,number,#.###}",
-          (double) errors / ocurrencies);
+              (double) errors / ocurrencies);
 
       double p = getTagPrecision(tag);
       double r = getTagRecall(tag);
       double f = getTagFMeasure(tag);
 
       printStream.append(String.format(format, tag, errors, ocurrencies, rate,
-          MessageFormat.format("{0,number,#.###}", p > 0 ? p : 0),
-          MessageFormat.format("{0,number,#.###}", r > 0 ? r : 0),
-          MessageFormat.format("{0,number,#.###}", f > 0 ? f : 0))
+              MessageFormat.format("{0,number,#.###}", p > 0 ? p : 0),
+              MessageFormat.format("{0,number,#.###}", r > 0 ? r : 0),
+              MessageFormat.format("{0,number,#.###}", f > 0 ? f : 0))
 
       );
     }

@@ -368,9 +368,7 @@ public class POSTaggerFineGrainedReportListener implements
         "% Err", "Precision", "Recall", "F-Measure"));
     printLine(tableSize);
 
-    Iterator<String> tagIterator = tags.iterator();
-    while (tagIterator.hasNext()) {
-      String tag = tagIterator.next();
+    for (String tag : tags) {
       int ocurrencies = getTagFrequency(tag);
       int errors = getTagErrors(tag);
       String rate = MessageFormat.format("{0,number,#.###}", (double) errors
