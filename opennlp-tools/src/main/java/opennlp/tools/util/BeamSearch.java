@@ -29,7 +29,11 @@ import opennlp.tools.ml.model.MaxentModel;
  * @see Sequence
  * @see SequenceValidator
  * @see BeamSearchContextGenerator
+ *
+ *
+ * @deprecated use opennlp.tools.ml.BeamSearch instead
  */
+@Deprecated
 public class BeamSearch<T> {
 
   private static final Object[] EMPTY_ADDITIONAL_CONTEXT = new Object[0];
