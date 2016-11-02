@@ -311,9 +311,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
           getManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + entryName);
 
       if (artifactSerializerClazzName != null) {
-        if (artifactSerializerClazzName != null) {
-          factory = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerClazzName);
-        }
+        factory = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerClazzName);
       }
 
       if (factory != null) {
