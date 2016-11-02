@@ -273,7 +273,7 @@ public class ParserEventStream extends AbstractParserEventStream {
         }
         //attach Node
         if (attachNode != null) {
-          if (attachType == Parser.ATTACH_DAUGHTER) {
+          if (Parser.ATTACH_DAUGHTER.equals(attachType)) {
             Parse daughter = currentChunks[ci];
             if (debug) System.err.println("daughter attach a="+attachNode.getType()+":"+attachNode+" d="+daughter+" com="+lastChild(chunks[ci], rightFrontier.get(attachNodeIndex)));
             attachNode.add(daughter,rules);
@@ -290,7 +290,7 @@ public class ParserEventStream extends AbstractParserEventStream {
               }
             }
           }
-          else if (attachType == Parser.ATTACH_SISTER) {
+          else if (Parser.ATTACH_SISTER.equals(attachType)) {
             Parse frontierNode = rightFrontier.get(attachNodeIndex);
             rightFrontier.set(attachNodeIndex,frontierNode.getParent());
             Parse sister = currentChunks[ci];

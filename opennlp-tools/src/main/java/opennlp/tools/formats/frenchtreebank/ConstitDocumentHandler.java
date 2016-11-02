@@ -171,7 +171,7 @@ class ConstitDocumentHandler extends DefaultHandler {
           Constituent con = cons.get(ci);
           String type = con.getLabel();
           if (!type.equals(AbstractBottomUpParser.TOP_NODE)) {
-            if (type == AbstractBottomUpParser.TOK_NODE) {
+            if (AbstractBottomUpParser.TOK_NODE.equals(type)) {
               tokenIndex++;
             }
             Parse c = new Parse(txt, con.getSpan(), type, 1,tokenIndex);

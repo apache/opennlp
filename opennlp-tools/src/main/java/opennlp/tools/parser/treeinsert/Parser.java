@@ -142,8 +142,8 @@ public class Parser extends AbstractBottomUpParser {
   public static List<Parse> getRightFrontier(Parse root,Set<String> punctSet) {
     List<Parse> rf = new LinkedList<Parse>();
     Parse top;
-    if (root.getType() == AbstractBottomUpParser.TOP_NODE ||
-        root.getType() == AbstractBottomUpParser.INC_NODE) {
+    if (AbstractBottomUpParser.TOP_NODE.equals(root.getType()) ||
+        AbstractBottomUpParser.INC_NODE.equals(root.getType())) {
       top = collapsePunctuation(root.getChildren(),punctSet)[0];
     }
     else {

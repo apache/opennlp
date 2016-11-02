@@ -131,7 +131,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
   }
 
   public Parse getHead(Parse[] constituents, String type) {
-    if (constituents[0].getType() == Parser.TOK_NODE) {
+    if (Parser.TOK_NODE.equals(constituents[0].getType())) {
       return null;
     }
     HeadRule hr;
