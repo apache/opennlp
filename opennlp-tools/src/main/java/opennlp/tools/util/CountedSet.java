@@ -32,7 +32,10 @@ import java.util.Set;
 /**
  * Set which counts the number of times a values are added to it.
  * This value can be accessed with the #getCount method.
+ *
+ * @deprecated this class is no longer used in OpenNLP and will be removed
  */
+@Deprecated
 public class CountedSet<E> implements Set<E> {
 
   private Map<E, Integer> cset;
