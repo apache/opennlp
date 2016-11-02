@@ -101,14 +101,12 @@ public class NameFinderME implements TokenNameFinder {
    */
   static AdaptiveFeatureGenerator createFeatureGenerator() {
     return new CachedFeatureGenerator(
-            new AdaptiveFeatureGenerator[]{
-              new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
-              new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
-              new OutcomePriorFeatureGenerator(),
-              new PreviousMapFeatureGenerator(),
-              new BigramNameFeatureGenerator(),
-              new SentenceFeatureGenerator(true, false)
-            });
+            new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
+            new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
+            new OutcomePriorFeatureGenerator(),
+            new PreviousMapFeatureGenerator(),
+            new BigramNameFeatureGenerator(),
+            new SentenceFeatureGenerator(true, false));
   }
 
   private static AdaptiveFeatureGenerator createFeatureGenerator(
