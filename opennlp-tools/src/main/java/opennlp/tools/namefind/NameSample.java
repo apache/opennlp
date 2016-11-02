@@ -245,7 +245,7 @@ public class NameSample {
 
       }
       else if (parts[pi].equals(NameSampleDataStream.END_TAG)) {
-        if(catchingName == false) {
+        if(!catchingName) {
           throw new IOException("Found unexpected annotation: " + errorTokenWithContext(parts, pi));
         }
         catchingName = false;

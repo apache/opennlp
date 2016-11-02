@@ -164,7 +164,7 @@ public class ADSentenceStream extends
         /* now we have to take care of the lastLevel. Every time it raises, we will add the
         leaf to the node at the top. If it decreases, we remove the top. */
 
-        while (line != null && line.length() != 0 && line.startsWith("</s>") == false && !line.equals("&&")) {
+        while (line != null && line.length() != 0 && !line.startsWith("</s>") && !line.equals("&&")) {
           TreeElement element = this.getElement(line);
 
           if(element != null) {
