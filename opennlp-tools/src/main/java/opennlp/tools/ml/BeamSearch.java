@@ -19,13 +19,13 @@ package opennlp.tools.ml;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BeamSearchContextGenerator;
 import opennlp.tools.util.Cache;
-import opennlp.tools.util.Heap;
-import opennlp.tools.util.ListHeap;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 
@@ -83,9 +83,9 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
   public Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, double minSequenceScore, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
 
-    Heap<Sequence> prev = new ListHeap<Sequence>(size);
-    Heap<Sequence> next = new ListHeap<Sequence>(size);
-    Heap<Sequence> tmp;
+    Queue<Sequence> prev = new PriorityQueue<>(size);
+    Queue<Sequence> next = new PriorityQueue<>(size);
+    Queue<Sequence> tmp;
     prev.add(new Sequence());
 
     if (additionalContext == null) {
@@ -96,7 +96,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
       int sz = Math.min(size, prev.size());
 
       for (int sc = 0; prev.size() > 0 && sc < sz; sc++) {
-        Sequence top = prev.extract();
+        Sequence top = prev.poll();
         List<String> tmpOutcomes = top.getOutcomes();
         String[] outcomes = tmpOutcomes.toArray(new String[tmpOutcomes.size()]);
         String[] contexts = cg.getContext(i, sequence, outcomes, additionalContext);
@@ -157,7 +157,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
     Sequence[] topSequences = new Sequence[numSeq];
 
     for (int seqIndex = 0; seqIndex < numSeq; seqIndex++) {
-      topSequences[seqIndex] = prev.extract();
+      topSequences[seqIndex] = prev.poll();
     }
 
     return topSequences;
