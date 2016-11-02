@@ -42,10 +42,7 @@ public abstract class AbstractContextGenerator {
    * @return Punctuation feature for the specified parse and the specified punctuation at the specfied index.
    */
   protected String punct(Parse punct, int i) {
-    StringBuilder feat = new StringBuilder(5);
-    feat.append(i).append("=");
-    feat.append(punct.getCoveredText());
-    return feat.toString();
+    return String.valueOf(i) + "=" + punct.getCoveredText();
   }
 
   /**
@@ -55,10 +52,7 @@ public abstract class AbstractContextGenerator {
    * @return Punctuation feature for the specified parse and the specified punctuation at the specfied index.
    */
   protected String punctbo(Parse punct, int i) {
-    StringBuilder feat = new StringBuilder(5);
-    feat.append(i).append("=");
-    feat.append(punct.getType());
-    return feat.toString();
+    return String.valueOf(i) + "=" + punct.getType();
   }
 
   protected String cons(Parse p, int i) {

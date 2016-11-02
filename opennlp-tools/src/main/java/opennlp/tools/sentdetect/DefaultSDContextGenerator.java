@@ -129,10 +129,10 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
           }
         }
       }
-      prefix = new StringBuffer(sb.subSequence(prefixStart, position)).toString().trim();
+      prefix = String.valueOf(sb.subSequence(prefixStart, position)).trim();
     }
     int prevStart = previousSpaceIndex(sb, prefixStart);
-    previous = new StringBuffer(sb.subSequence(prevStart, prefixStart)).toString().trim();
+    previous = String.valueOf(sb.subSequence(prevStart, prefixStart)).trim();
 
     int suffixEnd = nextSpaceIndex(sb, position, lastIndex);
     {
@@ -153,8 +153,8 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
       next = "";
     }
     else {
-      suffix = new StringBuilder(sb.subSequence(position + 1, suffixEnd)).toString().trim();
-      next = new StringBuilder(sb.subSequence(suffixEnd + 1, nextEnd)).toString().trim();
+      suffix = String.valueOf(sb.subSequence(position + 1, suffixEnd)).trim();
+      next = String.valueOf(sb.subSequence(suffixEnd + 1, nextEnd)).trim();
     }
 
     collectFeatures(prefix,suffix,previous,next, sb.charAt(position));

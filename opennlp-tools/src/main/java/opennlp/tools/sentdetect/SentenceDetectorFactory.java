@@ -205,9 +205,7 @@ public class SentenceDetectorFactory extends BaseToolFactory {
   }
 
   private String eosCharArrayToString(char[] eosCharacters) {
-    StringBuilder eosString = new StringBuilder();
-    eosString.append(eosCharacters);
-    return eosString.toString();
+    return String.valueOf(eosCharacters);
   }
 
   private char[] eosStringToCharArray(String eosCharacters) {

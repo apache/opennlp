@@ -76,10 +76,8 @@ public class GenerateManualTool {
    * @return this tool usage
    */
   private static String getUsage() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Requires one argument: \n");
-    sb.append("  Path to the output XML file \n");
-    return sb.toString();
+    return "Requires one argument: \n" +
+            "  Path to the output XML file \n";
   }
 
   /**
