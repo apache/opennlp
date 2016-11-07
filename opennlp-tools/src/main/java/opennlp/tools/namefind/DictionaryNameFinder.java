@@ -67,7 +67,7 @@ public class DictionaryNameFinder implements TokenNameFinder {
 
     for (int offsetFrom = 0; offsetFrom < textTokenized.length; offsetFrom++) {
       Span nameFound = null;
-      String tokensSearching[] = new String[] {};
+      String tokensSearching[];
 
       for (int offsetTo = offsetFrom; offsetTo < textTokenized.length; offsetTo++) {
         int lengthSearching = offsetTo - offsetFrom + 1;

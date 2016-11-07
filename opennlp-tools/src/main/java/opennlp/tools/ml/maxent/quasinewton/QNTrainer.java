@@ -156,7 +156,7 @@ public class QNTrainer extends AbstractEventTrainer {
   public QNModel trainModel(int iterations, DataIndexer indexer) {
 
     // Train model's parameters
-    Function objectiveFunction = null;
+    Function objectiveFunction;
     if (threads == 1) {
       System.out.println("Computing model parameters ...");
       objectiveFunction = new NegLogLikelihood(indexer);

@@ -55,30 +55,27 @@ public class BuildContextGenerator extends AbstractContextGenerator {
    * @return the contexts/features for the decision to build a new constituent.
    */
   public String[] getContext(Parse[] constituents, int index) {
-    Parse p_2 = null;
-    Parse p_1 = null;
-    Parse p0 = null;
-    Parse p1 = null;
-    Parse p2 = null;
     int ps = constituents.length;
 
-    p0 = constituents[index];
+    Parse p0 = constituents[index];
+
+    Parse p1 = null;
     if (index + 1 < ps) {
       p1 = constituents[index + 1];
     }
+
+    Parse p2 = null;
     if (index +2 < ps) {
       p2 = constituents[index + 2];
     }
 
-    Collection<Parse> punct1s = null;
-    Collection<Parse> punct_1s = null;
-    Collection<Parse> punct2s = null;
-    Collection<Parse> punct_2s = null;
 
-    punct_1s=p0.getPreviousPunctuationSet();
-    punct1s=p0.getNextPunctuationSet();
+    Collection<Parse> punct_1s = p0.getPreviousPunctuationSet();
+    Collection<Parse> punct1s = p0.getNextPunctuationSet();
+
+    Collection<Parse> punct2s = null;
     if (p1 != null) {
-      punct2s=p1.getNextPunctuationSet();
+      punct2s = p1.getNextPunctuationSet();
     }
 
 
@@ -92,9 +89,10 @@ public class BuildContextGenerator extends AbstractContextGenerator {
       rf = Parser.getRightFrontier(constituents[0], emptyPunctSet);
     }
     getFrontierNodes(rf,leftNodes);
-    p_1 = leftNodes[0];
-    p_2 = leftNodes[1];
+    Parse p_1 = leftNodes[0];
+    Parse p_2 = leftNodes[1];
 
+    Collection<Parse> punct_2s = null;
     if (p_1 != null) {
       punct_2s = p_1.getPreviousPunctuationSet();
     }

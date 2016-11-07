@@ -56,7 +56,7 @@ public class AnnotationConfiguration {
     BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
 
     // Note: This only supports entities and relations section
-    String line = null;
+    String line;
     String sectionType = null;
 
     while ((line = reader.readLine())!= null) {

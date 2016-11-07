@@ -73,32 +73,31 @@ public class BuildContextGenerator extends AbstractContextGenerator {
 
     // cons(-2), cons(-1), cons(0), cons(1), cons(2)
     // cons(-2)
-    Parse p_2 = null;
-    Parse p_1 = null;
-    Parse p0 = null;
-    Parse p1 = null;
-    Parse p2 = null;
 
-    Collection<Parse> punct1s = null;
     Collection<Parse> punct2s = null;
-    Collection<Parse> punct_1s = null;
     Collection<Parse> punct_2s = null;
 
+    Parse p_2 = null;
     if (index - 2 >= 0) {
       p_2 = constituents[index - 2];
     }
+
+    Parse p_1 = null;
     if (index - 1 >= 0) {
       p_1 = constituents[index - 1];
       punct_2s = p_1.getPreviousPunctuationSet();
     }
-    p0 = constituents[index];
-    punct_1s=p0.getPreviousPunctuationSet();
-    punct1s=p0.getNextPunctuationSet();
+    Parse p0 = constituents[index];
+    Collection<Parse> punct_1s = p0.getPreviousPunctuationSet();
+    Collection<Parse> punct1s = p0.getNextPunctuationSet();
 
+    Parse p1 = null;
     if (index + 1 < ps) {
       p1 = constituents[index + 1];
       punct2s = p1.getNextPunctuationSet();
     }
+
+    Parse p2 = null;
     if (index + 2 < ps) {
       p2 = constituents[index + 2];
     }

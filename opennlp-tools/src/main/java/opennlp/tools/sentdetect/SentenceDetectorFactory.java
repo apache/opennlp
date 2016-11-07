@@ -190,7 +190,7 @@ public class SentenceDetectorFactory extends BaseToolFactory {
   public SDContextGenerator getSDContextGenerator() {
     Factory f = new Factory();
     char[] eosChars = getEOSCharacters();
-    Set<String> abbs = null;
+    Set<String> abbs;
     Dictionary abbDict = getAbbreviationDictionary();
     if (abbDict != null) {
       abbs = abbDict.asStringSet();

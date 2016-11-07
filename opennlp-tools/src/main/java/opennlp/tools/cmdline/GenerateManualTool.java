@@ -239,7 +239,7 @@ public class GenerateManualTool {
    */
   private static String splitLongLines(String stringBlock) {
     StringBuilder sb = new StringBuilder();
-    String line = null;
+    String line;
     try {
       BufferedReader reader = new BufferedReader(new StringReader(stringBlock));
       while ((line = reader.readLine()) != null) {

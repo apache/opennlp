@@ -59,8 +59,6 @@ public class CheckContextGenerator extends AbstractContextGenerator {
 
     Parse p1 = null;
     Parse p2 = null;
-    Parse p_1 = null;
-    Parse p_2 = null;
     Collection<Parse> p1s = constituents[index].getNextPunctuationSet();
     Collection<Parse> p2s = null;
     Collection<Parse> p_1s = constituents[index].getPreviousPunctuationSet();
@@ -86,8 +84,8 @@ public class CheckContextGenerator extends AbstractContextGenerator {
     }
 
     getFrontierNodes(rf,leftNodes);
-    p_1 = leftNodes[0];
-    p_2 = leftNodes[1];
+    Parse p_1 = leftNodes[0];
+    Parse p_2 = leftNodes[1];
     int ps = constituents.length;
     if (p_1 != null) {
       p_2s = p_1.getPreviousPunctuationSet();

@@ -101,7 +101,7 @@ public abstract class BaseToolFactory {
 
   public static BaseToolFactory create(String subclassName,
       ArtifactProvider artifactProvider) throws InvalidFormatException {
-    BaseToolFactory theFactory = null;
+    BaseToolFactory theFactory;
 
     try {
       // load the ToolFactory using the default constructor

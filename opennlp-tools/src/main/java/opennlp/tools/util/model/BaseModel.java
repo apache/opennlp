@@ -347,14 +347,11 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   }
 
   protected ArtifactSerializer getArtifactSerializer(String resourceName) {
-    String extension = null;
     try {
-      extension = getEntryExtension(resourceName);
+      return artifactSerializers.get(getEntryExtension(resourceName));
     } catch (InvalidFormatException e) {
       throw new IllegalStateException(e);
     }
-
-    return artifactSerializers.get(extension);
   }
 
   protected static Map<String, ArtifactSerializer> createArtifactSerializers() {
@@ -621,7 +618,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     byte[] buffer = new byte[1024 * 4];
     int count = 0;
-    int n = 0;
+    int n;
     while (-1 != (n = input.read(buffer))) {
       output.write(buffer, 0, n);
       count += n;

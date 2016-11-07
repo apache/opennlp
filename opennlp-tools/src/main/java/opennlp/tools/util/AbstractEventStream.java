@@ -57,7 +57,7 @@ public abstract class AbstractEventStream<T> implements ObjectStream<Event> {
       return events.next();
     }
     else {
-      T sample = null;
+      T sample;
       while (!events.hasNext() && (sample = samples.read()) != null) {
         events = createEvents(sample);
       }

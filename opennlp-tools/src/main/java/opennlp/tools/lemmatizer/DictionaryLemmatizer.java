@@ -100,7 +100,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
    * @return the lemma
    */
   public String apply(final String word, final String postag) {
-    String lemma = null;
+    String lemma;
     final List<String> keys = this.getDictKeys(word, postag);
     // lookup lemma as value of the map
     final String keyValue = this.dictMap.get(keys);

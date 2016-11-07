@@ -228,7 +228,7 @@ public class TokenizerFactory extends BaseToolFactory {
    */
   public TokenContextGenerator getContextGenerator() {
     Factory f = new Factory();
-    Set<String> abbs = null;
+    Set<String> abbs;
     Dictionary abbDict = getAbbreviationDictionary();
     if (abbDict != null) {
       abbs = abbDict.asStringSet();

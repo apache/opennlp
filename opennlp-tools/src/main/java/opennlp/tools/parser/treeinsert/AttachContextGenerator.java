@@ -77,12 +77,9 @@ public class AttachContextGenerator extends AbstractContextGenerator {
       p1 = constituents[index+1];
     }
 
-    Collection<Parse> punct1s = null;
-    Collection<Parse> punct_1s = null;
-    Collection<Parse> punct_1fs = null;
-    punct_1fs = fn.getPreviousPunctuationSet();
-    punct_1s=p0.getPreviousPunctuationSet();
-    punct1s=p0.getNextPunctuationSet();
+    Collection<Parse> punct_1fs = fn.getPreviousPunctuationSet();
+    Collection<Parse> punct_1s = p0.getPreviousPunctuationSet();
+    Collection<Parse> punct1s = p0.getNextPunctuationSet();
 
     String consfp = cons(fp,-3);
     String consf = cons(fn,-2);

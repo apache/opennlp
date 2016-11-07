@@ -219,7 +219,7 @@ public abstract class AbstractBottomUpParser implements Parser {
   public static Parse[] collapsePunctuation(Parse[] chunks, Set<String> punctSet) {
     List<Parse> collapsedParses = new ArrayList<Parse>(chunks.length);
     int lastNonPunct = -1;
-    int nextNonPunct = -1;
+    int nextNonPunct;
     for (int ci=0,cn=chunks.length;ci<cn;ci++) {
       if (punctSet.contains(chunks[ci].getType())) {
         if (lastNonPunct >= 0) {
@@ -383,9 +383,9 @@ public abstract class AbstractBottomUpParser implements Parser {
     String words[] = new String[children.length];
     String ptags[] = new String[words.length];
     double probs[] = new double[words.length];
-    Parse sp = null;
+
     for (int i = 0, il = children.length; i < il; i++) {
-      sp = children[i];
+      Parse sp = children[i];
       words[i] = sp.getHead().getCoveredText();
       ptags[i] = sp.getType();
     }

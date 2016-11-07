@@ -76,13 +76,10 @@ public class EntityLinkerProperties {
    */
   public String getProperty(String key, String defaultValue) throws IOException {
 
-    String propVal = defaultValue;
-
     if (props != null) {
-      propVal = props.getProperty(key, defaultValue);
+      return props.getProperty(key, defaultValue);
     } else {
       throw new IOException("EntityLinkerProperties was not successfully initialized");
     }
-    return propVal;
   }
 }

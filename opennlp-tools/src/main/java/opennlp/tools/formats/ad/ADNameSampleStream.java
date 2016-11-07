@@ -347,10 +347,9 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
         // a NER.
         // we check if it is true, and expand the last NER
         int lastIndex = names.size() - 1;
-        Span last = null;
         boolean error = false;
         if (names.size() > 0) {
-          last = names.get(lastIndex);
+          Span last = names.get(lastIndex);
           if (last.getEnd() == sentence.size() - 1) {
             names.set(lastIndex, new Span(last.getStart(), sentence.size(),
                 last.getType()));

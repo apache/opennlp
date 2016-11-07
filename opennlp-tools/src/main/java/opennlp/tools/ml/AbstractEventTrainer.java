@@ -66,7 +66,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
 
     int cutoff = getCutoff();
     boolean sortAndMerge = isSortAndMerge();
-    DataIndexer indexer = null;
+    DataIndexer indexer;
 
     if (DATA_INDEXER_ONE_PASS_VALUE.equals(dataIndexerName)) {
       indexer = new OnePassDataIndexer(events, cutoff, sortAndMerge);

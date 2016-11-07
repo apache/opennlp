@@ -170,7 +170,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
 
     InputStream descriptorIn = new ByteArrayInputStream(featureGeneratorBytes);
 
-    AdaptiveFeatureGenerator generator = null;
+    AdaptiveFeatureGenerator generator;
     try {
       generator = GeneratorFactory.create(descriptorIn, new FeatureGeneratorResourceProvider() {
 

@@ -130,7 +130,7 @@ public class TokenSample {
         // and this token insert the separator chars
         // otherwise insert a space
 
-        String separator = "";
+        String separator;
         if (lastEndIndex == token.getStart())
           separator = separatorChars;
         else
@@ -181,7 +181,7 @@ public class TokenSample {
       boolean wasTokenReplaced = false;
 
       int tokStart = 0;
-      int tokEnd = -1;
+      int tokEnd;
       while ((tokEnd = whitespaceToken.indexOf(separatorChars, tokStart)) > -1) {
 
         String token = whitespaceToken.substring(tokStart, tokEnd);

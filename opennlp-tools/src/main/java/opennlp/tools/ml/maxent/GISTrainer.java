@@ -340,7 +340,7 @@ class GISTrainer {
     for (int oi = 0; oi < numOutcomes; oi++) {
       allOutcomesPattern[oi] = oi;
     }
-    int numActiveOutcomes = 0;
+    int numActiveOutcomes;
     for (int pi = 0; pi < numPreds; pi++) {
       numActiveOutcomes = 0;
       if (useSimpleSmoothing) {
@@ -404,7 +404,7 @@ class GISTrainer {
   /* Estimate and return the model parameters. */
   private void findParameters(int iterations, double correctionConstant) {
     double prevLL = 0.0;
-    double currLL = 0.0;
+    double currLL;
     display("Performing " + iterations + " iterations.\n");
     for (int i = 1; i <= iterations; i++) {
       if (i < 10)
@@ -569,7 +569,7 @@ class GISTrainer {
     }
 
     for (Future<?> future : futures) {
-      ModelExpactationComputeTask finishedTask = null;
+      ModelExpactationComputeTask finishedTask;
       try {
         finishedTask = (ModelExpactationComputeTask) future.get();
       } catch (InterruptedException e) {
