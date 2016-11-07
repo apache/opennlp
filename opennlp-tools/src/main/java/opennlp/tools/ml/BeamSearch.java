@@ -96,7 +96,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
       int sz = Math.min(size, prev.size());
 
       for (int sc = 0; prev.size() > 0 && sc < sz; sc++) {
-        Sequence top = prev.poll();
+        Sequence top = prev.remove();
         List<String> tmpOutcomes = top.getOutcomes();
         String[] outcomes = tmpOutcomes.toArray(new String[tmpOutcomes.size()]);
         String[] contexts = cg.getContext(i, sequence, outcomes, additionalContext);
@@ -157,7 +157,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
     Sequence[] topSequences = new Sequence[numSeq];
 
     for (int seqIndex = 0; seqIndex < numSeq; seqIndex++) {
-      topSequences[seqIndex] = prev.poll();
+      topSequences[seqIndex] = prev.remove();
     }
 
     return topSequences;
