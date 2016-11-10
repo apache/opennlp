@@ -63,6 +63,7 @@ import org.apache.uima.resource.ResourceInitializationException;
 public final class NameFinder extends AbstractNameFinder {
 
   public static final String NAME_TYPE_PARAMETER = "opennlp.uima.NameType";
+  public static final String NAME_TYPE_MAP_PARAMETER = "opennlp.uima.NameTypeMap";
 
   public static final String TOKEN_PATTERN_OPTIMIZATION =
       "opennlp.uima.TokenPatternOptimization";
