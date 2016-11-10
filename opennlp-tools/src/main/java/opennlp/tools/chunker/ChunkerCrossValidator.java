@@ -34,17 +34,6 @@ public class ChunkerCrossValidator {
   private ChunkerEvaluationMonitor[] listeners;
   private ChunkerFactory chunkerFactory;
 
-  /**
-   * @deprecated Use {@link #ChunkerCrossValidator(String, TrainingParameters, ChunkerFactory, ChunkerEvaluationMonitor...)} instead.
-   */
-  public ChunkerCrossValidator(String languageCode, TrainingParameters params,
-      ChunkerEvaluationMonitor... listeners) {
-
-    this.languageCode = languageCode;
-    this.params = params;
-    this.listeners = listeners;
-  }
-
   public ChunkerCrossValidator(String languageCode, TrainingParameters params,
       ChunkerFactory factory, ChunkerEvaluationMonitor... listeners) {
     this.chunkerFactory = factory;

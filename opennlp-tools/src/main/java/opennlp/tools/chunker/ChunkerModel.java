@@ -19,9 +19,6 @@
 package opennlp.tools.chunker;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -30,8 +27,6 @@ import java.util.Properties;
 
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.BinaryFileDataReader;
-import opennlp.tools.ml.model.GenericModelReader;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
@@ -48,15 +43,6 @@ public class ChunkerModel extends BaseModel {
 
   private static final String COMPONENT_NAME = "ChunkerME";
   private static final String CHUNKER_MODEL_ENTRY_NAME = "chunker.model";
-
-  /**
-   * @deprecated Use
-   *             {@link #ChunkerModel(String, MaxentModel, Map, ChunkerFactory)}
-   *             instead.
-   */
-  public ChunkerModel(String languageCode, MaxentModel chunkerModel, Map<String, String> manifestInfoEntries) {
-    this(languageCode, chunkerModel, ChunkerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, new ChunkerFactory());
-  }
 
   public ChunkerModel(String languageCode, SequenceClassificationModel<String> chunkerModel,
       Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
@@ -79,15 +65,6 @@ public class ChunkerModel extends BaseModel {
     manifest.put(BeamSearch.BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
 
     checkArtifactMap();
-  }
-
-  /**
-   * @deprecated Use
-   *             {@link #ChunkerModel(String, MaxentModel, ChunkerFactory)
-   *             instead.}
-   */
-  public ChunkerModel(String languageCode, MaxentModel chunkerModel) {
-    this(languageCode, chunkerModel, null, new ChunkerFactory());
   }
 
   public ChunkerModel(String languageCode, MaxentModel chunkerModel, ChunkerFactory factory) {
@@ -158,23 +135,5 @@ public class ChunkerModel extends BaseModel {
 
   public ChunkerFactory getFactory() {
     return (ChunkerFactory) this.toolFactory;
-  }
-
-  public static void main(String[] args) throws FileNotFoundException, IOException {
-
-    if (args.length != 4){
-      System.err.println("ChunkerModel -lang code packageName modelName");
-      System.exit(1);
-    }
-
-    String lang = args[1];
-    String packageName = args[2];
-    String modelName = args[3];
-
-    AbstractModel chunkerModel = new GenericModelReader(
-        new BinaryFileDataReader(new FileInputStream(modelName))).getModel();
-
-    ChunkerModel packageModel = new ChunkerModel(lang, chunkerModel);
-    packageModel.serialize(new FileOutputStream(packageName));
   }
 }
