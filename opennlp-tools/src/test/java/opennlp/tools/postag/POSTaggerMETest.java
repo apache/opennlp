@@ -18,16 +18,18 @@
 
 package opennlp.tools.postag;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.model.ModelType;
 
 import org.junit.Test;
+
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.model.ModelType;
 
 /**
  * Tests for the {@link POSTaggerME} class.
@@ -35,10 +37,10 @@ import org.junit.Test;
 public class POSTaggerMETest {
 
   private static ObjectStream<POSSample> createSampleStream() throws IOException {
-    InputStream in = POSTaggerMETest.class.getClassLoader().getResourceAsStream(
-        "opennlp/tools/postag/AnnotatedSentences.txt");
+    InputStreamFactory in = new ResourceAsStreamFactory(POSTaggerMETest.class, 
+        "/opennlp/tools/postag/AnnotatedSentences.txt");
 
-    return new WordTagSampleStream((new InputStreamReader(in)));
+    return new WordTagSampleStream(new PlainTextByLineStream(in, UTF_8));
   }
 
   /**

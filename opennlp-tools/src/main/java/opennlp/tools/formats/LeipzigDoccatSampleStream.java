@@ -18,12 +18,13 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.util.FilterObjectStream;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
@@ -51,13 +52,13 @@ public class LeipzigDoccatSampleStream extends
    * @throws IOException IOException
    */
   LeipzigDoccatSampleStream(String language, int sentencesPerDocument,
-      InputStream in) throws IOException {
-    super(new PlainTextByLineStream(in, "UTF-8"));
+      InputStreamFactory in) throws IOException {
+    super(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
     System.setOut(new PrintStream(System.out, true, "UTF-8"));
     this.language = language;
     this.sentencesPerDocument = sentencesPerDocument;
   }
-
+  
   public DocumentSample read() throws IOException {
 
     int count = 0;

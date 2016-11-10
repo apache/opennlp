@@ -70,8 +70,9 @@ public class LeipzigDocumentSampleStreamFactory
 
     for (int i = 0; i < sentencesFiles.length; i++) {
       try {
-        sampleStreams[i] = new LeipzigDoccatSampleStream(sentencesFiles[i].getName().substring(0, 3), 20,
-            CmdLineUtil.openInFile(sentencesFiles[i]));
+        sampleStreams[i] = new LeipzigDoccatSampleStream(
+            sentencesFiles[i].getName().substring(0, 3), 20,
+            CmdLineUtil.createInputStreamFactory(sentencesFiles[i]));
       } catch (IOException e) {
         throw new TerminateToolException(-1, "IO error while opening sample data: " + e.getMessage(), e);
       }

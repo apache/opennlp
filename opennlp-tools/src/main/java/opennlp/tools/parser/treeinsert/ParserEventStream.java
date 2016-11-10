@@ -20,11 +20,13 @@ package opennlp.tools.parser.treeinsert;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader;
 import opennlp.tools.ml.model.AbstractModel;
@@ -379,13 +381,19 @@ public class ParserEventStream extends AbstractParserEventStream {
     if (fun) {
       Parse.useFunctionTags(true);
     }
-    ObjectStream<Event> es = new ParserEventStream(new ParseSampleStream(new PlainTextByLineStream(new java.io.InputStreamReader(System.in))), rules, etype, dict);
-    Event e;
-    while ((e = es.read()) != null) {
-      if (model != null) {
-        System.out.print(model.eval(e.getContext())[model.getIndex(e.getOutcome())]+" ");
+    
+    try (ObjectStream<Event> es = new ParserEventStream(
+        new ParseSampleStream(new PlainTextByLineStream(
+            new SystemInputStreamFactory(), Charset.defaultCharset())),
+        rules, etype, dict)) {
+      Event e;
+      while ((e = es.read()) != null) {
+        if (model != null) {
+          System.out.print(
+              model.eval(e.getContext())[model.getIndex(e.getOutcome())] + " ");
+        }
+        System.out.println(e);
       }
-      System.out.println(e);
     }
   }
 }

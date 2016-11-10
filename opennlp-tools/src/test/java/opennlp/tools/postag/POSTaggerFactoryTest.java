@@ -17,25 +17,27 @@
 
 package opennlp.tools.postag;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+
+import org.junit.Test;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSContextGenerator;
 import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSDictionary;
 import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSSequenceValidator;
 import opennlp.tools.util.BaseToolFactory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
-
-import org.junit.Test;
 
 /**
  * Tests for the {@link POSTaggerFactory} class.
@@ -44,10 +46,11 @@ public class POSTaggerFactoryTest {
 
   private static ObjectStream<POSSample> createSampleStream()
       throws IOException {
-    InputStream in = POSTaggerFactoryTest.class.getClassLoader()
-        .getResourceAsStream("opennlp/tools/postag/AnnotatedSentences.txt");
+    InputStreamFactory in = new ResourceAsStreamFactory(
+        POSTaggerFactoryTest.class,
+        "/opennlp/tools/postag/AnnotatedSentences.txt");
 
-    return new WordTagSampleStream((new InputStreamReader(in)));
+    return new WordTagSampleStream(new PlainTextByLineStream(in, UTF_8));
   }
 
   static POSModel trainPOSModel(ModelType type, POSTaggerFactory factory)

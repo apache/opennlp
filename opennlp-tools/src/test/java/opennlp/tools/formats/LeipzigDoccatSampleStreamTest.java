@@ -21,18 +21,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
-import java.io.InputStream;
-
-import opennlp.tools.doccat.DocumentSample;
-import opennlp.tools.util.ObjectStream;
 
 import org.junit.Test;
+
+import opennlp.tools.doccat.DocumentSample;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
 
 public class LeipzigDoccatSampleStreamTest {
 
   @Test
   public void testParsingSample() throws IOException {
-    InputStream in = LeipzigDoccatSampleStreamTest.class.getResourceAsStream(
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
         "/opennlp/tools/formats/leipzig-en.sample");
 
     ObjectStream<DocumentSample> sampleStream =
@@ -51,5 +51,7 @@ public class LeipzigDoccatSampleStreamTest {
     assertEquals("en", doc4.getCategory());
 
     assertNull(sampleStream.read());
+    
+    sampleStream.close();
   }
 }

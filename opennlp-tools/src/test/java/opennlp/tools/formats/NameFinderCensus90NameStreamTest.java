@@ -15,25 +15,28 @@
 
 package opennlp.tools.formats;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.StringList;
 
 import org.junit.Test;
 
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringList;
+
 public class NameFinderCensus90NameStreamTest {
 
-  private static ObjectStream<StringList> openData(String name) throws IOException {
-    InputStream in = NameFinderCensus90NameStreamTest.class.getResourceAsStream("/opennlp/tools/formats/" + name);
+  private static ObjectStream<StringList> openData(String name)
+      throws IOException {
+    InputStreamFactory in = new ResourceAsStreamFactory(
+        NameFinderCensus90NameStreamTest.class,
+        "/opennlp/tools/formats/" + name);
 
-    return new NameFinderCensus90NameStream(in, Charset.forName("utf-8"));
+    return new NameFinderCensus90NameStream(in, UTF_8);
   }
 
   @Test

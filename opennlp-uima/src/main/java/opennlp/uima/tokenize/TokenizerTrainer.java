@@ -18,33 +18,16 @@
 package opennlp.uima.tokenize;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import opennlp.tools.ml.maxent.GIS;
-import opennlp.tools.tokenize.TokenSample;
-import opennlp.tools.tokenize.TokenSampleStream;
-import opennlp.tools.tokenize.TokenizerME;
-import opennlp.tools.tokenize.TokenizerModel;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamUtils;
-import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
-import opennlp.uima.util.CasConsumerUtil;
-import opennlp.uima.util.ContainingConstraint;
-import opennlp.uima.util.OpennlpUtil;
-import opennlp.uima.util.SampleTraceStream;
-import opennlp.uima.util.UimaUtil;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
@@ -58,6 +41,23 @@ import org.apache.uima.resource.ResourceProcessException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 import org.apache.uima.util.ProcessTrace;
+
+import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.tokenize.TokenSampleStream;
+import opennlp.tools.tokenize.TokenizerME;
+import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.MarkableFileInputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.Span;
+import opennlp.uima.util.CasConsumerUtil;
+import opennlp.uima.util.ContainingConstraint;
+import opennlp.uima.util.OpennlpUtil;
+import opennlp.uima.util.SampleTraceStream;
+import opennlp.uima.util.UimaUtil;
 
 /**
  * OpenNLP Tokenizer trainer.
@@ -231,36 +231,34 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
     // if trace file
     // serialize events ...
 
-    InputStream additionalTrainingDataIn = null;
     Writer samplesOut = null;
     TokenizerModel tokenModel;
 
-    try {
-      if (additionalTrainingDataFile != null) {
+    if (additionalTrainingDataFile != null) {
 
-        if (mLogger.isLoggable(Level.INFO)) {
-          mLogger.log(Level.INFO, "Using addional training data file: " + additionalTrainingDataFile);
-        }
-
-        additionalTrainingDataIn = new FileInputStream(additionalTrainingDataFile);
-
-        ObjectStream<TokenSample> additionalSamples = new TokenSampleStream(
-            new PlainTextByLineStream(new InputStreamReader(additionalTrainingDataIn, additionalTrainingDataEncoding)));
-
-        samples = ObjectStreamUtils.createObjectStream(samples, additionalSamples);
+      if (mLogger.isLoggable(Level.INFO)) {
+        mLogger.log(Level.INFO, "Using addional training data file: " + additionalTrainingDataFile);
       }
 
-      if (sampleTraceFile != null) {
-        samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
-        samples = new SampleTraceStream<TokenSample>(samples, samplesOut);
-      }
+      InputStreamFactory additionalTrainingDataIn = new MarkableFileInputStreamFactory(
+          new File(additionalTrainingDataFile));
 
-      tokenModel = TokenizerME.train(language, samples, isSkipAlphaNumerics);
+      Charset additionalTrainingDataCharset = Charset
+          .forName(additionalTrainingDataEncoding);
+
+      ObjectStream<TokenSample> additionalSamples = new TokenSampleStream(
+          new PlainTextByLineStream(additionalTrainingDataIn,
+              additionalTrainingDataCharset));
+
+      samples = ObjectStreamUtils.createObjectStream(samples, additionalSamples);
     }
-    finally {
-      if (additionalTrainingDataIn != null)
-        additionalTrainingDataIn.close();
+
+    if (sampleTraceFile != null) {
+      samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
+      samples = new SampleTraceStream<TokenSample>(samples, samplesOut);
     }
+
+    tokenModel = TokenizerME.train(language, samples, isSkipAlphaNumerics);
 
     // dereference to allow garbage collection
     tokenSamples = null;

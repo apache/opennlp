@@ -18,7 +18,6 @@
 package opennlp.tools.cmdline.namefind;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,6 +30,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.formats.NameFinderCensus90NameStream;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.StringList;
 
@@ -106,23 +106,17 @@ public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
     CmdLineUtil.checkInputFile("Name data", testData);
     CmdLineUtil.checkOutputFile("Dictionary file", dictOutFile);
 
-    FileInputStream sampleDataIn = CmdLineUtil.openInFile(testData);
-    ObjectStream<StringList> sampleStream = new NameFinderCensus90NameStream(sampleDataIn,
-        Charset.forName(params.getEncoding()));
+    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(testData);
 
     Dictionary mDictionary;
-    try {
+    try (
+        ObjectStream<StringList> sampleStream = new NameFinderCensus90NameStream(
+            sampleDataIn, Charset.forName(params.getEncoding()))) {
       System.out.println("Creating Dictionary...");
       mDictionary = createDictionary(sampleStream);
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
           + e.getMessage(), e);
-    } finally {
-      try {
-        sampleStream.close();
-      } catch(IOException e) {
-        // sorry this can fail..
-      }
     }
 
     System.out.println("Saving Dictionary...");
