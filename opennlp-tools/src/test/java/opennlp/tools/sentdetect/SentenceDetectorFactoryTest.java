@@ -17,6 +17,7 @@
 
 package opennlp.tools.sentdetect;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -25,19 +26,20 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 
+import org.junit.Test;
+
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyDictionary;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyEOSScanner;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummySDContextGenerator;
 import opennlp.tools.sentdetect.lang.Factory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
-
-import org.junit.Test;
 
 /**
  * Tests for the {@link SentenceDetectorME} class.
@@ -46,11 +48,12 @@ public class SentenceDetectorFactoryTest {
 
   private static ObjectStream<SentenceSample> createSampleStream()
       throws IOException {
-    InputStream in = SentenceDetectorFactoryTest.class.getClassLoader()
-        .getResourceAsStream("opennlp/tools/sentdetect/Sentences.txt");
+    InputStreamFactory in = new ResourceAsStreamFactory(
+        SentenceDetectorFactoryTest.class,
+        "/opennlp/tools/sentdetect/Sentences.txt");
 
     return new SentenceSampleStream(new PlainTextByLineStream(
-        new InputStreamReader(in)));
+        in, UTF_8));
   }
 
   private static SentenceModel train(SentenceDetectorFactory factory)

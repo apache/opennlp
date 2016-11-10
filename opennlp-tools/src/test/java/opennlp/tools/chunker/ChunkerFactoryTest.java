@@ -17,21 +17,20 @@
 
 package opennlp.tools.chunker;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 
+import org.junit.Test;
+
+import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
-
-import org.junit.Test;
 
 /**
  * Tests for the {@link ChunkerFactory} class.
@@ -40,12 +39,11 @@ public class ChunkerFactoryTest {
 
   private static ObjectStream<ChunkSample> createSampleStream()
       throws IOException {
-    InputStream in = ChunkerFactoryTest.class.getClassLoader()
-        .getResourceAsStream("opennlp/tools/chunker/test.txt");
-    Reader sentences = new InputStreamReader(in);
+    ResourceAsStreamFactory in = new ResourceAsStreamFactory(
+        ChunkerFactoryTest.class, "/opennlp/tools/chunker/test.txt");
 
-    ChunkSampleStream stream = new ChunkSampleStream(new PlainTextByLineStream(
-        sentences));
+    ChunkSampleStream stream = new ChunkSampleStream(
+        new PlainTextByLineStream(in, UTF_8));
     return stream;
   }
 

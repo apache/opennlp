@@ -17,9 +17,12 @@
 
 package opennlp.tools.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class MockInputStreamFactory implements InputStreamFactory {
 
@@ -27,6 +30,14 @@ public class MockInputStreamFactory implements InputStreamFactory {
 
   public MockInputStreamFactory(InputStream is) throws FileNotFoundException {
     this.is = is;
+  }
+  
+  public MockInputStreamFactory(String str) throws FileNotFoundException {
+    this.is = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
+  }
+  
+  public MockInputStreamFactory(String str, Charset charset) throws FileNotFoundException {
+    this.is = new ByteArrayInputStream(str.getBytes(charset));
   }
 
   @Override

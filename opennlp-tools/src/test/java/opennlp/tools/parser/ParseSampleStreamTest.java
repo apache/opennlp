@@ -17,26 +17,27 @@
 
 package opennlp.tools.parser;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 import org.junit.Test;
+
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 
 public class ParseSampleStreamTest {
 
   static ObjectStream<Parse> createParseSampleStream() throws IOException {
 
-    InputStream in = ParseSampleStreamTest.class.getResourceAsStream(
-    "/opennlp/tools/parser/test.parse");
+    InputStreamFactory in = new ResourceAsStreamFactory(
+        ParseSampleStreamTest.class, "/opennlp/tools/parser/test.parse");
 
-    return new ParseSampleStream(new PlainTextByLineStream(new InputStreamReader(in, "UTF-8")));
+    return new ParseSampleStream(new PlainTextByLineStream(in, UTF_8));
   }
 
   @Test

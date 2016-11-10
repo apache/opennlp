@@ -17,6 +17,7 @@
 
 package opennlp.tools.chunker;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,15 +25,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.Arrays;
 
+import org.junit.Test;
+
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
-
-import org.junit.Test;
 
 public class ChunkSampleTest {
 
@@ -184,14 +185,11 @@ public class ChunkSampleTest {
 
   @Test
   public void testRegions() throws IOException {
-	InputStream in = getClass().getClassLoader()
-			.getResourceAsStream("opennlp/tools/chunker/output.txt");
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/chunker/output.txt");
 
-	String encoding = "UTF-8";
-
-	DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-			new PlainTextByLineStream(new InputStreamReader(in,
-					encoding)), false);
+    DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
+        new PlainTextByLineStream(in, UTF_8), false);
 
 	ChunkSample cs1 = predictedSample.read();
 	String[] g1 = Span.spansToStrings(cs1.getPhrasesAsSpanList(), cs1.getSentence());
@@ -211,7 +209,10 @@ public class ChunkSampleTest {
 	assertEquals("their spouses", g3[4]);
 	assertEquals("lifetime access", g3[5]);
 	assertEquals("to", g3[6]);
-	}
+	
+	predictedSample.close();
+	
+  }
 
 
   // following are some tests to check the argument validation. Since all uses

@@ -17,6 +17,7 @@
 
 package opennlp.tools.tokenize;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -26,18 +27,19 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
+import org.junit.Test;
+
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.tokenize.DummyTokenizerFactory.DummyContextGenerator;
 import opennlp.tools.tokenize.DummyTokenizerFactory.DummyDictionary;
 import opennlp.tools.tokenize.lang.Factory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
-
-import org.junit.Test;
 
 /**
  * Tests for the {@link TokenizerFactory} class.
@@ -46,11 +48,10 @@ public class TokenizerFactoryTest {
 
   private static ObjectStream<TokenSample> createSampleStream()
       throws IOException {
-    InputStream in = TokenizerFactoryTest.class.getClassLoader()
-        .getResourceAsStream("opennlp/tools/tokenize/token.train");
+    InputStreamFactory in = new ResourceAsStreamFactory(
+        TokenizerFactoryTest.class, "/opennlp/tools/tokenize/token.train");
 
-    return new TokenSampleStream(new PlainTextByLineStream(
-        new InputStreamReader(in)));
+    return new TokenSampleStream(new PlainTextByLineStream(in, UTF_8));
   }
 
   private static TokenizerModel train(TokenizerFactory factory)

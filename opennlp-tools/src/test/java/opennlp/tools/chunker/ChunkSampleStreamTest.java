@@ -17,16 +17,17 @@
 
 package opennlp.tools.chunker;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
-import java.io.StringReader;
-
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 import org.junit.Test;
+
+import opennlp.tools.util.MockInputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 
 public class ChunkSampleStreamTest{
 
@@ -53,8 +54,9 @@ public class ChunkSampleStreamTest{
     sample.append('\n');
     sample.append("word23 tag23 pred23");
     sample.append('\n');
-
-    ObjectStream<String> stringStream = new PlainTextByLineStream(new StringReader(sample.toString()));
+    
+    ObjectStream<String> stringStream = new PlainTextByLineStream(
+        new MockInputStreamFactory(sample.toString()), UTF_8);
 
     ObjectStream<ChunkSample> chunkStream = new ChunkSampleStream(stringStream);
 
@@ -84,5 +86,7 @@ public class ChunkSampleStreamTest{
     assertEquals("pred23", secondSample.getPreds()[2]);
 
     assertNull(chunkStream.read());
+    
+    chunkStream.close();
   }
 }

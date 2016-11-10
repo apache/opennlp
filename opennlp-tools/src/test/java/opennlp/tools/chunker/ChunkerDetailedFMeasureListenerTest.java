@@ -17,56 +17,55 @@
 
 package opennlp.tools.chunker;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static junit.framework.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
-import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
-import opennlp.tools.util.PlainTextByLineStream;
-
 import org.junit.Test;
+
+import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.PlainTextByLineStream;
 
 public class ChunkerDetailedFMeasureListenerTest {
 
   @Test
   public void testEvaluator() throws IOException {
 
-    String encoding = "UTF-8";
+    ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
+        getClass(), "/opennlp/tools/chunker/output.txt");
+    ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/chunker/output.txt");
+    ResourceAsStreamFactory detailedOutputStream = new ResourceAsStreamFactory(
+        getClass(), "/opennlp/tools/chunker/detailedOutput.txt");
+          
+    DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
+        new PlainTextByLineStream(inPredicted, UTF_8), true);
 
-    try (InputStream inPredicted = getClass().getClassLoader().getResourceAsStream(
-         "opennlp/tools/chunker/output.txt");
-         InputStream inExpected = getClass().getClassLoader().getResourceAsStream(
-         "opennlp/tools/chunker/output.txt");
-         InputStream detailedOutputStream = getClass().getClassLoader().getResourceAsStream(
-         "opennlp/tools/chunker/detailedOutput.txt")) {
-      DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-              new PlainTextByLineStream(
-                      new InputStreamReader(inPredicted, encoding)), true);
+    DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
+        new PlainTextByLineStream(inExpected, UTF_8), false);
 
-      DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-              new PlainTextByLineStream(new InputStreamReader(inExpected)), false);
+    Chunker dummyChunker = new DummyChunker(predictedSample);
 
-      Chunker dummyChunker = new DummyChunker(predictedSample);
+    ChunkerDetailedFMeasureListener listener = new ChunkerDetailedFMeasureListener();
+    ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, listener);
 
-      ChunkerDetailedFMeasureListener listener = new ChunkerDetailedFMeasureListener();
-      ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, listener);
+    evaluator.evaluate(expectedSample);
 
-      evaluator.evaluate(expectedSample);
+    StringBuilder expected = new StringBuilder();
+    BufferedReader reader = new BufferedReader(
+        new InputStreamReader(detailedOutputStream.createInputStream(), UTF_8));
+    String line = reader.readLine();
 
-      StringBuilder expected = new StringBuilder();
-      BufferedReader reader = new BufferedReader(new InputStreamReader(detailedOutputStream, encoding));
-      String line = reader.readLine();
-
-      while (line != null) {
-        expected.append(line);
-        expected.append("\n");
-        line = reader.readLine();
-      }
-      assertEquals(expected.toString().trim(), listener.createReport(Locale.ENGLISH).trim());
+    while (line != null) {
+      expected.append(line);
+      expected.append("\n");
+      line = reader.readLine();
     }
+    assertEquals(expected.toString().trim(), listener.createReport(Locale.ENGLISH).trim());
   }
 }

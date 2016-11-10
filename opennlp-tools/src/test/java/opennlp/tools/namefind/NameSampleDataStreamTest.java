@@ -17,6 +17,8 @@
 
 package opennlp.tools.namefind;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -24,21 +26,21 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectStreamException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Test;
+
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
-
-import org.junit.Test;
 
 /**
  * This is the test class for {@link NameSampleDataStream}..
@@ -74,13 +76,11 @@ public class NameSampleDataStreamTest {
    */
   @Test
   public void testWithoutNameTypes() throws Exception {
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/namefind/AnnotatedSentences.txt");
-
-    String encoding = "ISO-8859-1";
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/namefind/AnnotatedSentences.txt");
 
     NameSampleDataStream ds = new NameSampleDataStream(
-        new PlainTextByLineStream(new InputStreamReader(in, encoding)));
+        new PlainTextByLineStream(in, ISO_8859_1));
 
     NameSample ns = ds.read();
 
@@ -102,6 +102,8 @@ public class NameSampleDataStreamTest {
       ns = ds.read();
     }
 
+    ds.close();
+    
     assertEquals(expectedNames.length, names.size());
     assertEquals(createDefaultSpan(6,8), spans.get(0));
     assertEquals(createDefaultSpan(3,4), spans.get(1));
@@ -137,28 +139,24 @@ public class NameSampleDataStreamTest {
    */
   @Test
   public void testWithoutNameTypeAndInvalidData() {
-    NameSampleDataStream sampleStream = new NameSampleDataStream(
-        ObjectStreamUtils.createObjectStream("<START> <START> Name <END>"));
 
-    try {
+    try (NameSampleDataStream sampleStream = new NameSampleDataStream(
+        ObjectStreamUtils.createObjectStream("<START> <START> Name <END>"))) {
       sampleStream.read();
       fail();
     } catch (IOException e) {
     }
 
-    sampleStream = new NameSampleDataStream(
-        ObjectStreamUtils.createObjectStream("<START> Name <END> <END>"));
-
-    try {
+    try (NameSampleDataStream sampleStream = new NameSampleDataStream(
+        ObjectStreamUtils.createObjectStream("<START> Name <END> <END>"))) {
       sampleStream.read();
       fail();
     } catch (IOException e) {
     }
 
-    sampleStream = new NameSampleDataStream(
-        ObjectStreamUtils.createObjectStream("<START> <START> Person <END> Street <END>"));
-
-    try {
+    try (NameSampleDataStream sampleStream = new NameSampleDataStream(
+        ObjectStreamUtils.createObjectStream(
+            "<START> <START> Person <END> Street <END>"));) {
       sampleStream.read();
       fail();
     } catch (IOException e) {
@@ -173,11 +171,11 @@ public class NameSampleDataStreamTest {
    */
   @Test
   public void testWithNameTypes() throws Exception {
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/namefind/voa1.train");
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/namefind/voa1.train");
 
     NameSampleDataStream ds = new NameSampleDataStream(
-        new PlainTextByLineStream(new InputStreamReader(in)));
+        new PlainTextByLineStream(in, UTF_8));
 
     Map<String, List<String>> names = new HashMap<String, List<String>>();
     Map<String, List<Span>> spans = new HashMap<String, List<Span>>();
@@ -197,7 +195,8 @@ public class NameSampleDataStreamTest {
             .add(nameSpan);
       }
     }
-
+    ds.close();
+    
     String[] expectedPerson = { "Barack Obama", "Obama", "Obama",
         "Lee Myung - bak", "Obama", "Obama", "Scott Snyder", "Snyder", "Obama",
         "Obama", "Obama", "Tim Peters", "Obama", "Peters" };
@@ -295,19 +294,16 @@ public class NameSampleDataStreamTest {
   @Test
   public void testWithNameTypeAndInvalidData() {
 
-    NameSampleDataStream sampleStream = new NameSampleDataStream(
-        ObjectStreamUtils.createObjectStream("<START:> Name <END>"));
-
-    try {
+    try (NameSampleDataStream sampleStream = new NameSampleDataStream(
+        ObjectStreamUtils.createObjectStream("<START:> Name <END>"))) {
       sampleStream.read();
       fail();
     } catch (IOException e) {
     }
 
-    sampleStream = new NameSampleDataStream(
-        ObjectStreamUtils.createObjectStream("<START:street> <START:person> Name <END> <END>"));
-
-    try {
+    try (NameSampleDataStream sampleStream = new NameSampleDataStream(
+        ObjectStreamUtils.createObjectStream(
+            "<START:street> <START:person> Name <END> <END>"))) {
       sampleStream.read();
       fail();
     } catch (IOException e) {
@@ -323,8 +319,8 @@ public class NameSampleDataStreamTest {
     trainingData.append("\n");
     trainingData.append("d\n");
 
-    ObjectStream<String> untokenizedLineStream =
-      new PlainTextByLineStream(new StringReader(trainingData.toString()));
+    ObjectStream<String> untokenizedLineStream = new PlainTextByLineStream(
+        new MockInputStreamFactory(trainingData.toString()), UTF_8);
 
     ObjectStream<NameSample> trainingStream = new NameSampleDataStream(untokenizedLineStream);
 
@@ -333,15 +329,17 @@ public class NameSampleDataStreamTest {
     assertFalse(trainingStream.read().isClearAdaptiveDataSet());
     assertTrue(trainingStream.read().isClearAdaptiveDataSet());
     assertNull(trainingStream.read());
+    
+    trainingStream.close();
   }
 
   @Test
   public void testHtmlNameSampleParsing() throws IOException {
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/namefind/html1.train");
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(), 
+        "/opennlp/tools/namefind/html1.train");
 
     NameSampleDataStream ds = new NameSampleDataStream(
-        new PlainTextByLineStream(new InputStreamReader(in, "UTF-8")));
+        new PlainTextByLineStream(in, UTF_8));
 
     NameSample ns = ds.read();
 
@@ -396,5 +394,7 @@ public class NameSampleDataStreamTest {
     assertEquals("</html>", ns.getSentence()[0]);
 
     assertNull(ds.read());
+    
+    ds.close();
   }
 }

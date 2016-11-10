@@ -17,10 +17,10 @@
 
 package opennlp.tools.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.io.StringReader;
 
 import org.junit.Test;
 
@@ -42,11 +42,13 @@ public class PlainTextByLineStreamTest {
     testString.append('\n');
 
     ObjectStream<String> stream =
-        new PlainTextByLineStream(new StringReader(testString.toString()));
+        new PlainTextByLineStream(new MockInputStreamFactory(testString.toString()), UTF_8);
 
     assertEquals("line1", stream.read());
     assertEquals("line2", stream.read());
     assertEquals("line3", stream.read());
     assertEquals("line4", stream.read());
+    
+    stream.close();
   }
 }

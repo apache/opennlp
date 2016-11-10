@@ -17,20 +17,20 @@
 
 package opennlp.tools.chunker;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static junit.framework.Assert.assertNotSame;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 
+import org.junit.Test;
+
 import opennlp.tools.cmdline.chunker.ChunkEvaluationErrorListener;
+import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.eval.FMeasure;
-
-import org.junit.Test;
 
 /**
  * Tests for {@link ChunkerEvaluator}.
@@ -50,18 +50,16 @@ public class ChunkerEvaluatorTest {
 	 */
 	@Test
 	public void testEvaluator() throws IOException {
-		InputStream inPredicted = getClass().getClassLoader().getResourceAsStream(
-				"opennlp/tools/chunker/output.txt");
-		InputStream inExpected = getClass().getClassLoader().getResourceAsStream(
-		"opennlp/tools/chunker/output.txt");
+        ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
+            getClass(), "/opennlp/tools/chunker/output.txt");
+        ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(getClass(),
+            "/opennlp/tools/chunker/output.txt");
 
-		String encoding = "UTF-8";
-
-		DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-				new PlainTextByLineStream(new InputStreamReader(inPredicted, encoding)), true);
-
-		DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-				new PlainTextByLineStream(new InputStreamReader(inExpected)), false);
+        DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
+            new PlainTextByLineStream(inPredicted, UTF_8), true);
+    
+        DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
+            new PlainTextByLineStream(inExpected, UTF_8), false);
 
 		Chunker dummyChunker = new DummyChunker(predictedSample);
 
@@ -82,20 +80,16 @@ public class ChunkerEvaluatorTest {
 
   @Test
   public void testEvaluatorNoError() throws IOException {
-    InputStream inPredicted = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/chunker/output.txt");
-    InputStream inExpected = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/chunker/output.txt");
-
-    String encoding = "UTF-8";
+    ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
+        getClass(), "/opennlp/tools/chunker/output.txt");
+    ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/chunker/output.txt");
 
     DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(new InputStreamReader(inPredicted, encoding)),
-        true);
+        new PlainTextByLineStream(inPredicted, UTF_8), true);
 
     DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(new InputStreamReader(inExpected, encoding)),
-        true);
+        new PlainTextByLineStream(inExpected, UTF_8), true);
 
     Chunker dummyChunker = new DummyChunker(predictedSample);
 

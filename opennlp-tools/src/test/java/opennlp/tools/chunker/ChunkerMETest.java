@@ -17,26 +17,26 @@
 
 package opennlp.tools.chunker;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * This is the test class for {@link NameFinderME}.
@@ -72,13 +72,11 @@ public class ChunkerMETest {
   public void startup() throws IOException {
     // train the chunker
 
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/chunker/test.txt");
-
-    String encoding = "UTF-8";
+    ResourceAsStreamFactory in = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/chunker/test.txt");
 
     ObjectStream<ChunkSample> sampleStream = new ChunkSampleStream(
-        new PlainTextByLineStream(new InputStreamReader(in, encoding)));
+        new PlainTextByLineStream(in, UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));

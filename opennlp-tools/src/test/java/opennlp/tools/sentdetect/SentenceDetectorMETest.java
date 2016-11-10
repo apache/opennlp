@@ -18,17 +18,18 @@
 
 package opennlp.tools.sentdetect;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
+import org.junit.Test;
+
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-
-import org.junit.Test;
 
 /**
  * Tests for the {@link SentenceDetectorME} class.
@@ -38,7 +39,7 @@ public class SentenceDetectorMETest {
   @Test
   public void testSentenceDetector() throws IOException {
 
-    InputStream in = getClass().getResourceAsStream(
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(), 
         "/opennlp/tools/sentdetect/Sentences.txt");
 
     TrainingParameters mlParams = new TrainingParameters();
@@ -46,7 +47,7 @@ public class SentenceDetectorMETest {
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
 
     SentenceModel sentdetectModel = SentenceDetectorME.train(
-        "en", new SentenceSampleStream(new PlainTextByLineStream(new InputStreamReader(in))), true, null, mlParams);
+        "en", new SentenceSampleStream(new PlainTextByLineStream(in, UTF_8)), true, null, mlParams);
 
     assertEquals("en", sentdetectModel.getLanguage());
 
