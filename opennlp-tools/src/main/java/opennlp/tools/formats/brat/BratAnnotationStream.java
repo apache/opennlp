@@ -82,9 +82,14 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
         String coveredText = line.subSequence(values[firstTextTokenIndex].getStart(),
             values[values.length - 1].getEnd()).toString();
 
-        return new SpanAnnotation(id, type,
-            new Span(parseInt(values[BEGIN_OFFSET]
-                .getCoveredText(line).toString()), endOffset, type), coveredText);
+        try {
+          return new SpanAnnotation(id, type,
+                  new Span(parseInt(values[BEGIN_OFFSET]
+                          .getCoveredText(line).toString()), endOffset, type), coveredText);
+        }
+        catch (IllegalArgumentException e) {
+          throw new InvalidFormatException(e);
+        }
       }
       else {
         throw new InvalidFormatException("Line must have at least 5 fields");
@@ -172,18 +177,20 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
         BratAnnotationParser parser = parsers.get(typeClass);
 
         if (parser == null) {
-          throw new IOException("Failed to parse ann document with id " + id +
+          throw new IOException("Failed to parse ann document with id " + id + ".ann" +
               " type class, no parser registered: " + tokens[BratAnnotationParser.TYPE_OFFSET]
               .getCoveredText(line).toString());
         }
 
-        return parser.parse(tokens, line);
+        try {
+          return parser.parse(tokens, line);
+        }
+        catch (IOException e)  {
+          throw new IOException(String.format("Failed to parse ann document with id [%s.ann]", id), e);
+        }
       }
     }
-    else {
-      return null;
-    }
-
+    
     return null;
   }
 
