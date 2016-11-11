@@ -17,22 +17,23 @@
 
 package opennlp.tools.namefind;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.Collections;
 import java.util.Map;
 
+import org.junit.Test;
+
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
-
-import org.junit.Test;
 
 public class TokenNameFinderCrossValidatorTest {
 
@@ -44,12 +45,11 @@ public class TokenNameFinderCrossValidatorTest {
    */
   public void testWithNullResources() throws Exception {
 
-    FileInputStream sampleDataIn = new FileInputStream(new File(getClass()
-        .getClassLoader()
-        .getResource("opennlp/tools/namefind/AnnotatedSentences.txt").toURI()));
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/namefind/AnnotatedSentences.txt");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(sampleDataIn.getChannel(), "ISO-8859-1"));
+        new PlainTextByLineStream(in, ISO_8859_1));
 
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -59,7 +59,7 @@ public class TokenNameFinderCrossValidatorTest {
         ModelType.MAXENT.toString());
 
     TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en",
-        TYPE, mlParams, null, null);
+        TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor)null);
 
     cv.evaluate(sampleStream, 2);
 
@@ -72,12 +72,11 @@ public class TokenNameFinderCrossValidatorTest {
    */
   public void testWithNameEvaluationErrorListener() throws Exception {
 
-    FileInputStream sampleDataIn = new FileInputStream(new File(getClass()
-        .getClassLoader()
-        .getResource("opennlp/tools/namefind/AnnotatedSentences.txt").toURI()));
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/namefind/AnnotatedSentences.txt");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(sampleDataIn.getChannel(), "ISO-8859-1"));
+        new PlainTextByLineStream(in, ISO_8859_1));
 
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));

@@ -17,24 +17,25 @@
 
 package opennlp.tools.namefind;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.eval.FMeasure;
-
-import org.junit.Test;
 
 /**
  * Tests the evaluation of a {@link DictionaryNameFinder}.
@@ -66,13 +67,12 @@ public class DictionaryNameFinderEvaluatorTest {
    */
   private static ObjectStream<NameSample> createSample() throws IOException,
       URISyntaxException {
-    FileInputStream sampleDataIn = new FileInputStream(new File(
-        DictionaryNameFinderEvaluatorTest.class.getClassLoader()
-            .getResource("opennlp/tools/namefind/AnnotatedSentences.txt")
-            .toURI()));
+    
+    InputStreamFactory in = new ResourceAsStreamFactory(
+        DictionaryNameFinderEvaluatorTest.class,
+        "/opennlp/tools/namefind/AnnotatedSentences.txt");
 
-    return new NameSampleDataStream(new PlainTextByLineStream(
-        sampleDataIn.getChannel(), "ISO-8859-1"));
+    return new NameSampleDataStream(new PlainTextByLineStream(in, ISO_8859_1));
   }
 
   /**
