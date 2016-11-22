@@ -248,15 +248,6 @@ public class Parser extends AbstractBottomUpParser {
     return newParses;
   }
 
-  /**
-   * @deprecated Please do not use anymore, use the ObjectStream train methods instead! This method
-   * will be removed soon.
-   */
-  @Deprecated
-  public static AbstractModel train(ObjectStream<Event> es, int iterations, int cut) throws java.io.IOException {
-    return opennlp.tools.ml.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
-  }
-
   public static void mergeReportIntoManifest(Map<String, String> manifest,
       Map<String, String> report, String namespace) {
 
@@ -317,28 +308,5 @@ public class Parser extends AbstractBottomUpParser {
     return new ParserModel(languageCode, buildModel, checkModel,
         posModel, chunkModel, (opennlp.tools.parser.HeadRules) rules,
         ParserType.CHUNKING, manifestInfoEntries);
-  }
-
-  /**
-  * @deprecated use {@link #train(String, ObjectStream, HeadRules, TrainingParameters)}
-  * instead and pass in a TrainingParameters object.
-  */
-  @Deprecated
-  public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
-      throws IOException {
-
-    TrainingParameters params = new TrainingParameters();
-    params.put("dict", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
-
-    params.put("tagger", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
-    params.put("tagger", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-    params.put("chunker", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
-    params.put("chunker", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-    params.put("check", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
-    params.put("check", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-    params.put("build", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
-    params.put("build", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-
-    return train(languageCode, parseSamples, rules, params);
   }
 }
