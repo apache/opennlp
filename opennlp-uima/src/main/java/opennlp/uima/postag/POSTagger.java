@@ -17,6 +17,7 @@
 
 package opennlp.uima.postag;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -127,7 +128,7 @@ public final class POSTagger extends CasAnnotator_ImplBase {
     if (beamSize == null)
       beamSize = POSTaggerME.DEFAULT_BEAM_SIZE;
 
-    this.posTagger = new POSTaggerME(model, beamSize, 0);
+    this.posTagger = new POSTaggerME(model);
   }
 
   /**
@@ -174,7 +175,8 @@ public final class POSTagger extends CasAnnotator_ImplBase {
         sentenceTokenList.add(tokenAnnotation.getCoveredText());
       }
 
-      final List<String> posTags = this.posTagger.tag(sentenceTokenList);
+      final List<String> posTags = Arrays.asList(this.posTagger.tag(
+              sentenceTokenList.toArray(new String[sentenceTokenList.size()])));
 
       double posProbabilities[] = null;
 

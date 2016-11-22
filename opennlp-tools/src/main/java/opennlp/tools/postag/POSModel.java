@@ -45,29 +45,6 @@ public final class POSModel extends BaseModel {
 
   public static final String POS_MODEL_ENTRY_NAME = "pos.model";
 
-  /**
-   * @deprecated Use
-   *             {@link #POSModel(String, MaxentModel, Map, POSTaggerFactory)}
-   *             instead.
-   */
-  public POSModel(String languageCode, MaxentModel posModel,
-      POSDictionary tagDictionary, Dictionary ngramDict, Map<String, String> manifestInfoEntries) {
-
-    this(languageCode, posModel, manifestInfoEntries, new POSTaggerFactory(
-        ngramDict, tagDictionary));
-  }
-
-  /**
-   * @deprecated Use
-   *             {@link #POSModel(String, MaxentModel, Map, POSTaggerFactory)}
-   *             instead.
-   */
-  public POSModel(String languageCode, MaxentModel posModel,
-      POSDictionary tagDictionary, Dictionary ngramDict) {
-    this(languageCode, posModel, POSTaggerME.DEFAULT_BEAM_SIZE, null, new POSTaggerFactory(ngramDict,
-        tagDictionary));
-  }
-
   public POSModel(String languageCode, SequenceClassificationModel<String> posModel,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
@@ -139,7 +116,6 @@ public final class POSModel extends BaseModel {
    * @deprecated use getPosSequenceModel instead. This method will be removed soon.
    */
   @Deprecated
-
   public MaxentModel getPosModel() {
     if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof MaxentModel) {
       return (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
@@ -169,37 +145,6 @@ public final class POSModel extends BaseModel {
     else {
       return null;
     }
-  }
-
-  /**
-   * Retrieves the tag dictionary.
-   *
-   * @return tag dictionary or null if not used
-   *
-   * @deprecated Use {@link POSModel#getFactory()} to get a
-   *             {@link POSTaggerFactory} and
-   *             {@link POSTaggerFactory#getTagDictionary()} to get a
-   *             {@link TagDictionary}.
-   *
-   * @throws IllegalStateException
-   *           if the TagDictionary is not an instance of POSDictionary
-   */
-  public POSDictionary getTagDictionary() {
-    if (getFactory() != null) {
-      TagDictionary dict = getFactory().getTagDictionary();
-      if (dict != null) {
-        if (dict instanceof POSDictionary) {
-          return (POSDictionary) dict;
-        }
-        String clazz = dict.getClass().getCanonicalName();
-        throw new IllegalStateException("Can not get a dictionary of type "
-            + clazz
-            + " using the deprecated method POSModel.getTagDictionary() "
-            + "because it can only return dictionaries of type POSDictionary. "
-            + "Use POSModel.getFactory().getTagDictionary() instead.");
-      }
-    }
-    return null;
   }
 
   public POSTaggerFactory getFactory() {

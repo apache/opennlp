@@ -90,39 +90,7 @@ public class POSTaggerME implements POSTagger {
   private SequenceValidator<String> sequenceValidator;
 
   /**
-   * Initializes the current instance with the provided
-   * model and provided beam size.
-   *
-   * @param model
-   * @param beamSize
-   *
-   * @deprecated the beam size should be specified in the params during training
-   */
-  @Deprecated
-  public POSTaggerME(POSModel model, int beamSize, int cacheSize) {
-    POSTaggerFactory factory = model.getFactory();
-
-    modelPackage = model;
-
-    // TODO: Why is this the beam size?! not cache size?
-    contextGen = factory.getPOSContextGenerator(beamSize);
-    tagDictionary = factory.getTagDictionary();
-    size = beamSize;
-
-    sequenceValidator = factory.getSequenceValidator();
-
-    if (model.getPosSequenceModel() != null) {
-      this.model = model.getPosSequenceModel();
-    }
-    else {
-      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
-          model.getPosModel(), cacheSize);
-    }
-  }
-
-  /**
-   * Initializes the current instance with the provided model
-   * and the default beam size of 3.
+   * Initializes the current instance with the provided model.
    *
    * @param model
    */
@@ -156,21 +124,6 @@ public class POSTaggerME implements POSTagger {
   }
 
   /**
-   * Returns the number of different tags predicted by this model.
-   *
-   * @return the number of different tags predicted by this model.
-   * @deprecated use getAllPosTags instead!
-   */
-  @Deprecated
-  public int getNumTags() {
-
-    // TODO: Lets discuss on the dev list how to do this properly!
-    // Nobody needs the number of tags, if the tags are not available.
-
-    return model.getOutcomes().length;
-  }
-
-  /**
    * Retrieves an array of all possible part-of-speech tags from the
    * tagger.
    *
@@ -178,12 +131,6 @@ public class POSTaggerME implements POSTagger {
    */
   public String[] getAllPosTags() {
     return model.getOutcomes();
-  }
-
-  @Deprecated
-  public List<String> tag(List<String> sentence) {
-    bestSequence = model.bestSequence(sentence.toArray(new String[sentence.size()]), null, contextGen, sequenceValidator);
-    return bestSequence.getOutcomes();
   }
 
   public String[] tag(String[] sentence) {
@@ -215,12 +162,6 @@ public class POSTaggerME implements POSTagger {
     return tags;
   }
 
-  @Deprecated
-  public Sequence[] topKSequences(List<String> sentence) {
-    return model.bestSequences(size, sentence.toArray(new String[sentence.size()]), null,
-        contextGen, sequenceValidator);
-  }
-
   public Sequence[] topKSequences(String[] sentence) {
     return this.topKSequences(sentence, null);
   }
@@ -245,19 +186,6 @@ public class POSTaggerME implements POSTagger {
    */
   public double[] probs() {
     return bestSequence.getProbs();
-  }
-
-  @Deprecated
-  public String tag(String sentence) {
-    List<String> toks = new ArrayList<String>();
-    StringTokenizer st = new StringTokenizer(sentence);
-    while (st.hasMoreTokens())
-      toks.add(st.nextToken());
-    List<String> tags = tag(toks);
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < tags.size(); i++)
-      sb.append(toks.get(i) + "/" + tags.get(i) + " ");
-    return sb.toString().trim();
   }
 
   public String[] getOrderedTags(List<String> words, List<String> tags, int index) {
@@ -347,37 +275,6 @@ public class POSTaggerME implements POSTagger {
     else {
       return new POSModel(languageCode, seqPosModel, manifestInfoEntries, posFactory);
     }
-  }
-
-  /**
-   * @deprecated use
-   *             {@link #train(String, ObjectStream, TrainingParameters, POSTaggerFactory)}
-   *             instead and pass in a {@link POSTaggerFactory}.
-   */
-  public static POSModel train(String languageCode, ObjectStream<POSSample> samples, TrainingParameters trainParams,
-      POSDictionary tagDictionary, Dictionary ngramDictionary) throws IOException {
-
-    return train(languageCode, samples, trainParams, new POSTaggerFactory(
-        ngramDictionary, tagDictionary));
-  }
-
-  /**
-   * @deprecated use
-   *             {@link #train(String, ObjectStream, TrainingParameters, POSTaggerFactory)}
-   *             instead and pass in a {@link POSTaggerFactory} and a
-   *             {@link TrainingParameters}.
-   */
-  @Deprecated
-  public static POSModel train(String languageCode, ObjectStream<POSSample> samples, ModelType modelType, POSDictionary tagDictionary,
-      Dictionary ngramDictionary, int cutoff, int iterations) throws IOException {
-
-    TrainingParameters params = new TrainingParameters();
-
-    params.put(TrainingParameters.ALGORITHM_PARAM, modelType.toString());
-    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
-
-    return train(languageCode, samples, params, tagDictionary, ngramDictionary);
   }
 
   public static Dictionary buildNGramDictionary(ObjectStream<POSSample> samples, int cutoff)

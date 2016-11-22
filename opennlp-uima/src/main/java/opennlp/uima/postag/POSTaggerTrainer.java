@@ -27,11 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import opennlp.tools.ml.maxent.GIS;
-import opennlp.tools.postag.POSDictionary;
-import opennlp.tools.postag.POSModel;
-import opennlp.tools.postag.POSSample;
-import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.postag.*;
 import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
 import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.CasConsumerUtil;
@@ -116,12 +114,8 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
         TAG_DICTIONARY_NAME);
 
     if (tagDictionaryName != null) {
-      try {
-        InputStream dictIn = AnnotatorUtil.getResourceAsStream(mContext, tagDictionaryName);
-
-        // TODO: ask Tom if case sensitivity must be configureable
-        tagDictionary = new POSDictionary(new BufferedReader(new InputStreamReader(dictIn)), false);
-
+      try (InputStream dictIn = AnnotatorUtil.getResourceAsStream(mContext, tagDictionaryName)) {
+        tagDictionary = POSDictionary.create(dictIn);
       } catch (final IOException e) {
         // if this fails just print error message and continue
         final String message = "IOException during tag dictionary reading, "
@@ -207,9 +201,13 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
 
     GIS.PRINT_MESSAGES = false;
 
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(5));
+
     POSModel posTaggerModel = POSTaggerME.train(language,
         ObjectStreamUtils.createObjectStream(mPOSSamples),
-        ModelType.MAXENT, tagDictionary, null, 100, 5);
+            params, new POSTaggerFactory(null, tagDictionary));
 
     // dereference to allow garbage collection
     mPOSSamples = null;

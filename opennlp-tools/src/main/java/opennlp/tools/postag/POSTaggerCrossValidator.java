@@ -79,41 +79,6 @@ public class POSTaggerCrossValidator {
   }
 
   /**
-   * @deprecated use
-   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
-   *             instead and pass in a {@link POSTaggerFactory}.
-   */
-  public POSTaggerCrossValidator(String languageCode,
-      TrainingParameters trainParam, POSDictionary tagDictionary,
-      POSTaggerEvaluationMonitor... listeners) {
-    this(languageCode, trainParam, create(null, tagDictionary), listeners);
-  }
-
-  /**
-   * @deprecated use
-   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
-   *             instead and pass in the name of {@link POSTaggerFactory}
-   *             sub-class.
-   */
-  public POSTaggerCrossValidator(String languageCode,
-      TrainingParameters trainParam, POSDictionary tagDictionary,
-      Integer ngramCutoff, POSTaggerEvaluationMonitor... listeners) {
-    this(languageCode, trainParam, create(null, tagDictionary), listeners);
-    this.ngramCutoff = ngramCutoff;
-  }
-
-  /**
-   * @deprecated use
-   *             {@link #POSTaggerCrossValidator(String, TrainingParameters, POSTaggerFactory, POSTaggerEvaluationMonitor...)}
-   *             instead and pass in a {@link POSTaggerFactory}.
-   */
-  public POSTaggerCrossValidator(String languageCode,
-      TrainingParameters trainParam, POSDictionary tagDictionary,
-      Dictionary ngramDictionary, POSTaggerEvaluationMonitor... listeners) {
-    this(languageCode, trainParam, create(ngramDictionary, tagDictionary), listeners);
-  }
-
-  /**
    * Starts the evaluation.
    *
    * @param samples

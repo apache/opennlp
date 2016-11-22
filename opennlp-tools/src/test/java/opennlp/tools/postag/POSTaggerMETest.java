@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import opennlp.tools.util.TrainingParameters;
 import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
@@ -50,8 +51,12 @@ public class POSTaggerMETest {
    * @throws IOException
    */
   static POSModel trainPOSModel(ModelType type) throws IOException {
-    // TODO: also use tag dictionary for training
-    return POSTaggerME.train("en", createSampleStream(), type, null, null, 5, 100);
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ALGORITHM_PARAM, type.toString());
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(5));
+
+    return POSTaggerME.train("en", createSampleStream(), params, new POSTaggerFactory());
   }
 
   @Test

@@ -28,41 +28,12 @@ public interface POSTagger {
 
   /**
    * Assigns the sentence of tokens pos tags.
-   *
-   * @param sentence
-   *          The sentence of tokens to be tagged.
-   * @return a list of pos tags for each token provided in sentence.
-   *
-   * @deprecated call <code> tag(String[]) </code> instead
-   */
-  @Deprecated
-  public List<String> tag(List<String> sentence);
-
-  /**
-   * Assigns the sentence of tokens pos tags.
    * @param sentence The sentece of tokens to be tagged.
    * @return an array of pos tags for each token provided in sentence.
    */
   public String[] tag(String[] sentence);
 
   public String[] tag(String[] sentence, Object[] additionaContext);
-
-  /**
-   * Assigns the sentence of space-delimied tokens pos tags.
-   * @param sentence The sentece of space-delimited tokens to be tagged.
-   * @return a string of space-delimited pos tags for each token provided in sentence.
-   *
-   * @deprecated call <code> tag(String[]) instead </code> use WhiteSpaceTokenizer.INSTANCE.tokenize
-   * to obtain the String array.
-   */
-  @Deprecated
-  public String tag(String sentence);
-
-  /**
-   * @deprecated call <code> topKSequences(String[]) </code> instead
-   */
-  @Deprecated
-  public Sequence[] topKSequences(List<String> sentence);
 
   public Sequence[] topKSequences(String[] sentence);
 
