@@ -36,8 +36,8 @@ public class TokenClassFeatureGenerator extends FeatureGeneratorAdapter {
     this(false);
   }
 
-  public TokenClassFeatureGenerator(boolean genearteWordAndClassFeature) {
-    this.generateWordAndClassFeature = genearteWordAndClassFeature;
+  public TokenClassFeatureGenerator(boolean generateWordAndClassFeature) {
+    this.generateWordAndClassFeature = generateWordAndClassFeature;
   }
 
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {

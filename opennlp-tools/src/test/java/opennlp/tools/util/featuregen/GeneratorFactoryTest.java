@@ -35,6 +35,23 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import org.junit.Test;
 
 public class GeneratorFactoryTest {
+	
+  @Test
+  public void testCreationWithTokenClassFeatureGenerator() throws Exception {
+    InputStream generatorDescriptorIn = getClass().getResourceAsStream(
+        "/opennlp/tools/util/featuregen/TestTokenClassFeatureGeneratorConfig.xml");
+
+    // If this fails the generator descriptor could not be found
+    // at the expected location
+    assertNotNull(generatorDescriptorIn);
+
+    AggregatedFeatureGenerator aggregatedGenerator =
+      (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
+
+    assertEquals(1, aggregatedGenerator.getGenerators().size());
+    assertEquals(TokenClassFeatureGenerator.class.getName(), aggregatedGenerator.getGenerators().iterator().next().getClass().getName());
+    
+  }
 
   @Test
   public void testCreationWihtSimpleDescriptor() throws Exception {
