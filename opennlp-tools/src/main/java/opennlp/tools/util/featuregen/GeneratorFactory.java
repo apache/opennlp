@@ -427,8 +427,20 @@ public class GeneratorFactory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
-      // TODO: Make it configurable ...
-      return new TokenClassFeatureGenerator(true);
+
+      String attribute = generatorElement.getAttribute("wordAndClass");
+    	
+      // Default to true.
+      boolean generateWordAndClassFeature = true;
+      
+      if(attribute != "") {
+          // Anything other than "true" sets it to false.
+    	  if(!"true".equalsIgnoreCase(attribute)) {
+        	  generateWordAndClassFeature = false;
+          }
+      }
+    	
+      return new TokenClassFeatureGenerator(generateWordAndClassFeature);
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
