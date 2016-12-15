@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.tokenize.SimpleTokenizer;
+import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -40,6 +41,8 @@ import opennlp.tools.util.PlainTextByLineStream;
 public class LeipzigDoccatSampleStream extends
     FilterObjectStream<String, DocumentSample> {
 
+  private final Tokenizer tokenizer;
+
   private final String language;
   private final int sentencesPerDocument;
 
@@ -51,12 +54,26 @@ public class LeipzigDoccatSampleStream extends
    * @param in the InputStream pointing to the contents of the sentences.txt input file
    * @throws IOException IOException
    */
-  LeipzigDoccatSampleStream(String language, int sentencesPerDocument,
-      InputStreamFactory in) throws IOException {
+  public LeipzigDoccatSampleStream(String language, int sentencesPerDocument, Tokenizer tokenizer,
+                                   InputStreamFactory in) throws IOException {
     super(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
     System.setOut(new PrintStream(System.out, true, "UTF-8"));
     this.language = language;
     this.sentencesPerDocument = sentencesPerDocument;
+    this.tokenizer = tokenizer;
+  }
+
+  /**
+   * Creates a new LeipzigDoccatSampleStream with the specified parameters.
+   *
+   * @param language the Leipzig input sentences.txt file
+   * @param sentencesPerDocument the number of sentences which should be grouped into once {@link DocumentSample}
+   * @param in the InputStream pointing to the contents of the sentences.txt input file
+   * @throws IOException IOException
+   */
+  public LeipzigDoccatSampleStream(String language, int sentencesPerDocument,
+      InputStreamFactory in) throws IOException {
+    this(language, sentencesPerDocument, SimpleTokenizer.INSTANCE, in);
   }
   
   public DocumentSample read() throws IOException {
@@ -68,7 +85,7 @@ public class LeipzigDoccatSampleStream extends
     String line;
     while (count < sentencesPerDocument && (line = samples.read()) != null) {
 
-      String tokens[] = SimpleTokenizer.INSTANCE.tokenize(line);
+      String tokens[] = tokenizer.tokenize(line);
 
       if (tokens.length == 0) {
         throw new IOException("Empty lines are not allowed!");
