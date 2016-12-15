@@ -22,11 +22,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.doccat.DoccatFactory;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.uima.util.CasConsumerUtil;
 import opennlp.uima.util.OpennlpUtil;
 import opennlp.uima.util.UimaUtil;
@@ -130,7 +132,12 @@ public class DocumentCategorizerTrainer extends CasConsumer_ImplBase {
 
     GIS.PRINT_MESSAGES = false;
 
-    DoccatModel categoryModel = DocumentCategorizerME.train(language, ObjectStreamUtils.createObjectStream(documentSamples));
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
+
+    DoccatModel categoryModel = DocumentCategorizerME.train(language,
+            ObjectStreamUtils.createObjectStream(documentSamples), params, new DoccatFactory());
 
     File modelFile = new File(getUimaContextAdmin().getResourceManager()
         .getDataPath() + File.separatorChar + mModelName);

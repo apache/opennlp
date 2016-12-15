@@ -176,30 +176,6 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     return model.getMaxentModel().getAllOutcomes(results);
   }
 
-  /**
-   * @deprecated Use
-   * {@link #train(String, ObjectStream, TrainingParameters, DoccatFactory)}
-   * instead.
-   */
-  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
-                                  TrainingParameters mlParams, FeatureGenerator... featureGenerators)
-      throws IOException {
-
-    if (featureGenerators.length == 0) {
-      featureGenerators = new FeatureGenerator[]{defaultFeatureGenerator};
-    }
-
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
-
-    EventTrainer trainer = TrainerFactory.getEventTrainer(
-            mlParams.getSettings(), manifestInfoEntries);
-
-    MaxentModel model = trainer.train(
-        new DocumentCategorizerEventStream(samples, featureGenerators));
-
-    return new DoccatModel(languageCode, model, manifestInfoEntries);
-  }
-
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
                                   TrainingParameters mlParams, DoccatFactory factory)
       throws IOException {
@@ -213,21 +189,5 @@ public class DocumentCategorizerME implements DocumentCategorizer {
         new DocumentCategorizerEventStream(samples, factory.getFeatureGenerators()));
 
     return new DoccatModel(languageCode, model, manifestInfoEntries, factory);
-  }
-
-  /**
-   * Trains a doccat model with default feature generation.
-   *
-   * @param languageCode the language code
-   * @param samples      the samples
-   * @return the trained doccat model
-   * @throws IOException
-   * @throws ObjectStreamException
-   * @deprecated Use
-   * {@link #train(String, ObjectStream, TrainingParameters, DoccatFactory)}
-   * instead.
-   */
-  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples) throws IOException {
-    return train(languageCode, samples, ModelUtil.createDefaultTrainingParameters(), defaultFeatureGenerator);
   }
 }

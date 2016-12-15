@@ -45,25 +45,6 @@ public class DoccatModel extends BaseModel {
     checkArtifactMap();
   }
 
-  /**
-   * @deprecated Use
-   *             {@link #DoccatModel(String, MaxentModel, Map, DoccatFactory)}
-   *             instead and pass in a {@link DoccatFactory}
-   */
-  protected DoccatModel(String languageCode, MaxentModel doccatModel,
-      Map<String, String> manifestInfoEntries) {
-    this(languageCode, doccatModel, manifestInfoEntries, new DoccatFactory());
-  }
-
-  /**
-   * @deprecated Use
-   *             {@link #DoccatModel(String, MaxentModel, Map, DoccatFactory)}
-   *             instead and pass in a {@link DoccatFactory}
-   */
-  public DoccatModel(String languageCode, MaxentModel doccatModel) {
-    this(languageCode, doccatModel, null);
-  }
-
   public DoccatModel(InputStream in) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, in);
   }
@@ -92,13 +73,6 @@ public class DoccatModel extends BaseModel {
   @Override
   protected Class<? extends BaseToolFactory> getDefaultFactory() {
     return DoccatFactory.class;
-  }
-
-  /**
-   * @deprecated Use {@link #getMaxentModel()} instead.
-   */
-  public MaxentModel getChunkerModel() {
-    return (MaxentModel) artifactMap.get(DOCCAT_MODEL_ENTRY_NAME);
   }
 
   public MaxentModel getMaxentModel() {

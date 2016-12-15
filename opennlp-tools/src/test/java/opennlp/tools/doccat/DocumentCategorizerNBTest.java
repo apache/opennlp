@@ -48,7 +48,7 @@ public class DocumentCategorizerNBTest {
     params.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
 
     DoccatModel model = DocumentCategorizerME.train("x-unspecified", samples,
-        params, new BagOfWordsFeatureGenerator());
+        params, new DoccatFactory());
 
     DocumentCategorizer doccat = new DocumentCategorizerME(model);
 

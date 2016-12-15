@@ -49,7 +49,7 @@ public class DoccatFactoryTest {
 
   private static DoccatModel train() throws IOException {
     return DocumentCategorizerME.train("x-unspecified", createSampleStream(),
-        TrainingParameters.defaultParams());
+        TrainingParameters.defaultParams(), new DoccatFactory());
   }
 
   private static DoccatModel train(DoccatFactory factory) throws IOException {

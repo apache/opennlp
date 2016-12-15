@@ -48,7 +48,7 @@ public class DocumentCategorizerMETest {
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
 
     DoccatModel model = DocumentCategorizerME.train("x-unspecified", samples,
-            params, new BagOfWordsFeatureGenerator());
+            params, new DoccatFactory());
 
     DocumentCategorizer doccat = new DocumentCategorizerME(model);
 
