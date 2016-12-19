@@ -253,7 +253,7 @@ public class SourceForgeModelEval {
     TokenNameFinderModel personModel = new TokenNameFinderModel(
         new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-ner-person.bin"));
 
-    evalNameFinder(personModel, new BigInteger("260378080051855476096106859434660527393"));
+    evalNameFinder(personModel, new BigInteger("143619582249937129618340838626447763744"));
   }
 
   @Test
@@ -334,14 +334,10 @@ public class SourceForgeModelEval {
   @Test
   public void evalParserModel() throws IOException {
 
-    // break input stream into sentences
-    // input is tokenized already
-
     ParserModel model = new ParserModel(
             new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-parser-chunking.bin"));
 
     MessageDigest digest = createDigest();
-
 
     Parser parser = ParserFactory.create(model);
 
@@ -367,7 +363,7 @@ public class SourceForgeModelEval {
       }
     }
 
-    Assert.assertEquals(new BigInteger("226003515785585284478071030961407561943"),
+    Assert.assertEquals(new BigInteger("155722144104513046994135548456420803172"),
             new BigInteger(1, digest.digest()));
   }
 }
