@@ -32,14 +32,14 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private String[] prevTokens;
 
-  private Cache contextsCache;
+  private Cache<Integer, List<String>> contextsCache;
 
   private long numberOfCacheHits;
   private long numberOfCacheMisses;
 
   public CachedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
     this.generator = new AggregatedFeatureGenerator(generators);
-    contextsCache = new Cache(100);
+    contextsCache = new Cache<>(100);
   }
 
   @SuppressWarnings("unchecked")
@@ -49,7 +49,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
     List<String> cacheFeatures;
 
     if (tokens == prevTokens) {
-      cacheFeatures = (List<String>) contextsCache.get(index);
+      cacheFeatures = contextsCache.get(index);
 
       if (cacheFeatures != null) {
         numberOfCacheHits++;
@@ -62,7 +62,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
       prevTokens = tokens;
     }
 
-    cacheFeatures = new ArrayList<String>();
+    cacheFeatures = new ArrayList<>();
 
     numberOfCacheMisses++;
 

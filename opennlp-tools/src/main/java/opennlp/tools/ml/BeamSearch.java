@@ -47,7 +47,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
   protected MaxentModel model;
 
   private double[] probs;
-  private Cache contextsCache;
+  private Cache<String[], double[]> contextsCache;
   private static final int zeroLog = -100000;
 
   /**
@@ -66,7 +66,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
     this.model = model;
 
     if (cacheSize > 0) {
-      contextsCache = new Cache(cacheSize);
+      contextsCache = new Cache<>(cacheSize);
     }
 
     this.probs = new double[model.getNumOutcomes()];
@@ -102,7 +102,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
         String[] contexts = cg.getContext(i, sequence, outcomes, additionalContext);
         double[] scores;
         if (contextsCache != null) {
-          scores = (double[]) contextsCache.get(contexts);
+          scores = contextsCache.get(contexts);
           if (scores == null) {
             scores = model.eval(contexts, probs);
             contextsCache.put(contexts,scores);
@@ -113,9 +113,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
         }
 
         double[] temp_scores = new double[scores.length];
-        for (int c = 0; c < scores.length; c++) {
-          temp_scores[c] = scores[c];
-        }
+        System.arraycopy(scores, 0, temp_scores, 0, scores.length);
 
         Arrays.sort(temp_scores);
 

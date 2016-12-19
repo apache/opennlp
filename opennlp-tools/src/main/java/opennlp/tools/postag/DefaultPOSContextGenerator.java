@@ -39,7 +39,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
   private static Pattern hasCap = Pattern.compile("[A-Z]");
   private static Pattern hasNum = Pattern.compile("[0-9]");
 
-  private Cache contextsCache;
+  private Cache<String, String[]> contextsCache;
   private Object wordsKey;
 
   private Dictionary dict;
@@ -64,12 +64,12 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     this.dict = dict;
     dictGram = new String[1];
     if (cacheSize > 0) {
-      contextsCache = new Cache(cacheSize);
+      contextsCache = new Cache<>(cacheSize);
     }
   }
   protected static String[] getPrefixes(String lex) {
     String[] prefs = new String[PREFIX_LENGTH];
-    for (int li = 0, ll = PREFIX_LENGTH; li < ll; li++) {
+    for (int li = 0; li < PREFIX_LENGTH; li++) {
       prefs[li] = lex.substring(0, Math.min(li + 1, lex.length()));
     }
     return prefs;
@@ -77,7 +77,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
 
   protected static String[] getSuffixes(String lex) {
     String[] suffs = new String[SUFFIX_LENGTH];
-    for (int li = 0, ll = SUFFIX_LENGTH; li < ll; li++) {
+    for (int li = 0; li < SUFFIX_LENGTH; li++) {
       suffs[li] = lex.substring(Math.max(lex.length() - li - 1, 0));
     }
     return suffs;
@@ -95,10 +95,9 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
    * @return The context for making a pos tag decision at the specified token index given the specified tokens and previous tags.
    */
   public String[] getContext(int index, Object[] tokens, String[] tags) {
-    String next, nextnext, lex, prev, prevprev;
+    String next, nextnext = null, lex, prev, prevprev = null;
     String tagprev, tagprevprev;
     tagprev = tagprevprev = null;
-    next = nextnext = lex = prev = prevprev = null;
 
     lex = tokens[index].toString();
     if (tokens.length > index + 1) {
@@ -131,7 +130,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     String cacheKey = index+tagprev+tagprevprev;
     if (contextsCache != null) {
       if (wordsKey == tokens){
-        String[] cachedContexts = (String[]) contextsCache.get(cacheKey);
+        String[] cachedContexts = contextsCache.get(cacheKey);
         if (cachedContexts != null) {
           return cachedContexts;
         }
@@ -141,7 +140,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
         wordsKey = tokens;
       }
     }
-    List<String> e = new ArrayList<String>();
+    List<String> e = new ArrayList<>();
     e.add("default");
     // add the word itself
     e.add("w=" + lex);

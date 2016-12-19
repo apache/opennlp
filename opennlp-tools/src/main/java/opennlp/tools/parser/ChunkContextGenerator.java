@@ -29,7 +29,7 @@ import opennlp.tools.util.Cache;
 public class ChunkContextGenerator implements ChunkerContextGenerator {
 
   private static final String EOS = "eos";
-  private Cache contextsCache;
+  private Cache<String, String[]> contextsCache;
   private Object wordsKey;
 
 
@@ -40,13 +40,13 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
   public ChunkContextGenerator(int cacheSize) {
     super();
     if (cacheSize > 0) {
-      contextsCache = new Cache(cacheSize);
+      contextsCache = new Cache<>(cacheSize);
     }
   }
 
   public String[] getContext(Object o) {
     Object[] data = (Object[]) o;
-    return getContext(((Integer) data[0]).intValue(), (String[]) data[1], (String[]) data[2], (String[]) data[3]);
+    return getContext((Integer) data[0], (String[]) data[1], (String[]) data[2], (String[]) data[3]);
   }
 
   public String[] getContext(int i, String[] words, String[] prevDecisions, Object[] ac) {
@@ -54,12 +54,11 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
   }
 
   public String[] getContext(int i, String[] words, String[] tags, String[] preds) {
-    List<String> features = new ArrayList<String>(19);
-    int x0 = i;
-    int x_2 = x0 - 2;
-    int x_1 = x0 - 1;
-    int x2 = x0 + 2;
-    int x1 = x0 + 1;
+    List<String> features = new ArrayList<>(19);
+    int x_2 = i - 2;
+    int x_1 = i - 1;
+    int x2 = i + 2;
+    int x1 = i + 1;
 
     String w_2,w_1,w0,w1,w2;
     String t_2,t_1,t0,t1,t2;
@@ -90,8 +89,8 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     }
 
     // chunkandpostag(0)
-    t0=tags[x0];
-    w0=words[x0];
+    t0=tags[i];
+    w0=words[i];
 
     // chunkandpostag(1)
     if (x1 < tags.length) {
@@ -113,7 +112,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
       w2=EOS;
     }
 
-    String cacheKey = x0+t_2+t1+t0+t1+t2+p_2+p_1;
+    String cacheKey = i +t_2+t1+t0+t1+t2+p_2+p_1;
     if (contextsCache!= null) {
       if (wordsKey == words) {
         String[] contexts = (String[]) contextsCache.get(cacheKey);
