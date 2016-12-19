@@ -49,8 +49,7 @@ public final class BuildModelUpdaterTool extends ModelUpdaterTool {
       System.out.println("Training builder");
       ObjectStream<Event> bes = new ParserEventStream(parseSamples,
           originalModel.getHeadRules(), ParserEventTypeEnum.BUILD, mdict);
-      AbstractModel buildModel = Parser.train(bes,
-          100, 5);
+      AbstractModel buildModel = Parser.train(bes, 100, 5);
 
       parseSamples.close();
 
