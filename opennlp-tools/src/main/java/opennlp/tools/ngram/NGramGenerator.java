@@ -37,7 +37,7 @@ public class NGramGenerator {
    */
   public static List<String> generate(List<String> input, int n, String separator) {
 
-    List<String> outGrams = new ArrayList<String>();
+    List<String> outGrams = new ArrayList<>();
     for (int i = 0; i < input.size() - (n - 2); i++) {
       String gram = "";
       if ((i + n) <= input.size()) {
@@ -59,7 +59,7 @@ public class NGramGenerator {
  */
   public static List<String> generate(char[] input, int n, String separator) {
 
-    List<String> outGrams = new ArrayList<String>();
+    List<String> outGrams = new ArrayList<>();
     for (int i = 0; i < input.length - (n - 2); i++) {
       String gram = "";
       if ((i + n) <= input.length) {
