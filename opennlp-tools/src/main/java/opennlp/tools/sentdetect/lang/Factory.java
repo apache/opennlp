@@ -36,14 +36,11 @@ public class Factory {
 
   public static final char[] thEosCharacters = new char[] { ' ','\n' };
 
-  public EndOfSentenceScanner createEndOfSentenceScanner(String languageCode) {
-    if ("th".equals(languageCode)) {
-      return new DefaultEndOfSentenceScanner(new char[]{' ','\n'});
-    } else if("pt".equals(languageCode)) {
-      return new DefaultEndOfSentenceScanner(ptEosCharacters);
-    }
+  public static final char[] jpEosCharacters = new char[] {'。', '！', '？'};
 
-    return new DefaultEndOfSentenceScanner(defaultEosCharacters);
+  public EndOfSentenceScanner createEndOfSentenceScanner(String languageCode) {
+
+    return new DefaultEndOfSentenceScanner(getEOSCharacters(languageCode));
   }
 
   public EndOfSentenceScanner createEndOfSentenceScanner(
@@ -76,6 +73,8 @@ public class Factory {
       return thEosCharacters;
     } else if ("pt".equals(languageCode)) {
       return ptEosCharacters;
+    } else if ("jp".equals(languageCode)) {
+      return jpEosCharacters;
     }
 
     return defaultEosCharacters;
