@@ -116,15 +116,15 @@ public class TokenNameFinderModel extends BaseModel {
     this(languageCode, nameFinderModel, null, resources, manifestInfoEntries);
   }
 
-  public TokenNameFinderModel(InputStream in) throws IOException, InvalidFormatException {
+  public TokenNameFinderModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
-  public TokenNameFinderModel(File modelFile) throws IOException, InvalidFormatException {
+  public TokenNameFinderModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
-  public TokenNameFinderModel(URL modelURL) throws IOException, InvalidFormatException {
+  public TokenNameFinderModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 
@@ -291,14 +291,9 @@ public class TokenNameFinderModel extends BaseModel {
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
 
-    if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel ||
-        artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
-      // TODO: Check should be performed on the possible outcomes!
-//      MaxentModel model = (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
-//      isModelValid(model);
-    }
-    else {
-      throw new InvalidFormatException("Token Name Finder model is incomplete!");
-    }
+    if (!(artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel) &&
+      !(artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel)) {
+          throw new InvalidFormatException("Token Name Finder model is incomplete!");
+        }
   }
 }

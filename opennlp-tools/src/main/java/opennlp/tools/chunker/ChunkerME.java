@@ -77,7 +77,7 @@ public class ChunkerME implements Chunker {
       this.model = model.getChunkerSequenceModel();
     }
     else {
-      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
+      this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
           model.getChunkerModel(), 0);
     }
   }
@@ -101,7 +101,7 @@ public class ChunkerME implements Chunker {
       this.model = model.getChunkerSequenceModel();
     }
     else {
-      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
+      this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
           model.getChunkerModel(), 0);
     }
   }
@@ -168,7 +168,7 @@ public class ChunkerME implements Chunker {
       beamSize = Integer.parseInt(beamSizeString);
     }
 
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    Map<String, String> manifestInfoEntries = new HashMap<>();
 
     TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
 

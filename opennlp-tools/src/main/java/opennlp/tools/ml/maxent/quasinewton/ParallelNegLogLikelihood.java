@@ -35,7 +35,7 @@ import opennlp.tools.ml.model.DataIndexer;
 public class ParallelNegLogLikelihood extends NegLogLikelihood {
 
   // Number of threads
-  int threads;
+  private int threads;
 
   // Partial value of negative log-likelihood to be computed by each thread
   private double[] negLogLikelihoodThread;
@@ -113,7 +113,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
           ParallelNegLogLikelihood.class,
           int.class, int.class, int.class, double[].class);
 
-      List<Future<?>> futures = new ArrayList<Future<?>>();
+      List<Future<?>> futures = new ArrayList<>();
       for (int i = 0; i < threads; i++) {
         if (i != threads - 1)
           futures.add(executor.submit(

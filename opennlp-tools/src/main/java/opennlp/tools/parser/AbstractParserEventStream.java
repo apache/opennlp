@@ -66,7 +66,7 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
 
   @Override
   protected Iterator<Event> createEvents(Parse sample) {
-    List<Event> newEvents = new ArrayList<Event>();
+    List<Event> newEvents = new ArrayList<>();
 
     Parse.pruneParse(sample);
     if (fixPossesives) {
@@ -96,7 +96,7 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
   }
 
   public static Parse[] getInitialChunks(Parse p) {
-    List<Parse> chunks = new ArrayList<Parse>();
+    List<Parse> chunks = new ArrayList<>();
     getInitialChunks(p, chunks);
     return chunks.toArray(new Parse[chunks.size()]);
   }
@@ -134,9 +134,9 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
   protected abstract void addParseEvents(List<Event> newEvents, Parse[] chunks);
 
   private void addChunkEvents(List<Event> chunkEvents, Parse[] chunks) {
-    List<String> toks = new ArrayList<String>();
-    List<String> tags = new ArrayList<String>();
-    List<String> preds = new ArrayList<String>();
+    List<String> toks = new ArrayList<>();
+    List<String> tags = new ArrayList<>();
+    List<String> preds = new ArrayList<>();
     for (int ci = 0, cl = chunks.length; ci < cl; ci++) {
       Parse c = chunks[ci];
       if (c.isPosTag()) {
@@ -168,8 +168,8 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
   }
 
   private void addTagEvents(List<Event> tagEvents, Parse[] chunks) {
-    List<String> toks = new ArrayList<String>();
-    List<String> preds = new ArrayList<String>();
+    List<String> toks = new ArrayList<>();
+    List<String> preds = new ArrayList<>();
     for (int ci = 0, cl = chunks.length; ci < cl; ci++) {
       Parse c = chunks[ci];
       if (c.isPosTag()) {

@@ -54,7 +54,7 @@ public class DoccatTool extends BasicCmdLineTool {
 
       DocumentCategorizerME doccat = new DocumentCategorizerME(model);
 
-      /**
+      /*
        * moved initialization to the try block to catch new IOException
        */
       ObjectStream<String> documentStream;

@@ -29,5 +29,5 @@ public interface BeamSearchContextGenerator<T> {
      * @param additionalContext Any addition context specific to a class implementing this interface.
      * @return the context for the specified position in the specified sequence.
      */
-  public String[] getContext(int index, T[] sequence, String[] priorDecisions, Object[] additionalContext);
+  String[] getContext(int index, T[] sequence, String[] priorDecisions, Object[] additionalContext);
 }

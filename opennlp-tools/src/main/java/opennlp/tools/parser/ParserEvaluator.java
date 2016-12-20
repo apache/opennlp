@@ -63,14 +63,14 @@ public class ParserEvaluator extends Evaluator<Parse> {
    */
   private static Span[] getConstituencySpans(final Parse parse) {
 
-    Stack<Parse> stack = new Stack<Parse>();
+    Stack<Parse> stack = new Stack<>();
 
     if (parse.getChildCount() > 0) {
       for (Parse child : parse.getChildren()) {
         stack.push(child);
       }
     }
-    List<Span> consts = new ArrayList<Span>();
+    List<Span> consts = new ArrayList<>();
 
     while (!stack.isEmpty()) {
 

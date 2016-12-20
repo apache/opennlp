@@ -47,7 +47,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
    *          the input dictionary via inputstream
    */
   public DictionaryLemmatizer(final InputStream dictionary) {
-    this.dictMap = new HashMap<List<String>, String>();
+    this.dictMap = new HashMap<>();
     final BufferedReader breader = new BufferedReader(new InputStreamReader(
         dictionary));
     String line;
@@ -80,13 +80,13 @@ public class DictionaryLemmatizer implements Lemmatizer {
    * @return returns the dictionary keys
    */
   private List<String> getDictKeys(final String word, final String postag) {
-    final List<String> keys = new ArrayList<String>();
+    final List<String> keys = new ArrayList<>();
     keys.addAll(Arrays.asList(word.toLowerCase(), postag));
     return keys;
   }
   
   public String[] lemmatize(final String[] tokens, final String[] postags) {
-    List<String> lemmas = new ArrayList<String>();
+    List<String> lemmas = new ArrayList<>();
     for (int i = 0; i < tokens.length; i++) {
       lemmas.add(this.apply(tokens[i], postags[i])); 
     }

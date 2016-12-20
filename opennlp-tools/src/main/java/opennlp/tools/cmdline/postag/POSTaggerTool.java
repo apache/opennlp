@@ -51,7 +51,7 @@ public final class POSTaggerTool extends BasicCmdLineTool {
 
       POSTaggerME tagger = new POSTaggerME(model);
 
-      ObjectStream<String> lineStream = null;
+      ObjectStream<String> lineStream;
       PerformanceMonitor perfMon = null;
 
       try {

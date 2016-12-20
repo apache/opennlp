@@ -35,7 +35,7 @@ import opennlp.tools.ml.model.Context;
  * which stores the parameters.
  */
 public class OldFormatGISModelReader extends PlainTextGISModelReader {
-    DataInputStream paramsInput;
+    private DataInputStream paramsInput;
 
   /**
    * Constructor which takes the name of the model without any suffixes, such as
@@ -68,9 +68,7 @@ public class OldFormatGISModelReader extends PlainTextGISModelReader {
     for (int i = 0; i < outcomePatterns.length; i++) {
       // construct outcome pattern
       int[] outcomePattern = new int[outcomePatterns[i].length - 1];
-      for (int k = 1; k < outcomePatterns[i].length; k++) {
-        outcomePattern[k - 1] = outcomePatterns[i][k];
-      }
+      System.arraycopy(outcomePatterns[i], 1, outcomePattern, 0, outcomePatterns[i].length - 1);
       // populate parameters for each context which uses this outcome pattern.
       for (int j = 0; j < outcomePatterns[i][0]; j++) {
         double[] contextParameters = new double[outcomePatterns[i].length - 1];

@@ -147,7 +147,7 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
     for (int oi = 0; oi < numOutcomes; oi++)
       allOutcomesPattern[oi] = oi;
 
-    /** Stores the estimated parameter value of each predicate during iteration. */
+    /* Stores the estimated parameter value of each predicate during iteration. */
     MutableContext[] params = new MutableContext[numPreds];
     for (int pi = 0; pi < numPreds; pi++) {
       params[pi] = new MutableContext(allOutcomesPattern, new double[numOutcomes]);

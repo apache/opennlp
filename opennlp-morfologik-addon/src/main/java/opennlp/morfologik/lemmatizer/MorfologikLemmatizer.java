@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import morfologik.stemming.Dictionary;
@@ -35,19 +37,18 @@ import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 public class MorfologikLemmatizer implements DictionaryLemmatizer {
 
   private IStemmer dictLookup;
-  public final Set<String> constantTags = new HashSet<String>(Arrays.asList(
-      "NNP", "NP00000"));
+  public final Set<String> constantTags = new HashSet<>(Arrays.asList("NNP", "NP00000"));
 
   public MorfologikLemmatizer(Path dictionaryPath) throws IllegalArgumentException,
       IOException {
     dictLookup = new DictionaryLookup(Dictionary.read(dictionaryPath));
   }
 
-  private HashMap<List<String>, String> getLemmaTagsDict(String word) {
+  private Map<List<String>, String> getLemmaTagsDict(String word) {
     List<WordData> wdList = dictLookup.lookup(word);
-    HashMap<List<String>, String> dictMap = new HashMap<List<String>, String>();
+    Map<List<String>, String> dictMap = new HashMap<>();
     for (WordData wd : wdList) {
-      List<String> wordLemmaTags = new ArrayList<String>();
+      List<String> wordLemmaTags = new ArrayList<>();
       wordLemmaTags.add(word);
       wordLemmaTags.add(wd.getTag().toString());
       dictMap.put(wordLemmaTags, wd.getStem().toString());
@@ -56,7 +57,7 @@ public class MorfologikLemmatizer implements DictionaryLemmatizer {
   }
 
   private List<String> getDictKeys(String word, String postag) {
-    List<String> keys = new ArrayList<String>();
+    List<String> keys = new ArrayList<>();
     if (constantTags.contains(postag)) {
       keys.addAll(Arrays.asList(word, postag));
     } else {
@@ -65,8 +66,8 @@ public class MorfologikLemmatizer implements DictionaryLemmatizer {
     return keys;
   }
 
-  private HashMap<List<String>, String> getDictMap(String word, String postag) {
-    HashMap<List<String>, String> dictMap = new HashMap<List<String>, String>();
+  private Map<List<String>, String> getDictMap(String word, String postag) {
+    Map<List<String>, String> dictMap;
 
     if (constantTags.contains(postag)) {
       dictMap = this.getLemmaTagsDict(word);
@@ -77,16 +78,16 @@ public class MorfologikLemmatizer implements DictionaryLemmatizer {
   }
 
   public String lemmatize(String word, String postag) {
-    String lemma = null;
+    String lemma;
     List<String> keys = this.getDictKeys(word, postag);
-    HashMap<List<String>, String> dictMap = this.getDictMap(word, postag);
+    Map<List<String>, String> dictMap = this.getDictMap(word, postag);
     // lookup lemma as value of the map
     String keyValue = dictMap.get(keys);
     if (keyValue != null) {
       lemma = keyValue;
-    } else if (keyValue == null && constantTags.contains(postag)) {
+    } else if (constantTags.contains(postag)) {
       lemma = word;
-    } else if (keyValue == null && word.toUpperCase() == word) {
+    } else if (Objects.equals(word.toUpperCase(), word)) {
       lemma = word;
     } else {
       lemma = word.toLowerCase();

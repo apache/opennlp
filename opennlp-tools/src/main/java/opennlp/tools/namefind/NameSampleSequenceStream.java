@@ -70,9 +70,8 @@ public class NameSampleSequenceStream implements SequenceStream {
 
   @SuppressWarnings("unchecked")
   public Event[] updateContext(Sequence sequence, AbstractModel model) {
-    Sequence<NameSample> pss = sequence;
     TokenNameFinder tagger = new NameFinderME(new TokenNameFinderModel("x-unspecified", model, Collections.<String, Object>emptyMap(), null));
-    String[] sentence = pss.getSource().getSentence();
+    String[] sentence = ((Sequence<NameSample>) sequence).getSource().getSentence();
     String[] tags = seqCodec.encode(tagger.find(sentence), sentence.length);
     Event[] events = new Event[sentence.length];
 
@@ -103,8 +102,7 @@ public class NameSampleSequenceStream implements SequenceStream {
 
         events[i] = new Event(tags[i], context);
       }
-      Sequence<NameSample> sequence = new Sequence<NameSample>(events,sample);
-      return sequence;
+      return new Sequence<>(events,sample);
       }
       else {
         return null;

@@ -15,21 +15,20 @@
 
 package opennlp.tools.formats;
 
-import static opennlp.tools.formats.Conll02NameSampleStream.extract;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
+
+import static opennlp.tools.formats.Conll02NameSampleStream.extract;
 
 /**
  * An import stream which can parse the CONLL03 data.
@@ -93,8 +92,8 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
 
   public NameSample read() throws IOException {
 
-    List<String> sentence = new ArrayList<String>();
-    List<String> tags = new ArrayList<String>();
+    List<String> sentence = new ArrayList<>();
+    List<String> tags = new ArrayList<>();
 
     boolean isClearAdaptiveData = false;
 
@@ -133,7 +132,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
     if (sentence.size() > 0) {
 
       // convert name tags into spans
-      List<Span> names = new ArrayList<Span>();
+      List<Span> names = new ArrayList<>();
 
       int beginIndex = -1;
       int endIndex = -1;

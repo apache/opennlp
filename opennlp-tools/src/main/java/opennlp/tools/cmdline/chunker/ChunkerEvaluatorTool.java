@@ -54,7 +54,7 @@ public final class ChunkerEvaluatorTool
 
     ChunkerModel model = new ChunkerModelLoader().load(params.getModel());
 
-    List<EvaluationMonitor<ChunkSample>> listeners = new LinkedList<EvaluationMonitor<ChunkSample>>();
+    List<EvaluationMonitor<ChunkSample>> listeners = new LinkedList<>();
     ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
     if(params.getMisclassified()) {
       listeners.add(new ChunkEvaluationErrorListener());

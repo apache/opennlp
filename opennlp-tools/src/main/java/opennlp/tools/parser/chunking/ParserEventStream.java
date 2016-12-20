@@ -93,7 +93,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     if (!type.equals(AbstractBottomUpParser.TOP_NODE)) {
       reducedChunks = new Parse[chunks.length-(reduceEnd-reduceStart+1)+1]; //total - num_removed + 1 (for new node)
       //insert nodes before reduction
-      for (int ri=0,rn=reduceStart;ri<rn;ri++) {
+      for (int ri = 0; ri< reduceStart; ri++) {
         reducedChunks[ri]=chunks[ri];
       }
       //insert reduced node
@@ -177,24 +177,25 @@ public class ParserEventStream extends AbstractParserEventStream {
     boolean fun = false;
     int ai = 0;
     while (ai < args.length && args[ai].startsWith("-")) {
-      if (args[ai].equals("-build")) {
-        etype = ParserEventTypeEnum.BUILD;
-      }
-      else if (args[ai].equals("-check")) {
-        etype = ParserEventTypeEnum.CHECK;
-      }
-      else if (args[ai].equals("-chunk")) {
-        etype = ParserEventTypeEnum.CHUNK;
-      }
-      else if (args[ai].equals("-tag")) {
-        etype = ParserEventTypeEnum.TAG;
-      }
-      else if (args[ai].equals("-fun")) {
-        fun = true;
-      }
-      else {
-        System.err.println("Invalid option " + args[ai]);
-        System.exit(1);
+      switch (args[ai]) {
+        case "-build":
+          etype = ParserEventTypeEnum.BUILD;
+          break;
+        case "-check":
+          etype = ParserEventTypeEnum.CHECK;
+          break;
+        case "-chunk":
+          etype = ParserEventTypeEnum.CHUNK;
+          break;
+        case "-tag":
+          etype = ParserEventTypeEnum.TAG;
+          break;
+        case "-fun":
+          fun = true;
+          break;
+        default:
+          System.err.println("Invalid option " + args[ai]);
+          System.exit(1);
       }
       ai++;
     }

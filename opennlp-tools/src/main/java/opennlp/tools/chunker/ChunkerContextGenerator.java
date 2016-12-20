@@ -32,5 +32,5 @@ public interface ChunkerContextGenerator extends BeamSearchContextGenerator<Stri
    * @param preds The previous decisions made in the taging of this sequence.  Only indices less than i will be examined.
    * @return An array of predictive contexts on which a model basis its decisions.
    */
-  public String[] getContext(int i, String[] toks, String[] tags, String[] preds);
+  String[] getContext(int i, String[] toks, String[] tags, String[] preds);
 }

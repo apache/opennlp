@@ -140,8 +140,7 @@ public class DoccatFactory extends BaseToolFactory {
       }
       if (featureGenerators == null) { // could not load using artifact provider
         // load bag of words as default
-        FeatureGenerator[] bow = {new BagOfWordsFeatureGenerator()};
-        this.featureGenerators = bow;
+        this.featureGenerators = new FeatureGenerator[]{new BagOfWordsFeatureGenerator()};
       }
     }
     return featureGenerators;

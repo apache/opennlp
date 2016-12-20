@@ -31,6 +31,6 @@ public interface LemmatizerContextGenerator extends BeamSearchContextGenerator<S
    * @param lemmas The previous decisions made in the tagging of this sequence.  Only indices less than i will be examined.
    * @return An array of predictive contexts on which a model basis its decisions.
    */
-  public String[] getContext(int i, String[] toks, String[] tags, String[] lemmas);
+  String[] getContext(int i, String[] toks, String[] tags, String[] lemmas);
 }
 

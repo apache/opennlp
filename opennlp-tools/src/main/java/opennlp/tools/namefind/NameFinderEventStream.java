@@ -39,8 +39,6 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
 
   private AdditionalContextFeatureGenerator additionalContextFeatureGenerator = new AdditionalContextFeatureGenerator();
 
-  private String type;
-
   private SequenceCodec<String> codec;
 
   /**
@@ -61,10 +59,11 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     this.contextGenerator = contextGenerator;
     this.contextGenerator.addFeatureGenerator(new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
 
+    String type1;
     if (type != null)
-      this.type = type;
+      type1 = type;
     else
-      this.type = "default";
+      type1 = "default";
   }
 
   public NameFinderEventStream(ObjectStream<NameSample> dataStream) {

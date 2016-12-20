@@ -29,8 +29,7 @@ public class ParserChunkerSequenceValidator implements SequenceValidator<String>
 
   public ParserChunkerSequenceValidator(String outcomes[]) {
 
-    continueStartMap =
-        new HashMap<String, String>(outcomes.length);
+    continueStartMap = new HashMap<>(outcomes.length);
     for (int oi=0, on = outcomes.length; oi<on; oi++) {
       String outcome = outcomes[oi];
       if (outcome.startsWith(Parser.CONT)){

@@ -51,19 +51,19 @@ public class ArgumentParser {
 
   public @Retention(RetentionPolicy.RUNTIME)
   @interface OptionalParameter {
-    public static final String DEFAULT_CHARSET = "DEFAULT_CHARSET";
-    public String defaultValue() default "";
+    String DEFAULT_CHARSET = "DEFAULT_CHARSET";
+    String defaultValue() default "";
   }
 
   public @Retention(RetentionPolicy.RUNTIME)
   @interface ParameterDescription {
-    public String valueName();
-    public String description() default "";
+    String valueName();
+    String description() default "";
   }
 
   private interface ArgumentFactory {
 
-    static final String INVALID_ARG = "Invalid argument: %s %s \n";
+    String INVALID_ARG = "Invalid argument: %s %s \n";
 
     Object parseArgument(Method method, String argName, String argValue);
   }
@@ -148,7 +148,7 @@ public class ArgumentParser {
   private static final Map<Class<?>, ArgumentFactory> argumentFactories;
 
   static {
-    Map<Class<?>, ArgumentFactory> factories = new HashMap<Class<?>, ArgumentParser.ArgumentFactory>();
+    Map<Class<?>, ArgumentFactory> factories = new HashMap<>();
     factories.put(Integer.class, new IntegerArgumentFactory());
     factories.put(Boolean.class, new BooleanArgumentFactory());
     factories.put(String.class, new StringArgumentFactory());
@@ -205,9 +205,7 @@ public class ArgumentParser {
     // name length is checked to be at least 4 prior
     parameterNameChars[3] = Character.toLowerCase(parameterNameChars[3]);
 
-    String parameterName = "-" + new String(parameterNameChars).substring(3);
-
-    return parameterName;
+    return "-" + new String(parameterNameChars).substring(3);
   }
 
   /**
@@ -270,9 +268,9 @@ public class ArgumentParser {
   public static <T> List<Argument> createArguments(Class<T>... argProxyInterfaces) {
     checkProxyInterfaces(argProxyInterfaces);
 
-    Set<String> duplicateFilter = new HashSet<String>();
+    Set<String> duplicateFilter = new HashSet<>();
 
-    List<Argument> arguments = new LinkedList<Argument>();
+    List<Argument> arguments = new LinkedList<>();
 
     for (Class<T> argProxyInterface : argProxyInterfaces) {
       if (null != argProxyInterface) {
@@ -321,7 +319,7 @@ public class ArgumentParser {
   public static <T> String createUsage(Class<T>... argProxyInterfaces) {
     checkProxyInterfaces(argProxyInterfaces);
 
-    Set<String> duplicateFilter = new HashSet<String>();
+    Set<String> duplicateFilter = new HashSet<>();
 
     StringBuilder usage = new StringBuilder();
     StringBuilder details = new StringBuilder();
@@ -348,7 +346,7 @@ public class ArgumentParser {
 
             usage.append(paramName).append(' ').append(desc.valueName());
             details.append('\t').append(paramName).append(' ').append(desc.valueName()).append('\n');
-            if(desc.description() != null && desc.description().length() > 0) {
+            if(desc.description().length() > 0) {
               details.append("\t\t").append(desc.description()).append('\n');
             }
 
@@ -425,7 +423,7 @@ public class ArgumentParser {
     }
 
     int argumentCount = 0;
-    List<String> parameters = new ArrayList<String>(Arrays.asList(args));
+    List<String> parameters = new ArrayList<>(Arrays.asList(args));
 
     for (Class<T> argProxyInterface : argProxyInterfaces) {
       for (Method method : argProxyInterface.getMethods()) {
@@ -482,7 +480,7 @@ public class ArgumentParser {
     if (!validateArguments(args, argProxyInterface))
       throw new IllegalArgumentException("Passed args must be valid!");
 
-    Map<String, Object> arguments = new HashMap<String, Object>();
+    Map<String, Object> arguments = new HashMap<>();
 
     for (Method method : argProxyInterface.getMethods()) {
 
@@ -531,7 +529,7 @@ public class ArgumentParser {
    * @return arguments pertaining to argProxyInterface
    */
   public static <T> String[] filter(String args[], Class<T> argProxyInterface) {
-    ArrayList<String> parameters = new ArrayList<String>(args.length);
+    ArrayList<String> parameters = new ArrayList<>(args.length);
 
     for (Method method : argProxyInterface.getMethods()) {
 

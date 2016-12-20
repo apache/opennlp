@@ -57,7 +57,7 @@ public final class ChunkerCrossValidatorTool
       mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 
-    List<EvaluationMonitor<ChunkSample>> listeners = new LinkedList<EvaluationMonitor<ChunkSample>>();
+    List<EvaluationMonitor<ChunkSample>> listeners = new LinkedList<>();
     ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
     if (params.getMisclassified()) {
       listeners.add(new ChunkEvaluationErrorListener());

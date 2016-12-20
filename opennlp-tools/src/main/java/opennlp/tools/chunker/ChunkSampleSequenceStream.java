@@ -53,7 +53,7 @@ public class ChunkSampleSequenceStream implements SequenceStream {
 
         events[i] = new Event(tags[i], context);
       }
-      return new Sequence<ChunkSample>(events,sample);
+      return new Sequence<>(events,sample);
     }
 
     return null;

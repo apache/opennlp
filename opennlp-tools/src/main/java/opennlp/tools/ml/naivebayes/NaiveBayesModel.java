@@ -91,7 +91,7 @@ public class NaiveBayesModel extends AbstractModel {
   }
 
   public static double[] eval(int[] context, float[] values, double[] prior, EvalParameters model, boolean normalize) {
-    Probabilities<Integer> probabilities = new LogProbabilities<Integer>();
+    Probabilities<Integer> probabilities = new LogProbabilities<>();
     Context[] params = model.getParams();
     double[] outcomeTotals = model instanceof NaiveBayesEvalParameters ? ((NaiveBayesEvalParameters) model).getOutcomeTotals() : new double[prior.length];
     long vocabulary = model instanceof NaiveBayesEvalParameters ? ((NaiveBayesEvalParameters) model).getVocabulary() : 0;
@@ -121,8 +121,7 @@ public class NaiveBayesModel extends AbstractModel {
     }
     for (int i = 0; i < outcomeTotals.length; ++i) {
       double numerator = outcomeTotals[i];
-      double denominator = total;
-      probabilities.addIn(i, numerator / denominator, 1);
+      probabilities.addIn(i, numerator / total, 1);
     }
     for (int i = 0; i < outcomeTotals.length; ++i) {
       prior[i] = probabilities.get(i);
@@ -141,9 +140,8 @@ public class NaiveBayesModel extends AbstractModel {
 
   private static double getSmoothedProbability(double numerator, double denominator, double vocabulary) {
     final double delta = 0.05; // Lidstone smoothing
-    final double featureVocabularySize = vocabulary;
 
-    return 1.0 * (numerator + delta) / (denominator + delta * featureVocabularySize);
+    return 1.0 * (numerator + delta) / (denominator + delta * vocabulary);
   }
 
   public static void main(String[] args) throws java.io.IOException {

@@ -67,7 +67,7 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
     // to be able to print warning a set of entities id must be maintained
     // to check if all entities have been used up after the matching is done
 
-    Set<String> entityIdSet = new HashSet<String>();
+    Set<String> entityIdSet = new HashSet<>();
 
     for (BratAnnotation ann : sample.getAnnotations()) {
       if (ann instanceof SpanAnnotation) {
@@ -93,7 +93,7 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
 
     // Currently we are missing all
 
-    List<NameSample> samples = new ArrayList<NameSample>(sentences.length);
+    List<NameSample> samples = new ArrayList<>(sentences.length);
 
     for (Span sentence : sentences) {
 
@@ -109,14 +109,14 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
       // in the tokenIndexMap.
       // The tokenIndexMap maps to the sentence local token index.
 
-      Map<Integer, Integer> tokenIndexMap = new HashMap<Integer, Integer>();
+      Map<Integer, Integer> tokenIndexMap = new HashMap<>();
 
       for (int i = 0; i < tokens.length; i++) {
         tokenIndexMap.put(-(sentence.getStart() + tokens[i].getStart()), i);
         tokenIndexMap.put(sentence.getStart() + tokens[i].getEnd(), i + 1);
       }
 
-      List<Span> names = new ArrayList<Span>();
+      List<Span> names = new ArrayList<>();
 
       for (BratAnnotation ann : sample.getAnnotations()) {
 

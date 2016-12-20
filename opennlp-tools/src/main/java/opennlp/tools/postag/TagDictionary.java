@@ -31,5 +31,5 @@ public interface TagDictionary {
    * @return A list of valid tags for the specified word or null if no information
    * is available for that word.
    */
-  public String[] getTags(String word);
+  String[] getTags(String word);
 }

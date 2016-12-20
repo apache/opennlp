@@ -102,7 +102,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
     this.types = types;
   }
 
-  static final Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
+  static Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
 
     String type = beginTag.substring(2);
 
@@ -128,8 +128,8 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
 
   public NameSample read() throws IOException {
 
-    List<String> sentence = new ArrayList<String>();
-    List<String> tags = new ArrayList<String>();
+    List<String> sentence = new ArrayList<>();
+    List<String> tags = new ArrayList<>();
 
     boolean isClearAdaptiveData = false;
 
@@ -162,7 +162,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
     if (sentence.size() > 0) {
 
       // convert name tags into spans
-      List<Span> names = new ArrayList<Span>();
+      List<Span> names = new ArrayList<>();
 
       int beginIndex = -1;
       int endIndex = -1;

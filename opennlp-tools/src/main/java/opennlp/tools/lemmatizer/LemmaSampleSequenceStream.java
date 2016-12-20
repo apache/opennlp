@@ -52,7 +52,7 @@ public class LemmaSampleSequenceStream implements SequenceStream {
 
         events[i] = new Event(tags[i], context);
       }
-      return new Sequence<LemmaSample>(events,sample);
+      return new Sequence<>(events,sample);
     }
 
     return null;

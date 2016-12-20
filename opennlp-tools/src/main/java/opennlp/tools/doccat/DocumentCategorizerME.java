@@ -17,7 +17,6 @@
 package opennlp.tools.doccat;
 
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.MaxentModel;
@@ -33,7 +31,6 @@ import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * Maxent implementation of {@link DocumentCategorizer}.
@@ -119,7 +116,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @return the score map
    */
   public Map<String, Double> scoreMap(String text) {
-    Map<String, Double> probDist = new HashMap<String, Double>();
+    Map<String, Double> probDist = new HashMap<>();
 
     double[] categorize = categorize(text);
     int catSize = getNumberOfCategories();
@@ -139,7 +136,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @return the sorted score map
    */
   public SortedMap<Double, Set<String>> sortedScoreMap(String text) {
-    SortedMap<Double, Set<String>> descendingMap = new TreeMap<Double, Set<String>>();
+    SortedMap<Double, Set<String>> descendingMap = new TreeMap<>();
     double[] categorize = categorize(text);
     int catSize = getNumberOfCategories();
     for (int i = 0; i < catSize; i++) {
@@ -180,7 +177,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
                                   TrainingParameters mlParams, DoccatFactory factory)
       throws IOException {
 
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    Map<String, String> manifestInfoEntries = new HashMap<>();
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(
          mlParams.getSettings(), manifestInfoEntries);

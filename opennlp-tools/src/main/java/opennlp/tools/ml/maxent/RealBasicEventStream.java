@@ -27,7 +27,7 @@ import opennlp.tools.util.ObjectStream;
 
 public class RealBasicEventStream implements ObjectStream<Event> {
   ContextGenerator cg = new BasicContextGenerator();
-  ObjectStream<String> ds;
+  private ObjectStream<String> ds;
 
   public RealBasicEventStream(ObjectStream<String> ds) {
     this.ds = ds;

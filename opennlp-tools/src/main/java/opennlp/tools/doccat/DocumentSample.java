@@ -50,7 +50,7 @@ public class DocumentSample {
     }
 
     this.category = category;
-    this.text = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(text)));
+    this.text = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(text)));
 
     if(extraInformation == null) {
       this.extraInformation = Collections.emptyMap();

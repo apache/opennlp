@@ -31,47 +31,47 @@ public interface Heap<E>  {
    * Removes the smallest element from the heap and returns it.
    * @return The smallest element from the heap.
    */
-  public E extract();
+  E extract();
 
   /**
    * Returns the smallest element of the heap.
    * @return The top element of the heap.
    */
-  public E first();
+  E first();
 
   /**
    * Returns the largest element of the heap.
    * @return The largest element of the heap.
    */
-  public E last();
+  E last();
 
   /**
    * Adds the specified object to the heap.
    * @param o The object to add to the heap.
    */
-  public void add(E o);
+  void add(E o);
 
   /**
    * Returns the size of the heap.
    * @return The size of the heap.
    */
-  public int size();
+  int size();
 
  /**
   * Returns whether the heap is empty.
   * @return true if the heap is empty; false otherwise.
   */
-  public boolean isEmpty();
+ boolean isEmpty();
 
   /**
    * Returns an iterator over the elements of the heap.  No specific ordering of these
    * elements is guaranteed.
    * @return An iterator over the elements of the heap.
    */
-  public Iterator<E> iterator();
+  Iterator<E> iterator();
 
   /**
    * Clears the contents of the heap.
    */
-  public void clear();
+  void clear();
 }

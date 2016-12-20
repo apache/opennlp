@@ -136,12 +136,6 @@ public class LinkedSpan<T extends BaseLink> extends Span {
     if (!Objects.equals(this.linkedEntries, other.linkedEntries)) {
       return false;
     }
-    if (this.sentenceid != other.sentenceid) {
-      return false;
-    }
-    if (!Objects.equals(this.searchTerm, other.searchTerm)) {
-      return false;
-    }
-    return true;
+    return this.sentenceid == other.sentenceid && Objects.equals(this.searchTerm, other.searchTerm);
   }
 }

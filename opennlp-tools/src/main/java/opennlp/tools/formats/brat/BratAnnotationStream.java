@@ -141,8 +141,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     }
   }
 
-  private final Map<String, BratAnnotationParser> parsers =
-      new HashMap<String, BratAnnotationParser>();
+  private final Map<String, BratAnnotationParser> parsers = new HashMap<>();
   private final AnnotationConfiguration config;
   private final BufferedReader reader;
   private final String id;

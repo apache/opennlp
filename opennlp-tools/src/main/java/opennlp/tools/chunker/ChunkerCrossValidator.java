@@ -18,8 +18,6 @@
 package opennlp.tools.chunker;
 
 import java.io.IOException;
-
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
@@ -53,8 +51,8 @@ public class ChunkerCrossValidator {
    * @throws IOException
    */
   public void evaluate(ObjectStream<ChunkSample> samples, int nFolds)
-      throws IOException, InvalidFormatException {
-    CrossValidationPartitioner<ChunkSample> partitioner = new CrossValidationPartitioner<ChunkSample>(
+      throws IOException {
+    CrossValidationPartitioner<ChunkSample> partitioner = new CrossValidationPartitioner<>(
         samples, nFolds);
 
     while (partitioner.hasNext()) {

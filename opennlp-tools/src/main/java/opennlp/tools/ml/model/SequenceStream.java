@@ -32,6 +32,6 @@ public interface SequenceStream extends ObjectStream<Sequence> {
    * @param sequence The sequence to be evaluated.
    * @return event array
    */
-  public Event[] updateContext(Sequence sequence, AbstractModel model);
+  Event[] updateContext(Sequence sequence, AbstractModel model);
 
 }

@@ -81,7 +81,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
             }
           }
 
-          List<Span> names = new ArrayList<Span>();
+          List<Span> names = new ArrayList<>();
 
           for (TokenNameFinder nameFinder : nameFinders) {
             Collections.addAll(names, nameFinder.find(whitespaceTokenizerLine));

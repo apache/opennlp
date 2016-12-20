@@ -51,7 +51,7 @@ public class LemmatizerMETool extends BasicCmdLineTool {
 
       LemmatizerME lemmatizer = new LemmatizerME(model);
 
-      ObjectStream<String> lineStream = null;
+      ObjectStream<String> lineStream;
       PerformanceMonitor perfMon = null;
 
       try {

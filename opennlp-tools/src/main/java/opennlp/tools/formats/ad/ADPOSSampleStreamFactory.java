@@ -81,10 +81,8 @@ public class ADPOSSampleStreamFactory extends
       CmdLineUtil.handleCreateObjectStreamError(ex);
     }
 
-    ADPOSSampleStream sentenceStream = new ADPOSSampleStream(lineStream,
+    return new ADPOSSampleStream(lineStream,
         params.getExpandME(), params.getIncludeFeatures());
-
-    return sentenceStream;
   }
 
 }

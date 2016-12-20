@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public class Attributes {
 
-  private Map<String, String> mNameValueMap = new HashMap<String, String>();
+  private Map<String, String> mNameValueMap = new HashMap<>();
 
   /**
    * Retrieves the value for the given key or null if attribute it not set.

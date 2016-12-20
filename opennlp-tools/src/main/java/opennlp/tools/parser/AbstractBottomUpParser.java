@@ -181,9 +181,9 @@ public abstract class AbstractBottomUpParser implements Parser {
     reportFailedParse = true;
     this.headRules = headRules;
     this.punctSet = headRules.getPunctuationTags();
-    odh = new ListHeap<Parse>(K);
-    ndh = new ListHeap<Parse>(K);
-    completeParses = new ListHeap<Parse>(K);
+    odh = new ListHeap<>(K);
+    ndh = new ListHeap<>(K);
+    completeParses = new ListHeap<>(K);
   }
 
   /**
@@ -217,7 +217,7 @@ public abstract class AbstractBottomUpParser implements Parser {
    * @return An array of parses which is a subset of chunks with punctuation removed.
    */
   public static Parse[] collapsePunctuation(Parse[] chunks, Set<String> punctSet) {
-    List<Parse> collapsedParses = new ArrayList<Parse>(chunks.length);
+    List<Parse> collapsedParses = new ArrayList<>(chunks.length);
     int lastNonPunct = -1;
     int nextNonPunct;
     for (int ci=0,cn=chunks.length;ci<cn;ci++) {
@@ -274,7 +274,7 @@ public abstract class AbstractBottomUpParser implements Parser {
     double minComplete = 2;
     double bestComplete = -100000; //approximating -infinity/0 in ln domain
     while (odh.size() > 0 && (completeParses.size() < M || (odh.first()).getProb() < minComplete) && derivationStage < maxDerivationLength) {
-      ndh = new ListHeap<Parse>(K);
+      ndh = new ListHeap<>(K);
 
       int derivationRank = 0;
       for (Iterator<Parse> pi = odh.iterator(); pi.hasNext() && derivationRank < K; derivationRank++) { // forearch derivation

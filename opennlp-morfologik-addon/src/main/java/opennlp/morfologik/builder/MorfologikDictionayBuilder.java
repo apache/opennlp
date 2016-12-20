@@ -17,12 +17,10 @@
 
 package opennlp.morfologik.builder;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Properties;
-
 import morfologik.stemming.DictionaryMetadata;
 import morfologik.stemming.EncoderType;
 import morfologik.tools.DictCompile;
@@ -90,7 +88,7 @@ public class MorfologikDictionayBuilder {
   }
 
   Properties createProperties(Charset encoding, String separator,
-      EncoderType encoderType) throws FileNotFoundException, IOException {
+      EncoderType encoderType) throws IOException {
 
     Properties properties = new Properties();
     properties.setProperty("fsa.dict.separator", separator);

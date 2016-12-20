@@ -53,7 +53,7 @@ public class CheckContextGenerator extends AbstractContextGenerator {
    */
   public String[] getContext(Parse[] constituents, String type, int start, int end) {
     int ps = constituents.length;
-    List<String> features = new ArrayList<String>(100);
+    List<String> features = new ArrayList<>(100);
 
     //default
     features.add("default");

@@ -26,7 +26,7 @@ import java.util.*;
  *
  */
 public abstract class Probabilities<T> {
-  protected HashMap<T, Double> map = new HashMap<T, Double>();
+  protected HashMap<T, Double> map = new HashMap<>();
 
   protected transient boolean isNormalised = false;
   protected Map<T, Double> normalised;
@@ -159,7 +159,7 @@ public abstract class Probabilities<T> {
   }
 
   protected Map<T, Double> createMapDataStructure() {
-    return new HashMap<T, Double>();
+    return new HashMap<>();
   }
 
   /**
@@ -190,7 +190,7 @@ public abstract class Probabilities<T> {
   }
 
   public void discardCountsBelow(double i) {
-    ArrayList<T> labelsToRemove = new ArrayList<T>();
+    ArrayList<T> labelsToRemove = new ArrayList<>();
     for (T label : map.keySet()) {
       Double sum = map.get(label);
       if (sum == null) sum = 0.0;

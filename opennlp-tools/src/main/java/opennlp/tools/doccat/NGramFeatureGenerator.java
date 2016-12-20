@@ -69,7 +69,7 @@ public class NGramFeatureGenerator implements FeatureGenerator {
    */
   public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInfo) {
 
-    List<String> features = new ArrayList<String>();
+    List<String> features = new ArrayList<>();
 
     for (int i = 0; i <= text.length - minGram; i++) {
       String feature = "ng=";

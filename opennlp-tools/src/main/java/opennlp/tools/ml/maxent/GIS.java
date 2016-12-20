@@ -63,11 +63,7 @@ public class GIS extends AbstractEventTrainer {
 
     String algorithmName = getAlgorithm();
 
-    if (algorithmName != null && !(MAXENT_VALUE.equals(algorithmName))) {
-      return false;
-    }
-
-    return true;
+    return !(algorithmName != null && !(MAXENT_VALUE.equals(algorithmName)));
   }
 
   public boolean isSortAndMerge() {

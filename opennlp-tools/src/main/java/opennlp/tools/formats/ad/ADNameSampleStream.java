@@ -80,7 +80,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   private static final Map<String, String> HAREM;
 
   static {
-    Map<String, String> harem = new HashMap<String, String>();
+    Map<String, String> harem = new HashMap<>();
 
     final String person = "person";
     harem.put("hum", person);
@@ -226,7 +226,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
   }
 
-  int textID = -1;
+  private int textID = -1;
 
   public NameSample read() throws IOException {
 
@@ -242,8 +242,8 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       }
 
       Node root = paragraph.getRoot();
-      List<String> sentence = new ArrayList<String>();
-      List<Span> names = new ArrayList<Span>();
+      List<String> sentence = new ArrayList<>();
+      List<Span> names = new ArrayList<>();
       process(root, sentence, names);
 
       return new NameSample(sentence.toArray(new String[sentence.size()]),
@@ -359,17 +359,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
         } else {
           error = true;
         }
-        if (error) {
-//           Maybe it is not the same NER, skip it.
-//           System.err.println("Missing NER start for sentence [" + sentence
-//           + "] node [" + leaf + "]");
-        }
       }
 
     }
 
   private List<String> processLexeme(String lexemeStr) {
-    List<String> out = new ArrayList<String>();
+    List<String> out = new ArrayList<>();
     String[] parts = underlinePattern.split(lexemeStr);
     for (String tok : parts) {
       if(tok.length() > 1 && !alphanumericPattern.matcher(tok).matches()) {
@@ -384,8 +379,8 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   private List<String> processTok(String tok) {
     boolean tokAdded = false;
     String original = tok;
-    List<String> out = new ArrayList<String>();
-    LinkedList<String> suffix = new LinkedList<String>();
+    List<String> out = new ArrayList<>();
+    LinkedList<String> suffix = new LinkedList<>();
     char first = tok.charAt(0);
     if (first == '«') {
       out.add(Character.toString(first));

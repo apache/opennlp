@@ -38,12 +38,12 @@ public class NameSampleTypeFilter extends FilterObjectStream<NameSample, NameSam
 
   public NameSampleTypeFilter(String[] types, ObjectStream<NameSample> samples) {
     super(samples);
-    this.types = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(types)));
+    this.types = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(types)));
   }
 
   public NameSampleTypeFilter(Set<String> types, ObjectStream<NameSample> samples) {
     super(samples);
-    this.types = Collections.unmodifiableSet(new HashSet<String>(types));
+    this.types = Collections.unmodifiableSet(new HashSet<>(types));
   }
 
   public NameSample read() throws IOException {
@@ -52,7 +52,7 @@ public class NameSampleTypeFilter extends FilterObjectStream<NameSample, NameSam
 
     if (sample != null) {
 
-      List<Span> filteredNames = new ArrayList<Span>();
+      List<Span> filteredNames = new ArrayList<>();
 
       for (Span name : sample.getNames()) {
         if (types.contains(name.getType())) {

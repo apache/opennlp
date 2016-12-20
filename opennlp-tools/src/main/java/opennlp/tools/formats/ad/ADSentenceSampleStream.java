@@ -129,7 +129,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     }
 
     StringBuilder document = new StringBuilder();
-    List<Span> sentences = new ArrayList<Span>();
+    List<Span> sentences = new ArrayList<>();
     do {
       do {
         if (!isTitle || (isTitle && isIncludeTitles)) {

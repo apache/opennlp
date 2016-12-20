@@ -32,13 +32,13 @@ public interface DataStream {
    *
    * @return the Object representing the data which is next in this DataStream
    */
-  public Object nextToken();
+  Object nextToken();
 
   /**
    * Test whether there are any Events remaining in this EventStream.
    *
    * @return true if this DataStream has more data tokens
    */
-  public boolean hasNext();
+  boolean hasNext();
 }
 

@@ -84,7 +84,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
         ObjectStream<String> untokenizedLineStream = new PlainTextByLineStream(
             new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
 
-        List<NameSample> document = new ArrayList<NameSample>();
+        List<NameSample> document = new ArrayList<>();
 
         String line;
         while ((line = untokenizedLineStream.read()) != null) {

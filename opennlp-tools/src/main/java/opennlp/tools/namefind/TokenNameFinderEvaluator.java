@@ -22,9 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
 import opennlp.tools.cmdline.PerformanceMonitor;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -103,8 +101,7 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
   }
 
   @Deprecated
-  public static void main(String[] args) throws IOException,
-      InvalidFormatException {
+  public static void main(String[] args) throws IOException {
 
     if (args.length == 4) {
 
@@ -149,9 +146,6 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
       System.out.println("F-Measure: " + evaluator.getFMeasure().getFMeasure());
       System.out.println("Recall: " + evaluator.getFMeasure().getRecallScore());
       System.out.println("Precision: " + evaluator.getFMeasure().getPrecisionScore());
-    }
-    else {
-      // usage: -encoding code test.file model.file
     }
   }
 }

@@ -70,7 +70,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
    *               observed in order to be included in the model.
    */
   public TwoPassDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
-    Map<String,Integer> predicateIndex = new HashMap<String,Integer>();
+    Map<String,Integer> predicateIndex = new HashMap<>();
     List<ComparableEvent> eventsToCompare;
 
     System.out.println("Indexing events using cutoff of " + cutoff + "\n");
@@ -118,10 +118,11 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
       * @param predicatesInOut a <code>TObjectIntHashMap</code> value
       * @param cutoff an <code>int</code> value
       */
-  private int computeEventCounts(ObjectStream<Event> eventStream, Writer eventStore, Map<String,Integer> predicatesInOut, int cutoff) throws IOException {
-    Map<String,Integer> counter = new HashMap<String,Integer>();
+  private int computeEventCounts(ObjectStream<Event> eventStream, Writer eventStore,
+                                 Map<String,Integer> predicatesInOut, int cutoff) throws IOException {
+    Map<String,Integer> counter = new HashMap<>();
     int eventCount = 0;
-    Set<String> predicateSet = new HashSet<String>();
+    Set<String> predicateSet = new HashSet<>();
 
     Event ev;
     while ((ev = eventStream.read()) != null) {
@@ -142,10 +143,10 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
   }
 
   private List<ComparableEvent> index(int numEvents, ObjectStream<Event> es, Map<String,Integer> predicateIndex) throws IOException {
-    Map<String,Integer> omap = new HashMap<String,Integer>();
+    Map<String,Integer> omap = new HashMap<>();
     int outcomeCount = 0;
-    List<ComparableEvent> eventsToCompare = new ArrayList<ComparableEvent>(numEvents);
-    List<Integer> indexedContext = new ArrayList<Integer>();
+    List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
+    List<Integer> indexedContext = new ArrayList<>();
 
     Event ev;
     while ((ev = es.read()) != null) {

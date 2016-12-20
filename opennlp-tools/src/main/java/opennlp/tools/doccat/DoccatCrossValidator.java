@@ -65,7 +65,7 @@ public class DoccatCrossValidator {
   public void evaluate(ObjectStream<DocumentSample> samples, int nFolds)
       throws IOException {
 
-    CrossValidationPartitioner<DocumentSample> partitioner = new CrossValidationPartitioner<DocumentSample>(
+    CrossValidationPartitioner<DocumentSample> partitioner = new CrossValidationPartitioner<>(
         samples, nFolds);
 
     while (partitioner.hasNext()) {

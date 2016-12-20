@@ -41,7 +41,7 @@ public class BagOfWordsFeatureGenerator implements FeatureGenerator {
   @Override
   public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInformation) {
 
-    Collection<String> bagOfWords = new ArrayList<String>(text.length);
+    Collection<String> bagOfWords = new ArrayList<>(text.length);
 
     for (String word : text) {
       if (useOnlyAllLetterTokens) {

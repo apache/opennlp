@@ -159,7 +159,7 @@ public class LogProbabilities<T> extends Probabilities<T> {
 
   public void discardCountsBelow(double i) {
     i = Math.log(i);
-    ArrayList<T> labelsToRemove = new ArrayList<T>();
+    ArrayList<T> labelsToRemove = new ArrayList<>();
     for (T label : map.keySet()) {
       Double sum = map.get(label);
       if (sum == null) sum = Double.NEGATIVE_INFINITY;

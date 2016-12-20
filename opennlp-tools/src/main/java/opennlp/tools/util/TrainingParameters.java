@@ -37,7 +37,7 @@ public class TrainingParameters {
   public static final String CUTOFF_PARAM = "Cutoff";
   public static final String THREADS_PARAM = "Threads";
   
-  private Map<String, String> parameters = new HashMap<String, String>();
+  private Map<String, String> parameters = new HashMap<>();
 
   public TrainingParameters() {
   }
@@ -79,7 +79,7 @@ public class TrainingParameters {
    */
   public Map<String, String> getSettings(String namespace) {
 
-    Map<String, String> trainingParams = new HashMap<String, String>();
+    Map<String, String> trainingParams = new HashMap<>();
 
     for (Map.Entry<String, String> entry : parameters.entrySet()) {
       String key = entry.getKey();
@@ -146,7 +146,7 @@ public class TrainingParameters {
     properties.store(out, null);
   }
 
-  public static final TrainingParameters defaultParams() {
+  public static TrainingParameters defaultParams() {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
     mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);

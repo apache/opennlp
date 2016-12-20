@@ -99,8 +99,7 @@ public class DoccatTrainerTool
 
   static FeatureGenerator[] createFeatureGenerators(String featureGeneratorsNames) {
     if(featureGeneratorsNames == null) {
-      FeatureGenerator[] def = {new BagOfWordsFeatureGenerator()};
-      return def;
+      return new FeatureGenerator[]{new BagOfWordsFeatureGenerator()};
     }
     String[] classes = featureGeneratorsNames.split(",");
     FeatureGenerator[] featureGenerators = new FeatureGenerator[classes.length];

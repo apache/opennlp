@@ -33,7 +33,7 @@ import opennlp.tools.util.ObjectStream;
 public class BratDocumentStream implements ObjectStream<BratDocument> {
 
   private AnnotationConfiguration config;
-  private List<String> documentIds = new LinkedList<String>();
+  private List<String> documentIds = new LinkedList<>();
   private Iterator<String> documentIdIterator;
 
   /**
@@ -57,7 +57,7 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
 
     this.config = config;
 
-    Stack<File> directoryStack = new Stack<File>();
+    Stack<File> directoryStack = new Stack<>();
     directoryStack.add(bratCorpusDirectory);
 
     while (!directoryStack.isEmpty()) {

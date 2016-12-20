@@ -85,7 +85,7 @@ public final class POSTaggerTrainerTool
       System.err.println("done");
     }
 
-    POSTaggerFactory postaggerFactory = null;
+    POSTaggerFactory postaggerFactory;
     try {
       postaggerFactory = POSTaggerFactory.create(params.getFactory(), ngramDict, null);
     } catch (InvalidFormatException e) {
@@ -149,17 +149,19 @@ public final class POSTaggerTrainerTool
     if (modelString == null)
       modelString = "maxent";
 
-    if (modelString.equals("maxent")) {
-      model = ModelType.MAXENT;
-    }
-    else if (modelString.equals("perceptron")) {
-      model = ModelType.PERCEPTRON;
-    }
-    else if (modelString.equals("perceptron_sequence")) {
-      model = ModelType.PERCEPTRON_SEQUENCE;
-    }
-    else {
-      model = null;
+    switch (modelString) {
+      case "maxent":
+        model = ModelType.MAXENT;
+        break;
+      case "perceptron":
+        model = ModelType.PERCEPTRON;
+        break;
+      case "perceptron_sequence":
+        model = ModelType.PERCEPTRON_SEQUENCE;
+        break;
+      default:
+        model = null;
+        break;
     }
     return model;
   }

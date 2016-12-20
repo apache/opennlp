@@ -98,15 +98,15 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
 
   protected List<List<ComparablePredicate>> computeOutcomePatterns(ComparablePredicate[] sorted) {
     ComparablePredicate cp = sorted[0];
-    List<List<ComparablePredicate>> outcomePatterns = new ArrayList<List<ComparablePredicate>>();
-    List<ComparablePredicate> newGroup = new ArrayList<ComparablePredicate>();
+    List<List<ComparablePredicate>> outcomePatterns = new ArrayList<>();
+    List<ComparablePredicate> newGroup = new ArrayList<>();
     for (ComparablePredicate predicate : sorted) {
       if (cp.compareTo(predicate) == 0) {
         newGroup.add(predicate);
       } else {
         cp = predicate;
         outcomePatterns.add(newGroup);
-        newGroup = new ArrayList<ComparablePredicate>();
+        newGroup = new ArrayList<>();
         newGroup.add(predicate);
       }
     }

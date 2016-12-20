@@ -42,7 +42,7 @@ public class TrainerFactory {
   private static final Map<String, Class> BUILTIN_TRAINERS;
 
   static {
-    Map<String, Class> _trainers = new HashMap<String, Class>();
+    Map<String, Class> _trainers = new HashMap<>();
     _trainers.put(GIS.MAXENT_VALUE, GIS.class);
     _trainers.put(QNTrainer.MAXENT_QN_VALUE, QNTrainer.class);
     _trainers.put(PerceptronTrainer.PERCEPTRON_VALUE, PerceptronTrainer.class);
@@ -89,21 +89,21 @@ public class TrainerFactory {
       ExtensionLoader.instantiateExtension(EventTrainer.class, alogrithmValue);
       return TrainerType.EVENT_MODEL_TRAINER;
     }
-    catch (ExtensionNotLoadedException e) {
+    catch (ExtensionNotLoadedException ignored) {
     }
 
     try {
       ExtensionLoader.instantiateExtension(EventModelSequenceTrainer.class, alogrithmValue);
       return TrainerType.EVENT_MODEL_SEQUENCE_TRAINER;
     }
-    catch (ExtensionNotLoadedException e) {
+    catch (ExtensionNotLoadedException ignored) {
     }
 
     try {
       ExtensionLoader.instantiateExtension(SequenceTrainer.class, alogrithmValue);
       return TrainerType.SEQUENCE_TRAINER;
     }
-    catch (ExtensionNotLoadedException e) {
+    catch (ExtensionNotLoadedException ignored) {
     }
 
     return null;

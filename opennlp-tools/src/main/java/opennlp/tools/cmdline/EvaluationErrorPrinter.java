@@ -40,8 +40,8 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   // for the sentence detector
   protected void printError(Span references[], Span predictions[],
       T referenceSample, T predictedSample, String sentence) {
-    List<Span> falseNegatives = new ArrayList<Span>();
-    List<Span> falsePositives = new ArrayList<Span>();
+    List<Span> falseNegatives = new ArrayList<>();
+    List<Span> falsePositives = new ArrayList<>();
 
     findErrors(references, predictions, falseNegatives, falsePositives);
 
@@ -57,8 +57,8 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   // for namefinder, chunker...
   protected void printError(String id, Span references[], Span predictions[],
       T referenceSample, T predictedSample, String[] sentenceTokens) {
-    List<Span> falseNegatives = new ArrayList<Span>();
-    List<Span> falsePositives = new ArrayList<Span>();
+    List<Span> falseNegatives = new ArrayList<>();
+    List<Span> falsePositives = new ArrayList<>();
 
     findErrors(references, predictions, falseNegatives, falsePositives);
 
@@ -83,9 +83,9 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   // for pos tagger
   protected void printError(String references[], String predictions[],
       T referenceSample, T predictedSample, String[] sentenceTokens) {
-    List<String> filteredDoc = new ArrayList<String>();
-    List<String> filteredRefs = new ArrayList<String>();
-    List<String> filteredPreds = new ArrayList<String>();
+    List<String> filteredDoc = new ArrayList<>();
+    List<String> filteredRefs = new ArrayList<>();
+    List<String> filteredPreds = new ArrayList<>();
 
     for (int i = 0; i < references.length; i++) {
       if (!references[i].equals(predictions[i])) {

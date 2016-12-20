@@ -47,9 +47,9 @@ public class ChunkSample {
 
     validateArguments(sentence.length, tags.length, preds.length);
 
-    this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
-    this.tags = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tags)));
-    this.preds = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(preds)));
+    this.sentence = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(sentence)));
+    this.tags = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(tags)));
+    this.preds = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(preds)));
   }
 
   /**
@@ -66,9 +66,9 @@ public class ChunkSample {
 
     validateArguments(sentence.size(), tags.size(), preds.size());
 
-    this.sentence = Collections.unmodifiableList(new ArrayList<String>(sentence));
-    this.tags = Collections.unmodifiableList(new ArrayList<String>(tags));
-    this.preds = Collections.unmodifiableList(new ArrayList<String>(preds));
+    this.sentence = Collections.unmodifiableList(new ArrayList<>(sentence));
+    this.tags = Collections.unmodifiableList(new ArrayList<>(tags));
+    this.preds = Collections.unmodifiableList(new ArrayList<>(preds));
   }
 
   /** Gets the training sentence */
@@ -109,7 +109,7 @@ public class ChunkSample {
     validateArguments(aSentence.length, aTags.length, aPreds.length);
 
     // initialize with the list maximum size
-    List<Span> phrases = new ArrayList<Span>(aSentence.length);
+    List<Span> phrases = new ArrayList<>(aSentence.length);
     String startTag = "";
     int startIndex = 0;
     boolean foundPhrase = false;

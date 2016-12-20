@@ -34,13 +34,13 @@ public interface Parser {
    * @param numParses The number of parses desired.
    * @return the specified number of parses for the specified tokens.
    */
-  public abstract Parse[] parse(Parse tokens, int numParses);
+  Parse[] parse(Parse tokens, int numParses);
 
   /**
    * Returns a parse for the specified parse of tokens.
    * @param tokens The root node of a flat parse containing only tokens.
    * @return A full parse of the specified tokens or the flat chunks of the tokens if a fullparse could not be found.
    */
-  public abstract Parse parse(Parse tokens);
+  Parse parse(Parse tokens);
 
 }
