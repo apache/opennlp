@@ -46,14 +46,12 @@
 	<fileSets>
 	    <fileSet>
 	    	<directory>src/main/readme</directory>
-	    	<outputDirectory></outputDirectory>
 	    	<fileMode>644</fileMode>
 	    	<directoryMode>755</directoryMode>      
 	    </fileSet>
 		
 	    <fileSet>
 	      <directory>.</directory>
-	      <outputDirectory></outputDirectory>
 	      <filtered>true</filtered>
 	      <fileMode>644</fileMode>
 	      <directoryMode>755</directoryMode> 
@@ -65,7 +63,6 @@
 	    
 	    <fileSet>
 	      <directory>target</directory>
-	      <outputDirectory></outputDirectory>
 	      <fileMode>644</fileMode>
 	      <directoryMode>755</directoryMode> 
 	      <includes>

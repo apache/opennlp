@@ -25,7 +25,6 @@
 	<annotatorImplementationName>opennlp.uima.namefind.NameFinder</annotatorImplementationName>
 	<analysisEngineMetaData>
 		<name>Time Name Finder</name>
-		<description></description>
 		<version>1.5.2-incubating</version>
 		<vendor>Apache Software Foundation</vendor>
 
