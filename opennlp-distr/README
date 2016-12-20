@@ -18,7 +18,7 @@ What is new in Apache OpenNLP ${pom.version}
 
 This release introduces many new features, improvements and bug fixes. The API
 has been improved for a better consistency and 1.4 deprecated methods were
-removed. Now Java 1.7 is required.
+removed. Now Java 1.8 is required.
 
 Additionally the release contains the following noteworthy changes:
 
@@ -39,6 +39,6 @@ notes.
 
 Requirements
 ------------
-Java 1.7 is required to run OpenNLP
-Maven 3.0.0 is required for building it
+Java 1.8 is required to run OpenNLP
+Maven 3.3.9 is required for building it
 

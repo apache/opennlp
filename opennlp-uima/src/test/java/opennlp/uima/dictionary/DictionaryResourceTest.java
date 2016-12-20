@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
 
 public class DictionaryResourceTest {
 
-  private static final String PATHNAME = "opennlp-uima/src/test/resources/test-descriptors/";
+  private static final String PATHNAME = "src/test/resources/test-descriptors/";
 
   private static AnalysisEngine AE;
 

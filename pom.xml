@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
-		<version>16</version>
+		<version>18</version>
 		<relativePath />
 	</parent>
 
@@ -35,10 +35,6 @@
 	<packaging>pom</packaging>
 
 	<name>Apache OpenNLP Reactor</name>
-
-	<prerequisites>
-		<maven>3.0</maven>
-	</prerequisites>
 
 	<scm>
 		<connection>scm:git:https://git-wip-us.apache.org/repos/asf/opennlp.git</connection>
@@ -87,11 +83,32 @@
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
-				<version>4.8.1</version>
+				<version>${junit.version}</version>
 				<scope>test</scope>
 			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-tools</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-uima</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
+
+	<properties>
+		<!-- Build Properties -->
+		<java.version>1.8</java.version>
+		<maven.version>3.3.9</maven.version>
+		<enforcer.plugin.version>1.4.1</enforcer.plugin.version>
+		<junit.version>4.12</junit.version>
+	</properties>
 
 	<build>
 		<pluginManagement>
@@ -110,9 +127,7 @@
 				<plugin>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
-					<!-- Version 2.3.5 breaks backward compatibility with java 5,
-					but the build must run on java 5! -->
-					<version>2.3.4</version>
+					<version>3.2.0</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -120,9 +135,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.3</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 					<compilerArgument>-Xlint</compilerArgument>
 				</configuration>
 			</plugin>
@@ -186,6 +202,41 @@
 				<configuration>
 					<workspace>../</workspace>
 					<workspaceCodeStylesURL>http://opennlp.apache.org/code-formatter/OpenNLP-Eclipse-Formatter.xml</workspaceCodeStylesURL>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>${enforcer.plugin.version}</version>
+				<executions>
+					<execution>
+						<id>enforce-java</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+						<rules>
+							<requireJavaVersion>
+								<message>Java 8 or higher is required to compile this module</message>
+								<version>[${java.version},)</version>
+							</requireJavaVersion>
+							<requireMavenVersion>
+								<message>Maven 3.3.9 or higher is required to compile this module</message>
+								<version>[${maven.version},)</version>
+							</requireMavenVersion>
+						</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skipTests>false</skipTests>
+					<argLine>-Xmx512m</argLine>
 				</configuration>
 			</plugin>
 
