@@ -36,7 +36,7 @@ public interface EndOfSentenceScanner {
    * Returns an array of character which can indicate the end of a sentence.
    * @return an array of character which can indicate the end of a sentence.
    */
-   public char[] getEndOfSentenceCharacters();
+  char[] getEndOfSentenceCharacters();
 
     /**
      * The receiver scans the specified string for sentence ending characters and
@@ -45,7 +45,7 @@ public interface EndOfSentenceScanner {
      * @param s a <code>String</code> value
      * @return a <code>List</code> of Integer objects.
      */
-    public List<Integer> getPositions(String s);
+    List<Integer> getPositions(String s);
 
     /**
      * The receiver scans `buf' for sentence ending characters and
@@ -54,7 +54,7 @@ public interface EndOfSentenceScanner {
      * @param buf a <code>StringBuffer</code> value
      * @return a <code>List</code> of Integer objects.
      */
-    public List<Integer> getPositions(StringBuffer buf);
+    List<Integer> getPositions(StringBuffer buf);
 
     /**
      * The receiver scans `cbuf' for sentence ending characters and
@@ -63,5 +63,5 @@ public interface EndOfSentenceScanner {
      * @param cbuf a <code>char[]</code> value
      * @return a <code>List</code> of Integer objects.
      */
-    public List<Integer> getPositions(char[] cbuf);
+    List<Integer> getPositions(char[] cbuf);
 }

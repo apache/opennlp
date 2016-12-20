@@ -29,5 +29,5 @@ public interface GapLabeler {
    * Labels the constituents found in the stack with gap labels if appropriate.
    * @param stack The stack of un-completed constituents.
    */
-  public void labelGaps(Stack<Constituent> stack);
+  void labelGaps(Stack<Constituent> stack);
 }

@@ -33,12 +33,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
-
 import opennlp.tools.parser.Constituent;
 import opennlp.tools.parser.GapLabeler;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.chunking.Parser;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
@@ -62,8 +60,7 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
 
   public static class HeadRulesSerializer implements ArtifactSerializer<opennlp.tools.parser.lang.es.AncoraSpanishHeadRules> {
 
-    public opennlp.tools.parser.lang.es.AncoraSpanishHeadRules create(InputStream in) throws IOException,
-        InvalidFormatException {
+    public opennlp.tools.parser.lang.es.AncoraSpanishHeadRules create(InputStream in) throws IOException {
       return new opennlp.tools.parser.lang.es.AncoraSpanishHeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
     }
 
@@ -119,7 +116,7 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
     BufferedReader in = new BufferedReader(rulesReader);
     readHeadRules(in);
 
-    punctSet = new HashSet<String>();
+    punctSet = new HashSet<>();
     punctSet.add(".");
     punctSet.add(",");
     punctSet.add("``");
@@ -199,7 +196,7 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
 
   private void readHeadRules(BufferedReader str) throws IOException {
     String line;
-    headRules = new HashMap<String, HeadRule>(60);
+    headRules = new HashMap<>(60);
     while ((line = str.readLine()) != null) {
       StringTokenizer st = new StringTokenizer(line);
       String num = st.nextToken();

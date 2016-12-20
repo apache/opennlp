@@ -38,9 +38,9 @@ public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
 
   public LemmaSample read() throws IOException {
 
-    List<String> toks = new ArrayList<String>();
-    List<String> tags = new ArrayList<String>();
-    List<String> preds = new ArrayList<String>();
+    List<String> toks = new ArrayList<>();
+    List<String> tags = new ArrayList<>();
+    List<String> preds = new ArrayList<>();
 
     for (String line = samples.read(); line != null && !line.equals(""); line = samples.read()) {
       String[] parts = line.split("\t");
@@ -55,8 +55,8 @@ public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
       }
     }
     if (toks.size() > 0) {
-      LemmaSample lemmaSample = new LemmaSample(toks.toArray(new String[toks.size()]), tags.toArray(new String[tags.size()]), preds.toArray(new String[preds.size()]));
-      return lemmaSample;
+      return new LemmaSample(toks.toArray(new String[toks.size()]), tags.toArray(new String[tags.size()]),
+        preds.toArray(new String[preds.size()]));
     }
     else {
       return null;

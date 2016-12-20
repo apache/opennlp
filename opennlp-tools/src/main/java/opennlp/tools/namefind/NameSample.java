@@ -55,8 +55,8 @@ public class NameSample {
       names = new Span[0];
     }
 
-    this.sentence = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(sentence)));
-    this.names = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(names)));
+    this.sentence = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(sentence)));
+    this.names = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(names)));
 
     if (additionalContext != null) {
       this.additionalContext = new String[additionalContext.length][];
@@ -215,8 +215,8 @@ public class NameSample {
     throws IOException {
     String[] parts = WhitespaceTokenizer.INSTANCE.tokenize(taggedTokens);
 
-    List<String> tokenList = new ArrayList<String>(parts.length);
-    List<Span> nameList = new ArrayList<Span>();
+    List<String> tokenList = new ArrayList<>(parts.length);
+    List<Span> nameList = new ArrayList<>();
 
     String nameType = defaultType;
     int startIndex = -1;

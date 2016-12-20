@@ -19,10 +19,8 @@ package opennlp.tools.cmdline.postag;
 
 import java.io.IOException;
 import java.io.InputStream;
-
 import opennlp.tools.cmdline.ModelLoader;
 import opennlp.tools.postag.POSModel;
-import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Loads a POS Tagger Model for the command line tools.
@@ -36,8 +34,7 @@ public final class POSModelLoader extends ModelLoader<POSModel>{
   }
 
   @Override
-  protected POSModel loadModel(InputStream modelIn) throws IOException,
-      InvalidFormatException {
+  protected POSModel loadModel(InputStream modelIn) throws IOException {
     return new POSModel(modelIn);
   }
 }

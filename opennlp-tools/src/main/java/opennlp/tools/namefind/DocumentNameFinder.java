@@ -36,6 +36,6 @@ public interface DocumentNameFinder {
    * @param document An array of tokens for each sentence of a document.
    * @return The token spans for each sentence of the specified document.
    */
-  public abstract Span[][] find(String[][] document);
+  Span[][] find(String[][] document);
 
 }

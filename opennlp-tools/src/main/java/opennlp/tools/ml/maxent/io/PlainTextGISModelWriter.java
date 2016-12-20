@@ -21,20 +21,18 @@ package opennlp.tools.ml.maxent.io;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.zip.GZIPOutputStream;
-
 import opennlp.tools.ml.model.AbstractModel;
 
 /**
  * Model writer that saves models in plain text format.
  */
 public class PlainTextGISModelWriter extends GISModelWriter {
-  BufferedWriter output;
+  private BufferedWriter output;
 
   /**
    * Constructor which takes a GISModel and a File and prepares itself to
@@ -45,7 +43,7 @@ public class PlainTextGISModelWriter extends GISModelWriter {
    * @param f The File in which the model is to be persisted.
    */
   public PlainTextGISModelWriter (AbstractModel model, File f)
-  throws IOException, FileNotFoundException {
+  throws IOException {
 
     super(model);
     if (f.getName().endsWith(".gz")) {

@@ -47,7 +47,7 @@ public class ChunkerEventStream extends AbstractEventStream<ChunkSample> {
   protected Iterator<Event> createEvents(ChunkSample sample) {
 
     if (sample != null) {
-      List<Event> events = new ArrayList<Event>();
+      List<Event> events = new ArrayList<>();
       String[] toksArray = sample.getSentence();
       String[] tagsArray = sample.getTags();
       String[] predsArray = sample.getPreds();

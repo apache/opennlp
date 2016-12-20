@@ -123,7 +123,6 @@ public abstract class GISModelWriter extends AbstractModelWriter {
       int[] predkeys = PARAMS[pid].getOutcomes();
       // Arrays.sort(predkeys);
       int numActive = predkeys.length;
-      int[] activeOutcomes = predkeys;
       double[] activeParams = PARAMS[pid].getParameters();
 
       numParams += numActive;
@@ -135,7 +134,7 @@ public abstract class GISModelWriter extends AbstractModelWriter {
        * PARAMS[pid].getParams(oid); id++; }
        */
       sortPreds[pid] = new ComparablePredicate(PRED_LABELS[pid],
-          activeOutcomes, activeParams);
+        predkeys, activeParams);
     }
 
     Arrays.sort(sortPreds);
@@ -143,17 +142,17 @@ public abstract class GISModelWriter extends AbstractModelWriter {
   }
 
   protected List<List<ComparablePredicate>> compressOutcomes(ComparablePredicate[] sorted) {
-    List<List<ComparablePredicate>> outcomePatterns = new ArrayList<List<ComparablePredicate>>();
+    List<List<ComparablePredicate>> outcomePatterns = new ArrayList<>();
     if(sorted.length > 0) {
         ComparablePredicate cp = sorted[0];    
-        List<ComparablePredicate> newGroup = new ArrayList<ComparablePredicate>();
+        List<ComparablePredicate> newGroup = new ArrayList<>();
         for (int i = 0; i < sorted.length; i++) {
           if (cp.compareTo(sorted[i]) == 0) {
             newGroup.add(sorted[i]);
           } else {
             cp = sorted[i];
             outcomePatterns.add(newGroup);
-            newGroup = new ArrayList<ComparablePredicate>();
+            newGroup = new ArrayList<>();
             newGroup.add(sorted[i]);
           }
         }

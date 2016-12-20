@@ -60,7 +60,7 @@ public class TokenNameFinderCrossValidator {
 
     public DocumentSample read() throws IOException {
 
-      List<NameSample> document = new ArrayList<NameSample>();
+      List<NameSample> document = new ArrayList<>();
 
       if (beginSample == null) {
         // Assume that the clear flag is set
@@ -143,7 +143,6 @@ public class TokenNameFinderCrossValidator {
   private TokenNameFinderEvaluationMonitor[] listeners;
 
   private FMeasure fmeasure = new FMeasure();
-  private SequenceCodec<String> codec;
   private TokenNameFinderFactory factory;
 
   /**
@@ -175,7 +174,6 @@ public class TokenNameFinderCrossValidator {
     this.params = trainParams;
 
     this.listeners = listeners;
-    this.codec = codec;
   }
 
   public TokenNameFinderCrossValidator(String languageCode, String type,
@@ -209,7 +207,7 @@ public class TokenNameFinderCrossValidator {
 
     // Note: The name samples need to be grouped on a document basis.
 
-    CrossValidationPartitioner<DocumentSample> partitioner = new CrossValidationPartitioner<DocumentSample>(
+    CrossValidationPartitioner<DocumentSample> partitioner = new CrossValidationPartitioner<>(
         new NameToDocumentSampleStream(samples), nFolds);
 
     while (partitioner.hasNext()) {

@@ -33,7 +33,7 @@ class DocumentCategorizerContextGenerator {
 
   public String[] getContext(String text[], Map<String, Object> extraInformation) {
 
-    Collection<String> context = new LinkedList<String>();
+    Collection<String> context = new LinkedList<>();
 
     for (FeatureGenerator mFeatureGenerator : mFeatureGenerators) {
       Collection<String> extractedFeatures =

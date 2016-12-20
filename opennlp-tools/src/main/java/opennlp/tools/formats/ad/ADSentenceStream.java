@@ -138,9 +138,6 @@ public class ADSentenceStream extends
 	        if(isBox) boxTag = " box";
 	        if(start > 0) {
 	          meta = line.substring(0, start) + " p=" + para + titleTag + boxTag + metaFromSource;
-	        } else {
-	          // rare case were there is no space between id and the sentence.
-              // will use previous meta for now
 	        }
         }
         sentence.setText(text);
@@ -154,7 +151,7 @@ public class ADSentenceStream extends
         }
 
         // got the root. Add it to the stack
-        Stack<Node> nodeStack = new Stack<Node>();
+        Stack<Node> nodeStack = new Stack<>();
 
         root.setSyntacticTag("ROOT");
         root.setLevel(0);
@@ -381,7 +378,7 @@ public class ADSentenceStream extends
 
     /** Represents the AD node */
     public class Node extends TreeElement {
-      private List<TreeElement> elems = new ArrayList<TreeElement>();
+      private List<TreeElement> elems = new ArrayList<>();
 
       public void addElement(TreeElement element) {
         elems.add(element);
@@ -546,12 +543,10 @@ public class ADSentenceStream extends
     	  if(sentenceStarted) {
     		  if (sentEnd.matcher(line).matches() || extEnd.matcher(line).matches()) {
 		          sentenceStarted = false;
-	          } else if(line.startsWith("A1")) {
-	            // skip
-	          } else {
+	          } else if (!line.startsWith("A1")) {
 	        	  sentence.append(line).append('\n');
 	          }
-    	  } else {
+        } else {
     		  if (sentStart.matcher(line).matches()) {
 		          sentenceStarted = true;
 		        } else if(paraStart.matcher(line).matches()) {

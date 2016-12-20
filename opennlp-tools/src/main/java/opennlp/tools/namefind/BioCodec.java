@@ -33,11 +33,10 @@ public class BioCodec implements SequenceCodec<String> {
 
   private static final Pattern typedOutcomePattern = Pattern.compile("(.+)-\\w+");
 
-  static final String extractNameType(String outcome) {
+  static String extractNameType(String outcome) {
     Matcher matcher = typedOutcomePattern.matcher(outcome);
     if(matcher.matches()) {
-      String nameType = matcher.group(1);
-      return nameType;
+      return matcher.group(1);
     }
 
     return null;
@@ -46,7 +45,7 @@ public class BioCodec implements SequenceCodec<String> {
   public Span[] decode(List<String> c) {
     int start = -1;
     int end = -1;
-    List<Span> spans = new ArrayList<Span>(c.size());
+    List<Span> spans = new ArrayList<>(c.size());
     for (int li = 0; li < c.size(); li++) {
       String chunkTag = c.get(li);
       if (chunkTag.endsWith(BioCodec.START)) {

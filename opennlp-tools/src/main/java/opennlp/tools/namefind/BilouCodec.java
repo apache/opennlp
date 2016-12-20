@@ -37,7 +37,7 @@ public class BilouCodec implements SequenceCodec<String> {
   public Span[] decode(List<String> c) {
     int start = -1;
     int end = -1;
-    List<Span> spans = new ArrayList<Span>(c.size());
+    List<Span> spans = new ArrayList<>(c.size());
     for (int li = 0; li < c.size(); li++) {
       String chunkTag = c.get(li);
       if (chunkTag.endsWith(BioCodec.START)) {
@@ -56,9 +56,6 @@ public class BilouCodec implements SequenceCodec<String> {
       }
       else if (chunkTag.endsWith(UNIT)) {
         spans.add(new Span(li, li + 1, BioCodec.extractNameType(c.get(li))));
-      }
-      else if (chunkTag.endsWith(BioCodec.OTHER)) {
-        // in this case do nothing
       }
     }
 

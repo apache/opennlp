@@ -54,7 +54,7 @@ public abstract class AbstractToSentenceSampleStream<T> extends
   protected abstract String[] toSentence(T sample);
 
   public SentenceSample read() throws IOException {
-    List<String[]> sentences = new ArrayList<String[]>();
+    List<String[]> sentences = new ArrayList<>();
 
     T posSample;
     int chunks = 0;

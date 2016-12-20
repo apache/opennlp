@@ -33,5 +33,5 @@ public interface SDContextGenerator {
    * @return an array of contextual features for the potential sentence boundary at the
    * specified position within the specified string buffer.
    */
-  public abstract String[] getContext(CharSequence s, int position);
+  String[] getContext(CharSequence s, int position);
 }

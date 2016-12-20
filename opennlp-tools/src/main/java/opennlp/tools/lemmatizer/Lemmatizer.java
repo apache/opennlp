@@ -29,6 +29,6 @@ public interface Lemmatizer {
    *
    * @return an array of lemma classes for each token in the sequence.
    */
-  public String[] lemmatize(String[] toks, String tags[]);
+  String[] lemmatize(String[] toks, String tags[]);
 
 }

@@ -90,7 +90,7 @@ public class POSTaggerCrossValidator {
    */
   public void evaluate(ObjectStream<POSSample> samples, int nFolds) throws IOException {
 
-    CrossValidationPartitioner<POSSample> partitioner = new CrossValidationPartitioner<POSSample>(
+    CrossValidationPartitioner<POSSample> partitioner = new CrossValidationPartitioner<>(
         samples, nFolds);
 
     while (partitioner.hasNext()) {

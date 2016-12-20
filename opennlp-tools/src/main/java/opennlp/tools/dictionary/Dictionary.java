@@ -28,12 +28,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
-
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionarySerializer;
 import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.dictionary.serializer.EntryInserter;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.StringUtil;
 
@@ -91,7 +89,7 @@ public class Dictionary implements Iterable<StringList> {
     }
   }
 
-  private Set<StringListWrapper> entrySet = new HashSet<StringListWrapper>();
+  private Set<StringListWrapper> entrySet = new HashSet<>();
   private final boolean isCaseSensitive;
   private int minTokenCount = 99999;
   private int maxTokenCount = 0;
@@ -113,9 +111,8 @@ public class Dictionary implements Iterable<StringList> {
    *
    * @param in
    * @throws IOException
-   * @throws InvalidFormatException
    */
-  public Dictionary(InputStream in) throws IOException, InvalidFormatException {
+  public Dictionary(InputStream in) throws IOException {
     isCaseSensitive = DictionarySerializer.create(in, new EntryInserter() {
       public void insert(Entry entry) {
         put(entry.getTokens());
@@ -136,9 +133,8 @@ public class Dictionary implements Iterable<StringList> {
    * @param caseSensitive
    *          has no effect
    * @throws IOException
-   * @throws InvalidFormatException
    */
-  public Dictionary(InputStream in, boolean caseSensitive) throws IOException, InvalidFormatException {
+  public Dictionary(InputStream in, boolean caseSensitive) throws IOException {
     this(in);
   }
 
@@ -173,7 +169,6 @@ public class Dictionary implements Iterable<StringList> {
    * Checks if this dictionary has the given entry.
    *
    * @param tokens
-   *
    * @return true if it contains the entry otherwise false
    */
   public boolean contains(StringList tokens) {

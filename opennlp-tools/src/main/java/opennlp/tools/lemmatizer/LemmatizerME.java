@@ -79,7 +79,7 @@ public class LemmatizerME implements Lemmatizer {
       this.model = model.getLemmatizerSequenceModel();
     }
     else {
-      this.model = new opennlp.tools.ml.BeamSearch<String>(beamSize,
+      this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
           (MaxentModel) model.getLemmatizerSequenceModel(), 0);
     }
   }
@@ -97,7 +97,7 @@ public String[] lemmatize(String[] toks, String[] tags) {
    * @return the array of decoded lemmas
    */
   public String[] decodeLemmas(String[] toks, String[] preds) {
-    List<String> lemmas = new ArrayList<String>();
+    List<String> lemmas = new ArrayList<>();
     for (int i = 0; i < toks.length; i++) {
       String lemma = StringUtil.decodeShortestEditScript(toks[i].toLowerCase(), preds[i]);
       //System.err.println("-> DEBUG: " + toks[i].toLowerCase() + " " + preds[i] + " " + lemma);
@@ -153,7 +153,7 @@ public String[] lemmatize(String[] toks, String[] tags) {
 
     LemmatizerContextGenerator contextGenerator = posFactory.getContextGenerator();
 
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    Map<String, String> manifestInfoEntries = new HashMap<>();
 
     TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
 

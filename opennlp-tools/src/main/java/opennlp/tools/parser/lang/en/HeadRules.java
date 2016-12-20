@@ -34,12 +34,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
-
 import opennlp.tools.parser.Constituent;
 import opennlp.tools.parser.GapLabeler;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.chunking.Parser;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
@@ -50,8 +48,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
 
   public static class HeadRulesSerializer implements ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
 
-    public opennlp.tools.parser.lang.en.HeadRules create(InputStream in) throws IOException,
-        InvalidFormatException {
+    public opennlp.tools.parser.lang.en.HeadRules create(InputStream in) throws IOException {
       return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
     }
 
@@ -118,7 +115,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
     BufferedReader in = new BufferedReader(rulesReader);
     readHeadRules(in);
 
-    punctSet = new HashSet<String>();
+    punctSet = new HashSet<>();
     punctSet.add(".");
     punctSet.add(",");
     punctSet.add("``");
@@ -197,7 +194,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
 
   private void readHeadRules(BufferedReader str) throws IOException {
     String line;
-    headRules = new HashMap<String, HeadRule>(30);
+    headRules = new HashMap<>(30);
     while ((line = str.readLine()) != null) {
       StringTokenizer st = new StringTokenizer(line);
       String num = st.nextToken();

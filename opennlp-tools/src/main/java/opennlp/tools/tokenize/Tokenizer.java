@@ -52,7 +52,7 @@ public interface Tokenizer {
      * @return  The String[] with the individual tokens as the array
      *          elements.
      */
-    public String[] tokenize(String s);
+    String[] tokenize(String s);
 
     /**
      * Finds the boundaries of atomic parts in a string.
@@ -61,5 +61,5 @@ public interface Tokenizer {
      * @return The Span[] with the spans (offsets into s) for each
      * token as the individuals array elements.
      */
-    public Span[] tokenizePos(String s);
+    Span[] tokenizePos(String s);
 }

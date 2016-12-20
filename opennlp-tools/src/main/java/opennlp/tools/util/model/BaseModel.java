@@ -50,8 +50,6 @@ import opennlp.tools.util.ext.ExtensionLoader;
  */
 public abstract class BaseModel implements ArtifactProvider, Serializable {
 
-  private static int MODEL_BUFFER_SIZE_LIMIT = Integer.MAX_VALUE;
-
   protected static final String MANIFEST_ENTRY = "manifest.properties";
   protected static final String FACTORY_NAME = "factory";
 
@@ -173,15 +171,14 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @param in the input stream containing the model
    *
    * @throws IOException
-   * @throws InvalidFormatException
    */
-  protected BaseModel(String componentName, InputStream in) throws IOException, InvalidFormatException {
+  protected BaseModel(String componentName, InputStream in) throws IOException {
     this(componentName, true);
 
     loadModel(in);
   }
 
-  protected BaseModel(String componentName, File modelFile) throws IOException, InvalidFormatException  {
+  protected BaseModel(String componentName, File modelFile) throws IOException  {
     this(componentName, true);
 
     try (InputStream in = new BufferedInputStream(new FileInputStream(modelFile))) {
@@ -189,7 +186,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     }
   }
 
-  protected BaseModel(String componentName, URL modelURL) throws IOException, InvalidFormatException  {
+  protected BaseModel(String componentName, URL modelURL) throws IOException  {
     this(componentName, true);
 
     try (InputStream in = new BufferedInputStream(modelURL.openStream())) {
@@ -197,7 +194,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     }
   }
 
-  private void loadModel(InputStream in) throws IOException, InvalidFormatException {
+  private void loadModel(InputStream in) throws IOException {
 
     if (in == null) {
       throw new IllegalArgumentException("in must not be null!");
@@ -210,6 +207,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     }
 
     // TODO: Discuss this solution, the buffering should
+    int MODEL_BUFFER_SIZE_LIMIT = Integer.MAX_VALUE;
     in.mark(MODEL_BUFFER_SIZE_LIMIT);
 
     final ZipInputStream zip = new ZipInputStream(in);
@@ -290,11 +288,11 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * Finish loading the artifacts now that it knows all serializers.
    */
   private void finishLoadingArtifacts(InputStream in)
-      throws InvalidFormatException, IOException {
+      throws IOException {
 
     final ZipInputStream zip = new ZipInputStream(in);
 
-    Map<String, Object> artifactMap = new HashMap<String, Object>();
+    Map<String, Object> artifactMap = new HashMap<>();
 
     ZipEntry entry;
     while((entry = zip.getNextEntry()) != null ) {
@@ -355,7 +353,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   }
 
   protected static Map<String, ArtifactSerializer> createArtifactSerializers() {
-    Map<String, ArtifactSerializer> serializers = new HashMap<String, ArtifactSerializer>();
+    Map<String, ArtifactSerializer> serializers = new HashMap<>();
 
     GenericModelSerializer.register(serializers);
     PropertiesSerializer.register(serializers);

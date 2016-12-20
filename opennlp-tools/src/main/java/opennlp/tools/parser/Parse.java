@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -153,7 +154,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     this.prob = p;
     this.head = this;
     this.headIndex = index;
-    this.parts = new LinkedList<Parse>();
+    this.parts = new LinkedList<>();
     this.label = null;
     this.parent = null;
   }
@@ -179,7 +180,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   @Override
   public Object clone() {
     Parse p = new Parse(this.text, this.span, this.type, this.prob, this.head);
-    p.parts = new LinkedList<Parse>();
+    p.parts = new LinkedList<>();
     p.parts.addAll(this.parts);
 
     if (derivation != null) {
@@ -843,8 +844,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
   public static Parse parseParse(String parse, GapLabeler gl) {
     StringBuilder text = new StringBuilder();
     int offset = 0;
-    Stack<Constituent> stack = new Stack<Constituent>();
-    List<Constituent> cons = new LinkedList<Constituent>();
+    Stack<Constituent> stack = new Stack<>();
+    List<Constituent> cons = new LinkedList<>();
     for (int ci = 0, cl = parse.length(); ci < cl; ci++) {
       char c = parse.charAt(ci);
       if (c == '(') {
@@ -856,7 +857,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
         String token = getToken(rest);
         stack.push(new Constituent(type, new Span(offset,offset)));
         if (token != null) {
-          if (type.equals("-NONE-") && gl != null) {
+          if (Objects.equals(type, "-NONE-") && gl != null) {
             //System.err.println("stack.size="+stack.size());
             gl.labelGaps(stack);
           }
@@ -950,8 +951,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * @return the parse nodes which are children of this node and which are pos tags.
    */
   public Parse[] getTagNodes() {
-    List<Parse> tags = new LinkedList<Parse>();
-    List<Parse> nodes = new LinkedList<Parse>();
+    List<Parse> tags = new LinkedList<>();
+    List<Parse> nodes = new LinkedList<>();
     nodes.addAll(this.parts);
     while(nodes.size() != 0) {
       Parse p = nodes.remove(0);
@@ -978,7 +979,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     if (this == node) {
       return parent;
     }
-    Set<Parse> parents = new HashSet<Parse>();
+    Set<Parse> parents = new HashSet<>();
     Parse cparent = this;
     while(cparent != null) {
       parents.add(cparent);

@@ -124,8 +124,8 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
     Sentence paragraph;
     while ((paragraph = this.adSentenceStream.read()) != null) {
       Node root = paragraph.getRoot();
-      List<String> sentence = new ArrayList<String>();
-      List<String> tags = new ArrayList<String>();
+      List<String> sentence = new ArrayList<>();
+      List<String> tags = new ArrayList<>();
       process(root, sentence, tags);
 
       return new POSSample(sentence, tags);
@@ -166,8 +166,8 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
         StringTokenizer tokenizer = new StringTokenizer(lexeme, "_");
 
         if (tokenizer.countTokens() > 0) {
-          List<String> toks = new ArrayList<String>(tokenizer.countTokens());
-          List<String> tagsWithCont = new ArrayList<String>(
+          List<String> toks = new ArrayList<>(tokenizer.countTokens());
+          List<String> tagsWithCont = new ArrayList<>(
               tokenizer.countTokens());
           toks.add(tokenizer.nextToken());
           tagsWithCont.add("B-" + tag);

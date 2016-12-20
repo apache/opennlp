@@ -31,5 +31,5 @@ public interface TokenContextGenerator {
    * @return an array of features for the specified sentence string at the
    *   specified index.
    */
-  public abstract String[] getContext(String sentence, int index);
+  String[] getContext(String sentence, int index);
 }

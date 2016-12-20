@@ -100,11 +100,11 @@ public class RegexNameFinderFactory {
     }
   }
 
-  public static interface RegexAble {
+  public interface RegexAble {
 
-    public Map<String, Pattern[]> getRegexMap();
+    Map<String, Pattern[]> getRegexMap();
 
-    public String getType();
+    String getType();
   }
 
   public enum DEFAULT_REGEX_NAME_FINDER implements RegexAble {

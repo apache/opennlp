@@ -45,7 +45,7 @@ public class LemmaSampleEventStream extends AbstractEventStream<LemmaSample> {
   protected Iterator<Event> createEvents(LemmaSample sample) {
 
     if (sample != null) {
-      List<Event> events = new ArrayList<Event>();
+      List<Event> events = new ArrayList<>();
       String[] toksArray = sample.getTokens();
       String[] tagsArray = sample.getTags();
       String[] lemmasArray = sample.getLemmas();

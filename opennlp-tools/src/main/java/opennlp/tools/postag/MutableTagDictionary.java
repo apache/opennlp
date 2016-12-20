@@ -36,7 +36,7 @@ public interface MutableTagDictionary extends TagDictionary {
    * @return the previous tags associated with the word, or null if there was no
    *         mapping for word.
    */
-  public String[] put(String word, String... tags);
+  String[] put(String word, String... tags);
 
   /**
    * Whether if the dictionary is case sensitive or not
@@ -45,6 +45,6 @@ public interface MutableTagDictionary extends TagDictionary {
    */
   // TODO: move to TagDictionary, can't do it now because of backward
   // compatibility.
-  public boolean isCaseSensitive();
+  boolean isCaseSensitive();
 
 }

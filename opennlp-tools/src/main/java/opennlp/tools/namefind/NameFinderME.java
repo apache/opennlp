@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
@@ -54,7 +53,6 @@ import opennlp.tools.util.featuregen.SentenceFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * Class for creating a maximum-entropy-based name finder.
@@ -95,7 +93,7 @@ public class NameFinderME implements TokenNameFinder {
   }
 
   @Deprecated
-  /**
+  /*
    * @deprecated the default feature generation is now always included in the models and loaded
    * if not by the factory. Subclasses using this methods should do the same.
    */
@@ -253,7 +251,7 @@ public class NameFinderME implements TokenNameFinder {
       beamSize = Integer.parseInt(beamSizeString);
     }
 
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    Map<String, String> manifestInfoEntries = new HashMap<>();
 
     MaxentModel nameFinderModel = null;
 
@@ -327,7 +325,7 @@ public class NameFinderME implements TokenNameFinder {
       beamSize = Integer.parseInt(beamSizeString);
     }
 
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    Map<String, String> manifestInfoEntries = new HashMap<>();
 
     AdaptiveFeatureGenerator featureGenerator;
 
@@ -418,11 +416,10 @@ public class NameFinderME implements TokenNameFinder {
    * @param outcome the outcome
    * @return the name type, or null if not set
    */
-  static final String extractNameType(String outcome) {
+  static String extractNameType(String outcome) {
     Matcher matcher = typedOutcomePattern.matcher(outcome);
     if (matcher.matches()) {
-      String nameType = matcher.group(1);
-      return nameType;
+      return matcher.group(1);
     }
 
     return null;

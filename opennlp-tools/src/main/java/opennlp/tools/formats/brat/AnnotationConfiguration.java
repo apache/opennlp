@@ -41,8 +41,7 @@ public class AnnotationConfiguration {
 
   public AnnotationConfiguration(Map<String, String> typeToClassMap) {
 
-    this.typeToClassMap = Collections.unmodifiableMap(
-        new HashMap<String, String>(typeToClassMap));
+    this.typeToClassMap = Collections.unmodifiableMap(new HashMap<>(typeToClassMap));
   }
 
   public String getTypeClass(String type) {
@@ -51,7 +50,7 @@ public class AnnotationConfiguration {
 
 
   public static AnnotationConfiguration parse(InputStream in) throws IOException {
-    Map<String, String> typeToClassMap = new HashMap<String, String>();
+    Map<String, String> typeToClassMap = new HashMap<>();
 
     BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
 
@@ -63,9 +62,7 @@ public class AnnotationConfiguration {
       line = line.trim();
 
       if (line.isEmpty()) {
-        continue;
       } else if (line.startsWith("#")) {
-        continue;
       } else if (line.startsWith("[") && line.endsWith("]")) {
         sectionType = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
       }

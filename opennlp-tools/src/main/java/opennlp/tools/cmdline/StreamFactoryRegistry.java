@@ -60,8 +60,7 @@ import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStreamFactory;
  */
 public final class StreamFactoryRegistry {
 
-  private static final Map<Class, Map<String, ObjectStreamFactory>> registry =
-      new HashMap<Class, Map<String, ObjectStreamFactory>>();
+  private static final Map<Class, Map<String, ObjectStreamFactory>> registry = new HashMap<>();
 
   static {
     ChunkerSampleStreamFactory.registerFactory();
@@ -129,7 +128,7 @@ public final class StreamFactoryRegistry {
     boolean result;
     Map<String, ObjectStreamFactory> formats = registry.get(sampleClass);
     if (null == formats) {
-      formats = new HashMap<String, ObjectStreamFactory>();
+      formats = new HashMap<>();
     }
     if (!formats.containsKey(formatName)) {
       formats.put(formatName, factory);
@@ -198,10 +197,8 @@ public final class StreamFactoryRegistry {
 
         try {
           return (ObjectStreamFactory<T>) factoryClazz.newInstance();
-        } catch (InstantiationException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
         	return null;
-        } catch (IllegalAccessException e) {
-          return null;
         }
 
       } catch (ClassNotFoundException e) {

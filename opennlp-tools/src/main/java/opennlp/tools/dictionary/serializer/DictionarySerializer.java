@@ -59,7 +59,7 @@ public class DictionarySerializer {
     private boolean mIsInsideTokenElement;
     private boolean mIsCaseSensitiveDictionary;
 
-    private List<String> mTokenList = new LinkedList<String>();
+    private List<String> mTokenList = new LinkedList<>();
 
     private StringBuilder token = new StringBuilder();
 
@@ -209,7 +209,7 @@ public class DictionarySerializer {
    * @throws InvalidFormatException
    */
   public static boolean create(InputStream in, EntryInserter inserter)
-      throws IOException, InvalidFormatException {
+      throws IOException {
 
     DictionaryContenthandler profileContentHandler =
         new DictionaryContenthandler(inserter);
@@ -299,8 +299,7 @@ public class DictionarySerializer {
       hd.endDocument();
     }
     catch (SAXException e) {
-      //TODO update after Java6 upgrade
-      throw (IOException) new IOException("Error during serialization: " + e.getMessage()).initCause(e);
+      throw new IOException("Error during serialization: " + e.getMessage(), e);
     }
   }
 
@@ -320,14 +319,11 @@ public class DictionarySerializer {
 
     StringList tokens = entry.getTokens();
 
-    for (Iterator<String> it = tokens.iterator(); it.hasNext(); ) {
+    for (String token1 : tokens) {
 
       hd.startElement("", "", TOKEN_ELEMENT, new AttributesImpl());
 
-      String token = it.next();
-
-      hd.characters(token.toCharArray(),
-          0, token.length());
+      hd.characters(token1.toCharArray(), 0, token1.length());
 
       hd.endElement("", "", TOKEN_ELEMENT);
     }

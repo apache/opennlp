@@ -29,7 +29,7 @@ public abstract class BaseLink {
   private String itemID;
   private String itemName;
   private String itemType;
-  private HashMap<String, Double> scoreMap = new HashMap<String, Double>();
+  private HashMap<String, Double> scoreMap = new HashMap<>();
 
   public BaseLink() {
   }
@@ -150,12 +150,6 @@ public abstract class BaseLink {
     if (!Objects.equals(this.itemID, other.itemID)) {
       return false;
     }
-    if (!Objects.equals(this.itemName, other.itemName)) {
-      return false;
-    }
-    if (!Objects.equals(this.itemType, other.itemType)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(this.itemName, other.itemName) && Objects.equals(this.itemType, other.itemType);
   }
 }

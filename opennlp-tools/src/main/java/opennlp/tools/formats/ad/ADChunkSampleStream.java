@@ -126,9 +126,9 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 				// skip this one
 			} else {
 				Node root = paragraph.getRoot();
-				List<String> sentence = new ArrayList<String>();
-				List<String> tags = new ArrayList<String>();
-				List<String> target = new ArrayList<String>();
+				List<String> sentence = new ArrayList<>();
+				List<String> tags = new ArrayList<>();
+				List<String> target = new ArrayList<>();
 
 				processRoot(root, sentence, tags, target);
 

@@ -33,7 +33,7 @@ public interface MaxentModel {
    *         outcomes, all of which sum to 1.
    *
    **/
-  public double[] eval(String[] context);
+  double[] eval(String[] context);
 
   /**
      * Evaluates a context.
@@ -44,7 +44,7 @@ public interface MaxentModel {
      *         outcomes, all of which sum to 1.
      * @return an array of the probabilities for each of the different outcomes, all of which sum to 1.
      **/
-  public double[] eval(String[] context, double probs[]);
+  double[] eval(String[] context, double probs[]);
 
   /**
    * Evaluates a contexts with the specified context values.
@@ -53,7 +53,7 @@ public interface MaxentModel {
    * @param values The values associated with each context.
    * @return an array of the probabilities for each of the different outcomes, all of which sum to 1.
    */
-  public double[] eval(String[] context, float[] values);
+  double[] eval(String[] context, float[] values);
 
   /**
    * Simple function to return the outcome associated with the index
@@ -64,7 +64,7 @@ public interface MaxentModel {
    *            method.
    * @return the String name of the best outcome
    **/
-  public String getBestOutcome(double[] outcomes);
+  String getBestOutcome(double[] outcomes);
 
   /**
    * Return a string matching all the outcome names with all the
@@ -79,7 +79,7 @@ public interface MaxentModel {
    *            for each one.
    **/
   // TODO: This should be removed, can't be used anyway without format spec
-  public String getAllOutcomes(double[] outcomes);
+  String getAllOutcomes(double[] outcomes);
 
   /**
    * Gets the String name of the outcome associated with the index
@@ -89,7 +89,7 @@ public interface MaxentModel {
    *          desired.
    * @return the String name of the outcome
    **/
-  public String getOutcome(int i);
+  String getOutcome(int i);
 
   /**
    * Gets the index associated with the String name of the given
@@ -100,9 +100,9 @@ public interface MaxentModel {
    * @return the index if the given outcome label exists for this
    * model, -1 if it does not.
    **/
-  public int getIndex(String outcome);
+  int getIndex(String outcome);
 
-  /**
+  /*
    * Returns the data structures relevant to storing the model.
    **/
   // public Object[] getDataStructures();
@@ -110,6 +110,6 @@ public interface MaxentModel {
   /** Returns the number of outcomes for this model.
    *  @return The number of outcomes.
    **/
-  public int getNumOutcomes();
+  int getNumOutcomes();
 
 }

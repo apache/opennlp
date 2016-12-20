@@ -43,9 +43,9 @@ public LemmaSample(String[] tokens, String[] tags, String[] lemmas) {
 
     validateArguments(tokens.length, tags.length, lemmas.length);
 
-    this.tokens = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tokens)));
-    this.tags = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(tags)));
-    this.lemmas = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(lemmas)));
+    this.tokens = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(tokens)));
+    this.tags = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(tags)));
+    this.lemmas = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(lemmas)));
   }
   
   /**
@@ -58,9 +58,9 @@ public LemmaSample(String[] tokens, String[] tags, String[] lemmas) {
 
     validateArguments(tokens.size(), tags.size(), lemmas.size());
 
-    this.tokens = Collections.unmodifiableList(new ArrayList<String>(tokens));
-    this.tags = Collections.unmodifiableList(new ArrayList<String>(tags));
-    this.lemmas = Collections.unmodifiableList(new ArrayList<String>(lemmas));
+    this.tokens = Collections.unmodifiableList(new ArrayList<>(tokens));
+    this.tags = Collections.unmodifiableList(new ArrayList<>(tags));
+    this.lemmas = Collections.unmodifiableList(new ArrayList<>(lemmas));
   }
 
   public String[] getTokens() {

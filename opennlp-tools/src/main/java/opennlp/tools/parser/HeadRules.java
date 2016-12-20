@@ -32,12 +32,12 @@ public interface HeadRules {
    * @param type The type of a constituent which is made up of the specified constituents.
    * @return The constituent which is the head.
    */
-  public Parse getHead(Parse[] constituents, String type);
+  Parse getHead(Parse[] constituents, String type);
 
   /**
    * Returns the set of punctuation tags.  Attachment decisions for these tags will not be modeled.
    *
    * @return the set of punctuation tags.
    */
-  public Set<String> getPunctuationTags();
+  Set<String> getPunctuationTags();
 }

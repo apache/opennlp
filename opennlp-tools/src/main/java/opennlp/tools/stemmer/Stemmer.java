@@ -22,5 +22,5 @@ package opennlp.tools.stemmer;
  */
 public interface Stemmer {
 
-  public CharSequence stem(CharSequence word);
+  CharSequence stem(CharSequence word);
 }

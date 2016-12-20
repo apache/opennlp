@@ -68,8 +68,8 @@ public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample>
      // paragraph get lines
      BufferedReader reader = new BufferedReader(new StringReader(paragraph));
 
-     List<String> tokens = new ArrayList<String>(100);
-     List<String> tags = new ArrayList<String>(100);
+     List<String> tokens = new ArrayList<>(100);
+     List<String> tags = new ArrayList<>(100);
 
      String line;
      while ((line = reader.readLine())  != null) {

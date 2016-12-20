@@ -36,9 +36,9 @@ final class CommandLineTokenizer {
   }
 
   void process() {
-    ObjectStream<String> untokenizedLineStream = null;
+    ObjectStream<String> untokenizedLineStream;
 
-    ObjectStream<String> tokenizedLineStream = null;
+    ObjectStream<String> tokenizedLineStream;
     PerformanceMonitor perfMon = null;
     try {
       untokenizedLineStream =

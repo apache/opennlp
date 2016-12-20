@@ -68,7 +68,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
    * @return the context for building constituents at the specified index.
    */
   public String[] getContext(Parse[] constituents, int index) {
-    List<String> features = new ArrayList<String>(100);
+    List<String> features = new ArrayList<>(100);
     int ps = constituents.length;
 
     // cons(-2), cons(-1), cons(0), cons(1), cons(2)

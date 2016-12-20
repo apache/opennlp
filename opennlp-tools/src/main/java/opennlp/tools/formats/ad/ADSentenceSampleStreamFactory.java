@@ -79,9 +79,6 @@ public class ADSentenceSampleStreamFactory extends
       CmdLineUtil.handleCreateObjectStreamError(ex);
     }
 
-    ADSentenceSampleStream sentenceStream = new ADSentenceSampleStream(
-        lineStream, includeTitle);
-
-    return sentenceStream;
+    return new ADSentenceSampleStream(lineStream, includeTitle);
   }
 }

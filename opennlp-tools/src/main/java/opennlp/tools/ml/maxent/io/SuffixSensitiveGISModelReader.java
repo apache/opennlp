@@ -76,8 +76,7 @@ public class SuffixSensitiveGISModelReader extends GISModelReader {
    * inspect a few of them as plain text files.
    */
   public static void main(String[] args) throws IOException {
-    AbstractModel m = new SuffixSensitiveGISModelReader(new File(args[0]))
-        .getModel();
+    AbstractModel m = new SuffixSensitiveGISModelReader(new File(args[0])).getModel();
     new SuffixSensitiveGISModelWriter(m, new File(args[1])).persist();
   }
 }

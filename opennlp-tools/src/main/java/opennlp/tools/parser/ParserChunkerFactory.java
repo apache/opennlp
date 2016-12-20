@@ -33,7 +33,7 @@ public class ParserChunkerFactory extends ChunkerFactory {
   @Override
   public SequenceValidator<String> getSequenceValidator() {
 
-    MaxentModel model = (MaxentModel) artifactProvider.getArtifact("chunker.model");
+    MaxentModel model = artifactProvider.getArtifact("chunker.model");
 
     String outcomes[] = new String[model.getNumOutcomes()];
     for (int i = 0; i < outcomes.length; i++) {

@@ -104,8 +104,8 @@ public class Parser extends AbstractBottomUpParser {
     cprobs = new double[checkModel.getNumOutcomes()];
     this.buildContextGenerator = new BuildContextGenerator();
     this.checkContextGenerator = new CheckContextGenerator();
-    startTypeMap = new HashMap<String, String>();
-    contTypeMap = new HashMap<String, String>();
+    startTypeMap = new HashMap<>();
+    contTypeMap = new HashMap<>();
     for (int boi = 0, bon = buildModel.getNumOutcomes(); boi < bon; boi++) {
       String outcome = buildModel.getOutcome(boi);
       if (outcome.startsWith(START)) {
@@ -134,15 +134,15 @@ public class Parser extends AbstractBottomUpParser {
   @Override
   protected Parse[] advanceParses(final Parse p, double probMass) {
     double q = 1 - probMass;
-    /** The closest previous node which has been labeled as a start node. */
+    /* The closest previous node which has been labeled as a start node. */
     Parse lastStartNode = null;
-    /** The index of the closest previous node which has been labeled as a start node. */
+    /* The index of the closest previous node which has been labeled as a start node. */
     int lastStartIndex = -1;
-    /** The type of the closest previous node which has been labeled as a start node. */
+    /* The type of the closest previous node which has been labeled as a start node. */
     String lastStartType = null;
-    /** The index of the node which will be labeled in this iteration of advancing the parse. */
+    /* The index of the node which will be labeled in this iteration of advancing the parse. */
     int advanceNodeIndex;
-    /** The node which will be labeled in this iteration of advancing the parse. */
+    /* The node which will be labeled in this iteration of advancing the parse. */
     Parse advanceNode=null;
     Parse[] originalChildren = p.getChildren();
     Parse[] children = collapsePunctuation(originalChildren,punctSet);
@@ -164,7 +164,7 @@ public class Parser extends AbstractBottomUpParser {
       }
     }
     int originalAdvanceIndex = mapParseIndex(advanceNodeIndex,children,originalChildren);
-    List<Parse> newParsesList = new ArrayList<Parse>(buildModel.getNumOutcomes());
+    List<Parse> newParsesList = new ArrayList<>(buildModel.getNumOutcomes());
     //call build
     buildModel.eval(buildContextGenerator.getContext(children, advanceNodeIndex), bprobs);
     double bprobSum = 0;
@@ -274,12 +274,12 @@ public class Parser extends AbstractBottomUpParser {
 
     parseSamples.reset();
 
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    Map<String, String> manifestInfoEntries = new HashMap<>();
 
     // build
     System.err.println("Training builder");
     ObjectStream<Event> bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
-    Map<String, String> buildReportMap = new HashMap<String, String>();
+    Map<String, String> buildReportMap = new HashMap<>();
     EventTrainer buildTrainer = TrainerFactory.getEventTrainer(mlParams.getSettings("build"), buildReportMap);
     MaxentModel buildModel = buildTrainer.train(bes);
     mergeReportIntoManifest(manifestInfoEntries, buildReportMap, "build");
@@ -308,7 +308,7 @@ public class Parser extends AbstractBottomUpParser {
     // check
     System.err.println("Training checker");
     ObjectStream<Event> kes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.CHECK);
-    Map<String, String> checkReportMap = new HashMap<String, String>();
+    Map<String, String> checkReportMap = new HashMap<>();
     EventTrainer checkTrainer = TrainerFactory.getEventTrainer( mlParams.getSettings("check"), checkReportMap);
     MaxentModel checkModel = checkTrainer.train(kes);
     mergeReportIntoManifest(manifestInfoEntries, checkReportMap, "check");

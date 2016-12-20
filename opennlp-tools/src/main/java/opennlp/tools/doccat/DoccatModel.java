@@ -45,15 +45,15 @@ public class DoccatModel extends BaseModel {
     checkArtifactMap();
   }
 
-  public DoccatModel(InputStream in) throws IOException, InvalidFormatException {
+  public DoccatModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
-  public DoccatModel(File modelFile) throws IOException, InvalidFormatException {
+  public DoccatModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
-  public DoccatModel(URL modelURL) throws IOException, InvalidFormatException {
+  public DoccatModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 

@@ -37,9 +37,7 @@ public class LemmatizerFactory extends BaseToolFactory {
       return new LemmatizerFactory();
     }
     try {
-      LemmatizerFactory theFactory = ExtensionLoader.instantiateExtension(
-          LemmatizerFactory.class, subclassName);
-      return theFactory;
+      return ExtensionLoader.instantiateExtension(LemmatizerFactory.class, subclassName);
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
           + ". The initialization throw an exception.";

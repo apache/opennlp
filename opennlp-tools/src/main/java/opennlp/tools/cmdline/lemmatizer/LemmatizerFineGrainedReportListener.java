@@ -459,7 +459,7 @@ public class LemmatizerFineGrainedReportListener
     printStream.append("\n");
   }
 
-  private static final String generateAlphaLabel(int index) {
+  private static String generateAlphaLabel(int index) {
 
     char labelChars[] = new char[3];
     int i;
@@ -484,20 +484,20 @@ public class LemmatizerFineGrainedReportListener
     private int maximumSentenceLength = Integer.MIN_VALUE;
 
     // token statistics
-    private final Map<String, Mean> tokAccuracies = new HashMap<String, Mean>();
-    private final Map<String, Counter> tokOcurrencies = new HashMap<String, Counter>();
-    private final Map<String, Counter> tokErrors = new HashMap<String, Counter>();
+    private final Map<String, Mean> tokAccuracies = new HashMap<>();
+    private final Map<String, Counter> tokOcurrencies = new HashMap<>();
+    private final Map<String, Counter> tokErrors = new HashMap<>();
 
     // tag statistics
-    private final Map<String, Counter> tagOcurrencies = new HashMap<String, Counter>();
-    private final Map<String, Counter> tagErrors = new HashMap<String, Counter>();
-    private final Map<String, FMeasure> tagFMeasure = new HashMap<String, FMeasure>();
+    private final Map<String, Counter> tagOcurrencies = new HashMap<>();
+    private final Map<String, Counter> tagErrors = new HashMap<>();
+    private final Map<String, FMeasure> tagFMeasure = new HashMap<>();
 
     // represents a Confusion Matrix that aggregates all tokens
-    private final Map<String, ConfusionMatrixLine> generalConfusionMatrix = new HashMap<String, ConfusionMatrixLine>();
+    private final Map<String, ConfusionMatrixLine> generalConfusionMatrix = new HashMap<>();
 
     // represents a set of Confusion Matrix for each token
-    private final Map<String, Map<String, ConfusionMatrixLine>> tokenConfusionMatrix = new HashMap<String, Map<String, ConfusionMatrixLine>>();
+    private final Map<String, Map<String, ConfusionMatrixLine>> tokenConfusionMatrix = new HashMap<>();
 
     public void add(LemmaSample reference, LemmaSample prediction) {
       int length = reference.getTokens().length;
@@ -576,13 +576,13 @@ public class LemmatizerFineGrainedReportListener
 
     private void updateTagFMeasure(String[] refs, String[] preds) {
       // create a set with all tags
-      Set<String> tags = new HashSet<String>(Arrays.asList(refs));
+      Set<String> tags = new HashSet<>(Arrays.asList(refs));
       tags.addAll(Arrays.asList(preds));
 
       // create samples for each tag
       for (String tag : tags) {
-        List<Span> reference = new ArrayList<Span>();
-        List<Span> prediction = new ArrayList<Span>();
+        List<Span> reference = new ArrayList<>();
+        List<Span> prediction = new ArrayList<>();
         for (int i = 0; i < refs.length; i++) {
           if (refs[i].equals(tag)) {
             reference.add(new Span(i, i + 1));
@@ -638,7 +638,7 @@ public class LemmatizerFineGrainedReportListener
     }
 
     public SortedSet<String> getTokensOrderedByFrequency() {
-      SortedSet<String> toks = new TreeSet<String>(new Comparator<String>() {
+      SortedSet<String> toks = new TreeSet<>(new Comparator<String>() {
         public int compare(String o1, String o2) {
           if (o1.equals(o2)) {
             return 0;
@@ -661,7 +661,7 @@ public class LemmatizerFineGrainedReportListener
     }
 
     public SortedSet<String> getTokensOrderedByNumberOfErrors() {
-      SortedSet<String> toks = new TreeSet<String>(new Comparator<String>() {
+      SortedSet<String> toks = new TreeSet<>(new Comparator<String>() {
         public int compare(String o1, String o2) {
           if (o1.equals(o2)) {
             return 0;
@@ -702,7 +702,7 @@ public class LemmatizerFineGrainedReportListener
     }
 
     public SortedSet<String> getTagsOrderedByErrors() {
-      SortedSet<String> tags = new TreeSet<String>(new Comparator<String>() {
+      SortedSet<String> tags = new TreeSet<>(new Comparator<String>() {
         public int compare(String o1, String o2) {
           if (o1.equals(o2)) {
             return 0;
@@ -767,10 +767,10 @@ public class LemmatizerFineGrainedReportListener
 
     private SortedSet<String> getConfusionMatrixTagset(
         Map<String, ConfusionMatrixLine> data) {
-      SortedSet<String> tags = new TreeSet<String>(
+      SortedSet<String> tags = new TreeSet<>(
           new CategoryComparator(data));
       tags.addAll(data.keySet());
-      List<String> col = new LinkedList<String>();
+      List<String> col = new LinkedList<>();
       for (String t : tags) {
         col.addAll(data.get(t).line.keySet());
       }
@@ -824,7 +824,7 @@ public class LemmatizerFineGrainedReportListener
    */
   private static class ConfusionMatrixLine {
 
-    private Map<String, Counter> line = new HashMap<String, Counter>();
+    private Map<String, Counter> line = new HashMap<>();
     private String ref;
     private int total = 0;
     private int correct = 0;

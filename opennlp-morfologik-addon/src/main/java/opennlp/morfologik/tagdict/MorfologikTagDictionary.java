@@ -77,7 +77,7 @@ public class MorfologikTagDictionary implements TagDictionary {
 
     List<WordData> data = dictLookup.lookup(word);
     if (data != null && data.size() > 0) {
-      List<String> tags = new ArrayList<String>(data.size());
+      List<String> tags = new ArrayList<>(data.size());
       for (int i = 0; i < data.size(); i++) {
         tags.add(data.get(i).getTag().toString());
       }

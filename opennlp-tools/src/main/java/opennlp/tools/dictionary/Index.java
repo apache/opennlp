@@ -30,7 +30,7 @@ import opennlp.tools.util.StringList;
  */
 public class Index {
 
-  private Set<String> tokens = new HashSet<String>();
+  private Set<String> tokens = new HashSet<>();
 
   /**
    * Initializes the current instance with the given

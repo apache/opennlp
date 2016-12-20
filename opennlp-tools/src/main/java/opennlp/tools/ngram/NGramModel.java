@@ -44,7 +44,7 @@ public class NGramModel implements Iterable<StringList>{
 
   protected static final String COUNT = "count";
 
-  private Map<StringList, Integer> mNGrams = new HashMap<StringList, Integer>();
+  private Map<StringList, Integer> mNGrams = new HashMap<>();
 
   /**
    * Initializes an empty instance.

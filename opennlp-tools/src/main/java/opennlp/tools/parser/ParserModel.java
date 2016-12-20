@@ -47,8 +47,7 @@ public class ParserModel extends BaseModel {
 
   private static class POSModelSerializer implements ArtifactSerializer<POSModel> {
 
-    public POSModel create(InputStream in) throws IOException,
-        InvalidFormatException {
+    public POSModel create(InputStream in) throws IOException {
       POSModel posModel = new POSModel(new UncloseableInputStream(in));
 
       // The 1.6.x models write the non-default beam size into the model itself.
@@ -73,8 +72,7 @@ public class ParserModel extends BaseModel {
 
   private static class ChunkerModelSerializer implements ArtifactSerializer<ChunkerModel> {
 
-    public ChunkerModel create(InputStream in) throws IOException,
-        InvalidFormatException {
+    public ChunkerModel create(InputStream in) throws IOException {
 
       ChunkerModel model = new ChunkerModel(new UncloseableInputStream(in));
 
@@ -176,15 +174,15 @@ public class ParserModel extends BaseModel {
         chunkerTagger, headRules, type, manifestInfoEntries);
   }
 
-  public ParserModel(InputStream in) throws IOException, InvalidFormatException {
+  public ParserModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
-  public ParserModel(File modelFile) throws IOException, InvalidFormatException {
+  public ParserModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
-  public ParserModel(URL modelURL) throws IOException, InvalidFormatException {
+  public ParserModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 

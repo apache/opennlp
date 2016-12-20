@@ -45,7 +45,7 @@ public class GenerateManualTool {
     appendHeader(sb);
 
     // organize by package name
-    LinkedHashMap<String, Map<String, CmdLineTool>> packageNameToolMap = new LinkedHashMap<String, Map<String, CmdLineTool>>();
+    LinkedHashMap<String, Map<String, CmdLineTool>> packageNameToolMap = new LinkedHashMap<>();
     for (String toolName : CLI.getToolLookupMap().keySet()) {
       CmdLineTool tool = CLI.getToolLookupMap().get(toolName);
       String packageName = tool.getClass().getPackage().getName();

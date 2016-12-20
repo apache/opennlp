@@ -50,7 +50,7 @@ public class ChunkerMETool extends BasicCmdLineTool {
 
       ChunkerME chunker = new ChunkerME(model);
 
-      ObjectStream<String> lineStream = null;
+      ObjectStream<String> lineStream;
       PerformanceMonitor perfMon = null;
 
       try {
