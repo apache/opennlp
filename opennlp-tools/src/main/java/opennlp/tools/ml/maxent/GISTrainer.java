@@ -361,9 +361,7 @@ class GISTrainer {
         }
         else {
           outcomePattern = new int[numActiveOutcomes];
-          for (int aoi=0;aoi<numActiveOutcomes;aoi++) {
-            outcomePattern[aoi] = activeOutcomes[aoi];
-          }
+          System.arraycopy(activeOutcomes, 0, outcomePattern, 0, numActiveOutcomes);
         }
       }
       params[pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);

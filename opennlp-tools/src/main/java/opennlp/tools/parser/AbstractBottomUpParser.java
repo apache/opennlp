@@ -576,9 +576,7 @@ public abstract class AbstractBottomUpParser implements Parser {
             if (ci+2 < chunks.length) window[wi++] = chunks[ci+2].getHead().getCoveredText();
             if (wi < 5) {
               String[] subWindow = new String[wi];
-              for (int swi=0;swi<wi;swi++) {
-                subWindow[swi]=window[swi];
-              }
+              System.arraycopy(window, 0, subWindow, 0, wi);
               window = subWindow;
             }
             if (window.length >=3) {
