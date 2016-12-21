@@ -41,8 +41,6 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
 
   private UimaContext context;
 
-  private Logger mLogger;
-
   private opennlp.tools.doccat.DocumentCategorizer mCategorizer;
 
   private Type mTokenType;
@@ -54,7 +52,7 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
 
     this.context = context;
 
-    mLogger = context.getLogger();
+    Logger mLogger = context.getLogger();
 
     if (mLogger.isLoggable(Level.INFO)) {
       mLogger.log(Level.INFO, "Initializing the OpenNLP Categorizer.");

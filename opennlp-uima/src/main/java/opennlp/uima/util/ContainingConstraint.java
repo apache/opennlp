@@ -30,8 +30,7 @@ import org.apache.uima.cas.text.AnnotationFS;
 public final class ContainingConstraint implements FSMatchConstraint {
   private static final long serialVersionUID = 1;
 
-  private Collection<AnnotationFS> mContainingAnnotations =
-      new LinkedList<AnnotationFS>();
+  private Collection<AnnotationFS> mContainingAnnotations = new LinkedList<>();
 
   /**
    * Initializes a new instance.
@@ -69,12 +68,8 @@ public final class ContainingConstraint implements FSMatchConstraint {
   }
 
   private boolean isContaining(AnnotationFS annotation, AnnotationFS containing) {
-    if ((containing.getBegin() <= annotation.getBegin())
-        && (containing.getEnd() >= annotation.getEnd())) {
-      return true;
-    } else {
-      return false;
-    }
+    return (containing.getBegin() <= annotation.getBegin())
+      && (containing.getEnd() >= annotation.getEnd());
   }
 
 }

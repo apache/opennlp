@@ -123,7 +123,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
       final AnnotationComboIterator sentenceNameCombo = new AnnotationComboIterator(cas,
           mSentenceType, mNameType);
 
-      List<AnnotationFS> removeAnnotations = new LinkedList<AnnotationFS>();
+      List<AnnotationFS> removeAnnotations = new LinkedList<>();
       for (AnnotationIteratorPair annotationIteratorPair : sentenceNameCombo) {
         for (AnnotationFS nameAnnotation : annotationIteratorPair.getSubIterator()) {
           removeAnnotations.add(nameAnnotation);
@@ -140,9 +140,9 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
 
     for (AnnotationIteratorPair annotationIteratorPair : sentenceTokenCombo) {
 
-      final List<AnnotationFS> sentenceTokenAnnotationList = new LinkedList<AnnotationFS>();
+      final List<AnnotationFS> sentenceTokenAnnotationList = new LinkedList<>();
 
-      final List<String> sentenceTokenList = new LinkedList<String>();
+      final List<String> sentenceTokenList = new LinkedList<>();
 
       for (AnnotationFS tokenAnnotation : annotationIteratorPair.getSubIterator()) {
 

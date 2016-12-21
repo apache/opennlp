@@ -29,19 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.uima.UimaContext;
-import org.apache.uima.cas.CAS;
-import org.apache.uima.cas.FSIndex;
-import org.apache.uima.cas.Type;
-import org.apache.uima.cas.TypeSystem;
-import org.apache.uima.cas.text.AnnotationFS;
-import org.apache.uima.collection.CasConsumer_ImplBase;
-import org.apache.uima.resource.ResourceInitializationException;
-import org.apache.uima.resource.ResourceProcessException;
-import org.apache.uima.util.Level;
-import org.apache.uima.util.Logger;
-import org.apache.uima.util.ProcessTrace;
-
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenSampleStream;
@@ -58,6 +45,18 @@ import opennlp.uima.util.ContainingConstraint;
 import opennlp.uima.util.OpennlpUtil;
 import opennlp.uima.util.SampleTraceStream;
 import opennlp.uima.util.UimaUtil;
+import org.apache.uima.UimaContext;
+import org.apache.uima.cas.CAS;
+import org.apache.uima.cas.FSIndex;
+import org.apache.uima.cas.Type;
+import org.apache.uima.cas.TypeSystem;
+import org.apache.uima.cas.text.AnnotationFS;
+import org.apache.uima.collection.CasConsumer_ImplBase;
+import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.resource.ResourceProcessException;
+import org.apache.uima.util.Level;
+import org.apache.uima.util.Logger;
+import org.apache.uima.util.ProcessTrace;
 
 /**
  * OpenNLP Tokenizer trainer.
@@ -80,10 +79,10 @@ import opennlp.uima.util.UimaUtil;
  */
 public final class TokenizerTrainer extends CasConsumer_ImplBase {
 
-  public static final String IS_ALPHA_NUMERIC_OPTIMIZATION =
+  private static final String IS_ALPHA_NUMERIC_OPTIMIZATION =
       "opennlp.uima.tokenizer.IsAlphaNumericOptimization";
 
-  private List<TokenSample> tokenSamples = new ArrayList<TokenSample>();
+  private List<TokenSample> tokenSamples = new ArrayList<>();
 
   private UimaContext mContext;
 
@@ -194,7 +193,7 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
     Iterator<AnnotationFS> containingTokens = tcas.createFilteredIterator(
         allTokens.iterator(), containingConstraint);
 
-    List<Span> openNLPSpans = new LinkedList<Span>();
+    List<Span> openNLPSpans = new LinkedList<>();
 
     while (containingTokens.hasNext()) {
       AnnotationFS tokenAnnotation = containingTokens.next();
@@ -231,7 +230,7 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
     // if trace file
     // serialize events ...
 
-    Writer samplesOut = null;
+    Writer samplesOut;
     TokenizerModel tokenModel;
 
     if (additionalTrainingDataFile != null) {
@@ -255,7 +254,7 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
 
     if (sampleTraceFile != null) {
       samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
-      samples = new SampleTraceStream<TokenSample>(samples, samplesOut);
+      samples = new SampleTraceStream<>(samples, samplesOut);
     }
 
     tokenModel = TokenizerME.train(language, samples, isSkipAlphaNumerics);

@@ -102,7 +102,7 @@ public final class UimaUtil {
     Iterator<AnnotationFS> containingTokens = cas.createFilteredIterator(
         allRemoveAnnotations.iterator(), containingConstraint);
 
-    Collection<AnnotationFS> removeAnnotations = new LinkedList<AnnotationFS>();
+    Collection<AnnotationFS> removeAnnotations = new LinkedList<>();
 
     while (containingTokens.hasNext()) {
       removeAnnotations.add(containingTokens.next());

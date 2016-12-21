@@ -67,15 +67,13 @@ import org.apache.uima.util.ProcessTrace;
  */
 public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
 
-  private List<SentenceSample> sentenceSamples = new ArrayList<SentenceSample>();
+  private List<SentenceSample> sentenceSamples = new ArrayList<>();
 
   private Type mSentenceType;
 
   private String mModelName;
 
   private String language = "en";
-
-  private Logger mLogger;
 
   private UimaContext mContext;
 
@@ -94,7 +92,7 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
 
     mContext = getUimaContext();
 
-    mLogger = mContext.getLogger();
+    Logger mLogger = mContext.getLogger();
 
     if (mLogger.isLoggable(Level.INFO)) {
       mLogger.log(Level.INFO, "Initializing the OpenNLP SentenceDetector " +
@@ -172,11 +170,11 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
      TrainingParameters mlParams = ModelUtil.createDefaultTrainingParameters();
     ObjectStream<SentenceSample> samples = ObjectStreamUtils.createObjectStream(sentenceSamples);
 
-    Writer samplesOut = null;
+    Writer samplesOut;
 
     if (sampleTraceFile != null) {
         samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
-        samples = new SampleTraceStream<SentenceSample>(samples, samplesOut);
+        samples = new SampleTraceStream<>(samples, samplesOut);
     }
 
     SentenceModel sentenceModel = SentenceDetectorME.train(language, samples,
