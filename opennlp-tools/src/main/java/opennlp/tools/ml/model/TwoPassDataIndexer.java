@@ -47,67 +47,50 @@ import opennlp.tools.util.ObjectStream;
  */
 public class TwoPassDataIndexer extends AbstractDataIndexer{
 
-  /**
-   * One argument constructor for DataIndexer which calls the two argument
-   * constructor assuming no cutoff.
-   *
-   * @param eventStream An Event[] which contains the a list of all the Events
-   *               seen in the training data.
-   */
-  public TwoPassDataIndexer(ObjectStream<Event> eventStream) throws IOException {
-    this(eventStream, 0);
-  }
+	public TwoPassDataIndexer() {}
+	
+	@Override
+	public void index(ObjectStream<Event> eventStream) throws IOException {
+		int cutoff=parameters.getIntParam(CUTOFF_PARAM, CUTOFF_DEFAULT);
+		boolean sort=parameters.getBooleanParam(SORT_PARAM, SORT_DEFAULT);
+		
+	    Map<String,Integer> predicateIndex = new HashMap<>();
+	    List<ComparableEvent> eventsToCompare;
 
-  public TwoPassDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
-    this(eventStream,cutoff,true);
-  }
-  /**
-   * Two argument constructor for DataIndexer.
-   *
-   * @param eventStream An Event[] which contains the a list of all the Events
-   *               seen in the training data.
-   * @param cutoff The minimum number of times a predicate must have been
-   *               observed in order to be included in the model.
-   */
-  public TwoPassDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
-    Map<String,Integer> predicateIndex = new HashMap<>();
-    List<ComparableEvent> eventsToCompare;
+	    System.out.println("Indexing events using cutoff of " + cutoff + "\n");
 
-    System.out.println("Indexing events using cutoff of " + cutoff + "\n");
+	    System.out.print("\tComputing event counts...  ");
+	    try {
+	      File tmp = File.createTempFile("events", null);
+	      tmp.deleteOnExit();
+	      Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
+	      int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
+	      System.out.println("done. " + numEvents + " events");
 
-    System.out.print("\tComputing event counts...  ");
-    try {
-      File tmp = File.createTempFile("events", null);
-      tmp.deleteOnExit();
-      Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
-      int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
-      System.out.println("done. " + numEvents + " events");
+	      System.out.print("\tIndexing...  ");
 
-      System.out.print("\tIndexing...  ");
+	      try (FileEventStream fes = new FileEventStream(tmp)) {
+	        eventsToCompare = index(numEvents, fes, predicateIndex);
+	      }
+	      // done with predicates
+	      predicateIndex = null;
+	      tmp.delete();
+	      System.out.println("done.");
 
-      try (FileEventStream fes = new FileEventStream(tmp)) {
-        eventsToCompare = index(numEvents, fes, predicateIndex);
-      }
-      // done with predicates
-      predicateIndex = null;
-      tmp.delete();
-      System.out.println("done.");
-
-      if (sort) {
-        System.out.print("Sorting and merging events... ");
-      }
-      else {
-        System.out.print("Collecting events... ");
-      }
-      sortAndMerge(eventsToCompare,sort);
-      System.out.println("Done indexing.");
-    }
-    catch(IOException e) {
-      System.err.println(e);
-    }
-  }
-
-  /**
+	      if (sort) {
+	        System.out.print("Sorting and merging events... ");
+	      }
+	      else {
+	        System.out.print("Collecting events... ");
+	      }
+	      sortAndMerge(eventsToCompare,sort);
+	      System.out.println("Done indexing.");
+	    }
+	    catch(IOException e) {
+	      System.err.println(e);
+	    }
+	}
+	/**
       * Reads events from <tt>eventStream</tt> into a linked list.  The
       * predicates associated with each event are counted and any which
       * occur at least <tt>cutoff</tt> times are added to the
@@ -188,6 +171,68 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
     outcomeLabels = toIndexedStringArray(omap);
     predLabels = toIndexedStringArray(predicateIndex);
     return eventsToCompare;
+  }
+  
+/**
+   * One argument constructor for DataIndexer which calls the two argument
+   * constructor assuming no cutoff.
+   *
+   * @param eventStream An Event[] which contains the a list of all the Events
+   *               seen in the training data.
+   */
+	@Deprecated
+  public TwoPassDataIndexer(ObjectStream<Event> eventStream) throws IOException {
+    this(eventStream, 0);
+  }
+@Deprecated
+  public TwoPassDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
+    this(eventStream,cutoff,true);
+  }
+/**
+   * Two argument constructor for DataIndexer.
+   *
+   * @param eventStream An Event[] which contains the a list of all the Events
+   *               seen in the training data.
+   * @param cutoff The minimum number of times a predicate must have been
+   *               observed in order to be included in the model.
+   */
+  @Deprecated
+  public TwoPassDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
+    Map<String,Integer> predicateIndex = new HashMap<>();
+    List<ComparableEvent> eventsToCompare;
+
+    System.out.println("Indexing events using cutoff of " + cutoff + "\n");
+
+    System.out.print("\tComputing event counts...  ");
+    try {
+      File tmp = File.createTempFile("events", null);
+      tmp.deleteOnExit();
+      Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
+      int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
+      System.out.println("done. " + numEvents + " events");
+
+      System.out.print("\tIndexing...  ");
+
+      try (FileEventStream fes = new FileEventStream(tmp)) {
+        eventsToCompare = index(numEvents, fes, predicateIndex);
+      }
+      // done with predicates
+      predicateIndex = null;
+      tmp.delete();
+      System.out.println("done.");
+
+      if (sort) {
+        System.out.print("Sorting and merging events... ");
+      }
+      else {
+        System.out.print("Collecting events... ");
+      }
+      sortAndMerge(eventsToCompare,sort);
+      System.out.println("Done indexing.");
+    }
+    catch(IOException e) {
+      System.err.println(e);
+    }
   }
 
 }

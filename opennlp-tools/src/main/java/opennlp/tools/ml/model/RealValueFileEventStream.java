@@ -21,7 +21,11 @@ package opennlp.tools.ml.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import opennlp.tools.ml.AbstractTrainer;
+import opennlp.tools.ml.PluggableParameters;
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelWriter;
 
@@ -106,15 +110,22 @@ public class RealValueFileEventStream extends FileEventStream {
     }
     int ai = 0;
     String eventFile = args[ai++];
-    int iterations = 100;
-    int cutoff = 5;
+    
+    Map<String,String> params=new HashMap<String, String>(); 
+    params.put(AbstractTrainer.ITERATIONS_PARAM,"100");
+    params.put(AbstractTrainer.CUTOFF_PARAM, "5");
     if (ai < args.length) {
-      iterations = Integer.parseInt(args[ai++]);
-      cutoff = Integer.parseInt(args[ai++]);
+      params.put(AbstractTrainer.ITERATIONS_PARAM,args[ai++]);
+      params.put(AbstractTrainer.CUTOFF_PARAM, args[ai++]);
     }
+    PluggableParameters parameters=new PluggableParameters(params, new HashMap<String, String>());
     AbstractModel model;
     try (RealValueFileEventStream es = new RealValueFileEventStream(eventFile)) {
-      model = GIS.trainModel(iterations, new OnePassRealValueDataIndexer(es, cutoff));
+      DataIndexer indexer=new OnePassDataIndexer();
+      indexer.init(params, new HashMap<String, String>());
+
+      // GIS should handle this better... 
+      model = GIS.trainModel(parameters.getIntParam(AbstractTrainer.ITERATIONS_PARAM, AbstractTrainer.CUTOFF_DEFAULT), indexer);
     }
     new SuffixSensitiveGISModelWriter(model, new File(eventFile + ".bin.gz")).persist();
   }
