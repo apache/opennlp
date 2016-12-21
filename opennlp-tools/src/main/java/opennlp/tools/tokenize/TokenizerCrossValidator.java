@@ -94,9 +94,7 @@ public class TokenizerCrossValidator {
          partitioner.next();
 
        // Maybe throws IOException if temporary file handling fails ...
-       TokenizerModel model;
-
-      model = TokenizerME.train(trainingSampleStream, this.factory, params);
+       TokenizerModel model = TokenizerME.train(trainingSampleStream, this.factory, params);
 
        TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model), listeners);
 

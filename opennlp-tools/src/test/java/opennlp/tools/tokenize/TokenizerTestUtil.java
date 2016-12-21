@@ -19,11 +19,10 @@
 package opennlp.tools.tokenize;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.CollectionObjectStream;
 import opennlp.tools.util.InputStreamFactory;
@@ -38,7 +37,7 @@ import opennlp.tools.util.TrainingParameters;
 public class TokenizerTestUtil {
 
   static TokenizerModel createSimpleMaxentTokenModel() throws IOException {
-    List<TokenSample> samples = new ArrayList<TokenSample>();
+    List<TokenSample> samples = new ArrayList<>();
 
     samples.add(new TokenSample("year", new Span[]{new Span(0, 4)}));
     samples.add(new TokenSample("year,", new Span[]{
@@ -59,8 +58,8 @@ public class TokenizerTestUtil {
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
 
-    return TokenizerME.train("en", new CollectionObjectStream<TokenSample>(samples), true,
-        mlParams);
+    return TokenizerME.train(new CollectionObjectStream<>(samples),
+      TokenizerFactory.create(null, "en", null, true, null), mlParams);
   }
 
   static TokenizerModel createMaxentTokenModel() throws IOException {
@@ -75,7 +74,7 @@ public class TokenizerTestUtil {
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
 
-    return TokenizerME.train("en", samples, true, mlParams);
+    return TokenizerME.train(samples, TokenizerFactory.create(null, "en", null, true, null), mlParams);
   }
 
 }

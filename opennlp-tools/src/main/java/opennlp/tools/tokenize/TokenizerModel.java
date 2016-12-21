@@ -124,7 +124,7 @@ public final class TokenizerModel extends BaseModel {
    * @throws IOException if reading from the stream fails in anyway
    * @throws InvalidFormatException if the stream doesn't have the expected format
    */
-  public TokenizerModel(InputStream in) throws IOException, InvalidFormatException {
+  public TokenizerModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
@@ -134,9 +134,8 @@ public final class TokenizerModel extends BaseModel {
    * @param modelFile the file containing the tokenizer model
    *
    * @throws IOException if reading from the stream fails in anyway
-   * @throws InvalidFormatException if the stream doesn't have the expected format
    */
-  public TokenizerModel(File modelFile) throws IOException, InvalidFormatException {
+  public TokenizerModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
@@ -146,9 +145,8 @@ public final class TokenizerModel extends BaseModel {
    * @param modelURL the URL pointing to the tokenizer model
    *
    * @throws IOException if reading from the stream fails in anyway
-   * @throws InvalidFormatException if the stream doesn't have the expected format
    */
-  public TokenizerModel(URL modelURL) throws IOException, InvalidFormatException {
+  public TokenizerModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 
@@ -196,10 +194,7 @@ public final class TokenizerModel extends BaseModel {
   }
 
   public boolean useAlphaNumericOptimization() {
-    if (getFactory() != null) {
-      return getFactory().isUseAlphaNumericOptmization();
-    }
-    return false;
+    return getFactory() != null && getFactory().isUseAlphaNumericOptmization();
   }
 
   public static void main(String[] args) throws IOException {
@@ -224,8 +219,8 @@ public final class TokenizerModel extends BaseModel {
     AbstractModel model = new BinaryGISModelReader(new DataInputStream(
         new FileInputStream(modelName))).getModel();
 
-    TokenizerModel packageModel = new TokenizerModel(languageCode, model,
-        alphaNumericOptimization);
+    TokenizerModel packageModel = new TokenizerModel(model, null,
+      TokenizerFactory.create(null, languageCode, null, alphaNumericOptimization, null));
 
     OutputStream out = null;
     try {
