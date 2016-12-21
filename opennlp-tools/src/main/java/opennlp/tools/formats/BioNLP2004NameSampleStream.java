@@ -18,7 +18,6 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -65,19 +64,6 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
 
     this.types = types;
 
-  }
-
-  @Deprecated
-  public BioNLP2004NameSampleStream(InputStream in, int types) {
-    try {
-      this.lineStream = new PlainTextByLineStream(in, "UTF-8");
-      System.setOut(new PrintStream(System.out, true, "UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8 is available on all JVMs, will never happen
-      throw new IllegalStateException(e);
-    }
-
-    this.types = types;
   }
 
   public NameSample read() throws IOException {

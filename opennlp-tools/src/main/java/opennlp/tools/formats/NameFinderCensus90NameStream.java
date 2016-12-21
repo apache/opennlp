@@ -16,7 +16,6 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
@@ -72,22 +71,6 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
   public NameFinderCensus90NameStream(InputStreamFactory in, Charset encoding)
       throws IOException {
     this.locale = new Locale("en"); // locale is English
-    this.encoding = encoding;
-    this.lineStream = new PlainTextByLineStream(in, this.encoding);
-  }
-
-
-  /**
-   * This constructor takes an <code>InputStream</code> and a <code>Charset</code>
-   * and opens an associated stream object with the specified encoding specified.
-   *
-   * @param in  an <code>InputStream</code> for the input file.
-   * @param encoding  the <code>Charset</code> to apply to the input stream.
-   * 
-   * @deprecated use {@link NameFinderCensus90NameStream#NameFinderCensus90NameStream(InputStreamFactory, Charset)}
-   */
-  public NameFinderCensus90NameStream(InputStream in, Charset encoding) {
-    this.locale = new Locale("en");   // locale is English
     this.encoding = encoding;
     this.lineStream = new PlainTextByLineStream(in, this.encoding);
   }

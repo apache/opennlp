@@ -18,7 +18,6 @@
 package opennlp.tools.formats.ad;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,26 +89,6 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
         throw new IllegalStateException(e);
       }
     }
-
-	/**
-	 * Creates a new {@link NameSample} stream from a {@link InputStream}
-	 *
-	 * @param in
-	 *          the Corpus {@link InputStream}
-	 * @param charsetName
-	 *          the charset of the Arvores Deitadas Corpus
-	 */
-    @Deprecated
-	public ADChunkSampleStream(InputStream in, String charsetName) {
-
-		try {
-			this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-					in, charsetName));
-		} catch (UnsupportedEncodingException e) {
-			// UTF-8 is available on all JVMs, will never happen
-			throw new IllegalStateException(e);
-		}
-	}
 
 	public ChunkSample read() throws IOException {
 

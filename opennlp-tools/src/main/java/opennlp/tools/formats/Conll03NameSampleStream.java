@@ -15,20 +15,20 @@
 
 package opennlp.tools.formats;
 
+import static opennlp.tools.formats.Conll02NameSampleStream.extract;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
-
-import static opennlp.tools.formats.Conll02NameSampleStream.extract;
 
 /**
  * An import stream which can parse the CONLL03 data.
@@ -58,26 +58,6 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
   }
 
   public Conll03NameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
-
-    this.lang = lang;
-    try {
-      this.lineStream = new PlainTextByLineStream(in, "UTF-8");
-      System.setOut(new PrintStream(System.out, true, "UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8 is available on all JVMs, will never happen
-      throw new IllegalStateException(e);
-    }
-    this.types = types;
-  }
-
-  /**
-   *
-   * @param lang the language of the CONLL 03 data
-   * @param in the Input Stream to read the data file
-   * @param types the entity types to include in the Name Sample object stream
-   */
-  @Deprecated
-  public Conll03NameSampleStream(LANGUAGE lang, InputStream in, int types) {
 
     this.lang = lang;
     try {

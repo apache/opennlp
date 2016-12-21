@@ -92,31 +92,6 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     this.isIncludeTitles = includeHeadlines;
   }
 
-  /**
-   * Creates a new {@link SentenceSample} stream from a {@link FileInputStream}
-   *
-   * @param in
-   *          input stream from the corpus
-   * @param charsetName
-   *          the charset to use while reading the corpus
-   * @param includeHeadlines
-   *          if true will output the sentences marked as news headlines
-   */
-  @Deprecated
-  public ADSentenceSampleStream(FileInputStream in, String charsetName,
-      boolean includeHeadlines) {
-    try {
-      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-          in, charsetName));
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8 is available on all JVMs, will never happen
-      throw new IllegalStateException(e);
-    }
-    ptEosCharacters = Factory.ptEosCharacters;
-    Arrays.sort(ptEosCharacters);
-    this.isIncludeTitles = includeHeadlines;
-  }
-
   // The Arvores Deitadas Corpus has information about texts and paragraphs.
   public SentenceSample read() throws IOException {
 

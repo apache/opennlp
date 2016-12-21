@@ -20,10 +20,7 @@ package opennlp.tools.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -50,50 +47,6 @@ public class PlainTextByLineStream implements ObjectStream<String> {
     this.encoding = charset.name();
 
     reset();
-  }
-
-  /**
-   * Initializes the current instance.
-   *
-   * @param in
-   * @deprecated Use {@link #PlainTextByLineStream(InputStreamFactory, Charset)} instead.
-   */
-  public PlainTextByLineStream(Reader in) {
-    this.in = new BufferedReader(in);
-    this.channel = null;
-    this.encoding = null;
-  }
-
-  /**
-   * @deprecated Use {@link #PlainTextByLineStream(InputStreamFactory, String)} instead.
-   */
-  public PlainTextByLineStream(InputStream in, String charsetName) throws UnsupportedEncodingException {
-    this(new InputStreamReader(in, charsetName));
-  }
-
-  /**
-   * @deprecated Use {@link #PlainTextByLineStream(InputStreamFactory, Charset)} instead.
-   */
-  public PlainTextByLineStream(InputStream in, Charset charset) {
-    this(new InputStreamReader(in, charset));
-  }
-
-  /**
-   * @deprecated Use {@link #PlainTextByLineStream(InputStreamFactory, String)} instead.
-   */
-  public PlainTextByLineStream(FileChannel channel, String charsetName) {
-    this.encoding = charsetName;
-    this.channel = channel;
-
-    // TODO: Why isn't reset called here ?
-    in = new BufferedReader(Channels.newReader(channel, encoding));
-  }
-
-  /**
-   * @deprecated Use {@link #PlainTextByLineStream(InputStreamFactory, Charset)} instead.
-   */
-  public PlainTextByLineStream(FileChannel channel, Charset encoding) {
-    this(channel, encoding.name());
   }
 
   public String read() throws IOException {

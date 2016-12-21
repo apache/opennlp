@@ -17,6 +17,8 @@
 
 package opennlp.tools.formats;
 
+import java.io.IOException;
+
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -68,7 +70,11 @@ public class BioNLP2004NameSampleStreamFactory extends AbstractSampleStreamFacto
           BioNLP2004NameSampleStream.GENERATE_RNA_ENTITIES;
     }
 
-    return new BioNLP2004NameSampleStream(
-        CmdLineUtil.openInFile(params.getData()), typesToGenerate);
+    try {
+      return new BioNLP2004NameSampleStream(
+          CmdLineUtil.createInputStreamFactory(params.getData()), typesToGenerate);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 }

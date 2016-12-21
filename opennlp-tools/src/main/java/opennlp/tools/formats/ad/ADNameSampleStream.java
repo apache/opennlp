@@ -201,31 +201,6 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
   }
 
-  /**
-   * Creates a new {@link NameSample} stream from a {@link InputStream}
-   *
-   * @param in
-   *          the Corpus {@link InputStream}
-   * @param charsetName
-   *          the charset of the Arvores Deitadas Corpus
-   * @param splitHyphenatedTokens
-   *          if true hyphenated tokens will be separated: "carros-monstro" &gt;
-   *          "carros" "-" "monstro"
-   */
-  @Deprecated
-  public ADNameSampleStream(InputStream in, String charsetName,
-      boolean splitHyphenatedTokens) {
-
-    try {
-      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-          in, charsetName));
-      this.splitHyphenatedTokens = splitHyphenatedTokens;
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8 is available on all JVMs, will never happen
-      throw new IllegalStateException(e);
-    }
-  }
-
   private int textID = -1;
 
   public NameSample read() throws IOException {
@@ -347,17 +322,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
         // a NER.
         // we check if it is true, and expand the last NER
         int lastIndex = names.size() - 1;
-        boolean error = false;
         if (names.size() > 0) {
           Span last = names.get(lastIndex);
           if (last.getEnd() == sentence.size() - 1) {
             names.set(lastIndex, new Span(last.getStart(), sentence.size(),
                 last.getType()));
-          } else {
-            error = true;
-          }
-        } else {
-          error = true;
+          } 
         }
       }
 
