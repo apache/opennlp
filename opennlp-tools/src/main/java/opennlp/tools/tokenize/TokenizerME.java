@@ -52,7 +52,7 @@ import opennlp.tools.util.model.ModelUtil;
  * must be instantiated which can share one <code>TokenizerModel</code> instance
  * to safe memory.
  * <p>
- * To train a new model {{@link #train(String, ObjectStream, boolean, TrainingParameters)} method
+ * To train a new model {{@link #train(ObjectStream, TokenizerFactory, TrainingParameters)} method
  * can be used.
  * <p>
  * Sample usage:
@@ -250,8 +250,7 @@ public class TokenizerME extends AbstractTokenizer {
 
     MaxentModel maxentModel = trainer.train(eventStream);
 
-    return new TokenizerModel(maxentModel, manifestInfoEntries,
-        factory);
+    return new TokenizerModel(maxentModel, manifestInfoEntries, factory);
   }
 
   /**
@@ -338,7 +337,8 @@ public class TokenizerME extends AbstractTokenizer {
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
       boolean useAlphaNumericOptimization) throws IOException {
-    return train(languageCode, samples, useAlphaNumericOptimization, ModelUtil.createDefaultTrainingParameters());
+    return train(samples, TokenizerFactory.create(null, languageCode, null, useAlphaNumericOptimization, null),
+      ModelUtil.createDefaultTrainingParameters());
   }
 
   /**

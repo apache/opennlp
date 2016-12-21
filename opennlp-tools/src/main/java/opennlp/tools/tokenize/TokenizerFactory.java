@@ -37,7 +37,7 @@ public class TokenizerFactory extends BaseToolFactory {
 
   private String languageCode;
   private Dictionary abbreviationDictionary;
-  private Boolean useAlphaNumericOptimization = null;
+  private Boolean useAlphaNumericOptimization;
   private Pattern alphaNumericPattern;
 
   private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
