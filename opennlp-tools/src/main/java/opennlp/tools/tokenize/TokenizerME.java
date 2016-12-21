@@ -18,7 +18,6 @@
 package opennlp.tools.tokenize;
 
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
@@ -127,8 +125,8 @@ public class TokenizerME extends AbstractTokenizer {
     this.model = model.getMaxentModel();
     this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptmization();
 
-    newTokens = new ArrayList<Span>();
-    tokProbs = new ArrayList<Double>(50);
+    newTokens = new ArrayList<>();
+    tokProbs = new ArrayList<>(50);
   }
 
   /**
@@ -145,13 +143,13 @@ public class TokenizerME extends AbstractTokenizer {
     this.model = model.getMaxentModel();
     useAlphaNumericOptimization = model.useAlphaNumericOptimization();
 
-    newTokens = new ArrayList<Span>();
-    tokProbs = new ArrayList<Double>(50);
+    newTokens = new ArrayList<>();
+    tokProbs = new ArrayList<>(50);
   }
 
   private static Set<String> getAbbreviations(Dictionary abbreviations) {
     if(abbreviations == null) {
-      return Collections.<String>emptySet();
+      return Collections.emptySet();
     }
     return abbreviations.asStringSet();
   }
@@ -241,7 +239,7 @@ public class TokenizerME extends AbstractTokenizer {
   public static TokenizerModel train(ObjectStream<TokenSample> samples, TokenizerFactory factory,
       TrainingParameters mlParams) throws IOException {
 
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    Map<String, String> manifestInfoEntries = new HashMap<>();
 
     ObjectStream<Event> eventStream = new TokSpanEventStream(samples,
         factory.isUseAlphaNumericOptmization(),
@@ -305,7 +303,7 @@ public class TokenizerME extends AbstractTokenizer {
       throws IOException {
     Factory factory = new Factory();
 
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    Map<String, String> manifestInfoEntries = new HashMap<>();
 
     ObjectStream<Event> eventStream = new TokSpanEventStream(samples,
         useAlphaNumericOptimization, factory.getAlphanumeric(languageCode),
@@ -334,16 +332,12 @@ public class TokenizerME extends AbstractTokenizer {
    * @throws IOException it throws an {@link IOException} if an {@link IOException}
    * is thrown during IO operations on a temp file which is
    *
-   * @throws ObjectStreamException if reading from the {@link ObjectStream} fails
-   * created during training.
-   *
-   *
    * @deprecated Use
    *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)}
    *    and pass in a {@link TokenizerFactory}
    */
   public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
-      boolean useAlphaNumericOptimization) throws IOException, ObjectStreamException {
+      boolean useAlphaNumericOptimization) throws IOException {
     return train(languageCode, samples, useAlphaNumericOptimization, ModelUtil.createDefaultTrainingParameters());
   }
 

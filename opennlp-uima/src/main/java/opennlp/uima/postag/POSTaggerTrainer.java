@@ -17,26 +17,25 @@
 
 package opennlp.uima.postag;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import opennlp.tools.ml.maxent.GIS;
-import opennlp.tools.postag.*;
+import opennlp.tools.postag.POSDictionary;
+import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTaggerFactory;
+import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelType;
 import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.CasConsumerUtil;
 import opennlp.uima.util.ContainingConstraint;
 import opennlp.uima.util.OpennlpUtil;
 import opennlp.uima.util.UimaUtil;
-
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.FSIndex;
@@ -82,7 +81,7 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
 
   private Logger mLogger;
 
-  private List<POSSample> mPOSSamples = new ArrayList<POSSample>();
+  private List<POSSample> mPOSSamples = new ArrayList<>();
 
   private String language;
 
@@ -173,8 +172,8 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
     ContainingConstraint containingConstraint =
         new ContainingConstraint(sentence);
 
-    List<String> tokens = new ArrayList<String>();
-    List<String> tags = new ArrayList<String>();
+    List<String> tokens = new ArrayList<>();
+    List<String> tags = new ArrayList<>();
 
     Iterator<AnnotationFS> containingTokens = tcas.createFilteredIterator(
         allTokens.iterator(), containingConstraint);

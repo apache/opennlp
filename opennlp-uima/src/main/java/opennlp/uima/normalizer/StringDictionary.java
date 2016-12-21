@@ -34,7 +34,7 @@ import opennlp.tools.util.StringList;
 // lookup a string for given token list
 public class StringDictionary {
 
-  private Map<StringList, String> entries = new HashMap<StringList, String>();
+  private Map<StringList, String> entries = new HashMap<>();
 
   public StringDictionary() {
   }
@@ -44,10 +44,8 @@ public class StringDictionary {
    *
    * @param in
    * @throws IOException
-   * @throws InvalidFormatException
    */
-  public StringDictionary(InputStream in) throws IOException,
-      InvalidFormatException {
+  public StringDictionary(InputStream in) throws IOException {
     DictionarySerializer.create(in, new EntryInserter() {
       public void insert(Entry entry) throws InvalidFormatException {
         String valueString = entry.getAttributes().getValue("value");

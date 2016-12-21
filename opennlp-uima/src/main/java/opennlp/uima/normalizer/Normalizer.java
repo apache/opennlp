@@ -65,7 +65,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
   private static final Set<String> SUPPORTED_TYPES;
 
   static {
-    Set<String> supportedTypes = new HashSet<String>();
+    Set<String> supportedTypes = new HashSet<>();
 
     supportedTypes.add(CAS.TYPE_NAME_STRING);
     supportedTypes.add(CAS.TYPE_NAME_BYTE);
@@ -232,9 +232,6 @@ public class Normalizer extends CasAnnotator_ImplBase {
             .getName())) {
           nameAnnotation
               .setDoubleValue(mStructureFeature, number.doubleValue());
-        } else {
-          // assert false : mStructureFeature.getRange().getName()
-          // + " is not supported!";
         }
       }
     }

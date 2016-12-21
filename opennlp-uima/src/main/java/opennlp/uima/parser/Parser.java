@@ -70,7 +70,7 @@ import org.apache.uima.util.Logger;
 public class Parser extends CasAnnotator_ImplBase {
 
   private static class ParseConverter {
-    private Map<Integer, Integer> mIndexMap = new HashMap<Integer, Integer>();
+    private Map<Integer, Integer> mIndexMap = new HashMap<>();
 
     private Parse mParseForTagger;
 
@@ -271,7 +271,7 @@ public class Parser extends CasAnnotator_ImplBase {
     Iterator<AnnotationFS> containingTokens = cas.createFilteredIterator(
         allTokens.iterator(), containingConstraint);
 
-    List<Span> tokenSpans = new LinkedList<Span>();
+    List<Span> tokenSpans = new LinkedList<>();
 
     while(containingTokens.hasNext()) {
       AnnotationFS token = containingTokens.next();

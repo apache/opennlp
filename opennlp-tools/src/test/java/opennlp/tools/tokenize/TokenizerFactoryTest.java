@@ -18,19 +18,12 @@
 package opennlp.tools.tokenize;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
-
-import org.junit.Test;
-
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.tokenize.DummyTokenizerFactory.DummyContextGenerator;
@@ -40,6 +33,12 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for the {@link TokenizerFactory} class.
@@ -56,11 +55,10 @@ public class TokenizerFactoryTest {
 
   private static TokenizerModel train(TokenizerFactory factory)
       throws IOException {
-    return TokenizerME.train(createSampleStream(),
-        factory, TrainingParameters.defaultParams());
+    return TokenizerME.train(createSampleStream(), factory, TrainingParameters.defaultParams());
   }
 
-  static Dictionary loadAbbDictionary() throws IOException {
+  private static Dictionary loadAbbDictionary() throws IOException {
     InputStream in = TokenizerFactoryTest.class.getClassLoader()
         .getResourceAsStream("opennlp/tools/sentdetect/abb.xml");
 
@@ -76,7 +74,7 @@ public class TokenizerFactoryTest {
     TokenizerModel model = train(new TokenizerFactory(lang, dic, false, null));
 
     TokenizerFactory factory = model.getFactory();
-    assertTrue(factory.getAbbreviationDictionary() instanceof Dictionary);
+    assertTrue(factory.getAbbreviationDictionary() != null);
     assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
     assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern()
@@ -92,7 +90,7 @@ public class TokenizerFactoryTest {
     TokenizerModel fromSerialized = new TokenizerModel(in);
 
     factory = fromSerialized.getFactory();
-    assertTrue(factory.getAbbreviationDictionary() instanceof Dictionary);
+    assertTrue(factory.getAbbreviationDictionary() != null);
     assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
     assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern()
@@ -130,8 +128,7 @@ public class TokenizerFactoryTest {
     assertNull(factory.getAbbreviationDictionary());
     assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern()
-        .pattern());
+    assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
     assertEquals(lang, factory.getLanguageCode());
     assertEquals(lang, model.getLanguage());
     assertFalse(factory.isUseAlphaNumericOptmization());

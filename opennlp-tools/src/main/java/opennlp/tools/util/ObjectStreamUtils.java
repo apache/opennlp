@@ -31,6 +31,7 @@ public class ObjectStreamUtils {
    *
    * @return the object stream over the array elements
    */
+  @SafeVarargs
   public static <T> ObjectStream<T> createObjectStream(final T... array) {
 
     return new ObjectStream<T>() {
@@ -90,6 +91,7 @@ public class ObjectStreamUtils {
    * @param streams
    * @return
    */
+  @SafeVarargs
   public static <T> ObjectStream<T> createObjectStream(final ObjectStream<T>... streams) {
 
     for (ObjectStream<T> stream : streams) {
