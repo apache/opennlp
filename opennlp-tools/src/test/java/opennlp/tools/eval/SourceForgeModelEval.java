@@ -17,7 +17,6 @@
 
 package opennlp.tools.eval;
 
-import junit.framework.Assert;
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -46,6 +45,7 @@ import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -124,10 +124,7 @@ public class SourceForgeModelEval {
 
       DocumentSample lineBatch ;
       while ((lineBatch = lineBatches.read()) != null) {
-        // TODO: Replace with Java 8 join
-        for (String token : lineBatch.getText()) {
-          text.append(token).append(" ");
-        }
+        text.append(String.join(" ", lineBatch.getText())).append(" ");
       }
     }
 
@@ -162,14 +159,7 @@ public class SourceForgeModelEval {
 
       DocumentSample line;
       while ((line = lines.read()) != null) {
-
-        // TODO: Replace with Java 8 join
-        StringBuffer text = new StringBuffer();
-        for (String token : line.getText()) {
-          text.append(token).append(' ');
-        }
-
-        String[] tokens = tokenizer.tokenize(text.toString());
+        String[] tokens = tokenizer.tokenize(String.join(" ", line.getText()));
         for (String token : tokens) {
           digest.update(token.getBytes("UTF-8"));
         }
@@ -345,15 +335,7 @@ public class SourceForgeModelEval {
 
       DocumentSample line;
       while ((line = lines.read()) != null) {
-
-        StringBuilder textLine = new StringBuilder();
-
-        // TODO: Replace with Java 8 join
-        for (String token : line.getText()) {
-          textLine.append(token).append(' ');
-        }
-
-        Parse[] parse = ParserTool.parseLine(textLine.toString(), parser, 1);
+        Parse[] parse = ParserTool.parseLine(String.join(" ", line.getText()), parser, 1);
         if (parse.length > 0) {
           digest.update(parse[0].toString().getBytes("UTF-8"));
         }
