@@ -54,7 +54,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
     try {
       while ((line = breader.readLine()) != null) {
         final String[] elems = line.split("\t");
-        this.dictMap.put(Arrays.asList(elems[0], elems[2]), elems[1]);
+        this.dictMap.put(Arrays.asList(elems[0], elems[1]), elems[2]);
       }
     } catch (final IOException e) {
       e.printStackTrace();
@@ -84,7 +84,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
     keys.addAll(Arrays.asList(word.toLowerCase(), postag));
     return keys;
   }
-  
+
   public String[] lemmatize(final String[] tokens, final String[] postags) {
     List<String> lemmas = new ArrayList<>();
     for (int i = 0; i < tokens.length; i++) {
