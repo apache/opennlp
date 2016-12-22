@@ -33,28 +33,76 @@ public abstract class AbstractTrainer {
   public static final String ITERATIONS_PARAM = "Iterations";
   public static final int ITERATIONS_DEFAULT = 100;
 
-  public static final String VERBOSE_PARAM = "PrintMessages";
-  public static final boolean VERBOSE_DEFAULT = true;
-  
-  protected PluggableParameters parameters;
+  private Map<String, String> trainParams;
+  private Map<String, String> reportMap;
 
   public AbstractTrainer() {
   }
 
   public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
-    parameters=new PluggableParameters(trainParams, reportMap);
+    this.trainParams = trainParams;
+    this.reportMap = reportMap;
   }
 
   public String getAlgorithm() {
-    return parameters.getStringParam(ALGORITHM_PARAM, GIS.MAXENT_VALUE);
+    return getStringParam(ALGORITHM_PARAM, GIS.MAXENT_VALUE);
   }
 
   public int getCutoff() {
-    return parameters.getIntParam(CUTOFF_PARAM, CUTOFF_DEFAULT);
+    return getIntParam(CUTOFF_PARAM, CUTOFF_DEFAULT);
   }
 
   public int getIterations() {
-    return parameters.getIntParam(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
+    return getIntParam(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
+  }
+
+  protected String getStringParam(String key, String defaultValue) {
+
+    String valueString = trainParams.get(key);
+
+    if (valueString == null)
+      valueString = defaultValue;
+
+    if (reportMap != null)
+      reportMap.put(key, valueString);
+
+    return valueString;
+  }
+
+  protected int getIntParam(String key, int defaultValue) {
+
+    String valueString = trainParams.get(key);
+
+    if (valueString != null)
+      return Integer.parseInt(valueString);
+    else
+      return defaultValue;
+  }
+
+  protected double getDoubleParam(String key, double defaultValue) {
+
+    String valueString = trainParams.get(key);
+
+    if (valueString != null)
+      return Double.parseDouble(valueString);
+    else
+      return defaultValue;
+  }
+
+  protected boolean getBooleanParam(String key, boolean defaultValue) {
+
+    String valueString = trainParams.get(key);
+
+    if (valueString != null)
+      return Boolean.parseBoolean(valueString);
+    else
+      return defaultValue;
+  }
+
+  protected void addToReport(String key, String value) {
+    if (reportMap != null) {
+      reportMap.put(key, value);
+    }
   }
 
   public boolean isValid() {
@@ -64,62 +112,17 @@ public abstract class AbstractTrainer {
     // should validate if algorithm is set? What about the Parser?
 
     try {
-      parameters.getIntParam(CUTOFF_PARAM, CUTOFF_DEFAULT);
-      parameters.getIntParam(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
+      String cutoffString = trainParams.get(CUTOFF_PARAM);
+      if (cutoffString != null)
+        Integer.parseInt(cutoffString);
+
+      String iterationsString = trainParams.get(ITERATIONS_PARAM);
+      if (iterationsString != null)
+        Integer.parseInt(iterationsString);
     } catch (NumberFormatException e) {
       return false;
     }
 
     return true;
-  }
-
-/**
-   * Use the PluggableParameters directly...
-   * @param key
-   * @param value
-   */
-  @Deprecated
-  protected String getStringParam(String key, String defaultValue) {
-	  return parameters.getStringParam(key, defaultValue);
-  }
-
-  /**
-   * Use the PluggableParameters directly...
-   * @param key
-   * @param value
-   */
-  @Deprecated
-  protected int getIntParam(String key, int defaultValue) {
-	  return parameters.getIntParam(key, defaultValue);
-  }
-  
-  /**
-   * Use the PluggableParameters directly...
-   * @param key
-   * @param value
-   */
-  @Deprecated
-  protected double getDoubleParam(String key, double defaultValue) {
-	  return parameters.getDoubleParam(key, defaultValue);
-  }
-
-  /**
-   * Use the PluggableParameters directly...
-   * @param key
-   * @param value
-   */
-  @Deprecated
-  protected boolean getBooleanParam(String key, boolean defaultValue) {
-	  return parameters.getBooleanParam(key, defaultValue);
-  }
-
-  /**
-   * Use the PluggableParameters directly...
-   * @param key
-   * @param value
-   */
-  @Deprecated
-  protected void addToReport(String key, String value) {
-	  parameters.addToReport(key, value);
   }
 }

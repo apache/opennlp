@@ -21,7 +21,6 @@ package opennlp.tools.ml.maxent.quasinewton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.maxent.quasinewton.QNMinimizer.Evaluator;
@@ -96,16 +95,6 @@ public class QNTrainer extends AbstractEventTrainer {
   public QNTrainer() {
   }
 
-  @Override
-	public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
-		super.init(trainParams, reportMap);
-		this.m = parameters.getIntParam(M_PARAM, M_DEFAULT);
-		this.maxFctEval = parameters.getIntParam(MAX_FCT_EVAL_PARAM, MAX_FCT_EVAL_DEFAULT);
-		this.threads = parameters.getIntParam(THREADS_PARAM, THREADS_DEFAULT);
-		this.l1Cost = parameters.getDoubleParam(L1COST_PARAM, L1COST_DEFAULT);
-		this.l2Cost = parameters.getDoubleParam(L2COST_PARAM, L2COST_DEFAULT);
-	}
-  
   public boolean isValid() {
 
     if (!super.isValid()) {
@@ -118,28 +107,38 @@ public class QNTrainer extends AbstractEventTrainer {
     }
 
     // Number of Hessian updates to remember
+    int m = getIntParam(M_PARAM, M_DEFAULT);
     if (m < 0) {
       return false;
     }
+    this.m = m;
 
     // Maximum number of function evaluations
+    int maxFctEval = getIntParam(MAX_FCT_EVAL_PARAM, MAX_FCT_EVAL_DEFAULT);
     if (maxFctEval < 0) {
       return false;
     }
+    this.maxFctEval = maxFctEval;
 
     // Number of threads must be >= 1
+    int threads = getIntParam(THREADS_PARAM, THREADS_DEFAULT);
     if (threads < 1) {
       return false;
     }
+    this.threads = threads;
 
     // Regularization costs must be >= 0
+    double l1Cost = getDoubleParam(L1COST_PARAM, L1COST_DEFAULT);
     if (l1Cost < 0) {
       return false;
     }
+    this.l1Cost = l1Cost;
 
+    double l2Cost = getDoubleParam(L2COST_PARAM, L2COST_DEFAULT);
     if (l2Cost < 0) {
       return false;
     }
+    this.l2Cost = l2Cost;
 
     return true;
   }

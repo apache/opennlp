@@ -39,9 +39,21 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 
   float[][] values;
 
-  public OnePassRealValueDataIndexer() {
+  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
+    super(eventStream,cutoff,sort);
   }
-  
+
+  /**
+   * Two argument constructor for DataIndexer.
+   * @param eventStream An Event[] which contains the a list of all the Events
+   *               seen in the training data.
+   * @param cutoff The minimum number of times a predicate must have been
+   *               observed in order to be included in the model.
+   */
+  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
+    super(eventStream,cutoff);
+  }
+
   public float[][] getValues() {
     return values;
   }
@@ -107,23 +119,6 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     outcomeLabels = toIndexedStringArray(omap);
     predLabels = toIndexedStringArray(predicateIndex);
     return eventsToCompare;
-  }
-
-/**
-   * Two argument constructor for DataIndexer.
-   * @param eventStream An Event[] which contains the a list of all the Events
-   *               seen in the training data.
-   * @param cutoff The minimum number of times a predicate must have been
-   *               observed in order to be included in the model.
-   */
-  @Deprecated
-  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
-    super(eventStream,cutoff);
-  }
-
-  @Deprecated
-  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
-    super(eventStream,cutoff,sort);
   }
 
 }

@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import opennlp.tools.ml.AbstractEventModelSequenceTrainer;
-import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
@@ -107,7 +106,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     int iterations = getIterations();
     int cutoff = getCutoff();
 
-    boolean useAverage = parameters.getBooleanParam("UseAverage", true);
+    boolean useAverage = getBooleanParam("UseAverage", true);
 
     return trainModel(iterations, events, cutoff, useAverage);
   }
@@ -117,12 +116,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
   public AbstractModel trainModel(int iterations, SequenceStream sequenceStream, int cutoff, boolean useAverage) throws IOException {
     this.iterations = iterations;
     this.sequenceStream = sequenceStream;
-    Map<String,String> indexingParameters=new HashMap<String, String>();
-    indexingParameters.put(AbstractDataIndexer.CUTOFF_PARAM, Integer.toString(cutoff));
-    indexingParameters.put(AbstractDataIndexer.SORT_PARAM, Boolean.toString(false));
-    DataIndexer di=new OnePassDataIndexer();
-    di.init(indexingParameters, new HashMap<String, String>());
-    di.index(new SequenceStreamEventStream(sequenceStream));
+    DataIndexer di = new OnePassDataIndexer(new SequenceStreamEventStream(sequenceStream),cutoff,false);
     numSequences = 0;
 
     sequenceStream.reset();

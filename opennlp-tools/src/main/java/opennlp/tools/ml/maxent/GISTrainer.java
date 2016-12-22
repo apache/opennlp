@@ -21,9 +21,7 @@ package opennlp.tools.ml.maxent;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
@@ -226,12 +224,7 @@ class GISTrainer {
    * @return A GIS model trained with specified
    */
   public GISModel trainModel(ObjectStream<Event> eventStream, int iterations, int cutoff) throws IOException {
-	DataIndexer indexer=new OnePassDataIndexer();
-	Map<String, String> params=new HashMap<String, String>();
-	params.put(GIS.ITERATIONS_PARAM, Integer.toString(iterations));
-	params.put(GIS.CUTOFF_PARAM, Integer.toString(cutoff));
-	indexer.init(params, new HashMap<String, String>());
-    return trainModel(iterations, indexer, cutoff);
+    return trainModel(iterations, new OnePassDataIndexer(eventStream,cutoff),cutoff);
   }
 
   /**
