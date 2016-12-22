@@ -47,7 +47,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
 		boolean sort=parameters.getBooleanParam(SORT_PARAM, SORT_DEFAULT);
 		
 		Map<String, Integer> predicateIndex = new HashMap<>();
-		LinkedList<Event> events;
+		List<Event> events;
 		List<ComparableEvent> eventsToCompare;
 
 		System.out.println("Indexing events using cutoff of " + cutoff + "\n");
@@ -84,14 +84,14 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
 	 *          an <code>int</code> value
 	 * @return a <code>TLinkedList</code> value
 	 */
-	private LinkedList<Event> computeEventCounts(ObjectStream<Event> eventStream,
+	private List<Event> computeEventCounts(ObjectStream<Event> eventStream,
 			Map<String, Integer> predicatesInOut, int cutoff) throws IOException {
 		Set<String> predicateSet = new HashSet<>();
 		Map<String, Integer> counter = new HashMap<>();
-		LinkedList<Event> events = new LinkedList<>();
+		List<Event> events = new LinkedList<>();
 		Event ev;
 		while ((ev = eventStream.read()) != null) {
-			events.addLast(ev);
+			events.add(ev);
 			update(ev.getContext(), predicateSet, counter, cutoff);
 		}
 		predCounts = new int[predicateSet.size()];
@@ -104,7 +104,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
 		return events;
 	}
 
-	protected List<ComparableEvent> index(LinkedList<Event> events,
+	protected List<ComparableEvent> index(List<Event> events,
 			Map<String, Integer> predicateIndex) {
 		Map<String, Integer> omap = new HashMap<>();
 
@@ -113,8 +113,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
 		List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
 		List<Integer> indexedContext = new ArrayList<>();
 
-		for (int eventIndex = 0; eventIndex < numEvents; eventIndex++) {
-			Event ev = events.removeFirst();
+		for(Event ev:events){
 			String[] econtext = ev.getContext();
 			ComparableEvent ce;
 
@@ -187,7 +186,7 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
 	public OnePassDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort)
 			throws IOException {
 		Map<String, Integer> predicateIndex = new HashMap<>();
-		LinkedList<Event> events;
+		List<Event> events;
 		List<ComparableEvent> eventsToCompare;
 	
 		System.out.println("Indexing events using cutoff of " + cutoff + "\n");
