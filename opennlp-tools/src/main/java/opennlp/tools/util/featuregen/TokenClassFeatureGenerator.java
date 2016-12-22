@@ -25,7 +25,7 @@ import opennlp.tools.util.StringUtil;
 /**
  * Generates features for different for the class of the token.
  */
-public class TokenClassFeatureGenerator extends FeatureGeneratorAdapter {
+public class TokenClassFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final String TOKEN_CLASS_PREFIX = "wc";
   private static final String TOKEN_AND_CLASS_PREFIX = "w&c";

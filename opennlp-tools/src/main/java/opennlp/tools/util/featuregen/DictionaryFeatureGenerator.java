@@ -31,7 +31,7 @@ import opennlp.tools.namefind.DictionaryNameFinder;
  * @see DictionaryNameFinder
  * @see InSpanGenerator
  */
-public class DictionaryFeatureGenerator extends FeatureGeneratorAdapter {
+public class DictionaryFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private InSpanGenerator isg;
 

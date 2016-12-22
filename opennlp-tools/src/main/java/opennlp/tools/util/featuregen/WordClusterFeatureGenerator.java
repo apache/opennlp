@@ -21,7 +21,7 @@ import java.util.List;
 
 import opennlp.tools.util.StringUtil;
 
-public class WordClusterFeatureGenerator extends FeatureGeneratorAdapter {
+public class WordClusterFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private WordClusterDictionary tokenDictionary;
   private String resourceName;

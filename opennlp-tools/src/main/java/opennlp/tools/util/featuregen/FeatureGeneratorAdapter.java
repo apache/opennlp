@@ -22,7 +22,10 @@ package opennlp.tools.util.featuregen;
  * This class provides empty implementations of some of the optional methods in
  * {@link AdditionalContextFeatureGenerator} to make implementing feature generators
  * easier.
+ *
+ * @deprecated use AdaptiveFeatureGenerator instead
  */
+@Deprecated // in 1.7.0
 public abstract class FeatureGeneratorAdapter implements AdaptiveFeatureGenerator {
 
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {

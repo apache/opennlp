@@ -19,7 +19,7 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
-public class SuffixFeatureGenerator extends FeatureGeneratorAdapter {
+public class SuffixFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final int SUFFIX_LENGTH = 4;
 

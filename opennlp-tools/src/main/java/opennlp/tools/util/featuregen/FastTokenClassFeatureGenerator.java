@@ -30,7 +30,7 @@ import opennlp.tools.util.StringUtil;
  * @deprecated Use {@link TokenClassFeatureGenerator} instead!
  */
 @Deprecated
-public class FastTokenClassFeatureGenerator extends FeatureGeneratorAdapter {
+public class FastTokenClassFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final String TOKEN_CLASS_PREFIX = "wc";
   private static final String TOKEN_AND_CLASS_PREFIX = "w&c";

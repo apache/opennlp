@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Generates Brown cluster features for token bigrams.
  */
-public class BrownBigramFeatureGenerator extends FeatureGeneratorAdapter {
+public class BrownBigramFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private BrownCluster brownLexicon;
 

@@ -23,7 +23,7 @@ import java.util.List;
  * Adds trigram features based on tokens and token classes.
  *
  */
-public class TrigramNameFeatureGenerator extends FeatureGeneratorAdapter {
+public class TrigramNameFeatureGenerator implements AdaptiveFeatureGenerator {
 
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {

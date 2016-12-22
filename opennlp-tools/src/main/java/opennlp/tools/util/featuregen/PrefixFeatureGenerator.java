@@ -19,7 +19,7 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
-public class PrefixFeatureGenerator extends FeatureGeneratorAdapter {
+public class PrefixFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final int PREFIX_LENGTH = 4;
 

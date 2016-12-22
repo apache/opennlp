@@ -25,7 +25,7 @@ import opennlp.tools.util.StringUtil;
 /**
  * Generates a feature which contains the token itself.
  */
-public class TokenFeatureGenerator extends FeatureGeneratorAdapter {
+public class TokenFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final String WORD_PREFIX = "w";
   private boolean lowercase;

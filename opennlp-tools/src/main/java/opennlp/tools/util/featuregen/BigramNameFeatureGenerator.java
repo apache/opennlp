@@ -19,7 +19,7 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
-public class BigramNameFeatureGenerator extends FeatureGeneratorAdapter {
+public class BigramNameFeatureGenerator implements AdaptiveFeatureGenerator {
 
   public void createFeatures(List<String> features, String[] tokens, int index, String[] previousOutcomes) {
     String wc = FeatureGeneratorUtil.tokenFeature(tokens[index]);
