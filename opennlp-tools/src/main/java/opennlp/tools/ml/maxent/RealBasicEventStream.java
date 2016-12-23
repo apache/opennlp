@@ -26,7 +26,7 @@ import opennlp.tools.ml.model.RealValueFileEventStream;
 import opennlp.tools.util.ObjectStream;
 
 public class RealBasicEventStream implements ObjectStream<Event> {
-  ContextGenerator cg = new BasicContextGenerator();
+  ContextGenerator<String> cg = new BasicContextGenerator();
   private ObjectStream<String> ds;
 
   public RealBasicEventStream(ObjectStream<String> ds) {
