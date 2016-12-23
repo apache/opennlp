@@ -34,6 +34,8 @@
 			<includes>
 				<include>org.apache.opennlp:opennlp-tools</include>
 				<include>org.apache.opennlp:opennlp-uima</include>
+				<include>org.apache.opennlp:opennlp-brat-annotator</include>
+				<include>org.apache.opennlp:opennlp-morfologik-addon</include>
 			</includes>
 			<unpack>false</unpack>
 			<useProjectArtifact>false</useProjectArtifact>
@@ -47,6 +49,7 @@
 	    <fileSet>
 	    	<directory>src/main/readme</directory>
 	    	<fileMode>644</fileMode>
+			<outputDirectory>.</outputDirectory>
 	    	<directoryMode>755</directoryMode>      
 	    </fileSet>
 		
@@ -90,7 +93,21 @@
 			<directoryMode>755</directoryMode>
 			<outputDirectory>docs/apidocs/opennlp-tools</outputDirectory>
 		</fileSet>
-		
+
+		<fileSet>
+			<directory>../opennlp-brat-annotator/target/apidocs</directory>
+			<fileMode>644</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>docs/apidocs/opennlp-brat-annotator</outputDirectory>
+		</fileSet>
+
+		<fileSet>
+			<directory>../opennlp-morfologik-addon/target/apidocs</directory>
+			<fileMode>644</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>docs/apidocs/opennlp-morfologik-addon</outputDirectory>
+		</fileSet>
+
 		<fileSet>
 			<directory>../opennlp-uima/target/apidocs</directory>
 			<fileMode>644</fileMode>
