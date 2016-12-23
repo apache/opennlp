@@ -34,7 +34,6 @@ import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * A Tokenizer for converting raw text into separated tokens.  It uses
@@ -251,94 +250,6 @@ public class TokenizerME extends AbstractTokenizer {
     MaxentModel maxentModel = trainer.train(eventStream);
 
     return new TokenizerModel(maxentModel, manifestInfoEntries, factory);
-  }
-
-  /**
-   * Trains a model for the {@link TokenizerME}.
-   *
-   * @param languageCode the language of the natural text
-   * @param samples the samples used for the training.
-   * @param useAlphaNumericOptimization - if true alpha numerics are skipped
-   * @param mlParams the machine learning train parameters
-   *
-   * @return the trained {@link TokenizerModel}
-   *
-   * @throws IOException it throws an {@link IOException} if an {@link IOException}
-   * is thrown during IO operations on a temp file which is created during training.
-   * Or if reading from the {@link ObjectStream} fails.
-   *
-   * @deprecated Use
-   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)}
-   *    and pass in a {@link TokenizerFactory}
-   */
-  public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
-      boolean useAlphaNumericOptimization, TrainingParameters mlParams) throws IOException {
-    return train(languageCode, samples, null, useAlphaNumericOptimization,
-        mlParams);
-  }
-
-  /**
-   * Trains a model for the {@link TokenizerME}.
-   *
-   * @param languageCode the language of the natural text
-   * @param samples the samples used for the training.
-   * @param abbreviations an abbreviations dictionary
-   * @param useAlphaNumericOptimization - if true alpha numerics are skipped
-   * @param mlParams the machine learning train parameters
-   *
-   * @return the trained {@link TokenizerModel}
-   *
-   * @throws IOException it throws an {@link IOException} if an {@link IOException}
-   * is thrown during IO operations on a temp file which is created during training.
-   * Or if reading from the {@link ObjectStream} fails.
-   *
-   * @deprecated Use
-   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)}
-   *    and pass in a {@link TokenizerFactory}
-   */
-  public static TokenizerModel train(String languageCode,
-      ObjectStream<TokenSample> samples, Dictionary abbreviations,
-      boolean useAlphaNumericOptimization, TrainingParameters mlParams)
-      throws IOException {
-    Factory factory = new Factory();
-
-    Map<String, String> manifestInfoEntries = new HashMap<>();
-
-    ObjectStream<Event> eventStream = new TokSpanEventStream(samples,
-        useAlphaNumericOptimization, factory.getAlphanumeric(languageCode),
-        factory.createTokenContextGenerator(languageCode,
-            getAbbreviations(abbreviations)));
-
-    EventTrainer trainer = TrainerFactory.getEventTrainer(
-            mlParams.getSettings(), manifestInfoEntries);
-
-    MaxentModel maxentModel = trainer.train(eventStream);
-
-    return new TokenizerModel(languageCode, maxentModel, abbreviations,
-        useAlphaNumericOptimization, manifestInfoEntries);
-  }
-
-
-  /**
-   * Trains a model for the {@link TokenizerME} with a default cutoff of 5 and 100 iterations.
-   *
-   * @param languageCode the language of the natural text
-   * @param samples the samples used for the training.
-   * @param useAlphaNumericOptimization - if true alpha numerics are skipped
-   *
-   * @return the trained {@link TokenizerModel}
-   *
-   * @throws IOException it throws an {@link IOException} if an {@link IOException}
-   * is thrown during IO operations on a temp file which is
-   *
-   * @deprecated Use
-   *    {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)}
-   *    and pass in a {@link TokenizerFactory}
-   */
-  public static TokenizerModel train(String languageCode, ObjectStream<TokenSample> samples,
-      boolean useAlphaNumericOptimization) throws IOException {
-    return train(samples, TokenizerFactory.create(null, languageCode, null, useAlphaNumericOptimization, null),
-      ModelUtil.createDefaultTrainingParameters());
   }
 
   /**

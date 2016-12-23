@@ -59,8 +59,7 @@ public class Conll00ChunkerEval {
       double expectedFMeasure) throws IOException {
 
     ObjectStream<ChunkSample> samples = new ChunkSampleStream(
-        new PlainTextByLineStream(new MarkableFileInputStreamFactory(testData),
-            "UTF-8"));
+        new PlainTextByLineStream(new MarkableFileInputStreamFactory(testData),"UTF-8"));
 
     ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model));
     evaluator.evaluate(samples);
