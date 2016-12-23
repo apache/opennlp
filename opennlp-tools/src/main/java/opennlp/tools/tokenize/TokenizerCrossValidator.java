@@ -18,13 +18,10 @@
 package opennlp.tools.tokenize;
 
 import java.io.IOException;
-
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.model.ModelUtil;
 
 public class TokenizerCrossValidator {
 
@@ -40,39 +37,6 @@ public class TokenizerCrossValidator {
     this.listeners = listeners;
     this.factory = factory;
   }
-
-  /**
-   * @deprecated use
-   *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
-   *             instead and pass in a {@link TokenizerFactory}
-   */
-  public TokenizerCrossValidator(String language, Dictionary abbreviations,
-      boolean alphaNumericOptimization, TrainingParameters params,
-      TokenizerEvaluationMonitor ... listeners) {
-    this(params, new TokenizerFactory(language, abbreviations,
-        alphaNumericOptimization, null), listeners);
-  }
-
-  /**
-   * @deprecated use
-   *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
-   *             instead and pass in a {@link TokenizerFactory}
-   */
-  public TokenizerCrossValidator(String language, boolean alphaNumericOptimization) {
-    this(language, alphaNumericOptimization, ModelUtil.createDefaultTrainingParameters());
-  }
-
-  /**
-   * @deprecated use
-   *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
-   *             instead and pass in a {@link TokenizerFactory}
-   */
-  public TokenizerCrossValidator(String language,
-      boolean alphaNumericOptimization, TrainingParameters params,
-      TokenizerEvaluationMonitor ... listeners) {
-    this(language, null, alphaNumericOptimization, params, listeners);
-  }
-
 
   /**
    * Starts the evaluation.
