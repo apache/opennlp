@@ -36,7 +36,7 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
 
   private SAXParser saxParser;
 
-  private List<Parse> parses = new ArrayList<Parse>();
+  private List<Parse> parses = new ArrayList<>();
 
   protected ConstitParseSampleStream(ObjectStream<byte[]> samples) {
     super(samples);
@@ -57,12 +57,12 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
 
       if (xmlbytes != null) {
 
-        List<Parse> producedParses = new ArrayList<Parse>();
+        List<Parse> producedParses = new ArrayList<>();
         try {
           saxParser.parse(new ByteArrayInputStream(xmlbytes), new ConstitDocumentHandler(producedParses));
         } catch (SAXException e) {
           //TODO update after Java6 upgrade
-          throw (IOException) new IOException(e.getMessage()).initCause(e);
+          throw new IOException(e.getMessage(), e);
         }
 
         parses.addAll(producedParses);

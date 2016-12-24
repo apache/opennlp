@@ -118,7 +118,6 @@ public abstract class AbstractContextGenerator {
     if (punct1s != null) {
       for (Iterator<Parse> pi = punct1s.iterator();pi.hasNext();) {
         Parse p = pi.next();
-//        String punct = punct(p,c1.index);
         String punctbo = punctbo(p,c1.index <= 0 ? c1.index -1 : c1.index);
 
         //punctbo(1);

@@ -60,8 +60,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
    * @return A set of contextual features about this attachment.
    */
   public String[] getContext(Parse[] constituents, int index, List<Parse> rightFrontier, int rfi) {
-    List<String> features = new ArrayList<String>(100);
-    int nodeDistance = rfi;
+    List<String> features = new ArrayList<>(100);
     Parse fn = rightFrontier.get(rfi);
     Parse fp = null;
     if (rfi+1 < rightFrontier.size()) {
@@ -147,9 +146,9 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     */
     int headDistance = (p0.getHeadIndex()-fn.getHeadIndex());
     features.add("hd="+headDistance);
-    features.add("nd="+nodeDistance);
+    features.add("nd="+ rfi);
 
-    features.add("nd="+p0.getType()+"."+nodeDistance);
+    features.add("nd="+p0.getType()+"."+ rfi);
     features.add("hd="+p0.getType()+"."+headDistance);
     //features.add("fs="+rightFrontier.size());
     //paired punct features
@@ -157,9 +156,6 @@ public class AttachContextGenerator extends AbstractContextGenerator {
       if (containsPunct(punct_1fs,"``")) {
         features.add("quotematch");//? not generating feature correctly
 
-      }
-      else {
-        //features.add("noquotematch");
       }
     }
     return features.toArray(new String[features.size()]);

@@ -18,9 +18,7 @@
 package opennlp.tools.formats.ontonotes;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.nio.charset.Charset;
-
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
@@ -41,19 +39,15 @@ public class OntoNotesNameSampleStreamFactory extends
     OntoNotesFormatParameters params = ArgumentParser.parse(args, OntoNotesFormatParameters.class);
 
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
-        params.getOntoNotesDir()), new FileFilter() {
+        params.getOntoNotesDir()), file -> {
+          if (file.isFile()) {
+            return file.getName().endsWith(".name");
+          }
 
-      public boolean accept(File file) {
-        if (file.isFile()) {
-          return file.getName().endsWith(".name");
-        }
+          return file.isDirectory();
+        }, true);
 
-        return file.isDirectory();
-      }
-    }, true);
-
-    return new OntoNotesNameSampleStream(new FileToStringSampleStream(
-        documentStream, Charset.forName("UTF-8")));
+    return new OntoNotesNameSampleStream(new FileToStringSampleStream(documentStream, Charset.forName("UTF-8")));
   }
 
   public static void registerFactory() {

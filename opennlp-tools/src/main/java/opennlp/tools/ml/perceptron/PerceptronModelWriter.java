@@ -40,7 +40,7 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
     protected Context[] PARAMS;
     protected String[] OUTCOME_LABELS;
     protected String[] PRED_LABELS;
-    int numOutcomes;
+    private int numOutcomes;
 
     public PerceptronModelWriter (AbstractModel model) {
 
@@ -99,15 +99,15 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
 
     protected List<List<ComparablePredicate>> computeOutcomePatterns(ComparablePredicate[] sorted) {
       ComparablePredicate cp = sorted[0];
-      List<List<ComparablePredicate>> outcomePatterns = new ArrayList<List<ComparablePredicate>>();
-      List<ComparablePredicate> newGroup = new ArrayList<ComparablePredicate>();
+      List<List<ComparablePredicate>> outcomePatterns = new ArrayList<>();
+      List<ComparablePredicate> newGroup = new ArrayList<>();
       for (ComparablePredicate predicate : sorted) {
         if (cp.compareTo(predicate) == 0) {
           newGroup.add(predicate);
         } else {
           cp = predicate;
           outcomePatterns.add(newGroup);
-          newGroup = new ArrayList<ComparablePredicate>();
+          newGroup = new ArrayList<>();
           newGroup.add(predicate);
         }
       }

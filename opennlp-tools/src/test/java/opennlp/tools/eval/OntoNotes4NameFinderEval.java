@@ -18,13 +18,8 @@
 package opennlp.tools.eval;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.formats.ontonotes.OntoNotesNameSampleStream;
@@ -35,6 +30,8 @@ import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class OntoNotes4NameFinderEval {
 
@@ -42,16 +39,13 @@ public class OntoNotes4NameFinderEval {
       throws IOException {
 
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
-        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"), new FileFilter() {
+        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"), file -> {
+          if (file.isFile()) {
+            return file.getName().endsWith(".name");
+          }
 
-      public boolean accept(File file) {
-        if (file.isFile()) {
-          return file.getName().endsWith(".name");
-        }
-
-        return file.isDirectory();
-      }
-    }, true);
+          return file.isDirectory();
+        }, true);
 
     ObjectStream<NameSample> samples = new OntoNotesNameSampleStream(new FileToStringSampleStream(
         documentStream, Charset.forName("UTF-8")));

@@ -73,12 +73,12 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
   }
 
   protected List<ComparableEvent> index(LinkedList<Event> events, Map<String,Integer> predicateIndex) {
-    Map<String,Integer> omap = new HashMap<String,Integer>();
+    Map<String,Integer> omap = new HashMap<>();
 
     int numEvents = events.size();
     int outcomeCount = 0;
-    List<ComparableEvent> eventsToCompare = new ArrayList<ComparableEvent>(numEvents);
-    List<Integer> indexedContext = new ArrayList<Integer>();
+    List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
+    List<Integer> indexedContext = new ArrayList<>();
 
     for (int eventIndex=0; eventIndex<numEvents; eventIndex++) {
       Event ev = events.removeFirst();

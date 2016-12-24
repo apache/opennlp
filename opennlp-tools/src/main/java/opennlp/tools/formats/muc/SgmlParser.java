@@ -75,7 +75,7 @@ public class SgmlParser {
     // value chars
     // " <- end
 
-    Map<String, String> attributes = new HashMap<String, String>();
+    Map<String, String> attributes = new HashMap<>();
 
     StringBuilder key = new StringBuilder();
     StringBuilder value = new StringBuilder();

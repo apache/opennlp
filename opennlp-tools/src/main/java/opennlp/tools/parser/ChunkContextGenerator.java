@@ -115,7 +115,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     String cacheKey = i +t_2+t1+t0+t1+t2+p_2+p_1;
     if (contextsCache!= null) {
       if (wordsKey == words) {
-        String[] contexts = (String[]) contextsCache.get(cacheKey);
+        String[] contexts = contextsCache.get(cacheKey);
         if (contexts != null) {
           return contexts;
         }

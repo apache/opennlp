@@ -45,7 +45,6 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.BigramNameFeatureGenerator;
 import opennlp.tools.util.featuregen.CachedFeatureGenerator;
-import opennlp.tools.util.featuregen.FeatureGeneratorResourceProvider;
 import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.featuregen.OutcomePriorFeatureGenerator;
 import opennlp.tools.util.featuregen.PreviousMapFeatureGenerator;
@@ -114,14 +113,11 @@ public class NameFinderME implements TokenNameFinder {
 
     if (generatorDescriptor != null) {
       featureGenerator = GeneratorFactory.create(new ByteArrayInputStream(
-              generatorDescriptor), new FeatureGeneratorResourceProvider() {
-
-                public Object getResource(String key) {
-                  if (resources != null) {
-                    return resources.get(key);
-                  }
-                  return null;
+              generatorDescriptor), key -> {
+                if (resources != null) {
+                  return resources.get(key);
                 }
+                return null;
               });
     } else {
       featureGenerator = null;
@@ -440,7 +436,7 @@ public class NameFinderME implements TokenNameFinder {
    */
   public static Span[] dropOverlappingSpans(Span spans[]) {
 
-    List<Span> sortedSpans = new ArrayList<Span>(spans.length);
+    List<Span> sortedSpans = new ArrayList<>(spans.length);
     Collections.addAll(sortedSpans, spans);
     Collections.sort(sortedSpans);
 
