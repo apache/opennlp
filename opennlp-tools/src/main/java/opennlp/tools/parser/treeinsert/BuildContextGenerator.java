@@ -115,7 +115,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     Cons c1 = new Cons(consp1,consbop1,1,true);
     Cons c2 = new Cons(consp2,consbop2,2,true);
 
-    List<String> features = new ArrayList<String>();
+    List<String> features = new ArrayList<>();
     features.add("default");
 
     //unigrams

@@ -31,7 +31,7 @@ public class MucNameSampleStream extends FilterObjectStream<String, NameSample> 
 
   private final Tokenizer tokenizer;
 
-  private List<NameSample> storedSamples = new ArrayList<NameSample>();
+  private List<NameSample> storedSamples = new ArrayList<>();
 
   protected MucNameSampleStream(Tokenizer tokenizer, ObjectStream<String> samples) {
     super(samples);

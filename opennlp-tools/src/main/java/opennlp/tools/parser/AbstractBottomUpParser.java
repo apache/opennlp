@@ -349,7 +349,7 @@ public abstract class AbstractBottomUpParser implements Parser {
       return new Parse[] {completeParses.first()};
     }
     else {
-      List<Parse> topParses = new ArrayList<Parse>(numParses);
+      List<Parse> topParses = new ArrayList<>(numParses);
       while(!completeParses.isEmpty() && topParses.size() < numParses) {
         Parse tp = completeParses.extract();
         topParses.add(tp);
@@ -460,9 +460,6 @@ public abstract class AbstractBottomUpParser implements Parser {
       words[i] = children[i].getCoveredText();
     }
     Sequence[] ts = tagger.topKSequences(words);
-//    if (ts.length == 0) {
-//      System.err.println("no tag sequence");
-//    }
     Parse[] newParses = new Parse[ts.length];
     for (int i = 0; i < ts.length; i++) {
       String[] tags = ts[i].getOutcomes().toArray(new String[words.length]);
@@ -475,7 +472,6 @@ public abstract class AbstractBottomUpParser implements Parser {
         double prob = probs[j];
         newParses[i].insert(new Parse(word.getText(), word.getSpan(), tags[j], prob,j));
         newParses[i].addProb(Math.log(prob));
-        //newParses[i].show();
       }
     }
     return newParses;

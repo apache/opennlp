@@ -31,7 +31,7 @@ import opennlp.tools.ml.model.AbstractModel;
  * Model writer that saves models in binary format.
  */
 public class BinaryNaiveBayesModelWriter extends NaiveBayesModelWriter {
-  DataOutputStream output;
+  private DataOutputStream output;
 
   /**
    * Constructor which takes a NaiveBayesModel and a File and prepares itself to

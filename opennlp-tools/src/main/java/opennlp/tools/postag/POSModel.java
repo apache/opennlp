@@ -43,7 +43,7 @@ public final class POSModel extends BaseModel {
 
   private static final String COMPONENT_NAME = "POSTaggerME";
 
-  public static final String POS_MODEL_ENTRY_NAME = "pos.model";
+  static final String POS_MODEL_ENTRY_NAME = "pos.model";
 
   public POSModel(String languageCode, SequenceClassificationModel<String> posModel,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
@@ -78,15 +78,15 @@ public final class POSModel extends BaseModel {
     checkArtifactMap();
   }
 
-  public POSModel(InputStream in) throws IOException, InvalidFormatException {
+  public POSModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
-  public POSModel(File modelFile) throws IOException, InvalidFormatException {
+  public POSModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
-  public POSModel(URL modelURL) throws IOException, InvalidFormatException {
+  public POSModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 

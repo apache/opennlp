@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader;
@@ -37,7 +36,6 @@ import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserEventTypeEnum;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -73,7 +71,7 @@ public class ParserEventStream extends AbstractParserEventStream {
    * @return a set of parent nodes.
    */
   private Map<Parse, Integer> getNonAdjoinedParent(Parse node) {
-    Map<Parse, Integer> parents = new HashMap<Parse, Integer>();
+    Map<Parse, Integer> parents = new HashMap<>();
     Parse parent = node.getParent();
     int index = indexOf(node,parent);
     parents.put(parent, index);
@@ -130,11 +128,11 @@ public class ParserEventStream extends AbstractParserEventStream {
 
   @Override
   protected void addParseEvents(List<Event> parseEvents, Parse[] chunks) {
-    /** Frontier nodes built from node in a completed parse.  Specifically,
+    /* Frontier nodes built from node in a completed parse.  Specifically,
      * they have all their children regardless of the stage of parsing.*/
-    List<Parse> rightFrontier = new ArrayList<Parse>();
-    List<Parse> builtNodes = new ArrayList<Parse>();
-    /** Nodes which characterize what the parse looks like to the parser as its being built.
+    List<Parse> rightFrontier = new ArrayList<>();
+    List<Parse> builtNodes = new ArrayList<>();
+    /* Nodes which characterize what the parse looks like to the parser as its being built.
      * Specifically, these nodes don't have all their children attached like the parents of
      * the chunk nodes do.*/
     Parse[] currentChunks = new Parse[chunks.length];
@@ -200,7 +198,7 @@ public class ParserEventStream extends AbstractParserEventStream {
       }
       //attach node
       String attachType = null;
-      /** Node selected for attachment. */
+      /* Node selected for attachment. */
       Parse attachNode = null;
       int attachNodeIndex = -1;
       if (ci == 0){
@@ -208,7 +206,7 @@ public class ParserEventStream extends AbstractParserEventStream {
         top.insert(currentChunks[ci]);
       }
       else {
-        /** Right frontier consisting of partially-built nodes based on current state of the parse.*/
+        /* Right frontier consisting of partially-built nodes based on current state of the parse.*/
         List<Parse> currentRightFrontier = Parser.getRightFrontier(currentChunks[0],punctSet);
         if (currentRightFrontier.size() != rightFrontier.size()) {
           System.err.println("fontiers mis-aligned: "+currentRightFrontier.size()+" != "+rightFrontier.size()+" "+currentRightFrontier+" "+rightFrontier);
@@ -333,7 +331,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     }
   }
 
-  public static void main(String[] args) throws java.io.IOException, InvalidFormatException {
+  public static void main(String[] args) throws java.io.IOException {
     if (args.length == 0) {
       System.err.println("Usage ParserEventStream -[tag|chunk|build|attach] [-fun] [-dict dictionary] [-model model] head_rules < parses");
       System.exit(1);
@@ -345,35 +343,36 @@ public class ParserEventStream extends AbstractParserEventStream {
     AbstractModel model = null;
 
     while (ai < args.length && args[ai].startsWith("-")) {
-      if (args[ai].equals("-build")) {
-        etype = ParserEventTypeEnum.BUILD;
-      }
-      else if (args[ai].equals("-attach")) {
-        etype = ParserEventTypeEnum.ATTACH;
-      }
-      else if (args[ai].equals("-chunk")) {
-        etype = ParserEventTypeEnum.CHUNK;
-      }
-      else if (args[ai].equals("-check")) {
-        etype = ParserEventTypeEnum.CHECK;
-      }
-      else if (args[ai].equals("-tag")) {
-        etype = ParserEventTypeEnum.TAG;
-      }
-      else if (args[ai].equals("-fun")) {
-        fun = true;
-      }
-      else if (args[ai].equals("-dict")) {
-        ai++;
-        dict = new Dictionary(new FileInputStream(args[ai]));
-      }
-      else if (args[ai].equals("-model")) {
-        ai++;
-        model = (new SuffixSensitiveGISModelReader(new File(args[ai]))).getModel();
-      }
-      else {
-        System.err.println("Invalid option " + args[ai]);
-        System.exit(1);
+      switch (args[ai]) {
+        case "-build":
+          etype = ParserEventTypeEnum.BUILD;
+          break;
+        case "-attach":
+          etype = ParserEventTypeEnum.ATTACH;
+          break;
+        case "-chunk":
+          etype = ParserEventTypeEnum.CHUNK;
+          break;
+        case "-check":
+          etype = ParserEventTypeEnum.CHECK;
+          break;
+        case "-tag":
+          etype = ParserEventTypeEnum.TAG;
+          break;
+        case "-fun":
+          fun = true;
+          break;
+        case "-dict":
+          ai++;
+          dict = new Dictionary(new FileInputStream(args[ai]));
+          break;
+        case "-model":
+          ai++;
+          model = (new SuffixSensitiveGISModelReader(new File(args[ai]))).getModel();
+          break;
+        default:
+          System.err.println("Invalid option " + args[ai]);
+          System.exit(1);
       }
       ai++;
     }

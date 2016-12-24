@@ -31,7 +31,7 @@ import opennlp.tools.ml.model.AbstractModel;
  * Model writer that saves models in binary format.
  */
 public class BinaryPerceptronModelWriter extends PerceptronModelWriter {
-  DataOutputStream output;
+  private DataOutputStream output;
 
   /**
    * Constructor which takes a GISModel and a File and prepares itself to

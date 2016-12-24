@@ -137,7 +137,7 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
 
     display("...done.\n");
 
-    /*************** Create and return the model ******************/
+    /* Create and return the model ****/
     return new NaiveBayesModel(finalParameters, predLabels, outcomeLabels);
   }
 

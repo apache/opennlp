@@ -42,12 +42,12 @@ public class OntoNotesNameSampleStream extends
 
   private final Map<String, String> tokenConversionMap;
 
-  private List<NameSample> nameSamples = new LinkedList<NameSample>();
+  private List<NameSample> nameSamples = new LinkedList<>();
 
   public OntoNotesNameSampleStream(ObjectStream<String> samples) {
     super(samples);
 
-    Map<String, String> tokenConversionMap = new HashMap<String, String>();
+    Map<String, String> tokenConversionMap = new HashMap<>();
     tokenConversionMap.put("-LRB-", "(");
     tokenConversionMap.put("-RRB-", ")");
     tokenConversionMap.put("-LSB-", "[");
@@ -107,8 +107,8 @@ public class OntoNotesNameSampleStream extends
 
           String tokens[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
 
-          List<Span> entities = new LinkedList<Span>();
-          List<String> cleanedTokens = new ArrayList<String>(tokens.length);
+          List<Span> entities = new LinkedList<>();
+          List<String> cleanedTokens = new ArrayList<>(tokens.length);
 
           int tokenIndex = 0;
           int entityBeginIndex = -1;

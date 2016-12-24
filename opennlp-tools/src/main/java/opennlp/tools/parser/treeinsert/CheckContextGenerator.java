@@ -42,7 +42,7 @@ public class CheckContextGenerator extends AbstractContextGenerator {
   }
 
   public String[] getContext(Parse parent, Parse[] constituents, int index, boolean trimFrontier) {
-    List<String> features = new ArrayList<String>(100);
+    List<String> features = new ArrayList<>(100);
     //default
     features.add("default");
     Parse[] children = Parser.collapsePunctuation(parent.getChildren(),punctSet);

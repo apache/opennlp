@@ -25,12 +25,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
-
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionarySerializer;
 import opennlp.tools.dictionary.serializer.Entry;
-import opennlp.tools.dictionary.serializer.EntryInserter;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.StringUtil;
@@ -57,11 +55,9 @@ public class NGramModel implements Iterable<StringList>{
    *
    * @param in the serialized model stream
    * @throws IOException
-   * @throws InvalidFormatException
    */
-  public NGramModel(InputStream in) throws IOException, InvalidFormatException {
-    DictionarySerializer.create(in, new EntryInserter() {
-      public void insert(Entry entry) throws InvalidFormatException {
+  public NGramModel(InputStream in) throws IOException {
+    DictionarySerializer.create(in, entry -> {
 
         int count;
         String countValueString = null;
@@ -82,8 +78,7 @@ public class NGramModel implements Iterable<StringList>{
 
         add(entry.getTokens());
         setCount(entry.getTokens(), count);
-      }
-    });
+      });
   }
 
   /**

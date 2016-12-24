@@ -30,7 +30,7 @@ class DocumentSplitterStream extends FilterObjectStream<String, String> {
   private static final String DOC_START_ELEMENT = "<DOC>";
   private static final String DOC_END_ELEMENT = "</DOC>";
 
-  private List<String> docs = new ArrayList<String>();
+  private List<String> docs = new ArrayList<>();
 
   DocumentSplitterStream(ObjectStream<String> samples) {
     super(samples);

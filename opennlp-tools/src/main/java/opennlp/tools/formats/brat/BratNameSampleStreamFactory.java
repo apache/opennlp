@@ -18,10 +18,7 @@
 package opennlp.tools.formats.brat;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
@@ -75,7 +72,7 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
    * Checks that non of the passed values are null.
    *
    * @param objects
-   * @return
+   * @return true or false
    */
   private boolean notNull(Object... objects) {
 
