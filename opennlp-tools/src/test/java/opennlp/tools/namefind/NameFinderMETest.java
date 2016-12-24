@@ -18,20 +18,18 @@
 
 package opennlp.tools.namefind;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.InputStream;
 import java.util.Collections;
-
-import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This is the test class for {@link NameFinderME}.
@@ -74,7 +72,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
-        params, (byte[]) null, Collections.<String, Object>emptyMap());
+        params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     TokenNameFinder nameFinder = new NameFinderME(nameFinderModel);
 
@@ -116,8 +114,6 @@ public class NameFinderMETest {
   /**
    * Train NamefinderME using AnnotatedSentencesWithTypes.txt with "person"
    * nameType and try the model in a sample text.
-   *
-   * @throws Exception
    */
   @Test
   public void testNameFinderWithTypes() throws Exception {
@@ -137,7 +133,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
-        params, (byte[]) null, Collections.<String, Object>emptyMap());
+        params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
@@ -167,8 +163,6 @@ public class NameFinderMETest {
   /**
    * Train NamefinderME using OnlyWithNames.train. The goal is to check if the model validator accepts it.
    * This is related to the issue OPENNLP-9
-   *
-   * @throws Exception
    */
   @Test
   public void testOnlyWithNames() throws Exception {
@@ -186,7 +180,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
-        params, (byte[]) null, Collections.<String, Object>emptyMap());
+        params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
@@ -206,8 +200,6 @@ public class NameFinderMETest {
   /**
    * Train NamefinderME using OnlyWithNamesWithTypes.train. The goal is to check if the model validator accepts it.
    * This is related to the issue OPENNLP-9
-   *
-   * @throws Exception
    */
   @Test
   public void testOnlyWithNamesWithTypes() throws Exception {
@@ -225,7 +217,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
-        params, (byte[]) null, Collections.<String, Object>emptyMap());
+        params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
@@ -247,8 +239,6 @@ public class NameFinderMETest {
   /**
    * Train NamefinderME using OnlyWithNames.train. The goal is to check if the model validator accepts it.
    * This is related to the issue OPENNLP-9
-   *
-   * @throws Exception
    */
   @Test
   public void testOnlyWithEntitiesWithTypes() throws Exception {
@@ -266,7 +256,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
-        params, (byte[]) null, Collections.<String, Object>emptyMap());
+        params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
@@ -283,13 +273,13 @@ public class NameFinderMETest {
   }
 
   private boolean hasOtherAsOutcome(TokenNameFinderModel nameFinderModel) {
-	  MaxentModel model = nameFinderModel.getNameFinderModel();
-	  for (int i = 0; i < model.getNumOutcomes(); i++) {
-	      String outcome = model.getOutcome(i);
-	      if (outcome.equals(NameFinderME.OTHER)) {
-	        return true;
-	      }
-	    }
+	  SequenceClassificationModel<String> model = nameFinderModel.getNameFinderSequenceModel();
+	  String[] outcomes = model.getOutcomes();
+	  for (int i = 0; i < outcomes.length; i++) {
+      if (outcomes[i].equals(NameFinderME.OTHER)) {
+        return true;
+      }
+    }
 	  return false;
   }
 
@@ -304,8 +294,6 @@ public class NameFinderMETest {
   /**
    * Train NamefinderME using voa1.train with several
    * nameTypes and try the model in a sample text.
-   *
-   * @throws Exception
    */
   @Test
   public void testNameFinderWithMultipleTypes() throws Exception {
@@ -323,7 +311,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
-        params, (byte[]) null, Collections.<String, Object>emptyMap());
+        params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 

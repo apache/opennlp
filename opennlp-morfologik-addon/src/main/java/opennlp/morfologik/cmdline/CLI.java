@@ -40,9 +40,9 @@ public final class CLI {
 	private static Map<String, CmdLineTool> toolLookupMap;
 
 	static {
-		toolLookupMap = new LinkedHashMap<String, CmdLineTool>();
+		toolLookupMap = new LinkedHashMap<>();
 
-		List<CmdLineTool> tools = new LinkedList<CmdLineTool>();
+		List<CmdLineTool> tools = new LinkedList<>();
 
 		tools.add(new MorfologikDictionaryBuilderTool());
 		tools.add(new XMLDictionaryToTableTool());

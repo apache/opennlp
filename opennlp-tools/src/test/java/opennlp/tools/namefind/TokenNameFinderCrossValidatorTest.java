@@ -18,15 +18,10 @@
 package opennlp.tools.namefind;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Collections;
 import java.util.Map;
-
-import org.junit.Test;
-
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
@@ -34,13 +29,17 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
+import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class TokenNameFinderCrossValidatorTest {
 
   private final String TYPE = null;
 
   @Test
-  /**
+  /*
    * Test that reproduces jira OPENNLP-463
    */
   public void testWithNullResources() throws Exception {
@@ -67,7 +66,7 @@ public class TokenNameFinderCrossValidatorTest {
   }
 
   @Test
-  /**
+  /*
    * Test that tries to reproduce jira OPENNLP-466
    */
   public void testWithNameEvaluationErrorListener() throws Exception {

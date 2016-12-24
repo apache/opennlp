@@ -73,7 +73,7 @@ public final class TokenNameFinderCrossValidatorTool
       sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
     }
 
-    List<EvaluationMonitor<NameSample>> listeners = new LinkedList<EvaluationMonitor<NameSample>>();
+    List<EvaluationMonitor<NameSample>> listeners = new LinkedList<>();
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
     }
@@ -94,7 +94,7 @@ public final class TokenNameFinderCrossValidatorTool
 
     SequenceCodec<String> sequenceCodec = TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
 
-    TokenNameFinderFactory nameFinderFactory = null;
+    TokenNameFinderFactory nameFinderFactory;
     try {
       nameFinderFactory = TokenNameFinderFactory.create(params.getFactory(),
           featureGeneratorBytes, resources, sequenceCodec);
