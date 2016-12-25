@@ -35,9 +35,10 @@ public abstract class Evaluator<T> {
 
   private List<EvaluationMonitor<T>> listeners;
 
+  @SafeVarargs
   public Evaluator(EvaluationMonitor<T>... aListeners) {
     if (aListeners != null) {
-      List<EvaluationMonitor<T>> listenersList = new ArrayList<EvaluationMonitor<T>>(
+      List<EvaluationMonitor<T>> listenersList = new ArrayList<>(
           aListeners.length);
       for (EvaluationMonitor<T> evaluationMonitor : aListeners) {
         if (evaluationMonitor != null) {
@@ -80,7 +81,7 @@ public abstract class Evaluator<T> {
     if(!listeners.isEmpty()) {
       if(sample.equals(predicted)) {
         for (EvaluationMonitor<T> listener : listeners) {
-          listener.correctlyClassified(predicted, predicted);
+          listener.correctlyClassified(sample, predicted);
         }
       } else {
         for (EvaluationMonitor<T> listener : listeners) {

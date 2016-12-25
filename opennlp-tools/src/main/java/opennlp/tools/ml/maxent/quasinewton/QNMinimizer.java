@@ -522,7 +522,7 @@ public class QNMinimizer {
    * it can be used to report model's training accuracy when
    * we train a Maximum Entropy classifier.
    */
-  public static interface Evaluator {
+  public interface Evaluator {
     /**
      * Measure quality of the training parameters
      * @param parameters
