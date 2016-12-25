@@ -89,13 +89,13 @@ public final class TokenNameFinderTrainerTool
    * @return a map consisting of the file name of the resource and its corresponding Object
    */
   public static Map<String, Object> loadResources(File resourcePath, File featureGenDescriptor) {
-    Map<String, Object> resources = new HashMap<String, Object>();
+    Map<String, Object> resources = new HashMap<>();
 
     if (resourcePath != null) {
 
       Map<String, ArtifactSerializer> artifactSerializers = TokenNameFinderModel
           .createArtifactSerializers();
-      List<Element> elements = new ArrayList<Element>();
+      List<Element> elements = new ArrayList<>();
       ArtifactSerializer serializer = null;
 
 
@@ -134,9 +134,6 @@ public final class TokenNameFinderTrainerTool
 
         try (InputStream resourceIn = CmdLineUtil.openInFile(resourceFile)) {
           resources.put(resourceName, serializer.create(resourceIn));
-        } catch (InvalidFormatException e) {
-          // TODO: Fix exception handling
-          e.printStackTrace();
         } catch (IOException e) {
           // TODO: Fix exception handling
           e.printStackTrace();
@@ -160,7 +157,7 @@ public final class TokenNameFinderTrainerTool
       return loadResources(resourcePath, featureGeneratorDescriptor);
     }
 
-    return new HashMap<String, Object>();
+    return new HashMap<>();
   }
 
   public void run(String format, String[] args) {
@@ -200,7 +197,7 @@ public final class TokenNameFinderTrainerTool
 
     SequenceCodec<String> sequenceCodec = TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
 
-    TokenNameFinderFactory nameFinderFactory = null;
+    TokenNameFinderFactory nameFinderFactory;
     try {
       nameFinderFactory = TokenNameFinderFactory.create(params.getFactory(),
           featureGeneratorBytes, resources, sequenceCodec);

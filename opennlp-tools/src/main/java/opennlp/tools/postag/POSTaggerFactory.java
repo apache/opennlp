@@ -19,7 +19,6 @@ package opennlp.tools.postag;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,7 +26,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.util.BaseToolFactory;
@@ -95,12 +93,12 @@ public class POSTaggerFactory extends BaseToolFactory {
   }
 
   public TagDictionary createTagDictionary(File dictionary)
-      throws InvalidFormatException, FileNotFoundException, IOException {
+      throws IOException {
     return createTagDictionary(new FileInputStream(dictionary));
   }
 
   public TagDictionary createTagDictionary(InputStream in)
-      throws InvalidFormatException, IOException {
+      throws IOException {
     return POSDictionary.create(in);
   }
 
@@ -146,8 +144,7 @@ public class POSTaggerFactory extends BaseToolFactory {
 
   static class POSDictionarySerializer implements ArtifactSerializer<POSDictionary> {
 
-    public POSDictionary create(InputStream in) throws IOException,
-        InvalidFormatException {
+    public POSDictionary create(InputStream in) throws IOException {
       return POSDictionary.create(new UncloseableInputStream(in));
     }
 
@@ -164,13 +161,13 @@ public class POSTaggerFactory extends BaseToolFactory {
 
   protected void validatePOSDictionary(POSDictionary posDict,
       AbstractModel posModel) throws InvalidFormatException {
-    Set<String> dictTags = new HashSet<String>();
+    Set<String> dictTags = new HashSet<>();
 
     for (String word : posDict) {
       Collections.addAll(dictTags, posDict.getTags(word));
     }
 
-    Set<String> modelTags = new HashSet<String>();
+    Set<String> modelTags = new HashSet<>();
 
     for (int i = 0; i < posModel.getNumOutcomes(); i++) {
       modelTags.add(posModel.getOutcome(i));
