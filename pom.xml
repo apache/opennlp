@@ -99,6 +99,17 @@
 				<version>${project.version}</version>
 			</dependency>
 
+			<dependency>
+				<artifactId>opennlp-brat-annotator</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-morfologik-addon</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -254,9 +265,6 @@
 					<executions>
 						<execution>
 							<id>default-cli</id>
-							<configuration>
-								<numUnapprovedLicenses>0</numUnapprovedLicenses>
-							</configuration>
 						</execution>
 					</executions>
 				</plugin>

@@ -49,6 +49,7 @@
 	    <fileSet>
 	    	<directory>src/main/readme</directory>
 	    	<fileMode>644</fileMode>
+			<outputDirectory>.</outputDirectory>
 	    	<directoryMode>755</directoryMode>      
 	    </fileSet>
 		
