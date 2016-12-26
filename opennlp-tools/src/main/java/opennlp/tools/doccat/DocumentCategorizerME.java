@@ -84,7 +84,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @param text the text to categorize
    */
   public double[] categorize(String text[]) {
-    return this.categorize(text, Collections.<String, Object>emptyMap());
+    return this.categorize(text, Collections.emptyMap());
   }
 
   /**
