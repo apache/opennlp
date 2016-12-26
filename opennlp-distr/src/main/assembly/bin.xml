@@ -74,6 +74,20 @@
 			<directoryMode>755</directoryMode>
 			<outputDirectory>bin</outputDirectory>
 		</fileSet>
+
+		<fileSet>
+			<directory>../opennlp-morfologik-addon/src/main/bin</directory>
+			<fileMode>755</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>bin</outputDirectory>
+		</fileSet>
+		
+		<fileSet>
+			<directory>../opennlp-brat-annotator/src/main/bin</directory>
+			<fileMode>755</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>bin</outputDirectory>
+		</fileSet>
 		
 		<fileSet>
 			<directory>../opennlp-docs/target/docbkx/html</directory>

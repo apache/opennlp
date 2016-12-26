@@ -32,4 +32,4 @@ fi
 # Might fail if $0 is a link
 OPENNLP_HOME=`dirname "$0"`/..
 
-$JAVACMD -Xmx1024m -cp "lib/*" opennlp.tools.cmdline.CLI $@
+$JAVACMD -Xmx1024m -cp "lib/*" opennlp.bratann.NameFinderAnnService $@
