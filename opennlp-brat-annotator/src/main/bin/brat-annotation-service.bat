@@ -38,10 +38,14 @@ IF "%OPENNLP_HOME%" == "" (
 	REM # Keep OPENNLP_HOME to short-name without spaces
 	FOR %%A IN ("%OPENNLP_HOME%") DO SET OPENNLP_HOME=%%~sfA
 )
+setLocal EnableDelayedExpansion
+set CLASSPATH="
 
-REM #  Get the library JAR file name (JIRA OPENNLP-554)
-FOR %%A IN ("%OPENNLP_HOME%\lib\*.jar") DO SET JAR_FILE=%%A
+FOR %%A IN ("%OPENNLP_HOME%\lib\*.jar") DO (
+	set CLASSPATH=!CLASSPATH!;%%A
+)
+set CLASSPATH=!CLASSPATH!"
 
-%JAVA_CMD% -Xmx1024m -jar %JAR_FILE% opennlp.bratann.NameFinderAnnService %*
+%JAVA_CMD% -Xmx1024m -cp %CLASSPATH% opennlp.bratann.NameFinderAnnService %*
 
 ENDLOCAL
