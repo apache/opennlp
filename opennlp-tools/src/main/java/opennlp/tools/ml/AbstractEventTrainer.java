@@ -66,7 +66,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
 
     String dataIndexerName = parameters.getStringParam(DATA_INDEXER_PARAM,
         DATA_INDEXER_TWO_PASS_VALUE);
-    Map<String,String> indexParams=new HashMap<String, String>();
+    Map<String,String> indexParams = new HashMap<String, String>();
     indexParams.put(AbstractDataIndexer.CUTOFF_PARAM, Integer.toString(getCutoff()));
     indexParams.put(AbstractDataIndexer.SORT_PARAM, Boolean.toString(isSortAndMerge()));
 
