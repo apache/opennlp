@@ -31,7 +31,6 @@ import java.util.StringTokenizer;
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionarySerializer;
 import opennlp.tools.dictionary.serializer.Entry;
-import opennlp.tools.dictionary.serializer.EntryInserter;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.StringUtil;
 
@@ -113,11 +112,7 @@ public class Dictionary implements Iterable<StringList> {
    * @throws IOException
    */
   public Dictionary(InputStream in) throws IOException {
-    isCaseSensitive = DictionarySerializer.create(in, new EntryInserter() {
-      public void insert(Entry entry) {
-        put(entry.getTokens());
-      }
-    });
+    isCaseSensitive = DictionarySerializer.create(in, entry -> put(entry.getTokens()));
   }
 
   /**

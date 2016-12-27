@@ -60,14 +60,15 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     return numUniqueEvents;
   }
 
+
   @Override
   protected List<ComparableEvent> index(List<Event> events, Map<String,Integer> predicateIndex) {
     Map<String,Integer> omap = new HashMap<String,Integer>();
-
+    
     int numEvents = events.size();
     int outcomeCount = 0;
-    List<ComparableEvent> eventsToCompare = new ArrayList<ComparableEvent>(numEvents);
-    List<Integer> indexedContext = new ArrayList<Integer>();
+    List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
+    List<Integer> indexedContext = new ArrayList<>();
 
     for (Event ev:events) {
       String[] econtext = ev.getContext();

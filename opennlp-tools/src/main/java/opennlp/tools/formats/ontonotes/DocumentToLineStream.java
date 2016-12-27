@@ -41,7 +41,7 @@ public class DocumentToLineStream extends SegmenterObjectStream<String, String> 
 
     // documents must be empty line terminated
     if (!lines.get(lines.size() - 1).trim().isEmpty()) {
-      lines = new ArrayList<String>(lines);
+      lines = new ArrayList<>(lines);
       lines.add("");
     }
 

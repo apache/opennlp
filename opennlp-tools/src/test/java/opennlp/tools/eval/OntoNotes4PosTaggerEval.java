@@ -18,13 +18,8 @@
 package opennlp.tools.eval;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.formats.convert.ParseToPOSSampleStream;
@@ -35,6 +30,8 @@ import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class OntoNotes4PosTaggerEval {
 
@@ -42,16 +39,13 @@ public class OntoNotes4PosTaggerEval {
       throws IOException {
     
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
-        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"), new FileFilter() {
+        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"), file -> {
+          if (file.isFile()) {
+            return file.getName().endsWith(".parse");
+          }
 
-      public boolean accept(File file) {
-        if (file.isFile()) {
-          return file.getName().endsWith(".parse");
-        }
-
-        return file.isDirectory();
-      }
-    }, true);
+          return file.isDirectory();
+        }, true);
 
     ParseToPOSSampleStream samples = new ParseToPOSSampleStream(new OntoNotesParseSampleStream(
         new DocumentToLineStream(

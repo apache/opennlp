@@ -22,11 +22,11 @@ package opennlp.tools.ml.maxent;
 /**
  * Generate contexts for maxent decisions.
  */
-public interface ContextGenerator {
+public interface ContextGenerator<T> {
 
   /**
    * Builds up the list of contextual predicates given an Object.
    */
-  public String[] getContext(Object o);
+  public String[] getContext(T o);
 
 }

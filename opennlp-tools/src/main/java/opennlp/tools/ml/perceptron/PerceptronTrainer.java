@@ -86,12 +86,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
   public boolean isValid() {
     String algorithmName = getAlgorithm();
-
-    if (algorithmName != null && !(PERCEPTRON_VALUE.equals(algorithmName))) {
-      return false;
-    }
-
-    return true;
+    return !(algorithmName != null && !(PERCEPTRON_VALUE.equals(algorithmName)));
   }
 
   public boolean isSortAndMerge() {
@@ -217,7 +212,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
     display("...done.\n");
 
-    /*************** Create and return the model ******************/
+    /* Create and return the model *************/
     return new PerceptronModel(finalParameters, predLabels, outcomeLabels);
   }
 
@@ -229,7 +224,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     for (int oi = 0; oi < numOutcomes; oi++)
       allOutcomesPattern[oi] = oi;
 
-    /** Stores the estimated parameter value of each predicate during iteration. */
+    /* Stores the estimated parameter value of each predicate during iteration. */
     MutableContext[] params = new MutableContext[numPreds];
     for (int pi = 0; pi < numPreds; pi++) {
       params[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
@@ -239,7 +234,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
     EvalParameters evalParams = new EvalParameters(params,numOutcomes);
 
-    /** Stores the sum of parameter values of each predicate over many iterations. */
+    /* Stores the sum of parameter values of each predicate over many iterations. */
     MutableContext[] summedParams = new MutableContext[numPreds];
     if (useAverage) {
       for (int pi = 0; pi < numPreds; pi++) {
@@ -273,7 +268,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       for (int ei = 0; ei < numUniqueEvents; ei++) {
         int targetOutcome = outcomeList[ei];
 
-        for (int ni=0; ni<this.numTimesEventsSeen[ei]; ni++) {
+        for (int ni = 0; ni < this.numTimesEventsSeen[ei]; ni++) {
 
           // Compute the model's prediction according to the current parameters.
           double[] modelDistribution = new double[numOutcomes];
@@ -295,8 +290,8 @@ public class PerceptronTrainer extends AbstractEventTrainer {
                 params[pi].updateParameter(targetOutcome, stepsize);
                 params[pi].updateParameter(maxOutcome, -stepsize);
               } else {
-                params[pi].updateParameter(targetOutcome, stepsize*values[ei][ci]);
-                params[pi].updateParameter(maxOutcome, -stepsize*values[ei][ci]);
+                params[pi].updateParameter(targetOutcome, stepsize * values[ei][ci]);
+                params[pi].updateParameter(maxOutcome, -stepsize * values[ei][ci]);
               }
             }
           }
@@ -309,36 +304,28 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
       // Calculate the training accuracy and display.
       double trainingAccuracy = (double) numCorrect / numEvents;
-      if (i < 10 || (i%10) == 0)
-        display(". (" + numCorrect + "/" + numEvents+") " + trainingAccuracy + "\n");
+      if (i < 10 || (i % 10) == 0)
+        display(". (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy + "\n");
 
       // TODO: Make averaging configurable !!!
 
       boolean doAveraging;
 
-      if (useAverage && useSkippedlAveraging && (i < 20 || isPerfectSquare(i))) {
-        doAveraging = true;
-      }
-      else if (useAverage) {
-        doAveraging = true;
-      }
-      else {
-        doAveraging = false;
-      }
+      doAveraging = useAverage && useSkippedlAveraging && (i < 20 || isPerfectSquare(i)) || useAverage;
 
       if (doAveraging) {
         numTimesSummed++;
         for (int pi = 0; pi < numPreds; pi++)
-          for (int aoi=0;aoi<numOutcomes;aoi++)
+          for (int aoi = 0; aoi < numOutcomes; aoi++)
             summedParams[pi].updateParameter(aoi, params[pi].getParameters()[aoi]);
       }
 
       // If the tolerance is greater than the difference between the
       // current training accuracy and all of the previous three
       // training accuracies, stop training.
-      if (Math.abs(prevAccuracy1-trainingAccuracy) < tolerance
-          && Math.abs(prevAccuracy2-trainingAccuracy) < tolerance
-          && Math.abs(prevAccuracy3-trainingAccuracy) < tolerance) {
+      if (Math.abs(prevAccuracy1 - trainingAccuracy) < tolerance
+        && Math.abs(prevAccuracy2 - trainingAccuracy) < tolerance
+        && Math.abs(prevAccuracy3 - trainingAccuracy) < tolerance) {
         display("Stopping: change in training set accuracy less than " + tolerance + "\n");
         break;
       }
@@ -419,7 +406,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
   // See whether a number is a perfect square. Inefficient, but fine
   // for our purposes.
-  private final static boolean isPerfectSquare (int n) {
+  private static boolean isPerfectSquare (int n) {
     int root = (int)Math.sqrt(n);
     return root*root == n;
   }

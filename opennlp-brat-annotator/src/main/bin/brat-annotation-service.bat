@@ -46,6 +46,6 @@ FOR %%A IN ("%OPENNLP_HOME%\lib\*.jar") DO (
 )
 set CLASSPATH=!CLASSPATH!"
 
-%JAVA_CMD% -Xmx1024m -cp %CLASSPATH% opennlp.morfologik.cmdline.CLI %*
+%JAVA_CMD% -Xmx1024m -cp %CLASSPATH% opennlp.bratann.NameFinderAnnService %*
 
 ENDLOCAL

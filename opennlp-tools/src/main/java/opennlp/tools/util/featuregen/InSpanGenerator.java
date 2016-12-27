@@ -27,7 +27,7 @@ import opennlp.tools.util.Span;
  * Generates features if the tokens are recognized by the provided
  * {@link TokenNameFinder}.
  */
-public class InSpanGenerator extends FeatureGeneratorAdapter {
+public class InSpanGenerator implements AdaptiveFeatureGenerator {
 
   private final String prefix;
 

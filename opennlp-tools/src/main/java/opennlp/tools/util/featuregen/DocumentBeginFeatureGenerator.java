@@ -19,7 +19,7 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
-public class DocumentBeginFeatureGenerator extends FeatureGeneratorAdapter {
+public class DocumentBeginFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private String firstSentence[];
 

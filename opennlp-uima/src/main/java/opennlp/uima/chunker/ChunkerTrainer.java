@@ -66,7 +66,7 @@ import org.apache.uima.util.ProcessTrace;
  */
 public class ChunkerTrainer extends CasConsumer_ImplBase {
 
-  private List<ChunkSample> mChunkSamples = new ArrayList<ChunkSample>();
+  private List<ChunkSample> mChunkSamples = new ArrayList<>();
 
   private UimaContext mContext;
 
@@ -82,8 +82,6 @@ public class ChunkerTrainer extends CasConsumer_ImplBase {
 
   private Feature mChunkTagFeature;
 
-  private Logger mLogger;
-
   private String language;
 
   /**
@@ -95,7 +93,7 @@ public class ChunkerTrainer extends CasConsumer_ImplBase {
 
     mContext = getUimaContext();
 
-    mLogger = mContext.getLogger();
+    Logger mLogger = mContext.getLogger();
 
     if (mLogger.isLoggable(Level.INFO)) {
       mLogger.log(Level.INFO, "Initializing the OpenNLP Chunker Trainer.");
@@ -183,9 +181,9 @@ public class ChunkerTrainer extends CasConsumer_ImplBase {
     Iterator<AnnotationFS> tokenIterator = tcas.createFilteredIterator(tokenIndex.iterator(),
         containingConstraint);
 
-    List<String> tokens = new ArrayList<String>();
-    List<String> tags = new ArrayList<String>();;
-    List<String> chunkTags = new ArrayList<String>();;
+    List<String> tokens = new ArrayList<>();
+    List<String> tags = new ArrayList<>();
+    List<String> chunkTags = new ArrayList<>();
 
     while (tokenIterator.hasNext()) {
       AnnotationFS tokenAnnotation = tokenIterator.next();

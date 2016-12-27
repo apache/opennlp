@@ -1,11 +1,13 @@
 Apache OpenNLP ${pom.version}
 ===============================
 
+Requirements
+------------
+Java 1.8 is required to run OpenNLP
+Maven 3.3.9 is required for building it
 
 Building from the Source Distribution
 -------------------------------------
-
-At least Maven 3.0.0 is required for building.
 
 To build everything execute the following command in the root folder:
     mvn clean install
@@ -22,23 +24,20 @@ removed. Now Java 1.8 is required.
 
 Additionally the release contains the following noteworthy changes:
 
-- Added evalutation support to the parser and doccat components
-- Added support to Evalita 07/09, Brat and OntoNotes corpus formats
-- Now L-BFGS is stable
-- Added Snowball to the Stemmer package
-- NameFinder now supports a user defined factory
-- Added pluggable machine learning support
-- Added a lemmatizer module
-- Added Cluster, Document Begin and Clark feature generators to the Name Finder
-- Added Liblinear as a Machine Learning addon
-- Entity Linker now has a command line interface
-- Added sequence classification support
+- OpenNLP is up to 50% faster at analyzing content
+- A lot of deprecated code has been removed
+- Code base has been cleaned up
+- There is a new brat annotation service
+- Documentation was improved and extended
+- A Naive Bayesian Classifier implementation was added
+- Morofologik addon is now included
+- Added a language model component
+- Added a CLI to the lemmatizer component.
+- Added a supervised statistical lemmatizer.
+- The lemmatizer component API has been entirely rewritten. The changes in
+  the previously existing Dictionary-based lemmatizer are not backward compatible.
 
 A detailed list of the issues related to this release can be found in the release
 notes.
 
-Requirements
-------------
-Java 1.8 is required to run OpenNLP
-Maven 3.3.9 is required for building it
 

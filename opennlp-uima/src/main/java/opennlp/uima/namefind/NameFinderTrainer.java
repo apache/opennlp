@@ -126,7 +126,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
   // - Directly start indexing with a blocking sample stream, the indexer will then write everything
   //   to disk or could store the events much more space efficient in memory
 
-  private List<NameSample> nameFinderSamples = new ArrayList<NameSample>();
+  private List<NameSample> nameFinderSamples = new ArrayList<>();
   private TrainingParameters trainingParams;
 
   /**
@@ -220,7 +220,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
    * @return
    */
   private static <T> List<T> iteratorToList(Iterator<T> it) {
-    List<T> list = new LinkedList<T>();
+    List<T> list = new LinkedList<>();
 
     while (it.hasNext()) {
       list.add(it.next());
@@ -231,19 +231,9 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
 
   private static boolean isContaining(AnnotationFS annotation,
       AnnotationFS containtedAnnotation) {
-    boolean isStartContaining = annotation.getBegin() <= containtedAnnotation
-        .getBegin();
-    if (!isStartContaining) {
-      return false;
-    }
+    boolean isStartContaining = annotation.getBegin() <= containtedAnnotation.getBegin();
+    return isStartContaining && annotation.getEnd() >= containtedAnnotation.getEnd();
 
-    boolean isEndContaining = annotation.getEnd() >= containtedAnnotation
-        .getEnd();
-    if (!isEndContaining) {
-      return false;
-    }
-
-    return true;
   }
 
   /**
@@ -258,7 +248,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
    */
   private static Span[] createNames(List<AnnotationFS> tokenList, List<AnnotationFS> entityAnnotations) {
 
-    List<Span> nameList = new LinkedList<Span>();
+    List<Span> nameList = new LinkedList<>();
 
     AnnotationFS currentEntity = null;
 
@@ -299,7 +289,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
     return nameList.toArray(new Span[nameList.size()]);
   }
 
-  /**
+  /*
    * Process the given CAS object.
    */
   /**
@@ -392,7 +382,7 @@ public final class NameFinderTrainer extends CasConsumer_ImplBase {
 
       if (sampleTraceFile != null) {
         samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
-        samples = new SampleTraceStream<NameSample>(samples, samplesOut);
+        samples = new SampleTraceStream<>(samples, samplesOut);
       }
 
       Map<String, Object> resourceMap;

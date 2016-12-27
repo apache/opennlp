@@ -69,11 +69,9 @@ public class ChunkerMETool extends BasicCmdLineTool {
             continue;
           }
 
-          String[] chunks = chunker.chunk(posSample.getSentence(),
-                  posSample.getTags());
+          String[] chunks = chunker.chunk(posSample.getSentence(), posSample.getTags());
 
-          System.out.println(new ChunkSample(posSample.getSentence(),
-                  posSample.getTags(), chunks).nicePrint());
+          System.out.println(new ChunkSample(posSample.getSentence(), posSample.getTags(), chunks).nicePrint());
 
           perfMon.incrementCounter();
         }

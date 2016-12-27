@@ -30,7 +30,7 @@ public class EvalParameters {
   private Context[] params;
   /** The number of outcomes being predicted. */
   private final int numOutcomes;
-  /** The maximum number of feattures fired in an event. Usually refered to a C.
+  /** The maximum number of features fired in an event. Usually referred to as C.
    * This is used to normalize the number of features which occur in an event. */
   private double correctionConstant;
 
@@ -40,9 +40,9 @@ public class EvalParameters {
   private double correctionParam;
 
   /**
-   * Creates a set of paramters which can be evaulated with the eval method.
+   * Creates a set of parameters which can be evaulated with the eval method.
    * @param params The parameters of the model.
-   * @param correctionParam The correction paramter.
+   * @param correctionParam The correction parameter.
    * @param correctionConstant The correction constant.
    * @param numOutcomes The number of outcomes.
    */

@@ -93,9 +93,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     if (!type.equals(AbstractBottomUpParser.TOP_NODE)) {
       reducedChunks = new Parse[chunks.length-(reduceEnd-reduceStart+1)+1]; //total - num_removed + 1 (for new node)
       //insert nodes before reduction
-      for (int ri = 0; ri< reduceStart; ri++) {
-        reducedChunks[ri]=chunks[ri];
-      }
+      System.arraycopy(chunks, 0, reducedChunks, 0, reduceStart);
       //insert reduced node
       reducedChunks[reduceStart]=parent;
       //propagate punctuation sets

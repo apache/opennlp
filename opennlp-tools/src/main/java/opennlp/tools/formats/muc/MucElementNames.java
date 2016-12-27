@@ -32,7 +32,7 @@ class MucElementNames {
   static final Set<String> CONTENT_ELEMENTS;
 
   static {
-    Set<String> contentElementNames = new HashSet<String>();
+    Set<String> contentElementNames = new HashSet<>();
     contentElementNames.add(MucElementNames.HEADLINE_ELEMENT);
     contentElementNames.add(MucElementNames.DATELINE_ELEMENT);
     contentElementNames.add(MucElementNames.DD_ELEMENT);

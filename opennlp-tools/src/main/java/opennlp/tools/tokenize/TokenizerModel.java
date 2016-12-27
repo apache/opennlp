@@ -66,65 +66,12 @@ public final class TokenizerModel extends BaseModel {
   /**
    * Initializes the current instance.
    *
-   * @param language the language the tokenizer should use
-   * @param tokenizerMaxentModel the statistical model of the tokenizer
-   * @param abbreviations the dictionary containing the abbreviations
-   * @param useAlphaNumericOptimization if true alpha numeric optimization is enabled, otherwise not
-   * @param manifestInfoEntries the additional meta data which should be written into manifest
-   *
-   * @deprecated Use
-   *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
-   *             instead and pass in a {@link TokenizerFactory}.
-   */
-  public TokenizerModel(String language, MaxentModel tokenizerMaxentModel,
-      Dictionary abbreviations, boolean useAlphaNumericOptimization,
-      Map<String, String> manifestInfoEntries) {
-    this(tokenizerMaxentModel, manifestInfoEntries,
-        new TokenizerFactory(language, abbreviations, useAlphaNumericOptimization, null));
-  }
-
-  /**
-   * Initializes the current instance.
-   *
-   * @param language the language the tokenizer should use
-   * @param tokenizerMaxentModel the statistical model of the tokenizer
-   * @param useAlphaNumericOptimization if true alpha numeric optimization is enabled, otherwise not
-   * @param manifestInfoEntries the additional meta data which should be written into manifest
-   *
-   * @deprecated Use
-   *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
-   *             instead and pass in a {@link TokenizerFactory}.
-   */
-  public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
-      boolean useAlphaNumericOptimization, Map<String, String> manifestInfoEntries) {
-    this(language, tokenizerMaxentModel, null, useAlphaNumericOptimization, manifestInfoEntries);
-  }
-
-  /**
-   * Initializes the current instance.
-   *
-   * @param language the language the tokenizer should use
-   * @param tokenizerMaxentModel the statistical model of the tokenizer
-   * @param useAlphaNumericOptimization if true alpha numeric optimization is enabled, otherwise not
-   *
-   * @deprecated Use
-   *             {@link TokenizerModel#TokenizerModel(MaxentModel, Map, TokenizerFactory)}
-   *             instead and pass in a {@link TokenizerFactory}.
-   */
-  public TokenizerModel(String language, AbstractModel tokenizerMaxentModel,
-      boolean useAlphaNumericOptimization) {
-    this(language, tokenizerMaxentModel, useAlphaNumericOptimization, null);
-  }
-
-  /**
-   * Initializes the current instance.
-   *
    * @param in the Input Stream to load the model from
    *
    * @throws IOException if reading from the stream fails in anyway
    * @throws InvalidFormatException if the stream doesn't have the expected format
    */
-  public TokenizerModel(InputStream in) throws IOException, InvalidFormatException {
+  public TokenizerModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
@@ -134,9 +81,8 @@ public final class TokenizerModel extends BaseModel {
    * @param modelFile the file containing the tokenizer model
    *
    * @throws IOException if reading from the stream fails in anyway
-   * @throws InvalidFormatException if the stream doesn't have the expected format
    */
-  public TokenizerModel(File modelFile) throws IOException, InvalidFormatException {
+  public TokenizerModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
@@ -146,9 +92,8 @@ public final class TokenizerModel extends BaseModel {
    * @param modelURL the URL pointing to the tokenizer model
    *
    * @throws IOException if reading from the stream fails in anyway
-   * @throws InvalidFormatException if the stream doesn't have the expected format
    */
-  public TokenizerModel(URL modelURL) throws IOException, InvalidFormatException {
+  public TokenizerModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 
@@ -196,10 +141,7 @@ public final class TokenizerModel extends BaseModel {
   }
 
   public boolean useAlphaNumericOptimization() {
-    if (getFactory() != null) {
-      return getFactory().isUseAlphaNumericOptmization();
-    }
-    return false;
+    return getFactory() != null && getFactory().isUseAlphaNumericOptmization();
   }
 
   public static void main(String[] args) throws IOException {
@@ -224,8 +166,8 @@ public final class TokenizerModel extends BaseModel {
     AbstractModel model = new BinaryGISModelReader(new DataInputStream(
         new FileInputStream(modelName))).getModel();
 
-    TokenizerModel packageModel = new TokenizerModel(languageCode, model,
-        alphaNumericOptimization);
+    TokenizerModel packageModel = new TokenizerModel(model, null,
+      TokenizerFactory.create(null, languageCode, null, alphaNumericOptimization, null));
 
     OutputStream out = null;
     try {

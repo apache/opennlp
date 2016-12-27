@@ -18,13 +18,10 @@
 package opennlp.tools.tokenize;
 
 import java.io.IOException;
-
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.model.ModelUtil;
 
 public class TokenizerCrossValidator {
 
@@ -42,39 +39,6 @@ public class TokenizerCrossValidator {
   }
 
   /**
-   * @deprecated use
-   *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
-   *             instead and pass in a {@link TokenizerFactory}
-   */
-  public TokenizerCrossValidator(String language, Dictionary abbreviations,
-      boolean alphaNumericOptimization, TrainingParameters params,
-      TokenizerEvaluationMonitor ... listeners) {
-    this(params, new TokenizerFactory(language, abbreviations,
-        alphaNumericOptimization, null), listeners);
-  }
-
-  /**
-   * @deprecated use
-   *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
-   *             instead and pass in a {@link TokenizerFactory}
-   */
-  public TokenizerCrossValidator(String language, boolean alphaNumericOptimization) {
-    this(language, alphaNumericOptimization, ModelUtil.createDefaultTrainingParameters());
-  }
-
-  /**
-   * @deprecated use
-   *             {@link #TokenizerCrossValidator(TrainingParameters, TokenizerFactory, TokenizerEvaluationMonitor...)}
-   *             instead and pass in a {@link TokenizerFactory}
-   */
-  public TokenizerCrossValidator(String language,
-      boolean alphaNumericOptimization, TrainingParameters params,
-      TokenizerEvaluationMonitor ... listeners) {
-    this(language, null, alphaNumericOptimization, params, listeners);
-  }
-
-
-  /**
    * Starts the evaluation.
    *
    * @param samples
@@ -86,8 +50,7 @@ public class TokenizerCrossValidator {
    */
   public void evaluate(ObjectStream<TokenSample> samples, int nFolds) throws IOException {
 
-    CrossValidationPartitioner<TokenSample> partitioner =
-      new CrossValidationPartitioner<TokenSample>(samples, nFolds);
+    CrossValidationPartitioner<TokenSample> partitioner = new CrossValidationPartitioner<>(samples, nFolds);
 
      while (partitioner.hasNext()) {
 
@@ -95,9 +58,7 @@ public class TokenizerCrossValidator {
          partitioner.next();
 
        // Maybe throws IOException if temporary file handling fails ...
-       TokenizerModel model;
-
-      model = TokenizerME.train(trainingSampleStream, this.factory, params);
+       TokenizerModel model = TokenizerME.train(trainingSampleStream, this.factory, params);
 
        TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model), listeners);
 

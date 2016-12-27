@@ -56,7 +56,7 @@ final public class OpennlpUtil {
     }
   }
 
-  public static final byte[] loadBytes(File inFile) throws IOException {
+  public static byte[] loadBytes(File inFile) throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
     try (InputStream in = new FileInputStream(inFile)) {
@@ -71,7 +71,7 @@ final public class OpennlpUtil {
     return bytes.toByteArray();
   }
 
-  public static final TrainingParameters loadTrainingParams(String inFileValue,
+  public static TrainingParameters loadTrainingParams(String inFileValue,
       boolean isSequenceTrainingAllowed) throws ResourceInitializationException {
 
     TrainingParameters params;

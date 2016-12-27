@@ -28,18 +28,16 @@
   
     <includeBaseDirectory>true</includeBaseDirectory>
 	<baseDirectory>/apache-opennlp-${project.version}</baseDirectory>
-  
+	
 	<dependencySets>
 		<dependencySet>
-			<includes>
-				<include>org.apache.opennlp:opennlp-tools</include>
-				<include>org.apache.opennlp:opennlp-uima</include>
-			</includes>
+			<scope>runtime</scope>
 			<unpack>false</unpack>
 			<useProjectArtifact>false</useProjectArtifact>
 			<fileMode>644</fileMode>
 			<directoryMode>755</directoryMode>
 			<outputDirectory>lib</outputDirectory>
+			<useTransitiveDependencies>true</useTransitiveDependencies>
 		</dependencySet>
 	</dependencySets>
 	
@@ -76,6 +74,20 @@
 			<directoryMode>755</directoryMode>
 			<outputDirectory>bin</outputDirectory>
 		</fileSet>
+
+		<fileSet>
+			<directory>../opennlp-morfologik-addon/src/main/bin</directory>
+			<fileMode>755</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>bin</outputDirectory>
+		</fileSet>
+		
+		<fileSet>
+			<directory>../opennlp-brat-annotator/src/main/bin</directory>
+			<fileMode>755</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>bin</outputDirectory>
+		</fileSet>
 		
 		<fileSet>
 			<directory>../opennlp-docs/target/docbkx/html</directory>
@@ -90,7 +102,21 @@
 			<directoryMode>755</directoryMode>
 			<outputDirectory>docs/apidocs/opennlp-tools</outputDirectory>
 		</fileSet>
-		
+
+		<fileSet>
+			<directory>../opennlp-brat-annotator/target/apidocs</directory>
+			<fileMode>644</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>docs/apidocs/opennlp-brat-annotator</outputDirectory>
+		</fileSet>
+
+		<fileSet>
+			<directory>../opennlp-morfologik-addon/target/apidocs</directory>
+			<fileMode>644</fileMode>
+			<directoryMode>755</directoryMode>
+			<outputDirectory>docs/apidocs/opennlp-morfologik-addon</outputDirectory>
+		</fileSet>
+
 		<fileSet>
 			<directory>../opennlp-uima/target/apidocs</directory>
 			<fileMode>644</fileMode>

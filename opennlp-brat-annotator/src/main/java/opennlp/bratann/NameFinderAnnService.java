@@ -18,13 +18,11 @@
 package opennlp.bratann;
 
 import java.io.File;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-
+import com.sun.net.httpserver.HttpServer;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -37,6 +35,10 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
+
+import javax.ws.rs.core.UriBuilder;
 
 public class NameFinderAnnService {
 
@@ -47,9 +49,10 @@ public class NameFinderAnnService {
   public static void main(String[] args) throws Exception {
 
     if (args.length == 0) {
+      System.out.println("Usage:");
       System.out.println(
-          "[-serverPort port] [-tokenizerModel file] [-ruleBasedTokenizer whitespace|simple] [-sentenceDetectorModel file] "
-              + "namefinderFile|nameFinderURI");
+          "[NameFinderAnnService -serverPort port] [-tokenizerModel file] [-ruleBasedTokenizer whitespace|simple] " +
+                  "[-sentenceDetectorModel file] namefinderFile|nameFinderURI");
       return;
     }
 
@@ -92,28 +95,8 @@ public class NameFinderAnnService {
     nameFinders = new TokenNameFinder[] { new NameFinderME(
         new TokenNameFinderModel(new File(args[args.length - 1]))) };
 
-    ServletContextHandler context = new ServletContextHandler(
-        ServletContextHandler.SESSIONS);
-    context.setContextPath("/");
-
-    Server jettyServer = new Server(serverPort);
-    jettyServer.setHandler(context);
-
-    ServletHolder jerseyServlet = context
-        .addServlet(com.sun.jersey.spi.container.servlet.ServletContainer.class, "/*");
-    jerseyServlet.setInitParameter("com.sun.jersey.config.property.packages",
-        "opennlp.bratann");
-    jerseyServlet.setInitParameter("com.sun.jersey.api.json.POJOMappingFeature", "true");
-    jerseyServlet.setInitOrder(0);
-
-    jerseyServlet.setInitParameter("jersey.config.server.provider.classnames",
-        NameFinderResource.class.getCanonicalName());
-
-    try {
-      jettyServer.start();
-      jettyServer.join();
-    } finally {
-      jettyServer.destroy();
-    }
+    URI baseUri = UriBuilder.fromUri("http://localhost/").port(serverPort).build();
+    ResourceConfig config = new ResourceConfig(NameFinderResource.class);
+    GrizzlyHttpServerFactory.createHttpServer(baseUri, config);
   }
 }

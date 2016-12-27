@@ -29,7 +29,7 @@ import opennlp.tools.util.StringUtil;
  * Partitions tokens into sub-tokens based on character classes and generates
  * class features for each of the sub-tokens and combinations of those sub-tokens.
  */
-public class TokenPatternFeatureGenerator extends FeatureGeneratorAdapter {
+public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
 
     private Pattern noLetters = Pattern.compile("[^a-zA-Z]");
     private Tokenizer tokenizer;

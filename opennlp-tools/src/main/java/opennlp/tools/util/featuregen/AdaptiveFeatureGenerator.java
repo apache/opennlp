@@ -58,11 +58,11 @@ public interface AdaptiveFeatureGenerator {
    * @param tokens The tokens of the sentence or other text unit which has been processed.
    * @param outcomes The outcomes associated with the specified tokens.
    */
-   void updateAdaptiveData(String[] tokens, String[] outcomes);
+   default void updateAdaptiveData(String[] tokens, String[] outcomes) {};
 
   /**
    * Informs the feature generator that the context of the adaptive data (typically a document)
    * is no longer valid.
    */
-   void clearAdaptiveData();
+   default void clearAdaptiveData() {};
 }

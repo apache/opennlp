@@ -98,6 +98,18 @@
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
 			</dependency>
+			
+			<dependency>
+                <artifactId>opennlp-brat-annotator</artifactId>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <artifactId>opennlp-morfologik-addon</artifactId>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+            </dependency>
 
 		</dependencies>
 	</dependencyManagement>

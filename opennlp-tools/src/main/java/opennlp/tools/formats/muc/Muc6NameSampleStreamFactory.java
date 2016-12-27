@@ -18,9 +18,7 @@
 package opennlp.tools.formats.muc;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.nio.charset.Charset;
-
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -55,12 +53,8 @@ public class Muc6NameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
     Tokenizer tokenizer = new TokenizerME(tokenizerModel);
 
     ObjectStream<String> mucDocStream = new FileToStringSampleStream(
-        new DirectorySampleStream(params.getData(), new FileFilter() {
-
-          public boolean accept(File file) {
-            return StringUtil.toLowerCase(file.getName()).endsWith(".sgm");
-          }
-        }, false), Charset.forName("UTF-8"));
+        new DirectorySampleStream(params.getData(),
+          file -> StringUtil.toLowerCase(file.getName()).endsWith(".sgm"), false), Charset.forName("UTF-8"));
 
     return new MucNameSampleStream(tokenizer, mucDocStream);
   }

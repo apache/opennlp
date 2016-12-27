@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Lemmatize by simple dictionary lookup into a hashmap built from a file
@@ -36,7 +37,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
   /**
    * The hashmap containing the dictionary.
    */
-  private final HashMap<List<String>, String> dictMap;
+  private final Map<List<String>, String> dictMap;
 
   /**
    * Construct a hashmap from the input tab separated dictionary.
@@ -54,7 +55,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
     try {
       while ((line = breader.readLine()) != null) {
         final String[] elems = line.split("\t");
-        this.dictMap.put(Arrays.asList(elems[0], elems[2]), elems[1]);
+        this.dictMap.put(Arrays.asList(elems[0], elems[1]), elems[2]);
       }
     } catch (final IOException e) {
       e.printStackTrace();
@@ -66,7 +67,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
    * 
    * @return dictMap the Map
    */
-  public HashMap<List<String>, String> getDictMap() {
+  public Map<List<String>, String> getDictMap() {
     return this.dictMap;
   }
 
@@ -84,7 +85,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
     keys.addAll(Arrays.asList(word.toLowerCase(), postag));
     return keys;
   }
-  
+
   public String[] lemmatize(final String[] tokens, final String[] postags) {
     List<String> lemmas = new ArrayList<>();
     for (int i = 0; i < tokens.length; i++) {

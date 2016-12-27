@@ -43,7 +43,7 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
   private static final Set<String> EXPECTED_TYPES;
 
   static {
-    Set<String> types = new HashSet<String>();
+    Set<String> types = new HashSet<>();
 
     types.add("PERSON");
     types.add("ORGANIZATION");
@@ -55,7 +55,7 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
 
     EXPECTED_TYPES = Collections.unmodifiableSet(types);
 
-    Set<String> nameElements = new HashSet<String>();
+    Set<String> nameElements = new HashSet<>();
     nameElements.add(ENTITY_ELEMENT_NAME);
     nameElements.add(TIME_ELEMENT_NAME);
     nameElements.add(NUM_ELEMENT_NAME);
@@ -65,12 +65,12 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
   private final Tokenizer tokenizer;
   private final List<NameSample> storedSamples;
 
-  boolean isInsideContentElement = false;
-  private final List<String> text = new ArrayList<String>();
+  private boolean isInsideContentElement = false;
+  private final List<String> text = new ArrayList<>();
   private boolean isClearAdaptiveData = false;
-  private final Stack<Span> incompleteNames = new Stack<Span>();
+  private final Stack<Span> incompleteNames = new Stack<>();
 
-  private List<Span> names = new ArrayList<Span>();
+  private List<Span> names = new ArrayList<>();
 
   public MucNameContentHandler(Tokenizer tokenizer,
       List<NameSample> storedSamples) {

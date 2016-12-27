@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * This feature generator creates sentence begin and end features.
  */
-public class SentenceFeatureGenerator extends FeatureGeneratorAdapter {
+public class SentenceFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private final boolean isGenerateFirstWordFeature;
   private final boolean isGenerateLastWordFeature;

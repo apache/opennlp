@@ -29,7 +29,7 @@ package opennlp.tools.ml.maxent;
  * cp_1 cp_2 ... cp_n
  * </p>
  */
-public class BasicContextGenerator implements ContextGenerator {
+public class BasicContextGenerator implements ContextGenerator<String> {
 
   private String separator = " ";
 
@@ -42,7 +42,7 @@ public class BasicContextGenerator implements ContextGenerator {
   /**
    * Builds up the list of contextual predicates given a String.
    */
-  public String[] getContext(Object o) {
+  public String[] getContext(String o) {
     String s = (String) o;
     return s.split(separator);
   }

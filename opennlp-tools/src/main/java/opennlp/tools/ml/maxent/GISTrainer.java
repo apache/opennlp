@@ -20,9 +20,7 @@
 package opennlp.tools.ml.maxent;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -30,7 +28,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
@@ -263,7 +260,7 @@ class GISTrainer {
 
     modelExpects = new MutableContext[threads][];
 
-    /************** Incorporate all of the needed info ******************/
+    /* Incorporate all of the needed info *****/
     display("Incorporating indexed data for training...  \n");
     contexts = di.getContexts();
     values = di.getValues();
@@ -368,9 +365,7 @@ class GISTrainer {
         }
         else {
           outcomePattern = new int[numActiveOutcomes];
-          for (int aoi=0;aoi<numActiveOutcomes;aoi++) {
-            outcomePattern[aoi] = activeOutcomes[aoi];
-          }
+          System.arraycopy(activeOutcomes, 0, outcomePattern, 0, numActiveOutcomes);
         }
       }
       params[pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
@@ -396,7 +391,7 @@ class GISTrainer {
 
     display("...done.\n");
 
-    /***************** Find the parameters ************************/
+    /* Find the parameters *****/
     if (threads == 1)
       display("Computing model parameters ...\n");
     else
@@ -404,7 +399,7 @@ class GISTrainer {
 
     findParameters(iterations, correctionConstant);
 
-    /*************** Create and return the model ******************/
+    /* Create and return the model ****/
     // To be compatible with old models the correction constant is always 1
     return new GISModel(params, predLabels, outcomeLabels, 1, evalParams.getCorrectionParam());
 
@@ -414,7 +409,7 @@ class GISTrainer {
   private void findParameters(int iterations, double correctionConstant) {
 	int threads=modelExpects.length;
 	ExecutorService executor = Executors.newFixedThreadPool(threads);
-	CompletionService<ModelExpactationComputeTask> completionService=new ExecutorCompletionService<GISTrainer.ModelExpactationComputeTask>(executor);
+	CompletionService<ModelExpactationComputeTask> completionService = new ExecutorCompletionService<>(executor);
     double prevLL = 0.0;
     double currLL;
     display("Performing " + iterations + " iterations.\n");
@@ -580,7 +575,7 @@ class GISTrainer {
     }
 
     for (int i=0; i<numberOfThreads; i++) {
-      ModelExpactationComputeTask finishedTask = null;
+      ModelExpactationComputeTask finishedTask;
       try {
         finishedTask = completionService.take().get();
       } catch (InterruptedException e) {

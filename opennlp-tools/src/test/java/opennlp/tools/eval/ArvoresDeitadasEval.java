@@ -72,7 +72,7 @@ public class ArvoresDeitadasEval {
 
   private static final String LANG = "pt";
 
-  private static final TrainingParameters getPerceptronZeroCutoff() {
+  private static TrainingParameters getPerceptronZeroCutoff() {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM,
         PerceptronTrainer.PERCEPTRON_VALUE);

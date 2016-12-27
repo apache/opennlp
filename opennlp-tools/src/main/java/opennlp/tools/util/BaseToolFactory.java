@@ -63,7 +63,7 @@ public abstract class BaseToolFactory {
    */
   @SuppressWarnings("rawtypes")
   public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
-    return new HashMap<String, ArtifactSerializer>();
+    return new HashMap<>();
   }
 
   /**
@@ -75,7 +75,7 @@ public abstract class BaseToolFactory {
    * populated by sub-classes.
    */
   public Map<String, Object> createArtifactMap() {
-    return new HashMap<String, Object>();
+    return new HashMap<>();
   }
 
   /**
@@ -84,7 +84,7 @@ public abstract class BaseToolFactory {
    * @return the manifest entries to added to the model manifest
    */
   public Map<String, String> createManifestEntries() {
-    return new HashMap<String, String>();
+    return new HashMap<>();
   }
 
   /**

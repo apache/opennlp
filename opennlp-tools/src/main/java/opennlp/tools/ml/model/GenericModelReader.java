@@ -41,20 +41,21 @@ public class GenericModelReader extends AbstractModelReader {
 
   public void checkModelType() throws IOException {
     String modelType = readUTF();
-    if (modelType.equals("Perceptron")) {
-      delegateModelReader = new PerceptronModelReader(this.dataReader);
-    }
-    else if (modelType.equals("GIS")) {
-      delegateModelReader = new GISModelReader(this.dataReader);
-    }
-    else if (modelType.equals("QN")) {
+    switch (modelType) {
+      case "Perceptron":
+        delegateModelReader = new PerceptronModelReader(this.dataReader);
+        break;
+      case "GIS":
+        delegateModelReader = new GISModelReader(this.dataReader);
+        break;
+      case "QN":
         delegateModelReader = new QNModelReader(this.dataReader);
-    }
-    else if (modelType.equals("NaiveBayes")) {
+        break;
+      case "NaiveBayes":
         delegateModelReader = new NaiveBayesModelReader(this.dataReader);
-    }
-    else {
-      throw new IOException("Unknown model format: "+modelType);
+        break;
+      default:
+        throw new IOException("Unknown model format: " + modelType);
     }
   }
 

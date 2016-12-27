@@ -56,13 +56,9 @@ public class DocumentCategorizerTrainer extends CasConsumer_ImplBase {
 
   private UimaContext mContext;
 
-  private Logger mLogger;
-
   private String mModelName;
 
-  private List<DocumentSample> documentSamples = new ArrayList<DocumentSample>();
-
-  private Type mTokenType;
+  private List<DocumentSample> documentSamples = new ArrayList<>();
 
   private Type mCategoryType;
 
@@ -76,7 +72,7 @@ public class DocumentCategorizerTrainer extends CasConsumer_ImplBase {
 
     mContext = getUimaContext();
 
-    mLogger = mContext.getLogger();
+    Logger mLogger = mContext.getLogger();
 
     if (mLogger.isLoggable(Level.INFO)) {
       mLogger.log(Level.INFO, "Initializing the OpenNLP Doccat Trainer.");
@@ -95,7 +91,7 @@ public class DocumentCategorizerTrainer extends CasConsumer_ImplBase {
     String tokenTypeName = CasConsumerUtil.getRequiredStringParameter(mContext,
         UimaUtil.SENTENCE_TYPE_PARAMETER);
 
-    mTokenType = CasConsumerUtil.getType(typeSystem, tokenTypeName);
+    Type mTokenType = CasConsumerUtil.getType(typeSystem, tokenTypeName);
 
     String categoryTypeName = CasConsumerUtil.getRequiredStringParameter(mContext,
         "opennlp.uima.doccat.CategoryType");

@@ -170,9 +170,7 @@ public class TokenNameFinderCrossValidator {
     this.type = type;
     this.featureGeneratorBytes = featureGeneratorBytes;
     this.resources = resources;
-
     this.params = trainParams;
-
     this.listeners = listeners;
   }
 
@@ -212,17 +210,16 @@ public class TokenNameFinderCrossValidator {
 
     while (partitioner.hasNext()) {
 
-      CrossValidationPartitioner.TrainingSampleStream<DocumentSample> trainingSampleStream = partitioner
-          .next();
+      CrossValidationPartitioner.TrainingSampleStream<DocumentSample> trainingSampleStream = partitioner.next();
 
       TokenNameFinderModel model;
       if (factory != null) {
-        model = opennlp.tools.namefind.NameFinderME.train(languageCode, type, new DocumentToNameSampleStream(trainingSampleStream), params, factory);
+        model = NameFinderME.train(languageCode, type, new DocumentToNameSampleStream(trainingSampleStream),
+          params, factory);
       }
       else {
-        model  = opennlp.tools.namefind.NameFinderME.train(languageCode, type,
-            new DocumentToNameSampleStream(trainingSampleStream), params, featureGeneratorBytes, resources);
-
+        model = NameFinderME.train(languageCode, type, new DocumentToNameSampleStream(trainingSampleStream),
+          params, TokenNameFinderFactory.create(null, featureGeneratorBytes, resources, new BioCodec()));
       }
 
       // do testing
