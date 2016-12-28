@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
+	license agreements. See the NOTICE file distributed with this work for additional 
+	information regarding copyright ownership. The ASF licenses this file to 
+	you under the Apache License, Version 2.0 (the "License"); you may not use 
+	this file except in compliance with the License. You may obtain a copy of 
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
+	language governing permissions and limitations under the License. -->
+
+
+<chapter id="tools.morfologik-addon">
+	<title>Morfologik Addon</title>
+		<para>
+			<ulink url="https://github.com/morfologik/morfologik-stemming"><citetitle>Morfologik</citetitle></ulink>
+			provides tools for finite state automata (FSA) construction and dictionary-based morphological dictionaries.
+		</para>
+		<para>
+			The Morfologik Addon implements OpenNLP interfaces and extensions to allow the use of FSA Morfologik dictionary tools.
+		</para>
+		<section id="tools.morfologik-addon.api">
+			<title>Morfologik Integration</title>
+			<para>
+			To allow for an easy integration with OpenNLP, the following implementations are provided:
+			<itemizedlist mark='opencircle'>
+				<listitem>
+					<para>
+					The <code>MorfologikPOSTaggerFactory</code> extends <code>POSTaggerFactory</code>, which helps creating a POSTagger model with an embedded FSA TagDictionary.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					The <code>MorfologikTagDictionary</code> implements a FSA based <code>TagDictionary</code>, allowing for much smaller files than the default XML based with improved memory consumption.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					The <code>MorfologikLemmatizer</code> implements a FSA based <code>Lemmatizer</code> dictionaries.
+					</para>
+				</listitem>
+			</itemizedlist>
+		</para>
+		<para>
+		The first two implementations can be used directly from command line, as in the example bellow. Having a FSA Morfologik dictionary (see next section how to build one), you can train a POS Tagger
+		model with an embedded FSA dictionary. 
+		</para>
+		<para>
+		The example trains a POSTagger with a CONLL corpus named <code>portuguese_bosque_train.conll</code> and a FSA dictionary named 
+		<code>pt-morfologik.dict</code>. It will output a model named <code>pos-pt_fsadic.model</code>.
+		
+		<screen>
+		<![CDATA[
+$ bin/opennlp POSTaggerTrainer -type perceptron -lang pt -model pos-pt_fsadic.model -data portuguese_bosque_train.conll \
+	 -encoding UTF-8 -factory opennlp.morfologik.tagdict.MorfologikPOSTaggerFactory -dict pt-morfologik.dict]]>
+		</screen>
+		
+		</para>
+		<para>
+		Another example follows. It shows how to use the <code>MorfologikLemmatizer</code>. You will need a lemma dictionary and info file, in this example, we will use a very small Portuguese dictionary. 
+		Its syntax is <code>lemma,lexeme,postag</code>.
+		</para>
+		<para>
+		File <code>lemmaDictionary.txt:</code>
+		<screen>
+		<![CDATA[
+casa,casa,NOUN
+casar,casa,V
+casar,casar,V-INF
+Casa,Casa,PROP
+casa,casinha,NOUN
+casa,casona,NOUN
+menino,menina,NOUN
+menino,menino,NOUN
+menino,meninão,NOUN
+menino,menininho,NOUN
+carro,carro,NOUN]]>
+		</screen>
+		</para>
+		<para>
+		Mandatory metadata file, which must have the same name but .info extension <code>lemmaDictionary.info:</code>
+		<screen>
+		<![CDATA[
+#
+# REQUIRED PROPERTIES
+#
+
+# Column (lemma, inflected, tag) separator. This must be a single byte in the target encoding.
+fsa.dict.separator=,
+
+# The charset in which the input is encoded. UTF-8 is strongly recommended.
+fsa.dict.encoding=UTF-8
+
+# The type of lemma-inflected form encoding compression that precedes automaton
+# construction. Allowed values: [suffix, infix, prefix, none].
+# Details are in Daciuk's paper and in the code. 
+# Leave at 'prefix' if not sure.
+fsa.dict.encoder=prefix
+		]]>
+		</screen>
+		</para>
+		<para>
+		The following code creates a binary FSA Morfologik dictionary, loads it in MorfologikLemmatizer and uses it to 
+		find the lemma the word "casa" noun and verb.
+		
+				<programlisting language="java">
+		<![CDATA[
+// Part 1: compile a FSA lemma dictionary 
+   
+// we need the tabular dictionary. It is mandatory to have info 
+//  file with same name, but .info extension
+Path textLemmaDictionary = Paths.get("dictionaryWithLemma.txt");
+
+// this will build a binary dictionary located in compiledLemmaDictionary
+Path compiledLemmaDictionary = new MorfologikDictionayBuilder()
+    .build(textLemmaDictionary);
+
+// Part 2: load a MorfologikLemmatizer and use it
+MorfologikLemmatizer lemmatizer = new MorfologikLemmatizer(compiledLemmaDictionary);
+
+String[] toks = {"casa", "casa"};
+String[] tags = {"NOUN", "V"};
+
+String[] lemmas = lemmatizer.lemmatize(toks, tags);
+System.out.println(Arrays.toString(lemmas)); // outputs [casa, casar]
+    ]]>
+			</programlisting>
+		
+		</para>
+		</section>
+		<section id="tools.morfologik-addon.cmdline">
+			<title>Morfologik CLI Tools</title>
+			<para>
+				The Morfologik addon provides a command line tool. <code>XMLDictionaryToTable</code> makes easy to convert from an OpenNLP XML based dictionary
+				to a tabular format. <code>MorfologikDictionaryBuilder</code> can take a tabular dictionary and output a binary Morfologik FSA dictionary.
+			</para>
+			<screen>
+		<![CDATA[
+$ sh bin/morfologik-addon
+OpenNLP Morfologik Addon. Usage: opennlp-morfologik-addon TOOL
+where TOOL is one of:
+  MorfologikDictionaryBuilder    builds a binary POS Dictionary using Morfologik
+  XMLDictionaryToTable           reads an OpenNLP XML tag dictionary and outputs it in a tabular file
+All tools print help when invoked with help parameter
+Example: opennlp-morfologik-addon POSDictionaryBuilder help
+		]]>
+		</screen>
+		</section>
+</chapter>
