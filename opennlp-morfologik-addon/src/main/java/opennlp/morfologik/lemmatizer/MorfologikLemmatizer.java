@@ -20,11 +20,9 @@ package opennlp.morfologik.lemmatizer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -32,66 +30,62 @@ import morfologik.stemming.Dictionary;
 import morfologik.stemming.DictionaryLookup;
 import morfologik.stemming.IStemmer;
 import morfologik.stemming.WordData;
-import opennlp.tools.lemmatizer.DictionaryLemmatizer;
+import opennlp.tools.lemmatizer.Lemmatizer;
 
-public class MorfologikLemmatizer implements DictionaryLemmatizer {
+public class MorfologikLemmatizer implements Lemmatizer {
 
   private IStemmer dictLookup;
-  public final Set<String> constantTags = new HashSet<>(Arrays.asList("NNP", "NP00000"));
 
   public MorfologikLemmatizer(Path dictionaryPath) throws IllegalArgumentException,
       IOException {
     dictLookup = new DictionaryLookup(Dictionary.read(dictionaryPath));
   }
 
-  private Map<List<String>, String> getLemmaTagsDict(String word) {
-    List<WordData> wdList = dictLookup.lookup(word);
-    Map<List<String>, String> dictMap = new HashMap<>();
-    for (WordData wd : wdList) {
-      List<String> wordLemmaTags = new ArrayList<>();
-      wordLemmaTags.add(word);
-      wordLemmaTags.add(wd.getTag().toString());
-      dictMap.put(wordLemmaTags, wd.getStem().toString());
+  private List<String> lemmatize(String word, String postag) {
+    List<WordData> dictMap = dictLookup.lookup(word.toLowerCase());
+    Set<String> lemmas = new HashSet<>();
+    for (WordData wordData : dictMap) {
+      if(Objects.equals(postag, asString(wordData.getTag()))) {
+        lemmas.add(asString(wordData.getStem()));
+      }
     }
-    return dictMap;
+    return Collections.unmodifiableList(new ArrayList<>(lemmas));
   }
 
-  private List<String> getDictKeys(String word, String postag) {
-    List<String> keys = new ArrayList<>();
-    if (constantTags.contains(postag)) {
-      keys.addAll(Arrays.asList(word, postag));
-    } else {
-      keys.addAll(Arrays.asList(word.toLowerCase(), postag));
-    }
-    return keys;
+  private String asString(CharSequence tag) {
+    if(tag == null)
+      return null;
+    return tag.toString();
   }
 
-  private Map<List<String>, String> getDictMap(String word, String postag) {
-    Map<List<String>, String> dictMap;
-
-    if (constantTags.contains(postag)) {
-      dictMap = this.getLemmaTagsDict(word);
-    } else {
-      dictMap = this.getLemmaTagsDict(word.toLowerCase());
+  @Override
+  public String[] lemmatize(String[] toks, String[] tags) {
+    String[] lemmas = new String[toks.length];
+    for (int i = 0; i < toks.length; i++) {
+       List<String> l = lemmatize(toks[i],tags[i]);
+      if(l.size() > 0) {
+        lemmas[i] = l.get(0);
+      } else {
+        lemmas[i] = null;
+      }
     }
-    return dictMap;
+    return lemmas;
   }
+  
 
-  public String lemmatize(String word, String postag) {
-    String lemma;
-    List<String> keys = this.getDictKeys(word, postag);
-    Map<List<String>, String> dictMap = this.getDictMap(word, postag);
-    // lookup lemma as value of the map
-    String keyValue = dictMap.get(keys);
-    if (keyValue != null) {
-      lemma = keyValue;
-    } else if (constantTags.contains(postag)) {
-      lemma = word;
-    } else if (Objects.equals(word.toUpperCase(), word)) {
-      lemma = word;
-    } else {
-      lemma = word.toLowerCase();
+  /**
+   * Generates a lemma tags for the word and postag returning the result in list of possible lemmas.
+   *
+   * @param toks an array of the tokens
+   * @param tags an array of the pos tags
+   *
+   * @return an list of possible lemmas for each token in the sequence.
+   */
+  public List<List<String>> lemmatize(List<String> toks, List<String> tags) {
+    List<List<String>> lemmas = new ArrayList<>();
+    for (int i = 0; i < toks.size(); i++) {
+      lemmas.add(lemmatize(toks.get(i),tags.get(i)));
     }
-    return lemma;
+    return lemmas;
   }
 }

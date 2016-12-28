@@ -41,7 +41,7 @@ public class XMLDictionaryToTableTool extends BasicCmdLineTool {
   private String SEPARATOR;
 
   public String getShortDescription() {
-    return "reads an OpenNLP XML tag dictionary and outputs it in a tab separated file";
+    return "reads an OpenNLP XML tag dictionary and outputs it in a tabular file";
   }
 
   public String getHelp() {
