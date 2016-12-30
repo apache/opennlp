@@ -37,8 +37,10 @@
 	<name>Apache OpenNLP Reactor</name>
 
 	<scm>
-		<connection>scm:git:https://git-wip-us.apache.org/repos/asf/opennlp.git</connection>
+		<connection>scm:git:git@github.com:apache/opennlp.git</connection>
+		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/opennlp.git</developerConnection>
 		<url>https://git-wip-us.apache.org/repos/asf?p=opennlp.git</url>
+		<tag>HEAD</tag>
 	</scm>
 
 	<mailingLists>
