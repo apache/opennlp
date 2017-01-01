@@ -20,9 +20,9 @@ package opennlp.tools.ml;
 import java.io.IOException;
 import java.util.Map;
 
-import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.ml.model.Event;
 
 public class MockEventTrainer implements EventTrainer {
 

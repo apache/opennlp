@@ -16,8 +16,6 @@
  */
 package opennlp.tools.formats;
 
-import java.io.IOException;
-
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -28,12 +26,14 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
+import java.io.IOException;
+
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
 public class WordTagSampleStreamFactory extends AbstractSampleStreamFactory<POSSample> {
 
-  public static interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {

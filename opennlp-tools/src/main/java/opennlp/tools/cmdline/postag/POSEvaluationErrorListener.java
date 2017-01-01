@@ -19,10 +19,10 @@ package opennlp.tools.cmdline.postag;
 
 import java.io.OutputStream;
 
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerEvaluationMonitor;
-import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
  * A default implementation of {@link EvaluationMonitor} that prints

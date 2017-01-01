@@ -29,6 +29,7 @@ import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.Prior;
 import opennlp.tools.ml.model.UniformPrior;
+import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader;
 
 /**
  * A maximum entropy model which has been trained using the Generalized
@@ -52,7 +53,7 @@ public final class GISModel extends AbstractModel {
    *          The parameter associated with the correction feature.
    */
   public GISModel(Context[] params, String[] predLabels, String[] outcomeNames,
-      int correctionConstant, double correctionParam) {
+                  int correctionConstant, double correctionParam) {
     this(params, predLabels, outcomeNames, correctionConstant, correctionParam,
         new UniformPrior());
   }
@@ -218,7 +219,7 @@ public final class GISModel extends AbstractModel {
       System.err.println("Usage: GISModel modelname < contexts");
       System.exit(1);
     }
-    AbstractModel m = new opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader(
+    AbstractModel m = new SuffixSensitiveGISModelReader(
         new File(args[0])).getModel();
     BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
     DecimalFormat df = new java.text.DecimalFormat(".###");

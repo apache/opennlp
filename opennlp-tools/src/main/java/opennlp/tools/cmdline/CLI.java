@@ -25,29 +25,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.cmdline.chunker.ChunkerTrainerTool;
+import opennlp.tools.cmdline.doccat.DoccatCrossValidatorTool;
+import opennlp.tools.cmdline.doccat.DoccatTrainerTool;
+import opennlp.tools.cmdline.lemmatizer.LemmatizerMETool;
+import opennlp.tools.cmdline.lemmatizer.LemmatizerTrainerTool;
+import opennlp.tools.cmdline.namefind.TokenNameFinderConverterTool;
+import opennlp.tools.cmdline.namefind.TokenNameFinderCrossValidatorTool;
+import opennlp.tools.cmdline.parser.CheckModelUpdaterTool;
+import opennlp.tools.cmdline.postag.POSTaggerEvaluatorTool;
+import opennlp.tools.cmdline.tokenizer.TokenizerConverterTool;
 import opennlp.tools.cmdline.chunker.ChunkerConverterTool;
 import opennlp.tools.cmdline.chunker.ChunkerCrossValidatorTool;
 import opennlp.tools.cmdline.chunker.ChunkerEvaluatorTool;
 import opennlp.tools.cmdline.chunker.ChunkerMETool;
-import opennlp.tools.cmdline.chunker.ChunkerTrainerTool;
 import opennlp.tools.cmdline.dictionary.DictionaryBuilderTool;
 import opennlp.tools.cmdline.doccat.DoccatConverterTool;
-import opennlp.tools.cmdline.doccat.DoccatCrossValidatorTool;
 import opennlp.tools.cmdline.doccat.DoccatEvaluatorTool;
 import opennlp.tools.cmdline.doccat.DoccatTool;
-import opennlp.tools.cmdline.doccat.DoccatTrainerTool;
 import opennlp.tools.cmdline.entitylinker.EntityLinkerTool;
 import opennlp.tools.cmdline.lemmatizer.LemmatizerEvaluatorTool;
-import opennlp.tools.cmdline.lemmatizer.LemmatizerMETool;
-import opennlp.tools.cmdline.lemmatizer.LemmatizerTrainerTool;
 import opennlp.tools.cmdline.namefind.CensusDictionaryCreatorTool;
-import opennlp.tools.cmdline.namefind.TokenNameFinderConverterTool;
-import opennlp.tools.cmdline.namefind.TokenNameFinderCrossValidatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.cmdline.parser.BuildModelUpdaterTool;
-import opennlp.tools.cmdline.parser.CheckModelUpdaterTool;
 import opennlp.tools.cmdline.parser.ParserConverterTool;
 import opennlp.tools.cmdline.parser.ParserEvaluatorTool;
 import opennlp.tools.cmdline.parser.ParserTool;
@@ -55,7 +57,6 @@ import opennlp.tools.cmdline.parser.ParserTrainerTool;
 import opennlp.tools.cmdline.parser.TaggerModelReplacerTool;
 import opennlp.tools.cmdline.postag.POSTaggerConverterTool;
 import opennlp.tools.cmdline.postag.POSTaggerCrossValidatorTool;
-import opennlp.tools.cmdline.postag.POSTaggerEvaluatorTool;
 import opennlp.tools.cmdline.postag.POSTaggerTrainerTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorConverterTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidatorTool;
@@ -64,12 +65,12 @@ import opennlp.tools.cmdline.sentdetect.SentenceDetectorTool;
 import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainerTool;
 import opennlp.tools.cmdline.tokenizer.DictionaryDetokenizerTool;
 import opennlp.tools.cmdline.tokenizer.SimpleTokenizerTool;
-import opennlp.tools.cmdline.tokenizer.TokenizerConverterTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMEEvaluatorTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerMETool;
 import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool;
 import opennlp.tools.util.Version;
+import opennlp.tools.cmdline.postag.POSTaggerTool;
 
 public final class CLI {
 
@@ -118,7 +119,7 @@ public final class CLI {
 
 
     // POS Tagger
-    tools.add(new opennlp.tools.cmdline.postag.POSTaggerTool());
+    tools.add(new POSTaggerTool());
     tools.add(new POSTaggerTrainerTool());
     tools.add(new POSTaggerEvaluatorTool());
     tools.add(new POSTaggerCrossValidatorTool());

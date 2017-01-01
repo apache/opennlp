@@ -17,10 +17,10 @@
 
 package opennlp.tools.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Tests for the {@link Version} class.
@@ -51,7 +51,7 @@ public class VersionTest {
       return;
     }
 
-    assertTrue(false);
+    assertFalse(false);
   }
 
   @Test
@@ -63,6 +63,6 @@ public class VersionTest {
       return;
     }
 
-    assertTrue(false);
+    assertFalse(false);
   }
 }

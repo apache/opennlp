@@ -19,10 +19,10 @@ package opennlp.tools.cmdline.chunker;
 
 import java.io.OutputStream;
 
-import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerEvaluationMonitor;
-import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.util.eval.EvaluationMonitor;
+import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.cmdline.EvaluationErrorPrinter;
 
 /**
  * A default implementation of {@link EvaluationMonitor} that prints

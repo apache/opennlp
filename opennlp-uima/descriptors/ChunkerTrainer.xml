@@ -24,7 +24,6 @@
 	<implementationName>opennlp.uima.chunker.ChunkerTrainer</implementationName>
 	<processingResourceMetaData>
 		<name>POS Trainer</name>
-		<description></description>
 		<version>${pom.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>

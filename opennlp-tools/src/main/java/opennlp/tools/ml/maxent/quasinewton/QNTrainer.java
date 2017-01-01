@@ -18,15 +18,14 @@
  */
 package opennlp.tools.ml.maxent.quasinewton;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import opennlp.tools.ml.AbstractEventTrainer;
-import opennlp.tools.ml.maxent.quasinewton.QNMinimizer.Evaluator;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.DataIndexer;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Maxent model trainer using L-BFGS algorithm.
@@ -180,8 +179,8 @@ public class QNTrainer extends AbstractEventTrainer {
 
     Context[] params = new Context[nPredLabels];
     for (int ci = 0; ci < params.length; ci++) {
-      List<Integer> outcomePattern = new ArrayList<Integer>(nOutcomes);
-      List<Double> alpha = new ArrayList<Double>(nOutcomes);
+      List<Integer> outcomePattern = new ArrayList<>(nOutcomes);
+      List<Double> alpha = new ArrayList<>(nOutcomes);
       for (int oi = 0; oi < nOutcomes; oi++) {
         double val = parameters[oi * nPredLabels + ci];
         outcomePattern.add(oi);
@@ -197,7 +196,7 @@ public class QNTrainer extends AbstractEventTrainer {
   /**
    * For measuring model's training accuracy
    */
-  private class ModelEvaluator implements Evaluator {
+  private class ModelEvaluator implements QNMinimizer.Evaluator {
 
     private DataIndexer indexer;
 

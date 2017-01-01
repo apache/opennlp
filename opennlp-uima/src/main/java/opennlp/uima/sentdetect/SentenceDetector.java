@@ -20,8 +20,8 @@ package opennlp.uima.sentdetect;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.Span;
-import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.UimaUtil;
+import opennlp.uima.util.AnnotatorUtil;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;

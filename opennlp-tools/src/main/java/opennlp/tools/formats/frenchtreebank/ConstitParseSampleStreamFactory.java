@@ -17,10 +17,10 @@
 
 package opennlp.tools.formats.frenchtreebank;
 
+import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
-import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToByteArraySampleStream;
 import opennlp.tools.parser.Parse;

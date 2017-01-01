@@ -16,16 +16,6 @@
  */
 package opennlp.tools.ml.maxent.quasinewton;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.BinaryFileDataReader;
 import opennlp.tools.ml.model.DataIndexer;
@@ -33,8 +23,16 @@ import opennlp.tools.ml.model.GenericModelReader;
 import opennlp.tools.ml.model.GenericModelWriter;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
-
 import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class QNTrainerTest {
 
@@ -80,8 +78,7 @@ public class QNTrainerTest {
 	    QNModel trainedModel = new QNTrainer(15, true).trainModel(
 	        ITERATIONS, testDataIndexer);
 
-	    assertTrue(trainedModel.equals(trainedModel));
-	    assertFalse(trainedModel.equals(null));
+	    assertNotNull(trainedModel);
   }
 
   @Test

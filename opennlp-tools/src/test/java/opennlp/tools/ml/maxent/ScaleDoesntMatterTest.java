@@ -20,11 +20,11 @@ package opennlp.tools.ml.maxent;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import junit.framework.TestCase;
+import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
-import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 

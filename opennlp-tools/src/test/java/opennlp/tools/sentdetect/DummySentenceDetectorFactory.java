@@ -17,15 +17,14 @@
 
 package opennlp.tools.sentdetect;
 
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.model.ArtifactSerializer;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
-
-import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.ArtifactSerializer;
 
 public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
 
@@ -36,7 +35,7 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
   }
 
   public DummySentenceDetectorFactory(String languageCode, boolean useTokenEnd,
-      Dictionary abbreviationDictionary, char[] eosCharacters) {
+                                      Dictionary abbreviationDictionary, char[] eosCharacters) {
     super(languageCode, useTokenEnd, abbreviationDictionary, eosCharacters);
   }
 
@@ -87,8 +86,7 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
   static class DummyDictionarySerializer implements
       ArtifactSerializer<DummyDictionary> {
 
-    public DummyDictionary create(InputStream in) throws IOException,
-        InvalidFormatException {
+    public DummyDictionary create(InputStream in) throws IOException {
       return new DummyDictionary(in);
     }
 

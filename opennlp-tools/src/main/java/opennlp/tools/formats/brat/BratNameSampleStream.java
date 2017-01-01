@@ -25,11 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.sentdetect.SentenceModel;
+import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetectorME;
-import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
@@ -52,7 +52,7 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
   }
 
   protected BratNameSampleStream(SentenceModel sentModel, TokenizerModel tokenModel,
-      ObjectStream<BratDocument> samples) {
+                                 ObjectStream<BratDocument> samples) {
     super(samples);
 
     // TODO: We can pass in custom validators here ...

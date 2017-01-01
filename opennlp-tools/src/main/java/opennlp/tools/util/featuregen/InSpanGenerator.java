@@ -20,8 +20,8 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
-import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.util.Span;
+import opennlp.tools.namefind.TokenNameFinder;
 
 /**
  * Generates features if the tokens are recognized by the provided

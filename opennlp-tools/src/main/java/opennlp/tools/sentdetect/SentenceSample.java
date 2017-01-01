@@ -17,13 +17,13 @@
 
 package opennlp.tools.sentdetect;
 
+import opennlp.tools.tokenize.Detokenizer;
+import opennlp.tools.util.Span;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import opennlp.tools.tokenize.Detokenizer;
-import opennlp.tools.util.Span;
 
 /**
  * A {@link SentenceSample} contains a document with
@@ -43,12 +43,12 @@ public class SentenceSample {
    */
   public SentenceSample(String document, Span... sentences) {
     this.document = document;
-    this.sentences = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(sentences)));
+    this.sentences = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(sentences)));
   }
 
   public SentenceSample(Detokenizer detokenizer, String[][] sentences) {
 
-    List<Span> spans = new ArrayList<Span>(sentences.length);
+    List<Span> spans = new ArrayList<>(sentences.length);
 
     StringBuilder documentBuilder = new StringBuilder();
 

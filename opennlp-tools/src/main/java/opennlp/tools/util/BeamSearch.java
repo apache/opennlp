@@ -17,10 +17,10 @@
 
 package opennlp.tools.util;
 
+import opennlp.tools.ml.model.MaxentModel;
+
 import java.util.Arrays;
 import java.util.List;
-
-import opennlp.tools.ml.model.MaxentModel;
 
 /**
  * Performs k-best search over sequence.  This is based on the description in
@@ -123,11 +123,7 @@ public class BeamSearch<T> {
         String[] contexts = cg.getContext(i, sequence, outcomes, additionalContext);
         double[] scores;
         if (contextsCache != null) {
-          scores = contextsCache.get(contexts);
-          if (scores == null) {
-            scores = model.eval(contexts, probs);
-            contextsCache.put(contexts,scores);
-          }
+          scores = contextsCache.computeIfAbsent(contexts, k -> model.eval(contexts, probs));
         }
         else {
           scores = model.eval(contexts, probs);

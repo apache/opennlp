@@ -17,9 +17,6 @@
 
 package opennlp.tools.namefind;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.BigramNameFeatureGenerator;
 import opennlp.tools.util.featuregen.CachedFeatureGenerator;
@@ -29,6 +26,9 @@ import opennlp.tools.util.featuregen.PreviousMapFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class for determining contextual features for a tag/chunk style
@@ -110,7 +110,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
    * @return the context for finding names at the specified index.
    */
   public String[] getContext(int index, String[] tokens, String[] preds, Object[] additionalContext) {
-    List<String> features = new ArrayList<String>();
+    List<String> features = new ArrayList<>();
 
     for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
       featureGenerator.createFeatures(features, tokens, index, preds);

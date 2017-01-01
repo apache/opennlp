@@ -26,8 +26,8 @@ import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.uima.util.AnnotationComboIterator;
 import opennlp.uima.util.AnnotationIteratorPair;
-import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.UimaUtil;
+import opennlp.uima.util.AnnotatorUtil;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;

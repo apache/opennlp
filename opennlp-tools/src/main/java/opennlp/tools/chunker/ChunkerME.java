@@ -22,19 +22,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.ml.SequenceTrainer;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventTrainer;
-import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
-import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
-import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.TrainingParameters;
 
 /**
  * The class represents a maximum-entropy-based chunker.  Such a chunker can be used to
@@ -77,7 +77,7 @@ public class ChunkerME implements Chunker {
       this.model = model.getChunkerSequenceModel();
     }
     else {
-      this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
+      this.model = new BeamSearch<>(beamSize,
           model.getChunkerModel(), 0);
     }
   }
@@ -101,7 +101,7 @@ public class ChunkerME implements Chunker {
       this.model = model.getChunkerSequenceModel();
     }
     else {
-      this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
+      this.model = new BeamSearch<>(beamSize,
           model.getChunkerModel(), 0);
     }
   }
@@ -159,7 +159,7 @@ public class ChunkerME implements Chunker {
   }
 
   public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in,
-      TrainingParameters mlParams, ChunkerFactory factory) throws IOException {
+                                   TrainingParameters mlParams, ChunkerFactory factory) throws IOException {
 
     String beamSizeString = mlParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
 

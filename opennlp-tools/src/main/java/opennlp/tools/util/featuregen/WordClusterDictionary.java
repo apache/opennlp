@@ -17,6 +17,10 @@
 
 package opennlp.tools.util.featuregen;
 
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.SerializableArtifact;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -28,10 +32,6 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
-
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.SerializableArtifact;
 
 public class WordClusterDictionary implements SerializableArtifact {
 
@@ -48,7 +48,7 @@ public class WordClusterDictionary implements SerializableArtifact {
     }
   }
 
-  private Map<String, String> tokenToClusterMap = new HashMap<String, String>();
+  private Map<String, String> tokenToClusterMap = new HashMap<>();
 
   /**
    * Read word2vec and clark clustering style lexicons.

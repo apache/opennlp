@@ -17,10 +17,17 @@
 
 package opennlp.tools.sentdetect;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import opennlp.tools.sentdetect.lang.Factory;
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyDictionary;
+import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyEOSScanner;
+import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummySDContextGenerator;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,18 +35,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import org.junit.Test;
-
-import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyDictionary;
-import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyEOSScanner;
-import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummySDContextGenerator;
-import opennlp.tools.sentdetect.lang.Factory;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.TrainingParameters;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for the {@link SentenceDetectorME} class.
@@ -79,7 +78,6 @@ public class SentenceDetectorFactoryTest {
         eos));
 
     SentenceDetectorFactory factory = sdModel.getFactory();
-    assertTrue(factory.getAbbreviationDictionary() instanceof Dictionary);
     assertTrue(factory.getSDContextGenerator() instanceof DefaultSDContextGenerator);
     assertTrue(factory.getEndOfSentenceScanner() instanceof DefaultEndOfSentenceScanner);
     assertTrue(Arrays.equals(eos, factory.getEOSCharacters()));
@@ -91,7 +89,6 @@ public class SentenceDetectorFactoryTest {
     SentenceModel fromSerialized = new SentenceModel(in);
 
     factory = fromSerialized.getFactory();
-    assertTrue(factory.getAbbreviationDictionary() instanceof Dictionary);
     assertTrue(factory.getSDContextGenerator() instanceof DefaultSDContextGenerator);
     assertTrue(factory.getEndOfSentenceScanner() instanceof DefaultEndOfSentenceScanner);
     assertTrue(Arrays.equals(eos, factory.getEOSCharacters()));

@@ -19,9 +19,9 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.File;
 
+import opennlp.tools.cmdline.params.BasicTrainingParams;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
-import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
  * TrainingParams for Sentence Detector.

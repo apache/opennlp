@@ -30,15 +30,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
-import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
-import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
-import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.InputStreamFactory;
 
 /**
  * Parser for Floresta Sita(c)tica Arvores Deitadas corpus, output to for the
@@ -205,7 +201,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   public NameSample read() throws IOException {
 
-    Sentence paragraph;
+    ADSentenceStream.Sentence paragraph;
     // we should look for text here.
     while ((paragraph = this.adSentenceStream.read()) != null) {
 
@@ -216,7 +212,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
         textID = currentTextID;
       }
 
-      Node root = paragraph.getRoot();
+      ADSentenceStream.SentenceParser.Node root = paragraph.getRoot();
       List<String> sentence = new ArrayList<>();
       List<Span> names = new ArrayList<>();
       process(root, sentence, names);
@@ -237,13 +233,13 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @param names
    *          the names we got so far
    */
-  private void process(Node node, List<String> sentence, List<Span> names) {
+  private void process(ADSentenceStream.SentenceParser.Node node, List<String> sentence, List<Span> names) {
     if (node != null) {
-      for (TreeElement element : node.getElements()) {
+      for (ADSentenceStream.SentenceParser.TreeElement element : node.getElements()) {
         if (element.isLeaf()) {
-          processLeaf((Leaf) element, sentence, names);
+          processLeaf((ADSentenceStream.SentenceParser.Leaf) element, sentence, names);
         } else {
-          process((Node) element, sentence, names);
+          process((ADSentenceStream.SentenceParser.Node) element, sentence, names);
         }
       }
     }
@@ -259,8 +255,8 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @param names
    *          the names we got so far
    */
-  private void processLeaf(Leaf leaf, List<String> sentence,
-      List<Span> names) {
+  private void processLeaf(ADSentenceStream.SentenceParser.Leaf leaf, List<String> sentence,
+                           List<Span> names) {
 
     boolean alreadyAdded = false;
 
@@ -459,7 +455,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   private int textIdMeta2 = -1;
   private String textMeta2 = "";
 
-  private int getTextID(Sentence paragraph) {
+  private int getTextID(ADSentenceStream.Sentence paragraph) {
 
     String meta = paragraph.getMetadata();
 

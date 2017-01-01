@@ -22,13 +22,12 @@ import static org.junit.Assert.assertArrayEquals;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * This is the test class for {@link LemmatizerME}.

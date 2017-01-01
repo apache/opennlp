@@ -17,19 +17,18 @@
 
 package opennlp.tools.formats;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.EncodingParameter;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
@@ -57,15 +56,10 @@ public class LeipzigDocumentSampleStreamFactory
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     File sentencesFileDir = params.getSentencesDir();
     
-    File sentencesFiles[] = sentencesFileDir.listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(File dir, String name) {
-        return name.contains("sentences") && name.endsWith(".txt");
-      }
-    });
+    File sentencesFiles[] = sentencesFileDir.listFiles((dir, name) -> name.contains("sentences") && name.endsWith(".txt"));
     
     @SuppressWarnings("unchecked")
-    ObjectStream<DocumentSample> sampleStreams[] = 
+    ObjectStream<DocumentSample> sampleStreams[] =
         new ObjectStream[sentencesFiles.length];
 
     for (int i = 0; i < sentencesFiles.length; i++) {

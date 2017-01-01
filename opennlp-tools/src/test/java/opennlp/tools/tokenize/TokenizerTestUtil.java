@@ -23,13 +23,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import opennlp.tools.formats.ResourceAsStreamFactory;
+
 import opennlp.tools.util.CollectionObjectStream;
+import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
-import opennlp.tools.util.TrainingParameters;
 
 /**
  * Utility class for testing the {@link Tokenizer}.

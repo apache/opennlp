@@ -19,9 +19,9 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
 
+import opennlp.tools.cmdline.params.BasicTrainingParams;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
-import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
  * TrainingParameters for Tokenizer.

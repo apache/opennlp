@@ -18,6 +18,8 @@
 
 package opennlp.tools.parser;
 
+import opennlp.tools.util.Span;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,8 +33,6 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import opennlp.tools.util.Span;
 
 /**
  * Data structure for holding parse constituents.
@@ -266,7 +266,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    */
   public void addPreviousPunctuation(Parse punct) {
     if (this.prevPunctSet == null) {
-      this.prevPunctSet = new TreeSet<Parse>();
+      this.prevPunctSet = new TreeSet<>();
     }
     prevPunctSet.add(punct);
   }
@@ -287,7 +287,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    */
   public void addNextPunctuation(Parse punct) {
     if (this.nextPunctSet == null) {
-      this.nextPunctSet = new TreeSet<Parse>();
+      this.nextPunctSet = new TreeSet<>();
     }
     nextPunctSet.add(punct);
   }
@@ -781,7 +781,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * @param parse
    */
   public static void pruneParse(Parse parse) {
-    List<Parse> nodes = new LinkedList<Parse>();
+    List<Parse> nodes = new LinkedList<>();
     nodes.add(parse);
     while(nodes.size() != 0) {
       Parse node = nodes.remove(0);

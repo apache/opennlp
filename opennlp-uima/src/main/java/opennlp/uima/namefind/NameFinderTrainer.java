@@ -30,6 +30,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.TokenNameFinderFactory;
+import opennlp.tools.util.MarkableFileInputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.uima.util.CasConsumerUtil;
+import opennlp.uima.util.ContainingConstraint;
+import opennlp.uima.util.OpennlpUtil;
+import opennlp.uima.util.SampleTraceStream;
+import opennlp.uima.util.UimaUtil;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.FSIndex;
 import org.apache.uima.cas.Type;
@@ -43,25 +55,13 @@ import org.apache.uima.util.Logger;
 import org.apache.uima.util.ProcessTrace;
 
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
-import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.namefind.BioCodec;
-import opennlp.tools.namefind.NameFinderME;
-import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
-import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.MarkableFileInputStreamFactory;
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.TrainingParameters;
-import opennlp.uima.util.CasConsumerUtil;
-import opennlp.uima.util.ContainingConstraint;
-import opennlp.uima.util.OpennlpUtil;
-import opennlp.uima.util.SampleTraceStream;
-import opennlp.uima.util.UimaUtil;
 
 /**
  * OpenNLP NameFinder trainer.

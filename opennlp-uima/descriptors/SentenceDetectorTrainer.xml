@@ -25,7 +25,6 @@
 	<implementationName>opennlp.uima.sentdetect.SentenceDetectorTrainer</implementationName>
 	<processingResourceMetaData>
 		<name>Sentence Detector Trainer</name>
-		<description></description>
 		<version>${pom.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 

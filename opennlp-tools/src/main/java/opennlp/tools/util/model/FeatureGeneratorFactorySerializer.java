@@ -18,12 +18,12 @@
 
 package opennlp.tools.util.model;
 
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.featuregen.FeatureGeneratorFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.featuregen.FeatureGeneratorFactory;
 
 @Deprecated
 public class FeatureGeneratorFactorySerializer
@@ -35,16 +35,13 @@ public class FeatureGeneratorFactorySerializer
     classSerializer = new ClassSerializer();
   }
 
-  public FeatureGeneratorFactory create(InputStream in) throws IOException,
-      InvalidFormatException {
+  public FeatureGeneratorFactory create(InputStream in) throws IOException {
 
     Class<?> generatorFactoryClass = classSerializer.create(in);
 
     try {
       return (FeatureGeneratorFactory) generatorFactoryClass.newInstance();
-    } catch (InstantiationException e) {
-      throw new InvalidFormatException(e);
-    } catch (IllegalAccessException e) {
+    } catch (InstantiationException | IllegalAccessException e) {
       throw new InvalidFormatException(e);
     }
   }

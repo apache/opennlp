@@ -17,11 +17,7 @@
 
 package opennlp.tools.namefind;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.SequenceCodec;
@@ -29,11 +25,16 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Class for creating an event stream out of data files for training an name
  * finder.
  */
-public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStream<NameSample> {
+public class NameFinderEventStream extends AbstractEventStream<NameSample> {
 
   private NameContextGenerator contextGenerator;
 
@@ -107,7 +108,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   }
 
   public static List<Event> generateEvents(String[] sentence, String[] outcomes, NameContextGenerator cg) {
-    List<Event> events = new ArrayList<Event>(outcomes.length);
+    List<Event> events = new ArrayList<>(outcomes.length);
     for (int i = 0; i < outcomes.length; i++) {
       events.add(new Event(outcomes[i], cg.getContext(i, sentence, outcomes,null)));
     }

@@ -28,10 +28,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
+
 import opennlp.tools.dictionary.serializer.Attributes;
-import opennlp.tools.dictionary.serializer.DictionarySerializer;
 import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.util.StringList;
+import opennlp.tools.dictionary.serializer.DictionarySerializer;
 import opennlp.tools.util.StringUtil;
 
 /**

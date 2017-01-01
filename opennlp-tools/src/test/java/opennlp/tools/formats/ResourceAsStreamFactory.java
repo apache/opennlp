@@ -15,10 +15,10 @@
 
 package opennlp.tools.formats;
 
+import opennlp.tools.util.InputStreamFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
-
-import opennlp.tools.util.InputStreamFactory;
 
 public class ResourceAsStreamFactory implements InputStreamFactory {
 

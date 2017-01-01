@@ -39,7 +39,7 @@ package opennlp.tools.stemmer.snowball;
   * It implements the stemming algorithm defined by a snowball script.
   */
 
-class dutchStemmer extends opennlp.tools.stemmer.snowball.AbstractSnowballStemmer {
+class dutchStemmer extends AbstractSnowballStemmer {
 
 private static final long serialVersionUID = 1L;
 

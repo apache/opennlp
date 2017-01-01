@@ -37,7 +37,7 @@ public class TreeHeap<E> implements Heap<E> {
    * Creates a new tree heap.
    */
   public TreeHeap() {
-    tree = new TreeSet<E>();
+    tree = new TreeSet<>();
   }
 
   /**
@@ -45,7 +45,7 @@ public class TreeHeap<E> implements Heap<E> {
    * @param size The size of the new tree heap.
    */
   public TreeHeap(int size) {
-    tree = new TreeSet<E>();
+    tree = new TreeSet<>();
   }
 
   public E extract() {
@@ -83,7 +83,7 @@ public class TreeHeap<E> implements Heap<E> {
   }
 
   public static void main(String[] args) {
-    Heap<Integer> heap = new TreeHeap<Integer>(5);
+    Heap<Integer> heap = new TreeHeap<>(5);
     for (int ai=0;ai<args.length;ai++){
       heap.add(Integer.parseInt(args[ai]));
     }

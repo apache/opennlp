@@ -18,11 +18,8 @@
 
 package opennlp.tools.util.eval;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import opennlp.tools.util.ObjectStream;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -31,10 +28,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.CrossValidationPartitioner.TrainingSampleStream;
-
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test for the {@link CrossValidationPartitioner} class.
@@ -46,7 +44,7 @@ public class CrossValidationPartitionerTest {
     Collection<String> emptyCollection = Collections.emptySet();
 
     CrossValidationPartitioner<String> partitioner =
-        new CrossValidationPartitioner<String>(emptyCollection, 2);
+        new CrossValidationPartitioner<>(emptyCollection, 2);
 
     assertTrue(partitioner.hasNext());
     assertNull(partitioner.next().read());
@@ -73,7 +71,7 @@ public class CrossValidationPartitionerTest {
    */
   @Test
   public void test3FoldCV() throws IOException {
-    List<String> data = new LinkedList<String>();
+    List<String> data = new LinkedList<>();
     data.add("01");
     data.add("02");
     data.add("03");
@@ -85,11 +83,11 @@ public class CrossValidationPartitionerTest {
     data.add("09");
     data.add("10");
 
-    CrossValidationPartitioner<String> partitioner = new CrossValidationPartitioner<String>(data, 3);
+    CrossValidationPartitioner<String> partitioner = new CrossValidationPartitioner<>(data, 3);
 
     // first partition
     assertTrue(partitioner.hasNext());
-    TrainingSampleStream<String> firstTraining = partitioner.next();
+    CrossValidationPartitioner.TrainingSampleStream<String> firstTraining = partitioner.next();
 
     assertEquals("02", firstTraining.read());
     assertEquals("03", firstTraining.read());
@@ -109,7 +107,7 @@ public class CrossValidationPartitionerTest {
 
     // second partition
     assertTrue(partitioner.hasNext());
-    TrainingSampleStream<String> secondTraining = partitioner.next();
+    CrossValidationPartitioner.TrainingSampleStream<String> secondTraining = partitioner.next();
 
     assertEquals("01", secondTraining.read());
     assertEquals("03", secondTraining.read());
@@ -130,7 +128,7 @@ public class CrossValidationPartitionerTest {
 
     // third partition
     assertTrue(partitioner.hasNext());
-    TrainingSampleStream<String> thirdTraining = partitioner.next();
+    CrossValidationPartitioner.TrainingSampleStream<String> thirdTraining = partitioner.next();
 
     assertEquals("01", thirdTraining.read());
     assertEquals("02", thirdTraining.read());
@@ -152,33 +150,33 @@ public class CrossValidationPartitionerTest {
   }
 
   @Test
-  public void testFailSafty() throws IOException {
-    List<String> data = new LinkedList<String>();
+  public void testFailSafety() throws IOException {
+    List<String> data = new LinkedList<>();
     data.add("01");
     data.add("02");
     data.add("03");
     data.add("04");
 
-    CrossValidationPartitioner<String> partitioner = new CrossValidationPartitioner<String>(data, 4);
+    CrossValidationPartitioner<String> partitioner = new CrossValidationPartitioner<>(data, 4);
 
     // Test that iterator from previous partition fails
     // if it is accessed
-    TrainingSampleStream<String> firstTraining = partitioner.next();
+    CrossValidationPartitioner.TrainingSampleStream<String> firstTraining = partitioner.next();
     assertEquals("02", firstTraining.read());
 
-    TrainingSampleStream<String> secondTraining = partitioner.next();
+    CrossValidationPartitioner.TrainingSampleStream<String> secondTraining = partitioner.next();
 
     try {
       firstTraining.read();
       fail();
     }
-    catch (IllegalStateException e) {}
+    catch (IllegalStateException ignored) {}
 
     try {
       firstTraining.getTestSampleStream();
       fail();
     }
-    catch (IllegalStateException e) {}
+    catch (IllegalStateException ignored) {}
 
     // Test that training iterator fails if there is a test iterator
     secondTraining.getTestSampleStream();
@@ -187,11 +185,11 @@ public class CrossValidationPartitionerTest {
       secondTraining.read();
       fail();
     }
-    catch (IllegalStateException e) {}
+    catch (IllegalStateException ignored) {}
 
     // Test that test iterator from previous partition fails
     // if there is a new partition
-    TrainingSampleStream<String> thirdTraining = partitioner.next();
+    CrossValidationPartitioner.TrainingSampleStream<String> thirdTraining = partitioner.next();
     ObjectStream<String> thridTest = thirdTraining.getTestSampleStream();
 
     assertTrue(partitioner.hasNext());
@@ -201,12 +199,12 @@ public class CrossValidationPartitionerTest {
       thridTest.read();
       fail();
     }
-    catch (IllegalStateException e) {}
+    catch (IllegalStateException ignored) {}
   }
 
   @Test
   public void testToString() {
     Collection<String> emptyCollection = Collections.emptySet();
-    new CrossValidationPartitioner<String>(emptyCollection, 10).toString();
+    new CrossValidationPartitioner<>(emptyCollection, 10).toString();
   }
 }

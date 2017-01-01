@@ -19,13 +19,12 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.params.BasicFormatParams;
-import opennlp.tools.formats.Conll02NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
@@ -55,13 +54,13 @@ public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
-    LANGUAGE lang;
+    Conll02NameSampleStream.LANGUAGE lang;
     if ("nl".equals(params.getLang())) {
-      lang = LANGUAGE.NL;
+      lang = Conll02NameSampleStream.LANGUAGE.NL;
       language = params.getLang();
     }
     else if ("es".equals(params.getLang())) {
-      lang = LANGUAGE.ES;
+      lang = Conll02NameSampleStream.LANGUAGE.ES;
       language = params.getLang();
     }
     else {

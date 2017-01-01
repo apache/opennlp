@@ -17,22 +17,22 @@
 
 package opennlp.tools.formats.brat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class BratDocumentTest {
 
   @Test
   public void testDocumentWithEntitiesParsing() throws IOException {
 
-    Map<String, String> typeToClassMap = new HashMap<String, String>();
+    Map<String, String> typeToClassMap = new HashMap<>();
     BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 

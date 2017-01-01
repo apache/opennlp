@@ -17,8 +17,8 @@
 
 package opennlp.tools.formats.ontonotes;
 
-import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.formats.convert.ParseToPOSSampleStream;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSSample;

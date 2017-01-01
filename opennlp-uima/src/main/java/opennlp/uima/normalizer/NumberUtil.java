@@ -59,7 +59,7 @@ public final class NumberUtil {
     StringBuilder result = new StringBuilder();
 
     int lastPosition = 0;
-    int position = 0;
+    int position;
     while ((position = string.indexOf(remove, lastPosition)) != -1) {
       result.append(string.substring(lastPosition, position));
       lastPosition = position + 1;

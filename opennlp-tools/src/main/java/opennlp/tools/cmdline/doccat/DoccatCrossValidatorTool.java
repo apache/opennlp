@@ -17,14 +17,6 @@
 
 package opennlp.tools.cmdline.doccat;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.List;
-
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
@@ -40,6 +32,14 @@ import opennlp.tools.doccat.FeatureGenerator;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.model.ModelUtil;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 public final class DoccatCrossValidatorTool extends
     AbstractCrossValidatorTool<DocumentSample, CVToolParams> {
@@ -66,7 +66,7 @@ public final class DoccatCrossValidatorTool extends
       mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 
-    List<EvaluationMonitor<DocumentSample>> listeners = new LinkedList<EvaluationMonitor<DocumentSample>>();
+    List<EvaluationMonitor<DocumentSample>> listeners = new LinkedList<>();
     if (params.getMisclassified()) {
       listeners.add(new DoccatEvaluationErrorListener());
     }

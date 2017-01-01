@@ -32,7 +32,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests for {@link opennlp.tools.languagemodel.NGramLanguageModel}
+ * Tests for {@link NGramLanguageModel}
  */
 public class NgramLanguageModelTest {
 

@@ -18,12 +18,12 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 
+import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;

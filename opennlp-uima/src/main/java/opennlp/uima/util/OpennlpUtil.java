@@ -26,12 +26,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.BaseModel;
 import org.apache.uima.resource.ResourceInitializationException;
 
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.maxent.GISModel;
-import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.BaseModel;
 
 /**
  * This class contains utils methods for the maxent library.
@@ -72,12 +72,12 @@ final public class OpennlpUtil {
   }
 
   public static TrainingParameters loadTrainingParams(String inFileValue,
-      boolean isSequenceTrainingAllowed) throws ResourceInitializationException {
+                                                      boolean isSequenceTrainingAllowed) throws ResourceInitializationException {
 
     TrainingParameters params;
     if (inFileValue != null) {
       try (InputStream paramsIn = new FileInputStream(new File(inFileValue))) {
-        params = new opennlp.tools.util.TrainingParameters(paramsIn);
+        params = new TrainingParameters(paramsIn);
       } catch (IOException e) {
         throw new ResourceInitializationException(e);
       }

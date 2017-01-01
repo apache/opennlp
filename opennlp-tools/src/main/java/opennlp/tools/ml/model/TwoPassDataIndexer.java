@@ -19,6 +19,8 @@
 
 package opennlp.tools.ml.model;
 
+import opennlp.tools.util.ObjectStream;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,8 +35,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import opennlp.tools.util.ObjectStream;
 
 
 /**

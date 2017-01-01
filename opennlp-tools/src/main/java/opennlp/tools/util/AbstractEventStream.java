@@ -18,11 +18,11 @@
 
 package opennlp.tools.util;
 
+import opennlp.tools.ml.model.Event;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
-
-import opennlp.tools.ml.model.Event;
 
 public abstract class AbstractEventStream<T> implements ObjectStream<Event> {
 

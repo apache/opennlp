@@ -22,6 +22,7 @@ import java.io.File;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.tokenize.TokenizerME;
 
 public final class TokenizerMETool extends BasicCmdLineTool {
 
@@ -41,7 +42,7 @@ public final class TokenizerMETool extends BasicCmdLineTool {
       TokenizerModel model = new TokenizerModelLoader().load(new File(args[0]));
 
       CommandLineTokenizer tokenizer =
-        new CommandLineTokenizer(new opennlp.tools.tokenize.TokenizerME(model));
+        new CommandLineTokenizer(new TokenizerME(model));
 
       tokenizer.process();
     }

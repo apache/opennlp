@@ -20,18 +20,18 @@ package opennlp.tools.cmdline.sentdetect;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.CVParams;
-import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidatorTool.CVToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.SDCrossValidator;
 import opennlp.tools.sentdetect.SentenceDetectorEvaluationMonitor;
-import opennlp.tools.sentdetect.SentenceDetectorFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.SentenceSampleStream;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorCrossValidatorTool.CVToolParams;
+import opennlp.tools.sentdetect.SentenceDetectorFactory;
 
 public final class SentenceDetectorCrossValidatorTool
     extends AbstractCrossValidatorTool<SentenceSample, CVToolParams> {

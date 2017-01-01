@@ -17,16 +17,17 @@
 
 package opennlp.morfologik.lemmatizer;
 
-import static org.junit.Assert.*;
+import opennlp.morfologik.builder.POSDictionayBuilderTest;
+import opennlp.tools.lemmatizer.Lemmatizer;
+import org.junit.Test;
 
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
-
-import opennlp.morfologik.builder.POSDictionayBuilderTest;
-import opennlp.tools.lemmatizer.Lemmatizer;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class MorfologikLemmatizerTest {
 
@@ -70,9 +71,7 @@ public class MorfologikLemmatizerTest {
 
     Path output = POSDictionayBuilderTest.createMorfologikDictionary();
 
-    MorfologikLemmatizer ml = new MorfologikLemmatizer(output);
-
-    return ml;
+    return new MorfologikLemmatizer(output);
   }
 
 }

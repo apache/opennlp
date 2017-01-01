@@ -17,22 +17,21 @@
 
 package opennlp.tools.parser.chunking;
 
-import java.io.FileInputStream;
-import java.nio.charset.Charset;
-import java.util.List;
-
 import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserEventStream;
-import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserEventTypeEnum;
-import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.parser.lang.en.HeadRules;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+
+import java.io.FileInputStream;
+import java.nio.charset.Charset;
+import java.util.List;
 
 /**
  * Wrapper class for one of four parser event streams.  The particular event stream is specified
@@ -50,7 +49,7 @@ public class ParserEventStream extends AbstractParserEventStream {
    * @param etype The type of events desired (tag, chunk, build, or check).
    * @param dict A tri-gram dictionary to reduce feature generation.
    */
-  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
+  public ParserEventStream(ObjectStream<Parse> d, opennlp.tools.parser.HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
     super(d,rules,etype,dict);
   }
 
@@ -66,7 +65,7 @@ public class ParserEventStream extends AbstractParserEventStream {
 
 
 
-  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype) {
+  public ParserEventStream(ObjectStream<Parse> d, opennlp.tools.parser.HeadRules rules, ParserEventTypeEnum etype) {
     this (d,rules,etype,null);
   }
 
@@ -166,7 +165,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     }
   }
 
-  public static void main(String[] args) throws java.io.IOException, InvalidFormatException {
+  public static void main(String[] args) throws java.io.IOException {
     if (args.length == 0) {
       System.err.println("Usage ParserEventStream -[tag|chunk|build|check|fun] head_rules [dictionary] < parses");
       System.exit(1);
@@ -197,7 +196,7 @@ public class ParserEventStream extends AbstractParserEventStream {
       }
       ai++;
     }
-    HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[ai++]);
+    HeadRules rules = new HeadRules(args[ai++]);
     Dictionary dict = null;
     if (ai < args.length) {
       dict = new Dictionary(new FileInputStream(args[ai++]),true);

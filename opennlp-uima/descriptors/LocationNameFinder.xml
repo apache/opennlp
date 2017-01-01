@@ -25,7 +25,6 @@
 	<annotatorImplementationName>opennlp.uima.namefind.NameFinder</annotatorImplementationName>
 	<analysisEngineMetaData>
 		<name>Location Name Finder</name>
-		<description></description>
 		<version>${pom.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>

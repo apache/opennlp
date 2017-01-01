@@ -22,12 +22,12 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
+import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.postag.POSSample;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.params.BasicFormatParams;
-import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 

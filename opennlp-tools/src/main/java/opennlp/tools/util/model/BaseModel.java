@@ -36,10 +36,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Version;
-import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
  * This model is a common based which can be used by the components

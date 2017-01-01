@@ -17,19 +17,17 @@
 
 package opennlp.uima.normalizer;
 
+import opennlp.tools.dictionary.serializer.Attributes;
+import opennlp.tools.dictionary.serializer.DictionarySerializer;
+import opennlp.tools.dictionary.serializer.Entry;
+import opennlp.tools.util.StringList;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import opennlp.tools.dictionary.serializer.Attributes;
-import opennlp.tools.dictionary.serializer.DictionarySerializer;
-import opennlp.tools.dictionary.serializer.Entry;
-import opennlp.tools.dictionary.serializer.EntryInserter;
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.StringList;
 
 // lookup a string for given token list
 public class StringDictionary {
@@ -46,11 +44,9 @@ public class StringDictionary {
    * @throws IOException
    */
   public StringDictionary(InputStream in) throws IOException {
-    DictionarySerializer.create(in, new EntryInserter() {
-      public void insert(Entry entry) throws InvalidFormatException {
-        String valueString = entry.getAttributes().getValue("value");
-        put(entry.getTokens(), valueString);
-      }
+    DictionarySerializer.create(in, entry -> {
+      String valueString = entry.getAttributes().getValue("value");
+      put(entry.getTokens(), valueString);
     });
   }
 

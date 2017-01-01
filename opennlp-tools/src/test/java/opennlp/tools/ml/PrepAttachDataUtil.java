@@ -17,7 +17,11 @@
 
 package opennlp.tools.ml;
 
-import static org.junit.Assert.assertEquals;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.perceptron.PerceptronPrepAttachTest;
+import opennlp.tools.util.ObjectStream;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,17 +30,13 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.perceptron.PerceptronPrepAttachTest;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamUtils;
+import static org.junit.Assert.assertEquals;
 
 public class PrepAttachDataUtil {
 
   private static List<Event> readPpaFile(String filename) throws IOException {
 
-    List<Event> events = new ArrayList<Event>();
+    List<Event> events = new ArrayList<>();
 
     try (InputStream in = PerceptronPrepAttachTest.class.getResourceAsStream("/data/ppa/" +
             filename)) {

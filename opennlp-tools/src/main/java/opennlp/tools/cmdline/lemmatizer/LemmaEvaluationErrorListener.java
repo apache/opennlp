@@ -19,10 +19,10 @@ package opennlp.tools.cmdline.lemmatizer;
 
 import java.io.OutputStream;
 
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.lemmatizer.LemmaSample;
 import opennlp.tools.lemmatizer.LemmatizerEvaluationMonitor;
-import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
  * A default implementation of {@link EvaluationMonitor} that prints to an

@@ -21,10 +21,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.chunker.ChunkSample;
-import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.chunker.ChunkSample;
 
 public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
 
@@ -76,7 +75,7 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
         if (c.isPosTag()) {
           toks.add(c.getCoveredText());
           tags.add(c.getType());
-          preds.add(Parser.OTHER);
+          preds.add(opennlp.tools.parser.chunking.Parser.OTHER);
         }
         else {
           boolean start = true;
@@ -87,11 +86,11 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
             toks.add(tok.getCoveredText());
             tags.add(tok.getType());
             if (start) {
-              preds.add(Parser.START + ctype);
+              preds.add(opennlp.tools.parser.chunking.Parser.START + ctype);
               start = false;
             }
             else {
-              preds.add(Parser.CONT + ctype);
+              preds.add(opennlp.tools.parser.chunking.Parser.CONT + ctype);
             }
           }
         }

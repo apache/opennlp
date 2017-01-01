@@ -24,7 +24,6 @@ import java.util.List;
 
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -35,6 +34,7 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.cmdline.CmdLineUtil;
 
 public class EntityLinkerTool extends BasicCmdLineTool {
 

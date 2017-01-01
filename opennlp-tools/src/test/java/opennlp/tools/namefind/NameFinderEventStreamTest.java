@@ -17,18 +17,16 @@
 
 package opennlp.tools.namefind;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.Span;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.IOException;
 
-import junit.framework.Assert;
-import opennlp.tools.ml.model.Event;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamUtils;
-import opennlp.tools.util.Span;
-
-import org.junit.Test;
+import static org.junit.Assert.assertNull;
 
 /**
  * This is the test class for {@link NameFinderEventStream}.
@@ -59,8 +57,8 @@ public class NameFinderEventStreamTest{
     ObjectStream<Event> eventStream = new NameFinderEventStream(
         ObjectStreamUtils.createObjectStream(nameSample));
 
-    assertEquals("person-" + NameFinderME.START, eventStream.read().getOutcome());
-    assertEquals("person-" + NameFinderME.CONTINUE, eventStream.read().getOutcome());
+    org.junit.Assert.assertEquals("person-" + NameFinderME.START, eventStream.read().getOutcome());
+    org.junit.Assert.assertEquals("person-" + NameFinderME.CONTINUE, eventStream.read().getOutcome());
 
     for (int i = 0; i < 10; i++) {
       Assert.assertEquals(NameFinderME.OTHER, eventStream.read().getOutcome());

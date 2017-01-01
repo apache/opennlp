@@ -17,14 +17,14 @@
 
 package opennlp.tools.util.featuregen;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test for the {@link CachedFeatureGenerator} class.
@@ -47,7 +47,7 @@ public class CachedFeatureGeneratorTest {
 
     testSentence2 = new String[] {"a2", "b2", "c2", "d2"};
 
-    features = new ArrayList<String>();
+    features = new ArrayList<>();
   }
 
   /**

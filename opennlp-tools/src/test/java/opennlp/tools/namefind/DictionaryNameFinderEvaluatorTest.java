@@ -17,25 +17,24 @@
 
 package opennlp.tools.namefind;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static org.junit.Assert.assertTrue;
+import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.Span;
+import opennlp.tools.util.StringList;
+import opennlp.tools.util.eval.FMeasure;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-
-import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
-import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringList;
-import opennlp.tools.util.eval.FMeasure;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the evaluation of a {@link DictionaryNameFinder}.
@@ -86,7 +85,7 @@ public class DictionaryNameFinderEvaluatorTest {
       URISyntaxException {
     ObjectStream<NameSample> sampleStream = createSample();
     NameSample sample = sampleStream.read();
-    List<String[]> entries = new ArrayList<String[]>();
+    List<String[]> entries = new ArrayList<>();
     while (sample != null) {
       Span[] names = sample.getNames();
       if (names != null && names.length > 0) {

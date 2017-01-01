@@ -24,9 +24,9 @@ import java.util.regex.Pattern;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.lang.Factory;
-import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ExtensionLoader;
+import opennlp.tools.util.BaseToolFactory;
 
 /**
  * The factory that provides {@link Tokenizer} default implementations and

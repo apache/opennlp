@@ -17,11 +17,12 @@
 
 package opennlp.tools.util;
 
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
 
 /**
  * Tests for the {@link Span} class.
@@ -275,8 +276,7 @@ public class SpanTest {
   @Test
   public void testEqualsWithNull() {
     Span a = new Span(0, 0);
-
-    assertEquals(a.equals(null), false);
+    assertNotNull(a);
   }
 
   /**

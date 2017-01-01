@@ -39,7 +39,7 @@ package opennlp.tools.stemmer.snowball;
   * It implements the stemming algorithm defined by a snowball script.
   */
 
-class porterStemmer extends opennlp.tools.stemmer.snowball.AbstractSnowballStemmer {
+class porterStemmer extends AbstractSnowballStemmer {
 
 private static final long serialVersionUID = 1L;
 
@@ -162,19 +162,11 @@ private static final long serialVersionUID = 1L;
                 }
 
                 private boolean r_R1() {
-                    if (!(I_p1 <= cursor))
-                    {
-                        return false;
-                    }
-                    return true;
+                  return I_p1 <= cursor;
                 }
 
                 private boolean r_R2() {
-                    if (!(I_p2 <= cursor))
-                    {
-                        return false;
-                    }
-                    return true;
+                  return I_p2 <= cursor;
                 }
 
                 private boolean r_Step_1a() {

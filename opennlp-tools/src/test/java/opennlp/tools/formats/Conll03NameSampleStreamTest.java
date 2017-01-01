@@ -17,19 +17,17 @@
 
 package opennlp.tools.formats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.io.IOException;
-
-import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
-
 import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Test for the {@link Conll03NameSampleStream} class.
@@ -40,7 +38,7 @@ public class Conll03NameSampleStreamTest {
   private static final String GERMAN_SAMPLE = "conll2003-de.sample";
 
 
-  private static ObjectStream<NameSample> openData(LANGUAGE lang, String name) throws IOException {
+  private static ObjectStream<NameSample> openData(Conll03NameSampleStream.LANGUAGE lang, String name) throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(Conll03NameSampleStreamTest.class,
         "/opennlp/tools/formats/" + name);
 
@@ -50,7 +48,7 @@ public class Conll03NameSampleStreamTest {
   @Test
   public void testParsingEnglishSample() throws IOException {
 
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.EN, ENGLISH_SAMPLE);
+    ObjectStream<NameSample> sampleStream = openData(Conll03NameSampleStream.LANGUAGE.EN, ENGLISH_SAMPLE);
 
     NameSample personName = sampleStream.read();
     assertNotNull(personName);
@@ -76,20 +74,20 @@ public class Conll03NameSampleStreamTest {
 
   @Test(expected=IOException.class)
   public void testParsingEnglishSampleWithGermanAsLanguage() throws IOException {
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, ENGLISH_SAMPLE);
+    ObjectStream<NameSample> sampleStream = openData(Conll03NameSampleStream.LANGUAGE.DE, ENGLISH_SAMPLE);
     sampleStream.read();
   }
 
   @Test(expected=IOException.class)
   public void testParsingGermanSampleWithEnglishAsLanguage() throws IOException {
-	  ObjectStream<NameSample> sampleStream = openData(LANGUAGE.EN, GERMAN_SAMPLE);
+	  ObjectStream<NameSample> sampleStream = openData(Conll03NameSampleStream.LANGUAGE.EN, GERMAN_SAMPLE);
 	  sampleStream.read();
   }
 
   @Test
   public void testParsingGermanSample() throws IOException {
 
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, GERMAN_SAMPLE);
+    ObjectStream<NameSample> sampleStream = openData(Conll03NameSampleStream.LANGUAGE.DE, GERMAN_SAMPLE);
 
     NameSample personName = sampleStream.read();
     assertNotNull(personName);
@@ -101,7 +99,7 @@ public class Conll03NameSampleStreamTest {
 
   @Test
   public void testReset() throws IOException {
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, GERMAN_SAMPLE);
+    ObjectStream<NameSample> sampleStream = openData(Conll03NameSampleStream.LANGUAGE.DE, GERMAN_SAMPLE);
 
     NameSample sample = sampleStream.read();
 

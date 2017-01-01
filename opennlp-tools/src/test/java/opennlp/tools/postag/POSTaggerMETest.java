@@ -23,14 +23,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import opennlp.tools.util.TrainingParameters;
-import org.junit.Test;
-
 import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
+import org.junit.Test;
+
+import opennlp.tools.util.InputStreamFactory;
 
 /**
  * Tests for the {@link POSTaggerME} class.
@@ -38,7 +38,7 @@ import opennlp.tools.util.model.ModelType;
 public class POSTaggerMETest {
 
   private static ObjectStream<POSSample> createSampleStream() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(POSTaggerMETest.class, 
+    InputStreamFactory in = new ResourceAsStreamFactory(POSTaggerMETest.class,
         "/opennlp/tools/postag/AnnotatedSentences.txt");
 
     return new WordTagSampleStream(new PlainTextByLineStream(in, UTF_8));

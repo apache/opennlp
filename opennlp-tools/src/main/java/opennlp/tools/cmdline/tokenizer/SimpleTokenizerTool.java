@@ -19,6 +19,7 @@ package opennlp.tools.cmdline.tokenizer;
 
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
+import opennlp.tools.tokenize.SimpleTokenizer;
 
 public final class SimpleTokenizerTool extends BasicCmdLineTool {
 
@@ -41,7 +42,7 @@ public final class SimpleTokenizerTool extends BasicCmdLineTool {
     } else {
 
       CommandLineTokenizer tokenizer =
-        new CommandLineTokenizer(opennlp.tools.tokenize.SimpleTokenizer.INSTANCE);
+        new CommandLineTokenizer(SimpleTokenizer.INSTANCE);
 
       tokenizer.process();
     }

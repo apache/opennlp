@@ -134,7 +134,7 @@ public final class FMeasure {
    */
   static int countTruePositives(final Object[] references, final Object[] predictions) {
 
-    List<Object> predListSpans = new ArrayList<Object>(predictions.length);
+    List<Object> predListSpans = new ArrayList<>(predictions.length);
     Collections.addAll(predListSpans, predictions);
     int truePositives = 0;
     Object matchedItem = null;

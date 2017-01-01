@@ -17,15 +17,15 @@
 
 package opennlp.tools.cmdline;
 
+import opennlp.tools.util.ObjectStream;
+
 import java.io.IOException;
 import java.util.Map;
-
-import opennlp.tools.util.ObjectStream;
 
 /**
  * Base class for format conversion tools.
  *
- * @param <T> class of data sample the tool converts, for example {@link opennlp.tools.postag
+ * @param <T> class of data sample the tool converts, for example {@link org.apache.opennlp.tools.postag
  * .POSSample}
  */
 public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {

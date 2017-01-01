@@ -17,12 +17,11 @@
 
 package opennlp.tools.cmdline.namefind;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import opennlp.tools.cmdline.ModelLoader;
 import opennlp.tools.namefind.TokenNameFinderModel;
-import opennlp.tools.util.InvalidFormatException;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Loads a Token Name Finder Model for the command line tools.
@@ -36,8 +35,7 @@ final public class TokenNameFinderModelLoader extends ModelLoader<TokenNameFinde
   }
 
   @Override
-  protected TokenNameFinderModel loadModel(InputStream modelIn)
-      throws IOException, InvalidFormatException {
+  protected TokenNameFinderModel loadModel(InputStream modelIn) throws IOException {
     return new TokenNameFinderModel(modelIn);
   }
 

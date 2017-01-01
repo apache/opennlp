@@ -22,10 +22,10 @@ package opennlp.tools.ml.perceptron;
 import java.io.File;
 import java.io.IOException;
 
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelReader;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.DataReader;
+import opennlp.tools.ml.model.AbstractModel;
 
 /**
  * Abstract parent class for readers of Perceptron.

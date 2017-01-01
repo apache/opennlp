@@ -27,6 +27,7 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerEvaluationMonitor;
 import opennlp.tools.tokenize.TokenizerEvaluator;
 import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.tokenize.TokenizerME;
 
 public final class TokenizerMEEvaluatorTool
     extends AbstractEvaluatorTool<TokenSample, EvalToolParams> {
@@ -53,7 +54,7 @@ public final class TokenizerMEEvaluatorTool
     }
 
     TokenizerEvaluator evaluator = new TokenizerEvaluator(
-        new opennlp.tools.tokenize.TokenizerME(model), misclassifiedListener);
+        new TokenizerME(model), misclassifiedListener);
 
     System.out.print("Evaluating ... ");
 

@@ -17,10 +17,10 @@
 
 package opennlp.tools.tokenize;
 
-import java.io.IOException;
-
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+
+import java.io.IOException;
 
 /**
  * This class is a stream filter which reads in string encoded samples and creates

@@ -17,16 +17,16 @@
 
 package opennlp.tools.ml.naivebayes;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import opennlp.tools.ml.model.Event;
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamUtils;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -114,7 +114,7 @@ public class NaiveBayesCorrectnessTest {
   }
 
   public static ObjectStream<Event> createTrainingStream() throws IOException {
-    List<Event> trainingEvents = new ArrayList<Event>();
+    List<Event> trainingEvents = new ArrayList<>();
 
     String label1 = "politics";
     String[] context1 = {"bow=the", "bow=united", "bow=nations"};

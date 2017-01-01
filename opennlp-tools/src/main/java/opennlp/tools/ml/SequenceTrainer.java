@@ -17,17 +17,17 @@
 
 package opennlp.tools.ml;
 
-import java.io.IOException;
-import java.util.Map;
-
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.ml.model.SequenceStream;
 
+import java.io.IOException;
+import java.util.Map;
+
 public interface SequenceTrainer {
 
-  public static final String SEQUENCE_VALUE = "Sequence";
+  String SEQUENCE_VALUE = "Sequence";
 
-  public void init(Map<String, String> trainParams, Map<String, String> reportMap);
+  void init(Map<String, String> trainParams, Map<String, String> reportMap);
 
-  public SequenceClassificationModel<String> train(SequenceStream events) throws IOException;
+  SequenceClassificationModel<String> train(SequenceStream events) throws IOException;
 }

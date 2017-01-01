@@ -16,32 +16,29 @@
  */
 package opennlp.tools.doccat;
 
-import static org.junit.Assert.assertEquals;
+import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
+import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamUtils;
-import opennlp.tools.util.TrainingParameters;
-
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 public class DocumentCategorizerMETest {
 
   @Test
   public void testSimpleTraining() throws IOException {
 
-    ObjectStream<DocumentSample> samples = ObjectStreamUtils.createObjectStream(new DocumentSample[]{
-      new DocumentSample("1", new String[]{"a", "b", "c"}),
-      new DocumentSample("1", new String[]{"a", "b", "c", "1", "2"}),
-      new DocumentSample("1", new String[]{"a", "b", "c", "3", "4"}),
-      new DocumentSample("0", new String[]{"x", "y", "z"}),
-      new DocumentSample("0", new String[]{"x", "y", "z", "5", "6"}),
-      new DocumentSample("0", new String[]{"x", "y", "z", "7", "8"})
-    });
+    ObjectStream<DocumentSample> samples = ObjectStreamUtils.createObjectStream(
+        new DocumentSample("1", new String[]{"a", "b", "c"}),
+        new DocumentSample("1", new String[]{"a", "b", "c", "1", "2"}),
+        new DocumentSample("1", new String[]{"a", "b", "c", "3", "4"}),
+        new DocumentSample("0", new String[]{"x", "y", "z"}),
+        new DocumentSample("0", new String[]{"x", "y", "z", "5", "6"}),
+        new DocumentSample("0", new String[]{"x", "y", "z", "7", "8"}));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));

@@ -17,6 +17,9 @@
 
 package opennlp.tools.util.featuregen;
 
+import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.SerializableArtifact;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -29,10 +32,6 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.SerializableArtifact;
 
 /**
  *
@@ -49,18 +48,16 @@ public class BrownCluster implements SerializableArtifact {
 
   public static class BrownClusterSerializer implements ArtifactSerializer<BrownCluster> {
 
-    public BrownCluster create(InputStream in) throws IOException,
-        InvalidFormatException {
+    public BrownCluster create(InputStream in) throws IOException {
       return new BrownCluster(in);
     }
 
-    public void serialize(BrownCluster artifact, OutputStream out)
-        throws IOException {
+    public void serialize(BrownCluster artifact, OutputStream out) throws IOException {
       artifact.serialize(out);
     }
   }
 
-  private Map<String, String> tokenToClusterMap = new HashMap<String, String>();
+  private Map<String, String> tokenToClusterMap = new HashMap<>();
 
   /**
    * Generates the token to cluster map from Brown cluster input file.

@@ -17,21 +17,19 @@
 
 package opennlp.tools.formats;
 
+import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.Span;
+import org.junit.Test;
+
+import java.io.IOException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
-import opennlp.tools.formats.Conll02NameSampleStream.LANGUAGE;
-import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
-
-import org.junit.Test;
 
 /**
  *
@@ -40,7 +38,7 @@ import org.junit.Test;
  */
 public class Conll02NameSampleStreamTest {
 
-  private static ObjectStream<NameSample> openData(LANGUAGE lang, String name) throws IOException {
+  private static ObjectStream<NameSample> openData(Conll02NameSampleStream.LANGUAGE lang, String name) throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(Conll02NameSampleStreamTest.class,
         "/opennlp/tools/formats/" + name);
 
@@ -50,7 +48,7 @@ public class Conll02NameSampleStreamTest {
   @Test
   public void testParsingSpanishSample() throws IOException {
 
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.ES, "conll2002-es.sample");
+    ObjectStream<NameSample> sampleStream = openData(Conll02NameSampleStream.LANGUAGE.ES, "conll2002-es.sample");
 
     NameSample personName = sampleStream.read();
 
@@ -72,7 +70,7 @@ public class Conll02NameSampleStreamTest {
 
   @Test
   public void testParsingDutchSample() throws IOException {
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NL, "conll2002-nl.sample");
+    ObjectStream<NameSample> sampleStream = openData(Conll02NameSampleStream.LANGUAGE.NL, "conll2002-nl.sample");
 
     NameSample personName = sampleStream.read();
 
@@ -88,7 +86,7 @@ public class Conll02NameSampleStreamTest {
 
   @Test
   public void testReset() throws IOException {
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NL, "conll2002-nl.sample");
+    ObjectStream<NameSample> sampleStream = openData(Conll02NameSampleStream.LANGUAGE.NL, "conll2002-nl.sample");
 
     NameSample sample = sampleStream.read();
 

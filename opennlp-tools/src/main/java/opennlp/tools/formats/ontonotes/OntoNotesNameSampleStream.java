@@ -27,8 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.namefind.NameSample;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;

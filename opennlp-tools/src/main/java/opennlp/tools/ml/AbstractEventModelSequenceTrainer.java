@@ -38,8 +38,8 @@ public abstract class AbstractEventModelSequenceTrainer extends AbstractTrainer 
     }
 
     MaxentModel model = doTrain(events);
-    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM,
-        EventModelSequenceTrainer.SEQUENCE_VALUE);
+    addToReport(TRAINER_TYPE_PARAM,
+        SEQUENCE_VALUE);
     return model;
   }
 

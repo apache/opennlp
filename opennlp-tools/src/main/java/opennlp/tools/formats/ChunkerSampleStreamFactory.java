@@ -18,15 +18,15 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 
-import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkSampleStream;
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.util.InputStreamFactory;
 
 /**
  * Factory producing OpenNLP {@link ChunkSampleStream}s.

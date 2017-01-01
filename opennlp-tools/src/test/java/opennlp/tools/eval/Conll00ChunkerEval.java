@@ -21,17 +21,17 @@ package opennlp.tools.eval;
 import java.io.File;
 import java.io.IOException;
 
-import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkSampleStream;
-import opennlp.tools.chunker.ChunkerEvaluator;
 import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.chunker.ChunkerEvaluator;
+import opennlp.tools.util.ObjectStream;
 
 import org.junit.Assert;
 import org.junit.Test;

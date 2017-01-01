@@ -34,7 +34,7 @@ public abstract class AbstractToSentenceSampleStream<T> extends
   private final int chunkSize;
 
   AbstractToSentenceSampleStream(Detokenizer detokenizer,
-      ObjectStream<T> samples, int chunkSize) {
+                                 ObjectStream<T> samples, int chunkSize) {
     super(samples);
 
     if (detokenizer == null)

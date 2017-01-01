@@ -18,8 +18,8 @@
 package opennlp.uima.tokenize;
 
 import opennlp.tools.util.Span;
-import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.UimaUtil;
+import opennlp.uima.util.AnnotatorUtil;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;

@@ -22,9 +22,9 @@ import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamUtils;
 
 import org.junit.Test;
 

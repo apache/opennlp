@@ -25,7 +25,6 @@
 	<annotatorImplementationName>opennlp.uima.doccat.LanguageDetector</annotatorImplementationName>
 	<analysisEngineMetaData>
 		<name>LanguageDetector</name>
-		<description></description>
 		<version>${pom.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>

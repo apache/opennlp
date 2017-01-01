@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import opennlp.tools.parser.Parse;
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.ObjectStream;
 
 import org.junit.Assert;
 import org.junit.Test;

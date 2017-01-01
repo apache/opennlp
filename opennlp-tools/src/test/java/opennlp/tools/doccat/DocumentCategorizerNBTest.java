@@ -22,10 +22,10 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
 
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.TrainingParameters;
 
 import org.junit.Test;

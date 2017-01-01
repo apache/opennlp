@@ -24,8 +24,8 @@ import java.io.IOException;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.sentdetect.lang.Factory;
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 import org.junit.Test;

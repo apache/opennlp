@@ -17,23 +17,24 @@
 
 package opennlp.tools.parser;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.parser.lang.en.HeadRules;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import org.junit.Assert;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
-import junit.framework.Assert;
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.parser.lang.en.HeadRules;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ParserTestUtil {
 
-   public static HeadRules createTestHeadRules() throws IOException {
+   public static opennlp.tools.parser.lang.en.HeadRules createTestHeadRules() throws IOException {
      InputStream headRulesIn =
        ParserTestUtil.class.getResourceAsStream("/opennlp/tools/parser/en_head_rules");
 

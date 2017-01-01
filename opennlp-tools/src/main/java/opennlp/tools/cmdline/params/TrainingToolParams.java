@@ -19,7 +19,7 @@ package opennlp.tools.cmdline.params;
 
 import java.io.File;
 
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.ArgumentParser;
 
 /**
  * Common training parameters.
@@ -28,6 +28,6 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
  */
 public interface TrainingToolParams extends BasicTrainingParams {
 
-  @ParameterDescription(valueName = "modelFile", description = "output model file.")
+  @ArgumentParser.ParameterDescription(valueName = "modelFile", description = "output model file.")
   File getModel();
 }

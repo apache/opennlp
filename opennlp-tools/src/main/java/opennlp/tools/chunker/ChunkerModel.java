@@ -18,20 +18,20 @@
 
 package opennlp.tools.chunker;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Map;
-import java.util.Properties;
-
+import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.BaseModel;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * The {@link ChunkerModel} is the model used
@@ -71,15 +71,15 @@ public class ChunkerModel extends BaseModel {
     this(languageCode, chunkerModel, null, factory);
   }
 
-  public ChunkerModel(InputStream in) throws IOException, InvalidFormatException {
+  public ChunkerModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
-  public ChunkerModel(File modelFile) throws IOException, InvalidFormatException {
+  public ChunkerModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
-  public ChunkerModel(URL modelURL) throws IOException, InvalidFormatException {
+  public ChunkerModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 

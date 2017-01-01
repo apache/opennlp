@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.lemmatizer;
 import java.io.File;
 import java.io.IOException;
 
+import opennlp.tools.lemmatizer.LemmatizerModel;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -28,7 +29,6 @@ import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.lemmatizer.LemmaSample;
 import opennlp.tools.lemmatizer.LemmatizerFactory;
 import opennlp.tools.lemmatizer.LemmatizerME;
-import opennlp.tools.lemmatizer.LemmatizerModel;
 import opennlp.tools.util.model.ModelUtil;
 
 public class LemmatizerTrainerTool

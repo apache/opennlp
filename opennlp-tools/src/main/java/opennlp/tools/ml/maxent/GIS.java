@@ -233,7 +233,7 @@ public class GIS extends AbstractEventTrainer {
    *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
   public static GISModel trainModel(int iterations, DataIndexer indexer,
-      Prior modelPrior, int cutoff) {
+                                    Prior modelPrior, int cutoff) {
     return trainModel(iterations, indexer, true, false, modelPrior, cutoff);
   }
 

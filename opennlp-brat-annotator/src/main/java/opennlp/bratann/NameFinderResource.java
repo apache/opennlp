@@ -17,22 +17,21 @@
 
 package opennlp.bratann;
 
+import opennlp.tools.namefind.TokenNameFinder;
+import opennlp.tools.sentdetect.SentenceDetector;
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.util.Span;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-
-import opennlp.tools.namefind.TokenNameFinder;
-import opennlp.tools.sentdetect.SentenceDetector;
-import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.util.Span;
 
 @Path("/ner")
 public class NameFinderResource {
@@ -67,7 +66,7 @@ public class NameFinderResource {
 
     Span sentenceSpans[] = sentDetect.sentPosDetect(text);
 
-    Map<String, NameAnn> map = new HashMap<String, NameAnn>();
+    Map<String, NameAnn> map = new HashMap<>();
 
     int indexCounter = 0;
 
@@ -92,7 +91,7 @@ public class NameFinderResource {
               + sentenceSpans[i].getStart();
 
           // create a list of new line indexes
-          List<Integer> newLineIndexes = new ArrayList<Integer>();
+          List<Integer> newLineIndexes = new ArrayList<>();
 
           // TODO: Code needs to handle case that there are multiple new lines
           // in a row
@@ -109,8 +108,8 @@ public class NameFinderResource {
             }
           }
 
-          List<String> textSegments = new ArrayList<String>();
-          List<int[]> spanSegments = new ArrayList<int[]>();
+          List<String> textSegments = new ArrayList<>();
+          List<int[]> spanSegments = new ArrayList<>();
 
           int segmentBegin = beginOffset;
 

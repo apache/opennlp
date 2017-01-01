@@ -90,7 +90,7 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
     for (int i = 1; i < prevWindowSize + 1; i++) {
       if (index - i >= 0) {
 
-        List<String> prevFeatures = new ArrayList<String>();
+        List<String> prevFeatures = new ArrayList<>();
 
         generator.createFeatures(prevFeatures, tokens, index - i, preds);
 
@@ -104,7 +104,7 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
     for (int i = 1; i < nextWindowSize + 1; i++) {
       if (i + index < tokens.length) {
 
-        List<String> nextFeatures = new ArrayList<String>();
+        List<String> nextFeatures = new ArrayList<>();
 
         generator.createFeatures(nextFeatures, tokens, index + i, preds);
 

@@ -226,8 +226,7 @@ public static void computeShortestEditScript(String wordForm, String lemma, int[
         }
         if (lemmaLength > 0 && (distance[wordFormLength][lemmaLength - 1] == distance[wordFormLength][lemmaLength])) {
             lemmaLength--;
-            continue;
-        }   
+        }
     }
 }
 

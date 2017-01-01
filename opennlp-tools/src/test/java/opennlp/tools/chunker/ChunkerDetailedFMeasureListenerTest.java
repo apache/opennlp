@@ -17,19 +17,18 @@
 
 package opennlp.tools.chunker;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static junit.framework.Assert.assertEquals;
+import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.PlainTextByLineStream;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
-import org.junit.Test;
-
-import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.PlainTextByLineStream;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ChunkerDetailedFMeasureListenerTest {
 
@@ -66,6 +65,6 @@ public class ChunkerDetailedFMeasureListenerTest {
       expected.append("\n");
       line = reader.readLine();
     }
-    assertEquals(expected.toString().trim(), listener.createReport(Locale.ENGLISH).trim());
+    Assert.assertEquals(expected.toString().trim(), listener.createReport(Locale.ENGLISH).trim());
   }
 }

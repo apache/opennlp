@@ -18,11 +18,11 @@
 
 package opennlp.tools.util.model;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import opennlp.tools.util.InvalidFormatException;
 
 @Deprecated
 public class ClassSerializer implements ArtifactSerializer<Class<?>> {
@@ -51,13 +51,9 @@ public class ClassSerializer implements ArtifactSerializer<Class<?>> {
     }
   }
 
-  public Class<?> create(InputStream in) throws IOException,
-      InvalidFormatException {
+  public Class<?> create(InputStream in) throws IOException {
     classBytes = ModelUtil.read(in);
-
-    Class<?> factoryClass = loadClass(classBytes);
-
-    return factoryClass;
+    return loadClass(classBytes);
   }
 
   public void serialize(Class<?> artifact, OutputStream out) throws IOException {

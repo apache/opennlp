@@ -17,11 +17,11 @@
 
 package opennlp.tools.formats.ad;
 
+import opennlp.tools.util.StringUtil;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import opennlp.tools.util.StringUtil;
 
 /**
  * Utility class to handle Portuguese contractions.
@@ -39,7 +39,7 @@ public class PortugueseContractionUtility {
   protected static final Map<String, String> CONTRACTIONS;
 
   static {
-    Map<String, String> elems = new HashMap<String, String>();
+    Map<String, String> elems = new HashMap<>();
     // 103 CONTRACTIONS.
     elems.put("a+a", "\u00e0");
     elems.put("a+as", "\u00e0s");

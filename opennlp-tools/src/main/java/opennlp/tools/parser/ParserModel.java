@@ -18,6 +18,17 @@
 
 package opennlp.tools.parser;
 
+import opennlp.tools.chunker.ChunkerModel;
+import opennlp.tools.ml.BeamSearch;
+import opennlp.tools.postag.POSModel;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.UncloseableInputStream;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.util.Version;
+import opennlp.tools.util.model.ArtifactSerializer;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -27,17 +38,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.Map;
-
-import opennlp.tools.chunker.ChunkerModel;
-import opennlp.tools.ml.BeamSearch;
-import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.postag.POSModel;
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.Version;
-import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.BaseModel;
-import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
  * This is an abstract base class for {@link ParserModel} implementations.
@@ -96,13 +96,13 @@ public class ParserModel extends BaseModel {
       ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
 
     public opennlp.tools.parser.lang.en.HeadRules create(InputStream in)
-        throws IOException, InvalidFormatException {
+        throws IOException {
       return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(
           new InputStreamReader(in, "UTF-8")));
     }
 
     public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact,
-        OutputStream out) throws IOException {
+                          OutputStream out) throws IOException {
       artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
     }
   }
@@ -125,7 +125,7 @@ public class ParserModel extends BaseModel {
 
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel,
       MaxentModel attachModel, POSModel parserTagger,
-      ChunkerModel chunkerTagger, opennlp.tools.parser.HeadRules headRules,
+      ChunkerModel chunkerTagger, HeadRules headRules,
       ParserType modelType, Map<String, String> manifestInfoEntries) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
@@ -160,16 +160,16 @@ public class ParserModel extends BaseModel {
 
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel,
       MaxentModel attachModel, POSModel parserTagger,
-      ChunkerModel chunkerTagger, opennlp.tools.parser.HeadRules headRules,
+      ChunkerModel chunkerTagger, HeadRules headRules,
       ParserType modelType) {
     this (languageCode, buildModel, checkModel, attachModel, parserTagger,
         chunkerTagger, headRules, modelType, null);
   }
 
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel,
-      POSModel parserTagger, ChunkerModel chunkerTagger,
-      opennlp.tools.parser.HeadRules headRules, ParserType type,
-      Map<String, String> manifestInfoEntries) {
+                     POSModel parserTagger, ChunkerModel chunkerTagger,
+                     HeadRules headRules, ParserType type,
+                     Map<String, String> manifestInfoEntries) {
     this (languageCode, buildModel, checkModel, null, parserTagger,
         chunkerTagger, headRules, type, manifestInfoEntries);
   }
@@ -230,8 +230,8 @@ public class ParserModel extends BaseModel {
     return (ChunkerModel) artifactMap.get(CHUNKER_TAGGER_MODEL_ENTRY_NAME);
   }
 
-  public opennlp.tools.parser.HeadRules getHeadRules() {
-    return (opennlp.tools.parser.HeadRules)
+  public HeadRules getHeadRules() {
+    return (HeadRules)
         artifactMap.get(HEAD_RULES_MODEL_ENTRY_NAME);
   }
 

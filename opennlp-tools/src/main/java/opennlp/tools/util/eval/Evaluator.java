@@ -18,12 +18,12 @@
 
 package opennlp.tools.util.eval;
 
+import opennlp.tools.util.ObjectStream;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import opennlp.tools.util.ObjectStream;
 
 /**
  * The {@link Evaluator} is an abstract base class for evaluators.

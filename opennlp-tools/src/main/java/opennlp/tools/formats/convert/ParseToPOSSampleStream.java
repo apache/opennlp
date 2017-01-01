@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.parser.Parse;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 

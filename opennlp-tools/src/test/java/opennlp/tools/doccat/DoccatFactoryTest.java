@@ -24,13 +24,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.tokenize.SimpleTokenizer;
+import opennlp.tools.util.InputStreamFactory;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -77,7 +78,7 @@ public class DoccatFactoryTest {
     assertEquals(BagOfWordsFeatureGenerator.class,
         factory.getFeatureGenerators()[0].getClass());
 
-    assertEquals(WhitespaceTokenizer.INSTANCE, factory.getTokenizer());
+    Assert.assertEquals(WhitespaceTokenizer.INSTANCE, factory.getTokenizer());
 
   }
 
@@ -109,7 +110,7 @@ public class DoccatFactoryTest {
         factory.getFeatureGenerators()[1].getClass());
     assertEquals(NGramFeatureGenerator.class,factory.getFeatureGenerators()[2].getClass());
 
-    assertEquals(SimpleTokenizer.INSTANCE.getClass(), factory.getTokenizer()
+    Assert.assertEquals(SimpleTokenizer.INSTANCE.getClass(), factory.getTokenizer()
         .getClass());
 
   }

@@ -18,14 +18,14 @@
  */
 package opennlp.tools.ngram;
 
-import java.util.Collection;
-import java.util.LinkedList;
 import opennlp.tools.util.StringList;
 import org.junit.Test;
 
+import java.util.Collection;
+import java.util.LinkedList;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link NGramUtils}
@@ -34,7 +34,7 @@ public class NGramUtilsTest {
 
   @Test
   public void testBigramMLProbability() {
-    Collection<StringList> set = new LinkedList<StringList>();
+    Collection<StringList> set = new LinkedList<>();
     set.add(new StringList("<s>", "I", "am", "Sam", "</s>"));
     set.add(new StringList("<s>", "Sam", "I", "am", "</s>"));
     set.add(new StringList("<s>", "I", "do", "not", "like", "green", "eggs", "and", "ham", "</s>"));
@@ -49,7 +49,7 @@ public class NGramUtilsTest {
 
   @Test
   public void testTrigramMLProbability() {
-    Collection<StringList> set = new LinkedList<StringList>();
+    Collection<StringList> set = new LinkedList<>();
     set.add(new StringList("<s>", "I", "am", "Sam", "</s>"));
     set.add(new StringList("<s>", "Sam", "I", "am", "</s>"));
     set.add(new StringList("<s>", "I", "do", "not", "like", "green", "eggs", "and", "ham", "</s>"));
@@ -62,7 +62,7 @@ public class NGramUtilsTest {
 
   @Test
   public void testNgramMLProbability() {
-    Collection<StringList> set = new LinkedList<StringList>();
+    Collection<StringList> set = new LinkedList<>();
     set.add(new StringList("<s>", "I", "am", "Sam", "</s>"));
     set.add(new StringList("<s>", "Sam", "I", "am", "</s>"));
     set.add(new StringList("<s>", "I", "do", "not", "like", "green", "eggs", "and", "ham", "</s>"));
@@ -75,7 +75,7 @@ public class NGramUtilsTest {
 
   @Test
   public void testLinearInterpolation() throws Exception {
-    Collection<StringList> set = new LinkedList<StringList>();
+    Collection<StringList> set = new LinkedList<>();
     set.add(new StringList("the", "green", "book", "STOP"));
     set.add(new StringList("my", "blue", "book", "STOP"));
     set.add(new StringList("his", "green", "house", "STOP"));
@@ -88,7 +88,7 @@ public class NGramUtilsTest {
 
   @Test
   public void testLinearInterpolation2() throws Exception {
-    Collection<StringList> set = new LinkedList<StringList>();
+    Collection<StringList> set = new LinkedList<>();
     set.add(new StringList("D", "N", "V", "STOP"));
     set.add(new StringList("D", "N", "V", "STOP"));
     Double lambda = 1d / 3d;

@@ -19,22 +19,23 @@ package opennlp.tools.formats.brat;
 
 import java.io.File;
 import java.io.IOException;
+
+import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.formats.AbstractSampleStreamFactory;
+import opennlp.tools.sentdetect.NewlineSentenceDetector;
+import opennlp.tools.sentdetect.SentenceModel;
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.sentdetect.NewlineSentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetectorME;
-import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.SimpleTokenizer;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
-import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 
 public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<NameSample> {

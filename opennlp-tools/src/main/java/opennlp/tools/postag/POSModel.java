@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
 
+import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.MaxentModel;
@@ -31,7 +32,6 @@ import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.BaseModel;
 
 /**
  * The {@link POSModel} is the model used

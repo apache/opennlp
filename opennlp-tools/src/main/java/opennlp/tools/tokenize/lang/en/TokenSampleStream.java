@@ -17,6 +17,9 @@
 
 package opennlp.tools.tokenize.lang.en;
 
+import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.util.Span;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,9 +28,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import opennlp.tools.tokenize.TokenSample;
-import opennlp.tools.util.Span;
 
 /**
  * Class which produces an Iterator&lt;TokenSample&gt; from a file of space delimited token.
@@ -56,22 +56,24 @@ public class TokenSampleStream implements Iterator<TokenSample> {
       evenq =true;
     }
     StringBuilder sb = new StringBuilder(line.length());
-    List<Span> spans = new ArrayList<Span>();
+    List<Span> spans = new ArrayList<>();
     int length = 0;
     for (int ti=0;ti<tokens.length;ti++) {
       String token = tokens[ti];
       String lastToken = ti -1 >= 0 ? tokens[ti-1] : "";
-      if (token.equals("-LRB-")) {
-        token = "(";
-      }
-      else if (token.equals("-LCB-")) {
-        token = "{";
-      }
-      else if (token.equals("-RRB-")) {
-        token = ")";
-      }
-      else if (token.equals("-RCB-")) {
-        token = "}";
+      switch (token) {
+        case "-LRB-":
+          token = "(";
+          break;
+        case "-LCB-":
+          token = "{";
+          break;
+        case "-RRB-":
+          token = ")";
+          break;
+        case "-RCB-":
+          token = "}";
+          break;
       }
       if (sb.length() == 0) {
 

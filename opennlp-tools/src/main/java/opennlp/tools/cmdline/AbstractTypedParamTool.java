@@ -42,15 +42,14 @@ public abstract class AbstractTypedParamTool<T, P> extends TypedCmdLineTool<T> {
   public String getHelp(String format) {
     if ("".equals(format) || StreamFactoryRegistry.DEFAULT_FORMAT.equals(format)) {
       return getBasicHelp(paramsClass,
-          StreamFactoryRegistry.getFactory(type, StreamFactoryRegistry.DEFAULT_FORMAT)
-              .<P>getParameters());
+          StreamFactoryRegistry.getFactory(type, StreamFactoryRegistry.DEFAULT_FORMAT).getParameters());
     } else {
       ObjectStreamFactory<T> factory = StreamFactoryRegistry.getFactory(type, format);
       if (null == factory) {
         throw new TerminateToolException(1, "Format " + format + " is not found.\n" + getHelp());
       }
       return "Usage: " + CLI.CMD + " " + getName() + "." + format + " " +
-          ArgumentParser.createUsage(paramsClass, factory.<P>getParameters());
+          ArgumentParser.createUsage(paramsClass, factory.getParameters());
     }
   }
 }

@@ -17,16 +17,16 @@
 
  package opennlp.tools.namefind;
 
-import java.io.IOException;
-import java.util.Collections;
-
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.Sequence;
 import opennlp.tools.ml.model.SequenceStream;
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
+import opennlp.tools.util.ObjectStream;
+
+import java.io.IOException;
+import java.util.Collections;
 
 public class NameSampleSequenceStream implements SequenceStream {
 
@@ -70,7 +70,7 @@ public class NameSampleSequenceStream implements SequenceStream {
 
   @SuppressWarnings("unchecked")
   public Event[] updateContext(Sequence sequence, AbstractModel model) {
-    TokenNameFinder tagger = new NameFinderME(new TokenNameFinderModel("x-unspecified", model, Collections.<String, Object>emptyMap(), null));
+    TokenNameFinder tagger = new NameFinderME(new TokenNameFinderModel("x-unspecified", model, Collections.emptyMap(), null));
     String[] sentence = ((Sequence<NameSample>) sequence).getSource().getSentence();
     String[] tags = seqCodec.encode(tagger.find(sentence), sentence.length);
     Event[] events = new Event[sentence.length];

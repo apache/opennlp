@@ -18,19 +18,18 @@
 
 package opennlp.tools.dictionary;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import opennlp.tools.util.StringList;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.util.StringList;
-
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 public class DictionaryAsSetCaseInsensitiveTest {
 
@@ -223,7 +222,7 @@ public class DictionaryAsSetCaseInsensitiveTest {
     dictA.put(asSL(entry2.toUpperCase()));
 
     Iterator<String> it = dictA.asStringSet().iterator();
-    List<String> elements = new ArrayList<String>();
+    List<String> elements = new ArrayList<>();
     while (it.hasNext()) {
       elements.add(it.next());
     }

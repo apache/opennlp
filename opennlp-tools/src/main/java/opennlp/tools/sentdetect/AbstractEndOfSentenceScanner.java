@@ -18,10 +18,10 @@
 
 package opennlp.tools.sentdetect;
 
+import opennlp.tools.ml.maxent.IntegerPool;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import opennlp.tools.ml.maxent.IntegerPool;
 
 /**
  * Abstract class for common methods related to identifying potential ends of sentences.
@@ -41,7 +41,7 @@ public abstract class AbstractEndOfSentenceScanner implements EndOfSentenceScann
   }
 
   public List<Integer> getPositions(char[] cbuf) {
-    List<Integer> l = new ArrayList<Integer>();
+    List<Integer> l = new ArrayList<>();
     char[] eosCharacters = getEndOfSentenceCharacters();
     for (int i = 0; i < cbuf.length; i++) {
       for (char eosCharacter : eosCharacters) {

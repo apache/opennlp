@@ -35,6 +35,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import opennlp.tools.parser.Constituent;
 import opennlp.tools.parser.GapLabeler;
+import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -56,15 +57,15 @@ import opennlp.tools.util.model.SerializableArtifact;
  * Other changes include removal of deprecated methods.
  *
  */
-public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, SerializableArtifact {
+public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, SerializableArtifact {
 
-  public static class HeadRulesSerializer implements ArtifactSerializer<opennlp.tools.parser.lang.es.AncoraSpanishHeadRules> {
+  public static class HeadRulesSerializer implements ArtifactSerializer<AncoraSpanishHeadRules> {
 
-    public opennlp.tools.parser.lang.es.AncoraSpanishHeadRules create(InputStream in) throws IOException {
-      return new opennlp.tools.parser.lang.es.AncoraSpanishHeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
+    public AncoraSpanishHeadRules create(InputStream in) throws IOException {
+      return new AncoraSpanishHeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
     }
 
-    public void serialize(opennlp.tools.parser.lang.es.AncoraSpanishHeadRules artifact, OutputStream out)
+    public void serialize(AncoraSpanishHeadRules artifact, OutputStream out)
         throws IOException {
       artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
     }

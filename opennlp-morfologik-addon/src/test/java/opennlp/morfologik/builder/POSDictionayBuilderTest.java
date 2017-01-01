@@ -17,6 +17,11 @@
 
 package opennlp.morfologik.builder;
 
+import morfologik.stemming.DictionaryMetadata;
+import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,13 +29,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
-import org.junit.Test;
-
-import junit.framework.TestCase;
-import morfologik.stemming.DictionaryMetadata;
-import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
-
-public class POSDictionayBuilderTest extends TestCase {
+public class POSDictionayBuilderTest {
 
   @Test
   public void testBuildDictionary() throws Exception {
@@ -39,7 +38,7 @@ public class POSDictionayBuilderTest extends TestCase {
 
     MorfologikLemmatizer ml = new MorfologikLemmatizer(output);
 
-    assertNotNull(ml);
+    Assert.assertNotNull(ml);
   }
   
   public static Path createMorfologikDictionary() throws Exception {

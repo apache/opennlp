@@ -19,8 +19,7 @@ package opennlp.tools.cmdline.postag;
 
 import java.io.File;
 
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
@@ -30,23 +29,23 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
  */
 interface TrainingParams extends BasicTrainingParams {
 
-  @ParameterDescription(valueName = "maxent|perceptron|perceptron_sequence", description = "The type of the token name finder model. One of maxent|perceptron|perceptron_sequence.")
-  @OptionalParameter(defaultValue = "maxent")
+  @ArgumentParser.ParameterDescription(valueName = "maxent|perceptron|perceptron_sequence", description = "The type of the token name finder model. One of maxent|perceptron|perceptron_sequence.")
+  @ArgumentParser.OptionalParameter(defaultValue = "maxent")
   String getType();
 
-  @ParameterDescription(valueName = "dictionaryPath", description = "The XML tag dictionary file")
-  @OptionalParameter
+  @ArgumentParser.ParameterDescription(valueName = "dictionaryPath", description = "The XML tag dictionary file")
+  @ArgumentParser.OptionalParameter
   File getDict();
 
-  @ParameterDescription(valueName = "cutoff", description = "NGram cutoff. If not specified will not create ngram dictionary.")
-  @OptionalParameter
+  @ArgumentParser.ParameterDescription(valueName = "cutoff", description = "NGram cutoff. If not specified will not create ngram dictionary.")
+  @ArgumentParser.OptionalParameter
   Integer getNgram();
 
-  @ParameterDescription(valueName = "tagDictCutoff", description = "TagDictionary cutoff. If specified will create/expand a mutable TagDictionary")
-  @OptionalParameter
+  @ArgumentParser.ParameterDescription(valueName = "tagDictCutoff", description = "TagDictionary cutoff. If specified will create/expand a mutable TagDictionary")
+  @ArgumentParser.OptionalParameter
   Integer getTagDictCutoff();
 
-  @ParameterDescription(valueName = "factoryName", description = "A sub-class of POSTaggerFactory where to get implementation and resources.")
-  @OptionalParameter
+  @ArgumentParser.ParameterDescription(valueName = "factoryName", description = "A sub-class of POSTaggerFactory where to get implementation and resources.")
+  @ArgumentParser.OptionalParameter
   String getFactory();
 }

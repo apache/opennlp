@@ -22,17 +22,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSContextGenerator;
-import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSDictionary;
-import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSSequenceValidator;
 import opennlp.tools.util.BaseToolFactory;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.InputStreamFactory;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -59,7 +57,7 @@ public class POSTaggerFactoryTest {
 
   @Test
   public void testPOSTaggerWithCustomFactory() throws IOException {
-    DummyPOSDictionary posDict = new DummyPOSDictionary(
+    DummyPOSTaggerFactory.DummyPOSDictionary posDict = new DummyPOSTaggerFactory.DummyPOSDictionary(
         POSDictionary.create(POSDictionaryTest.class
             .getResourceAsStream("TagDictionaryCaseSensitive.xml")));
     Dictionary dic = POSTaggerME.buildNGramDictionary(createSampleStream(), 0);
@@ -68,9 +66,9 @@ public class POSTaggerFactoryTest {
       new DummyPOSTaggerFactory(dic, posDict));
 
     POSTaggerFactory factory = posModel.getFactory();
-    assertTrue(factory.getTagDictionary() instanceof DummyPOSDictionary);
-    assertTrue(factory.getPOSContextGenerator() instanceof DummyPOSContextGenerator);
-    assertTrue(factory.getSequenceValidator() instanceof DummyPOSSequenceValidator);
+    assertTrue(factory.getTagDictionary() instanceof DummyPOSTaggerFactory.DummyPOSDictionary);
+    assertTrue(factory.getPOSContextGenerator() instanceof DummyPOSTaggerFactory.DummyPOSContextGenerator);
+    assertTrue(factory.getSequenceValidator() instanceof DummyPOSTaggerFactory.DummyPOSSequenceValidator);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     posModel.serialize(out);
@@ -79,9 +77,9 @@ public class POSTaggerFactoryTest {
     POSModel fromSerialized = new POSModel(in);
 
     factory = fromSerialized.getFactory();
-    assertTrue(factory.getTagDictionary() instanceof DummyPOSDictionary);
-    assertTrue(factory.getPOSContextGenerator() instanceof DummyPOSContextGenerator);
-    assertTrue(factory.getSequenceValidator() instanceof DummyPOSSequenceValidator);
+    assertTrue(factory.getTagDictionary() instanceof DummyPOSTaggerFactory.DummyPOSDictionary);
+    assertTrue(factory.getPOSContextGenerator() instanceof DummyPOSTaggerFactory.DummyPOSContextGenerator);
+    assertTrue(factory.getSequenceValidator() instanceof DummyPOSTaggerFactory.DummyPOSSequenceValidator);
     assertTrue(factory.getDictionary() != null);
   }
 

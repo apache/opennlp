@@ -47,7 +47,7 @@ public class ListHeap<E extends Comparable<E>> implements Heap<E> {
   public ListHeap(int sz, Comparator<E> c) {
     size = sz;
     comp = c;
-    list = new ArrayList<E>(sz);
+    list = new ArrayList<>(sz);
   }
 
   /**
@@ -194,7 +194,7 @@ public class ListHeap<E extends Comparable<E>> implements Heap<E> {
 
   @Deprecated
   public static void main(String[] args) {
-   Heap<Integer> heap = new ListHeap<Integer>(5);
+   Heap<Integer> heap = new ListHeap<>(5);
    for (int ai=0;ai<args.length;ai++){
      heap.add(Integer.parseInt(args[ai]));
    }

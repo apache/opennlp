@@ -17,12 +17,12 @@
 
 package opennlp.tools.chunker;
 
+import opennlp.tools.util.FilterObjectStream;
+import opennlp.tools.util.ObjectStream;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import opennlp.tools.util.FilterObjectStream;
-import opennlp.tools.util.ObjectStream;
 
 /**
  * This dummy chunk sample stream reads a file formatted as described at
@@ -30,7 +30,7 @@ import opennlp.tools.util.ObjectStream;
  * can be used together with DummyChunker simulate a chunker.
  */
 public class DummyChunkSampleStream extends
-		FilterObjectStream<String, ChunkSample> {
+    FilterObjectStream<String, ChunkSample> {
 
 	boolean mIsPredicted;
 	int count = 0;
@@ -47,14 +47,14 @@ public class DummyChunkSampleStream extends
 	 * Returns a pair representing the expected and the predicted at 0: the
 	 * chunk tag according to the corpus at 1: the chunk tag predicted
 	 *
-	 * @see opennlp.tools.util.ObjectStream#read()
+	 * @see ObjectStream#read()
 	 */
 	public ChunkSample read() throws IOException {
 
-		List<String> toks = new ArrayList<String>();
-		List<String> posTags = new ArrayList<String>();
-		List<String> chunkTags = new ArrayList<String>();
-		List<String> predictedChunkTags = new ArrayList<String>();
+		List<String> toks = new ArrayList<>();
+		List<String> posTags = new ArrayList<>();
+		List<String> chunkTags = new ArrayList<>();
+		List<String> predictedChunkTags = new ArrayList<>();
 
 		for (String line = samples.read(); line != null && !line.equals(""); line = samples
 				.read()) {

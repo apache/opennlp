@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.Cache;
 import opennlp.tools.util.StringList;
+import opennlp.tools.dictionary.Dictionary;
 
 /**
  * A context generator for the POS Tagger.

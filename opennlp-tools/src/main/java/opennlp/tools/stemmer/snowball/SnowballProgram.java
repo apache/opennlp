@@ -262,17 +262,13 @@ class SnowballProgram {
 		if (w.method == null) return w.result;
 		boolean res;
 		try {
-		    Object resobj = w.method.invoke(w.methodobject,
-						    new Object[0]);
+		    Object resobj = w.method.invoke(w.methodobject);
 		    res = resobj.toString().equals("true");
-		} catch (InvocationTargetException e) {
-		    res = false;
-		    // FIXME - debug message
-		} catch (IllegalAccessException e) {
+		} catch (InvocationTargetException | IllegalAccessException e) {
 		    res = false;
 		    // FIXME - debug message
 		}
-		cursor = c + w.s_size;
+			cursor = c + w.s_size;
 		if (res) return w.result;
 	    }
 	    i = w.substring_i;
@@ -331,17 +327,13 @@ class SnowballProgram {
 
 		boolean res;
 		try {
-		    Object resobj = w.method.invoke(w.methodobject,
-						    new Object[0]);
+		    Object resobj = w.method.invoke(w.methodobject);
 		    res = resobj.toString().equals("true");
-		} catch (InvocationTargetException e) {
-		    res = false;
-		    // FIXME - debug message
-		} catch (IllegalAccessException e) {
+		} catch (InvocationTargetException | IllegalAccessException e) {
 		    res = false;
 		    // FIXME - debug message
 		}
-		cursor = c - w.s_size;
+			cursor = c - w.s_size;
 		if (res) return w.result;
 	    }
 	    i = w.substring_i;

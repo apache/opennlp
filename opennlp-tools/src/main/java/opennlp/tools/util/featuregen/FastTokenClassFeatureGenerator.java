@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 import opennlp.tools.util.StringUtil;
 
 
-
 /**
  * Generates features for different for the class of the token.
  *

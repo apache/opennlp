@@ -19,8 +19,8 @@ package opennlp.tools.ml;
 
 import java.io.IOException;
 
-import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.ml.model.SequenceStream;
+import opennlp.tools.ml.model.SequenceClassificationModel;
 
 public abstract class AbstractSequenceTrainer extends AbstractTrainer implements
     SequenceTrainer {
@@ -38,7 +38,7 @@ public abstract class AbstractSequenceTrainer extends AbstractTrainer implements
     }
 
     SequenceClassificationModel model = doTrain(events);
-    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, SequenceTrainer.SEQUENCE_VALUE);
+    addToReport(TRAINER_TYPE_PARAM, SEQUENCE_VALUE);
     return model;
   }
 

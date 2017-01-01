@@ -21,16 +21,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.formats.LanguageSampleStreamFactory;
-import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * A Factory to create a Arvores Deitadas NameSampleDataStream from the command line

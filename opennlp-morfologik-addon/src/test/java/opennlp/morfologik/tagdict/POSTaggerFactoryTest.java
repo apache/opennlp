@@ -26,9 +26,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import opennlp.morfologik.builder.POSDictionayBuilderTest;
 import org.junit.Test;
 
-import opennlp.morfologik.builder.POSDictionayBuilderTest;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;

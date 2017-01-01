@@ -17,10 +17,10 @@
 
 package opennlp.tools.sentdetect;
 
+import opennlp.tools.util.Span;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import opennlp.tools.util.Span;
 
 /**
  * The Newline Sentence Detector assumes that sentences are line delimited and
@@ -34,7 +34,7 @@ public class NewlineSentenceDetector implements SentenceDetector {
 
   public Span[] sentPosDetect(String s) {
 
-    List<Span> sentences = new ArrayList<Span>();
+    List<Span> sentences = new ArrayList<>();
 
     int start = 0;
 

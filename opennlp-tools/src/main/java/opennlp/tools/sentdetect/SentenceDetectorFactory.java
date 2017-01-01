@@ -17,15 +17,15 @@
 
 package opennlp.tools.sentdetect;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ExtensionLoader;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The factory that provides SentenceDetecor default implementations and

@@ -17,19 +17,19 @@
 
 package opennlp.tools.formats;
 
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.Span;
+import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-
-import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
 
 /**
  * Parser for the Italian NER training files of the Evalita 2007 and 2009 NER  shared tasks.
@@ -91,7 +91,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
     this.types = types;
   }
 
-  static final Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
+  static Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
 
     String type = beginTag.substring(2);
 
@@ -117,8 +117,8 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
 
   public NameSample read() throws IOException {
 
-    List<String> sentence = new ArrayList<String>();
-    List<String> tags = new ArrayList<String>();
+    List<String> sentence = new ArrayList<>();
+    List<String> tags = new ArrayList<>();
 
     boolean isClearAdaptiveData = false;
 
@@ -156,7 +156,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
     if (sentence.size() > 0) {
 
       // convert name tags into spans
-      List<Span> names = new ArrayList<Span>();
+      List<Span> names = new ArrayList<>();
 
       int beginIndex = -1;
       int endIndex = -1;

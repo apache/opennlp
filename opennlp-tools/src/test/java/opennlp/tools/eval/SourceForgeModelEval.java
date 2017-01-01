@@ -17,10 +17,13 @@
 
 package opennlp.tools.eval;
 
+import opennlp.tools.cmdline.parser.ParserTool;
+import opennlp.tools.parser.ParserFactory;
+import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
-import opennlp.tools.cmdline.parser.ParserTool;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.formats.LeipzigDoccatSampleStream;
 import opennlp.tools.namefind.NameFinderME;
@@ -28,15 +31,12 @@ import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.Parser;
-import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTagger;
-import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetectorME;
-import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;

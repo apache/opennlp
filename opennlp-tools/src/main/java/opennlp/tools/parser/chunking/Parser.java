@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.parser.ParserEventTypeEnum;
+import opennlp.tools.postag.POSTaggerFactory;
+import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -40,17 +43,15 @@ import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserChunkerFactory;
-import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.PosSampleStream;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
-import opennlp.tools.postag.POSTaggerFactory;
-import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.ml.maxent.GIS;
 
 /**
  * Class for a shift reduce style parser based on Adwait Ratnaparkhi's 1998 thesis.
@@ -254,7 +255,7 @@ public class Parser extends AbstractBottomUpParser {
    */
   @Deprecated
   public static AbstractModel train(ObjectStream<Event> es, int iterations, int cut) throws java.io.IOException {
-    return opennlp.tools.ml.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
+    return GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 
   public static void mergeReportIntoManifest(Map<String, String> manifest,

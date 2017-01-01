@@ -18,25 +18,20 @@
 
 package opennlp.tools.postag;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileReader;
+import opennlp.tools.dictionary.serializer.Attributes;
+import opennlp.tools.dictionary.serializer.DictionarySerializer;
+import opennlp.tools.dictionary.serializer.Entry;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.StringList;
+import opennlp.tools.util.StringUtil;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import opennlp.tools.dictionary.serializer.Attributes;
-import opennlp.tools.dictionary.serializer.DictionarySerializer;
-import opennlp.tools.dictionary.serializer.Entry;
-import opennlp.tools.dictionary.serializer.EntryInserter;
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.StringList;
-import opennlp.tools.util.StringUtil;
 
 /**
  * Provides a means of determining which tags are valid for a particular word
@@ -60,7 +55,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
    * @param caseSensitive the {@link POSDictionary} case sensitivity
    */
   public POSDictionary(boolean caseSensitive) {
-    dictionary = new HashMap<String, String[]>();
+    dictionary = new HashMap<>();
     this.caseSensitive = caseSensitive;
   }
 
@@ -210,30 +205,29 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
    * @throws IOException
    * @throws InvalidFormatException
    */
-  public static POSDictionary create(InputStream in) throws IOException, InvalidFormatException {
+  public static POSDictionary create(InputStream in) throws IOException {
 
     final POSDictionary newPosDict = new POSDictionary();
 
-    boolean isCaseSensitive = DictionarySerializer.create(in, new EntryInserter() {
-      public void insert(Entry entry) throws InvalidFormatException {
+    boolean isCaseSensitive = DictionarySerializer.create(in, entry -> {
 
-        String tagString = entry.getAttributes().getValue("tags");
+      String tagString = entry.getAttributes().getValue("tags");
 
-        String[] tags = tagString.split(" ");
+      String[] tags = tagString.split(" ");
 
-        StringList word = entry.getTokens();
+      StringList word = entry.getTokens();
 
-        if (word.size() != 1)
-          throw new InvalidFormatException("Each entry must have exactly one token! "+word);
+      if (word.size() != 1)
+        throw new InvalidFormatException("Each entry must have exactly one token! "+word);
 
-        newPosDict.dictionary.put(word.getToken(0), tags);
-      }});
+      newPosDict.dictionary.put(word.getToken(0), tags);
+    });
 
     newPosDict.caseSensitive = isCaseSensitive;
 
     // TODO: The dictionary API needs to be improved to do this better!
     if (!isCaseSensitive) {
-      Map<String, String[]> lowerCasedDictionary = new HashMap<String, String[]>();
+      Map<String, String[]> lowerCasedDictionary = new HashMap<>();
 
       for (Map.Entry<String, String[]> entry : newPosDict.dictionary.entrySet()) {
         lowerCasedDictionary.put(StringUtil.toLowerCase(entry.getKey()), entry.getValue());

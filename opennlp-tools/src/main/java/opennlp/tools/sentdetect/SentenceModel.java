@@ -18,15 +18,6 @@
 
 package opennlp.tools.sentdetect;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Map;
-
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.GenericModelReader;
@@ -35,6 +26,14 @@ import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Map;
 
 /**
  * The {@link SentenceModel} is the model used
@@ -62,7 +61,7 @@ public class SentenceModel extends BaseModel {
    *             instead and pass in a {@link SentenceDetectorFactory}
    */
   public SentenceModel(String languageCode, MaxentModel sentModel,
-      boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters, Map<String, String> manifestInfoEntries) {
+                       boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters, Map<String, String> manifestInfoEntries) {
     this(languageCode, sentModel, manifestInfoEntries,
         new SentenceDetectorFactory(languageCode, useTokenEnd, abbreviations,
             eosCharacters));
@@ -141,10 +140,7 @@ public class SentenceModel extends BaseModel {
   }
 
   public boolean useTokenEnd() {
-    if (getFactory() != null) {
-      return getFactory().isUseTokenEnd();
-    }
-    return true;
+    return getFactory() == null || getFactory().isUseTokenEnd();
   }
 
   public char[] getEosCharacters() {
@@ -154,7 +150,7 @@ public class SentenceModel extends BaseModel {
     return null;
   }
 
-  public static void main(String[] args) throws FileNotFoundException, IOException, InvalidFormatException {
+  public static void main(String[] args) throws IOException {
     if (args.length < 3){
       System.err.println("SentenceModel [-abbreviationsDictionary] [-useTokenEnd] languageCode packageName modelName");
       System.exit(1);

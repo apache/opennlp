@@ -23,13 +23,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import opennlp.tools.util.TrainingParameters;
+import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.TrainingParameters;
 
 /**
  * Tests for the {@link SentenceDetectorME} class.
@@ -39,7 +40,7 @@ public class SentenceDetectorMETest {
   @Test
   public void testSentenceDetector() throws IOException {
 
-    InputStreamFactory in = new ResourceAsStreamFactory(getClass(), 
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
         "/opennlp/tools/sentdetect/Sentences.txt");
 
     TrainingParameters mlParams = new TrainingParameters();
@@ -49,7 +50,7 @@ public class SentenceDetectorMETest {
     SentenceModel sentdetectModel = SentenceDetectorME.train(
         "en", new SentenceSampleStream(new PlainTextByLineStream(in, UTF_8)), true, null, mlParams);
 
-    assertEquals("en", sentdetectModel.getLanguage());
+    Assert.assertEquals("en", sentdetectModel.getLanguage());
 
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
 

@@ -17,20 +17,19 @@
 
 package opennlp.tools.chunker;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertTrue;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ModelType;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.junit.Test;
-
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelType;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for the {@link ChunkerFactory} class.
@@ -42,9 +41,8 @@ public class ChunkerFactoryTest {
     ResourceAsStreamFactory in = new ResourceAsStreamFactory(
         ChunkerFactoryTest.class, "/opennlp/tools/chunker/test.txt");
 
-    ChunkSampleStream stream = new ChunkSampleStream(
+    return new ChunkSampleStream(
         new PlainTextByLineStream(in, UTF_8));
-    return stream;
   }
 
   static ChunkerModel trainModel(ModelType type, ChunkerFactory factory)
@@ -80,7 +78,6 @@ public class ChunkerFactoryTest {
     ChunkerModel model = trainModel(ModelType.MAXENT, new DummyChunkerFactory());
 
     DummyChunkerFactory factory = (DummyChunkerFactory) model.getFactory();
-    assertTrue(factory instanceof DummyChunkerFactory);
     assertTrue(factory.getContextGenerator() instanceof DummyChunkerFactory.DummyContextGenerator);
     assertTrue(factory.getSequenceValidator() instanceof DummyChunkerFactory.DummySequenceValidator);
 

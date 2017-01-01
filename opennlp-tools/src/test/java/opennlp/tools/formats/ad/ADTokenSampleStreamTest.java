@@ -17,8 +17,10 @@
 
 package opennlp.tools.formats.ad;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.util.ObjectStream;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,15 +28,12 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.tokenize.TokenSample;
-import opennlp.tools.util.ObjectStream;
-
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ADTokenSampleStreamTest {
 
-  List<TokenSample> samples = new ArrayList<TokenSample>();
+  private List<TokenSample> samples = new ArrayList<>();
 
   @Test
   public void testSimpleCount() throws IOException {

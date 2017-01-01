@@ -18,8 +18,6 @@
  */
 package opennlp.tools.ml.maxent.quasinewton;
 
-import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
-
 /**
  * Implementation of L-BFGS which supports L1-, L2-regularization
  * and Elastic Net for solving convex optimization problems. <p>
@@ -198,12 +196,12 @@ public class QNMinimizer {
       computePseudoGrad(currPoint, currGrad, pseudoGrad);
     }
 
-    LineSearchResult lsr;
+    LineSearch.LineSearchResult lsr;
     if (l1Cost > 0) {
-      lsr = LineSearchResult.getInitialObjectForL1(
+      lsr = LineSearch.LineSearchResult.getInitialObjectForL1(
           currValue, currGrad, pseudoGrad, currPoint);
     } else {
-      lsr = LineSearchResult.getInitialObject(
+      lsr = LineSearch.LineSearchResult.getInitialObject(
           currValue, currGrad, currPoint);
     }
 
@@ -364,7 +362,7 @@ public class QNMinimizer {
     }
   }
 
-  private boolean isConverged(LineSearchResult lsr) {
+  private boolean isConverged(LineSearch.LineSearchResult lsr) {
 
     // Check function's change rate
     if (lsr.getFuncChangeRate() < CONVERGE_TOLERANCE) {
@@ -433,7 +431,7 @@ public class QNMinimizer {
       alpha = new double[this.m];
     }
 
-    public void update(LineSearchResult lsr) {
+    public void update(LineSearch.LineSearchResult lsr) {
       double[] currPoint  = lsr.getCurrPoint();
       double[] gradAtCurr = lsr.getGradAtCurr();
       double[] nextPoint  = lsr.getNextPoint();

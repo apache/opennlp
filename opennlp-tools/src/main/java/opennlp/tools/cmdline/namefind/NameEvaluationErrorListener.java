@@ -19,10 +19,10 @@ package opennlp.tools.cmdline.namefind;
 
 import java.io.OutputStream;
 
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
-import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
  * A default implementation of {@link EvaluationMonitor} that prints

@@ -26,7 +26,6 @@
 	<annotatorImplementationName>opennlp.uima.sentdetect.SentenceDetector</annotatorImplementationName>
 	<analysisEngineMetaData>
 		<name>Sentence Detector</name>
-		<description></description>
 		<version>${pom.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>

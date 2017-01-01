@@ -16,15 +16,9 @@
  */
 package opennlp.tools.cmdline.parser;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Pattern;
-
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
+import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.SystemInputStreamFactory;
@@ -32,7 +26,6 @@ import opennlp.tools.cmdline.tokenizer.TokenizerModelLoader;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.Parser;
-import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
@@ -41,6 +34,13 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public final class ParserTool extends BasicCmdLineTool {
 
@@ -128,7 +128,7 @@ public final class ParserTool extends BasicCmdLineTool {
 
       Parser parser = ParserFactory.create(model, beamSize, advancePercentage);
 
-      ObjectStream<String> lineStream = null;
+      ObjectStream<String> lineStream;
       PerformanceMonitor perfMon = null;
       try {
         lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());

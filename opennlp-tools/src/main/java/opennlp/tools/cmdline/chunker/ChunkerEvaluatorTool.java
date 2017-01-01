@@ -21,19 +21,19 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerEvaluationMonitor;
-import opennlp.tools.chunker.ChunkerEvaluator;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
-import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.chunker.ChunkerEvaluatorTool.EvalToolParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
+import opennlp.tools.util.eval.EvaluationMonitor;
+import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.chunker.ChunkerEvaluator;
+import opennlp.tools.cmdline.AbstractEvaluatorTool;
+import opennlp.tools.cmdline.chunker.ChunkerEvaluatorTool.EvalToolParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.EvaluationMonitor;
 
 public final class ChunkerEvaluatorTool
     extends AbstractEvaluatorTool<ChunkSample, EvalToolParams> {

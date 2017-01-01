@@ -19,10 +19,10 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.OutputStream;
 
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerEvaluationMonitor;
-import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
  * A default implementation of {@link EvaluationMonitor} that prints

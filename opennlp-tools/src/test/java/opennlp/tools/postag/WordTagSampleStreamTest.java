@@ -18,17 +18,16 @@
 
 package opennlp.tools.postag;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import opennlp.tools.util.CollectionObjectStream;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import opennlp.tools.util.CollectionObjectStream;
-
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Tests for the {@link WordTagSampleStream} class.
@@ -38,11 +37,11 @@ public class WordTagSampleStreamTest {
   @Test
   public void testParseSimpleSample() throws IOException {
 
-    Collection<String> sampleString = new ArrayList<String>(1);
+    Collection<String> sampleString = new ArrayList<>(1);
     sampleString.add("This_x1 is_x2 a_x3 test_x4 sentence_x5 ._x6");
 
     WordTagSampleStream stream =
-      new WordTagSampleStream(new CollectionObjectStream<String>(sampleString));
+      new WordTagSampleStream(new CollectionObjectStream<>(sampleString));
 
     POSSample sample = stream.read();
     String words[] = sample.getSentence();

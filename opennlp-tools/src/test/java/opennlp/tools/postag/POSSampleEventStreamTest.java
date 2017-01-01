@@ -18,12 +18,12 @@
 
 package opennlp.tools.postag;
 
-import junit.framework.Assert;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 
 import org.junit.Test;
+import org.junit.Assert;
 
 /**
  * Tests for the {@link POSSampleEventStream} class.

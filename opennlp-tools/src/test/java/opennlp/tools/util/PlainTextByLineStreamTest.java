@@ -17,12 +17,12 @@
 
 package opennlp.tools.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests for the {@link PlainTextByLineStream} class.
@@ -31,18 +31,17 @@ public class PlainTextByLineStreamTest {
 
   @Test
   public void testLineSegmentation() throws IOException {
-    StringBuilder testString = new StringBuilder();
-    testString.append("line1");
-    testString.append('\n');
-    testString.append("line2");
-    testString.append('\n');
-    testString.append("line3");
-    testString.append("\r\n");
-    testString.append("line4");
-    testString.append('\n');
+    String testString = "line1" +
+        '\n' +
+        "line2" +
+        '\n' +
+        "line3" +
+        "\r\n" +
+        "line4" +
+        '\n';
 
     ObjectStream<String> stream =
-        new PlainTextByLineStream(new MockInputStreamFactory(testString.toString()), UTF_8);
+        new PlainTextByLineStream(new MockInputStreamFactory(testString), UTF_8);
 
     assertEquals("line1", stream.read());
     assertEquals("line2", stream.read());

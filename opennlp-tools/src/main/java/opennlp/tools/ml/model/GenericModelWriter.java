@@ -28,14 +28,13 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.zip.GZIPOutputStream;
 
+import opennlp.tools.ml.maxent.io.PlainTextGISModelWriter;
+import opennlp.tools.ml.naivebayes.BinaryNaiveBayesModelWriter;
+import opennlp.tools.ml.perceptron.PlainTextPerceptronModelWriter;
 import opennlp.tools.ml.maxent.io.BinaryGISModelWriter;
 import opennlp.tools.ml.maxent.io.BinaryQNModelWriter;
-import opennlp.tools.ml.maxent.io.PlainTextGISModelWriter;
-import opennlp.tools.ml.model.AbstractModel.ModelType;
-import opennlp.tools.ml.naivebayes.BinaryNaiveBayesModelWriter;
 import opennlp.tools.ml.naivebayes.PlainTextNaiveBayesModelWriter;
 import opennlp.tools.ml.perceptron.BinaryPerceptronModelWriter;
-import opennlp.tools.ml.perceptron.PlainTextPerceptronModelWriter;
 
 public class GenericModelWriter extends AbstractModelWriter {
 
@@ -65,25 +64,25 @@ public class GenericModelWriter extends AbstractModelWriter {
   }
 
   private void init(AbstractModel model, DataOutputStream dos) {
-    if (model.getModelType() == ModelType.Perceptron) {
+    if (model.getModelType() == AbstractModel.ModelType.Perceptron) {
       delegateWriter = new BinaryPerceptronModelWriter(model, dos);
-    } else if (model.getModelType() == ModelType.Maxent) {
+    } else if (model.getModelType() == AbstractModel.ModelType.Maxent) {
       delegateWriter = new BinaryGISModelWriter(model, dos);
-    } else if (model.getModelType() == ModelType.MaxentQn) {
+    } else if (model.getModelType() == AbstractModel.ModelType.MaxentQn) {
       delegateWriter = new BinaryQNModelWriter(model, dos);
     }
-    if (model.getModelType() == ModelType.NaiveBayes) {
+    if (model.getModelType() == AbstractModel.ModelType.NaiveBayes) {
       delegateWriter = new BinaryNaiveBayesModelWriter(model, dos);
     }
   }
 
   private void init(AbstractModel model, BufferedWriter bw) {
-    if (model.getModelType() == ModelType.Perceptron) {
+    if (model.getModelType() == AbstractModel.ModelType.Perceptron) {
       delegateWriter = new PlainTextPerceptronModelWriter(model, bw);
-    } else if (model.getModelType() == ModelType.Maxent) {
+    } else if (model.getModelType() == AbstractModel.ModelType.Maxent) {
       delegateWriter = new PlainTextGISModelWriter(model, bw);
     }
-    if (model.getModelType() == ModelType.NaiveBayes) {
+    if (model.getModelType() == AbstractModel.ModelType.NaiveBayes) {
       delegateWriter = new PlainTextNaiveBayesModelWriter(model, bw);
     }
   }

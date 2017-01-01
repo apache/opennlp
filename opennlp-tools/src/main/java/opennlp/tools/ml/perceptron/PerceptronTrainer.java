@@ -22,9 +22,9 @@ package opennlp.tools.ml.perceptron;
 import java.io.IOException;
 
 import opennlp.tools.ml.AbstractEventTrainer;
+import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
-import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.MutableContext;
 
 /**

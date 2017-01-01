@@ -40,7 +40,7 @@ public class DictionaryDetokenizer implements Detokenizer {
     DetokenizationOperation operations[] =
         new DetokenizationOperation[tokens.length];
 
-    Set<String> matchingTokens = new HashSet<String>();
+    Set<String> matchingTokens = new HashSet<>();
 
     for (int i = 0; i < tokens.length; i++) {
       DetokenizationDictionary.Operation dictOperation =

@@ -17,6 +17,8 @@
 
 package opennlp.tools.formats.brat;
 
+import opennlp.tools.util.ObjectStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,8 +29,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import opennlp.tools.util.ObjectStream;
 
 public class BratDocument {
 
@@ -43,7 +43,7 @@ public class BratDocument {
     this.id = id;
     this.text = text;
 
-    Map<String, BratAnnotation> annMap = new HashMap<String, BratAnnotation>();
+    Map<String, BratAnnotation> annMap = new HashMap<>();
     for (BratAnnotation annotation : annotations) {
       annMap.put(annotation.getId(), annotation);
     }
@@ -86,7 +86,7 @@ public class BratDocument {
       text.append(cbuf, 0, len);
     }
 
-    Collection<BratAnnotation> annotations = new ArrayList<BratAnnotation>();
+    Collection<BratAnnotation> annotations = new ArrayList<>();
 
     ObjectStream<BratAnnotation> annStream = new BratAnnotationStream(config, id, annIn);
 

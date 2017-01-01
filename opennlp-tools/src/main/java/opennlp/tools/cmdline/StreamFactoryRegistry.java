@@ -21,14 +21,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import opennlp.tools.formats.BioNLP2004NameSampleStreamFactory;
-import opennlp.tools.formats.ChunkerSampleStreamFactory;
 import opennlp.tools.formats.Conll02NameSampleStreamFactory;
-import opennlp.tools.formats.Conll03NameSampleStreamFactory;
 import opennlp.tools.formats.ConllXPOSSampleStreamFactory;
 import opennlp.tools.formats.ConllXSentenceSampleStreamFactory;
-import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
 import opennlp.tools.formats.DocumentSampleStreamFactory;
-import opennlp.tools.formats.EvalitaNameSampleStreamFactory;
 import opennlp.tools.formats.LeipzigDocumentSampleStreamFactory;
 import opennlp.tools.formats.LemmatizerSampleStreamFactory;
 import opennlp.tools.formats.NameSampleDataStreamFactory;
@@ -43,17 +39,21 @@ import opennlp.tools.formats.ad.ADSentenceSampleStreamFactory;
 import opennlp.tools.formats.ad.ADTokenSampleStreamFactory;
 import opennlp.tools.formats.brat.BratNameSampleStreamFactory;
 import opennlp.tools.formats.convert.NameToSentenceSampleStreamFactory;
-import opennlp.tools.formats.convert.NameToTokenSampleStreamFactory;
 import opennlp.tools.formats.convert.POSToSentenceSampleStreamFactory;
 import opennlp.tools.formats.convert.POSToTokenSampleStreamFactory;
 import opennlp.tools.formats.convert.ParseToPOSSampleStreamFactory;
 import opennlp.tools.formats.convert.ParseToSentenceSampleStreamFactory;
 import opennlp.tools.formats.convert.ParseToTokenSampleStreamFactory;
 import opennlp.tools.formats.frenchtreebank.ConstitParseSampleStreamFactory;
-import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesNameSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesPOSSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStreamFactory;
+import opennlp.tools.formats.ChunkerSampleStreamFactory;
+import opennlp.tools.formats.Conll03NameSampleStreamFactory;
+import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
+import opennlp.tools.formats.EvalitaNameSampleStreamFactory;
+import opennlp.tools.formats.convert.NameToTokenSampleStreamFactory;
+import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
 
 /**
  * Registry for object stream factories.
