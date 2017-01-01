@@ -21,19 +21,19 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import opennlp.tools.cmdline.AbstractCrossValidatorTool;
+import opennlp.tools.cmdline.params.CVParams;
+import opennlp.tools.util.eval.EvaluationMonitor;
+import opennlp.tools.util.model.ModelUtil;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerCrossValidator;
 import opennlp.tools.chunker.ChunkerEvaluationMonitor;
 import opennlp.tools.chunker.ChunkerFactory;
-import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.chunker.ChunkerCrossValidatorTool.CVToolParams;
-import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
-import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.model.ModelUtil;
 
 public final class ChunkerCrossValidatorTool
     extends AbstractCrossValidatorTool<ChunkSample, CVToolParams> {

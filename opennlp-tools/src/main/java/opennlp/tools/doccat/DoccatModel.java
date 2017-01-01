@@ -23,11 +23,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
+import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.BaseModel;
 
 /**
  * A model for document categorization

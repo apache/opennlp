@@ -19,6 +19,7 @@ package opennlp.tools.cmdline.postag;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import opennlp.tools.cmdline.ModelLoader;
 import opennlp.tools.postag.POSModel;
 
@@ -27,7 +28,7 @@ import opennlp.tools.postag.POSModel;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public final class POSModelLoader extends ModelLoader<POSModel>{
+public final class POSModelLoader extends ModelLoader<POSModel> {
 
   public POSModelLoader() {
     super("POS Tagger");

@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.InputStreamFactory;
@@ -45,7 +44,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
   private int para = -1;
   private boolean isSameText;
   private boolean isSamePara;
-  private Sentence sent;
+  private ADSentenceStream.Sentence sent;
   private boolean isIncludeTitles = true;
   private boolean isTitle;
 
@@ -79,7 +78,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
    *          if true will output the sentences marked as news headlines
    */
   public ADSentenceSampleStream(InputStreamFactory in, String charsetName,
-      boolean includeHeadlines) throws IOException {
+                                boolean includeHeadlines) throws IOException {
     try {
       this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
           in, charsetName));

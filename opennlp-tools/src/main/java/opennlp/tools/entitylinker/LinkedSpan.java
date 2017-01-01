@@ -15,10 +15,10 @@
  */
 package opennlp.tools.entitylinker;
 
+import opennlp.tools.util.Span;
+
 import java.util.ArrayList;
 import java.util.Objects;
-
-import opennlp.tools.util.Span;
 
 /**
  * An "default" extended span that holds additional information about the Span
@@ -133,9 +133,7 @@ public class LinkedSpan<T extends BaseLink> extends Span {
       return false;
     }
     final LinkedSpan<T> other = (LinkedSpan<T>) obj;
-    if (!Objects.equals(this.linkedEntries, other.linkedEntries)) {
-      return false;
-    }
-    return this.sentenceid == other.sentenceid && Objects.equals(this.searchTerm, other.searchTerm);
+    return Objects.equals(this.linkedEntries, other.linkedEntries) &&
+        this.sentenceid == other.sentenceid && Objects.equals(this.searchTerm, other.searchTerm);
   }
 }

@@ -27,7 +27,7 @@ public interface Detokenizer {
    * This enum contains an operation for every token to merge the
    * tokens together to their detokenized form.
    */
-  public enum DetokenizationOperation {
+  enum DetokenizationOperation {
     /**
      * The current token should be attached to the begin token on the right side.
      */

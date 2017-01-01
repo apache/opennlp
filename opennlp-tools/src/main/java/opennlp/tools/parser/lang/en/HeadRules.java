@@ -18,6 +18,13 @@
 
 package opennlp.tools.parser.lang.en;
 
+import opennlp.tools.parser.Constituent;
+import opennlp.tools.parser.chunking.Parser;
+import opennlp.tools.parser.GapLabeler;
+import opennlp.tools.parser.Parse;
+import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.SerializableArtifact;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -34,25 +41,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import opennlp.tools.parser.Constituent;
-import opennlp.tools.parser.GapLabeler;
-import opennlp.tools.parser.Parse;
-import opennlp.tools.parser.chunking.Parser;
-import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.SerializableArtifact;
 
 /**
  * Class for storing the English head rules associated with parsing.
  */
 public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, SerializableArtifact {
 
-  public static class HeadRulesSerializer implements ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
+  public static class HeadRulesSerializer implements ArtifactSerializer<HeadRules> {
 
-    public opennlp.tools.parser.lang.en.HeadRules create(InputStream in) throws IOException {
-      return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
+    public HeadRules create(InputStream in) throws IOException {
+      return new HeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
     }
 
-    public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact, OutputStream out)
+    public void serialize(HeadRules artifact, OutputStream out)
         throws IOException {
       artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
     }

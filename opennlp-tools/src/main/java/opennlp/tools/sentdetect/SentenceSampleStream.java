@@ -18,13 +18,13 @@
 
 package opennlp.tools.sentdetect;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * This class is a stream filter which reads a sentence by line samples from
@@ -44,7 +44,7 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
   public SentenceSample read() throws IOException {
 
     StringBuilder sentencesString = new StringBuilder();
-    List<Span> sentenceSpans = new LinkedList<Span>();
+    List<Span> sentenceSpans = new LinkedList<>();
 
     String sentence;
     while ((sentence = samples.read()) != null && !sentence.equals("")) {

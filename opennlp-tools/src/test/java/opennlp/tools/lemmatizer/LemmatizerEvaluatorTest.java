@@ -17,19 +17,19 @@
 
 package opennlp.tools.lemmatizer;
 
-import static junit.framework.Assert.assertNotSame;
-import static org.junit.Assert.assertEquals;
+import opennlp.tools.chunker.ChunkerEvaluator;
+import opennlp.tools.cmdline.lemmatizer.LemmaEvaluationErrorListener;
+import opennlp.tools.util.MockInputStreamFactory;
+import opennlp.tools.util.PlainTextByLineStream;
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.junit.Test;
-
-import opennlp.tools.cmdline.lemmatizer.LemmaEvaluationErrorListener;
-import opennlp.tools.util.MockInputStreamFactory;
-import opennlp.tools.util.PlainTextByLineStream;
+import static junit.framework.Assert.assertNotSame;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests for {@link LemmatizerEvaluator}.

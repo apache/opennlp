@@ -16,6 +16,14 @@
  */
 package opennlp.tools.doccat;
 
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.tokenize.SimpleTokenizer;
+import opennlp.tools.util.ObjectStream;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,13 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import opennlp.tools.ml.EventTrainer;
-import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.tokenize.SimpleTokenizer;
-import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.TrainingParameters;
 
 /**
  * Maxent implementation of {@link DocumentCategorizer}.
@@ -105,8 +106,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    */
   public double[] categorize(String documentText) {
     Tokenizer tokenizer = model.getFactory().getTokenizer();
-    return categorize(tokenizer.tokenize(documentText),
-        Collections.<String, Object>emptyMap());
+    return categorize(tokenizer.tokenize(documentText), Collections.emptyMap());
   }
 
   /**

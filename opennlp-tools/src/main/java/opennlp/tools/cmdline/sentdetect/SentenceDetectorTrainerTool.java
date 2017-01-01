@@ -21,6 +21,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import opennlp.tools.sentdetect.SentenceModel;
+import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.util.model.ModelUtil;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -31,10 +34,7 @@ import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.sentdetect.SentenceDetectorFactory;
 import opennlp.tools.sentdetect.SentenceDetectorME;
-import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.SentenceSampleStream;
-import opennlp.tools.util.model.ModelUtil;
 
 public final class SentenceDetectorTrainerTool
     extends AbstractTrainerTool<SentenceSample, TrainerToolParams> {

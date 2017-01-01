@@ -17,13 +17,13 @@
 
 package opennlp.tools.formats.convert;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.formats.DetokenizerSampleStreamFactory;
 import opennlp.tools.formats.ParseSampleStreamFactory;
-import opennlp.tools.parser.Parse;
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
 
 /**

@@ -21,9 +21,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import opennlp.tools.formats.ad.ADChunkSampleStream;
 import opennlp.tools.chunker.ChunkerCrossValidator;
 import opennlp.tools.chunker.ChunkerFactory;
-import opennlp.tools.formats.ad.ADChunkSampleStream;
 import opennlp.tools.formats.ad.ADNameSampleStream;
 import opennlp.tools.formats.ad.ADSentenceSampleStream;
 import opennlp.tools.formats.convert.NameToTokenSampleStream;
@@ -120,7 +120,7 @@ public class ArvoresDeitadasEval {
 
     TokenizerFactory tokFactory = TokenizerFactory.create(null, LANG, null,
         true, null);
-    validator = new opennlp.tools.tokenize.TokenizerCrossValidator(params,
+    validator = new TokenizerCrossValidator(params,
         tokFactory);
 
     validator.evaluate(samples, 10);

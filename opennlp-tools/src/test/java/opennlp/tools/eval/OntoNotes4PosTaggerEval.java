@@ -20,16 +20,17 @@ package opennlp.tools.eval;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import opennlp.tools.formats.DirectorySampleStream;
+
 import opennlp.tools.formats.convert.FileToStringSampleStream;
-import opennlp.tools.formats.convert.ParseToPOSSampleStream;
 import opennlp.tools.formats.ontonotes.DocumentToLineStream;
 import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStream;
 import opennlp.tools.postag.POSTaggerCrossValidator;
 import opennlp.tools.postag.POSTaggerFactory;
+import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.formats.DirectorySampleStream;
+import opennlp.tools.formats.convert.ParseToPOSSampleStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -49,7 +50,7 @@ public class OntoNotes4PosTaggerEval {
 
     ParseToPOSSampleStream samples = new ParseToPOSSampleStream(new OntoNotesParseSampleStream(
         new DocumentToLineStream(
-        new FileToStringSampleStream(documentStream, Charset.forName("UTF-8"))))); 
+        new FileToStringSampleStream(documentStream, Charset.forName("UTF-8")))));
     
     POSTaggerCrossValidator cv = new POSTaggerCrossValidator("en", params, new POSTaggerFactory());
     cv.evaluate(samples, 10);

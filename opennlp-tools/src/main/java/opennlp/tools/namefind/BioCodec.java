@@ -17,13 +17,13 @@
 
 package opennlp.tools.namefind;
 
+import opennlp.tools.util.SequenceCodec;
+import opennlp.tools.util.Span;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import opennlp.tools.util.SequenceCodec;
-import opennlp.tools.util.Span;
 
 public class BioCodec implements SequenceCodec<String> {
 
@@ -113,8 +113,8 @@ public class BioCodec implements SequenceCodec<String> {
     // To validate the model we check if we have one outcome named "other", at least
     // one outcome with suffix start. After that we check if all outcomes that ends with
     // "cont" have a pair that ends with "start".
-    List<String> start = new ArrayList<String>();
-    List<String> cont = new ArrayList<String>();
+    List<String> start = new ArrayList<>();
+    List<String> cont = new ArrayList<>();
 
     for (int i = 0; i < outcomes.length; i++) {
       String outcome = outcomes[i];

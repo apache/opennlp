@@ -18,19 +18,17 @@
 
 package opennlp.tools.postag;
 
+import opennlp.tools.util.model.ModelType;
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.ModelType;
-
-import org.junit.Test;
-
 public class POSModelTest {
 
   @Test
-  public void testPOSModelSerializationMaxent() throws IOException, InvalidFormatException {
+  public void testPOSModelSerializationMaxent() throws IOException {
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.MAXENT);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -48,7 +46,7 @@ public class POSModelTest {
   }
 
   @Test
-  public void testPOSModelSerializationPerceptron() throws IOException, InvalidFormatException {
+  public void testPOSModelSerializationPerceptron() throws IOException {
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.PERCEPTRON);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();

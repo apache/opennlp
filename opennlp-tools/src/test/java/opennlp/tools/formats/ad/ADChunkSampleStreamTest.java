@@ -17,23 +17,22 @@
 
 package opennlp.tools.formats.ad;
 
-import static org.junit.Assert.assertEquals;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.util.InputStreamFactory;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.chunker.ChunkSample;
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.PlainTextByLineStream;
-
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 public class ADChunkSampleStreamTest {
 
-  List<ChunkSample> samples = new ArrayList<ChunkSample>();
+  private List<ChunkSample> samples = new ArrayList<>();
 
   @Test
   public void testSimpleCount() throws IOException {

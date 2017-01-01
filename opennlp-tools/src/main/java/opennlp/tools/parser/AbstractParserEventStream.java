@@ -23,18 +23,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.postag.POSContextGenerator;
+import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.chunker.ChunkerContextGenerator;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.ml.model.Event;
-import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.postag.DefaultPOSContextGenerator;
-import opennlp.tools.postag.POSContextGenerator;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * Abstract class extended by parser event streams which perform tagging and chunking.
  */
-public abstract class AbstractParserEventStream extends opennlp.tools.util.AbstractEventStream<Parse> {
+public abstract class AbstractParserEventStream extends AbstractEventStream<Parse> {
 
   private ChunkerContextGenerator chunkerContextGenerator;
   private POSContextGenerator tagContextGenerator;
@@ -81,7 +81,7 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
       addChunkEvents(newEvents, chunks);
     }
     else {
-      addParseEvents(newEvents, Parser.collapsePunctuation(chunks,punctSet));
+      addParseEvents(newEvents, opennlp.tools.parser.chunking.Parser.collapsePunctuation(chunks,punctSet));
     }
 
     return newEvents.iterator();
@@ -142,7 +142,7 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
       if (c.isPosTag()) {
         toks.add(c.getCoveredText());
         tags.add(c.getType());
-        preds.add(Parser.OTHER);
+        preds.add(opennlp.tools.parser.chunking.Parser.OTHER);
       }
       else {
         boolean start = true;
@@ -153,11 +153,11 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
           toks.add(tok.getCoveredText());
           tags.add(tok.getType());
           if (start) {
-            preds.add(Parser.START + ctype);
+            preds.add(opennlp.tools.parser.chunking.Parser.START + ctype);
             start = false;
           }
           else {
-            preds.add(Parser.CONT + ctype);
+            preds.add(opennlp.tools.parser.chunking.Parser.CONT + ctype);
           }
         }
       }

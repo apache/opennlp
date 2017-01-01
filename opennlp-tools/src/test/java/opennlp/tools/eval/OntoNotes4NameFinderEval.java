@@ -20,16 +20,17 @@ package opennlp.tools.eval;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import opennlp.tools.formats.DirectorySampleStream;
+
 import opennlp.tools.formats.convert.FileToStringSampleStream;
-import opennlp.tools.formats.ontonotes.OntoNotesNameSampleStream;
-import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleTypeFilter;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.namefind.TokenNameFinderFactory;
+import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.formats.DirectorySampleStream;
+import opennlp.tools.formats.ontonotes.OntoNotesNameSampleStream;
+import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelUtil;
 import org.junit.Assert;
 import org.junit.Test;
 

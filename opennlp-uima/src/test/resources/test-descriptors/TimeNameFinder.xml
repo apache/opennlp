@@ -96,7 +96,7 @@
 		<externalResourceDependency>
 			<key>opennlp.uima.ModelName</key>
 			<interfaceName>opennlp.uima.namefind.TokenNameFinderModelResource
-			</interfaceName>
+            </interfaceName>
 		</externalResourceDependency>
 	</externalResourceDependencies>
 

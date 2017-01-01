@@ -19,8 +19,8 @@ package opennlp.tools.parser;
 
 import java.io.IOException;
 
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
 

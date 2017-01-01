@@ -22,13 +22,14 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import java.io.ByteArrayOutputStream;
 import java.util.Collections;
 import java.util.Map;
+
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;

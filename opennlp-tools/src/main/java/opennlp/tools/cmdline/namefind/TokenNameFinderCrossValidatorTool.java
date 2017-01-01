@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
+import opennlp.tools.namefind.NameSampleTypeFilter;
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderCrossValidatorTool.CVToolParams;
@@ -31,13 +33,11 @@ import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.namefind.BilouCodec;
 import opennlp.tools.namefind.BioCodec;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.namefind.NameSampleTypeFilter;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
-import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.model.ModelUtil;
 
 public final class TokenNameFinderCrossValidatorTool

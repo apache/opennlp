@@ -19,10 +19,10 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.OutputStream;
 
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.sentdetect.SentenceDetectorEvaluationMonitor;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
  * A default implementation of {@link EvaluationMonitor} that prints

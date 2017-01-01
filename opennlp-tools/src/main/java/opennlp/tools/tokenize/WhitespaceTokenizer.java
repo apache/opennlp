@@ -17,11 +17,11 @@
 
 package opennlp.tools.tokenize;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This tokenizer uses white spaces to tokenize the input text.
@@ -45,7 +45,7 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
 
   public Span[] tokenizePos(String d) {
     int tokStart = -1;
-    List<Span>tokens = new ArrayList<Span>();
+    List<Span>tokens = new ArrayList<>();
     boolean inTok = false;
 
     //gather up potential tokens

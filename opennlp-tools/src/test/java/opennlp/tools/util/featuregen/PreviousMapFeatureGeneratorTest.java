@@ -17,12 +17,12 @@
 
 package opennlp.tools.util.featuregen;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test for the {@link PreviousMapFeatureGenerator} class.
@@ -36,7 +36,7 @@ public class PreviousMapFeatureGeneratorTest {
 
     String sentence[] = new String[] {"a", "b", "c"};
 
-    List<String> features = new ArrayList<String>();
+    List<String> features = new ArrayList<>();
 
     // this should generate the pd=null feature
     fg.createFeatures(features, sentence, 0, null);

@@ -17,18 +17,13 @@
 
 package opennlp.tools.eval;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
+import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.ontonotes.DocumentToLineStream;
 import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStream;
-import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.ParserCrossValidator;
 import opennlp.tools.parser.ParserType;
+import opennlp.tools.parser.lang.en.HeadRules;
 import opennlp.tools.parser.lang.en.HeadRulesTest;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
@@ -36,9 +31,15 @@ import opennlp.tools.util.model.ModelUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+
 public class OntoNotes4ParserEval {
 
-  private static void crossEval(TrainingParameters params, HeadRules rules, double expectedScore)
+  private static void crossEval(TrainingParameters params, opennlp.tools.parser.HeadRules rules, double expectedScore)
       throws IOException {
 
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
@@ -64,11 +65,10 @@ public class OntoNotes4ParserEval {
   @Test
   public void evalEnglishMaxent() throws IOException {
 
-    HeadRules headRules;
+    opennlp.tools.parser.HeadRules headRules;
     try (InputStream headRulesIn =
         HeadRulesTest.class.getResourceAsStream("/opennlp/tools/parser/en_head_rules")) {
-      headRules = new opennlp.tools.parser.lang.en.HeadRules(
-          new InputStreamReader(headRulesIn, "UTF-8"));
+      headRules = new HeadRules(new InputStreamReader(headRulesIn, "UTF-8"));
     }
 
     crossEval(ModelUtil.createDefaultTrainingParameters(), headRules, 0.937987617163142d);

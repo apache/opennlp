@@ -24,15 +24,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import opennlp.tools.ml.AbstractEventModelSequenceTrainer;
-import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MutableContext;
-import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.Sequence;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.ml.model.SequenceStreamEventStream;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.DataIndexer;
+import opennlp.tools.ml.model.OnePassDataIndexer;
 
 /**
  * Trains models for sequences using the perceptron algorithm.  Each outcome is represented as

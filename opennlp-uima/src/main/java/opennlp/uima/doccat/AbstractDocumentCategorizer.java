@@ -17,10 +17,10 @@
 
 package opennlp.uima.doccat;
 
+import opennlp.tools.doccat.*;
 import opennlp.tools.doccat.DoccatModel;
-import opennlp.tools.doccat.DocumentCategorizerME;
-import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.UimaUtil;
+import opennlp.uima.util.AnnotatorUtil;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;

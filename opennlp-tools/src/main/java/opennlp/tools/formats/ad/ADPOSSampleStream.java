@@ -24,14 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
-import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
-import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
-import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
@@ -92,9 +88,9 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
   }
 
   public POSSample read() throws IOException {
-    Sentence paragraph;
+    ADSentenceStream.Sentence paragraph;
     while ((paragraph = this.adSentenceStream.read()) != null) {
-      Node root = paragraph.getRoot();
+      ADSentenceStream.SentenceParser.Node root = paragraph.getRoot();
       List<String> sentence = new ArrayList<>();
       List<String> tags = new ArrayList<>();
       process(root, sentence, tags);
@@ -104,19 +100,19 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
     return null;
   }
 
-  private void process(Node node, List<String> sentence, List<String> tags) {
+  private void process(ADSentenceStream.SentenceParser.Node node, List<String> sentence, List<String> tags) {
     if (node != null) {
-      for (TreeElement element : node.getElements()) {
+      for (ADSentenceStream.SentenceParser.TreeElement element : node.getElements()) {
         if (element.isLeaf()) {
-          processLeaf((Leaf) element, sentence, tags);
+          processLeaf((ADSentenceStream.SentenceParser.Leaf) element, sentence, tags);
         } else {
-          process((Node) element, sentence, tags);
+          process((ADSentenceStream.SentenceParser.Node) element, sentence, tags);
         }
       }
     }
   }
 
-  private void processLeaf(Leaf leaf, List<String> sentence, List<String> tags) {
+  private void processLeaf(ADSentenceStream.SentenceParser.Leaf leaf, List<String> sentence, List<String> tags) {
     if (leaf != null) {
       String lexeme = leaf.getLexeme();
       String tag = leaf.getFunctionalTag();

@@ -18,6 +18,12 @@
 
 package opennlp.tools.util.model;
 
+import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.GenericModelWriter;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.util.TrainingParameters;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -27,12 +33,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import opennlp.tools.ml.maxent.GIS;
-import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.GenericModelWriter;
-import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.util.TrainingParameters;
 
 /**
  * Utility class for handling of {@link MaxentModel}s.
@@ -86,7 +86,7 @@ public final class ModelUtil {
 
     if (expectedOutcomes.length == model.getNumOutcomes()) {
 
-      Set<String> expectedOutcomesSet = new HashSet<String>();
+      Set<String> expectedOutcomesSet = new HashSet<>();
       expectedOutcomesSet.addAll(Arrays.asList(expectedOutcomes));
 
       for (int i = 0; i < model.getNumOutcomes(); i++) {

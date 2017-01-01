@@ -17,13 +17,13 @@
 
 package opennlp.tools.sentdetect;
 
-import java.io.IOException;
-
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.model.ModelUtil;
+
+import java.io.IOException;
 
 /**
  * A cross validator for the sentence detector.
@@ -91,7 +91,7 @@ public class SDCrossValidator {
   public void evaluate(ObjectStream<SentenceSample> samples, int nFolds) throws IOException {
 
     CrossValidationPartitioner<SentenceSample> partitioner =
-        new CrossValidationPartitioner<SentenceSample>(samples, nFolds);
+        new CrossValidationPartitioner<>(samples, nFolds);
 
    while (partitioner.hasNext()) {
 

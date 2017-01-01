@@ -17,17 +17,16 @@
 
 package opennlp.morfologik.tagdict;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import morfologik.stemming.Dictionary;
+import opennlp.morfologik.builder.POSDictionayBuilderTest;
+import opennlp.tools.postag.TagDictionary;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-import morfologik.stemming.Dictionary;
-import opennlp.morfologik.builder.POSDictionayBuilderTest;
-import opennlp.tools.postag.TagDictionary;
-
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class MorfologikTagDictionaryTest {
 
@@ -87,9 +86,8 @@ public class MorfologikTagDictionaryTest {
       List<String> constant) throws Exception {
 
     Dictionary dic = Dictionary.read(POSDictionayBuilderTest.createMorfologikDictionary());
-    MorfologikTagDictionary ml = new MorfologikTagDictionary(dic, caseSensitive);
 
-    return ml;
+    return new MorfologikTagDictionary(dic, caseSensitive);
   }
 
 }

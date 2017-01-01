@@ -22,8 +22,8 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 import org.junit.Test;

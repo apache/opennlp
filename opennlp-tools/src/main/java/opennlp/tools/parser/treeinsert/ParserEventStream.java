@@ -18,13 +18,6 @@
 
 package opennlp.tools.parser.treeinsert;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader;
@@ -32,13 +25,21 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserEventStream;
-import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserEventTypeEnum;
+import opennlp.tools.parser.lang.en.HeadRules;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ParserEventStream extends AbstractParserEventStream {
 
@@ -48,7 +49,7 @@ public class ParserEventStream extends AbstractParserEventStream {
 
   private static final boolean debug = false;
 
-  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
+  public ParserEventStream(ObjectStream<Parse> d, opennlp.tools.parser.HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
     super(d, rules, etype, dict);
   }
 
@@ -59,7 +60,7 @@ public class ParserEventStream extends AbstractParserEventStream {
     checkContextGenerator = new CheckContextGenerator(punctSet);
   }
 
-  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype) {
+  public ParserEventStream(ObjectStream<Parse> d, opennlp.tools.parser.HeadRules rules, ParserEventTypeEnum etype) {
     super(d, rules, etype);
   }
 
@@ -376,7 +377,7 @@ public class ParserEventStream extends AbstractParserEventStream {
       }
       ai++;
     }
-    HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[ai++]);
+    HeadRules rules = new HeadRules(args[ai++]);
     if (fun) {
       Parse.useFunctionTags(true);
     }

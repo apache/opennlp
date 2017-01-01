@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class PreviousTwoMapFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private Map<String, String> previousMap = new HashMap<String, String>();
+  private Map<String, String> previousMap = new HashMap<>();
 
   /**
    * Generates previous decision features for the token based on contents of the previous map.

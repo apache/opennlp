@@ -17,12 +17,12 @@
 
 package opennlp.tools.formats.convert;
 
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.formats.ParseSampleStreamFactory;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
 

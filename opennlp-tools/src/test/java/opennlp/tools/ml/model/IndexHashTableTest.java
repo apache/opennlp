@@ -29,7 +29,7 @@ public class IndexHashTableTest extends TestCase {
     array[1] = "7";
     array[2] = "5";
 
-    IndexHashTable<String> arrayIndex = new IndexHashTable<String>(array, 1d);
+    IndexHashTable<String> arrayIndex = new IndexHashTable<>(array, 1d);
 
     for (int i = 0; i < array.length; i++)
       assertEquals(i, arrayIndex.get(array[i]));
@@ -43,7 +43,7 @@ public class IndexHashTableTest extends TestCase {
     array[1] = "21";
     array[2] = "0";
 
-    IndexHashTable<String> arrayIndex = new IndexHashTable<String>(array, 1d);
+    IndexHashTable<String> arrayIndex = new IndexHashTable<>(array, 1d);
 
     for (int i = 0; i < array.length; i++)
       assertEquals(i, arrayIndex.get(array[i]));

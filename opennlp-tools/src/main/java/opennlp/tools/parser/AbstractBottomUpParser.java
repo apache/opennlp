@@ -23,18 +23,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.chunker.Chunker;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.parser.chunking.ParserEventStream;
-import opennlp.tools.postag.POSTagger;
 import opennlp.tools.util.Heap;
-import opennlp.tools.util.ListHeap;
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.chunker.Chunker;
+import opennlp.tools.postag.POSTagger;
+import opennlp.tools.util.ListHeap;
+import opennlp.tools.util.ObjectStream;
 
 /**
  * Abstract class which contains code to tag and chunk parses for bottom up parsing and

@@ -21,16 +21,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import opennlp.tools.formats.ConllXPOSSampleStream;
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
+import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.formats.ConllXPOSSampleStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelUtil;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -56,7 +56,7 @@ import org.junit.Test;
 public class ConllXPosTaggerEval {
 
   private static POSModel train(File trainFile, String lang,
-      TrainingParameters params) throws IOException {
+                                TrainingParameters params) throws IOException {
 
     ObjectStream<POSSample> samples =
         new ConllXPOSSampleStream(new MarkableFileInputStreamFactory(trainFile), Charset.forName("UTF-8"));

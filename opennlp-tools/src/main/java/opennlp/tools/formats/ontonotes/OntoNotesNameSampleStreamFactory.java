@@ -19,11 +19,12 @@ package opennlp.tools.formats.ontonotes;
 
 import java.io.File;
 import java.nio.charset.Charset;
+
+import opennlp.tools.formats.AbstractSampleStreamFactory;
+import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.DirectorySampleStream;
-import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 

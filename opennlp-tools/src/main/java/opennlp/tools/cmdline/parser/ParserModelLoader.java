@@ -17,12 +17,11 @@
 
 package opennlp.tools.cmdline.parser;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import opennlp.tools.cmdline.ModelLoader;
 import opennlp.tools.parser.ParserModel;
-import opennlp.tools.util.InvalidFormatException;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Loads a Parser Model for the command line tools.
@@ -36,8 +35,7 @@ public final class ParserModelLoader extends ModelLoader<ParserModel> {
   }
 
   @Override
-  protected ParserModel loadModel(InputStream modelIn) throws IOException,
-      InvalidFormatException {
+  protected ParserModel loadModel(InputStream modelIn) throws IOException {
     return new ParserModel(modelIn);
   }
 

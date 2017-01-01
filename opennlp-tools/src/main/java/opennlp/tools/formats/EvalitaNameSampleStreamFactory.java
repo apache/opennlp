@@ -20,12 +20,10 @@ package opennlp.tools.formats;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
-import opennlp.tools.formats.EvalitaNameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
@@ -35,10 +33,10 @@ import opennlp.tools.util.ObjectStream;
 public class EvalitaNameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
 
   interface Parameters extends BasicFormatParams {
-    @ParameterDescription(valueName = "it")
+    @ArgumentParser.ParameterDescription(valueName = "it")
     String getLang();
 
-    @ParameterDescription(valueName = "per,loc,org,gpe")
+    @ArgumentParser.ParameterDescription(valueName = "per,loc,org,gpe")
     String getTypes();
   }
 
@@ -55,9 +53,9 @@ public class EvalitaNameSampleStreamFactory extends LanguageSampleStreamFactory<
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
-    LANGUAGE lang;
+    EvalitaNameSampleStream.LANGUAGE lang;
     if ("it".equals(params.getLang())) {
-      lang = LANGUAGE.IT;
+      lang = EvalitaNameSampleStream.LANGUAGE.IT;
       language = params.getLang();
     }
     else {

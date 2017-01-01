@@ -44,7 +44,7 @@ abstract class ModelUpdaterTool
   }
 
   protected abstract ParserModel trainAndUpdate(ParserModel originalModel,
-      ObjectStream<Parse> parseSamples, ModelUpdaterParams parameters)
+                                                ObjectStream<Parse> parseSamples, ModelUpdaterParams parameters)
       throws IOException;
 
   public final void run(String format, String[] args) {

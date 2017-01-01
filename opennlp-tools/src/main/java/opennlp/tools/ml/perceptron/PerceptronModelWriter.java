@@ -19,16 +19,16 @@
 
 package opennlp.tools.ml.perceptron;
 
+import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.AbstractModelWriter;
+import opennlp.tools.ml.model.ComparablePredicate;
+import opennlp.tools.ml.model.Context;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.AbstractModelWriter;
-import opennlp.tools.ml.model.ComparablePredicate;
-import opennlp.tools.ml.model.Context;
 
 /**
  * Abstract parent class for Perceptron writers.  It provides the persist method

@@ -18,11 +18,11 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 
+import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.lemmatizer.LemmaSample;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.BasicFormatParams;
-import opennlp.tools.lemmatizer.LemmaSample;
 import opennlp.tools.lemmatizer.LemmaSampleStream;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;

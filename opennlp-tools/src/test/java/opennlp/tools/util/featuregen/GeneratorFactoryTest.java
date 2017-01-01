@@ -18,9 +18,9 @@
 
 package opennlp.tools.util.featuregen;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.model.ArtifactSerializer;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,11 +28,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.featuregen.WordClusterDictionary.WordClusterDictionarySerializer;
-import opennlp.tools.util.model.ArtifactSerializer;
-
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class GeneratorFactoryTest {
 	
@@ -62,7 +60,7 @@ public class GeneratorFactoryTest {
     // at the expected location
     assertNotNull(generatorDescriptorIn);
 
-    Collection<String> expectedGenerators = new ArrayList<String>();
+    Collection<String> expectedGenerators = new ArrayList<>();
     expectedGenerators.add(OutcomePriorFeatureGenerator.class.getName());
 
     AggregatedFeatureGenerator aggregatedGenerator =
@@ -112,7 +110,7 @@ public class GeneratorFactoryTest {
   public void testCreationWithUnkownElement() throws IOException {
 
     try (InputStream descIn = getClass().getResourceAsStream(
-            "/opennlp/tools/util/featuregen/FeatureGeneratorConfigWithUnkownElement.xml")) {
+        "/opennlp/tools/util/featuregen/FeatureGeneratorConfigWithUnkownElement.xml")) {
       GeneratorFactory.create(descIn, null);
     }
   }
@@ -126,6 +124,6 @@ public class GeneratorFactoryTest {
     Map<String, ArtifactSerializer<?>> mapping =
         GeneratorFactory.extractCustomArtifactSerializerMappings(descIn);
 
-    assertTrue(mapping.get("test.resource") instanceof WordClusterDictionarySerializer);
+    assertTrue(mapping.get("test.resource") instanceof WordClusterDictionary.WordClusterDictionarySerializer);
   }
 }

@@ -16,20 +16,19 @@
  */
 package opennlp.tools.ml.maxent.quasinewton;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
+import opennlp.tools.ml.model.RealValueFileEventStream;
+import opennlp.tools.ml.model.DataIndexer;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.ml.model.DataIndexer;
-import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
-import opennlp.tools.ml.model.RealValueFileEventStream;
-
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class NegLogLikelihoodTest {
   public final double TOLERANCE01 = 1.0E-06;
@@ -172,8 +171,8 @@ public class NegLogLikelihoodTest {
   	Arrays.sort(sortedPredLabels);
   	Arrays.sort(sortedOutcomeLabels);
 
-  	Map<String, Integer> invertedPredIndex = new HashMap<String, Integer>();
-  	Map<String, Integer> invertedOutcomeIndex = new HashMap<String, Integer>();
+  	Map<String, Integer> invertedPredIndex = new HashMap<>();
+  	Map<String, Integer> invertedOutcomeIndex = new HashMap<>();
     for (int i = 0; i < predLabels.length; i++) {
       invertedPredIndex.put(predLabels[i], i);
     }
@@ -201,8 +200,8 @@ public class NegLogLikelihoodTest {
     Arrays.sort(sortedPredLabels);
     Arrays.sort(sortedOutcomeLabels);
 
-    Map<String, Integer> invertedPredIndex = new HashMap<String, Integer>();
-    Map<String, Integer> invertedOutcomeIndex = new HashMap<String, Integer>();
+    Map<String, Integer> invertedPredIndex = new HashMap<>();
+    Map<String, Integer> invertedOutcomeIndex = new HashMap<>();
     for (int i = 0; i < predLabels.length; i++) {
       invertedPredIndex.put(predLabels[i], i);
     }

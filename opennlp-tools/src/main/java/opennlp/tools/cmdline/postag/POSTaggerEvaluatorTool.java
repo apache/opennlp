@@ -34,6 +34,7 @@ import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerEvaluationMonitor;
+import opennlp.tools.postag.POSTaggerME;
 
 public final class POSTaggerEvaluatorTool
     extends AbstractEvaluatorTool<POSSample, EvalToolParams> {
@@ -79,7 +80,7 @@ public final class POSTaggerEvaluatorTool
     }
 
     POSEvaluator evaluator = new POSEvaluator(
-        new opennlp.tools.postag.POSTaggerME(model), missclassifiedListener,
+        new POSTaggerME(model), missclassifiedListener,
         reportListener);
 
     System.out.print("Evaluating ... ");

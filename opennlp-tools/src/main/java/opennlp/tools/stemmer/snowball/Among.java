@@ -46,7 +46,7 @@ class Among {
 	} else {
 	    try {
 		this.method = methodobject.getClass().
-		getDeclaredMethod(methodname, new Class[0]);
+		getDeclaredMethod(methodname);
 	    } catch (NoSuchMethodException e) {
 		throw new RuntimeException(e);
 	    }

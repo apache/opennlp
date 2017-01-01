@@ -39,10 +39,10 @@ public class BrownTokenClasses {
    */
   public static List<String> getWordClasses(String token, BrownCluster brownLexicon) {
     if (brownLexicon.lookupToken(token) == null) {
-      return new ArrayList<String>(0);
+      return new ArrayList<>(0);
     } else {
       String brownClass = brownLexicon.lookupToken(token);
-      List<String> pathLengthsList = new ArrayList<String>();
+      List<String> pathLengthsList = new ArrayList<>();
       pathLengthsList.add(brownClass.substring(0,
           Math.min(brownClass.length(), pathLengths[0])));
       for (int i = 1; i < pathLengths.length; i++) {

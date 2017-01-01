@@ -17,18 +17,18 @@
 
 package opennlp.tools.ml;
 
-import java.io.IOException;
-import java.util.Map;
-
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.ObjectStream;
 
+import java.io.IOException;
+import java.util.Map;
+
 public interface EventTrainer {
 
-  public static final String EVENT_VALUE = "Event";
+  String EVENT_VALUE = "Event";
 
-  public void init(Map<String, String> trainParams, Map<String, String> reportMap);
-  public MaxentModel train(ObjectStream<Event> events) throws IOException;
+  void init(Map<String, String> trainParams, Map<String, String> reportMap);
+  MaxentModel train(ObjectStream<Event> events) throws IOException;
 
 }

@@ -17,12 +17,12 @@
 
 package opennlp.tools.chunker;
 
+import opennlp.tools.util.FilterObjectStream;
+import opennlp.tools.util.ObjectStream;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import opennlp.tools.util.FilterObjectStream;
-import opennlp.tools.util.ObjectStream;
 
 /**
  * Parses the conll 2000 shared task shallow parser training data.
@@ -44,9 +44,9 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
 
   public ChunkSample read() throws IOException {
 
-    List<String> toks = new ArrayList<String>();
-    List<String> tags = new ArrayList<String>();
-    List<String> preds = new ArrayList<String>();
+    List<String> toks = new ArrayList<>();
+    List<String> tags = new ArrayList<>();
+    List<String> preds = new ArrayList<>();
 
     for (String line = samples.read(); line !=null && !line.equals(""); line = samples.read()) {
       String[] parts = line.split(" ");

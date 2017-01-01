@@ -23,17 +23,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.lemmatizer.LemmaSample;
+import opennlp.tools.lemmatizer.LemmatizerEvaluationMonitor;
+import opennlp.tools.lemmatizer.LemmatizerEvaluator;
+import opennlp.tools.lemmatizer.LemmatizerME;
+import opennlp.tools.lemmatizer.LemmatizerModel;
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.cmdline.lemmatizer.LemmatizerEvaluatorTool.EvalToolParams;
-import opennlp.tools.lemmatizer.LemmaSample;
-import opennlp.tools.lemmatizer.LemmatizerEvaluationMonitor;
-import opennlp.tools.lemmatizer.LemmatizerEvaluator;
-import opennlp.tools.lemmatizer.LemmatizerModel;
 
 public final class LemmatizerEvaluatorTool
     extends AbstractEvaluatorTool<LemmaSample, EvalToolParams> {
@@ -79,7 +80,7 @@ public final class LemmatizerEvaluatorTool
     }
 
     LemmatizerEvaluator evaluator = new LemmatizerEvaluator(
-        new opennlp.tools.lemmatizer.LemmatizerME(model),
+        new LemmatizerME(model),
         missclassifiedListener, reportListener);
 
     System.out.print("Evaluating ... ");

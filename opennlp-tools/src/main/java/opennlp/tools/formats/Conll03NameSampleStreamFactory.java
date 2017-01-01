@@ -18,22 +18,20 @@ package opennlp.tools.formats;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
-import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.cmdline.CmdLineUtil;
 
 public class Conll03NameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
 
   interface Parameters extends BasicFormatParams {
-    @ParameterDescription(valueName = "en|de")
+    @ArgumentParser.ParameterDescription(valueName = "en|de")
     String getLang();
 
-    @ParameterDescription(valueName = "per,loc,org,misc")
+    @ArgumentParser.ParameterDescription(valueName = "per,loc,org,misc")
     String getTypes();
   }
 
@@ -51,13 +49,13 @@ public class Conll03NameSampleStreamFactory extends LanguageSampleStreamFactory<
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
     // TODO: support the other languages with this CoNLL.
-    LANGUAGE lang;
+    Conll03NameSampleStream.LANGUAGE lang;
     if ("en".equals(params.getLang())) {
-      lang = LANGUAGE.EN;
+      lang = Conll03NameSampleStream.LANGUAGE.EN;
       language = params.getLang();
     }
     else if ("de".equals(params.getLang())) {
-      lang = LANGUAGE.DE;
+      lang = Conll03NameSampleStream.LANGUAGE.DE;
       language = params.getLang();
     }
     else {

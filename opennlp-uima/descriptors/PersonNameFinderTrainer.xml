@@ -25,7 +25,6 @@
 	<implementationName>opennlp.uima.namefind.NameFinderTrainer</implementationName>
 	<processingResourceMetaData>
 		<name>Person Name Finder Trainer</name>
-		<description></description>
 		<version>${pom.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>

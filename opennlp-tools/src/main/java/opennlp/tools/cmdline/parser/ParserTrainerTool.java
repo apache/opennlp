@@ -17,10 +17,6 @@
 
 package opennlp.tools.cmdline.parser;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -29,15 +25,20 @@ import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.cmdline.parser.ParserTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.chunking.Parser;
+import opennlp.tools.parser.lang.en.HeadRules;
+import opennlp.tools.parser.lang.es.AncoraSpanishHeadRules;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ModelUtil;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerToolParams> {
 
@@ -52,13 +53,12 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     return "trains the learnable parser";
   }
 
-  static Dictionary buildDictionary(ObjectStream<Parse> parseSamples, HeadRules headRules, int cutoff) {
+  static Dictionary buildDictionary(ObjectStream<Parse> parseSamples, opennlp.tools.parser.HeadRules headRules, int cutoff) {
     System.err.print("Building dictionary ...");
 
     Dictionary mdict;
     try {
-      mdict = Parser.
-          buildDictionary(parseSamples, headRules, cutoff);
+      mdict = Parser.buildDictionary(parseSamples, headRules, cutoff);
     } catch (IOException e) {
       System.err.println("Error while building dictionary: " + e.getMessage());
       mdict = null;
@@ -81,7 +81,7 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     return type;
   }
 
-  static HeadRules creaeHeadRules(TrainerToolParams params) throws IOException {
+  static opennlp.tools.parser.HeadRules creaeHeadRules(TrainerToolParams params) throws IOException {
 
     ArtifactSerializer headRulesSerializer;
 
@@ -91,21 +91,21 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     }
     else {
       if ("en".equals(params.getLang())) {
-        headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
+        headRulesSerializer = new HeadRules.HeadRulesSerializer();
       }
       else if ("es".equals(params.getLang())) {
-        headRulesSerializer = new opennlp.tools.parser.lang.es.AncoraSpanishHeadRules.HeadRulesSerializer();
+        headRulesSerializer = new AncoraSpanishHeadRules.HeadRulesSerializer();
       }
       else {
         // default for now, this case should probably cause an error ...
-        headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
+        headRulesSerializer = new HeadRules.HeadRulesSerializer();
       }
     }
 
     Object headRulesObject = headRulesSerializer.create(new FileInputStream(params.getHeadRules()));
 
-    if (headRulesObject instanceof HeadRules) {
-      return (HeadRules) headRulesObject;
+    if (headRulesObject instanceof opennlp.tools.parser.HeadRules) {
+      return (opennlp.tools.parser.HeadRules) headRulesObject;
     }
     else {
       throw new TerminateToolException(-1, "HeadRules Artifact Serializer must create an object of type HeadRules!");
@@ -149,7 +149,7 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
 
     ParserModel model;
     try {
-      HeadRules rules = creaeHeadRules(params);
+      opennlp.tools.parser.HeadRules rules = creaeHeadRules(params);
 
       ParserType type = parseParserType(params.getParserType());
       if(params.getFun()){
@@ -157,7 +157,7 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
       }
 
       if (ParserType.CHUNKING.equals(type)) {
-        model = opennlp.tools.parser.chunking.Parser.train(
+        model = Parser.train(
             params.getLang(), sampleStream, rules,
             mlParams);
       }

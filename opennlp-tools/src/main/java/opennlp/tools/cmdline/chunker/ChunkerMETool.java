@@ -19,7 +19,6 @@ package opennlp.tools.cmdline.chunker;
 import java.io.File;
 import java.io.IOException;
 
-import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.cmdline.BasicCmdLineTool;
@@ -31,6 +30,7 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.chunker.ChunkSample;
 
 public class ChunkerMETool extends BasicCmdLineTool {
 

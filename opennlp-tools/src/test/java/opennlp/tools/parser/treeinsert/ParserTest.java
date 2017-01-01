@@ -20,12 +20,12 @@ package opennlp.tools.parser.treeinsert;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserTestUtil;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.parser.HeadRules;
 
 import org.junit.Test;
 

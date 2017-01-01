@@ -17,6 +17,12 @@
 
 package opennlp.tools.cmdline;
 
+import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.MarkableFileInputStreamFactory;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.BaseModel;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,12 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-
-import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.MarkableFileInputStreamFactory;
-import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.BaseModel;
 
 /**
  * Util class for the command line interface.
@@ -247,7 +247,7 @@ public final class CmdLineUtil {
       if (value != null)
           return Integer.parseInt(value);
     }
-    catch (NumberFormatException e) {
+    catch (NumberFormatException ignored) {
     }
 
     return null;
@@ -267,14 +267,14 @@ public final class CmdLineUtil {
       if (value != null)
           return Double.parseDouble(value);
     }
-    catch (NumberFormatException e) {
+    catch (NumberFormatException ignored) {
     }
 
     return null;
   }
 
   public static void checkLanguageCode(String code) {
-    List<String> languageCodes  = new ArrayList<String>();
+    List<String> languageCodes  = new ArrayList<>();
     languageCodes.addAll(Arrays.asList(Locale.getISOLanguages()));
     languageCodes.add("x-unspecified");
 
@@ -308,7 +308,7 @@ public final class CmdLineUtil {
 
   // its optional, passing null is allowed
   public static TrainingParameters loadTrainingParameters(String paramFile,
-      boolean supportSequenceTraining) {
+                                                          boolean supportSequenceTraining) {
 
     TrainingParameters params = null;
 
@@ -317,7 +317,7 @@ public final class CmdLineUtil {
       checkInputFile("Training Parameter", new File(paramFile));
 
       try (InputStream paramsIn  = new FileInputStream(new File(paramFile))) {
-        params = new opennlp.tools.util.TrainingParameters(paramsIn);
+        params = new TrainingParameters(paramsIn);
       } catch (IOException e) {
         throw new TerminateToolException(-1, "Error during parameters loading: " + e.getMessage(), e);
       }

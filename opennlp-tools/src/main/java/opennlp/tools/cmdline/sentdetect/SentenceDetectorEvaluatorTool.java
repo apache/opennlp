@@ -19,15 +19,15 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.IOException;
 
-import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.params.EvaluatorParams;
-import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluatorTool.EvalToolParams;
 import opennlp.tools.sentdetect.SentenceDetectorEvaluationMonitor;
 import opennlp.tools.sentdetect.SentenceDetectorEvaluator;
-import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.cmdline.AbstractEvaluatorTool;
+import opennlp.tools.cmdline.params.EvaluatorParams;
+import opennlp.tools.cmdline.sentdetect.SentenceDetectorEvaluatorTool.EvalToolParams;
+import opennlp.tools.sentdetect.SentenceDetectorME;
 
 public final class SentenceDetectorEvaluatorTool
     extends AbstractEvaluatorTool<SentenceSample, EvalToolParams> {

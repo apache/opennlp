@@ -25,12 +25,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import opennlp.tools.util.eval.FMeasure;
 import org.junit.Test;
 
 import opennlp.tools.cmdline.chunker.ChunkEvaluationErrorListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.eval.FMeasure;
 
 /**
  * Tests for {@link ChunkerEvaluator}.

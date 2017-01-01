@@ -28,8 +28,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.zip.GZIPOutputStream;
 
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelWriter;
+import opennlp.tools.ml.model.AbstractModel;
 
 /**
  * A writer for GIS models which inspects the filename and invokes the

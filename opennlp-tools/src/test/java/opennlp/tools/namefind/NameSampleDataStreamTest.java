@@ -17,13 +17,15 @@
 
 package opennlp.tools.namefind;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.MockInputStreamFactory;
+import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.Span;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
@@ -32,15 +34,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.MockInputStreamFactory;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamUtils;
-import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * This is the test class for {@link NameSampleDataStream}..
@@ -91,8 +91,8 @@ public class NameSampleDataStreamTest {
         "Gina Schneider", "Bruno Schulz", "Michel Seile", "George Miller",
         "Miller", "Peter Schubert", "Natalie" };
 
-    List<String> names = new ArrayList<String>();
-    List<Span> spans = new ArrayList<Span>();
+    List<String> names = new ArrayList<>();
+    List<Span> spans = new ArrayList<>();
 
     while (ns != null) {
       for (Span nameSpan : ns.getNames()) {
@@ -144,22 +144,22 @@ public class NameSampleDataStreamTest {
         ObjectStreamUtils.createObjectStream("<START> <START> Name <END>"))) {
       sampleStream.read();
       fail();
-    } catch (IOException e) {
+    } catch (IOException ignored) {
     }
 
     try (NameSampleDataStream sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START> Name <END> <END>"))) {
       sampleStream.read();
       fail();
-    } catch (IOException e) {
+    } catch (IOException ignored) {
     }
 
     try (NameSampleDataStream sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream(
-            "<START> <START> Person <END> Street <END>"));) {
+            "<START> <START> Person <END> Street <END>"))) {
       sampleStream.read();
       fail();
-    } catch (IOException e) {
+    } catch (IOException ignored) {
     }
   }
 
@@ -177,8 +177,8 @@ public class NameSampleDataStreamTest {
     NameSampleDataStream ds = new NameSampleDataStream(
         new PlainTextByLineStream(in, UTF_8));
 
-    Map<String, List<String>> names = new HashMap<String, List<String>>();
-    Map<String, List<Span>> spans = new HashMap<String, List<Span>>();
+    Map<String, List<String>> names = new HashMap<>();
+    Map<String, List<Span>> spans = new HashMap<>();
 
     NameSample ns;
     while ((ns = ds.read()) != null) {
@@ -186,8 +186,8 @@ public class NameSampleDataStreamTest {
 
       for (Span nameSpan : nameSpans) {
         if (!names.containsKey(nameSpan.getType())) {
-          names.put(nameSpan.getType(), new ArrayList<String>());
-          spans.put(nameSpan.getType(), new ArrayList<Span>());
+          names.put(nameSpan.getType(), new ArrayList<>());
+          spans.put(nameSpan.getType(), new ArrayList<>());
         }
         names.get(nameSpan.getType())
             .add(sublistToString(ns.getSentence(), nameSpan));
@@ -298,7 +298,7 @@ public class NameSampleDataStreamTest {
         ObjectStreamUtils.createObjectStream("<START:> Name <END>"))) {
       sampleStream.read();
       fail();
-    } catch (IOException e) {
+    } catch (IOException ignored) {
     }
 
     try (NameSampleDataStream sampleStream = new NameSampleDataStream(
@@ -306,21 +306,20 @@ public class NameSampleDataStreamTest {
             "<START:street> <START:person> Name <END> <END>"))) {
       sampleStream.read();
       fail();
-    } catch (IOException e) {
+    } catch (IOException ignored) {
     }
   }
 
   @Test
   public void testClearAdaptiveData() throws IOException {
-    StringBuilder trainingData = new StringBuilder();
-    trainingData.append("a\n");
-    trainingData.append("b\n");
-    trainingData.append("c\n");
-    trainingData.append("\n");
-    trainingData.append("d\n");
+    String trainingData = "a\n" +
+        "b\n" +
+        "c\n" +
+        "\n" +
+        "d\n";
 
     ObjectStream<String> untokenizedLineStream = new PlainTextByLineStream(
-        new MockInputStreamFactory(trainingData.toString()), UTF_8);
+        new MockInputStreamFactory(trainingData), UTF_8);
 
     ObjectStream<NameSample> trainingStream = new NameSampleDataStream(untokenizedLineStream);
 
@@ -335,7 +334,7 @@ public class NameSampleDataStreamTest {
 
   @Test
   public void testHtmlNameSampleParsing() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(getClass(), 
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
         "/opennlp/tools/namefind/html1.train");
 
     NameSampleDataStream ds = new NameSampleDataStream(
@@ -367,7 +366,7 @@ public class NameSampleDataStreamTest {
     assertEquals("Pest", ns.getSentence()[3]);
     assertEquals("Management", ns.getSentence()[4]);
     assertEquals("</li>", ns.getSentence()[5]);
-    assertEquals(new Span(1, 5, organization), ns.getNames()[0]);
+    Assert.assertEquals(new Span(1, 5, organization), ns.getNames()[0]);
 
     // <li> <START:organization> Bay Cities Produce Co., Inc. <END> </li>
     ns = ds.read();
@@ -379,7 +378,7 @@ public class NameSampleDataStreamTest {
     assertEquals("Co.,", ns.getSentence()[4]);
     assertEquals("Inc.", ns.getSentence()[5]);
     assertEquals("</li>", ns.getSentence()[6]);
-    assertEquals(new Span(1, 6, organization), ns.getNames()[0]);
+    Assert.assertEquals(new Span(1, 6, organization), ns.getNames()[0]);
 
     ns = ds.read();
     assertEquals(1, ns.getSentence().length);

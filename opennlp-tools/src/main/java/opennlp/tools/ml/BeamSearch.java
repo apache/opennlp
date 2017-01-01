@@ -17,17 +17,17 @@
 
 package opennlp.tools.ml;
 
+import opennlp.tools.util.BeamSearchContextGenerator;
+import opennlp.tools.util.Cache;
+import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.util.Sequence;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
-
-import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.SequenceClassificationModel;
-import opennlp.tools.util.BeamSearchContextGenerator;
-import opennlp.tools.util.Cache;
-import opennlp.tools.util.Sequence;
-import opennlp.tools.util.SequenceValidator;
 
 /**
  * Performs k-best search over sequence.  This is based on the description in
@@ -102,11 +102,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
         String[] contexts = cg.getContext(i, sequence, outcomes, additionalContext);
         double[] scores;
         if (contextsCache != null) {
-          scores = contextsCache.get(contexts);
-          if (scores == null) {
-            scores = model.eval(contexts, probs);
-            contextsCache.put(contexts,scores);
-          }
+          scores = contextsCache.computeIfAbsent(contexts, k -> model.eval(contexts, probs));
         }
         else {
           scores = model.eval(contexts, probs);

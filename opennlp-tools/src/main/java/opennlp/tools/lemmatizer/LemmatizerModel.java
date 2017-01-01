@@ -16,13 +16,6 @@
  */
 package opennlp.tools.lemmatizer;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Map;
-import java.util.Properties;
-
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
@@ -30,6 +23,13 @@ import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Map;
+import java.util.Properties;
 
 /**
 * The {@link LemmatizerModel} is the model used
@@ -68,15 +68,15 @@ public class LemmatizerModel extends BaseModel {
    this(languageCode, lemmatizerModel, null, factory);
  }
 
- public LemmatizerModel(InputStream in) throws IOException, InvalidFormatException {
+ public LemmatizerModel(InputStream in) throws IOException {
    super(COMPONENT_NAME, in);
  }
 
- public LemmatizerModel(File modelFile) throws IOException, InvalidFormatException {
+ public LemmatizerModel(File modelFile) throws IOException {
    super(COMPONENT_NAME, modelFile);
  }
 
- public LemmatizerModel(URL modelURL) throws IOException, InvalidFormatException {
+ public LemmatizerModel(URL modelURL) throws IOException {
    super(COMPONENT_NAME, modelURL);
  }
 

@@ -18,18 +18,18 @@
 
 package opennlp.tools.tokenize;
 
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.tokenize.lang.Factory;
+import opennlp.tools.util.AbstractEventStream;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.Span;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import opennlp.tools.ml.model.Event;
-import opennlp.tools.tokenize.lang.Factory;
-import opennlp.tools.util.AbstractEventStream;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 /**
  * This class reads the {@link TokenSample}s from the given {@link Iterator}
@@ -97,7 +97,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
   @Override
   protected Iterator<Event> createEvents(TokenSample tokenSample) {
 
-    List<Event> events = new ArrayList<Event>(50);
+    List<Event> events = new ArrayList<>(50);
 
     Span tokens[] = tokenSample.getTokenSpans();
     String text = tokenSample.getText();

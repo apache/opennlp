@@ -68,7 +68,7 @@ public class AbstractEventStreamTest {
     protected Iterator<Event> createEvents(RESULT sample) {
 
       if (RESULT.EVENTS.equals(sample)) {
-        List<Event> events = new ArrayList<Event>();
+        List<Event> events = new ArrayList<>();
         events.add(new Event("test", new String[]{"f1", "f2"}));
 
         return events.iterator();
@@ -95,12 +95,12 @@ public class AbstractEventStreamTest {
   @Test
   public void testStandardCase() throws IOException {
 
-    List<RESULT> samples = new ArrayList<RESULT>();
+    List<RESULT> samples = new ArrayList<>();
     samples.add(RESULT.EVENTS);
     samples.add(RESULT.EMPTY);
     samples.add(RESULT.EVENTS);
 
-    TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<RESULT>(samples));
+    TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<>(samples));
 
     int eventCounter = 0;
 
@@ -118,17 +118,17 @@ public class AbstractEventStreamTest {
    */
   @Test
   public void testEmtpyEventStream() throws IOException {
-    List<RESULT> samples = new ArrayList<RESULT>();
+    List<RESULT> samples = new ArrayList<>();
     samples.add(RESULT.EMPTY);
 
-    TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<RESULT>(samples));
+    TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<>(samples));
     assertNull(eventStream.read());
 
     // now check if it can handle multiple empty event iterators
     samples.add(RESULT.EMPTY);
     samples.add(RESULT.EMPTY);
 
-    eventStream = new TestEventStream(new CollectionObjectStream<RESULT>(samples));
+    eventStream = new TestEventStream(new CollectionObjectStream<>(samples));
     assertNull(eventStream.read());
   }
 }

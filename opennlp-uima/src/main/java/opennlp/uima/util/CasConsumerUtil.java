@@ -23,7 +23,6 @@ import java.io.InputStream;
 import opennlp.tools.dictionary.Dictionary;
 
 import org.apache.uima.UimaContext;
-import org.apache.uima.analysis_engine.annotator.AnnotatorConfigurationException;
 import org.apache.uima.cas.Feature;
 import org.apache.uima.cas.Type;
 import org.apache.uima.cas.TypeSystem;

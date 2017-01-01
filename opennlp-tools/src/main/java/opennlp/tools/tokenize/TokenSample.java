@@ -18,13 +18,12 @@
 
 package opennlp.tools.tokenize;
 
+import opennlp.tools.util.Span;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
-import opennlp.tools.util.Span;
 
 /**
  * A {@link TokenSample} is text with token spans.
@@ -54,7 +53,7 @@ public class TokenSample {
       throw new IllegalArgumentException("tokenSpans must not be null! ");
 
     this.text = text;
-    this.tokenSpans = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(tokenSpans)));
+    this.tokenSpans = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(tokenSpans)));
 
     for (Span tokenSpan : tokenSpans) {
       if (tokenSpan.getStart() < 0 || tokenSpan.getStart() > text.length() ||
@@ -69,9 +68,9 @@ public class TokenSample {
 
     StringBuilder sentence = new StringBuilder();
 
-    DetokenizationOperation[] operations = detokenizer.detokenize(tokens);
+    Detokenizer.DetokenizationOperation[] operations = detokenizer.detokenize(tokens);
 
-    List<Span> mergedTokenSpans = new ArrayList<Span>();
+    List<Span> mergedTokenSpans = new ArrayList<>();
 
     for (int i = 0; i < operations.length; i++) {
 
@@ -92,14 +91,14 @@ public class TokenSample {
     tokenSpans = Collections.unmodifiableList(mergedTokenSpans);
   }
 
-  private boolean isMergeToRight(DetokenizationOperation operation) {
-    return DetokenizationOperation.MERGE_TO_RIGHT.equals(operation)
-        || DetokenizationOperation.MERGE_BOTH.equals(operation);
+  private boolean isMergeToRight(Detokenizer.DetokenizationOperation operation) {
+    return Detokenizer.DetokenizationOperation.MERGE_TO_RIGHT.equals(operation)
+        || Detokenizer.DetokenizationOperation.MERGE_BOTH.equals(operation);
   }
 
-  private boolean isMergeToLeft(DetokenizationOperation operation) {
-    return DetokenizationOperation.MERGE_TO_LEFT.equals(operation)
-        || DetokenizationOperation.MERGE_BOTH.equals(operation);
+  private boolean isMergeToLeft(Detokenizer.DetokenizationOperation operation) {
+    return Detokenizer.DetokenizationOperation.MERGE_TO_LEFT.equals(operation)
+        || Detokenizer.DetokenizationOperation.MERGE_BOTH.equals(operation);
   }
 
   /**
@@ -171,7 +170,7 @@ public class TokenSample {
     Span whitespaceTokenSpans[] = WhitespaceTokenizer.INSTANCE.tokenizePos(sampleString);
 
     // Pre-allocate 20% for newly created tokens
-    List<Span> realTokenSpans = new ArrayList<Span>((int) (whitespaceTokenSpans.length * 1.2d));
+    List<Span> realTokenSpans = new ArrayList<>((int) (whitespaceTokenSpans.length * 1.2d));
 
     StringBuilder untaggedSampleString = new StringBuilder();
 

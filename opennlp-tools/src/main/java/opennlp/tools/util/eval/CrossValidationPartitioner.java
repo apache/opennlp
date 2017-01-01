@@ -18,12 +18,12 @@
 
 package opennlp.tools.util.eval;
 
+import opennlp.tools.util.CollectionObjectStream;
+import opennlp.tools.util.ObjectStream;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.NoSuchElementException;
-
-import opennlp.tools.util.CollectionObjectStream;
-import opennlp.tools.util.ObjectStream;
 
 /**
  * Provides access to training and test partitions for n-fold cross validation.
@@ -195,7 +195,7 @@ public class CrossValidationPartitioner<E> {
       if (testSampleStream == null) {
 
         sampleStream.reset();
-        testSampleStream =  new TestSampleStream<E>(sampleStream, numberOfPartitions, testIndex);
+        testSampleStream =  new TestSampleStream<>(sampleStream, numberOfPartitions, testIndex);
       }
 
       return testSampleStream;
@@ -243,7 +243,7 @@ public class CrossValidationPartitioner<E> {
    * @param numberOfPartitions
    */
   public CrossValidationPartitioner(Collection<E> elements, int numberOfPartitions) {
-    this(new CollectionObjectStream<E>(elements), numberOfPartitions);
+    this(new CollectionObjectStream<>(elements), numberOfPartitions);
   }
 
   /**
@@ -263,7 +263,7 @@ public class CrossValidationPartitioner<E> {
 
       sampleStream.reset();
 
-      TrainingSampleStream<E> trainingSampleStream = new TrainingSampleStream<E>(sampleStream,
+      TrainingSampleStream<E> trainingSampleStream = new TrainingSampleStream<>(sampleStream,
           numberOfPartitions, testIndex);
 
       testIndex++;

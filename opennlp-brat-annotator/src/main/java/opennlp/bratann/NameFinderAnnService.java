@@ -17,12 +17,6 @@
 
 package opennlp.bratann;
 
-import java.io.File;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-
-import com.sun.net.httpserver.HttpServer;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -38,11 +32,15 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
+import java.io.File;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 import javax.ws.rs.core.UriBuilder;
 
 public class NameFinderAnnService {
 
-  public static SentenceDetector sentenceDetector = new NewlineSentenceDetector();;
+  public static SentenceDetector sentenceDetector = new NewlineSentenceDetector();
   public static Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
   public static TokenNameFinder nameFinders[];
 

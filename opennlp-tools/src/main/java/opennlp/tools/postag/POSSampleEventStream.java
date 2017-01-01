@@ -18,13 +18,13 @@
 
 package opennlp.tools.postag;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class reads the {@link POSSample}s from the given {@link Iterator}
@@ -72,7 +72,7 @@ public class POSSampleEventStream extends AbstractEventStream<POSSample> {
 
   public static List<Event> generateEvents(String[] sentence, String[] tags,
       Object[] additionalContext, POSContextGenerator cg) {
-    List<Event> events = new ArrayList<Event>(sentence.length);
+    List<Event> events = new ArrayList<>(sentence.length);
 
     for (int i=0; i < sentence.length; i++) {
 

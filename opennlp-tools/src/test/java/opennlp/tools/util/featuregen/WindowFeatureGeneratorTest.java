@@ -17,14 +17,14 @@
 
 package opennlp.tools.util.featuregen;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test for the {@link WindowFeatureGenerator} class.
@@ -38,7 +38,7 @@ public class WindowFeatureGeneratorTest {
 
   @Before
   public void setUp() throws Exception {
-    features = new ArrayList<String>();
+    features = new ArrayList<>();
   }
 
   /**

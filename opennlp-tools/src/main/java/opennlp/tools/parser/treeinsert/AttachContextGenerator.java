@@ -18,15 +18,15 @@
 
 package opennlp.tools.parser.treeinsert;
 
+import opennlp.tools.parser.AbstractContextGenerator;
+import opennlp.tools.parser.Cons;
+import opennlp.tools.parser.Parse;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import opennlp.tools.parser.AbstractContextGenerator;
-import opennlp.tools.parser.Cons;
-import opennlp.tools.parser.Parse;
 
 public class AttachContextGenerator extends AbstractContextGenerator {
 
@@ -42,8 +42,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
 
   private boolean containsPunct(Collection<Parse> puncts, String punct){
     if (puncts != null){
-      for (Iterator<Parse> pi=puncts.iterator();pi.hasNext();) {
-        Parse p = pi.next();
+      for (Parse p : puncts) {
         if (p.getType().equals(punct)) {
           return true;
         }

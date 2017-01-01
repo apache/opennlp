@@ -22,13 +22,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import opennlp.tools.ngram.NGramModel;
-import opennlp.tools.ngram.NGramUtils;
 import opennlp.tools.util.StringList;
+import opennlp.tools.ngram.NGramUtils;
 
 /**
- * A {@link opennlp.tools.languagemodel.LanguageModel} based on a {@link opennlp.tools.ngram.NGramModel} using Laplace
+ * A {@link LanguageModel} based on a {@link NGramModel} using Laplace
  * smoothing probability estimation to get the probabilities of the ngrams.
- * See also {@link NGramUtils#calculateLaplaceSmoothingProbability(opennlp.tools.util.StringList, Iterable, int, Double)}.
+ * See also {@link NGramUtils#calculateLaplaceSmoothingProbability(StringList, Iterable, int, Double)}.
  */
 public class NGramLanguageModel extends NGramModel implements LanguageModel {
 

@@ -17,13 +17,12 @@
 
 package opennlp.tools.formats.muc;
 
-import java.io.IOException;
-
-import junit.framework.Assert;
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
-
+import opennlp.tools.util.ObjectStream;
 import org.junit.Test;
+import org.junit.Assert;
+
+import java.io.IOException;
 
 public class DocumentSplitterStreamTest {
 

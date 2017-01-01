@@ -19,13 +19,13 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.IOException;
 
-import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.params.EvaluatorParams;
-import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.Parser;
 import opennlp.tools.parser.ParserEvaluator;
 import opennlp.tools.parser.ParserFactory;
+import opennlp.tools.cmdline.AbstractEvaluatorTool;
+import opennlp.tools.cmdline.params.EvaluatorParams;
+import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 
 public class ParserEvaluatorTool extends AbstractEvaluatorTool<Parse, EvaluatorParams> {

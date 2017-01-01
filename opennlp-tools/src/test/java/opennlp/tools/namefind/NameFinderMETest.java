@@ -20,12 +20,13 @@ package opennlp.tools.namefind;
 
 import java.io.InputStream;
 import java.util.Collections;
-import opennlp.tools.ml.model.SequenceClassificationModel;
+
 import opennlp.tools.util.MockInputStreamFactory;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

@@ -39,7 +39,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
 
   // for the sentence detector
   protected void printError(Span references[], Span predictions[],
-      T referenceSample, T predictedSample, String sentence) {
+                            T referenceSample, T predictedSample, String sentence) {
     List<Span> falseNegatives = new ArrayList<>();
     List<Span> falsePositives = new ArrayList<>();
 

@@ -17,13 +17,12 @@
 
 package opennlp.tools.formats.brat;
 
+import opennlp.tools.util.ObjectStream;
+import org.junit.Test;
+
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-
-import opennlp.tools.util.ObjectStream;
-
-import org.junit.Test;
 
 public class BratAnnotationStreamTest {
 
@@ -47,7 +46,7 @@ public class BratAnnotationStreamTest {
   @Test
   public void testParsingEntities() throws Exception {
 
-    Map<String, String> typeToClassMap = new HashMap<String, String>();
+    Map<String, String> typeToClassMap = new HashMap<>();
     addEntityTypes(typeToClassMap);
 
     AnnotationConfiguration annConfig = new AnnotationConfiguration(typeToClassMap);
@@ -66,7 +65,7 @@ public class BratAnnotationStreamTest {
   @Test
   public void testParsingRelations() throws Exception {
 
-    Map<String, String> typeToClassMap = new HashMap<String, String>();
+    Map<String, String> typeToClassMap = new HashMap<>();
     addEntityTypes(typeToClassMap);
     typeToClassMap.put("Related", AnnotationConfiguration.RELATION_TYPE);
 

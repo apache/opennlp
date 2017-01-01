@@ -31,11 +31,11 @@ import java.util.Map;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.maxent.io.BinaryGISModelReader;
 import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.util.BaseToolFactory;
 
 /**
  * The {@link TokenizerModel} is the model used

@@ -17,6 +17,8 @@
 
 package opennlp.tools.cmdline;
 
+import opennlp.tools.cmdline.ArgumentParser.Argument;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -26,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-
-import opennlp.tools.cmdline.ArgumentParser.Argument;
 
 public class GenerateManualTool {
 
@@ -52,8 +52,7 @@ public class GenerateManualTool {
       packageName = packageName.substring(packageName.lastIndexOf(".") + 1);
 
       if (!packageNameToolMap.containsKey(packageName)) {
-        packageNameToolMap.put(packageName,
-            new LinkedHashMap<String, CmdLineTool>());
+        packageNameToolMap.put(packageName, new LinkedHashMap<>());
       }
       packageNameToolMap.get(packageName).put(toolName, tool);
     }

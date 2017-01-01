@@ -20,13 +20,8 @@ package opennlp.tools.cmdline.postag;
 import java.io.File;
 import java.io.IOException;
 
-import opennlp.tools.cmdline.AbstractTrainerTool;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.params.TrainingToolParams;
-import opennlp.tools.cmdline.postag.POSTaggerTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.postag.MutableTagDictionary;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
@@ -37,6 +32,11 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
 import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.cmdline.AbstractTrainerTool;
+import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.params.TrainingToolParams;
+import opennlp.tools.cmdline.postag.POSTaggerTrainerTool.TrainerToolParams;
+import opennlp.tools.ml.TrainerFactory;
 
 public final class POSTaggerTrainerTool
     extends AbstractTrainerTool<POSSample, TrainerToolParams> {
@@ -126,7 +126,7 @@ public final class POSTaggerTrainerTool
 
     POSModel model;
     try {
-      model = opennlp.tools.postag.POSTaggerME.train(params.getLang(),
+      model = POSTaggerME.train(params.getLang(),
           sampleStream, mlParams, postaggerFactory);
     }
     catch (IOException e) {

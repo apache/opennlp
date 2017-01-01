@@ -44,7 +44,7 @@ public class CountedSet<E> implements Set<E> {
    * Creates a new counted set.
    */
   public CountedSet() {
-    cset = new HashMap<E, Integer>();
+    cset = new HashMap<>();
   }
 
   /**
@@ -53,7 +53,7 @@ public class CountedSet<E> implements Set<E> {
    * @param size The initial size of this set.
    */
   public CountedSet(int size) {
-    cset = new HashMap<E, Integer>(size);
+    cset = new HashMap<>(size);
 
   }
 
@@ -150,7 +150,7 @@ public class CountedSet<E> implements Set<E> {
    */
   @Deprecated
   public void write(String fileName,int countCutoff,String delim,String encoding) {
-    PrintWriter out = null;
+    PrintWriter out;
     try{
       if (encoding != null) {
         out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(fileName),encoding));
@@ -159,10 +159,9 @@ public class CountedSet<E> implements Set<E> {
         out = new PrintWriter(new FileWriter(fileName));
       }
 
-      for (Iterator<E> e = cset.keySet().iterator();  e.hasNext();) {
-        E key = e.next();
+      for (E key : cset.keySet()) {
         int count = this.getCount(key);
-        if ( count >= countCutoff ) {
+        if (count >= countCutoff) {
           out.println(count + delim + key);
         }
       }
@@ -217,8 +216,7 @@ public class CountedSet<E> implements Set<E> {
 
   public boolean retainAll(Collection<?> c) {
     boolean changed = false;
-    for (Iterator<E> ki = cset.keySet().iterator();ki.hasNext();) {
-      Object key = ki.next();
+    for (E key : cset.keySet()) {
       if (!c.contains(key)) {
         cset.remove(key);
         changed = true;

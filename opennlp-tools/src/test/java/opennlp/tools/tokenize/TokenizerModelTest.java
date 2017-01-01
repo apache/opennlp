@@ -18,13 +18,11 @@
 
 package opennlp.tools.tokenize;
 
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
-import opennlp.tools.util.InvalidFormatException;
-
-import org.junit.Test;
 
 /**
  * Tests for the {@link TokenizerModel} class.
@@ -32,7 +30,7 @@ import org.junit.Test;
 public class TokenizerModelTest {
 
   @Test
-  public void testSentenceModel() throws IOException, InvalidFormatException {
+  public void testSentenceModel() throws IOException {
 
     TokenizerModel model = TokenizerTestUtil.createSimpleMaxentTokenModel();
 

@@ -17,10 +17,10 @@
 
 package opennlp.tools.formats.ad;
 
+import opennlp.tools.formats.DetokenizerSampleStreamFactory;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
-import opennlp.tools.formats.DetokenizerSampleStreamFactory;
 import opennlp.tools.formats.convert.NameToTokenSampleStream;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.tokenize.TokenSample;

@@ -17,6 +17,8 @@
 
 package opennlp.tools.formats.brat;
 
+import opennlp.tools.tokenize.WhitespaceTokenizer;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,7 +30,6 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import opennlp.tools.tokenize.WhitespaceTokenizer;
 
 public class AnnotationConfiguration {
 

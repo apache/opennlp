@@ -17,19 +17,17 @@
 
 package opennlp.tools.postag;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import opennlp.tools.util.InvalidFormatException;
-
-import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for the {@link POSDictionary} class.
@@ -50,7 +48,7 @@ public class POSDictionaryTest {
        out.close();
     }
 
-    POSDictionary serializedDictionary = null;
+    POSDictionary serializedDictionary;
     try (InputStream in = new ByteArrayInputStream(out.toByteArray())) {
       serializedDictionary = POSDictionary.create(in);
     }
@@ -59,7 +57,7 @@ public class POSDictionaryTest {
   }
 
   @Test
-  public void testSerialization() throws IOException, InvalidFormatException {
+  public void testSerialization() throws IOException {
     POSDictionary dictionary = new POSDictionary();
 
     dictionary.addTags("a", "1", "2", "3");

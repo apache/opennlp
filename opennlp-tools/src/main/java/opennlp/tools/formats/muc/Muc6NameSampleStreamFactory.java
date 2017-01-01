@@ -19,8 +19,8 @@ package opennlp.tools.formats.muc;
 
 import java.io.File;
 import java.nio.charset.Charset;
+
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.cmdline.tokenizer.TokenizerModelLoader;
@@ -29,15 +29,15 @@ import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.util.StringUtil;
 
 public class Muc6NameSampleStreamFactory extends AbstractSampleStreamFactory<NameSample> {
 
   interface Parameters extends BasicFormatParams {
-    @ParameterDescription(valueName = "modelFile")
+    @ArgumentParser.ParameterDescription(valueName = "modelFile")
     File getTokenizerModel();
   }
 

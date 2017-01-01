@@ -17,16 +17,15 @@
 
 package opennlp.tools.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
+import opennlp.tools.ml.model.MaxentModel;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.ml.model.MaxentModel;
-
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 
 public class BeamSearchTest {
 
@@ -49,7 +48,7 @@ public class BeamSearchTest {
 
     private String[] outcomes;
 
-    private Map<String, Integer> outcomeIndexMap = new HashMap<String, Integer>();
+    private Map<String, Integer> outcomeIndexMap = new HashMap<>();
 
     private double bestOutcomeProb = 0.8d;
     private double otherOutcomeProb;
@@ -125,7 +124,7 @@ public class BeamSearchTest {
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<String>(3, cg, model);
+    BeamSearch<String> bs = new BeamSearch<>(3, cg, model);
 
     Sequence seq = bs.bestSequence(sequence, null);
     assertNotNull(seq);
@@ -143,7 +142,7 @@ public class BeamSearchTest {
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<String>(3, cg, model);
+    BeamSearch<String> bs = new BeamSearch<>(3, cg, model);
 
     Sequence seq = bs.bestSequence(sequence, null);
     assertNotNull(seq);
@@ -162,7 +161,7 @@ public class BeamSearchTest {
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<String>(2, cg, model);
+    BeamSearch<String> bs = new BeamSearch<>(2, cg, model);
 
     Sequence seq = bs.bestSequence(sequence, null);
     assertNotNull(seq);
@@ -185,12 +184,7 @@ public class BeamSearchTest {
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<String>(2, cg, model, new SequenceValidator<String>(){
-
-      public boolean validSequence(int i, String[] inputSequence,
-          String[] outcomesSequence, String outcome) {
-        return !"2".equals(outcome);
-      }}, 0);
+    BeamSearch<String> bs = new BeamSearch<>(2, cg, model, (i, inputSequence, outcomesSequence, outcome) -> !"2".equals(outcome), 0);
 
     Sequence seq = bs.bestSequence(sequence, null);
     assertNotNull(seq);

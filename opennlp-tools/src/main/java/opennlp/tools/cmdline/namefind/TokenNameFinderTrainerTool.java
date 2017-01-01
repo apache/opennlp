@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.namefind.NameSampleTypeFilter;
+import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -33,8 +35,7 @@ import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.namefind.BilouCodec;
 import opennlp.tools.namefind.BioCodec;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.namefind.NameSampleTypeFilter;
-import opennlp.tools.namefind.TokenNameFinderFactory;
+import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
@@ -210,7 +211,7 @@ public final class TokenNameFinderTrainerTool
     
     TokenNameFinderModel model;
     try {
-      model = opennlp.tools.namefind.NameFinderME.train(
+      model = NameFinderME.train(
           params.getLang(), params.getType(), sampleStream, mlParams,
           nameFinderFactory);
     }

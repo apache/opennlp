@@ -18,14 +18,14 @@
 
 package opennlp.tools.namefind;
 
-import static org.junit.Assert.assertTrue;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
   *Tests for the {@link DictionaryNameFinder} class.
@@ -41,15 +41,13 @@ public class DictionaryNameFinderTest{
     mDictionary.put(vanessa);
 
     StringList vanessaWilliams = new
-        StringList(new String[]{"Vanessa",
-        "Williams"});
+        StringList("Vanessa", "Williams");
     mDictionary.put(vanessaWilliams);
 
     StringList max = new StringList(new String[]{"Max"});
     mDictionary.put(max);
 
-    StringList michaelJordan = new
-        StringList(new String[]{"Michael", "Jordan"});
+    StringList michaelJordan = new StringList("Michael", "Jordan");
     mDictionary.put(michaelJordan);
   }
 

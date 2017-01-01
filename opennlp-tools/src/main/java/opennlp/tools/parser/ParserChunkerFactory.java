@@ -20,8 +20,8 @@ package opennlp.tools.parser;
 import opennlp.tools.chunker.ChunkerContextGenerator;
 import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.chunker.ChunkerME;
-import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.ml.model.MaxentModel;
 
 public class ParserChunkerFactory extends ChunkerFactory {
 

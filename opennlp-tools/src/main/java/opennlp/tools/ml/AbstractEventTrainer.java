@@ -93,7 +93,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
     MaxentModel model = doTrain(indexer);
 
     addToReport("Training-Eventhash", hses.calculateHashSum().toString(16));
-    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
+    addToReport(TRAINER_TYPE_PARAM, EVENT_VALUE);
     return model;
   }
 }

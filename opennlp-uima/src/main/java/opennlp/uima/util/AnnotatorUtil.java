@@ -24,8 +24,6 @@ import opennlp.tools.dictionary.Dictionary;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.analysis_engine.annotator.AnnotatorConfigurationException;
-import org.apache.uima.analysis_engine.annotator.AnnotatorInitializationException;
 import org.apache.uima.cas.Feature;
 import org.apache.uima.cas.Type;
 import org.apache.uima.cas.TypeSystem;
@@ -482,7 +480,7 @@ public final class AnnotatorUtil {
   }
 
   public static Dictionary createOptionalDictionary(UimaContext context,
-      String dictionaryParameter) throws ResourceInitializationException {
+                                                    String dictionaryParameter) throws ResourceInitializationException {
 
     String dictionaryName = AnnotatorUtil.getOptionalStringParameter(context,
         dictionaryParameter);

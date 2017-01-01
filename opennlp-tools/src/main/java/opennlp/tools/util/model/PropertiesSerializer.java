@@ -24,12 +24,9 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.Properties;
 
-import opennlp.tools.util.InvalidFormatException;
-
 class PropertiesSerializer implements ArtifactSerializer<Properties> {
 
-  public Properties create(InputStream in) throws IOException,
-      InvalidFormatException {
+  public Properties create(InputStream in) throws IOException {
     Properties properties = new Properties();
     properties.load(in);
 

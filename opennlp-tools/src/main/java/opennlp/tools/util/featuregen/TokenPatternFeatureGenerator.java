@@ -21,8 +21,8 @@ package opennlp.tools.util.featuregen;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.util.StringUtil;
 
 /**

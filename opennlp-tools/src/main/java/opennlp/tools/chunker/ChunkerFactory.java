@@ -17,10 +17,10 @@
 
 package opennlp.tools.chunker;
 
-import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.ext.ExtensionLoader;
+import opennlp.tools.util.BaseToolFactory;
 
 public class ChunkerFactory extends BaseToolFactory {
 

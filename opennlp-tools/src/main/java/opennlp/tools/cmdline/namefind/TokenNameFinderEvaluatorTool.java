@@ -17,26 +17,26 @@
 
 package opennlp.tools.cmdline.namefind;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-
+import opennlp.tools.cmdline.PerformanceMonitor;
+import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
+import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.namefind.NameSampleTypeFilter;
+import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
+import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
-import opennlp.tools.cmdline.PerformanceMonitor;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool.EvalToolParams;
-import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;
-import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.namefind.NameSampleTypeFilter;
-import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.namefind.TokenNameFinderEvaluator;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.eval.EvaluationMonitor;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 public final class TokenNameFinderEvaluatorTool
     extends AbstractEvaluatorTool<NameSample, EvalToolParams> {
@@ -60,7 +60,7 @@ public final class TokenNameFinderEvaluatorTool
 
     TokenNameFinderModel model = new TokenNameFinderModelLoader().load(params.getModel());
 
-    List<EvaluationMonitor<NameSample>> listeners = new LinkedList<EvaluationMonitor<NameSample>>();
+    List<EvaluationMonitor<NameSample>> listeners = new LinkedList<>();
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
     }

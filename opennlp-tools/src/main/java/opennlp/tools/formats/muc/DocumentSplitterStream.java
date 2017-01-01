@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 class DocumentSplitterStream extends FilterObjectStream<String, String> {

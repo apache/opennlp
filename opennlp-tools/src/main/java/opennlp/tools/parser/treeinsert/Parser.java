@@ -31,13 +31,13 @@ import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.ChunkSampleStream;
-import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserChunkerFactory;
 import opennlp.tools.parser.ParserEventTypeEnum;
@@ -50,6 +50,7 @@ import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.parser.HeadRules;
 
 /**
  * Built/attach parser.  Nodes are built when their left-most
@@ -139,7 +140,7 @@ public class Parser extends AbstractBottomUpParser {
    * @param root The root of the parse tree.
    * @return The right frontier of the specified parse tree.
    */
-  public static List<Parse> getRightFrontier(Parse root,Set<String> punctSet) {
+  public static List<Parse> getRightFrontier(Parse root, Set<String> punctSet) {
     List<Parse> rf = new LinkedList<>();
     Parse top;
     if (AbstractBottomUpParser.TOP_NODE.equals(root.getType()) ||
@@ -421,7 +422,7 @@ public class Parser extends AbstractBottomUpParser {
   }
 
   public static ParserModel train(String languageCode,
-      ObjectStream<Parse> parseSamples, HeadRules rules, TrainingParameters mlParams)
+                                  ObjectStream<Parse> parseSamples, HeadRules rules, TrainingParameters mlParams)
   throws IOException {
 
     Map<String, String> manifestInfoEntries = new HashMap<>();
@@ -503,6 +504,6 @@ public class Parser extends AbstractBottomUpParser {
 
   @Deprecated
   public static AbstractModel train(ObjectStream<Event>  es, int iterations, int cut) throws java.io.IOException {
-    return opennlp.tools.ml.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
+    return GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 }

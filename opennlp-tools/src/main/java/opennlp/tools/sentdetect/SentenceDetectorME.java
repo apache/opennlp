@@ -18,6 +18,18 @@
 
 package opennlp.tools.sentdetect;
 
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.sentdetect.lang.Factory;
+import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,18 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.ml.EventTrainer;
-import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.sentdetect.lang.Factory;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
-import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * A sentence detector for splitting up raw text into sentences.
@@ -74,7 +74,7 @@ public class SentenceDetectorME implements SentenceDetector {
   /**
    * The list of probabilities associated with each decision.
    */
-  private List<Double> sentProbs = new ArrayList<Double>();
+  private List<Double> sentProbs = new ArrayList<>();
 
   protected boolean useTokenEnd;
 
@@ -114,7 +114,7 @@ public class SentenceDetectorME implements SentenceDetector {
 
   private static Set<String> getAbbreviations(Dictionary abbreviations) {
     if(abbreviations == null) {
-      return Collections.<String>emptySet();
+      return Collections.emptySet();
     }
     return abbreviations.asStringSet();
   }
@@ -167,11 +167,10 @@ public class SentenceDetectorME implements SentenceDetector {
     sentProbs.clear();
     StringBuffer sb = new StringBuffer(s);
     List<Integer> enders = scanner.getPositions(s);
-    List<Integer> positions = new ArrayList<Integer>(enders.size());
+    List<Integer> positions = new ArrayList<>(enders.size());
 
     for (int i = 0, end = enders.size(), index = 0; i < end; i++) {
-      Integer candidate = enders.get(i);
-      int cint = candidate;
+      int cint = enders.get(i);
       // skip over the leading parts of non-token final delimiters
       int fws = getFirstWS(s,cint + 1);
       if (i + 1 < end && enders.get(i + 1) < fws) {
@@ -256,7 +255,7 @@ public class SentenceDetectorME implements SentenceDetector {
         sentProbs.add(1d);
       }
     }
-    /**
+    /*
      * set the prob for each span
      */
     for (int i = 0; i < spans.length; i++) {
@@ -318,7 +317,7 @@ public class SentenceDetectorME implements SentenceDetector {
       ObjectStream<SentenceSample> samples, SentenceDetectorFactory sdFactory,
       TrainingParameters mlParams) throws IOException {
 
-    Map<String, String> manifestInfoEntries = new HashMap<String, String>();
+    Map<String, String> manifestInfoEntries = new HashMap<>();
 
     // TODO: Fix the EventStream to throw exceptions when training goes wrong
     ObjectStream<Event> eventStream = new SDEventStream(samples,

@@ -25,9 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;

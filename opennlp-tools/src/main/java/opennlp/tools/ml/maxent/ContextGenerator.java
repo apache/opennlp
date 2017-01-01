@@ -27,6 +27,6 @@ public interface ContextGenerator<T> {
   /**
    * Builds up the list of contextual predicates given an Object.
    */
-  public String[] getContext(T o);
+  String[] getContext(T o);
 
 }

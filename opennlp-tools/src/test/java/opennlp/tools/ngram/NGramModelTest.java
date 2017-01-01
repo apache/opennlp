@@ -35,7 +35,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Tests for {@link opennlp.tools.ngram.NGramModel}
+ * Tests for {@link NGramModel}
  */
 public class NGramModelTest {
 

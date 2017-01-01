@@ -17,6 +17,8 @@
 
 package opennlp.tools.formats;
 
+import opennlp.tools.util.ObjectStream;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -24,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
-
-import opennlp.tools.util.ObjectStream;
 
 /**
  * The directory sample stream scans a directory (recursively) for plain text
@@ -39,16 +39,16 @@ public class DirectorySampleStream implements ObjectStream<File> {
 
   private final FileFilter fileFilter;
 
-  private Stack<File> directories = new Stack<File>();
+  private Stack<File> directories = new Stack<>();
 
-  private Stack<File> textFiles = new Stack<File>();
+  private Stack<File> textFiles = new Stack<>();
 
   public DirectorySampleStream(File dirs[], FileFilter fileFilter, boolean recursive) {
 
     this.fileFilter= fileFilter;
     isRecursiveScan = recursive;
 
-    List<File> inputDirectoryList = new ArrayList<File>(dirs.length);
+    List<File> inputDirectoryList = new ArrayList<>(dirs.length);
 
     for (File dir : dirs) {
       if (!dir.isDirectory()) {

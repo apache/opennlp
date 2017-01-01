@@ -27,10 +27,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import opennlp.tools.namefind.NameSample;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
+import opennlp.tools.namefind.NameSample;
 
 public class MucNameContentHandler extends SgmlParser.ContentHandler {
 

@@ -17,12 +17,12 @@
 
 package opennlp.tools.util;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Base class for all tool factories.

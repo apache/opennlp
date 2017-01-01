@@ -24,18 +24,18 @@ import java.util.Map;
 
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
-import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.SequenceTrainer;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.util.Sequence;
+import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
-import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Sequence;
-import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.StringUtil;
-import opennlp.tools.util.TrainingParameters;
 
 /**
  * A probabilistic lemmatizer.  Tries to predict the induced permutation class
@@ -79,7 +79,7 @@ public class LemmatizerME implements Lemmatizer {
       this.model = model.getLemmatizerSequenceModel();
     }
     else {
-      this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
+      this.model = new BeamSearch<>(beamSize,
           (MaxentModel) model.getLemmatizerSequenceModel(), 0);
     }
   }

@@ -17,9 +17,9 @@
 
 package opennlp.tools.util;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class ListHeapTest {
 
@@ -28,7 +28,7 @@ public class ListHeapTest {
 
     int size = 5;
 
-    Heap<Integer> heap = new ListHeap<Integer>(size);
+    Heap<Integer> heap = new ListHeap<>(size);
 
     for (int ai = 0; ai < 10; ai++){
 

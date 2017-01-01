@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.AbstractContextGenerator;
+import opennlp.tools.util.StringList;
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.Cons;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.util.StringList;
 
 /**
  * Class to generator predictive contexts for deciding how constituents should be combined together.

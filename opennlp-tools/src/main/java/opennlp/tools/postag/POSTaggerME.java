@@ -31,7 +31,6 @@ import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
@@ -114,7 +113,7 @@ public class POSTaggerME implements POSTagger {
       this.model = model.getPosSequenceModel();
     }
     else {
-      this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
+      this.model = new BeamSearch<>(beamSize,
           model.getPosModel(), 0);
     }
 
@@ -222,8 +221,8 @@ public class POSTaggerME implements POSTagger {
   }
 
   public static POSModel train(String languageCode,
-      ObjectStream<POSSample> samples, TrainingParameters trainParams,
-      POSTaggerFactory posFactory) throws IOException {
+                               ObjectStream<POSSample> samples, TrainingParameters trainParams,
+                               POSTaggerFactory posFactory) throws IOException {
 
     String beamSizeString = trainParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
 
@@ -236,24 +235,24 @@ public class POSTaggerME implements POSTagger {
 
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
-    TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
+    TrainerFactory.TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
 
     MaxentModel posModel = null;
     SequenceClassificationModel<String> seqPosModel = null;
-    if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
+    if (TrainerFactory.TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new POSSampleEventStream(samples, contextGenerator);
 
       EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams.getSettings(),
           manifestInfoEntries);
       posModel = trainer.train(es);
     }
-    else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
+    else if (TrainerFactory.TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
       EventModelSequenceTrainer trainer = TrainerFactory.getEventModelSequenceTrainer(trainParams.getSettings(),
           manifestInfoEntries);
       posModel = trainer.train(ss);
     }
-    else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
+    else if (TrainerFactory.TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
       SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
           trainParams.getSettings(), manifestInfoEntries);
 

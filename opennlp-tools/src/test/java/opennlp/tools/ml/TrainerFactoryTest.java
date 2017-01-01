@@ -19,10 +19,10 @@ package opennlp.tools.ml;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import opennlp.tools.ml.maxent.GIS;
+
 import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.ml.TrainerFactory.TrainerType;
+import opennlp.tools.ml.maxent.GIS;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -67,9 +67,9 @@ public class TrainerFactoryTest {
     mlParams.put(AbstractTrainer.ALGORITHM_PARAM,
         SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE);
 
-    TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
+    TrainerFactory.TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
 
-    assertTrue(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
+    assertTrue(TrainerFactory.TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
   }
 
   @Test
@@ -77,9 +77,9 @@ public class TrainerFactoryTest {
     mlParams.put(AbstractTrainer.ALGORITHM_PARAM,
         GIS.MAXENT_VALUE);
 
-    TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
+    TrainerFactory.TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
 
-    assertFalse(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
+    assertFalse(TrainerFactory.TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
   }
 
 }

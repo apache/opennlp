@@ -17,14 +17,14 @@
 
 package opennlp.tools.sentdetect;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 public class SDEventStream extends AbstractEventStream<SentenceSample> {
 
@@ -37,7 +37,7 @@ public class SDEventStream extends AbstractEventStream<SentenceSample> {
    * @param samples
    */
   public SDEventStream(ObjectStream<SentenceSample> samples, SDContextGenerator cg,
-      EndOfSentenceScanner scanner) {
+                       EndOfSentenceScanner scanner) {
     super(samples);
 
     this.cg = cg;
@@ -47,7 +47,7 @@ public class SDEventStream extends AbstractEventStream<SentenceSample> {
   @Override
   protected Iterator<Event> createEvents(SentenceSample sample) {
 
-    Collection<Event> events = new ArrayList<Event>();
+    Collection<Event> events = new ArrayList<>();
 
     for (Span sentenceSpan : sample.getSentences()) {
       String sentenceString = sentenceSpan.getCoveredText(sample.getDocument()).toString();

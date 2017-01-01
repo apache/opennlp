@@ -18,12 +18,12 @@
 
 package opennlp.tools.tokenize;
 
+import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
 
 /**
  * Performs tokenization using character classes.
@@ -48,7 +48,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
     CharacterEnum charType = CharacterEnum.WHITESPACE;
     CharacterEnum state = charType;
 
-    List<Span> tokens = new ArrayList<Span>();
+    List<Span> tokens = new ArrayList<>();
     int sl = s.length();
     int start = -1;
     char pc = 0;
@@ -101,7 +101,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
       System.err.println("Usage:  java opennlp.tools.tokenize.SimpleTokenizer < sentences");
       System.exit(1);
     }
-    opennlp.tools.tokenize.Tokenizer tokenizer = new SimpleTokenizer();
+    Tokenizer tokenizer = new SimpleTokenizer();
     java.io.BufferedReader inReader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
     for (String line = inReader.readLine(); line != null; line = inReader.readLine()) {
       if (line.equals("")) {

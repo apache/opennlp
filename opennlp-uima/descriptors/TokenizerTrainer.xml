@@ -23,10 +23,9 @@
 	<frameworkImplementation>org.apache.uima.java
 	</frameworkImplementation>
 	<implementationName>opennlp.uima.tokenize.TokenizerTrainer
-	</implementationName>
+    </implementationName>
 	<processingResourceMetaData>
 		<name>TokenizerTrainer</name>
-		<description></description>
 		<version>${pom.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>

@@ -21,18 +21,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import opennlp.tools.cmdline.AbstractTrainerTool;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.params.TrainingToolParams;
-import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool.TrainerToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerFactory;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.cmdline.AbstractTrainerTool;
+import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.params.TrainingToolParams;
+import opennlp.tools.cmdline.tokenizer.TokenizerTrainerTool.TrainerToolParams;
+import opennlp.tools.tokenize.TokenizerME;
 
 public final class TokenizerTrainerTool
     extends AbstractTrainerTool<TokenSample, TrainerToolParams> {
@@ -68,7 +68,7 @@ public final class TokenizerTrainerTool
             "' is invalid!");
       }
 
-      if (!TrainerType.EVENT_MODEL_TRAINER.equals(TrainerFactory.getTrainerType(mlParams.getSettings()))) {
+      if (!TrainerFactory.TrainerType.EVENT_MODEL_TRAINER.equals(TrainerFactory.getTrainerType(mlParams.getSettings()))) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }
@@ -87,7 +87,7 @@ public final class TokenizerTrainerTool
       TokenizerFactory tokFactory = TokenizerFactory.create(
           params.getFactory(), params.getLang(), dict,
           params.getAlphaNumOpt(), null);
-      model = opennlp.tools.tokenize.TokenizerME.train(sampleStream,
+      model = TokenizerME.train(sampleStream,
           tokFactory, mlParams);
 
     } catch (IOException e) {

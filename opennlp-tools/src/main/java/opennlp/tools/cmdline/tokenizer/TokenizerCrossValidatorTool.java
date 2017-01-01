@@ -20,10 +20,8 @@ package opennlp.tools.cmdline.tokenizer;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.CVParams;
-import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool.CVToolParams;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerCrossValidator;
@@ -31,6 +29,8 @@ import opennlp.tools.tokenize.TokenizerEvaluationMonitor;
 import opennlp.tools.tokenize.TokenizerFactory;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.cmdline.tokenizer.TokenizerCrossValidatorTool.CVToolParams;
 
 public final class TokenizerCrossValidatorTool
     extends AbstractCrossValidatorTool<TokenSample, CVToolParams> {
@@ -67,7 +67,7 @@ public final class TokenizerCrossValidatorTool
       TokenizerFactory tokFactory = TokenizerFactory.create(
           params.getFactory(), params.getLang(), dict,
           params.getAlphaNumOpt(), null);
-      validator = new opennlp.tools.tokenize.TokenizerCrossValidator(mlParams,
+      validator = new TokenizerCrossValidator(mlParams,
           tokFactory, listener);
 
       validator.evaluate(sampleStream, params.getFolds());

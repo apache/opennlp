@@ -25,17 +25,18 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
+
 import opennlp.tools.ml.BeamSearch;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.featuregen.BrownCluster;
+import opennlp.tools.util.featuregen.WordClusterDictionary;
+import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.ModelUtil;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
-import opennlp.tools.util.featuregen.BrownCluster;
-import opennlp.tools.util.featuregen.WordClusterDictionary;
 import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.BaseModel;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * The {@link TokenNameFinderModel} is the model used
@@ -71,8 +72,8 @@ public class TokenNameFinderModel extends BaseModel {
   static final String SEQUENCE_CODEC_CLASS_NAME_PARAMETER = "sequenceCodecImplName";
 
   public TokenNameFinderModel(String languageCode, SequenceClassificationModel<String> nameFinderModel,
-      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
-      SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
+                              byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
+                              SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
 
     init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries, seqCodec);
@@ -83,8 +84,8 @@ public class TokenNameFinderModel extends BaseModel {
   }
 
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel, int beamSize,
-      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
-      SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
+                              byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
+                              SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
 
 

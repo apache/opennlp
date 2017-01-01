@@ -17,12 +17,12 @@
 
 package opennlp.tools.chunker;
 
+import opennlp.tools.util.Span;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import opennlp.tools.util.Span;
 
 /**
  * Class for holding chunks for a single unit of text.

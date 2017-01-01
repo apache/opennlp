@@ -21,10 +21,10 @@ import java.io.File;
 
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
+import opennlp.tools.postag.POSModel;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.postag.POSModelLoader;
 import opennlp.tools.parser.ParserModel;
-import opennlp.tools.postag.POSModel;
 
 // user should train with the POS tool
 public final class TaggerModelReplacerTool extends BasicCmdLineTool {

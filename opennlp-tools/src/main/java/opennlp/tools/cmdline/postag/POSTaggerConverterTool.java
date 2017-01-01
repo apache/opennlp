@@ -17,8 +17,8 @@
 
 package opennlp.tools.cmdline.postag;
 
-import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.cmdline.AbstractConverterTool;
 
 public class POSTaggerConverterTool extends AbstractConverterTool<POSSample> {
 

@@ -28,7 +28,7 @@ import opennlp.tools.util.eval.Mean;
  * @see DocumentCategorizer
  * @see DocumentSample
  */
-public class DocumentCategorizerEvaluator extends Evaluator<DocumentSample>{
+public class DocumentCategorizerEvaluator extends Evaluator<DocumentSample> {
 
   private DocumentCategorizer categorizer;
 

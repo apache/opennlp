@@ -18,14 +18,14 @@
 
 package opennlp.tools.sentdetect.lang;
 
-import java.util.Collections;
-import java.util.Set;
-
+import opennlp.tools.sentdetect.EndOfSentenceScanner;
 import opennlp.tools.sentdetect.DefaultEndOfSentenceScanner;
 import opennlp.tools.sentdetect.DefaultSDContextGenerator;
-import opennlp.tools.sentdetect.EndOfSentenceScanner;
 import opennlp.tools.sentdetect.SDContextGenerator;
 import opennlp.tools.sentdetect.lang.th.SentenceContextGenerator;
+
+import java.util.Collections;
+import java.util.Set;
 
 public class Factory {
 
@@ -65,7 +65,7 @@ public class Factory {
   }
 
   public SDContextGenerator createSentenceContextGenerator(String languageCode) {
-    return createSentenceContextGenerator(languageCode, Collections.<String>emptySet());
+    return createSentenceContextGenerator(languageCode, Collections.emptySet());
   }
 
   public char[] getEOSCharacters(String languageCode) {

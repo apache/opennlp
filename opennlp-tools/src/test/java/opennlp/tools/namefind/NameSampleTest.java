@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import opennlp.tools.util.Span;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -140,9 +141,9 @@ public class NameSampleTest {
             false);
 
     assertEquals(3, parsedSample.getNames().length);
-    assertEquals("type-1", parsedSample.getNames()[0].getType());
-    assertEquals("type_2", parsedSample.getNames()[1].getType());
-    assertEquals("type_3-/;.,&%$", parsedSample.getNames()[2].getType());
+    Assert.assertEquals("type-1", parsedSample.getNames()[0].getType());
+    Assert.assertEquals("type_2", parsedSample.getNames()[1].getType());
+    Assert.assertEquals("type_3-/;.,&%$", parsedSample.getNames()[2].getType());
   }
 
   /**

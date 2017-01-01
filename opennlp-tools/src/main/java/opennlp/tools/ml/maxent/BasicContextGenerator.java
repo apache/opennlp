@@ -43,8 +43,7 @@ public class BasicContextGenerator implements ContextGenerator<String> {
    * Builds up the list of contextual predicates given a String.
    */
   public String[] getContext(String o) {
-    String s = (String) o;
-    return s.split(separator);
+    return o.split(separator);
   }
 
 }

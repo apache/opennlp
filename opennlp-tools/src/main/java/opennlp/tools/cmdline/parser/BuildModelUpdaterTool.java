@@ -19,14 +19,14 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.IOException;
 
+import opennlp.tools.parser.ParserEventTypeEnum;
+import opennlp.tools.parser.chunking.Parser;
+import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
-import opennlp.tools.parser.chunking.Parser;
-import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
 
 public final class BuildModelUpdaterTool extends ModelUpdaterTool {
@@ -37,7 +37,7 @@ public final class BuildModelUpdaterTool extends ModelUpdaterTool {
 
   @Override
   protected ParserModel trainAndUpdate(ParserModel originalModel,
-      ObjectStream<Parse> parseSamples, ModelUpdaterParams parameters)
+                                       ObjectStream<Parse> parseSamples, ModelUpdaterParams parameters)
       throws IOException {
 
       Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), 5);
