@@ -73,7 +73,7 @@ public class XMLDictionaryToTableTool extends BasicCmdLineTool {
       while (iterator.hasNext()) {
         String word = iterator.next();
         for (String tag : tagDictionary.getTags(word)) {
-          if (valid(word,tag)) {
+          if(valid(word, tag)) {
             String entry = createEntry(word, tag);
             writer.write(entry);
             writer.newLine();
@@ -117,9 +117,8 @@ public class XMLDictionaryToTableTool extends BasicCmdLineTool {
 
   private String createEntry(String word, String tag) {
 
-    return "" + SEPARATOR + // base
-        word + SEPARATOR +
-        tag;
+    return "" + SEPARATOR +// base
+        word + SEPARATOR + tag;
   }
 
 }
