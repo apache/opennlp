@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,9 +38,26 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 
   float[][] values;
 
+  /**
+   * Two argument constructor for DataIndexer.
+   * @param eventStream An Event[] which contains the a list of all the Events
+   *               seen in the training data.
+   * @param cutoff The minimum number of times a predicate must have been
+   *               observed in order to be included in the model.
+   */
+  @Deprecated
+  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
+    super(eventStream,cutoff);
+  }
+
+  @Deprecated
+  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
+    super(eventStream,cutoff,sort);
+  }
+
   public OnePassRealValueDataIndexer() {
   }
-  
+
   public float[][] getValues() {
     return values;
   }
@@ -63,8 +79,8 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 
   @Override
   protected List<ComparableEvent> index(List<Event> events, Map<String,Integer> predicateIndex) {
-    Map<String,Integer> omap = new HashMap<String,Integer>();
-    
+    Map<String,Integer> omap = new HashMap<>();
+
     int numEvents = events.size();
     int outcomeCount = 0;
     List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
@@ -102,29 +118,12 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
       else {
         System.err.println("Dropped event "+ev.getOutcome()+":"+Arrays.asList(ev.getContext()));
       }
-//    recycle the TIntArrayList
+      //    recycle the TIntArrayList
       indexedContext.clear();
     }
     outcomeLabels = toIndexedStringArray(omap);
     predLabels = toIndexedStringArray(predicateIndex);
     return eventsToCompare;
-  }
-
-/**
-   * Two argument constructor for DataIndexer.
-   * @param eventStream An Event[] which contains the a list of all the Events
-   *               seen in the training data.
-   * @param cutoff The minimum number of times a predicate must have been
-   *               observed in order to be included in the model.
-   */
-  @Deprecated
-  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
-    super(eventStream,cutoff);
-  }
-
-  @Deprecated
-  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
-    super(eventStream,cutoff,sort);
   }
 
 }

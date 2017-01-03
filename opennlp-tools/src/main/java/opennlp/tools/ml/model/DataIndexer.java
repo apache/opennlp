@@ -60,9 +60,9 @@ public interface DataIndexer {
   public int[] getPredCounts();
 
   /**
-    * Returns an array of outcome names.
-    * @return an array of outcome names indexed by outcome index.
-    */
+   * Returns an array of outcome names.
+   * @return an array of outcome names indexed by outcome index.
+   */
   public String[] getOutcomeLabels();
 
   /**
@@ -76,7 +76,7 @@ public interface DataIndexer {
    * @return The number of total events indexed.
    */
   public int getNumEvents();
-  
+
   /**
    * Sets parameters used during the data indexing.
    * @param trainParams

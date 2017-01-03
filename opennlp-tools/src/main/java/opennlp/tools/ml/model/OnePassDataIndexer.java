@@ -74,22 +74,22 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
     Map<String, Integer> predicateIndex = new HashMap<>();
     List<Event> events;
     List<ComparableEvent> eventsToCompare;
-  
+
     System.out.println("Indexing events using cutoff of " + cutoff + "\n");
-  
+
     System.out.print("\tComputing event counts...  ");
     events = computeEventCounts(eventStream, predicateIndex, cutoff);
     System.out.println("done. " + events.size() + " events");
-  
+
     System.out.print("\tIndexing...  ");
     eventsToCompare = index(events, predicateIndex);
     // done with event list
     events = null;
     // done with predicates
     predicateIndex = null;
-  
+
     System.out.println("done.");
-  
+
     System.out.print("Sorting and merging events... ");
     sortAndMerge(eventsToCompare, sort);
     System.out.println("Done indexing.");

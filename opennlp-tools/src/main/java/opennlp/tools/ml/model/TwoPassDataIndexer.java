@@ -76,9 +76,9 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
   public TwoPassDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
     Map<String,Integer> predicateIndex = new HashMap<>();
     List<ComparableEvent> eventsToCompare;
-  
+
     System.out.println("Indexing events using cutoff of " + cutoff + "\n");
-  
+
     System.out.print("\tComputing event counts...  ");
     try {
       File tmp = File.createTempFile("events", null);
@@ -86,9 +86,9 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
       Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
       int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
       System.out.println("done. " + numEvents + " events");
-  
+
       System.out.print("\tIndexing...  ");
-  
+
       try (FileEventStream fes = new FileEventStream(tmp)) {
         eventsToCompare = index(numEvents, fes, predicateIndex);
       }
@@ -96,7 +96,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
       predicateIndex = null;
       tmp.delete();
       System.out.println("done.");
-  
+
       if (sort) {
         System.out.print("Sorting and merging events... ");
       }
