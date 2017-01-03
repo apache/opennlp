@@ -1,11 +1,13 @@
+carro,carro,NOUN
 casa,casa,NOUN
-casar,casa,V
-casar,casar,V-INF
 Casa,Casa,PROP
 casa,casinha,NOUN
 casa,casona,NOUN
+casar,casa,V
+casar,casar,V-INF
+ir,foi,V
 menino,menina,NOUN
+menino,menininho,NOUN
 menino,menino,NOUN
 menino,meninão,NOUN
-menino,menininho,NOUN
-carro,carro,NOUN
+ser,foi,V

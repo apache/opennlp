@@ -17,8 +17,7 @@
 
 package opennlp.uima.namefind;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import opennlp.tools.util.Span;
 import opennlp.uima.util.AnnotationComboIterator;
@@ -46,6 +45,8 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
   protected Type mTokenType;
 
   protected Type mNameType;
+
+  protected Map<String, Type> mNameTypeMapping = Collections.emptyMap();
 
   protected UimaContext context;
 
@@ -98,8 +99,34 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
         UimaUtil.TOKEN_TYPE_PARAMETER);
 
     // name type
-    mNameType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
+    mNameType = AnnotatorUtil.getOptionalTypeParameter(context, typeSystem,
         NameFinder.NAME_TYPE_PARAMETER);
+
+    String typeMapString = (String) context.getConfigParameterValue(
+            NameFinder.NAME_TYPE_MAP_PARAMETER);
+
+    if (typeMapString != null) {
+      Map<String, Type> nameTypeMap = new HashMap<>();
+
+      String[] mappings = typeMapString.split(",");
+
+      for (String mapping : mappings) {
+        String[] parts = mapping.split(":");
+
+        if (parts.length == 2) {
+          nameTypeMap.put(parts[0].trim(), typeSystem.getType(parts[1].trim()));
+        }
+        else {
+            mLogger.log(Level.WARNING, String.format("Failed to parse a part of the type mapping [%s]", mapping));
+        }
+      }
+
+      mNameTypeMapping = Collections.unmodifiableMap(nameTypeMap);
+    }
+
+    if (mNameType == null && mNameTypeMapping.size() == 0) {
+        throw new AnalysisEngineProcessException(new Exception("No name type or valid name type mapping configured!"));
+    }
   }
 
   protected void postProcessAnnotations(Span detectedNames[],
@@ -164,10 +191,18 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
         int endIndex = sentenceTokenAnnotationList.get(
             names[i].getEnd() - 1).getEnd();
 
-        nameAnnotations[i] =
-            cas.createAnnotation(mNameType, startIndex, endIndex);
+        Type nameType = mNameTypeMapping.get(names[i].getType());
 
-        cas.getIndexRepository().addFS(nameAnnotations[i]);
+        if (nameType == null) {
+          nameType = mNameType;
+        }
+
+        // Types in the model which are not mapped should be ignored,
+        // this allows the usage of only some types in the model
+        if (nameType != null) {
+          nameAnnotations[i] = cas.createAnnotation(nameType, startIndex, endIndex);
+          cas.getIndexRepository().addFS(nameAnnotations[i]);
+        }
       }
 
       postProcessAnnotations(names, nameAnnotations);

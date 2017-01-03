@@ -163,7 +163,7 @@ Sequence topSequences[] = chunk.topKSequences(sent, pos);]]>
 		The training data can be converted to the OpenNLP chunker training format,
 		that is based on <ulink url="http://www.cnts.ua.ac.be/conll2000/chunking">CoNLL2000</ulink>.
         Other formats may also be available.
-		The train data consist of three columns separated by spaces. Each word has been put on a
+		The train data consist of three columns separated one single space. Each word has been put on a
 		separate line and there is an empty line after each sentence. The first column contains
 		the current word, the second its part-of-speech tag and the third its chunk tag. 
 		The chunk tags contain the name of the chunk type, for example I-NP for noun phrase words
@@ -192,6 +192,7 @@ in        IN   B-PP
 September NNP  B-NP
 .         .    O]]>
 		</screen>
+		Note that for improved visualization the example above uses tabs instead of a single space as column separator.
 		</para>
 		<section id="tools.chunker.training.tool">
 		<title>Training Tool</title>

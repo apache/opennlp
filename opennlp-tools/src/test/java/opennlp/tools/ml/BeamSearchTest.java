@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.util;
+package opennlp.tools.ml;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -26,6 +26,8 @@ import java.util.Map;
 
 import opennlp.tools.ml.model.MaxentModel;
 
+import opennlp.tools.util.BeamSearchContextGenerator;
+import opennlp.tools.util.Sequence;
 import org.junit.Test;
 
 public class BeamSearchTest {
@@ -125,9 +127,11 @@ public class BeamSearchTest {
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<String>(3, cg, model);
+    BeamSearch<String> bs = new BeamSearch<>(3, model);
 
-    Sequence seq = bs.bestSequence(sequence, null);
+    Sequence seq = bs.bestSequence(sequence, null, cg,
+            (int i, String[] inputSequence, String[] outcomesSequence,
+             String outcome) -> {return true;});
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());
   }
@@ -143,9 +147,12 @@ public class BeamSearchTest {
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<String>(3, cg, model);
+    BeamSearch<String> bs = new BeamSearch<>(3, model);
 
-    Sequence seq = bs.bestSequence(sequence, null);
+    Sequence seq = bs.bestSequence(sequence, null, cg,
+        (int i, String[] inputSequence, String[] outcomesSequence,
+        String outcome) -> {return true;});
+
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());
     assertEquals("1", seq.getOutcomes().get(0));
@@ -162,9 +169,12 @@ public class BeamSearchTest {
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<String>(2, cg, model);
+    BeamSearch<String> bs = new BeamSearch<>(2, model);
 
-    Sequence seq = bs.bestSequence(sequence, null);
+    Sequence seq = bs.bestSequence(sequence, null, cg,
+        (int i, String[] inputSequence, String[] outcomesSequence,
+        String outcome) -> {return true;});
+
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());
     assertEquals("1", seq.getOutcomes().get(0));
@@ -185,14 +195,13 @@ public class BeamSearchTest {
     String outcomes[] = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<String>(2, cg, model, new SequenceValidator<String>(){
+    BeamSearch<String> bs = new BeamSearch<>(2, model, 0);
 
-      public boolean validSequence(int i, String[] inputSequence,
-          String[] outcomesSequence, String outcome) {
-        return !"2".equals(outcome);
-      }}, 0);
-
-    Sequence seq = bs.bestSequence(sequence, null);
+    Sequence seq = bs.bestSequence(sequence, null, cg,
+        (int i, String[] inputSequence,
+        String[] outcomesSequence, String outcome) -> {
+      return !"2".equals(outcome);
+    });
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());
     assertEquals("1", seq.getOutcomes().get(0));
