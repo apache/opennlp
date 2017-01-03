@@ -17,20 +17,17 @@
 
 package opennlp.tools.chunker;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static junit.framework.Assert.assertNotSame;
-import static org.junit.Assert.assertEquals;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-
-import org.junit.Test;
-
 import opennlp.tools.cmdline.chunker.ChunkEvaluationErrorListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.eval.FMeasure;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Tests for {@link ChunkerEvaluator}.
@@ -56,10 +53,10 @@ public class ChunkerEvaluatorTest {
             "/opennlp/tools/chunker/output.txt");
 
         DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-            new PlainTextByLineStream(inPredicted, UTF_8), true);
+            new PlainTextByLineStream(inPredicted, StandardCharsets.UTF_8), true);
     
         DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-            new PlainTextByLineStream(inExpected, UTF_8), false);
+            new PlainTextByLineStream(inExpected, StandardCharsets.UTF_8), false);
 
 		Chunker dummyChunker = new DummyChunker(predictedSample);
 
@@ -71,11 +68,10 @@ public class ChunkerEvaluatorTest {
 
 		FMeasure fm = evaluator.getFMeasure();
 
-		assertEquals(0.8d, fm.getPrecisionScore(), DELTA);
-		assertEquals(0.875d, fm.getRecallScore(), DELTA);
+      Assert.assertEquals(0.8d, fm.getPrecisionScore(), DELTA);
+      Assert.assertEquals(0.875d, fm.getRecallScore(), DELTA);
 
-		assertNotSame(stream.toString().length(), 0);
-
+      Assert.assertNotSame(stream.toString().length(), 0);
 	}
 
   @Test
@@ -86,10 +82,10 @@ public class ChunkerEvaluatorTest {
         "/opennlp/tools/chunker/output.txt");
 
     DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(inPredicted, UTF_8), true);
+        new PlainTextByLineStream(inPredicted, StandardCharsets.UTF_8), true);
 
     DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(inExpected, UTF_8), true);
+        new PlainTextByLineStream(inExpected, StandardCharsets.UTF_8), true);
 
     Chunker dummyChunker = new DummyChunker(predictedSample);
 
@@ -102,11 +98,10 @@ public class ChunkerEvaluatorTest {
 
     FMeasure fm = evaluator.getFMeasure();
 
-    assertEquals(1d, fm.getPrecisionScore(), DELTA);
-    assertEquals(1d, fm.getRecallScore(), DELTA);
+    Assert.assertEquals(1d, fm.getPrecisionScore(), DELTA);
+    Assert.assertEquals(1d, fm.getRecallScore(), DELTA);
 
-    assertEquals(stream.toString().length(), 0);
-
+    Assert.assertEquals(stream.toString().length(), 0);
   }
 
 }

@@ -17,16 +17,13 @@
 
 package opennlp.tools.namefind;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotSame;
+import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
+import opennlp.tools.util.Span;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-
-import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
-import opennlp.tools.util.Span;
-
-import org.junit.Test;
 
 /**
  * This is the test class for {@link TokenNameFinderEvaluator}..
@@ -44,9 +41,9 @@ public class TokenNameFinderEvaluatorTest {
 
     eval.evaluateSample(createSimpleNameSampleA());
 
-    assertEquals(1.0, eval.getFMeasure().getFMeasure());
+    Assert.assertEquals(1.0, eval.getFMeasure().getFMeasure(), 0.0);
 
-    assertEquals(0, stream.toString().length());
+    Assert.assertEquals(0, stream.toString().length());
   }
 
   @Test
@@ -59,9 +56,9 @@ public class TokenNameFinderEvaluatorTest {
 
     eval.evaluateSample(createSimpleNameSampleA());
 
-    assertEquals(0.8, eval.getFMeasure().getFMeasure());
+    Assert.assertEquals(0.8, eval.getFMeasure().getFMeasure(), 0.0);
 
-    assertNotSame(0, stream.toString().length());
+    Assert.assertNotSame(0, stream.toString().length());
   }
 
 

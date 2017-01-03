@@ -17,19 +17,19 @@
 
 package opennlp.tools.parser;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-
-import junit.framework.Assert;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.parser.lang.en.HeadRules;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import org.junit.Assert;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 public class ParserTestUtil {
 
@@ -66,7 +66,7 @@ public class ParserTestUtil {
              samples.close();
           InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
               "/opennlp/tools/parser/parser.train");
-          samples = new ParseSampleStream(new PlainTextByLineStream(in, UTF_8));
+          samples = new ParseSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
         } catch (UnsupportedEncodingException e) {
           // Should never happen
           Assert.fail(e.getMessage());
