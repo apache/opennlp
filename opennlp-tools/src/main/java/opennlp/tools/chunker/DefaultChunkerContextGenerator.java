@@ -18,16 +18,38 @@
 
 package opennlp.tools.chunker;
 
+import java.util.Objects;
+
+import opennlp.tools.util.Cache;
+
 /** Features based on chunking model described in Fei Sha and Fernando Pereira. Shallow
  *  parsing with conditional random fields. In Proceedings of HLT-NAACL 2003. Association
  *  for Computational Linguistics, 2003.
  */
 public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
 
+  private Cache<String, String[]> contextsCache;
+  private Object wordsKey;
+  
+  protected static final String SB = "*SB*";
+  
   /**
    * Creates the default context generator a chunker.
    */
   public DefaultChunkerContextGenerator() {
+    this(0);
+  }
+  
+
+  /**
+   * Creates the default context generator a chunker.
+   * 
+   * @param cacheSize
+   */
+  public DefaultChunkerContextGenerator(int cacheSize) {
+    if (cacheSize > 0) {
+      contextsCache = new Cache<>(cacheSize);
+    }
   }
 
   public String[] getContext(int index, String[] sequence, String[] priorDecisions, Object[] additionalContext) {
@@ -35,6 +57,8 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
   }
 
   public String[] getContext(int i, String[] toks, String[] tags, String[] preds) {
+    String predprev = null, predprevprev = null;
+    
 	// Words in a 5-word window
     String w_2, w_1, w0, w1, w2;
 
@@ -43,6 +67,30 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
 
     // Previous predictions
     String p_2, p_1;
+    
+    String cacheKey = null;
+    if (contextsCache != null) {
+      if (i - 1 >= 0) {
+        predprev = preds[i - 1];
+
+        if (i - 2 >= 0) {
+          predprevprev = preds[i - 2];
+        }
+      }
+
+      cacheKey = i + predprev + predprevprev;
+      if (Objects.equals(wordsKey, toks)) {
+        // same sentence
+        String[] cachedContexts = contextsCache.get(cacheKey);
+        if (cachedContexts != null) {
+          return cachedContexts;
+        }
+      } else {
+        // new sentence
+        contextsCache.clear();
+        wordsKey = toks;
+      }
+    }
 
     if (i < 2) {
       w_2 = "w_2=bos";
@@ -140,6 +188,9 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
         p_1 + w0 + w1
     };
 
+    if (contextsCache != null) {
+      contextsCache.put(cacheKey,features);
+    }
     return features;
   }
 }

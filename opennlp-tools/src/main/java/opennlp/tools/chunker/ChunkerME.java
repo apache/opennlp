@@ -94,7 +94,7 @@ public class ChunkerME implements Chunker {
   @Deprecated
   private ChunkerME(ChunkerModel model, int beamSize) {
 
-   contextGenerator = model.getFactory().getContextGenerator();
+   contextGenerator = model.getFactory().getContextGenerator(beamSize);
    sequenceValidator = model.getFactory().getSequenceValidator();
 
     if (model.getChunkerSequenceModel() != null) {
@@ -177,7 +177,7 @@ public class ChunkerME implements Chunker {
     SequenceClassificationModel<String> seqChunkerModel = null;
 
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
-      ObjectStream<Event> es = new ChunkerEventStream(in, factory.getContextGenerator());
+      ObjectStream<Event> es = new ChunkerEventStream(in, factory.getContextGenerator(beamSize));
       EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams.getSettings(),
           manifestInfoEntries);
       chunkerModel = trainer.train(es);
@@ -188,7 +188,7 @@ public class ChunkerME implements Chunker {
 
       // TODO: This will probably cause issue, since the feature generator uses the outcomes array
 
-      ChunkSampleSequenceStream ss = new ChunkSampleSequenceStream(in, factory.getContextGenerator());
+      ChunkSampleSequenceStream ss = new ChunkSampleSequenceStream(in, factory.getContextGenerator(beamSize));
       seqChunkerModel = trainer.train(ss);
     }
     else {
