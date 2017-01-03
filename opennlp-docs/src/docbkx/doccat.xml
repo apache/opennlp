@@ -77,9 +77,9 @@ DoccatModel m = new DoccatModel(is);]]>
 						<programlisting language="java">
 				<![CDATA[
 String inputText = ...
-DocumentCategorizerME myCategorizer = new DocumentCategorierME(m);
+DocumentCategorizerME myCategorizer = new DocumentCategorizerME(m);
 double[] outcomes = myCategorizer.categorize(inputText);
-String category = myCategorizer.getBestOutcome();]]>
+String category = myCategorizer.getBestCategory(outcomes);]]>
 				</programlisting>
 		</para>
 	</section>
