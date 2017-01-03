@@ -37,14 +37,14 @@ public abstract class AbstractDataIndexer implements DataIndexer {
 
   public static final String CUTOFF_PARAM = AbstractTrainer.CUTOFF_PARAM;
   public static final int CUTOFF_DEFAULT = AbstractTrainer.CUTOFF_DEFAULT;
-  
+
   public static final String SORT_PARAM = "sort";
   public static final boolean SORT_DEFAULT = true;
 
   PluggableParameters parameters;
 
   public void init(Map<String,String> indexingParameters,Map<String, String> reportMap){
-	  parameters=new PluggableParameters(indexingParameters, reportMap);
+    parameters=new PluggableParameters(indexingParameters, reportMap);
   }
 
   private int numEvents;
@@ -101,7 +101,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     if (sort && eventsToCompare.size() > 0) {
 
       Collections.sort(eventsToCompare);
-      
+
       ComparableEvent ce = eventsToCompare.get(0);
       for (int i = 1; i < numEvents; i++) {
         ComparableEvent ce2 = eventsToCompare.get(i);
@@ -120,11 +120,11 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     else {
       numUniqueEvents = eventsToCompare.size();
     }
-    
+
     if(numUniqueEvents == 0) {
       throw new InsufficientTrainingDataException("Insufficient training data to create model.");
     }
-    
+
     if (sort) System.out.println("done. Reduced " + numEvents + " events to " + numUniqueEvents + ".");
 
     contexts = new int[numUniqueEvents][];
@@ -156,19 +156,19 @@ public abstract class AbstractDataIndexer implements DataIndexer {
    * @param counter The predicate counters.
    * @param cutoff The cutoff which determines whether a predicate is included.
    */
-   protected static void update(String[] ec, Set<String> predicateSet, Map<String,Integer> counter, int cutoff) {
-     for (String s : ec) {
-       Integer i = counter.get(s);
-       if (i == null) {
-         counter.put(s, 1);
-       }
-       else {
-         counter.put(s, i + 1);
-       }
-       if (!predicateSet.contains(s) && counter.get(s) >= cutoff) {
-         predicateSet.add(s);
-       }
-     }
+  protected static void update(String[] ec, Set<String> predicateSet, Map<String,Integer> counter, int cutoff) {
+    for (String s : ec) {
+      Integer i = counter.get(s);
+      if (i == null) {
+        counter.put(s, 1);
+      }
+      else {
+        counter.put(s, i + 1);
+      }
+      if (!predicateSet.contains(s) && counter.get(s) >= cutoff) {
+        predicateSet.add(s);
+      }
+    }
   }
 
   /**

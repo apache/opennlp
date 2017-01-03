@@ -97,15 +97,15 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   @Override
-	public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
-		super.init(trainParams, reportMap);
-		this.m = parameters.getIntParam(M_PARAM, M_DEFAULT);
-		this.maxFctEval = parameters.getIntParam(MAX_FCT_EVAL_PARAM, MAX_FCT_EVAL_DEFAULT);
-		this.threads = parameters.getIntParam(THREADS_PARAM, THREADS_DEFAULT);
-		this.l1Cost = parameters.getDoubleParam(L1COST_PARAM, L1COST_DEFAULT);
-		this.l2Cost = parameters.getDoubleParam(L2COST_PARAM, L2COST_DEFAULT);
-	}
-  
+  public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
+    super.init(trainParams, reportMap);
+    this.m = parameters.getIntParam(M_PARAM, M_DEFAULT);
+    this.maxFctEval = parameters.getIntParam(MAX_FCT_EVAL_PARAM, MAX_FCT_EVAL_DEFAULT);
+    this.threads = parameters.getIntParam(THREADS_PARAM, THREADS_DEFAULT);
+    this.l1Cost = parameters.getDoubleParam(L1COST_PARAM, L1COST_DEFAULT);
+    this.l2Cost = parameters.getDoubleParam(L2COST_PARAM, L2COST_DEFAULT);
+  }
+
   public boolean isValid() {
 
     if (!super.isValid()) {
