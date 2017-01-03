@@ -111,14 +111,14 @@ public class RealValueFileEventStream extends FileEventStream {
     int ai = 0;
     String eventFile = args[ai++];
 
-    Map<String,String> params=new HashMap<String, String>(); 
+    Map<String,String> params=new HashMap<>(); 
     params.put(AbstractTrainer.ITERATIONS_PARAM,"100");
     params.put(AbstractTrainer.CUTOFF_PARAM, "5");
     if (ai < args.length) {
       params.put(AbstractTrainer.ITERATIONS_PARAM,args[ai++]);
       params.put(AbstractTrainer.CUTOFF_PARAM, args[ai++]);
     }
-    PluggableParameters parameters=new PluggableParameters(params, new HashMap<>());
+    PluggableParameters parameters = new PluggableParameters(params, new HashMap<>());
     AbstractModel model;
     try (RealValueFileEventStream es = new RealValueFileEventStream(eventFile)) {
       DataIndexer indexer=new OnePassDataIndexer();
