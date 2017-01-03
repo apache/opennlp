@@ -1,24 +1,67 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package opennlp.morfologik.lemmatizer;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.nio.file.Path;
-
-import opennlp.morfologik.builder.POSDictionayBuilderTest;
-import opennlp.tools.lemmatizer.DictionaryLemmatizer;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
+
+import opennlp.morfologik.builder.POSDictionayBuilderTest;
+import opennlp.tools.lemmatizer.Lemmatizer;
 
 public class MorfologikLemmatizerTest {
 
   @Test
   public void testLemmatizeInsensitive() throws Exception {
-    DictionaryLemmatizer dict = createDictionary(false);
+    Lemmatizer dict = createDictionary(false);
+    
+    
+    String[] toks = {"casa", "casa", "Casa"};
+    String[] tags = {"V", "NOUN", "PROP"};
+    
+    String[] lemmas = dict.lemmatize(toks, tags);
 
-    assertEquals("casar", dict.lemmatize("casa", "V"));
-    assertEquals("casa", dict.lemmatize("casa", "NOUN"));
+    assertEquals("casar", lemmas[0]);
+    assertEquals("casa", lemmas[1]);
 
-    assertEquals("casa", dict.lemmatize("Casa", "PROP"));
+    // lookup is case insensitive. There is no entry casa - prop
+    assertNull(lemmas[2]);
+
+  }
+  
+  @Test
+  public void testLemmatizeMultiLemma() throws Exception {
+    MorfologikLemmatizer dict = createDictionary(false);
+    
+    
+    String[] toks = {"foi"};
+    String[] tags = {"V"};
+    
+    List<List<String>> lemmas = dict.lemmatize(Arrays.asList(toks), Arrays.asList(tags));
+
+    
+    assertTrue(lemmas.get(0).contains("ir"));
+    assertTrue(lemmas.get(0).contains("ser"));
+    
 
   }
 
