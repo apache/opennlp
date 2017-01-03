@@ -113,7 +113,7 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
    */
   public void initialize() throws ResourceInitializationException {
 
-	super.initialize();
+    super.initialize();
 
     mContext = getUimaContext();
 
@@ -134,7 +134,7 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
         mContext, IS_ALPHA_NUMERIC_OPTIMIZATION);
 
     if (isSkipAlphaNumerics == null) {
-    	isSkipAlphaNumerics = false;
+      isSkipAlphaNumerics = false;
     }
 
     additionalTrainingDataFile = CasConsumerUtil.getOptionalStringParameter(

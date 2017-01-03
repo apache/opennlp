@@ -65,7 +65,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     }
 
     Parse p2 = null;
-    if (index +2 < ps) {
+    if (index  + 2 < ps) {
       p2 = constituents[index + 2];
     }
 
@@ -140,8 +140,8 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     cons3(features,c_1,c0,c1,punct_1s,punct_1s,true,true,true);
 
     if (rf.isEmpty()) {
-      features.add(EOS+","+consp0);
-      features.add(EOS+","+consbop0);
+      features.add(EOS + "," + consp0);
+      features.add(EOS + "," + consbop0);
     }
 
     return features.toArray(new String[features.size()]);

@@ -162,10 +162,10 @@ public class TokenSample {
   public static TokenSample parse(String sampleString, String separatorChars) {
 
     if (sampleString == null) {
-        throw new IllegalArgumentException("sampleString must not be null!");
+      throw new IllegalArgumentException("sampleString must not be null!");
     }
     if (separatorChars == null) {
-        throw new IllegalArgumentException("separatorChars must not be null!");
+      throw new IllegalArgumentException("separatorChars must not be null!");
     }
 
     Span whitespaceTokenSpans[] = WhitespaceTokenizer.INSTANCE.tokenizePos(sampleString);

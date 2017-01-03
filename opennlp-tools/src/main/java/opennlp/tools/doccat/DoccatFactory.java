@@ -98,7 +98,7 @@ public class DoccatFactory extends BaseToolFactory {
   }
 
   public static DoccatFactory create(String subclassName, Tokenizer tokenizer,
-                                     FeatureGenerator[] featureGenerators) throws InvalidFormatException {
+      FeatureGenerator[] featureGenerators) throws InvalidFormatException {
     if (subclassName == null) {
       // will create the default factory
       return new DoccatFactory(tokenizer, featureGenerators);

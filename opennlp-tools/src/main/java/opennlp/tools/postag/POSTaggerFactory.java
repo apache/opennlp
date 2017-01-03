@@ -111,13 +111,13 @@ public class POSTaggerFactory extends BaseToolFactory {
   }
 
   public TagDictionary getTagDictionary() {
-    if(this.posDictionary == null && artifactProvider != null)
+    if (this.posDictionary == null && artifactProvider != null)
       this.posDictionary = artifactProvider.getArtifact(TAG_DICTIONARY_ENTRY_NAME);
     return this.posDictionary;
   }
 
   public Dictionary getDictionary() {
-    if(this.ngramDictionary == null && artifactProvider != null)
+    if (this.ngramDictionary == null && artifactProvider != null)
       this.ngramDictionary = artifactProvider.getArtifact(NGRAM_DICTIONARY_ENTRY_NAME);
     return this.ngramDictionary;
   }
@@ -196,7 +196,7 @@ public class POSTaggerFactory extends BaseToolFactory {
 
     if (tagdictEntry != null) {
       if (tagdictEntry instanceof POSDictionary) {
-        if(!this.artifactProvider.isLoadedFromSerialized()) {
+        if (!this.artifactProvider.isLoadedFromSerialized()) {
           AbstractModel posModel = this.artifactProvider
               .getArtifact(POSModel.POS_MODEL_ENTRY_NAME);
           POSDictionary posDict = (POSDictionary) tagdictEntry;

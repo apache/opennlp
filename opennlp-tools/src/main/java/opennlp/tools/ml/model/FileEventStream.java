@@ -67,7 +67,7 @@ public class FileEventStream implements ObjectStream<Event> {
   @Override
   public Event read() throws IOException {
     String line;
-    if ((line =reader.readLine()) != null) {
+    if ((line = reader.readLine()) != null) {
       StringTokenizer st = new StringTokenizer(line);
       String outcome = st.nextToken();
       int count = st.countTokens();
@@ -96,7 +96,7 @@ public class FileEventStream implements ObjectStream<Event> {
     StringBuilder sb = new StringBuilder();
     sb.append(event.getOutcome());
     String[] context = event.getContext();
-    for (int ci=0,cl=context.length;ci<cl;ci++) {
+    for (int ci = 0,cl = context.length; ci < cl; ci++) {
       sb.append(" ").append(context[ci]);
     }
     sb.append(System.getProperty("line.separator"));

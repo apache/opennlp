@@ -132,7 +132,7 @@ public class GeneratorFactory {
       }
 
       return new AggregatedFeatureGenerator(aggregatedGenerators.toArray(
-              new AdaptiveFeatureGenerator[aggregatedGenerators.size()]));
+          new AdaptiveFeatureGenerator[aggregatedGenerators.size()]));
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
@@ -429,17 +429,17 @@ public class GeneratorFactory {
         FeatureGeneratorResourceProvider resourceManager) {
 
       String attribute = generatorElement.getAttribute("wordAndClass");
-    	
+
       // Default to true.
       boolean generateWordAndClassFeature = true;
-      
-      if(attribute != "") {
-          // Anything other than "true" sets it to false.
-    	  if(!"true".equalsIgnoreCase(attribute)) {
-        	  generateWordAndClassFeature = false;
-          }
+
+      if (attribute != "") {
+        // Anything other than "true" sets it to false.
+        if (!"true".equalsIgnoreCase(attribute)) {
+          generateWordAndClassFeature = false;
+        }
       }
-    	
+
       return new TokenClassFeatureGenerator(generateWordAndClassFeature);
     }
 
@@ -512,7 +512,7 @@ public class GeneratorFactory {
 
       if (nestedGeneratorElement == null) {
         throw new InvalidFormatException("window feature generator must contain" +
-        		" an aggregator element");
+            " an aggregator element");
       }
 
       AdaptiveFeatureGenerator nestedGenerator = GeneratorFactory.createGenerator(nestedGeneratorElement, resourceManager);
@@ -703,10 +703,10 @@ public class GeneratorFactory {
    * components.
    *
    * @param xmlDescriptorIn the {@link InputStream} from which the descriptor
-   * is read, the stream remains open and must be closed by the caller.
+   *     is read, the stream remains open and must be closed by the caller.
    *
    * @param resourceManager the resource manager which is used to resolve resources
-   * referenced by a key in the descriptor
+   *     referenced by a key in the descriptor
    *
    * @return created feature generators
    *
@@ -724,8 +724,7 @@ public class GeneratorFactory {
   }
 
   public static Map<String, ArtifactSerializer<?>> extractCustomArtifactSerializerMappings(
-      InputStream xmlDescriptorIn)
-      throws IOException, InvalidFormatException {
+      InputStream xmlDescriptorIn) throws IOException, InvalidFormatException {
 
     Map<String, ArtifactSerializer<?>> mapping = new HashMap<>();
 
@@ -767,8 +766,7 @@ public class GeneratorFactory {
    * @throws IOException if inputstream cannot be open
    * @throws InvalidFormatException if xml is not well-formed
    */
-  public static List<Element> getDescriptorElements(
-      InputStream xmlDescriptorIn)
+  public static List<Element> getDescriptorElements(InputStream xmlDescriptorIn)
       throws IOException, InvalidFormatException {
 
     List<Element> elements = new ArrayList<Element>();
@@ -786,8 +784,8 @@ public class GeneratorFactory {
       if (allElements.item(i) instanceof Element) {
         Element customElement = (Element) allElements.item(i);
         elements.add(customElement);
-        }
       }
+    }
     return elements;
   }
 }

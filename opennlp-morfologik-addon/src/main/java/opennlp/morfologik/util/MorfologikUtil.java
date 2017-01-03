@@ -22,12 +22,12 @@ import java.io.File;
 import morfologik.stemming.DictionaryMetadata;
 
 public class MorfologikUtil {
-  
+
   public static File getExpectedPropertiesFile(File dictFile) {
     return DictionaryMetadata.getExpectedMetadataLocation(dictFile.toPath())
         .toFile();
   }
-  
+
   public static File getExpectedPropertiesFile(String dictFile) {
     File f = new File(dictFile);
     return getExpectedPropertiesFile(f);

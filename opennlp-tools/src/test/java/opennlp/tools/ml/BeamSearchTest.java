@@ -130,8 +130,10 @@ public class BeamSearchTest {
     BeamSearch<String> bs = new BeamSearch<>(3, model);
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
-            (int i, String[] inputSequence, String[] outcomesSequence,
-             String outcome) -> {return true;});
+        (int i, String[] inputSequence, String[] outcomesSequence, String outcome) -> {
+          return true;
+        });
+    
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());
   }
@@ -151,7 +153,9 @@ public class BeamSearchTest {
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence,
-        String outcome) -> {return true;});
+        String outcome) -> {
+          return true;
+        });
 
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());
@@ -173,7 +177,9 @@ public class BeamSearchTest {
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence,
-        String outcome) -> {return true;});
+        String outcome) -> {
+          return true;
+        });
 
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());
@@ -198,10 +204,9 @@ public class BeamSearchTest {
     BeamSearch<String> bs = new BeamSearch<>(2, model, 0);
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
-        (int i, String[] inputSequence,
-        String[] outcomesSequence, String outcome) -> {
-      return !"2".equals(outcome);
-    });
+        (int i, String[] inputSequence, String[] outcomesSequence, String outcome) -> {
+          return !"2".equals(outcome);
+        });
     assertNotNull(seq);
     assertEquals(sequence.length, seq.getOutcomes().size());
     assertEquals("1", seq.getOutcomes().get(0));

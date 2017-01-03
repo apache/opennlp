@@ -106,8 +106,8 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
 
   // for others
   protected void printError(T referenceSample, T predictedSample) {
-      printSamples(referenceSample, predictedSample);
-      printStream.println();
+    printSamples(referenceSample, predictedSample);
+    printStream.println();
   }
 
   /**

@@ -39,10 +39,10 @@ public class ADParagraphStreamTest {
 
     ADSentenceStream.Sentence paragraph = stream.read();
     paragraph.getRoot();
-    while(paragraph != null) {
+    while (paragraph != null) {
       count++;
       paragraph = stream.read();
-//      paragraph.getRoot();
+      // paragraph.getRoot();
     }
 
     assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
@@ -55,7 +55,7 @@ public class ADParagraphStreamTest {
     ADSentenceStream stream = openData();
 
     ADSentenceStream.Sentence paragraph = stream.read();
-    while(paragraph != null) {
+    while (paragraph != null) {
 
       count++;
       paragraph = stream.read();

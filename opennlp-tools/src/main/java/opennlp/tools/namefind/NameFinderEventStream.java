@@ -125,7 +125,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     }
 
     String outcomes[] = codec.encode(sample.getNames(), sample.getSentence().length);
-//    String outcomes[] = generateOutcomes(sample.getNames(), type, sample.getSentence().length);
+    // String outcomes[] = generateOutcomes(sample.getNames(), type, sample.getSentence().length);
     additionalContextFeatureGenerator.setCurrentContext(sample.getAdditionalContext());
     String[] tokens = new String[sample.getSentence().length];
 
@@ -145,9 +145,9 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
    */
   public static String[][] additionalContext(String[] tokens, Map<String, String> prevMap) {
     String[][] ac = new String[tokens.length][1];
-    for (int ti=0;ti<tokens.length;ti++) {
+    for (int ti = 0; ti < tokens.length; ti++) {
       String pt = prevMap.get(tokens[ti]);
-      ac[ti][0]="pd="+pt;
+      ac[ti][0] = "pd=" + pt;
     }
     return ac;
 

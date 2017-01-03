@@ -199,14 +199,14 @@ public class ParserModel extends BaseModel {
     // put on the serializer map.
 
     if (getVersion().getMajor() == 1 && getVersion().getMinor() == 5) {
-    	serializers.put("headrules", new HeadRulesSerializer());
+      serializers.put("headrules", new HeadRulesSerializer());
     }
 
     serializers.put("postagger", new POSModelSerializer());
     serializers.put("chunker", new ChunkerModelSerializer());
   }
 
-  public ParserType getParserType () {
+  public ParserType getParserType() {
     return ParserType.parse(getManifestProperty(PARSER_TYPE));
   }
 

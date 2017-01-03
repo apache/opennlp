@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.ml.maxent.quasinewton;
 
 import static org.junit.Assert.assertEquals;
@@ -117,8 +118,8 @@ public class NegLogLikelihoodTest {
     // when
     double[] nonInitialPoint = new double[] { 3, 2, 3, 2, 3, 2, 3, 2, 3, 2 };
     double value = objectFunction.valueAt(dealignDoubleArrayForTestData(nonInitialPoint,
-			testDataIndexer.getPredLabels(),
-			testDataIndexer.getOutcomeLabels()));
+        testDataIndexer.getPredLabels(),
+        testDataIndexer.getOutcomeLabels()));
     double expectedValue = 53.163219721099026;
     // then
     assertEquals(expectedValue, value, TOLERANCE02);
@@ -149,15 +150,15 @@ public class NegLogLikelihoodTest {
     // when
     double[] nonInitialPoint = new double[] { 0.2, 0.5, 0.2, 0.5, 0.2, 0.5, 0.2, 0.5, 0.2, 0.5 };
     double[] gradientAtNonInitialPoint =
-    		objectFunction.gradientAt(dealignDoubleArrayForTestData(nonInitialPoint,
-    				testDataIndexer.getPredLabels(),
-    				testDataIndexer.getOutcomeLabels()));
+        objectFunction.gradientAt(dealignDoubleArrayForTestData(nonInitialPoint,
+            testDataIndexer.getPredLabels(),
+            testDataIndexer.getOutcomeLabels()));
     double[] expectedGradient =
-            new double[] { -12.755042847945553, -21.227127506102434,
-                           -72.57790706276435,   38.03525795198456,
-                            15.348650889354925,  12.755042847945557,
-                            21.22712750610244,   72.57790706276438,
-                           -38.03525795198456,  -15.348650889354925 };
+        new double[] { -12.755042847945553, -21.227127506102434,
+            -72.57790706276435,   38.03525795198456,
+            15.348650889354925,  12.755042847945557,
+            21.22712750610244,   72.57790706276438,
+            -38.03525795198456,  -15.348650889354925 };
     // then
     assertTrue(compareDoubleArray(expectedGradient, gradientAtNonInitialPoint,
         testDataIndexer, TOLERANCE01));
@@ -165,15 +166,15 @@ public class NegLogLikelihoodTest {
 
   private double[] alignDoubleArrayForTestData(double[] expected,
       String[] predLabels, String[] outcomeLabels) {
-  	double[] aligned = new double[predLabels.length * outcomeLabels.length];
+    double[] aligned = new double[predLabels.length * outcomeLabels.length];
 
-  	String[] sortedPredLabels = predLabels.clone();
-  	String[] sortedOutcomeLabels =  outcomeLabels.clone();
-  	Arrays.sort(sortedPredLabels);
-  	Arrays.sort(sortedOutcomeLabels);
+    String[] sortedPredLabels = predLabels.clone();
+    String[] sortedOutcomeLabels =  outcomeLabels.clone();
+    Arrays.sort(sortedPredLabels);
+    Arrays.sort(sortedOutcomeLabels);
 
-  	Map<String, Integer> invertedPredIndex = new HashMap<String, Integer>();
-  	Map<String, Integer> invertedOutcomeIndex = new HashMap<String, Integer>();
+    Map<String, Integer> invertedPredIndex = new HashMap<String, Integer>();
+    Map<String, Integer> invertedOutcomeIndex = new HashMap<String, Integer>();
     for (int i = 0; i < predLabels.length; i++) {
       invertedPredIndex.put(predLabels[i], i);
     }
@@ -184,9 +185,9 @@ public class NegLogLikelihoodTest {
     for (int i = 0; i < sortedOutcomeLabels.length; i++) {
       for (int j = 0; j < sortedPredLabels.length; j++) {
         aligned[i * sortedPredLabels.length + j] = expected[invertedOutcomeIndex
-            .get(sortedOutcomeLabels[i])
-            * sortedPredLabels.length
-            + invertedPredIndex.get(sortedPredLabels[j])];
+                                                            .get(sortedOutcomeLabels[i])
+                                                            * sortedPredLabels.length
+                                                            + invertedPredIndex.get(sortedPredLabels[j])];
       }
     }
     return aligned;

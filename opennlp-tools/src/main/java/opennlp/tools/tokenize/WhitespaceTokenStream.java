@@ -48,7 +48,7 @@ public class WhitespaceTokenStream extends FilterObjectStream<TokenSample, Strin
       // Shorten string by one to get rid of last space
       if (whitespaceSeparatedTokenString.length() > 0) {
         whitespaceSeparatedTokenString.setLength(
-            whitespaceSeparatedTokenString.length() -1 );
+            whitespaceSeparatedTokenString.length() - 1 );
       }
 
       return whitespaceSeparatedTokenString.toString();

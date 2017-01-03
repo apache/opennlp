@@ -23,7 +23,7 @@ import opennlp.tools.cmdline.DetailedFMeasureListener;
 import opennlp.tools.util.Span;
 
 public class ChunkerDetailedFMeasureListener extends
-    DetailedFMeasureListener<ChunkSample> implements ChunkerEvaluationMonitor{
+    DetailedFMeasureListener<ChunkSample> implements ChunkerEvaluationMonitor {
 
   @Override
   protected Span[] asSpanArray(ChunkSample sample) {

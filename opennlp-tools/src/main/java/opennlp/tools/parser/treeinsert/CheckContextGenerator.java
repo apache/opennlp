@@ -47,12 +47,12 @@ public class CheckContextGenerator extends AbstractContextGenerator {
     features.add("default");
     Parse[] children = Parser.collapsePunctuation(parent.getChildren(),punctSet);
     Parse pstart = children[0];
-    Parse pend = children[children.length-1];
+    Parse pend = children[children.length - 1];
     String type = parent.getType();
     checkcons(pstart, "begin", type, features);
     checkcons(pend, "last", type, features);
-    String production = "p="+production(parent,false);
-    String punctProduction = "pp="+production(parent,true);
+    String production = "p=" + production(parent,false);
+    String punctProduction = "pp=" + production(parent,true);
     features.add(production);
     features.add(punctProduction);
 
@@ -72,10 +72,10 @@ public class CheckContextGenerator extends AbstractContextGenerator {
       if (trimFrontier) {
         int pi = rf.indexOf(parent);
         if (pi == -1) {
-          throw new RuntimeException("Parent not found in right frontier:"+parent+" rf="+rf);
+          throw new RuntimeException("Parent not found in right frontier:" + parent + " rf=" + rf);
         }
         else {
-          for (int ri=0;ri<=pi;ri++) {
+          for (int ri = 0; ri <= pi; ri++) {
             //System.err.println(pi+" removing "+((Parse)rf.get(0)).getType()+" "+rf.get(0)+" "+(rf.size()-1)+" remain");
             rf.remove(0);
           }

@@ -91,7 +91,7 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
       preds.add("p1=bok");
     }
     addCharPreds("f1", sentence.charAt(index), preds);
-    if (index+1 < sentence.length()) {
+    if (index + 1 < sentence.length()) {
       addCharPreds("f2", sentence.charAt(index + 1), preds);
       preds.add("f12=" + sentence.charAt(index) + sentence.charAt(index + 1));
     }
@@ -102,7 +102,7 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
       preds.add("cc");//character code
     }
 
-    if(index == sentence.length() - 1 && inducedAbbreviations.contains(sentence)) {
+    if (index == sentence.length() - 1 && inducedAbbreviations.contains(sentence)) {
       preds.add("pabb");
     }
 
@@ -128,16 +128,16 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
       preds.add(key + "_ws");
     }
     else {
-      if (c=='.' || c=='?' || c=='!') {
+      if (c == '.' || c == '?' || c == '!') {
         preds.add(key + "_eos");
       }
-      else if (c=='`' || c=='"' || c=='\'') {
+      else if (c == '`' || c == '"' || c == '\'') {
         preds.add(key + "_quote");
       }
-      else if (c=='[' || c=='{' || c=='(') {
+      else if (c == '[' || c == '{' || c == '(') {
         preds.add(key + "_lp");
       }
-      else if (c==']' || c=='}' || c==')') {
+      else if (c == ']' || c == '}' || c == ')') {
         preds.add(key + "_rp");
       }
     }

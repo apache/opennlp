@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.ngram;
 
 import java.util.ArrayList;
@@ -50,13 +51,14 @@ public class NGramGenerator {
     }
     return outGrams;
   }
-/**
- *Generates an nGram based on a char[] input
- * @param input the array of chars to convert to nGram
- * @param n The number of grams (chars) that each output gram will consist of
- * @param separator each char in each gram will be separated by this value if desired. Pass in empty string if no separator is desired
- * @return
- */
+
+  /**
+   *Generates an nGram based on a char[] input
+   * @param input the array of chars to convert to nGram
+   * @param n The number of grams (chars) that each output gram will consist of
+   * @param separator each char in each gram will be separated by this value if desired. Pass in empty string if no separator is desired
+   * @return
+   */
   public static List<String> generate(char[] input, int n, String separator) {
 
     List<String> outGrams = new ArrayList<>();

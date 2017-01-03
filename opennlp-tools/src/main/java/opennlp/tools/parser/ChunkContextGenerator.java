@@ -66,54 +66,54 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
 
     // chunkandpostag(-2)
     if (x_2 >= 0) {
-      t_2=tags[x_2];
-      p_2=preds[x_2];
-      w_2=words[x_2];
+      t_2 = tags[x_2];
+      p_2 = preds[x_2];
+      w_2 = words[x_2];
     }
     else {
-      t_2=EOS;
-      p_2=EOS;
-      w_2=EOS;
+      t_2 = EOS;
+      p_2 = EOS;
+      w_2 = EOS;
     }
 
     // chunkandpostag(-1)
     if (x_1 >= 0) {
-      t_1=tags[x_1];
-      p_1=preds[x_1];
-      w_1=words[x_1];
+      t_1 = tags[x_1];
+      p_1 = preds[x_1];
+      w_1 = words[x_1];
     }
     else {
-      t_1=EOS;
-      p_1=EOS;
-      w_1=EOS;
+      t_1 = EOS;
+      p_1 = EOS;
+      w_1 = EOS;
     }
 
     // chunkandpostag(0)
-    t0=tags[i];
-    w0=words[i];
+    t0 = tags[i];
+    w0 = words[i];
 
     // chunkandpostag(1)
     if (x1 < tags.length) {
-      t1=tags[x1];
-      w1=words[x1];
+      t1 = tags[x1];
+      w1 = words[x1];
     }
     else {
-      t1=EOS;
-      w1=EOS;
+      t1 = EOS;
+      w1 = EOS;
     }
 
     // chunkandpostag(2)
     if (x2 < tags.length) {
-      t2=tags[x2];
-      w2=words[x2];
+      t2 = tags[x2];
+      w2 = words[x2];
     }
     else {
-      t2=EOS;
-      w2=EOS;
+      t2 = EOS;
+      w2 = EOS;
     }
 
-    String cacheKey = i +t_2+t1+t0+t1+t2+p_2+p_1;
-    if (contextsCache!= null) {
+    String cacheKey = i + t_2 + t1 + t0 + t1 + t2 + p_2 + p_1;
+    if (contextsCache != null) {
       if (wordsKey == words) {
         String[] contexts = contextsCache.get(cacheKey);
         if (contexts != null) {

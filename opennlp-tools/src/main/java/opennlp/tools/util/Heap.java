@@ -57,11 +57,11 @@ public interface Heap<E>  {
    */
   int size();
 
- /**
-  * Returns whether the heap is empty.
-  * @return true if the heap is empty; false otherwise.
-  */
- boolean isEmpty();
+  /**
+   * Returns whether the heap is empty.
+   * @return true if the heap is empty; false otherwise.
+   */
+  boolean isEmpty();
 
   /**
    * Returns an iterator over the elements of the heap.  No specific ordering of these

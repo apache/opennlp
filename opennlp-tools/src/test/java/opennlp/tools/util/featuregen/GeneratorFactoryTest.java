@@ -35,7 +35,7 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import org.junit.Test;
 
 public class GeneratorFactoryTest {
-	
+
   @Test
   public void testCreationWithTokenClassFeatureGenerator() throws Exception {
     InputStream generatorDescriptorIn = getClass().getResourceAsStream(
@@ -46,11 +46,12 @@ public class GeneratorFactoryTest {
     assertNotNull(generatorDescriptorIn);
 
     AggregatedFeatureGenerator aggregatedGenerator =
-      (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
+        (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
 
     assertEquals(1, aggregatedGenerator.getGenerators().size());
-    assertEquals(TokenClassFeatureGenerator.class.getName(), aggregatedGenerator.getGenerators().iterator().next().getClass().getName());
-    
+    assertEquals(TokenClassFeatureGenerator.class.getName(),
+        aggregatedGenerator.getGenerators().iterator().next().getClass().getName());
+
   }
 
   @Test
@@ -66,16 +67,15 @@ public class GeneratorFactoryTest {
     expectedGenerators.add(OutcomePriorFeatureGenerator.class.getName());
 
     AggregatedFeatureGenerator aggregatedGenerator =
-      (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
+        (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
 
 
 
-    for (AdaptiveFeatureGenerator generator :
-        aggregatedGenerator.getGenerators()) {
+    for (AdaptiveFeatureGenerator generator : aggregatedGenerator.getGenerators()) {
 
-        expectedGenerators.remove(generator.getClass().getName());
+      expectedGenerators.remove(generator.getClass().getName());
 
-        // if of kind which requires parameters check that
+      // if of kind which requires parameters check that
     }
 
     // If this fails not all expected generators were found and
@@ -93,7 +93,7 @@ public class GeneratorFactoryTest {
     assertNotNull(generatorDescriptorIn);
 
     AggregatedFeatureGenerator aggregatedGenerator =
-      (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
+        (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
 
     Collection<AdaptiveFeatureGenerator> embeddedGenerator = aggregatedGenerator.getGenerators();
 

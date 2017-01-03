@@ -43,8 +43,7 @@ import opennlp.tools.util.ObjectStream;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ADSentenceStream extends
-    FilterObjectStream<String, ADSentenceStream.Sentence> {
+public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStream.Sentence> {
 
   public static class Sentence {
 
@@ -70,13 +69,13 @@ public class ADSentenceStream extends
       this.root = root;
     }
 
-	public void setMetadata(String metadata) {
-		this.metadata = metadata;
-	}
+    public void setMetadata(String metadata) {
+      this.metadata = metadata;
+    }
 
-	public String getMetadata() {
-		return metadata;
-	}
+    public String getMetadata() {
+      return metadata;
+    }
 
   }
 
@@ -92,7 +91,7 @@ public class ADSentenceStream extends
     private Pattern leafPattern = Pattern
         .compile("^([=-]*)([^:=]+):([^\\(\\s]+)\\([\"'](.+)[\"']\\s*((?:<.+>)*)\\s*([^\\)]+)?\\)\\s+(.+)");
     private Pattern bizarreLeafPattern = Pattern
-    		.compile("^([=-]*)([^:=]+=[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
+        .compile("^([=-]*)([^:=]+=[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
     private Pattern punctuationPattern = Pattern.compile("^(=*)(\\W+)$");
 
     private String text,meta;
@@ -111,34 +110,34 @@ public class ADSentenceStream extends
 
         boolean useSameTextAndMeta = false; // to handle cases where there are diff sug of parse (&&)
 
-          // should find the source source
-          while (!line.startsWith("SOURCE")) {
-        	  if(line.equals("&&")) {
-        		  // same sentence again!
-        		  useSameTextAndMeta = true;
-        		  break;
-        	  }
-            line = reader.readLine();
-            if (line == null) {
-              return null;
-            }
+        // should find the source source
+        while (!line.startsWith("SOURCE")) {
+          if (line.equals("&&")) {
+            // same sentence again!
+            useSameTextAndMeta = true;
+            break;
           }
-        if(!useSameTextAndMeta) {
-            // got source, get the metadata
-	        String metaFromSource = line.substring(7);
-	        line = reader.readLine();
-	        // we should have the plain sentence
-	        // we remove the first token
-	        int start = line.indexOf(" ");
-	        text = line.substring(start + 1).trim();
-	        text = fixPunctuation(text);
-	        String titleTag = "";
-	        if(isTitle) titleTag = " title";
-	        String boxTag = "";
-	        if(isBox) boxTag = " box";
-	        if(start > 0) {
-	          meta = line.substring(0, start) + " p=" + para + titleTag + boxTag + metaFromSource;
-	        }
+          line = reader.readLine();
+          if (line == null) {
+            return null;
+          }
+        }
+        if (!useSameTextAndMeta) {
+          // got source, get the metadata
+          String metaFromSource = line.substring(7);
+          line = reader.readLine();
+          // we should have the plain sentence
+          // we remove the first token
+          int start = line.indexOf(" ");
+          text = line.substring(start + 1).trim();
+          text = fixPunctuation(text);
+          String titleTag = "";
+          if (isTitle) titleTag = " title";
+          String boxTag = "";
+          if (isBox) boxTag = " box";
+          if (start > 0) {
+            meta = line.substring(0, start) + " p=" + para + titleTag + boxTag + metaFromSource;
+          }
         }
         sentence.setText(text);
         sentence.setMetadata(meta);
@@ -146,8 +145,8 @@ public class ADSentenceStream extends
 
         // skip lines starting with ###
         line = reader.readLine();
-        while(line != null && line.startsWith("###")) {
-        	line = reader.readLine();
+        while (line != null && line.startsWith("###")) {
+          line = reader.readLine();
         }
 
         // got the root. Add it to the stack
@@ -164,7 +163,7 @@ public class ADSentenceStream extends
         while (line != null && line.length() != 0 && !line.startsWith("</s>") && !line.equals("&&")) {
           TreeElement element = this.getElement(line);
 
-          if(element != null) {
+          if (element != null) {
             // The idea here is to keep a stack of nodes that are candidates for
             // parenting the following elements (nodes and leafs).
 
@@ -175,7 +174,7 @@ public class ADSentenceStream extends
               Node nephew = nodeStack.pop();
             }
 
-            if( element.isLeaf() ) {
+            if (element.isLeaf() ) {
               // 2a) If the element is a leaf and there is no parent candidate,
               // add it as a daughter of the root.
               if (nodeStack.isEmpty()) {
@@ -208,7 +207,7 @@ public class ADSentenceStream extends
               // 3) Check if the element that is at the top of the stack is this
               // node parent, if yes add it as a son
               if (!nodeStack.isEmpty() && nodeStack.peek().getLevel() < element.getLevel()) {
-                  nodeStack.peek().addElement(element);
+                nodeStack.peek().addElement(element);
               } else {
                 System.err.println("should not happen!");
               }
@@ -289,12 +288,12 @@ public class ADSentenceStream extends
       }
 
       // process the bizarre cases
-      if(line.equals("_") || line.startsWith("<lixo") || line.startsWith("pause")) {
-      	return null;
+      if (line.equals("_") || line.startsWith("<lixo") || line.startsWith("pause")) {
+        return null;
       }
 
-      if(line.startsWith("=")) {
-      	Matcher bizarreLeafMatcher = bizarreLeafPattern.matcher(line);
+      if (line.startsWith("=")) {
+        Matcher bizarreLeafMatcher = bizarreLeafPattern.matcher(line);
         if (bizarreLeafMatcher.matches()) {
           int level = bizarreLeafMatcher.group(1).length() + 1;
           String syntacticTag = bizarreLeafMatcher.group(2);
@@ -315,20 +314,20 @@ public class ADSentenceStream extends
 
           return leaf;
         } else {
-        	int level = line.lastIndexOf("=") + 1;
-        	String lexeme = line.substring(level + 1);
+          int level = line.lastIndexOf("=") + 1;
+          String lexeme = line.substring(level + 1);
 
-        	if(lexeme.matches("\\w.*?[\\.<>].*")) {
-        	  return null;
-        	}
+          if (lexeme.matches("\\w.*?[\\.<>].*")) {
+            return null;
+          }
 
-        	 Leaf leaf = new Leaf();
-           leaf.setLevel(level + 1);
-           leaf.setSyntacticTag("");
-           leaf.setMorphologicalTag("");
-           leaf.setLexeme(lexeme);
+          Leaf leaf = new Leaf();
+          leaf.setLevel(level + 1);
+          leaf.setSyntacticTag("");
+          leaf.setMorphologicalTag("");
+          leaf.setLexeme(lexeme);
 
-           return leaf;
+          return leaf;
         }
       }
 
@@ -349,7 +348,9 @@ public class ADSentenceStream extends
       private String morphologicalTag;
       private int level;
 
-      public boolean isLeaf() {return false;}
+      public boolean isLeaf() {
+        return false;
+      }
 
       public void setSyntacticTag(String syntacticTag) {
         this.syntacticTag = syntacticTag;
@@ -416,13 +417,15 @@ public class ADSentenceStream extends
       private String functionalTag;
 
       @Override
-      public boolean isLeaf() {return true;}
+      public boolean isLeaf() {
+        return true;
+      }
 
       public void setFunctionalTag(String funcTag) {
         this.functionalTag = funcTag;
       }
 
-      public String getFunctionalTag(){
+      public String getFunctionalTag() {
         return this.functionalTag;
       }
 
@@ -443,7 +446,7 @@ public class ADSentenceStream extends
       }
 
       private String emptyOrString(String value, String prefix, String suffix) {
-        if(value == null) return "";
+        if (value == null) return "";
         return prefix + value + suffix;
       }
 
@@ -540,29 +543,29 @@ public class ADSentenceStream extends
 
       if (line != null) {
 
-    	  if(sentenceStarted) {
-    		  if (sentEnd.matcher(line).matches() || extEnd.matcher(line).matches()) {
-		          sentenceStarted = false;
-	          } else if (!line.startsWith("A1")) {
-	        	  sentence.append(line).append('\n');
-	          }
+        if (sentenceStarted) {
+          if (sentEnd.matcher(line).matches() || extEnd.matcher(line).matches()) {
+            sentenceStarted = false;
+          } else if (!line.startsWith("A1")) {
+            sentence.append(line).append('\n');
+          }
         } else {
-    		  if (sentStart.matcher(line).matches()) {
-		          sentenceStarted = true;
-		        } else if(paraStart.matcher(line).matches()) {
-		        	paraID++;
-		        } else if(titleStart.matcher(line).matches()) {
-		        	isTitle = true;
-		        } else if(titleEnd.matcher(line).matches()) {
-		        	isTitle = false;
-		        } else if(textStart.matcher(line).matches()) {
-		        	paraID = 0;
-		        } else if(boxStart.matcher(line).matches()) {
-		        	isBox = true;
-		        } else if(boxEnd.matcher(line).matches()) {
-		        	isBox = false;
-		        }
-    	  }
+          if (sentStart.matcher(line).matches()) {
+            sentenceStarted = true;
+          } else if (paraStart.matcher(line).matches()) {
+            paraID++;
+          } else if (titleStart.matcher(line).matches()) {
+            isTitle = true;
+          } else if (titleEnd.matcher(line).matches()) {
+            isTitle = false;
+          } else if (textStart.matcher(line).matches()) {
+            paraID = 0;
+          } else if (boxStart.matcher(line).matches()) {
+            isBox = true;
+          } else if (boxEnd.matcher(line).matches()) {
+            isBox = false;
+          }
+        }
 
 
         if (!sentenceStarted && sentence.length() > 0) {

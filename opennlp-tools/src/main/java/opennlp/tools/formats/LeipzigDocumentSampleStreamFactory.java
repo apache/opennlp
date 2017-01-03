@@ -56,16 +56,16 @@ public class LeipzigDocumentSampleStreamFactory
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     File sentencesFileDir = params.getSentencesDir();
-    
+
     File sentencesFiles[] = sentencesFileDir.listFiles(new FilenameFilter() {
       @Override
       public boolean accept(File dir, String name) {
         return name.contains("sentences") && name.endsWith(".txt");
       }
     });
-    
+
     @SuppressWarnings("unchecked")
-    ObjectStream<DocumentSample> sampleStreams[] = 
+    ObjectStream<DocumentSample> sampleStreams[] =
         new ObjectStream[sentencesFiles.length];
 
     for (int i = 0; i < sentencesFiles.length; i++) {
@@ -77,7 +77,7 @@ public class LeipzigDocumentSampleStreamFactory
         throw new TerminateToolException(-1, "IO error while opening sample data: " + e.getMessage(), e);
       }
     }
-    
+
     return ObjectStreamUtils.createObjectStream(sampleStreams);
   }
 }

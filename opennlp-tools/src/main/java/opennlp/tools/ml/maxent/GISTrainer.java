@@ -273,8 +273,8 @@ class GISTrainer {
       }
       else {
         float cl = values[ci][0];
-        for (int vi=1;vi<values[ci].length;vi++) {
-          cl+=values[ci][vi];
+        for (int vi = 1; vi < values[ci].length; vi++) {
+          cl += values[ci][vi];
         }
 
         if (cl > correctionConstant) {
@@ -301,7 +301,7 @@ class GISTrainer {
     for (int ti = 0; ti < numUniqueEvents; ti++) {
       for (int j = 0; j < contexts[ti].length; j++) {
         if (values != null && values[ti] != null) {
-          predCount[contexts[ti][j]][outcomeList[ti]] += numTimesEventsSeen[ti]*values[ti][j];
+          predCount[contexts[ti][j]][outcomeList[ti]] += numTimesEventsSeen[ti] * values[ti][j];
         }
         else {
           predCount[contexts[ti][j]][outcomeList[ti]] += numTimesEventsSeen[ti];
@@ -323,7 +323,7 @@ class GISTrainer {
     // implementation, this is cancelled out when we compute the next
     // iteration of a parameter, making the extra divisions wasteful.
     params = new MutableContext[numPreds];
-    for (int i = 0; i< modelExpects.length; i++)
+    for (int i = 0; i < modelExpects.length; i++)
       modelExpects[i] = new MutableContext[numPreds];
     observedExpects = new MutableContext[numPreds];
 
@@ -334,7 +334,7 @@ class GISTrainer {
     evalParams = new EvalParameters(params,0,1,numOutcomes);
     int[] activeOutcomes = new int[numOutcomes];
     int[] outcomePattern;
-    int[] allOutcomesPattern= new int[numOutcomes];
+    int[] allOutcomesPattern = new int[numOutcomes];
     for (int oi = 0; oi < numOutcomes; oi++) {
       allOutcomesPattern[oi] = oi;
     }
@@ -361,17 +361,17 @@ class GISTrainer {
         }
       }
       params[pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
-      for (int i = 0; i< modelExpects.length; i++)
+      for (int i = 0; i < modelExpects.length; i++)
         modelExpects[i][pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
       observedExpects[pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
-      for (int aoi=0;aoi<numActiveOutcomes;aoi++) {
+      for (int aoi = 0;aoi < numActiveOutcomes; aoi++) {
         int oi = outcomePattern[aoi];
         params[pi].setParameter(aoi, 0.0);
         for (MutableContext[] modelExpect : modelExpects) {
           modelExpect[pi].setParameter(aoi, 0.0);
         }
         if (predCount[pi][oi] > 0) {
-            observedExpects[pi].setParameter(aoi, predCount[pi][oi]);
+          observedExpects[pi].setParameter(aoi, predCount[pi][oi]);
         }
         else if (useSimpleSmoothing) {
           observedExpects[pi].setParameter(aoi,smoothingObservation);
@@ -387,7 +387,7 @@ class GISTrainer {
     if (threads == 1)
       display("Computing model parameters ...\n");
     else
-      display("Computing model parameters in " + threads +" threads...\n");
+      display("Computing model parameters in " + threads + " threads...\n");
 
     findParameters(iterations, correctionConstant);
 
@@ -399,9 +399,9 @@ class GISTrainer {
 
   /* Estimate and return the model parameters. */
   private void findParameters(int iterations, double correctionConstant) {
-	int threads=modelExpects.length;
-	ExecutorService executor = Executors.newFixedThreadPool(threads);
-	CompletionService<ModelExpactationComputeTask> completionService = new ExecutorCompletionService<>(executor);
+    int threads = modelExpects.length;
+    ExecutorService executor = Executors.newFixedThreadPool(threads);
+    CompletionService<ModelExpactationComputeTask> completionService = new ExecutorCompletionService<>(executor);
     double prevLL = 0.0;
     double currLL;
     display("Performing " + iterations + " iterations.\n");
@@ -496,7 +496,7 @@ class GISTrainer {
           int pi = contexts[ei][j];
           if (predicateCounts[pi] >= cutoff) {
             int[] activeOutcomes = modelExpects[threadIndex][pi].getOutcomes();
-            for (int aoi=0;aoi<activeOutcomes.length;aoi++) {
+            for (int aoi = 0; aoi < activeOutcomes.length; aoi++) {
               int oi = activeOutcomes[aoi];
 
               // numTimesEventsSeen must also be thread safe
@@ -552,7 +552,7 @@ class GISTrainer {
     int numCorrect = 0;
 
     // Each thread gets equal number of tasks, if the number of tasks
-    // is not divisible by the number of threads, the first "leftOver" 
+    // is not divisible by the number of threads, the first "leftOver"
     // threads have one extra task.
     int numberOfThreads = modelExpects.length;
     int taskSize = numUniqueEvents / numberOfThreads;
@@ -561,12 +561,12 @@ class GISTrainer {
     // submit all tasks to the completion service.
     for (int i = 0; i < numberOfThreads; i++) {
       if (i < leftOver)
-        completionService.submit(new ModelExpactationComputeTask(i, i*taskSize+i, taskSize+1));
+        completionService.submit(new ModelExpactationComputeTask(i, i * taskSize + i, taskSize + 1));
       else
-        completionService.submit(new ModelExpactationComputeTask(i, i*taskSize+leftOver, taskSize));
+        completionService.submit(new ModelExpactationComputeTask(i, i * taskSize + leftOver, taskSize));
     }
 
-    for (int i=0; i<numberOfThreads; i++) {
+    for (int i = 0; i < numberOfThreads; i++) {
       ModelExpactationComputeTask finishedTask;
       try {
         finishedTask = completionService.take().get();
@@ -595,7 +595,7 @@ class GISTrainer {
     for (int pi = 0; pi < numPreds; pi++) {
       int[] activeOutcomes = params[pi].getOutcomes();
 
-      for (int aoi=0;aoi<activeOutcomes.length;aoi++) {
+      for (int aoi = 0; aoi < activeOutcomes.length; aoi++) {
         for (int i = 1; i < modelExpects.length; i++) {
           modelExpects[0][pi].updateParameter(aoi, modelExpects[i][pi].getParameters()[aoi]);
         }
@@ -609,16 +609,16 @@ class GISTrainer {
       double[] observed = observedExpects[pi].getParameters();
       double[] model = modelExpects[0][pi].getParameters();
       int[] activeOutcomes = params[pi].getOutcomes();
-      for (int aoi=0;aoi<activeOutcomes.length;aoi++) {
+      for (int aoi = 0; aoi < activeOutcomes.length; aoi++) {
         if (useGaussianSmoothing) {
           params[pi].updateParameter(aoi,gaussianUpdate(pi,aoi,numEvents,correctionConstant));
         }
         else {
           if (model[aoi] == 0) {
-            System.err.println("Model expects == 0 for "+predLabels[pi]+" "+outcomeLabels[aoi]);
+            System.err.println("Model expects == 0 for " + predLabels[pi] + " " + outcomeLabels[aoi]);
           }
           //params[pi].updateParameter(aoi,(Math.log(observed[aoi]) - Math.log(model[aoi])));
-          params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi]))/correctionConstant));
+          params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi])) / correctionConstant));
         }
 
         for (MutableContext[] modelExpect : modelExpects) {

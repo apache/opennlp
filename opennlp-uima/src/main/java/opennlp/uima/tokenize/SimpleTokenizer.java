@@ -49,7 +49,7 @@ public final class SimpleTokenizer extends AbstractTokenizer {
    * this instance. Not use the constructor.
    */
   public SimpleTokenizer() {
-	  super("OpenNLP Simple Tokenizer");
+    super("OpenNLP Simple Tokenizer");
     // must not be implemented !
   }
 

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.lemmatizer;
 
 import opennlp.tools.util.eval.Evaluator;
@@ -57,7 +58,7 @@ public class LemmatizerEvaluator extends Evaluator<LemmaSample> {
 
     String[] predictedLemmas = lemmatizer.lemmatize(reference.getTokens(), reference.getTags());
     String[] referenceLemmas = reference.getLemmas();
-    
+
     for (int i = 0; i < referenceLemmas.length; i++) {
       if (referenceLemmas[i].equals(predictedLemmas[i])) {
         wordAccuracy.add(1);

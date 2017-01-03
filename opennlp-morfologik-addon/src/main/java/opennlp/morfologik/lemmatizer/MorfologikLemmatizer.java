@@ -45,7 +45,7 @@ public class MorfologikLemmatizer implements Lemmatizer {
     List<WordData> dictMap = dictLookup.lookup(word.toLowerCase());
     Set<String> lemmas = new HashSet<>();
     for (WordData wordData : dictMap) {
-      if(Objects.equals(postag, asString(wordData.getTag()))) {
+      if (Objects.equals(postag, asString(wordData.getTag()))) {
         lemmas.add(asString(wordData.getStem()));
       }
     }
@@ -53,7 +53,7 @@ public class MorfologikLemmatizer implements Lemmatizer {
   }
 
   private String asString(CharSequence tag) {
-    if(tag == null)
+    if (tag == null)
       return null;
     return tag.toString();
   }
@@ -62,8 +62,8 @@ public class MorfologikLemmatizer implements Lemmatizer {
   public String[] lemmatize(String[] toks, String[] tags) {
     String[] lemmas = new String[toks.length];
     for (int i = 0; i < toks.length; i++) {
-       List<String> l = lemmatize(toks[i],tags[i]);
-      if(l.size() > 0) {
+      List<String> l = lemmatize(toks[i],tags[i]);
+      if (l.size() > 0) {
         lemmas[i] = l.get(0);
       } else {
         lemmas[i] = null;
@@ -71,7 +71,7 @@ public class MorfologikLemmatizer implements Lemmatizer {
     }
     return lemmas;
   }
-  
+
 
   /**
    * Generates a lemma tags for the word and postag returning the result in list of possible lemmas.

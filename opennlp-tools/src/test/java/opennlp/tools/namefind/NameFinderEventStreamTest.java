@@ -29,7 +29,7 @@ import java.io.IOException;
 /**
  * This is the test class for {@link NameFinderEventStream}.
  */
-public class NameFinderEventStreamTest{
+public class NameFinderEventStreamTest {
 
   /**
    * Tests the correctly generated outcomes for a test sentence.

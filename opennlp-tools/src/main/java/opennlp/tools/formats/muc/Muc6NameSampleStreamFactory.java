@@ -54,7 +54,7 @@ public class Muc6NameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
 
     ObjectStream<String> mucDocStream = new FileToStringSampleStream(
         new DirectorySampleStream(params.getData(),
-          file -> StringUtil.toLowerCase(file.getName()).endsWith(".sgm"), false), Charset.forName("UTF-8"));
+            file -> StringUtil.toLowerCase(file.getName()).endsWith(".sgm"), false), Charset.forName("UTF-8"));
 
     return new MucNameSampleStream(tokenizer, mucDocStream);
   }

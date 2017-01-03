@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.doccat;
 
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class DocumentSample {
     this.category = category;
     this.text = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(text)));
 
-    if(extraInformation == null) {
+    if (extraInformation == null) {
       this.extraInformation = Collections.emptyMap();
     } else {
       this.extraInformation = extraInformation;

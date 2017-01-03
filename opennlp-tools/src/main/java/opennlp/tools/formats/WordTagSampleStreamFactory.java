@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.formats;
 
 import java.io.IOException;
@@ -38,7 +39,7 @@ public class WordTagSampleStreamFactory extends AbstractSampleStreamFactory<POSS
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new WordTagSampleStreamFactory(Parameters.class));
+        StreamFactoryRegistry.DEFAULT_FORMAT, new WordTagSampleStreamFactory(Parameters.class));
   }
 
   protected <P> WordTagSampleStreamFactory(Class<P> params) {

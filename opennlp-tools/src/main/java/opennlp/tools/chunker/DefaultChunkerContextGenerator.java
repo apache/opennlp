@@ -35,7 +35,7 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
   }
 
   public String[] getContext(int i, String[] toks, String[] tags, String[] preds) {
-	// Words in a 5-word window
+    // Words in a 5-word window
     String w_2, w_1, w0, w1, w2;
 
     // Tags in a 5-word window

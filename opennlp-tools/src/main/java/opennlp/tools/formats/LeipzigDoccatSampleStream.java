@@ -75,7 +75,7 @@ public class LeipzigDoccatSampleStream extends
       InputStreamFactory in) throws IOException {
     this(language, sentencesPerDocument, SimpleTokenizer.INSTANCE, in);
   }
-  
+
   public DocumentSample read() throws IOException {
 
     int count = 0;

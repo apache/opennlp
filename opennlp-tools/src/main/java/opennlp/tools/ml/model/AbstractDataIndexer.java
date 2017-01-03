@@ -89,7 +89,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     if (sort && eventsToCompare.size() > 0) {
 
       Collections.sort(eventsToCompare);
-      
+
       ComparableEvent ce = eventsToCompare.get(0);
       for (int i = 1; i < numEvents; i++) {
         ComparableEvent ce2 = eventsToCompare.get(i);
@@ -108,11 +108,11 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     else {
       numUniqueEvents = eventsToCompare.size();
     }
-    
-    if(numUniqueEvents == 0) {
+
+    if (numUniqueEvents == 0) {
       throw new InsufficientTrainingDataException("Insufficient training data to create model.");
     }
-    
+
     if (sort) System.out.println("done. Reduced " + numEvents + " events to " + numUniqueEvents + ".");
 
     contexts = new int[numUniqueEvents][];
@@ -144,19 +144,19 @@ public abstract class AbstractDataIndexer implements DataIndexer {
    * @param counter The predicate counters.
    * @param cutoff The cutoff which determines whether a predicate is included.
    */
-   protected static void update(String[] ec, Set<String> predicateSet, Map<String,Integer> counter, int cutoff) {
-     for (String s : ec) {
-       Integer i = counter.get(s);
-       if (i == null) {
-         counter.put(s, 1);
-       }
-       else {
-         counter.put(s, i + 1);
-       }
-       if (!predicateSet.contains(s) && counter.get(s) >= cutoff) {
-         predicateSet.add(s);
-       }
-     }
+  protected static void update(String[] ec, Set<String> predicateSet, Map<String,Integer> counter, int cutoff) {
+    for (String s : ec) {
+      Integer i = counter.get(s);
+      if (i == null) {
+        counter.put(s, 1);
+      }
+      else {
+        counter.put(s, i + 1);
+      }
+      if (!predicateSet.contains(s) && counter.get(s) >= cutoff) {
+        predicateSet.add(s);
+      }
+    }
   }
 
   /**

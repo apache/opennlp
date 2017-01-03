@@ -124,10 +124,10 @@ public final class NameFinder extends AbstractNameFinder {
       TokenNameFinderModelResource modelResource =
             (TokenNameFinderModelResource) context.getResourceObject(UimaUtil.MODEL_PARAMETER);
 
-        model = modelResource.getModel();
+      model = modelResource.getModel();
     }
     catch (ResourceAccessException e) {
-        throw new ResourceInitializationException(e);
+      throw new ResourceInitializationException(e);
     }
 
     mNameFinder = new NameFinderME(model);
@@ -142,7 +142,7 @@ public final class NameFinder extends AbstractNameFinder {
     super.typeSystemInit(typeSystem);
 
     probabilityFeature = AnnotatorUtil.getOptionalFeatureParameter(context, mNameType,
-    		UimaUtil.PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_DOUBLE);
+        UimaUtil.PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_DOUBLE);
 
     documentConfidenceType = AnnotatorUtil.getOptionalTypeParameter(context, typeSystem,
         "opennlp.uima.DocumentConfidenceType");

@@ -37,7 +37,7 @@ public class Mean {
    * Adds a value to the arithmetic mean.
    *
    * @param value the value which should be added
-   * to the arithmetic mean.
+   *     to the arithmetic mean.
    */
   public void add(double value) {
     add(value, 1);
@@ -47,10 +47,10 @@ public class Mean {
    * Adds a value count times to the arithmetic mean.
    *
    * @param value the value which should be added
-   * to the arithmetic mean.
+   *     to the arithmetic mean.
    *
    * @param count number of times the value should be added to
-   * arithmetic mean.
+   *     arithmetic mean.
    */
   public void add(double value, long count) {
     sum += value * count;

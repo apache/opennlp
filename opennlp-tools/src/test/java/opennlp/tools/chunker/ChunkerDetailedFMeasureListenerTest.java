@@ -40,7 +40,7 @@ public class ChunkerDetailedFMeasureListenerTest {
         "/opennlp/tools/chunker/output.txt");
     ResourceAsStreamFactory detailedOutputStream = new ResourceAsStreamFactory(
         getClass(), "/opennlp/tools/chunker/detailedOutput.txt");
-          
+
     DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
         new PlainTextByLineStream(inPredicted, StandardCharsets.UTF_8), true);
 

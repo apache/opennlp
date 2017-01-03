@@ -30,61 +30,61 @@ import opennlp.tools.util.ObjectStream;
  * can be used together with DummyChunker simulate a chunker.
  */
 public class DummyChunkSampleStream extends
-		FilterObjectStream<String, ChunkSample> {
+    FilterObjectStream<String, ChunkSample> {
 
-	boolean mIsPredicted;
-	int count = 0;
+  boolean mIsPredicted;
+  int count = 0;
 
-	// the predicted flag sets if the stream will contain the expected or the
-	// predicted tags.
-	public DummyChunkSampleStream(ObjectStream<String> samples,
-			boolean isPredicted) {
-		super(samples);
-		mIsPredicted = isPredicted;
-	}
+  // the predicted flag sets if the stream will contain the expected or the
+  // predicted tags.
+  public DummyChunkSampleStream(ObjectStream<String> samples,
+      boolean isPredicted) {
+    super(samples);
+    mIsPredicted = isPredicted;
+  }
 
-	/**
-	 * Returns a pair representing the expected and the predicted at 0: the
-	 * chunk tag according to the corpus at 1: the chunk tag predicted
-	 *
-	 * @see opennlp.tools.util.ObjectStream#read()
-	 */
-	public ChunkSample read() throws IOException {
+  /**
+   * Returns a pair representing the expected and the predicted at 0: the
+   * chunk tag according to the corpus at 1: the chunk tag predicted
+   *
+   * @see opennlp.tools.util.ObjectStream#read()
+   */
+  public ChunkSample read() throws IOException {
 
-		List<String> toks = new ArrayList<String>();
-		List<String> posTags = new ArrayList<String>();
-		List<String> chunkTags = new ArrayList<String>();
-		List<String> predictedChunkTags = new ArrayList<String>();
+    List<String> toks = new ArrayList<String>();
+    List<String> posTags = new ArrayList<String>();
+    List<String> chunkTags = new ArrayList<String>();
+    List<String> predictedChunkTags = new ArrayList<String>();
 
-		for (String line = samples.read(); line != null && !line.equals(""); line = samples
-				.read()) {
-			String[] parts = line.split(" ");
-			if (parts.length != 4) {
-				System.err.println("Skipping corrupt line " + count + ": "
-						+ line);
-			} else {
-				toks.add(parts[0]);
-				posTags.add(parts[1]);
-				chunkTags.add(parts[2]);
-				predictedChunkTags.add(parts[3]);
-			}
-			count++;
-		}
+    for (String line = samples.read(); line != null && !line.equals(""); line = samples
+        .read()) {
+      String[] parts = line.split(" ");
+      if (parts.length != 4) {
+        System.err.println("Skipping corrupt line " + count + ": "
+            + line);
+      } else {
+        toks.add(parts[0]);
+        posTags.add(parts[1]);
+        chunkTags.add(parts[2]);
+        predictedChunkTags.add(parts[3]);
+      }
+      count++;
+    }
 
-		if (toks.size() > 0) {
-			if (mIsPredicted) {
-				return new ChunkSample(toks.toArray(new String[toks.size()]),
-						posTags.toArray(new String[posTags.size()]),
-						predictedChunkTags
-								.toArray(new String[predictedChunkTags.size()]));
-			} else
-				return new ChunkSample(toks.toArray(new String[toks.size()]),
-						posTags.toArray(new String[posTags.size()]),
-						chunkTags.toArray(new String[chunkTags.size()]));
-		} else {
-			return null;
-		}
+    if (toks.size() > 0) {
+      if (mIsPredicted) {
+        return new ChunkSample(toks.toArray(new String[toks.size()]),
+            posTags.toArray(new String[posTags.size()]),
+            predictedChunkTags
+            .toArray(new String[predictedChunkTags.size()]));
+      } else
+        return new ChunkSample(toks.toArray(new String[toks.size()]),
+            posTags.toArray(new String[posTags.size()]),
+            chunkTags.toArray(new String[chunkTags.size()]));
+    } else {
+      return null;
+    }
 
-	}
+  }
 
 }

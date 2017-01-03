@@ -49,7 +49,7 @@ public class NameSampleTest {
         new Span(14, 15, "Location")};
 
     NameSample nameSample;
-    if(useTypes) {
+    if (useTypes) {
       nameSample = new NameSample(sentence, names, false);
     }
     else {
@@ -74,7 +74,7 @@ public class NameSampleTest {
     String nameSampleStr = createSimpleNameSample(false).toString();
 
     assertEquals("<START> U . S . <END> President <START> Barack Obama <END> is considering " +
-    		"sending additional American forces to <START> Afghanistan <END> .", nameSampleStr);
+        "sending additional American forces to <START> Afghanistan <END> .", nameSampleStr);
   }
 
   /**
@@ -87,9 +87,9 @@ public class NameSampleTest {
     assertEquals("<START:Location> U . S . <END> President <START:Person> Barack Obama <END> is considering sending additional American forces to <START:Location> Afghanistan <END> .", nameSampleStr);
 
     NameSample parsedSample = NameSample.parse("<START:Location> U . S . <END> " +
-    		"President <START:Person> Barack Obama <END> is considering sending " +
-    		"additional American forces to <START:Location> Afghanistan <END> .",
-    		false);
+        "President <START:Person> Barack Obama <END> is considering sending " +
+        "additional American forces to <START:Location> Afghanistan <END> .",
+        false);
 
     assertEquals(createSimpleNameSample(true), parsedSample);
   }
@@ -148,7 +148,7 @@ public class NameSampleTest {
   /**
    * Test if it fails to parse empty type
    */
-  @Test(expected=IOException.class)
+  @Test(expected = IOException.class)
   public void testMissingType() throws Exception {
     NameSample.parse("<START:> token <END>",
         false);
@@ -158,7 +158,7 @@ public class NameSampleTest {
    * Test if it fails to parse type with space
    * @throws Exception
    */
-  @Test(expected=IOException.class)
+  @Test(expected = IOException.class)
   public void testTypeWithSpace() throws Exception {
     NameSample.parse("<START:abc a> token <END>",
         false);
@@ -168,7 +168,7 @@ public class NameSampleTest {
    * Test if it fails to parse type with new line
    * @throws Exception
    */
-  @Test(expected=IOException.class)
+  @Test(expected = IOException.class)
   public void testTypeWithNewLine() throws Exception {
     NameSample.parse("<START:abc\na> token <END>",
         false);
@@ -178,7 +178,7 @@ public class NameSampleTest {
    * Test if it fails to parse type with :
    * @throws Exception
    */
-  @Test(expected=IOException.class)
+  @Test(expected = IOException.class)
   public void testTypeWithInvalidChar1() throws Exception {
     NameSample.parse("<START:abc:a> token <END>",
         false);
@@ -188,7 +188,7 @@ public class NameSampleTest {
    * Test if it fails to parse type with >
    * @throws Exception
    */
-  @Test(expected=IOException.class)
+  @Test(expected = IOException.class)
   public void testTypeWithInvalidChar2() throws Exception {
     NameSample.parse("<START:abc>a> token <END>",
         false);

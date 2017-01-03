@@ -34,7 +34,7 @@ public interface EvaluatorParams {
 
   @ParameterDescription(valueName = "true|false",
       description = "if true will print false negatives and false positives.")
-  @OptionalParameter(defaultValue="false")
+  @OptionalParameter(defaultValue = "false")
   Boolean getMisclassified();
 
 }

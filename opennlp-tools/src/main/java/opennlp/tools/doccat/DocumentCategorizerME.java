@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.doccat;
 
 import java.io.IOException;
@@ -94,7 +95,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    */
   @Override
   public double[] categorize(String documentText,
-                             Map<String, Object> extraInformation) {
+      Map<String, Object> extraInformation) {
     Tokenizer tokenizer = model.getFactory().getTokenizer();
     return categorize(tokenizer.tokenize(documentText), extraInformation);
   }
@@ -174,13 +175,13 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   }
 
   public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
-                                  TrainingParameters mlParams, DoccatFactory factory)
-      throws IOException {
+      TrainingParameters mlParams, DoccatFactory factory)
+          throws IOException {
 
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(
-         mlParams.getSettings(), manifestInfoEntries);
+        mlParams.getSettings(), manifestInfoEntries);
 
     MaxentModel model = trainer.train(
         new DocumentCategorizerEventStream(samples, factory.getFeatureGenerators()));

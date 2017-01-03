@@ -40,6 +40,6 @@ public class GenericModelSerializer implements ArtifactSerializer<AbstractModel>
   }
 
   public static void register(Map<String, ArtifactSerializer> factories) {
-   factories.put("model", new GenericModelSerializer());
+    factories.put("model", new GenericModelSerializer());
   }
 }

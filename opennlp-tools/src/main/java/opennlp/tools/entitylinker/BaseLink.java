@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.entitylinker;
 
 import java.util.HashMap;
@@ -40,17 +41,19 @@ public abstract class BaseLink {
     this.itemName = itemName;
     this.itemType = itemType;
   }
-/**
- * Any parent ID for the linked item
- * @return
- */
+
+  /**
+   * Any parent ID for the linked item
+   * @return
+   */
   public String getItemParentID() {
     return itemParentID;
   }
-/**
- * returns the parent ID of the linked item
- * @param itemParentID
- */
+
+  /**
+   * returns the parent ID of the linked item
+   * @param itemParentID
+   */
   public void setItemParentID(String itemParentID) {
     this.itemParentID = itemParentID;
   }

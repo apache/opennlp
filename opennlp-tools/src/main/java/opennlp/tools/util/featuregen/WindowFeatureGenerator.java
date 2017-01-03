@@ -120,11 +120,11 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
   }
 
   public void clearAdaptiveData() {
-      generator.clearAdaptiveData();
+    generator.clearAdaptiveData();
   }
 
   @Override
   public String toString() {
-    return super.toString()+": Prev window size: " + prevWindowSize +", Next window size: " + nextWindowSize;
+    return super.toString() + ": Prev window size: " + prevWindowSize + ", Next window size: " + nextWindowSize;
   }
 }

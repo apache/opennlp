@@ -36,43 +36,43 @@ import java.nio.charset.StandardCharsets;
  */
 public class ChunkerEvaluatorTest {
 
-	private static final double DELTA = 1.0E-9d;
+  private static final double DELTA = 1.0E-9d;
 
-	/**
-	 * Checks the evaluator results against the results got using the conlleval,
-	 * available at http://www.cnts.ua.ac.be/conll2000/chunking/output.html
-	 * The output.txt file has only 3 sentences, but can be replaced by the one
-	 * available at the conll2000 site to validate using a bigger sample.
-	 * @throws IOException
-	 */
-	@Test
-	public void testEvaluator() throws IOException {
-        ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
-            getClass(), "/opennlp/tools/chunker/output.txt");
-        ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(getClass(),
-            "/opennlp/tools/chunker/output.txt");
+  /**
+   * Checks the evaluator results against the results got using the conlleval,
+   * available at http://www.cnts.ua.ac.be/conll2000/chunking/output.html
+   * The output.txt file has only 3 sentences, but can be replaced by the one
+   * available at the conll2000 site to validate using a bigger sample.
+   * @throws IOException
+   */
+  @Test
+  public void testEvaluator() throws IOException {
+    ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
+        getClass(), "/opennlp/tools/chunker/output.txt");
+    ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/chunker/output.txt");
 
-        DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-            new PlainTextByLineStream(inPredicted, StandardCharsets.UTF_8), true);
-    
-        DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-            new PlainTextByLineStream(inExpected, StandardCharsets.UTF_8), false);
+    DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
+        new PlainTextByLineStream(inPredicted, StandardCharsets.UTF_8), true);
 
-		Chunker dummyChunker = new DummyChunker(predictedSample);
+    DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
+        new PlainTextByLineStream(inExpected, StandardCharsets.UTF_8), false);
 
-		OutputStream stream = new ByteArrayOutputStream();
-		ChunkerEvaluationMonitor listener = new ChunkEvaluationErrorListener(stream);
-		ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, listener);
+    Chunker dummyChunker = new DummyChunker(predictedSample);
 
-		evaluator.evaluate(expectedSample);
+    OutputStream stream = new ByteArrayOutputStream();
+    ChunkerEvaluationMonitor listener = new ChunkEvaluationErrorListener(stream);
+    ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, listener);
 
-		FMeasure fm = evaluator.getFMeasure();
+    evaluator.evaluate(expectedSample);
 
-      Assert.assertEquals(0.8d, fm.getPrecisionScore(), DELTA);
-      Assert.assertEquals(0.875d, fm.getRecallScore(), DELTA);
+    FMeasure fm = evaluator.getFMeasure();
 
-      Assert.assertNotSame(stream.toString().length(), 0);
-	}
+    Assert.assertEquals(0.8d, fm.getPrecisionScore(), DELTA);
+    Assert.assertEquals(0.875d, fm.getRecallScore(), DELTA);
+
+    Assert.assertNotSame(stream.toString().length(), 0);
+  }
 
   @Test
   public void testEvaluatorNoError() throws IOException {

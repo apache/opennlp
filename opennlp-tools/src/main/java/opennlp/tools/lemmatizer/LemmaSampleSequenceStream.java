@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.lemmatizer;
 
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class LemmaSampleSequenceStream implements SequenceStream {
       String preds[] = sample.getLemmas();
       Event[] events = new Event[sentence.length];
 
-      for (int i=0; i < sentence.length; i++) {
+      for (int i = 0; i < sentence.length; i++) {
         // it is safe to pass the tags as previous tags because
         // the context generator does not look for non predicted tags
         String[] context = contextGenerator.getContext(i, sentence, tags, preds);

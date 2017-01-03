@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package opennlp.tools.ml.maxent.quasinewton;
 
 import opennlp.tools.ml.model.AbstractModel;
@@ -24,7 +25,7 @@ import opennlp.tools.ml.model.Context;
 public class QNModel extends AbstractModel {
 
   public QNModel(Context[] params, String[] predLabels, String[] outcomeNames) {
-	  super(params, predLabels, outcomeNames);
+    super(params, predLabels, outcomeNames);
     this.modelType = ModelType.MaxentQn;
   }
 
@@ -45,7 +46,7 @@ public class QNModel extends AbstractModel {
   }
 
   public double[] eval(String[] context, float[] values) {
-	  return eval(context, values, new double[evalParams.getNumOutcomes()]);
+    return eval(context, values, new double[evalParams.getNumOutcomes()]);
   }
 
   /**
@@ -81,7 +82,7 @@ public class QNModel extends AbstractModel {
 
     double logSumExp = ArrayMath.logSumOfExps(probs);
     for (int oi = 0; oi < outcomeNames.length; oi++) {
-    	probs[oi] = Math.exp(probs[oi] - logSumExp);
+      probs[oi] = Math.exp(probs[oi] - logSumExp);
     }
     return probs;
   }
@@ -109,7 +110,7 @@ public class QNModel extends AbstractModel {
 
     for (int i = 0; i < context.length; i++) {
       int predIdx = context[i];
-      double predValue = values != null? values[i] : 1.0;
+      double predValue = values != null ? values[i] : 1.0;
       for (int oi = 0; oi < nOutcomes; oi++) {
         probs[oi] += predValue * parameters[oi * nPredLabels + predIdx];
       }
@@ -142,7 +143,7 @@ public class QNModel extends AbstractModel {
     for (String pred : pmap.keySet()) {
       pmapArray[pmap.get(pred)] = pred;
     }
-    
+
     for (int i = 0; i < this.pmap.size(); i++) {
       if (i != objModel.pmap.get(pmapArray[i]))
         return false;
@@ -156,15 +157,15 @@ public class QNModel extends AbstractModel {
       if (this.evalParams.getParams()[i].getOutcomes().length != contextComparing[i].getOutcomes().length)
         return false;
       for (int j = 0; i < this.evalParams.getParams()[i].getOutcomes().length; i++) {
-    	  if (this.evalParams.getParams()[i].getOutcomes()[j] != contextComparing[i].getOutcomes()[j])
-    	    return false;
+        if (this.evalParams.getParams()[i].getOutcomes()[j] != contextComparing[i].getOutcomes()[j])
+          return false;
       }
 
       if (this.evalParams.getParams()[i].getParameters().length != contextComparing[i].getParameters().length)
         return false;
       for (int j = 0; i < this.evalParams.getParams()[i].getParameters().length; i++) {
-    	  if (this.evalParams.getParams()[i].getParameters()[j] != contextComparing[i].getParameters()[j])
-    	    return false;
+        if (this.evalParams.getParams()[i].getParameters()[j] != contextComparing[i].getParameters()[j])
+          return false;
       }
     }
     return true;

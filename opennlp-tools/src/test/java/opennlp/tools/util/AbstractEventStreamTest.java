@@ -60,9 +60,9 @@ public class AbstractEventStreamTest {
      * @param sample parameter to specify the output
      *
      * @return it returns an {@link Iterator} which contains one
-     * {@link Event} object if the sample parameter equals
-     * {@link RESULT#EVENTS} or an empty {@link Iterator} if the sample
-     * parameter equals {@link RESULT#EMPTY}.
+     *     {@link Event} object if the sample parameter equals
+     *     {@link RESULT#EVENTS} or an empty {@link Iterator} if the sample
+     *     parameter equals {@link RESULT#EMPTY}.
      */
     @Override
     protected Iterator<Event> createEvents(RESULT sample) {

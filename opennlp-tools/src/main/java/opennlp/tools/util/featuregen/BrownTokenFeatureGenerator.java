@@ -26,7 +26,7 @@ public class BrownTokenFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private BrownCluster brownLexicon;
 
-  public BrownTokenFeatureGenerator(BrownCluster dict){
+  public BrownTokenFeatureGenerator(BrownCluster dict) {
     this.brownLexicon = dict;
   }
 

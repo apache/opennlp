@@ -126,7 +126,7 @@ public class ChunkSample {
         foundPhrase = true;
       } else if (pred.equals("I-" + startTag)) { // middle
         // do nothing
-      } else if (foundPhrase) {// end
+      } else if (foundPhrase) { // end
         phrases.add(new Span(startIndex, ci, startTag));
         foundPhrase = false;
         startTag = "";
@@ -158,9 +158,9 @@ public class ChunkSample {
    */
   public String nicePrint() {
 
-  	Span[] spans = getPhrasesAsSpanList();
+    Span[] spans = getPhrasesAsSpanList();
 
-  	StringBuilder result = new StringBuilder(" ");
+    StringBuilder result = new StringBuilder(" ");
 
     for (int tokenIndex = 0; tokenIndex < sentence.size(); tokenIndex++) {
       for (int nameIndex = 0; nameIndex < spans.length; nameIndex++) {
@@ -191,13 +191,13 @@ public class ChunkSample {
   @Override
   public String toString() {
 
-	    StringBuilder chunkString = new StringBuilder();
+    StringBuilder chunkString = new StringBuilder();
 
-	    for (int ci=0; ci < preds.size(); ci++) {
-        chunkString.append(sentence.get(ci)).append(" ").append(tags.get(ci)).append(" ").append(preds.get(ci)).append("\n");
-	    }
-	    return chunkString.toString();
-	  }
+    for (int ci = 0; ci < preds.size(); ci++) {
+      chunkString.append(sentence.get(ci)).append(" ").append(tags.get(ci)).append(" ").append(preds.get(ci)).append("\n");
+    }
+    return chunkString.toString();
+  }
 
   @Override
   public boolean equals(Object obj) {

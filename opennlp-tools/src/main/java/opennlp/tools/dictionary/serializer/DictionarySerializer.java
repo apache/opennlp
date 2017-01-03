@@ -45,8 +45,8 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
-  * This class is used by for reading and writing dictionaries of all kinds.
-  */
+ * This class is used by for reading and writing dictionaries of all kinds.
+ */
 public class DictionarySerializer {
 
   // TODO: should check for invalid format, make it save
@@ -54,8 +54,8 @@ public class DictionarySerializer {
 
     private EntryInserter mInserter;
 
-//    private boolean mIsInsideDictionaryElement;
-//    private boolean mIsInsideEntryElement;
+    //    private boolean mIsInsideDictionaryElement;
+    //    private boolean mIsInsideEntryElement;
     private boolean mIsInsideTokenElement;
     private boolean mIsCaseSensitiveDictionary;
 
@@ -69,121 +69,122 @@ public class DictionarySerializer {
       mInserter = inserter;
       mIsCaseSensitiveDictionary = true;
     }
+
     /**
      * Not implemented.
      */
-     public void processingInstruction(String target, String data)
-       throws SAXException {
-     }
+    public void processingInstruction(String target, String data)
+        throws SAXException {
+    }
 
-     /**
-      * Not implemented.
-      */
-     public void startDocument() throws SAXException {
-     }
+    /**
+     * Not implemented.
+     */
+    public void startDocument() throws SAXException {
+    }
 
-     public void startElement(String uri, String localName, String qName,
-         org.xml.sax.Attributes atts) throws SAXException {
-       if (DICTIONARY_ELEMENT.equals(localName)) {
+    public void startElement(String uri, String localName, String qName,
+        org.xml.sax.Attributes atts) throws SAXException {
+      if (DICTIONARY_ELEMENT.equals(localName)) {
 
-         mAttributes = new Attributes();
+        mAttributes = new Attributes();
 
-         for (int i = 0; i < atts.getLength(); i++) {
-           mAttributes.setValue(atts.getLocalName(i), atts.getValue(i));
-         }
-         /* get the attribute here ... */
-         if (mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE) != null) {
-           mIsCaseSensitiveDictionary = Boolean.valueOf(mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE));
-         }
-         mAttributes = null;
-       }
-       else if (ENTRY_ELEMENT.equals(localName)) {
+        for (int i = 0; i < atts.getLength(); i++) {
+          mAttributes.setValue(atts.getLocalName(i), atts.getValue(i));
+        }
+        /* get the attribute here ... */
+        if (mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE) != null) {
+          mIsCaseSensitiveDictionary = Boolean.valueOf(mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE));
+        }
+        mAttributes = null;
+      }
+      else if (ENTRY_ELEMENT.equals(localName)) {
 
-         mAttributes = new Attributes();
+        mAttributes = new Attributes();
 
-         for (int i = 0; i < atts.getLength(); i++) {
-           mAttributes.setValue(atts.getLocalName(i), atts.getValue(i));
-         }
-       }
-       else if (TOKEN_ELEMENT.equals(localName)) {
-         mIsInsideTokenElement = true;
-       }
-     }
+        for (int i = 0; i < atts.getLength(); i++) {
+          mAttributes.setValue(atts.getLocalName(i), atts.getValue(i));
+        }
+      }
+      else if (TOKEN_ELEMENT.equals(localName)) {
+        mIsInsideTokenElement = true;
+      }
+    }
 
-     public void characters(char[] ch, int start, int length)
-         throws SAXException {
-       if (mIsInsideTokenElement) {
-         token.append(ch, start, length);
-       }
-     }
+    public void characters(char[] ch, int start, int length)
+        throws SAXException {
+      if (mIsInsideTokenElement) {
+        token.append(ch, start, length);
+      }
+    }
 
-     /**
-      * Creates the Profile object after processing is complete
-      * and switches mIsInsideNgramElement flag.
-      */
-     public void endElement(String uri, String localName, String qName)
-         throws SAXException {
+    /**
+     * Creates the Profile object after processing is complete
+     * and switches mIsInsideNgramElement flag.
+     */
+    public void endElement(String uri, String localName, String qName)
+        throws SAXException {
 
-       if (TOKEN_ELEMENT.equals(localName)) {
-         mTokenList.add(token.toString().trim());
-         token.setLength(0);
-         mIsInsideTokenElement = false;
-       }
-       else if (ENTRY_ELEMENT.equals(localName)) {
+      if (TOKEN_ELEMENT.equals(localName)) {
+        mTokenList.add(token.toString().trim());
+        token.setLength(0);
+        mIsInsideTokenElement = false;
+      }
+      else if (ENTRY_ELEMENT.equals(localName)) {
 
-         String[] tokens = mTokenList.toArray(
-             new String[mTokenList.size()]);
+        String[] tokens = mTokenList.toArray(
+            new String[mTokenList.size()]);
 
-         Entry entry = new Entry(new StringList(tokens), mAttributes);
+        Entry entry = new Entry(new StringList(tokens), mAttributes);
 
-         try {
-           mInserter.insert(entry);
-         } catch (InvalidFormatException e) {
-           throw new SAXException("Invalid dictionary format!", e);
-         }
+        try {
+          mInserter.insert(entry);
+        } catch (InvalidFormatException e) {
+          throw new SAXException("Invalid dictionary format!", e);
+        }
 
-         mTokenList.clear();
-         mAttributes = null;
-       }
-     }
+        mTokenList.clear();
+        mAttributes = null;
+      }
+    }
 
-     /**
-      * Not implemented.
-      */
-     public void endDocument() throws SAXException {
-     }
+    /**
+     * Not implemented.
+     */
+    public void endDocument() throws SAXException {
+    }
 
-     /**
-      * Not implemented.
-      */
-     public void endPrefixMapping(String prefix) throws SAXException {
-     }
+    /**
+     * Not implemented.
+     */
+    public void endPrefixMapping(String prefix) throws SAXException {
+    }
 
-     /**
-      * Not implemented.
-      */
-     public void ignorableWhitespace(char[] ch, int start, int length)
-         throws SAXException {
-     }
+    /**
+     * Not implemented.
+     */
+    public void ignorableWhitespace(char[] ch, int start, int length)
+        throws SAXException {
+    }
 
-     /**
-      * Not implemented.
-      */
-     public void setDocumentLocator(Locator locator) {
-     }
+    /**
+     * Not implemented.
+     */
+    public void setDocumentLocator(Locator locator) {
+    }
 
-     /**
-      * Not implemented.
-      */
-     public void skippedEntity(String name) throws SAXException {
-     }
+    /**
+     * Not implemented.
+     */
+    public void skippedEntity(String name) throws SAXException {
+    }
 
-     /**
-      * Not implemented.
-      */
-     public void startPrefixMapping(String prefix, String uri)
-         throws SAXException {
-     }
+    /**
+     * Not implemented.
+     */
+    public void startPrefixMapping(String prefix, String uri)
+        throws SAXException {
+    }
   }
 
   private static final String CHARSET = "UTF-8";
@@ -222,7 +223,7 @@ public class DictionarySerializer {
     }
     catch (SAXException e) {
       throw new InvalidFormatException("The profile data stream has " +
-            "an invalid format!", e);
+          "an invalid format!", e);
     }
     return profileContentHandler.mIsCaseSensitiveDictionary;
   }
@@ -241,8 +242,8 @@ public class DictionarySerializer {
    */
   @Deprecated
   public static void serialize(OutputStream out, Iterator<Entry> entries)
-          throws IOException {
-      DictionarySerializer.serialize(out, entries, true);
+      throws IOException {
+    DictionarySerializer.serialize(out, entries, true);
   }
 
   /**
@@ -259,8 +260,7 @@ public class DictionarySerializer {
    * @throws IOException If an I/O error occurs
    */
   public static void serialize(OutputStream out, Iterator<Entry> entries,
-          boolean casesensitive)
-      throws IOException {
+      boolean casesensitive) throws IOException {
     StreamResult streamResult = new StreamResult(out);
     SAXTransformerFactory tf = (SAXTransformerFactory)
         SAXTransformerFactory.newInstance();
@@ -285,7 +285,7 @@ public class DictionarySerializer {
       AttributesImpl dictionaryAttributes = new AttributesImpl();
 
       dictionaryAttributes.addAttribute("", "", ATTRIBUTE_CASE_SENSITIVE,
-                "", String.valueOf(casesensitive));
+          "", String.valueOf(casesensitive));
       hd.startElement("", "", DICTIONARY_ELEMENT, dictionaryAttributes);
 
       while (entries.hasNext()) {
@@ -304,7 +304,7 @@ public class DictionarySerializer {
   }
 
   private static void serializeEntry(TransformerHandler hd, Entry entry)
-      throws SAXException{
+      throws SAXException {
 
     AttributesImpl entryAttributes = new AttributesImpl();
 
@@ -312,7 +312,7 @@ public class DictionarySerializer {
       String key = it.next();
 
       entryAttributes.addAttribute("", "", key,
-              "", entry.getAttributes().getValue(key));
+          "", entry.getAttributes().getValue(key));
     }
 
     hd.startElement("", "", ENTRY_ELEMENT, entryAttributes);

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.namefind;
 
 import static org.junit.Assert.assertTrue;
@@ -84,7 +85,7 @@ public class RegexNameFinderTest {
     Pattern testPattern = Pattern.compile("[0-8] year"); // does match "0 year"
 
     String sentence[] = new String[]{"a", "80", "year", "c"};
-Pattern[] patterns = new Pattern[]{testPattern};
+    Pattern[] patterns = new Pattern[]{testPattern};
     Map<String, Pattern[]> regexMap = new HashMap<>();
     String type = "testtype";
 

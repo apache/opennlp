@@ -47,7 +47,7 @@ public class POSDictionaryTest {
       dict.serialize(out);
     }
     finally {
-       out.close();
+      out.close();
     }
 
     POSDictionary serializedDictionary = null;

@@ -58,7 +58,7 @@ public class AnnotationConfiguration {
     String line;
     String sectionType = null;
 
-    while ((line = reader.readLine())!= null) {
+    while ((line = reader.readLine()) != null) {
       line = line.trim();
 
       if (line.isEmpty()) {
@@ -70,27 +70,27 @@ public class AnnotationConfiguration {
         String typeName = WhitespaceTokenizer.INSTANCE.tokenize(line)[0];
 
         switch (sectionType) {
-        case "entities":
-          typeToClassMap.put(typeName, AnnotationConfiguration.ENTITY_TYPE);
-          break;
+          case "entities":
+            typeToClassMap.put(typeName, AnnotationConfiguration.ENTITY_TYPE);
+            break;
 
-        case "relations":
-          typeToClassMap.put(typeName, AnnotationConfiguration.RELATION_TYPE);
-          break;
+          case "relations":
+            typeToClassMap.put(typeName, AnnotationConfiguration.RELATION_TYPE);
+            break;
 
-        case "attributes":
-          typeToClassMap.put(typeName, AnnotationConfiguration.ATTRIBUTE_TYPE);
-          break;
+          case "attributes":
+            typeToClassMap.put(typeName, AnnotationConfiguration.ATTRIBUTE_TYPE);
+            break;
 
-        default:
-          break;
+          default:
+            break;
         }
       }
     }
 
     return new AnnotationConfiguration(typeToClassMap);
   }
-  
+
   public static AnnotationConfiguration parse(File annConfigFile) throws IOException {
     try (InputStream in = new BufferedInputStream(new FileInputStream(annConfigFile))) {
       return parse(in);

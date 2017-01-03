@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.lemmatizer;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class LemmaSampleEventStream extends AbstractEventStream<LemmaSample> {
     super(d);
     this.contextGenerator = cg;
   }
-  
+
   protected Iterator<Event> createEvents(LemmaSample sample) {
 
     if (sample != null) {

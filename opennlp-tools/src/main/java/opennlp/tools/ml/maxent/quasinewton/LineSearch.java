@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package opennlp.tools.ml.maxent.quasinewton;
 
 /**
@@ -101,7 +102,7 @@ public class LineSearch {
 
     // New sign vector
     for (int i = 0; i < dimension; i++) {
-      signX[i] = x[i] == 0? -pseudoGradAtX[i] : x[i];
+      signX[i] = x[i] == 0 ? -pseudoGradAtX[i] : x[i];
     }
 
     while (true) {
@@ -176,7 +177,7 @@ public class LineSearch {
         int fctEvalCount)
     {
       setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext,
-        currPoint, nextPoint, fctEvalCount);
+          currPoint, nextPoint, fctEvalCount);
     }
 
     /**
@@ -195,7 +196,7 @@ public class LineSearch {
         int fctEvalCount)
     {
       setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext,
-        pseudoGradAtNext, currPoint, nextPoint, signVector, fctEvalCount);
+          pseudoGradAtNext, currPoint, nextPoint, signVector, fctEvalCount);
     }
 
     /**
@@ -249,6 +250,7 @@ public class LineSearch {
     public double getStepSize() {
       return stepSize;
     }
+
     public void setStepSize(double stepSize) {
       this.stepSize = stepSize;
     }
@@ -256,6 +258,7 @@ public class LineSearch {
     public double getValueAtCurr() {
       return valueAtCurr;
     }
+
     public void setValueAtCurr(double valueAtCurr) {
       this.valueAtCurr = valueAtCurr;
     }
@@ -263,6 +266,7 @@ public class LineSearch {
     public double getValueAtNext() {
       return valueAtNext;
     }
+
     public void setValueAtNext(double valueAtNext) {
       this.valueAtNext = valueAtNext;
     }
@@ -270,6 +274,7 @@ public class LineSearch {
     public double[] getGradAtCurr() {
       return gradAtCurr;
     }
+
     public void setGradAtCurr(double[] gradAtCurr) {
       this.gradAtCurr = gradAtCurr;
     }
@@ -277,6 +282,7 @@ public class LineSearch {
     public double[] getGradAtNext() {
       return gradAtNext;
     }
+
     public void setGradAtNext(double[] gradAtNext) {
       this.gradAtNext = gradAtNext;
     }
@@ -284,6 +290,7 @@ public class LineSearch {
     public double[] getPseudoGradAtNext() {
       return pseudoGradAtNext;
     }
+
     public void setPseudoGradAtNext(double[] pseudoGradAtNext) {
       this.pseudoGradAtNext = pseudoGradAtNext;
     }
@@ -291,6 +298,7 @@ public class LineSearch {
     public double[] getCurrPoint() {
       return currPoint;
     }
+
     public void setCurrPoint(double[] currPoint) {
       this.currPoint = currPoint;
     }
@@ -298,6 +306,7 @@ public class LineSearch {
     public double[] getNextPoint() {
       return nextPoint;
     }
+
     public void setNextPoint(double[] nextPoint) {
       this.nextPoint = nextPoint;
     }
@@ -305,6 +314,7 @@ public class LineSearch {
     public double[] getSignVector() {
       return signVector;
     }
+
     public void setSignVector(double[] signVector) {
       this.signVector = signVector;
     }
@@ -312,12 +322,13 @@ public class LineSearch {
     public int getFctEvalCount() {
       return fctEvalCount;
     }
+
     public void setFctEvalCount(int fctEvalCount) {
       this.fctEvalCount = fctEvalCount;
     }
 
     /**
-     * Initial linear search object
+     * Initial linear search object.
      */
     public static LineSearchResult getInitialObject(
         double valueAtX,
@@ -328,7 +339,7 @@ public class LineSearch {
     }
 
     /**
-     * Initial linear search object for L1-regularization
+     * Initial linear search object for L1-regularization.
      */
     public static LineSearchResult getInitialObjectForL1(
         double valueAtX,
@@ -345,8 +356,7 @@ public class LineSearch {
         double[] pseudoGradAtX,
         double[] x,
         double[] signX,
-        int fctEvalCount)
-    {
+        int fctEvalCount) {
       return new LineSearchResult(0.0, 0.0, valueAtX, new double[x.length], gradAtX,
           pseudoGradAtX, new double[x.length], x, signX, fctEvalCount);
     }

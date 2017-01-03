@@ -42,7 +42,7 @@ public class SDEventStreamTest {
         new Span(0, 15), new Span(16, 29));
 
     ObjectStream<SentenceSample> sampleStream =
-      ObjectStreamUtils.createObjectStream(sample);
+        ObjectStreamUtils.createObjectStream(sample);
 
     Factory factory = new Factory();
 

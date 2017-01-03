@@ -64,8 +64,8 @@ public class NameFinderMETest {
     String encoding = "ISO-8859-1";
 
     ObjectStream<NameSample> sampleStream =
-          new NameSampleDataStream(
-          new PlainTextByLineStream(new MockInputStreamFactory(in), encoding));
+        new NameSampleDataStream(
+            new PlainTextByLineStream(new MockInputStreamFactory(in), encoding));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -79,15 +79,15 @@ public class NameFinderMETest {
     // now test if it can detect the sample sentences
 
     String sentence[] = {"Alisa",
-    		"appreciated",
-    		"the",
-    		"hint",
-    		"and",
-    		"enjoyed",
-    		"a",
-    		"delicious",
-    		"traditional",
-    		"meal."};
+        "appreciated",
+        "the",
+        "hint",
+        "and",
+        "enjoyed",
+        "a",
+        "delicious",
+        "traditional",
+        "meal."};
 
     Span names[] = nameFinder.find(sentence);
 
@@ -126,7 +126,7 @@ public class NameFinderMETest {
     String encoding = "ISO-8859-1";
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-       new PlainTextByLineStream(new MockInputStreamFactory(in), encoding));
+        new PlainTextByLineStream(new MockInputStreamFactory(in), encoding));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -173,7 +173,7 @@ public class NameFinderMETest {
         "opennlp/tools/namefind/OnlyWithNames.train");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-       new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -187,7 +187,7 @@ public class NameFinderMETest {
     // now test if it can detect the sample sentences
 
     String[] sentence = ("Neil Abercrombie Anibal Acevedo-Vila Gary Ackerman " +
-    		"Robert Aderholt Daniel Akaka Todd Akin Lamar Alexander Rodney Alexander").split("\\s+");
+        "Robert Aderholt Daniel Akaka Todd Akin Lamar Alexander Rodney Alexander").split("\\s+");
 
     Span[] names1 = nameFinder.find(sentence);
 
@@ -210,7 +210,7 @@ public class NameFinderMETest {
         "opennlp/tools/namefind/OnlyWithNamesWithTypes.train");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-       new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -224,7 +224,7 @@ public class NameFinderMETest {
     // now test if it can detect the sample sentences
 
     String[] sentence = ("Neil Abercrombie Anibal Acevedo-Vila Gary Ackerman " +
-    		"Robert Aderholt Daniel Akaka Todd Akin Lamar Alexander Rodney Alexander").split("\\s+");
+        "Robert Aderholt Daniel Akaka Todd Akin Lamar Alexander Rodney Alexander").split("\\s+");
 
     Span[] names1 = nameFinder.find(sentence);
 
@@ -273,14 +273,14 @@ public class NameFinderMETest {
   }
 
   private boolean hasOtherAsOutcome(TokenNameFinderModel nameFinderModel) {
-	  SequenceClassificationModel<String> model = nameFinderModel.getNameFinderSequenceModel();
-	  String[] outcomes = model.getOutcomes();
-	  for (int i = 0; i < outcomes.length; i++) {
+    SequenceClassificationModel<String> model = nameFinderModel.getNameFinderSequenceModel();
+    String[] outcomes = model.getOutcomes();
+    for (int i = 0; i < outcomes.length; i++) {
       if (outcomes[i].equals(NameFinderME.OTHER)) {
         return true;
       }
     }
-	  return false;
+    return false;
   }
 
   @Test
@@ -304,7 +304,7 @@ public class NameFinderMETest {
         "opennlp/tools/namefind/voa1.train");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-       new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));

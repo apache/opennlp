@@ -41,7 +41,7 @@ public class LemmatizerEvaluatorTest {
    * Checks the evaluator results against the results got using the conlleval,
    * available at http://www.cnts.ua.ac.be/conll2000/chunking/output.html but
    * containing lemmas instead of chunks.
-   * 
+   *
    * @throws IOException
    */
   @Test

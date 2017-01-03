@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 public class PerformanceMonitor {
 
   private ScheduledExecutorService scheduler =
-    Executors.newScheduledThreadPool(1);
+      Executors.newScheduledThreadPool(1);
 
   private final String unit;
 
@@ -128,7 +128,7 @@ public class PerformanceMonitor {
       }
     };
 
-   beeperHandle = scheduler.scheduleAtFixedRate(beeper, 1, 1, TimeUnit.SECONDS);
+    beeperHandle = scheduler.scheduleAtFixedRate(beeper, 1, 1, TimeUnit.SECONDS);
   }
 
   public void stopAndPrintFinalResult() {
@@ -157,7 +157,7 @@ public class PerformanceMonitor {
     out.println();
     out.println();
 
-    out.printf("Average: %.1f " + unit +"/s %n", average);
+    out.printf("Average: %.1f " + unit + "/s %n", average);
     out.println("Total: " + counter + " " + unit);
     out.println("Runtime: " + timePassed / 1000d + "s");
   }

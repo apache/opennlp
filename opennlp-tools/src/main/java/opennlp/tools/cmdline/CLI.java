@@ -123,7 +123,7 @@ public final class CLI {
     tools.add(new POSTaggerEvaluatorTool());
     tools.add(new POSTaggerCrossValidatorTool());
     tools.add(new POSTaggerConverterTool());
-    
+
     //Lemmatizer
     tools.add(new LemmatizerMETool());
     tools.add(new LemmatizerTrainerTool());
@@ -161,7 +161,7 @@ public final class CLI {
   public static Set<String> getToolNames() {
     return toolLookupMap.keySet();
   }
-  
+
   /**
    * @return a read only map with tool names and instances
    */
@@ -205,7 +205,7 @@ public final class CLI {
       System.exit(0);
     }
 
-    String toolArguments[] = new String[args.length -1];
+    String toolArguments[] = new String[args.length - 1];
     System.arraycopy(args, 1, toolArguments, 0, toolArguments.length);
 
     String toolName = args[0];
@@ -226,13 +226,13 @@ public final class CLI {
 
       if ((0 == toolArguments.length && tool.hasParams()) ||
           0 < toolArguments.length && "help".equals(toolArguments[0])) {
-          if (tool instanceof TypedCmdLineTool) {
-            System.out.println(((TypedCmdLineTool) tool).getHelp(formatName));
-          } else if (tool instanceof BasicCmdLineTool) {
-            System.out.println(tool.getHelp());
-          }
+        if (tool instanceof TypedCmdLineTool) {
+          System.out.println(((TypedCmdLineTool) tool).getHelp(formatName));
+        } else if (tool instanceof BasicCmdLineTool) {
+          System.out.println(tool.getHelp());
+        }
 
-          System.exit(0);
+        System.exit(0);
       }
 
       if (tool instanceof TypedCmdLineTool) {

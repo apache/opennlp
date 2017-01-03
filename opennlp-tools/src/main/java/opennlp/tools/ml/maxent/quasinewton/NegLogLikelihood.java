@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package opennlp.tools.ml.maxent.quasinewton;
 
 import java.util.Arrays;
@@ -94,7 +95,7 @@ public class NegLogLikelihood implements Function {
         tempSums[oi] = 0;
         for (ai = 0; ai < contexts[ci].length; ai++) {
           vectorIndex = indexOf(oi, contexts[ci][ai]);
-          predValue = values != null? values[ci][ai] : 1.0;
+          predValue = values != null ? values[ci][ai] : 1.0;
           tempSums[oi] += predValue * x[vectorIndex];
         }
       }
@@ -129,7 +130,7 @@ public class NegLogLikelihood implements Function {
         expectation[oi] = 0;
         for (ai = 0; ai < contexts[ci].length; ai++) {
           vectorIndex = indexOf(oi, contexts[ci][ai]);
-          predValue = values != null? values[ci][ai] : 1.0;
+          predValue = values != null ? values[ci][ai] : 1.0;
           expectation[oi] += predValue * x[vectorIndex];
         }
       }
@@ -141,10 +142,10 @@ public class NegLogLikelihood implements Function {
       }
 
       for (oi = 0; oi < numOutcomes; oi++) {
-        empirical = outcomeList[ci] == oi? 1 : 0;
+        empirical = outcomeList[ci] == oi ? 1 : 0;
         for (ai = 0; ai < contexts[ci].length; ai++) {
           vectorIndex = indexOf(oi, contexts[ci][ai]);
-          predValue = values != null? values[ci][ai] : 1.0;
+          predValue = values != null ? values[ci][ai] : 1.0;
           gradient[vectorIndex] +=
               predValue * (expectation[oi] - empirical) * numTimesEventsSeen[ci];
         }

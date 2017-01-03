@@ -41,7 +41,7 @@ public final class TokenizerMETool extends BasicCmdLineTool {
       TokenizerModel model = new TokenizerModelLoader().load(new File(args[0]));
 
       CommandLineTokenizer tokenizer =
-        new CommandLineTokenizer(new opennlp.tools.tokenize.TokenizerME(model));
+          new CommandLineTokenizer(new opennlp.tools.tokenize.TokenizerME(model));
 
       tokenizer.process();
     }

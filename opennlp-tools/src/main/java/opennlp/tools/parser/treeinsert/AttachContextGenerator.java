@@ -40,9 +40,9 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     return getContext((Parse[]) parts[0], (Integer) parts[1],(List) parts[2], (Integer) parts[3]);
   }
 
-  private boolean containsPunct(Collection<Parse> puncts, String punct){
-    if (puncts != null){
-      for (Iterator<Parse> pi=puncts.iterator();pi.hasNext();) {
+  private boolean containsPunct(Collection<Parse> puncts, String punct) {
+    if (puncts != null) {
+      for (Iterator<Parse> pi = puncts.iterator(); pi.hasNext();) {
         Parse p = pi.next();
         if (p.getType().equals(punct)) {
           return true;
@@ -63,8 +63,8 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     List<String> features = new ArrayList<>(100);
     Parse fn = rightFrontier.get(rfi);
     Parse fp = null;
-    if (rfi+1 < rightFrontier.size()) {
-      fp = rightFrontier.get(rfi+1);
+    if (rfi + 1 < rightFrontier.size()) {
+      fp = rightFrontier.get(rfi + 1);
     }
     Parse p_1 = null;
     if (rightFrontier.size() > 0) {
@@ -72,25 +72,25 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     }
     Parse p0 = constituents[index];
     Parse p1 = null;
-    if (index+1 < constituents.length) {
-      p1 = constituents[index+1];
+    if (index + 1 < constituents.length) {
+      p1 = constituents[index + 1];
     }
 
     Collection<Parse> punct_1fs = fn.getPreviousPunctuationSet();
     Collection<Parse> punct_1s = p0.getPreviousPunctuationSet();
     Collection<Parse> punct1s = p0.getNextPunctuationSet();
 
-    String consfp = cons(fp,-3);
-    String consf = cons(fn,-2);
-    String consp_1 = cons(p_1,-1);
-    String consp0 = cons(p0,0);
-    String consp1 = cons(p1,1);
+    String consfp = cons(fp, -3);
+    String consf = cons(fn, -2);
+    String consp_1 = cons(p_1, -1);
+    String consp0 = cons(p0, 0);
+    String consp1 = cons(p1, 1);
 
-    String consbofp = consbo(fp,-3);
-    String consbof = consbo(fn,-2);
-    String consbop_1 = consbo(p_1,-1);
-    String consbop0 = consbo(p0,0);
-    String consbop1 = consbo(p1,1);
+    String consbofp = consbo(fp, -3);
+    String consbof = consbo(fn, -2);
+    String consbop_1 = consbo(p_1, -1);
+    String consbop0 = consbo(p0, 0);
+    String consbop1 = consbo(p1, 1);
 
     Cons cfp = new Cons(consfp,consbofp,-3,true);
     Cons cf = new Cons(consf,consbof,-2,true);
@@ -116,12 +116,12 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     //productions
     String prod = production(fn,false);
     //String punctProd = production(fn,true,punctSet);
-    features.add("pn="+prod);
-    features.add("pd="+prod+","+p0.getType());
-    features.add("ps="+fn.getType()+"->"+fn.getType()+","+p0.getType());
+    features.add("pn=" + prod);
+    features.add("pd=" + prod + "," + p0.getType());
+    features.add("ps=" + fn.getType() + "->" + fn.getType() + "," + p0.getType());
     if (punct_1s != null) {
       StringBuilder punctBuf = new StringBuilder(5);
-      for (Iterator<Parse> pi=punct_1s.iterator();pi.hasNext();) {
+      for (Iterator<Parse> pi = punct_1s.iterator(); pi.hasNext();) {
         Parse punct = pi.next();
         punctBuf.append(punct.getType()).append(",");
       }
@@ -144,12 +144,12 @@ public class AttachContextGenerator extends AbstractContextGenerator {
       features.add("jn="+jn.getType());
     }
     */
-    int headDistance = (p0.getHeadIndex()-fn.getHeadIndex());
-    features.add("hd="+headDistance);
-    features.add("nd="+ rfi);
+    int headDistance = (p0.getHeadIndex() - fn.getHeadIndex());
+    features.add("hd=" + headDistance);
+    features.add("nd=" + rfi);
 
-    features.add("nd="+p0.getType()+"."+ rfi);
-    features.add("hd="+p0.getType()+"."+headDistance);
+    features.add("nd=" + p0.getType() + "." + rfi);
+    features.add("hd=" + p0.getType() + "." + headDistance);
     //features.add("fs="+rightFrontier.size());
     //paired punct features
     if (containsPunct(punct_1s,"''")) {

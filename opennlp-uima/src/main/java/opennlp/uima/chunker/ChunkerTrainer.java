@@ -110,10 +110,10 @@ public class ChunkerTrainer extends CasConsumer_ImplBase {
    * Initialize the current instance with the given type system.
    */
   public void typeSystemInit(TypeSystem typeSystem)
-        throws ResourceInitializationException {
+      throws ResourceInitializationException {
     String sentenceTypeName =
         CasConsumerUtil.getRequiredStringParameter(mContext,
-        UimaUtil.SENTENCE_TYPE_PARAMETER);
+            UimaUtil.SENTENCE_TYPE_PARAMETER);
 
     mSentenceType = CasConsumerUtil.getType(typeSystem, sentenceTypeName);
 
@@ -158,7 +158,7 @@ public class ChunkerTrainer extends CasConsumer_ImplBase {
     FSIndex<AnnotationFS> chunkIndex = tcas.getAnnotationIndex(mChunkType);
 
     ContainingConstraint containingConstraint =
-      new ContainingConstraint(sentence);
+        new ContainingConstraint(sentence);
 
     Iterator<AnnotationFS> chunkIterator = tcas.createFilteredIterator(
         chunkIndex.iterator(), containingConstraint);
@@ -176,7 +176,7 @@ public class ChunkerTrainer extends CasConsumer_ImplBase {
     FSIndex<AnnotationFS> tokenIndex = tcas.getAnnotationIndex(mTokenType);
 
     ContainingConstraint containingConstraint =
-      new ContainingConstraint(chunk);
+        new ContainingConstraint(chunk);
 
     Iterator<AnnotationFS> tokenIterator = tcas.createFilteredIterator(tokenIndex.iterator(),
         containingConstraint);

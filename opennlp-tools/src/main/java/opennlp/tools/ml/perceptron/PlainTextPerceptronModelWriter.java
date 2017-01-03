@@ -42,8 +42,8 @@ public class PlainTextPerceptronModelWriter extends PerceptronModelWriter {
    * @param model The PerceptronModel which is to be persisted.
    * @param f The File in which the model is to be persisted.
    */
-  public PlainTextPerceptronModelWriter (AbstractModel model, File f)
-  throws IOException {
+  public PlainTextPerceptronModelWriter(AbstractModel model, File f)
+      throws IOException {
 
     super(model);
     if (f.getName().endsWith(".gz")) {
@@ -62,27 +62,27 @@ public class PlainTextPerceptronModelWriter extends PerceptronModelWriter {
    * @param model The PerceptronModel which is to be persisted.
    * @param bw The BufferedWriter which will be used to persist the model.
    */
-  public PlainTextPerceptronModelWriter (AbstractModel model, BufferedWriter bw) {
+  public PlainTextPerceptronModelWriter(AbstractModel model, BufferedWriter bw) {
     super(model);
     output = bw;
   }
 
-  public void writeUTF (String s) throws java.io.IOException {
+  public void writeUTF(String s) throws java.io.IOException {
     output.write(s);
     output.newLine();
   }
 
-  public void writeInt (int i) throws java.io.IOException {
+  public void writeInt(int i) throws java.io.IOException {
     output.write(Integer.toString(i));
     output.newLine();
   }
 
-  public void writeDouble (double d) throws java.io.IOException {
+  public void writeDouble(double d) throws java.io.IOException {
     output.write(Double.toString(d));
     output.newLine();
   }
 
-  public void close () throws java.io.IOException {
+  public void close() throws java.io.IOException {
     output.flush();
     output.close();
   }

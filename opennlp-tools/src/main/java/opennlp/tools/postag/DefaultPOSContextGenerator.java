@@ -67,6 +67,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
       contextsCache = new Cache<>(cacheSize);
     }
   }
+
   protected static String[] getPrefixes(String lex) {
     String[] prefs = new String[PREFIX_LENGTH];
     for (int li = 0; li < PREFIX_LENGTH; li++) {
@@ -127,9 +128,9 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     else {
       prev = SB; // Sentence Beginning
     }
-    String cacheKey = index+tagprev+tagprevprev;
+    String cacheKey = index + tagprev + tagprevprev;
     if (contextsCache != null) {
-      if (wordsKey == tokens){
+      if (wordsKey == tokens) {
         String[] cachedContexts = contextsCache.get(cacheKey);
         if (cachedContexts != null) {
           return cachedContexts;
@@ -178,7 +179,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
       if (prevprev != null) {
         e.add("pp=" + prevprev);
         if (tagprevprev != null) {
-          e.add("t2=" + tagprevprev+","+tagprev);
+          e.add("t2=" + tagprevprev + "," + tagprev);
         }
       }
     }

@@ -56,7 +56,7 @@ public class PerceptronModel extends AbstractModel {
   public double[] eval(String[] context, float[] values,double[] outsums) {
     int[] scontexts = new int[context.length];
     java.util.Arrays.fill(outsums, 0);
-    for (int i=0; i<context.length; i++) {
+    for (int i = 0; i < context.length; i++) {
       Integer ci = pmap.get(context[i]);
       scontexts[i] = ci == null ? -1 : ci;
     }
@@ -98,7 +98,7 @@ public class PerceptronModel extends AbstractModel {
 
       double normal = 0.0;
       for (int oid = 0; oid < numOutcomes; oid++) {
-        prior[oid] = Math.exp(prior[oid]/maxPrior);
+        prior[oid] = Math.exp(prior[oid] / maxPrior);
         normal += prior[oid];
       }
 
@@ -119,8 +119,8 @@ public class PerceptronModel extends AbstractModel {
     for (String line = in.readLine(); line != null; line = in.readLine()) {
       String[] context = line.split(" ");
       double[] dist = m.eval(context);
-      for (int oi=0;oi<dist.length;oi++) {
-        System.out.print("["+m.getOutcome(oi)+" "+df.format(dist[oi])+"] ");
+      for (int oi = 0;oi < dist.length; oi++) {
+        System.out.print("[" + m.getOutcome(oi) + " " + df.format(dist[oi]) + "] ");
       }
       System.out.println();
     }

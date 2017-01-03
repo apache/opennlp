@@ -144,9 +144,9 @@ public class Normalizer extends CasAnnotator_ImplBase {
     }
   }
 
-    /**
-     * Initializes the type system.
-     */
+  /**
+   * Initializes the type system.
+   */
   public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
 

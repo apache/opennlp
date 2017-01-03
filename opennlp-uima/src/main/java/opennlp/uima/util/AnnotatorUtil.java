@@ -120,18 +120,17 @@ public final class AnnotatorUtil {
   }
 
   public static Feature getRequiredFeatureParameter(UimaContext context, Type type,
-		  String featureNameParameter)
-  		throws AnalysisEngineProcessException {
+      String featureNameParameter) throws AnalysisEngineProcessException {
 
-	String featureName;
+    String featureName;
 
-	try {
-		featureName = getRequiredStringParameter(context, featureNameParameter);
-	} catch (ResourceInitializationException e) {
-		throw new OpenNlpAnnotatorProcessException(e);
-	}
+    try {
+      featureName = getRequiredStringParameter(context, featureNameParameter);
+    } catch (ResourceInitializationException e) {
+      throw new OpenNlpAnnotatorProcessException(e);
+    }
 
-	return getRequiredFeature(type, featureName);
+    return getRequiredFeature(type, featureName);
   }
 
   public static Feature getRequiredFeatureParameter(UimaContext context,
@@ -244,11 +243,11 @@ public final class AnnotatorUtil {
   }
 
   private static void checkForNull(Object value, String parameterName)
-    throws ResourceInitializationException {
+      throws ResourceInitializationException {
     if (value == null) {
       throw new ResourceInitializationException(
-    	  ExceptionMessages.MESSAGE_CATALOG,
-    	  ExceptionMessages.PARAMETER_NOT_FOUND,
+          ExceptionMessages.MESSAGE_CATALOG,
+          ExceptionMessages.PARAMETER_NOT_FOUND,
           new Object[] {parameterName});
     }
   }
@@ -273,7 +272,7 @@ public final class AnnotatorUtil {
   }
 
   public static Feature getOptionalFeature(Type type, String featureName, String rangeType)
-    throws AnalysisEngineProcessException{
+      throws AnalysisEngineProcessException {
 
     Feature feature = type.getFeatureByBaseName(featureName);
 

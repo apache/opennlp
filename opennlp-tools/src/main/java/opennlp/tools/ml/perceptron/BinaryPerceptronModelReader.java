@@ -45,7 +45,7 @@ public class BinaryPerceptronModelReader extends PerceptronModelReader {
    *
    * @param f The File in which the model is stored.
    */
-  public BinaryPerceptronModelReader (File f) throws IOException {
+  public BinaryPerceptronModelReader(File f) throws IOException {
     super(f);
   }
 }

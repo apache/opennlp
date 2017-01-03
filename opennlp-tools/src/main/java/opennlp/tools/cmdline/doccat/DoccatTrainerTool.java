@@ -56,7 +56,7 @@ public class DoccatTrainerTool
     super.run(format, args);
 
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
-    if(mlParams == null) {
+    if (mlParams == null) {
       mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 
@@ -91,14 +91,14 @@ public class DoccatTrainerTool
   }
 
   static Tokenizer createTokenizer(String tokenizer) {
-    if(tokenizer != null) {
+    if (tokenizer != null) {
       return ExtensionLoader.instantiateExtension(Tokenizer.class, tokenizer);
     }
     return WhitespaceTokenizer.INSTANCE;
   }
 
   static FeatureGenerator[] createFeatureGenerators(String featureGeneratorsNames) {
-    if(featureGeneratorsNames == null) {
+    if (featureGeneratorsNames == null) {
       return new FeatureGenerator[]{new BagOfWordsFeatureGenerator()};
     }
     String[] classes = featureGeneratorsNames.split(",");

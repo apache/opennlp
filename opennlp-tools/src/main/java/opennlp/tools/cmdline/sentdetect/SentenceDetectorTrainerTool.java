@@ -70,7 +70,7 @@ public final class SentenceDetectorTrainerTool
       }
     }
 
-    if(mlParams == null) {
+    if (mlParams == null) {
       mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 

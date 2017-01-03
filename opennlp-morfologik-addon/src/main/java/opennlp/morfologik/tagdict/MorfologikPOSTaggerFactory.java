@@ -50,26 +50,25 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
 
   public MorfologikPOSTaggerFactory() {
   }
-  
+
   public TagDictionary createTagDictionary(File dictionary) throws IOException {
-    
-    if(!dictionary.canRead()) {
+
+    if (!dictionary.canRead()) {
       throw new FileNotFoundException("Could not read dictionary: " + dictionary.getAbsolutePath());
     }
-    
+
     Path dictionaryMeta = DictionaryMetadata.getExpectedMetadataLocation(dictionary.toPath());
-    
-    if(dictionaryMeta == null || !dictionaryMeta.toFile().canRead()) {
+
+    if (dictionaryMeta == null || !dictionaryMeta.toFile().canRead()) {
       throw new FileNotFoundException("Could not read dictionary metadata: " + dictionaryMeta.getFileName());
     }
-    
+
     this.dictData = Files.readAllBytes(dictionary.toPath());
     this.dictInfo = Files.readAllBytes(dictionaryMeta);
-    
+
     return createMorfologikDictionary(dictData, dictInfo);
-    
   }
-  
+
 
   @Override
   protected void init(Dictionary ngramDictionary, TagDictionary posDictionary) {

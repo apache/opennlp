@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
- package opennlp.tools.namefind;
+package opennlp.tools.namefind;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -40,12 +40,12 @@ public class NameSampleSequenceStream implements SequenceStream {
   }
 
   public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen)
-  throws IOException {
+      throws IOException {
     this(psi, new DefaultNameContextGenerator(featureGen), true);
   }
 
   public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen, boolean useOutcomes)
-  throws IOException {
+      throws IOException {
     this(psi, new DefaultNameContextGenerator(featureGen), useOutcomes);
   }
 
@@ -61,7 +61,7 @@ public class NameSampleSequenceStream implements SequenceStream {
 
   public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg, boolean useOutcomes,
       SequenceCodec<String> seqCodec)
-      throws IOException {
+          throws IOException {
     this.psi = psi;
     this.useOutcomes = useOutcomes;
     this.pcg = pcg;
@@ -88,7 +88,7 @@ public class NameSampleSequenceStream implements SequenceStream {
       String tags[] = seqCodec.encode(sample.getNames(), sentence.length);
       Event[] events = new Event[sentence.length];
 
-      for (int i=0; i < sentence.length; i++) {
+      for (int i = 0; i < sentence.length; i++) {
 
         // it is safe to pass the tags as previous tags because
         // the context generator does not look for non predicted tags
@@ -103,10 +103,10 @@ public class NameSampleSequenceStream implements SequenceStream {
         events[i] = new Event(tags[i], context);
       }
       return new Sequence<>(events,sample);
-      }
-      else {
-        return null;
-      }
+    }
+    else {
+      return null;
+    }
   }
 
   @Override

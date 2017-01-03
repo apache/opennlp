@@ -44,7 +44,7 @@ public class TokenSampleStreamTest {
     String sampleTokens = "Slave to the wage";
 
     ObjectStream<TokenSample> sampleTokenStream = new TokenSampleStream(
-      ObjectStreamUtils.createObjectStream(sampleTokens));
+        ObjectStreamUtils.createObjectStream(sampleTokens));
 
     TokenSample tokenSample = sampleTokenStream.read();
 
@@ -69,7 +69,7 @@ public class TokenSampleStreamTest {
     String sampleTokens = "a<SPLIT>b<SPLIT>c<SPLIT>d";
 
     ObjectStream<TokenSample> sampleTokenStream = new TokenSampleStream(
-      ObjectStreamUtils.createObjectStream(sampleTokens));
+        ObjectStreamUtils.createObjectStream(sampleTokens));
 
     TokenSample tokenSample = sampleTokenStream.read();
 
@@ -102,7 +102,7 @@ public class TokenSampleStreamTest {
     String sampleTokens = "a b<SPLIT>c d<SPLIT>e";
 
     ObjectStream<TokenSample> sampleTokenStream = new TokenSampleStream(
-      ObjectStreamUtils.createObjectStream(sampleTokens));
+        ObjectStreamUtils.createObjectStream(sampleTokens));
 
     TokenSample tokenSample = sampleTokenStream.read();
 

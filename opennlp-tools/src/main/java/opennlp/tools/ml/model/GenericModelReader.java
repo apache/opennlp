@@ -31,7 +31,7 @@ public class GenericModelReader extends AbstractModelReader {
 
   private AbstractModelReader delegateModelReader;
 
-  public GenericModelReader (File f) throws IOException {
+  public GenericModelReader(File f) throws IOException {
     super(f);
   }
 

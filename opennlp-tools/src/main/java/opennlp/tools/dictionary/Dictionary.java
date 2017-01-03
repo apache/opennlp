@@ -68,7 +68,7 @@ public class Dictionary implements Iterable<StringList> {
         else {
           result = this.stringList.compareToIgnoreCase(other.getStringList());
         }
-       }
+      }
       else {
         result = false;
       }
@@ -139,9 +139,9 @@ public class Dictionary implements Iterable<StringList> {
    * @param tokens the new entry
    */
   public void put(StringList tokens) {
-      entrySet.add(new StringListWrapper(tokens));
-      minTokenCount = Math.min(minTokenCount, tokens.size());
-      maxTokenCount = Math.max(maxTokenCount, tokens.size());
+    entrySet.add(new StringListWrapper(tokens));
+    minTokenCount = Math.min(minTokenCount, tokens.size());
+    maxTokenCount = Math.max(maxTokenCount, tokens.size());
   }
 
   /**
@@ -149,7 +149,7 @@ public class Dictionary implements Iterable<StringList> {
    * @return minimum token count in the dictionary
    */
   public int getMinTokenCount() {
-      return minTokenCount;
+    return minTokenCount;
   }
 
   /**
@@ -157,7 +157,7 @@ public class Dictionary implements Iterable<StringList> {
    * @return maximum token count in the dictionary
    */
   public int getMaxTokenCount() {
-      return maxTokenCount;
+    return maxTokenCount;
   }
 
   /**
@@ -167,7 +167,7 @@ public class Dictionary implements Iterable<StringList> {
    * @return true if it contains the entry otherwise false
    */
   public boolean contains(StringList tokens) {
-      return entrySet.contains(new StringListWrapper(tokens));
+    return entrySet.contains(new StringListWrapper(tokens));
   }
 
   /**
@@ -176,7 +176,7 @@ public class Dictionary implements Iterable<StringList> {
    * @param tokens
    */
   public void remove(StringList tokens) {
-      entrySet.remove(new StringListWrapper(tokens));
+    entrySet.remove(new StringListWrapper(tokens));
   }
 
   /**
@@ -199,7 +199,8 @@ public class Dictionary implements Iterable<StringList> {
 
       public void remove() {
         entries.remove();
-      }};
+      }
+    };
   }
 
   /**
@@ -220,25 +221,25 @@ public class Dictionary implements Iterable<StringList> {
   public void serialize(OutputStream out) throws IOException {
 
     Iterator<Entry> entryIterator = new Iterator<Entry>()
-      {
-        private Iterator<StringList> dictionaryIterator = Dictionary.this.iterator();
+    {
+      private Iterator<StringList> dictionaryIterator = Dictionary.this.iterator();
 
-        public boolean hasNext() {
-          return dictionaryIterator.hasNext();
-        }
+      public boolean hasNext() {
+        return dictionaryIterator.hasNext();
+      }
 
-        public Entry next() {
+      public Entry next() {
 
-          StringList tokens = dictionaryIterator.next();
+        StringList tokens = dictionaryIterator.next();
 
-          return new Entry(tokens, new Attributes());
-        }
+        return new Entry(tokens, new Attributes());
+      }
 
-        public void remove() {
-          throw new UnsupportedOperationException();
-        }
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
 
-      };
+    };
 
     DictionarySerializer.serialize(out, entryIterator, isCaseSensitive);
   }

@@ -48,7 +48,7 @@ public class PlainTextByLineStreamTest {
     assertEquals("line2", stream.read());
     assertEquals("line3", stream.read());
     assertEquals("line4", stream.read());
-    
+
     stream.close();
   }
 }

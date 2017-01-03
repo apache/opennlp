@@ -34,7 +34,7 @@ public class MorfologikDictionayBuilder {
 
   /**
    * Helper to compile a morphological dictionary automaton.
-   * 
+   *
    * @param input
    *          The input file (base,inflected,tag). An associated metadata
    *          (*.info) file must exist.
@@ -49,7 +49,7 @@ public class MorfologikDictionayBuilder {
    * @param ignoreEmpty
    *          Ignore empty lines in the input.
    * @return the dictionary path
-   * 
+   *
    * @throws Exception
    */
   public Path build(Path input, boolean overwrite, boolean validate,
@@ -60,10 +60,10 @@ public class MorfologikDictionayBuilder {
         acceptBom, acceptCr, ignoreEmpty);
     compiler.call();
 
-    
+
     Path metadataPath = DictionaryMetadata
         .getExpectedMetadataLocation(input);
-    
+
     return metadataPath.resolveSibling(
         metadataPath.getFileName().toString().replaceAll(
             "\\." + DictionaryMetadata.METADATA_FILE_EXTENSION + "$", ".dict"));
@@ -72,13 +72,13 @@ public class MorfologikDictionayBuilder {
   /**
    * Helper to compile a morphological dictionary automaton using default
    * parameters.
-   * 
+   *
    * @param input
    *          The input file (base,inflected,tag). An associated metadata
    *          (*.info) file must exist.
-   *          
+   *
    *  @return the dictionary path
-   * 
+   *
    * @throws Exception
    */
   public Path build(Path input) throws Exception {

@@ -61,6 +61,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
   private static class HeadRule {
     public boolean leftToRight;
     public String[] tags;
+
     public HeadRule(boolean l2r, String[] tags) {
       leftToRight = l2r;
 
@@ -213,23 +214,23 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
   public void labelGaps(Stack<Constituent> stack) {
     if (stack.size() > 4) {
       //Constituent con0 = (Constituent) stack.get(stack.size()-1);
-      Constituent con1 = stack.get(stack.size()-2);
-      Constituent con2 = stack.get(stack.size()-3);
-      Constituent con3 = stack.get(stack.size()-4);
-      Constituent con4 = stack.get(stack.size()-5);
+      Constituent con1 = stack.get(stack.size() - 2);
+      Constituent con2 = stack.get(stack.size() - 3);
+      Constituent con3 = stack.get(stack.size() - 4);
+      Constituent con4 = stack.get(stack.size() - 5);
       //System.err.println("con0="+con0.label+" con1="+con1.label+" con2="+con2.label+" con3="+con3.label+" con4="+con4.label);
       //subject extraction
       if (con1.getLabel().equals("NP") && con2.getLabel().equals("S") && con3.getLabel().equals("SBAR")) {
-        con1.setLabel(con1.getLabel()+"-G");
-        con2.setLabel(con2.getLabel()+"-G");
-        con3.setLabel(con3.getLabel()+"-G");
+        con1.setLabel(con1.getLabel() + "-G");
+        con2.setLabel(con2.getLabel() + "-G");
+        con3.setLabel(con3.getLabel() + "-G");
       }
       //object extraction
       else if (con1.getLabel().equals("NP") && con2.getLabel().equals("VP") && con3.getLabel().equals("S") && con4.getLabel().equals("SBAR")) {
-        con1.setLabel(con1.getLabel()+"-G");
-        con2.setLabel(con2.getLabel()+"-G");
-        con3.setLabel(con3.getLabel()+"-G");
-        con4.setLabel(con4.getLabel()+"-G");
+        con1.setLabel(con1.getLabel() + "-G");
+        con2.setLabel(con2.getLabel() + "-G");
+        con3.setLabel(con3.getLabel() + "-G");
+        con4.setLabel(con4.getLabel() + "-G");
       }
     }
   }

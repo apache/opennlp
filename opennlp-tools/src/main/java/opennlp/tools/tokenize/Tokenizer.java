@@ -45,21 +45,21 @@ import opennlp.tools.util.Span;
  */
 public interface Tokenizer {
 
-    /**
-     * Splits a string into its atomic parts
-     *
-     * @param s The string to be tokenized.
-     * @return  The String[] with the individual tokens as the array
-     *          elements.
-     */
-    String[] tokenize(String s);
+  /**
+   * Splits a string into its atomic parts
+   *
+   * @param s The string to be tokenized.
+   * @return  The String[] with the individual tokens as the array
+   *          elements.
+   */
+  String[] tokenize(String s);
 
-    /**
-     * Finds the boundaries of atomic parts in a string.
-     *
-     * @param s The string to be tokenized.
-     * @return The Span[] with the spans (offsets into s) for each
-     * token as the individuals array elements.
-     */
-    Span[] tokenizePos(String s);
+  /**
+   * Finds the boundaries of atomic parts in a string.
+   *
+   * @param s The string to be tokenized.
+   * @return The Span[] with the spans (offsets into s) for each
+   * token as the individuals array elements.
+   */
+  Span[] tokenizePos(String s);
 }

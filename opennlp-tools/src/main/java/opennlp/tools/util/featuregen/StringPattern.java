@@ -160,24 +160,24 @@ public class StringPattern {
         }
 
         switch (ch) {
-        case ',':
-          pattern |= CONTAINS_COMMA;
-          break;
+          case ',':
+            pattern |= CONTAINS_COMMA;
+            break;
 
-        case '.':
-          pattern |= CONTAINS_PERIOD;
-          break;
+          case '.':
+            pattern |= CONTAINS_PERIOD;
+            break;
 
-        case '/':
-          pattern |= CONTAINS_SLASH;
-          break;
+          case '/':
+            pattern |= CONTAINS_SLASH;
+            break;
 
-        case '-':
-          pattern |= CONTAINS_HYPHEN;
-          break;
+          case '-':
+            pattern |= CONTAINS_HYPHEN;
+            break;
 
-        default:
-          break;
+          default:
+            break;
         }
       }
     }

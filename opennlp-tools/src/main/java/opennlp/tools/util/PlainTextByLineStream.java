@@ -59,7 +59,7 @@ public class PlainTextByLineStream implements ObjectStream<String> {
       in = new BufferedReader(new InputStreamReader(inputStreamFactory.createInputStream(), encoding));
     }
     else if (channel == null) {
-        in.reset();
+      in.reset();
     }
     else {
       channel.position(0);
@@ -69,11 +69,11 @@ public class PlainTextByLineStream implements ObjectStream<String> {
 
   public void close() throws IOException {
 
-      if (in != null && channel == null) {
-        in.close();
-      }
-      else if (channel != null) {
-       channel.close();
-      }
+    if (in != null && channel == null) {
+      in.close();
+    }
+    else if (channel != null) {
+      channel.close();
+    }
   }
 }

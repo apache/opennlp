@@ -19,7 +19,7 @@ package opennlp.tools.chunker;
 
 import opennlp.tools.util.SequenceValidator;
 
-public class DefaultChunkerSequenceValidator implements SequenceValidator<String>{
+public class DefaultChunkerSequenceValidator implements SequenceValidator<String> {
 
   private boolean validOutcome(String outcome, String prevOutcome) {
     if (outcome.startsWith("I-")) {
@@ -41,7 +41,7 @@ public class DefaultChunkerSequenceValidator implements SequenceValidator<String
   protected boolean validOutcome(String outcome, String[] sequence) {
     String prevOutcome = null;
     if (sequence.length > 0) {
-      prevOutcome = sequence[sequence.length-1];
+      prevOutcome = sequence[sequence.length - 1];
     }
     return validOutcome(outcome,prevOutcome);
   }

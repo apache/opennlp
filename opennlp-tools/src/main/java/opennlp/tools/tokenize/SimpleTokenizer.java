@@ -38,7 +38,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
 
   /**
    * @deprecated Use INSTANCE field instead to obtain an instance, constructor
-   * will be made private in the future.
+   *     will be made private in the future.
    */
   @Deprecated
   public SimpleTokenizer() {
@@ -112,8 +112,8 @@ public class SimpleTokenizer extends AbstractTokenizer {
         if (tokens.length > 0) {
           System.out.print(tokens[0]);
         }
-        for (int ti=1,tn=tokens.length;ti<tn;ti++) {
-          System.out.print(" "+tokens[ti]);
+        for (int ti = 1,tn = tokens.length; ti < tn; ti++) {
+          System.out.print(" " + tokens[ti]);
         }
         System.out.println();
       }

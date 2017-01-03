@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package opennlp.tools.ml.maxent.quasinewton;
 
 import static org.junit.Assert.assertEquals;
@@ -182,7 +183,7 @@ public class LineSearchTest {
 
     public double[] gradientAt(double[] x) {
       // 2(x-2)
-      return new double[] {2 * (x[0]- 2)};
+      return new double[] {2 * (x[0] - 2)};
     }
 
     public int getDimension() {

@@ -31,11 +31,11 @@ public class MockInputStreamFactory implements InputStreamFactory {
   public MockInputStreamFactory(InputStream is) throws FileNotFoundException {
     this.is = is;
   }
-  
+
   public MockInputStreamFactory(String str) throws FileNotFoundException {
     this.is = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
   }
-  
+
   public MockInputStreamFactory(String str, Charset charset) throws FileNotFoundException {
     this.is = new ByteArrayInputStream(str.getBytes(charset));
   }

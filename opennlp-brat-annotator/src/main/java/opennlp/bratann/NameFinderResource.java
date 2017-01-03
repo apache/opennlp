@@ -72,9 +72,9 @@ public class NameFinderResource {
     int indexCounter = 0;
 
     for (int i = 0; i < sentenceSpans.length; i++) {
-      
+
       String sentenceText = sentenceSpans[i].getCoveredText(text).toString();
-      
+
       // offset of sentence gets lost here!
       Span tokenSpans[] = tokenizer
           .tokenizePos(sentenceText);
@@ -85,7 +85,7 @@ public class NameFinderResource {
         Span names[] = nameFinder.find(tokens);
 
         for (Span name : names) {
-          
+
           int beginOffset = tokenSpans[name.getStart()].getStart()
               + sentenceSpans[i].getStart();
           int endOffset = tokenSpans[name.getEnd() - 1].getEnd()

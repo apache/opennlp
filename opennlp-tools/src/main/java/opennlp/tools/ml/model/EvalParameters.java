@@ -19,13 +19,13 @@
 
 package opennlp.tools.ml.model;
 
- /**
+/**
  * This class encapsulates the varibales used in producing probabilities from a model
  * and facilitaes passing these variables to the eval method.
  */
 public class EvalParameters {
 
- /** Mapping between outcomes and paramater values for each context.
+  /** Mapping between outcomes and paramater values for each context.
    * The integer representation of the context can be found using <code>pmap</code>.*/
   private Context[] params;
   /** The number of outcomes being predicted. */

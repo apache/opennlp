@@ -49,12 +49,12 @@ public class SentenceDetectorME implements SentenceDetector {
   /**
    * Constant indicates a sentence split.
    */
-  public static final String SPLIT ="s";
+  public static final String SPLIT = "s";
 
   /**
    * Constant indicates no sentence split.
    */
-  public static final String NO_SPLIT ="n";
+  public static final String NO_SPLIT = "n";
 
   /**
    * The maximum entropy model to use to evaluate contexts.
@@ -113,7 +113,7 @@ public class SentenceDetectorME implements SentenceDetector {
   }
 
   private static Set<String> getAbbreviations(Dictionary abbreviations) {
-    if(abbreviations == null) {
+    if (abbreviations == null) {
       return Collections.<String>emptySet();
     }
     return abbreviations.asStringSet();
@@ -177,7 +177,7 @@ public class SentenceDetectorME implements SentenceDetector {
       if (i + 1 < end && enders.get(i + 1) < fws) {
         continue;
       }
-      if(positions.size() > 0 && cint < positions.get(positions.size()-1)) continue;
+      if (positions.size() > 0 && cint < positions.get(positions.size() - 1)) continue;
 
       double[] probs = model.eval(cgen.getContext(sb, cint));
       String bestOutcome = model.getBestOutcome(probs);
@@ -205,37 +205,37 @@ public class SentenceDetectorME implements SentenceDetector {
     // string does not contain sentence end positions
     if (starts.length == 0) {
 
-        // remove leading and trailing whitespace
-        int start = 0;
-        int end = s.length();
+      // remove leading and trailing whitespace
+      int start = 0;
+      int end = s.length();
 
-        while (start < s.length() && StringUtil.isWhitespace(s.charAt(start)))
-          start++;
+      while (start < s.length() && StringUtil.isWhitespace(s.charAt(start)))
+        start++;
 
-        while (end > 0 && StringUtil.isWhitespace(s.charAt(end - 1)))
-          end--;
+      while (end > 0 && StringUtil.isWhitespace(s.charAt(end - 1)))
+        end--;
 
-        if (end - start > 0) {
-          sentProbs.add(1d);
-          return new Span[] {new Span(start, end)};
-        }
-        else
-          return new Span[0];
+      if (end - start > 0) {
+        sentProbs.add(1d);
+        return new Span[] {new Span(start, end)};
+      }
+      else
+        return new Span[0];
     }
 
     // Convert the sentence end indexes to spans
 
     boolean leftover = starts[starts.length - 1] != s.length();
-    Span[] spans = new Span[leftover? starts.length + 1 : starts.length];
+    Span[] spans = new Span[leftover ? starts.length + 1 : starts.length];
 
-    for (int si=0; si < starts.length; si++) {
+    for (int si = 0; si < starts.length; si++) {
       int start;
 
-      if (si==0) {
+      if (si == 0) {
         start = 0;
       }
       else {
-        start = starts[si-1];
+        start = starts[si - 1];
       }
 
       // A span might contain only white spaces, in this case the length of
@@ -250,9 +250,9 @@ public class SentenceDetectorME implements SentenceDetector {
     }
 
     if (leftover) {
-      Span span = new Span(starts[starts.length-1],s.length()).trim(s);
+      Span span = new Span(starts[starts.length - 1], s.length()).trim(s);
       if (span.length() > 0) {
-        spans[spans.length-1] = span;
+        spans[spans.length - 1] = span;
         sentProbs.add(1d);
       }
     }
@@ -261,7 +261,7 @@ public class SentenceDetectorME implements SentenceDetector {
      */
     for (int i = 0; i < spans.length; i++) {
       double prob = sentProbs.get(i);
-      spans[i]= new Span(spans[i], prob);
+      spans[i] = new Span(spans[i], prob);
 
     }
 
@@ -273,8 +273,7 @@ public class SentenceDetectorME implements SentenceDetector {
    * calls to sentDetect().
    *
    * @return probability for each sentence returned for the most recent
-   * call to sentDetect.  If not applicable an empty array is
-   * returned.
+   *     call to sentDetect.  If not applicable an empty array is returned.
    */
   public double[] getSentenceProbabilities() {
     double[] sentProbArray = new double[sentProbs.size()];

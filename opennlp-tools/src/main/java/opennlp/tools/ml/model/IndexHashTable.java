@@ -33,8 +33,8 @@ package opennlp.tools.ml.model;
  * The table is thread safe and can concurrently accessed by multiple threads,
  * thread safety is achieved through immutability. Though its not strictly immutable
  * which means, that the table must still be safely published to other threads.
- * 
- * @deprecated use java.util.HashMap instead 
+ *
+ * @deprecated use java.util.HashMap instead
  */
 @Deprecated
 public class IndexHashTable<T> {

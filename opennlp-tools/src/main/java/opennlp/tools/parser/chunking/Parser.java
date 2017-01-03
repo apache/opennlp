@@ -94,7 +94,7 @@ public class Parser extends AbstractBottomUpParser {
    * @param headRules The head rules for head word perculation.
    * @param beamSize The number of different parses kept during parsing.
    * @param advancePercentage The minimal amount of probability mass which advanced outcomes must represent.
-   * Only outcomes which contribute to the top "advancePercentage" will be explored.
+   *     Only outcomes which contribute to the top "advancePercentage" will be explored.
    */
   private Parser(MaxentModel buildModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
     super(tagger, chunker, headRules, beamSize, advancePercentage);
@@ -143,7 +143,7 @@ public class Parser extends AbstractBottomUpParser {
     /* The index of the node which will be labeled in this iteration of advancing the parse. */
     int advanceNodeIndex;
     /* The node which will be labeled in this iteration of advancing the parse. */
-    Parse advanceNode=null;
+    Parse advanceNode = null;
     Parse[] originalChildren = p.getChildren();
     Parse[] children = collapsePunctuation(originalChildren,punctSet);
     int numNodes = children.length;
@@ -225,7 +225,7 @@ public class Parser extends AbstractBottomUpParser {
           flat &= cons[ci].isPosTag();
         }
         if (!flat) { //flat chunks are done by chunker
-          if (lastStartIndex == 0 && advanceNodeIndex == numNodes-1) { //check for top node to include end and begining punctuation
+          if (lastStartIndex == 0 && advanceNodeIndex == numNodes - 1) { //check for top node to include end and begining punctuation
             //System.err.println("ParserME.advanceParses: reducing entire span: "+new Span(lastStartNode.getSpan().getStart(), advanceNode.getSpan().getEnd())+" "+lastStartType+" "+java.util.Arrays.asList(children));
             newParse2.insert(new Parse(p.getText(), p.getSpan(), lastStartType, cprobs[1], headRules.getHead(cons, lastStartType)));
           }
@@ -250,7 +250,7 @@ public class Parser extends AbstractBottomUpParser {
 
   /**
    * @deprecated Please do not use anymore, use the ObjectStream train methods instead! This method
-   * will be removed soon.
+   *     will be removed soon.
    */
   @Deprecated
   public static AbstractModel train(ObjectStream<Event> es, int iterations, int cut) throws java.io.IOException {

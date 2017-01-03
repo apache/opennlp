@@ -139,7 +139,7 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
       if ("simple".equals(tokenizerName)) {
         tokenizer = SimpleTokenizer.INSTANCE;
       }
-      else if("whitespace".equals(tokenizerName)) {
+      else if ("whitespace".equals(tokenizerName)) {
         tokenizer = WhitespaceTokenizer.INSTANCE;
       }
       else {

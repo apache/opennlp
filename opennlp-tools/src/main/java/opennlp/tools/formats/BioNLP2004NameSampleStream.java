@@ -133,7 +133,7 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
           }
 
           beginIndex = i;
-          endIndex = i +1;
+          endIndex = i + 1;
         }
         else if (tag.startsWith("I-")) {
           endIndex++;

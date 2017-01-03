@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package opennlp.tools.ml.maxent.quasinewton;
 
 import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
@@ -165,6 +166,7 @@ public class QNMinimizer {
   public Evaluator getEvaluator() {
     return evaluator;
   }
+
   public void setEvaluator(Evaluator evaluator) {
     this.evaluator = evaluator;
   }
@@ -218,9 +220,9 @@ public class QNMinimizer {
     long startTime = System.currentTimeMillis();
 
     // Initial step size for the 1st iteration
-    double initialStepSize = l1Cost > 0?
+    double initialStepSize = l1Cost > 0 ?
         ArrayMath.invL2norm(lsr.getPseudoGradAtNext()) :
-        ArrayMath.invL2norm(lsr.getGradAtNext());
+          ArrayMath.invL2norm(lsr.getGradAtNext());
 
     for (int iter = 1; iter <= iterations; iter++) {
       // Find direction
@@ -260,12 +262,11 @@ public class QNMinimizer {
           display(iter + ":  ");
 
         if (evaluator != null) {
-          display("\t" + lsr.getValueAtNext()
-                + "\t" + lsr.getFuncChangeRate()
-                + "\t" + evaluator.evaluate(lsr.getNextPoint()) + "\n");
+          display("\t" + lsr.getValueAtNext() + "\t" + lsr.getFuncChangeRate()
+              + "\t" + evaluator.evaluate(lsr.getNextPoint()) + "\n");
         } else {
           display("\t " + lsr.getValueAtNext() +
-                  "\t" + lsr.getFuncChangeRate() + "\n");
+              "\t" + lsr.getFuncChangeRate() + "\n");
         }
       }
       if (isConverged(lsr))
@@ -370,13 +371,13 @@ public class QNMinimizer {
     if (lsr.getFuncChangeRate() < CONVERGE_TOLERANCE) {
       if (verbose)
         display("Function change rate is smaller than the threshold "
-                  + CONVERGE_TOLERANCE + ".\nTraining will stop.\n\n");
+            + CONVERGE_TOLERANCE + ".\nTraining will stop.\n\n");
       return true;
     }
 
     // Check gradient's norm using the criteria: ||g(x)|| / max(1, ||x||) < threshold
     double xNorm = Math.max(1, ArrayMath.l2norm(lsr.getNextPoint()));
-    double gradNorm = l1Cost > 0?
+    double gradNorm = l1Cost > 0 ?
         ArrayMath.l2norm(lsr.getPseudoGradAtNext()) : ArrayMath.l2norm(lsr.getGradAtNext());
     if (gradNorm / xNorm < REL_GRAD_NORM_TOL) {
       if (verbose)

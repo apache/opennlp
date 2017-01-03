@@ -48,10 +48,10 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
     List<String> tags = new ArrayList<String>();
     List<String> preds = new ArrayList<String>();
 
-    for (String line = samples.read(); line !=null && !line.equals(""); line = samples.read()) {
+    for (String line = samples.read(); line != null && !line.equals(""); line = samples.read()) {
       String[] parts = line.split(" ");
       if (parts.length != 3) {
-        System.err.println("Skipping corrupt line: "+line);
+        System.err.println("Skipping corrupt line: " + line);
       }
       else {
         toks.add(parts[0]);

@@ -36,10 +36,10 @@ public class ComparablePredicate implements Comparable<ComparablePredicate> {
   }
 
   public int compareTo(ComparablePredicate cp) {
-    int smallerLength = outcomes.length > cp.outcomes.length?
+    int smallerLength = outcomes.length > cp.outcomes.length ?
         cp.outcomes.length : outcomes.length;
 
-    for (int i=0; i<smallerLength; i++) {
+    for (int i = 0; i < smallerLength; i++) {
       if (outcomes[i] < cp.outcomes[i]) return -1;
       else if (outcomes[i] > cp.outcomes[i]) return 1;
     }

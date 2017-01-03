@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package opennlp.tools.ml.maxent.quasinewton;
 
 import java.io.IOException;
@@ -84,8 +85,8 @@ public class QNTrainer extends AbstractEventTrainer {
   // For testing purpose
   public QNTrainer(int m, int maxFctEval, boolean verbose) {
     this.verbose    = verbose;
-    this.m          = m < 0? M_DEFAULT: m;
-    this.maxFctEval = maxFctEval < 0? MAX_FCT_EVAL_DEFAULT: maxFctEval;
+    this.m          = m < 0 ? M_DEFAULT : m;
+    this.maxFctEval = maxFctEval < 0 ? MAX_FCT_EVAL_DEFAULT : maxFctEval;
     this.threads    = THREADS_DEFAULT;
     this.l1Cost     = L1COST_DEFAULT;
     this.l2Cost     = L2COST_DEFAULT;
@@ -223,7 +224,7 @@ public class QNTrainer extends AbstractEventTrainer {
 
       for (int ei = 0; ei < contexts.length; ei++) {
         int[] context  = contexts[ei];
-        float[] value  = values == null? null: values[ei];
+        float[] value  = values == null ? null : values[ei];
 
         double[] probs = new double[nOutcomes];
         QNModel.eval(context, value, probs, nOutcomes, nPredLabels, parameters);

@@ -116,8 +116,8 @@ public class DocumentCategorizerTrainer extends CasConsumer_ImplBase {
       // add to event collection
 
       DocumentSample sample = new DocumentSample(
-	      categoryAnnotation.getStringValue(mCategoryFeature),
-	      cas.getDocumentText());
+          categoryAnnotation.getStringValue(mCategoryFeature),
+          cas.getDocumentText());
 
       documentSamples.add(sample);
     }

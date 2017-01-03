@@ -43,59 +43,59 @@ import opennlp.tools.ml.model.AbstractModelWriter;
  * </ul>
  */
 public class SuffixSensitivePerceptronModelWriter extends PerceptronModelWriter {
-    private final AbstractModelWriter suffixAppropriateWriter;
+  private final AbstractModelWriter suffixAppropriateWriter;
 
-    /**
-     * Constructor which takes a GISModel and a File and invokes the
-     * GISModelWriter appropriate for the suffix.
-     *
-     * @param model The GISModel which is to be persisted.
-     * @param f The File in which the model is to be stored.
-     */
-    public SuffixSensitivePerceptronModelWriter (AbstractModel model, File f)
-	throws IOException {
+  /**
+   * Constructor which takes a GISModel and a File and invokes the
+   * GISModelWriter appropriate for the suffix.
+   *
+   * @param model The GISModel which is to be persisted.
+   * @param f The File in which the model is to be stored.
+   */
+  public SuffixSensitivePerceptronModelWriter(AbstractModel model, File f)
+      throws IOException {
 
-	super (model);
+    super(model);
 
-	OutputStream output;
-	String filename = f.getName();
+    OutputStream output;
+    String filename = f.getName();
 
-	// handle the zipped/not zipped distinction
-	if (filename.endsWith(".gz")) {
-	    output = new GZIPOutputStream(new FileOutputStream(f));
-	    filename = filename.substring(0,filename.length()-3);
-	}
-	else {
-	    output = new DataOutputStream(new FileOutputStream(f));
-	}
-
-	// handle the different formats
-	if (filename.endsWith(".bin")) {
-	    suffixAppropriateWriter =
-		new BinaryPerceptronModelWriter(model,
-					 new DataOutputStream(output));
-	}
-	else { // default is ".txt"
-	    suffixAppropriateWriter =
-		new PlainTextPerceptronModelWriter(model,
-		    new BufferedWriter(new OutputStreamWriter(output)));
-	}
+    // handle the zipped/not zipped distinction
+    if (filename.endsWith(".gz")) {
+      output = new GZIPOutputStream(new FileOutputStream(f));
+      filename = filename.substring(0,filename.length() - 3);
+    }
+    else {
+      output = new DataOutputStream(new FileOutputStream(f));
     }
 
-    public void writeUTF (String s) throws java.io.IOException {
-      suffixAppropriateWriter.writeUTF(s);
+    // handle the different formats
+    if (filename.endsWith(".bin")) {
+      suffixAppropriateWriter =
+          new BinaryPerceptronModelWriter(model,
+              new DataOutputStream(output));
     }
+    else { // default is ".txt"
+      suffixAppropriateWriter =
+          new PlainTextPerceptronModelWriter(model,
+              new BufferedWriter(new OutputStreamWriter(output)));
+    }
+  }
 
-    public void writeInt (int i) throws java.io.IOException {
-      suffixAppropriateWriter.writeInt(i);
-    }
+  public void writeUTF(String s) throws java.io.IOException {
+    suffixAppropriateWriter.writeUTF(s);
+  }
 
-    public void writeDouble (double d) throws java.io.IOException {
-      suffixAppropriateWriter.writeDouble(d);
-    }
+  public void writeInt(int i) throws java.io.IOException {
+    suffixAppropriateWriter.writeInt(i);
+  }
 
-    public void close () throws java.io.IOException {
-      suffixAppropriateWriter.close();
-    }
+  public void writeDouble(double d) throws java.io.IOException {
+    suffixAppropriateWriter.writeDouble(d);
+  }
+
+  public void close() throws java.io.IOException {
+    suffixAppropriateWriter.close();
+  }
 
 }
