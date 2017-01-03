@@ -82,7 +82,7 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
           boolean start = true;
           String ctype = c.getType();
           Parse[] kids = c.getChildren();
-          for (int ti=0,tl=kids.length;ti<tl;ti++) {
+          for (int ti = 0, tl = kids.length; ti < tl; ti++) {
             Parse tok = kids[ti];
             toks.add(tok.getCoveredText());
             tags.add(tok.getType());

@@ -59,7 +59,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
   }
 
   public TokenNameFinderFactory(byte[] featureGeneratorBytes, final Map<String, Object> resources,
-                                SequenceCodec<String> seqCodec) {
+      SequenceCodec<String> seqCodec) {
     init(featureGeneratorBytes, resources, seqCodec);
   }
 
@@ -70,15 +70,15 @@ public class TokenNameFinderFactory extends BaseToolFactory {
   }
 
   private static byte[] loadDefaultFeatureGeneratorBytes() {
-    
+
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     try (InputStream in = TokenNameFinderFactory.class.getResourceAsStream(
         "/opennlp/tools/namefind/ner-default-features.xml")) {
-      
+
       if (in == null) {
         throw new IllegalStateException("Classpath must contain ner-default-features.xml file!");
       }
-      
+
       byte buf[] = new byte[1024];
       int len;
       while ((len = in.read(buf)) > 0) {
@@ -88,10 +88,10 @@ public class TokenNameFinderFactory extends BaseToolFactory {
     catch (IOException e) {
       throw new IllegalStateException("Failed reading from ner-default-features.xml file on classpath!");
     }
-    
+
     return bytes.toByteArray();
   }
-  
+
   protected SequenceCodec<String> getSequenceCodec() {
     return seqCodec;
   }
@@ -105,8 +105,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
   }
 
   public static TokenNameFinderFactory create(String subclassName, byte[] featureGeneratorBytes, final Map<String, Object> resources,
-      SequenceCodec<String> seqCodec)
-      throws InvalidFormatException {
+      SequenceCodec<String> seqCodec) throws InvalidFormatException {
     TokenNameFinderFactory theFactory;
     if (subclassName == null) {
       // will create the default factory
@@ -150,12 +149,12 @@ public class TokenNameFinderFactory extends BaseToolFactory {
 
     if (featureGenerator == null) {
       featureGenerator = new CachedFeatureGenerator(
-        new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
-        new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
-        new OutcomePriorFeatureGenerator(),
-        new PreviousMapFeatureGenerator(),
-        new BigramNameFeatureGenerator(),
-        new SentenceFeatureGenerator(true, false));
+          new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
+          new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
+          new OutcomePriorFeatureGenerator(),
+          new PreviousMapFeatureGenerator(),
+          new BigramNameFeatureGenerator(),
+          new SentenceFeatureGenerator(true, false));
     }
 
     return new DefaultNameContextGenerator(featureGenerator);
@@ -176,7 +175,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
       featureGeneratorBytes = artifactProvider.getArtifact(
           TokenNameFinderModel.GENERATOR_DESCRIPTOR_ENTRY_NAME);
     }
-    
+
     if (featureGeneratorBytes == null) {
       featureGeneratorBytes = loadDefaultFeatureGeneratorBytes();
     }

@@ -166,15 +166,15 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
     SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
             null, language, true, null, eos);
 
-  //  TrainingParameters mlParams = ModelUtil.createTrainingParameters(100, 5);
-     TrainingParameters mlParams = ModelUtil.createDefaultTrainingParameters();
+    // TrainingParameters mlParams = ModelUtil.createTrainingParameters(100, 5);
+    TrainingParameters mlParams = ModelUtil.createDefaultTrainingParameters();
     ObjectStream<SentenceSample> samples = ObjectStreamUtils.createObjectStream(sentenceSamples);
 
     Writer samplesOut;
 
     if (sampleTraceFile != null) {
-        samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
-        samples = new SampleTraceStream<>(samples, samplesOut);
+      samplesOut = new OutputStreamWriter(new FileOutputStream(sampleTraceFile), sampleTraceFileEncoding);
+      samples = new SampleTraceStream<>(samples, samplesOut);
     }
 
     SentenceModel sentenceModel = SentenceDetectorME.train(language, samples,

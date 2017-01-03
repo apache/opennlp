@@ -30,7 +30,7 @@ import org.junit.Test;
 /**
   *Tests for the {@link DictionaryNameFinder} class.
   */
-public class DictionaryNameFinderTest{
+public class DictionaryNameFinderTest {
 
   private Dictionary mDictionary = new Dictionary();
   private TokenNameFinder mNameFinder;
@@ -40,9 +40,7 @@ public class DictionaryNameFinderTest{
     StringList vanessa = new StringList(new String[]{"Vanessa"});
     mDictionary.put(vanessa);
 
-    StringList vanessaWilliams = new
-        StringList(new String[]{"Vanessa",
-        "Williams"});
+    StringList vanessaWilliams = new StringList(new String[]{"Vanessa", "Williams"});
     mDictionary.put(vanessaWilliams);
 
     StringList max = new StringList(new String[]{"Max"});

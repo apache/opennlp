@@ -106,7 +106,7 @@ public class DetokenizationDictionary {
     }
   }
 
-  public DetokenizationDictionary(InputStream in) throws IOException, InvalidFormatException{
+  public DetokenizationDictionary(InputStream in) throws IOException, InvalidFormatException {
 
     DictionarySerializer.create(in, new EntryInserter() {
       public void insert(Entry entry) throws InvalidFormatException {
@@ -116,7 +116,7 @@ public class DetokenizationDictionary {
         StringList word = entry.getTokens();
 
         if (word.size() != 1)
-          throw new InvalidFormatException("Each entry must have exactly one token! "+word);
+          throw new InvalidFormatException("Each entry must have exactly one token! " + word);
 
         // parse operation
         Operation operation = Operation.parse(operationString);
@@ -125,7 +125,8 @@ public class DetokenizationDictionary {
             throw new InvalidFormatException("Unknown operation type: " + operationString);
 
         operationTable.put(word.getToken(0), operation);
-      }});
+      }
+    });
   }
 
   DetokenizationDictionary.Operation getOperation(String token) {

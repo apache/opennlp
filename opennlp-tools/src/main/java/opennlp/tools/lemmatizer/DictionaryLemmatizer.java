@@ -41,9 +41,9 @@ public class DictionaryLemmatizer implements Lemmatizer {
 
   /**
    * Construct a hashmap from the input tab separated dictionary.
-   * 
+   *
    * The input file should have, for each line, word\tablemma\tabpostag
-   * 
+   *
    * @param dictionary
    *          the input dictionary via inputstream
    */
@@ -64,7 +64,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
 
   /**
    * Get the Map containing the dictionary.
-   * 
+   *
    * @return dictMap the Map
    */
   public Map<List<String>, String> getDictMap() {
@@ -73,7 +73,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
 
   /**
    * Get the dictionary keys (word and postag).
-   * 
+   *
    * @param word
    *          the surface form word
    * @param postag
@@ -89,7 +89,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
   public String[] lemmatize(final String[] tokens, final String[] postags) {
     List<String> lemmas = new ArrayList<>();
     for (int i = 0; i < tokens.length; i++) {
-      lemmas.add(this.apply(tokens[i], postags[i])); 
+      lemmas.add(this.apply(tokens[i], postags[i]));
     }
     return lemmas.toArray(new String[lemmas.size()]);
   }

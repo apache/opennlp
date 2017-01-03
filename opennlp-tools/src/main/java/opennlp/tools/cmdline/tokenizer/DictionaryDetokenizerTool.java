@@ -43,15 +43,15 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
     if (args.length != 1) {
       System.out.println(getHelp());
     } else {
-          try {
-      Detokenizer detokenizer = new DictionaryDetokenizer(
-          new DetokenizationDictionaryLoader().load(new File(args[0])));
+      try {
+        Detokenizer detokenizer = new DictionaryDetokenizer(
+            new DetokenizationDictionaryLoader().load(new File(args[0])));
 
-      ObjectStream<String> tokenizedLineStream =
-        new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
+        ObjectStream<String> tokenizedLineStream =
+            new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
 
-      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
-      perfMon.start();
+        PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+        perfMon.start();
 
 
         String tokenizedLine;
@@ -64,7 +64,7 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
 
           perfMon.incrementCounter();
         }
-              perfMon.stopAndPrintFinalResult();
+        perfMon.stopAndPrintFinalResult();
       }
       catch (IOException e) {
         CmdLineUtil.handleStdinIoError(e);

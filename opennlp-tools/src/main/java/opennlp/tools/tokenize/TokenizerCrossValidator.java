@@ -52,19 +52,19 @@ public class TokenizerCrossValidator {
 
     CrossValidationPartitioner<TokenSample> partitioner = new CrossValidationPartitioner<>(samples, nFolds);
 
-     while (partitioner.hasNext()) {
+    while (partitioner.hasNext()) {
 
-       CrossValidationPartitioner.TrainingSampleStream<TokenSample> trainingSampleStream =
-         partitioner.next();
+      CrossValidationPartitioner.TrainingSampleStream<TokenSample> trainingSampleStream =
+          partitioner.next();
 
-       // Maybe throws IOException if temporary file handling fails ...
-       TokenizerModel model = TokenizerME.train(trainingSampleStream, this.factory, params);
+      // Maybe throws IOException if temporary file handling fails ...
+      TokenizerModel model = TokenizerME.train(trainingSampleStream, this.factory, params);
 
-       TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model), listeners);
+      TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model), listeners);
 
-       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
-       fmeasure.mergeInto(evaluator.getFMeasure());
-     }
+      evaluator.evaluate(trainingSampleStream.getTestSampleStream());
+      fmeasure.mergeInto(evaluator.getFMeasure());
+    }
   }
 
   public FMeasure getFMeasure() {

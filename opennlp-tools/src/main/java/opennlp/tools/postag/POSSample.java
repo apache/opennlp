@@ -77,12 +77,12 @@ public class POSSample {
             ", tags: " + tags.size());
     }
 
-      if (sentence.contains(null)) {
-        throw new IllegalArgumentException("null elements are not allowed in sentence tokens!");
-      }
-      if (tags.contains(null)) {
-        throw new IllegalArgumentException("null elements are not allowed in tags!");
-      }
+    if (sentence.contains(null)) {
+      throw new IllegalArgumentException("null elements are not allowed in sentence tokens!");
+    }
+    if (tags.contains(null)) {
+      throw new IllegalArgumentException("null elements are not allowed in tags!");
+    }
   }
 
   public String[] getSentence() {
@@ -132,7 +132,7 @@ public class POSSample {
       }
 
       sentence[i] = tokenTags[i].substring(0, split);
-      tags[i] = tokenTags[i].substring(split+1);
+      tags[i] = tokenTags[i].substring(split + 1);
     }
 
     return new POSSample(sentence, tags);

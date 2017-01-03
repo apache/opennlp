@@ -103,7 +103,7 @@ public class NameSampleDataStreamTest {
     }
 
     ds.close();
-    
+
     assertEquals(expectedNames.length, names.size());
     assertEquals(createDefaultSpan(6,8), spans.get(0));
     assertEquals(createDefaultSpan(3,4), spans.get(1));
@@ -189,14 +189,12 @@ public class NameSampleDataStreamTest {
           names.put(nameSpan.getType(), new ArrayList<String>());
           spans.put(nameSpan.getType(), new ArrayList<Span>());
         }
-        names.get(nameSpan.getType())
-            .add(sublistToString(ns.getSentence(), nameSpan));
-        spans.get(nameSpan.getType())
-            .add(nameSpan);
+        names.get(nameSpan.getType()).add(sublistToString(ns.getSentence(), nameSpan));
+        spans.get(nameSpan.getType()).add(nameSpan);
       }
     }
     ds.close();
-    
+
     String[] expectedPerson = { "Barack Obama", "Obama", "Obama",
         "Lee Myung - bak", "Obama", "Obama", "Scott Snyder", "Snyder", "Obama",
         "Obama", "Obama", "Tim Peters", "Obama", "Peters" };
@@ -329,13 +327,13 @@ public class NameSampleDataStreamTest {
     assertFalse(trainingStream.read().isClearAdaptiveDataSet());
     assertTrue(trainingStream.read().isClearAdaptiveDataSet());
     assertNull(trainingStream.read());
-    
+
     trainingStream.close();
   }
 
   @Test
   public void testHtmlNameSampleParsing() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(getClass(), 
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
         "/opennlp/tools/namefind/html1.train");
 
     NameSampleDataStream ds = new NameSampleDataStream(
@@ -394,7 +392,7 @@ public class NameSampleDataStreamTest {
     assertEquals("</html>", ns.getSentence()[0]);
 
     assertNull(ds.read());
-    
+
     ds.close();
   }
 }

@@ -216,11 +216,11 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     return new PerceptronModel(finalParameters, predLabels, outcomeLabels);
   }
 
-  private MutableContext[] findParameters (int iterations, boolean useAverage) {
+  private MutableContext[] findParameters(int iterations, boolean useAverage) {
 
     display("Performing " + iterations + " iterations.\n");
 
-    int[] allOutcomesPattern= new int[numOutcomes];
+    int[] allOutcomesPattern = new int[numOutcomes];
     for (int oi = 0; oi < numOutcomes; oi++)
       allOutcomesPattern[oi] = oi;
 
@@ -228,7 +228,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     MutableContext[] params = new MutableContext[numPreds];
     for (int pi = 0; pi < numPreds; pi++) {
       params[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
-      for (int aoi=0;aoi<numOutcomes;aoi++)
+      for (int aoi = 0; aoi < numOutcomes; aoi++)
         params[pi].setParameter(aoi, 0.0);
     }
 
@@ -239,7 +239,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     if (useAverage) {
       for (int pi = 0; pi < numPreds; pi++) {
         summedParams[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
-        for (int aoi=0;aoi<numOutcomes;aoi++)
+        for (int aoi = 0; aoi < numOutcomes; aoi++)
           summedParams[pi].setParameter(aoi, 0.0);
       }
     }
@@ -324,8 +324,8 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       // current training accuracy and all of the previous three
       // training accuracies, stop training.
       if (Math.abs(prevAccuracy1 - trainingAccuracy) < tolerance
-        && Math.abs(prevAccuracy2 - trainingAccuracy) < tolerance
-        && Math.abs(prevAccuracy3 - trainingAccuracy) < tolerance) {
+          && Math.abs(prevAccuracy2 - trainingAccuracy) < tolerance
+          && Math.abs(prevAccuracy3 - trainingAccuracy) < tolerance) {
         display("Stopping: change in training set accuracy less than " + tolerance + "\n");
         break;
       }
@@ -342,8 +342,8 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     // Create averaged parameters
     if (useAverage) {
       for (int pi = 0; pi < numPreds; pi++)
-        for (int aoi=0;aoi<numOutcomes;aoi++)
-          summedParams[pi].setParameter(aoi, summedParams[pi].getParameters()[aoi]/numTimesSummed);
+        for (int aoi = 0; aoi < numOutcomes; aoi++)
+          summedParams[pi].setParameter(aoi, summedParams[pi].getParameters()[aoi] / numTimesSummed);
 
       return summedParams;
 
@@ -355,11 +355,11 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
   }
 
-  private double trainingStats (EvalParameters evalParams) {
+  private double trainingStats(EvalParameters evalParams) {
     int numCorrect = 0;
 
     for (int ei = 0; ei < numUniqueEvents; ei++) {
-      for (int ni=0;ni<this.numTimesEventsSeen[ei];ni++) {
+      for (int ni = 0; ni < this.numTimesEventsSeen[ei]; ni++) {
 
         double[] modelDistribution = new double[numOutcomes];
 
@@ -374,12 +374,12 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       }
     }
     double trainingAccuracy = (double) numCorrect / numEvents;
-    display("Stats: (" + numCorrect + "/" + numEvents+") " + trainingAccuracy + "\n");
+    display("Stats: (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy + "\n");
     return trainingAccuracy;
   }
 
 
-  private int maxIndex (double[] values) {
+  private int maxIndex(double[] values) {
     int max = 0;
     for (int i = 1; i < values.length; i++)
       if (values[i] > values[max])
@@ -387,13 +387,13 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     return max;
   }
 
-  private void display (String s) {
+  private void display(String s) {
     if (printMessages)
       System.out.print(s);
   }
 
-  private void displayIteration (int i) {
-    if (i > 10 && (i%10) != 0)
+  private void displayIteration(int i) {
+    if (i > 10 && (i % 10) != 0)
       return;
 
     if (i < 10)
@@ -406,9 +406,9 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
   // See whether a number is a perfect square. Inefficient, but fine
   // for our purposes.
-  private static boolean isPerfectSquare (int n) {
-    int root = (int)Math.sqrt(n);
-    return root*root == n;
+  private static boolean isPerfectSquare(int n) {
+    int root = (int) Math.sqrt(n);
+    return root * root == n;
   }
 
 }

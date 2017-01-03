@@ -157,7 +157,7 @@ public final class POSModel extends BaseModel {
    * @return ngram dictionary or null if not used
    */
   public Dictionary getNgramDictionary() {
-    if(getFactory() != null)
+    if (getFactory() != null)
       return getFactory().getDictionary();
     return null;
   }

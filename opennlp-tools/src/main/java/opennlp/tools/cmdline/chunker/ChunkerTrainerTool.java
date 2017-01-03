@@ -53,7 +53,7 @@ public class ChunkerTrainerTool
     super.run(format, args);
 
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
-    if(mlParams == null) {
+    if (mlParams == null) {
       mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 

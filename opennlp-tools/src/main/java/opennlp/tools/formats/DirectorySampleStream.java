@@ -45,7 +45,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
 
   public DirectorySampleStream(File dirs[], FileFilter fileFilter, boolean recursive) {
 
-    this.fileFilter= fileFilter;
+    this.fileFilter = fileFilter;
     isRecursiveScan = recursive;
 
     List<File> inputDirectoryList = new ArrayList<File>(dirs.length);
@@ -71,7 +71,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
 
   public File read() throws IOException {
 
-    while(textFiles.isEmpty() && !directories.isEmpty()) {
+    while (textFiles.isEmpty() && !directories.isEmpty()) {
       File dir = directories.pop();
 
       File files[];

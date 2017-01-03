@@ -53,14 +53,14 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   public TokenSample next() {
     String[] tokens = line.split("\\s+");
     if (tokens.length == 0) {
-      evenq =true;
+      evenq = true;
     }
     StringBuilder sb = new StringBuilder(line.length());
     List<Span> spans = new ArrayList<Span>();
     int length = 0;
-    for (int ti=0;ti<tokens.length;ti++) {
+    for (int ti = 0; ti < tokens.length; ti++) {
       String token = tokens[ti];
-      String lastToken = ti -1 >= 0 ? tokens[ti-1] : "";
+      String lastToken = ti - 1 >= 0 ? tokens[ti - 1] : "";
       if (token.equals("-LRB-")) {
         token = "(";
       }
@@ -79,7 +79,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
       else if (!alphaNumeric.matcher(token).find() || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
         if ((token.equals("``") || token.equals("--") || token.equals("$") ||
             token.equals("(")  || token.equals("&")  || token.equals("#") ||
-            (token.equals("\"") && (evenq && ti != tokens.length-1)))
+            (token.equals("\"") && (evenq && ti != tokens.length - 1)))
             && (!lastToken.equals("(") || !lastToken.equals("{"))) {
           //System.out.print(" "+token);
           length++;
@@ -99,8 +99,8 @@ public class TokenSampleStream implements Iterator<TokenSample> {
         }
       }
       if (token.equals("\"")) {
-        if (ti == tokens.length -1) {
-          evenq=true;
+        if (ti == tokens.length - 1) {
+          evenq = true;
         }
         else {
           evenq = !evenq;
@@ -110,8 +110,8 @@ public class TokenSampleStream implements Iterator<TokenSample> {
         sb.append(" ");
       }
       sb.append(token);
-      spans.add(new Span(length,length+token.length()));
-      length+=token.length();
+      spans.add(new Span(length, length + token.length()));
+      length += token.length();
     }
     //System.out.println();
     try {
@@ -135,32 +135,32 @@ public class TokenSampleStream implements Iterator<TokenSample> {
 
   public static void main(String[] args) throws IOException {
     boolean showSpans = false;
-    int ai=0;
+    int ai = 0;
     while (ai < args.length) {
       if (args[ai].equals("-spans")) {
         showSpans = true;
       }
       else {
-        System.err.println("Unknown option "+args[ai]);
+        System.err.println("Unknown option " + args[ai]);
         usage();
       }
       ai++;
     }
     TokenSampleStream tss = new TokenSampleStream(System.in);
-    while(tss.hasNext()) {
+    while (tss.hasNext()) {
       TokenSample ts = tss.next();
       String text = ts.getText();
       System.out.println(text);
       Span[] tokenSpans = ts.getTokenSpans();
-      int ti=0;
+      int ti = 0;
       if (showSpans) {
-        for (int i=0;i<text.length();i++) {
-          if (ti-1 >= 0 && i==tokenSpans[ti-1].getEnd()-1) {
+        for (int i = 0; i < text.length(); i++) {
+          if (ti - 1 >= 0 && i == tokenSpans[ti - 1].getEnd() - 1) {
             System.out.print("]");
           }
-          else if (i==tokenSpans[ti].getStart()) {
+          else if (i == tokenSpans[ti].getStart()) {
             ti++;
-            if (ti-1 >= 0 && i==tokenSpans[ti-1].getEnd()-1) {
+            if (ti - 1 >= 0 && i == tokenSpans[ti - 1].getEnd() - 1) {
               System.out.print("|");
             }
             else {

@@ -190,7 +190,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
         }
       }
     }
-    
+
     return null;
   }
 

@@ -117,21 +117,21 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
 
         Arrays.sort(temp_scores);
 
-        double min = temp_scores[Math.max(0,scores.length-size)];
+        double min = temp_scores[Math.max(0,scores.length - size)];
 
         for (int p = 0; p < scores.length; p++) {
           if (scores[p] < min)
             continue; //only advance first "size" outcomes
           String out = model.getOutcome(p);
-           if (validator.validSequence(i, sequence, outcomes, out)) {
+          if (validator.validSequence(i, sequence, outcomes, out)) {
             Sequence ns = new Sequence(top, out, scores[p]);
             if (ns.getScore() > minSequenceScore) {
               next.add(ns);
             }
-           }
+          }
         }
 
-        if (next.size() == 0) {//if no advanced sequences, advance all valid
+        if (next.size() == 0) { //if no advanced sequences, advance all valid
           for (int p = 0; p < scores.length; p++) {
             String out = model.getOutcome(p);
             if (validator.validSequence(i, sequence, outcomes, out)) {

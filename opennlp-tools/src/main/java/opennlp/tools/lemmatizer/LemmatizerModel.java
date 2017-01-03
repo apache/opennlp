@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.lemmatizer;
 
 import java.io.File;
@@ -32,92 +33,92 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 
 /**
-* The {@link LemmatizerModel} is the model used
-* by a learnable {@link Lemmatizer}.
-*
-* @see LemmatizerME
-*/
+ * The {@link LemmatizerModel} is the model used
+ * by a learnable {@link Lemmatizer}.
+ *
+ * @see LemmatizerME
+ */
 public class LemmatizerModel extends BaseModel {
 
- private static final String COMPONENT_NAME = "StatisticalLemmatizer";
- private static final String LEMMATIZER_MODEL_ENTRY_NAME = "lemmatizer.model";
+  private static final String COMPONENT_NAME = "StatisticalLemmatizer";
+  private static final String LEMMATIZER_MODEL_ENTRY_NAME = "lemmatizer.model";
 
- public LemmatizerModel(String languageCode, SequenceClassificationModel<String> lemmatizerModel,
-     Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
-   super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
-   artifactMap.put(LEMMATIZER_MODEL_ENTRY_NAME, lemmatizerModel);
-   checkArtifactMap();
- }
+  public LemmatizerModel(String languageCode, SequenceClassificationModel<String> lemmatizerModel,
+      Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
+    artifactMap.put(LEMMATIZER_MODEL_ENTRY_NAME, lemmatizerModel);
+    checkArtifactMap();
+  }
 
- public LemmatizerModel(String languageCode, MaxentModel lemmatizerModel,
-     Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
-   this(languageCode, lemmatizerModel, LemmatizerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, factory);
- }
+  public LemmatizerModel(String languageCode, MaxentModel lemmatizerModel,
+      Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
+    this(languageCode, lemmatizerModel, LemmatizerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, factory);
+  }
 
- public LemmatizerModel(String languageCode, MaxentModel lemmatizerModel, int beamSize,
-     Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
-   super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
-   artifactMap.put(LEMMATIZER_MODEL_ENTRY_NAME, lemmatizerModel);
+  public LemmatizerModel(String languageCode, MaxentModel lemmatizerModel, int beamSize,
+      Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
+    super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
+    artifactMap.put(LEMMATIZER_MODEL_ENTRY_NAME, lemmatizerModel);
 
-   Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
-   manifest.put(BeamSearch.BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
-   checkArtifactMap();
- }
+    Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
+    manifest.put(BeamSearch.BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
+    checkArtifactMap();
+  }
 
- public LemmatizerModel(String languageCode, MaxentModel lemmatizerModel, LemmatizerFactory factory) {
-   this(languageCode, lemmatizerModel, null, factory);
- }
+  public LemmatizerModel(String languageCode, MaxentModel lemmatizerModel, LemmatizerFactory factory) {
+    this(languageCode, lemmatizerModel, null, factory);
+  }
 
- public LemmatizerModel(InputStream in) throws IOException, InvalidFormatException {
-   super(COMPONENT_NAME, in);
- }
+  public LemmatizerModel(InputStream in) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, in);
+  }
 
- public LemmatizerModel(File modelFile) throws IOException, InvalidFormatException {
-   super(COMPONENT_NAME, modelFile);
- }
+  public LemmatizerModel(File modelFile) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelFile);
+  }
 
- public LemmatizerModel(URL modelURL) throws IOException, InvalidFormatException {
-   super(COMPONENT_NAME, modelURL);
- }
+  public LemmatizerModel(URL modelURL) throws IOException, InvalidFormatException {
+    super(COMPONENT_NAME, modelURL);
+  }
 
- @Override
- protected void validateArtifactMap() throws InvalidFormatException {
-   super.validateArtifactMap();
+  @Override
+  protected void validateArtifactMap() throws InvalidFormatException {
+    super.validateArtifactMap();
 
-   if (!(artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
-     throw new InvalidFormatException("Lemmatizer model is incomplete!");
-   }
- }
+    if (!(artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
+      throw new InvalidFormatException("Lemmatizer model is incomplete!");
+    }
+  }
 
- public SequenceClassificationModel<String> getLemmatizerSequenceModel() {
+  public SequenceClassificationModel<String> getLemmatizerSequenceModel() {
 
-   Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
+    Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
 
-   if (artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME) instanceof MaxentModel) {
-     String beamSizeString = manifest.getProperty(BeamSearch.BEAM_SIZE_PARAMETER);
+    if (artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME) instanceof MaxentModel) {
+      String beamSizeString = manifest.getProperty(BeamSearch.BEAM_SIZE_PARAMETER);
 
-     int beamSize = LemmatizerME.DEFAULT_BEAM_SIZE;
-     if (beamSizeString != null) {
-       beamSize = Integer.parseInt(beamSizeString);
-     }
+      int beamSize = LemmatizerME.DEFAULT_BEAM_SIZE;
+      if (beamSizeString != null) {
+        beamSize = Integer.parseInt(beamSizeString);
+      }
 
-     return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME));
-   }
-   else if (artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
-     return (SequenceClassificationModel) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME);
-   }
-   else {
-     return null;
-   }
- }
+      return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME));
+    }
+    else if (artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
+      return (SequenceClassificationModel) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME);
+    }
+    else {
+      return null;
+    }
+  }
 
- @Override
- protected Class<? extends BaseToolFactory> getDefaultFactory() {
-   return LemmatizerFactory.class;
- }
+  @Override
+  protected Class<? extends BaseToolFactory> getDefaultFactory() {
+    return LemmatizerFactory.class;
+  }
 
 
- public LemmatizerFactory getFactory() {
-   return (LemmatizerFactory) this.toolFactory;
- }
+  public LemmatizerFactory getFactory() {
+    return (LemmatizerFactory) this.toolFactory;
+  }
 }

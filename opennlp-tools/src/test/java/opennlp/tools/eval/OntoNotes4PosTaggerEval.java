@@ -37,9 +37,10 @@ public class OntoNotes4PosTaggerEval {
 
   private static void crossEval(TrainingParameters params, double expectedScore)
       throws IOException {
-    
+
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
-        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"), file -> {
+        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"), 
+        file -> {
           if (file.isFile()) {
             return file.getName().endsWith(".parse");
           }
@@ -49,14 +50,14 @@ public class OntoNotes4PosTaggerEval {
 
     ParseToPOSSampleStream samples = new ParseToPOSSampleStream(new OntoNotesParseSampleStream(
         new DocumentToLineStream(
-        new FileToStringSampleStream(documentStream, Charset.forName("UTF-8"))))); 
-    
+        new FileToStringSampleStream(documentStream, Charset.forName("UTF-8")))));
+
     POSTaggerCrossValidator cv = new POSTaggerCrossValidator("en", params, new POSTaggerFactory());
     cv.evaluate(samples, 10);
-    
+
     Assert.assertEquals(expectedScore, cv.getWordAccuracy(), 0.0001d);
   }
-  
+
   @Test
   public void evalEnglishMaxentTagger() throws IOException {
     crossEval(ModelUtil.createDefaultTrainingParameters(), 0.9707977252663043d);

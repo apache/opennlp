@@ -50,7 +50,7 @@ public class DocumentSampleStream extends FilterObjectStream<String, DocumentSam
       if (tokens.length > 1) {
         String category = tokens[0];
         String docTokens[] = new String[tokens.length - 1];
-        System.arraycopy(tokens, 1, docTokens, 0, tokens.length -1);
+        System.arraycopy(tokens, 1, docTokens, 0, tokens.length - 1);
 
         sample = new DocumentSample(category, docTokens);
       }

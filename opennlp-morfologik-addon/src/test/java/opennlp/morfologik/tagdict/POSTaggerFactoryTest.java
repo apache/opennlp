@@ -52,7 +52,7 @@ public class POSTaggerFactoryTest {
     MarkableFileInputStreamFactory sampleDataIn = new MarkableFileInputStreamFactory(
         new File(POSTaggerFactory.class.getResource("/AnnotatedSentences.txt")
             .getFile()));
-    
+
 
     ObjectStream<String> lineStream = null;
     try {
@@ -84,7 +84,7 @@ public class POSTaggerFactoryTest {
     assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
 
     factory = null;
-    
+
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     posModel.serialize(out);
     ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -93,7 +93,7 @@ public class POSTaggerFactoryTest {
 
     factory = fromSerialized.getFactory();
     assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
-    
+
     assertEquals(2, factory.getTagDictionary().getTags("casa").length);
   }
 

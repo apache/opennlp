@@ -43,10 +43,10 @@ public abstract class AbstractEventStream<T> implements ObjectStream<Event> {
    * Creates events for the provided sample.
    *
    * @param sample the sample for which training {@link Event}s
-   * are be created.
+   *     are be created.
    *
    * @return an {@link Iterator} of training events or
-   * an empty {@link Iterator}.
+   *     an empty {@link Iterator}.
    */
   protected abstract Iterator<Event> createEvents(T sample);
 

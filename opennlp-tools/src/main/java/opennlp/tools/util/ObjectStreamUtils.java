@@ -87,7 +87,7 @@ public class ObjectStreamUtils {
   /**
    * Creates a single concatenated ObjectStream from multiple individual
    * ObjectStreams with the same type.
-   * 
+   *
    * @param streams
    * @return
    */
@@ -111,7 +111,7 @@ public class ObjectStreamUtils {
           object = streams[streamIndex].read();
 
           if (object == null)
-              streamIndex++;
+            streamIndex++;
         }
 
         return object;
@@ -130,6 +130,7 @@ public class ObjectStreamUtils {
         for (ObjectStream<T> stream : streams) {
           stream.close();
         }
-      }};
+      }
+    };
   }
 }

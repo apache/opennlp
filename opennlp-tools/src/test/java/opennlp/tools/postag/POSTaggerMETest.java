@@ -38,7 +38,7 @@ import opennlp.tools.util.model.ModelType;
 public class POSTaggerMETest {
 
   private static ObjectStream<POSSample> createSampleStream() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(POSTaggerMETest.class, 
+    InputStreamFactory in = new ResourceAsStreamFactory(POSTaggerMETest.class,
         "/opennlp/tools/postag/AnnotatedSentences.txt");
 
     return new WordTagSampleStream(new PlainTextByLineStream(in, UTF_8));
@@ -67,11 +67,11 @@ public class POSTaggerMETest {
 
     String tags[] = tagger.tag(new String[] {
         "The",
-    	"driver",
-    	"got",
-    	"badly",
-    	"injured",
-    	"."});
+        "driver",
+        "got",
+        "badly",
+        "injured",
+        "."});
 
     assertEquals(6, tags.length);
 

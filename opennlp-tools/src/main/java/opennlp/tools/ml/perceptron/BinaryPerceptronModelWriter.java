@@ -41,7 +41,7 @@ public class BinaryPerceptronModelWriter extends PerceptronModelWriter {
    * @param model The GISModel which is to be persisted.
    * @param f The File in which the model is to be persisted.
    */
-  public BinaryPerceptronModelWriter (AbstractModel model, File f) throws IOException {
+  public BinaryPerceptronModelWriter(AbstractModel model, File f) throws IOException {
 
     super(model);
 
@@ -61,24 +61,24 @@ public class BinaryPerceptronModelWriter extends PerceptronModelWriter {
    * @param model The GISModel which is to be persisted.
    * @param dos The stream which will be used to persist the model.
    */
-  public BinaryPerceptronModelWriter (AbstractModel model, DataOutputStream dos) {
+  public BinaryPerceptronModelWriter(AbstractModel model, DataOutputStream dos) {
     super(model);
     output = dos;
   }
 
-  public void writeUTF (String s) throws java.io.IOException {
+  public void writeUTF(String s) throws java.io.IOException {
     output.writeUTF(s);
   }
 
-  public void writeInt (int i) throws java.io.IOException {
+  public void writeInt(int i) throws java.io.IOException {
     output.writeInt(i);
   }
 
-  public void writeDouble (double d) throws java.io.IOException {
+  public void writeDouble(double d) throws java.io.IOException {
     output.writeDouble(d);
   }
 
-  public void close () throws java.io.IOException {
+  public void close() throws java.io.IOException {
     output.flush();
     output.close();
   }

@@ -72,7 +72,7 @@ public class SDCrossValidator {
 
   /**
    * @deprecated use {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
-   * instead and pass in a TrainingParameters object.
+   *     instead and pass in a TrainingParameters object.
    */
   public SDCrossValidator(String languageCode) {
     this(languageCode, ModelUtil.createDefaultTrainingParameters());
@@ -93,10 +93,10 @@ public class SDCrossValidator {
     CrossValidationPartitioner<SentenceSample> partitioner =
         new CrossValidationPartitioner<SentenceSample>(samples, nFolds);
 
-   while (partitioner.hasNext()) {
+    while (partitioner.hasNext()) {
 
-     CrossValidationPartitioner.TrainingSampleStream<SentenceSample> trainingSampleStream =
-         partitioner.next();
+      CrossValidationPartitioner.TrainingSampleStream<SentenceSample> trainingSampleStream =
+          partitioner.next();
 
       SentenceModel model;
 

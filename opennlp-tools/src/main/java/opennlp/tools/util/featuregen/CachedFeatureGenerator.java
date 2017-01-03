@@ -100,7 +100,8 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
   @Override
   public String toString() {
-    return super.toString()+": hits=" + numberOfCacheHits+" misses="+ numberOfCacheMisses+" hit%"+ (numberOfCacheHits > 0 ?
-        (double) numberOfCacheHits/(numberOfCacheMisses+numberOfCacheHits) : 0);
+    return super.toString() + ": hits=" + numberOfCacheHits
+        + " misses=" + numberOfCacheMisses + " hit%" + (numberOfCacheHits > 0 ?
+        (double) numberOfCacheHits / (numberOfCacheMisses + numberOfCacheHits) : 0);
   }
 }

@@ -29,6 +29,7 @@ public interface EventTrainer {
   public static final String EVENT_VALUE = "Event";
 
   public void init(Map<String, String> trainParams, Map<String, String> reportMap);
+
   public MaxentModel train(ObjectStream<Event> events) throws IOException;
 
 }

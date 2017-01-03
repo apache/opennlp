@@ -46,7 +46,7 @@ import opennlp.tools.util.StringUtil;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class Conll02NameSampleStream implements ObjectStream<NameSample>{
+public class Conll02NameSampleStream implements ObjectStream<NameSample> {
 
   public enum LANGUAGE {
     NL,
@@ -172,7 +172,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample>{
           }
 
           beginIndex = i;
-          endIndex = i +1;
+          endIndex = i + 1;
         }
         else if (tag.startsWith("I-")) {
           endIndex++;

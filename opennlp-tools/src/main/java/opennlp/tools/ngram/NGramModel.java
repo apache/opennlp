@@ -38,7 +38,7 @@ import opennlp.tools.util.StringUtil;
  *
  * @see StringList
  */
-public class NGramModel implements Iterable<StringList>{
+public class NGramModel implements Iterable<StringList> {
 
   protected static final String COUNT = "count";
 
@@ -59,26 +59,26 @@ public class NGramModel implements Iterable<StringList>{
   public NGramModel(InputStream in) throws IOException {
     DictionarySerializer.create(in, entry -> {
 
-        int count;
-        String countValueString = null;
+      int count;
+      String countValueString = null;
 
-        try {
-          countValueString = entry.getAttributes().getValue(COUNT);
+      try {
+        countValueString = entry.getAttributes().getValue(COUNT);
 
-          if (countValueString == null) {
-        	  throw new InvalidFormatException(
-        	      "The count attribute must be set!");
-          }
-
-          count = Integer.parseInt(countValueString);
-        } catch (NumberFormatException e) {
-          throw new InvalidFormatException("The count attribute '" + countValueString
-              + "' must be a number!", e);
+        if (countValueString == null) {
+          throw new InvalidFormatException(
+              "The count attribute must be set!");
         }
 
-        add(entry.getTokens());
-        setCount(entry.getTokens(), count);
-      });
+        count = Integer.parseInt(countValueString);
+      } catch (NumberFormatException e) {
+        throw new InvalidFormatException("The count attribute '" + countValueString
+            + "' must be a number!", e);
+      }
+
+      add(entry.getTokens());
+      setCount(entry.getTokens(), count);
+    });
   }
 
   /**
@@ -139,12 +139,12 @@ public class NGramModel implements Iterable<StringList>{
   public void add(StringList ngram, int minLength, int maxLength) {
 
     if (minLength < 1 || maxLength < 1)
-        throw new IllegalArgumentException("minLength and maxLength param must be at least 1. " +
-            "minLength=" + minLength + ", maxLength= " + maxLength);
+      throw new IllegalArgumentException("minLength and maxLength param must be at least 1. " +
+          "minLength=" + minLength + ", maxLength= " + maxLength);
 
     if (minLength > maxLength)
-        throw new IllegalArgumentException("minLength param must not be larger than " +
-            "maxLength param. minLength=" + minLength + ", maxLength= " + maxLength);
+      throw new IllegalArgumentException("minLength param must not be larger than " +
+          "maxLength param. minLength=" + minLength + ", maxLength= " + maxLength);
 
     for (int lengthIndex = minLength; lengthIndex < maxLength + 1; lengthIndex++) {
       for (int textIndex = 0;
@@ -301,32 +301,32 @@ public class NGramModel implements Iterable<StringList>{
    * @throws IOException if an I/O Error during writing occurs
    */
   public void serialize(OutputStream out) throws IOException {
-	    Iterator<Entry> entryIterator = new Iterator<Entry>()
-	      {
-	        private Iterator<StringList> mDictionaryIterator = NGramModel.this.iterator();
+    Iterator<Entry> entryIterator = new Iterator<Entry>()
+    {
+      private Iterator<StringList> mDictionaryIterator = NGramModel.this.iterator();
 
-	        public boolean hasNext() {
-	          return mDictionaryIterator.hasNext();
-	        }
+      public boolean hasNext() {
+        return mDictionaryIterator.hasNext();
+      }
 
-	        public Entry next() {
+      public Entry next() {
 
-	          StringList tokens = mDictionaryIterator.next();
+        StringList tokens = mDictionaryIterator.next();
 
-	          Attributes attributes = new Attributes();
+        Attributes attributes = new Attributes();
 
-	          attributes.setValue(COUNT, Integer.toString(getCount(tokens)));
+        attributes.setValue(COUNT, Integer.toString(getCount(tokens)));
 
-	          return new Entry(tokens, attributes);
-	        }
+        return new Entry(tokens, attributes);
+      }
 
-	        public void remove() {
-	          throw new UnsupportedOperationException();
-	        }
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
 
-	      };
+    };
 
-	    DictionarySerializer.serialize(out, entryIterator, false);
+    DictionarySerializer.serialize(out, entryIterator, false);
   }
 
   @Override
@@ -346,7 +346,7 @@ public class NGramModel implements Iterable<StringList>{
     }
 
     return result;
-   }
+  }
 
   @Override
   public String toString() {

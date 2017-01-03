@@ -105,7 +105,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
     super.initialize(context);
 
-	this.context = context;
+    this.context = context;
 
     mLogger = context.getLogger();
 
@@ -117,12 +117,12 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
     try {
       ChunkerModelResource modelResource =
-            (ChunkerModelResource) context.getResourceObject(UimaUtil.MODEL_PARAMETER);
+          (ChunkerModelResource) context.getResourceObject(UimaUtil.MODEL_PARAMETER);
 
-        model = modelResource.getModel();
+      model = modelResource.getModel();
     }
     catch (ResourceAccessException e) {
-        throw new ResourceInitializationException(e);
+      throw new ResourceInitializationException(e);
     }
 
     mChunker = new ChunkerME(model);
@@ -135,12 +135,12 @@ public final class Chunker extends CasAnnotator_ImplBase {
       throws AnalysisEngineProcessException {
 
     // chunk type
-	mChunkType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
+    mChunkType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         CHUNK_TYPE_PARAMETER);
 
     // chunk feature
     mChunkFeature = AnnotatorUtil.getRequiredFeatureParameter(context, mChunkType,
-    		CHUNK_TAG_FEATURE_PARAMETER, CAS.TYPE_NAME_STRING);
+        CHUNK_TAG_FEATURE_PARAMETER, CAS.TYPE_NAME_STRING);
 
     // token type
     mTokenType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
@@ -148,7 +148,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
     // pos feature
     mPosFeature = AnnotatorUtil.getRequiredFeatureParameter(context, mTokenType, UimaUtil.POS_FEATURE_PARAMETER,
-    		CAS.TYPE_NAME_STRING);
+        CAS.TYPE_NAME_STRING);
   }
 
   private void addChunkAnnotation(CAS tcas, AnnotationFS tokenAnnotations[],
@@ -171,7 +171,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
     String tokens[] = new String[tokenAnnotationIndex.size()];
     String pos[] = new String[tokenAnnotationIndex.size()];
     AnnotationFS tokenAnnotations[] = new AnnotationFS[tokenAnnotationIndex
-        .size()];
+                                                       .size()];
 
     int index = 0;
 
@@ -196,16 +196,16 @@ public final class Chunker extends CasAnnotator_ImplBase {
       if (chunkTag.startsWith("B")) {
         if (start != -1) {
           addChunkAnnotation(tcas, tokenAnnotations, result[i - 1].substring(2),
-        		  start, end);
+              start, end);
         }
 
         start = i;
         end = i + 1;
       }
       else if (chunkTag.startsWith("I")) {
-    	  end = i + 1;
+        end = i + 1;
       }
-      else if (chunkTag.startsWith("O")){
+      else if (chunkTag.startsWith("O")) {
         if (start != -1) {
 
           addChunkAnnotation(tcas, tokenAnnotations, result[i - 1].substring(2), start, end);
@@ -215,7 +215,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
         }
       }
       else {
-    	  System.out.println("Unexpected tag: " + result[i]);
+        System.out.println("Unexpected tag: " + result[i]);
       }
     }
 

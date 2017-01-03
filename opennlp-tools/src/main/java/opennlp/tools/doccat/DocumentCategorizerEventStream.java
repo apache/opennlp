@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.doccat;
 
 import java.util.Iterator;
@@ -23,8 +24,8 @@ import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
-* Iterator-like class for modeling document classification events.
-*/
+ * Iterator-like class for modeling document classification events.
+ */
 public class DocumentCategorizerEventStream extends AbstractEventStream<DocumentSample> {
 
   private DocumentCategorizerContextGenerator mContextGenerator;
@@ -40,7 +41,7 @@ public class DocumentCategorizerEventStream extends AbstractEventStream<Document
     super(data);
 
     mContextGenerator =
-      new DocumentCategorizerContextGenerator(featureGenerators);
+        new DocumentCategorizerContextGenerator(featureGenerators);
   }
 
   /**
@@ -52,13 +53,13 @@ public class DocumentCategorizerEventStream extends AbstractEventStream<Document
     super(samples);
 
     mContextGenerator =
-      new DocumentCategorizerContextGenerator(new BagOfWordsFeatureGenerator());
+        new DocumentCategorizerContextGenerator(new BagOfWordsFeatureGenerator());
   }
 
   @Override
   protected Iterator<Event> createEvents(final DocumentSample sample) {
 
-    return new Iterator<Event>(){
+    return new Iterator<Event>() {
 
       private boolean isVirgin = true;
 
@@ -76,6 +77,7 @@ public class DocumentCategorizerEventStream extends AbstractEventStream<Document
 
       public void remove() {
         throw new UnsupportedOperationException();
-      }};
+      }
+    };
   }
 }

@@ -30,7 +30,7 @@ public interface DetailedFMeasureEvaluatorParams {
 
   @ParameterDescription(valueName = "true|false",
       description = "if true will print detailed FMeasure results.")
-  @OptionalParameter(defaultValue="false")
+  @OptionalParameter(defaultValue = "false")
   Boolean getDetailedF();
 
 }

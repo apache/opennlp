@@ -45,7 +45,7 @@ public class ChunkSampleSequenceStream implements SequenceStream {
       String tags[] = sample.getTags();
       Event[] events = new Event[sentence.length];
 
-      for (int i=0; i < sentence.length; i++) {
+      for (int i = 0; i < sentence.length; i++) {
 
         // it is safe to pass the tags as previous tags because
         // the context generator does not look for non predicted tags

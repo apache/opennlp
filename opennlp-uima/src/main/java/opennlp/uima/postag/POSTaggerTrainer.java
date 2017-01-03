@@ -228,7 +228,7 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
    * Releases allocated resources.
    */
   public void destroy() {
-   // dereference to allow garbage collection
+    // dereference to allow garbage collection
     mPOSSamples = null;
   }
 }

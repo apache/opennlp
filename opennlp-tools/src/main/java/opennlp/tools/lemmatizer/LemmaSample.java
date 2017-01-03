@@ -30,16 +30,16 @@ public class LemmaSample {
   private List<String> tokens;
 
   private List<String> tags;
-  
+
   private final List<String> lemmas;
 
- /**
- * Represents one lemma sample.
- * @param tokens the token
- * @param tags the postags
- * @param lemmas the lemmas
- */
-public LemmaSample(String[] tokens, String[] tags, String[] lemmas) {
+  /**
+   * Represents one lemma sample.
+   * @param tokens the token
+   * @param tags the postags
+   * @param lemmas the lemmas
+   */
+  public LemmaSample(String[] tokens, String[] tags, String[] lemmas) {
 
     validateArguments(tokens.length, tags.length, lemmas.length);
 
@@ -47,7 +47,7 @@ public LemmaSample(String[] tokens, String[] tags, String[] lemmas) {
     this.tags = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(tags)));
     this.lemmas = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(lemmas)));
   }
-  
+
   /**
    * Lemma Sample constructor.
    * @param tokens the tokens
@@ -70,7 +70,7 @@ public LemmaSample(String[] tokens, String[] tags, String[] lemmas) {
   public String[] getTags() {
     return tags.toArray(new String[tags.size()]);
   }
-  
+
   public String[] getLemmas() {
     return lemmas.toArray(new String[lemmas.size()]);
   }
@@ -87,14 +87,13 @@ public LemmaSample(String[] tokens, String[] tags, String[] lemmas) {
 
   @Override
   public String toString() {
+    StringBuilder lemmaString = new StringBuilder();
 
-        StringBuilder lemmaString = new StringBuilder();
-
-        for (int ci = 0; ci < lemmas.size(); ci++) {
-        lemmaString.append(tokens.get(ci)).append("\t").append(tags.get(ci)).append("\t").append(lemmas.get(ci)).append("\n");
-        }
-        return lemmaString.toString();
-      }
+    for (int ci = 0; ci < lemmas.size(); ci++) {
+      lemmaString.append(tokens.get(ci)).append("\t").append(tags.get(ci)).append("\t").append(lemmas.get(ci)).append("\n");
+    }
+    return lemmaString.toString();
+  }
 
   @Override
   public boolean equals(Object obj) {

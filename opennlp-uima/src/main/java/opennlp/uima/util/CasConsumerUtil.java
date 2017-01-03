@@ -42,16 +42,16 @@ public final class CasConsumerUtil {
   }
 
   public static InputStream getOptionalResourceAsStream(UimaContext context,
-	      String name) throws ResourceInitializationException {
-      try {
-	      return context.getResourceAsStream(name);
-	    } catch (ResourceAccessException e) {
-	      throw new ResourceInitializationException(
-	          ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-	          new Object[] { "There is an internal error in the UIMA SDK: " +
-	          e.getMessage(),
-	          e });
-	    }
+      String name) throws ResourceInitializationException {
+    try {
+      return context.getResourceAsStream(name);
+    } catch (ResourceAccessException e) {
+      throw new ResourceInitializationException(
+          ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
+          new Object[] { "There is an internal error in the UIMA SDK: " +
+              e.getMessage(),
+              e });
+    }
   }
 
   /**
@@ -112,6 +112,7 @@ public final class CasConsumerUtil {
       throws ResourceInitializationException {
     return typeSystem.getType(name);
   }
+
   /**
    * Retrieves a required parameter form the given context.
    *
@@ -189,13 +190,12 @@ public final class CasConsumerUtil {
   }
 
   private static void checkForNull(Object value, String parameterName)
-      throws ResourceInitializationException{
+      throws ResourceInitializationException {
 
     if (value == null) {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] { "The " + parameterName + " is a " +
-          "required parameter!" });
+          new Object[] { "The " + parameterName + " is a required parameter!" });
     }
   }
 
@@ -221,36 +221,35 @@ public final class CasConsumerUtil {
     else {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] {"The parameter: "  + parameter + " does not have" +
-          " the expected type String"});
+          new Object[] {"The parameter: "  + parameter + " does not have the expected type String"});
     }
   }
 
   public static String[] getOptionalStringArrayParameter(UimaContext context,
-	    String parameter) throws ResourceInitializationException {
+      String parameter) throws ResourceInitializationException {
 
-	Object value = getOptionalParameter(context, parameter);
+    Object value = getOptionalParameter(context, parameter);
 
-	if (value instanceof String[]) {
-	    return (String[]) value;
-	} else if (value == null) {
-	    return new String[0];
-	} else {
-	    throw new ResourceInitializationException(
-		    ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-		    new Object[] { "The parameter: " + parameter
-			    + " does not have the expected type String array" });
-	}
+    if (value instanceof String[]) {
+      return (String[]) value;
+    } else if (value == null) {
+      return new String[0];
+    } else {
+      throw new ResourceInitializationException(
+          ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
+          new Object[] { "The parameter: " + parameter
+              + " does not have the expected type String array" });
     }
+  }
 
   /**
-    * Retrieves an optional boolean parameter from the given context.
-    *
-    * @param context
-    * @param parameter
-    * @return the boolean parameter or null if not set
-    * @throws ResourceInitializationException
-    */
+   * Retrieves an optional boolean parameter from the given context.
+   *
+   * @param context
+   * @param parameter
+   * @return the boolean parameter or null if not set
+   * @throws ResourceInitializationException
+   */
   public static Integer getOptionalIntegerParameter(UimaContext context,
       String parameter) throws ResourceInitializationException {
 
@@ -265,8 +264,7 @@ public final class CasConsumerUtil {
     else {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] {"The parameter: "  + parameter + " does not have " +
-          "the expected type Integer"});
+          new Object[] {"The parameter: "  + parameter + " does not have the expected type Integer"});
     }
   }
 
@@ -313,8 +311,7 @@ public final class CasConsumerUtil {
     else {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] {"The parameter: "  + parameter + " does not have" +
-          " the expected type Float"});
+          new Object[] {"The parameter: "  + parameter + " does not have the expected type Float"});
     }
   }
 
@@ -340,8 +337,7 @@ public final class CasConsumerUtil {
     else {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] {"The parameter: "  + parameter + " does not have" +
-          " the expected type Boolean"});
+          new Object[] {"The parameter: "  + parameter + " does not have the expected type Boolean"});
     }
   }
 
@@ -370,7 +366,7 @@ public final class CasConsumerUtil {
    * @throws ResourceInitializationException - if type does not match
    */
   public static void checkFeatureType(Feature feature, String expectedType)
-  throws ResourceInitializationException {
+      throws ResourceInitializationException {
     if (!feature.getRange().getName().equals(expectedType)) {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
@@ -381,46 +377,46 @@ public final class CasConsumerUtil {
   }
 
   public static Dictionary createOptionalDictionary(UimaContext context, String parameter)
-  	throws ResourceInitializationException {
-	String dictionaryName = CasConsumerUtil.getOptionalStringParameter(
-		context, parameter);
+      throws ResourceInitializationException {
+    String dictionaryName = CasConsumerUtil.getOptionalStringParameter(
+        context, parameter);
 
-	Dictionary dictionary = null;
+    Dictionary dictionary = null;
 
-	if (dictionaryName != null) {
+    if (dictionaryName != null) {
 
-	    Logger logger = context.getLogger();
+      Logger logger = context.getLogger();
 
-	    try {
+      try {
 
-		InputStream dictIn = CasConsumerUtil.getOptionalResourceAsStream(context,
-			dictionaryName);
+        InputStream dictIn = CasConsumerUtil.getOptionalResourceAsStream(context,
+            dictionaryName);
 
-		if (dictIn == null) {
-			String message = "The dictionary file " + dictionaryName +
-			" does not exist!";
+        if (dictIn == null) {
+          String message = "The dictionary file " + dictionaryName +
+              " does not exist!";
 
-			if (logger.isLoggable(Level.WARNING)) {
-			    logger.log(Level.WARNING, message);
-			}
+          if (logger.isLoggable(Level.WARNING)) {
+            logger.log(Level.WARNING, message);
+          }
 
-			return null;
-		}
+          return null;
+        }
 
-		dictionary = new Dictionary(dictIn);
+        dictionary = new Dictionary(dictIn);
 
-	    } catch (IOException e) {
-			// if this fails just print error message and continue
-			String message = "IOException during dictionary reading, "
-				+ "running without dictionary: " + e.getMessage();
+      } catch (IOException e) {
+        // if this fails just print error message and continue
+        String message = "IOException during dictionary reading, "
+            + "running without dictionary: " + e.getMessage();
 
-			if (logger.isLoggable(Level.WARNING)) {
-			    logger.log(Level.WARNING, message);
-			}
-	    }
+        if (logger.isLoggable(Level.WARNING)) {
+          logger.log(Level.WARNING, message);
+        }
+      }
 
-	    return dictionary;
-	} else
-	    return null;
+      return dictionary;
+    } else
+      return null;
   }
 }

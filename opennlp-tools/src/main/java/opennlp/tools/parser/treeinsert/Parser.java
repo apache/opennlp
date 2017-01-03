@@ -149,10 +149,10 @@ public class Parser extends AbstractBottomUpParser {
     else {
       top = root;
     }
-    while(!top.isPosTag()) {
+    while (!top.isPosTag()) {
       rf.add(0,top);
       Parse[] kids = top.getChildren();
-      top = kids[kids.length-1];
+      top = kids[kids.length - 1];
     }
     return new ArrayList<>(rf);
   }
@@ -164,10 +164,10 @@ public class Parser extends AbstractBottomUpParser {
     }
     else {
       if (isComplete(p)) {
-        p.setLabel(Parser.BUILT+"."+Parser.COMPLETE);
+        p.setLabel(Parser.BUILT + "." + Parser.COMPLETE);
       }
       else {
-        p.setLabel(Parser.BUILT+"."+Parser.INCOMPLETE);
+        p.setLabel(Parser.BUILT + "." + Parser.INCOMPLETE);
       }
     }
   }
@@ -178,7 +178,7 @@ public class Parser extends AbstractBottomUpParser {
       p.setLabel(Parser.COMPLETE);
     }
     else {
-      p.setLabel(Parser.BUILT+"."+Parser.COMPLETE);
+      p.setLabel(Parser.BUILT + "." + Parser.COMPLETE);
     }
   }
 
@@ -187,7 +187,7 @@ public class Parser extends AbstractBottomUpParser {
       p.setLabel(Parser.INCOMPLETE);
     }
     else {
-      p.setLabel(Parser.BUILT+"."+Parser.INCOMPLETE);
+      p.setLabel(Parser.BUILT + "." + Parser.INCOMPLETE);
     }
   }
 
@@ -204,9 +204,9 @@ public class Parser extends AbstractBottomUpParser {
   @Override
   protected Parse[] advanceChunks(Parse p, double minChunkScore) {
     Parse[] parses = super.advanceChunks(p, minChunkScore);
-    for (int pi=0;pi<parses.length;pi++) {
+    for (int pi = 0; pi < parses.length; pi++) {
       Parse[] chunks = parses[pi].getChildren();
-      for (int ci=0;ci<chunks.length;ci++) {
+      for (int ci = 0; ci < chunks.length; ci++) {
         setComplete(chunks[ci]);
       }
     }
@@ -219,7 +219,7 @@ public class Parser extends AbstractBottomUpParser {
     /* The index of the node which will be labeled in this iteration of advancing the parse. */
     int advanceNodeIndex;
     /* The node which will be labeled in this iteration of advancing the parse. */
-    Parse advanceNode=null;
+    Parse advanceNode = null;
     Parse[] originalChildren = p.getChildren();
     Parse[] children = collapsePunctuation(originalChildren,punctSet);
     int numNodes = children.length;
@@ -248,8 +248,11 @@ public class Parser extends AbstractBottomUpParser {
     //call build model
     buildModel.eval(buildContextGenerator.getContext(children, advanceNodeIndex), bprobs);
     double doneProb = bprobs[doneIndex];
-    if (debugOn) System.out.println("adi="+advanceNodeIndex+" "+advanceNode.getType()+"."+advanceNode.getLabel()+" "+advanceNode+" choose build="+(1-doneProb)+" attach="+doneProb);
-    if (1-doneProb > q) {
+    if (debugOn)
+      System.out.println("adi=" + advanceNodeIndex + " " + advanceNode.getType() + "." + advanceNode.getLabel()
+          + " " + advanceNode + " choose build=" + (1 - doneProb) + " attach=" + doneProb);
+
+    if (1 - doneProb > q) {
       double bprobSum = 0;
       while (bprobSum < probMass) {
         /* The largest unadvanced labeling. */
@@ -274,15 +277,15 @@ public class Parser extends AbstractBottomUpParser {
           newParsesList.add(newParse1);
           if (checkComplete) {
             cprobs = checkModel.eval(checkContextGenerator.getContext(newNode,children,advanceNodeIndex,false));
-            if (debugOn) System.out.println("building "+tag+" "+bprob+" c="+cprobs[completeIndex]);
+            if (debugOn) System.out.println("building " + tag + " " + bprob + " c=" + cprobs[completeIndex]);
             if (cprobs[completeIndex] > probMass) { //just complete advances
               setComplete(newNode);
               newParse1.addProb(Math.log(cprobs[completeIndex]));
               if (debugOn) System.out.println("Only advancing complete node");
             }
-            else if (1-cprobs[completeIndex] > probMass) { //just incomplete advances
+            else if (1 - cprobs[completeIndex] > probMass) { //just incomplete advances
               setIncomplete(newNode);
-              newParse1.addProb(Math.log(1-cprobs[completeIndex]));
+              newParse1.addProb(Math.log(1 - cprobs[completeIndex]));
               if (debugOn) System.out.println("Only advancing incomplete node");
             }
             else { //both complete and incomplete advance
@@ -295,12 +298,12 @@ public class Parser extends AbstractBottomUpParser {
               newParse2.insert(newNode2);
               newParse2.addProb(Math.log(bprob));
               newParsesList.add(newParse2);
-              newParse2.addProb(Math.log(1-cprobs[completeIndex]));
+              newParse2.addProb(Math.log(1 - cprobs[completeIndex]));
               setIncomplete(newNode2); //set incomplete for non-clone
             }
           }
           else {
-            if (debugOn) System.out.println("building "+tag+" "+bprob);
+            if (debugOn) System.out.println("building " + tag + " " + bprob);
           }
         }
       }
@@ -311,10 +314,10 @@ public class Parser extends AbstractBottomUpParser {
       //mark nodes as built
       if (checkComplete) {
         if (isComplete(advanceNode)) {
-          newParse1.setChild(originalAdvanceIndex,Parser.BUILT+"."+Parser.COMPLETE); //replace constituent being labeled to create new derivation
+          newParse1.setChild(originalAdvanceIndex,Parser.BUILT + "." + Parser.COMPLETE); //replace constituent being labeled to create new derivation
         }
         else {
-          newParse1.setChild(originalAdvanceIndex,Parser.BUILT+"."+Parser.INCOMPLETE); //replace constituent being labeled to create new derivation
+          newParse1.setChild(originalAdvanceIndex,Parser.BUILT + "." + Parser.INCOMPLETE); //replace constituent being labeled to create new derivation
         }
       }
       else {
@@ -326,40 +329,42 @@ public class Parser extends AbstractBottomUpParser {
       }
       else {
         List<Parse> rf = getRightFrontier(p,punctSet);
-        for (int fi=0,fs=rf.size();fi<fs;fi++) {
+        for (int fi = 0,fs = rf.size(); fi < fs; fi++) {
           Parse fn = rf.get(fi);
-          attachModel.eval(attachContextGenerator.getContext(children, advanceNodeIndex,rf,fi), aprobs);
+          attachModel.eval(attachContextGenerator.getContext(children, advanceNodeIndex, rf, fi), aprobs);
           if (debugOn) {
             //List cs = java.util.Arrays.asList(attachContextGenerator.getContext(children, advanceNodeIndex,rf,fi,punctSet));
-            System.out.println("Frontier node("+fi+"): "+fn.getType()+"."+fn.getLabel()+" "+fn+" <- "+advanceNode.getType()+" "+advanceNode+" d="+aprobs[daughterAttachIndex]+" s="+aprobs[sisterAttachIndex]+" ");
+            System.out.println("Frontier node(" + fi + "): " + fn.getType() + "." + fn.getLabel()
+                + " " + fn + " <- " + advanceNode.getType() + " " + advanceNode + " d="
+                + aprobs[daughterAttachIndex] + " s=" + aprobs[sisterAttachIndex] + " ");
           }
-          for (int ai=0;ai<attachments.length;ai++) {
+          for (int ai = 0; ai < attachments.length; ai++) {
             double prob = aprobs[attachments[ai]];
             //should we try an attach if p > threshold and
             // if !checkComplete then prevent daughter attaching to chunk
             // if checkComplete then prevent daughter attacing to complete node or
             //    sister attaching to an incomplete node
             if (prob > q && (
-                (!checkComplete && (attachments[ai]!= daughterAttachIndex || !isComplete(fn)))
+                (!checkComplete && (attachments[ai] != daughterAttachIndex || !isComplete(fn)))
                 ||
-                (checkComplete && ((attachments[ai]== daughterAttachIndex && !isComplete(fn)) || (attachments[ai] == sisterAttachIndex && isComplete(fn)))))) {
+                (checkComplete && ((attachments[ai] == daughterAttachIndex && !isComplete(fn)) || (attachments[ai] == sisterAttachIndex && isComplete(fn)))))) {
               Parse newParse2 = newParse1.cloneRoot(fn,originalZeroIndex);
               Parse[] newKids = Parser.collapsePunctuation(newParse2.getChildren(),punctSet);
               //remove node from top level since were going to attach it (including punct)
-              for (int ri=originalZeroIndex+1;ri<=originalAdvanceIndex;ri++) {
+              for (int ri = originalZeroIndex + 1; ri <= originalAdvanceIndex; ri++) {
                 //System.out.println(at"-removing "+(originalZeroIndex+1)+" "+newParse2.getChildren()[originalZeroIndex+1]);
-                newParse2.remove(originalZeroIndex+1);
+                newParse2.remove(originalZeroIndex + 1);
               }
               List<Parse> crf = getRightFrontier(newParse2,punctSet);
               Parse updatedNode;
-              if (attachments[ai] == daughterAttachIndex) {//attach daughter
+              if (attachments[ai] == daughterAttachIndex) { //attach daughter
                 updatedNode = crf.get(fi);
                 updatedNode.add(advanceNode,headRules);
               }
               else { //attach sister
                 Parse psite;
-                if (fi+1 < crf.size()) {
-                  psite = crf.get(fi+1);
+                if (fi + 1 < crf.size()) {
+                  psite = crf.get(fi + 1);
                   updatedNode = psite.adjoin(advanceNode,headRules);
                 }
                 else {
@@ -369,7 +374,7 @@ public class Parser extends AbstractBottomUpParser {
                 }
               }
               //update spans affected by attachment
-              for (int ni=fi+1;ni<crf.size();ni++) {
+              for (int ni = fi + 1; ni < crf.size(); ni++) {
                 Parse node = crf.get(ni);
                 node.updateSpan();
               }
@@ -383,9 +388,9 @@ public class Parser extends AbstractBottomUpParser {
                   newParse2.addProb(Math.log(cprobs[completeIndex]));
                   if (debugOn) System.out.println("Only advancing complete node");
                 }
-                else if (1-cprobs[completeIndex] > probMass) {
+                else if (1 - cprobs[completeIndex] > probMass) {
                   setIncomplete(updatedNode);
-                  newParse2.addProb(Math.log(1-cprobs[completeIndex]));
+                  newParse2.addProb(Math.log(1 - cprobs[completeIndex]));
                   if (debugOn) System.out.println("Only advancing incomplete node");
                 }
                 else {
@@ -394,17 +399,22 @@ public class Parser extends AbstractBottomUpParser {
                   newParse3.addProb(Math.log(cprobs[completeIndex]));
                   newParsesList.add(newParse3);
                   setIncomplete(updatedNode);
-                  newParse2.addProb(Math.log(1-cprobs[completeIndex]));
-                  if (debugOn) System.out.println("Advancing both complete and incomplete nodes; c="+cprobs[completeIndex]);
+                  newParse2.addProb(Math.log(1 - cprobs[completeIndex]));
+                  if (debugOn) System.out.println("Advancing both complete and incomplete nodes; c=" + cprobs[completeIndex]);
                 }
               }
             }
             else {
-              if (debugOn) System.out.println("Skipping "+fn.getType()+"."+fn.getLabel()+" "+fn+" daughter="+(attachments[ai] == daughterAttachIndex)+" complete="+isComplete(fn)+" prob="+prob);
+              if (debugOn)
+                System.out.println("Skipping " + fn.getType() + "." + fn.getLabel() + " "
+                    + fn + " daughter=" + (attachments[ai] == daughterAttachIndex)
+                    + " complete=" + isComplete(fn) + " prob=" + prob);
             }
           }
-          if(checkComplete && !isComplete(fn)) {
-            if (debugOn) System.out.println("Stopping at incomplete node("+fi+"): "+fn.getType()+"."+fn.getLabel()+" "+fn);
+          if (checkComplete && !isComplete(fn)) {
+            if (debugOn)
+              System.out.println("Stopping at incomplete node(" + fi + "): "
+                  + fn.getType() + "." + fn.getLabel() + " " + fn);
             break;
           }
         }
@@ -422,7 +432,7 @@ public class Parser extends AbstractBottomUpParser {
 
   public static ParserModel train(String languageCode,
       ObjectStream<Parse> parseSamples, HeadRules rules, TrainingParameters mlParams)
-  throws IOException {
+      throws IOException {
 
     Map<String, String> manifestInfoEntries = new HashMap<>();
 

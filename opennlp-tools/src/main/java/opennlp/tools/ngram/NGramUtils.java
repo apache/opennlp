@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package opennlp.tools.ngram;
 
 import java.util.Collection;
@@ -123,7 +124,7 @@ public class NGramUtils {
    * @return the linear interpolation probability
    */
   public static double calculateTrigramLinearInterpolationProbability(String x0, String x1, String x2, Collection<StringList> set,
-                                                                      Double lambda1, Double lambda2, Double lambda3) {
+      Double lambda1, Double lambda2, Double lambda3) {
     assert lambda1 + lambda2 + lambda3 == 1 : "lambdas sum should be equals to 1";
     assert lambda1 > 0 && lambda2 > 0 && lambda3 > 0 : "lambdas should all be greater than 0";
 

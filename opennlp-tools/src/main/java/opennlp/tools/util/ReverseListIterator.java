@@ -29,8 +29,8 @@ public class ReverseListIterator<T> implements Iterator<T> {
   private List<T> list;
 
   public ReverseListIterator(List<T> list) {
-    index = list.size()-1;
-    this.list=list;
+    index = list.size() - 1;
+    this.list = list;
   }
 
   public T next() {
@@ -38,7 +38,7 @@ public class ReverseListIterator<T> implements Iterator<T> {
   }
 
   public boolean hasNext() {
-    return index >=0;
+    return index >= 0;
   }
 
   public void remove() {

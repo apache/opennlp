@@ -35,53 +35,53 @@ public class NameSampleCountersStream
 
   private int sentenceCount;
   private int tokenCount;
-  
+
   private Map<String, Integer> nameCounters = new HashMap<>();
-  
+
   protected NameSampleCountersStream(ObjectStream<NameSample> samples) {
     super(samples);
   }
 
   @Override
   public NameSample read() throws IOException {
-    
+
     NameSample sample = samples.read();
-    
+
     if (sample != null) {
       sentenceCount++;
       tokenCount += sample.getSentence().length;
-      
+
       for (Span nameSpan : sample.getNames()) {
         Integer nameCounter = nameCounters.get(nameSpan.getType());
-        
+
         if (nameCounter == null) {
           nameCounter = 0;
         }
-        
+
         nameCounters.put(nameSpan.getType(), nameCounter + 1);
       }
     }
-    
+
     return sample;
   }
-  
+
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
     super.reset();
-    
+
     sentenceCount = 0;
     tokenCount = 0;
     nameCounters = new HashMap<>();
   }
-  
+
   public int getSentenceCount() {
     return sentenceCount;
   }
-  
+
   public int getTokenCount() {
     return tokenCount;
   }
-  
+
   public Map<String, Integer> getNameCounters() {
     return Collections.unmodifiableMap(nameCounters);
   }
@@ -90,7 +90,7 @@ public class NameSampleCountersStream
     System.out.println("Training data summary:");
     System.out.println("#Sentences: " + getSentenceCount());
     System.out.println("#Tokens: " + getTokenCount());
-    
+
     int totalNames = 0;
     for (Map.Entry<String, Integer> counter : getNameCounters().entrySet()) {
       System.out.println("#" + counter.getKey() + " entities: " + counter.getValue());

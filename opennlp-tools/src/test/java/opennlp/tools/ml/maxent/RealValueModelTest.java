@@ -46,7 +46,7 @@ public class RealValueModelTest {
     double[] repeatResults = repeatModel.eval(features2Classify);
 
     Assert.assertEquals(realResults.length, repeatResults.length);
-    for(int i=0; i<realResults.length; i++) {
+    for (int i = 0; i < realResults.length; i++) {
       System.out.println(String.format("classifiy with realModel: %1$s = %2$f", realModel.getOutcome(i), realResults[i]));
       System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f", repeatModel.getOutcome(i), repeatResults[i]));
       Assert.assertEquals(realResults[i], repeatResults[i], 0.01f);
@@ -58,7 +58,7 @@ public class RealValueModelTest {
 
     System.out.println();
     Assert.assertEquals(realResults.length, repeatResults.length);
-    for(int i=0; i<realResults.length; i++) {
+    for (int i = 0; i < realResults.length; i++) {
       System.out.println(String.format("classifiy with realModel: %1$s = %2$f", realModel.getOutcome(i), realResults[i]));
       System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f", repeatModel.getOutcome(i), repeatResults[i]));
       Assert.assertEquals(realResults[i], repeatResults[i], 0.01f);

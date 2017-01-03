@@ -78,7 +78,7 @@ public class ExtensionLoader {
           } catch (NoSuchFieldException | SecurityException e1) {
             throw new ExtensionNotLoadedException(e1);
           }
-          if(instanceField != null) {
+          if (instanceField != null) {
             try {
               return (T) instanceField.get(null);
             } catch (IllegalArgumentException | IllegalAccessException e1) {

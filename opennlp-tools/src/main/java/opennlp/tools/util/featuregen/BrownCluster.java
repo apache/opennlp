@@ -76,8 +76,8 @@ public class BrownCluster implements SerializableArtifact {
       String[] lineArray = tabPattern.split(line);
       if (lineArray.length == 3) {
         int freq = Integer.parseInt(lineArray[2]);
-          if (freq > 5 ) {
-            tokenToClusterMap.put(lineArray[1], lineArray[0]);
+        if (freq > 5 ) {
+          tokenToClusterMap.put(lineArray[1], lineArray[0]);
         }
       }
       else if (lineArray.length == 2) {

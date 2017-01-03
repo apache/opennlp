@@ -58,7 +58,7 @@ public final class SentenceDetectorEvaluatorTool
 
     System.out.print("Evaluating ... ");
     try {
-    evaluator.evaluate(sampleStream);
+      evaluator.evaluate(sampleStream);
     }
     catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " +

@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 public class NewlineSentenceDetectorTest {
 
 
-  private static void testSentenceValues(String sentences){
+  private static void testSentenceValues(String sentences) {
     NewlineSentenceDetector sd = new NewlineSentenceDetector();
 
     String results[] = sd.sentDetect(sentences);

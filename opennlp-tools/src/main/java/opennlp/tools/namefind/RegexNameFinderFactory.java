@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.namefind;
 
 import java.util.HashMap;
@@ -75,11 +76,11 @@ public class RegexNameFinderFactory {
     String text = "my email is opennlp@gmail.com and my phone num is 123-234-5678 and i like https://www.google.com and I visited MGRS  11sku528111 AKA  11S KU 528 111 and DMS 45N 123W AKA  +45.1234, -123.12 AKA  45.1234N 123.12W AKA 45 30 N 50 30 W";
     String[] tokens = text.split(" ");
     RegexNameFinder regexNameFinder = RegexNameFinderFactory.getDefaultRegexNameFinders(
-            DEFAULT_REGEX_NAME_FINDER.DEGREES_MIN_SEC_LAT_LON,
-            DEFAULT_REGEX_NAME_FINDER.EMAIL,
-            DEFAULT_REGEX_NAME_FINDER.MGRS,
-            DEFAULT_REGEX_NAME_FINDER.USA_PHONE_NUM,
-            DEFAULT_REGEX_NAME_FINDER.URL);
+        DEFAULT_REGEX_NAME_FINDER.DEGREES_MIN_SEC_LAT_LON,
+        DEFAULT_REGEX_NAME_FINDER.EMAIL,
+        DEFAULT_REGEX_NAME_FINDER.MGRS,
+        DEFAULT_REGEX_NAME_FINDER.USA_PHONE_NUM,
+        DEFAULT_REGEX_NAME_FINDER.URL);
 
 
     Span[] find = regexNameFinder.find(tokens);
@@ -145,15 +146,15 @@ public class RegexNameFinderFactory {
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
         p[0] = Pattern.compile("\\b(((ht|f)tp(s?)\\:\\/\\/|~\\/|\\/)|www.)"
-                + "(\\w+:\\w+@)?(([-\\w]+\\.)+(com|org|net|gov"
-                + "|mil|biz|info|mobi|name|aero|jobs|museum"
-                + "|travel|[a-z]{2}))(:[\\d]{1,5})?"
-                + "(((\\/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|\\/)+|\\?|#)?"
-                + "((\\?([-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?"
-                + "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)"
-                + "(&(?:[-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?"
-                + "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)*)*"
-                + "(#([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)?\\b", Pattern.CASE_INSENSITIVE);
+            + "(\\w+:\\w+@)?(([-\\w]+\\.)+(com|org|net|gov"
+            + "|mil|biz|info|mobi|name|aero|jobs|museum"
+            + "|travel|[a-z]{2}))(:[\\d]{1,5})?"
+            + "(((\\/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|\\/)+|\\?|#)?"
+            + "((\\?([-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?"
+            + "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)"
+            + "(&(?:[-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?"
+            + "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)*)*"
+            + "(#([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)?\\b", Pattern.CASE_INSENSITIVE);
         Map<String, Pattern[]> regexMap = new HashMap<>();
         regexMap.put(getType(), p);
         return regexMap;

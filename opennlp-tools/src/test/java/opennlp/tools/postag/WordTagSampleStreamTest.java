@@ -42,7 +42,7 @@ public class WordTagSampleStreamTest {
     sampleString.add("This_x1 is_x2 a_x3 test_x4 sentence_x5 ._x6");
 
     WordTagSampleStream stream =
-      new WordTagSampleStream(new CollectionObjectStream<String>(sampleString));
+        new WordTagSampleStream(new CollectionObjectStream<String>(sampleString));
 
     POSSample sample = stream.read();
     String words[] = sample.getSentence();

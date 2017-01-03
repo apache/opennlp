@@ -80,7 +80,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
     List<Integer> indexedContext = new ArrayList<>();
 
-    for (int eventIndex=0; eventIndex<numEvents; eventIndex++) {
+    for (int eventIndex = 0; eventIndex < numEvents; eventIndex++) {
       Event ev = events.removeFirst();
       String[] econtext = ev.getContext();
       ComparableEvent ce;
@@ -104,16 +104,16 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
       //drop events with no active features
       if (indexedContext.size() > 0) {
         int[] cons = new int[indexedContext.size()];
-        for (int ci=0;ci<cons.length;ci++) {
+        for (int ci = 0; ci < cons.length; ci++) {
           cons[ci] = indexedContext.get(ci);
         }
         ce = new ComparableEvent(ocID, cons, ev.getValues());
         eventsToCompare.add(ce);
       }
       else {
-        System.err.println("Dropped event "+ev.getOutcome()+":"+Arrays.asList(ev.getContext()));
+        System.err.println("Dropped event " + ev.getOutcome() + ":" + Arrays.asList(ev.getContext()));
       }
-//    recycle the TIntArrayList
+
       indexedContext.clear();
     }
     outcomeLabels = toIndexedStringArray(omap);

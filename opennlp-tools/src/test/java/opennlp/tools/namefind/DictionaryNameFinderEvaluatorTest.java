@@ -67,7 +67,7 @@ public class DictionaryNameFinderEvaluatorTest {
    */
   private static ObjectStream<NameSample> createSample() throws IOException,
       URISyntaxException {
-    
+
     InputStreamFactory in = new ResourceAsStreamFactory(
         DictionaryNameFinderEvaluatorTest.class,
         "/opennlp/tools/namefind/AnnotatedSentences.txt");

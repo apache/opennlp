@@ -49,14 +49,12 @@ import java.util.Set;
  */
 public class ArgumentParser {
 
-  public @Retention(RetentionPolicy.RUNTIME)
-  @interface OptionalParameter {
+  public @Retention(RetentionPolicy.RUNTIME) @interface OptionalParameter {
     String DEFAULT_CHARSET = "DEFAULT_CHARSET";
     String defaultValue() default "";
   }
 
-  public @Retention(RetentionPolicy.RUNTIME)
-  @interface ParameterDescription {
+  public @Retention(RetentionPolicy.RUNTIME) @interface ParameterDescription {
     String valueName();
     String description() default "";
   }
@@ -112,7 +110,7 @@ public class ArgumentParser {
     public Object parseArgument(Method method, String argName, String charsetName) {
 
       try {
-        if(OptionalParameter.DEFAULT_CHARSET.equals(charsetName)) {
+        if (OptionalParameter.DEFAULT_CHARSET.equals(charsetName)) {
           return Charset.defaultCharset();
         } else if (Charset.isSupported(charsetName)) {
           return Charset.forName(charsetName);
@@ -183,16 +181,16 @@ public class ArgumentParser {
           // check that method has zero arguments
           if (method.getParameterTypes().length != 0)
             throw new IllegalArgumentException(method.getName() + " method must have zero parameters but has " +
-                    method.getParameterTypes().length + "!");
+                method.getParameterTypes().length + "!");
 
           // check return types of interface
           Class<?> returnType = method.getReturnType();
 
           Set<Class<?>> compatibleReturnTypes = argumentFactories.keySet();
 
-          if(!compatibleReturnTypes.contains(returnType))
-             throw new IllegalArgumentException(method.getName() + " method must have compatible return type! Got " +
-                     returnType + ", expected one of " + compatibleReturnTypes);
+          if (!compatibleReturnTypes.contains(returnType))
+            throw new IllegalArgumentException(method.getName() + " method must have compatible return type! Got " +
+                returnType + ", expected one of " + compatibleReturnTypes);
         }
       }
     }
@@ -220,7 +218,7 @@ public class ArgumentParser {
   public static <T> String createUsage(Class<T> argProxyInterface) {
     return createUsage(new Class[]{argProxyInterface});
   }
-  
+
   /**
    * Auxiliary class that holds information about an argument. This is used by the
    * GenerateManualTool, which creates a Docbook for the CLI automatically.
@@ -230,7 +228,7 @@ public class ArgumentParser {
     private final String value;
     private final String description;
     private final boolean optional;
-    
+
     public Argument(String argument, String value, String description,
         boolean optional) {
       super();
@@ -254,9 +252,9 @@ public class ArgumentParser {
 
     public boolean getOptional() {
       return optional;
-    } 
+    }
   }
-  
+
 
 
   /**
@@ -289,16 +287,16 @@ public class ArgumentParser {
             else {
               duplicateFilter.add(paramName);
             }
-            
+
             boolean isOptional = false;
 
             if (optional != null)
               isOptional = true;
-            
+
             Argument arg = new Argument(paramName.substring(1), desc.valueName(), desc.description(), isOptional);
 
             arguments.add(arg);
-            
+
           }
         }
       }
@@ -346,7 +344,7 @@ public class ArgumentParser {
 
             usage.append(paramName).append(' ').append(desc.valueName());
             details.append('\t').append(paramName).append(' ').append(desc.valueName()).append('\n');
-            if(desc.description().length() > 0) {
+            if (desc.description().length() > 0) {
               details.append("\t\t").append(desc.description()).append('\n');
             }
 

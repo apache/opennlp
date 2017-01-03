@@ -28,7 +28,7 @@ public class UniformPrior implements Prior {
   private double r;
 
   public void logPrior(double[] dist, int[] context, float[] values) {
-    for (int oi=0;oi<numOutcomes;oi++) {
+    for (int oi = 0; oi < numOutcomes; oi++) {
       dist[oi] = r;
     }
   }
@@ -39,6 +39,6 @@ public class UniformPrior implements Prior {
 
   public void setLabels(String[] outcomeLabels, String[] contextLabels) {
     this.numOutcomes = outcomeLabels.length;
-    r = Math.log(1.0/numOutcomes);
+    r = Math.log(1.0 / numOutcomes);
   }
 }

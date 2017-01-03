@@ -120,7 +120,7 @@ public class ConstitParseSampleStreamTest {
 
     Parse[] tagNodes = p.getTagNodes();
     String[] tokens = new String[tagNodes.length];
-    for (int ti=0;ti<tagNodes.length;ti++){
+    for (int ti = 0; ti < tagNodes.length; ti++) {
       tokens[ti] = tagNodes[ti].getCoveredText();
     }
 

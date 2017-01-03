@@ -38,7 +38,8 @@ public class OntoNotesParseSampleStreamFactory extends AbstractSampleStreamFacto
     OntoNotesFormatParameters params = ArgumentParser.parse(args, OntoNotesFormatParameters.class);
 
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
-        params.getOntoNotesDir()), file -> {
+        params.getOntoNotesDir()),
+        file -> {
           if (file.isFile()) {
             return file.getName().endsWith(".parse");
           }

@@ -38,6 +38,7 @@ public class DictionaryFeatureGenerator implements AdaptiveFeatureGenerator {
   public DictionaryFeatureGenerator(Dictionary dict) {
     this("",dict);
   }
+
   public DictionaryFeatureGenerator(String prefix, Dictionary dict) {
     setDictionary(prefix,dict);
   }

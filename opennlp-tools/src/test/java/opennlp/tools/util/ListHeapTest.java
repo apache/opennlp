@@ -30,7 +30,7 @@ public class ListHeapTest {
 
     Heap<Integer> heap = new ListHeap<Integer>(size);
 
-    for (int ai = 0; ai < 10; ai++){
+    for (int ai = 0; ai < 10; ai++) {
 
       if (ai < size)
         assertEquals(ai, heap.size());

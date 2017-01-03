@@ -98,7 +98,7 @@ public interface MaxentModel {
    * @param outcome the String name of the outcome for which the
    *          index is desired
    * @return the index if the given outcome label exists for this
-   * model, -1 if it does not.
+   *     model, -1 if it does not.
    **/
   int getIndex(String outcome);
 

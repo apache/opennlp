@@ -46,9 +46,9 @@ public abstract class BaseToolFactory {
   public BaseToolFactory() {
   }
 
- /**
-  * Initializes the ToolFactory with an artifact provider.
-  */
+  /**
+   * Initializes the ToolFactory with an artifact provider.
+   */
   protected void init(ArtifactProvider artifactProvider) {
     this.artifactProvider = artifactProvider;
   }

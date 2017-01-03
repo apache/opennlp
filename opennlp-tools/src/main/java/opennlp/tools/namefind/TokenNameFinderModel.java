@@ -232,8 +232,8 @@ public class TokenNameFinderModel extends BaseModel {
     super.validateArtifactMap();
 
     if (!(artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel) &&
-      !(artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel)) {
-          throw new InvalidFormatException("Token Name Finder model is incomplete!");
-        }
+        !(artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel)) {
+      throw new InvalidFormatException("Token Name Finder model is incomplete!");
+    }
   }
 }

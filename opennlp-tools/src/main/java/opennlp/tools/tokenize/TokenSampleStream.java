@@ -51,7 +51,7 @@ public class TokenSampleStream extends FilterObjectStream<String, TokenSample> {
       throw new IllegalArgumentException("separatorChars must not be null!");
     }
 
-    this.separatorChars= separatorChars;
+    this.separatorChars = separatorChars;
   }
 
   public TokenSampleStream(ObjectStream<String> sentences) {

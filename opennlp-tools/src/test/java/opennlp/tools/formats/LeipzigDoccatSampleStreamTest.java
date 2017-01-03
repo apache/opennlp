@@ -51,7 +51,7 @@ public class LeipzigDoccatSampleStreamTest {
     assertEquals("en", doc4.getCategory());
 
     assertNull(sampleStream.read());
-    
+
     sampleStream.close();
   }
 }

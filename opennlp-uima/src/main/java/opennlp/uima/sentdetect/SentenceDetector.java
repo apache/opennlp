@@ -47,7 +47,7 @@ import org.apache.uima.resource.ResourceInitializationException;
  * <table border=1>
  *   <caption></caption>
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * 	 <tr><td>String</td> <td>opennlp.uima.ContainerType</td> <td>The name of the container type</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.ContainerType</td> <td>The name of the container type</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double
  *       probability feature (not set by default)</td></tr>
  * </table>

@@ -73,7 +73,7 @@ public final class TokenizerTrainerTool
       }
     }
 
-    if(mlParams == null) {
+    if (mlParams == null) {
       mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 

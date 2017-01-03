@@ -29,7 +29,7 @@ import opennlp.tools.util.InvalidFormatException;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DetokenizationDictionaryTest{
+public class DetokenizationDictionaryTest {
 
   private String tokens[];
   private Operation operations[];

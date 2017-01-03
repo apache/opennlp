@@ -64,8 +64,7 @@ public class POSTaggerFactoryTest {
             .getResourceAsStream("TagDictionaryCaseSensitive.xml")));
     Dictionary dic = POSTaggerME.buildNGramDictionary(createSampleStream(), 0);
 
-    POSModel posModel = trainPOSModel(
-      new DummyPOSTaggerFactory(dic, posDict));
+    POSModel posModel = trainPOSModel(new DummyPOSTaggerFactory(dic, posDict));
 
     POSTaggerFactory factory = posModel.getFactory();
     assertTrue(factory.getTagDictionary() instanceof DummyPOSDictionary);
@@ -91,8 +90,7 @@ public class POSTaggerFactoryTest {
             .getResourceAsStream("TagDictionaryCaseSensitive.xml"));
     Dictionary dic = POSTaggerME.buildNGramDictionary(createSampleStream(), 0);
 
-    POSModel posModel = trainPOSModel(
-      new POSTaggerFactory(dic, posDict));
+    POSModel posModel = trainPOSModel(new POSTaggerFactory(dic, posDict));
 
     POSTaggerFactory factory = posModel.getFactory();
     assertTrue(factory.getTagDictionary() instanceof POSDictionary);

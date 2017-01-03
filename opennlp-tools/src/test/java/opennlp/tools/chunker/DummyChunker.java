@@ -32,54 +32,54 @@ import opennlp.tools.util.Span;
  */
 public class DummyChunker implements Chunker {
 
-	private DummyChunkSampleStream mSampleStream;
+  private DummyChunkSampleStream mSampleStream;
 
-	public DummyChunker(DummyChunkSampleStream aSampleStream) {
-		mSampleStream = aSampleStream;
-	}
+  public DummyChunker(DummyChunkSampleStream aSampleStream) {
+    mSampleStream = aSampleStream;
+  }
 
-	public List<String> chunk(List<String> toks, List<String> tags) {
-		return Arrays.asList(chunk(toks.toArray(new String[toks.size()]),
-				tags.toArray(new String[tags.size()])));
-	}
+  public List<String> chunk(List<String> toks, List<String> tags) {
+    return Arrays.asList(chunk(toks.toArray(new String[toks.size()]),
+        tags.toArray(new String[tags.size()])));
+  }
 
-	public String[] chunk(String[] toks, String[] tags) {
-		try {
-			ChunkSample predsSample = mSampleStream.read();
+  public String[] chunk(String[] toks, String[] tags) {
+    try {
+      ChunkSample predsSample = mSampleStream.read();
 
-			// checks if the streams are sync
-			for (int i = 0; i < toks.length; i++) {
-				if (!toks[i].equals(predsSample.getSentence()[i])
-						|| !tags[i].equals(predsSample.getTags()[i])) {
-					throw new RuntimeException("The streams are not sync!"
-							+ "\n expected sentence: " + Arrays.toString(toks)
-							+ "\n expected tags: " + Arrays.toString(tags)
-							+ "\n predicted sentence: "
-							+ Arrays.toString(predsSample.getSentence())
-							+ "\n predicted tags: "
-							+ Arrays.toString(predsSample.getTags()));
-				}
-			}
+      // checks if the streams are sync
+      for (int i = 0; i < toks.length; i++) {
+        if (!toks[i].equals(predsSample.getSentence()[i])
+            || !tags[i].equals(predsSample.getTags()[i])) {
+          throw new RuntimeException("The streams are not sync!"
+              + "\n expected sentence: " + Arrays.toString(toks)
+              + "\n expected tags: " + Arrays.toString(tags)
+              + "\n predicted sentence: "
+              + Arrays.toString(predsSample.getSentence())
+              + "\n predicted tags: "
+              + Arrays.toString(predsSample.getTags()));
+        }
+      }
 
-			return predsSample.getPreds();
+      return predsSample.getPreds();
 
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
-	public Sequence[] topKSequences(List<String> sentence, List<String> tags) {
-		return null;
-	}
+  public Sequence[] topKSequences(List<String> sentence, List<String> tags) {
+    return null;
+  }
 
-	public Sequence[] topKSequences(String[] sentence, String[] tags,
-			double minSequenceScore) {
-		return null;
-	}
+  public Sequence[] topKSequences(String[] sentence, String[] tags,
+      double minSequenceScore) {
+    return null;
+  }
 
-	public Span[] chunkAsSpans(String[] toks, String[] tags) {
-		return null;
-	}
+  public Span[] chunkAsSpans(String[] toks, String[] tags) {
+    return null;
+  }
 
   public Sequence[] topKSequences(String[] sentence, String[] tags) {
     return null;

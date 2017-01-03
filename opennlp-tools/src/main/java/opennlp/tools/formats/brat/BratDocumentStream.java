@@ -42,7 +42,7 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
    * @param config the annotation.conf from the brat project as an Annotation Configuration object
    * @param bratCorpusDirectory the directory containing all the brat training data files
    * @param searchRecursive specifies if the corpus directory should be traversed recursively
-   * to find training data files.
+   *     to find training data files.
    * @param fileFilter  a custom file filter to filter out certain files or null to accept all files
    *
    * @throws IOException if reading from the brat directory fails in anyway
@@ -52,7 +52,7 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
 
     if (!bratCorpusDirectory.isDirectory()) {
       throw new IOException("Input corpus directory must be a directory " +
-      		"according to File.isDirectory()!");
+          "according to File.isDirectory()!");
     }
 
     this.config = config;

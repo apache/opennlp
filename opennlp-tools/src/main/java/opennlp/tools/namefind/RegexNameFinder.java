@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.namefind;
 
 import java.util.Collection;
@@ -96,9 +97,9 @@ public final class RegexNameFinder implements TokenNameFinder {
 
           while (matcher.find()) {
             Integer tokenStartIndex =
-                    sentencePosTokenMap.get(matcher.start());
+                sentencePosTokenMap.get(matcher.start());
             Integer tokenEndIndex =
-                    sentencePosTokenMap.get(matcher.end());
+                sentencePosTokenMap.get(matcher.end());
 
             if (tokenStartIndex != null && tokenEndIndex != null) {
               Span annotation = new Span(tokenStartIndex, tokenEndIndex, entry.getKey());
@@ -113,9 +114,9 @@ public final class RegexNameFinder implements TokenNameFinder {
 
         while (matcher.find()) {
           Integer tokenStartIndex =
-                  sentencePosTokenMap.get(matcher.start());
+              sentencePosTokenMap.get(matcher.start());
           Integer tokenEndIndex =
-                  sentencePosTokenMap.get(matcher.end());
+              sentencePosTokenMap.get(matcher.end());
 
           if (tokenStartIndex != null && tokenEndIndex != null) {
             Span annotation = new Span(tokenStartIndex, tokenEndIndex, sType);
@@ -127,7 +128,7 @@ public final class RegexNameFinder implements TokenNameFinder {
 
 
     return annotations.toArray(
-            new Span[annotations.size()]);
+        new Span[annotations.size()]);
   }
 
   /**
@@ -172,7 +173,7 @@ public final class RegexNameFinder implements TokenNameFinder {
     }
 
     return annotations.toArray(
-            new Span[annotations.size()]);
+        new Span[annotations.size()]);
   }
 
   @Override

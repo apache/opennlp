@@ -82,7 +82,7 @@ public class GenerateManualTool {
 
   /**
    * Appends a group of tools, based on the tool package name
-   * 
+   *
    * @param groupName
    * @param toolsMap
    * @param sb
@@ -102,7 +102,7 @@ public class GenerateManualTool {
 
   /**
    * Appends a tool
-   * 
+   *
    * @param groupName
    * @param toolName
    * @param tool
@@ -233,7 +233,7 @@ public class GenerateManualTool {
 
   /**
    * Prevents long lines. Lines are optimized for printing.
-   * 
+   *
    * @param stringBlock
    * @return
    */

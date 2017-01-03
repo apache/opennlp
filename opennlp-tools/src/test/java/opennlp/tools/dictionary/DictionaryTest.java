@@ -32,22 +32,22 @@ import opennlp.tools.util.StringList;
 import org.junit.Test;
 
 /**
-  * Tests for the {@link Dictionary} class.
-  */
+ * Tests for the {@link Dictionary} class.
+ */
 public class DictionaryTest {
 
   /**
    * @return a case sensitive Dictionary
    */
   private Dictionary getCaseSensitive() {
-      return new Dictionary(true);
+    return new Dictionary(true);
   }
 
   /**
    * @return a case insensitive Dictionary
    */
   private Dictionary getCaseInsensitive() {
-      return new Dictionary(false);
+    return new Dictionary(false);
   }
 
   /**
@@ -126,7 +126,7 @@ public class DictionaryTest {
     String testDictionary = "1a 1b 1c 1d \n 2a 2b 2c \n 3a \n 4a    4b   ";
 
     Dictionary dictionay =
-      Dictionary.parseOneEntryPerLine(new StringReader(testDictionary));
+        Dictionary.parseOneEntryPerLine(new StringReader(testDictionary));
 
     assertTrue(dictionay.size() == 4);
 

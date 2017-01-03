@@ -46,7 +46,7 @@ public class PrepAttachDataUtil {
         String[] items = line.split("\\s+");
         String label = items[5];
         String[] context = {"verb=" + items[1], "noun=" + items[2],
-                "prep=" + items[3], "prep_obj=" + items[4]};
+            "prep=" + items[3], "prep_obj=" + items[4]};
         events.add(new Event(label, context));
       }
     }
@@ -70,7 +70,7 @@ public class PrepAttachDataUtil {
       double[] ocs = model.eval(ev.getContext());
 
       int best = 0;
-      for (int i=1; i<ocs.length; i++)
+      for (int i = 1; i < ocs.length; i++)
         if (ocs[i] > ocs[best])
           best = i;
 
@@ -81,7 +81,7 @@ public class PrepAttachDataUtil {
       total++;
     }
 
-    double accuracy = correct/(double)total;
+    double accuracy = correct / (double) total;
     System.out.println("Accuracy on PPA devset: (" + correct + "/" + total + ") " + accuracy);
 
     assertEquals(expecedAccuracy, accuracy, .00001);

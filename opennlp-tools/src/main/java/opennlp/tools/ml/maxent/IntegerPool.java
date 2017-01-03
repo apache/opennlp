@@ -26,7 +26,7 @@ package opennlp.tools.ml.maxent;
  * number of Integer wrapper objects will be created.
  */
 public class IntegerPool {
-    private Integer[] _table;
+  private Integer[] _table;
 
   /**
    * Creates an IntegerPool with 0..size Integer objects.

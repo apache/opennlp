@@ -203,11 +203,12 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     else {
       Parse c = (Parse) this.clone();
-      Parse lc = c.parts.get(parts.size()-1);
-      c.parts.set(parts.size()-1,lc.clone(node));
+      Parse lc = c.parts.get(parts.size() - 1);
+      c.parts.set(parts.size() - 1,lc.clone(node));
       return c;
     }
   }
+
   /**
    * Clones the right frontier of this root parse up to and including the specified node.
    *
@@ -320,7 +321,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     Span ic = constituent.span;
     if (span.contains(ic)) {
       //double oprob=c.prob;
-      int pi=0;
+      int pi = 0;
       int pn = parts.size();
       for (; pi < pn; pi++) {
         Parse subPart = parts.get(pi);
@@ -392,7 +393,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * Displays this parse using Penn Treebank-style formatting.
    */
   public void show() {
-    StringBuffer sb = new StringBuffer(text.length()*4);
+    StringBuffer sb = new StringBuffer(text.length() * 4);
     show(sb);
     System.out.println(sb);
   }
@@ -482,7 +483,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * @param logProb The probability of an action performed on this parse.
    */
   public void addProb(double logProb) {
-    this.prob+=logProb;
+    this.prob += logProb;
   }
 
   /**
@@ -521,10 +522,10 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   public void remove(int index) {
     parts.remove(index);
-    if(! parts.isEmpty()) {
-        if (index == 0 || index == parts.size()) { //size is orig last element
-            span = new Span((parts.get(0)).span.getStart(),(parts.get(parts.size()-1)).span.getEnd());
-          }
+    if (! parts.isEmpty()) {
+      if (index == 0 || index == parts.size()) { //size is orig last element
+        span = new Span((parts.get(0)).span.getStart(),(parts.get(parts.size() - 1)).span.getEnd());
+      }
     }
   }
 
@@ -549,14 +550,14 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * @return The new parent node of this node and the specified sister node.
    */
   public Parse adjoin(Parse sister, HeadRules rules) {
-    Parse lastChild = parts.get(parts.size()-1);
+    Parse lastChild = parts.get(parts.size() - 1);
     Parse adjNode = new Parse(this.text,new Span(lastChild.getSpan().getStart(),sister.getSpan().getEnd()),lastChild.getType(),1,rules.getHead(new Parse[]{lastChild,sister},lastChild.getType()));
     adjNode.parts.add(lastChild);
     if (sister.prevPunctSet != null) {
       adjNode.parts.addAll(sister.prevPunctSet);
     }
     adjNode.parts.add(sister);
-    parts.set(parts.size()-1,adjNode);
+    parts.set(parts.size() - 1, adjNode);
     this.span = new Span(span.getStart(),sister.getSpan().getEnd());
     this.head = rules.getHead(getChildren(),type);
     this.headIndex = head.headIndex;
@@ -566,7 +567,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   public void expandTopNode(Parse root) {
     boolean beforeRoot = true;
     //System.err.println("expandTopNode: parts="+parts);
-    for (int pi=0,ai=0;pi<parts.size();pi++,ai++) {
+    for (int pi = 0, ai = 0; pi < parts.size(); pi++,ai++) {
       Parse node = parts.get(pi);
       if (node == root) {
         beforeRoot = false;
@@ -674,7 +675,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
           Matcher funMatcher = funTypePattern.matcher(rest);
           if (funMatcher.find()) {
             String ftag = funMatcher.group(1);
-            type = type+"-"+ftag;
+            type = type + "-" + ftag;
           }
         }
         return type;
@@ -736,7 +737,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * @param rest The portion of the parse string remaining to be processed.
    *
    * @return The string containing the token for the specified portion of the parse string or
-   * null if the portion of the parse string does not represent a token.
+   *     null if the portion of the parse string does not represent a token.
    */
   private static String getToken(String rest) {
     Matcher tokenMatcher = tokenPattern.matcher(rest);
@@ -754,7 +755,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    */
   public void updateHeads(HeadRules rules) {
     if (parts != null && parts.size() != 0) {
-      for (int pi=0,pn=parts.size();pi<pn;pi++) {
+      for (int pi = 0, pn = parts.size(); pi < pn; pi++) {
         Parse c = parts.get(pi);
         c.updateHeads(rules);
       }
@@ -772,7 +773,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   public void updateSpan() {
-    span = new Span((parts.get(0)).span.getStart(),(parts.get(parts.size()-1)).span.getEnd());
+    span = new Span((parts.get(0)).span.getStart(),(parts.get(parts.size() - 1)).span.getEnd());
   }
 
   /**
@@ -783,7 +784,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   public static void pruneParse(Parse parse) {
     List<Parse> nodes = new LinkedList<Parse>();
     nodes.add(parse);
-    while(nodes.size() != 0) {
+    while (nodes.size() != 0) {
       Parse node = nodes.remove(0);
       Parse[] children = node.getChildren();
       if (children.length == 1 && node.getType().equals(children[0].getType())) {
@@ -799,20 +800,20 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   public static void fixPossesives(Parse parse) {
     Parse[] tags = parse.getTagNodes();
-    for (int ti=0;ti<tags.length;ti++) {
+    for (int ti = 0; ti < tags.length; ti++) {
       if (tags[ti].getType().equals("POS")) {
-        if (ti+1 < tags.length && tags[ti+1].getParent() == tags[ti].getParent().getParent()) {
-          int start = tags[ti+1].getSpan().getStart();
-          int end = tags[ti+1].getSpan().getEnd();
-          for (int npi=ti+2;npi<tags.length;npi++) {
-            if (tags[npi].getParent() == tags[npi-1].getParent()) {
+        if (ti + 1 < tags.length && tags[ti + 1].getParent() == tags[ti].getParent().getParent()) {
+          int start = tags[ti + 1].getSpan().getStart();
+          int end = tags[ti + 1].getSpan().getEnd();
+          for (int npi = ti + 2; npi < tags.length; npi++) {
+            if (tags[npi].getParent() == tags[npi - 1].getParent()) {
               end = tags[npi].getSpan().getEnd();
             }
             else {
               break;
             }
           }
-          Parse npPos = new Parse(parse.getText(),new Span(start,end),"NP",1,tags[ti+1]);
+          Parse npPos = new Parse(parse.getText(), new Span(start,end), "NP", 1 , tags[ti + 1]);
           parse.insert(npPos);
         }
       }
@@ -873,14 +874,14 @@ public class Parse implements Cloneable, Comparable<Parse> {
         Constituent con = stack.pop();
         int start = con.getSpan().getStart();
         if (start < offset) {
-          cons.add(new Constituent(con.getLabel(), new Span(start, offset-1)));
+          cons.add(new Constituent(con.getLabel(), new Span(start, offset - 1)));
         }
       }
     }
     String txt = text.toString();
     int tokenIndex = -1;
     Parse p = new Parse(txt, new Span(0, txt.length()), AbstractBottomUpParser.TOP_NODE, 1,0);
-    for (int ci=0;ci < cons.size();ci++) {
+    for (int ci = 0; ci < cons.size(); ci++) {
       Constituent con = cons.get(ci);
       String type = con.getLabel();
       if (!type.equals(AbstractBottomUpParser.TOP_NODE)) {
@@ -931,7 +932,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    */
   public boolean isFlat() {
     boolean flat = true;
-    for (int ci=0;ci<parts.size();ci++) {
+    for (int ci = 0; ci < parts.size(); ci++) {
       flat &= (parts.get(ci)).isPosTag();
     }
     return flat;
@@ -954,7 +955,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     List<Parse> tags = new LinkedList<>();
     List<Parse> nodes = new LinkedList<>();
     nodes.addAll(this.parts);
-    while(nodes.size() != 0) {
+    while (nodes.size() != 0) {
       Parse p = nodes.remove(0);
       if (p.isPosTag()) {
         tags.add(p);
@@ -981,7 +982,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     }
     Set<Parse> parents = new HashSet<>();
     Parse cparent = this;
-    while(cparent != null) {
+    while (cparent != null) {
       parents.add(cparent);
       cparent = cparent.getParent();
     }
@@ -1012,10 +1013,10 @@ public class Parse implements Cloneable, Comparable<Parse> {
       if (!this.text.equals(p.text)) {
         return false;
       }
-      if (this.parts.size() != p.parts.size()){
-      	return false;
+      if (this.parts.size() != p.parts.size()) {
+        return false;
       }
-      for (int ci=0;ci<parts.size();ci++) {
+      for (int ci = 0; ci < parts.size(); ci++) {
         if (!parts.get(ci).equals(p.parts.get(ci))) {
           return false;
         }
@@ -1028,11 +1029,11 @@ public class Parse implements Cloneable, Comparable<Parse> {
   @Override
   public int hashCode() {
     int result = 17;
-    result = 37*result + span.hashCode();
+    result = 37 * result + span.hashCode();
 
     // TODO: This might lead to a performance regression
-//    result = 37*result + label.hashCode();
-    result = 37*result + text.hashCode();
+    // result = 37*result + label.hashCode();
+    result = 37 * result + text.hashCode();
     return result;
   }
 
@@ -1049,8 +1050,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   /**
    * Returns the derivation string for this parse if one has been created.
    *
-   * @return the derivation string for this parse or null if no derivation
-   * string has been created.
+   * @return the derivation string for this parse or null if no derivation string has been created.
    */
   public StringBuffer getDerivation() {
     return derivation;
@@ -1069,14 +1069,14 @@ public class Parse implements Cloneable, Comparable<Parse> {
     Parse[] kids = p.getChildren();
     StringBuilder levelsBuff = new StringBuilder();
     levelsBuff.append("[");
-    int[] nlevels = new int[levels.length+1];
-    for (int li=0;li<levels.length;li++) {
+    int[] nlevels = new int[levels.length + 1];
+    for (int li = 0; li < levels.length; li++) {
       nlevels[li] = levels[li];
       levelsBuff.append(levels[li]).append(".");
     }
-    for (int ki=0;ki<kids.length;ki++) {
+    for (int ki = 0; ki < kids.length; ki++) {
       nlevels[levels.length] = ki;
-      System.out.println(levelsBuff.toString() + ki + "] "+ kids[ki].getType() +
+      System.out.println(levelsBuff.toString() + ki + "] " + kids[ki].getType() +
           " " + kids[ki].hashCode() + " -> " + kids[ki].getParent().hashCode() +
           " " + kids[ki].getParent().getType() + " " + kids[ki].getCoveredText());
       codeTree(kids[ki],nlevels);
@@ -1099,7 +1099,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * @param tokens
    */
   public static void addNames(String tag, Span[] names, Parse[] tokens) {
-    for (int ni=0,nn=names.length;ni<nn;ni++) {
+    for (int ni = 0, nn = names.length; ni < nn; ni++) {
       Span nameTokenSpan = names[ni];
       Parse startToken = tokens[nameTokenSpan.getStart()];
       Parse endToken = tokens[nameTokenSpan.getEnd() - 1];
@@ -1113,8 +1113,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
         else {
           Parse[] kids = commonParent.getChildren();
           boolean crossingKids = false;
-          for (int ki=0,kn=kids.length;ki<kn;ki++) {
-            if (nameSpan.crosses(kids[ki].getSpan())){
+          for (int ki = 0, kn = kids.length; ki < kn; ki++) {
+            if (nameSpan.crosses(kids[ki].getSpan())) {
               crossingKids = true;
             }
           }
@@ -1124,8 +1124,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
           else {
             if (commonParent.getType().equals("NP")) {
               Parse[] grandKids = kids[0].getChildren();
-              if (grandKids.length > 1 && nameSpan.contains(grandKids[grandKids.length-1].getSpan())) {
-                commonParent.insert(new Parse(commonParent.getText(),commonParent.getSpan(),tag,1.0,commonParent.getHeadIndex()));
+              if (grandKids.length > 1 && nameSpan.contains(grandKids[grandKids.length - 1].getSpan())) {
+                commonParent.insert(new Parse(commonParent.getText(), commonParent.getSpan(), tag,1.0, commonParent.getHeadIndex()));
               }
             }
           }
@@ -1148,9 +1148,9 @@ public class Parse implements Cloneable, Comparable<Parse> {
       System.err.println("Reads training parses (one-sentence-per-line) and displays parse structure.");
       System.exit(1);
     }
-    int ai=0;
+    int ai = 0;
     boolean fixPossesives = false;
-    while(args[ai].startsWith("-") && ai < args.length) {
+    while (args[ai].startsWith("-") && ai < args.length) {
       if (args[ai].equals("-fun")) {
         Parse.useFunctionTags(true);
         ai++;

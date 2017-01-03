@@ -65,7 +65,7 @@ public class FMeasureTest {
   };
 
   private Span predictedToMerge[] = {
-	  new Span(8, 9),
+      new Span(8, 9),
       new Span(14, 15),
       new Span(15, 16),
       new Span(100, 120),
@@ -112,46 +112,46 @@ public class FMeasureTest {
 
   @Test
   public void testEmpty() {
-	  FMeasure fm = new FMeasure();
-	  assertEquals(-1, fm.getFMeasure(), DELTA);
-	  assertEquals(0, fm.getRecallScore(), DELTA);
-	  assertEquals(0, fm.getPrecisionScore(), DELTA);
+    FMeasure fm = new FMeasure();
+    assertEquals(-1, fm.getFMeasure(), DELTA);
+    assertEquals(0, fm.getRecallScore(), DELTA);
+    assertEquals(0, fm.getPrecisionScore(), DELTA);
   }
 
   @Test
   public void testPerfect() {
-	  FMeasure fm = new FMeasure();
-	  fm.updateScores(gold, gold);
-	  assertEquals(1, fm.getFMeasure(), DELTA);
-	  assertEquals(1, fm.getRecallScore(), DELTA);
-	  assertEquals(1, fm.getPrecisionScore(), DELTA);
+    FMeasure fm = new FMeasure();
+    fm.updateScores(gold, gold);
+    assertEquals(1, fm.getFMeasure(), DELTA);
+    assertEquals(1, fm.getRecallScore(), DELTA);
+    assertEquals(1, fm.getPrecisionScore(), DELTA);
   }
 
   @Test
   public void testMerge() {
-	  FMeasure fm = new FMeasure();
-	  fm.updateScores(gold, predicted);
-	  fm.updateScores(goldToMerge, predictedToMerge);
+    FMeasure fm = new FMeasure();
+    fm.updateScores(gold, predicted);
+    fm.updateScores(goldToMerge, predictedToMerge);
 
-	  FMeasure fmMerge = new FMeasure();
-	  fmMerge.updateScores(gold, predicted);
-	  FMeasure toMerge = new FMeasure();
-	  toMerge.updateScores(goldToMerge, predictedToMerge);
-	  fmMerge.mergeInto(toMerge);
+    FMeasure fmMerge = new FMeasure();
+    fmMerge.updateScores(gold, predicted);
+    FMeasure toMerge = new FMeasure();
+    toMerge.updateScores(goldToMerge, predictedToMerge);
+    fmMerge.mergeInto(toMerge);
 
-	  double selected1 = predicted.length;
-	  double target1 = gold.length;
-	  double tp1 = FMeasure.countTruePositives(gold, predicted);
+    double selected1 = predicted.length;
+    double target1 = gold.length;
+    double tp1 = FMeasure.countTruePositives(gold, predicted);
 
-	  double selected2 = predictedToMerge.length;
-	  double target2 = goldToMerge.length;
-	  double tp2 = FMeasure.countTruePositives(goldToMerge, predictedToMerge);
+    double selected2 = predictedToMerge.length;
+    double target2 = goldToMerge.length;
+    double tp2 = FMeasure.countTruePositives(goldToMerge, predictedToMerge);
 
 
-	  assertEquals((tp1 + tp2) / (target1 + target2), fm.getRecallScore(), DELTA);
-	  assertEquals((tp1 + tp2) / (selected1 + selected2), fm.getPrecisionScore(), DELTA);
+    assertEquals((tp1 + tp2) / (target1 + target2), fm.getRecallScore(), DELTA);
+    assertEquals((tp1 + tp2) / (selected1 + selected2), fm.getPrecisionScore(), DELTA);
 
-	  assertEquals(fm.getRecallScore(), fmMerge.getRecallScore(), DELTA);
-	  assertEquals(fm.getPrecisionScore(), fmMerge.getPrecisionScore(), DELTA);
+    assertEquals(fm.getRecallScore(), fmMerge.getRecallScore(), DELTA);
+    assertEquals(fm.getPrecisionScore(), fmMerge.getPrecisionScore(), DELTA);
   }
 }
