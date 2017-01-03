@@ -60,4 +60,8 @@ public class ChunkerFactory extends BaseToolFactory {
   public ChunkerContextGenerator getContextGenerator() {
     return new DefaultChunkerContextGenerator();
   }
+
+  public ChunkerContextGenerator getContextGenerator(int cache) {
+    return new DefaultChunkerContextGenerator(cache);
+  }
 }
