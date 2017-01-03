@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.postag;
 
-import junit.framework.Assert;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

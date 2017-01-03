@@ -17,18 +17,14 @@
 
 package opennlp.tools.sentdetect;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotSame;
-
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-
 import opennlp.tools.cmdline.sentdetect.SentenceEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
-
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 
 public class SentenceDetectorEvaluatorTest {
 
@@ -42,9 +38,9 @@ public class SentenceDetectorEvaluatorTest {
 
     eval.evaluateSample(SentenceSampleTest.createGoldSample());
 
-    assertEquals(1.0, eval.getFMeasure().getFMeasure());
+    Assert.assertEquals(1.0, eval.getFMeasure().getFMeasure(), 0.0);
 
-    assertEquals(0, stream.toString().length());
+    Assert.assertEquals(0, stream.toString().length());
   }
 
   @Test
@@ -57,9 +53,9 @@ public class SentenceDetectorEvaluatorTest {
 
     eval.evaluateSample(SentenceSampleTest.createPredSample());
 
-    assertEquals(-1.0, eval.getFMeasure().getFMeasure(), .1d);
+    Assert.assertEquals(-1.0, eval.getFMeasure().getFMeasure(), .1d);
 
-    assertNotSame(0, stream.toString().length());
+    Assert.assertNotSame(0, stream.toString().length());
   }
 
 

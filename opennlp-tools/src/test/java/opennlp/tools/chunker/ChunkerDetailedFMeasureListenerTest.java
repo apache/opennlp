@@ -17,19 +17,17 @@
 
 package opennlp.tools.chunker;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static junit.framework.Assert.assertEquals;
+import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.PlainTextByLineStream;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-
-import org.junit.Test;
-
-import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.PlainTextByLineStream;
 
 public class ChunkerDetailedFMeasureListenerTest {
 
@@ -44,10 +42,10 @@ public class ChunkerDetailedFMeasureListenerTest {
         getClass(), "/opennlp/tools/chunker/detailedOutput.txt");
           
     DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(inPredicted, UTF_8), true);
+        new PlainTextByLineStream(inPredicted, StandardCharsets.UTF_8), true);
 
     DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(inExpected, UTF_8), false);
+        new PlainTextByLineStream(inExpected, StandardCharsets.UTF_8), false);
 
     Chunker dummyChunker = new DummyChunker(predictedSample);
 
@@ -58,7 +56,7 @@ public class ChunkerDetailedFMeasureListenerTest {
 
     StringBuilder expected = new StringBuilder();
     BufferedReader reader = new BufferedReader(
-        new InputStreamReader(detailedOutputStream.createInputStream(), UTF_8));
+        new InputStreamReader(detailedOutputStream.createInputStream(), StandardCharsets.UTF_8));
     String line = reader.readLine();
 
     while (line != null) {
@@ -66,6 +64,7 @@ public class ChunkerDetailedFMeasureListenerTest {
       expected.append("\n");
       line = reader.readLine();
     }
-    assertEquals(expected.toString().trim(), listener.createReport(Locale.ENGLISH).trim());
+
+    Assert.assertEquals(expected.toString().trim(), listener.createReport(Locale.ENGLISH).trim());
   }
 }
