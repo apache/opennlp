@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
@@ -41,6 +42,8 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
 
   private SequenceCodec<String> codec;
 
+  private final String defaultType; 
+  
   /**
    * Creates a new name finder event stream using the specified data stream and context generator.
    * @param dataStream The data stream of events.
@@ -59,11 +62,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     this.contextGenerator = contextGenerator;
     this.contextGenerator.addFeatureGenerator(new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
 
-    String type1;
-    if (type != null)
-      type1 = type;
-    else
-      type1 = "default";
+    this.defaultType = type;
   }
 
   public NameFinderEventStream(ObjectStream<NameSample> dataStream) {
@@ -124,7 +123,12 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
       contextGenerator.clearAdaptiveData();
     }
 
-    String outcomes[] = codec.encode(sample.getNames(), sample.getSentence().length);
+    Span[] names = sample.getNames();
+    if (!Objects.isNull(this.defaultType)) {
+      names = overrideDefaultType(names);
+    }
+
+    String outcomes[] = codec.encode(names, sample.getSentence().length);
 //    String outcomes[] = generateOutcomes(sample.getNames(), type, sample.getSentence().length);
     additionalContextFeatureGenerator.setCurrentContext(sample.getAdditionalContext());
     String[] tokens = new String[sample.getSentence().length];
@@ -136,6 +140,20 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     return generateEvents(tokens, outcomes, contextGenerator).iterator();
   }
 
+  private Span[] overrideDefaultType(Span[] names) {
+    // need to copy because Span is not modifiable
+    Span[] converted = new Span[names.length];
+    for (int i = 0; i < names.length; i++) {
+      Span n = names[i];
+      if (Objects.isNull(n.getType())) {
+        converted[i] = new Span(n.getStart(), n.getEnd(), this.defaultType,
+            n.getProb());
+      } else {
+        converted[i] = n;
+      }
+    }
+    return converted;
+  }
 
   /**
    * Generated previous decision features for each token based on contents of the specified map.
