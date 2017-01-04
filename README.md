@@ -18,8 +18,8 @@ limitations under the License.
 Welcome to Apache OpenNLP!
 ===========
 
-[![Build Status](https://api.travis-ci.org/apache/opennlp.svg?branch=master)](https://travis-ci.org/apache/opennlp)
-[![Coverage Status](https://coveralls.io/repos/github/apache/opennlp/badge.svg?branch=master)](https://coveralls.io/github/apache/opennlp?branch=master)
+[![Build Status](https://api.travis-ci.org/apache/opennlp.svg?branch=trunk)](https://travis-ci.org/apache/opennlp)
+[![Coverage Status](https://coveralls.io/repos/github/apache/opennlp/badge.svg?branch=trunk)](https://coveralls.io/github/apache/opennlp?branch=trunk)
  
 The Apache OpenNLP library is a machine learning based toolkit for the processing of natural language text.
 It supports the most common NLP tasks, such as tokenization, sentence segmentation,
