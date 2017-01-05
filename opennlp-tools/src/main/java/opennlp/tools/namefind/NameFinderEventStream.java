@@ -17,7 +17,11 @@
 
 package opennlp.tools.namefind;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
