@@ -50,7 +50,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
    * @param type null or overrides the type parameter in the provided samples
    * @param contextGenerator The context generator used to generate features for the event stream.
    */
-  public NameFinderEventStream(ObjectStream<NameSample> dataStream, String type, NameContextGenerator contextGenerator, SequenceCodec codec) {
+  public NameFinderEventStream(ObjectStream<NameSample> dataStream, String type, NameContextGenerator contextGenerator, SequenceCodec<String> codec) {
     super(dataStream);
 
     this.codec = codec;
