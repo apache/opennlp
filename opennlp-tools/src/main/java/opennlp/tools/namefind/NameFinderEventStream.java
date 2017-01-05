@@ -141,18 +141,14 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   }
 
   private Span[] overrideDefaultType(Span[] names) {
-    // need to copy because Span is not modifiable
-    Span[] converted = new Span[names.length];
     for (int i = 0; i < names.length; i++) {
       Span n = names[i];
       if (Objects.isNull(n.getType())) {
-        converted[i] = new Span(n.getStart(), n.getEnd(), this.defaultType,
+        names[i] = new Span(n.getStart(), n.getEnd(), this.defaultType,
             n.getProb());
-      } else {
-        converted[i] = n;
       }
     }
-    return converted;
+    return names;
   }
 
   /**
