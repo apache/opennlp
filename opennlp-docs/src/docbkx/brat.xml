@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+        "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+        ]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter id="tools.brat.format.support">
+
+    <title>... the chapter where it should be placed ...</title>
+
+    <section>
+    <title>Brat Format Support</title>
+    <para>
+        The brat annotation tool is an online environment for collaborative text annotation and
+        supports labeling documents with named entities. The best performance of the name finder
+        can only be achieved if it was trained on documents similar to the the documents it will
+        process. For that reason it is often necessary to manually label a large number of documents and
+        build a custom corpus.
+
+        <imagedata fileref="images/brat.png" width="6.5in" depth="4in" scalefit="1"/>
+
+        OpenNLP can directly be trained and evaluated on the labeled data in the brat format.
+        Instructions on how to use, download and install brat can be found on the project website:
+
+        <ulink url="http://brat.nlplab.org">http://brat.nlplab.org</ulink>
+
+        Confuguration of brat, including setting up the diffent entities and relations can be found at:
+
+        <ulink url="http://brat.nlplab.org/configuration.html">http://brat.nlplab.org/configuration.html</ulink>
+
+    </para>
+    </section>
+
+    <section>
+    <title>Sentences and Tokens</title>
+    <para>
+        The brat annotation tool only adds named entity spans to the data and doesn't provide information
+        about tokens and sentences. To train the name finder this information is required. By default it
+        is assumed that each line is a sentence and that tokens are whitespace separated. This can be
+        adjusted by providing a custom sentence detector and optional also a tokenizer.
+
+        The opennlp brat command support the following arguments for providing custom sentence detector
+        and tokenizer.
+
+        <simplelist type='horiz' columns='1'>
+            <member><para>-sentenceDetectorModel - your sentence model</para></member>
+            <member><para>-tokenizerModel - your tokenizer model</para></member>
+            <member><para>-ruleBasedTokenizer - simple | whitespace</para></member>
+        </simplelist>
+
+    </para>
+    </section>
+
+    <section>
+    <title>Training</title>
+    <para>
+        To train your namefinder model using your brat annotated files you can either use the opennlp command
+        line or call opennlp.tools.cmdline.CLI main class from your prefered IDE.
+
+        Calling opennlp TokenNameFinder.brat will give you a list of all the arguments you can use.
+        Obviously some combinations are not valid. E.g. you should not provide a token model and also define
+        a rule based tokenizer.
+
+        <screen>
+            <![CDATA[
+$ opennlp TokenNameFinderTrainer.brat
+Usage: opennlp TokenNameFinderTrainer.brat [-factory factoryName] [-resources resourcesDir] [-type modelType]
+[-featuregen featuregenFile] [-nameTypes types] [-sequenceCodec codec] [-params paramsFile] -lang language
+-model modelFile [-tokenizerModel modelFile] [-ruleBasedTokenizer name] -annotationConfig annConfFile
+-bratDataDir bratDataDir [-recursive value] [-sentenceDetectorModel modelFile]
+
+Arguments description:
+	-factory factoryName
+		A sub-class of TokenNameFinderFactory
+	-resources resourcesDir
+		The resources directory
+	-type modelType
+		The type of the token name finder model
+	-featuregen featuregenFile
+		The feature generator descriptor file
+	-nameTypes types
+		name types to use for training
+	-sequenceCodec codec
+		sequence codec used to code name spans
+	-params paramsFile
+		training parameters file.
+	-lang language
+		language which is being processed.
+	-model modelFile
+		output model file.
+	-tokenizerModel modelFile
+	-ruleBasedTokenizer name
+	-annotationConfig annConfFile
+	-bratDataDir bratDataDir
+		location of brat data dir
+	-recursive value
+	-sentenceDetectorModel modelFile
+]]>
+        </screen>
+
+        The following command will train a danish organization name finder model.
+
+        <screen>
+            <![CDATA[
+$ opennlp TokenNameFinderTrainer.brat -resources conf/resources \
+-featuregen conf/resources/fg-da-org.xml -nameTypes Organization \
+-params conf/resources/TrainerParams.txt -lang da \
+-model models/da-org.bin -ruleBasedTokenizer simple \
+-annotationConfig data/annotation.conf -bratDataDir data/gold/da/train \
+-recursive true -sentenceDetectorModel models/da-sent.bin
+
+Indexing events using cutoff of 0
+
+Computing event counts...
+done. 620738 events
+Indexing...  done.
+Collecting events... Done indexing.
+Incorporating indexed data for training...
+done.
+	Number of Event Tokens: 620738
+	    Number of Outcomes: 3
+	  Number of Predicates: 1403655
+Computing model parameters...
+Performing 100 iterations.
+  1:  . (614536/620738) 0.9900086671027067
+  2:  . (617590/620738) 0.9949286172265915
+  3:  . (618615/620738) 0.9965798775006525
+  4:  . (619263/620738) 0.9976237961909856
+  5:  . (619509/620738) 0.9980200986567602
+  6:  . (619830/620738) 0.9985372250450271
+  7:  . (619968/620738) 0.9987595410624128
+  8:  . (620110/620738) 0.9989883010223315
+  9:  . (620200/620738) 0.9991332897293222
+ 10:  . (620266/620738) 0.9992396147811153
+ 20:  . (620538/620738) 0.999677802873354
+ 30:  . (620641/620738) 0.9998437343935767
+ 40:  . (620653/620738) 0.9998630662211755
+Stopping: change in training set accuracy less than 1.0E-5
+Stats: (620594/620738) 0.9997680180688149
+...done.
+
+Writing name finder model ... Training data summary:
+#Sentences: 26133
+#Tokens: 620738
+#Organization entities: 13053
+
+Compressed 1403655 parameters to 116378
+4 outcome patterns
+done (11.099s)
+
+Wrote name finder model to
+path: models/da-org.bin
+]]>
+        </screen>
+    </para>
+    </section>
+
+    <section>
+    <title>Evaluation</title>
+    <para>
+        To evaluate you name finder model opennlp provides an evaluator that works with your brat
+        annotated data. Normally you would partition your data a training set and a test set e.g. 70%
+        training and 30% test.
+        The training set is of cause only used for training the model and should never be used for
+        evaluation. The test set is only used for evaluation. It is preferable if the training set and
+        test set is somewhat balanced so that both sets represents a broad variety of the entities
+        it should be able to identify, but shuffling the data before splitting is most like sufficient.
+
+        <screen>
+            <![CDATA[
+$ opennlp TokenNameFinderEvaluator.brat -model models/da-org.bin \
+-ruleBasedTokenizer simple -annotationConfig data/annotation.conf \
+-bratDataDir data/gold/da/test -recursive true \
+-sentenceDetectorModel models/da-sent.bin
+
+Loading Token Name Finder model ... done (12.395s)
+
+Average: 610.7 sent/s
+Total: 6133 sent
+Runtime: 10.043s
+
+Precision: 0.7321974661424203
+Recall: 0.25176505933603727
+F-Measure: 0.3746926000447127
+
+]]>
+        </screen>
+    </para>
+    </section>
+
+    <section>
+    <title>Cross Validation</title>
+    <para>
+        You can also use the cross validation to evaluate you model. This can come handy when you do
+        not have enough data to divide it into a proper training and test set.
+        Running cross validation with the misclassified attribute set to true can also be helpful to
+        identify missed annotations as they will pop up as false positives.
+        <screen>
+            <![CDATA[
+$ opennlp TokenNameFinderCrossValidator.brat -resources conf/resources \
+-featuregen conf/resources/fg-da-org.xml -nameTypes Organization \
+-params conf/resources/TrainerParams.txt -lang da -misclassified true \
+-folds 10 -detailedF true -ruleBasedTokenizer simple -annotationConfig data/annotation.conf \
+-bratDataDir data/gold/da -recursive true -sentenceDetectorModel models/da-sent.bin
+
+Indexing events using cutoff of 0
+
+Computing event counts...
+done. 555858 events
+    Indexing...  done.
+Collecting events... Done indexing.
+Incorporating indexed data for training...
+done.
+	Number of Event Tokens: 555858
+	    Number of Outcomes: 3
+	  Number of Predicates: 1302740
+Computing model parameters...
+Performing 100 iterations.
+  1:  . (550095/555858) 0.9896322442062541
+  2:  . (552971/555858) 0.9948062274897546
+...
+...
+... (training and evaluationg x 10)
+...
+done
+
+Evaluated 26133 samples with 13053 entities; found: 12174 entities; correct: 10361.
+       TOTAL: precision:   85.11%;  recall:   79.38%; F1:   82.14%.
+Organization: precision:   85.11%;  recall:   79.38%; F1:   82.14%. [target: 13053; tp: 10361; fp: 1813]
+
+
+        ]]>
+        </screen>
+    </para>
+    </section>
+</chapter>
