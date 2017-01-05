@@ -106,7 +106,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   }
 
   public static List<Event> generateEvents(String[] sentence, String[] outcomes, NameContextGenerator cg) {
-    List<Event> events = new ArrayList<Event>(outcomes.length);
+    List<Event> events = new ArrayList<>(outcomes.length);
     for (int i = 0; i < outcomes.length; i++) {
       events.add(new Event(outcomes[i], cg.getContext(i, sentence, outcomes,null)));
     }
