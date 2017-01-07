@@ -25,7 +25,7 @@
 <module name = "Checker">
   <property name="charset" value="UTF-8"/>
 
-  <property name="severity" value="warning"/>
+  <property name="severity" value="error"/>
 
   <property name="fileExtensions" value="java, properties, xml"/>
   <!-- Checks for whitespace                               -->
@@ -35,6 +35,7 @@
   </module>
 
   <module name="TreeWalker">
+    <module name="OuterTypeFilename"/>
     <module name="IllegalTokenText">
       <property name="tokens" value="STRING_LITERAL, CHAR_LITERAL"/>
       <property name="format" value="\\u00(08|09|0(a|A)|0(c|C)|0(d|D)|22|27|5(C|c))|\\(0(10|11|12|14|15|42|47)|134)"/>
@@ -45,6 +46,7 @@
       <!--<property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>-->
     <!--</module>-->
     <module name="AvoidStarImport"/>
+    <module name="OneTopLevelClass"/>
     <module name="NoLineWrap"/>
     <!--<module name="NeedBraces"/>-->
     <!--<module name="LeftCurly">-->
@@ -61,6 +63,7 @@
       <property name="allowEmptyTypes" value="true"/>
       <property name="allowEmptyLoops" value="true"/>
     </module>
+    <module name="OneStatementPerLine"/>
     <module name="PackageName">
       <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
       <message key="name.invalidPattern"
@@ -93,6 +96,10 @@
       <property name="throwsIndent" value="4"/>
       <property name="lineWrappingIndentation" value="4"/>
       <property name="arrayInitIndent" value="2"/>
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="EmptyCatchBlock">
+      <property name="exceptionVariableName" value="expected|ignore"/>
     </module>
     <!--<module name="CustomImportOrder">-->
       <!--<property name="sortImportsInGroupAlphabetically" value="true"/>-->
