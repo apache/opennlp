@@ -17,9 +17,8 @@
 
 package opennlp.tools.sentdetect;
 
+import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests for the {@link NewlineSentenceDetector} class.
@@ -32,10 +31,10 @@ public class NewlineSentenceDetectorTest {
 
     String results[] = sd.sentDetect(sentences);
 
-    assertEquals(3, results.length);
-    assertEquals("one.", results[0]);
-    assertEquals("two.", results[1]);
-    assertEquals("three.", results[2]);
+    Assert.assertEquals(3, results.length);
+    Assert.assertEquals("one.", results[0]);
+    Assert.assertEquals("two.", results[1]);
+    Assert.assertEquals("three.", results[2]);
   }
 
   @Test

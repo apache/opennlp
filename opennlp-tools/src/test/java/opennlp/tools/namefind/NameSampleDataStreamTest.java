@@ -144,14 +144,16 @@ public class NameSampleDataStreamTest {
         ObjectStreamUtils.createObjectStream("<START> <START> Name <END>"))) {
       sampleStream.read();
       fail();
-    } catch (IOException e) {
+    } catch (IOException expected) {
+      // the read above is expected to throw an exception
     }
 
     try (NameSampleDataStream sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream("<START> Name <END> <END>"))) {
       sampleStream.read();
       fail();
-    } catch (IOException e) {
+    } catch (IOException expected) {
+      // the read above is expected to throw an exception
     }
 
     try (NameSampleDataStream sampleStream = new NameSampleDataStream(
@@ -159,7 +161,8 @@ public class NameSampleDataStreamTest {
             "<START> <START> Person <END> Street <END>"));) {
       sampleStream.read();
       fail();
-    } catch (IOException e) {
+    } catch (IOException expected) {
+      // the read above is expected to throw an exception
     }
   }
 
@@ -296,7 +299,8 @@ public class NameSampleDataStreamTest {
         ObjectStreamUtils.createObjectStream("<START:> Name <END>"))) {
       sampleStream.read();
       fail();
-    } catch (IOException e) {
+    } catch (IOException expected) {
+      // the read above is expected to throw an exception
     }
 
     try (NameSampleDataStream sampleStream = new NameSampleDataStream(
@@ -304,7 +308,8 @@ public class NameSampleDataStreamTest {
             "<START:street> <START:person> Name <END> <END>"))) {
       sampleStream.read();
       fail();
-    } catch (IOException e) {
+    } catch (IOException expected) {
+      // the read above is expected to throw an exception
     }
   }
 

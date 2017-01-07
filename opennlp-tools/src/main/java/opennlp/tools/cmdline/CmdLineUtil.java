@@ -247,7 +247,8 @@ public final class CmdLineUtil {
       if (value != null)
         return Integer.parseInt(value);
     }
-    catch (NumberFormatException e) {
+    catch (NumberFormatException ignored) {
+      // in this case return null
     }
 
     return null;
@@ -267,7 +268,8 @@ public final class CmdLineUtil {
       if (value != null)
         return Double.parseDouble(value);
     }
-    catch (NumberFormatException e) {
+    catch (NumberFormatException ignored) {
+      // in this case return null
     }
 
     return null;

@@ -166,7 +166,8 @@
 								<consoleOutput>true</consoleOutput>
 								<includeTestSourceDirectory>true</includeTestSourceDirectory>
 								<testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
-								<failsOnError>true</failsOnError>
+								<violationSeverity>error</violationSeverity>
+								<failOnViolation>true</failOnViolation>
 								<excludes>**/stemmer/**/*</excludes>
 							</configuration>
 							<goals>

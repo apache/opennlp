@@ -40,7 +40,7 @@ import javax.ws.rs.core.UriBuilder;
 
 public class NameFinderAnnService {
 
-  public static SentenceDetector sentenceDetector = new NewlineSentenceDetector();;
+  public static SentenceDetector sentenceDetector = new NewlineSentenceDetector();
   public static Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
   public static TokenNameFinder nameFinders[];
 
