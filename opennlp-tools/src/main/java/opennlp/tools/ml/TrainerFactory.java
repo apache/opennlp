@@ -90,6 +90,7 @@ public class TrainerFactory {
       return TrainerType.EVENT_MODEL_TRAINER;
     }
     catch (ExtensionNotLoadedException ignored) {
+      // this is ignored
     }
 
     try {
@@ -97,6 +98,7 @@ public class TrainerFactory {
       return TrainerType.EVENT_MODEL_SEQUENCE_TRAINER;
     }
     catch (ExtensionNotLoadedException ignored) {
+      // this is ignored
     }
 
     try {
@@ -104,6 +106,7 @@ public class TrainerFactory {
       return TrainerType.SEQUENCE_TRAINER;
     }
     catch (ExtensionNotLoadedException ignored) {
+      // this is ignored
     }
 
     return null;
