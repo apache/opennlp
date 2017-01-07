@@ -217,7 +217,8 @@ public class StringUtil {
         continue;
       }
       if ((wordFormLength > 0 && lemmaLength > 0) && (distance[wordFormLength - 1][lemmaLength - 1] == distance[wordFormLength][lemmaLength])) {
-        wordFormLength--; lemmaLength--;
+        wordFormLength--;
+        lemmaLength--;
         continue ;
       }
       if (wordFormLength > 0 && (distance[wordFormLength - 1][lemmaLength] == distance[wordFormLength][lemmaLength])) {
