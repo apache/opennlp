@@ -319,7 +319,7 @@ Usage: opennlp ParserEvaluator[.ontonotes|frenchtreebank] [-misclassified true|f
 				and you trained a model called en-parser-chunking.bin:
 				<screen>
 				<![CDATA[
-$ opennlp ParserEvaluator -model en-parser-chunking.bin -lang en -data en-parser-chunking.eval -encoding UTF-8]]>
+$ opennlp ParserEvaluator -model en-parser-chunking.bin -data en-parser-chunking.eval -encoding UTF-8]]>
 		</screen>
 				and here is a sample output:
 				<screen>

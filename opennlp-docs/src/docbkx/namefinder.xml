@@ -512,7 +512,7 @@ new NameFinderME(model);]]>
 		The following command shows how the tool can be run:
 		<screen>
             <![CDATA[
-$ opennlp TokenNameFinderEvaluator -model en-ner-person.bin -lang en -data en-ner-person.test -encoding UTF-8
+$ opennlp TokenNameFinderEvaluator -model en-ner-person.bin -data en-ner-person.test -encoding UTF-8
 
 Precision: 0.8005071889818507
 Recall: 0.7450581122145297

@@ -256,7 +256,7 @@ try {
                 The command shows how the evaluator tool can be run:
                 <screen>
 				<![CDATA[
-$ opennlp SentenceDetectorEvaluator -model en-sent.bin -lang en -data en-sent.eval -encoding UTF-8
+$ opennlp SentenceDetectorEvaluator -model en-sent.bin -data en-sent.eval -encoding UTF-8
 
 Loading model ... done
 Evaluating ... done

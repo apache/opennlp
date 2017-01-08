@@ -363,7 +363,7 @@ InputStreamFactory inputStreamFactory = null;
 					The following command shows how the tool can be run:
 					<screen>
 				<![CDATA[
-$ opennlp LemmatizerEvaluator -model en-lemmatizer.bin -lang en -data en-lemmatizer.test -encoding utf-8]]>
+$ opennlp LemmatizerEvaluator -model en-lemmatizer.bin -data en-lemmatizer.test -encoding utf-8]]>
 			 </screen>
 					This will display the resulting accuracy score, e.g.:
 					<screen>
