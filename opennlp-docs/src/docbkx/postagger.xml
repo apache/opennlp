@@ -307,7 +307,7 @@ finally {
 		The following command shows how the tool can be run:
 		<screen>
 				<![CDATA[
-$ opennlp POSTaggerEvaluator -model pt.postagger.bin -lang pt -data pt.postagger.test -encoding utf-8]]>
+$ opennlp POSTaggerEvaluator -model pt.postagger.bin -data pt.postagger.test -encoding utf-8]]>
 			 </screen>
 			 This will display the resulting accuracy score, e.g.:
 			 <screen>

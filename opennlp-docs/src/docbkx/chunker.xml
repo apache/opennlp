@@ -290,7 +290,7 @@ Usage: opennlp ChunkerEvaluator[.ad] -model model [-misclassified true|false] \
 		and you trained a model called en-chunker.bin:
             <screen>
 				<![CDATA[
-$ opennlp ChunkerEvaluator -model en-chunker.bin -lang en -data en-chunker.eval -encoding UTF-8]]>
+$ opennlp ChunkerEvaluator -model en-chunker.bin -data en-chunker.eval -encoding UTF-8]]>
 		</screen>
 		and here is a sample output:  
 		<screen>
