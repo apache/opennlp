@@ -372,7 +372,7 @@ class GISTrainer {
       for (int i = 0; i< modelExpects.length; i++)
         modelExpects[i][pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
       observedExpects[pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
-      for (int aoi=0;aoi<numActiveOutcomes;aoi++) {
+      for (int aoi = 0;aoi < numActiveOutcomes;aoi++) {
         int oi = outcomePattern[aoi];
         params[pi].setParameter(aoi, 0.0);
         for (MutableContext[] modelExpect : modelExpects) {
