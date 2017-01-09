@@ -31,7 +31,7 @@ import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.util.ObjectStream;
 
 public abstract class AbstractEventTrainer extends AbstractTrainer implements
-    EventTrainer {
+EventTrainer {
 
   public static final String DATA_INDEXER_PARAM = "DataIndexer";
   public static final String DATA_INDEXER_ONE_PASS_VALUE = "OnePass";
@@ -89,13 +89,13 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
 
   public final MaxentModel train(DataIndexer indexer) throws IOException {
     if (!isValid()) {
-	  throw new IllegalArgumentException("trainParams are not valid!");
-	}
+      throw new IllegalArgumentException("trainParams are not valid!");
+    }
     MaxentModel model = doTrain(indexer);
     parameters.addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
     return model;
   }
-  
+
   public final MaxentModel train(ObjectStream<Event> events) throws IOException {
 
     if (!isValid()) {
@@ -105,10 +105,6 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
     HashSumEventStream hses = new HashSumEventStream(events);
     DataIndexer indexer = getDataIndexer(hses);
 
-    MaxentModel model = doTrain(indexer);
-
-    parameters.addToReport("Training-Eventhash", hses.calculateHashSum().toString(16));
-    parameters.addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
-    return model;
+    return train(indexer);
   }
 }

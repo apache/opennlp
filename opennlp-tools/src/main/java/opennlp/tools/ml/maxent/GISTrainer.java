@@ -223,11 +223,11 @@ class GISTrainer {
    * @return A GIS model trained with specified
    */
   public GISModel trainModel(ObjectStream<Event> eventStream, int iterations, int cutoff) throws IOException {
-	DataIndexer indexer=new OnePassDataIndexer();
-	Map<String, String> params=new HashMap<String, String>();
-	params.put(GIS.ITERATIONS_PARAM, Integer.toString(iterations));
-	params.put(GIS.CUTOFF_PARAM, Integer.toString(cutoff));
-	indexer.init(params, new HashMap<String, String>());
+    DataIndexer indexer = new OnePassDataIndexer();
+    Map<String, String> params=new HashMap<>();
+    params.put(GIS.ITERATIONS_PARAM, Integer.toString(iterations));
+    params.put(GIS.CUTOFF_PARAM, Integer.toString(cutoff));
+    indexer.init(params, new HashMap<>());
     return trainModel(iterations, indexer, cutoff);
   }
 
@@ -379,7 +379,7 @@ class GISTrainer {
           modelExpect[pi].setParameter(aoi, 0.0);
         }
         if (predCount[pi][oi] > 0) {
-            observedExpects[pi].setParameter(aoi, predCount[pi][oi]);
+          observedExpects[pi].setParameter(aoi, predCount[pi][oi]);
         }
         else if (useSimpleSmoothing) {
           observedExpects[pi].setParameter(aoi,smoothingObservation);
@@ -407,9 +407,9 @@ class GISTrainer {
 
   /* Estimate and return the model parameters. */
   private void findParameters(int iterations, double correctionConstant) {
-	int threads=modelExpects.length;
-	ExecutorService executor = Executors.newFixedThreadPool(threads);
-	CompletionService<ModelExpactationComputeTask> completionService = new ExecutorCompletionService<>(executor);
+    int threads=modelExpects.length;
+    ExecutorService executor = Executors.newFixedThreadPool(threads);
+    CompletionService<ModelExpactationComputeTask> completionService = new ExecutorCompletionService<>(executor);
     double prevLL = 0.0;
     double currLL;
     display("Performing " + iterations + " iterations.\n");

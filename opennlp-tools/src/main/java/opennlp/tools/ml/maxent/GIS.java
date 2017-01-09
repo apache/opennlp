@@ -51,10 +51,10 @@ public class GIS extends AbstractEventTrainer {
    * Defaulted to 0.1.
    */
   public static double SMOOTHING_OBSERVATION = 0.1;
-  
-  public static final String SMOOTHING_PARAM="smoothing";
-  public static final boolean SMOOTHING_DEFAULT=false;
-  
+
+  public static final String SMOOTHING_PARAM = "smoothing";
+  public static final boolean SMOOTHING_DEFAULT = false;
+
   public GIS() {
   }
 
@@ -82,9 +82,9 @@ public class GIS extends AbstractEventTrainer {
     boolean smoothing = parameters.getBooleanParam(SMOOTHING_PARAM, SMOOTHING_DEFAULT);
     int cutoff = getCutoff();
     int threads = parameters.getIntParam(TrainingParameters.THREADS_PARAM, 1);
-    
+
     model = trainModel(iterations, indexer, printMessages, smoothing, null, cutoff, threads);
-    
+
     return model;
   }
 
@@ -162,7 +162,7 @@ public class GIS extends AbstractEventTrainer {
    */
   public static GISModel trainModel(ObjectStream<Event> eventStream, int iterations,
       int cutoff, boolean smoothing, boolean printMessagesWhileTraining)
-      throws IOException {
+          throws IOException {
     GISTrainer trainer = new GISTrainer(printMessagesWhileTraining);
     trainer.setSmoothing(smoothing);
     trainer.setSmoothingObservation(SMOOTHING_OBSERVATION);

@@ -30,7 +30,7 @@ public class MockEventTrainer implements EventTrainer {
   public MaxentModel train(ObjectStream<Event> events) throws IOException {
     return null;
   }
-  
+
   @Override
   public MaxentModel train(DataIndexer indexer) throws IOException {
     return null;
