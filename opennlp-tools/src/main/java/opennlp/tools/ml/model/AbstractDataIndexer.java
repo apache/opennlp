@@ -43,7 +43,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
 
   PluggableParameters parameters;
 
-  public void init(Map<String,String> indexingParameters,Map<String, String> reportMap){
+  public void init(Map<String,String> indexingParameters, Map<String, String> reportMap){
     parameters=new PluggableParameters(indexingParameters, reportMap);
   }
 
