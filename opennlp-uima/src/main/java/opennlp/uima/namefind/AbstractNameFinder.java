@@ -17,13 +17,11 @@
 
 package opennlp.uima.namefind;
 
-import java.util.*;
-
-import opennlp.tools.util.Span;
-import opennlp.uima.util.AnnotationComboIterator;
-import opennlp.uima.util.AnnotationIteratorPair;
-import opennlp.uima.util.AnnotatorUtil;
-import opennlp.uima.util.UimaUtil;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;
@@ -35,6 +33,12 @@ import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
+
+import opennlp.tools.util.Span;
+import opennlp.uima.util.AnnotationComboIterator;
+import opennlp.uima.util.AnnotationIteratorPair;
+import opennlp.uima.util.AnnotatorUtil;
+import opennlp.uima.util.UimaUtil;
 
 abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
 
@@ -63,22 +67,21 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
 
   public final void initialize(UimaContext context) throws ResourceInitializationException {
 
-	super.initialize(context);
+    super.initialize(context);
 
-	this.context = context;
+    this.context = context;
 
     mLogger = context.getLogger();
 
     if (mLogger.isLoggable(Level.INFO)) {
-      mLogger.log(Level.INFO,
-      "Initializing the " + name + ".");
+      mLogger.log(Level.INFO, "Initializing the " + name + ".");
     }
 
     isRemoveExistingAnnotations = AnnotatorUtil.getOptionalBooleanParameter(
         context, UimaUtil.IS_REMOVE_EXISTINGS_ANNOTAIONS);
 
     if (isRemoveExistingAnnotations == null) {
-        isRemoveExistingAnnotations = false;
+      isRemoveExistingAnnotations = false;
     }
 
     initialize();
@@ -91,7 +94,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
       throws AnalysisEngineProcessException {
 
     // sentence type
-	  mSentenceType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
+    mSentenceType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         UimaUtil.SENTENCE_TYPE_PARAMETER);
 
     // token type
@@ -117,7 +120,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
           nameTypeMap.put(parts[0].trim(), typeSystem.getType(parts[1].trim()));
         }
         else {
-            mLogger.log(Level.WARNING, String.format("Failed to parse a part of the type mapping [%s]", mapping));
+          mLogger.log(Level.WARNING, String.format("Failed to parse a part of the type mapping [%s]", mapping));
         }
       }
 
@@ -125,12 +128,12 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
     }
 
     if (mNameType == null && mNameTypeMapping.size() == 0) {
-        throw new AnalysisEngineProcessException(new Exception("No name type or valid name type mapping configured!"));
+      throw new AnalysisEngineProcessException(new Exception("No name type or valid name type mapping configured!"));
     }
   }
 
   protected void postProcessAnnotations(Span detectedNames[],
-		  AnnotationFS[] nameAnnotations) {
+      AnnotationFS[] nameAnnotations) {
   }
 
   /**

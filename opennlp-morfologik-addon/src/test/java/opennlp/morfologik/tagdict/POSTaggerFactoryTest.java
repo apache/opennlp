@@ -17,17 +17,6 @@
 
 package opennlp.morfologik.tagdict;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-
-import org.junit.Test;
-
 import opennlp.morfologik.builder.POSDictionayBuilderTest;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.postag.POSModel;
@@ -42,6 +31,15 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
 
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+
 /**
  * Tests for the {@link POSTaggerFactory} class.
  */
@@ -50,9 +48,7 @@ public class POSTaggerFactoryTest {
   private static ObjectStream<POSSample> createSampleStream()
       throws IOException {
     MarkableFileInputStreamFactory sampleDataIn = new MarkableFileInputStreamFactory(
-        new File(POSTaggerFactory.class.getResource("/AnnotatedSentences.txt")
-            .getFile()));
-    
+        new File(POSTaggerFactory.class.getResource("/AnnotatedSentences.txt").getFile()));
 
     ObjectStream<String> lineStream = null;
     try {
@@ -64,7 +60,7 @@ public class POSTaggerFactoryTest {
     return new WordTagSampleStream(lineStream);
   }
 
-  static POSModel trainPOSModel(ModelType type, POSTaggerFactory factory)
+  private static POSModel trainPOSModel(ModelType type, POSTaggerFactory factory)
       throws IOException {
     return POSTaggerME.train("en", createSampleStream(),
         TrainingParameters.defaultParams(), factory);
@@ -81,10 +77,10 @@ public class POSTaggerFactoryTest {
     POSModel posModel = trainPOSModel(ModelType.MAXENT, inFactory);
 
     POSTaggerFactory factory = posModel.getFactory();
-    assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
+    Assert.assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
 
     factory = null;
-    
+
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     posModel.serialize(out);
     ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -92,9 +88,9 @@ public class POSTaggerFactoryTest {
     POSModel fromSerialized = new POSModel(in);
 
     factory = fromSerialized.getFactory();
-    assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
-    
-    assertEquals(2, factory.getTagDictionary().getTags("casa").length);
+    Assert.assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
+
+    Assert.assertEquals(2, factory.getTagDictionary().getTags("casa").length);
   }
 
 }

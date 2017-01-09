@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.doccat;
 
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
@@ -35,12 +35,12 @@ public class DocumentCategorizerMETest {
   public void testSimpleTraining() throws IOException {
 
     ObjectStream<DocumentSample> samples = ObjectStreamUtils.createObjectStream(new DocumentSample[]{
-      new DocumentSample("1", new String[]{"a", "b", "c"}),
-      new DocumentSample("1", new String[]{"a", "b", "c", "1", "2"}),
-      new DocumentSample("1", new String[]{"a", "b", "c", "3", "4"}),
-      new DocumentSample("0", new String[]{"x", "y", "z"}),
-      new DocumentSample("0", new String[]{"x", "y", "z", "5", "6"}),
-      new DocumentSample("0", new String[]{"x", "y", "z", "7", "8"})
+        new DocumentSample("1", new String[]{"a", "b", "c"}),
+        new DocumentSample("1", new String[]{"a", "b", "c", "1", "2"}),
+        new DocumentSample("1", new String[]{"a", "b", "c", "3", "4"}),
+        new DocumentSample("0", new String[]{"x", "y", "z"}),
+        new DocumentSample("0", new String[]{"x", "y", "z", "5", "6"}),
+        new DocumentSample("0", new String[]{"x", "y", "z", "7", "8"})
     });
 
     TrainingParameters params = new TrainingParameters();

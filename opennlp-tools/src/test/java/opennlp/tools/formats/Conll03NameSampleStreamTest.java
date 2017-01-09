@@ -74,16 +74,16 @@ public class Conll03NameSampleStreamTest {
     assertNull(sampleStream.read());
   }
 
-  @Test(expected=IOException.class)
+  @Test(expected = IOException.class)
   public void testParsingEnglishSampleWithGermanAsLanguage() throws IOException {
     ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, ENGLISH_SAMPLE);
     sampleStream.read();
   }
 
-  @Test(expected=IOException.class)
+  @Test(expected = IOException.class)
   public void testParsingGermanSampleWithEnglishAsLanguage() throws IOException {
-	  ObjectStream<NameSample> sampleStream = openData(LANGUAGE.EN, GERMAN_SAMPLE);
-	  sampleStream.read();
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.EN, GERMAN_SAMPLE);
+    sampleStream.read();
   }
 
   @Test

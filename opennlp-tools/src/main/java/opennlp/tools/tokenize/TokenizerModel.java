@@ -145,7 +145,7 @@ public final class TokenizerModel extends BaseModel {
   }
 
   public static void main(String[] args) throws IOException {
-    if (args.length < 3){
+    if (args.length < 3) {
       System.err.println("TokenizerModel [-alphaNumericOptimization] languageCode packageName modelName");
       System.exit(1);
     }
@@ -167,7 +167,7 @@ public final class TokenizerModel extends BaseModel {
         new FileInputStream(modelName))).getModel();
 
     TokenizerModel packageModel = new TokenizerModel(model, null,
-      TokenizerFactory.create(null, languageCode, null, alphaNumericOptimization, null));
+        TokenizerFactory.create(null, languageCode, null, alphaNumericOptimization, null));
 
     OutputStream out = null;
     try {

@@ -39,7 +39,8 @@ public class OntoNotes4NameFinderEval {
       throws IOException {
 
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
-        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"), file -> {
+        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"),
+        file -> {
           if (file.isFile()) {
             return file.getName().endsWith(".name");
           }

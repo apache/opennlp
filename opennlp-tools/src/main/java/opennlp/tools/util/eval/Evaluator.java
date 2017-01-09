@@ -78,8 +78,8 @@ public abstract class Evaluator<T> {
    */
   public void evaluateSample(T sample) {
     T predicted = processSample(sample);
-    if(!listeners.isEmpty()) {
-      if(sample.equals(predicted)) {
+    if (!listeners.isEmpty()) {
+      if (sample.equals(predicted)) {
         for (EvaluationMonitor<T> listener : listeners) {
           listener.correctlyClassified(sample, predicted);
         }
@@ -97,7 +97,7 @@ public abstract class Evaluator<T> {
    * {@link #evaluateSample(Object)} method.
    *
    * @param samples the stream of reference which
-   * should be evaluated.
+   *     should be evaluated.
    *
    * @throws IOException IOException
    */

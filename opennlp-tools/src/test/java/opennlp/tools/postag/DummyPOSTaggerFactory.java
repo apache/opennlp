@@ -69,7 +69,7 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
   @Override
   public Map<String, Object> createArtifactMap() {
     Map<String, Object> artifactMap = super.createArtifactMap();
-    if(this.dict != null)
+    if (this.dict != null)
       artifactMap.put(DUMMY_POSDICT, this.dict);
     return artifactMap;
   }

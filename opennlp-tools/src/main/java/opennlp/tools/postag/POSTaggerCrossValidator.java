@@ -105,7 +105,7 @@ public class POSTaggerCrossValidator {
 
       Dictionary ngramDict = this.factory.getDictionary();
       if (ngramDict == null) {
-        if(this.ngramCutoff != null) {
+        if (this.ngramCutoff != null) {
           System.err.print("Building ngram dictionary ... ");
           ngramDict = POSTaggerME.buildNGramDictionary(trainingSampleStream,
               this.ngramCutoff);

@@ -53,7 +53,7 @@ public class CLITest {
     }
 
     @Override
-    public void checkExit(int status){
+    public void checkExit(int status) {
       super.checkExit(status);
 
       throw new ExitException(status);
@@ -62,7 +62,7 @@ public class CLITest {
 
   private final SecurityManager originalSecurityManager = System.getSecurityManager();
 
- @Before
+  @Before
   public void installNoExitSecurityManager() {
     System.setSecurityManager(new NoExitSecurityManager());
   }
@@ -124,7 +124,7 @@ public class CLITest {
   public void testHelpMessageOfTools() {
 
     for (String toolName : CLI.getToolNames()) {
-    	System.err.println("-> ToolName" + toolName);
+      System.err.println("-> ToolName" + toolName);
       try {
         CLI.main(new String[]{toolName, "help"});
       } catch (ExitException e) {

@@ -17,8 +17,16 @@
 
 package opennlp.uima.dictionary;
 
-import opennlp.tools.util.StringList;
-import opennlp.uima.util.CasUtil;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.uima.UIMAFramework;
 import org.apache.uima.analysis_engine.AnalysisEngine;
 import org.apache.uima.cas.CAS;
@@ -33,13 +41,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.junit.Assert.*;
+import opennlp.tools.util.StringList;
+import opennlp.uima.util.CasUtil;
 
 public class DictionaryResourceTest {
 

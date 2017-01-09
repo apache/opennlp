@@ -172,13 +172,17 @@ public class CrossValidationPartitionerTest {
       firstTraining.read();
       fail();
     }
-    catch (IllegalStateException e) {}
+    catch (IllegalStateException expected) {
+      // the read above is expected to throw an exception
+    }
 
     try {
       firstTraining.getTestSampleStream();
       fail();
     }
-    catch (IllegalStateException e) {}
+    catch (IllegalStateException expected) {
+      // the read above is expected to throw an exception
+    }
 
     // Test that training iterator fails if there is a test iterator
     secondTraining.getTestSampleStream();
@@ -187,7 +191,9 @@ public class CrossValidationPartitionerTest {
       secondTraining.read();
       fail();
     }
-    catch (IllegalStateException e) {}
+    catch (IllegalStateException expected) {
+      // the read above is expected to throw an exception
+    }
 
     // Test that test iterator from previous partition fails
     // if there is a new partition
@@ -201,7 +207,9 @@ public class CrossValidationPartitionerTest {
       thridTest.read();
       fail();
     }
-    catch (IllegalStateException e) {}
+    catch (IllegalStateException expected) {
+      // the read above is expected to throw an exception
+    }
   }
 
   @Test

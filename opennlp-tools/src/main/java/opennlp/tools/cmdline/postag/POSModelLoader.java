@@ -27,7 +27,7 @@ import opennlp.tools.postag.POSModel;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public final class POSModelLoader extends ModelLoader<POSModel>{
+public final class POSModelLoader extends ModelLoader<POSModel> {
 
   public POSModelLoader() {
     super("POS Tagger");

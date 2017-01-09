@@ -59,8 +59,8 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    * the set of induced abbreviations.
    *
    * @param inducedAbbreviations a <code>Set</code> of Strings
-   * representing induced abbreviations in the training data.
-   * Example: &quot;Mr.&quot;
+   *     representing induced abbreviations in the training data.
+   *     Example: &quot;Mr.&quot;
    *
    * @param eosCharacters
    */

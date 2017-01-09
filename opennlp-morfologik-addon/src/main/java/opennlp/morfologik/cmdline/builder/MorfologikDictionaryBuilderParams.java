@@ -30,28 +30,28 @@ interface MorfologikDictionaryBuilderParams extends EncodingParameter {
 
   @ParameterDescription(valueName = "in", description = "The input file (base,inflected,tag). An associated metadata (*.info) file must exist.")
   File getInputFile();
-  
+
   @ParameterDescription(valueName = "true|false", description = "Accept leading BOM bytes (UTF-8).")
-  @OptionalParameter(defaultValue="false")
+  @OptionalParameter(defaultValue = "false")
   Boolean getAcceptBOM();
-  
+
   @ParameterDescription(valueName = "true|false", description = "Accept CR bytes in input sequences (\r).")
-  @OptionalParameter(defaultValue="false")
+  @OptionalParameter(defaultValue = "false")
   Boolean getAcceptCR();
-  
+
   @ParameterDescription(valueName = "FSA5|CFSA2", description = "Automaton serialization format.")
-  @OptionalParameter(defaultValue="FSA5")
+  @OptionalParameter(defaultValue = "FSA5")
   String getFormat();
-  
+
   @ParameterDescription(valueName = "true|false", description = "Ignore empty lines in the input.")
-  @OptionalParameter(defaultValue="false")
+  @OptionalParameter(defaultValue = "false")
   Boolean getIgnoreEmpty();
-  
+
   @ParameterDescription(valueName = "true|false", description = "Overwrite the output file if it exists.")
-  @OptionalParameter(defaultValue="false")
+  @OptionalParameter(defaultValue = "false")
   Boolean getOverwrite();
-  
+
   @ParameterDescription(valueName = "true|false", description = "Validate input to make sure it makes sense.")
-  @OptionalParameter(defaultValue="false")
+  @OptionalParameter(defaultValue = "false")
   Boolean getValidate();
 }

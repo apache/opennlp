@@ -17,21 +17,24 @@
 
 package opennlp.tools.stemmer;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class PorterStemmerTest extends TestCase{
+public class PorterStemmerTest {
 
   private PorterStemmer stemmer = new PorterStemmer();
 
+  @Test
   public void testNotNull() {
-    assertNotNull(stemmer);
+    Assert.assertNotNull(stemmer);
   }
 
+  @Test
   public void testStemming() {
-	assertEquals(stemmer.stem("deny"), "deni" );
-	assertEquals(stemmer.stem("declining"), "declin" );
-	assertEquals(stemmer.stem("diversity"), "divers" );
-	assertEquals(stemmer.stem("divers"), "diver" );
-	assertEquals(stemmer.stem("dental"), "dental" );
+    Assert.assertEquals(stemmer.stem("deny"), "deni" );
+    Assert.assertEquals(stemmer.stem("declining"), "declin" );
+    Assert.assertEquals(stemmer.stem("diversity"), "divers" );
+    Assert.assertEquals(stemmer.stem("divers"), "diver" );
+    Assert.assertEquals(stemmer.stem("dental"), "dental" );
   }
 }

@@ -45,7 +45,7 @@ public class MutableContext extends Context {
    * @param value The value to be assigned.
    */
   public void setParameter(int outcomeIndex, double value) {
-    parameters[outcomeIndex]=value;
+    parameters[outcomeIndex] = value;
   }
 
   /**
@@ -55,7 +55,7 @@ public class MutableContext extends Context {
    * @param value The value to be added.
    */
   public void updateParameter(int outcomeIndex, double value) {
-    parameters[outcomeIndex]+=value;
+    parameters[outcomeIndex] += value;
   }
 
   public boolean contains(int outcome) {

@@ -30,6 +30,24 @@ import opennlp.tools.util.StringUtil;
  */
 public class SimpleTokenizer extends AbstractTokenizer {
 
+  static class CharacterEnum {
+    static final CharacterEnum WHITESPACE = new CharacterEnum("whitespace");
+    static final CharacterEnum ALPHABETIC = new CharacterEnum("alphabetic");
+    static final CharacterEnum NUMERIC = new CharacterEnum("numeric");
+    static final CharacterEnum OTHER = new CharacterEnum("other");
+
+    private String name;
+
+    private CharacterEnum(String name) {
+      this.name = name;
+    }
+
+    @Override
+    public String toString() {
+      return name;
+    }
+  }
+  
   public static final SimpleTokenizer INSTANCE;
 
   static {
@@ -38,7 +56,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
 
   /**
    * @deprecated Use INSTANCE field instead to obtain an instance, constructor
-   * will be made private in the future.
+   *     will be made private in the future.
    */
   @Deprecated
   public SimpleTokenizer() {
@@ -112,30 +130,12 @@ public class SimpleTokenizer extends AbstractTokenizer {
         if (tokens.length > 0) {
           System.out.print(tokens[0]);
         }
-        for (int ti=1,tn=tokens.length;ti<tn;ti++) {
-          System.out.print(" "+tokens[ti]);
+        for (int ti = 1,tn = tokens.length; ti < tn; ti++) {
+          System.out.print(" " + tokens[ti]);
         }
         System.out.println();
       }
     }
   }
 
-}
-
-class CharacterEnum {
-  static final CharacterEnum WHITESPACE = new CharacterEnum("whitespace");
-  static final CharacterEnum ALPHABETIC = new CharacterEnum("alphabetic");
-  static final CharacterEnum NUMERIC = new CharacterEnum("numeric");
-  static final CharacterEnum OTHER = new CharacterEnum("other");
-
-  private String name;
-
-  private CharacterEnum(String name) {
-    this.name = name;
-  }
-
-  @Override
-  public String toString() {
-    return name;
-  }
 }

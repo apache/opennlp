@@ -33,7 +33,7 @@ import opennlp.tools.util.StringUtil;
 /**
  * An import stream which can parse the CONLL03 data.
  */
-public class Conll03NameSampleStream implements ObjectStream<NameSample>{
+public class Conll03NameSampleStream implements ObjectStream<NameSample> {
 
   public enum LANGUAGE {
     EN,
@@ -87,7 +87,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
         String emptyLine = lineStream.read();
 
         if (!StringUtil.isEmpty(emptyLine))
-          throw new IOException("Empty line after -DOCSTART- not empty: '" + emptyLine +"'!");
+          throw new IOException("Empty line after -DOCSTART- not empty: '" + emptyLine + "'!");
 
         continue;
       }
@@ -121,19 +121,19 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample>{
         String tag = tags.get(i);
 
         if (tag.endsWith("PER") &&
-        		(types & Conll02NameSampleStream.GENERATE_PERSON_ENTITIES) == 0)
+            (types & Conll02NameSampleStream.GENERATE_PERSON_ENTITIES) == 0)
           tag = "O";
 
         if (tag.endsWith("ORG") &&
-        		(types & Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES) == 0)
+            (types & Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES) == 0)
           tag = "O";
 
         if (tag.endsWith("LOC") &&
-        		(types & Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES) == 0)
+            (types & Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES) == 0)
           tag = "O";
 
         if (tag.endsWith("MISC") &&
-        		(types & Conll02NameSampleStream.GENERATE_MISC_ENTITIES) == 0)
+            (types & Conll02NameSampleStream.GENERATE_MISC_ENTITIES) == 0)
           tag = "O";
 
         if (tag.equals("O")) {

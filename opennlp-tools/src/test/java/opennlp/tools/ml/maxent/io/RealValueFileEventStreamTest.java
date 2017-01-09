@@ -17,14 +17,16 @@
 
 package opennlp.tools.ml.maxent.io;
 
-import java.io.IOException;
-
-import junit.framework.TestCase;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class RealValueFileEventStreamTest extends TestCase {
+import java.io.IOException;
 
+public class RealValueFileEventStreamTest {
+
+  @Test
   public void testLastLineBug() throws IOException {
     OnePassRealValueDataIndexer indexer;
     RealValueFileEventStream rvfes;
@@ -36,7 +38,7 @@ public class RealValueFileEventStreamTest extends TestCase {
     } finally {
       rvfes.close();
     }
-    assertEquals(1, indexer.getOutcomeLabels().length);
+    Assert.assertEquals(1, indexer.getOutcomeLabels().length);
 
     rvfes = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-broken.txt");
@@ -45,6 +47,6 @@ public class RealValueFileEventStreamTest extends TestCase {
     } finally {
       rvfes.close();
     }
-    assertEquals(1, indexer.getOutcomeLabels().length);
+    Assert.assertEquals(1, indexer.getOutcomeLabels().length);
   }
 }

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.ml.maxent.quasinewton;
 
 import static org.junit.Assert.assertEquals;
@@ -72,51 +73,51 @@ public class QNTrainerTest {
 
   @Test
   public void testModel() throws IOException {
-	    // given
-	    RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-	        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
-	    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
-	    // when
-	    QNModel trainedModel = new QNTrainer(15, true).trainModel(
-	        ITERATIONS, testDataIndexer);
+    // given
+    RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
+    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    // when
+    QNModel trainedModel = new QNTrainer(15, true).trainModel(
+        ITERATIONS, testDataIndexer);
 
-	    assertTrue(trainedModel.equals(trainedModel));
-	    assertFalse(trainedModel.equals(null));
+    assertTrue(trainedModel.equals(trainedModel));
+    assertFalse(trainedModel.equals(null));
   }
 
   @Test
   public void testSerdeModel() throws IOException {
-	    // given
-	    RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-	        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
-	    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
-	    // when
-	    QNModel trainedModel = new QNTrainer(5, 700, true).trainModel(ITERATIONS, testDataIndexer);
+    // given
+    RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
+    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    // when
+    QNModel trainedModel = new QNTrainer(5, 700, true).trainModel(ITERATIONS, testDataIndexer);
 
-	    ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
-	    GenericModelWriter modelWriter = new GenericModelWriter(trainedModel,
-	        new DataOutputStream(modelBytes));
-	    modelWriter.persist();
-	    modelWriter.close();
+    ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
+    GenericModelWriter modelWriter = new GenericModelWriter(trainedModel,
+        new DataOutputStream(modelBytes));
+    modelWriter.persist();
+    modelWriter.close();
 
-	    GenericModelReader modelReader = new GenericModelReader(new BinaryFileDataReader(
-	        new ByteArrayInputStream(modelBytes.toByteArray())));
-	    AbstractModel readModel = modelReader.getModel();
-	    QNModel deserModel = (QNModel) readModel;
+    GenericModelReader modelReader = new GenericModelReader(new BinaryFileDataReader(
+        new ByteArrayInputStream(modelBytes.toByteArray())));
+    AbstractModel readModel = modelReader.getModel();
+    QNModel deserModel = (QNModel) readModel;
 
-	    assertTrue(trainedModel.equals(deserModel));
+    assertTrue(trainedModel.equals(deserModel));
 
-	    String[] features2Classify = new String[] {
-	        "feature2","feature3", "feature3",
-	        "feature3","feature3", "feature3",
-	        "feature3","feature3", "feature3",
-	        "feature3","feature3", "feature3"};
-	    double[] eval01 = trainedModel.eval(features2Classify);
-	    double[] eval02 = deserModel.eval(features2Classify);
+    String[] features2Classify = new String[] {
+        "feature2","feature3", "feature3",
+        "feature3","feature3", "feature3",
+        "feature3","feature3", "feature3",
+        "feature3","feature3", "feature3"};
+    double[] eval01 = trainedModel.eval(features2Classify);
+    double[] eval02 = deserModel.eval(features2Classify);
 
-	    assertEquals(eval01.length, eval02.length);
-	    for (int i = 0; i < eval01.length; i++) {
-	    	assertEquals(eval01[i], eval02[i], 0.00000001);
-	    }
+    assertEquals(eval01.length, eval02.length);
+    for (int i = 0; i < eval01.length; i++) {
+      assertEquals(eval01[i], eval02[i], 0.00000001);
+    }
   }
 }

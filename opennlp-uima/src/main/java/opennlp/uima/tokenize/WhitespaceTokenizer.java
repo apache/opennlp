@@ -43,7 +43,7 @@ public final class WhitespaceTokenizer extends AbstractTokenizer {
    * this instance. Not use the constructor.
    */
   public WhitespaceTokenizer() {
-      super("OpenNLP Whitespace Tokenizer");
+    super("OpenNLP Whitespace Tokenizer");
     // must not be implemented !
   }
 

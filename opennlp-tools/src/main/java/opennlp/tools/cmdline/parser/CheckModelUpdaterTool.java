@@ -41,20 +41,20 @@ public final class CheckModelUpdaterTool extends ModelUpdaterTool {
       ObjectStream<Parse> parseSamples, ModelUpdaterParams parameters)
       throws IOException {
 
-      Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), 5);
+    Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), 5);
 
-      parseSamples.reset();
+    parseSamples.reset();
 
-      // TODO: Maybe that should be part of the ChunkingParser ...
-      // Training build
-      System.out.println("Training check model");
-      ObjectStream<Event> bes = new ParserEventStream(parseSamples,
-          originalModel.getHeadRules(), ParserEventTypeEnum.CHECK, mdict);
-      AbstractModel checkModel = Parser.train(bes,
-          100, 5);
+    // TODO: Maybe that should be part of the ChunkingParser ...
+    // Training build
+    System.out.println("Training check model");
+    ObjectStream<Event> bes = new ParserEventStream(parseSamples,
+        originalModel.getHeadRules(), ParserEventTypeEnum.CHECK, mdict);
+    AbstractModel checkModel = Parser.train(bes,
+        100, 5);
 
-      parseSamples.close();
+    parseSamples.close();
 
-      return originalModel.updateCheckModel(checkModel);
+    return originalModel.updateCheckModel(checkModel);
   }
 }

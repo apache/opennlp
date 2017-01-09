@@ -73,7 +73,7 @@ public class XMLDictionaryToTableTool extends BasicCmdLineTool {
       while (iterator.hasNext()) {
         String word = iterator.next();
         for (String tag : tagDictionary.getTags(word)) {
-          if(valid(word,tag)) {
+          if (valid(word, tag)) {
             String entry = createEntry(word, tag);
             writer.write(entry);
             writer.newLine();
@@ -86,14 +86,14 @@ public class XMLDictionaryToTableTool extends BasicCmdLineTool {
       throw new TerminateToolException(-1, "Error while writing output: "
           + e.getMessage(), e);
     }
-    
+
     Properties info = new Properties();
     info.setProperty("fsa.dict.separator", SEPARATOR);
     info.setProperty("fsa.dict.encoding", params.getEncoding().name());
     info.setProperty("fsa.dict.encoder", params.getEncoder());
-    
+
     Path metaPath = DictionaryMetadata.getExpectedMetadataLocation(dictOutFile.toPath());
-    
+
     try {
       info.store(Files.newOutputStream(metaPath), "Info file for FSA Morfologik dictionary.");
     } catch (IOException e) {
@@ -101,25 +101,23 @@ public class XMLDictionaryToTableTool extends BasicCmdLineTool {
           + e.getMessage(), e);
     }
     System.out.println("Created metadata: " + dictOutFile.toPath());
-    
+
   }
 
   private boolean valid(String word, String tag) {
-    if(word.contains(SEPARATOR) || tag.contains(SEPARATOR)) {
+    if (word.contains(SEPARATOR) || tag.contains(SEPARATOR)) {
       System.out
           .println("Warn: invalid entry because contains separator - word: "
               + word + " tag: " + tag);
       return false;
     }
-    
+
     return true;
   }
 
   private String createEntry(String word, String tag) {
 
-    return "" + SEPARATOR +// base
-        word + SEPARATOR +
-        tag;
+    return "" + SEPARATOR + // base
+        word + SEPARATOR + tag;
   }
-
 }

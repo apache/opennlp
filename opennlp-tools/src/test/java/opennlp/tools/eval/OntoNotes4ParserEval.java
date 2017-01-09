@@ -42,7 +42,8 @@ public class OntoNotes4ParserEval {
       throws IOException {
 
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
-        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"), file -> {
+        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"),
+        file -> {
           if (file.isFile()) {
             return file.getName().endsWith(".parse");
           }

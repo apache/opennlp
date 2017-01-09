@@ -51,10 +51,9 @@ public class SuffixSensitiveGISModelWriter extends GISModelWriter {
    * @param model The GISModel which is to be persisted.
    * @param f The File in which the model is to be stored.
    */
-  public SuffixSensitiveGISModelWriter (AbstractModel model, File f)
-  throws IOException {
+  public SuffixSensitiveGISModelWriter(AbstractModel model, File f) throws IOException {
 
-    super (model);
+    super(model);
 
     OutputStream output;
     String filename = f.getName();
@@ -62,7 +61,7 @@ public class SuffixSensitiveGISModelWriter extends GISModelWriter {
     // handle the zipped/not zipped distinction
     if (filename.endsWith(".gz")) {
       output = new GZIPOutputStream(new FileOutputStream(f));
-      filename = filename.substring(0,filename.length()-3);
+      filename = filename.substring(0,filename.length() - 3);
     }
     else {
       output = new DataOutputStream(new FileOutputStream(f));
@@ -81,19 +80,19 @@ public class SuffixSensitiveGISModelWriter extends GISModelWriter {
     }
   }
 
-  public void writeUTF (String s) throws java.io.IOException {
+  public void writeUTF(String s) throws java.io.IOException {
     suffixAppropriateWriter.writeUTF(s);
   }
 
-  public void writeInt (int i) throws java.io.IOException {
+  public void writeInt(int i) throws java.io.IOException {
     suffixAppropriateWriter.writeInt(i);
   }
 
-  public void writeDouble (double d) throws java.io.IOException {
+  public void writeDouble(double d) throws java.io.IOException {
     suffixAppropriateWriter.writeDouble(d);
   }
 
-  public void close () throws java.io.IOException {
+  public void close() throws java.io.IOException {
     suffixAppropriateWriter.close();
   }
 }

@@ -35,7 +35,7 @@ public class BioCodec implements SequenceCodec<String> {
 
   static String extractNameType(String outcome) {
     Matcher matcher = typedOutcomePattern.matcher(outcome);
-    if(matcher.matches()) {
+    if (matcher.matches()) {
       return matcher.group(1);
     }
 

@@ -44,7 +44,7 @@ public class PlainTextPerceptronModelReader extends PerceptronModelReader {
    *
    * @param f The File in which the model is stored.
    */
-  public PlainTextPerceptronModelReader (File f) throws IOException {
+  public PlainTextPerceptronModelReader(File f) throws IOException {
     super(f);
   }
 }

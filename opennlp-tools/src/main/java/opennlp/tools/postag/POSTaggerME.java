@@ -152,7 +152,7 @@ public class POSTaggerME implements POSTagger {
     Sequence[] bestSequences = model.bestSequences(numTaggings, sentence, null,
         contextGen, sequenceValidator);
     String[][] tags = new String[bestSequences.length][];
-    for (int si=0;si<tags.length;si++) {
+    for (int si = 0; si < tags.length; si++) {
       List<String> t = bestSequences[si].getOutcomes();
       tags[si] = t.toArray(new String[t.size()]);
     }
@@ -208,8 +208,8 @@ public class POSTaggerME implements POSTagger {
           }
         }
         orderedTags[i] = posModel.getOutcome(max);
-        if (tprobs != null){
-          tprobs[i]=probs[max];
+        if (tprobs != null) {
+          tprobs[i] = probs[max];
         }
         probs[max] = 0;
       }
@@ -280,7 +280,7 @@ public class POSTaggerME implements POSTagger {
     NGramModel ngramModel = new NGramModel();
 
     POSSample sample;
-    while((sample = samples.read()) != null) {
+    while ((sample = samples.read()) != null) {
       String[] words = sample.getSentence();
 
       if (words.length > 0)

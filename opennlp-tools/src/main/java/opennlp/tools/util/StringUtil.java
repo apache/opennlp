@@ -38,7 +38,7 @@ public class StringUtil {
    */
   public static boolean isWhitespace(char charCode) {
     return Character.isWhitespace(charCode)  ||
-    Character.getType(charCode) == Character.SPACE_SEPARATOR;
+        Character.getType(charCode) == Character.SPACE_SEPARATOR;
   }
 
   /**
@@ -102,18 +102,18 @@ public class StringUtil {
   }
 
   /**
-    * Returns <tt>true</tt> if {@link CharSequence#length()} is
-    * <tt>0</tt> or <tt>null</tt>.
-    *
-    * @return <tt>true</tt> if {@link CharSequence#length()} is <tt>0</tt>, otherwise
-    *         <tt>false</tt>
-    *
-    * @since 1.5.1
-    */
+   * Returns <tt>true</tt> if {@link CharSequence#length()} is
+   * <tt>0</tt> or <tt>null</tt>.
+   *
+   * @return <tt>true</tt> if {@link CharSequence#length()} is <tt>0</tt>, otherwise
+   *         <tt>false</tt>
+   *
+   * @since 1.5.1
+   */
   public static boolean isEmpty(CharSequence theString) {
-	return theString.length() == 0;
+    return theString.length() == 0;
   }
-  
+
   /**
    * Get mininum of three values.
    * @param a number a
@@ -122,17 +122,17 @@ public class StringUtil {
    * @return the minimum
    */
   private static int minimum(int a, int b, int c) {
-      int minValue;
-      minValue = a;
-      if (b < minValue) {
-        minValue = b;
-      }
-      if (c < minValue) {
-        minValue = c;
-      }
-      return minValue;
+    int minValue;
+    minValue = a;
+    if (b < minValue) {
+      minValue = b;
+    }
+    if (c < minValue) {
+      minValue = c;
+    }
+    return minValue;
   }
-  
+
   /**
    * Computes the Levenshtein distance of two strings in a matrix.
    * Based on pseudo-code provided here:
@@ -149,7 +149,7 @@ public class StringUtil {
     int lemmaLength = lemma.length();
     int cost;
     int[][] distance = new int[wordLength + 1][lemmaLength + 1];
-    
+
     if (wordLength == 0) {
       return distance;
     }
@@ -179,71 +179,72 @@ public class StringUtil {
     }
     return distance;
   }
-  
+
   /**
    * Computes the Shortest Edit Script (SES) to convert a word into its lemma.
    * This is based on Chrupala's PhD thesis (2008).
- * @param wordForm the token
- * @param lemma the target lemma
- * @param distance the levenshtein distance
- * @param permutations the number of permutations
- */
-public static void computeShortestEditScript(String wordForm, String lemma, int[][] distance, StringBuffer permutations) {
-    
+   * @param wordForm the token
+   * @param lemma the target lemma
+   * @param distance the levenshtein distance
+   * @param permutations the number of permutations
+   */
+  public static void computeShortestEditScript(String wordForm, String lemma, int[][] distance, StringBuffer permutations) {
+
     int n = distance.length;
     int m = distance[0].length;
-    
+
     int wordFormLength = n - 1;
     int lemmaLength = m - 1;
-    while(true) {
-        
-        if (distance[wordFormLength][lemmaLength] == 0) {
-          break;
-        }
-        if ((lemmaLength > 0 && wordFormLength > 0) && (distance[wordFormLength - 1][lemmaLength - 1] < distance[wordFormLength][lemmaLength])) {
-            permutations.append('R').append(Integer.toString(wordFormLength - 1)).append(wordForm.charAt(wordFormLength - 1)).append(lemma.charAt(lemmaLength - 1));
-            lemmaLength--;
-            wordFormLength--;
-            continue;
-        }
-        if (lemmaLength > 0 && (distance[wordFormLength][lemmaLength - 1] < distance[wordFormLength][lemmaLength])) {
-            permutations.append('I').append(Integer.toString(wordFormLength)).append(lemma.charAt(lemmaLength - 1));
-            lemmaLength--;
-            continue;
-        }
-        if (wordFormLength > 0 && (distance[wordFormLength - 1][lemmaLength] < distance[wordFormLength][lemmaLength])) {
-            permutations.append('D').append(Integer.toString(wordFormLength - 1)).append(wordForm.charAt(wordFormLength - 1));
-            wordFormLength--;
-            continue;
-        }
-        if ((wordFormLength > 0 && lemmaLength > 0) && (distance[wordFormLength - 1][lemmaLength - 1] == distance[wordFormLength][lemmaLength])) {
-            wordFormLength--; lemmaLength--;
-            continue ;
-        }
-        if (wordFormLength > 0 && (distance[wordFormLength - 1][lemmaLength] == distance[wordFormLength][lemmaLength])) {
-            wordFormLength--;
-            continue;
-        }
-        if (lemmaLength > 0 && (distance[wordFormLength][lemmaLength - 1] == distance[wordFormLength][lemmaLength])) {
-            lemmaLength--;
-            continue;
-        }   
-    }
-}
+    while (true) {
 
-/**
- * Read predicted SES by the lemmatizer model and apply the
- * permutations to obtain the lemma from the wordForm.
- * @param wordForm the wordForm
- * @param permutations the permutations predicted by the lemmatizer model
- * @return the lemma
- */
-public static String decodeShortestEditScript(String wordForm, String permutations) {
-  
-  StringBuffer lemma = new StringBuffer(wordForm).reverse();
-  
-  int permIndex = 0;
-  while(true) {
+      if (distance[wordFormLength][lemmaLength] == 0) {
+        break;
+      }
+      if ((lemmaLength > 0 && wordFormLength > 0) && (distance[wordFormLength - 1][lemmaLength - 1] < distance[wordFormLength][lemmaLength])) {
+        permutations.append('R').append(Integer.toString(wordFormLength - 1)).append(wordForm.charAt(wordFormLength - 1)).append(lemma.charAt(lemmaLength - 1));
+        lemmaLength--;
+        wordFormLength--;
+        continue;
+      }
+      if (lemmaLength > 0 && (distance[wordFormLength][lemmaLength - 1] < distance[wordFormLength][lemmaLength])) {
+        permutations.append('I').append(Integer.toString(wordFormLength)).append(lemma.charAt(lemmaLength - 1));
+        lemmaLength--;
+        continue;
+      }
+      if (wordFormLength > 0 && (distance[wordFormLength - 1][lemmaLength] < distance[wordFormLength][lemmaLength])) {
+        permutations.append('D').append(Integer.toString(wordFormLength - 1)).append(wordForm.charAt(wordFormLength - 1));
+        wordFormLength--;
+        continue;
+      }
+      if ((wordFormLength > 0 && lemmaLength > 0) && (distance[wordFormLength - 1][lemmaLength - 1] == distance[wordFormLength][lemmaLength])) {
+        wordFormLength--;
+        lemmaLength--;
+        continue ;
+      }
+      if (wordFormLength > 0 && (distance[wordFormLength - 1][lemmaLength] == distance[wordFormLength][lemmaLength])) {
+        wordFormLength--;
+        continue;
+      }
+      if (lemmaLength > 0 && (distance[wordFormLength][lemmaLength - 1] == distance[wordFormLength][lemmaLength])) {
+        lemmaLength--;
+        continue;
+      }
+    }
+  }
+
+  /**
+   * Read predicted SES by the lemmatizer model and apply the
+   * permutations to obtain the lemma from the wordForm.
+   * @param wordForm the wordForm
+   * @param permutations the permutations predicted by the lemmatizer model
+   * @return the lemma
+   */
+  public static String decodeShortestEditScript(String wordForm, String permutations) {
+
+    StringBuffer lemma = new StringBuffer(wordForm).reverse();
+
+    int permIndex = 0;
+    while (true) {
       if (permutations.length() <= permIndex) {
         break;
       }
@@ -253,75 +254,75 @@ public static String decodeShortestEditScript(String wordForm, String permutatio
       //go to the next permutation letter
       permIndex++;
       if (nextOperation == 'R') {
-          String charAtPerm = Character.toString(permutations.charAt(permIndex));
-          int charIndex = Integer.parseInt(charAtPerm);
-          // go to the next character in the permutation buffer
-          // which is the replacement character
-          permIndex++;
-          char replace = permutations.charAt(permIndex);
-          //go to the next char in the permutation buffer
-          // which is the candidate character
-          permIndex++;
-          char with = permutations.charAt(permIndex);
-          
-          if (lemma.length() <= charIndex) {
-            return wordForm; 
-          }
-          if (lemma.charAt(charIndex) == replace) {
-            lemma.setCharAt(charIndex, with);
-          }
-          //System.err.println("-> ROP: " + lemma.toString());
-          //go to next permutation
-          permIndex++;
-          
-      } else if (nextOperation == 'I') {
-          String charAtPerm = Character.toString(permutations.charAt(permIndex));
-          int charIndex = Integer.parseInt(charAtPerm);
-          permIndex++;
-          //character to be inserted
-          char in = permutations.charAt(permIndex);
-      
-          if (lemma.length() < charIndex) {
-            return wordForm; 
-          }
-          lemma.insert(charIndex, in);
-          //System.err.println("-> IOP " + lemma.toString());
-          //go to next permutation
-          permIndex++;
-      } else if (nextOperation == 'D') {
-          String charAtPerm = Character.toString(permutations.charAt(permIndex));
-          int charIndex = Integer.parseInt(charAtPerm);
-          if (lemma.length() <= charIndex) {
-            return wordForm;
-          }
-          lemma.deleteCharAt(charIndex);
-          permIndex++;
-          // go to next permutation
-          permIndex++;
-      }
-  }
-  return lemma.reverse().toString();
-}
+        String charAtPerm = Character.toString(permutations.charAt(permIndex));
+        int charIndex = Integer.parseInt(charAtPerm);
+        // go to the next character in the permutation buffer
+        // which is the replacement character
+        permIndex++;
+        char replace = permutations.charAt(permIndex);
+        //go to the next char in the permutation buffer
+        // which is the candidate character
+        permIndex++;
+        char with = permutations.charAt(permIndex);
 
-/**
- * Get the SES required to go from a word to a lemma.
- * @param wordForm the word
- * @param lemma the lemma
- * @return the shortest edit script
- */
-public static String getShortestEditScript(String wordForm, String lemma) {
-  String reversedWF = new StringBuffer(wordForm.toLowerCase()).reverse().toString();
-  String reversedLemma = new StringBuffer(lemma.toLowerCase()).reverse().toString();
-  StringBuffer permutations = new StringBuffer();
-  String ses;
-  if (!reversedWF.equals(reversedLemma)) {
-    int[][]levenDistance = StringUtil.levenshteinDistance(reversedWF, reversedLemma);
-    StringUtil.computeShortestEditScript(reversedWF, reversedLemma, levenDistance, permutations);
-    ses = permutations.toString();
-  } else {
-    ses = "O";
+        if (lemma.length() <= charIndex) {
+          return wordForm;
+        }
+        if (lemma.charAt(charIndex) == replace) {
+          lemma.setCharAt(charIndex, with);
+        }
+        //System.err.println("-> ROP: " + lemma.toString());
+        //go to next permutation
+        permIndex++;
+
+      } else if (nextOperation == 'I') {
+        String charAtPerm = Character.toString(permutations.charAt(permIndex));
+        int charIndex = Integer.parseInt(charAtPerm);
+        permIndex++;
+        //character to be inserted
+        char in = permutations.charAt(permIndex);
+
+        if (lemma.length() < charIndex) {
+          return wordForm;
+        }
+        lemma.insert(charIndex, in);
+        //System.err.println("-> IOP " + lemma.toString());
+        //go to next permutation
+        permIndex++;
+      } else if (nextOperation == 'D') {
+        String charAtPerm = Character.toString(permutations.charAt(permIndex));
+        int charIndex = Integer.parseInt(charAtPerm);
+        if (lemma.length() <= charIndex) {
+          return wordForm;
+        }
+        lemma.deleteCharAt(charIndex);
+        permIndex++;
+        // go to next permutation
+        permIndex++;
+      }
+    }
+    return lemma.reverse().toString();
   }
-  return ses;
-}
+
+  /**
+   * Get the SES required to go from a word to a lemma.
+   * @param wordForm the word
+   * @param lemma the lemma
+   * @return the shortest edit script
+   */
+  public static String getShortestEditScript(String wordForm, String lemma) {
+    String reversedWF = new StringBuffer(wordForm.toLowerCase()).reverse().toString();
+    String reversedLemma = new StringBuffer(lemma.toLowerCase()).reverse().toString();
+    StringBuffer permutations = new StringBuffer();
+    String ses;
+    if (!reversedWF.equals(reversedLemma)) {
+      int[][]levenDistance = StringUtil.levenshteinDistance(reversedWF, reversedLemma);
+      StringUtil.computeShortestEditScript(reversedWF, reversedLemma, levenDistance, permutations);
+      ses = permutations.toString();
+    } else {
+      ses = "O";
+    }
+    return ses;
+  }
 
 }

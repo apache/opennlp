@@ -60,7 +60,7 @@ public final class TokenNameFinderTrainerTool
   }
 
   static byte[] openFeatureGeneratorBytes(String featureGenDescriptorFile) {
-    if(featureGenDescriptorFile != null) {
+    if (featureGenDescriptorFile != null) {
       return openFeatureGeneratorBytes(new File(featureGenDescriptorFile));
     }
     return null;
@@ -108,7 +108,7 @@ public final class TokenNameFinderTrainerTool
           // TODO: Improve error handling!
           e.printStackTrace();
         }
-        
+
         try (InputStream inputStreamXML = CmdLineUtil.openInFile(featureGenDescriptor)) {
           elements = GeneratorFactory.getDescriptorElements(inputStreamXML);
         } catch (IOException e) {
@@ -164,7 +164,7 @@ public final class TokenNameFinderTrainerTool
     super.run(format, args);
 
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
-    if(mlParams == null) {
+    if (mlParams == null) {
       mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 
@@ -207,7 +207,7 @@ public final class TokenNameFinderTrainerTool
 
     NameSampleCountersStream counters = new NameSampleCountersStream(sampleStream);
     sampleStream = counters;
-    
+
     TokenNameFinderModel model;
     try {
       model = opennlp.tools.namefind.NameFinderME.train(
@@ -225,12 +225,12 @@ public final class TokenNameFinderTrainerTool
         // sorry that this can fail
       }
     }
-    
+
     System.out.println();
     counters.printSummary();
     System.out.println();
-    
+
     CmdLineUtil.writeModel("name finder", modelOutFile, model);
-    
+
   }
 }

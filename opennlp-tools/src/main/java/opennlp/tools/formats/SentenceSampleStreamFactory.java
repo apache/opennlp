@@ -53,7 +53,7 @@ public class SentenceSampleStreamFactory extends AbstractSampleStreamFactory<Sen
     CmdLineUtil.checkInputFile("Data", params.getData());
     InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
 
-    ObjectStream<String> lineStream=null;
+    ObjectStream<String> lineStream = null;
     try {
       lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
     } catch (IOException ex) {

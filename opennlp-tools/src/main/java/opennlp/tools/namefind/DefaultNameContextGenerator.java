@@ -40,11 +40,11 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
   @Deprecated
   private static AdaptiveFeatureGenerator windowFeatures = new CachedFeatureGenerator(
-          new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
-          new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
-          new OutcomePriorFeatureGenerator(),
-          new PreviousMapFeatureGenerator(),
-          new BigramNameFeatureGenerator());
+      new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
+      new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
+      new OutcomePriorFeatureGenerator(),
+      new PreviousMapFeatureGenerator(),
+      new BigramNameFeatureGenerator());
 
   /**
    * Creates a name context generator.
@@ -73,21 +73,21 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
   }
 
   public void addFeatureGenerator(AdaptiveFeatureGenerator generator) {
-      AdaptiveFeatureGenerator generators[] = featureGenerators;
+    AdaptiveFeatureGenerator generators[] = featureGenerators;
 
-      featureGenerators = new AdaptiveFeatureGenerator[featureGenerators.length + 1];
+    featureGenerators = new AdaptiveFeatureGenerator[featureGenerators.length + 1];
 
-      System.arraycopy(generators, 0, featureGenerators, 0, generators.length);
+    System.arraycopy(generators, 0, featureGenerators, 0, generators.length);
 
-      featureGenerators[featureGenerators.length - 1] = generator;
+    featureGenerators[featureGenerators.length - 1] = generator;
   }
 
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
 
     if (tokens != null && outcomes != null && tokens.length != outcomes.length) {
-        throw new IllegalArgumentException(
-            "The tokens and outcome arrays MUST have the same size!");
-      }
+      throw new IllegalArgumentException(
+          "The tokens and outcome arrays MUST have the same size!");
+    }
 
     for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
       featureGenerator.updateAdaptiveData(tokens, outcomes);
@@ -122,12 +122,12 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
     // TODO: These should be moved out here in its own feature generator!
     if (preds != null) {
-      if (index > 1){
-        ppo = preds[index-2];
+      if (index > 1) {
+        ppo = preds[index - 2];
       }
 
       if (index > 0) {
-        po = preds[index-1];
+        po = preds[index - 1];
       }
       features.add("po=" + po);
       features.add("pow=" + po + "," + tokens[index]);

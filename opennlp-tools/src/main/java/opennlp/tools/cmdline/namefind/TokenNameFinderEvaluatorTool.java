@@ -116,7 +116,7 @@ public final class TokenNameFinderEvaluatorTool
 
     System.out.println();
 
-    if(detailedFListener == null) {
+    if (detailedFListener == null) {
       System.out.println(evaluator.getFMeasure());
     } else {
       System.out.println(detailedFListener.toString());

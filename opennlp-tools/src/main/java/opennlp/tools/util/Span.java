@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.util;
 
 /**
@@ -102,11 +103,12 @@ public class Span implements Comparable<Span> {
   public Span(Span span, int offset) {
     this(span.start + offset, span.end + offset, span.getType(), span.getProb());
   }
-/**
- * Creates a new immutable span based on an existing span, where the existing span did not include the prob
- * @param span the span that has no prob or the prob is incorrect and a new Span must be generated
- * @param prob the probability of the span
- */
+
+  /**
+   * Creates a new immutable span based on an existing span, where the existing span did not include the prob
+   * @param span the span that has no prob or the prob is incorrect and a new Span must be generated
+   * @param prob the probability of the span
+   */
   public Span(Span span, double prob) {
     this(span.start, span.end, span.getType(), prob);
   }
@@ -158,8 +160,7 @@ public class Span implements Comparable<Span> {
    *
    * @param s The span to compare with this span.
    *
-   * @return true is the specified span is contained by this span; false
-   * otherwise.
+   * @return true is the specified span is contained by this span; false otherwise.
    */
   public boolean contains(Span s) {
     return start <= s.getStart() && s.getEnd() <= end;
@@ -184,7 +185,7 @@ public class Span implements Comparable<Span> {
    * @param s The span to compare with this span.
    *
    * @return true if the specified span starts with this span and is contained
-   * in this span; false otherwise
+   *     in this span; false otherwise
    */
   public boolean startsWith(Span s) {
     return getStart() == s.getStart() && contains(s);
@@ -211,7 +212,7 @@ public class Span implements Comparable<Span> {
    * @param s The span to compare with this span.
    *
    * @return true is the specified span overlaps this span and contains a
-   * non-overlapping section; false otherwise.
+   *     non-overlapping section; false otherwise.
    */
   public boolean crosses(Span s) {
     int sstart = s.getStart();

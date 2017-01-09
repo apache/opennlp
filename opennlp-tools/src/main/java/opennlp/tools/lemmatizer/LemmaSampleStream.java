@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.lemmatizer;
 
 import java.io.IOException;
@@ -56,7 +57,7 @@ public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
     }
     if (toks.size() > 0) {
       return new LemmaSample(toks.toArray(new String[toks.size()]), tags.toArray(new String[tags.size()]),
-        preds.toArray(new String[preds.size()]));
+          preds.toArray(new String[preds.size()]));
     }
     else {
       return null;

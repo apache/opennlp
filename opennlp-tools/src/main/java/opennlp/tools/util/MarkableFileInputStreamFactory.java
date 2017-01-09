@@ -30,7 +30,7 @@ public class MarkableFileInputStreamFactory implements InputStreamFactory {
   private File file;
 
   public MarkableFileInputStreamFactory(File file) throws FileNotFoundException {
-    if(!file.exists()) {
+    if (!file.exists()) {
       throw new FileNotFoundException("File '" + file + "' cannot be found");
     }
     this.file = file;

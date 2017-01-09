@@ -43,7 +43,7 @@ import opennlp.tools.util.model.BaseModel;
  */
 public final class CmdLineUtil {
 
- static final int IO_BUFFER_SIZE = 1024 * 1024;
+  static final int IO_BUFFER_SIZE = 1024 * 1024;
 
   private CmdLineUtil() {
     // not intended to be instantiated
@@ -58,12 +58,12 @@ public final class CmdLineUtil {
    * - accessibly<br>
    *
    * @param name the name which is used to refer to the file in an error message, it
-   * should start with a capital letter.
+   *     should start with a capital letter.
    *
    * @param inFile the particular file to check to qualify an input file
    *
    * @throws TerminateToolException  if test does not pass this exception is
-   * thrown and an error message is printed to the console.
+   *     thrown and an error message is printed to the console.
    */
   public static void checkInputFile(String name, File inFile) {
 
@@ -135,7 +135,7 @@ public final class CmdLineUtil {
       }
       else {
         isFailure = "The parent directory of the " + name + " file does not exist, " +
-        		"please create it first!";
+            "please create it first!";
       }
 
     }
@@ -223,12 +223,12 @@ public final class CmdLineUtil {
    */
   public static String getParameter(String param, String args[]) {
     int i = getParameterIndex(param, args);
-      if (-1 < i) {
-        i++;
-        if (i < args.length) {
-          return args[i];
-        }
+    if (-1 < i) {
+      i++;
+      if (i < args.length) {
+        return args[i];
       }
+    }
 
     return null;
   }
@@ -245,9 +245,10 @@ public final class CmdLineUtil {
 
     try {
       if (value != null)
-          return Integer.parseInt(value);
+        return Integer.parseInt(value);
     }
-    catch (NumberFormatException e) {
+    catch (NumberFormatException ignored) {
+      // in this case return null
     }
 
     return null;
@@ -265,9 +266,10 @@ public final class CmdLineUtil {
 
     try {
       if (value != null)
-          return Double.parseDouble(value);
+        return Double.parseDouble(value);
     }
-    catch (NumberFormatException e) {
+    catch (NumberFormatException ignored) {
+      // in this case return null
     }
 
     return null;

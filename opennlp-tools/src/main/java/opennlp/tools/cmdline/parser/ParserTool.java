@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.cmdline.parser;
 
 import java.io.File;
@@ -55,6 +56,7 @@ public final class ParserTool extends BasicCmdLineTool {
             + "-k n: Show the top n parses.  This will also display their log-probablities.\n"
             + "-tk tok_model: Use the specified tokenizer model to tokenize the sentences. Defaults to a WhitespaceTokenizer.";
   }
+
   private static Pattern untokenizedParenPattern1 = Pattern.compile("([^ ])([({)}])");
   private static Pattern untokenizedParenPattern2 = Pattern.compile("([({)}])([^ ])");
 
@@ -121,7 +123,7 @@ public final class ParserTool extends BasicCmdLineTool {
 
       Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
       String tokenizerModelName = CmdLineUtil.getParameter( "-tk", args );
-      if( tokenizerModelName != null ){
+      if (tokenizerModelName != null ) {
         TokenizerModel tokenizerModel = new TokenizerModelLoader().load( new File( tokenizerModelName ) );
         tokenizer = new TokenizerME( tokenizerModel );
       }

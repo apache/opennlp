@@ -77,12 +77,12 @@ public class TokenizerME extends AbstractTokenizer {
   /**
    * Constant indicates a token split.
    */
-  public static final String SPLIT ="T";
+  public static final String SPLIT = "T";
 
   /**
    * Constant indicates no token split.
    */
-  public static final String NO_SPLIT ="F";
+  public static final String NO_SPLIT = "F";
 
   /**
    * Alpha-Numeric Pattern
@@ -147,7 +147,7 @@ public class TokenizerME extends AbstractTokenizer {
   }
 
   private static Set<String> getAbbreviations(Dictionary abbreviations) {
-    if(abbreviations == null) {
+    if (abbreviations == null) {
       return Collections.emptySet();
     }
     return abbreviations.asStringSet();
@@ -158,8 +158,7 @@ public class TokenizerME extends AbstractTokenizer {
    * calls to {@link TokenizerME#tokenize(String)} or {@link TokenizerME#tokenizePos(String)}.
    *
    * @return probability for each token returned for the most recent
-   * call to tokenize.  If not applicable an empty array is
-   * returned.
+   *     call to tokenize.  If not applicable an empty array is returned.
    */
   public double[] getTokenProbabilities() {
     double[] tokProbArray = new double[tokProbs.size()];

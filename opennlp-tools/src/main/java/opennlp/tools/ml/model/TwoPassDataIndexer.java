@@ -45,7 +45,7 @@ import opennlp.tools.util.ObjectStream;
  * the events.  During the first pass a temporary event file is created which
  * is read during the second pass.
  */
-public class TwoPassDataIndexer extends AbstractDataIndexer{
+public class TwoPassDataIndexer extends AbstractDataIndexer {
 
   /**
    * One argument constructor for DataIndexer which calls the two argument
@@ -150,7 +150,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
       sortAndMerge(eventsToCompare,sort);
       System.out.println("Done indexing.");
     }
-    catch(IOException e) {
+    catch (IOException e) {
       System.err.println(e);
     }
   }
@@ -180,7 +180,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
     }
     predCounts = new int[predicateSet.size()];
     int index = 0;
-    for (Iterator<String> pi=predicateSet.iterator();pi.hasNext();index++) {
+    for (Iterator<String> pi = predicateSet.iterator(); pi.hasNext(); index++) {
       String predicate = pi.next();
       predCounts[index] = counter.get(predicate);
       predicatesInOut.put(predicate,index);
@@ -220,7 +220,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer{
       // drop events with no active features
       if (indexedContext.size() > 0) {
         int[] cons = new int[indexedContext.size()];
-        for (int ci=0;ci<cons.length;ci++) {
+        for (int ci = 0;ci < cons.length; ci++) {
           cons[ci] = indexedContext.get(ci);
         }
         ce = new ComparableEvent(ocID, cons);

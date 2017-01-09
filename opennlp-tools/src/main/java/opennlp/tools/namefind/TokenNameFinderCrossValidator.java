@@ -105,7 +105,7 @@ public class TokenNameFinderCrossValidator {
   /**
    * Splits DocumentSample into NameSamples.
    */
-  private class DocumentToNameSampleStream extends FilterObjectStream<DocumentSample, NameSample>{
+  private class DocumentToNameSampleStream extends FilterObjectStream<DocumentSample, NameSample> {
 
     protected DocumentToNameSampleStream(ObjectStream<DocumentSample> samples) {
       super(samples);
@@ -215,11 +215,11 @@ public class TokenNameFinderCrossValidator {
       TokenNameFinderModel model;
       if (factory != null) {
         model = NameFinderME.train(languageCode, type, new DocumentToNameSampleStream(trainingSampleStream),
-          params, factory);
+            params, factory);
       }
       else {
         model = NameFinderME.train(languageCode, type, new DocumentToNameSampleStream(trainingSampleStream),
-          params, TokenNameFinderFactory.create(null, featureGeneratorBytes, resources, new BioCodec()));
+            params, TokenNameFinderFactory.create(null, featureGeneratorBytes, resources, new BioCodec()));
       }
 
       // do testing

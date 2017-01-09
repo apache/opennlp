@@ -27,7 +27,7 @@ import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
 
 import org.junit.Test;
 
-public class DictionaryDetokenizerTest{
+public class DictionaryDetokenizerTest {
 
   @Test
   public void testDetokenizer() {
@@ -40,8 +40,7 @@ public class DictionaryDetokenizerTest{
         Operation.MOVE_RIGHT,
         Operation.MOVE_LEFT,
         Operation.RIGHT_LEFT_MATCHING,
-        Operation.MOVE_BOTH
-      };
+        Operation.MOVE_BOTH};
 
     DetokenizationDictionary dict = new DetokenizationDictionary(tokens, operations);
     Detokenizer detokenizer = new DictionaryDetokenizer(dict);
@@ -59,7 +58,7 @@ public class DictionaryDetokenizerTest{
 
   static Detokenizer createLatinDetokenizer() throws IOException {
     InputStream dictIn = DictionaryDetokenizerTest.class.getResourceAsStream(
-    "/opennlp/tools/tokenize/latin-detokenizer.xml");
+        "/opennlp/tools/tokenize/latin-detokenizer.xml");
 
     DetokenizationDictionary dict = new DetokenizationDictionary(dictIn);
 

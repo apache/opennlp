@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package opennlp.tools.ngram;
 
 import static org.junit.Assert.assertEquals;
@@ -191,7 +192,7 @@ public class NGramModelTest {
     // remove AL header
     int start = modelString.indexOf("<!--");
     int end = modelString.indexOf("-->");
-    String asfHeaderString = modelString.substring(start, end +3);
+    String asfHeaderString = modelString.substring(start, end + 3);
     modelString = modelString.replace(asfHeaderString, "");
     String outputString = out.toString(Charset.forName("UTF-8").name());
     assertEquals(modelString.replaceAll("\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", ""),

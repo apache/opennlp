@@ -17,20 +17,17 @@
 
 package opennlp.tools.chunker;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static junit.framework.Assert.assertNotSame;
-import static org.junit.Assert.assertEquals;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-
-import org.junit.Test;
-
 import opennlp.tools.cmdline.chunker.ChunkEvaluationErrorListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.eval.FMeasure;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Tests for {@link ChunkerEvaluator}.
@@ -39,44 +36,43 @@ import opennlp.tools.util.eval.FMeasure;
  */
 public class ChunkerEvaluatorTest {
 
-	private static final double DELTA = 1.0E-9d;
+  private static final double DELTA = 1.0E-9d;
 
-	/**
-	 * Checks the evaluator results against the results got using the conlleval,
-	 * available at http://www.cnts.ua.ac.be/conll2000/chunking/output.html
-	 * The output.txt file has only 3 sentences, but can be replaced by the one
-	 * available at the conll2000 site to validate using a bigger sample.
-	 * @throws IOException
-	 */
-	@Test
-	public void testEvaluator() throws IOException {
-        ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
-            getClass(), "/opennlp/tools/chunker/output.txt");
-        ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(getClass(),
-            "/opennlp/tools/chunker/output.txt");
+  /**
+   * Checks the evaluator results against the results got using the conlleval,
+   * available at http://www.cnts.ua.ac.be/conll2000/chunking/output.html
+   * The output.txt file has only 3 sentences, but can be replaced by the one
+   * available at the conll2000 site to validate using a bigger sample.
+   * @throws IOException
+   */
+  @Test
+  public void testEvaluator() throws IOException {
+    ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
+        getClass(), "/opennlp/tools/chunker/output.txt");
+    ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/chunker/output.txt");
 
-        DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-            new PlainTextByLineStream(inPredicted, UTF_8), true);
-    
-        DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-            new PlainTextByLineStream(inExpected, UTF_8), false);
+    DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
+        new PlainTextByLineStream(inPredicted, StandardCharsets.UTF_8), true);
 
-		Chunker dummyChunker = new DummyChunker(predictedSample);
+    DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
+        new PlainTextByLineStream(inExpected, StandardCharsets.UTF_8), false);
 
-		OutputStream stream = new ByteArrayOutputStream();
-		ChunkerEvaluationMonitor listener = new ChunkEvaluationErrorListener(stream);
-		ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, listener);
+    Chunker dummyChunker = new DummyChunker(predictedSample);
 
-		evaluator.evaluate(expectedSample);
+    OutputStream stream = new ByteArrayOutputStream();
+    ChunkerEvaluationMonitor listener = new ChunkEvaluationErrorListener(stream);
+    ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, listener);
 
-		FMeasure fm = evaluator.getFMeasure();
+    evaluator.evaluate(expectedSample);
 
-		assertEquals(0.8d, fm.getPrecisionScore(), DELTA);
-		assertEquals(0.875d, fm.getRecallScore(), DELTA);
+    FMeasure fm = evaluator.getFMeasure();
 
-		assertNotSame(stream.toString().length(), 0);
+    Assert.assertEquals(0.8d, fm.getPrecisionScore(), DELTA);
+    Assert.assertEquals(0.875d, fm.getRecallScore(), DELTA);
 
-	}
+    Assert.assertNotSame(stream.toString().length(), 0);
+  }
 
   @Test
   public void testEvaluatorNoError() throws IOException {
@@ -86,10 +82,10 @@ public class ChunkerEvaluatorTest {
         "/opennlp/tools/chunker/output.txt");
 
     DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(inPredicted, UTF_8), true);
+        new PlainTextByLineStream(inPredicted, StandardCharsets.UTF_8), true);
 
     DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(inExpected, UTF_8), true);
+        new PlainTextByLineStream(inExpected, StandardCharsets.UTF_8), true);
 
     Chunker dummyChunker = new DummyChunker(predictedSample);
 
@@ -102,11 +98,10 @@ public class ChunkerEvaluatorTest {
 
     FMeasure fm = evaluator.getFMeasure();
 
-    assertEquals(1d, fm.getPrecisionScore(), DELTA);
-    assertEquals(1d, fm.getRecallScore(), DELTA);
+    Assert.assertEquals(1d, fm.getPrecisionScore(), DELTA);
+    Assert.assertEquals(1d, fm.getRecallScore(), DELTA);
 
-    assertEquals(stream.toString().length(), 0);
-
+    Assert.assertEquals(stream.toString().length(), 0);
   }
 
 }

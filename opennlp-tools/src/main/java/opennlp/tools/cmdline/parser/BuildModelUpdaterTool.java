@@ -40,19 +40,19 @@ public final class BuildModelUpdaterTool extends ModelUpdaterTool {
       ObjectStream<Parse> parseSamples, ModelUpdaterParams parameters)
       throws IOException {
 
-      Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), 5);
+    Dictionary mdict = ParserTrainerTool.buildDictionary(parseSamples, originalModel.getHeadRules(), 5);
 
-      parseSamples.reset();
+    parseSamples.reset();
 
-      // TODO: training individual models should be in the chunking parser, not here
-      // Training build
-      System.out.println("Training builder");
-      ObjectStream<Event> bes = new ParserEventStream(parseSamples,
-          originalModel.getHeadRules(), ParserEventTypeEnum.BUILD, mdict);
-      AbstractModel buildModel = Parser.train(bes, 100, 5);
+    // TODO: training individual models should be in the chunking parser, not here
+    // Training build
+    System.out.println("Training builder");
+    ObjectStream<Event> bes = new ParserEventStream(parseSamples,
+        originalModel.getHeadRules(), ParserEventTypeEnum.BUILD, mdict);
+    AbstractModel buildModel = Parser.train(bes, 100, 5);
 
-      parseSamples.close();
+    parseSamples.close();
 
-      return originalModel.updateBuildModel(buildModel);
+    return originalModel.updateBuildModel(buildModel);
   }
 }

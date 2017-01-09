@@ -64,7 +64,7 @@ public class ChunkerME implements Chunker {
    *        is valid for the preceding sequence. This can be used to implement constraints
    *        on what sequences are valid.
    * @deprecated Use {@link #ChunkerME(ChunkerModel, int)} instead
-   *    and use the {@link ChunkerFactory} to configure the {@link SequenceValidator} and {@link ChunkerContextGenerator}.
+   *     and use the {@link ChunkerFactory} to configure the {@link SequenceValidator} and {@link ChunkerContextGenerator}.
    */
   @Deprecated
   private ChunkerME(ChunkerModel model, int beamSize, SequenceValidator<String> sequenceValidator,
@@ -94,8 +94,8 @@ public class ChunkerME implements Chunker {
   @Deprecated
   private ChunkerME(ChunkerModel model, int beamSize) {
 
-   contextGenerator = model.getFactory().getContextGenerator();
-   sequenceValidator = model.getFactory().getSequenceValidator();
+    contextGenerator = model.getFactory().getContextGenerator();
+    sequenceValidator = model.getFactory().getSequenceValidator();
 
     if (model.getChunkerSequenceModel() != null) {
       this.model = model.getChunkerSequenceModel();
@@ -148,12 +148,12 @@ public class ChunkerME implements Chunker {
     bestSequence.getProbs(probs);
   }
 
-    /**
-     * Returns an array with the probabilities of the last decoded sequence.  The
-     * sequence was determined based on the previous call to <code>chunk</code>.
-     * @return An array with the same number of probabilities as tokens were sent to <code>chunk</code>
-     * when it was last called.
-     */
+  /**
+   * Returns an array with the probabilities of the last decoded sequence.  The
+   * sequence was determined based on the previous call to <code>chunk</code>.
+   * @return An array with the same number of probabilities as tokens were sent to <code>chunk</code>
+   *     when it was last called.
+   */
   public double[] probs() {
     return bestSequence.getProbs();
   }

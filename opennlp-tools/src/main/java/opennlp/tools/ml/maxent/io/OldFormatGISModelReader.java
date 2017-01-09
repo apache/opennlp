@@ -35,7 +35,7 @@ import opennlp.tools.ml.model.Context;
  * which stores the parameters.
  */
 public class OldFormatGISModelReader extends PlainTextGISModelReader {
-    private DataInputStream paramsInput;
+  private DataInputStream paramsInput;
 
   /**
    * Constructor which takes the name of the model without any suffixes, such as

@@ -49,7 +49,7 @@ public class DocumentCategorizer extends AbstractDocumentCategorizer {
 
     // get feature name
     mCategoryFeature = AnnotatorUtil.getRequiredFeatureParameter(getContext(), mCategoryType,
-    		"opennlp.uima.doccat.CategoryFeature", CAS.TYPE_NAME_STRING);
+        "opennlp.uima.doccat.CategoryFeature", CAS.TYPE_NAME_STRING);
   }
 
   @Override

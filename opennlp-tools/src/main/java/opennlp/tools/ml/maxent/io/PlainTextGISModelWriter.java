@@ -42,8 +42,7 @@ public class PlainTextGISModelWriter extends GISModelWriter {
    * @param model The GISModel which is to be persisted.
    * @param f The File in which the model is to be persisted.
    */
-  public PlainTextGISModelWriter (AbstractModel model, File f)
-  throws IOException {
+  public PlainTextGISModelWriter(AbstractModel model, File f) throws IOException {
 
     super(model);
     if (f.getName().endsWith(".gz")) {
@@ -62,27 +61,27 @@ public class PlainTextGISModelWriter extends GISModelWriter {
    * @param model The GISModel which is to be persisted.
    * @param bw The BufferedWriter which will be used to persist the model.
    */
-  public PlainTextGISModelWriter (AbstractModel model, BufferedWriter bw) {
+  public PlainTextGISModelWriter(AbstractModel model, BufferedWriter bw) {
     super(model);
     output = bw;
   }
 
-  public void writeUTF (String s) throws java.io.IOException {
+  public void writeUTF(String s) throws java.io.IOException {
     output.write(s);
     output.newLine();
   }
 
-  public void writeInt (int i) throws java.io.IOException {
+  public void writeInt(int i) throws java.io.IOException {
     output.write(Integer.toString(i));
     output.newLine();
   }
 
-  public void writeDouble (double d) throws java.io.IOException {
+  public void writeDouble(double d) throws java.io.IOException {
     output.write(Double.toString(d));
     output.newLine();
   }
 
-  public void close () throws java.io.IOException {
+  public void close() throws java.io.IOException {
     output.flush();
     output.close();
   }

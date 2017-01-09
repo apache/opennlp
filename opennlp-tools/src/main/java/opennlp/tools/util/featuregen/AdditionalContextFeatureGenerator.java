@@ -28,9 +28,6 @@ public class AdditionalContextFeatureGenerator implements AdaptiveFeatureGenerat
 
   private String[][] additionalContext;
 
-//  public AdditionalContextFeatureGenerator() {
-//  }
-
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
 
     if (additionalContext != null && additionalContext.length != 0) {

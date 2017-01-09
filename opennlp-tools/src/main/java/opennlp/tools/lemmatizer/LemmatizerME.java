@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.lemmatizer;
 
 import java.io.IOException;
@@ -40,21 +41,21 @@ import opennlp.tools.util.TrainingParameters;
 /**
  * A probabilistic lemmatizer.  Tries to predict the induced permutation class
  * for each word depending on its surrounding context. Based on
- * Grzegorz Chrupała. 2008. Towards a Machine-Learning Architecture 
- * for Lexical Functional Grammar Parsing. PhD dissertation, Dublin City University. 
+ * Grzegorz Chrupała. 2008. Towards a Machine-Learning Architecture
+ * for Lexical Functional Grammar Parsing. PhD dissertation, Dublin City University.
  * http://grzegorz.chrupala.me/papers/phd-single.pdf
  */
 public class LemmatizerME implements Lemmatizer {
-  
+
   public static final int DEFAULT_BEAM_SIZE = 3;
   protected int beamSize;
   private Sequence bestSequence;
-  
+
   private SequenceClassificationModel<String> model;
-  
+
   private LemmatizerContextGenerator contextGenerator;
   private SequenceValidator<String> sequenceValidator;
-  
+
   /**
    * Initializes the current instance with the provided model
    * and the default beam size of 3.
@@ -62,14 +63,14 @@ public class LemmatizerME implements Lemmatizer {
    * @param model the model
    */
   public LemmatizerME(LemmatizerModel model) {
-    
+
     LemmatizerFactory factory = model.getFactory();
     int defaultBeamSize = LemmatizerME.DEFAULT_BEAM_SIZE;
     String beamSizeString = model.getManifestProperty(BeamSearch.BEAM_SIZE_PARAMETER);
     if (beamSizeString != null) {
       defaultBeamSize = Integer.parseInt(beamSizeString);
     }
-    
+
     contextGenerator = factory.getContextGenerator();
     beamSize = defaultBeamSize;
 
@@ -83,13 +84,13 @@ public class LemmatizerME implements Lemmatizer {
           (MaxentModel) model.getLemmatizerSequenceModel(), 0);
     }
   }
-  
-public String[] lemmatize(String[] toks, String[] tags) {
+
+  public String[] lemmatize(String[] toks, String[] tags) {
     bestSequence = model.bestSequence(toks, new Object[] {tags}, contextGenerator, sequenceValidator);
     List<String> c = bestSequence.getOutcomes();
     return c.toArray(new String[c.size()]);
   }
-  
+
   /**
    * Decodes the lemma from the word and the induced lemma class.
    * @param toks the array of tokens
@@ -108,7 +109,7 @@ public String[] lemmatize(String[] toks, String[] tags) {
     }
     return lemmas.toArray(new String[lemmas.size()]);
   }
-  
+
   public Sequence[] topKSequences(String[] sentence, String[] tags) {
     return model.bestSequences(DEFAULT_BEAM_SIZE, sentence,
         new Object[] { tags }, contextGenerator, sequenceValidator);
@@ -130,16 +131,16 @@ public String[] lemmatize(String[] toks, String[] tags) {
     bestSequence.getProbs(probs);
   }
 
-    /**
-     * Returns an array with the probabilities of the last decoded sequence.  The
-     * sequence was determined based on the previous call to <code>chunk</code>.
-     * @return An array with the same number of probabilities as tokens were sent to <code>chunk</code>
-     * when it was last called.
-     */
+  /**
+   * Returns an array with the probabilities of the last decoded sequence.  The
+   * sequence was determined based on the previous call to <code>chunk</code>.
+   * @return An array with the same number of probabilities as tokens were sent to <code>chunk</code>
+   *     when it was last called.
+   */
   public double[] probs() {
     return bestSequence.getProbs();
   }
-  
+
   public static LemmatizerModel train(String languageCode,
       ObjectStream<LemmaSample> samples, TrainingParameters trainParams,
       LemmatizerFactory posFactory) throws IOException {
@@ -192,7 +193,7 @@ public String[] lemmatize(String[] toks, String[] tags) {
       return new LemmatizerModel(languageCode, seqLemmatizerModel, manifestInfoEntries, posFactory);
     }
   }
-  
+
   public Sequence[] topKLemmaClasses(String[] sentence, String[] tags) {
     return model.bestSequences(DEFAULT_BEAM_SIZE, sentence,
         new Object[] { tags }, contextGenerator, sequenceValidator);

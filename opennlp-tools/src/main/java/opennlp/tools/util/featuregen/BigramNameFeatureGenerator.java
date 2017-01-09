@@ -25,14 +25,14 @@ public class BigramNameFeatureGenerator implements AdaptiveFeatureGenerator {
     String wc = FeatureGeneratorUtil.tokenFeature(tokens[index]);
     //bi-gram features
     if (index > 0) {
-      features.add("pw,w="+tokens[index-1]+","+tokens[index]);
-      String pwc = FeatureGeneratorUtil.tokenFeature(tokens[index-1]);
-      features.add("pwc,wc="+pwc+","+wc);
+      features.add("pw,w=" + tokens[index - 1] + "," + tokens[index]);
+      String pwc = FeatureGeneratorUtil.tokenFeature(tokens[index - 1]);
+      features.add("pwc,wc=" + pwc + "," + wc);
     }
-    if (index+1 < tokens.length) {
-      features.add("w,nw="+tokens[index]+","+tokens[index+1]);
-      String nwc = FeatureGeneratorUtil.tokenFeature(tokens[index+1]);
-      features.add("wc,nc="+wc+","+nwc);
+    if (index + 1 < tokens.length) {
+      features.add("w,nw=" + tokens[index] + "," + tokens[index + 1]);
+      String nwc = FeatureGeneratorUtil.tokenFeature(tokens[index + 1]);
+      features.add("wc,nc=" + wc + "," + nwc);
     }
   }
 }

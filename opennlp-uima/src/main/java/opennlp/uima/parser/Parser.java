@@ -273,7 +273,7 @@ public class Parser extends CasAnnotator_ImplBase {
 
     List<Span> tokenSpans = new LinkedList<>();
 
-    while(containingTokens.hasNext()) {
+    while (containingTokens.hasNext()) {
       AnnotationFS token = containingTokens.next();
 
       tokenSpans.add(new Span(token.getBegin() - sentenceAnnotation.getBegin(),
@@ -334,6 +334,7 @@ public class Parser extends CasAnnotator_ImplBase {
   /**
    * Releases allocated resources.
    */
+
   public void destroy() {
     mParser = null;
   }

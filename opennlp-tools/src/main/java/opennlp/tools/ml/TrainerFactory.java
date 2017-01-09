@@ -59,7 +59,7 @@ public class TrainerFactory {
    * @param trainParams
    * @return the trainer type or null if type couldn't be determined.
    */
-  public static TrainerType getTrainerType(Map<String, String> trainParams){
+  public static TrainerType getTrainerType(Map<String, String> trainParams) {
 
     String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
 
@@ -70,7 +70,7 @@ public class TrainerFactory {
 
     Class<?> trainerClass = BUILTIN_TRAINERS.get(alogrithmValue);
 
-    if(trainerClass != null) {
+    if (trainerClass != null) {
 
       if (EventTrainer.class.isAssignableFrom(trainerClass)) {
         return TrainerType.EVENT_MODEL_TRAINER;
@@ -90,6 +90,7 @@ public class TrainerFactory {
       return TrainerType.EVENT_MODEL_TRAINER;
     }
     catch (ExtensionNotLoadedException ignored) {
+      // this is ignored
     }
 
     try {
@@ -97,6 +98,7 @@ public class TrainerFactory {
       return TrainerType.EVENT_MODEL_SEQUENCE_TRAINER;
     }
     catch (ExtensionNotLoadedException ignored) {
+      // this is ignored
     }
 
     try {
@@ -104,6 +106,7 @@ public class TrainerFactory {
       return TrainerType.SEQUENCE_TRAINER;
     }
     catch (ExtensionNotLoadedException ignored) {
+      // this is ignored
     }
 
     return null;
@@ -115,7 +118,7 @@ public class TrainerFactory {
 
     if (trainerType != null) {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        SequenceTrainer trainer =  TrainerFactory.<SequenceTrainer> createBuiltinTrainer(
+        SequenceTrainer trainer =  TrainerFactory.<SequenceTrainer>createBuiltinTrainer(
             BUILTIN_TRAINERS.get(trainerType));
         trainer.init(trainParams, reportMap);
         return trainer;
@@ -135,7 +138,7 @@ public class TrainerFactory {
     String trainerType = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
     if (trainerType != null) {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        EventModelSequenceTrainer trainer = TrainerFactory.<EventModelSequenceTrainer> createBuiltinTrainer(
+        EventModelSequenceTrainer trainer = TrainerFactory.<EventModelSequenceTrainer>createBuiltinTrainer(
             BUILTIN_TRAINERS.get(trainerType));
         trainer.init(trainParams, reportMap);
         return trainer;
@@ -162,7 +165,7 @@ public class TrainerFactory {
     }
     else {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        EventTrainer trainer = TrainerFactory.<EventTrainer> createBuiltinTrainer(
+        EventTrainer trainer = TrainerFactory.<EventTrainer>createBuiltinTrainer(
             BUILTIN_TRAINERS.get(trainerType));
         trainer.init(trainParams, reportMap);
         return trainer;

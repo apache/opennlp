@@ -34,7 +34,12 @@ public abstract class AbstractModel implements MaxentModel {
   /** Prior distribution for this model. */
   protected Prior prior;
 
-  public enum ModelType {Maxent,Perceptron,MaxentQn,NaiveBayes}
+  public enum ModelType {
+    Maxent,
+    Perceptron,
+    MaxentQn,
+    NaiveBayes
+  }
 
   /** The type of the model. */
   protected ModelType modelType;
@@ -55,13 +60,13 @@ public abstract class AbstractModel implements MaxentModel {
     this.evalParams = new EvalParameters(params,correctionParam,correctionConstant,outcomeNames.length);
   }
 
-  private void init(String[] predLabels, String[] outcomeNames){
+  private void init(String[] predLabels, String[] outcomeNames) {
     this.pmap = new HashMap<String, Integer>(predLabels.length);
-    
+
     for (int i = 0; i < predLabels.length; i++) {
       pmap.put(predLabels[i], i);
     }
-    
+
     this.outcomeNames =  outcomeNames;
   }
 
@@ -75,13 +80,13 @@ public abstract class AbstractModel implements MaxentModel {
    * @return    The name of the most likely outcome.
    */
   public final String getBestOutcome(double[] ocs) {
-      int best = 0;
-      for (int i = 1; i<ocs.length; i++)
-          if (ocs[i] > ocs[best]) best = i;
-      return outcomeNames[best];
+    int best = 0;
+    for (int i = 1; i < ocs.length; i++)
+      if (ocs[i] > ocs[best]) best = i;
+    return outcomeNames[best];
   }
 
-  public ModelType getModelType(){
+  public ModelType getModelType() {
     return modelType;
   }
 
@@ -98,18 +103,18 @@ public abstract class AbstractModel implements MaxentModel {
    *            for each one.
    */
   public final String getAllOutcomes(double[] ocs) {
-      if (ocs.length != outcomeNames.length) {
-          return "The double array sent as a parameter to GISModel.getAllOutcomes() must not have been produced by this model.";
+    if (ocs.length != outcomeNames.length) {
+      return "The double array sent as a parameter to GISModel.getAllOutcomes() must not have been produced by this model.";
+    }
+    else {
+      DecimalFormat df =  new DecimalFormat("0.0000");
+      StringBuilder sb = new StringBuilder(ocs.length * 2);
+      sb.append(outcomeNames[0]).append("[").append(df.format(ocs[0])).append("]");
+      for (int i = 1; i < ocs.length; i++) {
+        sb.append("  ").append(outcomeNames[i]).append("[").append(df.format(ocs[i])).append("]");
       }
-      else {
-        DecimalFormat df =  new DecimalFormat("0.0000");
-        StringBuilder sb = new StringBuilder(ocs.length * 2);
-        sb.append(outcomeNames[0]).append("[").append(df.format(ocs[0])).append("]");
-        for (int i = 1; i<ocs.length; i++) {
-          sb.append("  ").append(outcomeNames[i]).append("[").append(df.format(ocs[i])).append("]");
-        }
-        return sb.toString();
-      }
+      return sb.toString();
+    }
   }
 
   /**
@@ -119,7 +124,7 @@ public abstract class AbstractModel implements MaxentModel {
    * @return  The name of the outcome associated with that id.
    */
   public final String getOutcome(int i) {
-      return outcomeNames[i];
+    return outcomeNames[i];
   }
 
   /**
@@ -128,14 +133,14 @@ public abstract class AbstractModel implements MaxentModel {
    * @param outcome the String name of the outcome for which the
    *          index is desired
    * @return the index if the given outcome label exists for this
-   * model, -1 if it does not.
+   *     model, -1 if it does not.
    **/
   public int getIndex(String outcome) {
-      for (int i=0; i<outcomeNames.length; i++) {
-          if (outcomeNames[i].equals(outcome))
-              return i;
-      }
-      return -1;
+    for (int i = 0; i < outcomeNames.length; i++) {
+      if (outcomeNames[i].equals(outcome))
+        return i;
+    }
+    return -1;
   }
 
   public int getNumOutcomes() {
@@ -154,7 +159,7 @@ public abstract class AbstractModel implements MaxentModel {
    *            to unique integers
    * <li>index 2: java.lang.String[] containing the names of the outcomes,
    *            stored in the index of the array which represents their
-   * 	          unique ids in the model.
+   *            unique ids in the model.
    * <li>index 3: java.lang.Integer containing the value of the models
    *            correction constant
    * <li>index 4: java.lang.Double containing the value of the models
@@ -164,12 +169,12 @@ public abstract class AbstractModel implements MaxentModel {
    * @return An Object[] with the values as described above.
    */
   public final Object[] getDataStructures() {
-      Object[] data = new Object[5];
-      data[0] = evalParams.getParams();
-      data[1] = pmap;
-      data[2] = outcomeNames;
-      data[3] = (int) evalParams.getCorrectionConstant();
-      data[4] = evalParams.getCorrectionParam();
-      return data;
+    Object[] data = new Object[5];
+    data[0] = evalParams.getParams();
+    data[1] = pmap;
+    data[2] = outcomeNames;
+    data[3] = (int) evalParams.getCorrectionConstant();
+    data[4] = evalParams.getCorrectionParam();
+    return data;
   }
 }

@@ -39,7 +39,7 @@ public class SentenceDetectorMETest {
   @Test
   public void testSentenceDetector() throws IOException {
 
-    InputStreamFactory in = new ResourceAsStreamFactory(getClass(), 
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
         "/opennlp/tools/sentdetect/Sentences.txt");
 
     TrainingParameters mlParams = new TrainingParameters();

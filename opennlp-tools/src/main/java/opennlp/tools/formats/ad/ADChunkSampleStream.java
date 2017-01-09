@@ -58,163 +58,163 @@ import opennlp.tools.util.StringUtil;
  */
 public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 
-	protected final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
+  protected final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
 
-	private int start = -1;
-	private int end = -1;
+  private int start = -1;
+  private int end = -1;
 
-	private int index = 0;
+  private int index = 0;
 
-    public static final String OTHER = "O";
+  public static final String OTHER = "O";
 
-	/**
-	 * Creates a new {@link NameSample} stream from a line stream, i.e.
-	 * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
-	 * {@link PlainTextByLineStream} object.
-	 *
-	 * @param lineStream
-	 *          a stream of lines as {@link String}
-	 */
-	public ADChunkSampleStream(ObjectStream<String> lineStream) {
-	  this.adSentenceStream = new ADSentenceStream(lineStream);
-	}
+  /**
+   * Creates a new {@link NameSample} stream from a line stream, i.e.
+   * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
+   * {@link PlainTextByLineStream} object.
+   *
+   * @param lineStream
+   *          a stream of lines as {@link String}
+   */
+  public ADChunkSampleStream(ObjectStream<String> lineStream) {
+    this.adSentenceStream = new ADSentenceStream(lineStream);
+  }
 
-    public ADChunkSampleStream(InputStreamFactory in, String charsetName) throws IOException {
+  public ADChunkSampleStream(InputStreamFactory in, String charsetName) throws IOException {
 
-      try {
-        this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-            in, charsetName));
-      } catch (UnsupportedEncodingException e) {
-        // UTF-8 is available on all JVMs, will never happen
-        throw new IllegalStateException(e);
+    try {
+      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
+          in, charsetName));
+    } catch (UnsupportedEncodingException e) {
+      // UTF-8 is available on all JVMs, will never happen
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public ChunkSample read() throws IOException {
+
+    Sentence paragraph;
+    while ((paragraph = this.adSentenceStream.read()) != null) {
+
+      if (end > -1 && index >= end) {
+        // leave
+        return null;
+      }
+
+      if (start > -1 && index < start) {
+        index++;
+        // skip this one
+      } else {
+        Node root = paragraph.getRoot();
+        List<String> sentence = new ArrayList<>();
+        List<String> tags = new ArrayList<>();
+        List<String> target = new ArrayList<>();
+
+        processRoot(root, sentence, tags, target);
+
+        if (sentence.size() > 0) {
+          index++;
+          return new ChunkSample(sentence, tags, target);
+        }
+
+      }
+
+    }
+    return null;
+  }
+
+  protected void processRoot(Node root, List<String> sentence, List<String> tags,
+      List<String> target) {
+    if (root != null) {
+      TreeElement[] elements = root.getElements();
+      for (int i = 0; i < elements.length; i++) {
+        if (elements[i].isLeaf()) {
+          processLeaf((Leaf) elements[i], false, OTHER, sentence, tags, target);
+        } else {
+          processNode((Node) elements[i], sentence, tags, target, null);
+        }
       }
     }
+  }
 
-	public ChunkSample read() throws IOException {
-
-		Sentence paragraph;
-		while ((paragraph = this.adSentenceStream.read()) != null) {
-
-			if (end > -1 && index >= end) {
-				// leave
-				return null;
-			}
-
-			if (start > -1 && index < start) {
-				index++;
-				// skip this one
-			} else {
-				Node root = paragraph.getRoot();
-				List<String> sentence = new ArrayList<>();
-				List<String> tags = new ArrayList<>();
-				List<String> target = new ArrayList<>();
-
-				processRoot(root, sentence, tags, target);
-
-				if (sentence.size() > 0) {
-					index++;
-					return new ChunkSample(sentence, tags, target);
-				}
-
-			}
-
-		}
-		return null;
-	}
-
-	protected void processRoot(Node root, List<String> sentence, List<String> tags,
-			List<String> target) {
-		if (root != null) {
-			TreeElement[] elements = root.getElements();
-			for (int i = 0; i < elements.length; i++) {
-				if (elements[i].isLeaf()) {
-					processLeaf((Leaf) elements[i], false, OTHER, sentence, tags, target);
-				} else {
-					processNode((Node) elements[i], sentence, tags, target, null);
-				}
-			}
-		}
-	}
-
-    private void processNode(Node node, List<String> sentence, List<String> tags,
-        List<String> target, String inheritedTag) {
+  private void processNode(Node node, List<String> sentence, List<String> tags,
+      List<String> target, String inheritedTag) {
     String phraseTag = getChunkTag(node);
 
     boolean inherited = false;
-    if(phraseTag.equals(OTHER) && inheritedTag != null) {
+    if (phraseTag.equals(OTHER) && inheritedTag != null) {
       phraseTag = inheritedTag;
       inherited = true;
     }
 
     TreeElement[] elements = node.getElements();
     for (int i = 0; i < elements.length; i++) {
-        if (elements[i].isLeaf()) {
-            boolean isIntermediate = false;
-            String tag = phraseTag;
-            Leaf leaf = (Leaf) elements[i];
+      if (elements[i].isLeaf()) {
+        boolean isIntermediate = false;
+        String tag = phraseTag;
+        Leaf leaf = (Leaf) elements[i];
 
-            String localChunk = getChunkTag(leaf);
-            if(localChunk != null && !tag.equals(localChunk)) {
-              tag = localChunk;
-            }
-
-            if(isIntermediate(tags, target, tag) && (inherited || i > 0)) {
-                  isIntermediate = true;
-            }
-            if(!isIncludePunctuations() && leaf.getFunctionalTag() == null &&
-                (
-                    !( i + 1 < elements.length && elements[i+1].isLeaf() ) ||
-                    !( i > 0 && elements[i - 1].isLeaf() )
-                )
-              ){
-              isIntermediate = false;
-              tag = OTHER;
-            }
-            processLeaf(leaf, isIntermediate, tag, sentence,
-                    tags, target);
-        } else {
-            int before = target.size();
-            processNode((Node) elements[i], sentence, tags, target, phraseTag);
-
-            // if the child node was of a different type we should break the chunk sequence
-            for (int j = target.size() - 1; j >= before; j--) {
-              if(!target.get(j).endsWith("-" + phraseTag)) {
-                phraseTag = OTHER;
-                break;
-              }
-            }
+        String localChunk = getChunkTag(leaf);
+        if (localChunk != null && !tag.equals(localChunk)) {
+          tag = localChunk;
         }
+
+        if (isIntermediate(tags, target, tag) && (inherited || i > 0)) {
+          isIntermediate = true;
+        }
+        if (!isIncludePunctuations() && leaf.getFunctionalTag() == null &&
+            (
+                !( i + 1 < elements.length && elements[i + 1].isLeaf() ) ||
+                !( i > 0 && elements[i - 1].isLeaf() )
+                )
+            ) {
+          isIntermediate = false;
+          tag = OTHER;
+        }
+        processLeaf(leaf, isIntermediate, tag, sentence,
+            tags, target);
+      } else {
+        int before = target.size();
+        processNode((Node) elements[i], sentence, tags, target, phraseTag);
+
+        // if the child node was of a different type we should break the chunk sequence
+        for (int j = target.size() - 1; j >= before; j--) {
+          if (!target.get(j).endsWith("-" + phraseTag)) {
+            phraseTag = OTHER;
+            break;
+          }
+        }
+      }
     }
-}
+  }
 
 
   protected void processLeaf(Leaf leaf, boolean isIntermediate, String phraseTag,
-			List<String> sentence, List<String> tags, List<String> target) {
-		String chunkTag;
+      List<String> sentence, List<String> tags, List<String> target) {
+    String chunkTag;
 
-		if (leaf.getFunctionalTag() != null
-				&& phraseTag.equals(OTHER)) {
-		  phraseTag = getPhraseTagFromPosTag(leaf.getFunctionalTag());
-		}
+    if (leaf.getFunctionalTag() != null
+        && phraseTag.equals(OTHER)) {
+      phraseTag = getPhraseTagFromPosTag(leaf.getFunctionalTag());
+    }
 
-		if (!phraseTag.equals(OTHER)) {
-			if (isIntermediate) {
-				chunkTag = "I-" + phraseTag;
-			} else {
-				chunkTag = "B-" + phraseTag;
-			}
-		} else {
-			chunkTag = phraseTag;
-		}
+    if (!phraseTag.equals(OTHER)) {
+      if (isIntermediate) {
+        chunkTag = "I-" + phraseTag;
+      } else {
+        chunkTag = "B-" + phraseTag;
+      }
+    } else {
+      chunkTag = phraseTag;
+    }
 
-		sentence.add(leaf.getLexeme());
-		if (leaf.getSyntacticTag() == null) {
-			tags.add(leaf.getLexeme());
-		} else {
-			tags.add(ADChunkSampleStream.convertFuncTag(leaf.getFunctionalTag(), false));
-		}
-		target.add(chunkTag);
-	}
+    sentence.add(leaf.getLexeme());
+    if (leaf.getSyntacticTag() == null) {
+      tags.add(leaf.getLexeme());
+    } else {
+      tags.add(ADChunkSampleStream.convertFuncTag(leaf.getFunctionalTag(), false));
+    }
+    target.add(chunkTag);
+  }
 
   protected String getPhraseTagFromPosTag(String functionalTag) {
     if (functionalTag.equals("v-fin")) {
@@ -236,7 +236,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 
   protected String getChunkTag(Leaf leaf) {
     String tag = leaf.getSyntacticTag();
-    if("P".equals(tag)) {
+    if ("P".equals(tag)) {
       return "VP";
     }
     return null;
@@ -262,21 +262,21 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
     return phraseTag;
   }
 
-	public void setStart(int aStart) {
-		this.start = aStart;
-	}
+  public void setStart(int aStart) {
+    this.start = aStart;
+  }
 
-	public void setEnd(int aEnd) {
-		this.end = aEnd;
-	}
+  public void setEnd(int aEnd) {
+    this.end = aEnd;
+  }
 
-	public void reset() throws IOException, UnsupportedOperationException {
-		adSentenceStream.reset();
-	}
+  public void reset() throws IOException, UnsupportedOperationException {
+    adSentenceStream.reset();
+  }
 
-	public void close() throws IOException {
-		adSentenceStream.close();
-	}
+  public void close() throws IOException {
+    adSentenceStream.close();
+  }
 
   protected boolean isIncludePunctuations() {
     return false;

@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package opennlp.tools.ml.maxent.quasinewton;
 
 import static java.lang.Math.pow;
@@ -87,13 +88,13 @@ public class QNMinimizerTest {
 
     @Override
     public double valueAt(double[] x) {
-      return pow(1-x[0], 2) + 100 * pow(x[1] - pow(x[0], 2), 2);
+      return pow(1 - x[0], 2) + 100 * pow(x[1] - pow(x[0], 2), 2);
     }
 
     @Override
     public double[] gradientAt(double[] x) {
       double[] g = new double[2];
-      g[0] = -2*(1-x[0]) - 400 * (x[1] - pow(x[0], 2)) * x[0];
+      g[0] = -2 * (1 - x[0]) - 400 * (x[1] - pow(x[0], 2)) * x[0];
       g[1] = 200 * (x[1] - pow(x[0], 2));
       return g;
     }

@@ -17,6 +17,11 @@
 
 package opennlp.morfologik.builder;
 
+import morfologik.stemming.DictionaryMetadata;
+import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,61 +29,55 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
-import org.junit.Test;
-
-import junit.framework.TestCase;
-import morfologik.stemming.DictionaryMetadata;
-import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
-
-public class POSDictionayBuilderTest extends TestCase {
+public class POSDictionayBuilderTest {
 
   @Test
   public void testBuildDictionary() throws Exception {
-    
+
     Path output = createMorfologikDictionary();
 
     MorfologikLemmatizer ml = new MorfologikLemmatizer(output);
 
-    assertNotNull(ml);
+    Assert.assertNotNull(ml);
   }
-  
+
   public static Path createMorfologikDictionary() throws Exception {
     Path tabFilePath = File.createTempFile(
         POSDictionayBuilderTest.class.getName(), ".txt").toPath();
     Path infoFilePath = DictionaryMetadata.getExpectedMetadataLocation(tabFilePath);
-    
+
     Files.copy(POSDictionayBuilderTest.class.getResourceAsStream(
         "/dictionaryWithLemma.txt"), tabFilePath, StandardCopyOption.REPLACE_EXISTING);
     Files.copy(POSDictionayBuilderTest.class.getResourceAsStream(
         "/dictionaryWithLemma.info"), infoFilePath, StandardCopyOption.REPLACE_EXISTING);
-    
+
     MorfologikDictionayBuilder builder = new MorfologikDictionayBuilder();
-    
+
     return builder.build(tabFilePath);
   }
-  
-  
+
+
   public static void main(String[] args) throws Exception {
 
-    // Part 1: compile a FSA lemma dictionary 
-    
-    // we need the tabular dictionary. It is mandatory to have info 
+    // Part 1: compile a FSA lemma dictionary
+
+    // we need the tabular dictionary. It is mandatory to have info
     //  file with same name, but .info extension
     Path textLemmaDictionary = Paths.get("/Users/wcolen/git/opennlp/opennlp-morfologik-addon/src/test/resources/dictionaryWithLemma.txt");
-    
+
     // this will build a binary dictionary located in compiledLemmaDictionary
     Path compiledLemmaDictionary = new MorfologikDictionayBuilder()
         .build(textLemmaDictionary);
-    
+
     // Part 2: load a MorfologikLemmatizer and use it
     MorfologikLemmatizer lemmatizer = new MorfologikLemmatizer(compiledLemmaDictionary);
-    
+
     String[] toks = {"casa", "casa"};
     String[] tags = {"NOUN", "V"};
-    
+
     String[] lemmas = lemmatizer.lemmatize(toks, tags);
     System.out.println(Arrays.toString(lemmas)); // outputs [casa, casar]
-    
+
   }
 
 }

@@ -148,7 +148,7 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
         boolean start = true;
         String ctype = c.getType();
         Parse[] kids = c.getChildren();
-        for (int ti=0,tl=kids.length;ti<tl;ti++) {
+        for (int ti = 0, tl = kids.length; ti < tl; ti++) {
           Parse tok = kids[ti];
           toks.add(tok.getCoveredText());
           tags.add(tok.getType());
@@ -178,7 +178,7 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
       }
       else {
         Parse[] kids = c.getChildren();
-        for (int ti=0,tl=kids.length;ti<tl;ti++) {
+        for (int ti = 0, tl = kids.length; ti < tl; ti++) {
           Parse tok = kids[ti];
           toks.add(tok.getCoveredText());
           preds.add(tok.getType());

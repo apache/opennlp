@@ -128,8 +128,8 @@ public class ArgumentParserTest {
   public void testSimpleArgumentsUsage() {
 
     String arguments[] = new String[] {"-encoding charset",
-    		"[-iterations num]",
-    		"[-alphaNumOpt true|false]"};
+        "[-iterations num]",
+        "[-alphaNumOpt true|false]"};
 
     String usage = ArgumentParser.createUsage(SimpleArguments.class);
 
@@ -169,7 +169,7 @@ public class ArgumentParserTest {
     Collection<Charset> availableCharset = Charset.availableCharsets().values();
     String notTheDefaultCharset = "UTF-8";
     for (Charset charset : availableCharset) {
-      if(!charset.equals(Charset.defaultCharset())) {
+      if (!charset.equals(Charset.defaultCharset())) {
         notTheDefaultCharset = charset.name();
         break;
       }

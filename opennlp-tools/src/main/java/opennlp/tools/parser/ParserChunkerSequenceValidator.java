@@ -30,13 +30,14 @@ public class ParserChunkerSequenceValidator implements SequenceValidator<String>
   public ParserChunkerSequenceValidator(String outcomes[]) {
 
     continueStartMap = new HashMap<>(outcomes.length);
-    for (int oi=0, on = outcomes.length; oi<on; oi++) {
+    for (int oi = 0, on = outcomes.length; oi < on; oi++) {
       String outcome = outcomes[oi];
-      if (outcome.startsWith(Parser.CONT)){
-        continueStartMap.put(outcome,Parser.START+outcome.substring(
+      if (outcome.startsWith(Parser.CONT)) {
+        continueStartMap.put(outcome,Parser.START + outcome.substring(
             Parser.CONT.length()));
       }
-    }  }
+    }
+  }
 
   public boolean validSequence(int i, String[] inputSequence,
       String[] tagList, String outcome) {
@@ -50,7 +51,7 @@ public class ParserChunkerSequenceValidator implements SequenceValidator<String>
         String lastTag = tagList[lti];
 
         if (lastTag.equals(outcome)) {
-           return true;
+          return true;
         }
 
         if (lastTag.equals(continueStartMap.get(outcome))) {

@@ -118,9 +118,11 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
         }
         sent = this.adSentenceStream.read();
         updateMeta();
-      } while (isSamePara);
+      }
+      while (isSamePara);
       // break; // got one paragraph!
-    } while (isSameText);
+    }
+    while (isSameText);
 
     String doc;
     if (document.length() > 0) {

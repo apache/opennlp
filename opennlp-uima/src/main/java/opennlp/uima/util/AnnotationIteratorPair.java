@@ -28,14 +28,17 @@ import org.apache.uima.cas.text.AnnotationFS;
 public final class AnnotationIteratorPair {
   private final AnnotationFS annot;
   private final Iterable<AnnotationFS> it;
+
   public AnnotationIteratorPair(AnnotationFS a, Iterable<AnnotationFS> it) {
     super();
     this.annot = a;
     this.it = it;
   }
+
   public AnnotationFS getAnnotation() {
     return this.annot;
   }
+
   public Iterable<AnnotationFS> getSubIterator() {
     return this.it;
   }

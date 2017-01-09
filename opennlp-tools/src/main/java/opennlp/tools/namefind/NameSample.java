@@ -182,10 +182,10 @@ public class NameSample {
 
     // two token before
     if (index > 1)
-      errorString.append(sentence[index -2]).append(" ");
+      errorString.append(sentence[index - 2]).append(" ");
 
     if (index > 0)
-      errorString.append(sentence[index -1]).append(" ");
+      errorString.append(sentence[index - 1]).append(" ");
 
     // token itself
     errorString.append("###");
@@ -210,9 +210,9 @@ public class NameSample {
   }
 
   public static NameSample parse(String taggedTokens, String defaultType,
-      boolean isClearAdaptiveData)
+      boolean isClearAdaptiveData) throws IOException {
     // TODO: Should throw another exception, and then convert it into an IOException in the stream
-    throws IOException {
+
     String[] parts = WhitespaceTokenizer.INSTANCE.tokenize(taggedTokens);
 
     List<String> tokenList = new ArrayList<>(parts.length);
@@ -229,15 +229,15 @@ public class NameSample {
     for (int pi = 0; pi < parts.length; pi++) {
       Matcher startMatcher = START_TAG_PATTERN.matcher(parts[pi]);
       if (startMatcher.matches()) {
-        if(catchingName) {
+        if (catchingName) {
           throw new IOException("Found unexpected annotation" +
               " while handling a name sequence: " + errorTokenWithContext(parts, pi));
         }
         catchingName = true;
         startIndex = wordIndex;
         String nameTypeFromSample = startMatcher.group(2);
-        if(nameTypeFromSample != null) {
-          if(nameTypeFromSample.length() == 0) {
+        if (nameTypeFromSample != null) {
+          if (nameTypeFromSample.length() == 0) {
             throw new IOException("Missing a name type: " + errorTokenWithContext(parts, pi));
           }
           nameType = nameTypeFromSample;
@@ -245,7 +245,7 @@ public class NameSample {
 
       }
       else if (parts[pi].equals(NameSampleDataStream.END_TAG)) {
-        if(!catchingName) {
+        if (!catchingName) {
           throw new IOException("Found unexpected annotation: " + errorTokenWithContext(parts, pi));
         }
         catchingName = false;

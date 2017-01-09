@@ -50,7 +50,7 @@ public class StringList implements Iterable<String> {
    * Token Strings will be replaced by identical internal String object.
    *
    * @param tokens the string parts of the new {@link StringList}, an empty
-   * tokens array or null is not permitted.
+   *     tokens array or null is not permitted.
    */
   public StringList(String... tokens) {
 

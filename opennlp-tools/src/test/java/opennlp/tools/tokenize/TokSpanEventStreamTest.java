@@ -41,7 +41,7 @@ public class TokSpanEventStreamTest {
   public void testEventOutcomes() throws IOException {
 
     ObjectStream<String> sentenceStream =
-      ObjectStreamUtils.createObjectStream("\"<SPLIT>out<SPLIT>.<SPLIT>\"");
+        ObjectStreamUtils.createObjectStream("\"<SPLIT>out<SPLIT>.<SPLIT>\"");
 
     ObjectStream<TokenSample> tokenSampleStream = new TokenSampleStream(sentenceStream);
 

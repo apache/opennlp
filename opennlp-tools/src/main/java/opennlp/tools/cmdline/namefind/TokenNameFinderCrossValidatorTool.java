@@ -123,7 +123,7 @@ public final class TokenNameFinderCrossValidatorTool
 
     System.out.println();
 
-    if(detailedFListener == null) {
+    if (detailedFListener == null) {
       System.out.println(validator.getFMeasure());
     } else {
       System.out.println(detailedFListener.toString());

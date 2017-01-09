@@ -17,24 +17,21 @@
 
 package opennlp.tools.lemmatizer;
 
-import static junit.framework.Assert.assertNotSame;
-import static org.junit.Assert.assertEquals;
+import opennlp.tools.cmdline.lemmatizer.LemmaEvaluationErrorListener;
+import opennlp.tools.util.MockInputStreamFactory;
+import opennlp.tools.util.PlainTextByLineStream;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.junit.Test;
-
-import opennlp.tools.cmdline.lemmatizer.LemmaEvaluationErrorListener;
-import opennlp.tools.util.MockInputStreamFactory;
-import opennlp.tools.util.PlainTextByLineStream;
-
 /**
  * Tests for {@link LemmatizerEvaluator}.
  *
- * @see ChunkerEvaluator
+ * @see opennlp.tools.chunker.ChunkerEvaluator
  */
 public class LemmatizerEvaluatorTest {
 
@@ -44,7 +41,7 @@ public class LemmatizerEvaluatorTest {
    * Checks the evaluator results against the results got using the conlleval,
    * available at http://www.cnts.ua.ac.be/conll2000/chunking/output.html but
    * containing lemmas instead of chunks.
-   * 
+   *
    * @throws IOException
    */
   @Test
@@ -57,27 +54,21 @@ public class LemmatizerEvaluatorTest {
     String encoding = "UTF-8";
 
     DummyLemmaSampleStream predictedSample = new DummyLemmaSampleStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(inPredicted),
-            encoding),
-        true);
+        new PlainTextByLineStream(new MockInputStreamFactory(inPredicted), encoding), true);
 
     DummyLemmaSampleStream expectedSample = new DummyLemmaSampleStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(inExpected),
-            encoding),
-        false);
+        new PlainTextByLineStream(new MockInputStreamFactory(inExpected), encoding), false);
 
     Lemmatizer dummyLemmatizer = new DummyLemmatizer(predictedSample);
 
     OutputStream stream = new ByteArrayOutputStream();
-    LemmatizerEvaluationMonitor listener = new LemmaEvaluationErrorListener(
-        stream);
-    LemmatizerEvaluator evaluator = new LemmatizerEvaluator(dummyLemmatizer,
-        listener);
+    LemmatizerEvaluationMonitor listener = new LemmaEvaluationErrorListener(stream);
+    LemmatizerEvaluator evaluator = new LemmatizerEvaluator(dummyLemmatizer, listener);
 
     evaluator.evaluate(expectedSample);
 
-    assertEquals(0.9877049180327869, evaluator.getWordAccuracy(), DELTA);
-    assertNotSame(stream.toString().length(), 0);
+    Assert.assertEquals(0.9877049180327869, evaluator.getWordAccuracy(), DELTA);
+    Assert.assertNotSame(stream.toString().length(), 0);
 
   }
 

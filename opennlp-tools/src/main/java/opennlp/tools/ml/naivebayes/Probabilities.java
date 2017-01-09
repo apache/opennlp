@@ -17,7 +17,12 @@
 
 package opennlp.tools.ml.naivebayes;
 
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class implementing the probability distribution over labels returned by a classifier.
@@ -26,7 +31,7 @@ import java.util.*;
  *
  */
 public abstract class Probabilities<T> {
-  protected HashMap<T, Double> map = new HashMap<>();
+  protected Map<T, Double> map = new HashMap<>();
 
   protected transient boolean isNormalised = false;
   protected Map<T, Double> normalised;
@@ -190,7 +195,7 @@ public abstract class Probabilities<T> {
   }
 
   public void discardCountsBelow(double i) {
-    ArrayList<T> labelsToRemove = new ArrayList<>();
+    List<T> labelsToRemove = new ArrayList<>();
     for (T label : map.keySet()) {
       Double sum = map.get(label);
       if (sum == null) sum = 0.0;

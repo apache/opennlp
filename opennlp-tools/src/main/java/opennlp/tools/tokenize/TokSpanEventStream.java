@@ -119,8 +119,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
         //adjust cSpan to text offsets
         cSpan = new Span(cSpan.getStart() + start, cSpan.getEnd() + start);
         //should we skip this token
-        if (ctok.length() > 1
-          && (!skipAlphaNumerics || !alphaNumeric.matcher(ctok).matches())) {
+        if (ctok.length() > 1 && (!skipAlphaNumerics || !alphaNumeric.matcher(ctok).matches())) {
 
           //find offsets of annotated tokens inside of candidate tokens
           boolean foundTrainingTokens = false;
@@ -141,7 +140,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
             else {
               if (logger.isLoggable(Level.WARNING)) {
                 logger.warning("Bad training token: " + tokens[ti] + " cand: " + cSpan +
-                    " token="+text.substring(tokens[ti].getStart(), tokens[ti].getEnd()));
+                    " token=" + text.substring(tokens[ti].getStart(), tokens[ti].getEnd()));
               }
             }
           }

@@ -56,9 +56,9 @@ public class StringUtilTest {
     assertTrue(!StringUtil.isEmpty("a"));
   }
 
-  @Test(expected=NullPointerException.class)
+  @Test(expected = NullPointerException.class)
   public void testIsEmptyWithNullString() {
-	// should raise a NPE
+    // should raise a NPE
     StringUtil.isEmpty(null);
   }
 

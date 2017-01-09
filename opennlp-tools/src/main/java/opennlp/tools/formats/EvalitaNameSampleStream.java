@@ -55,7 +55,7 @@ import opennlp.tools.util.StringUtil;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
+public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
   public enum LANGUAGE {
     IT
@@ -132,7 +132,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
         String emptyLine = lineStream.read();
 
         if (!StringUtil.isEmpty(emptyLine))
-          throw new IOException("Empty line after -DOCSTART- not empty: '" + emptyLine +"'!");
+          throw new IOException("Empty line after -DOCSTART- not empty: '" + emptyLine + "'!");
 
         continue;
       }
@@ -185,7 +185,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample>{
           }
 
           beginIndex = i;
-          endIndex = i +1;
+          endIndex = i + 1;
         }
         else if (tag.startsWith("I-")) {
           endIndex++;

@@ -63,9 +63,11 @@ public class TokenSampleTest {
     TokenSample a = new TokenSample(detokenizer, tokens);
 
     assertEquals("start () end. hyphen-string.", a.getText());
-              //  0123456789012345678901234567
-    assertEquals("start (" + TokenSample.DEFAULT_SEPARATOR_CHARS + ") end" + TokenSample.DEFAULT_SEPARATOR_CHARS + "."
-        + " hyphen" + TokenSample.DEFAULT_SEPARATOR_CHARS + "-" + TokenSample.DEFAULT_SEPARATOR_CHARS + "string" + TokenSample.DEFAULT_SEPARATOR_CHARS + ".", a.toString());
+    //  0123456789012345678901234567
+    assertEquals("start (" + TokenSample.DEFAULT_SEPARATOR_CHARS + ") end"
+        + TokenSample.DEFAULT_SEPARATOR_CHARS + "."
+        + " hyphen" + TokenSample.DEFAULT_SEPARATOR_CHARS + "-" + TokenSample.DEFAULT_SEPARATOR_CHARS
+        + "string" + TokenSample.DEFAULT_SEPARATOR_CHARS + ".", a.toString());
 
     assertEquals(9, a.getTokenSpans().length);
 

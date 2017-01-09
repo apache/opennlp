@@ -70,7 +70,7 @@ public class HashList extends HashMap {
 
     o.add(value);
 
-    if(o.size() == 1)
+    if (o.size() == 1)
       return null;
     else
       return o;
@@ -84,7 +84,7 @@ public class HashList extends HashMap {
     else {
       boolean r = l.remove(value);
       if (l.size() == 0) {
-	remove(key);
+        remove(key);
       }
       return r;
     }

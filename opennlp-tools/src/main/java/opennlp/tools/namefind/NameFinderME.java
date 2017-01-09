@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.namefind;
 
 import java.io.ByteArrayInputStream;
@@ -92,12 +93,12 @@ public class NameFinderME implements TokenNameFinder {
 
     if (generatorDescriptor != null) {
       featureGenerator = GeneratorFactory.create(new ByteArrayInputStream(
-              generatorDescriptor), key -> {
-                if (resources != null) {
-                  return resources.get(key);
-                }
-                return null;
-              });
+          generatorDescriptor), key -> {
+            if (resources != null) {
+              return resources.get(key);
+            }
+            return null;
+          });
     } else {
       featureGenerator = null;
     }
@@ -113,10 +114,9 @@ public class NameFinderME implements TokenNameFinder {
    * Generates name tags for the given sequence, typically a sentence, returning
    * token spans for any identified names.
    *
-   * @param tokens an array of the tokens or words of the sequence, typically a
-   * sentence.
+   * @param tokens an array of the tokens or words of the sequence, typically a sentence.
    * @param additionalContext features which are based on context outside of the
-   * sentence but which should also be used.
+   *     sentence but which should also be used.
    *
    * @return an array of spans for each of the names identified.
    */
@@ -151,7 +151,7 @@ public class NameFinderME implements TokenNameFinder {
    * number of tokens in the previous call to <code>chunk</code>.
    *
    * @param probs An array used to hold the probabilities of the last decoded
-   * sequence.
+   *     sequence.
    */
   public void probs(double[] probs) {
     bestSequence.getProbs(probs);
@@ -162,7 +162,7 @@ public class NameFinderME implements TokenNameFinder {
    * sequence was determined based on the previous call to <code>chunk</code>.
    *
    * @return An array with the same number of probabilities as tokens were sent
-   * to <code>chunk</code> when it was last called.
+   *     to <code>chunk</code> when it was last called.
    */
   public double[] probs() {
     return bestSequence.getProbs();
@@ -175,12 +175,12 @@ public class NameFinderME implements TokenNameFinder {
    * @return
    */
   private Span[] setProbs(Span[] spans) {
-     double[] probs = probs(spans);
-     if (probs != null) {
+    double[] probs = probs(spans);
+    if (probs != null) {
 
       for (int i = 0; i < probs.length; i++) {
         double prob = probs[i];
-        spans[i]= new Span(spans[i], prob);
+        spans[i] = new Span(spans[i], prob);
       }
     }
     return spans;

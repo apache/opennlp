@@ -122,6 +122,7 @@
 		<maven.version>3.3.9</maven.version>
 		<enforcer.plugin.version>1.4.1</enforcer.plugin.version>
 		<junit.version>4.12</junit.version>
+		<checkstyle.plugin.version>2.17</checkstyle.plugin.version>
 	</properties>
 
 	<build>
@@ -142,6 +143,38 @@
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
 					<version>3.2.0</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>${checkstyle.plugin.version}</version>
+					<dependencies>
+						<dependency>
+							<groupId>com.puppycrawl.tools</groupId>
+							<artifactId>checkstyle</artifactId>
+							<version>7.2</version>
+						</dependency>
+					</dependencies>
+					<executions>
+						<execution>
+							<id>validate</id>
+							<phase>validate</phase>
+							<configuration>
+								<configLocation>checkstyle.xml</configLocation>
+								<encoding>UTF-8</encoding>
+								<consoleOutput>true</consoleOutput>
+								<includeTestSourceDirectory>true</includeTestSourceDirectory>
+								<testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
+								<violationSeverity>error</violationSeverity>
+								<failOnViolation>true</failOnViolation>
+								<excludes>**/stemmer/**/*</excludes>
+							</configuration>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -252,6 +285,11 @@
 					<skipTests>false</skipTests>
 					<argLine>-Xmx512m</argLine>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
 
 		</plugins>

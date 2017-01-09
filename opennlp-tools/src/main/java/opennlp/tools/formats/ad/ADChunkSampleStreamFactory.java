@@ -79,7 +79,7 @@ public class ADChunkSampleStreamFactory extends LanguageSampleStreamFactory<Chun
 
     InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
 
-    ObjectStream<String> lineStream=null;
+    ObjectStream<String> lineStream = null;
     try {
       lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
     } catch (IOException ex) {
@@ -88,11 +88,11 @@ public class ADChunkSampleStreamFactory extends LanguageSampleStreamFactory<Chun
 
     ADChunkSampleStream sampleStream = new ADChunkSampleStream(lineStream);
 
-    if(params.getStart() != null && params.getStart() > -1) {
+    if (params.getStart() != null && params.getStart() > -1) {
       sampleStream.setStart(params.getStart());
     }
 
-    if(params.getEnd() != null && params.getEnd() > -1) {
+    if (params.getEnd() != null && params.getEnd() > -1) {
       sampleStream.setEnd(params.getEnd());
     }
 

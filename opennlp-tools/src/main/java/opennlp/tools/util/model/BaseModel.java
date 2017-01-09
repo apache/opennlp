@@ -130,7 +130,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     artifactMap.put(MANIFEST_ENTRY, manifest);
     finishedLoadingArtifacts = true;
 
-    if (factory!=null) {
+    if (factory != null) {
       setManifestProperty(FACTORY_NAME, factory.getClass().getCanonicalName());
       artifactMap.putAll(factory.createArtifactMap());
 
@@ -223,7 +223,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     boolean isSearchingForManifest = true;
 
     ZipEntry entry;
-    while((entry = zip.getNextEntry()) != null && isSearchingForManifest) {
+    while ((entry = zip.getNextEntry()) != null && isSearchingForManifest) {
 
       if ("manifest.properties".equals(entry.getName())) {
         // TODO: Probably better to use the serializer here directly!
@@ -253,7 +253,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     if (factoryName == null) {
       // load the default factory
       Class<? extends BaseToolFactory> factoryClass = getDefaultFactory();
-      if(factoryClass != null) {
+      if (factoryClass != null) {
         this.toolFactory = BaseToolFactory.create(factoryClass, this);
       }
     } else {
@@ -295,7 +295,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     Map<String, Object> artifactMap = new HashMap<>();
 
     ZipEntry entry;
-    while((entry = zip.getNextEntry()) != null ) {
+    while ((entry = zip.getNextEntry()) != null ) {
 
       // Note: The manifest.properties file will be read here again,
       // there should be no need to prevent that.
@@ -380,7 +380,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    */
   protected void createArtifactSerializers(
       Map<String, ArtifactSerializer> serializers) {
-    if(this.toolFactory != null)
+    if (this.toolFactory != null)
       serializers.putAll(this.toolFactory.createArtifactSerializersMap());
   }
 
@@ -423,13 +423,13 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
         if (Version.currentVersion().getMajor() != version.getMajor() ||
             Version.currentVersion().getMinor() - 2 > version.getMinor()) {
           throw new InvalidFormatException("Model version " + version + " is not supported by this ("
-              + Version.currentVersion() +") version of OpenNLP!");
+              + Version.currentVersion() + ") version of OpenNLP!");
         }
 
         // Reject loading a snapshot model with a non-snapshot version
         if (!Version.currentVersion().isSnapshot() && version.isSnapshot()) {
           throw new InvalidFormatException("Model version " + version + " is a snapshot - snapshot models are not " +
-          		"supported by this non-snapshot version (" + Version.currentVersion() + ") of OpenNLP!");
+              "supported by this non-snapshot version (" + Version.currentVersion() + ") of OpenNLP!");
         }
       }
     }
@@ -448,7 +448,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
     if (getManifestProperty(LANGUAGE_PROPERTY) == null)
       throw new InvalidFormatException("Missing " + LANGUAGE_PROPERTY + " property in " +
-      		MANIFEST_ENTRY + "!");
+          MANIFEST_ENTRY + "!");
 
     // Validate the factory. We try to load it using the ExtensionLoader. It
     // will return the factory, null or raise an exception
@@ -469,7 +469,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     }
 
     // validate artifacts declared by the factory
-    if(toolFactory != null) {
+    if (toolFactory != null) {
       toolFactory.validateArtifactMap();
     }
   }
@@ -605,7 +605,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   @SuppressWarnings("unchecked")
   public <T> T getArtifact(String key) {
     Object artifact = artifactMap.get(key);
-    if(artifact == null)
+    if (artifact == null)
       return null;
     return (T) artifact;
   }

@@ -99,7 +99,7 @@ public abstract class TypedCmdLineTool<T>
           formats.append(".").append(format).append("|");
         }
       }
-      formatsHelp = "[" + formats.substring(0, formats.length() - 1)+ "] ";
+      formatsHelp = "[" + formats.substring(0, formats.length() - 1) + "] ";
     }
 
     return "Usage: " + CLI.CMD + " " + getName() + formatsHelp +

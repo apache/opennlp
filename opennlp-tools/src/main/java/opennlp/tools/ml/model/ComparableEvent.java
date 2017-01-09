@@ -27,8 +27,7 @@ package opennlp.tools.ml.model;
 public class ComparableEvent implements Comparable<ComparableEvent> {
   public int outcome;
   public int[] predIndexes;
-  public int seen = 1; // the number of times this event
-                       // has been seen.
+  public int seen = 1; // the number of times this event has been seen.
 
   public float[] values;
 

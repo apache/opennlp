@@ -42,5 +42,5 @@ class PropertiesSerializer implements ArtifactSerializer<Properties> {
 
   static void register(Map<String, ArtifactSerializer> factories) {
     factories.put("properties", new PropertiesSerializer());
-   }
+  }
 }

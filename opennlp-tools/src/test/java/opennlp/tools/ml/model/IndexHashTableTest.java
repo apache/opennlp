@@ -17,10 +17,12 @@
 
 package opennlp.tools.ml.model;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class IndexHashTableTest extends TestCase {
+public class IndexHashTableTest {
 
+  @Test
   public void testWithoutCollision() {
 
     String array[] = new String[3];
@@ -29,12 +31,13 @@ public class IndexHashTableTest extends TestCase {
     array[1] = "7";
     array[2] = "5";
 
-    IndexHashTable<String> arrayIndex = new IndexHashTable<String>(array, 1d);
+    IndexHashTable<String> arrayIndex = new IndexHashTable<>(array, 1d);
 
     for (int i = 0; i < array.length; i++)
-      assertEquals(i, arrayIndex.get(array[i]));
+      Assert.assertEquals(i, arrayIndex.get(array[i]));
   }
 
+  @Test
   public void testWitCollision() {
 
     String array[] = new String[3];
@@ -43,12 +46,12 @@ public class IndexHashTableTest extends TestCase {
     array[1] = "21";
     array[2] = "0";
 
-    IndexHashTable<String> arrayIndex = new IndexHashTable<String>(array, 1d);
+    IndexHashTable<String> arrayIndex = new IndexHashTable<>(array, 1d);
 
     for (int i = 0; i < array.length; i++)
-      assertEquals(i, arrayIndex.get(array[i]));
+      Assert.assertEquals(i, arrayIndex.get(array[i]));
 
     // has the same slot as as ""
-    assertEquals(-1, arrayIndex.get("4"));
+    Assert.assertEquals(-1, arrayIndex.get("4"));
   }
 }

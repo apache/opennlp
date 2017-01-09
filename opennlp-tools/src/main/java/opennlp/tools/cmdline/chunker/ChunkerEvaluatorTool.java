@@ -56,10 +56,10 @@ public final class ChunkerEvaluatorTool
 
     List<EvaluationMonitor<ChunkSample>> listeners = new LinkedList<>();
     ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
-    if(params.getMisclassified()) {
+    if (params.getMisclassified()) {
       listeners.add(new ChunkEvaluationErrorListener());
     }
-    if(params.getDetailedF()) {
+    if (params.getDetailedF()) {
       detailedFMeasureListener = new ChunkerDetailedFMeasureListener();
       listeners.add(detailedFMeasureListener);
     }

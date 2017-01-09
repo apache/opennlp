@@ -85,27 +85,27 @@ public class ParserEventStream extends AbstractParserEventStream {
     //  perform reduce
     int reduceStart = ci;
     int reduceEnd = ci;
-    while (reduceStart >=0 && chunks[reduceStart].getParent() == parent) {
+    while (reduceStart >= 0 && chunks[reduceStart].getParent() == parent) {
       reduceStart--;
     }
     reduceStart++;
     Parse[] reducedChunks;
     if (!type.equals(AbstractBottomUpParser.TOP_NODE)) {
-      reducedChunks = new Parse[chunks.length-(reduceEnd-reduceStart+1)+1]; //total - num_removed + 1 (for new node)
+      reducedChunks = new Parse[chunks.length - (reduceEnd - reduceStart + 1) + 1]; //total - num_removed + 1 (for new node)
       //insert nodes before reduction
       System.arraycopy(chunks, 0, reducedChunks, 0, reduceStart);
       //insert reduced node
-      reducedChunks[reduceStart]=parent;
+      reducedChunks[reduceStart] = parent;
       //propagate punctuation sets
       parent.setPrevPunctuation(chunks[reduceStart].getPreviousPunctuationSet());
       parent.setNextPunctuation(chunks[reduceEnd].getNextPunctuationSet());
       //insert nodes after reduction
-      int ri=reduceStart+1;
-      for (int rci=reduceEnd+1;rci<chunks.length;rci++) {
-        reducedChunks[ri]=chunks[rci];
+      int ri = reduceStart + 1;
+      for (int rci = reduceEnd + 1; rci < chunks.length; rci++) {
+        reducedChunks[ri] = chunks[rci];
         ri++;
       }
-      ci=reduceStart-1; //ci will be incremented at end of loop
+      ci = reduceStart - 1; //ci will be incremented at end of loop
     }
     else {
       reducedChunks = new Parse[0];
@@ -149,12 +149,12 @@ public class ParserEventStream extends AbstractParserEventStream {
           }
           //perform reduce
           int reduceStart = ci;
-          while (reduceStart >=0 && chunks[reduceStart].getParent() == parent) {
+          while (reduceStart >= 0 && chunks[reduceStart].getParent() == parent) {
             reduceStart--;
           }
           reduceStart++;
           chunks = reduceChunks(chunks,ci,parent);
-          ci=reduceStart-1; //ci will be incremented at end of loop
+          ci = reduceStart - 1; //ci will be incremented at end of loop
         }
         else {
           if (etype == ParserEventTypeEnum.CHECK) {

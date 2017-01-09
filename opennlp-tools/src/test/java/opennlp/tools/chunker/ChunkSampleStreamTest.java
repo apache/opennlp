@@ -29,7 +29,7 @@ import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class ChunkSampleStreamTest{
+public class ChunkSampleStreamTest {
 
   @Test
   public void testReadingEvents() throws IOException {
@@ -54,7 +54,7 @@ public class ChunkSampleStreamTest{
     sample.append('\n');
     sample.append("word23 tag23 pred23");
     sample.append('\n');
-    
+
     ObjectStream<String> stringStream = new PlainTextByLineStream(
         new MockInputStreamFactory(sample.toString()), UTF_8);
 
@@ -86,7 +86,7 @@ public class ChunkSampleStreamTest{
     assertEquals("pred23", secondSample.getPreds()[2]);
 
     assertNull(chunkStream.read());
-    
+
     chunkStream.close();
   }
 }

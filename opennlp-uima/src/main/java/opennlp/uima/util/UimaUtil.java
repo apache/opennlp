@@ -74,7 +74,7 @@ public final class UimaUtil {
       "opennlp.uima.ProbabilityFeature";
 
   public static final String IS_REMOVE_EXISTINGS_ANNOTAIONS =
-	  "opennlp.uima.IsRemoveExistingAnnotations";
+      "opennlp.uima.IsRemoveExistingAnnotations";
 
   public static final String ADDITIONAL_TRAINING_DATA_FILE =
       "opennlp.uima.AdditionalTrainingDataFile";

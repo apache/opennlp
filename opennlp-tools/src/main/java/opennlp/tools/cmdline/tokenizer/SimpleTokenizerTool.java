@@ -41,7 +41,7 @@ public final class SimpleTokenizerTool extends BasicCmdLineTool {
     } else {
 
       CommandLineTokenizer tokenizer =
-        new CommandLineTokenizer(opennlp.tools.tokenize.SimpleTokenizer.INSTANCE);
+          new CommandLineTokenizer(opennlp.tools.tokenize.SimpleTokenizer.INSTANCE);
 
       tokenizer.process();
     }

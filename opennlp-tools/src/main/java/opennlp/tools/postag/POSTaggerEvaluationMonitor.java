@@ -19,6 +19,6 @@ package opennlp.tools.postag;
 
 import opennlp.tools.util.eval.EvaluationMonitor;
 
-public interface POSTaggerEvaluationMonitor extends EvaluationMonitor<POSSample>{
+public interface POSTaggerEvaluationMonitor extends EvaluationMonitor<POSSample> {
 
 }

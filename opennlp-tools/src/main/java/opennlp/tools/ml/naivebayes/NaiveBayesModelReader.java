@@ -59,7 +59,7 @@ public class NaiveBayesModelReader extends AbstractModelReader {
    * other methods provided in this abstract class.
    *
    * @return The NaiveBayesModel stored in the format and location specified to
-   * this NaiveBayesModelReader (usually via its the constructor).
+   *     this NaiveBayesModelReader (usually via its the constructor).
    */
   public AbstractModel constructModel() throws IOException {
     String[] outcomeLabels = getOutcomes();

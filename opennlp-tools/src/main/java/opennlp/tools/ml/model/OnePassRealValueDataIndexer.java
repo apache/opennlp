@@ -86,7 +86,12 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
     List<Integer> indexedContext = new ArrayList<>();
 
+<<<<<<< HEAD
     for (Event ev:events) {
+=======
+    for (int eventIndex = 0; eventIndex < numEvents; eventIndex++) {
+      Event ev = events.removeFirst();
+>>>>>>> branch 'trunk' of git://git.apache.org/opennlp.git
       String[] econtext = ev.getContext();
       ComparableEvent ce;
 
@@ -109,15 +114,25 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
       //drop events with no active features
       if (indexedContext.size() > 0) {
         int[] cons = new int[indexedContext.size()];
-        for (int ci=0;ci<cons.length;ci++) {
+        for (int ci = 0; ci < cons.length; ci++) {
           cons[ci] = indexedContext.get(ci);
         }
         ce = new ComparableEvent(ocID, cons, ev.getValues());
         eventsToCompare.add(ce);
+<<<<<<< HEAD
       } else {
         System.err.println("Dropped event "+ev.getOutcome()+":"+Arrays.asList(ev.getContext()));
+=======
       }
+      else {
+        System.err.println("Dropped event " + ev.getOutcome() + ":" + Arrays.asList(ev.getContext()));
+>>>>>>> branch 'trunk' of git://git.apache.org/opennlp.git
+      }
+<<<<<<< HEAD
       //    recycle the TIntArrayList
+=======
+
+>>>>>>> branch 'trunk' of git://git.apache.org/opennlp.git
       indexedContext.clear();
     }
     outcomeLabels = toIndexedStringArray(omap);

@@ -281,8 +281,8 @@ class GISTrainer {
       }
       else {
         float cl = values[ci][0];
-        for (int vi=1;vi<values[ci].length;vi++) {
-          cl+=values[ci][vi];
+        for (int vi = 1; vi < values[ci].length; vi++) {
+          cl += values[ci][vi];
         }
 
         if (cl > correctionConstant) {
@@ -309,7 +309,7 @@ class GISTrainer {
     for (int ti = 0; ti < numUniqueEvents; ti++) {
       for (int j = 0; j < contexts[ti].length; j++) {
         if (values != null && values[ti] != null) {
-          predCount[contexts[ti][j]][outcomeList[ti]] += numTimesEventsSeen[ti]*values[ti][j];
+          predCount[contexts[ti][j]][outcomeList[ti]] += numTimesEventsSeen[ti] * values[ti][j];
         }
         else {
           predCount[contexts[ti][j]][outcomeList[ti]] += numTimesEventsSeen[ti];

@@ -66,7 +66,7 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
    *
    * @param in  an <code>InputStreamFactory</code> for the input file.
    * @param encoding  the <code>Charset</code> to apply to the input stream.
-   * @throws IOException 
+   * @throws IOException
    */
   public NameFinderCensus90NameStream(InputStreamFactory in, Charset encoding)
       throws IOException {

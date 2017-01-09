@@ -70,9 +70,9 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
 
   static ParserType parseParserType(String typeAsString) {
     ParserType type = null;
-    if(typeAsString != null && typeAsString.length() > 0) {
+    if (typeAsString != null && typeAsString.length() > 0) {
       type = ParserType.parse(typeAsString);
-      if(type == null) {
+      if (type == null) {
         throw new TerminateToolException(1, "ParserType training parameter '" + typeAsString +
             "' is invalid!");
       }
@@ -140,7 +140,7 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
       }
     }
 
-    if(mlParams == null) {
+    if (mlParams == null) {
       mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 
@@ -152,8 +152,8 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
       HeadRules rules = creaeHeadRules(params);
 
       ParserType type = parseParserType(params.getParserType());
-      if(params.getFun()){
-    	  Parse.useFunctionTags(true);
+      if (params.getFun()) {
+        Parse.useFunctionTags(true);
       }
 
       if (ParserType.CHUNKING.equals(type)) {

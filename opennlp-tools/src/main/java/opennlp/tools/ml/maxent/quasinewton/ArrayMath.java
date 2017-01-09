@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package opennlp.tools.ml.maxent.quasinewton;
 
 import java.util.List;
@@ -86,7 +87,7 @@ public class ArrayMath {
    * Find index of maximum element in the vector x
    * @param x input vector
    * @return index of the maximum element. Index of the first
-   * maximum element is returned if multiple maximums are found.
+   *     maximum element is returned if multiple maximums are found.
    */
   public static int maxIdx(double[] x) {
     if (x == null || x.length == 0) {

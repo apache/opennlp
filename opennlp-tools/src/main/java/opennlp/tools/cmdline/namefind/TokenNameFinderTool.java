@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.cmdline.namefind;
 
 import java.io.File;
@@ -59,8 +60,8 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
         nameFinders[i] = new NameFinderME(model);
       }
 
-//      ObjectStream<String> untokenizedLineStream =
-//          new PlainTextByLineStream(new InputStreamReader(System.in));
+      // ObjectStream<String> untokenizedLineStream =
+      // new PlainTextByLineStream(new InputStreamReader(System.in));
       ObjectStream<String> untokenizedLineStream;
       PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
       perfMon.start();

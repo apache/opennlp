@@ -167,7 +167,7 @@ class ConstitDocumentHandler extends DefaultHandler {
         String txt = text.toString();
         int tokenIndex = -1;
         Parse p = new Parse(txt, new Span(0, txt.length()), AbstractBottomUpParser.TOP_NODE, 1,0);
-        for (int ci=0;ci < cons.size();ci++) {
+        for (int ci = 0; ci < cons.size(); ci++) {
           Constituent con = cons.get(ci);
           String type = con.getLabel();
           if (!type.equals(AbstractBottomUpParser.TOP_NODE)) {

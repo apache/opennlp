@@ -70,7 +70,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
    * @param word The word.
    *
    * @return A list of valid tags for the specified word or
-   * null if no information is available for that word.
+   *     null if no information is available for that word.
    */
   public String[] getTags(String word) {
     if (caseSensitive) {
@@ -224,10 +224,11 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
         StringList word = entry.getTokens();
 
         if (word.size() != 1)
-          throw new InvalidFormatException("Each entry must have exactly one token! "+word);
+          throw new InvalidFormatException("Each entry must have exactly one token! " + word);
 
         newPosDict.dictionary.put(word.getToken(0), tags);
-      }});
+      }
+    });
 
     newPosDict.caseSensitive = isCaseSensitive;
 

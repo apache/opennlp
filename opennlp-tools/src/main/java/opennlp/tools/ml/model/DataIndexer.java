@@ -30,7 +30,7 @@ public interface DataIndexer {
   /**
    * Returns the array of predicates seen in each event.
    * @return a 2-D array whose first dimension is the event index and array this refers to contains
-   * the contexts for that event.
+   *     the contexts for that event.
    */
   public int[][] getContexts();
 
@@ -49,7 +49,7 @@ public interface DataIndexer {
   /**
    * Returns an array of predicate/context names.
    * @return an array of predicate/context names indexed by context index.  These indices are the
-   * value of the array returned by <code>getContexts</code>.
+   *     value of the array returned by <code>getContexts</code>.
    */
   public String[] getPredLabels();
 

@@ -116,7 +116,7 @@ public class SentenceModel extends BaseModel {
     if (!ModelUtil.validateOutcomes(getMaxentModel(), SentenceDetectorME.SPLIT,
         SentenceDetectorME.NO_SPLIT)) {
       throw new InvalidFormatException("The maxent model is not compatible " +
-      		"with the sentence detector!");
+          "with the sentence detector!");
     }
   }
 
@@ -155,7 +155,7 @@ public class SentenceModel extends BaseModel {
   }
 
   public static void main(String[] args) throws FileNotFoundException, IOException, InvalidFormatException {
-    if (args.length < 3){
+    if (args.length < 3) {
       System.err.println("SentenceModel [-abbreviationsDictionary] [-useTokenEnd] languageCode packageName modelName");
       System.exit(1);
     }

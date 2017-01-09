@@ -38,30 +38,30 @@ public interface EndOfSentenceScanner {
    */
   char[] getEndOfSentenceCharacters();
 
-    /**
-     * The receiver scans the specified string for sentence ending characters and
-     * returns their offsets.
-     *
-     * @param s a <code>String</code> value
-     * @return a <code>List</code> of Integer objects.
-     */
-    List<Integer> getPositions(String s);
+  /**
+   * The receiver scans the specified string for sentence ending characters and
+   * returns their offsets.
+   *
+   * @param s a <code>String</code> value
+   * @return a <code>List</code> of Integer objects.
+   */
+  List<Integer> getPositions(String s);
 
-    /**
-     * The receiver scans `buf' for sentence ending characters and
-     * returns their offsets.
-     *
-     * @param buf a <code>StringBuffer</code> value
-     * @return a <code>List</code> of Integer objects.
-     */
-    List<Integer> getPositions(StringBuffer buf);
+  /**
+   * The receiver scans `buf' for sentence ending characters and
+   * returns their offsets.
+   *
+   * @param buf a <code>StringBuffer</code> value
+   * @return a <code>List</code> of Integer objects.
+   */
+  List<Integer> getPositions(StringBuffer buf);
 
-    /**
-     * The receiver scans `cbuf' for sentence ending characters and
-     * returns their offsets.
-     *
-     * @param cbuf a <code>char[]</code> value
-     * @return a <code>List</code> of Integer objects.
-     */
-    List<Integer> getPositions(char[] cbuf);
+  /**
+   * The receiver scans `cbuf' for sentence ending characters and
+   * returns their offsets.
+   *
+   * @param cbuf a <code>char[]</code> value
+   * @return a <code>List</code> of Integer objects.
+   */
+  List<Integer> getPositions(char[] cbuf);
 }

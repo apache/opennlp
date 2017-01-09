@@ -198,7 +198,7 @@ public final class StreamFactoryRegistry {
         try {
           return (ObjectStreamFactory<T>) factoryClazz.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
-        	return null;
+          return null;
         }
 
       } catch (ClassNotFoundException e) {

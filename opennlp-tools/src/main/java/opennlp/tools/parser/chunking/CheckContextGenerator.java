@@ -58,7 +58,7 @@ public class CheckContextGenerator extends AbstractContextGenerator {
     //default
     features.add("default");
     //first constituent label
-    features.add("fl="+constituents[0].getLabel());
+    features.add("fl=" + constituents[0].getLabel());
     Parse pstart = constituents[start];
     Parse pend = constituents[end];
     checkcons(pstart, "begin", type, features);
@@ -74,7 +74,7 @@ public class CheckContextGenerator extends AbstractContextGenerator {
       punctProduction.append(p.getType()).append(",");
       Collection<Parse> nextPunct = p.getNextPunctuationSet();
       if (nextPunct != null) {
-        for (Iterator<Parse> pit=nextPunct.iterator();pit.hasNext();) {
+        for (Iterator<Parse> pit = nextPunct.iterator(); pit.hasNext();) {
           Parse punct = pit.next();
           punctProduction.append(punct.getType()).append(",");
         }

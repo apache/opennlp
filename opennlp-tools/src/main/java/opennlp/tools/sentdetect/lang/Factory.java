@@ -52,7 +52,7 @@ public class Factory {
 
     if ("th".equals(languageCode)) {
       return new SentenceContextGenerator();
-    } else if("pt".equals(languageCode)) {
+    } else if ("pt".equals(languageCode)) {
       return new DefaultSDContextGenerator(abbreviations, ptEosCharacters);
     }
 

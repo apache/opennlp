@@ -24,7 +24,7 @@ public abstract class BratAnnotation {
 
   protected BratAnnotation(String id, String type) {
     this.id = id;
-    this.type =type;
+    this.type = type;
   }
 
   public String getId() {
