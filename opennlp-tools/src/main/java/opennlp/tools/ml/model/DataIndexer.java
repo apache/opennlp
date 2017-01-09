@@ -19,6 +19,11 @@
 
 package opennlp.tools.ml.model;
 
+import java.io.IOException;
+import java.util.Map;
+
+import opennlp.tools.util.ObjectStream;
+
 /** Object which compresses events in memory and performs feature selection.
  */
 public interface DataIndexer {
@@ -55,9 +60,9 @@ public interface DataIndexer {
   public int[] getPredCounts();
 
   /**
-    * Returns an array of outcome names.
-    * @return an array of outcome names indexed by outcome index.
-    */
+   * Returns an array of outcome names.
+   * @return an array of outcome names indexed by outcome index.
+   */
   public String[] getOutcomeLabels();
 
   /**
@@ -71,4 +76,19 @@ public interface DataIndexer {
    * @return The number of total events indexed.
    */
   public int getNumEvents();
+
+  /**
+   * Sets parameters used during the data indexing.
+   * @param trainParams
+   * @param reportMap
+   */
+  public void init(Map<String, String> trainParams, Map<String, String> reportMap);
+
+  /**
+   * Performs the data indexing. Make sure the init(...) method is called first.
+   * 
+   * @param eventStream
+   * @throws IOException
+   */
+  public void index(ObjectStream<Event> eventStream) throws IOException;
 }

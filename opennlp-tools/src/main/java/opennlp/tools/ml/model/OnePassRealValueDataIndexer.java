@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,11 +37,12 @@ import opennlp.tools.util.ObjectStream;
 public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 
   float[][] values;
-
+  
+  @Deprecated
   public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
     super(eventStream,cutoff,sort);
   }
-
+  
   /**
    * Two argument constructor for DataIndexer.
    * @param eventStream An Event[] which contains the a list of all the Events
@@ -50,8 +50,12 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
    * @param cutoff The minimum number of times a predicate must have been
    *               observed in order to be included in the model.
    */
+  @Deprecated
   public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
     super(eventStream,cutoff);
+  }
+
+  public OnePassRealValueDataIndexer() {
   }
 
   public float[][] getValues() {
@@ -72,7 +76,9 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     return numUniqueEvents;
   }
 
-  protected List<ComparableEvent> index(LinkedList<Event> events, Map<String,Integer> predicateIndex) {
+
+  @Override
+  protected List<ComparableEvent> index(List<Event> events, Map<String,Integer> predicateIndex) {
     Map<String,Integer> omap = new HashMap<>();
 
     int numEvents = events.size();
@@ -80,8 +86,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
     List<Integer> indexedContext = new ArrayList<>();
 
-    for (int eventIndex = 0; eventIndex < numEvents; eventIndex++) {
-      Event ev = events.removeFirst();
+    for (Event ev:events) {
       String[] econtext = ev.getContext();
       ComparableEvent ce;
 
@@ -109,8 +114,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
         }
         ce = new ComparableEvent(ocID, cons, ev.getValues());
         eventsToCompare.add(ce);
-      }
-      else {
+      } else {
         System.err.println("Dropped event " + ev.getOutcome() + ":" + Arrays.asList(ev.getContext()));
       }
 
