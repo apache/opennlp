@@ -603,7 +603,7 @@ class GISTrainer {
     for (int pi = 0; pi < numPreds; pi++) {
       int[] activeOutcomes = params[pi].getOutcomes();
 
-      for (int aoi=0; aoi < activeOutcomes.length; aoi++) {
+      for (int aoi = 0; aoi < activeOutcomes.length; aoi++) {
         for (int i = 1; i < modelExpects.length; i++) {
           modelExpects[0][pi].updateParameter(aoi, modelExpects[i][pi].getParameters()[aoi]);
         }
