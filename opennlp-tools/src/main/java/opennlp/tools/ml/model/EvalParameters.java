@@ -19,6 +19,9 @@
 
 package opennlp.tools.ml.model;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * This class encapsulates the varibales used in producing probabilities from a model
  * and facilitaes passing these variables to the eval method.
@@ -86,5 +89,30 @@ public class EvalParameters {
 
   public void setCorrectionParam(double correctionParam) {
     this.correctionParam = correctionParam;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(Arrays.hashCode(params), numOutcomes, correctionConstant,
+        constantInverse, correctionParam);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+
+    if (obj instanceof EvalParameters) {
+      EvalParameters evalParameters = (EvalParameters) obj;
+
+      return Arrays.equals(params, evalParameters.params)
+          && numOutcomes == evalParameters.numOutcomes
+          && correctionConstant == evalParameters.correctionConstant
+          && constantInverse == evalParameters.constantInverse
+          && correctionParam == evalParameters.correctionParam;
+    }
+
+    return false;
   }
 }

@@ -19,6 +19,8 @@
 
 package opennlp.tools.ml.model;
 
+import java.util.Objects;
+
 /**
  * Provide a maximum entropy model with a uniform prior.
  */
@@ -40,5 +42,25 @@ public class UniformPrior implements Prior {
   public void setLabels(String[] outcomeLabels, String[] contextLabels) {
     this.numOutcomes = outcomeLabels.length;
     r = Math.log(1.0 / numOutcomes);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(numOutcomes, r);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+
+    if (obj instanceof UniformPrior) {
+      UniformPrior prior = (UniformPrior) obj;
+
+      return numOutcomes == prior.numOutcomes && r == prior.r;
+    }
+
+    return false;
   }
 }

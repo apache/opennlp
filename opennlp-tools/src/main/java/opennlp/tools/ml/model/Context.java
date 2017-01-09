@@ -19,6 +19,9 @@
 
 package opennlp.tools.ml.model;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * Class which associates a real valued parameter or expected value with a particular contextual
  * predicate or feature.  This is used to store maxent model parameters as well as model and empirical
@@ -56,5 +59,26 @@ public class Context {
    */
   public double[] getParameters() {
     return parameters;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(Arrays.hashCode(parameters), Arrays.hashCode(outcomes));
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+
+    if (obj instanceof Context) {
+      Context context = (Context) obj;
+
+      return Arrays.equals(parameters, context.parameters)
+           && Arrays.equals(outcomes, context.outcomes);
+    }
+
+    return false;
   }
 }
