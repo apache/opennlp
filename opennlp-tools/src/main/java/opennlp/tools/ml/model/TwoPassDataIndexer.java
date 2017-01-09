@@ -106,7 +106,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
       sortAndMerge(eventsToCompare,sort);
       System.out.println("Done indexing.");
     }
-    catch(IOException e) {
+    catch (IOException e) {
       System.err.println(e);
     }
   }
@@ -115,8 +115,8 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
 
   @Override
   public void index(ObjectStream<Event> eventStream) throws IOException {
-    int cutoff=parameters.getIntParam(CUTOFF_PARAM, CUTOFF_DEFAULT);
-    boolean sort=parameters.getBooleanParam(SORT_PARAM, SORT_DEFAULT);
+    int cutoff = parameters.getIntParam(CUTOFF_PARAM, CUTOFF_DEFAULT);
+    boolean sort = parameters.getBooleanParam(SORT_PARAM, SORT_DEFAULT);
 
     Map<String,Integer> predicateIndex = new HashMap<>();
     List<ComparableEvent> eventsToCompare;

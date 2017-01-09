@@ -114,10 +114,10 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
   public AbstractModel trainModel(int iterations, SequenceStream sequenceStream, int cutoff, boolean useAverage) throws IOException {
     this.iterations = iterations;
     this.sequenceStream = sequenceStream;
-    Map<String,String> indexingParameters=new HashMap<String, String>();
+    Map<String,String> indexingParameters = new HashMap<String, String>();
     indexingParameters.put(AbstractDataIndexer.CUTOFF_PARAM, Integer.toString(cutoff));
     indexingParameters.put(AbstractDataIndexer.SORT_PARAM, Boolean.toString(false));
-    DataIndexer di=new OnePassDataIndexer();
+    DataIndexer di = new OnePassDataIndexer();
     di.init(indexingParameters, new HashMap<String, String>());
     di.index(new SequenceStreamEventStream(sequenceStream));
     numSequences = 0;

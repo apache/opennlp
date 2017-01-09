@@ -34,7 +34,7 @@ public abstract class AbstractModel implements MaxentModel {
   /** Prior distribution for this model. */
   protected Prior prior;
 
-  public enum ModelType {Maxent,Perceptron,MaxentQn,NaiveBayes}
+  public enum ModelType { Maxent,Perceptron,MaxentQn,NaiveBayes }
 
   /** The type of the model. */
   protected ModelType modelType;
@@ -55,7 +55,7 @@ public abstract class AbstractModel implements MaxentModel {
     this.evalParams = new EvalParameters(params,correctionParam,correctionConstant,outcomeNames.length);
   }
 
-  private void init(String[] predLabels, String[] outcomeNames){
+  private void init(String[] predLabels, String[] outcomeNames) {
     this.pmap = new HashMap<String, Integer>(predLabels.length);
 
     for (int i = 0; i < predLabels.length; i++) {
@@ -81,7 +81,7 @@ public abstract class AbstractModel implements MaxentModel {
     return outcomeNames[best];
   }
 
-  public ModelType getModelType(){
+  public ModelType getModelType() {
     return modelType;
   }
 

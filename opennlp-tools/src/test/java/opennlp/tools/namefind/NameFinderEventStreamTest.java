@@ -33,8 +33,8 @@ import java.io.IOException;
 public class NameFinderEventStreamTest {
 
   private static final String[] SENTENCE = {"Elise", "Wendel", "appreciated",
-          "the", "hint", "and", "enjoyed", "a", "delicious", "traditional", "meal",
-          "."};
+      "the", "hint", "and", "enjoyed", "a", "delicious", "traditional", "meal",
+      "."};
 
   private static final NameContextGenerator CG = new DefaultNameContextGenerator(
           (AdaptiveFeatureGenerator[]) null);

@@ -224,7 +224,7 @@ class GISTrainer {
    */
   public GISModel trainModel(ObjectStream<Event> eventStream, int iterations, int cutoff) throws IOException {
     DataIndexer indexer = new OnePassDataIndexer();
-    Map<String, String> params=new HashMap<>();
+    Map<String, String> params = new HashMap<>();
     params.put(GIS.ITERATIONS_PARAM, Integer.toString(iterations));
     params.put(GIS.CUTOFF_PARAM, Integer.toString(cutoff));
     indexer.init(params, new HashMap<>());
@@ -603,7 +603,7 @@ class GISTrainer {
     for (int pi = 0; pi < numPreds; pi++) {
       int[] activeOutcomes = params[pi].getOutcomes();
 
-      for (int aoi=0;aoi<activeOutcomes.length;aoi++) {
+      for (int aoi=0; aoi < activeOutcomes.length; aoi++) {
         for (int i = 1; i < modelExpects.length; i++) {
           modelExpects[0][pi].updateParameter(aoi, modelExpects[i][pi].getParameters()[aoi]);
         }
@@ -623,10 +623,10 @@ class GISTrainer {
         }
         else {
           if (model[aoi] == 0) {
-            System.err.println("Model expects == 0 for "+predLabels[pi]+" "+outcomeLabels[aoi]);
+            System.err.println("Model expects == 0 for " + predLabels[pi] + " " + outcomeLabels[aoi]);
           }
           //params[pi].updateParameter(aoi,(Math.log(observed[aoi]) - Math.log(model[aoi])));
-          params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi]))/correctionConstant));
+          params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi])) / correctionConstant));
         }
 
         for (MutableContext[] modelExpect : modelExpects) {

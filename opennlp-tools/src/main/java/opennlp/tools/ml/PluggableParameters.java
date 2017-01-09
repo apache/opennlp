@@ -8,8 +8,8 @@ public final class PluggableParameters {
   private Map<String, String> reportMap;
 
   public PluggableParameters(Map<String,String> parameterMap,Map<String,String> reportMap) {
-    this.parameterMap=parameterMap;
-    this.reportMap=reportMap;
+    this.parameterMap = parameterMap;
+    this.reportMap = reportMap;
   }
 
   public String getStringParam(String key, String defaultValue) {

@@ -111,7 +111,7 @@ public class RealValueFileEventStream extends FileEventStream {
     int ai = 0;
     String eventFile = args[ai++];
 
-    Map<String,String> params=new HashMap<>(); 
+    Map<String,String> params = new HashMap<>(); 
     params.put(AbstractTrainer.ITERATIONS_PARAM,"100");
     params.put(AbstractTrainer.CUTOFF_PARAM, "5");
     if (ai < args.length) {
@@ -121,7 +121,7 @@ public class RealValueFileEventStream extends FileEventStream {
     PluggableParameters parameters = new PluggableParameters(params, new HashMap<>());
     AbstractModel model;
     try (RealValueFileEventStream es = new RealValueFileEventStream(eventFile)) {
-      DataIndexer indexer=new OnePassDataIndexer();
+      DataIndexer indexer = new OnePassDataIndexer();
       indexer.init(params, new HashMap<String, String>());
 
       // GIS should handle this better... 

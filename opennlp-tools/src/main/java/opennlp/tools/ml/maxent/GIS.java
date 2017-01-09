@@ -78,7 +78,7 @@ public class GIS extends AbstractEventTrainer {
 
     AbstractModel model;
 
-    boolean printMessages= parameters.getBooleanParam(VERBOSE_PARAM, VERBOSE_DEFAULT);
+    boolean printMessages = parameters.getBooleanParam(VERBOSE_PARAM, VERBOSE_DEFAULT);
     boolean smoothing = parameters.getBooleanParam(SMOOTHING_PARAM, SMOOTHING_DEFAULT);
     int cutoff = getCutoff();
     int threads = parameters.getIntParam(TrainingParameters.THREADS_PARAM, 1);

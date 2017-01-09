@@ -43,8 +43,8 @@ public abstract class AbstractDataIndexer implements DataIndexer {
 
   PluggableParameters parameters;
 
-  public void init(Map<String,String> indexingParameters, Map<String, String> reportMap){
-    parameters=new PluggableParameters(indexingParameters, reportMap);
+  public void init(Map<String,String> indexingParameters, Map<String, String> reportMap) {
+    parameters = new PluggableParameters(indexingParameters, reportMap);
   }
 
   private int numEvents;
@@ -121,7 +121,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
       numUniqueEvents = eventsToCompare.size();
     }
 
-    if(numUniqueEvents == 0) {
+    if (numUniqueEvents == 0) {
       throw new InsufficientTrainingDataException("Insufficient training data to create model.");
     }
 

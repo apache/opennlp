@@ -42,7 +42,7 @@ public abstract class AbstractTrainer {
   }
 
   public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
-    parameters=new PluggableParameters(trainParams, reportMap);
+    parameters = new PluggableParameters(trainParams, reportMap);
   }
 
   public String getAlgorithm() {
@@ -80,7 +80,7 @@ public abstract class AbstractTrainer {
    */
   @Deprecated
   protected String getStringParam(String key, String defaultValue) {
-	  return parameters.getStringParam(key, defaultValue);
+    return parameters.getStringParam(key, defaultValue);
   }
 
   /**
@@ -90,7 +90,7 @@ public abstract class AbstractTrainer {
    */
   @Deprecated
   protected int getIntParam(String key, int defaultValue) {
-	  return parameters.getIntParam(key, defaultValue);
+    return parameters.getIntParam(key, defaultValue);
   }
   
   /**
@@ -100,7 +100,7 @@ public abstract class AbstractTrainer {
    */
   @Deprecated
   protected double getDoubleParam(String key, double defaultValue) {
-	  return parameters.getDoubleParam(key, defaultValue);
+    return parameters.getDoubleParam(key, defaultValue);
   }
 
   /**
@@ -110,7 +110,7 @@ public abstract class AbstractTrainer {
    */
   @Deprecated
   protected boolean getBooleanParam(String key, boolean defaultValue) {
-	  return parameters.getBooleanParam(key, defaultValue);
+    return parameters.getBooleanParam(key, defaultValue);
   }
 
   /**
@@ -120,6 +120,6 @@ public abstract class AbstractTrainer {
    */
   @Deprecated
   protected void addToReport(String key, String value) {
-	  parameters.addToReport(key, value);
+    parameters.addToReport(key, value);
   }
 }
