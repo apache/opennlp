@@ -20,8 +20,10 @@
 package opennlp.tools.ml.model;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public abstract class AbstractModel implements MaxentModel {
 
@@ -171,5 +173,26 @@ public abstract class AbstractModel implements MaxentModel {
     data[3] = (int) evalParams.getCorrectionConstant();
     data[4] = evalParams.getCorrectionParam();
     return data;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(pmap, Arrays.hashCode(outcomeNames), evalParams, prior);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+
+    if (obj instanceof AbstractModel) {
+      AbstractModel model = (AbstractModel) obj;
+
+      return pmap.equals(model.pmap) && Objects.deepEquals(outcomeNames, model.outcomeNames)
+          && evalParams.equals(model.evalParams) && Objects.equals(prior, model.prior);
+    }
+
+    return false;
   }
 }
