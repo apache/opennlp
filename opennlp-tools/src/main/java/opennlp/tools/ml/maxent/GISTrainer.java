@@ -331,7 +331,7 @@ class GISTrainer {
     // implementation, this is cancelled out when we compute the next
     // iteration of a parameter, making the extra divisions wasteful.
     params = new MutableContext[numPreds];
-    for (int i = 0; i< modelExpects.length; i++)
+    for (int i = 0; i < modelExpects.length; i++)
       modelExpects[i] = new MutableContext[numPreds];
     observedExpects = new MutableContext[numPreds];
 
@@ -369,10 +369,10 @@ class GISTrainer {
         }
       }
       params[pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
-      for (int i = 0; i< modelExpects.length; i++)
+      for (int i = 0; i < modelExpects.length; i++)
         modelExpects[i][pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
       observedExpects[pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
-      for (int aoi = 0;aoi < numActiveOutcomes;aoi++) {
+      for (int aoi = 0;aoi < numActiveOutcomes; aoi++) {
         int oi = outcomePattern[aoi];
         params[pi].setParameter(aoi, 0.0);
         for (MutableContext[] modelExpect : modelExpects) {
@@ -395,7 +395,7 @@ class GISTrainer {
     if (threads == 1)
       display("Computing model parameters ...\n");
     else
-      display("Computing model parameters in " + threads +" threads...\n");
+      display("Computing model parameters in " + threads + " threads...\n");
 
     findParameters(iterations, correctionConstant);
 
@@ -407,7 +407,7 @@ class GISTrainer {
 
   /* Estimate and return the model parameters. */
   private void findParameters(int iterations, double correctionConstant) {
-    int threads=modelExpects.length;
+    int threads = modelExpects.length;
     ExecutorService executor = Executors.newFixedThreadPool(threads);
     CompletionService<ModelExpactationComputeTask> completionService = new ExecutorCompletionService<>(executor);
     double prevLL = 0.0;
@@ -504,7 +504,7 @@ class GISTrainer {
           int pi = contexts[ei][j];
           if (predicateCounts[pi] >= cutoff) {
             int[] activeOutcomes = modelExpects[threadIndex][pi].getOutcomes();
-            for (int aoi=0;aoi<activeOutcomes.length;aoi++) {
+            for (int aoi = 0;aoi < activeOutcomes.length; aoi++) {
               int oi = activeOutcomes[aoi];
 
               // numTimesEventsSeen must also be thread safe
@@ -569,12 +569,12 @@ class GISTrainer {
     // submit all tasks to the completion service.
     for (int i = 0; i < numberOfThreads; i++) {
       if (i < leftOver)
-        completionService.submit(new ModelExpactationComputeTask(i, i*taskSize+i, taskSize+1));
+        completionService.submit(new ModelExpactationComputeTask(i, i * taskSize + i, taskSize + 1));
       else
-        completionService.submit(new ModelExpactationComputeTask(i, i*taskSize+leftOver, taskSize));
+        completionService.submit(new ModelExpactationComputeTask(i, i * taskSize + leftOver, taskSize));
     }
 
-    for (int i=0; i<numberOfThreads; i++) {
+    for (int i = 0; i < numberOfThreads; i++) {
       ModelExpactationComputeTask finishedTask;
       try {
         finishedTask = completionService.take().get();
@@ -617,7 +617,7 @@ class GISTrainer {
       double[] observed = observedExpects[pi].getParameters();
       double[] model = modelExpects[0][pi].getParameters();
       int[] activeOutcomes = params[pi].getOutcomes();
-      for (int aoi=0;aoi<activeOutcomes.length;aoi++) {
+      for (int aoi = 0; aoi < activeOutcomes.length; aoi++) {
         if (useGaussianSmoothing) {
           params[pi].updateParameter(aoi,gaussianUpdate(pi,aoi,numEvents,correctionConstant));
         }
