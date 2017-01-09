@@ -162,7 +162,7 @@ public class GIS extends AbstractEventTrainer {
    */
   public static GISModel trainModel(ObjectStream<Event> eventStream, int iterations,
       int cutoff, boolean smoothing, boolean printMessagesWhileTraining)
-          throws IOException {
+      throws IOException {
     GISTrainer trainer = new GISTrainer(printMessagesWhileTraining);
     trainer.setSmoothing(smoothing);
     trainer.setSmoothingObservation(SMOOTHING_OBSERVATION);

@@ -37,7 +37,12 @@ import opennlp.tools.util.ObjectStream;
 public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 
   float[][] values;
-
+  
+  @Deprecated
+  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
+    super(eventStream,cutoff,sort);
+  }
+  
   /**
    * Two argument constructor for DataIndexer.
    * @param eventStream An Event[] which contains the a list of all the Events
@@ -48,11 +53,6 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
   @Deprecated
   public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
     super(eventStream,cutoff);
-  }
-
-  @Deprecated
-  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
-    super(eventStream,cutoff,sort);
   }
 
   public OnePassRealValueDataIndexer() {
