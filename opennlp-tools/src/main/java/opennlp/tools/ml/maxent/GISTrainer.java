@@ -342,7 +342,7 @@ class GISTrainer {
     evalParams = new EvalParameters(params,0,1,numOutcomes);
     int[] activeOutcomes = new int[numOutcomes];
     int[] outcomePattern;
-    int[] allOutcomesPattern= new int[numOutcomes];
+    int[] allOutcomesPattern = new int[numOutcomes];
     for (int oi = 0; oi < numOutcomes; oi++) {
       allOutcomesPattern[oi] = oi;
     }
