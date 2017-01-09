@@ -103,17 +103,17 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
     AbstractModel model;
 
-    boolean useAverage = getBooleanParam("UseAverage", true);
+    boolean useAverage = parameters.getBooleanParam("UseAverage", true);
 
-    boolean useSkippedAveraging = getBooleanParam("UseSkippedAveraging", false);
+    boolean useSkippedAveraging = parameters.getBooleanParam("UseSkippedAveraging", false);
 
     // overwrite otherwise it might not work
     if (useSkippedAveraging)
       useAverage = true;
 
-    double stepSizeDecrease = getDoubleParam("StepSizeDecrease", 0);
+    double stepSizeDecrease = parameters.getDoubleParam("StepSizeDecrease", 0);
 
-    double tolerance = getDoubleParam("Tolerance",
+    double tolerance = parameters.getDoubleParam("Tolerance",
         PerceptronTrainer.TOLERANCE_DEFAULT);
 
     this.setSkippedAveraging(useSkippedAveraging);

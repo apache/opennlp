@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.ml.AbstractTrainer;
+import opennlp.tools.ml.PluggableParameters;
 import opennlp.tools.util.InsufficientTrainingDataException;
 
 
@@ -32,6 +34,18 @@ import opennlp.tools.util.InsufficientTrainingDataException;
  *
  */
 public abstract class AbstractDataIndexer implements DataIndexer {
+
+  public static final String CUTOFF_PARAM = AbstractTrainer.CUTOFF_PARAM;
+  public static final int CUTOFF_DEFAULT = AbstractTrainer.CUTOFF_DEFAULT;
+
+  public static final String SORT_PARAM = "sort";
+  public static final boolean SORT_DEFAULT = true;
+
+  PluggableParameters parameters;
+
+  public void init(Map<String,String> indexingParameters, Map<String, String> reportMap) {
+    parameters = new PluggableParameters(indexingParameters, reportMap);
+  }
 
   private int numEvents;
   /** The integer contexts associated with each unique event. */
@@ -66,8 +80,6 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   public String[] getOutcomeLabels() {
     return outcomeLabels;
   }
-
-
 
   public int[] getPredCounts() {
     return predCounts;

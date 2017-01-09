@@ -54,10 +54,12 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
    * @param eventStream An Event[] which contains the a list of all the Events
    *               seen in the training data.
    */
+  @Deprecated
   public TwoPassDataIndexer(ObjectStream<Event> eventStream) throws IOException {
     this(eventStream, 0);
   }
 
+  @Deprecated
   public TwoPassDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
     this(eventStream,cutoff,true);
   }
@@ -70,7 +72,52 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
    * @param cutoff The minimum number of times a predicate must have been
    *               observed in order to be included in the model.
    */
+  @Deprecated
   public TwoPassDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
+    Map<String,Integer> predicateIndex = new HashMap<>();
+    List<ComparableEvent> eventsToCompare;
+  
+    System.out.println("Indexing events using cutoff of " + cutoff + "\n");
+  
+    System.out.print("\tComputing event counts...  ");
+    try {
+      File tmp = File.createTempFile("events", null);
+      tmp.deleteOnExit();
+      Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
+      int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
+      System.out.println("done. " + numEvents + " events");
+  
+      System.out.print("\tIndexing...  ");
+  
+      try (FileEventStream fes = new FileEventStream(tmp)) {
+        eventsToCompare = index(numEvents, fes, predicateIndex);
+      }
+      // done with predicates
+      predicateIndex = null;
+      tmp.delete();
+      System.out.println("done.");
+  
+      if (sort) {
+        System.out.print("Sorting and merging events... ");
+      }
+      else {
+        System.out.print("Collecting events... ");
+      }
+      sortAndMerge(eventsToCompare,sort);
+      System.out.println("Done indexing.");
+    }
+    catch (IOException e) {
+      System.err.println(e);
+    }
+  }
+
+  public TwoPassDataIndexer() {}
+
+  @Override
+  public void index(ObjectStream<Event> eventStream) throws IOException {
+    int cutoff = parameters.getIntParam(CUTOFF_PARAM, CUTOFF_DEFAULT);
+    boolean sort = parameters.getBooleanParam(SORT_PARAM, SORT_DEFAULT);
+
     Map<String,Integer> predicateIndex = new HashMap<>();
     List<ComparableEvent> eventsToCompare;
 
@@ -107,20 +154,19 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
       System.err.println(e);
     }
   }
-
   /**
-      * Reads events from <tt>eventStream</tt> into a linked list.  The
-      * predicates associated with each event are counted and any which
-      * occur at least <tt>cutoff</tt> times are added to the
-      * <tt>predicatesInOut</tt> map along with a unique integer index.
-      *
-      * @param eventStream an <code>EventStream</code> value
-      * @param eventStore a writer to which the events are written to for later processing.
-      * @param predicatesInOut a <code>TObjectIntHashMap</code> value
-      * @param cutoff an <code>int</code> value
-      */
+   * Reads events from <tt>eventStream</tt> into a linked list.  The
+   * predicates associated with each event are counted and any which
+   * occur at least <tt>cutoff</tt> times are added to the
+   * <tt>predicatesInOut</tt> map along with a unique integer index.
+   *
+   * @param eventStream an <code>EventStream</code> value
+   * @param eventStore a writer to which the events are written to for later processing.
+   * @param predicatesInOut a <code>TObjectIntHashMap</code> value
+   * @param cutoff an <code>int</code> value
+   */
   private int computeEventCounts(ObjectStream<Event> eventStream, Writer eventStore,
-                                 Map<String,Integer> predicatesInOut, int cutoff) throws IOException {
+      Map<String,Integer> predicatesInOut, int cutoff) throws IOException {
     Map<String,Integer> counter = new HashMap<>();
     int eventCount = 0;
     Set<String> predicateSet = new HashSet<>();

@@ -20,12 +20,15 @@
 package opennlp.tools.ml.maxent;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.Event;
@@ -220,7 +223,12 @@ class GISTrainer {
    * @return A GIS model trained with specified
    */
   public GISModel trainModel(ObjectStream<Event> eventStream, int iterations, int cutoff) throws IOException {
-    return trainModel(iterations, new OnePassDataIndexer(eventStream,cutoff),cutoff);
+    DataIndexer indexer = new OnePassDataIndexer();
+    Map<String, String> params = new HashMap<>();
+    params.put(GIS.ITERATIONS_PARAM, Integer.toString(iterations));
+    params.put(GIS.CUTOFF_PARAM, Integer.toString(cutoff));
+    indexer.init(params, new HashMap<>());
+    return trainModel(iterations, indexer, cutoff);
   }
 
   /**
@@ -496,7 +504,7 @@ class GISTrainer {
           int pi = contexts[ei][j];
           if (predicateCounts[pi] >= cutoff) {
             int[] activeOutcomes = modelExpects[threadIndex][pi].getOutcomes();
-            for (int aoi = 0; aoi < activeOutcomes.length; aoi++) {
+            for (int aoi = 0;aoi < activeOutcomes.length; aoi++) {
               int oi = activeOutcomes[aoi];
 
               // numTimesEventsSeen must also be thread safe
@@ -552,7 +560,7 @@ class GISTrainer {
     int numCorrect = 0;
 
     // Each thread gets equal number of tasks, if the number of tasks
-    // is not divisible by the number of threads, the first "leftOver"
+    // is not divisible by the number of threads, the first "leftOver" 
     // threads have one extra task.
     int numberOfThreads = modelExpects.length;
     int taskSize = numUniqueEvents / numberOfThreads;

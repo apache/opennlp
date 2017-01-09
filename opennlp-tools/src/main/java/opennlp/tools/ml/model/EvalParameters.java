@@ -25,7 +25,7 @@ package opennlp.tools.ml.model;
  */
 public class EvalParameters {
 
-  /** Mapping between outcomes and paramater values for each context.
+  /** Mapping between outcomes and parameter values for each context.
    * The integer representation of the context can be found using <code>pmap</code>.*/
   private Context[] params;
   /** The number of outcomes being predicted. */

@@ -18,7 +18,10 @@
 package opennlp.tools.ml;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.HashSumEventStream;
@@ -27,8 +30,7 @@ import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.util.ObjectStream;
 
-public abstract class AbstractEventTrainer extends AbstractTrainer implements
-    EventTrainer {
+public abstract class AbstractEventTrainer extends AbstractTrainer implements EventTrainer {
 
   public static final String DATA_INDEXER_PARAM = "DataIndexer";
   public static final String DATA_INDEXER_ONE_PASS_VALUE = "OnePass";
@@ -43,7 +45,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
       return false;
     }
 
-    String dataIndexer = getStringParam(DATA_INDEXER_PARAM,
+    String dataIndexer = parameters.getStringParam(DATA_INDEXER_PARAM,
         DATA_INDEXER_TWO_PASS_VALUE);
 
     if (dataIndexer != null) {
@@ -61,25 +63,37 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
 
   public DataIndexer getDataIndexer(ObjectStream<Event> events) throws IOException {
 
-    String dataIndexerName = getStringParam(DATA_INDEXER_PARAM,
+    String dataIndexerName = parameters.getStringParam(DATA_INDEXER_PARAM,
         DATA_INDEXER_TWO_PASS_VALUE);
+    Map<String,String> indexParams = new HashMap<String, String>();
+    indexParams.put(AbstractDataIndexer.CUTOFF_PARAM, Integer.toString(getCutoff()));
+    indexParams.put(AbstractDataIndexer.SORT_PARAM, Boolean.toString(isSortAndMerge()));
 
-    int cutoff = getCutoff();
-    boolean sortAndMerge = isSortAndMerge();
     DataIndexer indexer;
 
     if (DATA_INDEXER_ONE_PASS_VALUE.equals(dataIndexerName)) {
-      indexer = new OnePassDataIndexer(events, cutoff, sortAndMerge);
+      indexer = new OnePassDataIndexer();
     } else if (DATA_INDEXER_TWO_PASS_VALUE.equals(dataIndexerName)) {
-      indexer = new TwoPassDataIndexer(events, cutoff, sortAndMerge);
+      indexer = new TwoPassDataIndexer();
     } else {
       throw new IllegalStateException("Unexpected data indexer name: "
           + dataIndexerName);
     }
+    indexer.init(indexParams, parameters.getReportMap());
+    indexer.index(events);
     return indexer;
   }
 
   public abstract MaxentModel doTrain(DataIndexer indexer) throws IOException;
+
+  public final MaxentModel train(DataIndexer indexer) throws IOException {
+    if (!isValid()) {
+      throw new IllegalArgumentException("trainParams are not valid!");
+    }
+    MaxentModel model = doTrain(indexer);
+    parameters.addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
+    return model;
+  }
 
   public final MaxentModel train(ObjectStream<Event> events) throws IOException {
 
@@ -90,10 +104,6 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements
     HashSumEventStream hses = new HashSumEventStream(events);
     DataIndexer indexer = getDataIndexer(hses);
 
-    MaxentModel model = doTrain(indexer);
-
-    addToReport("Training-Eventhash", hses.calculateHashSum().toString(16));
-    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
-    return model;
+    return train(indexer);
   }
 }
