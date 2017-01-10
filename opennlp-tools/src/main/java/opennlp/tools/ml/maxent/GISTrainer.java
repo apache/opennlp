@@ -228,6 +228,7 @@ class GISTrainer {
     params.put(GIS.ITERATIONS_PARAM, Integer.toString(iterations));
     params.put(GIS.CUTOFF_PARAM, Integer.toString(cutoff));
     indexer.init(params, new HashMap<>());
+    indexer.index(eventStream);
     return trainModel(iterations, indexer, cutoff);
   }
 
