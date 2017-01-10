@@ -17,22 +17,16 @@
 
 package opennlp.tools.parser.chunking;
 
-import java.io.FileInputStream;
-import java.nio.charset.Charset;
 import java.util.List;
 
-import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserEventStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserEventTypeEnum;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Wrapper class for one of four parser event streams.  The particular event stream is specified
@@ -163,55 +157,6 @@ public class ParserEventStream extends AbstractParserEventStream {
         }
       }
       ci++;
-    }
-  }
-
-  public static void main(String[] args) throws java.io.IOException, InvalidFormatException {
-    if (args.length == 0) {
-      System.err.println("Usage ParserEventStream -[tag|chunk|build|check|fun] head_rules [dictionary] < parses");
-      System.exit(1);
-    }
-    ParserEventTypeEnum etype = null;
-    boolean fun = false;
-    int ai = 0;
-    while (ai < args.length && args[ai].startsWith("-")) {
-      switch (args[ai]) {
-        case "-build":
-          etype = ParserEventTypeEnum.BUILD;
-          break;
-        case "-check":
-          etype = ParserEventTypeEnum.CHECK;
-          break;
-        case "-chunk":
-          etype = ParserEventTypeEnum.CHUNK;
-          break;
-        case "-tag":
-          etype = ParserEventTypeEnum.TAG;
-          break;
-        case "-fun":
-          fun = true;
-          break;
-        default:
-          System.err.println("Invalid option " + args[ai]);
-          System.exit(1);
-      }
-      ai++;
-    }
-    HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[ai++]);
-    Dictionary dict = null;
-    if (ai < args.length) {
-      dict = new Dictionary(new FileInputStream(args[ai++]),true);
-    }
-    if (fun) {
-      Parse.useFunctionTags(true);
-    }
-    ObjectStream<Event> es = new ParserEventStream(
-        new ParseSampleStream(new PlainTextByLineStream(
-            new SystemInputStreamFactory(), Charset.defaultCharset())),
-        rules, etype, dict);
-    Event event;
-    while ((event = es.read()) != null) {
-      System.out.println(event);
     }
   }
 }
