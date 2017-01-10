@@ -29,6 +29,7 @@ import java.io.InputStream;
 
 import opennlp.tools.util.InvalidFormatException;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -112,5 +113,14 @@ public class POSDictionaryTest {
     assertEquals("POSDictionary{size=1, caseSensitive=false}", dict.toString());
     dict = loadDictionary("TagDictionaryCaseSensitive.xml");
     assertEquals("POSDictionary{size=1, caseSensitive=true}", dict.toString());
+  }
+
+  @Test
+  public void testEqualsAndHashCode() throws IOException {
+    POSDictionary dictA = loadDictionary("TagDictionaryCaseInsensitive.xml");
+    POSDictionary dictB = loadDictionary("TagDictionaryCaseInsensitive.xml");
+
+    Assert.assertEquals(dictA, dictB);
+    Assert.assertEquals(dictA.hashCode(), dictB.hashCode());
   }
 }

@@ -106,5 +106,6 @@
       <!--<property name="separateLineBetweenGroups" value="true"/>-->
       <!--<property name="customImportOrderRules" value="SAME_PACKAGE(3)###THIRD_PARTY_PACKAGE###STANDARD_JAVA_PACKAGE###STATIC"/>-->
     <!--</module>-->
+    <module name="EqualsHashCode"/>
   </module>
 </module>

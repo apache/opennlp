@@ -21,6 +21,7 @@ package opennlp.tools.postag;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
@@ -139,16 +140,23 @@ public class POSSample {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(Arrays.hashCode(getSentence()), Arrays.hashCode(getTags()));
+  }
+
+  @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
+    if (obj == this) {
       return true;
-    } else if (obj instanceof POSSample) {
+    }
+
+    if (obj instanceof POSSample) {
       POSSample a = (POSSample) obj;
 
       return Arrays.equals(getSentence(), a.getSentence())
           && Arrays.equals(getTags(), a.getTags());
-    } else {
-      return false;
     }
+
+    return this == obj;
   }
 }

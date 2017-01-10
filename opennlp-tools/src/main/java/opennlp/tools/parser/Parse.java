@@ -996,45 +996,25 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o instanceof Parse) {
-      Parse p = (Parse) o;
-      if (this.label == null) {
-        if (p.label != null) {
-          return false;
-        }
-      }
-      else if (!this.label.equals(p.label)) {
-        return false;
-      }
-      if (!this.span.equals(p.span)) {
-        return false;
-      }
-      if (!this.text.equals(p.text)) {
-        return false;
-      }
-      if (this.parts.size() != p.parts.size()) {
-        return false;
-      }
-      for (int ci = 0; ci < parts.size(); ci++) {
-        if (!parts.get(ci).equals(p.parts.get(ci))) {
-          return false;
-        }
-      }
+  public boolean equals(Object obj) {
+    if (obj == this) {
       return true;
     }
+
+    if (obj instanceof Parse) {
+      Parse p = (Parse) obj;
+
+      return Objects.equals(label, p.label) && span.equals(p.span)
+          && text.equals(p.text) && parts.equals(p.parts);
+    }
+
     return false;
   }
 
   @Override
   public int hashCode() {
-    int result = 17;
-    result = 37 * result + span.hashCode();
-
-    // TODO: This might lead to a performance regression
-    // result = 37*result + label.hashCode();
-    result = 37 * result + text.hashCode();
-    return result;
+    // Note: label is missing here!
+    return Objects.hash(span, text);
   }
 
   public int compareTo(Parse p) {

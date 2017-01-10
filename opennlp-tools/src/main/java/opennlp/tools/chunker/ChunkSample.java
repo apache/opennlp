@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import opennlp.tools.util.Span;
 
@@ -200,18 +201,25 @@ public class ChunkSample {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(Arrays.hashCode(getSentence()),
+        Arrays.hashCode(getTags()), Arrays.hashCode(getPreds()));
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    } else if (obj instanceof ChunkSample) {
+    }
+
+    if (obj instanceof ChunkSample) {
       ChunkSample a = (ChunkSample) obj;
 
       return Arrays.equals(getSentence(), a.getSentence())
           && Arrays.equals(getTags(), a.getTags())
           && Arrays.equals(getPreds(), a.getPreds());
-    } else {
-      return false;
     }
-  }
 
+    return false;
+  }
 }

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -113,12 +114,19 @@ public class NameSample {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(Arrays.hashCode(getSentence()), Arrays.hashCode(getNames()),
+        Arrays.hashCode(getAdditionalContext()), isClearAdaptiveDataSet());
+  }
+
+  @Override
   public boolean equals(Object obj) {
 
     if (this == obj) {
       return true;
     }
-    else if (obj instanceof NameSample) {
+
+    if (obj instanceof NameSample) {
       NameSample a = (NameSample) obj;
 
       return Arrays.equals(getSentence(), a.getSentence()) &&
@@ -126,10 +134,8 @@ public class NameSample {
           Arrays.equals(getAdditionalContext(), a.getAdditionalContext()) &&
           isClearAdaptiveDataSet() == a.isClearAdaptiveDataSet();
     }
-    else {
-      return false;
-    }
 
+    return false;
   }
 
   @Override

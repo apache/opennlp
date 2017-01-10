@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionarySerializer;
@@ -161,22 +162,37 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public int hashCode() {
 
-    if (o == this) {
+    int[] keyHashes = new int[dictionary.size()];
+    int[] valueHashes = new int[dictionary.size()];
+
+    int i = 0;
+
+    for (String word : this) {
+      keyHashes[i] = word.hashCode();
+      valueHashes[i] = Arrays.hashCode(getTags(word));
+      i++;
+    }
+
+    Arrays.sort(keyHashes);
+    Arrays.sort(valueHashes);
+
+    return Objects.hash(Arrays.hashCode(keyHashes), Arrays.hashCode(valueHashes));
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
       return true;
     }
-    else if (o instanceof POSDictionary) {
-      POSDictionary dictionary = (POSDictionary) o;
 
-      if (this.dictionary.size() == dictionary.dictionary.size()) {
+    if (obj instanceof POSDictionary) {
+      POSDictionary posDictionary = (POSDictionary) obj;
 
+      if (this.dictionary.size() == posDictionary.dictionary.size()) {
         for (String word : this) {
-
-          String aTags[] = getTags(word);
-          String bTags[] = dictionary.getTags(word);
-
-          if (!Arrays.equals(aTags, bTags)) {
+          if (!Arrays.equals(getTags(word), posDictionary.getTags(word))) {
             return false;
           }
         }

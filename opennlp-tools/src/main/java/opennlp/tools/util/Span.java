@@ -17,6 +17,8 @@
 
 package opennlp.tools.util;
 
+import java.util.Objects;
+
 /**
  * Class for storing start and end integer offsets.
  *
@@ -300,16 +302,7 @@ public class Span implements Comparable<Span> {
    */
   @Override
   public int hashCode() {
-    int res = 23;
-    res = res * 37 + getStart();
-    res = res * 37 + getEnd();
-    if (getType() == null) {
-      res = res * 37;
-    } else {
-      res = res * 37 + getType().hashCode();
-    }
-
-    return res;
+    return Objects.hash(getStart(), getEnd(), getType());
   }
 
   /**
@@ -317,23 +310,18 @@ public class Span implements Comparable<Span> {
    */
   @Override
   public boolean equals(Object o) {
-
-    boolean result;
-
     if (o == this) {
-      result = true;
-    } else if (o instanceof Span) {
-      Span s = (Span) o;
-
-      result = (getStart() == s.getStart())
-              && (getEnd() == s.getEnd())
-              && (getType() != null ? type.equals(s.getType()) : true)
-              && (s.getType() != null ? s.getType().equals(getType()) : true);
-    } else {
-      result = false;
+      return true;
     }
 
-    return result;
+    if (o instanceof Span) {
+      Span s = (Span) o;
+
+      return getStart() == s.getStart() && getEnd() == s.getEnd()
+          && Objects.equals(getType(), s.getType());
+    }
+
+    return false;
   }
 
   /**

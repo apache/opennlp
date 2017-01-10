@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 
@@ -92,16 +93,23 @@ public class DocumentSample {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(getCategory(), Arrays.hashCode(getText()));
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    } else if (obj instanceof DocumentSample) {
+    }
+
+    if (obj instanceof DocumentSample) {
       DocumentSample a = (DocumentSample) obj;
 
       return getCategory().equals(a.getCategory())
           && Arrays.equals(getText(), a.getText());
-    } else {
-      return false;
     }
+
+    return false;
   }
 }

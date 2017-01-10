@@ -20,6 +20,7 @@ package opennlp.tools.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -78,7 +79,6 @@ public class Version {
    this(major, minor, revision, false);
   }
 
-
   /**
    * Retrieves the major version.
    *
@@ -125,20 +125,26 @@ public class Version {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) {
+  public int hashCode() {
+    return Objects.hash(getMajor(), getMinor(), getRevision(), isSnapshot());
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
       return true;
-    } else if (o instanceof Version) {
-      Version version = (Version) o;
+    }
+
+    if (obj instanceof Version) {
+      Version version = (Version) obj;
 
       return getMajor() == version.getMajor()
           && getMinor() == version.getMinor()
           && getRevision() == version.getRevision()
           && isSnapshot() == version.isSnapshot();
     }
-    else {
-      return false;
-    }
+
+    return false;
   }
 
   /**

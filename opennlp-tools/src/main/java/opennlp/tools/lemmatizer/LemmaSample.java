@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents an lemmatized sentence.
@@ -90,22 +91,32 @@ public class LemmaSample {
     StringBuilder lemmaString = new StringBuilder();
 
     for (int ci = 0; ci < lemmas.size(); ci++) {
-      lemmaString.append(tokens.get(ci)).append("\t").append(tags.get(ci)).append("\t").append(lemmas.get(ci)).append("\n");
+      lemmaString.append(tokens.get(ci)).append("\t").append(tags.get(ci))
+           .append("\t").append(lemmas.get(ci)).append("\n");
     }
     return lemmaString.toString();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(Arrays.hashCode(getTokens()), Arrays.hashCode(getTags()),
+        Arrays.hashCode(getLemmas()));
   }
 
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    } else if (obj instanceof LemmaSample) {
+    }
+
+    if (obj instanceof LemmaSample) {
       LemmaSample a = (LemmaSample) obj;
+
       return Arrays.equals(getTokens(), a.getTokens())
           && Arrays.equals(getTags(), a.getTags())
           && Arrays.equals(getLemmas(), a.getLemmas());
-    } else {
-      return false;
     }
+
+    return false;
   }
 }
