@@ -25,10 +25,10 @@ import opennlp.tools.ml.model.SequenceStream;
 
 public interface EventModelSequenceTrainer {
 
-  public static final String SEQUENCE_VALUE = "EventModelSequence";
+  String SEQUENCE_VALUE = "EventModelSequence";
 
-  public void init(Map<String, String> trainParams, Map<String, String> reportMap);
+  void init(Map<String, String> trainParams, Map<String, String> reportMap);
 
-  public MaxentModel train(SequenceStream events) throws IOException;
+  MaxentModel train(SequenceStream events) throws IOException;
 
 }

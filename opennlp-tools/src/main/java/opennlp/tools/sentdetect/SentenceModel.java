@@ -20,7 +20,6 @@ package opennlp.tools.sentdetect;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,15 +91,15 @@ public class SentenceModel extends BaseModel {
     this (languageCode, sentModel, useTokenEnd, abbreviations, null, null);
   }
 
-  public SentenceModel(InputStream in) throws IOException, InvalidFormatException {
+  public SentenceModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
-  public SentenceModel(File modelFile) throws IOException, InvalidFormatException {
+  public SentenceModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
-  public SentenceModel(URL modelURL) throws IOException, InvalidFormatException {
+  public SentenceModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 
@@ -141,10 +140,7 @@ public class SentenceModel extends BaseModel {
   }
 
   public boolean useTokenEnd() {
-    if (getFactory() != null) {
-      return getFactory().isUseTokenEnd();
-    }
-    return true;
+    return getFactory() == null || getFactory().isUseTokenEnd();
   }
 
   public char[] getEosCharacters() {
@@ -154,7 +150,7 @@ public class SentenceModel extends BaseModel {
     return null;
   }
 
-  public static void main(String[] args) throws FileNotFoundException, IOException, InvalidFormatException {
+  public static void main(String[] args) throws IOException {
     if (args.length < 3) {
       System.err.println("SentenceModel [-abbreviationsDictionary] [-useTokenEnd] languageCode packageName modelName");
       System.exit(1);
