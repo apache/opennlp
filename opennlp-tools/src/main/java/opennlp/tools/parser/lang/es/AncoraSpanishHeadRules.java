@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -86,19 +87,24 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
     }
 
     @Override
+    public int hashCode() {
+      return Objects.hash(leftToRight, Arrays.hashCode(tags));
+    }
+
+    @Override
     public boolean equals(Object obj) {
       if (obj == this) {
         return true;
       }
-      else if (obj instanceof HeadRule) {
+
+      if (obj instanceof HeadRule) {
         HeadRule rule = (HeadRule) obj;
 
         return (rule.leftToRight == leftToRight) &&
             Arrays.equals(rule.tags, tags);
       }
-      else {
-        return false;
-      }
+
+      return false;
     }
   }
 
@@ -282,19 +288,24 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(headRules, punctSet);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (obj == this) {
       return true;
     }
-    else if (obj instanceof AncoraSpanishHeadRules) {
+
+    if (obj instanceof AncoraSpanishHeadRules) {
       AncoraSpanishHeadRules rules = (AncoraSpanishHeadRules) obj;
 
-      return rules.headRules.equals(headRules) &&
-          rules.punctSet.equals(punctSet);
+      return rules.headRules.equals(headRules)
+          && rules.punctSet.equals(punctSet);
     }
-    else {
-      return false;
-    }
+
+    return false;
   }
 
   @Override

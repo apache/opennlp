@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
 import opennlp.tools.util.Span;
@@ -212,16 +213,23 @@ public class TokenSample {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(getText(), Arrays.hashCode(getTokenSpans()));
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    } else if (obj instanceof TokenSample) {
+    }
+
+    if (obj instanceof TokenSample) {
       TokenSample a = (TokenSample) obj;
 
       return getText().equals(a.getText())
           && Arrays.equals(getTokenSpans(), a.getTokenSpans());
-    } else {
-      return false;
     }
+
+    return false;
   }
 }

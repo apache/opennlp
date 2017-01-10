@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.util.Span;
@@ -101,16 +102,23 @@ public class SentenceSample {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(getDocument(), Arrays.hashCode(getSentences()));
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    } else if (obj instanceof SentenceSample) {
+    }
+
+    if (obj instanceof SentenceSample) {
       SentenceSample a = (SentenceSample) obj;
 
       return getDocument().equals(a.getDocument())
           && Arrays.equals(getSentences(), a.getSentences());
-    } else {
-      return false;
     }
+
+    return false;
   }
 }

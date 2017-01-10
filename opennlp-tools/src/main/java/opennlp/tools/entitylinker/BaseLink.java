@@ -125,34 +125,31 @@ public abstract class BaseLink {
 
   @Override
   public String toString() {
-    return "\tBaseLink" + "\n\titemParentID=" + itemParentID + ", \n\titemID=" + itemID + ", \n\titemName=" + itemName + ", \n\titemType=" + itemType + ", \n\tscoreMap=" + scoreMap + "\n";
+    return "\tBaseLink" + "\n\titemParentID=" + itemParentID + ", \n\titemID=" + itemID
+        + ", \n\titemName=" + itemName + ", \n\titemType=" + itemType + ", \n\tscoreMap="
+        + scoreMap + "\n";
   }
 
   @Override
   public int hashCode() {
-    int hash = 7;
-    hash = 71 * hash + Objects.hashCode(this.itemParentID);
-    hash = 71 * hash + Objects.hashCode(this.itemID);
-    hash = 71 * hash + Objects.hashCode(this.itemName);
-    hash = 71 * hash + Objects.hashCode(this.itemType);
-    return hash;
+    return Objects.hash(itemParentID, itemID, itemName, itemType);
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null) {
-      return false;
+    if (obj == this) {
+      return true;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
+
+    if (obj instanceof BaseLink) {
+      BaseLink other = (BaseLink) obj;
+
+      return Objects.equals(itemParentID, other.itemParentID)
+          && Objects.equals(itemID, other.itemID)
+          && Objects.equals(itemName, other.itemName)
+          && Objects.equals(itemType, other.itemType);
     }
-    final BaseLink other = (BaseLink) obj;
-    if (!Objects.equals(this.itemParentID, other.itemParentID)) {
-      return false;
-    }
-    if (!Objects.equals(this.itemID, other.itemID)) {
-      return false;
-    }
-    return Objects.equals(this.itemName, other.itemName) && Objects.equals(this.itemType, other.itemType);
+
+    return false;
   }
 }

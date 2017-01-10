@@ -118,11 +118,7 @@ public class LinkedSpan<T extends BaseLink> extends Span {
 
   @Override
   public int hashCode() {
-    int hash = 7;
-    hash = 71 * hash + Objects.hashCode(this.linkedEntries);
-    hash = 71 * hash + this.sentenceid;
-    hash = 71 * hash + Objects.hashCode(this.searchTerm);
-    return hash;
+    return Objects.hash(linkedEntries, sentenceid, searchTerm);
   }
 
   @Override
@@ -130,13 +126,14 @@ public class LinkedSpan<T extends BaseLink> extends Span {
     if (obj == null) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
+
+    if (obj instanceof LinkedSpan) {
+      final LinkedSpan<T> other = (LinkedSpan<T>) obj;
+      return Objects.equals(this.linkedEntries, other.linkedEntries)
+          && this.sentenceid == other.sentenceid
+          && Objects.equals(this.searchTerm, other.searchTerm);
     }
-    final LinkedSpan<T> other = (LinkedSpan<T>) obj;
-    if (!Objects.equals(this.linkedEntries, other.linkedEntries)) {
-      return false;
-    }
-    return this.sentenceid == other.sentenceid && Objects.equals(this.searchTerm, other.searchTerm);
+
+    return false;
   }
 }
