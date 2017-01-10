@@ -34,6 +34,11 @@
     <property name="eachLine" value="true"/>
   </module>
 
+  <module name="RegexpMultiline">
+    <property name="format" value="\r\n"/>
+    <property name="message" value="CRLF line endings are prohibited"/>
+  </module>
+
   <module name="TreeWalker">
     <module name="OuterTypeFilename"/>
     <module name="IllegalTokenText">
