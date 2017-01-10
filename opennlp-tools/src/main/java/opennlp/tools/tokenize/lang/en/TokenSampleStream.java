@@ -56,7 +56,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
       evenq = true;
     }
     StringBuilder sb = new StringBuilder(line.length());
-    List<Span> spans = new ArrayList<Span>();
+    List<Span> spans = new ArrayList<>();
     int length = 0;
     for (int ti = 0; ti < tokens.length; ti++) {
       String token = tokens[ti];
@@ -73,38 +73,26 @@ public class TokenSampleStream implements Iterator<TokenSample> {
       else if (token.equals("-RCB-")) {
         token = "}";
       }
-      if (sb.length() == 0) {
-
-      }
-      else if (!alphaNumeric.matcher(token).find() || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
-        if ((token.equals("``") || token.equals("--") || token.equals("$") ||
-            token.equals("(")  || token.equals("&")  || token.equals("#") ||
-            (token.equals("\"") && (evenq && ti != tokens.length - 1)))
-            && (!lastToken.equals("(") || !lastToken.equals("{"))) {
-          //System.out.print(" "+token);
-          length++;
+      if (sb.length() != 0) {
+        if (!alphaNumeric.matcher(token).find() || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
+          if ((token.equals("``") || token.equals("--") || token.equals("$") ||
+              token.equals("(")  || token.equals("&")  || token.equals("#") ||
+              (token.equals("\"") && (evenq && ti != tokens.length - 1)))
+              && (!lastToken.equals("(") || !lastToken.equals("{"))) {
+            //System.out.print(" "+token);
+            length++;
+          }
         }
         else {
-          //System.out.print(token);
-        }
-      }
-      else {
-        if (lastToken.equals("``") || (lastToken.equals("\"") && !evenq) || lastToken.equals("(") || lastToken.equals("{")
-            || lastToken.equals("$") || lastToken.equals("#")) {
-          //System.out.print(token);
-        }
-        else {
-          //System.out.print(" "+token);
-          length++;
+          if (!lastToken.equals("``") && (!lastToken.equals("\"") || evenq) && !lastToken.equals("(") && !lastToken.equals("{")
+              && !lastToken.equals("$") && !lastToken.equals("#")) {
+                //System.out.print(" "+token);
+                length++;
+              }
         }
       }
       if (token.equals("\"")) {
-        if (ti == tokens.length - 1) {
-          evenq = true;
-        }
-        else {
-          evenq = !evenq;
-        }
+        evenq = ti == tokens.length - 1 || !evenq;
       }
       if (sb.length() < length) {
         sb.append(" ");
@@ -131,48 +119,5 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   private static void usage() {
     System.err.println("TokenSampleStream [-spans] < in");
     System.err.println("Where in is a space delimited list of tokens.");
-  }
-
-  public static void main(String[] args) throws IOException {
-    boolean showSpans = false;
-    int ai = 0;
-    while (ai < args.length) {
-      if (args[ai].equals("-spans")) {
-        showSpans = true;
-      }
-      else {
-        System.err.println("Unknown option " + args[ai]);
-        usage();
-      }
-      ai++;
-    }
-    TokenSampleStream tss = new TokenSampleStream(System.in);
-    while (tss.hasNext()) {
-      TokenSample ts = tss.next();
-      String text = ts.getText();
-      System.out.println(text);
-      Span[] tokenSpans = ts.getTokenSpans();
-      int ti = 0;
-      if (showSpans) {
-        for (int i = 0; i < text.length(); i++) {
-          if (ti - 1 >= 0 && i == tokenSpans[ti - 1].getEnd() - 1) {
-            System.out.print("]");
-          }
-          else if (i == tokenSpans[ti].getStart()) {
-            ti++;
-            if (ti - 1 >= 0 && i == tokenSpans[ti - 1].getEnd() - 1) {
-              System.out.print("|");
-            }
-            else {
-              System.out.print("[");
-            }
-          }
-          else {
-            System.out.print("-");
-          }
-        }
-        System.out.println();
-      }
-    }
   }
 }

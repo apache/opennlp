@@ -72,35 +72,6 @@ public class RegexNameFinderFactory {
     return regexMap;
   }
 
-  public static void main(String[] args) {
-    String text = "my email is opennlp@gmail.com and my phone num is 123-234-5678 and i like https://www.google.com and I visited MGRS  11sku528111 AKA  11S KU 528 111 and DMS 45N 123W AKA  +45.1234, -123.12 AKA  45.1234N 123.12W AKA 45 30 N 50 30 W";
-    String[] tokens = text.split(" ");
-    RegexNameFinder regexNameFinder = RegexNameFinderFactory.getDefaultRegexNameFinders(
-        DEFAULT_REGEX_NAME_FINDER.DEGREES_MIN_SEC_LAT_LON,
-        DEFAULT_REGEX_NAME_FINDER.EMAIL,
-        DEFAULT_REGEX_NAME_FINDER.MGRS,
-        DEFAULT_REGEX_NAME_FINDER.USA_PHONE_NUM,
-        DEFAULT_REGEX_NAME_FINDER.URL);
-
-
-    Span[] find = regexNameFinder.find(tokens);
-    String[] spansToStrings = Span.spansToStrings(find, tokens);
-    for (int i = 0; i < spansToStrings.length; i++) {
-      System.out.println(find[i].getType() + " @ " + find[i].toString() + " = " + spansToStrings[i]);
-    }
-    System.out.println("With String, not String[]");
-
-    Span[] find2 = regexNameFinder.find(text);
-    String[] hits = new String[find2.length];
-    for (int x = 0; x < find2.length; x++) {
-      hits[x] = text.substring(find2[x].getStart(), find2[x].getEnd());
-    }
-
-    for (int i = 0; i < hits.length; i++) {
-      System.out.println(find2[i].getType() + " @ " + find2[i].toString() + " = " + hits[i]);
-    }
-  }
-
   public interface RegexAble {
 
     Map<String, Pattern[]> getRegexMap();

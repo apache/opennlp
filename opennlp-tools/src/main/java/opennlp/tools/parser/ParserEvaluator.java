@@ -116,29 +116,4 @@ public class ParserEvaluator extends Evaluator<Parse> {
   public final FMeasure getFMeasure() {
     return fmeasure;
   }
-
-  /**
-   * Main method to show the example of running the evaluator.
-   * Moved to a test case soon, hopefully.
-   * @param args
-   */
-  // TODO: Move this to a test case!
-  public static void main(final String[] args) {
-
-    String goldParseString = "(TOP (S (NP (NNS Sales) (NNS executives)) (VP (VBD were) (VP (VBG examing) (NP (DT the) (NNS figures)) (PP (IN with) (NP (JJ great) (NN care))) ))  (NP (NN yesterday)) (. .) ))";
-    Span[] goldConsts = getConstituencySpans(Parse.parseParse(goldParseString));
-
-    String testParseString = "(TOP (S (NP (NNS Sales) (NNS executives)) (VP (VBD were) (VP (VBG examing) (NP (DT the) (NNS figures)) (PP (IN with) (NP (JJ great) (NN care) (NN yesterday))) ))  (. .) ))";
-    Span[] testConsts = getConstituencySpans(Parse.parseParse(testParseString));
-
-    FMeasure measure = new FMeasure();
-    measure.updateScores(goldConsts, testConsts);
-
-    // Expected output:
-    // Precision: 0.42857142857142855
-    // Recall: 0.375
-    // F-Measure: 0.39999999999999997
-
-    System.out.println(measure.toString());
-  }
 }

@@ -19,11 +19,6 @@
 
 package opennlp.tools.ml.maxent;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.text.DecimalFormat;
-
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.EvalParameters;
@@ -211,25 +206,5 @@ public final class GISModel extends AbstractModel {
       prior[oid] /= normal;
     }
     return prior;
-  }
-
-  public static void main(String[] args) throws java.io.IOException {
-    if (args.length == 0) {
-      System.err.println("Usage: GISModel modelname < contexts");
-      System.exit(1);
-    }
-    AbstractModel m = new opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader(
-        new File(args[0])).getModel();
-    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-    DecimalFormat df = new java.text.DecimalFormat(".###");
-    for (String line = in.readLine(); line != null; line = in.readLine()) {
-      String[] context = line.split(" ");
-      double[] dist = m.eval(context);
-      for (int oi = 0; oi < dist.length; oi++) {
-        System.out.print("[" + m.getOutcome(oi) + " " + df.format(dist[oi])
-            + "] ");
-      }
-      System.out.println();
-    }
   }
 }

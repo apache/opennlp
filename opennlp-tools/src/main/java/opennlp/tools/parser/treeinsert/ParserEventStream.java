@@ -18,26 +18,19 @@
 
 package opennlp.tools.parser.treeinsert;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import opennlp.tools.cmdline.SystemInputStreamFactory;
+
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelReader;
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserEventStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 public class ParserEventStream extends AbstractParserEventStream {
@@ -358,72 +351,6 @@ public class ParserEventStream extends AbstractParserEventStream {
       }
       rightFrontier.addAll(0,builtNodes);
       builtNodes.clear();
-    }
-  }
-
-  public static void main(String[] args) throws java.io.IOException {
-    if (args.length == 0) {
-      System.err.println("Usage ParserEventStream -[tag|chunk|build|attach] [-fun] "
-          + "[-dict dictionary] [-model model] head_rules < parses");
-      System.exit(1);
-    }
-    ParserEventTypeEnum etype = null;
-    boolean fun = false;
-    int ai = 0;
-    Dictionary dict = null;
-    AbstractModel model = null;
-
-    while (ai < args.length && args[ai].startsWith("-")) {
-      switch (args[ai]) {
-        case "-build":
-          etype = ParserEventTypeEnum.BUILD;
-          break;
-        case "-attach":
-          etype = ParserEventTypeEnum.ATTACH;
-          break;
-        case "-chunk":
-          etype = ParserEventTypeEnum.CHUNK;
-          break;
-        case "-check":
-          etype = ParserEventTypeEnum.CHECK;
-          break;
-        case "-tag":
-          etype = ParserEventTypeEnum.TAG;
-          break;
-        case "-fun":
-          fun = true;
-          break;
-        case "-dict":
-          ai++;
-          dict = new Dictionary(new FileInputStream(args[ai]));
-          break;
-        case "-model":
-          ai++;
-          model = (new SuffixSensitiveGISModelReader(new File(args[ai]))).getModel();
-          break;
-        default:
-          System.err.println("Invalid option " + args[ai]);
-          System.exit(1);
-      }
-      ai++;
-    }
-    HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[ai++]);
-    if (fun) {
-      Parse.useFunctionTags(true);
-    }
-
-    try (ObjectStream<Event> es = new ParserEventStream(
-        new ParseSampleStream(new PlainTextByLineStream(
-            new SystemInputStreamFactory(), Charset.defaultCharset())),
-        rules, etype, dict)) {
-      Event e;
-      while ((e = es.read()) != null) {
-        if (model != null) {
-          System.out.print(
-              model.eval(e.getContext())[model.getIndex(e.getOutcome())] + " ");
-        }
-        System.out.println(e);
-      }
     }
   }
 }

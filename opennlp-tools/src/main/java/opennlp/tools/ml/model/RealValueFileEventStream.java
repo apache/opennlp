@@ -21,13 +21,6 @@ package opennlp.tools.ml.model;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import opennlp.tools.ml.AbstractTrainer;
-import opennlp.tools.ml.PluggableParameters;
-import opennlp.tools.ml.maxent.GIS;
-import opennlp.tools.ml.maxent.io.SuffixSensitiveGISModelWriter;
 
 public class RealValueFileEventStream extends FileEventStream {
 
@@ -94,39 +87,5 @@ public class RealValueFileEventStream extends FileEventStream {
     }
 
     return null;
-  }
-
-  /**
-   * Trains and writes a model based on the events in the specified event file.
-   * the name of the model created is based on the event file name.
-   *
-   * @param args eventfile [iterations cuttoff]
-   * @throws IOException when the eventfile can not be read or the model file can not be written.
-   */
-  public static void main(String[] args) throws IOException {
-    if (args.length == 0) {
-      System.err.println("Usage: RealValueFileEventStream eventfile [iterations cutoff]");
-      System.exit(1);
-    }
-    int ai = 0;
-    String eventFile = args[ai++];
-
-    Map<String,String> params = new HashMap<>(); 
-    params.put(AbstractTrainer.ITERATIONS_PARAM,"100");
-    params.put(AbstractTrainer.CUTOFF_PARAM, "5");
-    if (ai < args.length) {
-      params.put(AbstractTrainer.ITERATIONS_PARAM,args[ai++]);
-      params.put(AbstractTrainer.CUTOFF_PARAM, args[ai++]);
-    }
-    PluggableParameters parameters = new PluggableParameters(params, new HashMap<>());
-    AbstractModel model;
-    try (RealValueFileEventStream es = new RealValueFileEventStream(eventFile)) {
-      DataIndexer indexer = new OnePassDataIndexer();
-      indexer.init(params, new HashMap<String, String>());
-
-      // GIS should handle this better... 
-      model = GIS.trainModel(parameters.getIntParam(AbstractTrainer.ITERATIONS_PARAM, AbstractTrainer.CUTOFF_DEFAULT), indexer);
-    }
-    new SuffixSensitiveGISModelWriter(model, new File(eventFile + ".bin.gz")).persist();
   }
 }
