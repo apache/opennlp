@@ -20,7 +20,6 @@ package opennlp.tools.parser.treeinsert;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -30,20 +29,18 @@ import opennlp.tools.parser.Parse;
 
 public class AttachContextGenerator extends AbstractContextGenerator {
 
-
   public AttachContextGenerator(Set<String> punctSet) {
     this.punctSet = punctSet;
   }
 
   public String[] getContext(Object o) {
     Object[] parts = (Object[]) o;
-    return getContext((Parse[]) parts[0], (Integer) parts[1],(List) parts[2], (Integer) parts[3]);
+    return getContext((Parse[]) parts[0], (Integer) parts[1],(List<Parse>) parts[2], (Integer) parts[3]);
   }
 
   private boolean containsPunct(Collection<Parse> puncts, String punct) {
     if (puncts != null) {
-      for (Iterator<Parse> pi = puncts.iterator(); pi.hasNext();) {
-        Parse p = pi.next();
+      for (Parse p : puncts) {
         if (p.getType().equals(punct)) {
           return true;
         }
@@ -121,8 +118,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     features.add("ps=" + fn.getType() + "->" + fn.getType() + "," + p0.getType());
     if (punct_1s != null) {
       StringBuilder punctBuf = new StringBuilder(5);
-      for (Iterator<Parse> pi = punct_1s.iterator(); pi.hasNext();) {
-        Parse punct = pi.next();
+      for (Parse punct : punct_1s) {
         punctBuf.append(punct.getType()).append(",");
       }
       //features.add("ppd="+punctProd+","+punctBuf.toString()+p0.getType());
