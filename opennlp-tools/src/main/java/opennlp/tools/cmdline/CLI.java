@@ -205,6 +205,7 @@ public final class CLI {
       System.exit(0);
     }
 
+    final long startTime = System.currentTimeMillis();
     String toolArguments[] = new String[args.length - 1];
     System.arraycopy(args, 1, toolArguments, 0, toolArguments.length);
 
@@ -260,5 +261,8 @@ public final class CLI {
 
       System.exit(e.getCode());
     }
+
+    final long endTime = System.currentTimeMillis();
+    System.out.format("Execution time: %.3f seconds", (endTime - startTime) / 1000.0);
   }
 }
