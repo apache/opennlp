@@ -51,7 +51,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class NameFinderMETest {
 
-  private final String TYPE = "default";
+  private final String TYPE_OVERRIDE = "aType";
+  private final String DEFAULT = "default";
 
   @Test
   public void testNameFinder() throws Exception {
@@ -71,7 +72,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     TokenNameFinder nameFinder = new NameFinderME(nameFinderModel);
@@ -92,7 +93,7 @@ public class NameFinderMETest {
     Span names[] = nameFinder.find(sentence);
 
     assertEquals(1, names.length);
-    assertEquals(new Span(0, 1, TYPE), names[0]);
+    assertEquals(new Span(0, 1, DEFAULT), names[0]);
 
     sentence = new String[] {
         "Hi",
@@ -107,8 +108,8 @@ public class NameFinderMETest {
     names = nameFinder.find(sentence);
 
     assertEquals(2, names.length);
-    assertEquals(new Span(1, 2, TYPE), names[0]);
-    assertEquals(new Span(4, 6, TYPE), names[1]);
+    assertEquals(new Span(1, 2, DEFAULT), names[0]);
+    assertEquals(new Span(4, 6, DEFAULT), names[1]);
   }
 
   /**
@@ -132,7 +133,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -170,6 +171,39 @@ public class NameFinderMETest {
     // train the name finder
 
     InputStream in = getClass().getClassLoader().getResourceAsStream(
+            "opennlp/tools/namefind/OnlyWithNames.train");
+
+    ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
+            new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
+    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
+            params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
+
+    NameFinderME nameFinder = new NameFinderME(nameFinderModel);
+
+    // now test if it can detect the sample sentences
+
+    String[] sentence = ("Neil Abercrombie Anibal Acevedo-Vila Gary Ackerman " +
+            "Robert Aderholt Daniel Akaka Todd Akin Lamar Alexander Rodney Alexander").split("\\s+");
+
+    Span[] names1 = nameFinder.find(sentence);
+
+    assertEquals(new Span(0, 2, DEFAULT), names1[0]);
+    assertEquals(new Span(2, 4, DEFAULT), names1[1]);
+    assertEquals(new Span(4, 6, DEFAULT), names1[2]);
+    assertTrue(!hasOtherAsOutcome(nameFinderModel));
+  }
+
+  @Test
+  public void testOnlyWithNamesTypeOverride() throws Exception {
+
+    // train the name finder
+
+    InputStream in = getClass().getClassLoader().getResourceAsStream(
         "opennlp/tools/namefind/OnlyWithNames.train");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
@@ -179,7 +213,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE_OVERRIDE, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -191,9 +225,9 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    assertEquals(new Span(0, 2, TYPE), names1[0]);
-    assertEquals(new Span(2, 4, TYPE), names1[1]);
-    assertEquals(new Span(4, 6, TYPE), names1[2]);
+    assertEquals(new Span(0, 2, TYPE_OVERRIDE), names1[0]);
+    assertEquals(new Span(2, 4, TYPE_OVERRIDE), names1[1]);
+    assertEquals(new Span(4, 6, TYPE_OVERRIDE), names1[2]);
     assertTrue(!hasOtherAsOutcome(nameFinderModel));
   }
 
@@ -216,7 +250,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -255,7 +289,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -310,7 +344,7 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE, sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);

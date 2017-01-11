@@ -125,7 +125,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
 
     Span[] names = sample.getNames();
     if (!Objects.isNull(this.defaultType)) {
-      overrideDefaultType(names);
+      overrideType(names);
     }
 
     String outcomes[] = codec.encode(names, sample.getSentence().length);
@@ -140,13 +140,11 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     return generateEvents(tokens, outcomes, contextGenerator).iterator();
   }
 
-  private void overrideDefaultType(Span[] names) {
+  private void overrideType(Span[] names) {
     for (int i = 0; i < names.length; i++) {
       Span n = names[i];
-      if (Objects.isNull(n.getType())) {
-        names[i] = new Span(n.getStart(), n.getEnd(), this.defaultType,
-                n.getProb());
-      }
+      names[i] = new Span(n.getStart(), n.getEnd(), this.defaultType,
+              n.getProb());
     }
   }
 

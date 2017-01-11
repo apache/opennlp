@@ -76,7 +76,7 @@ public class NameFinderEventStreamTest {
     ObjectStream<Event> eventStream = new NameFinderEventStream(
             ObjectStreamUtils.createObjectStream(nameSample), type, CG, null);
 
-    String prefix = "person-";
+    String prefix = type + "-";
     Assert.assertEquals(prefix + NameFinderME.START, eventStream.read().getOutcome());
     Assert.assertEquals(prefix + NameFinderME.CONTINUE,
             eventStream.read().getOutcome());
