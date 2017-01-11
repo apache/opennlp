@@ -45,7 +45,7 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
 
   public Span[] tokenizePos(String d) {
     int tokStart = -1;
-    List<Span> tokens = new ArrayList<Span>();
+    List<Span> tokens = new ArrayList<>();
     boolean inTok = false;
 
     //gather up potential tokens

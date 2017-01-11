@@ -71,7 +71,7 @@ public final class RegexNameFinder implements TokenNameFinder {
   public Span[] find(String tokens[]) {
     Map<Integer, Integer> sentencePosTokenMap = new HashMap<>();
 
-    StringBuffer sentenceString = new StringBuffer(tokens.length * 10);
+    StringBuilder sentenceString = new StringBuilder(tokens.length * 10);
 
     for (int i = 0; i < tokens.length; i++) {
 
