@@ -168,7 +168,6 @@
 								<testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
 								<violationSeverity>error</violationSeverity>
 								<failOnViolation>true</failOnViolation>
-								<excludes>**/stemmer/**/*</excludes>
 							</configuration>
 							<goals>
 								<goal>check</goal>
