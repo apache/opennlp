@@ -111,7 +111,9 @@ public class Parser extends AbstractBottomUpParser {
     this(model, defaultBeamSize, defaultAdvancePercentage);
   }
 
-  private Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize, double advancePercentage) {
+  private Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel,
+                 POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize,
+                 double advancePercentage) {
     super(tagger,chunker,headRules,beamSize,advancePercentage);
     this.buildModel = buildModel;
     this.attachModel = attachModel;
@@ -249,8 +251,9 @@ public class Parser extends AbstractBottomUpParser {
     buildModel.eval(buildContextGenerator.getContext(children, advanceNodeIndex), bprobs);
     double doneProb = bprobs[doneIndex];
     if (debugOn)
-      System.out.println("adi=" + advanceNodeIndex + " " + advanceNode.getType() + "." + advanceNode.getLabel()
-          + " " + advanceNode + " choose build=" + (1 - doneProb) + " attach=" + doneProb);
+      System.out.println("adi=" + advanceNodeIndex + " " + advanceNode.getType() + "."
+          + advanceNode.getLabel() + " " + advanceNode + " choose build=" + (1 - doneProb)
+          + " attach=" + doneProb);
 
     if (1 - doneProb > q) {
       double bprobSum = 0;
@@ -276,7 +279,8 @@ public class Parser extends AbstractBottomUpParser {
           newParse1.addProb(Math.log(bprob));
           newParsesList.add(newParse1);
           if (checkComplete) {
-            cprobs = checkModel.eval(checkContextGenerator.getContext(newNode,children,advanceNodeIndex,false));
+            cprobs = checkModel.eval(checkContextGenerator.getContext(newNode, children,
+                advanceNodeIndex,false));
             if (debugOn) System.out.println("building " + tag + " " + bprob + " c=" + cprobs[completeIndex]);
             if (cprobs[completeIndex] > probMass) { //just complete advances
               setComplete(newNode);
@@ -314,14 +318,17 @@ public class Parser extends AbstractBottomUpParser {
       //mark nodes as built
       if (checkComplete) {
         if (isComplete(advanceNode)) {
-          newParse1.setChild(originalAdvanceIndex,Parser.BUILT + "." + Parser.COMPLETE); //replace constituent being labeled to create new derivation
+          //replace constituent being labeled to create new derivation
+          newParse1.setChild(originalAdvanceIndex,Parser.BUILT + "." + Parser.COMPLETE);
         }
         else {
-          newParse1.setChild(originalAdvanceIndex,Parser.BUILT + "." + Parser.INCOMPLETE); //replace constituent being labeled to create new derivation
+          //replace constituent being labeled to create new derivation
+          newParse1.setChild(originalAdvanceIndex,Parser.BUILT + "." + Parser.INCOMPLETE);
         }
       }
       else {
-        newParse1.setChild(originalAdvanceIndex,Parser.BUILT); //replace constituent being labeled to create new derivation
+        //replace constituent being labeled to create new derivation
+        newParse1.setChild(originalAdvanceIndex,Parser.BUILT);
       }
       newParse1.addProb(Math.log(doneProb));
       if (advanceNodeIndex == 0) { //no attach if first node.
@@ -333,7 +340,8 @@ public class Parser extends AbstractBottomUpParser {
           Parse fn = rf.get(fi);
           attachModel.eval(attachContextGenerator.getContext(children, advanceNodeIndex, rf, fi), aprobs);
           if (debugOn) {
-            //List cs = java.util.Arrays.asList(attachContextGenerator.getContext(children, advanceNodeIndex,rf,fi,punctSet));
+            // List cs = java.util.Arrays.asList(attachContextGenerator.getContext(children,
+            //     advanceNodeIndex,rf,fi,punctSet));
             System.out.println("Frontier node(" + fi + "): " + fn.getType() + "." + fn.getLabel()
                 + " " + fn + " <- " + advanceNode.getType() + " " + advanceNode + " d="
                 + aprobs[daughterAttachIndex] + " s=" + aprobs[sisterAttachIndex] + " ");
@@ -347,12 +355,14 @@ public class Parser extends AbstractBottomUpParser {
             if (prob > q && (
                 (!checkComplete && (attachments[ai] != daughterAttachIndex || !isComplete(fn)))
                 ||
-                (checkComplete && ((attachments[ai] == daughterAttachIndex && !isComplete(fn)) || (attachments[ai] == sisterAttachIndex && isComplete(fn)))))) {
+                (checkComplete && ((attachments[ai] == daughterAttachIndex && !isComplete(fn))
+                    || (attachments[ai] == sisterAttachIndex && isComplete(fn)))))) {
               Parse newParse2 = newParse1.cloneRoot(fn,originalZeroIndex);
               Parse[] newKids = Parser.collapsePunctuation(newParse2.getChildren(),punctSet);
               //remove node from top level since were going to attach it (including punct)
               for (int ri = originalZeroIndex + 1; ri <= originalAdvanceIndex; ri++) {
-                //System.out.println(at"-removing "+(originalZeroIndex+1)+" "+newParse2.getChildren()[originalZeroIndex+1]);
+                //System.out.println(at"-removing "+(originalZeroIndex+1)+" "
+                // +newParse2.getChildren()[originalZeroIndex+1]);
                 newParse2.remove(originalZeroIndex + 1);
               }
               List<Parse> crf = getRightFrontier(newParse2,punctSet);
@@ -382,7 +392,8 @@ public class Parser extends AbstractBottomUpParser {
               newParse2.addProb(Math.log(prob));
               newParsesList.add(newParse2);
               if (checkComplete) {
-                cprobs = checkModel.eval(checkContextGenerator.getContext(updatedNode,newKids,advanceNodeIndex,true));
+                cprobs = checkModel.eval(
+                    checkContextGenerator.getContext(updatedNode,newKids,advanceNodeIndex,true));
                 if (cprobs[completeIndex] > probMass) {
                   setComplete(updatedNode);
                   newParse2.addProb(Math.log(cprobs[completeIndex]));
@@ -400,7 +411,9 @@ public class Parser extends AbstractBottomUpParser {
                   newParsesList.add(newParse3);
                   setIncomplete(updatedNode);
                   newParse2.addProb(Math.log(1 - cprobs[completeIndex]));
-                  if (debugOn) System.out.println("Advancing both complete and incomplete nodes; c=" + cprobs[completeIndex]);
+                  if (debugOn)
+                    System.out.println("Advancing both complete and incomplete nodes; c="
+                        + cprobs[completeIndex]);
                 }
               }
             }
@@ -459,9 +472,11 @@ public class Parser extends AbstractBottomUpParser {
         ParserEventTypeEnum.BUILD, mdict);
     Map<String, String> buildReportMap = new HashMap<>();
 
-    EventTrainer buildTrainer = TrainerFactory.getEventTrainer(mlParams.getSettings("build"), buildReportMap);
+    EventTrainer buildTrainer = TrainerFactory.getEventTrainer(
+        mlParams.getSettings("build"), buildReportMap);
     MaxentModel buildModel = buildTrainer.train(bes);
-    opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(manifestInfoEntries, buildReportMap, "build");
+    opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(
+        manifestInfoEntries, buildReportMap, "build");
 
     parseSamples.reset();
 
@@ -471,9 +486,11 @@ public class Parser extends AbstractBottomUpParser {
         ParserEventTypeEnum.CHECK);
     Map<String, String> checkReportMap = new HashMap<>();
 
-    EventTrainer checkTrainer = TrainerFactory.getEventTrainer(mlParams.getSettings("check"), checkReportMap);
+    EventTrainer checkTrainer = TrainerFactory.getEventTrainer(
+        mlParams.getSettings("check"), checkReportMap);
     MaxentModel checkModel = checkTrainer.train(kes);
-    opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(manifestInfoEntries, checkReportMap, "check");
+    opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(
+        manifestInfoEntries, checkReportMap, "check");
 
     parseSamples.reset();
 
@@ -482,9 +499,11 @@ public class Parser extends AbstractBottomUpParser {
     ObjectStream<Event>  attachEvents = new ParserEventStream(parseSamples, rules,
         ParserEventTypeEnum.ATTACH);
     Map<String, String> attachReportMap = new HashMap<>();
-    EventTrainer attachTrainer = TrainerFactory.getEventTrainer(mlParams.getSettings("attach"), attachReportMap);
+    EventTrainer attachTrainer = TrainerFactory.getEventTrainer(
+        mlParams.getSettings("attach"), attachReportMap);
     MaxentModel attachModel = attachTrainer.train(attachEvents);
-    opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(manifestInfoEntries, attachReportMap, "attach");
+    opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(
+        manifestInfoEntries, attachReportMap, "attach");
 
     // TODO: Remove cast for HeadRules
     return new ParserModel(languageCode, buildModel, checkModel,
@@ -512,7 +531,8 @@ public class Parser extends AbstractBottomUpParser {
   }
 
   @Deprecated
-  public static AbstractModel train(ObjectStream<Event>  es, int iterations, int cut) throws java.io.IOException {
+  public static AbstractModel train(ObjectStream<Event>  es, int iterations, int cut)
+      throws IOException {
     return opennlp.tools.ml.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 }

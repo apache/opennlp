@@ -28,15 +28,18 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
  */
 interface TrainingParams extends BasicTrainingParams {
 
-  @ParameterDescription(valueName = "fg", description = "Comma separated feature generator classes. Bag of words is used if not specified.")
+  @ParameterDescription(valueName = "fg",
+      description = "Comma separated feature generator classes. Bag of words is used if not specified.")
   @OptionalParameter
   String getFeatureGenerators();
 
-  @ParameterDescription(valueName = "tokenizer", description = "Tokenizer implementation. WhitespaceTokenizer is used if not specified.")
+  @ParameterDescription(valueName = "tokenizer",
+      description = "Tokenizer implementation. WhitespaceTokenizer is used if not specified.")
   @OptionalParameter
   String getTokenizer();
 
-  @ParameterDescription(valueName = "factoryName", description = "A sub-class of DoccatFactory where to get implementation and resources.")
+  @ParameterDescription(valueName = "factoryName",
+      description = "A sub-class of DoccatFactory where to get implementation and resources.")
   @OptionalParameter
   String getFactory();
 

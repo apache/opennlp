@@ -21,9 +21,10 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**
- * Class implementing the probability distribution over labels returned by a classifier as a log of probabilities.
- * This is necessary because floating point precision in Java does not allow for high-accuracy representation of very low probabilities
- * such as would occur in a text categorizer.
+ * Class implementing the probability distribution over labels returned by
+ * a classifier as a log of probabilities.
+ * This is necessary because floating point precision in Java does not allow for high-accuracy
+ * representation of very low probabilities such as would occur in a text categorizer.
  *
  * @param <T> the label (category) class
  *
@@ -53,7 +54,8 @@ public class LogProbabilities<T> extends Probabilities<T> {
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability, if the new probability is greater than the old one.
+   * Assigns a probability to a label, discarding any previously assigned probability,
+   * if the new probability is greater than the old one.
    *
    * @param t           the label to which the probability is being assigned
    * @param probability the probability to assign

@@ -210,7 +210,8 @@ public class TokenNameFinderCrossValidator {
 
     while (partitioner.hasNext()) {
 
-      CrossValidationPartitioner.TrainingSampleStream<DocumentSample> trainingSampleStream = partitioner.next();
+      CrossValidationPartitioner.TrainingSampleStream<DocumentSample> trainingSampleStream =
+          partitioner.next();
 
       TokenNameFinderModel model;
       if (factory != null) {

@@ -41,8 +41,8 @@ public class ConstitParseSampleStreamFactory extends AbstractSampleStreamFactory
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
 
-    return new ConstitParseSampleStream(new FileToByteArraySampleStream(new DirectorySampleStream(params.getData(),
-        null, false)));
+    return new ConstitParseSampleStream(new FileToByteArraySampleStream(
+        new DirectorySampleStream(params.getData(), null, false)));
   }
 
   public static void registerFactory() {

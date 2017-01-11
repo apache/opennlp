@@ -38,13 +38,15 @@ public class ParserEventStream extends AbstractParserEventStream {
   protected CheckContextGenerator kcg;
 
   /**
-   * Create an event stream based on the specified data stream of the specified type using the specified head rules.
+   * Create an event stream based on the specified data stream of the specified type using
+   * the specified head rules.
    * @param d A 1-parse-per-line Penn Treebank Style parse.
    * @param rules The head rules.
    * @param etype The type of events desired (tag, chunk, build, or check).
    * @param dict A tri-gram dictionary to reduce feature generation.
    */
-  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
+  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules,
+                           ParserEventTypeEnum etype, Dictionary dict) {
     super(d,rules,etype,dict);
   }
 
@@ -85,7 +87,8 @@ public class ParserEventStream extends AbstractParserEventStream {
     reduceStart++;
     Parse[] reducedChunks;
     if (!type.equals(AbstractBottomUpParser.TOP_NODE)) {
-      reducedChunks = new Parse[chunks.length - (reduceEnd - reduceStart + 1) + 1]; //total - num_removed + 1 (for new node)
+      //total - num_removed + 1 (for new node)
+      reducedChunks = new Parse[chunks.length - (reduceEnd - reduceStart + 1) + 1];
       //insert nodes before reduction
       System.arraycopy(chunks, 0, reducedChunks, 0, reduceStart);
       //insert reduced node
@@ -108,7 +111,8 @@ public class ParserEventStream extends AbstractParserEventStream {
   }
 
   /**
-   * Adds events for parsing (post tagging and chunking to the specified list of events for the specified parse chunks.
+   * Adds events for parsing (post tagging and chunking to the specified list of events for
+   * the specified parse chunks.
    * @param parseEvents The events for the specified chunks.
    * @param chunks The incomplete parses to be parsed.
    */
@@ -128,7 +132,8 @@ public class ParserEventStream extends AbstractParserEventStream {
         else {
           outcome = AbstractBottomUpParser.CONT + type;
         }
-        //System.err.println("parserEventStream.addParseEvents: chunks["+ci+"]="+c+" label="+outcome+" bcg="+bcg);
+        // System.err.println("parserEventStream.addParseEvents: chunks["+ci+"]="+c+" label="
+        // +outcome+" bcg="+bcg);
         c.setLabel(outcome);
         if (etype == ParserEventTypeEnum.BUILD) {
           parseEvents.add(new Event(outcome, bcg.getContext(chunks, ci)));

@@ -189,7 +189,8 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     return eventCount;
   }
 
-  private List<ComparableEvent> index(int numEvents, ObjectStream<Event> es, Map<String,Integer> predicateIndex) throws IOException {
+  private List<ComparableEvent> index(int numEvents, ObjectStream<Event> es,
+      Map<String,Integer> predicateIndex) throws IOException {
     Map<String,Integer> omap = new HashMap<>();
     int outcomeCount = 0;
     List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);

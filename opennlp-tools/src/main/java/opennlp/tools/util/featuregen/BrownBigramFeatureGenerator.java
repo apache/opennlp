@@ -37,13 +37,15 @@ public class BrownBigramFeatureGenerator implements AdaptiveFeatureGenerator {
     if (index > 0) {
       List<String> prevWordClasses = BrownTokenClasses.getWordClasses(tokens[index - 1], brownLexicon);
       for (int i = 0; i < wordClasses.size() && i < prevWordClasses.size(); i++)
-      features.add("p" + "browncluster" + "," + "browncluster" + "=" + prevWordClasses.get(i) + "," + wordClasses.get(i));
+      features.add("p" + "browncluster" + "," + "browncluster" + "="
+          + prevWordClasses.get(i) + "," + wordClasses.get(i));
     }
 
     if (index + 1 < tokens.length) {
       List<String> nextWordClasses = BrownTokenClasses.getWordClasses(tokens[index + 1], brownLexicon);
       for (int i = 0; i < wordClasses.size() && i < nextWordClasses.size(); i++) {
-        features.add("browncluster" + "," + "n" + "browncluster" + "=" + wordClasses.get(i) + "," + nextWordClasses.get(i));
+        features.add("browncluster" + "," + "n" + "browncluster" + "="
+            + wordClasses.get(i) + "," + nextWordClasses.get(i));
       }
     }
   }

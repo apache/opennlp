@@ -147,8 +147,8 @@ public final class Chunker extends CasAnnotator_ImplBase {
         UimaUtil.TOKEN_TYPE_PARAMETER);
 
     // pos feature
-    mPosFeature = AnnotatorUtil.getRequiredFeatureParameter(context, mTokenType, UimaUtil.POS_FEATURE_PARAMETER,
-        CAS.TYPE_NAME_STRING);
+    mPosFeature = AnnotatorUtil.getRequiredFeatureParameter(
+        context, mTokenType, UimaUtil.POS_FEATURE_PARAMETER, CAS.TYPE_NAME_STRING);
   }
 
   private void addChunkAnnotation(CAS tcas, AnnotationFS tokenAnnotations[],

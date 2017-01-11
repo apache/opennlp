@@ -52,7 +52,8 @@ public class BilouNameFinderSequenceValidator implements
 
     if (outcomesSequence.length - 1 > 0) {
       if (outcome.endsWith(NameFinderME.OTHER)) {
-        if (outcomesSequence[outcomesSequence.length - 1].endsWith(NameFinderME.START) || outcomesSequence[outcomesSequence.length - 1].endsWith(NameFinderME.CONTINUE)) {
+        if (outcomesSequence[outcomesSequence.length - 1].endsWith(NameFinderME.START)
+            || outcomesSequence[outcomesSequence.length - 1].endsWith(NameFinderME.CONTINUE)) {
           return false;
         }
       }

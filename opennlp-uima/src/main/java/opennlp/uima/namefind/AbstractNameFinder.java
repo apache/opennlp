@@ -120,7 +120,8 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
           nameTypeMap.put(parts[0].trim(), typeSystem.getType(parts[1].trim()));
         }
         else {
-          mLogger.log(Level.WARNING, String.format("Failed to parse a part of the type mapping [%s]", mapping));
+          mLogger.log(Level.WARNING,
+              String.format("Failed to parse a part of the type mapping [%s]", mapping));
         }
       }
 
@@ -128,7 +129,8 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
     }
 
     if (mNameType == null && mNameTypeMapping.size() == 0) {
-      throw new AnalysisEngineProcessException(new Exception("No name type or valid name type mapping configured!"));
+      throw new AnalysisEngineProcessException(
+          new Exception("No name type or valid name type mapping configured!"));
     }
   }
 

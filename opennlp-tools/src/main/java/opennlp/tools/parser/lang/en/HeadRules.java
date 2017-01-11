@@ -47,10 +47,10 @@ import opennlp.tools.util.model.SerializableArtifact;
  */
 public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, SerializableArtifact {
 
-  public static class HeadRulesSerializer implements ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
+  public static class HeadRulesSerializer implements ArtifactSerializer<HeadRules> {
 
-    public opennlp.tools.parser.lang.en.HeadRules create(InputStream in) throws IOException {
-      return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
+    public HeadRules create(InputStream in) throws IOException {
+      return new HeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
     }
 
     public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact, OutputStream out)
@@ -224,7 +224,8 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
       Constituent con2 = stack.get(stack.size() - 3);
       Constituent con3 = stack.get(stack.size() - 4);
       Constituent con4 = stack.get(stack.size() - 5);
-      //System.err.println("con0="+con0.label+" con1="+con1.label+" con2="+con2.label+" con3="+con3.label+" con4="+con4.label);
+      // System.err.println("con0="+con0.label+" con1="+con1.label+" con2="
+      // +con2.label+" con3="+con3.label+" con4="+con4.label);
       //subject extraction
       if (con1.getLabel().equals("NP") && con2.getLabel().equals("S") && con3.getLabel().equals("SBAR")) {
         con1.setLabel(con1.getLabel() + "-G");
@@ -232,7 +233,8 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
         con3.setLabel(con3.getLabel() + "-G");
       }
       //object extraction
-      else if (con1.getLabel().equals("NP") && con2.getLabel().equals("VP") && con3.getLabel().equals("S") && con4.getLabel().equals("SBAR")) {
+      else if (con1.getLabel().equals("NP") && con2.getLabel().equals("VP")
+          && con3.getLabel().equals("S") && con4.getLabel().equals("SBAR")) {
         con1.setLabel(con1.getLabel() + "-G");
         con2.setLabel(con2.getLabel() + "-G");
         con3.setLabel(con3.getLabel() + "-G");

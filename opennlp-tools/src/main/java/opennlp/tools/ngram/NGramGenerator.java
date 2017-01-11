@@ -33,7 +33,8 @@ public class NGramGenerator {
    *
    * @param input     the input tokens the output ngrams will be derived from
    * @param n         the number of tokens as the sliding window
-   * @param separator each string in each gram will be separated by this value if desired. Pass in empty string if no separator is desired
+   * @param separator each string in each gram will be separated by this value if desired.
+   *                  Pass in empty string if no separator is desired
    * @return
    */
   public static List<String> generate(List<String> input, int n, String separator) {
@@ -56,7 +57,8 @@ public class NGramGenerator {
    *Generates an nGram based on a char[] input
    * @param input the array of chars to convert to nGram
    * @param n The number of grams (chars) that each output gram will consist of
-   * @param separator each char in each gram will be separated by this value if desired. Pass in empty string if no separator is desired
+   * @param separator each char in each gram will be separated by this value if desired.
+   *                  Pass in empty string if no separator is desired
    * @return
    */
   public static List<String> generate(char[] input, int n, String separator) {

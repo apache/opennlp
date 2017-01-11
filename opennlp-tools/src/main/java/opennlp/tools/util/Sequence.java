@@ -101,7 +101,8 @@ public class Sequence implements Comparable<Sequence> {
   }
 
   /** Populates  an array with the probabilities associated with the outcomes of this sequence.
-   * @param ps a pre-allocated array to use to hold the values of the probabilities of the outcomes for this sequence.
+   * @param ps a pre-allocated array to use to hold the values of the
+   *           probabilities of the outcomes for this sequence.
    */
   public void getProbs(double[] ps) {
     for (int pi = 0, pl = probs.size(); pi < pl; pi++) {

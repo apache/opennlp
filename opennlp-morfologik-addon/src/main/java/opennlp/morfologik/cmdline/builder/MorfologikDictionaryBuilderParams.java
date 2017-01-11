@@ -28,7 +28,8 @@ import opennlp.tools.cmdline.params.EncodingParameter;
  */
 interface MorfologikDictionaryBuilderParams extends EncodingParameter {
 
-  @ParameterDescription(valueName = "in", description = "The input file (base,inflected,tag). An associated metadata (*.info) file must exist.")
+  @ParameterDescription(valueName = "in",
+      description = "The input file (base,inflected,tag). An associated metadata (*.info) file must exist.")
   File getInputFile();
 
   @ParameterDescription(valueName = "true|false", description = "Accept leading BOM bytes (UTF-8).")
@@ -51,7 +52,8 @@ interface MorfologikDictionaryBuilderParams extends EncodingParameter {
   @OptionalParameter(defaultValue = "false")
   Boolean getOverwrite();
 
-  @ParameterDescription(valueName = "true|false", description = "Validate input to make sure it makes sense.")
+  @ParameterDescription(valueName = "true|false",
+      description = "Validate input to make sure it makes sense.")
   @OptionalParameter(defaultValue = "false")
   Boolean getValidate();
 }

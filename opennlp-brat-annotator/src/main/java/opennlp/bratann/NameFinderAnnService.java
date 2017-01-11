@@ -48,9 +48,9 @@ public class NameFinderAnnService {
 
     if (args.length == 0) {
       System.out.println("Usage:");
-      System.out.println(
-          "[NameFinderAnnService -serverPort port] [-tokenizerModel file] [-ruleBasedTokenizer whitespace|simple] " +
-                  "[-sentenceDetectorModel file] namefinderFile|nameFinderURI");
+      System.out.println("[NameFinderAnnService -serverPort port] [-tokenizerModel file] "
+           + "[-ruleBasedTokenizer whitespace|simple] "
+           + "[-sentenceDetectorModel file] namefinderFile|nameFinderURI");
       return;
     }
 

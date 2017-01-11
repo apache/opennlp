@@ -137,8 +137,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
   private static boolean useFunctionTags;
 
   /**
-   * Creates a new parse node for this specified text and span of the specified type with the specified probability
-   * and the specified head index.
+   * Creates a new parse node for this specified text and span of the specified type
+   * with the specified probability and the specified head index.
    *
    * @param text The text of the sentence for which this node is a part of.
    * @param span The character offsets for this node within the specified text.
@@ -159,8 +159,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   /**
-   * Creates a new parse node for this specified text and span of the specified type with the specified probability
-   * and the specified head and head index.
+   * Creates a new parse node for this specified text and span of the specified type with
+   * the specified probability and the specified head and head index.
    *
    * @param text The text of the sentence for which this node is a part of.
    * @param span The character offsets for this node within the specified text.
@@ -348,7 +348,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
       //System.err.println("Parse.insert:adding con="+constituent+" to "+this);
       parts.add(pi, constituent);
       constituent.setParent(this);
-      //System.err.println("Parse.insert: "+constituent.hashCode()+" -> "+constituent.getParent().hashCode());
+      // System.err.println("Parse.insert: "+constituent.hashCode()+" -> "
+      // +constituent.getParent().hashCode());
     }
     else {
       throw new IllegalArgumentException("Inserting constituent not contained in the sentence!");
@@ -468,9 +469,11 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   /**
-   * Returns the log of the product of the probability associated with all the decisions which formed this constituent.
+   * Returns the log of the product of the probability associated with all the
+   * decisions which formed this constituent.
    *
-   * @return The log of the product of the probability associated with all the decisions which formed this constituent.
+   * @return The log of the product of the probability associated with all the
+   * decisions which formed this constituent.
    */
   public double getProb() {
     return prob;
@@ -530,7 +533,9 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   public Parse adjoinRoot(Parse node, HeadRules rules, int parseIndex) {
     Parse lastChild = parts.get(parseIndex);
-    Parse adjNode = new Parse(this.text,new Span(lastChild.getSpan().getStart(),node.getSpan().getEnd()),lastChild.getType(),1,rules.getHead(new Parse[]{lastChild,node},lastChild.getType()));
+    Parse adjNode = new Parse(this.text,new Span(lastChild.getSpan().getStart(),
+        node.getSpan().getEnd()),lastChild.getType(),1,
+        rules.getHead(new Parse[]{lastChild,node},lastChild.getType()));
     adjNode.parts.add(lastChild);
     if (node.prevPunctSet != null) {
       adjNode.parts.addAll(node.prevPunctSet);
@@ -550,7 +555,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
    */
   public Parse adjoin(Parse sister, HeadRules rules) {
     Parse lastChild = parts.get(parts.size() - 1);
-    Parse adjNode = new Parse(this.text,new Span(lastChild.getSpan().getStart(),sister.getSpan().getEnd()),lastChild.getType(),1,rules.getHead(new Parse[]{lastChild,sister},lastChild.getType()));
+    Parse adjNode = new Parse(this.text,new Span(lastChild.getSpan().getStart(),sister.getSpan().getEnd()),
+        lastChild.getType(),1,rules.getHead(new Parse[]{lastChild,sister},lastChild.getType()));
     adjNode.parts.add(lastChild);
     if (sister.prevPunctSet != null) {
       adjNode.parts.addAll(sister.prevPunctSet);
@@ -1096,12 +1102,14 @@ public class Parse implements Cloneable, Comparable<Parse> {
             }
           }
           if (!crossingKids) {
-            commonParent.insert(new Parse(commonParent.getText(), nameSpan, tag, 1.0, endToken.getHeadIndex()));
+            commonParent.insert(new Parse(commonParent.getText(), nameSpan,
+                tag, 1.0, endToken.getHeadIndex()));
           } else {
             if (commonParent.getType().equals("NP")) {
               Parse[] grandKids = kids[0].getChildren();
               if (grandKids.length > 1 && nameSpan.contains(grandKids[grandKids.length - 1].getSpan())) {
-                commonParent.insert(new Parse(commonParent.getText(), commonParent.getSpan(), tag, 1.0, commonParent.getHeadIndex()));
+                commonParent.insert(new Parse(commonParent.getText(), commonParent.getSpan(),
+                    tag, 1.0, commonParent.getHeadIndex()));
               }
             }
           }

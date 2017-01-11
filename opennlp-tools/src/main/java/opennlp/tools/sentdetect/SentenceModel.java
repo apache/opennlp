@@ -56,8 +56,8 @@ public class SentenceModel extends BaseModel {
    *             {@link #SentenceModel(String, MaxentModel, Map, SentenceDetectorFactory)}
    *             instead and pass in a {@link SentenceDetectorFactory}
    */
-  public SentenceModel(String languageCode, MaxentModel sentModel,
-      boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters, Map<String, String> manifestInfoEntries) {
+  public SentenceModel(String languageCode, MaxentModel sentModel, boolean useTokenEnd,
+      Dictionary abbreviations, char[] eosCharacters, Map<String, String> manifestInfoEntries) {
     this(languageCode, sentModel, manifestInfoEntries,
         new SentenceDetectorFactory(languageCode, useTokenEnd, abbreviations,
             eosCharacters));

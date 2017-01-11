@@ -24,7 +24,9 @@ import opennlp.tools.util.Span;
  */
 public interface TokenNameFinder {
 
-  /** Generates name tags for the given sequence, typically a sentence, returning token spans for any identified names.
+  /** Generates name tags for the given sequence, typically a sentence,
+   * returning token spans for any identified names.
+   *
    * @param tokens an array of the tokens or words of the sequence, typically a sentence.
    * @return an array of spans for each of the names identified.
    */

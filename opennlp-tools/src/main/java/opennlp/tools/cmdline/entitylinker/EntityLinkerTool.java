@@ -121,7 +121,8 @@ public class EntityLinkerTool extends BasicCmdLineTool {
               text.append("\n");
             }
 
-            List<Span> linkedSpans = entityLinker.find(text.toString(), sentences, tokensBySentence, namesBySentence);
+            List<Span> linkedSpans =
+                entityLinker.find(text.toString(), sentences, tokensBySentence, namesBySentence);
 
             for (int i = 0; i < linkedSpans.size(); i++) {
               System.out.println(linkedSpans.get(i));

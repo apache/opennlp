@@ -33,17 +33,20 @@ public class NaiveBayesModel extends AbstractModel {
   protected double[] outcomeTotals;
   protected long vocabulary;
 
-  public NaiveBayesModel(Context[] params, String[] predLabels, Map<String, Integer> pmap, String[] outcomeNames) {
+  public NaiveBayesModel(Context[] params, String[] predLabels, Map<String, Integer> pmap,
+                         String[] outcomeNames) {
     super(params, predLabels, pmap, outcomeNames);
     outcomeTotals = initOutcomeTotals(outcomeNames, params);
-    this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length, outcomeTotals, predLabels.length);
+    this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length,
+        outcomeTotals, predLabels.length);
     modelType = ModelType.NaiveBayes;
   }
 
   public NaiveBayesModel(Context[] params, String[] predLabels, String[] outcomeNames) {
     super(params, predLabels, outcomeNames);
     outcomeTotals = initOutcomeTotals(outcomeNames, params);
-    this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length, outcomeTotals, predLabels.length);
+    this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length,
+        outcomeTotals, predLabels.length);
     modelType = ModelType.NaiveBayes;
   }
 
@@ -86,11 +89,14 @@ public class NaiveBayesModel extends AbstractModel {
     return eval(context, null, prior, model, true);
   }
 
-  public static double[] eval(int[] context, float[] values, double[] prior, EvalParameters model, boolean normalize) {
+  public static double[] eval(int[] context, float[] values, double[] prior,
+                              EvalParameters model, boolean normalize) {
     Probabilities<Integer> probabilities = new LogProbabilities<>();
     Context[] params = model.getParams();
-    double[] outcomeTotals = model instanceof NaiveBayesEvalParameters ? ((NaiveBayesEvalParameters) model).getOutcomeTotals() : new double[prior.length];
-    long vocabulary = model instanceof NaiveBayesEvalParameters ? ((NaiveBayesEvalParameters) model).getVocabulary() : 0;
+    double[] outcomeTotals = model instanceof NaiveBayesEvalParameters
+        ? ((NaiveBayesEvalParameters) model).getOutcomeTotals() : new double[prior.length];
+    long vocabulary = model instanceof NaiveBayesEvalParameters
+        ? ((NaiveBayesEvalParameters) model).getVocabulary() : 0;
     double[] activeParameters;
     int[] activeOutcomes;
     double value = 1;
@@ -125,7 +131,8 @@ public class NaiveBayesModel extends AbstractModel {
     return prior;
   }
 
-  private static double getProbability(double numerator, double denominator, double vocabulary, boolean isSmoothed) {
+  private static double getProbability(double numerator, double denominator,
+                                       double vocabulary, boolean isSmoothed) {
     if (isSmoothed)
       return getSmoothedProbability(numerator, denominator, vocabulary);
     else if (denominator == 0 || denominator < Double.MIN_VALUE)

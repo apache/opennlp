@@ -330,7 +330,8 @@ public final class CmdLineUtil {
 
       TrainerFactory.TrainerType trainerType = TrainerFactory.getTrainerType(params.getSettings());
 
-      if (!supportSequenceTraining && trainerType.equals(TrainerFactory.TrainerType.EVENT_MODEL_SEQUENCE_TRAINER)) {
+      if (!supportSequenceTraining
+          && trainerType.equals(TrainerFactory.TrainerType.EVENT_MODEL_SEQUENCE_TRAINER)) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }

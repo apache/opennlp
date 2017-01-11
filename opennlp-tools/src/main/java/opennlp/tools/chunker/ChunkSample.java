@@ -140,7 +140,8 @@ public class ChunkSample {
     return phrases.toArray(new Span[phrases.size()]);
   }
 
-  private static void validateArguments(int sentenceSize, int tagsSize, int predsSize) throws IllegalArgumentException {
+  private static void validateArguments(int sentenceSize, int tagsSize, int predsSize)
+      throws IllegalArgumentException {
     if (sentenceSize != tagsSize || tagsSize != predsSize)
       throw new IllegalArgumentException(
           "All arrays must have the same length: " +
@@ -152,7 +153,9 @@ public class ChunkSample {
   /**
    * Creates a nice to read string for the phrases formatted as following: <br>
    * <code>
-   * [NP Rockwell_NNP ] [VP said_VBD ] [NP the_DT agreement_NN ] [VP calls_VBZ ] [SBAR for_IN ] [NP it_PRP ] [VP to_TO supply_VB ] [NP 200_CD additional_JJ so-called_JJ shipsets_NNS ] [PP for_IN ] [NP the_DT planes_NNS ] ._.
+   * [NP Rockwell_NNP ] [VP said_VBD ] [NP the_DT agreement_NN ] [VP calls_VBZ ] [SBAR for_IN ]
+   * [NP it_PRP ] [VP to_TO supply_VB ] [NP 200_CD additional_JJ so-called_JJ shipsets_NNS ]
+   * [PP for_IN ] [NP the_DT planes_NNS ] ._.
    * </code>
    *
    * @return a nice to read string representation of the chunk phases
@@ -195,7 +198,8 @@ public class ChunkSample {
     StringBuilder chunkString = new StringBuilder();
 
     for (int ci = 0; ci < preds.size(); ci++) {
-      chunkString.append(sentence.get(ci)).append(" ").append(tags.get(ci)).append(" ").append(preds.get(ci)).append("\n");
+      chunkString.append(sentence.get(ci)).append(" ").append(tags.get(ci))
+          .append(" ").append(preds.get(ci)).append("\n");
     }
     return chunkString.toString();
   }

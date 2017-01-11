@@ -39,7 +39,8 @@ public class RegexNameFinderFactory {
    * @param defaults the OpenNLP default regexes
    * @return
    */
-  public static synchronized RegexNameFinder getDefaultRegexNameFinders(Map<String, Pattern[]> config, DEFAULT_REGEX_NAME_FINDER... defaults) {
+  public static synchronized RegexNameFinder getDefaultRegexNameFinders(
+      Map<String, Pattern[]> config, DEFAULT_REGEX_NAME_FINDER... defaults) {
     if (config == null) {
       throw new IllegalArgumentException("config Map cannot be null");
     }
@@ -57,14 +58,16 @@ public class RegexNameFinderFactory {
    * @param defaults the OpenNLP default regexes
    * @return
    */
-  public static synchronized RegexNameFinder getDefaultRegexNameFinders(DEFAULT_REGEX_NAME_FINDER... defaults) {
+  public static synchronized RegexNameFinder getDefaultRegexNameFinders(
+      DEFAULT_REGEX_NAME_FINDER... defaults) {
     if (defaults == null) {
       throw new IllegalArgumentException("defaults cannot be null");
     }
     return new RegexNameFinder(defaultsToMap(defaults));
   }
 
-  private synchronized static Map<String, Pattern[]> defaultsToMap(DEFAULT_REGEX_NAME_FINDER... defaults) {
+  private synchronized static Map<String, Pattern[]> defaultsToMap(
+      DEFAULT_REGEX_NAME_FINDER... defaults) {
     Map<String, Pattern[]> regexMap = new HashMap<>();
     for (DEFAULT_REGEX_NAME_FINDER def : defaults) {
       regexMap.putAll(def.getRegexMap());
@@ -85,7 +88,10 @@ public class RegexNameFinderFactory {
       @Override
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
-        // p[0] = Pattern.compile("([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[- \\.]?(\\d){2,})|([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[- \\.]?(\\d){2,})|([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,})", Pattern.CASE_INSENSITIVE);
+        // p[0] = Pattern.compile("([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[- \\.]?
+        // (\\d){2,}[- \\.]?(\\d){2,})|([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[-
+        // \\.]?(\\d){2,})|([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,})",
+        // Pattern.CASE_INSENSITIVE);
         p[0] = Pattern.compile("((\\(\\d{3}\\) ?)|(\\d{3}-))?\\d{3}-\\d{4}");
         Map<String, Pattern[]> regexMap = new HashMap<>();
         regexMap.put(getType(), p);
@@ -101,7 +107,12 @@ public class RegexNameFinderFactory {
       @Override
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
-        p[0] = Pattern.compile("([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"([\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])", Pattern.CASE_INSENSITIVE);
+        p[0] = Pattern.compile("([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*" +
+            "|\"([\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09" +
+            "\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]" +
+            "*[a-z0-9])?|\\[((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]" +
+            "?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]" +
+            "|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])", Pattern.CASE_INSENSITIVE);
         Map<String, Pattern[]> regexMap = new HashMap<>();
         regexMap.put(getType(), p);
         return regexMap;
@@ -140,7 +151,8 @@ public class RegexNameFinderFactory {
       @Override
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
-        p[0] = Pattern.compile("\\d{1,2}[A-Za-z]\\s*[A-Za-z]{2}\\s*\\d{1,5}\\s*\\d{1,5}", Pattern.CASE_INSENSITIVE);
+        p[0] = Pattern.compile("\\d{1,2}[A-Za-z]\\s*[A-Za-z]{2}\\s*\\d{1,5}\\s*\\d{1,5}",
+            Pattern.CASE_INSENSITIVE);
         Map<String, Pattern[]> regexMap = new HashMap<>();
         regexMap.put(getType(), p);
         return regexMap;
@@ -155,7 +167,10 @@ public class RegexNameFinderFactory {
       @Override
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
-        p[0] = Pattern.compile("([-|\\+]?\\d{1,3}[d|D|\\u00B0|\\s](\\s*\\d{1,2}['|\\u2019|\\s])?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[N|n|S|s]?)(\\s*|,|,\\s*)([-|\\+]?\\d{1,3}[d|D|\\u00B0|\\s](\\s*\\d{1,2}['|\\u2019|\\s])?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[E|e|W|w]?)", Pattern.CASE_INSENSITIVE);
+        p[0] = Pattern.compile("([-|\\+]?\\d{1,3}[d|D|\\u00B0|\\s](\\s*\\d{1,2}['|\\u2019|\\s])" +
+            "?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[N|n|S|s]?)(\\s*|,|,\\s*)([-|\\+]?\\d{1,3}[d|D|\\u00B0|" +
+            "\\s](\\s*\\d{1,2}['|\\u2019|\\s])?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[E|e|W|w]?)",
+            Pattern.CASE_INSENSITIVE);
         Map<String, Pattern[]> regexMap = new HashMap<>();
         regexMap.put(getType(), p);
         return regexMap;

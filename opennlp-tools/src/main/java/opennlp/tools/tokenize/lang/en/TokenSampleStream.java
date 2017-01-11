@@ -84,11 +84,10 @@ public class TokenSampleStream implements Iterator<TokenSample> {
           }
         }
         else {
-          if (!lastToken.equals("``") && (!lastToken.equals("\"") || evenq) && !lastToken.equals("(") && !lastToken.equals("{")
-              && !lastToken.equals("$") && !lastToken.equals("#")) {
-                //System.out.print(" "+token);
-                length++;
-              }
+          if (!lastToken.equals("``") && (!lastToken.equals("\"") || evenq) && !lastToken.equals("(")
+              && !lastToken.equals("{") && !lastToken.equals("$") && !lastToken.equals("#")) {
+            length++;
+          }
         }
       }
       if (token.equals("\"")) {

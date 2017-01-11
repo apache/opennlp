@@ -27,7 +27,8 @@ import opennlp.tools.ml.model.EvalParameters;
 
 public class PerceptronModel extends AbstractModel {
 
-  public PerceptronModel(Context[] params, String[] predLabels, Map<String, Integer> pmap, String[] outcomeNames) {
+  public PerceptronModel(Context[] params, String[] predLabels, Map<String, Integer> pmap,
+                         String[] outcomeNames) {
     super(params,predLabels,pmap,outcomeNames);
     modelType = ModelType.Perceptron;
   }
@@ -63,7 +64,8 @@ public class PerceptronModel extends AbstractModel {
     return eval(context,null,prior,model,true);
   }
 
-  public static double[] eval(int[] context, float[] values, double[] prior, EvalParameters model, boolean normalize) {
+  public static double[] eval(int[] context, float[] values, double[] prior, EvalParameters model,
+                              boolean normalize) {
     Context[] params = model.getParams();
     double[] activeParameters;
     int[] activeOutcomes;

@@ -48,7 +48,8 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    * @param nameFinder the {@link TokenNameFinder} to evaluate.
    * @param listeners evaluation sample listeners
    */
-  public TokenNameFinderEvaluator(TokenNameFinder nameFinder, TokenNameFinderEvaluationMonitor ... listeners) {
+  public TokenNameFinderEvaluator(TokenNameFinder nameFinder,
+      TokenNameFinderEvaluationMonitor ... listeners) {
     super(listeners);
     this.nameFinder = nameFinder;
   }

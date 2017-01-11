@@ -39,7 +39,8 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
   float[][] values;
   
   @Deprecated
-  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort) throws IOException {
+  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort)
+      throws IOException {
     super(eventStream,cutoff,sort);
   }
   
@@ -62,7 +63,8 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     return values;
   }
 
-  protected int sortAndMerge(List<ComparableEvent> eventsToCompare,boolean sort) throws InsufficientTrainingDataException {
+  protected int sortAndMerge(List<ComparableEvent> eventsToCompare,boolean sort)
+      throws InsufficientTrainingDataException {
     int numUniqueEvents = super.sortAndMerge(eventsToCompare,sort);
     values = new float[numUniqueEvents][];
     int numEvents = eventsToCompare.size();

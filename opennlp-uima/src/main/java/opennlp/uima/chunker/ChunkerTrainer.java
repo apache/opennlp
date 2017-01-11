@@ -204,7 +204,9 @@ public class ChunkerTrainer extends CasConsumer_ImplBase {
       throws ResourceProcessException, IOException {
     GIS.PRINT_MESSAGES = false;
 
-    ChunkerModel chunkerModel = ChunkerME.train(language, ObjectStreamUtils.createObjectStream(mChunkSamples), ModelUtil.createDefaultTrainingParameters(), ChunkerFactory.create(null));
+    ChunkerModel chunkerModel = ChunkerME.train(language,
+        ObjectStreamUtils.createObjectStream(mChunkSamples),
+        ModelUtil.createDefaultTrainingParameters(), ChunkerFactory.create(null));
 
     // dereference to allow garbage collection
     mChunkSamples  = null;

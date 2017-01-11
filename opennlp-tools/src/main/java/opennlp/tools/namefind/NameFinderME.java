@@ -252,7 +252,8 @@ public class NameFinderME implements TokenNameFinder {
       SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
               trainParams.getSettings(), manifestInfoEntries);
 
-      NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, factory.createContextGenerator(), false);
+      NameSampleSequenceStream ss =
+          new NameSampleSequenceStream(samples, factory.createContextGenerator(), false);
       seqModel = trainer.train(ss);
     } else {
       throw new IllegalStateException("Unexpected trainer type!");

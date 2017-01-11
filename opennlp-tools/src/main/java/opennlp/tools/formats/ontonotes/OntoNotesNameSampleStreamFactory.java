@@ -48,7 +48,8 @@ public class OntoNotesNameSampleStreamFactory extends
           return file.isDirectory();
         }, true);
 
-    return new OntoNotesNameSampleStream(new FileToStringSampleStream(documentStream, Charset.forName("UTF-8")));
+    return new OntoNotesNameSampleStream(
+        new FileToStringSampleStream(documentStream, Charset.forName("UTF-8")));
   }
 
   public static void registerFactory() {

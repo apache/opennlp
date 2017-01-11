@@ -84,16 +84,19 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     return suffs;
   }
 
-  public String[] getContext(int index, String[] sequence, String[] priorDecisions, Object[] additionalContext) {
+  public String[] getContext(int index, String[] sequence, String[] priorDecisions,
+      Object[] additionalContext) {
     return getContext(index,sequence,priorDecisions);
   }
 
   /**
-   * Returns the context for making a pos tag decision at the specified token index given the specified tokens and previous tags.
+   * Returns the context for making a pos tag decision at the specified token index
+   * given the specified tokens and previous tags.
    * @param index The index of the token for which the context is provided.
    * @param tokens The tokens in the sentence.
    * @param tags The tags assigned to the previous words in the sentence.
-   * @return The context for making a pos tag decision at the specified token index given the specified tokens and previous tags.
+   * @return The context for making a pos tag decision at the specified token index
+   *     given the specified tokens and previous tags.
    */
   public String[] getContext(int index, Object[] tokens, String[] tags) {
     String next, nextnext = null, lex, prev, prevprev = null;

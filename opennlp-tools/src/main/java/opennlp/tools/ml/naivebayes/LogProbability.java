@@ -49,7 +49,8 @@ public class LogProbability<T> extends Probability<T> {
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability, if the new probability is greater than the old one.
+   * Assigns a probability to a label, discarding any previously assigned probability,
+   * if the new probability is greater than the old one.
    *
    * @param probability the probability to assign
    */
@@ -61,7 +62,8 @@ public class LogProbability<T> extends Probability<T> {
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability, if the new probability is greater than the old one.
+   * Assigns a probability to a label, discarding any previously assigned probability,
+   * if the new probability is greater than the old one.
    *
    * @param probability the probability to assign
    */
@@ -90,7 +92,8 @@ public class LogProbability<T> extends Probability<T> {
   }
 
   /**
-   * Compounds the existing probability mass on the label with the new probability passed in to the method.
+   * Compounds the existing probability mass on the label with the new
+   * probability passed in to the method.
    *
    * @param probability the probability weight to add
    */

@@ -48,7 +48,8 @@ public class ADSentenceSampleStreamFactory extends
     @ParameterDescription(valueName = "language", description = "language which is being processed.")
     String getLang();
 
-    @ParameterDescription(valueName = "includeTitles", description = "if true will include sentences marked as headlines.")
+    @ParameterDescription(valueName = "includeTitles",
+        description = "if true will include sentences marked as headlines.")
     @OptionalParameter(defaultValue = "false")
     Boolean getIncludeTitles();
   }

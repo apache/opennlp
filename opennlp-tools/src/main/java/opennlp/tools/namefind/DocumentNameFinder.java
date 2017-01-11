@@ -31,8 +31,9 @@ public interface DocumentNameFinder {
   /**
    * Returns tokens span for the specified document of sentences and their tokens.
    * Span start and end indices are relative to the sentence they are in.
-   * For example, a span identifying a name consisting of the first and second word of the second sentence would
-   * be 0..2 and be referenced as spans[1][0].
+   * For example, a span identifying a name consisting of the first and second word
+   * of the second sentence would be 0..2 and be referenced as spans[1][0].
+   *
    * @param document An array of tokens for each sentence of a document.
    * @return The token spans for each sentence of the specified document.
    */

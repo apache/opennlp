@@ -38,7 +38,8 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
 
   private NameContextGenerator contextGenerator;
 
-  private AdditionalContextFeatureGenerator additionalContextFeatureGenerator = new AdditionalContextFeatureGenerator();
+  private AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
+      new AdditionalContextFeatureGenerator();
 
   private SequenceCodec<String> codec;
 
@@ -50,7 +51,8 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
    * @param type null or overrides the type parameter in the provided samples
    * @param contextGenerator The context generator used to generate features for the event stream.
    */
-  public NameFinderEventStream(ObjectStream<NameSample> dataStream, String type, NameContextGenerator contextGenerator, SequenceCodec<String> codec) {
+  public NameFinderEventStream(ObjectStream<NameSample> dataStream, String type,
+                               NameContextGenerator contextGenerator, SequenceCodec<String> codec) {
     super(dataStream);
 
     this.codec = codec;
@@ -60,7 +62,8 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     }
 
     this.contextGenerator = contextGenerator;
-    this.contextGenerator.addFeatureGenerator(new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
+    this.contextGenerator.addFeatureGenerator(
+        new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
 
     this.defaultType = type;
   }
@@ -105,7 +108,8 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     return outcomes;
   }
 
-  public static List<Event> generateEvents(String[] sentence, String[] outcomes, NameContextGenerator cg) {
+  public static List<Event> generateEvents(String[] sentence, String[] outcomes,
+                                           NameContextGenerator cg) {
     List<Event> events = new ArrayList<>(outcomes.length);
     for (int i = 0; i < outcomes.length; i++) {
       events.add(new Event(outcomes[i], cg.getContext(i, sentence, outcomes,null)));
@@ -148,7 +152,6 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     }
   }
 
-
   /**
    * Generated previous decision features for each token based on contents of the specified map.
    * @param tokens The token for which the context is generated.
@@ -162,6 +165,5 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
       ac[ti][0] = "pd=" + pt;
     }
     return ac;
-
   }
 }

@@ -34,7 +34,8 @@ public class PlainTextFileDataReader implements DataReader {
 
   public PlainTextFileDataReader(File f) throws IOException {
     if (f.getName().endsWith(".gz")) {
-      input = new BufferedReader(new InputStreamReader(new BufferedInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(f))))));
+      input = new BufferedReader(new InputStreamReader(new BufferedInputStream(
+          new GZIPInputStream(new BufferedInputStream(new FileInputStream(f))))));
     }
     else {
       input = new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(f))));

@@ -55,7 +55,8 @@ public class ChunkerMETool extends BasicCmdLineTool {
       PerformanceMonitor perfMon = null;
 
       try {
-        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
+        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
+            SystemInputStreamFactory.encoding());
         perfMon = new PerformanceMonitor(System.err, "sent");
         perfMon.start();
         String line;
@@ -72,7 +73,8 @@ public class ChunkerMETool extends BasicCmdLineTool {
 
           String[] chunks = chunker.chunk(posSample.getSentence(), posSample.getTags());
 
-          System.out.println(new ChunkSample(posSample.getSentence(), posSample.getTags(), chunks).nicePrint());
+          System.out.println(new ChunkSample(posSample.getSentence(),
+              posSample.getTags(), chunks).nicePrint());
 
           perfMon.incrementCounter();
         }

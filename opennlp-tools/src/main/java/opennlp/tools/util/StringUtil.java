@@ -174,7 +174,8 @@ public class StringUtil {
           cost = 1;
         }
         //obtain minimum distance from calculating deletion, insertion, substitution
-        distance[i][j] = minimum(distance[i - 1][j] + 1, distance[i][j - 1] + 1, distance[i - 1][j - 1] + cost);
+        distance[i][j] = minimum(distance[i - 1][j] + 1, distance[i][j - 1]
+            + 1, distance[i - 1][j - 1] + cost);
       }
     }
     return distance;
@@ -188,7 +189,8 @@ public class StringUtil {
    * @param distance the levenshtein distance
    * @param permutations the number of permutations
    */
-  public static void computeShortestEditScript(String wordForm, String lemma, int[][] distance, StringBuffer permutations) {
+  public static void computeShortestEditScript(String wordForm, String lemma,
+      int[][] distance, StringBuffer permutations) {
 
     int n = distance.length;
     int m = distance[0].length;
@@ -200,32 +202,41 @@ public class StringUtil {
       if (distance[wordFormLength][lemmaLength] == 0) {
         break;
       }
-      if ((lemmaLength > 0 && wordFormLength > 0) && (distance[wordFormLength - 1][lemmaLength - 1] < distance[wordFormLength][lemmaLength])) {
-        permutations.append('R').append(Integer.toString(wordFormLength - 1)).append(wordForm.charAt(wordFormLength - 1)).append(lemma.charAt(lemmaLength - 1));
+      if ((lemmaLength > 0 && wordFormLength > 0) && (distance[wordFormLength - 1][lemmaLength - 1]
+          < distance[wordFormLength][lemmaLength])) {
+        permutations.append('R').append(Integer.toString(wordFormLength - 1))
+            .append(wordForm.charAt(wordFormLength - 1)).append(lemma.charAt(lemmaLength - 1));
         lemmaLength--;
         wordFormLength--;
         continue;
       }
-      if (lemmaLength > 0 && (distance[wordFormLength][lemmaLength - 1] < distance[wordFormLength][lemmaLength])) {
-        permutations.append('I').append(Integer.toString(wordFormLength)).append(lemma.charAt(lemmaLength - 1));
+      if (lemmaLength > 0 && (distance[wordFormLength][lemmaLength - 1]
+          < distance[wordFormLength][lemmaLength])) {
+        permutations.append('I').append(Integer.toString(wordFormLength))
+            .append(lemma.charAt(lemmaLength - 1));
         lemmaLength--;
         continue;
       }
-      if (wordFormLength > 0 && (distance[wordFormLength - 1][lemmaLength] < distance[wordFormLength][lemmaLength])) {
-        permutations.append('D').append(Integer.toString(wordFormLength - 1)).append(wordForm.charAt(wordFormLength - 1));
+      if (wordFormLength > 0 && (distance[wordFormLength - 1][lemmaLength]
+          < distance[wordFormLength][lemmaLength])) {
+        permutations.append('D').append(Integer.toString(wordFormLength - 1))
+            .append(wordForm.charAt(wordFormLength - 1));
         wordFormLength--;
         continue;
       }
-      if ((wordFormLength > 0 && lemmaLength > 0) && (distance[wordFormLength - 1][lemmaLength - 1] == distance[wordFormLength][lemmaLength])) {
+      if ((wordFormLength > 0 && lemmaLength > 0) && (distance[wordFormLength - 1][lemmaLength - 1]
+          == distance[wordFormLength][lemmaLength])) {
         wordFormLength--;
         lemmaLength--;
         continue ;
       }
-      if (wordFormLength > 0 && (distance[wordFormLength - 1][lemmaLength] == distance[wordFormLength][lemmaLength])) {
+      if (wordFormLength > 0 && (distance[wordFormLength - 1][lemmaLength]
+          == distance[wordFormLength][lemmaLength])) {
         wordFormLength--;
         continue;
       }
-      if (lemmaLength > 0 && (distance[wordFormLength][lemmaLength - 1] == distance[wordFormLength][lemmaLength])) {
+      if (lemmaLength > 0 && (distance[wordFormLength][lemmaLength - 1]
+          == distance[wordFormLength][lemmaLength])) {
         lemmaLength--;
         continue;
       }

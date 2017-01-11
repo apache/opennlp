@@ -81,20 +81,29 @@ import opennlp.uima.util.UimaUtil;
  * <table border=1>
  *   <caption></caption>
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>String</td> <td>opennlp.uima.opennlp.uima.TrainingParamsFile</td> <td>Training Parameters Properties file</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.FeatureGeneratorFile</td> <td>Feature Generator definition file which contain the feature generator configuration</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.FeatureGeneratorResources</td> <td>Feature Generator resources dictionary</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.AdditionalTrainingDataFile</td> <td>Training file which contains additional data in the OpenNLP format</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.AdditionalTrainingDataEncoding</td> <td>Encoding of the additional training data</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.SampleTraceFile</td> <td>All training samples are traced to this file</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.SampleTraceFileEncoding</td> <td>Encoding of the sample trace file</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.opennlp.uima.TrainingParamsFile</td>
+ *   <td>Training Parameters Properties file</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.FeatureGeneratorFile</td>
+ *   <td>Feature Generator definition file which contain the feature generator configuration</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.FeatureGeneratorResources</td>
+ *   <td>Feature Generator resources dictionary</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.AdditionalTrainingDataFile</td>
+ *   <td>Training file which contains additional data in the OpenNLP format</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.AdditionalTrainingDataEncoding</td>
+ *   <td>Encoding of the additional training data</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.SampleTraceFile</td>
+ *   <td>All training samples are traced to this file</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.SampleTraceFileEncoding</td>
+ *   <td>Encoding of the sample trace file</td></tr>
  * </table>
  * <p>
  */
 public final class NameFinderTrainer extends CasConsumer_ImplBase {
 
-  private static final String FEATURE_GENERATOR_DEFINITION_FILE_PARAMETER = "opennlp.uima.FeatureGeneratorFile";
-  private static final String FEATURE_GENERATOR_RESOURCES_PARAMETER = "opennlp.uima.FeatureGeneratorResources";
+  private static final String FEATURE_GENERATOR_DEFINITION_FILE_PARAMETER =
+      "opennlp.uima.FeatureGeneratorFile";
+  private static final String FEATURE_GENERATOR_RESOURCES_PARAMETER =
+      "opennlp.uima.FeatureGeneratorResources";
 
   private Logger logger;
 

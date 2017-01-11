@@ -95,7 +95,8 @@ public abstract class AbstractDataIndexer implements DataIndexer {
    * @throws InsufficientTrainingDataException if not enough events are provided
    * @since maxent 1.2.6
    */
-  protected int sortAndMerge(List<ComparableEvent> eventsToCompare, boolean sort) throws InsufficientTrainingDataException {
+  protected int sortAndMerge(List<ComparableEvent> eventsToCompare, boolean sort)
+      throws InsufficientTrainingDataException {
     int numUniqueEvents = 1;
     numEvents = eventsToCompare.size();
     if (sort && eventsToCompare.size() > 0) {
@@ -156,7 +157,8 @@ public abstract class AbstractDataIndexer implements DataIndexer {
    * @param counter The predicate counters.
    * @param cutoff The cutoff which determines whether a predicate is included.
    */
-  protected static void update(String[] ec, Set<String> predicateSet, Map<String,Integer> counter, int cutoff) {
+  protected static void update(String[] ec, Set<String> predicateSet,
+      Map<String,Integer> counter, int cutoff) {
     for (String s : ec) {
       Integer i = counter.get(s);
       if (i == null) {

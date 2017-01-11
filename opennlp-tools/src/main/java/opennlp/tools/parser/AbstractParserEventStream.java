@@ -48,7 +48,8 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
   protected boolean fixPossesives;
   protected Dictionary dict;
 
-  public AbstractParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
+  public AbstractParserEventStream(ObjectStream<Parse> d,
+      HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
     super(d);
     this.dict = dict;
     if (etype == ParserEventTypeEnum.CHUNK) {
@@ -163,7 +164,9 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
       }
     }
     for (int ti = 0, tl = toks.size(); ti < tl; ti++) {
-      chunkEvents.add(new Event(preds.get(ti), chunkerContextGenerator.getContext(ti, toks.toArray(new String[toks.size()]), tags.toArray(new String[tags.size()]), preds.toArray(new String[preds.size()]))));
+      chunkEvents.add(new Event(preds.get(ti),
+          chunkerContextGenerator.getContext(ti, toks.toArray(new String[toks.size()]),
+          tags.toArray(new String[tags.size()]), preds.toArray(new String[preds.size()]))));
     }
   }
 

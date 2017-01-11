@@ -148,7 +148,8 @@ public class TokenSample {
     return sentence.toString();
   }
 
-  private static void addToken(StringBuilder sample, List<Span> tokenSpans, String token, boolean isNextMerged) {
+  private static void addToken(StringBuilder sample, List<Span> tokenSpans,
+      String token, boolean isNextMerged) {
 
     int tokenSpanStart = sample.length();
     sample.append(token);

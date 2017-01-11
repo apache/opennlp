@@ -71,7 +71,8 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   private static final Pattern whitespacePattern = Pattern.compile("\\s+");
   private static final Pattern underlinePattern = Pattern.compile("[_]+");
-  private static final Pattern hyphenPattern = Pattern.compile("((\\p{L}+)-$)|(^-(\\p{L}+)(.*))|((\\p{L}+)-(\\p{L}+)(.*))");
+  private static final Pattern hyphenPattern =
+      Pattern.compile("((\\p{L}+)-$)|(^-(\\p{L}+)(.*))|((\\p{L}+)-(\\p{L}+)(.*))");
   private static final Pattern alphanumericPattern = Pattern.compile("^[\\p{L}\\p{Nd}]+$");
 
   /**

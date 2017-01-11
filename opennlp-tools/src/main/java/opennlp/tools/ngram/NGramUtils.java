@@ -41,7 +41,8 @@ public class NGramUtils {
    * @return the Laplace smoothing probability
    * @see <a href="https://en.wikipedia.org/wiki/Additive_smoothing">Additive Smoothing</a>
    */
-  public static double calculateLaplaceSmoothingProbability(StringList ngram, Iterable<StringList> set, int size, Double k) {
+  public static double calculateLaplaceSmoothingProbability(StringList ngram,
+      Iterable<StringList> set, int size, Double k) {
     return (count(ngram, set) + k) / (count(getNMinusOneTokenFirst(ngram), set) + k * 1);
   }
 
@@ -81,7 +82,8 @@ public class NGramUtils {
    * @param set the vocabulary
    * @return the maximum likelihood probability
    */
-  public static double calculateTrigramMLProbability(String x0, String x1, String x2, Iterable<StringList> set) {
+  public static double calculateTrigramMLProbability(String x0, String x1, String x2,
+                                                     Iterable<StringList> set) {
     return calculateNgramMLProbability(new StringList(x0, x1, x2), set);
   }
 
@@ -106,7 +108,8 @@ public class NGramUtils {
    * @param k   the smoothing factor
    * @return the prior Laplace smoothiing probability
    */
-  public static double calculateBigramPriorSmoothingProbability(String x0, String x1, Collection<StringList> set, Double k) {
+  public static double calculateBigramPriorSmoothingProbability(String x0, String x1,
+                                                                Collection<StringList> set, Double k) {
     return (count(new StringList(x0, x1), set) + k * calculateUnigramMLProbability(x1, set)) /
         (count(new StringList(x0), set) + k * set.size());
   }
@@ -123,7 +126,8 @@ public class NGramUtils {
    * @param lambda3 unigram interpolation factor
    * @return the linear interpolation probability
    */
-  public static double calculateTrigramLinearInterpolationProbability(String x0, String x1, String x2, Collection<StringList> set,
+  public static double calculateTrigramLinearInterpolationProbability(String x0, String x1,
+                                                                      String x2, Collection<StringList> set,
       Double lambda1, Double lambda2, Double lambda3) {
     assert lambda1 + lambda2 + lambda3 == 1 : "lambdas sum should be equals to 1";
     assert lambda1 > 0 && lambda2 > 0 && lambda3 > 0 : "lambdas should all be greater than 0";
@@ -142,7 +146,8 @@ public class NGramUtils {
    * @param set      the vocabulary
    * @return the probability
    */
-  public static double calculateMissingNgramProbabilityMass(StringList ngram, Double discount, Iterable<StringList> set) {
+  public static double calculateMissingNgramProbabilityMass(StringList ngram, Double discount,
+                                                            Iterable<StringList> set) {
     Double missingMass = 0d;
     Double countWord = count(ngram, set);
     for (String word : flatSet(set)) {
@@ -250,5 +255,4 @@ public class NGramUtils {
 
     return ngrams;
   }
-
 }

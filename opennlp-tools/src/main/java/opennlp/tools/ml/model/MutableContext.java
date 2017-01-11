@@ -49,7 +49,8 @@ public class MutableContext extends Context {
   }
 
   /**
-   * Updated the parameter or expected value at the specified outcomeIndex by adding the specified value to its current value.
+   * Updated the parameter or expected value at the specified outcomeIndex by
+   * adding the specified value to its current value.
    *
    * @param outcomeIndex The index of the parameter or expected value to be updated.
    * @param value The value to be added.

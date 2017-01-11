@@ -92,7 +92,8 @@ public final class TokenNameFinderCrossValidatorTool
       sequenceCodecImplName = BilouCodec.class.getName();
     }
 
-    SequenceCodec<String> sequenceCodec = TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
+    SequenceCodec<String> sequenceCodec =
+        TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
 
     TokenNameFinderFactory nameFinderFactory;
     try {

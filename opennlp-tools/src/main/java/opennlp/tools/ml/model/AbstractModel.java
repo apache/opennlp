@@ -41,7 +41,8 @@ public abstract class AbstractModel implements MaxentModel {
   /** The type of the model. */
   protected ModelType modelType;
 
-  public AbstractModel(Context[] params, String[] predLabels, Map<String, Integer> pmap, String[] outcomeNames) {
+  public AbstractModel(Context[] params, String[] predLabels,
+      Map<String, Integer> pmap, String[] outcomeNames) {
     this.pmap = pmap;
     this.outcomeNames =  outcomeNames;
     this.evalParams = new EvalParameters(params,outcomeNames.length);
@@ -52,7 +53,8 @@ public abstract class AbstractModel implements MaxentModel {
     this.evalParams = new EvalParameters(params,outcomeNames.length);
   }
 
-  public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames, int correctionConstant,double correctionParam) {
+  public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames,
+      int correctionConstant,double correctionParam) {
     init(predLabels,outcomeNames);
     this.evalParams = new EvalParameters(params,correctionParam,correctionConstant,outcomeNames.length);
   }
@@ -101,7 +103,8 @@ public abstract class AbstractModel implements MaxentModel {
    */
   public final String getAllOutcomes(double[] ocs) {
     if (ocs.length != outcomeNames.length) {
-      return "The double array sent as a parameter to GISModel.getAllOutcomes() must not have been produced by this model.";
+      return "The double array sent as a parameter to GISModel.getAllOutcomes() " +
+          "must not have been produced by this model.";
     }
     else {
       DecimalFormat df =  new DecimalFormat("0.0000");
