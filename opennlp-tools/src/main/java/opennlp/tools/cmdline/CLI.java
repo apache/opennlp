@@ -263,6 +263,6 @@ public final class CLI {
     }
 
     final long endTime = System.currentTimeMillis();
-    System.out.format("Execution time: %.3f seconds", (endTime - startTime) / 1000.0);
+    System.out.format("Execution time: %.3f seconds\n", (endTime - startTime) / 1000.0);
   }
 }
