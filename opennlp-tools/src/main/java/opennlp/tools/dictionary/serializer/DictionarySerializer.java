@@ -238,7 +238,8 @@ public class DictionarySerializer {
    * @param entries entries to serialize
    *
    * @throws IOException If an I/O error occurs
-   * @deprecated Use {@link DictionarySerializer#serialize(java.io.OutputStream, java.util.Iterator, boolean)} instead
+   * @deprecated Use
+   *     {@link DictionarySerializer#serialize(java.io.OutputStream, java.util.Iterator, boolean)} instead
    */
   @Deprecated
   public static void serialize(OutputStream out, Iterator<Entry> entries)

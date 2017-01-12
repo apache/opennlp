@@ -76,7 +76,6 @@ public class CheckContextGenerator extends AbstractContextGenerator {
         }
         else {
           for (int ri = 0; ri <= pi; ri++) {
-            //System.err.println(pi+" removing "+((Parse)rf.get(0)).getType()+" "+rf.get(0)+" "+(rf.size()-1)+" remain");
             rf.remove(0);
           }
         }

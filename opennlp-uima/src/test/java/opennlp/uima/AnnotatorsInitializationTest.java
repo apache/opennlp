@@ -56,7 +56,8 @@ public class AnnotatorsInitializationTest {
     }
   }
 
-  private AnalysisEngine produceAE(String descName) throws IOException, InvalidXMLException, ResourceInitializationException {
+  private AnalysisEngine produceAE(String descName)
+      throws IOException, InvalidXMLException, ResourceInitializationException {
     File descFile = new File(PATHNAME + descName);
     XMLInputSource in = new XMLInputSource(descFile);
     ResourceSpecifier specifier = UIMAFramework.getXMLParser().parseResourceSpecifier(in);

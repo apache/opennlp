@@ -62,7 +62,8 @@ import org.apache.uima.util.ProcessTrace;
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
  *   <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.EOSChars</td> <td>A string containing end-of-sentence characters</td></tr>
+ *   <tr><td>String</td> <td>opennlp.uima.EOSChars</td>
+ *   <td>A string containing end-of-sentence characters</td></tr>
  * </table>
  */
 public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {

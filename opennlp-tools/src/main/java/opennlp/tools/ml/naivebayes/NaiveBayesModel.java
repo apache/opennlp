@@ -19,10 +19,6 @@
 
 package opennlp.tools.ml.naivebayes;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.text.DecimalFormat;
 import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractModel;
@@ -37,17 +33,20 @@ public class NaiveBayesModel extends AbstractModel {
   protected double[] outcomeTotals;
   protected long vocabulary;
 
-  public NaiveBayesModel(Context[] params, String[] predLabels, Map<String, Integer> pmap, String[] outcomeNames) {
+  public NaiveBayesModel(Context[] params, String[] predLabels, Map<String, Integer> pmap,
+                         String[] outcomeNames) {
     super(params, predLabels, pmap, outcomeNames);
     outcomeTotals = initOutcomeTotals(outcomeNames, params);
-    this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length, outcomeTotals, predLabels.length);
+    this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length,
+        outcomeTotals, predLabels.length);
     modelType = ModelType.NaiveBayes;
   }
 
   public NaiveBayesModel(Context[] params, String[] predLabels, String[] outcomeNames) {
     super(params, predLabels, outcomeNames);
     outcomeTotals = initOutcomeTotals(outcomeNames, params);
-    this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length, outcomeTotals, predLabels.length);
+    this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length,
+        outcomeTotals, predLabels.length);
     modelType = ModelType.NaiveBayes;
   }
 
@@ -90,11 +89,14 @@ public class NaiveBayesModel extends AbstractModel {
     return eval(context, null, prior, model, true);
   }
 
-  public static double[] eval(int[] context, float[] values, double[] prior, EvalParameters model, boolean normalize) {
+  public static double[] eval(int[] context, float[] values, double[] prior,
+                              EvalParameters model, boolean normalize) {
     Probabilities<Integer> probabilities = new LogProbabilities<>();
     Context[] params = model.getParams();
-    double[] outcomeTotals = model instanceof NaiveBayesEvalParameters ? ((NaiveBayesEvalParameters) model).getOutcomeTotals() : new double[prior.length];
-    long vocabulary = model instanceof NaiveBayesEvalParameters ? ((NaiveBayesEvalParameters) model).getVocabulary() : 0;
+    double[] outcomeTotals = model instanceof NaiveBayesEvalParameters
+        ? ((NaiveBayesEvalParameters) model).getOutcomeTotals() : new double[prior.length];
+    long vocabulary = model instanceof NaiveBayesEvalParameters
+        ? ((NaiveBayesEvalParameters) model).getVocabulary() : 0;
     double[] activeParameters;
     int[] activeOutcomes;
     double value = 1;
@@ -129,7 +131,8 @@ public class NaiveBayesModel extends AbstractModel {
     return prior;
   }
 
-  private static double getProbability(double numerator, double denominator, double vocabulary, boolean isSmoothed) {
+  private static double getProbability(double numerator, double denominator,
+                                       double vocabulary, boolean isSmoothed) {
     if (isSmoothed)
       return getSmoothedProbability(numerator, denominator, vocabulary);
     else if (denominator == 0 || denominator < Double.MIN_VALUE)
@@ -142,23 +145,5 @@ public class NaiveBayesModel extends AbstractModel {
     final double delta = 0.05; // Lidstone smoothing
 
     return 1.0 * (numerator + delta) / (denominator + delta * vocabulary);
-  }
-
-  public static void main(String[] args) throws java.io.IOException {
-    if (args.length == 0) {
-      System.err.println("Usage: NaiveBayesModel modelname < contexts");
-      System.exit(1);
-    }
-    AbstractModel m = new NaiveBayesModelReader(new File(args[0])).getModel();
-    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-    DecimalFormat df = new java.text.DecimalFormat(".###");
-    for (String line = in.readLine(); line != null; line = in.readLine()) {
-      String[] context = line.split(" ");
-      double[] dist = m.eval(context);
-      for (int oi = 0; oi < dist.length; oi++) {
-        System.out.print("[" + m.getOutcome(oi) + " " + df.format(dist[oi]) + "] ");
-      }
-      System.out.println();
-    }
   }
 }

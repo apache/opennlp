@@ -249,8 +249,8 @@ public class POSTaggerME implements POSTagger {
     }
     else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
-      EventModelSequenceTrainer trainer = TrainerFactory.getEventModelSequenceTrainer(trainParams.getSettings(),
-          manifestInfoEntries);
+      EventModelSequenceTrainer trainer =
+          TrainerFactory.getEventModelSequenceTrainer(trainParams.getSettings(), manifestInfoEntries);
       posModel = trainer.train(ss);
     }
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {

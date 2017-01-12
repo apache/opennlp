@@ -36,6 +36,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import opennlp.tools.parser.Constituent;
 import opennlp.tools.parser.GapLabeler;
+import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -57,12 +58,12 @@ import opennlp.tools.util.model.SerializableArtifact;
  * Other changes include removal of deprecated methods.
  *
  */
-public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, SerializableArtifact {
+public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, SerializableArtifact {
 
-  public static class HeadRulesSerializer implements ArtifactSerializer<opennlp.tools.parser.lang.es.AncoraSpanishHeadRules> {
+  public static class HeadRulesSerializer implements ArtifactSerializer<AncoraSpanishHeadRules> {
 
-    public opennlp.tools.parser.lang.es.AncoraSpanishHeadRules create(InputStream in) throws IOException {
-      return new opennlp.tools.parser.lang.es.AncoraSpanishHeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
+    public AncoraSpanishHeadRules create(InputStream in) throws IOException {
+      return new AncoraSpanishHeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
     }
 
     public void serialize(opennlp.tools.parser.lang.es.AncoraSpanishHeadRules artifact, OutputStream out)
@@ -227,15 +228,17 @@ public class AncoraSpanishHeadRules implements opennlp.tools.parser.HeadRules, G
       Constituent con2 = stack.get(stack.size() - 3);
       Constituent con3 = stack.get(stack.size() - 4);
       Constituent con4 = stack.get(stack.size() - 5);
-      //System.err.println("con0="+con0.label+" con1="+con1.label+" con2="+con2.label+" con3="+con3.label+" con4="+con4.label);
+
       //subject extraction
-      if (con1.getLabel().equals("SN") && con2.getLabel().equals("S") && con3.getLabel().equals("GRUP.NOM")) {
+      if (con1.getLabel().equals("SN")
+          && con2.getLabel().equals("S") && con3.getLabel().equals("GRUP.NOM")) {
         con1.setLabel(con1.getLabel() + "-G");
         con2.setLabel(con2.getLabel() + "-G");
         con3.setLabel(con3.getLabel() + "-G");
       }
       //object extraction
-      else if (con1.getLabel().equals("SN") && con2.getLabel().equals("GRUP.VERB") && con3.getLabel().equals("S") && con4.getLabel().equals("GRUP.NOM")) {
+      else if (con1.getLabel().equals("SN") && con2.getLabel().equals("GRUP.VERB")
+          && con3.getLabel().equals("S") && con4.getLabel().equals("GRUP.NOM")) {
         con1.setLabel(con1.getLabel() + "-G");
         con2.setLabel(con2.getLabel() + "-G");
         con3.setLabel(con3.getLabel() + "-G");

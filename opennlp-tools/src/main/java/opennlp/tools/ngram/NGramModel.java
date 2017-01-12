@@ -278,7 +278,8 @@ public class NGramModel implements Iterable<StringList> {
    * Creates a dictionary which contains all {@link StringList}s which
    * are in the current {@link NGramModel}.
    *
-   * @param caseSensitive Specifies whether case distinctions should be kept in the creation of the dictionary.
+   * @param caseSensitive Specifies whether case distinctions should be kept
+   *                      in the creation of the dictionary.
    *
    * @return a dictionary of the ngrams
    */

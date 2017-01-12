@@ -38,8 +38,8 @@ public class ParserCrossValidator {
 
   private ParserEvaluationMonitor[] monitors;
 
-  public ParserCrossValidator(String languageCode, TrainingParameters params, HeadRules rules, ParserType parserType,
-      ParserEvaluationMonitor... monitors) {
+  public ParserCrossValidator(String languageCode, TrainingParameters params,
+      HeadRules rules, ParserType parserType, ParserEvaluationMonitor... monitors) {
     this.languageCode = languageCode;
     this.params = params;
     this.rules = rules;

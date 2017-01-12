@@ -18,18 +18,13 @@
 
 package opennlp.tools.tokenize;
 
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.Map;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.ml.maxent.io.BinaryGISModelReader;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.BaseToolFactory;
@@ -142,41 +137,5 @@ public final class TokenizerModel extends BaseModel {
 
   public boolean useAlphaNumericOptimization() {
     return getFactory() != null && getFactory().isUseAlphaNumericOptmization();
-  }
-
-  public static void main(String[] args) throws IOException {
-    if (args.length < 3) {
-      System.err.println("TokenizerModel [-alphaNumericOptimization] languageCode packageName modelName");
-      System.exit(1);
-    }
-
-    int ai = 0;
-
-    boolean alphaNumericOptimization = false;
-
-    if ("-alphaNumericOptimization".equals(args[ai])) {
-      alphaNumericOptimization = true;
-      ai++;
-    }
-
-    String languageCode = args[ai++];
-    String packageName = args[ai++];
-    String modelName = args[ai];
-
-    AbstractModel model = new BinaryGISModelReader(new DataInputStream(
-        new FileInputStream(modelName))).getModel();
-
-    TokenizerModel packageModel = new TokenizerModel(model, null,
-        TokenizerFactory.create(null, languageCode, null, alphaNumericOptimization, null));
-
-    OutputStream out = null;
-    try {
-      out = new FileOutputStream(packageName);
-      packageModel.serialize(out);
-    }
-    finally {
-      if (out != null)
-        out.close();
-    }
   }
 }

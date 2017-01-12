@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 
-import opennlp.tools.ml.model.AbstractModelReader;
 import opennlp.tools.ml.model.Context;
 
 /**
@@ -80,40 +79,5 @@ public class OldFormatGISModelReader extends PlainTextGISModelReader {
       }
     }
     return params;
-  }
-
-  /**
-   * Convert a model created with Maxent 1.0 to a format used with Maxent 1.2.
-   *
-   * <p>
-   * Usage: java opennlp.tools.ml.maxent.io.OldFormatGISModelReader model_name_prefix
-   * (new_model_name)");
-   *
-   * <p>
-   * If the new_model_name is left unspecified, the new model will be saved in
-   * gzipped, binary format as "&lt;model_name_prefix&gt;.bin.gz".
-   */
-  public static void main(String[] args) throws IOException {
-    if (args.length < 1) {
-      System.out
-          .println("Usage: java opennlp.tools.ml.maxent.io.OldFormatGISModelReader model_name_prefix (new_model_name)");
-      System.exit(0);
-    }
-
-    int nameIndex = 0;
-
-    String infilePrefix = args[nameIndex];
-    String outfile;
-
-    if (args.length > nameIndex)
-      outfile = args[nameIndex + 1];
-    else
-      outfile = infilePrefix + ".bin.gz";
-
-    AbstractModelReader reader = new OldFormatGISModelReader(infilePrefix);
-
-    new SuffixSensitiveGISModelWriter(reader.getModel(), new File(outfile))
-        .persist();
-
   }
 }

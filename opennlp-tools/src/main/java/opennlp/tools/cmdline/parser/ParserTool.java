@@ -54,7 +54,8 @@ public final class ParserTool extends BasicCmdLineTool {
             + "-bs n: Use a beam size of n.\n"
             + "-ap f: Advance outcomes in with at least f% of the probability mass.\n"
             + "-k n: Show the top n parses.  This will also display their log-probablities.\n"
-            + "-tk tok_model: Use the specified tokenizer model to tokenize the sentences. Defaults to a WhitespaceTokenizer.";
+            + "-tk tok_model: Use the specified tokenizer model to tokenize the sentences. "
+            + "Defaults to a WhitespaceTokenizer.";
   }
 
   private static Pattern untokenizedParenPattern1 = Pattern.compile("([^ ])([({)}])");
@@ -124,7 +125,7 @@ public final class ParserTool extends BasicCmdLineTool {
       Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
       String tokenizerModelName = CmdLineUtil.getParameter( "-tk", args );
       if (tokenizerModelName != null ) {
-        TokenizerModel tokenizerModel = new TokenizerModelLoader().load( new File( tokenizerModelName ) );
+        TokenizerModel tokenizerModel = new TokenizerModelLoader().load(new File(tokenizerModelName));
         tokenizer = new TokenizerME( tokenizerModel );
       }
 
@@ -133,7 +134,8 @@ public final class ParserTool extends BasicCmdLineTool {
       ObjectStream<String> lineStream = null;
       PerformanceMonitor perfMon = null;
       try {
-        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
+        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
+            SystemInputStreamFactory.encoding());
         perfMon = new PerformanceMonitor(System.err, "sent");
         perfMon.start();
         String line;

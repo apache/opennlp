@@ -17,22 +17,16 @@
 
 package opennlp.tools.parser.chunking;
 
-import java.io.FileInputStream;
-import java.nio.charset.Charset;
 import java.util.List;
 
-import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserEventStream;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.parser.ParseSampleStream;
 import opennlp.tools.parser.ParserEventTypeEnum;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Wrapper class for one of four parser event streams.  The particular event stream is specified
@@ -44,13 +38,15 @@ public class ParserEventStream extends AbstractParserEventStream {
   protected CheckContextGenerator kcg;
 
   /**
-   * Create an event stream based on the specified data stream of the specified type using the specified head rules.
+   * Create an event stream based on the specified data stream of the specified type using
+   * the specified head rules.
    * @param d A 1-parse-per-line Penn Treebank Style parse.
    * @param rules The head rules.
    * @param etype The type of events desired (tag, chunk, build, or check).
    * @param dict A tri-gram dictionary to reduce feature generation.
    */
-  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype, Dictionary dict) {
+  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules,
+                           ParserEventTypeEnum etype, Dictionary dict) {
     super(d,rules,etype,dict);
   }
 
@@ -91,7 +87,8 @@ public class ParserEventStream extends AbstractParserEventStream {
     reduceStart++;
     Parse[] reducedChunks;
     if (!type.equals(AbstractBottomUpParser.TOP_NODE)) {
-      reducedChunks = new Parse[chunks.length - (reduceEnd - reduceStart + 1) + 1]; //total - num_removed + 1 (for new node)
+      //total - num_removed + 1 (for new node)
+      reducedChunks = new Parse[chunks.length - (reduceEnd - reduceStart + 1) + 1];
       //insert nodes before reduction
       System.arraycopy(chunks, 0, reducedChunks, 0, reduceStart);
       //insert reduced node
@@ -114,7 +111,8 @@ public class ParserEventStream extends AbstractParserEventStream {
   }
 
   /**
-   * Adds events for parsing (post tagging and chunking to the specified list of events for the specified parse chunks.
+   * Adds events for parsing (post tagging and chunking to the specified list of events for
+   * the specified parse chunks.
    * @param parseEvents The events for the specified chunks.
    * @param chunks The incomplete parses to be parsed.
    */
@@ -134,7 +132,8 @@ public class ParserEventStream extends AbstractParserEventStream {
         else {
           outcome = AbstractBottomUpParser.CONT + type;
         }
-        //System.err.println("parserEventStream.addParseEvents: chunks["+ci+"]="+c+" label="+outcome+" bcg="+bcg);
+        // System.err.println("parserEventStream.addParseEvents: chunks["+ci+"]="+c+" label="
+        // +outcome+" bcg="+bcg);
         c.setLabel(outcome);
         if (etype == ParserEventTypeEnum.BUILD) {
           parseEvents.add(new Event(outcome, bcg.getContext(chunks, ci)));
@@ -163,55 +162,6 @@ public class ParserEventStream extends AbstractParserEventStream {
         }
       }
       ci++;
-    }
-  }
-
-  public static void main(String[] args) throws java.io.IOException, InvalidFormatException {
-    if (args.length == 0) {
-      System.err.println("Usage ParserEventStream -[tag|chunk|build|check|fun] head_rules [dictionary] < parses");
-      System.exit(1);
-    }
-    ParserEventTypeEnum etype = null;
-    boolean fun = false;
-    int ai = 0;
-    while (ai < args.length && args[ai].startsWith("-")) {
-      switch (args[ai]) {
-        case "-build":
-          etype = ParserEventTypeEnum.BUILD;
-          break;
-        case "-check":
-          etype = ParserEventTypeEnum.CHECK;
-          break;
-        case "-chunk":
-          etype = ParserEventTypeEnum.CHUNK;
-          break;
-        case "-tag":
-          etype = ParserEventTypeEnum.TAG;
-          break;
-        case "-fun":
-          fun = true;
-          break;
-        default:
-          System.err.println("Invalid option " + args[ai]);
-          System.exit(1);
-      }
-      ai++;
-    }
-    HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[ai++]);
-    Dictionary dict = null;
-    if (ai < args.length) {
-      dict = new Dictionary(new FileInputStream(args[ai++]),true);
-    }
-    if (fun) {
-      Parse.useFunctionTags(true);
-    }
-    ObjectStream<Event> es = new ParserEventStream(
-        new ParseSampleStream(new PlainTextByLineStream(
-            new SystemInputStreamFactory(), Charset.defaultCharset())),
-        rules, etype, dict);
-    Event event;
-    while ((event = es.read()) != null) {
-      System.out.println(event);
     }
   }
 }

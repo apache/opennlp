@@ -60,7 +60,8 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
    * @param nextWindowSize
    * @param generators
    */
-  public WindowFeatureGenerator(int prevWindowSize, int nextWindowSize, AdaptiveFeatureGenerator... generators) {
+  public WindowFeatureGenerator(int prevWindowSize, int nextWindowSize,
+      AdaptiveFeatureGenerator... generators) {
     this(new AggregatedFeatureGenerator(generators), prevWindowSize, nextWindowSize);
   }
 
@@ -125,6 +126,7 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
 
   @Override
   public String toString() {
-    return super.toString() + ": Prev window size: " + prevWindowSize + ", Next window size: " + nextWindowSize;
+    return super.toString() + ": Prev window size: " + prevWindowSize
+        + ", Next window size: " + nextWindowSize;
   }
 }

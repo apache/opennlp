@@ -63,7 +63,8 @@ public class TokenNameFinderFactory extends BaseToolFactory {
     init(featureGeneratorBytes, resources, seqCodec);
   }
 
-  void init(byte[] featureGeneratorBytes, final Map<String, Object> resources, SequenceCodec<String> seqCodec) {
+  void init(byte[] featureGeneratorBytes, final Map<String, Object> resources,
+      SequenceCodec<String> seqCodec) {
     this.featureGeneratorBytes = featureGeneratorBytes;
     this.resources = resources;
     this.seqCodec = seqCodec;
@@ -104,8 +105,9 @@ public class TokenNameFinderFactory extends BaseToolFactory {
     return featureGeneratorBytes;
   }
 
-  public static TokenNameFinderFactory create(String subclassName, byte[] featureGeneratorBytes, final Map<String, Object> resources,
-      SequenceCodec<String> seqCodec) throws InvalidFormatException {
+  public static TokenNameFinderFactory create(String subclassName, byte[] featureGeneratorBytes,
+      final Map<String, Object> resources, SequenceCodec<String> seqCodec)
+      throws InvalidFormatException {
     TokenNameFinderFactory theFactory;
     if (subclassName == null) {
       // will create the default factory

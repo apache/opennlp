@@ -63,8 +63,8 @@ public class ChunkerME implements Chunker {
    * @param sequenceValidator  The {@link SequenceValidator} to determines whether the outcome
    *        is valid for the preceding sequence. This can be used to implement constraints
    *        on what sequences are valid.
-   * @deprecated Use {@link #ChunkerME(ChunkerModel, int)} instead
-   *     and use the {@link ChunkerFactory} to configure the {@link SequenceValidator} and {@link ChunkerContextGenerator}.
+   * @deprecated Use {@link #ChunkerME(ChunkerModel, int)} instead and use the {@link ChunkerFactory}
+   *     to configure the {@link SequenceValidator} and {@link ChunkerContextGenerator}.
    */
   @Deprecated
   private ChunkerME(ChunkerModel model, int beamSize, SequenceValidator<String> sequenceValidator,
@@ -140,7 +140,8 @@ public class ChunkerME implements Chunker {
   /**
    * Populates the specified array with the probabilities of the last decoded sequence.  The
    * sequence was determined based on the previous call to <code>chunk</code>.  The
-   * specified array should be at least as large as the numbe of tokens in the previous call to <code>chunk</code>.
+   * specified array should be at least as large as the numbe of tokens in the previous
+   * call to <code>chunk</code>.
    *
    * @param probs An array used to hold the probabilities of the last decoded sequence.
    */

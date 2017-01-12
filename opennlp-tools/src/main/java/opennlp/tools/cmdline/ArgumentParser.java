@@ -179,18 +179,22 @@ public class ArgumentParser {
             throw new IllegalArgumentException(method.getName() + " method name does not start with 'get'!");
 
           // check that method has zero arguments
-          if (method.getParameterTypes().length != 0)
-            throw new IllegalArgumentException(method.getName() + " method must have zero parameters but has " +
-                method.getParameterTypes().length + "!");
+          if (method.getParameterTypes().length != 0) {
+            throw new IllegalArgumentException(method.getName()
+                + " method must have zero parameters but has "
+                + method.getParameterTypes().length + "!");
+          }
 
           // check return types of interface
           Class<?> returnType = method.getReturnType();
 
           Set<Class<?>> compatibleReturnTypes = argumentFactories.keySet();
 
-          if (!compatibleReturnTypes.contains(returnType))
-            throw new IllegalArgumentException(method.getName() + " method must have compatible return type! Got " +
-                returnType + ", expected one of " + compatibleReturnTypes);
+          if (!compatibleReturnTypes.contains(returnType)) {
+            throw new IllegalArgumentException(method.getName()
+                + " method must have compatible return type! Got "
+                + returnType + ", expected one of " + compatibleReturnTypes);
+          }
         }
       }
     }
@@ -293,7 +297,8 @@ public class ArgumentParser {
             if (optional != null)
               isOptional = true;
 
-            Argument arg = new Argument(paramName.substring(1), desc.valueName(), desc.description(), isOptional);
+            Argument arg = new Argument(paramName.substring(1),
+                desc.valueName(), desc.description(), isOptional);
 
             arguments.add(arg);
 
@@ -468,7 +473,8 @@ public class ArgumentParser {
    * @return parsed parameters
    *
    * @throws TerminateToolException if an argument value cannot be parsed.
-   * @throws IllegalArgumentException if validateArguments returns false, if the proxy interface is not compatible.
+   * @throws IllegalArgumentException if validateArguments returns false,
+   *     if the proxy interface is not compatible.
    */
   @SuppressWarnings("unchecked")
   public static <T> T parse(String args[], Class<T> argProxyInterface) {

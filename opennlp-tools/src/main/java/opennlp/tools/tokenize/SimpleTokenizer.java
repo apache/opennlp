@@ -18,7 +18,6 @@
 
 package opennlp.tools.tokenize;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,39 +102,4 @@ public class SimpleTokenizer extends AbstractTokenizer {
     }
     return tokens.toArray(new Span[tokens.size()]);
   }
-
-
-  /**
-   *
-   * @param args the command line arguments
-   *
-   * @throws IOException if reading or writing from stdin or stdout fails in anyway
-   *
-   * @deprecated this method will be removed, use the new command line interface instead!
-   */
-  @Deprecated
-  public static void main(String[] args) throws IOException {
-    if (args.length != 0) {
-      System.err.println("Usage:  java opennlp.tools.tokenize.SimpleTokenizer < sentences");
-      System.exit(1);
-    }
-    opennlp.tools.tokenize.Tokenizer tokenizer = new SimpleTokenizer();
-    java.io.BufferedReader inReader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
-    for (String line = inReader.readLine(); line != null; line = inReader.readLine()) {
-      if (line.equals("")) {
-        System.out.println();
-      }
-      else {
-        String[] tokens = tokenizer.tokenize(line);
-        if (tokens.length > 0) {
-          System.out.print(tokens[0]);
-        }
-        for (int ti = 1,tn = tokens.length; ti < tn; ti++) {
-          System.out.print(" " + tokens[ti]);
-        }
-        System.out.println();
-      }
-    }
-  }
-
 }

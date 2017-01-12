@@ -51,7 +51,8 @@ public class LemmaSampleEventStream extends AbstractEventStream<LemmaSample> {
       String[] tagsArray = sample.getTags();
       String[] lemmasArray = sample.getLemmas();
       for (int ei = 0, el = sample.getTokens().length; ei < el; ei++) {
-        events.add(new Event(lemmasArray[ei], contextGenerator.getContext(ei,toksArray,tagsArray,lemmasArray)));
+        events.add(new Event(lemmasArray[ei],
+            contextGenerator.getContext(ei,toksArray,tagsArray,lemmasArray)));
       }
       return events.iterator();
     }

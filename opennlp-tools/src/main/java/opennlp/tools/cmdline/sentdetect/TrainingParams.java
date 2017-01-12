@@ -38,7 +38,8 @@ interface TrainingParams extends BasicTrainingParams {
   @OptionalParameter
   String getEosChars();
 
-  @ParameterDescription(valueName = "factoryName", description = "A sub-class of SentenceDetectorFactory where to get implementation and resources.")
+  @ParameterDescription(valueName = "factoryName",
+      description = "A sub-class of SentenceDetectorFactory where to get implementation and resources.")
   @OptionalParameter
   String getFactory();
 }

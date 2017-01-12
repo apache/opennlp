@@ -24,11 +24,13 @@ import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * This class reads in string encoded training samples, parses them and outputs {@link DocumentSample} objects.
+ * This class reads in string encoded training samples, parses them and
+ * outputs {@link DocumentSample} objects.
  * <p>
  * Format:<br>
  * Each line contains one sample document.<br>
- * The category is the first string in the line followed by a tab and whitespace separated document tokens.<br>
+ * The category is the first string in the line followed by a tab and whitespace
+ * separated document tokens.<br>
  * Sample line: category-string tab-char whitespace-separated-tokens line-break-char(s)<br>
  */
 public class DocumentSampleStream extends FilterObjectStream<String, DocumentSample> {

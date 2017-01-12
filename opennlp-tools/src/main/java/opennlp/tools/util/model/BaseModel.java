@@ -428,8 +428,9 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
         // Reject loading a snapshot model with a non-snapshot version
         if (!Version.currentVersion().isSnapshot() && version.isSnapshot()) {
-          throw new InvalidFormatException("Model version " + version + " is a snapshot - snapshot models are not " +
-              "supported by this non-snapshot version (" + Version.currentVersion() + ") of OpenNLP!");
+          throw new InvalidFormatException("Model version " + version
+              + " is a snapshot - snapshot models are not supported by this non-snapshot version ("
+              + Version.currentVersion() + ") of OpenNLP!");
         }
       }
     }

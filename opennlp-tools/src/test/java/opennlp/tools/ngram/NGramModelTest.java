@@ -195,7 +195,8 @@ public class NGramModelTest {
     String asfHeaderString = modelString.substring(start, end + 3);
     modelString = modelString.replace(asfHeaderString, "");
     String outputString = out.toString(Charset.forName("UTF-8").name());
-    assertEquals(modelString.replaceAll("\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", ""),
-            outputString.replaceAll("\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", ""));
+    assertEquals(
+        modelString.replaceAll("\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", ""),
+        outputString.replaceAll("\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", ""));
   }
 }

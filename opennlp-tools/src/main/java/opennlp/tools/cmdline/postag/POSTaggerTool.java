@@ -56,7 +56,8 @@ public final class POSTaggerTool extends BasicCmdLineTool {
       PerformanceMonitor perfMon = null;
 
       try {
-        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
+        lineStream =
+            new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
         perfMon = new PerformanceMonitor(System.err, "sent");
         perfMon.start();
         String line;

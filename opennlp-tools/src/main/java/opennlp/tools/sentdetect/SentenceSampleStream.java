@@ -59,7 +59,8 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
     }
 
     if (sentenceSpans.size() > 0) {
-      return new SentenceSample(sentencesString.toString(), sentenceSpans.toArray(new Span[sentenceSpans.size()]));
+      return new SentenceSample(sentencesString.toString(),
+          sentenceSpans.toArray(new Span[sentenceSpans.size()]));
     }
     else {
       return null;

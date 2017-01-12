@@ -51,7 +51,8 @@ public class SDCrossValidator {
 
   /**
    * @deprecated Use
-   *             {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
+   *             {@link #SDCrossValidator(String, TrainingParameters,
+   *             SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
    *             and pass in a {@link SentenceDetectorFactory}.
    */
   public SDCrossValidator(String languageCode, TrainingParameters params) {
@@ -61,7 +62,8 @@ public class SDCrossValidator {
 
   /**
    * @deprecated use
-   *             {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
+   *             {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory,
+   *             SentenceDetectorEvaluationMonitor...)}
    *             instead and pass in a TrainingParameters object.
    */
   public SDCrossValidator(String languageCode, TrainingParameters params,
@@ -71,7 +73,8 @@ public class SDCrossValidator {
   }
 
   /**
-   * @deprecated use {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
+   * @deprecated use {@link #SDCrossValidator(String, TrainingParameters,
+   *     SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
    *     instead and pass in a TrainingParameters object.
    */
   public SDCrossValidator(String languageCode) {

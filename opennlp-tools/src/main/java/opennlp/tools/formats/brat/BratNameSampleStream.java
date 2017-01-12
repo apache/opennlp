@@ -137,8 +137,9 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
               names.add(new Span(nameBeginIndex, nameEndIndex, entity.getType()));
             }
             else {
-              System.err.println("Dropped entity " + entity.getId() + " (" + entitySpan.getCoveredText(sample.getText()) + ") " + " in document " +
-                  sample.getId() + ", it is not matching tokenization!");
+              System.err.println("Dropped entity " + entity.getId() + " ("
+                  + entitySpan.getCoveredText(sample.getText()) + ") " + " in document "
+                  + sample.getId() + ", it is not matching tokenization!");
             }
           }
         }

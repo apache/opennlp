@@ -60,13 +60,15 @@ public class LanguageModelTestUtils {
     return new StringList(sentence);
   }
 
-  public static double getPerplexity(LanguageModel lm, Collection<StringList> testSet, int ngramSize) throws ArithmeticException {
+  public static double getPerplexity(LanguageModel lm, Collection<StringList> testSet, int ngramSize)
+      throws ArithmeticException {
     BigDecimal perplexity = new BigDecimal(1d);
 
     for (StringList sentence : testSet) {
       for (StringList ngram : NGramUtils.getNGrams(sentence, ngramSize)) {
         double ngramProbability = lm.calculateProbability(ngram);
-        perplexity = perplexity.multiply(new BigDecimal(1d).divide(new BigDecimal(ngramProbability), CONTEXT));
+        perplexity = perplexity.multiply(new BigDecimal(1d).divide(
+            new BigDecimal(ngramProbability), CONTEXT));
       }
     }
 

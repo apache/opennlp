@@ -60,7 +60,8 @@ public class DictionaryBuilderTool extends BasicCmdLineTool {
       dict.serialize(out);
 
     } catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage(), e);
+      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
+          + e.getMessage(), e);
     }
   }
 }

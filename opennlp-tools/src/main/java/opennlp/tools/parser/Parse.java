@@ -18,7 +18,6 @@
 
 package opennlp.tools.parser;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -138,8 +137,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
   private static boolean useFunctionTags;
 
   /**
-   * Creates a new parse node for this specified text and span of the specified type with the specified probability
-   * and the specified head index.
+   * Creates a new parse node for this specified text and span of the specified type
+   * with the specified probability and the specified head index.
    *
    * @param text The text of the sentence for which this node is a part of.
    * @param span The character offsets for this node within the specified text.
@@ -160,8 +159,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   /**
-   * Creates a new parse node for this specified text and span of the specified type with the specified probability
-   * and the specified head and head index.
+   * Creates a new parse node for this specified text and span of the specified type with
+   * the specified probability and the specified head and head index.
    *
    * @param text The text of the sentence for which this node is a part of.
    * @param span The character offsets for this node within the specified text.
@@ -267,7 +266,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    */
   public void addPreviousPunctuation(Parse punct) {
     if (this.prevPunctSet == null) {
-      this.prevPunctSet = new TreeSet<Parse>();
+      this.prevPunctSet = new TreeSet<>();
     }
     prevPunctSet.add(punct);
   }
@@ -288,7 +287,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    */
   public void addNextPunctuation(Parse punct) {
     if (this.nextPunctSet == null) {
-      this.nextPunctSet = new TreeSet<Parse>();
+      this.nextPunctSet = new TreeSet<>();
     }
     nextPunctSet.add(punct);
   }
@@ -349,7 +348,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
       //System.err.println("Parse.insert:adding con="+constituent+" to "+this);
       parts.add(pi, constituent);
       constituent.setParent(this);
-      //System.err.println("Parse.insert: "+constituent.hashCode()+" -> "+constituent.getParent().hashCode());
+      // System.err.println("Parse.insert: "+constituent.hashCode()+" -> "
+      // +constituent.getParent().hashCode());
     }
     else {
       throw new IllegalArgumentException("Inserting constituent not contained in the sentence!");
@@ -469,9 +469,11 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   /**
-   * Returns the log of the product of the probability associated with all the decisions which formed this constituent.
+   * Returns the log of the product of the probability associated with all the
+   * decisions which formed this constituent.
    *
-   * @return The log of the product of the probability associated with all the decisions which formed this constituent.
+   * @return The log of the product of the probability associated with all the
+   * decisions which formed this constituent.
    */
   public double getProb() {
     return prob;
@@ -531,7 +533,9 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   public Parse adjoinRoot(Parse node, HeadRules rules, int parseIndex) {
     Parse lastChild = parts.get(parseIndex);
-    Parse adjNode = new Parse(this.text,new Span(lastChild.getSpan().getStart(),node.getSpan().getEnd()),lastChild.getType(),1,rules.getHead(new Parse[]{lastChild,node},lastChild.getType()));
+    Parse adjNode = new Parse(this.text,new Span(lastChild.getSpan().getStart(),
+        node.getSpan().getEnd()),lastChild.getType(),1,
+        rules.getHead(new Parse[]{lastChild,node},lastChild.getType()));
     adjNode.parts.add(lastChild);
     if (node.prevPunctSet != null) {
       adjNode.parts.addAll(node.prevPunctSet);
@@ -551,7 +555,8 @@ public class Parse implements Cloneable, Comparable<Parse> {
    */
   public Parse adjoin(Parse sister, HeadRules rules) {
     Parse lastChild = parts.get(parts.size() - 1);
-    Parse adjNode = new Parse(this.text,new Span(lastChild.getSpan().getStart(),sister.getSpan().getEnd()),lastChild.getType(),1,rules.getHead(new Parse[]{lastChild,sister},lastChild.getType()));
+    Parse adjNode = new Parse(this.text,new Span(lastChild.getSpan().getStart(),sister.getSpan().getEnd()),
+        lastChild.getType(),1,rules.getHead(new Parse[]{lastChild,sister},lastChild.getType()));
     adjNode.parts.add(lastChild);
     if (sister.prevPunctSet != null) {
       adjNode.parts.addAll(sister.prevPunctSet);
@@ -782,7 +787,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * @param parse
    */
   public static void pruneParse(Parse parse) {
-    List<Parse> nodes = new LinkedList<Parse>();
+    List<Parse> nodes = new LinkedList<>();
     nodes.add(parse);
     while (nodes.size() != 0) {
       Parse node = nodes.remove(0);
@@ -1079,80 +1084,37 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * @param tokens
    */
   public static void addNames(String tag, Span[] names, Parse[] tokens) {
-    for (int ni = 0, nn = names.length; ni < nn; ni++) {
-      Span nameTokenSpan = names[ni];
+    for (Span nameTokenSpan : names) {
       Parse startToken = tokens[nameTokenSpan.getStart()];
       Parse endToken = tokens[nameTokenSpan.getEnd() - 1];
       Parse commonParent = startToken.getCommonParent(endToken);
       //System.err.println("addNames: "+startToken+" .. "+endToken+" commonParent = "+commonParent);
       if (commonParent != null) {
-        Span nameSpan = new Span(startToken.getSpan().getStart(),endToken.getSpan().getEnd());
+        Span nameSpan = new Span(startToken.getSpan().getStart(), endToken.getSpan().getEnd());
         if (nameSpan.equals(commonParent.getSpan())) {
-          commonParent.insert(new Parse(commonParent.getText(),nameSpan,tag,1.0,endToken.getHeadIndex()));
-        }
-        else {
+          commonParent.insert(new Parse(commonParent.getText(), nameSpan, tag, 1.0, endToken.getHeadIndex()));
+        } else {
           Parse[] kids = commonParent.getChildren();
           boolean crossingKids = false;
-          for (int ki = 0, kn = kids.length; ki < kn; ki++) {
-            if (nameSpan.crosses(kids[ki].getSpan())) {
+          for (Parse kid : kids) {
+            if (nameSpan.crosses(kid.getSpan())) {
               crossingKids = true;
             }
           }
           if (!crossingKids) {
-            commonParent.insert(new Parse(commonParent.getText(),nameSpan,tag,1.0,endToken.getHeadIndex()));
-          }
-          else {
+            commonParent.insert(new Parse(commonParent.getText(), nameSpan,
+                tag, 1.0, endToken.getHeadIndex()));
+          } else {
             if (commonParent.getType().equals("NP")) {
               Parse[] grandKids = kids[0].getChildren();
               if (grandKids.length > 1 && nameSpan.contains(grandKids[grandKids.length - 1].getSpan())) {
-                commonParent.insert(new Parse(commonParent.getText(), commonParent.getSpan(), tag,1.0, commonParent.getHeadIndex()));
+                commonParent.insert(new Parse(commonParent.getText(), commonParent.getSpan(),
+                    tag, 1.0, commonParent.getHeadIndex()));
               }
             }
           }
         }
       }
-    }
-  }
-
-  /**
-   * Reads training parses (one-sentence-per-line) and displays parse structure.
-   *
-   * @param args The head rules files.
-   *
-   * @throws IOException If the head rules file can not be opened and read.
-   */
-  @Deprecated
-  public static void main(String[] args) throws java.io.IOException {
-    if (args.length == 0) {
-      System.err.println("Usage: Parse -fun -pos head_rules < train_parses");
-      System.err.println("Reads training parses (one-sentence-per-line) and displays parse structure.");
-      System.exit(1);
-    }
-    int ai = 0;
-    boolean fixPossesives = false;
-    while (args[ai].startsWith("-") && ai < args.length) {
-      if (args[ai].equals("-fun")) {
-        Parse.useFunctionTags(true);
-        ai++;
-      }
-      else if (args[ai].equals("-pos")) {
-        fixPossesives = true;
-        ai++;
-      }
-    }
-
-    opennlp.tools.parser.lang.en.HeadRules rules = new opennlp.tools.parser.lang.en.HeadRules(args[ai]);
-    java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
-
-    for (String line = in.readLine(); line != null; line = in.readLine()) {
-      Parse p = Parse.parseParse(line,rules);
-      Parse.pruneParse(p);
-      if (fixPossesives) {
-        Parse.fixPossesives(p);
-      }
-      p.updateHeads(rules);
-      p.show();
-      //p.showCodeTree();
     }
   }
 }

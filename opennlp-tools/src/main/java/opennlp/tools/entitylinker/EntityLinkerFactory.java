@@ -39,7 +39,8 @@ public class EntityLinkerFactory {
    * @return an EntityLinker impl
    * @throws java.io.IOException
    */
-  public static synchronized EntityLinker<?> getLinker(String entityType, EntityLinkerProperties properties) throws IOException {
+  public static synchronized EntityLinker<?> getLinker(String entityType, EntityLinkerProperties properties)
+      throws IOException {
     if (entityType == null || properties == null) {
       throw new IllegalArgumentException("Null argument in entityLinkerFactory");
     }

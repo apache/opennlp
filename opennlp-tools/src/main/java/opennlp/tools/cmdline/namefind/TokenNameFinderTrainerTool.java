@@ -103,7 +103,8 @@ public final class TokenNameFinderTrainerTool
       if (featureGenDescriptor != null) {
 
         try (InputStream xmlDescriptorIn = CmdLineUtil.openInFile(featureGenDescriptor)) {
-          artifactSerializers.putAll(GeneratorFactory.extractCustomArtifactSerializerMappings(xmlDescriptorIn));
+          artifactSerializers.putAll(
+              GeneratorFactory.extractCustomArtifactSerializerMappings(xmlDescriptorIn));
         } catch (IOException e) {
           // TODO: Improve error handling!
           e.printStackTrace();
@@ -195,7 +196,8 @@ public final class TokenNameFinderTrainerTool
       sequenceCodecImplName = BilouCodec.class.getName();
     }
 
-    SequenceCodec<String> sequenceCodec = TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
+    SequenceCodec<String> sequenceCodec =
+        TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
 
     TokenNameFinderFactory nameFinderFactory;
     try {

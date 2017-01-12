@@ -76,12 +76,15 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
    * Returns the best sequence of outcomes based on model for this object.
    *
    * @param sequence The input sequence.
-   * @param additionalContext An Object[] of additional context.  This is passed to the context generator blindly with the assumption that the context are appropiate.
+   * @param additionalContext An Object[] of additional context.
+   *     This is passed to the context generator blindly with the
+   *     assumption that the context are appropiate.
    *
    * @return The top ranked sequence of outcomes or null if no sequence could be found
    */
   public Sequence[] bestSequences(int numSequences, T[] sequence,
-      Object[] additionalContext, double minSequenceScore, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
+      Object[] additionalContext, double minSequenceScore,
+      BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
 
     Queue<Sequence> prev = new PriorityQueue<>(size);
     Queue<Sequence> next = new PriorityQueue<>(size);

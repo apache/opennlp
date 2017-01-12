@@ -31,7 +31,8 @@ import opennlp.tools.parser.Parse;
 public class CheckContextGenerator extends AbstractContextGenerator {
 
   /**
-   * Creates a new context generator for generating predictive context for deciding when a constituent is complete.
+   * Creates a new context generator for generating predictive context for deciding
+   * when a constituent is complete.
    */
   public CheckContextGenerator() {
     super();
@@ -43,8 +44,9 @@ public class CheckContextGenerator extends AbstractContextGenerator {
   }
 
   /**
-   * Returns predictive context for deciding whether the specified constituents between the specified start and end index
-   * can be combined to form a new constituent of the specified type.
+   * Returns predictive context for deciding whether the specified constituents between the
+   * specified start and end index can be combined to form a new constituent of the specified type.
+   *
    * @param constituents The constituents which have yet to be combined into new constituents.
    * @param type The type of the new constituent proposed.
    * @param start The first constituent of the proposed constituent.

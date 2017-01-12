@@ -28,7 +28,8 @@ public class NaiveBayesEvalParameters extends EvalParameters {
   protected double[] outcomeTotals;
   protected long vocabulary;
 
-  public NaiveBayesEvalParameters(Context[] params, int numOutcomes, double[] outcomeTotals, long vocabulary) {
+  public NaiveBayesEvalParameters(Context[] params, int numOutcomes,
+      double[] outcomeTotals, long vocabulary) {
     super(params, 0, 0, numOutcomes);
     this.outcomeTotals = outcomeTotals;
     this.vocabulary = vocabulary;

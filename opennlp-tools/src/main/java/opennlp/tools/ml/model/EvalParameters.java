@@ -49,7 +49,8 @@ public class EvalParameters {
    * @param correctionConstant The correction constant.
    * @param numOutcomes The number of outcomes.
    */
-  public EvalParameters(Context[] params, double correctionParam, double correctionConstant, int numOutcomes) {
+  public EvalParameters(Context[] params, double correctionParam,
+      double correctionConstant, int numOutcomes) {
     this.params = params;
     this.correctionParam = correctionParam;
     this.numOutcomes = numOutcomes;

@@ -27,9 +27,10 @@ import opennlp.tools.ngram.NGramUtils;
 import opennlp.tools.util.StringList;
 
 /**
- * A {@link opennlp.tools.languagemodel.LanguageModel} based on a {@link opennlp.tools.ngram.NGramModel} using Laplace
- * smoothing probability estimation to get the probabilities of the ngrams.
- * See also {@link NGramUtils#calculateLaplaceSmoothingProbability(opennlp.tools.util.StringList, Iterable, int, Double)}.
+ * A {@link opennlp.tools.languagemodel.LanguageModel} based on a {@link opennlp.tools.ngram.NGramModel}
+ * using Laplace smoothing probability estimation to get the probabilities of the ngrams.
+ * See also {@link NGramUtils#calculateLaplaceSmoothingProbability(
+ * opennlp.tools.util.StringList, Iterable, int, Double)}.
  */
 public class NGramLanguageModel extends NGramModel implements LanguageModel {
 

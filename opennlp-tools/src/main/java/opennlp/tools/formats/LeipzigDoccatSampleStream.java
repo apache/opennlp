@@ -50,7 +50,8 @@ public class LeipzigDoccatSampleStream extends
    * Creates a new LeipzigDoccatSampleStream with the specified parameters.
    *
    * @param language the Leipzig input sentences.txt file
-   * @param sentencesPerDocument the number of sentences which should be grouped into once {@link DocumentSample}
+   * @param sentencesPerDocument the number of sentences which
+   *                             should be grouped into once {@link DocumentSample}
    * @param in the InputStream pointing to the contents of the sentences.txt input file
    * @throws IOException IOException
    */
@@ -67,7 +68,8 @@ public class LeipzigDoccatSampleStream extends
    * Creates a new LeipzigDoccatSampleStream with the specified parameters.
    *
    * @param language the Leipzig input sentences.txt file
-   * @param sentencesPerDocument the number of sentences which should be grouped into once {@link DocumentSample}
+   * @param sentencesPerDocument the number of sentences which should be
+   *                             grouped into once {@link DocumentSample}
    * @param in the InputStream pointing to the contents of the sentences.txt input file
    * @throws IOException IOException
    */

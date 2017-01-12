@@ -76,7 +76,8 @@ public class LemmaSample {
     return lemmas.toArray(new String[lemmas.size()]);
   }
 
-  private void validateArguments(int tokensSize, int tagsSize, int lemmasSize) throws IllegalArgumentException {
+  private void validateArguments(int tokensSize, int tagsSize, int lemmasSize)
+      throws IllegalArgumentException {
     if (tokensSize != tagsSize || tagsSize != lemmasSize) {
       throw new IllegalArgumentException(
           "All arrays must have the same length: " +

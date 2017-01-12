@@ -80,35 +80,32 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     System.out.println("Indexing events using cutoff of " + cutoff + "\n");
   
     System.out.print("\tComputing event counts...  ");
-    try {
-      File tmp = File.createTempFile("events", null);
-      tmp.deleteOnExit();
-      Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
-      int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
-      System.out.println("done. " + numEvents + " events");
-  
-      System.out.print("\tIndexing...  ");
-  
-      try (FileEventStream fes = new FileEventStream(tmp)) {
-        eventsToCompare = index(numEvents, fes, predicateIndex);
-      }
-      // done with predicates
-      predicateIndex = null;
-      tmp.delete();
-      System.out.println("done.");
-  
-      if (sort) {
-        System.out.print("Sorting and merging events... ");
-      }
-      else {
-        System.out.print("Collecting events... ");
-      }
-      sortAndMerge(eventsToCompare,sort);
-      System.out.println("Done indexing.");
+
+    File tmp = File.createTempFile("events", null);
+    tmp.deleteOnExit();
+    Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
+    int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
+    System.out.println("done. " + numEvents + " events");
+
+    System.out.print("\tIndexing...  ");
+
+    try (FileEventStream fes = new FileEventStream(tmp)) {
+      eventsToCompare = index(numEvents, fes, predicateIndex);
     }
-    catch (IOException e) {
-      System.err.println(e);
+    // done with predicates
+    predicateIndex = null;
+    tmp.delete();
+    System.out.println("done.");
+
+    if (sort) {
+      System.out.print("Sorting and merging events... ");
     }
+    else {
+      System.out.print("Collecting events... ");
+    }
+    sortAndMerge(eventsToCompare,sort);
+    System.out.println("Done indexing.");
+
   }
 
   public TwoPassDataIndexer() {}
@@ -124,35 +121,32 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     System.out.println("Indexing events using cutoff of " + cutoff + "\n");
 
     System.out.print("\tComputing event counts...  ");
-    try {
-      File tmp = File.createTempFile("events", null);
-      tmp.deleteOnExit();
-      Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
-      int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
-      System.out.println("done. " + numEvents + " events");
 
-      System.out.print("\tIndexing...  ");
+    File tmp = File.createTempFile("events", null);
+    tmp.deleteOnExit();
+    Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
+    int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
+    System.out.println("done. " + numEvents + " events");
 
-      try (FileEventStream fes = new FileEventStream(tmp)) {
-        eventsToCompare = index(numEvents, fes, predicateIndex);
-      }
-      // done with predicates
-      predicateIndex = null;
-      tmp.delete();
-      System.out.println("done.");
+    System.out.print("\tIndexing...  ");
 
-      if (sort) {
-        System.out.print("Sorting and merging events... ");
-      }
-      else {
-        System.out.print("Collecting events... ");
-      }
-      sortAndMerge(eventsToCompare,sort);
-      System.out.println("Done indexing.");
+    try (FileEventStream fes = new FileEventStream(tmp)) {
+      eventsToCompare = index(numEvents, fes, predicateIndex);
     }
-    catch (IOException e) {
-      System.err.println(e);
+    // done with predicates
+    predicateIndex = null;
+    tmp.delete();
+    System.out.println("done.");
+
+    if (sort) {
+      System.out.print("Sorting and merging events... ");
     }
+    else {
+      System.out.print("Collecting events... ");
+    }
+    sortAndMerge(eventsToCompare,sort);
+    System.out.println("Done indexing.");
+
   }
   /**
    * Reads events from <tt>eventStream</tt> into a linked list.  The
@@ -189,7 +183,8 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     return eventCount;
   }
 
-  private List<ComparableEvent> index(int numEvents, ObjectStream<Event> es, Map<String,Integer> predicateIndex) throws IOException {
+  private List<ComparableEvent> index(int numEvents, ObjectStream<Event> es,
+      Map<String,Integer> predicateIndex) throws IOException {
     Map<String,Integer> omap = new HashMap<>();
     int outcomeCount = 0;
     List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);

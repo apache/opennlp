@@ -53,8 +53,8 @@ public interface SequenceClassificationModel<T> {
    *
    * @return
    */
-  Sequence[] bestSequences(int numSequences, T[] sequence,
-      Object[] additionalContext, double minSequenceScore, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
+  Sequence[] bestSequences(int numSequences, T[] sequence, Object[] additionalContext,
+      double minSequenceScore, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
 
   /**
    * Finds the n most probable sequences.

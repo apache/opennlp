@@ -29,7 +29,8 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {
-  @ParameterDescription(valueName = "isAlphaNumOpt", description = "Optimization flag to skip alpha numeric tokens for further tokenization")
+  @ParameterDescription(valueName = "isAlphaNumOpt",
+      description = "Optimization flag to skip alpha numeric tokens for further tokenization")
   @OptionalParameter(defaultValue = "false")
   Boolean getAlphaNumOpt();
 
@@ -37,7 +38,8 @@ interface TrainingParams extends BasicTrainingParams {
   @OptionalParameter
   File getAbbDict();
 
-  @ParameterDescription(valueName = "factoryName", description = "A sub-class of TokenizerFactory where to get implementation and resources.")
+  @ParameterDescription(valueName = "factoryName",
+      description = "A sub-class of TokenizerFactory where to get implementation and resources.")
   @OptionalParameter
   String getFactory();
 }

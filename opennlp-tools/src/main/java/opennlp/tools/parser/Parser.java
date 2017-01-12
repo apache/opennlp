@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.parser;
 
 /**
@@ -26,10 +25,10 @@ public interface Parser {
   /**
    * Returns the specified number of parses or fewer for the specified tokens. <br>
    * <b>Note:</b> The nodes within
-   * the returned parses are shared with other parses and therefore their parent node references will not be consistent
-   * with their child node reference.  {@link Parse#setParent(Parse)} can be used to make the parents consistent
-   * with a particular parse, but subsequent calls to <code>setParents</code> can invalidate the results of earlier
-   * calls.<br>
+   * the returned parses are shared with other parses and therefore their parent node references
+   * will not be consistent with their child node reference.  {@link Parse#setParent(Parse)}
+   * can be used to make the parents consistent with a particular parse, but subsequent calls
+   * to <code>setParents</code> can invalidate the results of earlier calls.<br>
    * @param tokens A parse containing the tokens with a single parent node.
    * @param numParses The number of parses desired.
    * @return the specified number of parses for the specified tokens.
@@ -38,9 +37,10 @@ public interface Parser {
 
   /**
    * Returns a parse for the specified parse of tokens.
+   *
    * @param tokens The root node of a flat parse containing only tokens.
-   * @return A full parse of the specified tokens or the flat chunks of the tokens if a fullparse could not be found.
+   * @return A full parse of the specified tokens or the flat chunks of the tokens if a
+   *     fullparse could not be found.
    */
   Parse parse(Parse tokens);
-
 }

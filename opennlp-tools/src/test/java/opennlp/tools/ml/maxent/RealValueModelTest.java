@@ -30,14 +30,14 @@ public class RealValueModelTest {
   @Test
   public void testRealValuedWeightsVsRepeatWeighting() throws IOException {
     GISModel realModel;
-    try (RealValueFileEventStream rvfes1 =
-        new RealValueFileEventStream("src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt")) {
+    try (RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt")) {
       realModel = GIS.trainModel(100, new OnePassRealValueDataIndexer(rvfes1, 1));
     }
 
     GISModel repeatModel;
-    try (FileEventStream rvfes2 =
-        new FileEventStream("src/test/resources/data/opennlp/maxent/repeat-weighting-training-data.txt")) {
+    try (FileEventStream rvfes2 = new FileEventStream(
+        "src/test/resources/data/opennlp/maxent/repeat-weighting-training-data.txt")) {
       repeatModel = GIS.trainModel(100, new OnePassRealValueDataIndexer(rvfes2, 1));
     }
 
@@ -47,8 +47,10 @@ public class RealValueModelTest {
 
     Assert.assertEquals(realResults.length, repeatResults.length);
     for (int i = 0; i < realResults.length; i++) {
-      System.out.println(String.format("classifiy with realModel: %1$s = %2$f", realModel.getOutcome(i), realResults[i]));
-      System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f", repeatModel.getOutcome(i), repeatResults[i]));
+      System.out.println(String.format("classifiy with realModel: %1$s = %2$f",
+          realModel.getOutcome(i), realResults[i]));
+      System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f",
+          repeatModel.getOutcome(i), repeatResults[i]));
       Assert.assertEquals(realResults[i], repeatResults[i], 0.01f);
     }
 
@@ -59,8 +61,10 @@ public class RealValueModelTest {
     System.out.println();
     Assert.assertEquals(realResults.length, repeatResults.length);
     for (int i = 0; i < realResults.length; i++) {
-      System.out.println(String.format("classifiy with realModel: %1$s = %2$f", realModel.getOutcome(i), realResults[i]));
-      System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f", repeatModel.getOutcome(i), repeatResults[i]));
+      System.out.println(String.format("classifiy with realModel: %1$s = %2$f",
+          realModel.getOutcome(i), realResults[i]));
+      System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f",
+          repeatModel.getOutcome(i), repeatResults[i]));
       Assert.assertEquals(realResults[i], repeatResults[i], 0.01f);
     }
 

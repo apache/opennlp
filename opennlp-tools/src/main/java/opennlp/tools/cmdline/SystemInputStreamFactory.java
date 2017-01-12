@@ -39,7 +39,8 @@ public class SystemInputStreamFactory implements InputStreamFactory {
       return System.in;
     }
     else {
-      throw new UnsupportedOperationException("The System.in stream can't be re-created to read from the beginning!");
+      throw new UnsupportedOperationException(
+          "The System.in stream can't be re-created to read from the beginning!");
     }
   }
 }

@@ -188,7 +188,8 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    * @param next Space delimited token following token containing eos character.
    * @param eosChar the EOS character been analyzed
    */
-  protected void collectFeatures(String prefix, String suffix, String previous, String next, Character eosChar) {
+  protected void collectFeatures(String prefix, String suffix, String previous,
+      String next, Character eosChar) {
     buf.append("x=");
     buf.append(prefix);
     collectFeats.add(buf.toString());

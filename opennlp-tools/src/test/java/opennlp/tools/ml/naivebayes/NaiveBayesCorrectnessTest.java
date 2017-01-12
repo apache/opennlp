@@ -39,7 +39,8 @@ public class NaiveBayesCorrectnessTest {
   public void testNaiveBayes1() throws IOException {
 
     NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(
+            new TwoPassDataIndexer(createTrainingStream(), 1, false));
 
     String label = "politics";
     String[] context = {"bow=united", "bow=nations"};
@@ -54,7 +55,8 @@ public class NaiveBayesCorrectnessTest {
   public void testNaiveBayes2() throws IOException {
 
     NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(
+            new TwoPassDataIndexer(createTrainingStream(), 1, false));
 
     String label = "sports";
     String[] context = {"bow=manchester", "bow=united"};
@@ -69,7 +71,8 @@ public class NaiveBayesCorrectnessTest {
   public void testNaiveBayes3() throws IOException {
 
     NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(
+            new TwoPassDataIndexer(createTrainingStream(), 1, false));
 
     String label = "politics";
     String[] context = {"bow=united"};
@@ -84,7 +87,8 @@ public class NaiveBayesCorrectnessTest {
   public void testNaiveBayes4() throws IOException {
 
     NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(
+            new TwoPassDataIndexer(createTrainingStream(), 1, false));
 
     String label = "politics";
     String[] context = {};

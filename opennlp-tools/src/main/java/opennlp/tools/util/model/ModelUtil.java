@@ -63,12 +63,14 @@ public final class ModelUtil {
     if (out == null)
       throw new IllegalArgumentException("out parameter must not be null!");
 
-    GenericModelWriter modelWriter = new GenericModelWriter((AbstractModel) model, new DataOutputStream(new OutputStream() {
-      @Override
-      public void write(int b) throws IOException {
-        out.write(b);
-      }
-    }));
+    GenericModelWriter modelWriter = new GenericModelWriter((AbstractModel) model,
+        new DataOutputStream(new OutputStream() {
+          @Override
+          public void write(int b) throws IOException {
+            out.write(b);
+          }
+        }));
+
     modelWriter.persist();
   }
 

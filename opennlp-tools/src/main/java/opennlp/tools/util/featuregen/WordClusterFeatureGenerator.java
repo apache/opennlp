@@ -27,7 +27,8 @@ public class WordClusterFeatureGenerator implements AdaptiveFeatureGenerator {
   private String resourceName;
   private boolean lowerCaseDictionary;
 
-  public WordClusterFeatureGenerator(WordClusterDictionary dict, String dictResourceKey, boolean lowerCaseDictionary) {
+  public WordClusterFeatureGenerator(WordClusterDictionary dict,
+      String dictResourceKey, boolean lowerCaseDictionary) {
     tokenDictionary = dict;
     resourceName = dictResourceKey;
     this.lowerCaseDictionary = lowerCaseDictionary;

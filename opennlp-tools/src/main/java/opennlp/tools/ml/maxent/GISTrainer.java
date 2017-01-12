@@ -228,6 +228,7 @@ class GISTrainer {
     params.put(GIS.ITERATIONS_PARAM, Integer.toString(iterations));
     params.put(GIS.CUTOFF_PARAM, Integer.toString(cutoff));
     indexer.init(params, new HashMap<>());
+    indexer.index(eventStream);
     return trainModel(iterations, indexer, cutoff);
   }
 
@@ -401,7 +402,8 @@ class GISTrainer {
 
     /* Create and return the model ****/
     // To be compatible with old models the correction constant is always 1
-    return new GISModel(params, predLabels, outcomeLabels, 1, evalParams.getCorrectionParam());
+    return new GISModel(params, predLabels, outcomeLabels, 1,
+        evalParams.getCorrectionParam());
 
   }
 
@@ -409,7 +411,8 @@ class GISTrainer {
   private void findParameters(int iterations, double correctionConstant) {
     int threads = modelExpects.length;
     ExecutorService executor = Executors.newFixedThreadPool(threads);
-    CompletionService<ModelExpactationComputeTask> completionService = new ExecutorCompletionService<>(executor);
+    CompletionService<ModelExpactationComputeTask> completionService =
+        new ExecutorCompletionService<>(executor);
     double prevLL = 0.0;
     double currLL;
     display("Performing " + iterations + " iterations.\n");
@@ -509,10 +512,12 @@ class GISTrainer {
 
               // numTimesEventsSeen must also be thread safe
               if (values != null && values[ei] != null) {
-                modelExpects[threadIndex][pi].updateParameter(aoi,modelDistribution[oi] * values[ei][j] * numTimesEventsSeen[ei]);
+                modelExpects[threadIndex][pi].updateParameter(aoi,modelDistribution[oi]
+                    * values[ei][j] * numTimesEventsSeen[ei]);
               }
               else {
-                modelExpects[threadIndex][pi].updateParameter(aoi,modelDistribution[oi] * numTimesEventsSeen[ei]);
+                modelExpects[threadIndex][pi].updateParameter(aoi,modelDistribution[oi]
+                    * numTimesEventsSeen[ei]);
               }
             }
           }
@@ -552,7 +557,8 @@ class GISTrainer {
   }
 
   /* Compute one iteration of GIS and retutn log-likelihood.*/
-  private double nextIteration(double correctionConstant, CompletionService<ModelExpactationComputeTask> completionService) {
+  private double nextIteration(double correctionConstant,
+                               CompletionService<ModelExpactationComputeTask> completionService) {
     // compute contribution of p(a|b_i) for each feature and the new
     // correction parameter
     double loglikelihood = 0.0;
@@ -626,7 +632,8 @@ class GISTrainer {
             System.err.println("Model expects == 0 for " + predLabels[pi] + " " + outcomeLabels[aoi]);
           }
           //params[pi].updateParameter(aoi,(Math.log(observed[aoi]) - Math.log(model[aoi])));
-          params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi])) / correctionConstant));
+          params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi]))
+              / correctionConstant));
         }
 
         for (MutableContext[] modelExpect : modelExpects) {

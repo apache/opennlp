@@ -64,8 +64,8 @@ public class DoccatTool extends BasicCmdLineTool {
       perfMon.start();
 
       try {
-        documentStream = new ParagraphStream(
-                new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding()));
+        documentStream = new ParagraphStream(new PlainTextByLineStream(
+            new SystemInputStreamFactory(), SystemInputStreamFactory.encoding()));
         String document;
         while ((document = documentStream.read()) != null) {
           String[] tokens = model.getFactory().getTokenizer().tokenize(document);

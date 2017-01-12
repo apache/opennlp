@@ -61,7 +61,8 @@ public abstract class Probabilities<T> {
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability, if the new probability is greater than the old one.
+   * Assigns a probability to a label, discarding any previously assigned probability,
+   * if the new probability is greater than the old one.
    *
    * @param t           the label to which the probability is being assigned
    * @param probability the probability to assign

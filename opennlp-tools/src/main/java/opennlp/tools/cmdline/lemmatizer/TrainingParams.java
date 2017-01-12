@@ -28,8 +28,8 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
  */
 interface TrainingParams extends BasicTrainingParams {
 
-  @ParameterDescription(valueName = "factoryName", description = "A sub-class of LemmatizerFactory where to get implementation and resources.")
+  @ParameterDescription(valueName = "factoryName",
+      description = "A sub-class of LemmatizerFactory where to get implementation and resources.")
   @OptionalParameter
   String getFactory();
-
 }

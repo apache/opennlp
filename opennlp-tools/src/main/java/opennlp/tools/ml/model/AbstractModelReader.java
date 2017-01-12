@@ -136,7 +136,7 @@ public abstract class AbstractModelReader {
       //construct outcome pattern
       int[] outcomePattern = new int[outcomePatterns[i].length - 1];
       System.arraycopy(outcomePatterns[i], 1, outcomePattern, 0, outcomePatterns[i].length - 1);
-      //System.err.println("outcomePattern "+i+" of "+outcomePatterns.length+" with "+outcomePatterns[i].length+" outcomes ");
+
       //populate parameters for each context which uses this outcome pattern.
       for (int j = 0; j < outcomePatterns[i][0]; j++) {
         double[] contextParameters = new double[outcomePatterns[i].length - 1];

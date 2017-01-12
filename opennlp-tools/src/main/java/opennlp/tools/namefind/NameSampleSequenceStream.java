@@ -44,7 +44,8 @@ public class NameSampleSequenceStream implements SequenceStream {
     this(psi, new DefaultNameContextGenerator(featureGen), true);
   }
 
-  public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen, boolean useOutcomes)
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi,
+      AdaptiveFeatureGenerator featureGen, boolean useOutcomes)
       throws IOException {
     this(psi, new DefaultNameContextGenerator(featureGen), useOutcomes);
   }
@@ -70,7 +71,8 @@ public class NameSampleSequenceStream implements SequenceStream {
 
   @SuppressWarnings("unchecked")
   public Event[] updateContext(Sequence sequence, AbstractModel model) {
-    TokenNameFinder tagger = new NameFinderME(new TokenNameFinderModel("x-unspecified", model, Collections.<String, Object>emptyMap(), null));
+    TokenNameFinder tagger = new NameFinderME(new TokenNameFinderModel(
+        "x-unspecified", model, Collections.emptyMap(), null));
     String[] sentence = ((Sequence<NameSample>) sequence).getSource().getSentence();
     String[] tags = seqCodec.encode(tagger.find(sentence), sentence.length);
     Event[] events = new Event[sentence.length];

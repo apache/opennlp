@@ -36,7 +36,8 @@ public class DocumentCategorizerNBTest {
   @Test
   public void testSimpleTraining() throws IOException {
 
-    ObjectStream<DocumentSample> samples = ObjectStreamUtils.createObjectStream(new DocumentSample("1", new String[]{"a", "b", "c"}),
+    ObjectStream<DocumentSample> samples = ObjectStreamUtils.createObjectStream(
+        new DocumentSample("1", new String[]{"a", "b", "c"}),
         new DocumentSample("1", new String[]{"a", "b", "c", "1", "2"}),
         new DocumentSample("1", new String[]{"a", "b", "c", "3", "4"}),
         new DocumentSample("0", new String[]{"x", "y", "z"}),

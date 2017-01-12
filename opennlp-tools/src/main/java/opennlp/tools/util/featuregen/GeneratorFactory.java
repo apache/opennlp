@@ -290,10 +290,12 @@ public class GeneratorFactory {
 
 
       if (!(dictResource instanceof WordClusterDictionary)) {
-        throw new InvalidFormatException("Not a WordClusterDictionary resource for key: " + dictResourceKey);
+        throw new InvalidFormatException("Not a WordClusterDictionary resource for key: "
+            + dictResourceKey);
       }
 
-      return new WordClusterFeatureGenerator((WordClusterDictionary) dictResource, dictResourceKey, lowerCaseDictionary);
+      return new WordClusterFeatureGenerator((WordClusterDictionary) dictResource,
+          dictResourceKey, lowerCaseDictionary);
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
@@ -515,7 +517,8 @@ public class GeneratorFactory {
             " an aggregator element");
       }
 
-      AdaptiveFeatureGenerator nestedGenerator = GeneratorFactory.createGenerator(nestedGeneratorElement, resourceManager);
+      AdaptiveFeatureGenerator nestedGenerator =
+          GeneratorFactory.createGenerator(nestedGeneratorElement, resourceManager);
 
       String prevLengthString = generatorElement.getAttribute("prevLength");
 
@@ -524,7 +527,8 @@ public class GeneratorFactory {
       try {
         prevLength = Integer.parseInt(prevLengthString);
       } catch (NumberFormatException e) {
-        throw new InvalidFormatException("prevLength attribute '" + prevLengthString + "' is not a number!", e);
+        throw new InvalidFormatException("prevLength attribute '" + prevLengthString
+            + "' is not a number!", e);
       }
 
       String nextLengthString = generatorElement.getAttribute("nextLength");
@@ -534,7 +538,8 @@ public class GeneratorFactory {
       try {
         nextLength = Integer.parseInt(nextLengthString);
       } catch (NumberFormatException e) {
-        throw new InvalidFormatException("nextLength attribute '" + nextLengthString + "' is not a number!", e);
+        throw new InvalidFormatException("nextLength attribute '" + nextLengthString
+            + "' is not a number!", e);
       }
 
       return new WindowFeatureGenerator(nestedGenerator, prevLength, nextLength);
@@ -591,8 +596,8 @@ public class GeneratorFactory {
 
       String featureGeneratorClassName = generatorElement.getAttribute("class");
 
-      AdaptiveFeatureGenerator generator = ExtensionLoader.instantiateExtension(AdaptiveFeatureGenerator.class,
-          featureGeneratorClassName);
+      AdaptiveFeatureGenerator generator =
+          ExtensionLoader.instantiateExtension(AdaptiveFeatureGenerator.class, featureGeneratorClassName);
 
       if (generator instanceof CustomFeatureGenerator) {
 

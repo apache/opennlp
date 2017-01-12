@@ -108,7 +108,8 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
       return (HeadRules) headRulesObject;
     }
     else {
-      throw new TerminateToolException(-1, "HeadRules Artifact Serializer must create an object of type HeadRules!");
+      throw new TerminateToolException(-1,
+          "HeadRules Artifact Serializer must create an object of type HeadRules!");
     }
   }
 

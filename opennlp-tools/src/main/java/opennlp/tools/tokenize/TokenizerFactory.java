@@ -127,7 +127,8 @@ public class TokenizerFactory extends BaseToolFactory {
    * @param subclassName the name of the class implementing the {@link TokenizerFactory}
    * @param languageCode the language code the tokenizer should use
    * @param abbreviationDictionary an optional dictionary containing abbreviations, or null if not present
-   * @param useAlphaNumericOptimization indicate if the alpha numeric optimization should be enabled or disabled
+   * @param useAlphaNumericOptimization indicate if the alpha numeric optimization
+   *     should be enabled or disabled
    * @param alphaNumericPattern the pattern the alpha numeric optimization should use
    *
    * @return the instance of the Tokenizer Factory

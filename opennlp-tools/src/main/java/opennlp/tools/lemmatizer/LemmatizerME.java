@@ -123,7 +123,8 @@ public class LemmatizerME implements Lemmatizer {
   /**
    * Populates the specified array with the probabilities of the last decoded sequence.  The
    * sequence was determined based on the previous call to <code>lemmatize</code>.  The
-   * specified array should be at least as large as the number of tokens in the previous call to <code>lemmatize</code>.
+   * specified array should be at least as large as the number of tokens in the
+   * previous call to <code>lemmatize</code>.
    *
    * @param probs An array used to hold the probabilities of the last decoded sequence.
    */
@@ -169,8 +170,8 @@ public class LemmatizerME implements Lemmatizer {
     }
     else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       LemmaSampleSequenceStream ss = new LemmaSampleSequenceStream(samples, contextGenerator);
-      EventModelSequenceTrainer trainer = TrainerFactory.getEventModelSequenceTrainer(trainParams.getSettings(),
-          manifestInfoEntries);
+      EventModelSequenceTrainer trainer =
+          TrainerFactory.getEventModelSequenceTrainer(trainParams.getSettings(), manifestInfoEntries);
       lemmatizerModel = trainer.train(ss);
     }
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {

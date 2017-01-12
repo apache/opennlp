@@ -30,7 +30,8 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
  */
 interface TrainingParams extends BasicTrainingParams {
 
-  @ParameterDescription(valueName = "maxent|perceptron|perceptron_sequence", description = "The type of the token name finder model. One of maxent|perceptron|perceptron_sequence.")
+  @ParameterDescription(valueName = "maxent|perceptron|perceptron_sequence",
+      description = "The type of the token name finder model. One of maxent|perceptron|perceptron_sequence.")
   @OptionalParameter(defaultValue = "maxent")
   String getType();
 
@@ -38,15 +39,18 @@ interface TrainingParams extends BasicTrainingParams {
   @OptionalParameter
   File getDict();
 
-  @ParameterDescription(valueName = "cutoff", description = "NGram cutoff. If not specified will not create ngram dictionary.")
+  @ParameterDescription(valueName = "cutoff",
+      description = "NGram cutoff. If not specified will not create ngram dictionary.")
   @OptionalParameter
   Integer getNgram();
 
-  @ParameterDescription(valueName = "tagDictCutoff", description = "TagDictionary cutoff. If specified will create/expand a mutable TagDictionary")
+  @ParameterDescription(valueName = "tagDictCutoff",
+      description = "TagDictionary cutoff. If specified will create/expand a mutable TagDictionary")
   @OptionalParameter
   Integer getTagDictCutoff();
 
-  @ParameterDescription(valueName = "factoryName", description = "A sub-class of POSTaggerFactory where to get implementation and resources.")
+  @ParameterDescription(valueName = "factoryName",
+      description = "A sub-class of POSTaggerFactory where to get implementation and resources.")
   @OptionalParameter
   String getFactory();
 }

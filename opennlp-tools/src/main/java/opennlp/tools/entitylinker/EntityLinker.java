@@ -89,5 +89,6 @@ public interface EntityLinker<T extends Span> {
    *                      Span[] corresponds to
    * @return
    */
-  List<T> find(String doctext, Span[] sentences, Span[][] tokensBySentence, Span[][] namesBySentence, int sentenceIndex);
+  List<T> find(String doctext, Span[] sentences, Span[][] tokensBySentence,
+      Span[][] namesBySentence, int sentenceIndex);
 }
