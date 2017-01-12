@@ -27,7 +27,10 @@ import org.junit.Test;
  */
 public class ParseTest {
 
-  public static final String PARSE_STRING = "(TOP  (S (S (NP-SBJ (PRP She)  )(VP (VBD was)  (ADVP (RB just)  )(NP-PRD (NP (DT another)  (NN freighter)  )(PP (IN from)  (NP (DT the)  (NNPS States)  )))))(, ,)  (CC and) (S (NP-SBJ (PRP she)  )(VP (VBD seemed)  (ADJP-PRD (ADJP (RB as)  (JJ commonplace)  )(PP (IN as)  (NP (PRP$ her)  (NN name)  )))))(. .)  ))";
+  public static final String PARSE_STRING = "(TOP  (S (S (NP-SBJ (PRP She)  )(VP (VBD was)  "
+      + "(ADVP (RB just)  )(NP-PRD (NP (DT another)  (NN freighter)  )(PP (IN from)  (NP (DT the)  "
+      + "(NNPS States)  )))))(, ,)  (CC and) (S (NP-SBJ (PRP she)  )(VP (VBD seemed)  "
+      + "(ADJP-PRD (ADJP (RB as)  (JJ commonplace)  )(PP (IN as)  (NP (PRP$ her)  (NN name)  )))))(. .)  ))";
 
   @Test
   public void testToHashCode() {
@@ -60,7 +63,8 @@ public class ParseTest {
     Parse p = Parse.parseParse(PARSE_STRING);
 
     // TODO: Why does parse attaches a space to the end of the text ???
-    String expectedText = "She was just another freighter from the States , and she seemed as commonplace as her name . ";
+    String expectedText = "She was just another freighter from the States , " +
+        "and she seemed as commonplace as her name . ";
 
     assertEquals(expectedText, p.getText());
   }

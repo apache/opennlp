@@ -65,7 +65,8 @@ public class ADParagraphStreamTest {
   }
 
   private static ADSentenceStream openData() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample");
+    InputStreamFactory in = new ResourceAsStreamFactory(ADParagraphStreamTest.class,
+        "/opennlp/tools/formats/ad.sample");
 
     return new ADSentenceStream(new PlainTextByLineStream(in, "UTF-8"));
   }

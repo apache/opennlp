@@ -45,7 +45,8 @@ public class ParserTest {
     ObjectStream<Parse> parseSamples = ParserTestUtil.openTestTrainingData();
     HeadRules headRules = ParserTestUtil.createTestHeadRules();
 
-    ParserModel model = Parser.train("en", parseSamples, headRules, TrainingParameters.defaultParams());
+    ParserModel model = Parser.train("en", parseSamples, headRules,
+        TrainingParameters.defaultParams());
 
     opennlp.tools.parser.Parser parser = ParserFactory.create(model);
 

@@ -84,7 +84,9 @@ public class NameSampleTest {
   @Test
   public void testWithTypesToString() throws Exception {
     String nameSampleStr = createSimpleNameSample(true).toString();
-    assertEquals("<START:Location> U . S . <END> President <START:Person> Barack Obama <END> is considering sending additional American forces to <START:Location> Afghanistan <END> .", nameSampleStr);
+    assertEquals("<START:Location> U . S . <END> President <START:Person> Barack Obama <END> " +
+        "is considering sending additional American forces to <START:Location> Afghanistan <END> .",
+        nameSampleStr);
 
     NameSample parsedSample = NameSample.parse("<START:Location> U . S . <END> " +
         "President <START:Person> Barack Obama <END> is considering sending " +

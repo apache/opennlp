@@ -82,10 +82,12 @@ public class Conll02NameFinderEval {
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/ned.testa"), LANGUAGE.NL, Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.5696539485359361d);
+        "conll02/ner/data/ned.testa"), LANGUAGE.NL,
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.5696539485359361d);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/ned.testb"), LANGUAGE.NL, Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.7127771911298839d);
+        "conll02/ner/data/ned.testb"), LANGUAGE.NL,
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.7127771911298839d);
   }
 
   @Test
@@ -97,10 +99,12 @@ public class Conll02NameFinderEval {
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/ned.testa"), LANGUAGE.NL, Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.5197969543147207d);
+        "conll02/ner/data/ned.testa"), LANGUAGE.NL,
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.5197969543147207d);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/ned.testb"), LANGUAGE.NL, Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.5753228120516498d);
+        "conll02/ner/data/ned.testb"), LANGUAGE.NL,
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.5753228120516498d);
   }
 
   @Test
@@ -112,10 +116,12 @@ public class Conll02NameFinderEval {
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/ned.testa"), LANGUAGE.NL, Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.5451977401129944d);
+        "conll02/ner/data/ned.testa"), LANGUAGE.NL,
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.5451977401129944d);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/ned.testb"), LANGUAGE.NL, Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.680952380952381d);
+        "conll02/ner/data/ned.testb"), LANGUAGE.NL,
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.680952380952381d);
   }
 
   @Test
@@ -127,18 +133,22 @@ public class Conll02NameFinderEval {
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/ned.testa"), LANGUAGE.NL, Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5831157528285466d);
+        "conll02/ner/data/ned.testa"), LANGUAGE.NL,
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5831157528285466d);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/ned.testb"), LANGUAGE.NL, Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5762897914379803d);
+        "conll02/ner/data/ned.testb"), LANGUAGE.NL,
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5762897914379803d);
   }
 
   @Test
   public void evalDutchCombined() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
-    int combinedType = Conll02NameSampleStream.GENERATE_PERSON_ENTITIES | Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES
-        | Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES | Conll02NameSampleStream.GENERATE_MISC_ENTITIES;
+    int combinedType = Conll02NameSampleStream.GENERATE_PERSON_ENTITIES
+        | Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES
+        | Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES
+        | Conll02NameSampleStream.GENERATE_MISC_ENTITIES;
 
     TokenNameFinderModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
         "conll02/ner/data/ned.train"), LANGUAGE.NL, params,
@@ -160,10 +170,12 @@ public class Conll02NameFinderEval {
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/esp.testa"), LANGUAGE.ES, Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.686960933536276d);
+        "conll02/ner/data/esp.testa"), LANGUAGE.ES,
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.686960933536276d);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/esp.testb"), LANGUAGE.ES, Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.8132033008252063d);
+        "conll02/ner/data/esp.testb"), LANGUAGE.ES,
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.8132033008252063d);
   }
 
   @Test
@@ -175,10 +187,12 @@ public class Conll02NameFinderEval {
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/esp.testa"), LANGUAGE.ES, Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.6982288828337874d);
+        "conll02/ner/data/esp.testa"), LANGUAGE.ES,
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.6982288828337874d);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/esp.testb"), LANGUAGE.ES, Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7640449438202247d);
+        "conll02/ner/data/esp.testb"), LANGUAGE.ES,
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7640449438202247d);
   }
 
   @Test
@@ -190,10 +204,12 @@ public class Conll02NameFinderEval {
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/esp.testa"), LANGUAGE.ES, Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7386907929749867d);
+        "conll02/ner/data/esp.testa"), LANGUAGE.ES,
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7386907929749867d);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/esp.testb"), LANGUAGE.ES, Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.6772777167947311d);
+        "conll02/ner/data/esp.testb"), LANGUAGE.ES,
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.6772777167947311d);
   }
 
   @Test
@@ -205,18 +221,22 @@ public class Conll02NameFinderEval {
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/esp.testa"), LANGUAGE.ES, Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.40971168437025796d);
+        "conll02/ner/data/esp.testa"), LANGUAGE.ES,
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.40971168437025796d);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conll02/ner/data/esp.testb"), LANGUAGE.ES, Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.45703124999999994d);
+        "conll02/ner/data/esp.testb"), LANGUAGE.ES,
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.45703124999999994d);
   }
 
   @Test
   public void evalSpanishCombined() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
-    int combinedType = Conll02NameSampleStream.GENERATE_PERSON_ENTITIES | Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES
-        | Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES | Conll02NameSampleStream.GENERATE_MISC_ENTITIES;
+    int combinedType = Conll02NameSampleStream.GENERATE_PERSON_ENTITIES
+        | Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES
+        | Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES
+        | Conll02NameSampleStream.GENERATE_MISC_ENTITIES;
 
     TokenNameFinderModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
         "conll02/ner/data/esp.train"), LANGUAGE.ES, params,

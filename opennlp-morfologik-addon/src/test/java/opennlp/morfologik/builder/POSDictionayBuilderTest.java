@@ -63,7 +63,8 @@ public class POSDictionayBuilderTest {
 
     // we need the tabular dictionary. It is mandatory to have info
     //  file with same name, but .info extension
-    Path textLemmaDictionary = Paths.get("/Users/wcolen/git/opennlp/opennlp-morfologik-addon/src/test/resources/dictionaryWithLemma.txt");
+    Path textLemmaDictionary = Paths.get(
+        "/Users/wcolen/git/opennlp/opennlp-morfologik-addon/src/test/resources/dictionaryWithLemma.txt");
 
     // this will build a binary dictionary located in compiledLemmaDictionary
     Path compiledLemmaDictionary = new MorfologikDictionayBuilder()

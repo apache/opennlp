@@ -82,7 +82,8 @@ public class NGramUtilsTest {
     set.add(new StringList("his", "green", "house", "STOP"));
     set.add(new StringList("book", "STOP"));
     Double lambda = 1d / 3d;
-    Double d = NGramUtils.calculateTrigramLinearInterpolationProbability("the", "green", "book", set, lambda, lambda, lambda);
+    Double d = NGramUtils.calculateTrigramLinearInterpolationProbability("the", "green",
+        "book", set, lambda, lambda, lambda);
     assertNotNull(d);
     assertEquals("wrong result", Double.valueOf(0.5714285714285714d), d);
   }
@@ -93,14 +94,16 @@ public class NGramUtilsTest {
     set.add(new StringList("D", "N", "V", "STOP"));
     set.add(new StringList("D", "N", "V", "STOP"));
     Double lambda = 1d / 3d;
-    Double d = NGramUtils.calculateTrigramLinearInterpolationProbability("N", "V", "STOP", set, lambda, lambda, lambda);
+    Double d = NGramUtils.calculateTrigramLinearInterpolationProbability("N", "V",
+        "STOP", set, lambda, lambda, lambda);
     assertNotNull(d);
     assertEquals("wrong result", Double.valueOf(0.75d), d);
   }
 
   @Test
   public void testGetNGrams() throws Exception {
-    Collection<StringList> nGrams = NGramUtils.getNGrams(new StringList("I", "saw", "brown", "fox"), 2);
+    Collection<StringList> nGrams = NGramUtils.getNGrams(new StringList("I",
+        "saw", "brown", "fox"), 2);
     assertEquals(3, nGrams.size());
     nGrams = NGramUtils.getNGrams(new StringList("I", "saw", "brown", "fox"), 3);
     assertEquals(2, nGrams.size());

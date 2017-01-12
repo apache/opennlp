@@ -141,9 +141,10 @@ public class ChunkSampleTest {
 
     ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
 
-    assertEquals(" [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] " +
-        "[VP range_VBP ] [ADVP widely_RB ] ,_, [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] " +
-        "[VP range_VBP ] [ADVP widely_RB ] ._.", sample.nicePrint());
+    assertEquals(" [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] "
+        + "[VP range_VBP ] [ADVP widely_RB ] ,_, [NP Forecasts_NNS ] [PP for_IN ] "
+        + "[NP the_DT trade_NN figures_NNS ] "
+        + "[VP range_VBP ] [ADVP widely_RB ] ._.", sample.nicePrint());
   }
 
   @Test

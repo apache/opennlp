@@ -232,7 +232,8 @@ public class NameFinderMETest {
   }
 
   /**
-   * Train NamefinderME using OnlyWithNamesWithTypes.train. The goal is to check if the model validator accepts it.
+   * Train NamefinderME using OnlyWithNamesWithTypes.train.
+   * The goal is to check if the model validator accepts it.
    * This is related to the issue OPENNLP-9
    */
   @Test
