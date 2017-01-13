@@ -17,9 +17,11 @@
 
 package opennlp.tools.ml;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.util.TrainingParameters;
 
 public abstract class AbstractTrainer {
 
@@ -35,26 +37,33 @@ public abstract class AbstractTrainer {
 
   public static final String VERBOSE_PARAM = "PrintMessages";
   public static final boolean VERBOSE_DEFAULT = true;
-  
-  protected PluggableParameters parameters;
+
+  protected TrainingParameters trainingParameters;
+  protected Map<String,String> reportMap;
 
   public AbstractTrainer() {
   }
 
+  public void init(TrainingParameters trainingParameters, Map<String,String> reportMap) {
+    this.trainingParameters = trainingParameters;
+    if (reportMap == null) reportMap = new HashMap<>();
+    this.reportMap = reportMap;
+  }
+  
   public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
-    parameters = new PluggableParameters(trainParams, reportMap);
+    init(new TrainingParameters(trainParams),reportMap);
   }
 
   public String getAlgorithm() {
-    return parameters.getStringParam(ALGORITHM_PARAM, GIS.MAXENT_VALUE);
+    return trainingParameters.getStringParameter(ALGORITHM_PARAM, GIS.MAXENT_VALUE);
   }
 
   public int getCutoff() {
-    return parameters.getIntParam(CUTOFF_PARAM, CUTOFF_DEFAULT);
+    return trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
   }
 
   public int getIterations() {
-    return parameters.getIntParam(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
+    return trainingParameters.getIntParameter(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
   }
 
   public boolean isValid() {
@@ -64,23 +73,23 @@ public abstract class AbstractTrainer {
     // should validate if algorithm is set? What about the Parser?
 
     try {
-      parameters.getIntParam(CUTOFF_PARAM, CUTOFF_DEFAULT);
-      parameters.getIntParam(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
+      trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
+      trainingParameters.getIntParameter(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
     } catch (NumberFormatException e) {
       return false;
     }
-
+    
     return true;
   }
 
 /**
-   * Use the PluggableParameters directly...
+   * Use the TrainingParameters directly...
    * @param key
    * @param value
    */
   @Deprecated
   protected String getStringParam(String key, String defaultValue) {
-    return parameters.getStringParam(key, defaultValue);
+    return trainingParameters.getStringParameter(key, defaultValue);
   }
 
   /**
@@ -89,8 +98,8 @@ public abstract class AbstractTrainer {
    * @param value
    */
   @Deprecated
-  protected int getIntParam(String key, int defaultValue) {
-    return parameters.getIntParam(key, defaultValue);
+  protected int TrainingParameters(String key, int defaultValue) {
+    return trainingParameters.getIntParameter(key, defaultValue);
   }
   
   /**
@@ -100,7 +109,7 @@ public abstract class AbstractTrainer {
    */
   @Deprecated
   protected double getDoubleParam(String key, double defaultValue) {
-    return parameters.getDoubleParam(key, defaultValue);
+    return trainingParameters.getDoubleParameter(key, defaultValue);
   }
 
   /**
@@ -110,16 +119,15 @@ public abstract class AbstractTrainer {
    */
   @Deprecated
   protected boolean getBooleanParam(String key, boolean defaultValue) {
-    return parameters.getBooleanParam(key, defaultValue);
+    return trainingParameters.getBooleanParameter(key, defaultValue);
   }
 
   /**
-   * Use the PluggableParameters directly...
+   * Adds the key/Value to the report map.
    * @param key
    * @param value
    */
-  @Deprecated
   protected void addToReport(String key, String value) {
-    parameters.addToReport(key, value);
+    reportMap.put(key, value);
   }
 }

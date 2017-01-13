@@ -28,9 +28,13 @@ import java.util.Map;
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.model.AbstractDataIndexer;
+import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
+import opennlp.tools.util.TrainingParameters;
 
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -38,10 +42,21 @@ import org.junit.Test;
  */
 public class NaiveBayesPrepAttachTest {
 
+  private DataIndexer testDataIndexer;
+  @Before
+  public void initIndexer() {
+    TrainingParameters trainingParameters = new TrainingParameters();
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, "false");
+    testDataIndexer = new TwoPassDataIndexer();
+    testDataIndexer.init(trainingParameters, new HashMap<>());
+  }
+  
   @Test
   public void testNaiveBayesOnPrepAttachData() throws IOException {
-    MaxentModel model =
-        new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(createTrainingStream(), 1, false));
+    testDataIndexer.index(createTrainingStream());
+    MaxentModel model = 
+        new NaiveBayesTrainer().trainModel(testDataIndexer);
 
     assertTrue(model instanceof NaiveBayesModel);
 

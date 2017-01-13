@@ -26,22 +26,36 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.DataIndexer;
+import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
+import opennlp.tools.util.TrainingParameters;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class NegLogLikelihoodTest {
   public final double TOLERANCE01 = 1.0E-06;
   public final double TOLERANCE02 = 1.0E-10;
 
+  private DataIndexer testDataIndexer;
+  @Before
+  public void initIndexer() {
+    TrainingParameters trainingParameters = new TrainingParameters();
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    testDataIndexer = new OnePassRealValueDataIndexer();
+    testDataIndexer.init(trainingParameters, new HashMap<>());
+  }
+  
   @Test
   public void testDomainDimensionSanity() throws IOException {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
     int correctDomainDimension = testDataIndexer.getPredLabels().length
@@ -55,7 +69,7 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
     double[] initial = objectFunction.getInitialPoint();
@@ -70,7 +84,7 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
     double[] initial = objectFunction.getInitialPoint();
@@ -84,7 +98,7 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
     double value = objectFunction.valueAt(objectFunction.getInitialPoint());
@@ -98,7 +112,7 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
     double[] nonInitialPoint = new double[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
@@ -113,7 +127,7 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
     double[] nonInitialPoint = new double[] { 3, 2, 3, 2, 3, 2, 3, 2, 3, 2 };
@@ -130,7 +144,7 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
     double[] gradientAtInitialPoint = objectFunction.gradientAt(objectFunction.getInitialPoint());
@@ -145,7 +159,7 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
     double[] nonInitialPoint = new double[] { 0.2, 0.5, 0.2, 0.5, 0.2, 0.5, 0.2, 0.5, 0.2, 0.5 };

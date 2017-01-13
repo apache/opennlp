@@ -42,6 +42,14 @@ public class TrainingParameters {
   public TrainingParameters() {
   }
 
+  public TrainingParameters(TrainingParameters trainingParameters) {
+    this.parameters.putAll(trainingParameters.parameters);
+  }
+  
+  public TrainingParameters(Map<String,String> map) {
+    parameters.putAll(map);
+  }
+  
   public TrainingParameters(InputStream in) throws IOException {
 
     Properties properties = new Properties();
@@ -146,6 +154,56 @@ public class TrainingParameters {
     properties.store(out, null);
   }
 
+  public String getStringParameter(String key, String defaultValue) {
+    return parameters.getOrDefault(key, defaultValue);
+  }
+  
+  public String getStringParameter(String namespace, String key, String defaultValue) {
+    if (namespace == null) {
+      return getStringParameter(key, defaultValue);
+    }
+    return parameters.getOrDefault(namespace + "." + key, defaultValue);
+  }
+  
+  public int getIntParameter(String key, int defaultValue) {
+    String value = parameters.getOrDefault(key, Integer.toString(defaultValue));
+    return Integer.parseInt(value);
+  }
+  
+  public int getIntParameter(String namespace, String key, int defaultValue) {
+    if (namespace == null) {
+      return getIntParameter(key, defaultValue);
+    }
+    String value = parameters.getOrDefault(namespace + "." + key, Integer.toString(defaultValue));
+    return Integer.parseInt(value);
+  }
+  
+  public double getDoubleParameter(String key, double defaultValue) {
+    String value = parameters.getOrDefault(key, Double.toString(defaultValue));
+    return Double.parseDouble(value);
+  }
+  
+  public double getDoubleParameter(String namespace, String key, double defaultValue) {
+    if (namespace == null) {
+      return getDoubleParameter(key, defaultValue);
+    }
+    String value = parameters.getOrDefault(namespace + "." + key, Double.toString(defaultValue));
+    return Double.parseDouble(value);
+  }
+  
+  public boolean getBooleanParameter(String key, boolean defaultValue) {
+    String value = parameters.getOrDefault(key, Boolean.toString(defaultValue));
+    return Boolean.parseBoolean(value);
+  }
+  
+  public boolean getBooleanParameter(String namespace, String key, boolean defaultValue) {
+    if (namespace == null) {
+      return getBooleanParameter(key, defaultValue);
+    }
+    String value = parameters.getOrDefault(namespace + "." + key, Boolean.toString(defaultValue));
+    return Boolean.parseBoolean(value);
+  }
+  
   public static TrainingParameters defaultParams() {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");

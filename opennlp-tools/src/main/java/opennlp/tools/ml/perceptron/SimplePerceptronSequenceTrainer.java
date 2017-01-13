@@ -104,7 +104,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     int iterations = getIterations();
     int cutoff = getCutoff();
 
-    boolean useAverage = parameters.getBooleanParam("UseAverage", true);
+    boolean useAverage = trainingParameters.getBooleanParameter("UseAverage", true);
 
     return trainModel(iterations, events, cutoff, useAverage);
   }
@@ -115,11 +115,11 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
                                   int cutoff, boolean useAverage) throws IOException {
     this.iterations = iterations;
     this.sequenceStream = sequenceStream;
-    Map<String,String> indexingParameters = new HashMap<String, String>();
-    indexingParameters.put(AbstractDataIndexer.CUTOFF_PARAM, Integer.toString(cutoff));
-    indexingParameters.put(AbstractDataIndexer.SORT_PARAM, Boolean.toString(false));
+    
+    trainingParameters.put(AbstractDataIndexer.CUTOFF_PARAM, Integer.toString(cutoff));
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, Boolean.toString(false));
     DataIndexer di = new OnePassDataIndexer();
-    di.init(indexingParameters, new HashMap<String, String>());
+    di.init(trainingParameters,reportMap);
     di.index(new SequenceStreamEventStream(sequenceStream));
     numSequences = 0;
 

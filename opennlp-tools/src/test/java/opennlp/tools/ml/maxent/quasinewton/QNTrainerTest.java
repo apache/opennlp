@@ -26,7 +26,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.BinaryFileDataReader;
 import opennlp.tools.ml.model.DataIndexer;
@@ -34,19 +36,30 @@ import opennlp.tools.ml.model.GenericModelReader;
 import opennlp.tools.ml.model.GenericModelWriter;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
+import opennlp.tools.util.TrainingParameters;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class QNTrainerTest {
 
   private static int ITERATIONS = 50;
 
+  private DataIndexer testDataIndexer;
+  @Before
+  public void initIndexer() {
+    TrainingParameters trainingParameters = new TrainingParameters();
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    testDataIndexer = new OnePassRealValueDataIndexer();
+    testDataIndexer.init(trainingParameters, new HashMap<>());
+  }
+  
   @Test
   public void testTrainModelReturnsAQNModel() throws Exception {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);
     // when
     QNModel trainedModel = new QNTrainer(false).trainModel(ITERATIONS, testDataIndexer);
     // then
@@ -58,7 +71,7 @@ public class QNTrainerTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);;
     // when
     QNModel trainedModel = new QNTrainer(15, true).trainModel(ITERATIONS, testDataIndexer);
     String[] features2Classify = new String[] {
@@ -76,7 +89,7 @@ public class QNTrainerTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);
     // when
     QNModel trainedModel = new QNTrainer(15, true).trainModel(
         ITERATIONS, testDataIndexer);
@@ -90,7 +103,7 @@ public class QNTrainerTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
-    DataIndexer testDataIndexer = new OnePassRealValueDataIndexer(rvfes1,1);
+    testDataIndexer.index(rvfes1);
     // when
     QNModel trainedModel = new QNTrainer(5, 700, true).trainModel(ITERATIONS, testDataIndexer);
 

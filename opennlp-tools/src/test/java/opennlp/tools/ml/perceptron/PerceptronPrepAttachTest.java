@@ -31,9 +31,11 @@ import java.util.Map;
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
+import opennlp.tools.util.TrainingParameters;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,9 +47,15 @@ public class PerceptronPrepAttachTest {
 
   @Test
   public void testPerceptronOnPrepAttachData() throws IOException {
+    TwoPassDataIndexer indexer = new TwoPassDataIndexer();
+    TrainingParameters indexingParameters = new TrainingParameters();
+    indexingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    indexingParameters.put(AbstractDataIndexer.SORT_PARAM, "false");    
+    indexer.init(indexingParameters, new HashMap<>());
+    indexer.index(createTrainingStream());
     MaxentModel model =
         new PerceptronTrainer().trainModel(400,
-        new TwoPassDataIndexer(createTrainingStream(), 1, false), 1);
+        indexer, 1);
 
     testModel(model, 0.7650408516959644);
   }

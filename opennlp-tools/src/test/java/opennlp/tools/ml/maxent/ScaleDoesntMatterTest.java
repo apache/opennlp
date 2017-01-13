@@ -17,6 +17,8 @@
 
 package opennlp.tools.ml.maxent;
 
+import opennlp.tools.ml.AbstractTrainer;
+import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
@@ -24,13 +26,26 @@ import opennlp.tools.ml.model.RealValueFileEventStream;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
+
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
 public class ScaleDoesntMatterTest {
 
+  private DataIndexer testDataIndexer;
+  @Before
+  public void initIndexer() {
+    TrainingParameters trainingParameters = new TrainingParameters();
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "0");
+    testDataIndexer = new OnePassRealValueDataIndexer();
+    testDataIndexer.init(trainingParameters, new HashMap<>());
+  }
+  
   /**
    * This test sets out to prove that the scale you use on real valued
    * predicates doesn't matter when it comes the probability assigned to each
@@ -52,8 +67,9 @@ public class ScaleDoesntMatterTest {
     ObjectStream<Event> smallEventStream = new RealBasicEventStream(
         new PlainTextByLineStream(new MockInputStreamFactory(smallValues), StandardCharsets.UTF_8));
 
+    testDataIndexer.index(smallEventStream);
     MaxentModel smallModel = GIS.trainModel(100,
-        new OnePassRealValueDataIndexer(smallEventStream, 0), false);
+        testDataIndexer, false);
     String[] contexts = smallTest.split(" ");
     float[] values = RealValueFileEventStream.parseContexts(contexts);
     double[] smallResults = smallModel.eval(contexts, values);
@@ -64,8 +80,9 @@ public class ScaleDoesntMatterTest {
     ObjectStream<Event> largeEventStream = new RealBasicEventStream(
         new PlainTextByLineStream(new MockInputStreamFactory(largeValues), StandardCharsets.UTF_8));
 
+    testDataIndexer.index(largeEventStream);
     MaxentModel largeModel = GIS.trainModel(100,
-        new OnePassRealValueDataIndexer(largeEventStream, 0), false);
+        testDataIndexer, false);
     contexts = largeTest.split(" ");
     values = RealValueFileEventStream.parseContexts(contexts);
     double[] largeResults = largeModel.eval(contexts, values);

@@ -99,8 +99,8 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
 
   @Override
   public void index(ObjectStream<Event> eventStream) throws IOException {
-    int cutoff = parameters.getIntParam(CUTOFF_PARAM, CUTOFF_DEFAULT);
-    boolean sort = parameters.getBooleanParam(SORT_PARAM, SORT_DEFAULT);
+    int cutoff = trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
+    boolean sort = trainingParameters.getBooleanParameter(SORT_PARAM, SORT_DEFAULT);
 
     Map<String, Integer> predicateIndex = new HashMap<>();
     List<Event> events;
