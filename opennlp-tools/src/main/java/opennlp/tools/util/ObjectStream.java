@@ -64,7 +64,9 @@ public interface ObjectStream<T> extends AutoCloseable {
    *
    * @throws IOException if there is an error during reseting the stream
    */
-  void reset() throws IOException, UnsupportedOperationException;
+  default void reset() throws IOException, UnsupportedOperationException {
+    throw new UnsupportedOperationException("reset is not supported on this stream");
+  }
 
   /**
    * Closes the <code>ObjectStream</code> and releases all allocated
@@ -73,5 +75,5 @@ public interface ObjectStream<T> extends AutoCloseable {
    *
    * @throws IOException if there is an error during closing the stream
    */
-  void close() throws IOException;
+  default void close() throws IOException {}
 }

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.
+-->
+
+<letsmt version="1.0">
+    <head></head>
+    <body>
+        <s id="1">
+            <w>The</w>
+            <w>Apache</w>
+            <w>Software</w>
+            <w>Foundation</w>
+            <w>uses</w>
+            <w>various</w>
+            <w>licenses</w>
+            <w>to</w>
+            <w>distribute</w>
+            <w>software</w>
+            <w>and</w>
+            <w>documentation</w>
+            <w>,</w>
+            <w>to</w>
+            <w>accept</w>
+            <w>regular</w>
+            <w>contributions</w>
+            <w>from</w>
+            <w>individuals</w>
+            <w>and</w>
+            <w>corporations</w>
+            <w>,</w>
+            <w>and</w>
+            <w>to</w>
+            <w>accept</w>
+            <w>larger</w>
+            <w>grants</w>
+            <w>of</w>
+            <w>existing</w>
+            <w>software</w>
+            <w>products</w>
+            <w>.</w>
+        </s>
+        <s id="2">
+            <w>All</w>
+            <w>software</w>
+            <w>produced</w>
+            <w>by</w>
+            <w>The</w>
+            <w>Apache</w>
+            <w>Software</w>
+            <w>Foundation</w>
+            <w>or</w>
+            <w>any</w>
+            <w>of</w>
+            <w>its</w>
+            <w>projects</w>
+            <w>or</w>
+            <w>subjects</w>
+            <w>is</w>
+            <w>licensed</w>
+            <w>according</w>
+            <w>to</w>
+            <w>the</w>
+            <w>terms</w>
+            <w>of</w>
+            <w>the</w>
+            <w>documents</w>
+            <w>listed</w>
+            <w>below</w>
+            <w>.</w>
+        </s>
+    </body>
+</letsmt>

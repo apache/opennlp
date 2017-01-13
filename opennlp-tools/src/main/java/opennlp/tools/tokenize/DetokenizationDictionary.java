@@ -17,6 +17,9 @@
 
 package opennlp.tools.tokenize;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -105,7 +108,16 @@ public class DetokenizationDictionary {
   }
 
   public DetokenizationDictionary(InputStream in) throws IOException {
+    init(in);
+  }
 
+  public DetokenizationDictionary(File file) throws IOException {
+    try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+      init(in);
+    }
+  }
+
+  private void init(InputStream in) throws IOException {
     DictionarySerializer.create(in, entry -> {
 
       String operationString = entry.getAttributes().getValue("operation");
@@ -119,7 +131,7 @@ public class DetokenizationDictionary {
       Operation operation = Operation.parse(operationString);
 
       if (operation == null)
-          throw new InvalidFormatException("Unknown operation type: " + operationString);
+        throw new InvalidFormatException("Unknown operation type: " + operationString);
 
       operationTable.put(word.getToken(0), operation);
     });

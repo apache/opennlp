@@ -42,8 +42,8 @@ public class SentenceSample {
    * @param document
    * @param sentences
    */
-  public SentenceSample(String document, Span... sentences) {
-    this.document = document;
+  public SentenceSample(CharSequence document, Span... sentences) {
+    this.document = document.toString();
     this.sentences = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(sentences)));
   }
 
