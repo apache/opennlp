@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package opennlp.tools.stemmer.snowball;
 
+// CHECKSTYLE:OFF
 abstract class AbstractSnowballStemmer extends SnowballProgram {
     public abstract boolean stem();
 }

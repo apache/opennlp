@@ -30,8 +30,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 package opennlp.tools.stemmer.snowball;
+
 import java.lang.reflect.InvocationTargetException;
 
+// CHECKSTYLE:OFF
 class SnowballProgram {
     protected SnowballProgram()
     {

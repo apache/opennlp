@@ -29,9 +29,7 @@
 
   <property name="fileExtensions" value="java, properties, xml"/>
 
-  <module name="SuppressionFilter">
-    <property name="file" value="checkstyle-suppressions.xml" />
-  </module>
+  <module name="SuppressionCommentFilter"/>
 
   <!-- Checks for whitespace                               -->
   <!-- See http://checkstyle.sf.net/config_whitespace.html -->
@@ -45,6 +43,7 @@
   </module>
 
   <module name="TreeWalker">
+    <module name="FileContentsHolder"/>
     <module name="OuterTypeFilename"/>
     <module name="IllegalTokenText">
       <property name="tokens" value="STRING_LITERAL, CHAR_LITERAL"/>

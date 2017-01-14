@@ -50,7 +50,9 @@ import java.util.Set;
 public class ArgumentParser {
 
   public @Retention(RetentionPolicy.RUNTIME) @interface OptionalParameter {
+    // CHECKSTYLE:OFF
     String DEFAULT_CHARSET = "DEFAULT_CHARSET";
+    // CHECKSTYLE:ON
     String defaultValue() default "";
   }
 

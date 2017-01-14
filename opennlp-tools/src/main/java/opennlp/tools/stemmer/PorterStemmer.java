@@ -51,7 +51,7 @@ package opennlp.tools.stemmer;
  * word can be provided a character at time (by calling add()), or at once
  * by calling one of the various stem(something) methods.
  */
-
+// CHECKSTYLE:OFF
 public class PorterStemmer implements Stemmer {
   private char[] b;
   private int i,    /* offset into b */
