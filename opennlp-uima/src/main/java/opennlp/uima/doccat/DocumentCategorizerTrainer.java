@@ -51,7 +51,11 @@ import org.apache.uima.util.ProcessTrace;
  * OpenNLP NameFinder trainer.
  *
  * Note: This class is still work in progress, and should not be used!
+ *
+ * @deprecated will be removed after 1.7.1 release, there is no replacement
  */
+@Deprecated
+
 public class DocumentCategorizerTrainer extends CasConsumer_ImplBase {
 
   private UimaContext mContext;

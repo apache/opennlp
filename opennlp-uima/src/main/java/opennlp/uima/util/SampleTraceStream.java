@@ -28,7 +28,10 @@ import opennlp.tools.util.ObjectStream;
  * In the case the underlying stream is reseted this stream will
  * detect that, and does not write the samples again to the output writer.
  * @param <T>
+ *
+ * @deprecated will be removed after 1.7.1 release, there is no replacement
  */
+@Deprecated
 public class SampleTraceStream<T> extends FilterObjectStream<T, T> {
 
   private final Writer out;

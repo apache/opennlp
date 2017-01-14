@@ -97,7 +97,11 @@ import opennlp.uima.util.UimaUtil;
  *   <td>Encoding of the sample trace file</td></tr>
  * </table>
  * <p>
+ *
+ * @deprecated will be removed after 1.7.1 release, there is no replacement
  */
+@Deprecated
+
 public final class NameFinderTrainer extends CasConsumer_ImplBase {
 
   private static final String FEATURE_GENERATOR_DEFINITION_FILE_PARAMETER =

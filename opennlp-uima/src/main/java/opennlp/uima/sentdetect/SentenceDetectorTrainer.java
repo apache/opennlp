@@ -65,7 +65,10 @@ import org.apache.uima.util.ProcessTrace;
  *   <tr><td>String</td> <td>opennlp.uima.EOSChars</td>
  *   <td>A string containing end-of-sentence characters</td></tr>
  * </table>
+ *
+ * @deprecated will be removed after 1.7.1 release, there is no replacement
  */
+@Deprecated
 public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
 
   private List<SentenceSample> sentenceSamples = new ArrayList<>();

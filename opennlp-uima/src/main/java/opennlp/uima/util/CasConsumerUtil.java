@@ -34,7 +34,10 @@ import org.apache.uima.util.Logger;
 
 /**
  * This is a util class for cas consumer.
+ * @deprecated will be removed after 1.7.1 release, there is no replacement
  */
+@Deprecated
+
 public final class CasConsumerUtil {
 
   private CasConsumerUtil(){

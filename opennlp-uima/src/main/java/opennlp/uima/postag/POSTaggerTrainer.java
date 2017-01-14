@@ -64,7 +64,11 @@ import org.apache.uima.util.ProcessTrace;
  *       the feature must be of type String</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.TagDictionaryName</td></tr>
  * </table>
+ *
+ * @deprecated will be removed after 1.7.1 release, there is no replacement
  */
+@Deprecated
+
 public class POSTaggerTrainer extends CasConsumer_ImplBase {
 
   public static final String TAG_DICTIONARY_NAME = "opennlp.uima.TagDictionaryName";

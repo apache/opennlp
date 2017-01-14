@@ -63,7 +63,10 @@ import org.apache.uima.util.ProcessTrace;
  *   <tr><td>String</td> <td>opennlp.uima.ChunkType</td></tr>
  *   <tr><td>String</td> <td>opennlp.uima.ChunkTagFeature</td></tr>
  * </table>
+ *
+ * @deprecated will be removed after 1.7.1 release, there is no replacement
  */
+@Deprecated
 public class ChunkerTrainer extends CasConsumer_ImplBase {
 
   private List<ChunkSample> mChunkSamples = new ArrayList<>();

@@ -78,7 +78,11 @@ import org.apache.uima.util.ProcessTrace;
  *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
  *   <tr><td>Boolean</td> <td>opennlp.uima.tokenizer.IsSkipAlphaNumerics</td></tr>
  * </table>
+ *
+ * @deprecated will be removed after 1.7.1 release, there is no replacement
  */
+@Deprecated
+
 public final class TokenizerTrainer extends CasConsumer_ImplBase {
 
   private static final String IS_ALPHA_NUMERIC_OPTIMIZATION =
