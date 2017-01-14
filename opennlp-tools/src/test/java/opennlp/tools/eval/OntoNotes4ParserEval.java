@@ -72,6 +72,13 @@ public class OntoNotes4ParserEval {
           new InputStreamReader(headRulesIn, "UTF-8"));
     }
 
-    crossEval(ModelUtil.createDefaultTrainingParameters(), headRules, 0.937987617163142d);
+    TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
+    params.put("build.Threads", "4");
+    params.put("tagger.Threads", "4");
+    params.put("chunker.Threads", "4");
+    params.put("check.Threads", "4");
+
+
+    crossEval(params, headRules, 0.937987617163142d);
   }
 }
