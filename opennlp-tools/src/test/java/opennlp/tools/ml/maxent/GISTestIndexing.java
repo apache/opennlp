@@ -29,12 +29,13 @@ import opennlp.tools.util.ObjectStreamUtils;
 
 public class GISTestIndexing {
 
-  static String[][] cntx = new String[][]{
+  private static String[][] cntx = new String[][]{
     {"dog","cat","mouse"},
     {"text", "print", "mouse"},
     {"dog", "pig", "cat", "mouse"}
   };
-  static String[] outputs = new String[]{"A","B","A"};
+
+  private static String[] outputs = new String[]{"A","B","A"};
 
   /*
    * Test the GIS.trainModel(ObjectStream<Event> eventStream) method
@@ -74,12 +75,13 @@ public class GISTestIndexing {
       events.add(new Event(outputs[i], cntx[i]));
     }
     ObjectStream<Event> eventStream = ObjectStreamUtils.createObjectStream(events);
-    Assert.assertNotNull(GIS.trainModel(eventStream,10,1));
+    Assert.assertNotNull(GIS.trainModel(eventStream, 10, 1));
     eventStream.close();
   }
  
   /*
-   * Test the GIS.trainModel(ObjectStream<Event> eventStream, int iterations, int cutoff, double sigma) method
+   * Test the GIS.trainModel(ObjectStream<Event> eventStream, int iterations, int cutoff,
+    * double sigma) method
    */
   @Test
   public void testGISTrainSignature4() throws Exception {
@@ -88,7 +90,7 @@ public class GISTestIndexing {
       events.add(new Event(outputs[i], cntx[i]));
     }
     ObjectStream<Event> eventStream = ObjectStreamUtils.createObjectStream(events);
-    Assert.assertNotNull(GIS.trainModel(eventStream,10,1,0.01));
+    Assert.assertNotNull(GIS.trainModel(eventStream, 10, 1, 0.01));
     eventStream.close();
   }
   
@@ -103,7 +105,7 @@ public class GISTestIndexing {
       events.add(new Event(outputs[i], cntx[i]));
     }
     ObjectStream<Event> eventStream = ObjectStreamUtils.createObjectStream(events);
-    Assert.assertNotNull(GIS.trainModel(eventStream,10,1,false,false));
+    Assert.assertNotNull(GIS.trainModel(eventStream, 10, 1, false, false));
     eventStream.close();
   }
 }

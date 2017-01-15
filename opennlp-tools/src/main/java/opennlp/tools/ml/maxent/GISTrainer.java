@@ -44,118 +44,92 @@ import opennlp.tools.util.ObjectStream;
  * for this implementation was Adwait Ratnaparkhi's tech report at the
  * University of Pennsylvania's Institute for Research in Cognitive Science,
  * and is available at <a href ="ftp://ftp.cis.upenn.edu/pub/ircs/tr/97-08.ps.Z"><code>ftp://ftp.cis.upenn.edu/pub/ircs/tr/97-08.ps.Z</code></a>.
- *
+ * <p>
  * The slack parameter used in the above implementation has been removed by default
  * from the computation and a method for updating with Gaussian smoothing has been
  * added per Investigating GIS and Smoothing for Maximum Entropy Taggers, Clark and Curran (2002).
  * <a href="http://acl.ldc.upenn.edu/E/E03/E03-1071.pdf"><code>http://acl.ldc.upenn.edu/E/E03/E03-1071.pdf</code></a>
  * The slack parameter can be used by setting <code>useSlackParameter</code> to true.
  * Gaussian smoothing can be used by setting <code>useGaussianSmoothing</code> to true.
- *
+ * <p>
  * A prior can be used to train models which converge to the distribution which minimizes the
  * relative entropy between the distribution specified by the empirical constraints of the training
  * data and the specified prior.  By default, the uniform distribution is used as the prior.
  */
 class GISTrainer {
 
+  private static final double LLThreshold = 0.0001;
+  private final boolean printMessages;
   /**
    * Specifies whether unseen context/outcome pairs should be estimated as occur very infrequently.
    */
   private boolean useSimpleSmoothing = false;
-
   /**
    * Specified whether parameter updates should prefer a distribution of parameters which
    * is gaussian.
    */
   private boolean useGaussianSmoothing = false;
-
   private double sigma = 2.0;
-
   // If we are using smoothing, this is used as the "number" of
   // times we want the trainer to imagine that it saw a feature that it
   // actually didn't see.  Defaulted to 0.1.
   private double _smoothingObservation = 0.1;
-
-  private final boolean printMessages;
-
   /**
    * Number of unique events which occured in the event set.
    */
   private int numUniqueEvents;
-
   /**
    * Number of predicates.
    */
   private int numPreds;
-
   /**
    * Number of outcomes.
    */
   private int numOutcomes;
-
   /**
    * Records the array of predicates seen in each event.
    */
   private int[][] contexts;
-
   /**
    * The value associated with each context. If null then context values are assumes to be 1.
    */
   private float[][] values;
-
   /**
    * List of outcomes for each event i, in context[i].
    */
   private int[] outcomeList;
-
   /**
    * Records the num of times an event has been seen for each event i, in context[i].
    */
   private int[] numTimesEventsSeen;
-
-  /**
-   * The number of times a predicate occured in the training data.
-   */
-  private int[] predicateCounts;
-
-  private int cutoff;
-
   /**
    * Stores the String names of the outcomes. The GIS only tracks outcomes as
    * ints, and so this array is needed to save the model to disk and thereby
    * allow users to know what the outcome was in human understandable terms.
    */
   private String[] outcomeLabels;
-
   /**
    * Stores the String names of the predicates. The GIS only tracks predicates
    * as ints, and so this array is needed to save the model to disk and thereby
    * allow users to know what the outcome was in human understandable terms.
    */
   private String[] predLabels;
-
   /**
    * Stores the observed expected values of the features based on training data.
    */
   private MutableContext[] observedExpects;
-
   /**
    * Stores the estimated parameter value of each predicate during iteration
    */
   private MutableContext[] params;
-
   /**
    * Stores the expected values of the features based on the current models
    */
   private MutableContext[][] modelExpects;
-
   /**
    * This is the prior distribution that the model uses for training.
    */
   private Prior prior;
-
-  private static final double LLThreshold = 0.0001;
-
   /**
    * Initial probability for all outcomes.
    */
@@ -164,7 +138,6 @@ class GISTrainer {
   /**
    * Creates a new <code>GISTrainer</code> instance which does not print
    * progress messages about training to STDOUT.
-   *
    */
   GISTrainer() {
     printMessages = false;
@@ -207,7 +180,6 @@ class GISTrainer {
    * Sets whether this trainer will use smoothing while training the model.
    * This can improve model accuracy, though training will potentially take
    * longer and use more memory.  Model size will also be larger.
-   *
    */
   public void setGaussianSigma(double sigmaValue) {
     useGaussianSmoothing = true;
@@ -217,43 +189,45 @@ class GISTrainer {
   /**
    * Trains a GIS model on the event in the specified event stream, using the specified number
    * of iterations and the specified count cutoff.
+   *
    * @param eventStream A stream of all events.
-   * @param iterations The number of iterations to use for GIS.
-   * @param cutoff The number of times a feature must occur to be included.
+   * @param iterations  The number of iterations to use for GIS.
+   * @param cutoff      The number of times a feature must occur to be included.
    * @return A GIS model trained with specified
    */
-  public GISModel trainModel(ObjectStream<Event> eventStream, int iterations, int cutoff) throws IOException {
+  public GISModel trainModel(ObjectStream<Event> eventStream, int iterations,
+                             int cutoff) throws IOException {
     DataIndexer indexer = new OnePassDataIndexer();
     Map<String, String> params = new HashMap<>();
     params.put(GIS.ITERATIONS_PARAM, Integer.toString(iterations));
     params.put(GIS.CUTOFF_PARAM, Integer.toString(cutoff));
     indexer.init(params, new HashMap<>());
     indexer.index(eventStream);
-    return trainModel(iterations, indexer, cutoff);
+    return trainModel(iterations, indexer);
   }
 
   /**
    * Train a model using the GIS algorithm.
    *
-   * @param iterations  The number of GIS iterations to perform.
-   * @param di The data indexer used to compress events in memory.
+   * @param iterations The number of GIS iterations to perform.
+   * @param di         The data indexer used to compress events in memory.
    * @return The newly trained model, which can be used immediately or saved
-   *         to disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
+   * to disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
-  public GISModel trainModel(int iterations, DataIndexer di, int cutoff) {
-    return trainModel(iterations,di,new UniformPrior(),cutoff,1);
+  public GISModel trainModel(int iterations, DataIndexer di) {
+    return trainModel(iterations, di, new UniformPrior(), 1);
   }
 
   /**
    * Train a model using the GIS algorithm.
    *
-   * @param iterations  The number of GIS iterations to perform.
-   * @param di The data indexer used to compress events in memory.
+   * @param iterations The number of GIS iterations to perform.
+   * @param di         The data indexer used to compress events in memory.
    * @param modelPrior The prior distribution used to train this model.
    * @return The newly trained model, which can be used immediately or saved
-   *         to disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
+   * to disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
-  public GISModel trainModel(int iterations, DataIndexer di, Prior modelPrior, int cutoff, int threads) {
+  public GISModel trainModel(int iterations, DataIndexer di, Prior modelPrior, int threads) {
 
     if (threads <= 0) {
       throw new IllegalArgumentException("threads must be at least one or greater but is " + threads + "!");
@@ -265,8 +239,10 @@ class GISTrainer {
     display("Incorporating indexed data for training...  \n");
     contexts = di.getContexts();
     values = di.getValues();
-    this.cutoff = cutoff;
-    predicateCounts = di.getPredCounts();
+    /*
+    The number of times a predicate occured in the training data.
+   */
+    int[] predicateCounts = di.getPredCounts();
     numTimesEventsSeen = di.getNumTimesEventsSeen();
     numUniqueEvents = contexts.length;
     this.prior = modelPrior;
@@ -279,8 +255,7 @@ class GISTrainer {
         if (contexts[ci].length > correctionConstant) {
           correctionConstant = contexts[ci].length;
         }
-      }
-      else {
+      } else {
         float cl = values[ci][0];
         for (int vi = 1; vi < values[ci].length; vi++) {
           cl += values[ci][vi];
@@ -298,7 +273,7 @@ class GISTrainer {
     numOutcomes = outcomeLabels.length;
 
     predLabels = di.getPredLabels();
-    prior.setLabels(outcomeLabels,predLabels);
+    prior.setLabels(outcomeLabels, predLabels);
     numPreds = predLabels.length;
 
     display("\tNumber of Event Tokens: " + numUniqueEvents + "\n");
@@ -311,15 +286,11 @@ class GISTrainer {
       for (int j = 0; j < contexts[ti].length; j++) {
         if (values != null && values[ti] != null) {
           predCount[contexts[ti][j]][outcomeList[ti]] += numTimesEventsSeen[ti] * values[ti][j];
-        }
-        else {
+        } else {
           predCount[contexts[ti][j]][outcomeList[ti]] += numTimesEventsSeen[ti];
         }
       }
     }
-
-    //printTable(predCount);
-    di = null; // don't need it anymore
 
     // A fake "observation" to cover features which are not detected in
     // the data.  The default is to assume that we observed "1/10th" of a
@@ -332,15 +303,16 @@ class GISTrainer {
     // implementation, this is cancelled out when we compute the next
     // iteration of a parameter, making the extra divisions wasteful.
     params = new MutableContext[numPreds];
-    for (int i = 0; i < modelExpects.length; i++)
+    for (int i = 0; i < modelExpects.length; i++) {
       modelExpects[i] = new MutableContext[numPreds];
+    }
     observedExpects = new MutableContext[numPreds];
 
     // The model does need the correction constant and the correction feature. The correction constant
     // is only needed during training, and the correction feature is not necessary.
     // For compatibility reasons the model contains form now on a correction constant of 1,
     // and a correction param 0.
-    evalParams = new EvalParameters(params,0,1,numOutcomes);
+    evalParams = new EvalParameters(params, 0, 1, numOutcomes);
     int[] activeOutcomes = new int[numOutcomes];
     int[] outcomePattern;
     int[] allOutcomesPattern = new int[numOutcomes];
@@ -353,27 +325,26 @@ class GISTrainer {
       if (useSimpleSmoothing) {
         numActiveOutcomes = numOutcomes;
         outcomePattern = allOutcomesPattern;
-      }
-      else { //determine active outcomes
+      } else { //determine active outcomes
         for (int oi = 0; oi < numOutcomes; oi++) {
-          if (predCount[pi][oi] > 0 && predicateCounts[pi] >= cutoff) {
+          if (predCount[pi][oi] > 0) {
             activeOutcomes[numActiveOutcomes] = oi;
             numActiveOutcomes++;
           }
         }
         if (numActiveOutcomes == numOutcomes) {
           outcomePattern = allOutcomesPattern;
-        }
-        else {
+        } else {
           outcomePattern = new int[numActiveOutcomes];
           System.arraycopy(activeOutcomes, 0, outcomePattern, 0, numActiveOutcomes);
         }
       }
-      params[pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
-      for (int i = 0; i < modelExpects.length; i++)
-        modelExpects[i][pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
-      observedExpects[pi] = new MutableContext(outcomePattern,new double[numActiveOutcomes]);
-      for (int aoi = 0;aoi < numActiveOutcomes; aoi++) {
+      params[pi] = new MutableContext(outcomePattern, new double[numActiveOutcomes]);
+      for (int i = 0; i < modelExpects.length; i++) {
+        modelExpects[i][pi] = new MutableContext(outcomePattern, new double[numActiveOutcomes]);
+      }
+      observedExpects[pi] = new MutableContext(outcomePattern, new double[numActiveOutcomes]);
+      for (int aoi = 0; aoi < numActiveOutcomes; aoi++) {
         int oi = outcomePattern[aoi];
         params[pi].setParameter(aoi, 0.0);
         for (MutableContext[] modelExpect : modelExpects) {
@@ -381,22 +352,20 @@ class GISTrainer {
         }
         if (predCount[pi][oi] > 0) {
           observedExpects[pi].setParameter(aoi, predCount[pi][oi]);
-        }
-        else if (useSimpleSmoothing) {
-          observedExpects[pi].setParameter(aoi,smoothingObservation);
+        } else if (useSimpleSmoothing) {
+          observedExpects[pi].setParameter(aoi, smoothingObservation);
         }
       }
     }
 
-    predCount = null; // don't need it anymore
-
     display("...done.\n");
 
     /* Find the parameters *****/
-    if (threads == 1)
+    if (threads == 1) {
       display("Computing model parameters ...\n");
-    else
+    } else {
       display("Computing model parameters in " + threads + " threads...\n");
+    }
 
     findParameters(iterations, correctionConstant);
 
@@ -411,19 +380,20 @@ class GISTrainer {
   private void findParameters(int iterations, double correctionConstant) {
     int threads = modelExpects.length;
     ExecutorService executor = Executors.newFixedThreadPool(threads);
-    CompletionService<ModelExpactationComputeTask> completionService =
+    CompletionService<ModelExpectationComputeTask> completionService =
         new ExecutorCompletionService<>(executor);
     double prevLL = 0.0;
     double currLL;
     display("Performing " + iterations + " iterations.\n");
     for (int i = 1; i <= iterations; i++) {
-      if (i < 10)
+      if (i < 10) {
         display("  " + i + ":  ");
-      else if (i < 100)
+      } else if (i < 100) {
         display(" " + i + ":  ");
-      else
+      } else {
         display(i + ":  ");
-      currLL = nextIteration(correctionConstant,completionService);
+      }
+      currLL = nextIteration(correctionConstant, completionService);
       if (i > 1) {
         if (prevLL > currLL) {
           System.err.println("Model Diverging: loglikelihood decreased");
@@ -445,7 +415,7 @@ class GISTrainer {
   }
 
   //modeled on implementation in  Zhang Le's maxent kit
-  private double gaussianUpdate(int predicate, int oid, int n, double correctionConstant) {
+  private double gaussianUpdate(int predicate, int oid, double correctionConstant) {
     double param = params[predicate].getParameters()[oid];
     double x0 = 0.0;
     double modelValue = modelExpects[0][predicate].getParameters()[oid];
@@ -467,98 +437,9 @@ class GISTrainer {
     return x0;
   }
 
-  private class ModelExpactationComputeTask implements Callable<ModelExpactationComputeTask> {
-
-    private final int startIndex;
-    private final int length;
-
-    private double loglikelihood = 0;
-
-    private int numEvents = 0;
-    private int numCorrect = 0;
-
-    final private int threadIndex;
-
-    // startIndex to compute, number of events to compute
-    ModelExpactationComputeTask(int threadIndex, int startIndex, int length) {
-      this.startIndex = startIndex;
-      this.length = length;
-      this.threadIndex = threadIndex;
-    }
-
-    public ModelExpactationComputeTask call() {
-
-      final double[] modelDistribution = new double[numOutcomes];
-
-
-      for (int ei = startIndex; ei < startIndex + length; ei++) {
-
-        // TODO: check interruption status here, if interrupted set a poisoned flag and return
-
-        if (values != null) {
-          prior.logPrior(modelDistribution, contexts[ei], values[ei]);
-          GISModel.eval(contexts[ei], values[ei], modelDistribution, evalParams);
-        }
-        else {
-          prior.logPrior(modelDistribution,contexts[ei]);
-          GISModel.eval(contexts[ei], modelDistribution, evalParams);
-        }
-        for (int j = 0; j < contexts[ei].length; j++) {
-          int pi = contexts[ei][j];
-          if (predicateCounts[pi] >= cutoff) {
-            int[] activeOutcomes = modelExpects[threadIndex][pi].getOutcomes();
-            for (int aoi = 0;aoi < activeOutcomes.length; aoi++) {
-              int oi = activeOutcomes[aoi];
-
-              // numTimesEventsSeen must also be thread safe
-              if (values != null && values[ei] != null) {
-                modelExpects[threadIndex][pi].updateParameter(aoi,modelDistribution[oi]
-                    * values[ei][j] * numTimesEventsSeen[ei]);
-              }
-              else {
-                modelExpects[threadIndex][pi].updateParameter(aoi,modelDistribution[oi]
-                    * numTimesEventsSeen[ei]);
-              }
-            }
-          }
-        }
-
-        loglikelihood += Math.log(modelDistribution[outcomeList[ei]]) * numTimesEventsSeen[ei];
-
-        numEvents += numTimesEventsSeen[ei];
-        if (printMessages) {
-          int max = 0;
-          for (int oi = 1; oi < numOutcomes; oi++) {
-            if (modelDistribution[oi] > modelDistribution[max]) {
-              max = oi;
-            }
-          }
-          if (max == outcomeList[ei]) {
-            numCorrect += numTimesEventsSeen[ei];
-          }
-        }
-
-      }
-
-      return this;
-    }
-
-    synchronized int getNumEvents() {
-      return numEvents;
-    }
-
-    synchronized int getNumCorrect() {
-      return numCorrect;
-    }
-
-    synchronized double getLoglikelihood() {
-      return loglikelihood;
-    }
-  }
-
   /* Compute one iteration of GIS and retutn log-likelihood.*/
   private double nextIteration(double correctionConstant,
-                               CompletionService<ModelExpactationComputeTask> completionService) {
+                               CompletionService<ModelExpectationComputeTask> completionService) {
     // compute contribution of p(a|b_i) for each feature and the new
     // correction parameter
     double loglikelihood = 0.0;
@@ -566,7 +447,7 @@ class GISTrainer {
     int numCorrect = 0;
 
     // Each thread gets equal number of tasks, if the number of tasks
-    // is not divisible by the number of threads, the first "leftOver" 
+    // is not divisible by the number of threads, the first "leftOver"
     // threads have one extra task.
     int numberOfThreads = modelExpects.length;
     int taskSize = numUniqueEvents / numberOfThreads;
@@ -574,14 +455,17 @@ class GISTrainer {
 
     // submit all tasks to the completion service.
     for (int i = 0; i < numberOfThreads; i++) {
-      if (i < leftOver)
-        completionService.submit(new ModelExpactationComputeTask(i, i * taskSize + i, taskSize + 1));
-      else
-        completionService.submit(new ModelExpactationComputeTask(i, i * taskSize + leftOver, taskSize));
+      if (i < leftOver) {
+        completionService.submit(new ModelExpectationComputeTask(i, i * taskSize + i,
+            taskSize + 1));
+      } else {
+        completionService.submit(new ModelExpectationComputeTask(i,
+            i * taskSize + leftOver, taskSize));
+      }
     }
 
     for (int i = 0; i < numberOfThreads; i++) {
-      ModelExpactationComputeTask finishedTask;
+      ModelExpectationComputeTask finishedTask;
       try {
         finishedTask = completionService.take().get();
       } catch (InterruptedException e) {
@@ -625,14 +509,13 @@ class GISTrainer {
       int[] activeOutcomes = params[pi].getOutcomes();
       for (int aoi = 0; aoi < activeOutcomes.length; aoi++) {
         if (useGaussianSmoothing) {
-          params[pi].updateParameter(aoi,gaussianUpdate(pi,aoi,numEvents,correctionConstant));
-        }
-        else {
+          params[pi].updateParameter(aoi, gaussianUpdate(pi, aoi, correctionConstant));
+        } else {
           if (model[aoi] == 0) {
             System.err.println("Model expects == 0 for " + predLabels[pi] + " " + outcomeLabels[aoi]);
           }
           //params[pi].updateParameter(aoi,(Math.log(observed[aoi]) - Math.log(model[aoi])));
-          params[pi].updateParameter(aoi,((Math.log(observed[aoi]) - Math.log(model[aoi]))
+          params[pi].updateParameter(aoi, ((Math.log(observed[aoi]) - Math.log(model[aoi]))
               / correctionConstant));
         }
 
@@ -649,7 +532,90 @@ class GISTrainer {
   }
 
   private void display(String s) {
-    if (printMessages)
+    if (printMessages) {
       System.out.print(s);
+    }
+  }
+
+  private class ModelExpectationComputeTask implements Callable<ModelExpectationComputeTask> {
+
+    private final int startIndex;
+    private final int length;
+    final private int threadIndex;
+    private double loglikelihood = 0;
+    private int numEvents = 0;
+    private int numCorrect = 0;
+
+    // startIndex to compute, number of events to compute
+    ModelExpectationComputeTask(int threadIndex, int startIndex, int length) {
+      this.startIndex = startIndex;
+      this.length = length;
+      this.threadIndex = threadIndex;
+    }
+
+    public ModelExpectationComputeTask call() {
+
+      final double[] modelDistribution = new double[numOutcomes];
+
+
+      for (int ei = startIndex; ei < startIndex + length; ei++) {
+
+        // TODO: check interruption status here, if interrupted set a poisoned flag and return
+
+        if (values != null) {
+          prior.logPrior(modelDistribution, contexts[ei], values[ei]);
+          GISModel.eval(contexts[ei], values[ei], modelDistribution, evalParams);
+        } else {
+          prior.logPrior(modelDistribution, contexts[ei]);
+          GISModel.eval(contexts[ei], modelDistribution, evalParams);
+        }
+        for (int j = 0; j < contexts[ei].length; j++) {
+          int pi = contexts[ei][j];
+          int[] activeOutcomes = modelExpects[threadIndex][pi].getOutcomes();
+          for (int aoi = 0; aoi < activeOutcomes.length; aoi++) {
+            int oi = activeOutcomes[aoi];
+
+            // numTimesEventsSeen must also be thread safe
+            if (values != null && values[ei] != null) {
+              modelExpects[threadIndex][pi].updateParameter(aoi, modelDistribution[oi]
+                  * values[ei][j] * numTimesEventsSeen[ei]);
+            } else {
+              modelExpects[threadIndex][pi].updateParameter(aoi, modelDistribution[oi]
+                  * numTimesEventsSeen[ei]);
+            }
+          }
+        }
+
+        loglikelihood += Math.log(modelDistribution[outcomeList[ei]]) * numTimesEventsSeen[ei];
+
+        numEvents += numTimesEventsSeen[ei];
+        if (printMessages) {
+          int max = 0;
+          for (int oi = 1; oi < numOutcomes; oi++) {
+            if (modelDistribution[oi] > modelDistribution[max]) {
+              max = oi;
+            }
+          }
+          if (max == outcomeList[ei]) {
+            numCorrect += numTimesEventsSeen[ei];
+          }
+        }
+
+      }
+
+      return this;
+    }
+
+    synchronized int getNumEvents() {
+      return numEvents;
+    }
+
+    synchronized int getNumCorrect() {
+      return numCorrect;
+    }
+
+    synchronized double getLoglikelihood() {
+      return loglikelihood;
+    }
   }
 }
