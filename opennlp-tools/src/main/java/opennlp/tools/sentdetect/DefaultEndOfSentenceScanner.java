@@ -21,16 +21,12 @@ package opennlp.tools.sentdetect;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.ml.maxent.IntegerPool;
-
 /**
  * Default implementation of the {@link EndOfSentenceScanner}.
  * It uses an character array with possible end of sentence chars
  * to identify potential sentence endings.
  */
 public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
-
-  protected static final IntegerPool INT_POOL = new IntegerPool(500);
 
   private char eosCharacters[];
 
@@ -57,7 +53,7 @@ public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
     for (int i = 0; i < cbuf.length; i++) {
       for (char eosCharacter : eosCharacters) {
         if (cbuf[i] == eosCharacter) {
-          l.add(INT_POOL.get(i));
+          l.add(i);
           break;
         }
       }

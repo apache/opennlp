@@ -24,7 +24,10 @@ package opennlp.tools.ml.maxent;
  * A pool of read-only, unsigned Integer objects within a fixed,
  * non-sparse range.  Use this class for operations in which a large
  * number of Integer wrapper objects will be created.
+ *
+ * @deprecated repalace with Integer.valueOf or auto boxing
  */
+@Deprecated
 public class IntegerPool {
   private Integer[] _table;
 
