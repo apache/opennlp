@@ -51,6 +51,7 @@ import opennlp.tools.formats.convert.ParseToSentenceSampleStreamFactory;
 import opennlp.tools.formats.convert.ParseToTokenSampleStreamFactory;
 import opennlp.tools.formats.frenchtreebank.ConstitParseSampleStreamFactory;
 import opennlp.tools.formats.letsmt.LetsmtSentenceStreamFactory;
+import opennlp.tools.formats.moses.MosesSentenceSampleStreamFactory;
 import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesNameSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesPOSSampleStreamFactory;
@@ -108,6 +109,7 @@ public final class StreamFactoryRegistry {
     BratNameSampleStreamFactory.registerFactory();
 
     LetsmtSentenceStreamFactory.registerFactory();
+    MosesSentenceSampleStreamFactory.registerFactory();
   }
 
   public static final String DEFAULT_FORMAT = "opennlp";
