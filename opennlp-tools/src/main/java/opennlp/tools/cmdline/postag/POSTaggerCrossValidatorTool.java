@@ -76,9 +76,7 @@ public final class POSTaggerCrossValidatorTool
         reportListener = new POSTaggerFineGrainedReportListener(
             reportOutputStream);
       } catch (FileNotFoundException e) {
-        throw new TerminateToolException(-1,
-            "IO error while creating POS Tagger fine-grained report file: "
-                + e.getMessage());
+        throw createTerminationIOException(e);
       }
     }
 

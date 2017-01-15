@@ -81,9 +81,7 @@ public final class DoccatCrossValidatorTool extends
         reportListener = new DoccatFineGrainedReportListener(reportOutputStream);
         listeners.add(reportListener);
       } catch (FileNotFoundException e) {
-        throw new TerminateToolException(-1,
-            "IO error while creating Doccat fine-grained report file: "
-                + e.getMessage());
+        throw createTerminationIOException(e);
       }
     }
 

@@ -130,8 +130,7 @@ public final class POSTaggerTrainerTool
           sampleStream, mlParams, postaggerFactory);
     }
     catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
-          + e.getMessage(), e);
+      throw createTerminationIOException(e);
     }
     finally {
       try {

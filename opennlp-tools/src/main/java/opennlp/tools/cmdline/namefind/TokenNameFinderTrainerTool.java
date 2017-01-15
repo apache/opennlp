@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.w3c.dom.Element;
+
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -41,8 +43,6 @@ import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ModelUtil;
-
-import org.w3c.dom.Element;
 
 public final class TokenNameFinderTrainerTool
     extends AbstractTrainerTool<NameSample, TrainerToolParams> {
@@ -217,8 +217,7 @@ public final class TokenNameFinderTrainerTool
           nameFinderFactory);
     }
     catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
-          + e.getMessage(), e);
+      throw createTerminationIOException(e);
     }
     finally {
       try {

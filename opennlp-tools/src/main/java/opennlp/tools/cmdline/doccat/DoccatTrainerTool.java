@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.doccat.DoccatTrainerTool.TrainerToolParams;
 import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.doccat.BagOfWordsFeatureGenerator;
@@ -76,8 +75,7 @@ public class DoccatTrainerTool
       model = DocumentCategorizerME.train(params.getLang(), sampleStream,
           mlParams, factory);
     } catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " +
-          e.getMessage(), e);
+      throw createTerminationIOException(e);
     }
     finally {
       try {

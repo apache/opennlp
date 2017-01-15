@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.lemmatizer.LemmatizerTrainerTool.TrainerToolParams;
 import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.lemmatizer.LemmaSample;
@@ -67,10 +66,7 @@ public class LemmatizerTrainerTool
       model = LemmatizerME.train(params.getLang(), sampleStream, mlParams,
           lemmatizerFactory);
     } catch (IOException e) {
-      throw new TerminateToolException(-1,
-          "IO error while reading training data or indexing data: "
-              + e.getMessage(),
-          e);
+      throw createTerminationIOException(e);
     } finally {
       try {
         sampleStream.close();

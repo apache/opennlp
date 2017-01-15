@@ -27,7 +27,6 @@ import opennlp.tools.chunker.ChunkerEvaluationMonitor;
 import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.chunker.ChunkerCrossValidatorTool.CVToolParams;
 import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
@@ -79,8 +78,7 @@ public final class ChunkerCrossValidatorTool
       validator.evaluate(sampleStream, params.getFolds());
     }
     catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " +
-          e.getMessage(), e);
+      throw createTerminationIOException(e);
     }
     finally {
       try {

@@ -17,18 +17,17 @@
 
 package opennlp.tools.cmdline;
 
-import opennlp.tools.util.ObjectStream;
+import java.io.IOException;
+
+import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.TrainingParameters;
 
 /**
  * Base class for trainer tools.
  */
-public class AbstractTrainerTool<T, P> extends AbstractTypedParamTool<T, P> {
+public class AbstractTrainerTool<T, P> extends AbstractEvaluatorTool<T, P> {
 
-  protected P params;
   protected TrainingParameters mlParams;
-  protected ObjectStreamFactory<T> factory;
-  protected ObjectStream<T> sampleStream;
 
   /**
    * Constructor with type parameters.
@@ -40,15 +39,16 @@ public class AbstractTrainerTool<T, P> extends AbstractTypedParamTool<T, P> {
     super(sampleType, params);
   }
 
-  public void run(String format, String[] args) {
-    validateAllArgs(args, this.paramsClass, format);
+  protected TerminateToolException createTerminationIOException(IOException e) {
 
-    params = ArgumentParser.parse(
-        ArgumentParser.filter(args, this.paramsClass), this.paramsClass);
+    if (e instanceof InsufficientTrainingDataException) {
+      return new TerminateToolException(-1, "\n\nERROR: Not enough training data\n" +
+          "The provided training data is not sufficient to create enough events to train a model.\n" +
+          "To resolve this error use more training data, if this doesn't help there might\n" +
+          "be some fundamental problem with the training data itself.");
+    }
 
-    factory = getStreamFactory(format);
-    String[] fargs = ArgumentParser.filter(args, factory.getParameters());
-    validateFactoryArgs(factory, fargs);
-    sampleStream = factory.create(fargs);
+    return new TerminateToolException(-1, "IO error while reading training data or indexing data: " +
+        e.getMessage(), e);
   }
 }
