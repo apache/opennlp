@@ -27,7 +27,10 @@ import opennlp.tools.ml.model.PlainTextFileDataReader;
 
 /**
  * A reader for GIS models stored in plain text format.
+ *
+ * @deprecated will be removed after 1.7.1 release. Don't use it.
  */
+@Deprecated
 public class PlainTextGISModelReader extends GISModelReader {
 
   /**

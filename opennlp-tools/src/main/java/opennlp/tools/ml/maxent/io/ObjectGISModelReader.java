@@ -23,6 +23,10 @@ import java.io.ObjectInputStream;
 
 import opennlp.tools.ml.model.ObjectDataReader;
 
+/**
+ * @deprecated will be removed after 1.7.1 release. Don't use it.
+ */
+@Deprecated
 public class ObjectGISModelReader extends GISModelReader {
 
   protected ObjectInputStream input;

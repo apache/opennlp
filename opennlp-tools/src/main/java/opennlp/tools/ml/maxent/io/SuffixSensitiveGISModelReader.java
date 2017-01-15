@@ -32,7 +32,10 @@ import java.io.IOException;
  *    <li>.txt --&gt; the file is plain text</li>
  *    <li>.bin --&gt; the file is binary</li>
  * </ul>
+ *
+ * @deprecated will be removed after 1.7.1 release. Don't use it.
  */
+@Deprecated
 public class SuffixSensitiveGISModelReader extends GISModelReader {
   protected GISModelReader suffixAppropriateReader;
 

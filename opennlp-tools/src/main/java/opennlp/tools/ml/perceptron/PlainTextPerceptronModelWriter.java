@@ -30,7 +30,10 @@ import opennlp.tools.ml.model.AbstractModel;
 
 /**
  * Model writer that saves models in plain text format.
+ *
+ * @deprecated will be removed after 1.7.1 release. Don't use it.
  */
+@Deprecated
 public class PlainTextPerceptronModelWriter extends PerceptronModelWriter {
   private BufferedWriter output;
 

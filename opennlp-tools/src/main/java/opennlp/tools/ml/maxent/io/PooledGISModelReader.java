@@ -27,7 +27,9 @@ import java.io.IOException;
  * attempts to pool all context strings.  This is useful when loading models which
  * share many context strings.
  *
+ * @deprecated will be removed after 1.7.1 release. Don't use it.
  */
+@Deprecated
 public class PooledGISModelReader extends SuffixSensitiveGISModelReader {
 
   /**

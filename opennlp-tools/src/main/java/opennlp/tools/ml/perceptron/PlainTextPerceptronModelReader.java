@@ -25,6 +25,11 @@ import java.io.IOException;
 
 import opennlp.tools.ml.model.PlainTextFileDataReader;
 
+/*
+ *
+ * @deprecated will be removed after 1.7.1 release. Don't use it.
+ */
+@Deprecated
 public class PlainTextPerceptronModelReader extends PerceptronModelReader {
 
   /**

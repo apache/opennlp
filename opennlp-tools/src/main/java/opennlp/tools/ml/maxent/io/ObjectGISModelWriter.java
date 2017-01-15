@@ -24,6 +24,10 @@ import java.io.ObjectOutputStream;
 
 import opennlp.tools.ml.model.AbstractModel;
 
+/**
+ * @deprecated will be removed after 1.7.1 release. Don't use it.
+ */
+@Deprecated
 public class ObjectGISModelWriter extends GISModelWriter {
 
   protected ObjectOutputStream output;

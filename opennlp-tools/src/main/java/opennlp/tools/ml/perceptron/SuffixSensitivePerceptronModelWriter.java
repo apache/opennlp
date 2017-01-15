@@ -41,7 +41,10 @@ import opennlp.tools.ml.model.AbstractModelWriter;
  *    <li>.txt --&gt; the file is plain text
  *    <li>.bin --&gt; the file is binary
  * </ul>
+ *
+ * @deprecated will be removed after 1.7.1 release. Don't use it.
  */
+@Deprecated
 public class SuffixSensitivePerceptronModelWriter extends PerceptronModelWriter {
   private final AbstractModelWriter suffixAppropriateWriter;
 
