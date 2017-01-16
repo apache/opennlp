@@ -50,10 +50,10 @@ public class GIS extends AbstractEventTrainer {
    * the trainer to imagine that it saw a feature that it actually didn't see.
    * Defaulted to 0.1.
    */
-  public static double SMOOTHING_OBSERVATION = 0.1;
+  private static final double SMOOTHING_OBSERVATION = 0.1;
 
-  public static final String SMOOTHING_PARAM = "smoothing";
-  public static final boolean SMOOTHING_DEFAULT = false;
+  private static final String SMOOTHING_PARAM = "smoothing";
+  private static final boolean SMOOTHING_DEFAULT = false;
 
   public GIS() {
   }
@@ -80,10 +80,9 @@ public class GIS extends AbstractEventTrainer {
 
     boolean printMessages = parameters.getBooleanParam(VERBOSE_PARAM, VERBOSE_DEFAULT);
     boolean smoothing = parameters.getBooleanParam(SMOOTHING_PARAM, SMOOTHING_DEFAULT);
-    int cutoff = getCutoff();
     int threads = parameters.getIntParam(TrainingParameters.THREADS_PARAM, 1);
 
-    model = trainModel(iterations, indexer, printMessages, smoothing, null, cutoff, threads);
+    model = trainModel(iterations, indexer, printMessages, smoothing, null, threads);
 
     return model;
   }
@@ -188,8 +187,9 @@ public class GIS extends AbstractEventTrainer {
   public static GISModel trainModel(ObjectStream<Event> eventStream, int iterations,
       int cutoff, double sigma) throws IOException {
     GISTrainer trainer = new GISTrainer(PRINT_MESSAGES);
-    if (sigma > 0)
+    if (sigma > 0) {
       trainer.setGaussianSigma(sigma);
+    }
     return trainer.trainModel(eventStream, iterations, cutoff);
   }
 
@@ -206,9 +206,8 @@ public class GIS extends AbstractEventTrainer {
    * @return The newly trained model, which can be used immediately or saved to
    *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
-  public static GISModel trainModel(int iterations, DataIndexer indexer,
-      boolean smoothing) {
-    return trainModel(iterations, indexer, true, smoothing, null, 0);
+  public static GISModel trainModel(int iterations, DataIndexer indexer, boolean smoothing) {
+    return trainModel(iterations, indexer, true, smoothing, null, 1);
   }
 
   /**
@@ -222,7 +221,7 @@ public class GIS extends AbstractEventTrainer {
    *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
   public static GISModel trainModel(int iterations, DataIndexer indexer) {
-    return trainModel(iterations, indexer, true, false, null, 0);
+    return trainModel(iterations, indexer, true, false, null, 1);
   }
 
   /**
@@ -257,16 +256,13 @@ public class GIS extends AbstractEventTrainer {
    *          training the model.
    * @param modelPrior
    *          The prior distribution for the model.
-   * @param cutoff
-   *          The number of times a predicate must occur to be used in a model.
    * @return The newly trained model, which can be used immediately or saved to
    *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
   public static GISModel trainModel(int iterations, DataIndexer indexer,
-      boolean printMessagesWhileTraining, boolean smoothing, Prior modelPrior,
-      int cutoff) {
-    return trainModel(iterations, indexer, printMessagesWhileTraining,
-        smoothing, modelPrior, cutoff, 1);
+                                    boolean printMessagesWhileTraining, boolean smoothing,
+                                    Prior modelPrior) {
+    return trainModel(iterations, indexer, printMessagesWhileTraining, smoothing, modelPrior, 1);
   }
 
   /**
@@ -283,22 +279,19 @@ public class GIS extends AbstractEventTrainer {
    *          training the model.
    * @param modelPrior
    *          The prior distribution for the model.
-   * @param cutoff
-   *          The number of times a predicate must occur to be used in a model.
    * @return The newly trained model, which can be used immediately or saved to
    *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
   public static GISModel trainModel(int iterations, DataIndexer indexer,
-      boolean printMessagesWhileTraining, boolean smoothing, Prior modelPrior,
-      int cutoff, int threads) {
+                                    boolean printMessagesWhileTraining, boolean smoothing,
+                                    Prior modelPrior, int threads) {
     GISTrainer trainer = new GISTrainer(printMessagesWhileTraining);
     trainer.setSmoothing(smoothing);
     trainer.setSmoothingObservation(SMOOTHING_OBSERVATION);
     if (modelPrior == null) {
       modelPrior = new UniformPrior();
     }
-
-    return trainer.trainModel(iterations, indexer, modelPrior, cutoff, threads);
+    return trainer.trainModel(iterations, indexer, modelPrior, threads);
   }
 }
 

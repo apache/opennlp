@@ -17,13 +17,14 @@
 
 package opennlp.tools.ml.maxent;
 
-import opennlp.tools.ml.model.FileEventStream;
-import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
-import opennlp.tools.ml.model.RealValueFileEventStream;
+import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
+import opennlp.tools.ml.model.FileEventStream;
+import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
+import opennlp.tools.ml.model.RealValueFileEventStream;
 
 public class RealValueModelTest {
 

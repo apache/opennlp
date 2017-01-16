@@ -182,8 +182,8 @@ public class QNTrainer extends AbstractEventTrainer {
 
     Context[] params = new Context[nPredLabels];
     for (int ci = 0; ci < params.length; ci++) {
-      List<Integer> outcomePattern = new ArrayList<Integer>(nOutcomes);
-      List<Double> alpha = new ArrayList<Double>(nOutcomes);
+      List<Integer> outcomePattern = new ArrayList<>(nOutcomes);
+      List<Double> alpha = new ArrayList<>(nOutcomes);
       for (int oi = 0; oi < nOutcomes; oi++) {
         double val = parameters[oi * nPredLabels + ci];
         outcomePattern.add(oi);
