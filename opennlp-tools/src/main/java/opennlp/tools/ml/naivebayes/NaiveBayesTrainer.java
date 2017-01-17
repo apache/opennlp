@@ -91,8 +91,6 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
    */
   private String[] predLabels;
 
-  private boolean printMessages = true;
-
   public NaiveBayesTrainer() {
   }
 
@@ -210,10 +208,5 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
       if (values[i] > values[max])
         max = i;
     return max;
-  }
-
-  private void display(String s) {
-    if (printMessages)
-      System.out.print(s);
   }
 }

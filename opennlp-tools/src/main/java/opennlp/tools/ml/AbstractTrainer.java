@@ -41,6 +41,8 @@ public abstract class AbstractTrainer {
   protected TrainingParameters trainingParameters;
   protected Map<String,String> reportMap;
 
+  protected boolean printMessages;
+
   public AbstractTrainer() {
   }
 
@@ -48,6 +50,7 @@ public abstract class AbstractTrainer {
     this.trainingParameters = trainingParameters;
     if (reportMap == null) reportMap = new HashMap<>();
     this.reportMap = reportMap;
+    printMessages = trainingParameters.getBooleanParameter(VERBOSE_PARAM, VERBOSE_DEFAULT);
   }
   
   public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
@@ -85,7 +88,7 @@ public abstract class AbstractTrainer {
 /**
    * Use the TrainingParameters directly...
    * @param key
-   * @param value
+   * @param defaultValue
    */
   @Deprecated
   protected String getStringParam(String key, String defaultValue) {
@@ -95,7 +98,7 @@ public abstract class AbstractTrainer {
   /**
    * Use the PluggableParameters directly...
    * @param key
-   * @param value
+   * @param defaultValue
    */
   @Deprecated
   protected int TrainingParameters(String key, int defaultValue) {
@@ -105,7 +108,7 @@ public abstract class AbstractTrainer {
   /**
    * Use the PluggableParameters directly...
    * @param key
-   * @param value
+   * @param defaultValue
    */
   @Deprecated
   protected double getDoubleParam(String key, double defaultValue) {
@@ -129,5 +132,11 @@ public abstract class AbstractTrainer {
    */
   protected void addToReport(String key, String value) {
     reportMap.put(key, value);
+  }
+
+  protected void display(String s) {
+    if (printMessages) {
+      System.out.print(s);
+    }
   }
 }

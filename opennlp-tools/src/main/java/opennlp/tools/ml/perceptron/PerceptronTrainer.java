@@ -73,8 +73,6 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   understandable terms. */
   private String[] predLabels;
 
-  private boolean printMessages = true;
-
   private double tolerance = TOLERANCE_DEFAULT;
 
   private Double stepSizeDecrease;
@@ -385,11 +383,6 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       if (values[i] > values[max])
         max = i;
     return max;
-  }
-
-  private void display(String s) {
-    if (printMessages)
-      System.out.print(s);
   }
 
   private void displayIteration(int i) {

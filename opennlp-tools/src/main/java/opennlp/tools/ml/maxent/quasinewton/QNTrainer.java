@@ -67,11 +67,10 @@ public class QNTrainer extends AbstractEventTrainer {
   // Settings for QNMinimizer
   private int m;
   private int maxFctEval;
-  private boolean verbose = true;
 
   // Constructor -- to log. For testing purpose
-  public QNTrainer(boolean verbose) {
-    this(M_DEFAULT, verbose);
+  public QNTrainer(boolean printMessages) {
+    this(M_DEFAULT, printMessages);
   }
 
   // Constructor -- m : number of hessian updates to store. For testing purpose
@@ -85,8 +84,8 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   // For testing purpose
-  public QNTrainer(int m, int maxFctEval, boolean verbose) {
-    this.verbose    = verbose;
+  public QNTrainer(int m, int maxFctEval, boolean printMessages) {
+    this.printMessages    = printMessages;
     this.m          = m < 0 ? M_DEFAULT : m;
     this.maxFctEval = maxFctEval < 0 ? MAX_FCT_EVAL_DEFAULT : maxFctEval;
     this.threads    = THREADS_DEFAULT;
@@ -174,7 +173,7 @@ public class QNTrainer extends AbstractEventTrainer {
     }
 
     QNMinimizer minimizer = new QNMinimizer(
-        l1Cost, l2Cost, iterations, m, maxFctEval, verbose);
+        l1Cost, l2Cost, iterations, m, maxFctEval, printMessages);
     minimizer.setEvaluator(new ModelEvaluator(indexer));
 
     double[] parameters = minimizer.minimize(objectiveFunction);

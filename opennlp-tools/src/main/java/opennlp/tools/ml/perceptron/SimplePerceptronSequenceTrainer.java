@@ -216,12 +216,6 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     }
   }
 
-  private void display(String s) {
-    boolean printMessages = true;
-    if (printMessages)
-      System.out.print(s);
-  }
-
   public void nextIteration(int iteration) throws IOException {
     iteration--; //move to 0-based index
     int numCorrect = 0;

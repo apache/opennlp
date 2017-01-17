@@ -44,11 +44,16 @@ public abstract class AbstractDataIndexer implements DataIndexer {
 
   protected TrainingParameters trainingParameters;
   protected Map<String,String> reportMap;
-  
+
+  protected boolean printMessages;
+
   public void init(TrainingParameters indexingParameters,Map<String, String> reportMap) {
     this.reportMap = reportMap;
     if (this.reportMap == null) reportMap = new HashMap<>();
     trainingParameters = indexingParameters;
+
+    printMessages = trainingParameters.getBooleanParameter(AbstractTrainer.VERBOSE_PARAM,
+        AbstractTrainer.VERBOSE_DEFAULT);
   }
 
   private int numEvents;
@@ -197,5 +202,11 @@ public abstract class AbstractDataIndexer implements DataIndexer {
 
   public float[][] getValues() {
     return null;
+  }
+
+  protected void display(String s) {
+    if (printMessages) {
+      System.out.print(s);
+    }
   }
 }
