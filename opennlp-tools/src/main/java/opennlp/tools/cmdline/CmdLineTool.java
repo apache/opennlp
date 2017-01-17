@@ -47,12 +47,11 @@ public abstract class CmdLineTool {
     return true;
   }
 
-  @SuppressWarnings({"unchecked"})
-  protected <T> String getBasicHelp(Class<T> argProxyInterface) {
+  protected String getBasicHelp(Class<?> argProxyInterface) {
     return getBasicHelp(new Class[]{argProxyInterface});
   }
 
-  protected <T> String getBasicHelp(Class<T>... argProxyInterfaces) {
+  protected String getBasicHelp(Class<?>... argProxyInterfaces) {
     return "Usage: " + CLI.CMD + " " + getName() + " " +
         ArgumentParser.createUsage(argProxyInterfaces);
   }

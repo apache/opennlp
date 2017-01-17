@@ -88,7 +88,7 @@ public abstract class TypedCmdLineTool<T>
   }
 
   @Override
-  protected <A> String getBasicHelp(Class<A>... argProxyInterfaces) {
+  protected String getBasicHelp(Class<?>... argProxyInterfaces) {
     Map<String, ObjectStreamFactory<T>> factories = StreamFactoryRegistry.getFactories(type);
 
     String formatsHelp = " ";

@@ -161,8 +161,8 @@ public class ArgumentParser {
   private ArgumentParser() {
   }
 
-  private static <T> void checkProxyInterfaces(Class<T>... proxyInterfaces) {
-    for (Class<T> proxyInterface : proxyInterfaces) {
+  private static void checkProxyInterfaces(Class<?>... proxyInterfaces) {
+    for (Class<?> proxyInterface : proxyInterfaces) {
       if (null != proxyInterface) {
         if (!proxyInterface.isInterface())
           throw new IllegalArgumentException("proxy interface is not an interface!");
@@ -269,14 +269,14 @@ public class ArgumentParser {
    * @param argProxyInterfaces interfaces with parameter descriptions
    * @return the help message usage string
    */
-  public static <T> List<Argument> createArguments(Class<T>... argProxyInterfaces) {
+  public static List<Argument> createArguments(Class<?>... argProxyInterfaces) {
     checkProxyInterfaces(argProxyInterfaces);
 
     Set<String> duplicateFilter = new HashSet<>();
 
     List<Argument> arguments = new LinkedList<>();
 
-    for (Class<T> argProxyInterface : argProxyInterfaces) {
+    for (Class<?> argProxyInterface : argProxyInterfaces) {
       if (null != argProxyInterface) {
         for (Method method : argProxyInterface.getMethods()) {
 
@@ -321,14 +321,14 @@ public class ArgumentParser {
    * @param argProxyInterfaces interfaces with parameter descriptions
    * @return the help message usage string
    */
-  public static <T> String createUsage(Class<T>... argProxyInterfaces) {
+  public static String createUsage(Class<?>... argProxyInterfaces) {
     checkProxyInterfaces(argProxyInterfaces);
 
     Set<String> duplicateFilter = new HashSet<>();
 
     StringBuilder usage = new StringBuilder();
     StringBuilder details = new StringBuilder();
-    for (Class<T> argProxyInterface : argProxyInterfaces) {
+    for (Class<?> argProxyInterface : argProxyInterfaces) {
       if (null != argProxyInterface) {
         for (Method method : argProxyInterface.getMethods()) {
 
@@ -398,7 +398,7 @@ public class ArgumentParser {
    * @param argProxyInterfaces interfaces with parameters description
    * @return true, if arguments are valid
    */
-  public static <T> boolean validateArguments(String args[], Class<T>... argProxyInterfaces) {
+  public static boolean validateArguments(String args[], Class<?>... argProxyInterfaces) {
     return null == validateArgumentsLoudly(args, argProxyInterfaces);
   }
 
@@ -409,8 +409,7 @@ public class ArgumentParser {
    * @param argProxyInterface interface with parameters description
    * @return null, if arguments are valid or error message otherwise
    */
-  @SuppressWarnings({"unchecked"})
-  public static <T> String validateArgumentsLoudly(String args[], Class<T> argProxyInterface) {
+  public static String validateArgumentsLoudly(String args[], Class<?> argProxyInterface) {
     return validateArgumentsLoudly(args, new Class[]{argProxyInterface});
   }
 
@@ -421,7 +420,7 @@ public class ArgumentParser {
    * @param argProxyInterfaces interfaces with parameters description
    * @return null, if arguments are valid or error message otherwise
    */
-  public static <T> String validateArgumentsLoudly(String args[], Class<T>... argProxyInterfaces) {
+  public static String validateArgumentsLoudly(String args[], Class<?>... argProxyInterfaces) {
     // number of parameters must be always be even
     if (args.length % 2 != 0) {
       return "Number of parameters must be always be even";
@@ -430,7 +429,7 @@ public class ArgumentParser {
     int argumentCount = 0;
     List<String> parameters = new ArrayList<>(Arrays.asList(args));
 
-    for (Class<T> argProxyInterface : argProxyInterfaces) {
+    for (Class<?> argProxyInterface : argProxyInterfaces) {
       for (Method method : argProxyInterface.getMethods()) {
         String paramName = methodNameToParameter(method.getName());
         int paramIndex = CmdLineUtil.getParameterIndex(paramName, args);
