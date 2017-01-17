@@ -46,9 +46,26 @@ public final class GISModel extends AbstractModel {
    * @param correctionParam
    *          The parameter associated with the correction feature.
    */
+  @Deprecated
   public GISModel(Context[] params, String[] predLabels, String[] outcomeNames,
       int correctionConstant, double correctionParam) {
     this(params, predLabels, outcomeNames, correctionConstant, correctionParam,
+        new UniformPrior());
+  }
+
+  /**
+   * Creates a new model with the specified parameters, outcome names, and
+   * predicate/feature labels.
+   *
+   * @param params
+   *          The parameters of the model.
+   * @param predLabels
+   *          The names of the predicates used in this model.
+   * @param outcomeNames
+   *          The names of the outcomes this model predicts.
+   */
+  public GISModel(Context[] params, String[] predLabels, String[] outcomeNames) {
+    this(params, predLabels, outcomeNames, 1, 0,
         new UniformPrior());
   }
 
@@ -69,12 +86,30 @@ public final class GISModel extends AbstractModel {
    * @param prior
    *          The prior to be used with this model.
    */
+  @Deprecated
   public GISModel(Context[] params, String[] predLabels, String[] outcomeNames,
       int correctionConstant, double correctionParam, Prior prior) {
     super(params, predLabels, outcomeNames, correctionConstant, correctionParam);
     this.prior = prior;
     prior.setLabels(outcomeNames, predLabels);
     modelType = ModelType.Maxent;
+  }
+
+  /**
+   * Creates a new model with the specified parameters, outcome names, and
+   * predicate/feature labels.
+   *
+   * @param params
+   *          The parameters of the model.
+   * @param predLabels
+   *          The names of the predicates used in this model.
+   * @param outcomeNames
+   *          The names of the outcomes this model predicts.
+   * @param prior
+   *          The prior to be used with this model.
+   */
+  public GISModel(Context[] params, String[] predLabels, String[] outcomeNames, Prior prior) {
+    this(params, predLabels, outcomeNames, 1, 0, prior);
   }
 
   /**
@@ -190,15 +225,7 @@ public final class GISModel extends AbstractModel {
 
     double normal = 0.0;
     for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
-      if (model.getCorrectionParam() != 0) {
-        prior[oid] = Math
-            .exp(prior[oid]
-                * model.getConstantInverse()
-                + ((1.0 - (numfeats[oid] / model
-                    .getCorrectionConstant())) * model.getCorrectionParam()));
-      } else {
-        prior[oid] = Math.exp(prior[oid] * model.getConstantInverse());
-      }
+      prior[oid] = Math.exp(prior[oid]);
       normal += prior[oid];
     }
 

@@ -312,7 +312,7 @@ class GISTrainer {
     // is only needed during training, and the correction feature is not necessary.
     // For compatibility reasons the model contains form now on a correction constant of 1,
     // and a correction param 0.
-    evalParams = new EvalParameters(params, 0, 1, numOutcomes);
+    evalParams = new EvalParameters(params, numOutcomes);
     int[] activeOutcomes = new int[numOutcomes];
     int[] outcomePattern;
     int[] allOutcomesPattern = new int[numOutcomes];
@@ -369,10 +369,8 @@ class GISTrainer {
 
     findParameters(iterations, correctionConstant);
 
-    /* Create and return the model ****/
-    // To be compatible with old models the correction constant is always 1
-    return new GISModel(params, predLabels, outcomeLabels, 1,
-        evalParams.getCorrectionParam());
+    // Create and return the model
+    return new GISModel(params, predLabels, outcomeLabels);
 
   }
 

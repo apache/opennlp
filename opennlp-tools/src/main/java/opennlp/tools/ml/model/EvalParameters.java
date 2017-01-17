@@ -28,18 +28,25 @@ import java.util.Objects;
  */
 public class EvalParameters {
 
-  /** Mapping between outcomes and parameter values for each context.
-   * The integer representation of the context can be found using <code>pmap</code>.*/
+  /**
+   * Mapping between outcomes and parameter values for each context.
+   * The integer representation of the context can be found using <code>pmap</code>.
+   */
   private Context[] params;
-  /** The number of outcomes being predicted. */
+  /**
+   * The number of outcomes being predicted.
+   */
   private final int numOutcomes;
-  /** The maximum number of features fired in an event. Usually referred to as C.
+  /**
+   * The maximum number of features fired in an event. Usually referred to as C.
    * This is used to normalize the number of features which occur in an event. */
   private double correctionConstant;
 
   /**  Stores inverse of the correction constant, 1/C. */
+  @Deprecated
   private final double constantInverse;
   /** The correction parameter of the model. */
+  @Deprecated
   private double correctionParam;
 
   /**
@@ -49,6 +56,7 @@ public class EvalParameters {
    * @param correctionConstant The correction constant.
    * @param numOutcomes The number of outcomes.
    */
+  @Deprecated
   public EvalParameters(Context[] params, double correctionParam,
       double correctionConstant, int numOutcomes) {
     this.params = params;
@@ -59,35 +67,33 @@ public class EvalParameters {
   }
 
   public EvalParameters(Context[] params, int numOutcomes) {
-    this(params,0,0,numOutcomes);
+    this(params, 0, 1, numOutcomes);
   }
 
-  /* (non-Javadoc)
-   * @see opennlp.tools.ml.model.EvalParameters#getParams()
-   */
   public Context[] getParams() {
     return params;
   }
 
-  /* (non-Javadoc)
-   * @see opennlp.tools.ml.model.EvalParameters#getNumOutcomes()
-   */
   public int getNumOutcomes() {
     return numOutcomes;
   }
 
+  @Deprecated
   public double getCorrectionConstant() {
     return correctionConstant;
   }
 
+  @Deprecated
   public double getConstantInverse() {
     return constantInverse;
   }
 
+  @Deprecated
   public double getCorrectionParam() {
     return correctionParam;
   }
 
+  @Deprecated
   public void setCorrectionParam(double correctionParam) {
     this.correctionParam = correctionParam;
   }

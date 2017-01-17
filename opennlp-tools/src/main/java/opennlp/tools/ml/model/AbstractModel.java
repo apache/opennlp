@@ -53,8 +53,9 @@ public abstract class AbstractModel implements MaxentModel {
     this.evalParams = new EvalParameters(params,outcomeNames.length);
   }
 
+  @Deprecated
   public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames,
-      int correctionConstant,double correctionParam) {
+      int correctionConstant, double correctionParam) {
     init(predLabels,outcomeNames);
     this.evalParams = new EvalParameters(params,correctionParam,correctionConstant,outcomeNames.length);
   }
