@@ -17,6 +17,13 @@
 
 package opennlp.tools.ml.maxent;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
@@ -28,16 +35,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-
 public class ScaleDoesntMatterTest {
 
   private DataIndexer testDataIndexer;
+
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
@@ -45,14 +46,13 @@ public class ScaleDoesntMatterTest {
     testDataIndexer = new OnePassRealValueDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
-  
+
   /**
    * This test sets out to prove that the scale you use on real valued
    * predicates doesn't matter when it comes the probability assigned to each
    * outcome. Strangely, if we use (1,2) and (10,20) there's no difference. If
    * we use (0.1,0.2) and (10,20) there is a difference.
    *
-   * @throws Exception
    */
   @Test
   public void testScaleResults() throws Exception {

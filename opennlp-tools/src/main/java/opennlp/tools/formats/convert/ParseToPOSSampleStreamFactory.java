@@ -25,7 +25,6 @@ import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
 
-
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */

@@ -27,15 +27,11 @@ public class CollectionObjectStream<E> implements ObjectStream<E> {
 
   public CollectionObjectStream(Collection<E> collection) {
     this.collection = collection;
-
     reset();
   }
 
   public E read() {
-    if (iterator.hasNext())
-      return iterator.next();
-    else
-      return null;
+    return iterator.hasNext() ? iterator.next() : null;
   }
 
   public void reset() {

@@ -17,10 +17,8 @@
 
 package opennlp.tools.tokenize;
 
-import static org.junit.Assert.assertTrue;
-
+import org.junit.Assert;
 import org.junit.Test;
-
 
 /**
  * Tests for the {@link SimpleTokenizer} class.
@@ -40,14 +38,14 @@ public class SimpleTokenizerTest {
 
     String[] tokenizedText = mTokenizer.tokenize(text);
 
-    assertTrue("a".equals(tokenizedText[0]));
-    assertTrue("b".equals(tokenizedText[1]));
-    assertTrue("c".equals(tokenizedText[2]));
-    assertTrue("d".equals(tokenizedText[3]));
-    assertTrue("e".equals(tokenizedText[4]));
-    assertTrue("f".equals(tokenizedText[5]));
+    Assert.assertTrue("a".equals(tokenizedText[0]));
+    Assert.assertTrue("b".equals(tokenizedText[1]));
+    Assert.assertTrue("c".equals(tokenizedText[2]));
+    Assert.assertTrue("d".equals(tokenizedText[3]));
+    Assert.assertTrue("e".equals(tokenizedText[4]));
+    Assert.assertTrue("f".equals(tokenizedText[5]));
 
-    assertTrue(tokenizedText.length == 6);
+    Assert.assertTrue(tokenizedText.length == 6);
   }
 
   /**
@@ -59,10 +57,9 @@ public class SimpleTokenizerTest {
 
     String[] tokenizedText = mTokenizer.tokenize(text);
 
-    assertTrue("a".equals(tokenizedText[0]));
-    assertTrue(".".equals(tokenizedText[1]));
-
-    assertTrue(tokenizedText.length == 2);
+    Assert.assertTrue("a".equals(tokenizedText[0]));
+    Assert.assertTrue(".".equals(tokenizedText[1]));
+    Assert.assertTrue(tokenizedText.length == 2);
   }
 
   /**
@@ -74,10 +71,9 @@ public class SimpleTokenizerTest {
 
     String[] tokenizedText = mTokenizer.tokenize(text);
 
-    assertTrue("305".equals(tokenizedText[0]));
-    assertTrue("KW".equals(tokenizedText[1]));
-
-    assertTrue(tokenizedText.length == 2);
+    Assert.assertTrue("305".equals(tokenizedText[0]));
+    Assert.assertTrue("KW".equals(tokenizedText[1]));
+    Assert.assertTrue(tokenizedText.length == 2);
   }
 
   @Test
@@ -86,12 +82,11 @@ public class SimpleTokenizerTest {
 
     String[] tokenizedText = mTokenizer.tokenize(text);
 
-    assertTrue("rebecca".equals(tokenizedText[0]));
-    assertTrue(".".equals(tokenizedText[1]));
-    assertTrue("sleep".equals(tokenizedText[2]));
-    assertTrue("(".equals(tokenizedText[3]));
-    assertTrue(")".equals(tokenizedText[4]));
-
-    assertTrue(tokenizedText.length == 5);
+    Assert.assertTrue("rebecca".equals(tokenizedText[0]));
+    Assert.assertTrue(".".equals(tokenizedText[1]));
+    Assert.assertTrue("sleep".equals(tokenizedText[2]));
+    Assert.assertTrue("(".equals(tokenizedText[3]));
+    Assert.assertTrue(")".equals(tokenizedText[4]));
+    Assert.assertTrue(tokenizedText.length == 5);
   }
 }

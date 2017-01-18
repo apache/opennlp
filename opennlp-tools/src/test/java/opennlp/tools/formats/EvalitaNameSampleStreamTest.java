@@ -17,11 +17,9 @@
 
 package opennlp.tools.formats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import java.io.IOException;
+
+import org.junit.Test;
 
 import opennlp.tools.formats.EvalitaNameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
@@ -29,10 +27,11 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
- *
  * Note:
  * Sample training data must be UTF-8 encoded and uncompressed!
  */

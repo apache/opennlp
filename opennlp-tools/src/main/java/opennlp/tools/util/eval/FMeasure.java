@@ -134,18 +134,15 @@ public final class FMeasure {
    */
   static int countTruePositives(final Object[] references, final Object[] predictions) {
 
-    List<Object> predListSpans = new ArrayList<Object>(predictions.length);
+    List<Object> predListSpans = new ArrayList<>(predictions.length);
     Collections.addAll(predListSpans, predictions);
     int truePositives = 0;
     Object matchedItem = null;
 
-    for (int referenceIndex = 0; referenceIndex < references.length; referenceIndex++) {
-      Object referenceName = references[referenceIndex];
-
-      for (int predIndex = 0; predIndex < predListSpans.size(); predIndex++) {
-
-        if (referenceName.equals(predListSpans.get(predIndex))) {
-          matchedItem = predListSpans.get(predIndex);
+    for (Object referenceName : references) {
+      for (Object predListSpan : predListSpans) {
+        if (referenceName.equals(predListSpan)) {
+          matchedItem = predListSpan;
           truePositives++;
         }
       }

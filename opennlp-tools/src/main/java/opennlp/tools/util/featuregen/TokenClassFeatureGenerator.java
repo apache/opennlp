@@ -45,7 +45,8 @@ public class TokenClassFeatureGenerator implements AdaptiveFeatureGenerator {
     features.add(TOKEN_CLASS_PREFIX + "=" + wordClass);
 
     if (generateWordAndClassFeature) {
-      features.add(TOKEN_AND_CLASS_PREFIX + "=" + StringUtil.toLowerCase(tokens[index]) + "," + wordClass);
+      features.add(TOKEN_AND_CLASS_PREFIX + "=" + StringUtil.toLowerCase(tokens[index]) +
+          "," + wordClass);
     }
   }
 }

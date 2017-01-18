@@ -15,22 +15,17 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.dictionary;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.util.StringList;
-
+import org.junit.Assert;
 import org.junit.Test;
+
+import opennlp.tools.util.StringList;
 
 public class DictionaryAsSetCaseInsensitiveTest {
 
@@ -57,10 +52,10 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> set = dict.asStringSet();
 
-    assertTrue(set.contains(a));
-    assertFalse(set.contains(b));
+    Assert.assertTrue(set.contains(a));
+    Assert.assertFalse(set.contains(b));
 
-    assertTrue(set.contains(a.toUpperCase()));
+    Assert.assertTrue(set.contains(a.toUpperCase()));
   }
 
   /**
@@ -79,8 +74,8 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> set = dict.asStringSet();
 
-    assertTrue(set.contains(a));
-    assertEquals(1, set.size());
+    Assert.assertTrue(set.contains(a));
+    Assert.assertEquals(1, set.size());
   }
 
   /**
@@ -99,8 +94,8 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> set = dict.asStringSet();
 
-    assertTrue(set.contains(a));
-    assertEquals(1, set.size());
+    Assert.assertTrue(set.contains(a));
+    Assert.assertEquals(1, set.size());
   }
 
   /**
@@ -123,7 +118,7 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> setB = dictB.asStringSet();
 
-    assertTrue(setA.equals(setB));
+    Assert.assertTrue(setA.equals(setB));
   }
 
   /**
@@ -144,7 +139,7 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> setB = dictB.asStringSet();
 
-    assertTrue(setA.equals(setB));
+    Assert.assertTrue(setA.equals(setB));
   }
 
   /**
@@ -164,7 +159,7 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> setB = dictB.asStringSet();
 
-    assertEquals(setA.hashCode(), setB.hashCode());
+    Assert.assertEquals(setA.hashCode(), setB.hashCode());
   }
 
   /**
@@ -185,7 +180,7 @@ public class DictionaryAsSetCaseInsensitiveTest {
     Set<String> setB = dictB.asStringSet();
 
     // TODO: should it be equal??
-    assertNotSame(setA.hashCode(), setB.hashCode());
+    Assert.assertNotSame(setA.hashCode(), setB.hashCode());
   }
 
   /**
@@ -204,7 +199,7 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> set = dict.asStringSet();
 
-    assertTrue(set.contains(entry2));
+    Assert.assertTrue(set.contains(entry2));
   }
 
   /**
@@ -223,14 +218,14 @@ public class DictionaryAsSetCaseInsensitiveTest {
     dictA.put(asSL(entry2.toUpperCase()));
 
     Iterator<String> it = dictA.asStringSet().iterator();
-    List<String> elements = new ArrayList<String>();
+    List<String> elements = new ArrayList<>();
     while (it.hasNext()) {
       elements.add(it.next());
     }
 
-    assertEquals(2, elements.size());
-    assertTrue(elements.contains(entry1));
-    assertTrue(elements.contains(entry2));
+    Assert.assertEquals(2, elements.size());
+    Assert.assertTrue(elements.contains(entry1));
+    Assert.assertTrue(elements.contains(entry2));
 
   }
 }

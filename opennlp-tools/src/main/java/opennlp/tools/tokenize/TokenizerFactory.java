@@ -82,14 +82,11 @@ public class TokenizerFactory extends BaseToolFactory {
 
   @Override
   public void validateArtifactMap() throws InvalidFormatException {
-
-    if (this.artifactProvider
-        .getManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION) == null)
+    if (this.artifactProvider.getManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION) == null)
       throw new InvalidFormatException(USE_ALPHA_NUMERIC_OPTIMIZATION
           + " is a mandatory property!");
 
-    Object abbreviationsEntry = this.artifactProvider
-        .getArtifact(ABBREVIATIONS_ENTRY_NAME);
+    Object abbreviationsEntry = this.artifactProvider.getArtifact(ABBREVIATIONS_ENTRY_NAME);
 
     if (abbreviationsEntry != null && !(abbreviationsEntry instanceof Dictionary)) {
       throw new InvalidFormatException("Abbreviations dictionary '" + abbreviationsEntry +
@@ -102,8 +99,9 @@ public class TokenizerFactory extends BaseToolFactory {
     Map<String, Object> artifactMap = super.createArtifactMap();
 
     // Abbreviations are optional
-    if (abbreviationDictionary != null)
+    if (abbreviationDictionary != null) {
       artifactMap.put(ABBREVIATIONS_ENTRY_NAME, abbreviationDictionary);
+    }
 
     return artifactMap;
   }
@@ -112,11 +110,13 @@ public class TokenizerFactory extends BaseToolFactory {
   public Map<String, String> createManifestEntries() {
     Map<String, String> manifestEntries = super.createManifestEntries();
 
-    manifestEntries.put(USE_ALPHA_NUMERIC_OPTIMIZATION, Boolean.toString(isUseAlphaNumericOptmization()));
+    manifestEntries.put(USE_ALPHA_NUMERIC_OPTIMIZATION,
+        Boolean.toString(isUseAlphaNumericOptmization()));
 
     // alphanumeric pattern is optional
-    if (getAlphaNumericPattern() != null)
+    if (getAlphaNumericPattern() != null) {
       manifestEntries.put(ALPHA_NUMERIC_PATTERN, getAlphaNumericPattern().pattern());
+    }
 
     return manifestEntries;
   }

@@ -15,21 +15,18 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.dictionary;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
-
-import org.junit.Test;
 
 /**
  * Tests for the {@link Dictionary} class.
@@ -56,17 +53,17 @@ public class DictionaryTest {
   @Test
   public void testLookup() {
 
-    StringList entry1 = new StringList(new String[]{"1a", "1b"});
-    StringList entry1u = new StringList(new String[]{"1A", "1B"});
-    StringList entry2 = new StringList(new String[]{"1A", "1C"});
+    StringList entry1 = new StringList("1a", "1b");
+    StringList entry1u = new StringList("1A", "1B");
+    StringList entry2 = new StringList("1A", "1C");
 
     Dictionary dict = getCaseInsensitive();
 
     dict.put(entry1);
 
-    assertTrue(dict.contains(entry1));
-    assertTrue(dict.contains(entry1u));
-    assertTrue(!dict.contains(entry2));
+    Assert.assertTrue(dict.contains(entry1));
+    Assert.assertTrue(dict.contains(entry1u));
+    Assert.assertTrue(!dict.contains(entry2));
   }
 
   /**
@@ -74,17 +71,17 @@ public class DictionaryTest {
    */
   @Test
   public void testLookupCaseSensitive() {
-    StringList entry1 = new StringList(new String[]{"1a", "1b"});
-    StringList entry1u = new StringList(new String[]{"1A", "1B"});
-    StringList entry2 = new StringList(new String[]{"1A", "1C"});
+    StringList entry1 = new StringList("1a", "1b");
+    StringList entry1u = new StringList("1A", "1B");
+    StringList entry2 = new StringList("1A", "1C");
 
     Dictionary dict = getCaseSensitive();
 
     dict.put(entry1);
 
-    assertTrue(dict.contains(entry1));
-    assertTrue(!dict.contains(entry1u));
-    assertTrue(!dict.contains(entry2));
+    Assert.assertTrue(dict.contains(entry1));
+    Assert.assertTrue(!dict.contains(entry1u));
+    Assert.assertTrue(!dict.contains(entry2));
   }
 
   /**
@@ -94,7 +91,7 @@ public class DictionaryTest {
    * @throws InvalidFormatException
    */
   @Test
-  public void testSerialization() throws IOException, InvalidFormatException {
+  public void testSerialization() throws IOException {
     Dictionary reference = getCaseInsensitive();
 
     String a1 = "a1";
@@ -102,7 +99,7 @@ public class DictionaryTest {
     String a3 = "a3";
     String a5 = "a5";
 
-    reference.put(new StringList(new String[]{a1, a2, a3, a5,}));
+    reference.put(new StringList(a1, a2, a3, a5));
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -111,7 +108,7 @@ public class DictionaryTest {
     Dictionary recreated = new Dictionary(
         new ByteArrayInputStream(out.toByteArray()));
 
-    assertTrue(reference.equals(recreated));
+    Assert.assertTrue(reference.equals(recreated));
   }
 
   /**
@@ -128,19 +125,11 @@ public class DictionaryTest {
     Dictionary dictionay =
         Dictionary.parseOneEntryPerLine(new StringReader(testDictionary));
 
-    assertTrue(dictionay.size() == 4);
-
-    assertTrue(dictionay.contains(
-        new StringList(new String[]{"1a", "1b", "1c", "1d"})));
-
-    assertTrue(dictionay.contains(
-        new StringList(new String[]{"2a", "2b", "2c"})));
-
-    assertTrue(dictionay.contains(
-        new StringList(new String[]{"3a"})));
-
-    assertTrue(dictionay.contains(
-        new StringList(new String[]{"4a", "4b"})));
+    Assert.assertTrue(dictionay.size() == 4);
+    Assert.assertTrue(dictionay.contains(new StringList("1a", "1b", "1c", "1d")));
+    Assert.assertTrue(dictionay.contains(new StringList("2a", "2b", "2c")));
+    Assert.assertTrue(dictionay.contains(new StringList(new String[]{"3a"})));
+    Assert.assertTrue(dictionay.contains(new StringList("4a", "4b")));
   }
 
   /**
@@ -148,8 +137,8 @@ public class DictionaryTest {
    */
   @Test
   public void testEquals() {
-    StringList entry1 = new StringList(new String[]{"1a", "1b"});
-    StringList entry2 = new StringList(new String[]{"2a", "2b"});
+    StringList entry1 = new StringList("1a", "1b");
+    StringList entry2 = new StringList("2a", "2b");
 
     Dictionary dictA = getCaseInsensitive();
     dictA.put(entry1);
@@ -163,9 +152,9 @@ public class DictionaryTest {
     dictC.put(entry1);
     dictC.put(entry2);
 
-    assertTrue(dictA.equals(dictB));
-    assertTrue(dictC.equals(dictA));
-    assertTrue(dictB.equals(dictC));
+    Assert.assertTrue(dictA.equals(dictB));
+    Assert.assertTrue(dictC.equals(dictA));
+    Assert.assertTrue(dictB.equals(dictC));
   }
 
   /**
@@ -173,8 +162,8 @@ public class DictionaryTest {
    */
   @Test
   public void testHashCode() {
-    StringList entry1 = new StringList(new String[]{"1a", "1b"});
-    StringList entry2 = new StringList(new String[]{"1A", "1B"});
+    StringList entry1 = new StringList("1a", "1b");
+    StringList entry2 = new StringList("1A", "1B");
 
     Dictionary dictA = getCaseInsensitive();
     dictA.put(entry1);
@@ -188,9 +177,9 @@ public class DictionaryTest {
     Dictionary dictD = getCaseSensitive();
     dictD.put(entry2);
 
-    assertEquals(dictA.hashCode(), dictB.hashCode());
-    assertEquals(dictB.hashCode(), dictC.hashCode());
-    assertEquals(dictC.hashCode(), dictD.hashCode());
+    Assert.assertEquals(dictA.hashCode(), dictB.hashCode());
+    Assert.assertEquals(dictB.hashCode(), dictC.hashCode());
+    Assert.assertEquals(dictC.hashCode(), dictD.hashCode());
   }
 
   /**
@@ -198,7 +187,7 @@ public class DictionaryTest {
    */
   @Test
   public void testToString() {
-    StringList entry1 = new StringList(new String[]{"1a", "1b"});
+    StringList entry1 = new StringList("1a", "1b");
 
     Dictionary dictA = getCaseInsensitive();
 
@@ -215,14 +204,14 @@ public class DictionaryTest {
   @Test
   public void testDifferentCaseLookup() {
 
-    StringList entry1 = new StringList(new String[]{"1a", "1b"});
-    StringList entry2 = new StringList(new String[]{"1A", "1B"});
+    StringList entry1 = new StringList("1a", "1b");
+    StringList entry2 = new StringList("1A", "1B");
 
     Dictionary dict = getCaseInsensitive();
 
     dict.put(entry1);
 
-    assertTrue(dict.contains(entry2));
+    Assert.assertTrue(dict.contains(entry2));
   }
 
   /**
@@ -231,14 +220,14 @@ public class DictionaryTest {
   @Test
   public void testDifferentCaseLookupCaseSensitive() {
 
-    StringList entry1 = new StringList(new String[]{"1a", "1b"});
-    StringList entry2 = new StringList(new String[]{"1A", "1B"});
+    StringList entry1 = new StringList("1a", "1b");
+    StringList entry2 = new StringList("1A", "1B");
 
     Dictionary dict = getCaseSensitive();
 
     dict.put(entry1);
 
-    assertTrue(!dict.contains(entry2));
+    Assert.assertTrue(!dict.contains(entry2));
   }
 
 }

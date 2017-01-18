@@ -81,8 +81,9 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   private BaseModel(String componentName, boolean isLoadedFromSerialized) {
     this.isLoadedFromSerialized = isLoadedFromSerialized;
 
-    if (componentName == null)
+    if (componentName == null) {
       throw new IllegalArgumentException("componentName must not be null!");
+    }
 
     this.componentName = componentName;
   }
@@ -108,8 +109,9 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
     this(componentName, false);
 
-    if (languageCode == null)
-        throw new IllegalArgumentException("languageCode must not be null!");
+    if (languageCode == null) {
+      throw new IllegalArgumentException("languageCode must not be null!");
+    }
 
     createBaseArtifactSerializers(artifactSerializers);
 
@@ -117,8 +119,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     manifest.setProperty(MANIFEST_VERSION_PROPERTY, "1.0");
     manifest.setProperty(LANGUAGE_PROPERTY, languageCode);
     manifest.setProperty(VERSION_PROPERTY, Version.currentVersion().toString());
-    manifest.setProperty(TIMESTAMP_PROPERTY,
-        Long.toString(System.currentTimeMillis()));
+    manifest.setProperty(TIMESTAMP_PROPERTY, Long.toString(System.currentTimeMillis()));
     manifest.setProperty(COMPONENT_NAME_PROPERTY, componentName);
 
     if (manifestInfoEntries != null) {

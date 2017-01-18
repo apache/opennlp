@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.util;
 
 import java.io.BufferedReader;
@@ -37,11 +36,13 @@ public class PlainTextByLineStream implements ObjectStream<String> {
 
   private BufferedReader in;
 
-  public PlainTextByLineStream(InputStreamFactory inputStreamFactory, String charsetName) throws IOException {
+  public PlainTextByLineStream(InputStreamFactory inputStreamFactory,
+                               String charsetName) throws IOException {
     this(inputStreamFactory, Charset.forName(charsetName));
   }
 
-  public PlainTextByLineStream(InputStreamFactory inputStreamFactory, Charset charset) throws IOException {
+  public PlainTextByLineStream(InputStreamFactory inputStreamFactory,
+                               Charset charset) throws IOException {
     this.inputStreamFactory = inputStreamFactory;
     this.channel = null;
     this.encoding = charset.name();
@@ -56,23 +57,20 @@ public class PlainTextByLineStream implements ObjectStream<String> {
   public void reset() throws IOException {
 
     if (inputStreamFactory != null) {
-      in = new BufferedReader(new InputStreamReader(inputStreamFactory.createInputStream(), encoding));
-    }
-    else if (channel == null) {
+      in = new BufferedReader(new InputStreamReader(inputStreamFactory.createInputStream(),
+          encoding));
+    } else if (channel == null) {
       in.reset();
-    }
-    else {
+    } else {
       channel.position(0);
       in = new BufferedReader(Channels.newReader(channel, encoding));
     }
   }
 
   public void close() throws IOException {
-
     if (in != null && channel == null) {
       in.close();
-    }
-    else if (channel != null) {
+    } else if (channel != null) {
       channel.close();
     }
   }

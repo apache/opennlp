@@ -28,6 +28,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 
 public class AnnotationConfiguration {
@@ -61,29 +62,31 @@ public class AnnotationConfiguration {
     while ((line = reader.readLine()) != null) {
       line = line.trim();
 
-      if (line.isEmpty()) {
-      } else if (line.startsWith("#")) {
-      } else if (line.startsWith("[") && line.endsWith("]")) {
-        sectionType = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
-      }
-      else {
-        String typeName = WhitespaceTokenizer.INSTANCE.tokenize(line)[0];
+      if (!line.isEmpty()) {
+        if (!line.startsWith("#")) {
+          if (line.startsWith("[") && line.endsWith("]")) {
+            sectionType = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
+          }
+          else {
+            String typeName = WhitespaceTokenizer.INSTANCE.tokenize(line)[0];
 
-        switch (sectionType) {
-          case "entities":
-            typeToClassMap.put(typeName, AnnotationConfiguration.ENTITY_TYPE);
-            break;
+            switch (sectionType) {
+              case "entities":
+                typeToClassMap.put(typeName, AnnotationConfiguration.ENTITY_TYPE);
+                break;
 
-          case "relations":
-            typeToClassMap.put(typeName, AnnotationConfiguration.RELATION_TYPE);
-            break;
+              case "relations":
+                typeToClassMap.put(typeName, AnnotationConfiguration.RELATION_TYPE);
+                break;
 
-          case "attributes":
-            typeToClassMap.put(typeName, AnnotationConfiguration.ATTRIBUTE_TYPE);
-            break;
+              case "attributes":
+                typeToClassMap.put(typeName, AnnotationConfiguration.ATTRIBUTE_TYPE);
+                break;
 
-          default:
-            break;
+              default:
+                break;
+            }
+          }
         }
       }
     }

@@ -17,21 +17,16 @@
 
 package opennlp.tools.formats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.formats.Conll02NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
-
-import org.junit.Test;
 
 /**
  *
@@ -54,20 +49,20 @@ public class Conll02NameSampleStreamTest {
 
     NameSample personName = sampleStream.read();
 
-    assertNotNull(personName);
+    Assert.assertNotNull(personName);
 
-    assertEquals(5, personName.getSentence().length);
-    assertEquals(1, personName.getNames().length);
-    assertEquals(true, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(5, personName.getSentence().length);
+    Assert.assertEquals(1, personName.getNames().length);
+    Assert.assertEquals(true, personName.isClearAdaptiveDataSet());
 
     Span nameSpan = personName.getNames()[0];
-    assertEquals(0, nameSpan.getStart());
-    assertEquals(4, nameSpan.getEnd());
-    assertEquals(true, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(0, nameSpan.getStart());
+    Assert.assertEquals(4, nameSpan.getEnd());
+    Assert.assertEquals(true, personName.isClearAdaptiveDataSet());
 
-    assertEquals(0, sampleStream.read().getNames().length);
+    Assert.assertEquals(0, sampleStream.read().getNames().length);
 
-    assertNull(sampleStream.read());
+    Assert.assertNull(sampleStream.read());
   }
 
   @Test
@@ -76,14 +71,14 @@ public class Conll02NameSampleStreamTest {
 
     NameSample personName = sampleStream.read();
 
-    assertEquals(0, personName.getNames().length);
-    assertTrue(personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(0, personName.getNames().length);
+    Assert.assertTrue(personName.isClearAdaptiveDataSet());
 
     personName = sampleStream.read();
 
-    assertFalse(personName.isClearAdaptiveDataSet());
+    Assert.assertFalse(personName.isClearAdaptiveDataSet());
 
-    assertNull(sampleStream.read());
+    Assert.assertNull(sampleStream.read());
   }
 
   @Test
@@ -94,6 +89,6 @@ public class Conll02NameSampleStreamTest {
 
     sampleStream.reset();
 
-    assertEquals(sample, sampleStream.read());
+    Assert.assertEquals(sample, sampleStream.read());
   }
 }

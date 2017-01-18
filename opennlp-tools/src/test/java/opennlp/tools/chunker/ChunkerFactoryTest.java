@@ -17,13 +17,12 @@
 
 package opennlp.tools.chunker;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
@@ -42,12 +41,11 @@ public class ChunkerFactoryTest {
     ResourceAsStreamFactory in = new ResourceAsStreamFactory(
         ChunkerFactoryTest.class, "/opennlp/tools/chunker/test.txt");
 
-    ChunkSampleStream stream = new ChunkSampleStream(
-        new PlainTextByLineStream(in, UTF_8));
-    return stream;
+    return new ChunkSampleStream(
+        new PlainTextByLineStream(in, StandardCharsets.UTF_8));
   }
 
-  static ChunkerModel trainModel(ModelType type, ChunkerFactory factory)
+  private static ChunkerModel trainModel(ModelType type, ChunkerFactory factory)
       throws IOException {
     return ChunkerME.train("en", createSampleStream(),
         TrainingParameters.defaultParams(), factory);
@@ -59,8 +57,8 @@ public class ChunkerFactoryTest {
     ChunkerModel model = trainModel(ModelType.MAXENT, new ChunkerFactory());
 
     ChunkerFactory factory = model.getFactory();
-    assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
-    assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
+    Assert.assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -69,8 +67,8 @@ public class ChunkerFactoryTest {
     ChunkerModel fromSerialized = new ChunkerModel(in);
 
     factory = fromSerialized.getFactory();
-    assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
-    assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
+    Assert.assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
   }
 
 
@@ -80,9 +78,8 @@ public class ChunkerFactoryTest {
     ChunkerModel model = trainModel(ModelType.MAXENT, new DummyChunkerFactory());
 
     DummyChunkerFactory factory = (DummyChunkerFactory) model.getFactory();
-    assertTrue(factory instanceof DummyChunkerFactory);
-    assertTrue(factory.getContextGenerator() instanceof DummyChunkerFactory.DummyContextGenerator);
-    assertTrue(factory.getSequenceValidator() instanceof DummyChunkerFactory.DummySequenceValidator);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DummyChunkerFactory.DummyContextGenerator);
+    Assert.assertTrue(factory.getSequenceValidator() instanceof DummyChunkerFactory.DummySequenceValidator);
 
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -91,19 +88,19 @@ public class ChunkerFactoryTest {
 
     ChunkerModel fromSerialized = new ChunkerModel(in);
 
-    factory = (DummyChunkerFactory)fromSerialized.getFactory();
-    assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
-    assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
+    factory = (DummyChunkerFactory) fromSerialized.getFactory();
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
+    Assert.assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
 
 
     ChunkerME chunker = new ChunkerME(model);
 
-    String[] toks1 = { "Rockwell", "said", "the", "agreement", "calls", "for",
+    String[] toks1 = {"Rockwell", "said", "the", "agreement", "calls", "for",
         "it", "to", "supply", "200", "additional", "so-called", "shipsets",
-        "for", "the", "planes", "." };
+        "for", "the", "planes", "."};
 
-    String[] tags1 = { "NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
-        "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "." };
+    String[] tags1 = {"NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
+        "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "."};
 
 
     chunker.chunk(toks1, tags1);

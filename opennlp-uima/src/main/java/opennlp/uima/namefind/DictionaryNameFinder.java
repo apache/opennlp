@@ -19,6 +19,11 @@ package opennlp.uima.namefind;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.apache.uima.cas.CAS;
+import org.apache.uima.resource.ResourceAccessException;
+import org.apache.uima.resource.ResourceInitializationException;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.Span;
 import opennlp.uima.dictionary.DictionaryResource;
@@ -26,27 +31,23 @@ import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.ExceptionMessages;
 import opennlp.uima.util.UimaUtil;
 
-import org.apache.uima.cas.CAS;
-import org.apache.uima.resource.ResourceAccessException;
-import org.apache.uima.resource.ResourceInitializationException;
-
 public class DictionaryNameFinder extends AbstractNameFinder {
 
   private opennlp.tools.namefind.TokenNameFinder mNameFinder;
 
   /**
    * Initializes a new instance.
-   *
+   * <p>
    * Note: Use {@link #initialize() } to initialize
    * this instance. Not use the constructor.
    */
   public DictionaryNameFinder() {
-      super("OpenNLP Dictionary Name annotator");
+    super("OpenNLP Dictionary Name annotator");
   }
 
   /**
    * Initializes the current instance with the given context.
-   *
+   * <p>
    * Note: Do all initialization in this method, do not use the constructor.
    */
   public void initialize() throws ResourceInitializationException {
@@ -73,7 +74,7 @@ public class DictionaryNameFinder extends AbstractNameFinder {
         throw new ResourceInitializationException(
             ExceptionMessages.MESSAGE_CATALOG,
             ExceptionMessages.IO_ERROR_DICTIONARY_READING,
-            new Object[] { ie.getMessage() });
+            new Object[] {ie.getMessage()});
       }
 
     }

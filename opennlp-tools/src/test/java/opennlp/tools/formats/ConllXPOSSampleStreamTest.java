@@ -17,17 +17,17 @@
 
 package opennlp.tools.formats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.io.IOException;
 import java.nio.charset.Charset;
+
+import org.junit.Test;
 
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class ConllXPOSSampleStreamTest {
 

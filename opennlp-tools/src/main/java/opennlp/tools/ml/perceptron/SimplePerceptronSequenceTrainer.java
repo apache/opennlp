@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import opennlp.tools.ml.AbstractEventModelSequenceTrainer;
 import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.AbstractModel;
@@ -48,7 +49,6 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
 
   public static final String PERCEPTRON_SEQUENCE_VALUE = "PERCEPTRON_SEQUENCE";
 
-  private boolean printMessages = true;
   private int iterations;
   private SequenceStream sequenceStream;
   /** Number of events in the event set. */
@@ -62,8 +62,6 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
   private int[] outcomeList;
 
   private String[] outcomeLabels;
-
-  private double[] modelDistribution;
 
   /** Stores the average parameter values of each predicate during iteration. */
   private MutableContext[] averageParams;
@@ -81,7 +79,6 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
   private static final int ITER = 1;
   private static final int EVENT = 2;
 
-  private int[] allOutcomesPattern;
   private String[] predLabels;
   private int numSequences;
 
@@ -115,7 +112,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
                                   int cutoff, boolean useAverage) throws IOException {
     this.iterations = iterations;
     this.sequenceStream = sequenceStream;
-    
+
     trainingParameters.put(AbstractDataIndexer.CUTOFF_PARAM, Integer.toString(cutoff));
     trainingParameters.put(AbstractDataIndexer.SORT_PARAM, Boolean.toString(false));
     DataIndexer di = new OnePassDataIndexer();
@@ -165,7 +162,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     params = new MutableContext[numPreds];
     if (useAverage) averageParams = new MutableContext[numPreds];
 
-    allOutcomesPattern = new int[numOutcomes];
+    int[] allOutcomesPattern = new int[numOutcomes];
     for (int oi = 0; oi < numOutcomes; oi++) {
       allOutcomesPattern[oi] = oi;
     }
@@ -178,7 +175,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
         if (useAverage) averageParams[pi].setParameter(aoi, 0.0);
       }
     }
-    modelDistribution = new double[numOutcomes];
+    double[] modelDistribution = new double[numOutcomes];
 
     display("Computing model parameters...\n");
     findParameters(iterations);
@@ -220,6 +217,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
   }
 
   private void display(String s) {
+    boolean printMessages = true;
     if (printMessages)
       System.out.print(s);
   }

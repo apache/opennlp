@@ -44,12 +44,12 @@ public class SentenceSample {
    */
   public SentenceSample(String document, Span... sentences) {
     this.document = document;
-    this.sentences = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(sentences)));
+    this.sentences = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(sentences)));
   }
 
   public SentenceSample(Detokenizer detokenizer, String[][] sentences) {
 
-    List<Span> spans = new ArrayList<Span>(sentences.length);
+    List<Span> spans = new ArrayList<>(sentences.length);
 
     StringBuilder documentBuilder = new StringBuilder();
 
@@ -89,15 +89,12 @@ public class SentenceSample {
   // TODO: This one must output the tags!
   @Override
   public String toString() {
-
     StringBuilder documentBuilder = new StringBuilder();
-
     for (Span sentSpan : sentences) {
       documentBuilder.append(sentSpan.getCoveredText(document).toString()
           .replace("\r", "<CR>").replace("\n", "<LF>"));
       documentBuilder.append("\n");
     }
-
     return documentBuilder.toString();
   }
 

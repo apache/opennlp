@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.tokenize;
 
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ public class TokenSample {
 
   public static final String DEFAULT_SEPARATOR_CHARS = "<SPLIT>";
 
-  private final String separatorChars = DEFAULT_SEPARATOR_CHARS;
+  private static final String separatorChars = DEFAULT_SEPARATOR_CHARS;
 
   private final String text;
 
@@ -55,7 +54,7 @@ public class TokenSample {
       throw new IllegalArgumentException("tokenSpans must not be null! ");
 
     this.text = text;
-    this.tokenSpans = Collections.unmodifiableList(new ArrayList<Span>(Arrays.asList(tokenSpans)));
+    this.tokenSpans = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(tokenSpans)));
 
     for (Span tokenSpan : tokenSpans) {
       if (tokenSpan.getStart() < 0 || tokenSpan.getStart() > text.length() ||
@@ -72,7 +71,7 @@ public class TokenSample {
 
     DetokenizationOperation[] operations = detokenizer.detokenize(tokens);
 
-    List<Span> mergedTokenSpans = new ArrayList<Span>();
+    List<Span> mergedTokenSpans = new ArrayList<>();
 
     for (int i = 0; i < operations.length; i++) {
 
@@ -173,7 +172,7 @@ public class TokenSample {
     Span whitespaceTokenSpans[] = WhitespaceTokenizer.INSTANCE.tokenizePos(sampleString);
 
     // Pre-allocate 20% for newly created tokens
-    List<Span> realTokenSpans = new ArrayList<Span>((int) (whitespaceTokenSpans.length * 1.2d));
+    List<Span> realTokenSpans = new ArrayList<>((int) (whitespaceTokenSpans.length * 1.2d));
 
     StringBuilder untaggedSampleString = new StringBuilder();
 

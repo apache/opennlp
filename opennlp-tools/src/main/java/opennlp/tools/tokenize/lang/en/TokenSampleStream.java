@@ -61,17 +61,19 @@ public class TokenSampleStream implements Iterator<TokenSample> {
     for (int ti = 0; ti < tokens.length; ti++) {
       String token = tokens[ti];
       String lastToken = ti - 1 >= 0 ? tokens[ti - 1] : "";
-      if (token.equals("-LRB-")) {
-        token = "(";
-      }
-      else if (token.equals("-LCB-")) {
-        token = "{";
-      }
-      else if (token.equals("-RRB-")) {
-        token = ")";
-      }
-      else if (token.equals("-RCB-")) {
-        token = "}";
+      switch (token) {
+        case "-LRB-":
+          token = "(";
+          break;
+        case "-LCB-":
+          token = "{";
+          break;
+        case "-RRB-":
+          token = ")";
+          break;
+        case "-RCB-":
+          token = "}";
+          break;
       }
       if (sb.length() != 0) {
         if (!alphaNumeric.matcher(token).find() || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
@@ -100,7 +102,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
       spans.add(new Span(length, length + token.length()));
       length += token.length();
     }
-    //System.out.println();
+
     try {
       line = in.readLine();
     } catch (IOException e) {

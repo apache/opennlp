@@ -25,6 +25,7 @@ import morfologik.stemming.Dictionary;
 import morfologik.stemming.DictionaryLookup;
 import morfologik.stemming.IStemmer;
 import morfologik.stemming.WordData;
+
 import opennlp.tools.postag.TagDictionary;
 
 /**
@@ -78,8 +79,8 @@ public class MorfologikTagDictionary implements TagDictionary {
     List<WordData> data = dictLookup.lookup(word);
     if (data != null && data.size() > 0) {
       List<String> tags = new ArrayList<>(data.size());
-      for (int i = 0; i < data.size(); i++) {
-        tags.add(data.get(i).getTag().toString());
+      for (WordData aData : data) {
+        tags.add(aData.getTag().toString());
       }
       if (tags.size() > 0)
         return tags.toArray(new String[tags.size()]);

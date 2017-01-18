@@ -17,11 +17,10 @@
 
 package opennlp.tools.cmdline;
 
-import static org.junit.Assert.assertEquals;
-
 import java.security.Permission;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -76,7 +75,7 @@ public class CLITest {
     try {
       CLI.main(new String[]{});
     } catch (ExitException e) {
-      assertEquals(0, e.status());
+      Assert.assertEquals(0, e.status());
     }
   }
 
@@ -88,7 +87,7 @@ public class CLITest {
     try {
       CLI.main(new String[]{"unknown name"});
     } catch (ExitException e) {
-      assertEquals(1, e.status());
+      Assert.assertEquals(1, e.status());
     }
   }
 
@@ -100,7 +99,7 @@ public class CLITest {
     try {
       CLI.main(new String[]{"DoccatTrainer", "-param", "value"});
     } catch (ExitException e) {
-      assertEquals(1, e.status());
+      Assert.assertEquals(1, e.status());
     }
   }
 
@@ -112,7 +111,7 @@ public class CLITest {
     try {
       CLI.main(new String[]{"Doccat", "unknown.model"});
     } catch (ExitException e) {
-      assertEquals(-1, e.status());
+      Assert.assertEquals(-1, e.status());
     }
   }
 
@@ -128,7 +127,7 @@ public class CLITest {
       try {
         CLI.main(new String[]{toolName, "help"});
       } catch (ExitException e) {
-        assertEquals(0, e.status());
+        Assert.assertEquals(0, e.status());
       }
     }
   }

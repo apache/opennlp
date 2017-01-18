@@ -29,7 +29,6 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
@@ -37,18 +36,16 @@ public class WordClusterDictionary implements SerializableArtifact {
 
   public static class WordClusterDictionarySerializer implements ArtifactSerializer<WordClusterDictionary> {
 
-    public WordClusterDictionary create(InputStream in) throws IOException,
-        InvalidFormatException {
+    public WordClusterDictionary create(InputStream in) throws IOException {
       return new WordClusterDictionary(in);
     }
 
-    public void serialize(WordClusterDictionary artifact, OutputStream out)
-        throws IOException {
+    public void serialize(WordClusterDictionary artifact, OutputStream out) throws IOException {
       artifact.serialize(out);
     }
   }
 
-  private Map<String, String> tokenToClusterMap = new HashMap<String, String>();
+  private Map<String, String> tokenToClusterMap = new HashMap<>();
 
   /**
    * Read word2vec and clark clustering style lexicons.
@@ -56,9 +53,7 @@ public class WordClusterDictionary implements SerializableArtifact {
    * @throws IOException the io exception
    */
   public WordClusterDictionary(InputStream in) throws IOException {
-
     BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
-
     String line;
     while ((line = reader.readLine()) != null) {
       String parts[] = line.split(" ");

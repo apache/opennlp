@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.tokenize;
 
 import java.util.ArrayList;
@@ -65,7 +64,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
     CharacterEnum charType = CharacterEnum.WHITESPACE;
     CharacterEnum state = charType;
 
-    List<Span> tokens = new ArrayList<Span>();
+    List<Span> tokens = new ArrayList<>();
     int sl = s.length();
     int start = -1;
     char pc = 0;

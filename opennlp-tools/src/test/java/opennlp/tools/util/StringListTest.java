@@ -17,12 +17,9 @@
 
 package opennlp.tools.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Iterator;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -36,40 +33,33 @@ public class StringListTest {
   @Test
   public void testGetToken() {
     StringList l = new StringList("a", "b");
-
-    assertEquals(2, l.size());
-
-    assertEquals("a", l.getToken(0));
-    assertEquals("b", l.getToken(1));
+    Assert.assertEquals(2, l.size());
+    Assert.assertEquals("a", l.getToken(0));
+    Assert.assertEquals("b", l.getToken(1));
   }
 
   /**
    * Tests {@link StringList#iterator()}.
    */
   @Test
-  public void testItertor() {
+  public void testIterator() {
     StringList l = new StringList("a");
-
     Iterator<String> it = l.iterator();
-
-    assertTrue(it.hasNext());
-    assertEquals("a", it.next());
-    assertFalse(it.hasNext());
+    Assert.assertTrue(it.hasNext());
+    Assert.assertEquals("a", it.next());
+    Assert.assertFalse(it.hasNext());
 
     // now test with more than one string
     l = new StringList("a", "b", "c");
     it = l.iterator();
 
-    assertTrue(it.hasNext());
-    assertEquals("a", it.next());
-
-    assertTrue(it.hasNext());
-    assertEquals("b", it.next());
-
-    assertTrue(it.hasNext());
-    assertEquals("c", it.next());
-
-    assertFalse(it.hasNext());
+    Assert.assertTrue(it.hasNext());
+    Assert.assertEquals("a", it.next());
+    Assert.assertTrue(it.hasNext());
+    Assert.assertEquals("b", it.next());
+    Assert.assertTrue(it.hasNext());
+    Assert.assertEquals("c", it.next());
+    Assert.assertFalse(it.hasNext());
   }
 
   /**
@@ -77,7 +67,7 @@ public class StringListTest {
    */
   @Test
   public void testCompareToIgnoreCase() {
-    assertTrue(new StringList("a", "b").compareToIgnoreCase(
+    Assert.assertTrue(new StringList("a", "b").compareToIgnoreCase(
         new StringList("A", "B")));
   }
 
@@ -86,10 +76,10 @@ public class StringListTest {
    */
   @Test
   public void testEquals() {
-    assertEquals(new StringList("a", "b"),
+    Assert.assertEquals(new StringList("a", "b"),
         new StringList("a", "b"));
 
-    assertFalse(new StringList("a", "b").equals(
+    Assert.assertFalse(new StringList("a", "b").equals(
         new StringList("A", "B")));
   }
 
@@ -98,7 +88,7 @@ public class StringListTest {
    */
   @Test
   public void testHashCode() {
-    assertEquals(new StringList("a", "b").hashCode(),
+    Assert.assertEquals(new StringList("a", "b").hashCode(),
         new StringList("a", "b").hashCode());
   }
 

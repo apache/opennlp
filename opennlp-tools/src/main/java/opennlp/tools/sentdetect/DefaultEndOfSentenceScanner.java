@@ -48,7 +48,7 @@ public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
   }
 
   public List<Integer> getPositions(char[] cbuf) {
-    List<Integer> l = new ArrayList<Integer>();
+    List<Integer> l = new ArrayList<>();
     char[] eosCharacters = getEndOfSentenceCharacters();
     for (int i = 0; i < cbuf.length; i++) {
       for (char eosCharacter : eosCharacters) {

@@ -15,12 +15,7 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.util.featuregen;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,11 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.WordClusterDictionary.WordClusterDictionarySerializer;
 import opennlp.tools.util.model.ArtifactSerializer;
-
-import org.junit.Test;
 
 public class GeneratorFactoryTest {
 
@@ -43,13 +39,13 @@ public class GeneratorFactoryTest {
 
     // If this fails the generator descriptor could not be found
     // at the expected location
-    assertNotNull(generatorDescriptorIn);
+    Assert.assertNotNull(generatorDescriptorIn);
 
     AggregatedFeatureGenerator aggregatedGenerator =
         (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
 
-    assertEquals(1, aggregatedGenerator.getGenerators().size());
-    assertEquals(TokenClassFeatureGenerator.class.getName(),
+    Assert.assertEquals(1, aggregatedGenerator.getGenerators().size());
+    Assert.assertEquals(TokenClassFeatureGenerator.class.getName(),
         aggregatedGenerator.getGenerators().iterator().next().getClass().getName());
 
   }
@@ -61,9 +57,9 @@ public class GeneratorFactoryTest {
 
     // If this fails the generator descriptor could not be found
     // at the expected location
-    assertNotNull(generatorDescriptorIn);
+    Assert.assertNotNull(generatorDescriptorIn);
 
-    Collection<String> expectedGenerators = new ArrayList<String>();
+    Collection<String> expectedGenerators = new ArrayList<>();
     expectedGenerators.add(OutcomePriorFeatureGenerator.class.getName());
 
     AggregatedFeatureGenerator aggregatedGenerator =
@@ -80,7 +76,7 @@ public class GeneratorFactoryTest {
 
     // If this fails not all expected generators were found and
     // removed from the expected generators collection
-    assertEquals(0, expectedGenerators.size());
+    Assert.assertEquals(0, expectedGenerators.size());
   }
 
   @Test
@@ -90,17 +86,17 @@ public class GeneratorFactoryTest {
 
     // If this fails the generator descriptor could not be found
     // at the expected location
-    assertNotNull(generatorDescriptorIn);
+    Assert.assertNotNull(generatorDescriptorIn);
 
     AggregatedFeatureGenerator aggregatedGenerator =
         (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
 
     Collection<AdaptiveFeatureGenerator> embeddedGenerator = aggregatedGenerator.getGenerators();
 
-    assertEquals(1, embeddedGenerator.size());
+    Assert.assertEquals(1, embeddedGenerator.size());
 
     for (AdaptiveFeatureGenerator generator : embeddedGenerator) {
-      assertEquals(TokenFeatureGenerator.class.getName(), generator.getClass().getName());
+      Assert.assertEquals(TokenFeatureGenerator.class.getName(), generator.getClass().getName());
     }
   }
 
@@ -126,6 +122,6 @@ public class GeneratorFactoryTest {
     Map<String, ArtifactSerializer<?>> mapping =
         GeneratorFactory.extractCustomArtifactSerializerMappings(descIn);
 
-    assertTrue(mapping.get("test.resource") instanceof WordClusterDictionarySerializer);
+    Assert.assertTrue(mapping.get("test.resource") instanceof WordClusterDictionarySerializer);
   }
 }

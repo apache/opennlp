@@ -30,6 +30,7 @@ import morfologik.stemming.Dictionary;
 import morfologik.stemming.DictionaryLookup;
 import morfologik.stemming.IStemmer;
 import morfologik.stemming.WordData;
+
 import opennlp.tools.lemmatizer.Lemmatizer;
 
 public class MorfologikLemmatizer implements Lemmatizer {
@@ -53,8 +54,9 @@ public class MorfologikLemmatizer implements Lemmatizer {
   }
 
   private String asString(CharSequence tag) {
-    if (tag == null)
+    if (tag == null) {
       return null;
+    }
     return tag.toString();
   }
 
@@ -62,7 +64,7 @@ public class MorfologikLemmatizer implements Lemmatizer {
   public String[] lemmatize(String[] toks, String[] tags) {
     String[] lemmas = new String[toks.length];
     for (int i = 0; i < toks.length; i++) {
-      List<String> l = lemmatize(toks[i],tags[i]);
+      List<String> l = lemmatize(toks[i], tags[i]);
       if (l.size() > 0) {
         lemmas[i] = l.get(0);
       } else {
@@ -78,13 +80,12 @@ public class MorfologikLemmatizer implements Lemmatizer {
    *
    * @param toks an array of the tokens
    * @param tags an array of the pos tags
-   *
    * @return an list of possible lemmas for each token in the sequence.
    */
   public List<List<String>> lemmatize(List<String> toks, List<String> tags) {
     List<List<String>> lemmas = new ArrayList<>();
     for (int i = 0; i < toks.size(); i++) {
-      lemmas.add(lemmatize(toks.get(i),tags.get(i)));
+      lemmas.add(lemmatize(toks.get(i), tags.get(i)));
     }
     return lemmas;
   }

@@ -17,9 +17,6 @@
 
 package opennlp.tools.ml.perceptron;
 
-import static opennlp.tools.ml.PrepAttachDataUtil.createTrainingStream;
-import static opennlp.tools.ml.PrepAttachDataUtil.testModel;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -28,17 +25,18 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.PrepAttachDataUtil;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.util.TrainingParameters;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Test for perceptron training and use with the ppa data.
@@ -50,58 +48,52 @@ public class PerceptronPrepAttachTest {
     TwoPassDataIndexer indexer = new TwoPassDataIndexer();
     TrainingParameters indexingParameters = new TrainingParameters();
     indexingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
-    indexingParameters.put(AbstractDataIndexer.SORT_PARAM, "false");    
+    indexingParameters.put(AbstractDataIndexer.SORT_PARAM, "false");
     indexer.init(indexingParameters, new HashMap<>());
-    indexer.index(createTrainingStream());
-    MaxentModel model =
-        new PerceptronTrainer().trainModel(400,
-        indexer, 1);
-
-    testModel(model, 0.7650408516959644);
+    indexer.index(PrepAttachDataUtil.createTrainingStream());
+    MaxentModel model = new PerceptronTrainer().trainModel(400, indexer, 1);
+    PrepAttachDataUtil.testModel(model, 0.7650408516959644);
   }
 
   @Test
   public void testPerceptronOnPrepAttachDataWithSkippedAveraging() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<String, String>();
+    Map<String, String> trainParams = new HashMap<>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put("UseSkippedAveraging", Boolean.toString(true));
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
-    MaxentModel model = trainer.train(createTrainingStream());
-
-    testModel(model, 0.773706362961129);
+    MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
+    PrepAttachDataUtil.testModel(model, 0.773706362961129);
   }
 
   @Test
   public void testPerceptronOnPrepAttachDataWithTolerance() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<String, String>();
+    Map<String, String> trainParams = new HashMap<>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put(AbstractTrainer.ITERATIONS_PARAM, Integer.toString(500));
     trainParams.put("Tolerance", Double.toString(0.0001d));
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
-    MaxentModel model = trainer.train(createTrainingStream());
-
-    testModel(model, 0.7677642980935875);
+    MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
+    PrepAttachDataUtil.testModel(model, 0.7677642980935875);
   }
 
   @Test
   public void testPerceptronOnPrepAttachDataWithStepSizeDecrease() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<String, String>();
+    Map<String, String> trainParams = new HashMap<>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put(AbstractTrainer.ITERATIONS_PARAM, Integer.toString(500));
     trainParams.put("StepSizeDecrease", Double.toString(0.06d));
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
-    MaxentModel model = trainer.train(createTrainingStream());
-
-    testModel(model, 0.7791532557563754);
+    MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
+    PrepAttachDataUtil.testModel(model, 0.7791532557563754);
   }
 
   @Test
@@ -113,9 +105,9 @@ public class PerceptronPrepAttachTest {
     trainParams.put("UseSkippedAveraging", Boolean.toString(true));
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
-    AbstractModel model = (AbstractModel) trainer.train(createTrainingStream());
+    AbstractModel model = (AbstractModel) trainer.train(PrepAttachDataUtil.createTrainingStream());
 
-    testModel(model, 0.773706362961129);
+    PrepAttachDataUtil.testModel(model, 0.773706362961129);
 
     // serialize and load model, then check if it still works as expected
     ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
@@ -126,8 +118,7 @@ public class PerceptronPrepAttachTest {
 
     MaxentModel restoredModel = new BinaryPerceptronModelReader(
         new DataInputStream(new ByteArrayInputStream(modelBytes.toByteArray()))).getModel();
-
-    testModel(restoredModel, 0.773706362961129);
+    PrepAttachDataUtil.testModel(restoredModel, 0.773706362961129);
   }
 
   @Test
@@ -138,9 +129,8 @@ public class PerceptronPrepAttachTest {
     trainParams.put("UseSkippedAveraging", Boolean.toString(true));
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
-
-    AbstractModel modelA = (AbstractModel) trainer.train(createTrainingStream());
-    AbstractModel modelB = (AbstractModel) trainer.train(createTrainingStream());
+    AbstractModel modelA = (AbstractModel) trainer.train(PrepAttachDataUtil.createTrainingStream());
+    AbstractModel modelB = (AbstractModel) trainer.train(PrepAttachDataUtil.createTrainingStream());
 
     Assert.assertEquals(modelA, modelB);
     Assert.assertEquals(modelA.hashCode(), modelB.hashCode());

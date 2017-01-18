@@ -17,12 +17,13 @@
 
 package opennlp.tools.formats.ad;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
@@ -30,25 +31,22 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
-import org.junit.Before;
-import org.junit.Test;
-
 public class ADSentenceSampleStreamTest {
 
-  List<SentenceSample> samples = new ArrayList<SentenceSample>();
+  private List<SentenceSample> samples = new ArrayList<>();
 
   @Test
   public void testSimpleCount() throws IOException {
-    assertEquals(5, samples.size());
+    Assert.assertEquals(5, samples.size());
   }
 
   @Test
   public void testSentences() throws IOException {
 
-    assertNotNull(samples.get(0).getDocument());
-    assertEquals(3, samples.get(0).getSentences().length);
-    assertEquals(new Span(0, 119), samples.get(0).getSentences()[0]);
-    assertEquals(new Span(120, 180), samples.get(0).getSentences()[1]);
+    Assert.assertNotNull(samples.get(0).getDocument());
+    Assert.assertEquals(3, samples.get(0).getSentences().length);
+    Assert.assertEquals(new Span(0, 119), samples.get(0).getSentences()[0]);
+    Assert.assertEquals(new Span(120, 180), samples.get(0).getSentences()[1]);
   }
 
   @Before

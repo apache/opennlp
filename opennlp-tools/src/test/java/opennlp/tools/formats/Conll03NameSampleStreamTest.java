@@ -17,19 +17,16 @@
 
 package opennlp.tools.formats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import java.io.IOException;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
-
-import org.junit.Test;
 
 /**
  * Test for the {@link Conll03NameSampleStream} class.
@@ -53,25 +50,25 @@ public class Conll03NameSampleStreamTest {
     ObjectStream<NameSample> sampleStream = openData(LANGUAGE.EN, ENGLISH_SAMPLE);
 
     NameSample personName = sampleStream.read();
-    assertNotNull(personName);
+    Assert.assertNotNull(personName);
 
-    assertEquals(9, personName.getSentence().length);
-    assertEquals(0, personName.getNames().length);
-    assertEquals(true, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(9, personName.getSentence().length);
+    Assert.assertEquals(0, personName.getNames().length);
+    Assert.assertEquals(true, personName.isClearAdaptiveDataSet());
 
     personName = sampleStream.read();
 
-    assertNotNull(personName);
+    Assert.assertNotNull(personName);
 
-    assertEquals(2, personName.getSentence().length);
-    assertEquals(1, personName.getNames().length);
-    assertEquals(false, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(2, personName.getSentence().length);
+    Assert.assertEquals(1, personName.getNames().length);
+    Assert.assertEquals(false, personName.isClearAdaptiveDataSet());
 
     Span nameSpan = personName.getNames()[0];
-    assertEquals(0, nameSpan.getStart());
-    assertEquals(2, nameSpan.getEnd());
+    Assert.assertEquals(0, nameSpan.getStart());
+    Assert.assertEquals(2, nameSpan.getEnd());
 
-    assertNull(sampleStream.read());
+    Assert.assertNull(sampleStream.read());
   }
 
   @Test(expected = IOException.class)
@@ -92,11 +89,11 @@ public class Conll03NameSampleStreamTest {
     ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, GERMAN_SAMPLE);
 
     NameSample personName = sampleStream.read();
-    assertNotNull(personName);
+    Assert.assertNotNull(personName);
 
-    assertEquals(5, personName.getSentence().length);
-    assertEquals(0, personName.getNames().length);
-    assertEquals(true, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(5, personName.getSentence().length);
+    Assert.assertEquals(0, personName.getNames().length);
+    Assert.assertEquals(true, personName.isClearAdaptiveDataSet());
   }
 
   @Test
@@ -107,6 +104,6 @@ public class Conll03NameSampleStreamTest {
 
     sampleStream.reset();
 
-    assertEquals(sample, sampleStream.read());
+    Assert.assertEquals(sample, sampleStream.read());
   }
 }

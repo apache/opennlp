@@ -22,6 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.formats.ontonotes.DocumentToLineStream;
@@ -33,8 +37,6 @@ import opennlp.tools.parser.lang.en.HeadRulesTest;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class OntoNotes4ParserEval {
 
@@ -53,7 +55,7 @@ public class OntoNotes4ParserEval {
 
     OntoNotesParseSampleStream samples = new OntoNotesParseSampleStream(
         new DocumentToLineStream(new FileToStringSampleStream(
-        documentStream, Charset.forName("UTF-8"))));
+            documentStream, Charset.forName("UTF-8"))));
 
     ParserCrossValidator cv = new ParserCrossValidator("en", params, rules, ParserType.CHUNKING);
 
@@ -67,7 +69,7 @@ public class OntoNotes4ParserEval {
 
     HeadRules headRules;
     try (InputStream headRulesIn =
-        HeadRulesTest.class.getResourceAsStream("/opennlp/tools/parser/en_head_rules")) {
+             HeadRulesTest.class.getResourceAsStream("/opennlp/tools/parser/en_head_rules")) {
       headRules = new opennlp.tools.parser.lang.en.HeadRules(
           new InputStreamReader(headRulesIn, "UTF-8"));
     }

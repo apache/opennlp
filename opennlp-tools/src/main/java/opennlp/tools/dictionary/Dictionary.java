@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.dictionary;
 
 import java.io.BufferedReader;
@@ -28,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
+
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionarySerializer;
 import opennlp.tools.dictionary.serializer.Entry;

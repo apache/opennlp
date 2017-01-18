@@ -21,7 +21,7 @@ import java.io.File;
 
 public class EvalUtil {
 
-  public static final File getOpennlpDataDir() {
+  public static File getOpennlpDataDir() {
     return new File(System.getProperty("OPENNLP_DATA_DIR"));
   }
 }

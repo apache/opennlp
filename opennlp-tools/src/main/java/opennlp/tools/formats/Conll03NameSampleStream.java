@@ -15,8 +15,6 @@
 
 package opennlp.tools.formats;
 
-import static opennlp.tools.formats.Conll02NameSampleStream.extract;
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
@@ -139,7 +137,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample> {
         if (tag.equals("O")) {
           // O means we don't have anything this round.
           if (beginIndex != -1) {
-            names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
+            names.add(Conll02NameSampleStream.extract(beginIndex, endIndex, tags.get(beginIndex)));
             beginIndex = -1;
             endIndex = -1;
           }
@@ -147,7 +145,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample> {
         else if (tag.startsWith("B-")) {
           // B- prefix means we have two same entities next to each other
           if (beginIndex != -1) {
-            names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
+            names.add(Conll02NameSampleStream.extract(beginIndex, endIndex, tags.get(beginIndex)));
           }
           beginIndex = i;
           endIndex = i + 1;
@@ -161,7 +159,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample> {
           else if (!tag.endsWith(tags.get(beginIndex).substring(1))) {
             // we have a new tag type following a tagged word series
             // also may not have the same I- starting the previous!
-            names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
+            names.add(Conll02NameSampleStream.extract(beginIndex, endIndex, tags.get(beginIndex)));
             beginIndex = i;
             endIndex = i + 1;
           }
@@ -176,7 +174,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample> {
 
       // if one span remains, create it here
       if (beginIndex != -1)
-        names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
+        names.add(Conll02NameSampleStream.extract(beginIndex, endIndex, tags.get(beginIndex)));
 
       return new NameSample(sentence.toArray(new String[sentence.size()]),
           names.toArray(new Span[names.size()]), isClearAdaptiveData);

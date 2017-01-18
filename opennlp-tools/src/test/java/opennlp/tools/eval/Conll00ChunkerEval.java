@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.eval;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkSampleStream;
@@ -32,9 +34,6 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Evaluates the chunker against the English CONLL2000 corpus.
@@ -56,10 +55,10 @@ public class Conll00ChunkerEval {
   }
 
   private static void eval(ChunkerModel model, File testData,
-      double expectedFMeasure) throws IOException {
+                           double expectedFMeasure) throws IOException {
 
     ObjectStream<ChunkSample> samples = new ChunkSampleStream(
-        new PlainTextByLineStream(new MarkableFileInputStreamFactory(testData),"UTF-8"));
+        new PlainTextByLineStream(new MarkableFileInputStreamFactory(testData), "UTF-8"));
 
     ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model));
     evaluator.evaluate(samples);

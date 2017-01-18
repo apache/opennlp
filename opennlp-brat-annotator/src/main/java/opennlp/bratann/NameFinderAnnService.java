@@ -17,6 +17,16 @@
 
 package opennlp.bratann;
 
+import java.io.File;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.ws.rs.core.UriBuilder;
+
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
+
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -29,14 +39,6 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
-import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.glassfish.jersey.server.ResourceConfig;
-
-import java.io.File;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-import javax.ws.rs.core.UriBuilder;
 
 public class NameFinderAnnService {
 
@@ -49,8 +51,8 @@ public class NameFinderAnnService {
     if (args.length == 0) {
       System.out.println("Usage:");
       System.out.println("[NameFinderAnnService -serverPort port] [-tokenizerModel file] "
-           + "[-ruleBasedTokenizer whitespace|simple] "
-           + "[-sentenceDetectorModel file] namefinderFile|nameFinderURI");
+          + "[-ruleBasedTokenizer whitespace|simple] "
+          + "[-sentenceDetectorModel file] namefinderFile|nameFinderURI");
       return;
     }
 
@@ -63,8 +65,7 @@ public class NameFinderAnnService {
       serverPort = Integer.parseInt(args[serverPortIndex]);
     }
 
-    int sentenceModelIndex = argList.indexOf("-sentenceDetectorModel")
-        + 1;
+    int sentenceModelIndex = argList.indexOf("-sentenceDetectorModel") + 1;
     if (sentenceModelIndex > 0 && sentenceModelIndex < args.length) {
       sentenceDetector = new SentenceDetectorME(
           new SentenceModel(new File(args[sentenceModelIndex])));
@@ -78,8 +79,7 @@ public class NameFinderAnnService {
       } else if ("simple".equals(args[ruleBasedTokenizerIndex])) {
         tokenizer = SimpleTokenizer.INSTANCE;
       } else {
-        System.out
-        .println("unkown tokenizer: " + args[ruleBasedTokenizerIndex]);
+        System.out.println("unkown tokenizer: " + args[ruleBasedTokenizerIndex]);
         return;
       }
     }
@@ -90,8 +90,8 @@ public class NameFinderAnnService {
           new TokenizerModel(new File(args[tokenizerModelIndex])));
     }
 
-    nameFinders = new TokenNameFinder[] { new NameFinderME(
-        new TokenNameFinderModel(new File(args[args.length - 1]))) };
+    nameFinders = new TokenNameFinder[] {new NameFinderME(
+        new TokenNameFinderModel(new File(args[args.length - 1])))};
 
     URI baseUri = UriBuilder.fromUri("http://localhost/").port(serverPort).build();
     ResourceConfig config = new ResourceConfig(NameFinderResource.class);

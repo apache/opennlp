@@ -17,19 +17,18 @@
 
 package opennlp.tools.doccat;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.TrainingParameters;
-
-import org.junit.Test;
 
 public class DocumentCategorizerNBTest {
 
@@ -55,15 +54,15 @@ public class DocumentCategorizerNBTest {
     DocumentCategorizer doccat = new DocumentCategorizerME(model);
 
     double aProbs[] = doccat.categorize("a");
-    assertEquals("1", doccat.getBestCategory(aProbs));
+    Assert.assertEquals("1", doccat.getBestCategory(aProbs));
 
     double bProbs[] = doccat.categorize("x");
-    assertEquals("0", doccat.getBestCategory(bProbs));
+    Assert.assertEquals("0", doccat.getBestCategory(bProbs));
 
     //test to make sure sorted map's last key is cat 1 because it has the highest score.
     SortedMap<Double, Set<String>> sortedScoreMap = doccat.sortedScoreMap("a");
     for (String cat : sortedScoreMap.get(sortedScoreMap.lastKey())) {
-      assertEquals("1", cat);
+      Assert.assertEquals("1", cat);
       break;
     }
     System.out.println("");

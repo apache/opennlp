@@ -17,12 +17,10 @@
 
 package opennlp.tools.sentdetect;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import opennlp.tools.util.Span;
-
+import org.junit.Assert;
 import org.junit.Test;
+
+import opennlp.tools.util.Span;
 
 /**
  * Tests for the {@link SentenceSample} class.
@@ -35,17 +33,17 @@ public class SentenceSampleTest {
     SentenceSample sample = new SentenceSample("1. 2.",
         new Span(0, 2), new Span(3, 5));
 
-    assertEquals("1. 2.", sample.getDocument());
-    assertEquals(new Span(0, 2), sample.getSentences()[0]);
-    assertEquals(new Span(3, 5), sample.getSentences()[1]);
+    Assert.assertEquals("1. 2.", sample.getDocument());
+    Assert.assertEquals(new Span(0, 2), sample.getSentences()[0]);
+    Assert.assertEquals(new Span(3, 5), sample.getSentences()[1]);
   }
 
   @Test
   public void testEquals() {
-    assertFalse(createGoldSample() == createGoldSample());
-    assertTrue(createGoldSample().equals(createGoldSample()));
-    assertFalse(createPredSample().equals(createGoldSample()));
-    assertFalse(createPredSample().equals(new Object()));
+    Assert.assertFalse(createGoldSample() == createGoldSample());
+    Assert.assertTrue(createGoldSample().equals(createGoldSample()));
+    Assert.assertFalse(createPredSample().equals(createGoldSample()));
+    Assert.assertFalse(createPredSample().equals(new Object()));
   }
 
   public static SentenceSample createGoldSample() {

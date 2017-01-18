@@ -19,9 +19,7 @@
 
 package opennlp.tools.ml.maxent.quasinewton;
 
-import static java.lang.Math.pow;
-import static org.junit.Assert.assertEquals;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 public class QNMinimizerTest {
@@ -33,9 +31,9 @@ public class QNMinimizerTest {
     double[] x = minimizer.minimize(f);
     double minValue = f.valueAt(x);
 
-    assertEquals(x[0], 1.0, 1e-5);
-    assertEquals(x[1], 5.0, 1e-5);
-    assertEquals(minValue, 10.0, 1e-10);
+    Assert.assertEquals(x[0], 1.0, 1e-5);
+    Assert.assertEquals(x[1], 5.0, 1e-5);
+    Assert.assertEquals(minValue, 10.0, 1e-10);
   }
 
   @Test
@@ -45,9 +43,9 @@ public class QNMinimizerTest {
     double[] x = minimizer.minimize(f);
     double minValue = f.valueAt(x);
 
-    assertEquals(x[0], 1.0, 1e-5);
-    assertEquals(x[1], 1.0, 1e-5);
-    assertEquals(minValue, 0, 1e-10);
+    Assert.assertEquals(x[0], 1.0, 1e-5);
+    Assert.assertEquals(x[1], 1.0, 1e-5);
+    Assert.assertEquals(minValue, 0, 1e-10);
   }
 
   /**
@@ -62,7 +60,7 @@ public class QNMinimizerTest {
 
     @Override
     public double valueAt(double[] x) {
-      return pow(x[0] - 1, 2) + pow(x[1] - 5, 2) + 10;
+      return Math.pow(x[0] - 1, 2) + Math.pow(x[1] - 5, 2) + 10;
     }
 
     @Override
@@ -88,14 +86,14 @@ public class QNMinimizerTest {
 
     @Override
     public double valueAt(double[] x) {
-      return pow(1 - x[0], 2) + 100 * pow(x[1] - pow(x[0], 2), 2);
+      return Math.pow(1 - x[0], 2) + 100 * Math.pow(x[1] - Math.pow(x[0], 2), 2);
     }
 
     @Override
     public double[] gradientAt(double[] x) {
       double[] g = new double[2];
-      g[0] = -2 * (1 - x[0]) - 400 * (x[1] - pow(x[0], 2)) * x[0];
-      g[1] = 200 * (x[1] - pow(x[0], 2));
+      g[0] = -2 * (1 - x[0]) - 400 * (x[1] - Math.pow(x[0], 2)) * x[0];
+      g[1] = 200 * (x[1] - Math.pow(x[0], 2));
       return g;
     }
 

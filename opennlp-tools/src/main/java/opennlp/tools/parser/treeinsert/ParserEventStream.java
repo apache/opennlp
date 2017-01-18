@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.parser.treeinsert;
 
 import java.util.ArrayList;

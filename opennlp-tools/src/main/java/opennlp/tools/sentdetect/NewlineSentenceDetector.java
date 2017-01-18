@@ -34,7 +34,7 @@ public class NewlineSentenceDetector implements SentenceDetector {
 
   public Span[] sentPosDetect(String s) {
 
-    List<Span> sentences = new ArrayList<Span>();
+    List<Span> sentences = new ArrayList<>();
 
     int start = 0;
 

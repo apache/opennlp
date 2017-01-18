@@ -15,12 +15,9 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.tokenize;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -30,9 +27,9 @@ public class WhitespaceTokenizerTest {
 
   @Test
   public void testOneToken() {
-    assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one")[0]);
-    assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize(" one")[0]);
-    assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one ")[0]);
+    Assert.assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one")[0]);
+    Assert.assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize(" one")[0]);
+    Assert.assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one ")[0]);
   }
 
   /**
@@ -45,21 +42,21 @@ public class WhitespaceTokenizerTest {
 
     String[] tokenizedText = WhitespaceTokenizer.INSTANCE.tokenize(text);
 
-    assertTrue("a".equals(tokenizedText[0]));
-    assertTrue("b".equals(tokenizedText[1]));
-    assertTrue("c".equals(tokenizedText[2]));
-    assertTrue("d".equals(tokenizedText[3]));
-    assertTrue("e".equals(tokenizedText[4]));
-    assertTrue("f".equals(tokenizedText[5]));
+    Assert.assertTrue("a".equals(tokenizedText[0]));
+    Assert.assertTrue("b".equals(tokenizedText[1]));
+    Assert.assertTrue("c".equals(tokenizedText[2]));
+    Assert.assertTrue("d".equals(tokenizedText[3]));
+    Assert.assertTrue("e".equals(tokenizedText[4]));
+    Assert.assertTrue("f".equals(tokenizedText[5]));
 
-    assertTrue(tokenizedText.length == 6);
+    Assert.assertTrue(tokenizedText.length == 6);
   }
 
   @Test
   public void testTokenizationOfStringWithoutTokens() {
-    assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("").length); // empty
-    assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize(" ").length); // space
-    assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize(" ").length); // tab
-    assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("     ").length);
+    Assert.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("").length); // empty
+    Assert.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize(" ").length); // space
+    Assert.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize(" ").length); // tab
+    Assert.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("     ").length);
   }
 }

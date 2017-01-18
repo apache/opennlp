@@ -21,12 +21,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class ConstitParseSampleStreamTest {
 
@@ -85,7 +85,7 @@ public class ConstitParseSampleStreamTest {
    *
    * @return byte array containing sample1.xml.
    */
-  static byte[] getSample1() throws IOException {
+  private static byte[] getSample1() throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
     byte buffer[] = new byte[1024];

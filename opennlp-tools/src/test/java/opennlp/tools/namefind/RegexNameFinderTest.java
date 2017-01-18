@@ -17,15 +17,14 @@
 
 package opennlp.tools.namefind;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import opennlp.tools.util.Span;
-
+import org.junit.Assert;
 import org.junit.Test;
+
+import opennlp.tools.util.Span;
 
 /**
  * Tests for the {@link RegexNameFinder} class.
@@ -50,10 +49,10 @@ public class RegexNameFinderTest {
 
     Span[] result = finder.find(sentence);
 
-    assertTrue(result.length == 1);
+    Assert.assertTrue(result.length == 1);
 
-    assertTrue(result[0].getStart() == 1);
-    assertTrue(result[0].getEnd() == 2);
+    Assert.assertTrue(result[0].getStart() == 1);
+    Assert.assertTrue(result[0].getEnd() == 2);
   }
 
   @Test
@@ -73,11 +72,11 @@ public class RegexNameFinderTest {
 
     Span[] result = finder.find(sentence);
 
-    assertTrue(result.length == 1);
+    Assert.assertTrue(result.length == 1);
 
-    assertTrue(result[0].getStart() == 1);
-    assertTrue(result[0].getEnd() == 3);
-    assertTrue(result[0].getType().equals("match"));
+    Assert.assertTrue(result[0].getStart() == 1);
+    Assert.assertTrue(result[0].getEnd() == 3);
+    Assert.assertTrue(result[0].getType().equals("match"));
   }
 
   @Test
@@ -91,11 +90,10 @@ public class RegexNameFinderTest {
 
     regexMap.put(type, patterns);
 
-    RegexNameFinder finder =
-            new RegexNameFinder(regexMap);
+    RegexNameFinder finder = new RegexNameFinder(regexMap);
 
     Span[] result = finder.find(sentence);
 
-    assertTrue(result.length == 0);
+    Assert.assertTrue(result.length == 0);
   }
 }

@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.ngram;
 
 import java.io.IOException;
@@ -25,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionarySerializer;

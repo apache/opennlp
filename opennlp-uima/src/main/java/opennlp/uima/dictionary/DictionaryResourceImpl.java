@@ -17,11 +17,11 @@
 
 package opennlp.uima.dictionary;
 
-import opennlp.tools.dictionary.Dictionary;
-import opennlp.uima.util.AbstractModelResource;
-
 import java.io.IOException;
 import java.io.InputStream;
+
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.uima.util.AbstractModelResource;
 
 public class DictionaryResourceImpl extends AbstractModelResource<Dictionary>
     implements DictionaryResource {

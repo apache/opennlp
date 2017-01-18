@@ -23,14 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.parser.Parse;
-import opennlp.tools.parser.ParserFactory;
-import opennlp.tools.parser.ParserModel;
-import opennlp.tools.util.Span;
-import opennlp.uima.util.AnnotatorUtil;
-import opennlp.uima.util.ContainingConstraint;
-import opennlp.uima.util.UimaUtil;
-
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -46,152 +38,53 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
+import opennlp.tools.parser.Parse;
+import opennlp.tools.parser.ParserFactory;
+import opennlp.tools.parser.ParserModel;
+import opennlp.tools.util.Span;
+import opennlp.uima.util.AnnotatorUtil;
+import opennlp.uima.util.ContainingConstraint;
+import opennlp.uima.util.UimaUtil;
+
 /**
  * Abstract base class for OpenNLP Parser annotators.
  * <p>
  * Mandatory parameters
  * <table border=1>
- *   <caption></caption>
- *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ParseType</td> <td>The full name of the parse type</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.TypeFeature</td> <td>The name of the type feature</td></tr>
+ * <caption></caption>
+ * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ * <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.ParseType</td> <td>The full name of the parse type</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.TypeFeature</td> <td>The name of the type feature</td></tr>
  * </table>
  * <p>
  * Optional parameters
  * <table border=1>
- *   <caption></caption>
- *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td></tr>
+ * <caption></caption>
+ * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ * <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td></tr>
  * </table>
  */
 public class Parser extends CasAnnotator_ImplBase {
 
-  private static class ParseConverter {
-    private Map<Integer, Integer> mIndexMap = new HashMap<>();
-
-    private Parse mParseForTagger;
-
-    private final String mSentence;
-
-    /**
-     * Initializes a new instance.
-     *
-     * @param sentence
-     * @param tokens
-     */
-    public ParseConverter(String sentence, Span tokens[]) {
-
-      mSentence = sentence;
-
-      StringBuilder sentenceStringBuilder = new StringBuilder();
-
-      String tokenList[] = new String[tokens.length];
-
-      for (int i = 0; i < tokens.length; i++) {
-        String tokenString = tokens[i].getCoveredText(sentence).toString();
-        String escapedToken = escape(tokenString);
-        tokenList[i] = escapedToken;
-
-        int escapedStart = sentenceStringBuilder.length();
-        int start = tokens[i].getStart();
-        mIndexMap.put(escapedStart, start);
-
-        int escapedEnd = escapedStart + escapedToken.length();
-        int end = tokens[i].getEnd();
-        mIndexMap.put(escapedEnd, end);
-
-        sentenceStringBuilder.append(tokenList[i]);
-
-        sentenceStringBuilder.append(' ');
-      }
-
-      // remove last space
-      if (sentenceStringBuilder.length() > 0)
-        sentenceStringBuilder.setLength(sentenceStringBuilder.length() - 1);
-
-      String tokenizedSentence = sentenceStringBuilder.toString();
-
-      mParseForTagger = new Parse(tokenizedSentence,
-          new Span(0, tokenizedSentence.length()), "INC", 1, null);
-
-      int start = 0;
-
-      for (String token : tokenList) {
-        mParseForTagger.insert(new Parse(tokenizedSentence, new Span(start,
-            start + token.length()),
-            opennlp.tools.parser.chunking.Parser.TOK_NODE, 0f, 0));
-
-        start += token.length() + 1;
-      }
-    }
-
-    private static String escape(String text) {
-      return text;
-    }
-
-    /**
-     * Creates the parse for the tagger.
-     *
-     * @return the parse which can be passed to the tagger
-     */
-    Parse getParseForTagger() {
-      return mParseForTagger;
-    }
-
-    /**
-     * Converts the parse from the tagger back.
-     *
-     * @param parseFromTagger
-     * @return the final parse
-     */
-    Parse transformParseFromTagger(Parse parseFromTagger) {
-      int start = parseFromTagger.getSpan().getStart();
-      int end = parseFromTagger.getSpan().getEnd();
-
-      Parse transformedParse = new Parse(mSentence, new Span(
-          mIndexMap.get(start), mIndexMap.get(end)), parseFromTagger.getType(),
-          parseFromTagger.getProb(), parseFromTagger.getHeadIndex());
-
-      Parse[] parseFromTaggerChildrens = parseFromTagger.getChildren();
-
-      for (Parse child : parseFromTaggerChildrens) {
-        transformedParse.insert(transformParseFromTagger(child));
-      }
-
-      return transformedParse;
-    }
-  }
-
   public static final String PARSE_TYPE_PARAMETER = "opennlp.uima.ParseType";
-
   public static final String TYPE_FEATURE_PARAMETER =
       "opennlp.uima.TypeFeature";
-
   public static final String CHILDREN_FEATURE_PARAMETER =
       "opennlp.uima.ChildrenFeature";
-
   public static final String PROBABILITY_FEATURE_PARAMETER =
       "opennlp.uima.ProbabilityFeature";
-
   protected UimaContext context;
-
   protected Logger mLogger;
-
+  protected opennlp.tools.parser.Parser mParser;
   private Type mSentenceType;
 
   private Type mTokenType;
-
-  protected opennlp.tools.parser.Parser mParser;
-
   private Type mParseType;
-
   private Feature mTypeFeature;
-
   private Feature childrenFeature;
-
   private Feature probabilityFeature;
 
   /**
@@ -280,7 +173,7 @@ public class Parser extends CasAnnotator_ImplBase {
           token.getEnd() - sentenceAnnotation.getBegin()));
     }
 
-    ParseConverter converter = new ParseConverter(sentence,tokenSpans.toArray(new Span[tokenSpans.size()]));
+    ParseConverter converter = new ParseConverter(sentence, tokenSpans.toArray(new Span[tokenSpans.size()]));
 
     Parse unparsedTree = converter.getParseForTagger();
 
@@ -331,11 +224,107 @@ public class Parser extends CasAnnotator_ImplBase {
 
     return parseAnnotation;
   }
+
   /**
    * Releases allocated resources.
    */
 
   public void destroy() {
     mParser = null;
+  }
+
+  private static class ParseConverter {
+    private final String mSentence;
+    private Map<Integer, Integer> mIndexMap = new HashMap<>();
+    private Parse mParseForTagger;
+
+    /**
+     * Initializes a new instance.
+     *
+     * @param sentence
+     * @param tokens
+     */
+    public ParseConverter(String sentence, Span tokens[]) {
+
+      mSentence = sentence;
+
+      StringBuilder sentenceStringBuilder = new StringBuilder();
+
+      String tokenList[] = new String[tokens.length];
+
+      for (int i = 0; i < tokens.length; i++) {
+        String tokenString = tokens[i].getCoveredText(sentence).toString();
+        String escapedToken = escape(tokenString);
+        tokenList[i] = escapedToken;
+
+        int escapedStart = sentenceStringBuilder.length();
+        int start = tokens[i].getStart();
+        mIndexMap.put(escapedStart, start);
+
+        int escapedEnd = escapedStart + escapedToken.length();
+        int end = tokens[i].getEnd();
+        mIndexMap.put(escapedEnd, end);
+
+        sentenceStringBuilder.append(tokenList[i]);
+
+        sentenceStringBuilder.append(' ');
+      }
+
+      // remove last space
+      if (sentenceStringBuilder.length() > 0) {
+        sentenceStringBuilder.setLength(sentenceStringBuilder.length() - 1);
+      }
+
+      String tokenizedSentence = sentenceStringBuilder.toString();
+
+      mParseForTagger = new Parse(tokenizedSentence,
+          new Span(0, tokenizedSentence.length()), "INC", 1, null);
+
+      int start = 0;
+
+      for (String token : tokenList) {
+        mParseForTagger.insert(new Parse(tokenizedSentence, new Span(start,
+            start + token.length()),
+            opennlp.tools.parser.chunking.Parser.TOK_NODE, 0f, 0));
+
+        start += token.length() + 1;
+      }
+    }
+
+    private static String escape(String text) {
+      return text;
+    }
+
+    /**
+     * Creates the parse for the tagger.
+     *
+     * @return the parse which can be passed to the tagger
+     */
+    Parse getParseForTagger() {
+      return mParseForTagger;
+    }
+
+    /**
+     * Converts the parse from the tagger back.
+     *
+     * @param parseFromTagger
+     * @return the final parse
+     */
+    Parse transformParseFromTagger(Parse parseFromTagger) {
+      int start = parseFromTagger.getSpan().getStart();
+      int end = parseFromTagger.getSpan().getEnd();
+
+      Parse transformedParse = new Parse(mSentence, new Span(
+          mIndexMap.get(start), mIndexMap.get(end)), parseFromTagger.getType(),
+          parseFromTagger.getProb(), parseFromTagger.getHeadIndex());
+
+      Parse[] parseFromTaggerChildrens = parseFromTagger.getChildren();
+
+      for (Parse child : parseFromTaggerChildrens) {
+        transformedParse.insert(transformParseFromTagger(child));
+      }
+
+      return transformedParse;
+    }
   }
 }

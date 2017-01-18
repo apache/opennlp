@@ -17,16 +17,9 @@
 
 package opennlp.tools.namefind;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.io.ObjectStreamException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,15 +35,21 @@ import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * This is the test class for {@link NameSampleDataStream}..
  */
 public class NameSampleDataStreamTest {
 
-  final String person = "person";
-  final String date = "date";
-  final String location = "location";
-  final String organization = "organization";
+  private static final String person = "person";
+  private static final String date = "date";
+  private static final String location = "location";
+  private static final String organization = "organization";
 
   /**
    * Create a string from a array section.
@@ -62,7 +61,7 @@ public class NameSampleDataStreamTest {
   private static String sublistToString(String[] tokens, Span nameSpan) {
     StringBuilder sb = new StringBuilder();
     for (int i = nameSpan.getStart(); i < nameSpan.getEnd(); i++) {
-      sb.append(tokens[i] + " ");
+      sb.append(tokens[i]).append(" ");
     }
 
     return sb.toString().trim();
@@ -80,7 +79,7 @@ public class NameSampleDataStreamTest {
         "/opennlp/tools/namefind/AnnotatedSentences.txt");
 
     NameSampleDataStream ds = new NameSampleDataStream(
-        new PlainTextByLineStream(in, ISO_8859_1));
+        new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
     NameSample ns = ds.read();
 
@@ -91,8 +90,8 @@ public class NameSampleDataStreamTest {
         "Gina Schneider", "Bruno Schulz", "Michel Seile", "George Miller",
         "Miller", "Peter Schubert", "Natalie" };
 
-    List<String> names = new ArrayList<String>();
-    List<Span> spans = new ArrayList<Span>();
+    List<String> names = new ArrayList<>();
+    List<Span> spans = new ArrayList<>();
 
     while (ns != null) {
       for (Span nameSpan : ns.getNames()) {
@@ -158,7 +157,7 @@ public class NameSampleDataStreamTest {
 
     try (NameSampleDataStream sampleStream = new NameSampleDataStream(
         ObjectStreamUtils.createObjectStream(
-            "<START> <START> Person <END> Street <END>"));) {
+            "<START> <START> Person <END> Street <END>"))) {
       sampleStream.read();
       fail();
     } catch (IOException expected) {
@@ -178,10 +177,10 @@ public class NameSampleDataStreamTest {
         "/opennlp/tools/namefind/voa1.train");
 
     NameSampleDataStream ds = new NameSampleDataStream(
-        new PlainTextByLineStream(in, UTF_8));
+        new PlainTextByLineStream(in, StandardCharsets.UTF_8));
 
-    Map<String, List<String>> names = new HashMap<String, List<String>>();
-    Map<String, List<Span>> spans = new HashMap<String, List<Span>>();
+    Map<String, List<String>> names = new HashMap<>();
+    Map<String, List<Span>> spans = new HashMap<>();
 
     NameSample ns;
     while ((ns = ds.read()) != null) {
@@ -189,8 +188,8 @@ public class NameSampleDataStreamTest {
 
       for (Span nameSpan : nameSpans) {
         if (!names.containsKey(nameSpan.getType())) {
-          names.put(nameSpan.getType(), new ArrayList<String>());
-          spans.put(nameSpan.getType(), new ArrayList<Span>());
+          names.put(nameSpan.getType(), new ArrayList<>());
+          spans.put(nameSpan.getType(), new ArrayList<>());
         }
         names.get(nameSpan.getType()).add(sublistToString(ns.getSentence(), nameSpan));
         spans.get(nameSpan.getType()).add(nameSpan);
@@ -315,15 +314,14 @@ public class NameSampleDataStreamTest {
 
   @Test
   public void testClearAdaptiveData() throws IOException {
-    StringBuilder trainingData = new StringBuilder();
-    trainingData.append("a\n");
-    trainingData.append("b\n");
-    trainingData.append("c\n");
-    trainingData.append("\n");
-    trainingData.append("d\n");
+    String trainingData = "a\n" +
+        "b\n" +
+        "c\n" +
+        "\n" +
+        "d\n";
 
     ObjectStream<String> untokenizedLineStream = new PlainTextByLineStream(
-        new MockInputStreamFactory(trainingData.toString()), UTF_8);
+        new MockInputStreamFactory(trainingData), StandardCharsets.UTF_8);
 
     ObjectStream<NameSample> trainingStream = new NameSampleDataStream(untokenizedLineStream);
 
@@ -342,7 +340,7 @@ public class NameSampleDataStreamTest {
         "/opennlp/tools/namefind/html1.train");
 
     NameSampleDataStream ds = new NameSampleDataStream(
-        new PlainTextByLineStream(in, UTF_8));
+        new PlainTextByLineStream(in, StandardCharsets.UTF_8));
 
     NameSample ns = ds.read();
 

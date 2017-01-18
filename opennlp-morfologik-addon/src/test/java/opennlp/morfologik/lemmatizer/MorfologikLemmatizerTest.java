@@ -17,14 +17,11 @@
 
 package opennlp.morfologik.lemmatizer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.morfologik.builder.POSDictionayBuilderTest;
@@ -42,39 +39,30 @@ public class MorfologikLemmatizerTest {
 
     String[] lemmas = dict.lemmatize(toks, tags);
 
-    assertEquals("casar", lemmas[0]);
-    assertEquals("casa", lemmas[1]);
+    Assert.assertEquals("casar", lemmas[0]);
+    Assert.assertEquals("casa", lemmas[1]);
 
     // lookup is case insensitive. There is no entry casa - prop
-    assertNull(lemmas[2]);
-
+    Assert.assertNull(lemmas[2]);
   }
 
   @Test
   public void testLemmatizeMultiLemma() throws Exception {
     MorfologikLemmatizer dict = createDictionary(false);
 
-
     String[] toks = {"foi"};
     String[] tags = {"V"};
 
     List<List<String>> lemmas = dict.lemmatize(Arrays.asList(toks), Arrays.asList(tags));
 
-
-    assertTrue(lemmas.get(0).contains("ir"));
-    assertTrue(lemmas.get(0).contains("ser"));
-
-
+    Assert.assertTrue(lemmas.get(0).contains("ir"));
+    Assert.assertTrue(lemmas.get(0).contains("ser"));
   }
 
   private MorfologikLemmatizer createDictionary(boolean caseSensitive)
       throws Exception {
-
     Path output = POSDictionayBuilderTest.createMorfologikDictionary();
-
-    MorfologikLemmatizer ml = new MorfologikLemmatizer(output);
-
-    return ml;
+    return new MorfologikLemmatizer(output);
   }
 
 }

@@ -17,12 +17,10 @@
 
 package opennlp.tools.util.featuregen;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,7 +36,7 @@ public class WindowFeatureGeneratorTest {
 
   @Before
   public void setUp() throws Exception {
-    features = new ArrayList<String>();
+    features = new ArrayList<>();
   }
 
   /**
@@ -55,9 +53,9 @@ public class WindowFeatureGeneratorTest {
 
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
 
-    assertEquals(1, features.size());
+    Assert.assertEquals(1, features.size());
 
-    assertEquals(features.get(0), testSentence[testTokenIndex]);
+    Assert.assertEquals(features.get(0), testSentence[testTokenIndex]);
   }
 
   @Test
@@ -69,7 +67,7 @@ public class WindowFeatureGeneratorTest {
 
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
 
-    assertEquals(3, features.size());
+    Assert.assertEquals(3, features.size());
   }
 
   @Test
@@ -78,12 +76,9 @@ public class WindowFeatureGeneratorTest {
         new IdentityFeatureGenerator(), 1, 0);
 
     int testTokenIndex = 0;
-
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
-
-    assertEquals(1, features.size());
-
-    assertEquals(features.get(0), testSentence[testTokenIndex]);
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals(features.get(0), testSentence[testTokenIndex]);
   }
 
   @Test
@@ -92,12 +87,9 @@ public class WindowFeatureGeneratorTest {
         new IdentityFeatureGenerator(), 0, 1);
 
     int testTokenIndex = testSentence.length - 1;
-
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
-
-    assertEquals(1, features.size());
-
-    assertEquals(features.get(0), testSentence[testTokenIndex]);
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals(features.get(0), testSentence[testTokenIndex]);
   }
 
   /**
@@ -109,21 +101,19 @@ public class WindowFeatureGeneratorTest {
         new IdentityFeatureGenerator(), 2, 2);
 
     int testTokenIndex = 3;
-
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
+    Assert.assertEquals(5, features.size());
 
-    assertEquals(5, features.size());
-
-    assertTrue(features.contains(WindowFeatureGenerator.PREV_PREFIX + "2" +
+    Assert.assertTrue(features.contains(WindowFeatureGenerator.PREV_PREFIX + "2" +
         testSentence[testTokenIndex - 2]));
-    assertTrue(features.contains(WindowFeatureGenerator.PREV_PREFIX + "1" +
+    Assert.assertTrue(features.contains(WindowFeatureGenerator.PREV_PREFIX + "1" +
         testSentence[testTokenIndex - 1]));
 
-    assertTrue(features.contains(testSentence[testTokenIndex]));
+    Assert.assertTrue(features.contains(testSentence[testTokenIndex]));
 
-    assertTrue(features.contains(WindowFeatureGenerator.NEXT_PREFIX + "1" +
+    Assert.assertTrue(features.contains(WindowFeatureGenerator.NEXT_PREFIX + "1" +
         testSentence[testTokenIndex + 1]));
-    assertTrue(features.contains(WindowFeatureGenerator.NEXT_PREFIX + "2" +
+    Assert.assertTrue(features.contains(WindowFeatureGenerator.NEXT_PREFIX + "2" +
         testSentence[testTokenIndex + 2]));
   }
 }

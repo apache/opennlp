@@ -21,6 +21,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.chunker.ChunkerCrossValidator;
 import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.formats.ad.ADChunkSampleStream;
@@ -43,9 +46,6 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 /**
  * Cross validation of Sentence Detector, Tokenizer and Chunker against the
  * Portugues corpus.
@@ -61,7 +61,6 @@ import org.junit.Test;
  * "http://www.linguateca.pt/floresta/ficheiros/gz/Bosque_CF_8.0.ad.txt.gz">
  * Bosque_CF_8.0.ad.txt.gz </a></li>
  * </ul>
- *
  */
 public class ArvoresDeitadasEval {
 
@@ -88,7 +87,7 @@ public class ArvoresDeitadasEval {
   }
 
   private static void sentenceCrossEval(TrainingParameters params,
-      double expectedScore) throws IOException {
+                                        double expectedScore) throws IOException {
 
     ADSentenceSampleStream samples = new ADSentenceSampleStream(
         getLineSample(FLORESTA_VIRGEM), false);
@@ -104,7 +103,7 @@ public class ArvoresDeitadasEval {
   }
 
   private static void tokenizerCrossEval(TrainingParameters params,
-      double expectedScore) throws IOException {
+                                         double expectedScore) throws IOException {
 
     ObjectStream<NameSample> nameSamples = new ADNameSampleStream(
         getLineSample(FLORESTA_VIRGEM), true);
@@ -131,7 +130,7 @@ public class ArvoresDeitadasEval {
   }
 
   private static void chunkerCrossEval(TrainingParameters params,
-      double expectedScore) throws IOException {
+                                       double expectedScore) throws IOException {
 
     ADChunkSampleStream samples = new ADChunkSampleStream(getLineSample(BOSQUE));
 

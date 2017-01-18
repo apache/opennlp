@@ -77,11 +77,9 @@ public class SentenceDetectorFactory extends BaseToolFactory {
       throw new InvalidFormatException(TOKEN_END_PROPERTY
           + " is a mandatory property!");
 
-    Object abbreviationsEntry = this.artifactProvider
-        .getArtifact(ABBREVIATIONS_ENTRY_NAME);
+    Object abbreviationsEntry = this.artifactProvider.getArtifact(ABBREVIATIONS_ENTRY_NAME);
 
-    if (abbreviationsEntry != null
-        && !(abbreviationsEntry instanceof Dictionary)) {
+    if (abbreviationsEntry != null && !(abbreviationsEntry instanceof Dictionary)) {
       throw new InvalidFormatException(
           "Abbreviations dictionary '" + abbreviationsEntry +
               "' has wrong type, needs to be of type Dictionary!");

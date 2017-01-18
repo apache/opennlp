@@ -17,15 +17,16 @@
 
 package opennlp.tools.namefind;
 
+import java.io.IOException;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * This is the test class for {@link NameFinderEventStream}.

@@ -17,8 +17,7 @@
 
 package opennlp.tools.util.eval;
 
-import static org.junit.Assert.assertEquals;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -30,27 +29,27 @@ public class MeanTest {
   public void testMeanCalculation() {
     Mean a = new Mean();
     a.add(1);
-    assertEquals(1, a.count());
-    assertEquals(1d, a.mean(), 0.00001d);
+    Assert.assertEquals(1, a.count());
+    Assert.assertEquals(1d, a.mean(), 0.00001d);
 
     a.add(1);
-    assertEquals(2, a.count());
-    assertEquals(1d, a.mean(), 0.00001d);
+    Assert.assertEquals(2, a.count());
+    Assert.assertEquals(1d, a.mean(), 0.00001d);
     a.toString();
 
     Mean b = new Mean();
     b.add(0.5);
-    assertEquals(1, b.count());
-    assertEquals(0.5d, b.mean(), 0.00001d);
+    Assert.assertEquals(1, b.count());
+    Assert.assertEquals(0.5d, b.mean(), 0.00001d);
 
     b.add(2);
-    assertEquals(2, b.count());
-    assertEquals(1.25d, b.mean(), 0.00001d);
+    Assert.assertEquals(2, b.count());
+    Assert.assertEquals(1.25d, b.mean(), 0.00001d);
     b.toString();
 
     Mean c = new Mean();
-    assertEquals(0, c.count());
-    assertEquals(0d, c.mean(), 0.00001d);
+    Assert.assertEquals(0, c.count());
+    Assert.assertEquals(0d, c.mean(), 0.00001d);
     c.toString();
   }
 

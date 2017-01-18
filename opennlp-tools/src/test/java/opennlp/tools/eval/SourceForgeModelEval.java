@@ -17,6 +17,16 @@
 
 package opennlp.tools.eval;
 
+import java.io.File;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -45,24 +55,15 @@ import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * This tests ensures that the existing SourceForge models perform
  * like they are expected to.
- *
+ * <p>
  * To run this tests external the leipzig sentences files is needed:
  * leipzig/eng_news_2010_300K-sentences.txt, this file can be
  * obtained from the leipzig corpus project. <br>
- *
+ * <p>
  * And all the SourceForge models:<br>
  * - models-sf/en-sent.bin<br>
  * - models-sf/en-token.bin<br>
@@ -93,8 +94,8 @@ public class SourceForgeModelEval {
     MessageDigest digest = createDigest();
 
     try (ObjectStream<String> lines = new PlainTextByLineStream(
-            new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
-                    "leipzig/eng_news_2010_300K-sentences.txt")), Charset.forName("UTF-8"))) {
+        new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
+            "leipzig/eng_news_2010_300K-sentences.txt")), Charset.forName("UTF-8"))) {
 
       String line;
       while ((line = lines.read()) != null) {
@@ -102,7 +103,7 @@ public class SourceForgeModelEval {
       }
 
       Assert.assertEquals(new BigInteger("248567841356936801447294643695012852392"),
-              new BigInteger(1, digest.digest()));
+          new BigInteger(1, digest.digest()));
     }
   }
 
@@ -110,7 +111,7 @@ public class SourceForgeModelEval {
   public void evalSentenceModel() throws IOException {
 
     SentenceModel model = new SentenceModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-sent.bin"));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-sent.bin"));
 
     MessageDigest digest = createDigest();
 
@@ -119,10 +120,10 @@ public class SourceForgeModelEval {
     StringBuilder text = new StringBuilder();
 
     try (ObjectStream<DocumentSample> lineBatches = new LeipzigDoccatSampleStream("en", 25,
-            new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
-                    "leipzig/eng_news_2010_300K-sentences.txt")))) {
+        new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
+            "leipzig/eng_news_2010_300K-sentences.txt")))) {
 
-      DocumentSample lineBatch ;
+      DocumentSample lineBatch;
       while ((lineBatch = lineBatches.read()) != null) {
         text.append(String.join(" ", lineBatch.getText())).append(" ");
       }
@@ -135,7 +136,7 @@ public class SourceForgeModelEval {
     }
 
     Assert.assertEquals(new BigInteger("228544068397077998410949364710969159291"),
-            new BigInteger(1, digest.digest()));
+        new BigInteger(1, digest.digest()));
   }
 
   @Test
@@ -146,16 +147,16 @@ public class SourceForgeModelEval {
     // and then tokenize it here
 
     TokenizerModel model = new TokenizerModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-token.bin"));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-token.bin"));
 
     MessageDigest digest = createDigest();
 
     Tokenizer tokenizer = new TokenizerME(model);
 
     try (ObjectStream<DocumentSample> lines = new LeipzigDoccatSampleStream("en", 1,
-            WhitespaceTokenizer.INSTANCE,
-            new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
-                    "leipzig/eng_news_2010_300K-sentences.txt")))) {
+        WhitespaceTokenizer.INSTANCE,
+        new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
+            "leipzig/eng_news_2010_300K-sentences.txt")))) {
 
       DocumentSample line;
       while ((line = lines.read()) != null) {
@@ -167,13 +168,13 @@ public class SourceForgeModelEval {
     }
 
     Assert.assertEquals(new BigInteger("180602607571756839321060482558626151930"),
-            new BigInteger(1, digest.digest()));
+        new BigInteger(1, digest.digest()));
   }
 
   private ObjectStream<DocumentSample> createLineWiseStream() throws IOException {
     return new LeipzigDoccatSampleStream("en", 1,
-            new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
-                    "leipzig/eng_news_2010_300K-sentences.txt")));
+        new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
+            "leipzig/eng_news_2010_300K-sentences.txt")));
   }
 
 
@@ -201,7 +202,7 @@ public class SourceForgeModelEval {
   @Test
   public void evalNerDateModel() throws IOException {
     TokenNameFinderModel personModel = new TokenNameFinderModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-ner-date.bin"));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-ner-date.bin"));
 
     evalNameFinder(personModel, new BigInteger("116570003910213570906062355532299200317"));
   }
@@ -209,7 +210,7 @@ public class SourceForgeModelEval {
   @Test
   public void evalNerLocationModel() throws IOException {
     TokenNameFinderModel personModel = new TokenNameFinderModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-ner-location.bin"));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-ner-location.bin"));
 
     evalNameFinder(personModel, new BigInteger("44810593886021404716125849669208680993"));
   }
@@ -217,7 +218,7 @@ public class SourceForgeModelEval {
   @Test
   public void evalNerMoneyModel() throws IOException {
     TokenNameFinderModel personModel = new TokenNameFinderModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-ner-money.bin"));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-ner-money.bin"));
 
     evalNameFinder(personModel, new BigInteger("65248897509365807977219790824670047287"));
   }
@@ -225,7 +226,7 @@ public class SourceForgeModelEval {
   @Test
   public void evalNerOrganizationModel() throws IOException {
     TokenNameFinderModel personModel = new TokenNameFinderModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-ner-organization.bin"));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-ner-organization.bin"));
 
     evalNameFinder(personModel, new BigInteger("50454559690338630659278005157657197233"));
   }
@@ -233,7 +234,7 @@ public class SourceForgeModelEval {
   @Test
   public void evalNerPercentageModel() throws IOException {
     TokenNameFinderModel personModel = new TokenNameFinderModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-ner-percentage.bin"));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-ner-percentage.bin"));
 
     evalNameFinder(personModel, new BigInteger("320996882594215344113023719117249515343"));
   }
@@ -260,10 +261,10 @@ public class SourceForgeModelEval {
     MessageDigest digest = createDigest();
 
     POSTagger tagger = new POSTaggerME(new POSModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-pos-perceptron.bin")));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-pos-perceptron.bin")));
 
     Chunker chunker = new ChunkerME(new ChunkerModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-chunker.bin")));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-chunker.bin")));
 
     try (ObjectStream<DocumentSample> lines = createLineWiseStream()) {
 
@@ -308,7 +309,7 @@ public class SourceForgeModelEval {
   @Test
   public void evalMaxentModel() throws IOException {
     POSModel maxentModel = new POSModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-pos-maxent.bin"));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-pos-maxent.bin"));
 
     evalPosModel(maxentModel, new BigInteger("231995214522232523777090597594904492687"));
   }
@@ -316,7 +317,7 @@ public class SourceForgeModelEval {
   @Test
   public void evalPerceptronModel() throws IOException {
     POSModel perceptronModel = new POSModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-pos-perceptron.bin"));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-pos-perceptron.bin"));
 
     evalPosModel(perceptronModel, new BigInteger("209440430718727101220960491543652921728"));
   }
@@ -325,7 +326,7 @@ public class SourceForgeModelEval {
   public void evalParserModel() throws IOException {
 
     ParserModel model = new ParserModel(
-            new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-parser-chunking.bin"));
+        new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-parser-chunking.bin"));
 
     MessageDigest digest = createDigest();
 
@@ -338,14 +339,13 @@ public class SourceForgeModelEval {
         Parse[] parse = ParserTool.parseLine(String.join(" ", line.getText()), parser, 1);
         if (parse.length > 0) {
           digest.update(parse[0].toString().getBytes("UTF-8"));
-        }
-        else {
+        } else {
           digest.update("empty".getBytes("UTF-8"));
         }
       }
     }
 
     Assert.assertEquals(new BigInteger("155722144104513046994135548456420803172"),
-            new BigInteger(1, digest.digest()));
+        new BigInteger(1, digest.digest()));
   }
 }

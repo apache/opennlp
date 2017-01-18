@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.eval;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.formats.Conll02NameSampleStream;
 import opennlp.tools.formats.Conll02NameSampleStream.LANGUAGE;
@@ -32,9 +34,6 @@ import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Evaluates the name finder against the Dutch and Spanish CONLL2002 corpus.

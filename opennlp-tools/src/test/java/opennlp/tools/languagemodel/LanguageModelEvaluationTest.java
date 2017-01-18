@@ -21,10 +21,10 @@ package opennlp.tools.languagemodel;
 
 import java.util.Collection;
 
-import opennlp.tools.util.StringList;
+import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import opennlp.tools.util.StringList;
 
 /**
  * Tests for evaluating accuracy of language models
@@ -34,28 +34,33 @@ public class LanguageModelEvaluationTest {
   @Test
   public void testPerplexityComparison() throws Exception {
 
-    Collection<StringList> trainingVocabulary = LanguageModelTestUtils.generateRandomVocabulary(1100000);
-    Collection<StringList> testVocabulary = LanguageModelTestUtils.generateRandomVocabulary(100);
+    Collection<StringList> trainingVocabulary =
+        LanguageModelTestUtils.generateRandomVocabulary(1100000);
+    Collection<StringList> testVocabulary =
+        LanguageModelTestUtils.generateRandomVocabulary(100);
 
     NGramLanguageModel unigramLM = new NGramLanguageModel(1);
     for (StringList sentence : trainingVocabulary) {
       unigramLM.add(sentence, 1, 1);
     }
-    double unigramPerplexity = LanguageModelTestUtils.getPerplexity(unigramLM, testVocabulary, 1);
+    double unigramPerplexity =
+        LanguageModelTestUtils.getPerplexity(unigramLM, testVocabulary, 1);
 
     NGramLanguageModel bigramLM = new NGramLanguageModel(2);
     for (StringList sentence : trainingVocabulary) {
       bigramLM.add(sentence, 1, 2);
     }
-    double bigramPerplexity = LanguageModelTestUtils.getPerplexity(bigramLM, testVocabulary, 2);
-    assertTrue(unigramPerplexity >= bigramPerplexity);
+    double bigramPerplexity =
+        LanguageModelTestUtils.getPerplexity(bigramLM, testVocabulary, 2);
+    Assert.assertTrue(unigramPerplexity >= bigramPerplexity);
 
     NGramLanguageModel trigramLM = new NGramLanguageModel(3);
     for (StringList sentence : trainingVocabulary) {
       trigramLM.add(sentence, 2, 3);
     }
-    double trigramPerplexity = LanguageModelTestUtils.getPerplexity(trigramLM, testVocabulary, 3);
-    assertTrue(bigramPerplexity >= trigramPerplexity);
+    double trigramPerplexity =
+        LanguageModelTestUtils.getPerplexity(trigramLM, testVocabulary, 3);
+    Assert.assertTrue(bigramPerplexity >= trigramPerplexity);
 
   }
 

@@ -41,8 +41,7 @@ public class SDCrossValidator {
   private SentenceDetectorFactory sdFactory;
 
   public SDCrossValidator(String languageCode, TrainingParameters params,
-      SentenceDetectorFactory sdFactory,
-      SentenceDetectorEvaluationMonitor... listeners) {
+      SentenceDetectorFactory sdFactory, SentenceDetectorEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
     this.params = params;
     this.listeners = listeners;
@@ -94,7 +93,7 @@ public class SDCrossValidator {
   public void evaluate(ObjectStream<SentenceSample> samples, int nFolds) throws IOException {
 
     CrossValidationPartitioner<SentenceSample> partitioner =
-        new CrossValidationPartitioner<SentenceSample>(samples, nFolds);
+        new CrossValidationPartitioner<>(samples, nFolds);
 
     while (partitioner.hasNext()) {
 

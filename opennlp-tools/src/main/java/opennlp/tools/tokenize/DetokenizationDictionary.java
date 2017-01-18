@@ -27,7 +27,6 @@ import java.util.Map;
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionarySerializer;
 import opennlp.tools.dictionary.serializer.Entry;
-import opennlp.tools.dictionary.serializer.EntryInserter;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
 
@@ -76,8 +75,7 @@ public class DetokenizationDictionary {
     }
   }
 
-  private final Map<String, DetokenizationDictionary.Operation> operationTable =
-      new HashMap<String, DetokenizationDictionary.Operation>();
+  private final Map<String, DetokenizationDictionary.Operation> operationTable = new HashMap<>();
 
   /**
    * Initializes the current instance.
@@ -106,26 +104,24 @@ public class DetokenizationDictionary {
     }
   }
 
-  public DetokenizationDictionary(InputStream in) throws IOException, InvalidFormatException {
+  public DetokenizationDictionary(InputStream in) throws IOException {
 
-    DictionarySerializer.create(in, new EntryInserter() {
-      public void insert(Entry entry) throws InvalidFormatException {
+    DictionarySerializer.create(in, entry -> {
 
-        String operationString = entry.getAttributes().getValue("operation");
+      String operationString = entry.getAttributes().getValue("operation");
 
-        StringList word = entry.getTokens();
+      StringList word = entry.getTokens();
 
-        if (word.size() != 1)
-          throw new InvalidFormatException("Each entry must have exactly one token! " + word);
+      if (word.size() != 1)
+        throw new InvalidFormatException("Each entry must have exactly one token! " + word);
 
-        // parse operation
-        Operation operation = Operation.parse(operationString);
+      // parse operation
+      Operation operation = Operation.parse(operationString);
 
-        if (operation == null)
-            throw new InvalidFormatException("Unknown operation type: " + operationString);
+      if (operation == null)
+          throw new InvalidFormatException("Unknown operation type: " + operationString);
 
-        operationTable.put(word.getToken(0), operation);
-      }
+      operationTable.put(word.getToken(0), operation);
     });
   }
 

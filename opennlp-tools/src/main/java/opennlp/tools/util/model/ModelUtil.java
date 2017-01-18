@@ -57,11 +57,13 @@ public final class ModelUtil {
   public static void writeModel(MaxentModel model, final OutputStream out)
           throws IOException, IllegalArgumentException {
 
-    if (model == null)
+    if (model == null) {
       throw new IllegalArgumentException("model parameter must not be null!");
+    }
 
-    if (out == null)
+    if (out == null) {
       throw new IllegalArgumentException("out parameter must not be null!");
+    }
 
     GenericModelWriter modelWriter = new GenericModelWriter((AbstractModel) model,
         new DataOutputStream(new OutputStream() {
@@ -88,7 +90,7 @@ public final class ModelUtil {
 
     if (expectedOutcomes.length == model.getNumOutcomes()) {
 
-      Set<String> expectedOutcomesSet = new HashSet<String>();
+      Set<String> expectedOutcomesSet = new HashSet<>();
       expectedOutcomesSet.addAll(Arrays.asList(expectedOutcomes));
 
       for (int i = 0; i < model.getNumOutcomes(); i++) {

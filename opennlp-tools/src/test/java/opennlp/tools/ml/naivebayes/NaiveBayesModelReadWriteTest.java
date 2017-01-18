@@ -20,8 +20,11 @@ package opennlp.tools.ml.naivebayes;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractDataIndexer;
@@ -30,17 +33,13 @@ import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.util.TrainingParameters;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertNotNull;
-
 /**
  * Tests for persisting and reading naive bayes models
  */
 public class NaiveBayesModelReadWriteTest {
-  
+
   private DataIndexer testDataIndexer;
+
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
@@ -49,7 +48,7 @@ public class NaiveBayesModelReadWriteTest {
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
-  
+
   @Test
   public void testBinaryModelPersistence() throws Exception {
     testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
@@ -61,7 +60,7 @@ public class NaiveBayesModelReadWriteTest {
     NaiveBayesModelReader reader = new BinaryNaiveBayesModelReader(file);
     reader.checkModelType();
     AbstractModel abstractModel = reader.constructModel();
-    assertNotNull(abstractModel);
+    Assert.assertNotNull(abstractModel);
   }
 
   @Test
@@ -75,6 +74,6 @@ public class NaiveBayesModelReadWriteTest {
     NaiveBayesModelReader reader = new PlainTextNaiveBayesModelReader(file);
     reader.checkModelType();
     AbstractModel abstractModel = reader.constructModel();
-    assertNotNull(abstractModel);
+    Assert.assertNotNull(abstractModel);
   }
 }

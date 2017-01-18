@@ -179,26 +179,23 @@ public class TokenizerME extends AbstractTokenizer {
     Span[] tokens = WhitespaceTokenizer.INSTANCE.tokenizePos(d);
     newTokens.clear();
     tokProbs.clear();
-    for (int i = 0, il = tokens.length; i < il; i++) {
-      Span s = tokens[i];
+    for (Span s : tokens) {
       String tok = d.substring(s.getStart(), s.getEnd());
       // Can't tokenize single characters
       if (tok.length() < 2) {
         newTokens.add(s);
         tokProbs.add(1d);
-      }
-      else if (useAlphaNumericOptimization() && alphanumeric.matcher(tok).matches()) {
+      } else if (useAlphaNumericOptimization() && alphanumeric.matcher(tok).matches()) {
         newTokens.add(s);
         tokProbs.add(1d);
-      }
-      else {
+      } else {
         int start = s.getStart();
         int end = s.getEnd();
         final int origStart = s.getStart();
         double tokenProb = 1.0;
         for (int j = origStart + 1; j < end; j++) {
           double[] probs =
-            model.eval(cg.getContext(tok, j - origStart));
+              model.eval(cg.getContext(tok, j - origStart));
           String best = model.getBestOutcome(probs);
           tokenProb *= probs[model.getIndex(best)];
           if (best.equals(TokenizerME.SPLIT)) {

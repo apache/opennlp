@@ -17,16 +17,11 @@
 
 package opennlp.tools.chunker;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,14 +52,14 @@ public class ChunkerMETest {
 
   private Chunker chunker;
 
-  String[] toks1 = { "Rockwell", "said", "the", "agreement", "calls", "for",
+  private static String[] toks1 = { "Rockwell", "said", "the", "agreement", "calls", "for",
       "it", "to", "supply", "200", "additional", "so-called", "shipsets",
       "for", "the", "planes", "." };
 
-  String[] tags1 = { "NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
+  private static String[] tags1 = { "NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
       "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "." };
 
-  String[] expect1 = { "B-NP", "B-VP", "B-NP", "I-NP", "B-VP", "B-SBAR",
+  private static String[] expect1 = { "B-NP", "B-VP", "B-NP", "I-NP", "B-VP", "B-SBAR",
       "B-NP", "B-VP", "I-VP", "B-NP", "I-NP", "I-NP", "I-NP", "B-PP", "B-NP",
       "I-NP", "O" };
 
@@ -76,7 +71,7 @@ public class ChunkerMETest {
         "/opennlp/tools/chunker/test.txt");
 
     ObjectStream<ChunkSample> sampleStream = new ChunkSampleStream(
-        new PlainTextByLineStream(in, UTF_8));
+        new PlainTextByLineStream(in, StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -92,49 +87,46 @@ public class ChunkerMETest {
 
     String preds[] = chunker.chunk(toks1, tags1);
 
-    assertArrayEquals(expect1, preds);
+    Assert.assertArrayEquals(expect1, preds);
   }
 
   @Test
   public void testChunkAsSpan() throws Exception {
-
     Span[] preds = chunker.chunkAsSpans(toks1, tags1);
     System.out.println(Arrays.toString(preds));
 
-    assertEquals(10, preds.length);
-    assertEquals(new Span(0, 1, "NP"), preds[0]);
-    assertEquals(new Span(1, 2, "VP"), preds[1]);
-    assertEquals(new Span(2, 4, "NP"), preds[2]);
-    assertEquals(new Span(4, 5, "VP"), preds[3]);
-    assertEquals(new Span(5, 6, "SBAR"), preds[4]);
-    assertEquals(new Span(6, 7, "NP"), preds[5]);
-    assertEquals(new Span(7, 9, "VP"), preds[6]);
-    assertEquals(new Span(9, 13, "NP"), preds[7]);
-    assertEquals(new Span(13, 14, "PP"), preds[8]);
-    assertEquals(new Span(14, 16, "NP"), preds[9]);
+    Assert.assertEquals(10, preds.length);
+    Assert.assertEquals(new Span(0, 1, "NP"), preds[0]);
+    Assert.assertEquals(new Span(1, 2, "VP"), preds[1]);
+    Assert.assertEquals(new Span(2, 4, "NP"), preds[2]);
+    Assert.assertEquals(new Span(4, 5, "VP"), preds[3]);
+    Assert.assertEquals(new Span(5, 6, "SBAR"), preds[4]);
+    Assert.assertEquals(new Span(6, 7, "NP"), preds[5]);
+    Assert.assertEquals(new Span(7, 9, "VP"), preds[6]);
+    Assert.assertEquals(new Span(9, 13, "NP"), preds[7]);
+    Assert.assertEquals(new Span(13, 14, "PP"), preds[8]);
+    Assert.assertEquals(new Span(14, 16, "NP"), preds[9]);
 
   }
 
   @Test
   public void testTokenProbArray() throws Exception {
-
     Sequence[] preds = chunker.topKSequences(toks1, tags1);
 
-    assertTrue(preds.length > 0);
-    assertEquals(expect1.length, preds[0].getProbs().length);
-    assertEquals(Arrays.asList(expect1), preds[0].getOutcomes());
-    assertNotSame(Arrays.asList(expect1), preds[1].getOutcomes());
+    Assert.assertTrue(preds.length > 0);
+    Assert.assertEquals(expect1.length, preds[0].getProbs().length);
+    Assert.assertEquals(Arrays.asList(expect1), preds[0].getOutcomes());
+    Assert.assertNotSame(Arrays.asList(expect1), preds[1].getOutcomes());
   }
 
   @Test
   public void testTokenProbMinScore() throws Exception {
-
     Sequence[] preds = chunker.topKSequences(toks1, tags1, -5.55);
 
-    assertTrue(preds.length == 4);
-    assertEquals(expect1.length, preds[0].getProbs().length);
-    assertEquals(Arrays.asList(expect1), preds[0].getOutcomes());
-    assertNotSame(Arrays.asList(expect1), preds[1].getOutcomes());
+    Assert.assertTrue(preds.length == 4);
+    Assert.assertEquals(expect1.length, preds[0].getProbs().length);
+    Assert.assertEquals(Arrays.asList(expect1), preds[0].getOutcomes());
+    Assert.assertNotSame(Arrays.asList(expect1), preds[1].getOutcomes());
   }
 
 }

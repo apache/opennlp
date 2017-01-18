@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.sentdetect.lang.th;
 
 import opennlp.tools.sentdetect.DefaultSDContextGenerator;

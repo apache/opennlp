@@ -17,52 +17,50 @@
 
 package opennlp.tools.formats.ad;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 
-import org.junit.Before;
-import org.junit.Test;
-
 public class ADChunkSampleStreamTest {
 
-  List<ChunkSample> samples = new ArrayList<ChunkSample>();
+  private List<ChunkSample> samples = new ArrayList<>();
 
   @Test
   public void testSimpleCount() throws IOException {
-    assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
+    Assert.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
   }
 
   @Test
   public void testChunks() throws IOException {
 
-    assertEquals("Inicia", samples.get(0).getSentence()[0]);
-    assertEquals("v-fin", samples.get(0).getTags()[0]);
-    assertEquals("B-VP", samples.get(0).getPreds()[0]);
+    Assert.assertEquals("Inicia", samples.get(0).getSentence()[0]);
+    Assert.assertEquals("v-fin", samples.get(0).getTags()[0]);
+    Assert.assertEquals("B-VP", samples.get(0).getPreds()[0]);
 
-    assertEquals("em", samples.get(0).getSentence()[1]);
-    assertEquals("prp", samples.get(0).getTags()[1]);
-    assertEquals("B-PP", samples.get(0).getPreds()[1]);
+    Assert.assertEquals("em", samples.get(0).getSentence()[1]);
+    Assert.assertEquals("prp", samples.get(0).getTags()[1]);
+    Assert.assertEquals("B-PP", samples.get(0).getPreds()[1]);
 
-    assertEquals("o", samples.get(0).getSentence()[2]);
-    assertEquals("art", samples.get(0).getTags()[2]);
-    assertEquals("B-NP", samples.get(0).getPreds()[2]);
+    Assert.assertEquals("o", samples.get(0).getSentence()[2]);
+    Assert.assertEquals("art", samples.get(0).getTags()[2]);
+    Assert.assertEquals("B-NP", samples.get(0).getPreds()[2]);
 
-    assertEquals("próximo", samples.get(0).getSentence()[3]);
-    assertEquals("adj", samples.get(0).getTags()[3]);
-    assertEquals("I-NP", samples.get(0).getPreds()[3]);
+    Assert.assertEquals("próximo", samples.get(0).getSentence()[3]);
+    Assert.assertEquals("adj", samples.get(0).getTags()[3]);
+    Assert.assertEquals("I-NP", samples.get(0).getPreds()[3]);
 
-    assertEquals("Casas", samples.get(3).getSentence()[0]);
-    assertEquals("n", samples.get(3).getTags()[0]);
-    assertEquals("B-NP", samples.get(3).getPreds()[0]);
-
+    Assert.assertEquals("Casas", samples.get(3).getSentence()[0]);
+    Assert.assertEquals("n", samples.get(3).getTags()[0]);
+    Assert.assertEquals("B-NP", samples.get(3).getPreds()[0]);
   }
 
   @Before

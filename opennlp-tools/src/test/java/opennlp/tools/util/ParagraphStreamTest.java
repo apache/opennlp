@@ -17,17 +17,15 @@
 
 package opennlp.tools.util;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class ParagraphStreamTest {
 
   @Test
   public void testSimpleReading() throws IOException {
-
     String line1 = "1";
     String line2 = "2";
     String line3 = "";
@@ -38,13 +36,13 @@ public class ParagraphStreamTest {
     ParagraphStream paraStream = new ParagraphStream(
         ObjectStreamUtils.createObjectStream(line1, line2, line3, line4, line5));
 
-    assertEquals("1\n2\n", paraStream.read());
-    assertEquals("4\n5\n", paraStream.read());
+    Assert.assertEquals("1\n2\n", paraStream.read());
+    Assert.assertEquals("4\n5\n", paraStream.read());
 
     paraStream = new ParagraphStream(
         ObjectStreamUtils.createObjectStream(line1, line2, line3, line4, line5, line6));
 
-    assertEquals("1\n2\n", paraStream.read());
-    assertEquals("4\n5\n", paraStream.read());
+    Assert.assertEquals("1\n2\n", paraStream.read());
+    Assert.assertEquals("4\n5\n", paraStream.read());
   }
 }

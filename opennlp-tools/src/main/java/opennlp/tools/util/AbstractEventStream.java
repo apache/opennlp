@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.util;
 
 import java.io.IOException;

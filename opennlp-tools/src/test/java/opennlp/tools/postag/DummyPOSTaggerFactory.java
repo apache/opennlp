@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.UncloseableInputStream;
@@ -84,8 +83,7 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
 
   static class DummyPOSDictionarySerializer implements ArtifactSerializer<DummyPOSDictionary> {
 
-    public DummyPOSDictionary create(InputStream in) throws IOException,
-        InvalidFormatException {
+    public DummyPOSDictionary create(InputStream in) throws IOException {
       return DummyPOSDictionary.create(new UncloseableInputStream(in));
     }
 
@@ -113,7 +111,7 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
     }
 
     public static DummyPOSDictionary create(
-        UncloseableInputStream uncloseableInputStream) throws InvalidFormatException, IOException {
+        UncloseableInputStream uncloseableInputStream) throws IOException {
       return new DummyPOSDictionary(POSDictionary.create(uncloseableInputStream));
     }
 

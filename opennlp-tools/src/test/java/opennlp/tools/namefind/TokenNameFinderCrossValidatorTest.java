@@ -17,11 +17,14 @@
 
 package opennlp.tools.namefind;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
@@ -29,10 +32,6 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
-import org.junit.Test;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class TokenNameFinderCrossValidatorTest {
 
@@ -48,7 +47,7 @@ public class TokenNameFinderCrossValidatorTest {
         "/opennlp/tools/namefind/AnnotatedSentences.txt");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(in, ISO_8859_1));
+        new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -62,7 +61,7 @@ public class TokenNameFinderCrossValidatorTest {
 
     cv.evaluate(sampleStream, 2);
 
-    assertNotNull(cv.getFMeasure());
+    Assert.assertNotNull(cv.getFMeasure());
   }
 
   @Test
@@ -75,7 +74,7 @@ public class TokenNameFinderCrossValidatorTest {
         "/opennlp/tools/namefind/AnnotatedSentences.txt");
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(in, ISO_8859_1));
+        new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -93,7 +92,7 @@ public class TokenNameFinderCrossValidatorTest {
 
     cv.evaluate(sampleStream, 2);
 
-    assertTrue(out.size() > 0);
-    assertNotNull(cv.getFMeasure());
+    Assert.assertTrue(out.size() > 0);
+    Assert.assertNotNull(cv.getFMeasure());
   }
 }

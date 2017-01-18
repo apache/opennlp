@@ -55,6 +55,7 @@
       <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
     </module>
     <module name="AvoidStarImport"/>
+    <module name="UnusedImports"/>
     <module name="OneTopLevelClass"/>
     <module name="NoLineWrap"/>
     <!--<module name="NeedBraces"/>-->
@@ -113,7 +114,10 @@
     <!--<module name="CustomImportOrder">-->
       <!--<property name="sortImportsInGroupAlphabetically" value="true"/>-->
       <!--<property name="separateLineBetweenGroups" value="true"/>-->
-      <!--<property name="customImportOrderRules" value="SAME_PACKAGE(3)###THIRD_PARTY_PACKAGE###STANDARD_JAVA_PACKAGE###STATIC"/>-->
+      <!--<property name="specialImportsRegExp" value="opennlp\."/>-->
+      <!--<property name="thirdPartyPackageRegExp" value="^opennlp\."/>-->
+      <!--<property name="customImportOrderRules"-->
+                <!--value="STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE###SPECIAL_IMPORTS###SAME_PACKAGE(1)###STATIC"/>-->
     <!--</module>-->
     <module name="EqualsHashCode"/>
   </module>

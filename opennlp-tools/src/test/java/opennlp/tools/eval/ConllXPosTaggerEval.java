@@ -21,6 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.formats.ConllXPOSSampleStream;
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
@@ -31,9 +34,6 @@ import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Evaluates the POS Tagger on the CONLL-X data. The CONLL-X data includes training and evaluation data for
@@ -56,7 +56,7 @@ import org.junit.Test;
 public class ConllXPosTaggerEval {
 
   private static POSModel train(File trainFile, String lang,
-      TrainingParameters params) throws IOException {
+                                TrainingParameters params) throws IOException {
 
     ObjectStream<POSSample> samples =
         new ConllXPOSSampleStream(new MarkableFileInputStreamFactory(trainFile), Charset.forName("UTF-8"));
@@ -65,7 +65,7 @@ public class ConllXPosTaggerEval {
   }
 
   private static void eval(POSModel model, File testData,
-      double expectedAccuracy) throws IOException {
+                           double expectedAccuracy) throws IOException {
 
     ObjectStream<POSSample> samples = new ConllXPOSSampleStream(
         new MarkableFileInputStreamFactory(testData), Charset.forName("UTF-8"));

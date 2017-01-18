@@ -15,18 +15,14 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.namefind;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import opennlp.tools.util.Span;
-
+import org.junit.Assert;
 import org.junit.Test;
+
+import opennlp.tools.util.Span;
 
 /**
  * This is the test class for {@link NameSample}.
@@ -73,7 +69,8 @@ public class NameSampleTest {
   public void testNoTypesToString() {
     String nameSampleStr = createSimpleNameSample(false).toString();
 
-    assertEquals("<START> U . S . <END> President <START> Barack Obama <END> is considering " +
+    Assert.assertEquals("<START> U . S . <END> President <START> Barack Obama <END>" +
+        " is considering " +
         "sending additional American forces to <START> Afghanistan <END> .", nameSampleStr);
   }
 
@@ -84,7 +81,8 @@ public class NameSampleTest {
   @Test
   public void testWithTypesToString() throws Exception {
     String nameSampleStr = createSimpleNameSample(true).toString();
-    assertEquals("<START:Location> U . S . <END> President <START:Person> Barack Obama <END> " +
+    Assert.assertEquals("<START:Location> U . S . <END> President <START:Person>" +
+            " Barack Obama <END> " +
         "is considering sending additional American forces to <START:Location> Afghanistan <END> .",
         nameSampleStr);
 
@@ -93,7 +91,7 @@ public class NameSampleTest {
         "additional American forces to <START:Location> Afghanistan <END> .",
         false);
 
-    assertEquals(createSimpleNameSample(true), parsedSample);
+    Assert.assertEquals(createSimpleNameSample(true), parsedSample);
   }
 
   /**
@@ -112,7 +110,7 @@ public class NameSampleTest {
 
     NameSample sample = new NameSample(sentence, new Span[]{new Span(3, 4)}, false);
 
-    assertEquals("My name is <START> Anna <END>", sample.toString());
+    Assert.assertEquals("My name is <START> Anna <END>", sample.toString());
   }
 
   /**
@@ -126,7 +124,7 @@ public class NameSampleTest {
 
     NameSample test = NameSample.parse(line, false);
 
-    assertEquals(8, test.getSentence().length);
+    Assert.assertEquals(8, test.getSentence().length);
   }
 
   /**
@@ -141,10 +139,10 @@ public class NameSampleTest {
                 + "additional American forces to <START:type_3-/;.,&%$> Afghanistan <END> .",
             false);
 
-    assertEquals(3, parsedSample.getNames().length);
-    assertEquals("type-1", parsedSample.getNames()[0].getType());
-    assertEquals("type_2", parsedSample.getNames()[1].getType());
-    assertEquals("type_3-/;.,&%$", parsedSample.getNames()[2].getType());
+    Assert.assertEquals(3, parsedSample.getNames().length);
+    Assert.assertEquals("type-1", parsedSample.getNames()[0].getType());
+    Assert.assertEquals("type_2", parsedSample.getNames()[1].getType());
+    Assert.assertEquals("type_3-/;.,&%$", parsedSample.getNames()[2].getType());
   }
 
   /**
@@ -152,8 +150,7 @@ public class NameSampleTest {
    */
   @Test(expected = IOException.class)
   public void testMissingType() throws Exception {
-    NameSample.parse("<START:> token <END>",
-        false);
+    NameSample.parse("<START:> token <END>", false);
   }
 
   /**
@@ -162,8 +159,7 @@ public class NameSampleTest {
    */
   @Test(expected = IOException.class)
   public void testTypeWithSpace() throws Exception {
-    NameSample.parse("<START:abc a> token <END>",
-        false);
+    NameSample.parse("<START:abc a> token <END>", false);
   }
 
   /**
@@ -172,8 +168,7 @@ public class NameSampleTest {
    */
   @Test(expected = IOException.class)
   public void testTypeWithNewLine() throws Exception {
-    NameSample.parse("<START:abc\na> token <END>",
-        false);
+    NameSample.parse("<START:abc\na> token <END>", false);
   }
 
   /**
@@ -182,8 +177,7 @@ public class NameSampleTest {
    */
   @Test(expected = IOException.class)
   public void testTypeWithInvalidChar1() throws Exception {
-    NameSample.parse("<START:abc:a> token <END>",
-        false);
+    NameSample.parse("<START:abc:a> token <END>", false);
   }
 
   /**
@@ -192,16 +186,15 @@ public class NameSampleTest {
    */
   @Test(expected = IOException.class)
   public void testTypeWithInvalidChar2() throws Exception {
-    NameSample.parse("<START:abc>a> token <END>",
-        false);
+    NameSample.parse("<START:abc>a> token <END>", false);
   }
 
   @Test
   public void testEquals() {
-    assertFalse(createGoldSample() == createGoldSample());
-    assertTrue(createGoldSample().equals(createGoldSample()));
-    assertFalse(createGoldSample().equals(createPredSample()));
-    assertFalse(createPredSample().equals(new Object()));
+    Assert.assertFalse(createGoldSample() == createGoldSample());
+    Assert.assertTrue(createGoldSample().equals(createGoldSample()));
+    Assert.assertFalse(createGoldSample().equals(createPredSample()));
+    Assert.assertFalse(createPredSample().equals(new Object()));
   }
 
   public static NameSample createGoldSample() {

@@ -24,12 +24,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import opennlp.tools.util.StringList;
-import opennlp.uima.namefind.NameFinder;
-import opennlp.uima.util.AnnotatorUtil;
-import opennlp.uima.util.ExceptionMessages;
-import opennlp.uima.util.UimaUtil;
-
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -43,17 +37,23 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
+import opennlp.tools.util.StringList;
+import opennlp.uima.namefind.NameFinder;
+import opennlp.uima.util.AnnotatorUtil;
+import opennlp.uima.util.ExceptionMessages;
+import opennlp.uima.util.UimaUtil;
+
 /**
  * The Normalizer tries the structure annotations. The structured value
  * is than assigned to a field of the annotation.
- *
+ * <p>
  * The process depends on the
- *
+ * <p>
  * string Tokens must be (fuzzy) mapped to categories eg. a month, a day or a
  * year (use dictionary) integer, float tokens must be parsed eg. for percentage
  * or period boolean tokens must be parsed eg is there any ???
- *
- *
+ * <p>
+ * <p>
  * restricted set of outcomes throw error if not matched or silently fail
  * unrestricted set of outcomes
  */
@@ -89,7 +89,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
 
   /**
    * The target type which the text should have. This type must be primitive.
-   *
+   * <p>
    * It should not be possible to assign something to this feature with is not
    * structured. The feature should define allowed values.
    */
@@ -101,7 +101,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
 
   /**
    * Initializes a new instance.
-   *
+   * <p>
    * Note: Use {@link #initialize(UimaContext) } to initialize this instance. Not
    * use the constructor.
    */
@@ -111,7 +111,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
 
   /**
    * Initializes the current instance with the given context.
-   *
+   * <p>
    * Note: Do all initialization in this method, do not use the constructor.
    */
   public void initialize(UimaContext context)
@@ -167,7 +167,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
     if (!SUPPORTED_TYPES.contains(mStructureFeature.getRange().getName())) {
       throw new AnalysisEngineProcessException(
           ExceptionMessages.MESSAGE_CATALOG, "range_type_unsupported",
-          new Object[] { mStructureFeature.getRange().getName() });
+          new Object[] {mStructureFeature.getRange().getName()});
     }
   }
 

@@ -33,8 +33,9 @@ public abstract class FilterObjectStream<S, T> implements ObjectStream<T> {
   protected final ObjectStream<S> samples;
 
   protected FilterObjectStream(ObjectStream<S> samples) {
-    if (samples == null)
+    if (samples == null) {
       throw new IllegalArgumentException("samples must not be null!");
+    }
 
     this.samples = samples;
   }

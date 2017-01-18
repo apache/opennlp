@@ -20,6 +20,10 @@ package opennlp.tools.eval;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.formats.ontonotes.OntoNotesNameSampleStream;
@@ -30,8 +34,6 @@ import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class OntoNotes4NameFinderEval {
 
@@ -51,11 +53,11 @@ public class OntoNotes4NameFinderEval {
     ObjectStream<NameSample> samples = new OntoNotesNameSampleStream(new FileToStringSampleStream(
         documentStream, Charset.forName("UTF-8")));
 
-    TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en",  null,
+    TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en", null,
         params, new TokenNameFinderFactory());
 
     if (type != null) {
-      samples = new NameSampleTypeFilter(new String[]{type}, samples);
+      samples = new NameSampleTypeFilter(new String[] {type}, samples);
     }
 
     cv.evaluate(samples, 10);

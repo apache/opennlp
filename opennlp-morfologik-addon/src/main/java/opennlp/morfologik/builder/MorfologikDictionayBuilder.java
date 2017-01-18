@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Properties;
+
 import morfologik.stemming.DictionaryMetadata;
 import morfologik.stemming.EncoderType;
 import morfologik.tools.DictCompile;
@@ -35,34 +36,25 @@ public class MorfologikDictionayBuilder {
   /**
    * Helper to compile a morphological dictionary automaton.
    *
-   * @param input
-   *          The input file (base,inflected,tag). An associated metadata
-   *          (*.info) file must exist.
-   * @param overwrite
-   *          Overwrite the output file if it exists.
-   * @param validate
-   *          Validate input to make sure it makes sense.
-   * @param acceptBom
-   *          Accept leading BOM bytes (UTF-8).
-   * @param acceptCr
-   *          Accept CR bytes in input sequences (\r).
-   * @param ignoreEmpty
-   *          Ignore empty lines in the input.
+   * @param input       The input file (base,inflected,tag). An associated metadata
+   *                    (*.info) file must exist.
+   * @param overwrite   Overwrite the output file if it exists.
+   * @param validate    Validate input to make sure it makes sense.
+   * @param acceptBom   Accept leading BOM bytes (UTF-8).
+   * @param acceptCr    Accept CR bytes in input sequences (\r).
+   * @param ignoreEmpty Ignore empty lines in the input.
    * @return the dictionary path
-   *
    * @throws Exception
    */
   public Path build(Path input, boolean overwrite, boolean validate,
-      boolean acceptBom, boolean acceptCr, boolean ignoreEmpty)
+                    boolean acceptBom, boolean acceptCr, boolean ignoreEmpty)
       throws Exception {
 
-    DictCompile compiler = new DictCompile(input, overwrite, validate,
-        acceptBom, acceptCr, ignoreEmpty);
+    DictCompile compiler = new DictCompile(input, overwrite, validate, acceptBom,
+        acceptCr, ignoreEmpty);
     compiler.call();
 
-
-    Path metadataPath = DictionaryMetadata
-        .getExpectedMetadataLocation(input);
+    Path metadataPath = DictionaryMetadata.getExpectedMetadataLocation(input);
 
     return metadataPath.resolveSibling(
         metadataPath.getFileName().toString().replaceAll(
@@ -73,29 +65,21 @@ public class MorfologikDictionayBuilder {
    * Helper to compile a morphological dictionary automaton using default
    * parameters.
    *
-   * @param input
-   *          The input file (base,inflected,tag). An associated metadata
-   *          (*.info) file must exist.
-   *
-   *  @return the dictionary path
-   *
+   * @param input The input file (base,inflected,tag). An associated metadata
+   *              (*.info) file must exist.
+   * @return the dictionary path
    * @throws Exception
    */
   public Path build(Path input) throws Exception {
-
     return build(input, true, true, false, false, false);
-
   }
 
-  Properties createProperties(Charset encoding, String separator,
-      EncoderType encoderType) throws IOException {
-
+  Properties createProperties(Charset encoding, String separator, EncoderType encoderType)
+      throws IOException {
     Properties properties = new Properties();
     properties.setProperty("fsa.dict.separator", separator);
     properties.setProperty("fsa.dict.encoding", encoding.name());
     properties.setProperty("fsa.dict.encoder", encoderType.name());
-
     return properties;
-
   }
 }

@@ -17,9 +17,7 @@
 
 package opennlp.tools.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -30,16 +28,20 @@ public class VersionTest {
   @Test
   public void testParse() {
     Version referenceVersion = Version.currentVersion();
-    assertEquals(referenceVersion, Version.parse(referenceVersion.toString()));
+    Assert.assertEquals(referenceVersion, Version.parse(referenceVersion.toString()));
 
-    assertEquals(new Version(1,5,2, false), Version.parse("1.5.2-incubating"));
-    assertEquals(new Version(1,5,2, false), Version.parse("1.5.2"));
+    Assert.assertEquals(new Version(1,5,2, false),
+        Version.parse("1.5.2-incubating"));
+    Assert.assertEquals(new Version(1,5,2, false),
+        Version.parse("1.5.2"));
   }
 
   @Test
   public void testParseSnapshot() {
-    assertEquals(new Version(1,5,2, true), Version.parse("1.5.2-incubating-SNAPSHOT"));
-    assertEquals(new Version(1,5,2, true), Version.parse("1.5.2-SNAPSHOT"));
+    Assert.assertEquals(new Version(1,5,2, true),
+        Version.parse("1.5.2-incubating-SNAPSHOT"));
+    Assert.assertEquals(new Version(1,5,2, true),
+        Version.parse("1.5.2-SNAPSHOT"));
   }
 
   @Test
@@ -51,7 +53,7 @@ public class VersionTest {
       return;
     }
 
-    assertTrue(false);
+    Assert.assertFalse(false);
   }
 
   @Test
@@ -63,6 +65,6 @@ public class VersionTest {
       return;
     }
 
-    assertTrue(false);
+    Assert.assertTrue(false);
   }
 }

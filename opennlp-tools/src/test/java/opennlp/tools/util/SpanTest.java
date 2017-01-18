@@ -17,10 +17,7 @@
 
 package opennlp.tools.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -33,7 +30,7 @@ public class SpanTest {
    */
   @Test
   public void testGetStart() {
-    assertEquals(5, new Span(5, 6).getStart());
+    Assert.assertEquals(5, new Span(5, 6).getStart());
   }
 
   /**
@@ -41,7 +38,7 @@ public class SpanTest {
    */
   @Test
   public void testGetEnd() {
-    assertEquals(6, new Span(5, 6).getEnd());
+    Assert.assertEquals(6, new Span(5, 6).getEnd());
   }
 
   /**
@@ -49,7 +46,7 @@ public class SpanTest {
    */
   @Test
   public void testLength() {
-    assertEquals(11, new Span(10, 21).length());
+    Assert.assertEquals(11, new Span(10, 21).length());
   }
 
   /**
@@ -60,7 +57,7 @@ public class SpanTest {
     Span a = new Span(500, 900);
     Span b = new Span(520, 600);
 
-    assertEquals(true, a.contains(b));
+    Assert.assertEquals(true, a.contains(b));
   }
 
   /**
@@ -69,8 +66,7 @@ public class SpanTest {
   @Test
   public void testContainsWithEqual() {
     Span a = new Span(500, 900);
-
-    assertEquals(true, a.contains(a));
+    Assert.assertEquals(true, a.contains(a));
   }
 
   /**
@@ -80,8 +76,7 @@ public class SpanTest {
   public void testContainsWithLowerIntersect() {
     Span a = new Span(500, 900);
     Span b = new Span(450, 1000);
-
-    assertEquals(false, a.contains(b));
+    Assert.assertEquals(false, a.contains(b));
   }
 
   /**
@@ -91,8 +86,7 @@ public class SpanTest {
   public void testContainsWithHigherIntersect() {
     Span a = new Span(500, 900);
     Span b = new Span(500, 1000);
-
-    assertEquals(false, a.contains(b));
+    Assert.assertEquals(false, a.contains(b));
   }
 
   /**
@@ -107,11 +101,11 @@ public class SpanTest {
      * true end for the span.  The indexes used must observe the same
      * requirements for the contains function.
      */
-    assertFalse(a.contains(9));
-    assertTrue(a.contains(10));
-    assertTrue(a.contains(200));
-    assertTrue(a.contains(299));
-    assertFalse(a.contains(300));
+    Assert.assertFalse(a.contains(9));
+    Assert.assertTrue(a.contains(10));
+    Assert.assertTrue(a.contains(200));
+    Assert.assertTrue(a.contains(299));
+    Assert.assertFalse(a.contains(300));
   }
 
   /**
@@ -122,11 +116,9 @@ public class SpanTest {
     Span a = new Span(10, 50);
     Span b = new Span(10, 12);
 
-    assertTrue(a.startsWith(a));
-
-    assertTrue(a.startsWith(b));
-
-    assertFalse(b.startsWith(a));
+    Assert.assertTrue(a.startsWith(a));
+    Assert.assertTrue(a.startsWith(b));
+    Assert.assertFalse(b.startsWith(a));
   }
 
   /**
@@ -137,16 +129,15 @@ public class SpanTest {
     Span a = new Span(10, 50);
     Span b = new Span(40, 100);
 
-    assertTrue(a.intersects(b));
-    assertTrue(b.intersects(a));
+    Assert.assertTrue(a.intersects(b));
+    Assert.assertTrue(b.intersects(a));
 
     Span c = new Span(10, 20);
     Span d = new Span(40, 50);
 
-    assertFalse(c.intersects(d));
-    assertFalse(d.intersects(c));
-
-    assertTrue(b.intersects(d));
+    Assert.assertFalse(c.intersects(d));
+    Assert.assertFalse(d.intersects(c));
+    Assert.assertTrue(b.intersects(d));
   }
 
   /**
@@ -157,16 +148,15 @@ public class SpanTest {
     Span a = new Span(10, 50);
     Span b = new Span(40, 100);
 
-    assertTrue(a.crosses(b));
-    assertTrue(b.crosses(a));
+    Assert.assertTrue(a.crosses(b));
+    Assert.assertTrue(b.crosses(a));
 
     Span c = new Span(10, 20);
     Span d = new Span(40, 50);
 
-    assertFalse(c.crosses(d));
-    assertFalse(d.crosses(c));
-
-    assertFalse(b.crosses(d));
+    Assert.assertFalse(c.crosses(d));
+    Assert.assertFalse(d.crosses(c));
+    Assert.assertFalse(b.crosses(d));
   }
 
   /**
@@ -176,8 +166,7 @@ public class SpanTest {
   public void testCompareToLower() {
     Span a = new Span(100, 1000);
     Span b = new Span(10, 50);
-
-    assertEquals(true, a.compareTo(b) > 0);
+    Assert.assertEquals(true, a.compareTo(b) > 0);
   }
 
   /**
@@ -187,8 +176,7 @@ public class SpanTest {
   public void testCompareToHigher() {
     Span a = new Span(100, 200);
     Span b = new Span(300, 400);
-
-    assertEquals(true, a.compareTo(b) < 0);
+    Assert.assertEquals(true, a.compareTo(b) < 0);
   }
 
   /**
@@ -198,8 +186,7 @@ public class SpanTest {
   public void testCompareToEquals() {
     Span a = new Span(30, 1000);
     Span b = new Span(30, 1000);
-
-    assertEquals(true, a.compareTo(b) == 0);
+    Assert.assertEquals(true, a.compareTo(b) == 0);
   }
 
   ///
@@ -211,8 +198,7 @@ public class SpanTest {
   public void testCompareToEqualsSameType() {
     Span a = new Span(30, 1000, "a");
     Span b = new Span(30, 1000, "a");
-
-    assertEquals(true, a.compareTo(b) == 0);
+    Assert.assertEquals(true, a.compareTo(b) == 0);
   }
 
   /**
@@ -222,8 +208,7 @@ public class SpanTest {
   public void testCompareToEqualsDiffType1() {
     Span a = new Span(30, 1000, "a");
     Span b = new Span(30, 1000, "b");
-
-    assertEquals(true, a.compareTo(b) == -1);
+    Assert.assertEquals(true, a.compareTo(b) == -1);
   }
 
   /**
@@ -233,8 +218,7 @@ public class SpanTest {
   public void testCompareToEqualsDiffType2() {
     Span a = new Span(30, 1000, "b");
     Span b = new Span(30, 1000, "a");
-
-    assertEquals(true, a.compareTo(b) == 1);
+    Assert.assertEquals(true, a.compareTo(b) == 1);
   }
 
   /**
@@ -244,8 +228,7 @@ public class SpanTest {
   public void testCompareToEqualsNullType1() {
     Span a = new Span(30, 1000);
     Span b = new Span(30, 1000, "b");
-
-    assertEquals(true, a.compareTo(b) == 1);
+    Assert.assertEquals(true, a.compareTo(b) == 1);
   }
 
   /**
@@ -255,18 +238,15 @@ public class SpanTest {
   public void testCompareToEqualsNullType2() {
     Span a = new Span(30, 1000, "b");
     Span b = new Span(30, 1000);
-
-    assertEquals(true, a.compareTo(b) == -1);
+    Assert.assertEquals(true, a.compareTo(b) == -1);
   }
-
-  ///
 
   /**
    * Test for {@link Span#hashCode()}.
    */
   @Test
   public void testhHashCode() {
-    assertEquals(new Span(10, 11), new Span(10, 11));
+    Assert.assertEquals(new Span(10, 11), new Span(10, 11));
   }
 
   /**
@@ -275,8 +255,7 @@ public class SpanTest {
   @Test
   public void testEqualsWithNull() {
     Span a = new Span(0, 0);
-
-    assertEquals(a.equals(null), false);
+    Assert.assertEquals(a.equals(null), false);
   }
 
   /**
@@ -286,21 +265,19 @@ public class SpanTest {
   public void testEquals() {
     Span a1 = new Span(100, 1000, "test");
     Span a2 = new Span(100, 1000, "test");
-
-    assertTrue(a1.equals(a2));
+    Assert.assertTrue(a1.equals(a2));
 
     // end is different
     Span b1 = new Span(100, 100, "test");
-    assertFalse(a1.equals(b1));
+    Assert.assertFalse(a1.equals(b1));
 
     // type is different
     Span c1 = new Span(100, 1000, "Test");
-    assertFalse(a1.equals(c1));
+    Assert.assertFalse(a1.equals(c1));
 
     Span d1 = new Span(100, 1000);
-
-    assertFalse(d1.equals(a1));
-    assertFalse(a1.equals(d1));
+    Assert.assertFalse(d1.equals(a1));
+    Assert.assertFalse(a1.equals(d1));
 
   }
 
@@ -316,13 +293,13 @@ public class SpanTest {
   public void testTrim() {
     String string1 = "  12 34  ";
     Span span1 = new Span(0, string1.length());
-    assertEquals("12 34", span1.trim(string1).getCoveredText(string1));
+    Assert.assertEquals("12 34", span1.trim(string1).getCoveredText(string1));
   }
 
   @Test
   public void testTrimWhitespaceSpan() {
     String string1 = "              ";
     Span span1 = new Span(0, string1.length());
-    assertEquals("", span1.trim(string1).getCoveredText(string1));
+    Assert.assertEquals("", span1.trim(string1).getCoveredText(string1));
   }
 }

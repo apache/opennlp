@@ -17,18 +17,15 @@
 
 package opennlp.tools.ml;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.ml.model.MaxentModel;
+import org.junit.Assert;
+import org.junit.Test;
 
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.BeamSearchContextGenerator;
 import opennlp.tools.util.Sequence;
-import org.junit.Test;
 
 public class BeamSearchTest {
 
@@ -51,7 +48,7 @@ public class BeamSearchTest {
 
     private String[] outcomes;
 
-    private Map<String, Integer> outcomeIndexMap = new HashMap<String, Integer>();
+    private Map<String, Integer> outcomeIndexMap = new HashMap<>();
 
     private double bestOutcomeProb = 0.8d;
     private double otherOutcomeProb;
@@ -130,12 +127,10 @@ public class BeamSearchTest {
     BeamSearch<String> bs = new BeamSearch<>(3, model);
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
-        (int i, String[] inputSequence, String[] outcomesSequence, String outcome) -> {
-          return true;
-        });
+        (int i, String[] inputSequence, String[] outcomesSequence, String outcome) -> true);
     
-    assertNotNull(seq);
-    assertEquals(sequence.length, seq.getOutcomes().size());
+    Assert.assertNotNull(seq);
+    Assert.assertEquals(sequence.length, seq.getOutcomes().size());
   }
 
   /**
@@ -153,13 +148,11 @@ public class BeamSearchTest {
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence,
-        String outcome) -> {
-          return true;
-        });
+        String outcome) -> true);
 
-    assertNotNull(seq);
-    assertEquals(sequence.length, seq.getOutcomes().size());
-    assertEquals("1", seq.getOutcomes().get(0));
+    Assert.assertNotNull(seq);
+    Assert.assertEquals(sequence.length, seq.getOutcomes().size());
+    Assert.assertEquals("1", seq.getOutcomes().get(0));
   }
 
   /**
@@ -177,17 +170,15 @@ public class BeamSearchTest {
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence,
-        String outcome) -> {
-          return true;
-        });
+        String outcome) -> true);
 
-    assertNotNull(seq);
-    assertEquals(sequence.length, seq.getOutcomes().size());
-    assertEquals("1", seq.getOutcomes().get(0));
-    assertEquals("2", seq.getOutcomes().get(1));
-    assertEquals("3", seq.getOutcomes().get(2));
-    assertEquals("2", seq.getOutcomes().get(3));
-    assertEquals("1", seq.getOutcomes().get(4));
+    Assert.assertNotNull(seq);
+    Assert.assertEquals(sequence.length, seq.getOutcomes().size());
+    Assert.assertEquals("1", seq.getOutcomes().get(0));
+    Assert.assertEquals("2", seq.getOutcomes().get(1));
+    Assert.assertEquals("3", seq.getOutcomes().get(2));
+    Assert.assertEquals("2", seq.getOutcomes().get(3));
+    Assert.assertEquals("1", seq.getOutcomes().get(4));
   }
 
   /**
@@ -204,15 +195,14 @@ public class BeamSearchTest {
     BeamSearch<String> bs = new BeamSearch<>(2, model, 0);
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
-        (int i, String[] inputSequence, String[] outcomesSequence, String outcome) -> {
-          return !"2".equals(outcome);
-        });
-    assertNotNull(seq);
-    assertEquals(sequence.length, seq.getOutcomes().size());
-    assertEquals("1", seq.getOutcomes().get(0));
-    assertNotSame("2", seq.getOutcomes().get(1));
-    assertEquals("3", seq.getOutcomes().get(2));
-    assertNotSame("2", seq.getOutcomes().get(3));
-    assertEquals("1", seq.getOutcomes().get(4));
+        (int i, String[] inputSequence, String[] outcomesSequence,
+         String outcome) -> !"2".equals(outcome));
+    Assert.assertNotNull(seq);
+    Assert.assertEquals(sequence.length, seq.getOutcomes().size());
+    Assert.assertEquals("1", seq.getOutcomes().get(0));
+    Assert.assertNotSame("2", seq.getOutcomes().get(1));
+    Assert.assertEquals("3", seq.getOutcomes().get(2));
+    Assert.assertNotSame("2", seq.getOutcomes().get(3));
+    Assert.assertEquals("1", seq.getOutcomes().get(4));
   }
 }

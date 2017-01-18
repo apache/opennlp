@@ -17,14 +17,13 @@
 
 package opennlp.tools.namefind;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
@@ -54,8 +53,8 @@ public class DictionaryNameFinderEvaluatorTest {
     sample.close();
     FMeasure fmeasure = evaluator.getFMeasure();
 
-    assertTrue(fmeasure.getFMeasure() == 1);
-    assertTrue(fmeasure.getRecallScore() == 1);
+    Assert.assertTrue(fmeasure.getFMeasure() == 1);
+    Assert.assertTrue(fmeasure.getRecallScore() == 1);
   }
 
   /**
@@ -72,7 +71,7 @@ public class DictionaryNameFinderEvaluatorTest {
         DictionaryNameFinderEvaluatorTest.class,
         "/opennlp/tools/namefind/AnnotatedSentences.txt");
 
-    return new NameSampleDataStream(new PlainTextByLineStream(in, ISO_8859_1));
+    return new NameSampleDataStream(new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
   }
 
   /**
@@ -86,7 +85,7 @@ public class DictionaryNameFinderEvaluatorTest {
       URISyntaxException {
     ObjectStream<NameSample> sampleStream = createSample();
     NameSample sample = sampleStream.read();
-    List<String[]> entries = new ArrayList<String[]>();
+    List<String[]> entries = new ArrayList<>();
     while (sample != null) {
       Span[] names = sample.getNames();
       if (names != null && names.length > 0) {

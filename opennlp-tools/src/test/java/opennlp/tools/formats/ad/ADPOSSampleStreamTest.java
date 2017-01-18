@@ -17,15 +17,14 @@
 
 package opennlp.tools.formats.ad;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.PlainTextByLineStream;
-
-import org.junit.Test;
 
 public class ADPOSSampleStreamTest {
 
@@ -39,19 +38,19 @@ public class ADPOSSampleStreamTest {
 
     POSSample sample = stream.read();
 
-    assertEquals(23, sample.getSentence().length);
+    Assert.assertEquals(23, sample.getSentence().length);
 
-    assertEquals("Inicia", sample.getSentence()[0]);
-    assertEquals("v-fin", sample.getTags()[0]);
+    Assert.assertEquals("Inicia", sample.getSentence()[0]);
+    Assert.assertEquals("v-fin", sample.getTags()[0]);
 
-    assertEquals("em", sample.getSentence()[1]);
-    assertEquals("prp", sample.getTags()[1]);
+    Assert.assertEquals("em", sample.getSentence()[1]);
+    Assert.assertEquals("prp", sample.getTags()[1]);
 
-    assertEquals("o", sample.getSentence()[2]);
-    assertEquals("art", sample.getTags()[2]);
+    Assert.assertEquals("o", sample.getSentence()[2]);
+    Assert.assertEquals("art", sample.getTags()[2]);
 
-    assertEquals("Porto_Poesia", sample.getSentence()[9]);
-    assertEquals("prop", sample.getTags()[9]);
+    Assert.assertEquals("Porto_Poesia", sample.getSentence()[9]);
+    Assert.assertEquals("prop", sample.getTags()[9]);
   }
 
   @Test
@@ -64,22 +63,22 @@ public class ADPOSSampleStreamTest {
 
     POSSample sample = stream.read();
 
-    assertEquals(27, sample.getSentence().length);
+    Assert.assertEquals(27, sample.getSentence().length);
 
-    assertEquals("Inicia", sample.getSentence()[0]);
-    assertEquals("v-fin", sample.getTags()[0]);
+    Assert.assertEquals("Inicia", sample.getSentence()[0]);
+    Assert.assertEquals("v-fin", sample.getTags()[0]);
 
-    assertEquals("em", sample.getSentence()[1]);
-    assertEquals("prp", sample.getTags()[1]);
+    Assert.assertEquals("em", sample.getSentence()[1]);
+    Assert.assertEquals("prp", sample.getTags()[1]);
 
-    assertEquals("o", sample.getSentence()[2]);
-    assertEquals("art", sample.getTags()[2]);
+    Assert.assertEquals("o", sample.getSentence()[2]);
+    Assert.assertEquals("art", sample.getTags()[2]);
 
-    assertEquals("Porto", sample.getSentence()[9]);
-    assertEquals("B-prop", sample.getTags()[9]);
+    Assert.assertEquals("Porto", sample.getSentence()[9]);
+    Assert.assertEquals("B-prop", sample.getTags()[9]);
 
-    assertEquals("Poesia", sample.getSentence()[10]);
-    assertEquals("I-prop", sample.getTags()[10]);
+    Assert.assertEquals("Poesia", sample.getSentence()[10]);
+    Assert.assertEquals("I-prop", sample.getTags()[10]);
   }
 
   @Test
@@ -92,19 +91,19 @@ public class ADPOSSampleStreamTest {
 
     POSSample sample = stream.read();
 
-    assertEquals(23, sample.getSentence().length);
+    Assert.assertEquals(23, sample.getSentence().length);
 
-    assertEquals("Inicia", sample.getSentence()[0]);
-    assertEquals("v-fin=PR=3S=IND=VFIN", sample.getTags()[0]);
+    Assert.assertEquals("Inicia", sample.getSentence()[0]);
+    Assert.assertEquals("v-fin=PR=3S=IND=VFIN", sample.getTags()[0]);
 
-    assertEquals("em", sample.getSentence()[1]);
-    assertEquals("prp", sample.getTags()[1]);
+    Assert.assertEquals("em", sample.getSentence()[1]);
+    Assert.assertEquals("prp", sample.getTags()[1]);
 
-    assertEquals("o", sample.getSentence()[2]);
-    assertEquals("art=DET=M=S", sample.getTags()[2]);
+    Assert.assertEquals("o", sample.getSentence()[2]);
+    Assert.assertEquals("art=DET=M=S", sample.getTags()[2]);
 
-    assertEquals("Porto_Poesia", sample.getSentence()[9]);
-    assertEquals("prop=M=S", sample.getTags()[9]);
+    Assert.assertEquals("Porto_Poesia", sample.getSentence()[9]);
+    Assert.assertEquals("prop=M=S", sample.getTags()[9]);
   }
 
 }

@@ -17,11 +17,10 @@
 
 package opennlp.tools.lemmatizer;
 
-import static org.junit.Assert.assertArrayEquals;
-
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,14 +48,14 @@ public class LemmatizerMETest {
 
   private LemmatizerME lemmatizer;
 
-  String[] tokens = { "Rockwell", "said", "the", "agreement", "calls", "for",
+  private static String[] tokens = { "Rockwell", "said", "the", "agreement", "calls", "for",
       "it", "to", "supply", "200", "additional", "so-called", "shipsets", "for",
       "the", "planes", "." };
 
-  String[] postags = { "NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
+  private static String[] postags = { "NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
       "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "." };
 
-  String[] expect = { "rockwell", "say", "the", "agreement", "call", "for",
+  private static String[] expect = { "rockwell", "say", "the", "agreement", "call", "for",
       "it", "to", "supply", "200", "additional", "so-called", "shipset", "for",
       "the", "plane", "." };
 
@@ -86,7 +85,7 @@ public class LemmatizerMETest {
     String[] preds = lemmatizer.lemmatize(tokens, postags);
     String[] lemmas = lemmatizer.decodeLemmas(tokens, preds);
 
-    assertArrayEquals(expect, lemmas);
+    Assert.assertArrayEquals(expect, lemmas);
   }
 
 }

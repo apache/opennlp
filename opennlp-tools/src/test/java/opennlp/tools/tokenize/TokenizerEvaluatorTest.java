@@ -17,14 +17,15 @@
 
 package opennlp.tools.tokenize;
 
-import opennlp.tools.cmdline.tokenizer.TokenEvaluationErrorListener;
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.Span;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import opennlp.tools.cmdline.tokenizer.TokenEvaluationErrorListener;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.Span;
 
 public class TokenizerEvaluatorTest {
 
@@ -59,7 +60,9 @@ public class TokenizerEvaluatorTest {
     Assert.assertNotSame(0, stream.toString().length());
   }
 
-  /** a dummy tokenizer that always return something expected */
+  /**
+   * a dummy tokenizer that always return something expected
+   */
   class DummyTokenizer implements Tokenizer {
 
     private TokenSample sample;

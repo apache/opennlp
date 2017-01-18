@@ -50,7 +50,8 @@ public class TokenizerCrossValidator {
    */
   public void evaluate(ObjectStream<TokenSample> samples, int nFolds) throws IOException {
 
-    CrossValidationPartitioner<TokenSample> partitioner = new CrossValidationPartitioner<>(samples, nFolds);
+    CrossValidationPartitioner<TokenSample> partitioner =
+        new CrossValidationPartitioner<>(samples, nFolds);
 
     while (partitioner.hasNext()) {
 
