@@ -31,7 +31,7 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
 interface TrainingParams extends BasicTrainingParams {
 
   @ParameterDescription(valueName = "modelType", description = "The type of the token name finder model")
-  @OptionalParameter(defaultValue = "default")
+  @OptionalParameter
   String getType();
 
   @ParameterDescription(valueName = "resourcesDir", description = "The resources directory")
