@@ -17,16 +17,15 @@
 
 package opennlp.tools.ml.maxent.quasinewton;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractModel;
@@ -38,14 +37,12 @@ import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
 import opennlp.tools.util.TrainingParameters;
 
-import org.junit.Before;
-import org.junit.Test;
-
 public class QNTrainerTest {
 
-  private static int ITERATIONS = 50;
+  private static final int ITERATIONS = 50;
 
   private DataIndexer testDataIndexer;
+
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
@@ -53,7 +50,7 @@ public class QNTrainerTest {
     testDataIndexer = new OnePassRealValueDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
-  
+
   @Test
   public void testTrainModelReturnsAQNModel() throws Exception {
     // given
@@ -63,7 +60,7 @@ public class QNTrainerTest {
     // when
     QNModel trainedModel = new QNTrainer(false).trainModel(ITERATIONS, testDataIndexer);
     // then
-    assertNotNull(trainedModel);
+    Assert.assertNotNull(trainedModel);
   }
 
   @Test
@@ -81,7 +78,7 @@ public class QNTrainerTest {
         "feature3","feature3", "feature3"};
     double[] eval = trainedModel.eval(features2Classify);
     // then
-    assertNotNull(eval);
+    Assert.assertNotNull(eval);
   }
 
   @Test
@@ -94,8 +91,7 @@ public class QNTrainerTest {
     QNModel trainedModel = new QNTrainer(15, true).trainModel(
         ITERATIONS, testDataIndexer);
 
-    assertTrue(trainedModel.equals(trainedModel));
-    assertFalse(trainedModel.equals(null));
+    Assert.assertFalse(trainedModel.equals(null));
   }
 
   @Test
@@ -118,7 +114,7 @@ public class QNTrainerTest {
     AbstractModel readModel = modelReader.getModel();
     QNModel deserModel = (QNModel) readModel;
 
-    assertTrue(trainedModel.equals(deserModel));
+    Assert.assertTrue(trainedModel.equals(deserModel));
 
     String[] features2Classify = new String[] {
         "feature2","feature3", "feature3",
@@ -128,9 +124,9 @@ public class QNTrainerTest {
     double[] eval01 = trainedModel.eval(features2Classify);
     double[] eval02 = deserModel.eval(features2Classify);
 
-    assertEquals(eval01.length, eval02.length);
+    Assert.assertEquals(eval01.length, eval02.length);
     for (int i = 0; i < eval01.length; i++) {
-      assertEquals(eval01[i], eval02[i], 0.00000001);
+      Assert.assertEquals(eval01[i], eval02[i], 0.00000001);
     }
   }
 }

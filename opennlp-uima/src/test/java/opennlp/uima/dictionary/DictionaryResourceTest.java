@@ -17,10 +17,6 @@
 
 package opennlp.uima.dictionary;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -37,7 +33,9 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.ResourceSpecifier;
 import org.apache.uima.util.InvalidXMLException;
 import org.apache.uima.util.XMLInputSource;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -60,6 +58,15 @@ public class DictionaryResourceTest {
     AE.destroy(); // is this necessary?
   }
 
+  private static AnalysisEngine produceAE(String descName)
+      throws IOException, InvalidXMLException, ResourceInitializationException {
+    File descFile = new File(PATHNAME + descName);
+    XMLInputSource in = new XMLInputSource(descFile);
+    ResourceSpecifier specifier = UIMAFramework.getXMLParser()
+        .parseResourceSpecifier(in);
+    return UIMAFramework.produceAnalysisEngine(specifier);
+  }
+
   @Test
   public void testDictionaryWasLoaded() {
 
@@ -67,16 +74,16 @@ public class DictionaryResourceTest {
       DictionaryResource dic = (DictionaryResource) AE.getResourceManager()
           .getResource("/opennlp.uima.Dictionary");
       // simple check if ordering always is the same...
-      assertEquals(
+      Assert.assertEquals(
           "[[Berlin], [Stockholm], [New,York], [London], [Copenhagen], [Paris]]",
           dic.getDictionary().toString());
       // else we can do a simple test like this
-      assertEquals("There should be six entries in the dictionary", 6,
+      Assert.assertEquals("There should be six entries in the dictionary", 6,
           dic.getDictionary().asStringSet().size());
-      assertTrue("London should be in the dictionary",
+      Assert.assertTrue("London should be in the dictionary",
           dic.getDictionary().contains(new StringList("London")));
     } catch (Exception e) {
-      fail("Dictionary was not loaded.");
+      Assert.fail("Dictionary was not loaded.");
     }
 
   }
@@ -99,25 +106,16 @@ public class DictionaryResourceTest {
 
       while (locationIterator.isValid()) {
         AnnotationFS annotationFS = locationIterator.get();
-        assertTrue(expectedLocations.contains(annotationFS.getCoveredText()));
+        Assert.assertTrue(expectedLocations.contains(annotationFS.getCoveredText()));
         expectedLocations.remove(annotationFS.getCoveredText());
         locationIterator.moveToNext();
       }
-      assertEquals(0, expectedLocations.size());
+      Assert.assertEquals(0, expectedLocations.size());
     } catch (Exception e) {
       e.printStackTrace();
-      fail(e.getLocalizedMessage());
+      Assert.fail(e.getLocalizedMessage());
     }
 
-  }
-
-  private static AnalysisEngine produceAE(String descName)
-      throws IOException, InvalidXMLException, ResourceInitializationException {
-    File descFile = new File(PATHNAME + descName);
-    XMLInputSource in = new XMLInputSource(descFile);
-    ResourceSpecifier specifier = UIMAFramework.getXMLParser()
-        .parseResourceSpecifier(in);
-    return UIMAFramework.produceAnalysisEngine(specifier);
   }
 
 }

@@ -29,6 +29,19 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.uima.UimaContext;
+import org.apache.uima.cas.CAS;
+import org.apache.uima.cas.FSIndex;
+import org.apache.uima.cas.Type;
+import org.apache.uima.cas.TypeSystem;
+import org.apache.uima.cas.text.AnnotationFS;
+import org.apache.uima.collection.CasConsumer_ImplBase;
+import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.resource.ResourceProcessException;
+import org.apache.uima.util.Level;
+import org.apache.uima.util.Logger;
+import org.apache.uima.util.ProcessTrace;
+
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenSampleStream;
@@ -47,36 +60,24 @@ import opennlp.uima.util.ContainingConstraint;
 import opennlp.uima.util.OpennlpUtil;
 import opennlp.uima.util.SampleTraceStream;
 import opennlp.uima.util.UimaUtil;
-import org.apache.uima.UimaContext;
-import org.apache.uima.cas.CAS;
-import org.apache.uima.cas.FSIndex;
-import org.apache.uima.cas.Type;
-import org.apache.uima.cas.TypeSystem;
-import org.apache.uima.cas.text.AnnotationFS;
-import org.apache.uima.collection.CasConsumer_ImplBase;
-import org.apache.uima.resource.ResourceInitializationException;
-import org.apache.uima.resource.ResourceProcessException;
-import org.apache.uima.util.Level;
-import org.apache.uima.util.Logger;
-import org.apache.uima.util.ProcessTrace;
 
 /**
  * OpenNLP Tokenizer trainer.
  * <p>
  * Mandatory parameters
  * <table border=1>
- *   <caption></caption>
- *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
+ * <caption></caption>
+ * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ * <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
  * </table>
  * <p>
  * Optional parameters
  * <table border=1>
- *   <caption></caption>
- *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>Boolean</td> <td>opennlp.uima.tokenizer.IsSkipAlphaNumerics</td></tr>
+ * <caption></caption>
+ * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ * <tr><td>Boolean</td> <td>opennlp.uima.tokenizer.IsSkipAlphaNumerics</td></tr>
  * </table>
  *
  * @deprecated will be removed after 1.7.1 release, there is no replacement
@@ -135,7 +136,7 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
 
     isSkipAlphaNumerics =
         CasConsumerUtil.getOptionalBooleanParameter(
-        mContext, IS_ALPHA_NUMERIC_OPTIMIZATION);
+            mContext, IS_ALPHA_NUMERIC_OPTIMIZATION);
 
     if (isSkipAlphaNumerics == null) {
       isSkipAlphaNumerics = false;
@@ -151,7 +152,7 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
     }
 
     String sampleTraceFileName = CasConsumerUtil.getOptionalStringParameter(
-            getUimaContext(), "opennlp.uima.SampleTraceFile");
+        getUimaContext(), "opennlp.uima.SampleTraceFile");
 
     if (sampleTraceFileName != null) {
       sampleTraceFile = new File(getUimaContextAdmin().getResourceManager()
@@ -264,8 +265,8 @@ public final class TokenizerTrainer extends CasConsumer_ImplBase {
     }
 
     tokenModel = TokenizerME.train(samples,
-      TokenizerFactory.create(null, language, null, isSkipAlphaNumerics, null),
-      ModelUtil.createDefaultTrainingParameters());
+        TokenizerFactory.create(null, language, null, isSkipAlphaNumerics, null),
+        ModelUtil.createDefaultTrainingParameters());
 
     // dereference to allow garbage collection
     tokenSamples = null;

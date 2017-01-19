@@ -17,9 +17,7 @@
 
 package opennlp.tools.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -29,31 +27,31 @@ public class StringUtilTest {
 
   @Test
   public void testNoBreakSpace() {
-    assertTrue(StringUtil.isWhitespace(0x00A0));
-    assertTrue(StringUtil.isWhitespace(0x2007));
-    assertTrue(StringUtil.isWhitespace(0x202F));
+    Assert.assertTrue(StringUtil.isWhitespace(0x00A0));
+    Assert.assertTrue(StringUtil.isWhitespace(0x2007));
+    Assert.assertTrue(StringUtil.isWhitespace(0x202F));
 
-    assertTrue(StringUtil.isWhitespace((char) 0x00A0));
-    assertTrue(StringUtil.isWhitespace((char) 0x2007));
-    assertTrue(StringUtil.isWhitespace((char) 0x202F));
+    Assert.assertTrue(StringUtil.isWhitespace((char) 0x00A0));
+    Assert.assertTrue(StringUtil.isWhitespace((char) 0x2007));
+    Assert.assertTrue(StringUtil.isWhitespace((char) 0x202F));
   }
 
   @Test
   public void testToLowerCase() {
-    assertEquals("test", StringUtil.toLowerCase("TEST"));
-    assertEquals("simple", StringUtil.toLowerCase("SIMPLE"));
+    Assert.assertEquals("test", StringUtil.toLowerCase("TEST"));
+    Assert.assertEquals("simple", StringUtil.toLowerCase("SIMPLE"));
   }
 
   @Test
   public void testToUpperCase() {
-    assertEquals("TEST", StringUtil.toUpperCase("test"));
-    assertEquals("SIMPLE", StringUtil.toUpperCase("simple"));
+    Assert.assertEquals("TEST", StringUtil.toUpperCase("test"));
+    Assert.assertEquals("SIMPLE", StringUtil.toUpperCase("simple"));
   }
 
   @Test
   public void testIsEmpty() {
-    assertTrue(StringUtil.isEmpty(""));
-    assertTrue(!StringUtil.isEmpty("a"));
+    Assert.assertTrue(StringUtil.isEmpty(""));
+    Assert.assertTrue(!StringUtil.isEmpty("a"));
   }
 
   @Test(expected = NullPointerException.class)

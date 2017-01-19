@@ -44,11 +44,10 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
   public SentenceSample read() throws IOException {
 
     StringBuilder sentencesString = new StringBuilder();
-    List<Span> sentenceSpans = new LinkedList<Span>();
+    List<Span> sentenceSpans = new LinkedList<>();
 
     String sentence;
     while ((sentence = samples.read()) != null && !sentence.equals("")) {
-
       int begin = sentencesString.length();
       sentence = sentence.trim();
       sentence = replaceNewLineEscapeTags(sentence);
@@ -62,8 +61,6 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
       return new SentenceSample(sentencesString.toString(),
           sentenceSpans.toArray(new Span[sentenceSpans.size()]));
     }
-    else {
-      return null;
-    }
+    return null;
   }
 }

@@ -17,16 +17,17 @@
 
 package opennlp.tools.lemmatizer;
 
-import opennlp.tools.cmdline.lemmatizer.LemmaEvaluationErrorListener;
-import opennlp.tools.util.MockInputStreamFactory;
-import opennlp.tools.util.PlainTextByLineStream;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import opennlp.tools.cmdline.lemmatizer.LemmaEvaluationErrorListener;
+import opennlp.tools.util.MockInputStreamFactory;
+import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Tests for {@link LemmatizerEvaluator}.

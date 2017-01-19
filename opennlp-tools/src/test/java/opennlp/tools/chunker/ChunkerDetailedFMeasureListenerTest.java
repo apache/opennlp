@@ -17,17 +17,18 @@
 
 package opennlp.tools.chunker;
 
-import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.PlainTextByLineStream;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.PlainTextByLineStream;
 
 public class ChunkerDetailedFMeasureListenerTest {
 

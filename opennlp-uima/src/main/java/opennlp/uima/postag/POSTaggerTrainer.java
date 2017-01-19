@@ -23,19 +23,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import opennlp.tools.ml.maxent.GIS;
-import opennlp.tools.postag.POSDictionary;
-import opennlp.tools.postag.POSModel;
-import opennlp.tools.postag.POSSample;
-import opennlp.tools.postag.POSTaggerFactory;
-import opennlp.tools.postag.POSTaggerME;
-import opennlp.tools.util.ObjectStreamUtils;
-import opennlp.tools.util.TrainingParameters;
-import opennlp.uima.util.AnnotatorUtil;
-import opennlp.uima.util.CasConsumerUtil;
-import opennlp.uima.util.ContainingConstraint;
-import opennlp.uima.util.OpennlpUtil;
-import opennlp.uima.util.UimaUtil;
+
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.FSIndex;
@@ -50,19 +38,33 @@ import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 import org.apache.uima.util.ProcessTrace;
 
+import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.postag.POSDictionary;
+import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTaggerFactory;
+import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.uima.util.AnnotatorUtil;
+import opennlp.uima.util.CasConsumerUtil;
+import opennlp.uima.util.ContainingConstraint;
+import opennlp.uima.util.OpennlpUtil;
+import opennlp.uima.util.UimaUtil;
+
 /**
  * OpenNLP POSTagger trainer.
  * <p>
  * Mandatory parameters
  * <table border=1>
- *   <caption></caption>
- *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
- *   <tr><td>String</td> <td>pennlp.uima.POSFeature</td> <td>The name of the token pos feature,
- *       the feature must be of type String</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.TagDictionaryName</td></tr>
+ * <caption></caption>
+ * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ * <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
+ * <tr><td>String</td> <td>pennlp.uima.POSFeature</td> <td>The name of the token pos feature,
+ * the feature must be of type String</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.TagDictionaryName</td></tr>
  * </table>
  *
  * @deprecated will be removed after 1.7.1 release, there is no replacement
@@ -210,7 +212,7 @@ public class POSTaggerTrainer extends CasConsumer_ImplBase {
 
     POSModel posTaggerModel = POSTaggerME.train(language,
         ObjectStreamUtils.createObjectStream(mPOSSamples),
-            params, new POSTaggerFactory(null, tagDictionary));
+        params, new POSTaggerFactory(null, tagDictionary));
 
     // dereference to allow garbage collection
     mPOSSamples = null;

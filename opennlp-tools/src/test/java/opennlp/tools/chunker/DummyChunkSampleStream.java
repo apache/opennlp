@@ -32,13 +32,12 @@ import opennlp.tools.util.ObjectStream;
 public class DummyChunkSampleStream extends
     FilterObjectStream<String, ChunkSample> {
 
-  boolean mIsPredicted;
-  int count = 0;
+  private boolean mIsPredicted;
+  private int count = 0;
 
   // the predicted flag sets if the stream will contain the expected or the
   // predicted tags.
-  public DummyChunkSampleStream(ObjectStream<String> samples,
-      boolean isPredicted) {
+  public DummyChunkSampleStream(ObjectStream<String> samples, boolean isPredicted) {
     super(samples);
     mIsPredicted = isPredicted;
   }
@@ -51,10 +50,10 @@ public class DummyChunkSampleStream extends
    */
   public ChunkSample read() throws IOException {
 
-    List<String> toks = new ArrayList<String>();
-    List<String> posTags = new ArrayList<String>();
-    List<String> chunkTags = new ArrayList<String>();
-    List<String> predictedChunkTags = new ArrayList<String>();
+    List<String> toks = new ArrayList<>();
+    List<String> posTags = new ArrayList<>();
+    List<String> chunkTags = new ArrayList<>();
+    List<String> predictedChunkTags = new ArrayList<>();
 
     for (String line = samples.read(); line != null && !line.equals(""); line = samples
         .read()) {

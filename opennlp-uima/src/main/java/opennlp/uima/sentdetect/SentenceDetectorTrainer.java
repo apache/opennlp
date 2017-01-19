@@ -25,6 +25,19 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.uima.UimaContext;
+import org.apache.uima.cas.CAS;
+import org.apache.uima.cas.FSIndex;
+import org.apache.uima.cas.Type;
+import org.apache.uima.cas.TypeSystem;
+import org.apache.uima.cas.text.AnnotationFS;
+import org.apache.uima.collection.CasConsumer_ImplBase;
+import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.resource.ResourceProcessException;
+import org.apache.uima.util.Level;
+import org.apache.uima.util.Logger;
+import org.apache.uima.util.ProcessTrace;
+
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.sentdetect.SentenceDetectorFactory;
 import opennlp.tools.sentdetect.SentenceDetectorME;
@@ -40,30 +53,17 @@ import opennlp.uima.util.OpennlpUtil;
 import opennlp.uima.util.SampleTraceStream;
 import opennlp.uima.util.UimaUtil;
 
-import org.apache.uima.UimaContext;
-import org.apache.uima.cas.CAS;
-import org.apache.uima.cas.FSIndex;
-import org.apache.uima.cas.Type;
-import org.apache.uima.cas.TypeSystem;
-import org.apache.uima.cas.text.AnnotationFS;
-import org.apache.uima.collection.CasConsumer_ImplBase;
-import org.apache.uima.resource.ResourceInitializationException;
-import org.apache.uima.resource.ResourceProcessException;
-import org.apache.uima.util.Level;
-import org.apache.uima.util.Logger;
-import org.apache.uima.util.ProcessTrace;
-
 /**
  * OpenNLP SentenceDetector trainer.
  * <p>
  * Mandatory parameters
  * <table border=1>
- *   <caption></caption>
- *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.EOSChars</td>
- *   <td>A string containing end-of-sentence characters</td></tr>
+ * <caption></caption>
+ * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ * <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.EOSChars</td>
+ * <td>A string containing end-of-sentence characters</td></tr>
  * </table>
  *
  * @deprecated will be removed after 1.7.1 release, there is no replacement
@@ -113,7 +113,7 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
 
 
     String sampleTraceFileName = CasConsumerUtil.getOptionalStringParameter(
-            getUimaContext(), "opennlp.uima.SampleTraceFile");
+        getUimaContext(), "opennlp.uima.SampleTraceFile");
 
     if (sampleTraceFileName != null) {
       sampleTraceFile = new File(getUimaContextAdmin().getResourceManager()
@@ -131,7 +131,7 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
 
     String sentenceTypeName =
         CasConsumerUtil.getRequiredStringParameter(mContext,
-        UimaUtil.SENTENCE_TYPE_PARAMETER);
+            UimaUtil.SENTENCE_TYPE_PARAMETER);
 
     mSentenceType = CasConsumerUtil.getType(typeSystem, sentenceTypeName);
   }
@@ -168,7 +168,7 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
     }
 
     SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
-            null, language, true, null, eos);
+        null, language, true, null, eos);
 
     // TrainingParameters mlParams = ModelUtil.createTrainingParameters(100, 5);
     TrainingParameters mlParams = ModelUtil.createDefaultTrainingParameters();
@@ -182,7 +182,7 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
     }
 
     SentenceModel sentenceModel = SentenceDetectorME.train(language, samples,
-         sdFactory, mlParams);
+        sdFactory, mlParams);
 
     // dereference to allow garbage collection
     sentenceSamples = null;
@@ -190,7 +190,7 @@ public final class SentenceDetectorTrainer extends CasConsumer_ImplBase {
     File modelFile = new File(getUimaContextAdmin().getResourceManager()
         .getDataPath() + File.separatorChar + mModelName);
 
-    OpennlpUtil.serialize(sentenceModel,modelFile);
+    OpennlpUtil.serialize(sentenceModel, modelFile);
   }
 
   /**

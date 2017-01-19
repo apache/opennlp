@@ -19,12 +19,10 @@
 
 package opennlp.tools.ml.maxent.quasinewton;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
-
+import org.junit.Assert;
 import org.junit.Test;
+
+import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
 
 public class LineSearchTest {
   public static final double TOLERANCE = 0.01;
@@ -43,7 +41,7 @@ public class LineSearchTest {
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    assertTrue(succCond);
+    Assert.assertTrue(succCond);
   }
 
   @Test
@@ -60,7 +58,7 @@ public class LineSearchTest {
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    assertTrue(succCond);
+    Assert.assertTrue(succCond);
   }
 
   @Test
@@ -77,8 +75,8 @@ public class LineSearchTest {
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    assertFalse(succCond);
-    assertEquals(0.0, stepSize, TOLERANCE);
+    Assert.assertFalse(succCond);
+    Assert.assertEquals(0.0, stepSize, TOLERANCE);
   }
 
   @Test
@@ -95,8 +93,8 @@ public class LineSearchTest {
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    assertFalse(succCond);
-    assertEquals(0.0, stepSize, TOLERANCE);
+    Assert.assertFalse(succCond);
+    Assert.assertEquals(0.0, stepSize, TOLERANCE);
   }
 
   @Test
@@ -113,8 +111,8 @@ public class LineSearchTest {
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    assertFalse(succCond);
-    assertEquals(0.0, stepSize, TOLERANCE);
+    Assert.assertFalse(succCond);
+    Assert.assertEquals(0.0, stepSize, TOLERANCE);
   }
 
   @Test
@@ -131,8 +129,8 @@ public class LineSearchTest {
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    assertFalse(succCond);
-    assertEquals(0.0, stepSize, TOLERANCE);
+    Assert.assertFalse(succCond);
+    Assert.assertEquals(0.0, stepSize, TOLERANCE);
   }
 
   @Test
@@ -149,8 +147,8 @@ public class LineSearchTest {
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    assertFalse(succCond);
-    assertEquals(0.0, stepSize, TOLERANCE);
+    Assert.assertFalse(succCond);
+    Assert.assertEquals(0.0, stepSize, TOLERANCE);
   }
 
   @Test
@@ -167,8 +165,8 @@ public class LineSearchTest {
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    assertFalse(succCond);
-    assertEquals(0.0, stepSize, TOLERANCE);
+    Assert.assertFalse(succCond);
+    Assert.assertEquals(0.0, stepSize, TOLERANCE);
   }
 
   /**

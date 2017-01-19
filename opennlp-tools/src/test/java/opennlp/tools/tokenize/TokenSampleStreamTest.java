@@ -17,16 +17,14 @@
 
 package opennlp.tools.tokenize;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
-import java.io.ObjectStreamException;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Span;
-
-import org.junit.Test;
 
 /**
  * Tests for the {@link TokenSampleStream} class.
@@ -37,7 +35,6 @@ public class TokenSampleStreamTest {
    * Tests if the {@link TokenSample} correctly tokenizes tokens which
    * are separated by a whitespace.
    *
-   * @throws ObjectStreamException
    */
   @Test
   public void testParsingWhitespaceSeparatedTokens() throws IOException {
@@ -50,19 +47,18 @@ public class TokenSampleStreamTest {
 
     Span tokenSpans[] = tokenSample.getTokenSpans();
 
-    assertEquals(4, tokenSpans.length);
+    Assert.assertEquals(4, tokenSpans.length);
 
-    assertEquals("Slave", tokenSpans[0].getCoveredText(sampleTokens));
-    assertEquals("to", tokenSpans[1].getCoveredText(sampleTokens));
-    assertEquals("the", tokenSpans[2].getCoveredText(sampleTokens));
-    assertEquals("wage", tokenSpans[3].getCoveredText(sampleTokens));
+    Assert.assertEquals("Slave", tokenSpans[0].getCoveredText(sampleTokens));
+    Assert.assertEquals("to", tokenSpans[1].getCoveredText(sampleTokens));
+    Assert.assertEquals("the", tokenSpans[2].getCoveredText(sampleTokens));
+    Assert.assertEquals("wage", tokenSpans[3].getCoveredText(sampleTokens));
   }
 
   /**
    * Tests if the {@link TokenSample} correctly tokenizes tokens which
    * are separated by the split chars.
    *
-   * @throws ObjectStreamException
    */
   @Test
   public void testParsingSeparatedString() throws IOException {
@@ -75,19 +71,19 @@ public class TokenSampleStreamTest {
 
     Span tokenSpans[] = tokenSample.getTokenSpans();
 
-    assertEquals(4, tokenSpans.length);
+    Assert.assertEquals(4, tokenSpans.length);
 
-    assertEquals("a", tokenSpans[0].getCoveredText(tokenSample.getText()));
-    assertEquals(new Span(0,1), tokenSpans[0]);
+    Assert.assertEquals("a", tokenSpans[0].getCoveredText(tokenSample.getText()));
+    Assert.assertEquals(new Span(0,1), tokenSpans[0]);
 
-    assertEquals("b", tokenSpans[1].getCoveredText(tokenSample.getText()));
-    assertEquals(new Span(1,2), tokenSpans[1]);
+    Assert.assertEquals("b", tokenSpans[1].getCoveredText(tokenSample.getText()));
+    Assert.assertEquals(new Span(1,2), tokenSpans[1]);
 
-    assertEquals("c", tokenSpans[2].getCoveredText(tokenSample.getText()));
-    assertEquals(new Span(2,3), tokenSpans[2]);
+    Assert.assertEquals("c", tokenSpans[2].getCoveredText(tokenSample.getText()));
+    Assert.assertEquals(new Span(2,3), tokenSpans[2]);
 
-    assertEquals("d", tokenSpans[3].getCoveredText(tokenSample.getText()));
-    assertEquals(new Span(3,4), tokenSpans[3]);
+    Assert.assertEquals("d", tokenSpans[3].getCoveredText(tokenSample.getText()));
+    Assert.assertEquals(new Span(3,4), tokenSpans[3]);
 
   }
 
@@ -95,7 +91,6 @@ public class TokenSampleStreamTest {
    * Tests if the {@link TokenSample} correctly tokenizes tokens which
    * are separated by whitespace and by the split chars.
    *
-   * @throws ObjectStreamException
    */
   @Test
   public void testParsingWhitespaceAndSeparatedString() throws IOException {
@@ -108,12 +103,12 @@ public class TokenSampleStreamTest {
 
     Span tokenSpans[] = tokenSample.getTokenSpans();
 
-    assertEquals(5, tokenSpans.length);
+    Assert.assertEquals(5, tokenSpans.length);
 
-    assertEquals("a", tokenSpans[0].getCoveredText(tokenSample.getText()));
-    assertEquals("b", tokenSpans[1].getCoveredText(tokenSample.getText()));
-    assertEquals("c", tokenSpans[2].getCoveredText(tokenSample.getText()));
-    assertEquals("d", tokenSpans[3].getCoveredText(tokenSample.getText()));
-    assertEquals("e", tokenSpans[4].getCoveredText(tokenSample.getText()));
+    Assert.assertEquals("a", tokenSpans[0].getCoveredText(tokenSample.getText()));
+    Assert.assertEquals("b", tokenSpans[1].getCoveredText(tokenSample.getText()));
+    Assert.assertEquals("c", tokenSpans[2].getCoveredText(tokenSample.getText()));
+    Assert.assertEquals("d", tokenSpans[3].getCoveredText(tokenSample.getText()));
+    Assert.assertEquals("e", tokenSpans[4].getCoveredText(tokenSample.getText()));
   }
 }

@@ -17,19 +17,20 @@
 
 package opennlp.tools.parser;
 
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.parser.lang.en.HeadRules;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
-import org.junit.Assert;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+
+import org.junit.Assert;
+
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.parser.lang.en.HeadRules;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 
 public class ParserTestUtil {
 
@@ -62,8 +63,9 @@ public class ParserTestUtil {
 
       public void reset() throws IOException {
         try {
-          if (samples != null)
+          if (samples != null) {
             samples.close();
+          }
           InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
               "/opennlp/tools/parser/parser.train");
           samples = new ParseSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));

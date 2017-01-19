@@ -17,11 +17,6 @@
 
 package opennlp.uima.chunker;
 
-import opennlp.tools.chunker.ChunkerME;
-import opennlp.tools.chunker.ChunkerModel;
-import opennlp.uima.util.AnnotatorUtil;
-import opennlp.uima.util.UimaUtil;
-
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -36,27 +31,32 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
+import opennlp.tools.chunker.ChunkerME;
+import opennlp.tools.chunker.ChunkerModel;
+import opennlp.uima.util.AnnotatorUtil;
+import opennlp.uima.util.UimaUtil;
+
 /**
  * OpenNLP Chunker annotator.
  * <p>
  * Mandatory parameters
  * <table border=1>
- *   <caption></caption>
- *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.POSFeature</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ChunkType</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ChunkTagFeature</td></tr>
+ * <caption></caption>
+ * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ * <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.POSFeature</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.ChunkType</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.ChunkTagFeature</td></tr>
  * </table>
  * <p>
  * Optional parameters
  * <table border=1>
- *   <caption></caption>
- *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td></tr>
- *   </table>
+ * <caption></caption>
+ * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ * <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td></tr>
+ * </table>
  */
 public final class Chunker extends CasAnnotator_ImplBase {
 
@@ -87,7 +87,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
   /**
    * Initializes a new instance.
-   *
+   * <p>
    * Note: Use {@link #initialize(UimaContext) } to initialize
    * this instance. Not use the constructor.
    */
@@ -97,7 +97,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
   /**
    * Initializes the current instance with the given context.
-   *
+   * <p>
    * Note: Do all initialization in this method, do not use the constructor.
    */
   public void initialize(UimaContext context)
@@ -120,8 +120,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
           (ChunkerModelResource) context.getResourceObject(UimaUtil.MODEL_PARAMETER);
 
       model = modelResource.getModel();
-    }
-    catch (ResourceAccessException e) {
+    } catch (ResourceAccessException e) {
       throw new ResourceInitializationException(e);
     }
 
@@ -152,7 +151,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
   }
 
   private void addChunkAnnotation(CAS tcas, AnnotationFS tokenAnnotations[],
-      String tag, int start, int end) {
+                                  String tag, int start, int end) {
     AnnotationFS chunk = tcas.createAnnotation(mChunkType,
         tokenAnnotations[start].getBegin(), tokenAnnotations[end - 1].getEnd());
 
@@ -171,7 +170,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
     String tokens[] = new String[tokenAnnotationIndex.size()];
     String pos[] = new String[tokenAnnotationIndex.size()];
     AnnotationFS tokenAnnotations[] = new AnnotationFS[tokenAnnotationIndex
-                                                       .size()];
+        .size()];
 
     int index = 0;
 
@@ -201,11 +200,9 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
         start = i;
         end = i + 1;
-      }
-      else if (chunkTag.startsWith("I")) {
+      } else if (chunkTag.startsWith("I")) {
         end = i + 1;
-      }
-      else if (chunkTag.startsWith("O")) {
+      } else if (chunkTag.startsWith("O")) {
         if (start != -1) {
 
           addChunkAnnotation(tcas, tokenAnnotations, result[i - 1].substring(2), start, end);
@@ -213,8 +210,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
           start = -1;
           end = -1;
         }
-      }
-      else {
+      } else {
         System.out.println("Unexpected tag: " + result[i]);
       }
     }

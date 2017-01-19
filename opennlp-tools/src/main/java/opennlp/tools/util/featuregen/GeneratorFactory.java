@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,16 +36,16 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.ext.ExtensionLoader;
-import opennlp.tools.util.model.ArtifactSerializer;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ext.ExtensionLoader;
+import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
  * Creates a set of feature generators based on a provided XML descriptor.
@@ -91,7 +92,7 @@ public class GeneratorFactory {
    * an {@link AdaptiveFeatureGenerator} from an given XML {@link Element}
    * which contains all necessary configuration if any.
    */
-  static interface XmlFeatureGeneratorFactory {
+  interface XmlFeatureGeneratorFactory {
 
     /**
      * Creates an {@link AdaptiveFeatureGenerator} from a the describing
@@ -115,17 +116,14 @@ public class GeneratorFactory {
     public AdaptiveFeatureGenerator create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager)  throws InvalidFormatException {
 
-      Collection<AdaptiveFeatureGenerator> aggregatedGenerators =
-          new LinkedList<AdaptiveFeatureGenerator>();
+      Collection<AdaptiveFeatureGenerator> aggregatedGenerators = new LinkedList<>();
 
       NodeList childNodes = generatorElement.getChildNodes();
 
       for (int i = 0; i < childNodes.getLength(); i++) {
         Node childNode = childNodes.item(i);
-
         if (childNode instanceof Element) {
           Element aggregatedGeneratorElement = (Element) childNode;
-
           aggregatedGenerators.add(
               GeneratorFactory.createGenerator(aggregatedGeneratorElement, resourceManager));
         }
@@ -216,7 +214,7 @@ public class GeneratorFactory {
   }
 
   /**
-   * @see DefinitionFeatureGenerator
+   * @see DefinitionFeatureGeneratorFactory
    */
   static class DefinitionFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
 
@@ -435,7 +433,7 @@ public class GeneratorFactory {
       // Default to true.
       boolean generateWordAndClassFeature = true;
 
-      if (attribute != "") {
+      if (!Objects.equals(attribute, "")) {
         // Anything other than "true" sets it to false.
         if (!"true".equalsIgnoreCase(attribute)) {
           generateWordAndClassFeature = false;
@@ -627,8 +625,7 @@ public class GeneratorFactory {
     }
   }
 
-  private static Map<String, XmlFeatureGeneratorFactory> factories =
-      new HashMap<String, XmlFeatureGeneratorFactory>();
+  private static Map<String, XmlFeatureGeneratorFactory> factories = new HashMap<>();
 
   static {
     AggregatedFeatureGeneratorFactory.register(factories);
@@ -679,7 +676,7 @@ public class GeneratorFactory {
   }
 
   private static org.w3c.dom.Document createDOM(InputStream xmlDescriptorIn)
-      throws IOException, InvalidFormatException {
+      throws IOException {
     DocumentBuilderFactory documentBuilderFacoty = DocumentBuilderFactory.newInstance();
 
     DocumentBuilder documentBuilder;
@@ -719,7 +716,7 @@ public class GeneratorFactory {
    *     {@link InputStream}
    */
   public static AdaptiveFeatureGenerator create(InputStream xmlDescriptorIn,
-      FeatureGeneratorResourceProvider resourceManager) throws IOException, InvalidFormatException {
+      FeatureGeneratorResourceProvider resourceManager) throws IOException {
 
     org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
 
@@ -729,7 +726,7 @@ public class GeneratorFactory {
   }
 
   public static Map<String, ArtifactSerializer<?>> extractCustomArtifactSerializerMappings(
-      InputStream xmlDescriptorIn) throws IOException, InvalidFormatException {
+      InputStream xmlDescriptorIn) throws IOException {
 
     Map<String, ArtifactSerializer<?>> mapping = new HashMap<>();
 
@@ -772,9 +769,9 @@ public class GeneratorFactory {
    * @throws InvalidFormatException if xml is not well-formed
    */
   public static List<Element> getDescriptorElements(InputStream xmlDescriptorIn)
-      throws IOException, InvalidFormatException {
+      throws IOException {
 
-    List<Element> elements = new ArrayList<Element>();
+    List<Element> elements = new ArrayList<>();
     org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
     XPath xPath = XPathFactory.newInstance().newXPath();
     NodeList allElements;

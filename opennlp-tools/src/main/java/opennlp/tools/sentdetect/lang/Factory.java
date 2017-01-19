@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.sentdetect.lang;
 
 import java.util.Collections;
@@ -65,7 +64,7 @@ public class Factory {
   }
 
   public SDContextGenerator createSentenceContextGenerator(String languageCode) {
-    return createSentenceContextGenerator(languageCode, Collections.<String>emptySet());
+    return createSentenceContextGenerator(languageCode, Collections.emptySet());
   }
 
   public char[] getEOSCharacters(String languageCode) {

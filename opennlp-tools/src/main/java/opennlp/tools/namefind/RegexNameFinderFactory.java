@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import opennlp.tools.util.Span;
-
 /**
  *
  * Returns a RegexNameFinder based on A selection of
@@ -37,7 +35,7 @@ public class RegexNameFinderFactory {
    *                 Pattern[]. If the keys clash with default keys, the config
    *                 map will win
    * @param defaults the OpenNLP default regexes
-   * @return
+   * @return {@link RegexNameFinder}
    */
   public static synchronized RegexNameFinder getDefaultRegexNameFinders(
       Map<String, Pattern[]> config, DEFAULT_REGEX_NAME_FINDER... defaults) {
@@ -56,7 +54,7 @@ public class RegexNameFinderFactory {
    * Returns a RegexNamefinder that will utilize specified default regexes.
    *
    * @param defaults the OpenNLP default regexes
-   * @return
+   * @return {@link RegexNameFinder}
    */
   public static synchronized RegexNameFinder getDefaultRegexNameFinders(
       DEFAULT_REGEX_NAME_FINDER... defaults) {

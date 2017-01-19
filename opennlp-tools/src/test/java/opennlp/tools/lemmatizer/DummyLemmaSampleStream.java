@@ -32,8 +32,8 @@ import opennlp.tools.util.ObjectStream;
 public class DummyLemmaSampleStream
     extends FilterObjectStream<String, LemmaSample> {
 
-  boolean mIsPredicted;
-  int count = 0;
+  private boolean mIsPredicted;
+  private int count = 0;
 
   // the predicted flag sets if the stream will contain the expected or the
   // predicted tags.
@@ -45,10 +45,10 @@ public class DummyLemmaSampleStream
 
   public LemmaSample read() throws IOException {
 
-    List<String> toks = new ArrayList<String>();
-    List<String> posTags = new ArrayList<String>();
-    List<String> goldLemmas = new ArrayList<String>();
-    List<String> predictedLemmas = new ArrayList<String>();
+    List<String> toks = new ArrayList<>();
+    List<String> posTags = new ArrayList<>();
+    List<String> goldLemmas = new ArrayList<>();
+    List<String> predictedLemmas = new ArrayList<>();
 
     for (String line = samples.read(); line != null
         && !line.equals(""); line = samples.read()) {

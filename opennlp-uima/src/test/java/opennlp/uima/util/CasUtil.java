@@ -38,6 +38,7 @@ import org.apache.uima.util.CasCreationUtils;
 import org.apache.uima.util.InvalidXMLException;
 import org.apache.uima.util.XMLInputSource;
 import org.apache.uima.util.XMLParser;
+
 import org.xml.sax.SAXException;
 
 public class CasUtil {

@@ -27,8 +27,6 @@ import opennlp.tools.ml.model.DataIndexerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.HashSumEventStream;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.OnePassDataIndexer;
-import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.util.ObjectStream;
 
 public abstract class AbstractEventTrainer extends AbstractTrainer implements EventTrainer {
@@ -45,11 +43,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
 
   @Override
   public boolean isValid() {
-    if (!super.isValid()) {
-      return false;
-    }
-  
-    return true;
+    return super.isValid();
   }
 
   public abstract boolean isSortAndMerge();

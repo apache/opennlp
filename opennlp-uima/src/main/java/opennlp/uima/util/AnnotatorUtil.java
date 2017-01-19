@@ -20,12 +20,8 @@ package opennlp.uima.util;
 import java.io.IOException;
 import java.io.InputStream;
 
-import opennlp.tools.dictionary.Dictionary;
-
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.analysis_engine.annotator.AnnotatorConfigurationException;
-import org.apache.uima.analysis_engine.annotator.AnnotatorInitializationException;
 import org.apache.uima.cas.Feature;
 import org.apache.uima.cas.Type;
 import org.apache.uima.cas.TypeSystem;
@@ -34,12 +30,14 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
+import opennlp.tools.dictionary.Dictionary;
+
 /**
  * This is a utility class for Annotators.
  */
 public final class AnnotatorUtil {
 
-  private AnnotatorUtil(){
+  private AnnotatorUtil() {
     // util class not must not instantiated
   }
 
@@ -49,7 +47,6 @@ public final class AnnotatorUtil {
    * @param typeSystem
    * @param name
    * @return the type
-   *
    * @throws AnalysisEngineProcessException
    */
   public static Type getType(TypeSystem typeSystem, String name)
@@ -71,7 +68,6 @@ public final class AnnotatorUtil {
    *
    * @param feature
    * @param expectedType
-   *
    * @throws AnalysisEngineProcessException - if type does not match
    */
   private static void checkFeatureType(Feature feature, String expectedType)
@@ -79,8 +75,7 @@ public final class AnnotatorUtil {
     if (!feature.getRange().getName().equals(expectedType)) {
       throw new OpenNlpAnnotatorProcessException(
           ExceptionMessages.WRONG_FEATURE_TYPE,
-          new Object[] {feature.getName(),
-              expectedType
+          new Object[] {feature.getName(), expectedType
           });
     }
   }
@@ -92,8 +87,7 @@ public final class AnnotatorUtil {
 
     if (feature == null) {
       throw new OpenNlpAnnotatorProcessException(
-          ExceptionMessages.FEATURE_NOT_FOUND, new Object[] { type.getName(),
-              featureName});
+          ExceptionMessages.FEATURE_NOT_FOUND, new Object[] {type.getName(), featureName});
     }
 
     return feature;
@@ -102,15 +96,15 @@ public final class AnnotatorUtil {
   /**
    * Retrieves a required feature from the given type.
    *
-   * @param type the type
+   * @param type        the type
    * @param featureName the name of the feature
-   * @param rangeType the expected range type
+   * @param rangeType   the expected range type
    * @return the requested parameter
-   *
    * @throws AnalysisEngineProcessException
    */
   public static Feature getRequiredFeature(Type type, String featureName,
-      String rangeType) throws AnalysisEngineProcessException {
+                                           String rangeType)
+      throws AnalysisEngineProcessException {
 
     Feature feature = getRequiredFeature(type, featureName);
 
@@ -120,7 +114,8 @@ public final class AnnotatorUtil {
   }
 
   public static Feature getRequiredFeatureParameter(UimaContext context, Type type,
-      String featureNameParameter) throws AnalysisEngineProcessException {
+                                                    String featureNameParameter)
+      throws AnalysisEngineProcessException {
 
     String featureName;
 
@@ -134,7 +129,8 @@ public final class AnnotatorUtil {
   }
 
   public static Feature getRequiredFeatureParameter(UimaContext context,
-      Type type, String featureNameParameter, String rangeTypeName)
+                                                    Type type, String featureNameParameter,
+                                                    String rangeTypeName)
       throws AnalysisEngineProcessException {
 
     String featureName;
@@ -148,7 +144,7 @@ public final class AnnotatorUtil {
   }
 
   public static Type getRequiredTypeParameter(UimaContext context,
-      TypeSystem typeSystem, String parameter)
+                                              TypeSystem typeSystem, String parameter)
       throws AnalysisEngineProcessException {
 
     String typeName;
@@ -168,11 +164,10 @@ public final class AnnotatorUtil {
    * @param context
    * @param parameter
    * @return the requested parameter
-   *
    * @throws ResourceInitializationException
    */
   public static String getRequiredStringParameter(UimaContext context,
-      String parameter)
+                                                  String parameter)
       throws ResourceInitializationException {
 
     String value = getOptionalStringParameter(context, parameter);
@@ -188,11 +183,10 @@ public final class AnnotatorUtil {
    * @param context
    * @param parameter
    * @return the requested parameter
-   *
    * @throws ResourceInitializationException
    */
   public static Integer getRequiredIntegerParameter(UimaContext context,
-      String parameter)
+                                                    String parameter)
       throws ResourceInitializationException {
 
     Integer value = getOptionalIntegerParameter(context, parameter);
@@ -208,11 +202,10 @@ public final class AnnotatorUtil {
    * @param context
    * @param parameter
    * @return the requested parameter
-   *
    * @throws ResourceInitializationException
    */
   public static Float getRequiredFloatParameter(UimaContext context,
-      String parameter)
+                                                String parameter)
       throws ResourceInitializationException {
 
     Float value = getOptionalFloatParameter(context, parameter);
@@ -228,11 +221,10 @@ public final class AnnotatorUtil {
    * @param context
    * @param parameter
    * @return the requested parameter
-   *
    * @throws ResourceInitializationException
    */
   public static Boolean getRequiredBooleanParameter(UimaContext context,
-      String parameter)
+                                                    String parameter)
       throws ResourceInitializationException {
 
     Boolean value = getOptionalBooleanParameter(context, parameter);
@@ -254,7 +246,8 @@ public final class AnnotatorUtil {
 
 
   public static Feature getOptionalFeatureParameter(UimaContext context,
-      Type nameType, String featureNameParameter, String rangeTypeName)
+                                                    Type nameType, String featureNameParameter,
+                                                    String rangeTypeName)
       throws AnalysisEngineProcessException {
 
     String featureName;
@@ -282,7 +275,7 @@ public final class AnnotatorUtil {
   }
 
   public static Type getOptionalTypeParameter(UimaContext context,
-      TypeSystem typeSystem, String parameter)
+                                              TypeSystem typeSystem, String parameter)
       throws AnalysisEngineProcessException {
     String typeName;
 
@@ -292,10 +285,11 @@ public final class AnnotatorUtil {
       throw new OpenNlpAnnotatorProcessException(e);
     }
 
-    if (typeName != null)
+    if (typeName != null) {
       return getType(typeSystem, typeName);
-    else
+    } else {
       return null;
+    }
   }
 
   /**
@@ -304,21 +298,18 @@ public final class AnnotatorUtil {
    * @param context
    * @param parameter
    * @return the parameter or null if not set
-   *
    * @throws ResourceInitializationException
    */
   public static String getOptionalStringParameter(UimaContext context,
-      String parameter)
+                                                  String parameter)
       throws ResourceInitializationException {
     Object value = getOptionalParameter(context, parameter);
 
     if (value instanceof String) {
       return (String) value;
-    }
-    else if (value == null) {
+    } else if (value == null) {
       return null;
-    }
-    else {
+    } else {
       throw new ResourceInitializationException(
           ExceptionMessages.MESSAGE_CATALOG,
           ExceptionMessages.WRONG_PARAMETER_TYPE,
@@ -327,7 +318,8 @@ public final class AnnotatorUtil {
   }
 
   public static String[] getOptionalStringArrayParameter(UimaContext context,
-      String parameter) throws ResourceInitializationException {
+                                                         String parameter)
+      throws ResourceInitializationException {
     Object value = getOptionalParameter(context, parameter);
 
     if (value instanceof String[]) {
@@ -337,36 +329,8 @@ public final class AnnotatorUtil {
     } else {
       throw new ResourceInitializationException(
           ExceptionMessages.MESSAGE_CATALOG,
-          ExceptionMessages.WRONG_PARAMETER_TYPE, new Object[] { parameter,
-              "String array" });
-    }
-  }
-
-  /**
-    * Retrieves an optional parameter from the given context.
-    *
-    * @param context
-    * @param parameter
-    * @return the parameter or null if not set
-    *
-    * @throws ResourceInitializationException
-    */
-  public static Integer getOptionalIntegerParameter(UimaContext context,
-      String parameter)
-      throws ResourceInitializationException {
-    Object value = getOptionalParameter(context, parameter);
-
-    if (value instanceof Integer) {
-      return (Integer) value;
-    }
-    else if (value == null) {
-      return null;
-    }
-    else {
-      throw new ResourceInitializationException(
-              ExceptionMessages.MESSAGE_CATALOG,
-              ExceptionMessages.WRONG_PARAMETER_TYPE,
-              new Object[] {parameter, "Integer"});
+          ExceptionMessages.WRONG_PARAMETER_TYPE, new Object[] {parameter,
+          "String array"});
     }
   }
 
@@ -376,26 +340,49 @@ public final class AnnotatorUtil {
    * @param context
    * @param parameter
    * @return the parameter or null if not set
+   * @throws ResourceInitializationException
+   */
+  public static Integer getOptionalIntegerParameter(UimaContext context,
+                                                    String parameter)
+      throws ResourceInitializationException {
+
+    Object value = getOptionalParameter(context, parameter);
+
+    if (value instanceof Integer) {
+      return (Integer) value;
+    } else if (value == null) {
+      return null;
+    } else {
+      throw new ResourceInitializationException(
+          ExceptionMessages.MESSAGE_CATALOG,
+          ExceptionMessages.WRONG_PARAMETER_TYPE,
+          new Object[] {parameter, "Integer"});
+    }
+  }
+
+  /**
+   * Retrieves an optional parameter from the given context.
    *
+   * @param context
+   * @param parameter
+   * @return the parameter or null if not set
    * @throws ResourceInitializationException
    */
   public static Float getOptionalFloatParameter(UimaContext context,
-      String parameter)
+                                                String parameter)
       throws ResourceInitializationException {
 
     Object value = getOptionalParameter(context, parameter);
 
     if (value instanceof Float) {
       return (Float) value;
-    }
-    else if (value == null) {
+    } else if (value == null) {
       return null;
-    }
-    else {
+    } else {
       throw new ResourceInitializationException(
-              ExceptionMessages.MESSAGE_CATALOG,
-              ExceptionMessages.WRONG_PARAMETER_TYPE,
-              new Object[] {parameter, "Float"});
+          ExceptionMessages.MESSAGE_CATALOG,
+          ExceptionMessages.WRONG_PARAMETER_TYPE,
+          new Object[] {parameter, "Float"});
     }
   }
 
@@ -405,30 +392,27 @@ public final class AnnotatorUtil {
    * @param context
    * @param parameter
    * @return the parameter or null if not set
-   *
    * @throws ResourceInitializationException
    */
   public static Boolean getOptionalBooleanParameter(UimaContext context,
-      String parameter)
+                                                    String parameter)
       throws ResourceInitializationException {
     Object value = getOptionalParameter(context, parameter);
 
     if (value instanceof Boolean) {
       return (Boolean) value;
-    }
-    else if (value == null) {
+    } else if (value == null) {
       return null;
-    }
-    else {
+    } else {
       throw new ResourceInitializationException(
-              ExceptionMessages.MESSAGE_CATALOG,
-              ExceptionMessages.WRONG_PARAMETER_TYPE,
-              new Object[] {parameter, "Boolean"});
+          ExceptionMessages.MESSAGE_CATALOG,
+          ExceptionMessages.WRONG_PARAMETER_TYPE,
+          new Object[] {parameter, "Boolean"});
     }
   }
 
   private static Object getOptionalParameter(UimaContext context,
-      String parameter)
+                                             String parameter)
       throws ResourceInitializationException {
 
     Object value = context.getConfigParameterValue(parameter);
@@ -449,7 +433,6 @@ public final class AnnotatorUtil {
    * @param context
    * @param name
    * @return the stream
-   *
    * @throws ResourceInitializationException
    */
   public static InputStream getResourceAsStream(UimaContext context, String name)
@@ -460,15 +443,17 @@ public final class AnnotatorUtil {
     if (inResource == null) {
       throw new ResourceInitializationException(
           ExceptionMessages.MESSAGE_CATALOG,
-          ExceptionMessages.IO_ERROR_MODEL_READING, new Object[] { name
-              + " could not be found!" });
+          ExceptionMessages.IO_ERROR_MODEL_READING, new Object[] {name
+          + " could not be found!"});
     }
 
     return inResource;
   }
 
   public static InputStream getOptionalResourceAsStream(UimaContext context,
-      String name) throws ResourceInitializationException {
+                                                        String name)
+      throws ResourceInitializationException {
+
     InputStream inResource;
 
     try {
@@ -481,7 +466,8 @@ public final class AnnotatorUtil {
   }
 
   public static Dictionary createOptionalDictionary(UimaContext context,
-      String dictionaryParameter) throws ResourceInitializationException {
+                                                    String dictionaryParameter)
+      throws ResourceInitializationException {
 
     String dictionaryName = AnnotatorUtil.getOptionalStringParameter(context,
         dictionaryParameter);
@@ -521,7 +507,8 @@ public final class AnnotatorUtil {
       }
 
       return dictionary;
-    } else
+    } else {
       return null;
+    }
   }
 }

@@ -19,21 +19,17 @@
 
 package opennlp.tools.ngram;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.StringList;
-
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.StringList;
 
 /**
  * Tests for {@link opennlp.tools.ngram.NGramModel}
@@ -44,8 +40,8 @@ public class NGramModelTest {
   public void testZeroGetCount() throws Exception {
     NGramModel ngramModel = new NGramModel();
     int count = ngramModel.getCount(new StringList(""));
-    assertEquals(0, count);
-    assertEquals(0, ngramModel.size());
+    Assert.assertEquals(0, count);
+    Assert.assertEquals(0, ngramModel.size());
   }
 
   @Test
@@ -53,8 +49,8 @@ public class NGramModelTest {
     NGramModel ngramModel = new NGramModel();
     ngramModel.add(new StringList("the", "bro", "wn"));
     int count = ngramModel.getCount(new StringList("fox"));
-    assertEquals(0, count);
-    assertEquals(1, ngramModel.size());
+    Assert.assertEquals(0, count);
+    Assert.assertEquals(1, ngramModel.size());
   }
 
   @Test
@@ -62,8 +58,8 @@ public class NGramModelTest {
     NGramModel ngramModel = new NGramModel();
     ngramModel.add(new StringList("the", "bro", "wn"));
     int count = ngramModel.getCount(new StringList("the"));
-    assertEquals(0, count);
-    assertEquals(1, ngramModel.size());
+    Assert.assertEquals(0, count);
+    Assert.assertEquals(1, ngramModel.size());
   }
 
   @Test
@@ -71,8 +67,8 @@ public class NGramModelTest {
     NGramModel ngramModel = new NGramModel();
     ngramModel.add(new StringList("the", "bro", "wn"));
     int count = ngramModel.getCount(new StringList("the", "bro", "wn"));
-    assertEquals(1, count);
-    assertEquals(1, ngramModel.size());
+    Assert.assertEquals(1, count);
+    Assert.assertEquals(1, ngramModel.size());
   }
 
   @Test
@@ -80,8 +76,8 @@ public class NGramModelTest {
     NGramModel ngramModel = new NGramModel();
     ngramModel.add(new StringList("the", "bro", "wn"), 2, 3);
     int count = ngramModel.getCount(new StringList("the", "bro", "wn"));
-    assertEquals(1, count);
-    assertEquals(3, ngramModel.size());
+    Assert.assertEquals(1, count);
+    Assert.assertEquals(3, ngramModel.size());
   }
 
   @Test
@@ -89,12 +85,12 @@ public class NGramModelTest {
     NGramModel ngramModel = new NGramModel();
     ngramModel.add(new StringList("the", "brown", "fox"), 2, 3);
     int count = ngramModel.getCount(new StringList("the", "brown", "fox"));
-    assertEquals(1, count);
+    Assert.assertEquals(1, count);
     count = ngramModel.getCount(new StringList("the", "brown"));
-    assertEquals(1, count);
+    Assert.assertEquals(1, count);
     count = ngramModel.getCount(new StringList("brown", "fox"));
-    assertEquals(1, count);
-    assertEquals(3, ngramModel.size());
+    Assert.assertEquals(1, count);
+    Assert.assertEquals(3, ngramModel.size());
   }
 
   @Test
@@ -103,7 +99,7 @@ public class NGramModelTest {
     StringList tokens = new StringList("the", "bro", "wn");
     ngramModel.add(tokens);
     ngramModel.remove(tokens);
-    assertEquals(0, ngramModel.size());
+    Assert.assertEquals(0, ngramModel.size());
   }
 
   @Test
@@ -111,7 +107,7 @@ public class NGramModelTest {
     NGramModel ngramModel = new NGramModel();
     StringList tokens = new StringList("the", "bro", "wn");
     ngramModel.add(tokens);
-    assertFalse(ngramModel.contains(new StringList("the")));
+    Assert.assertFalse(ngramModel.contains(new StringList("the")));
   }
 
   @Test
@@ -119,7 +115,7 @@ public class NGramModelTest {
     NGramModel ngramModel = new NGramModel();
     StringList tokens = new StringList("the", "bro", "wn");
     ngramModel.add(tokens, 1, 3);
-    assertTrue(ngramModel.contains(new StringList("the")));
+    Assert.assertTrue(ngramModel.contains(new StringList("the")));
   }
 
   @Test
@@ -127,7 +123,7 @@ public class NGramModelTest {
     NGramModel ngramModel = new NGramModel();
     StringList tokens = new StringList("the", "bro", "wn");
     ngramModel.add(tokens, 1, 3);
-    assertEquals(6, ngramModel.numberOfGrams());
+    Assert.assertEquals(6, ngramModel.numberOfGrams());
   }
 
   @Test
@@ -136,7 +132,7 @@ public class NGramModelTest {
     StringList tokens = new StringList("the", "brown", "fox", "jumped");
     ngramModel.add(tokens, 1, 3);
     ngramModel.cutoff(2, 4);
-    assertEquals(0, ngramModel.size());
+    Assert.assertEquals(0, ngramModel.size());
   }
 
   @Test
@@ -145,7 +141,7 @@ public class NGramModelTest {
     StringList tokens = new StringList("the", "brown", "fox", "jumped");
     ngramModel.add(tokens, 1, 3);
     ngramModel.cutoff(1, 3);
-    assertEquals(9, ngramModel.size());
+    Assert.assertEquals(9, ngramModel.size());
   }
 
   @Test
@@ -156,10 +152,10 @@ public class NGramModelTest {
     tokens = new StringList("the", "brown", "Fox", "jumped");
     ngramModel.add(tokens, 1, 3);
     Dictionary dictionary = ngramModel.toDictionary();
-    assertNotNull(dictionary);
-    assertEquals(9, dictionary.size());
-    assertEquals(1, dictionary.getMinTokenCount());
-    assertEquals(3, dictionary.getMaxTokenCount());
+    Assert.assertNotNull(dictionary);
+    Assert.assertEquals(9, dictionary.size());
+    Assert.assertEquals(1, dictionary.getMinTokenCount());
+    Assert.assertEquals(3, dictionary.getMaxTokenCount());
   }
 
   @Test
@@ -170,10 +166,10 @@ public class NGramModelTest {
     tokens = new StringList("the", "brown", "Fox", "jumped");
     ngramModel.add(tokens, 1, 3);
     Dictionary dictionary = ngramModel.toDictionary(true);
-    assertNotNull(dictionary);
-    assertEquals(14, dictionary.size());
-    assertEquals(1, dictionary.getMinTokenCount());
-    assertEquals(3, dictionary.getMaxTokenCount());
+    Assert.assertNotNull(dictionary);
+    Assert.assertEquals(14, dictionary.size());
+    Assert.assertEquals(1, dictionary.getMinTokenCount());
+    Assert.assertEquals(3, dictionary.getMaxTokenCount());
   }
 
   @Ignore
@@ -186,8 +182,9 @@ public class NGramModelTest {
     ngramModel.add(tokens, 1, 3);
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ngramModel.serialize(out);
-    assertNotNull(out);
-    InputStream nGramModelStream = getClass().getResourceAsStream("/opennlp/tools/ngram/ngram-model.xml");
+    Assert.assertNotNull(out);
+    InputStream nGramModelStream = getClass()
+        .getResourceAsStream("/opennlp/tools/ngram/ngram-model.xml");
     String modelString = IOUtils.toString(nGramModelStream);
     // remove AL header
     int start = modelString.indexOf("<!--");
@@ -195,8 +192,10 @@ public class NGramModelTest {
     String asfHeaderString = modelString.substring(start, end + 3);
     modelString = modelString.replace(asfHeaderString, "");
     String outputString = out.toString(Charset.forName("UTF-8").name());
-    assertEquals(
-        modelString.replaceAll("\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", ""),
-        outputString.replaceAll("\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", ""));
+    Assert.assertEquals(
+        modelString.replaceAll("\n", "").replaceAll("\r", "")
+            .replaceAll("\t", "").replaceAll(" ", ""),
+        outputString.replaceAll("\n", "").replaceAll("\r", "")
+            .replaceAll("\t", "").replaceAll(" ", ""));
   }
 }

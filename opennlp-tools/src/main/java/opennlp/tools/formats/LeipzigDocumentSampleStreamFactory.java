@@ -37,19 +37,13 @@ import opennlp.tools.util.ObjectStreamUtils;
 public class LeipzigDocumentSampleStreamFactory
     extends AbstractSampleStreamFactory<DocumentSample> {
 
-  interface Parameters extends EncodingParameter {
-    @ParameterDescription(valueName = "sentencesDir",
-        description = "dir with Leipig sentences to be used")
-    File getSentencesDir();
+  protected <P> LeipzigDocumentSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(DocumentSample.class,
         "leipzig", new LeipzigDocumentSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> LeipzigDocumentSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<DocumentSample> create(String[] args) {
@@ -79,5 +73,11 @@ public class LeipzigDocumentSampleStreamFactory
     }
 
     return ObjectStreamUtils.createObjectStream(sampleStreams);
+  }
+
+  interface Parameters extends EncodingParameter {
+    @ParameterDescription(valueName = "sentencesDir",
+        description = "dir with Leipig sentences to be used")
+    File getSentencesDir();
   }
 }

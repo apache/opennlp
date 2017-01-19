@@ -17,10 +17,6 @@
 
 package opennlp.uima.tokenize;
 
-import opennlp.tools.util.Span;
-import opennlp.uima.util.AnnotatorUtil;
-import opennlp.uima.util.UimaUtil;
-
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -32,6 +28,10 @@ import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
+
+import opennlp.tools.util.Span;
+import opennlp.uima.util.AnnotatorUtil;
+import opennlp.uima.util.UimaUtil;
 
 public abstract class AbstractTokenizer extends CasAnnotator_ImplBase {
 
@@ -92,7 +92,7 @@ public abstract class AbstractTokenizer extends CasAnnotator_ImplBase {
   }
 
   protected void postProcessAnnotations(Span tokens[],
-      AnnotationFS tokenAnnotations[]) {
+                                        AnnotationFS tokenAnnotations[]) {
   }
 
   protected abstract Span[] tokenize(CAS cas, AnnotationFS sentence);
@@ -103,8 +103,9 @@ public abstract class AbstractTokenizer extends CasAnnotator_ImplBase {
 
     for (AnnotationFS sentence : sentences) {
 
-      if (isRemoveExistingAnnotations)
+      if (isRemoveExistingAnnotations) {
         UimaUtil.removeAnnotations(cas, sentence, tokenType);
+      }
 
       Span tokenSpans[] = tokenize(cas, sentence);
 

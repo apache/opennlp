@@ -38,12 +38,6 @@ import opennlp.tools.lemmatizer.LemmatizerModel;
 public final class LemmatizerEvaluatorTool
     extends AbstractEvaluatorTool<LemmaSample, EvalToolParams> {
 
-  interface EvalToolParams extends EvaluatorParams {
-    @ParameterDescription(valueName = "outputFile", description = "the path of the fine-grained report file.")
-    @OptionalParameter
-    File getReportOutputFile();
-  }
-
   public LemmatizerEvaluatorTool() {
     super(LemmaSample.class, EvalToolParams.class);
   }
@@ -115,5 +109,11 @@ public final class LemmatizerEvaluatorTool
     System.out.println();
 
     System.out.println("Accuracy: " + evaluator.getWordAccuracy());
+  }
+
+  interface EvalToolParams extends EvaluatorParams {
+    @ParameterDescription(valueName = "outputFile", description = "the path of the fine-grained report file.")
+    @OptionalParameter
+    File getReportOutputFile();
   }
 }

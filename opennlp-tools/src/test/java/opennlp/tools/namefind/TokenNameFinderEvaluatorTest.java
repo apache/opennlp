@@ -17,13 +17,14 @@
 
 package opennlp.tools.namefind;
 
-import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
-import opennlp.tools.util.Span;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
+import opennlp.tools.util.Span;
 
 /**
  * This is the test class for {@link TokenNameFinderEvaluator}..
@@ -37,7 +38,8 @@ public class TokenNameFinderEvaluatorTest {
     TokenNameFinderEvaluationMonitor listener = new NameEvaluationErrorListener(stream);
 
     Span[] pred = createSimpleNameSampleA().getNames();
-    TokenNameFinderEvaluator eval = new TokenNameFinderEvaluator(new DummyNameFinder(pred), listener);
+    TokenNameFinderEvaluator eval =
+        new TokenNameFinderEvaluator(new DummyNameFinder(pred), listener);
 
     eval.evaluateSample(createSimpleNameSampleA());
 
@@ -52,7 +54,8 @@ public class TokenNameFinderEvaluatorTest {
     TokenNameFinderEvaluationMonitor listener = new NameEvaluationErrorListener(stream);
 
     Span[] pred = createSimpleNameSampleB().getNames();
-    TokenNameFinderEvaluator eval = new TokenNameFinderEvaluator(new DummyNameFinder(pred), listener);
+    TokenNameFinderEvaluator eval =
+        new TokenNameFinderEvaluator(new DummyNameFinder(pred), listener);
 
     eval.evaluateSample(createSimpleNameSampleA());
 

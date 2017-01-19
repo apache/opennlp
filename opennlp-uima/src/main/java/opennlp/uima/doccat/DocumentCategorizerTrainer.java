@@ -22,17 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.doccat.DoccatFactory;
-import opennlp.tools.doccat.DoccatModel;
-import opennlp.tools.doccat.DocumentCategorizerME;
-import opennlp.tools.doccat.DocumentSample;
-import opennlp.tools.ml.maxent.GIS;
-import opennlp.tools.util.ObjectStreamUtils;
-import opennlp.tools.util.TrainingParameters;
-import opennlp.uima.util.CasConsumerUtil;
-import opennlp.uima.util.OpennlpUtil;
-import opennlp.uima.util.UimaUtil;
-
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.FSIndex;
@@ -47,9 +36,20 @@ import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 import org.apache.uima.util.ProcessTrace;
 
+import opennlp.tools.doccat.DoccatFactory;
+import opennlp.tools.doccat.DoccatModel;
+import opennlp.tools.doccat.DocumentCategorizerME;
+import opennlp.tools.doccat.DocumentSample;
+import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.uima.util.CasConsumerUtil;
+import opennlp.uima.util.OpennlpUtil;
+import opennlp.uima.util.UimaUtil;
+
 /**
  * OpenNLP NameFinder trainer.
- *
+ * <p>
  * Note: This class is still work in progress, and should not be used!
  *
  * @deprecated will be removed after 1.7.1 release, there is no replacement
@@ -114,7 +114,7 @@ public class DocumentCategorizerTrainer extends CasConsumer_ImplBase {
     FSIndex categoryIndex = cas.getAnnotationIndex(mCategoryType);
 
     if (categoryIndex.size() > 0) {
-      AnnotationFS categoryAnnotation  =
+      AnnotationFS categoryAnnotation =
           (AnnotationFS) categoryIndex.iterator().next();
 
       // add to event collection
@@ -137,7 +137,7 @@ public class DocumentCategorizerTrainer extends CasConsumer_ImplBase {
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
 
     DoccatModel categoryModel = DocumentCategorizerME.train(language,
-            ObjectStreamUtils.createObjectStream(documentSamples), params, new DoccatFactory());
+        ObjectStreamUtils.createObjectStream(documentSamples), params, new DoccatFactory());
 
     File modelFile = new File(getUimaContextAdmin().getResourceManager()
         .getDataPath() + File.separatorChar + mModelName);

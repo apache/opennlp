@@ -15,13 +15,11 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.tokenize;
-
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -44,9 +42,9 @@ public class TokenizerMETest {
 
     String tokens[] = tokenizer.tokenize("test,");
 
-    assertEquals(2, tokens.length);
-    assertEquals("test", tokens[0]);
-    assertEquals(",", tokens[1]);
+    Assert.assertEquals(2, tokens.length);
+    Assert.assertEquals("test", tokens[0]);
+    Assert.assertEquals(",", tokens[1]);
   }
 
   @Test
@@ -54,18 +52,17 @@ public class TokenizerMETest {
     TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
 
     TokenizerME tokenizer = new TokenizerME(model);
-
     String tokens[] = tokenizer.tokenize("Sounds like it's not properly thought through!");
 
-    assertEquals(9, tokens.length);
-    assertEquals("Sounds", tokens[0]);
-    assertEquals("like", tokens[1]);
-    assertEquals("it", tokens[2]);
-    assertEquals("'s", tokens[3]);
-    assertEquals("not", tokens[4]);
-    assertEquals("properly", tokens[5]);
-    assertEquals("thought", tokens[6]);
-    assertEquals("through", tokens[7]);
-    assertEquals("!", tokens[8]);
+    Assert.assertEquals(9, tokens.length);
+    Assert.assertEquals("Sounds", tokens[0]);
+    Assert.assertEquals("like", tokens[1]);
+    Assert.assertEquals("it", tokens[2]);
+    Assert.assertEquals("'s", tokens[3]);
+    Assert.assertEquals("not", tokens[4]);
+    Assert.assertEquals("properly", tokens[5]);
+    Assert.assertEquals("thought", tokens[6]);
+    Assert.assertEquals("through", tokens[7]);
+    Assert.assertEquals("!", tokens[8]);
   }
 }

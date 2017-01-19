@@ -17,14 +17,14 @@
 
 package opennlp.tools.ml;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Assert;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
@@ -36,7 +36,7 @@ public class PrepAttachDataUtil {
 
   private static List<Event> readPpaFile(String filename) throws IOException {
 
-    List<Event> events = new ArrayList<Event>();
+    List<Event> events = new ArrayList<>();
 
     try (InputStream in = PerceptronPrepAttachTest.class.getResourceAsStream("/data/ppa/" +
             filename)) {
@@ -84,6 +84,6 @@ public class PrepAttachDataUtil {
     double accuracy = correct / (double) total;
     System.out.println("Accuracy on PPA devset: (" + correct + "/" + total + ") " + accuracy);
 
-    assertEquals(expecedAccuracy, accuracy, .00001);
+    Assert.assertEquals(expecedAccuracy, accuracy, .00001);
   }
 }

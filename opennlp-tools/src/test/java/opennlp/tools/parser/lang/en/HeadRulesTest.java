@@ -17,8 +17,6 @@
 
 package opennlp.tools.parser.lang.en;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class HeadRulesTest {
@@ -44,6 +43,6 @@ public class HeadRulesTest {
     HeadRules headRulesRecreated = new HeadRules(new InputStreamReader(
         new ByteArrayInputStream(out.toByteArray()), "UTF-8"));
 
-    assertEquals(headRulesOrginal, headRulesRecreated);
+    Assert.assertEquals(headRulesOrginal, headRulesRecreated);
   }
 }

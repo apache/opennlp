@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-
-
 package opennlp.tools.sentdetect;
 
 import java.util.List;

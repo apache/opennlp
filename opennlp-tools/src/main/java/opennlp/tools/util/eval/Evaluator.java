@@ -38,8 +38,7 @@ public abstract class Evaluator<T> {
   @SafeVarargs
   public Evaluator(EvaluationMonitor<T>... aListeners) {
     if (aListeners != null) {
-      List<EvaluationMonitor<T>> listenersList = new ArrayList<>(
-          aListeners.length);
+      List<EvaluationMonitor<T>> listenersList = new ArrayList<>(aListeners.length);
       for (EvaluationMonitor<T> evaluationMonitor : aListeners) {
         if (evaluationMonitor != null) {
           listenersList.add(evaluationMonitor);

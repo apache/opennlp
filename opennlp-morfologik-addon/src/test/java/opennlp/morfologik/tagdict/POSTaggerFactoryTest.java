@@ -17,6 +17,15 @@
 
 package opennlp.morfologik.tagdict;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.morfologik.builder.POSDictionayBuilderTest;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.postag.POSModel;
@@ -30,15 +39,6 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * Tests for the {@link POSTaggerFactory} class.

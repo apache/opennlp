@@ -17,43 +17,39 @@
 
 package opennlp.tools.util;
 
-import static org.junit.Assert.assertEquals;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 public class ListHeapTest {
 
   @Test
   public void testSimple() {
-
     int size = 5;
-
-    Heap<Integer> heap = new ListHeap<Integer>(size);
+    Heap<Integer> heap = new ListHeap<>(size);
 
     for (int ai = 0; ai < 10; ai++) {
-
-      if (ai < size)
-        assertEquals(ai, heap.size());
-      else
-        assertEquals(size, heap.size());
-
+      if (ai < size) {
+        Assert.assertEquals(ai, heap.size());
+      } else {
+        Assert.assertEquals(size, heap.size());
+      }
       heap.add(ai);
     }
 
-    assertEquals(Integer.valueOf(0), heap.extract());
-    assertEquals(4, heap.size());
+    Assert.assertEquals(Integer.valueOf(0), heap.extract());
+    Assert.assertEquals(4, heap.size());
 
-    assertEquals(Integer.valueOf(1), heap.extract());
-    assertEquals(3, heap.size());
+    Assert.assertEquals(Integer.valueOf(1), heap.extract());
+    Assert.assertEquals(3, heap.size());
 
-    assertEquals(Integer.valueOf(2), heap.extract());
-    assertEquals(2, heap.size());
+    Assert.assertEquals(Integer.valueOf(2), heap.extract());
+    Assert.assertEquals(2, heap.size());
 
-    assertEquals(Integer.valueOf(3), heap.extract());
-    assertEquals(1, heap.size());
+    Assert.assertEquals(Integer.valueOf(3), heap.extract());
+    Assert.assertEquals(1, heap.size());
 
-    assertEquals(Integer.valueOf(4), heap.extract());
-    assertEquals(0, heap.size());
+    Assert.assertEquals(Integer.valueOf(4), heap.extract());
+    Assert.assertEquals(0, heap.size());
 
   }
 }

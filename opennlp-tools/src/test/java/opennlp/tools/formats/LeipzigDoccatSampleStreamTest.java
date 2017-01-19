@@ -17,9 +17,6 @@
 
 package opennlp.tools.formats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.io.IOException;
 
 import org.junit.Test;
@@ -27,6 +24,9 @@ import org.junit.Test;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class LeipzigDoccatSampleStreamTest {
 

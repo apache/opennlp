@@ -17,11 +17,7 @@
 
 package opennlp.tools.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -40,9 +36,9 @@ public class SequenceTest {
 
     Sequence copy = new Sequence(sequence);
 
-    assertEquals(sequence.getOutcomes(), copy.getOutcomes());
-    assertTrue(Arrays.equals(sequence.getProbs(), copy.getProbs()));
-    assertTrue(sequence.compareTo(copy) == 0);
+    Assert.assertEquals(sequence.getOutcomes(), copy.getOutcomes());
+    Assert.assertArrayEquals(sequence.getProbs(), copy.getProbs(), 0.0);
+    Assert.assertTrue(sequence.compareTo(copy) == 0);
   }
 
   /**
@@ -55,8 +51,8 @@ public class SequenceTest {
     sequence.add("a", 10d);
 
     // check if insert was successful
-    assertEquals("a", sequence.getOutcomes().get(0));
-    assertEquals(10d, sequence.getProbs()[0], 0d);
+    Assert.assertEquals("a", sequence.getOutcomes().get(0));
+    Assert.assertEquals(10d, sequence.getProbs()[0], 0d);
   }
 
   /**
@@ -74,9 +70,8 @@ public class SequenceTest {
     lowScore.add("B", 8d);
     lowScore.add("C", 9d);
 
-    assertEquals(-1, lowScore.compareTo(highScore));
-    assertEquals(1, highScore.compareTo(lowScore));
-    assertEquals(0, highScore.compareTo(highScore));
+    Assert.assertEquals(-1, lowScore.compareTo(highScore));
+    Assert.assertEquals(1, highScore.compareTo(lowScore));
   }
 
   /**

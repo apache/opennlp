@@ -17,11 +17,6 @@
 
 package opennlp.uima.doccat;
 
-import opennlp.tools.doccat.DoccatModel;
-import opennlp.tools.doccat.DocumentCategorizerME;
-import opennlp.uima.util.AnnotatorUtil;
-import opennlp.uima.util.UimaUtil;
-
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -32,6 +27,11 @@ import org.apache.uima.resource.ResourceAccessException;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
+
+import opennlp.tools.doccat.DoccatModel;
+import opennlp.tools.doccat.DocumentCategorizerME;
+import opennlp.uima.util.AnnotatorUtil;
+import opennlp.uima.util.UimaUtil;
 
 /**
  * Abstract document categorizer which can be implemented to define how the
@@ -91,8 +91,7 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
       // pass array to doccat
       // create result annotation
       result = mCategorizer.categorize(cas.getDocumentText());
-    }
-    else {
+    } else {
       result = mCategorizer.categorize(cas.getDocumentText());
     }
 

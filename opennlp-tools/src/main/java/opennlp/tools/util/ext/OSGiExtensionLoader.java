@@ -39,7 +39,6 @@ public class OSGiExtensionLoader implements BundleActivator {
   public void start(BundleContext context) throws Exception {
     instance = this;
     this.context = context;
-
     ExtensionLoader.setOSGiAvailable();
   }
 

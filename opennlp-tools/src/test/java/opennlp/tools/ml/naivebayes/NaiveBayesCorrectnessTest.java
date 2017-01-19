@@ -17,13 +17,12 @@
 
 package opennlp.tools.ml.naivebayes;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,6 +42,7 @@ import opennlp.tools.util.TrainingParameters;
 public class NaiveBayesCorrectnessTest {
 
   private DataIndexer testDataIndexer;
+
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
@@ -51,7 +51,7 @@ public class NaiveBayesCorrectnessTest {
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
-  
+
   @Test
   public void testNaiveBayes1() throws IOException {
 
@@ -118,24 +118,24 @@ public class NaiveBayesCorrectnessTest {
   private void testModel(MaxentModel model, Event event, double higher_probability) {
     double[] outcomes = model.eval(event.getContext());
     String outcome = model.getBestOutcome(outcomes);
-    assertEquals(2, outcomes.length);
-    assertEquals(event.getOutcome(), outcome);
+    Assert.assertEquals(2, outcomes.length);
+    Assert.assertEquals(event.getOutcome(), outcome);
     if (event.getOutcome().equals(model.getOutcome(0))) {
-      assertEquals(higher_probability, outcomes[0], 0.0001);
+      Assert.assertEquals(higher_probability, outcomes[0], 0.0001);
     }
     if (!event.getOutcome().equals(model.getOutcome(0))) {
-      assertEquals(1.0 - higher_probability, outcomes[0], 0.0001);
+      Assert.assertEquals(1.0 - higher_probability, outcomes[0], 0.0001);
     }
     if (event.getOutcome().equals(model.getOutcome(1))) {
-      assertEquals(higher_probability, outcomes[1], 0.0001);
+      Assert.assertEquals(higher_probability, outcomes[1], 0.0001);
     }
     if (!event.getOutcome().equals(model.getOutcome(1))) {
-      assertEquals(1.0 - higher_probability, outcomes[1], 0.0001);
+      Assert.assertEquals(1.0 - higher_probability, outcomes[1], 0.0001);
     }
   }
 
   public static ObjectStream<Event> createTrainingStream() throws IOException {
-    List<Event> trainingEvents = new ArrayList<Event>();
+    List<Event> trainingEvents = new ArrayList<>();
 
     String label1 = "politics";
     String[] context1 = {"bow=the", "bow=united", "bow=nations"};

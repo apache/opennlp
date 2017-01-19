@@ -17,12 +17,12 @@
 
 package opennlp.tools.postag;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Tests for the {@link POSSampleEventStream} class.
@@ -32,8 +32,6 @@ public class POSSampleEventStreamTest {
   /**
    * Tests that the outcomes for a single sentence match the
    * expected outcomes.
-   *
-   * @throws Exception
    */
   @Test
   public void testOutcomesForSingleSentence() throws Exception {

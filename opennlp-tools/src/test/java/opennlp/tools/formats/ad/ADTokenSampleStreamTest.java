@@ -17,33 +17,31 @@
 
 package opennlp.tools.formats.ad;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.tokenize.TokenSample;
-import opennlp.tools.util.ObjectStream;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.util.ObjectStream;
+
 public class ADTokenSampleStreamTest {
 
-  List<TokenSample> samples = new ArrayList<TokenSample>();
+  private List<TokenSample> samples = new ArrayList<>();
 
   @Test
   public void testSimpleCount() throws IOException {
-    assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
+    Assert.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
   }
 
   @Test
   public void testSentences() throws IOException {
-    assertTrue(samples.get(5).getText().contains("ofereceu-me"));
+    Assert.assertTrue(samples.get(5).getText().contains("ofereceu-me"));
   }
 
   @Before

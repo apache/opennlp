@@ -17,16 +17,17 @@
 
 package opennlp.tools.ml.naivebayes;
 
-import static opennlp.tools.ml.PrepAttachDataUtil.createTrainingStream;
-import static opennlp.tools.ml.PrepAttachDataUtil.testModel;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.PrepAttachDataUtil;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.DataIndexer;
@@ -34,15 +35,13 @@ import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.util.TrainingParameters;
 
-import org.junit.Before;
-import org.junit.Test;
-
 /**
  * Test for Naive Bayes training and use with the ppa data.
  */
 public class NaiveBayesPrepAttachTest {
 
   private DataIndexer testDataIndexer;
+
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
@@ -51,45 +50,36 @@ public class NaiveBayesPrepAttachTest {
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
-  
+
   @Test
   public void testNaiveBayesOnPrepAttachData() throws IOException {
-    testDataIndexer.index(createTrainingStream());
-    MaxentModel model = 
-        new NaiveBayesTrainer().trainModel(testDataIndexer);
-
-    assertTrue(model instanceof NaiveBayesModel);
-
-    testModel(model, 0.7897994553107205);
+    testDataIndexer.index(PrepAttachDataUtil.createTrainingStream());
+    MaxentModel model = new NaiveBayesTrainer().trainModel(testDataIndexer);
+    Assert.assertTrue(model instanceof NaiveBayesModel);
+    PrepAttachDataUtil.testModel(model, 0.7897994553107205);
   }
 
   @Test
   public void testNaiveBayesOnPrepAttachDataUsingTrainUtil() throws IOException {
-
-    Map<String, String> trainParams = new HashMap<String, String>();
+    Map<String, String> trainParams = new HashMap<>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
-    MaxentModel model = trainer.train(createTrainingStream());
-
-    assertTrue(model instanceof NaiveBayesModel);
-
-    testModel(model, 0.7897994553107205);
+    MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
+    Assert.assertTrue(model instanceof NaiveBayesModel);
+    PrepAttachDataUtil.testModel(model, 0.7897994553107205);
   }
 
   @Test
   public void testNaiveBayesOnPrepAttachDataUsingTrainUtilWithCutoff5() throws IOException {
-
-    Map<String, String> trainParams = new HashMap<String, String>();
+    Map<String, String> trainParams = new HashMap<>();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(5));
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
-    MaxentModel model = trainer.train(createTrainingStream());
-
-    assertTrue(model instanceof NaiveBayesModel);
-
-    testModel(model, 0.7945035899975241);
+    MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
+    Assert.assertTrue(model instanceof NaiveBayesModel);
+    PrepAttachDataUtil.testModel(model, 0.7945035899975241);
   }
 }

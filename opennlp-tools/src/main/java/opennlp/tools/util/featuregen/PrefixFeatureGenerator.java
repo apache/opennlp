@@ -23,9 +23,9 @@ public class PrefixFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final int PREFIX_LENGTH = 4;
 
-  public static String[] getPrefixes(String lex) {
+  private static String[] getPrefixes(String lex) {
     String[] prefs = new String[PREFIX_LENGTH];
-    for (int li = 0, ll = PREFIX_LENGTH; li < ll; li++) {
+    for (int li = 0; li < PREFIX_LENGTH; li++) {
       prefs[li] = lex.substring(0, Math.min(li + 1, lex.length()));
     }
     return prefs;

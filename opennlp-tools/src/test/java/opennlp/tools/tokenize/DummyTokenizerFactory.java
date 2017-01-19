@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 public class DummyTokenizerFactory extends TokenizerFactory {
@@ -85,8 +84,7 @@ public class DummyTokenizerFactory extends TokenizerFactory {
   static class DummyDictionarySerializer implements
       ArtifactSerializer<DummyDictionary> {
 
-    public DummyDictionary create(InputStream in) throws IOException,
-        InvalidFormatException {
+    public DummyDictionary create(InputStream in) throws IOException {
       return new DummyDictionary(in);
     }
 

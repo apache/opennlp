@@ -21,6 +21,7 @@ import java.io.File;
 import java.nio.file.Path;
 
 import morfologik.stemming.DictionaryMetadata;
+
 import opennlp.morfologik.builder.MorfologikDictionayBuilder;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;

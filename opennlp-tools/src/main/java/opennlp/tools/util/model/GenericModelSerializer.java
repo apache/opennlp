@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.util.model;
 
 import java.io.IOException;
@@ -26,12 +25,10 @@ import java.util.Map;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.BinaryFileDataReader;
 import opennlp.tools.ml.model.GenericModelReader;
-import opennlp.tools.util.InvalidFormatException;
 
 public class GenericModelSerializer implements ArtifactSerializer<AbstractModel> {
 
-  public AbstractModel create(InputStream in) throws IOException,
-      InvalidFormatException {
+  public AbstractModel create(InputStream in) throws IOException {
     return new GenericModelReader(new BinaryFileDataReader(in)).getModel();
   }
 

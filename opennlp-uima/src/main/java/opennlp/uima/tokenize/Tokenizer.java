@@ -17,12 +17,6 @@
 
 package opennlp.uima.tokenize;
 
-import opennlp.tools.tokenize.TokenizerME;
-import opennlp.tools.tokenize.TokenizerModel;
-import opennlp.tools.util.Span;
-import opennlp.uima.util.AnnotatorUtil;
-import opennlp.uima.util.UimaUtil;
-
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CAS;
@@ -32,24 +26,30 @@ import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.resource.ResourceAccessException;
 import org.apache.uima.resource.ResourceInitializationException;
 
+import opennlp.tools.tokenize.TokenizerME;
+import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.util.Span;
+import opennlp.uima.util.AnnotatorUtil;
+import opennlp.uima.util.UimaUtil;
+
 /**
  * OpenNLP Tokenizer annotator.
  * <p>
  * Mandatory parameters
  * <table border=1>
- *   <caption></caption>
- *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
+ * <caption></caption>
+ * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ * <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
  * </table>
  * <p>
  * Optional parameters
  * <table border=1>
- *   <caption></caption>
- *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double
- *       probability feature (not set by default)</td>
+ * <caption></caption>
+ * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ * <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double
+ * probability feature (not set by default)</td></tr>
  * </table>
  *
  * @see TokenizerME
@@ -65,7 +65,7 @@ public final class Tokenizer extends AbstractTokenizer {
 
   /**
    * Initializes a new instance.
-   *
+   * <p>
    * Note: Use {@link #initialize(UimaContext) } to initialize
    * this instance. Not use the constructor.
    */
@@ -77,7 +77,7 @@ public final class Tokenizer extends AbstractTokenizer {
 
   /**
    * Initializes the current instance with the given context.
-   *
+   * <p>
    * Note: Do all initialization in this method, do not use the constructor.
    */
   public void initialize(UimaContext context)
@@ -120,7 +120,7 @@ public final class Tokenizer extends AbstractTokenizer {
 
   @Override
   protected void postProcessAnnotations(Span[] tokens,
-      AnnotationFS[] tokenAnnotations) {
+                                        AnnotationFS[] tokenAnnotations) {
     // if interest
     if (probabilityFeature != null) {
       double tokenProbabilties[] = tokenizer.getTokenProbabilities();

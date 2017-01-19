@@ -17,15 +17,14 @@
 
 package opennlp.tools.formats.ad;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
-
-import org.junit.Test;
 
 public class ADParagraphStreamTest {
 
@@ -45,7 +44,7 @@ public class ADParagraphStreamTest {
       // paragraph.getRoot();
     }
 
-    assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
+    Assert.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
   }
 
   @Test
@@ -61,7 +60,7 @@ public class ADParagraphStreamTest {
       paragraph = stream.read();
     }
 
-    assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
+    Assert.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
   }
 
   private static ADSentenceStream openData() throws IOException {

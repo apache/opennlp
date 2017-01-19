@@ -15,21 +15,20 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.namefind;
 
 import java.io.InputStream;
 import java.util.Collections;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * This is the test class for {@link NameFinderME}.
@@ -51,8 +50,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class NameFinderMETest {
 
-  private final String TYPE_OVERRIDE = "aType";
-  private final String DEFAULT = "default";
+  private static final String TYPE_OVERRIDE = "aType";
+  private static final String DEFAULT = "default";
 
   @Test
   public void testNameFinder() throws Exception {
@@ -92,8 +91,8 @@ public class NameFinderMETest {
 
     Span names[] = nameFinder.find(sentence);
 
-    assertEquals(1, names.length);
-    assertEquals(new Span(0, 1, DEFAULT), names[0]);
+    Assert.assertEquals(1, names.length);
+    Assert.assertEquals(new Span(0, 1, DEFAULT), names[0]);
 
     sentence = new String[] {
         "Hi",
@@ -107,9 +106,9 @@ public class NameFinderMETest {
 
     names = nameFinder.find(sentence);
 
-    assertEquals(2, names.length);
-    assertEquals(new Span(1, 2, DEFAULT), names[0]);
-    assertEquals(new Span(4, 6, DEFAULT), names[1]);
+    Assert.assertEquals(2, names.length);
+    Assert.assertEquals(new Span(1, 2, DEFAULT), names[0]);
+    Assert.assertEquals(new Span(4, 6, DEFAULT), names[1]);
   }
 
   /**
@@ -145,20 +144,20 @@ public class NameFinderMETest {
 
     Span[] names2 = nameFinder.find(sentence2);
 
-    assertEquals(2, names2.length);
-    assertEquals(new Span(1, 2, "person"), names2[0]);
-    assertEquals(new Span(4, 6, "person"), names2[1]);
-    assertEquals("person", names2[0].getType());
-    assertEquals("person", names2[1].getType());
+    Assert.assertEquals(2, names2.length);
+    Assert.assertEquals(new Span(1, 2, "person"), names2[0]);
+    Assert.assertEquals(new Span(4, 6, "person"), names2[1]);
+    Assert.assertEquals("person", names2[0].getType());
+    Assert.assertEquals("person", names2[1].getType());
 
     String sentence[] = { "Alisa", "appreciated", "the", "hint", "and",
         "enjoyed", "a", "delicious", "traditional", "meal." };
 
     Span names[] = nameFinder.find(sentence);
 
-    assertEquals(1, names.length);
-    assertEquals(new Span(0, 1, "person"), names[0]);
-    assertTrue(hasOtherAsOutcome(nameFinderModel));
+    Assert.assertEquals(1, names.length);
+    Assert.assertEquals(new Span(0, 1, "person"), names[0]);
+    Assert.assertTrue(hasOtherAsOutcome(nameFinderModel));
   }
 
   /**
@@ -192,10 +191,10 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    assertEquals(new Span(0, 2, DEFAULT), names1[0]);
-    assertEquals(new Span(2, 4, DEFAULT), names1[1]);
-    assertEquals(new Span(4, 6, DEFAULT), names1[2]);
-    assertTrue(!hasOtherAsOutcome(nameFinderModel));
+    Assert.assertEquals(new Span(0, 2, DEFAULT), names1[0]);
+    Assert.assertEquals(new Span(2, 4, DEFAULT), names1[1]);
+    Assert.assertEquals(new Span(4, 6, DEFAULT), names1[2]);
+    Assert.assertTrue(!hasOtherAsOutcome(nameFinderModel));
   }
 
   @Test
@@ -225,10 +224,10 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    assertEquals(new Span(0, 2, TYPE_OVERRIDE), names1[0]);
-    assertEquals(new Span(2, 4, TYPE_OVERRIDE), names1[1]);
-    assertEquals(new Span(4, 6, TYPE_OVERRIDE), names1[2]);
-    assertTrue(!hasOtherAsOutcome(nameFinderModel));
+    Assert.assertEquals(new Span(0, 2, TYPE_OVERRIDE), names1[0]);
+    Assert.assertEquals(new Span(2, 4, TYPE_OVERRIDE), names1[1]);
+    Assert.assertEquals(new Span(4, 6, TYPE_OVERRIDE), names1[2]);
+    Assert.assertTrue(!hasOtherAsOutcome(nameFinderModel));
   }
 
   /**
@@ -263,12 +262,11 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    assertEquals(new Span(0, 2, "person"), names1[0]);
-    assertEquals(new Span(2, 4, "person"), names1[1]);
-    assertEquals(new Span(4, 6, "person"), names1[2]);
-    assertEquals("person", names1[2].getType());
-
-    assertTrue(!hasOtherAsOutcome(nameFinderModel));
+    Assert.assertEquals(new Span(0, 2, "person"), names1[0]);
+    Assert.assertEquals(new Span(2, 4, "person"), names1[1]);
+    Assert.assertEquals(new Span(4, 6, "person"), names1[2]);
+    Assert.assertEquals("person", names1[2].getType());
+    Assert.assertTrue(!hasOtherAsOutcome(nameFinderModel));
   }
 
   /**
@@ -301,17 +299,17 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    assertEquals(new Span(0, 1, "organization"), names1[0]); // NATO
-    assertEquals(new Span(1, 3, "location"), names1[1]); // United States
-    assertEquals("person", names1[2].getType());
-    assertTrue(!hasOtherAsOutcome(nameFinderModel));
+    Assert.assertEquals(new Span(0, 1, "organization"), names1[0]); // NATO
+    Assert.assertEquals(new Span(1, 3, "location"), names1[1]); // United States
+    Assert.assertEquals("person", names1[2].getType());
+    Assert.assertTrue(!hasOtherAsOutcome(nameFinderModel));
   }
 
   private boolean hasOtherAsOutcome(TokenNameFinderModel nameFinderModel) {
     SequenceClassificationModel<String> model = nameFinderModel.getNameFinderSequenceModel();
     String[] outcomes = model.getOutcomes();
-    for (int i = 0; i < outcomes.length; i++) {
-      if (outcomes[i].equals(NameFinderME.OTHER)) {
+    for (String outcome : outcomes) {
+      if (outcome.equals(NameFinderME.OTHER)) {
         return true;
       }
     }
@@ -322,8 +320,7 @@ public class NameFinderMETest {
   public void testDropOverlappingSpans() {
     Span spans[] = new Span[] {new Span(1, 10), new Span(1,11), new Span(1,11), new Span(5, 15)};
     Span remainingSpan[] = NameFinderME.dropOverlappingSpans(spans);
-
-    assertEquals(new Span(1, 11), remainingSpan[0]);
+    Assert.assertEquals(new Span(1, 11), remainingSpan[0]);
   }
 
   /**
@@ -361,25 +358,25 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    assertEquals(new Span(0, 4, "location"), names1[0]);
-    assertEquals(new Span(5, 7, "person"), names1[1]);
-    assertEquals(new Span(10, 12, "location"), names1[2]);
-    assertEquals(new Span(28, 30, "location"), names1[3]);
-    assertEquals("location", names1[0].getType());
-    assertEquals("person", names1[1].getType());
-    assertEquals("location", names1[2].getType());
-    assertEquals("location", names1[3].getType());
+    Assert.assertEquals(new Span(0, 4, "location"), names1[0]);
+    Assert.assertEquals(new Span(5, 7, "person"), names1[1]);
+    Assert.assertEquals(new Span(10, 12, "location"), names1[2]);
+    Assert.assertEquals(new Span(28, 30, "location"), names1[3]);
+    Assert.assertEquals("location", names1[0].getType());
+    Assert.assertEquals("person", names1[1].getType());
+    Assert.assertEquals("location", names1[2].getType());
+    Assert.assertEquals("location", names1[3].getType());
 
     sentence = new String[] { "Scott", "Snyder", "is", "the", "director", "of",
         "the", "Center", "for", "U", ".", "S", ".", "Korea", "Policy", "." };
 
     Span[] names2 = nameFinder.find(sentence);
 
-    assertEquals(2, names2.length);
-    assertEquals(new Span(0, 2, "person"), names2[0]);
-    assertEquals(new Span(7, 15, "organization"), names2[1]);
-    assertEquals("person", names2[0].getType());
-    assertEquals("organization", names2[1].getType());
+    Assert.assertEquals(2, names2.length);
+    Assert.assertEquals(new Span(0, 2, "person"), names2[0]);
+    Assert.assertEquals(new Span(7, 15, "organization"), names2[1]);
+    Assert.assertEquals("person", names2[0].getType());
+    Assert.assertEquals("organization", names2[1].getType());
   }
 
 }

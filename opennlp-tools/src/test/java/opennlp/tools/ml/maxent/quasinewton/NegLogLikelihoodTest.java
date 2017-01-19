@@ -17,31 +17,27 @@
 
 package opennlp.tools.ml.maxent.quasinewton;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.DataIndexer;
-import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
 import opennlp.tools.util.TrainingParameters;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 public class NegLogLikelihoodTest {
-  public final double TOLERANCE01 = 1.0E-06;
-  public final double TOLERANCE02 = 1.0E-10;
+  private static final double TOLERANCE01 = 1.0E-06;
+  private static final double TOLERANCE02 = 1.0E-10;
 
   private DataIndexer testDataIndexer;
+
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
@@ -49,7 +45,7 @@ public class NegLogLikelihoodTest {
     testDataIndexer = new OnePassRealValueDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
-  
+
   @Test
   public void testDomainDimensionSanity() throws IOException {
     // given
@@ -61,7 +57,7 @@ public class NegLogLikelihoodTest {
     int correctDomainDimension = testDataIndexer.getPredLabels().length
         * testDataIndexer.getOutcomeLabels().length;
     // then
-    assertEquals(correctDomainDimension, objectFunction.getDimension());
+    Assert.assertEquals(correctDomainDimension, objectFunction.getDimension());
   }
 
   @Test
@@ -74,8 +70,8 @@ public class NegLogLikelihoodTest {
     // when
     double[] initial = objectFunction.getInitialPoint();
     // then
-    for (int i = 0; i < initial.length; i++) {
-      assertEquals(0.0, initial[i], TOLERANCE01);
+    for (double anInitial : initial) {
+      Assert.assertEquals(0.0, anInitial, TOLERANCE01);
     }
   }
 
@@ -90,7 +86,7 @@ public class NegLogLikelihoodTest {
     double[] initial = objectFunction.getInitialPoint();
     double[] gradientAtInitial = objectFunction.gradientAt(initial);
     // then
-    assertNotNull(gradientAtInitial);
+    Assert.assertNotNull(gradientAtInitial);
   }
 
   @Test
@@ -104,7 +100,7 @@ public class NegLogLikelihoodTest {
     double value = objectFunction.valueAt(objectFunction.getInitialPoint());
     double expectedValue = 13.86294361;
     // then
-    assertEquals(expectedValue, value, TOLERANCE01);
+    Assert.assertEquals(expectedValue, value, TOLERANCE01);
   }
 
   @Test
@@ -119,7 +115,7 @@ public class NegLogLikelihoodTest {
     double value = objectFunction.valueAt(nonInitialPoint);
     double expectedValue = 13.862943611198894;
     // then
-    assertEquals(expectedValue, value, TOLERANCE01);
+    Assert.assertEquals(expectedValue, value, TOLERANCE01);
   }
 
   @Test
@@ -136,7 +132,7 @@ public class NegLogLikelihoodTest {
         testDataIndexer.getOutcomeLabels()));
     double expectedValue = 53.163219721099026;
     // then
-    assertEquals(expectedValue, value, TOLERANCE02);
+    Assert.assertEquals(expectedValue, value, TOLERANCE02);
   }
 
   @Test
@@ -150,7 +146,7 @@ public class NegLogLikelihoodTest {
     double[] gradientAtInitialPoint = objectFunction.gradientAt(objectFunction.getInitialPoint());
     double[] expectedGradient = new double[] { -9.0, -14.0, -17.0, 20.0, 8.5, 9.0, 14.0, 17.0, -20.0, -8.5 };
     // then
-    assertTrue(compareDoubleArray(expectedGradient, gradientAtInitialPoint,
+    Assert.assertTrue(compareDoubleArray(expectedGradient, gradientAtInitialPoint,
         testDataIndexer, TOLERANCE01));
   }
 
@@ -174,7 +170,7 @@ public class NegLogLikelihoodTest {
             21.22712750610244,   72.57790706276438,
             -38.03525795198456,  -15.348650889354925 };
     // then
-    assertTrue(compareDoubleArray(expectedGradient, gradientAtNonInitialPoint,
+    Assert.assertTrue(compareDoubleArray(expectedGradient, gradientAtNonInitialPoint,
         testDataIndexer, TOLERANCE01));
   }
 
@@ -187,8 +183,8 @@ public class NegLogLikelihoodTest {
     Arrays.sort(sortedPredLabels);
     Arrays.sort(sortedOutcomeLabels);
 
-    Map<String, Integer> invertedPredIndex = new HashMap<String, Integer>();
-    Map<String, Integer> invertedOutcomeIndex = new HashMap<String, Integer>();
+    Map<String, Integer> invertedPredIndex = new HashMap<>();
+    Map<String, Integer> invertedOutcomeIndex = new HashMap<>();
     for (int i = 0; i < predLabels.length; i++) {
       invertedPredIndex.put(predLabels[i], i);
     }
@@ -216,8 +212,8 @@ public class NegLogLikelihoodTest {
     Arrays.sort(sortedPredLabels);
     Arrays.sort(sortedOutcomeLabels);
 
-    Map<String, Integer> invertedPredIndex = new HashMap<String, Integer>();
-    Map<String, Integer> invertedOutcomeIndex = new HashMap<String, Integer>();
+    Map<String, Integer> invertedPredIndex = new HashMap<>();
+    Map<String, Integer> invertedOutcomeIndex = new HashMap<>();
     for (int i = 0; i < predLabels.length; i++) {
       invertedPredIndex.put(predLabels[i], i);
     }

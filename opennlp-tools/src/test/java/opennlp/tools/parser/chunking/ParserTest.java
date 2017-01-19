@@ -20,15 +20,15 @@ package opennlp.tools.parser.chunking;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import org.junit.Test;
+
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserTestUtil;
 import opennlp.tools.util.ObjectStream;
-
 import opennlp.tools.util.TrainingParameters;
-import org.junit.Test;
 
 /**
  * Tests for the {@link Parser} class.
@@ -61,7 +61,7 @@ public class ParserTest {
     model.serialize(outArray);
     outArray.close();
 
-    new ParserModel(new ByteArrayInputStream(outArray.toByteArray()));
+    ParserModel outputModel =  new ParserModel(new ByteArrayInputStream(outArray.toByteArray()));
 
     // TODO: compare both models
   }

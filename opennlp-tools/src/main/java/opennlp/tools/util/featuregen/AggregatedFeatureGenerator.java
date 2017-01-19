@@ -46,7 +46,7 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
         throw new IllegalArgumentException("null values in generators are not permitted!");
     }
 
-    this.generators = new ArrayList<AdaptiveFeatureGenerator>(generators.length);
+    this.generators = new ArrayList<>(generators.length);
 
     Collections.addAll(this.generators, generators);
 

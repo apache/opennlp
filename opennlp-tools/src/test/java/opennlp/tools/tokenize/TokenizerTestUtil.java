@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.tokenize;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.CollectionObjectStream;
 import opennlp.tools.util.InputStreamFactory;
@@ -68,7 +67,7 @@ public class TokenizerTestUtil {
         TokenizerModel.class, "/opennlp/tools/tokenize/token.train");
 
     ObjectStream<TokenSample> samples = new TokenSampleStream(
-        new PlainTextByLineStream(trainDataIn, UTF_8));
+        new PlainTextByLineStream(trainDataIn, StandardCharsets.UTF_8));
 
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));

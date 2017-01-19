@@ -97,7 +97,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
   @Override
   protected Iterator<Event> createEvents(TokenSample tokenSample) {
 
-    List<Event> events = new ArrayList<Event>(50);
+    List<Event> events = new ArrayList<>(50);
 
     Span tokens[] = tokenSample.getTokenSpans();
     String text = tokenSample.getText();

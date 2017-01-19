@@ -17,40 +17,36 @@
 
 package opennlp.tools.tokenize;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import opennlp.tools.tokenize.DetokenizationDictionary.Operation;
-import opennlp.tools.util.InvalidFormatException;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import opennlp.tools.tokenize.DetokenizationDictionary.Operation;
+
 public class DetokenizationDictionaryTest {
 
-  private String tokens[];
-  private Operation operations[];
   private DetokenizationDictionary dict;
 
   @Before
   public void setUp() throws Exception {
 
-    tokens = new String[]{"\"", "(", ")", "-"};
+    String[] tokens = new String[] {"\"", "(", ")", "-"};
 
-    operations = new Operation[]{ Operation.RIGHT_LEFT_MATCHING,
-        Operation.MOVE_RIGHT, Operation.MOVE_LEFT, Operation.MOVE_BOTH };
+    Operation[] operations = new Operation[] {Operation.RIGHT_LEFT_MATCHING,
+        Operation.MOVE_RIGHT, Operation.MOVE_LEFT, Operation.MOVE_BOTH};
 
     dict = new DetokenizationDictionary(tokens, operations);
   }
 
   private static void testEntries(DetokenizationDictionary dict) {
-    assertEquals(Operation.RIGHT_LEFT_MATCHING, dict.getOperation("\""));
-    assertEquals(Operation.MOVE_RIGHT, dict.getOperation("("));
-    assertEquals(Operation.MOVE_LEFT, dict.getOperation(")"));
-    assertEquals(Operation.MOVE_BOTH, dict.getOperation("-"));
+    Assert.assertEquals(Operation.RIGHT_LEFT_MATCHING, dict.getOperation("\""));
+    Assert.assertEquals(Operation.MOVE_RIGHT, dict.getOperation("("));
+    Assert.assertEquals(Operation.MOVE_LEFT, dict.getOperation(")"));
+    Assert.assertEquals(Operation.MOVE_BOTH, dict.getOperation("-"));
   }
 
   @Test
@@ -59,10 +55,8 @@ public class DetokenizationDictionaryTest {
   }
 
   @Test
-  public void testSerialization() throws IOException, InvalidFormatException {
-
+  public void testSerialization() throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-
     dict.serialize(out);
 
     DetokenizationDictionary parsedDict = new DetokenizationDictionary(

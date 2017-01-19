@@ -17,17 +17,13 @@
 
 package opennlp.tools.chunker;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
@@ -36,12 +32,6 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 public class ChunkSampleTest {
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testParameterValidation() {
-    new ChunkSample(new String[]{""}, new String[]{""},
-        new String[]{"test", "one element to much"});
-  }
 
   private static String[] createSentence() {
     return new String[] {
@@ -66,7 +56,7 @@ public class ChunkSampleTest {
 
   private static String[] createTags() {
 
-    return new String[]{
+    return new String[] {
         "NNS",
         "IN",
         "DT",
@@ -87,7 +77,7 @@ public class ChunkSampleTest {
   }
 
   private static String[] createChunks() {
-    return new String[]{
+    return new String[] {
         "B-NP",
         "B-PP",
         "B-NP",
@@ -107,13 +97,29 @@ public class ChunkSampleTest {
     };
   }
 
+  public static ChunkSample createGoldSample() {
+    return new ChunkSample(createSentence(), createTags(), createChunks());
+  }
+
+  public static ChunkSample createPredSample() {
+    String[] chunks = createChunks();
+    chunks[5] = "B-NP";
+    return new ChunkSample(createSentence(), createTags(), chunks);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testParameterValidation() {
+    new ChunkSample(new String[] {""}, new String[] {""},
+        new String[] {"test", "one element to much"});
+  }
+
   @Test
   public void testRetrievingContent() {
     ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
 
-    assertArrayEquals(createSentence(), sample.getSentence());
-    assertArrayEquals(createTags(), sample.getTags());
-    assertArrayEquals(createChunks(), sample.getPreds());
+    Assert.assertArrayEquals(createSentence(), sample.getSentence());
+    Assert.assertArrayEquals(createTags(), sample.getTags());
+    Assert.assertArrayEquals(createChunks(), sample.getPreds());
   }
 
   @Test
@@ -129,10 +135,10 @@ public class ChunkSampleTest {
     for (int i = 0; i < sentence.length; i++) {
       String line = reader.readLine();
       String[] parts = line.split("\\s+");
-      assertEquals(3, parts.length);
-      assertEquals(sentence[i], parts[0]);
-      assertEquals(tags[i], parts[1]);
-      assertEquals(chunks[i], parts[2]);
+      Assert.assertEquals(3, parts.length);
+      Assert.assertEquals(sentence[i], parts[0]);
+      Assert.assertEquals(tags[i], parts[1]);
+      Assert.assertEquals(chunks[i], parts[2]);
     }
   }
 
@@ -141,7 +147,7 @@ public class ChunkSampleTest {
 
     ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
 
-    assertEquals(" [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] "
+    Assert.assertEquals(" [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] "
         + "[VP range_VBP ] [ADVP widely_RB ] ,_, [NP Forecasts_NNS ] [PP for_IN ] "
         + "[NP the_DT trade_NN figures_NNS ] "
         + "[VP range_VBP ] [ADVP widely_RB ] ._.", sample.nicePrint());
@@ -153,35 +159,39 @@ public class ChunkSampleTest {
         createChunks());
     Span[] spans = sample.getPhrasesAsSpanList();
 
-    assertEquals(10, spans.length);
-    assertEquals(new Span(0, 1, "NP"), spans[0]);
-    assertEquals(new Span(1, 2, "PP"), spans[1]);
-    assertEquals(new Span(2, 5, "NP"), spans[2]);
-    assertEquals(new Span(5, 6, "VP"), spans[3]);
-    assertEquals(new Span(6, 7, "ADVP"), spans[4]);
-    assertEquals(new Span(8, 9, "NP"), spans[5]);
-    assertEquals(new Span(9, 10, "PP"), spans[6]);
-    assertEquals(new Span(10, 13, "NP"), spans[7]);
-    assertEquals(new Span(13, 14, "VP"), spans[8]);
-    assertEquals(new Span(14, 15, "ADVP"), spans[9]);
+    Assert.assertEquals(10, spans.length);
+    Assert.assertEquals(new Span(0, 1, "NP"), spans[0]);
+    Assert.assertEquals(new Span(1, 2, "PP"), spans[1]);
+    Assert.assertEquals(new Span(2, 5, "NP"), spans[2]);
+    Assert.assertEquals(new Span(5, 6, "VP"), spans[3]);
+    Assert.assertEquals(new Span(6, 7, "ADVP"), spans[4]);
+    Assert.assertEquals(new Span(8, 9, "NP"), spans[5]);
+    Assert.assertEquals(new Span(9, 10, "PP"), spans[6]);
+    Assert.assertEquals(new Span(10, 13, "NP"), spans[7]);
+    Assert.assertEquals(new Span(13, 14, "VP"), spans[8]);
+    Assert.assertEquals(new Span(14, 15, "ADVP"), spans[9]);
   }
+
+
+  // following are some tests to check the argument validation. Since all uses
+  // the same validateArguments method, we do a deeper test only once
 
   @Test
   public void testPhraseAsSpan() {
     Span[] spans = ChunkSample.phrasesAsSpanList(createSentence(),
         createTags(), createChunks());
 
-    assertEquals(10, spans.length);
-    assertEquals(new Span(0, 1, "NP"), spans[0]);
-    assertEquals(new Span(1, 2, "PP"), spans[1]);
-    assertEquals(new Span(2, 5, "NP"), spans[2]);
-    assertEquals(new Span(5, 6, "VP"), spans[3]);
-    assertEquals(new Span(6, 7, "ADVP"), spans[4]);
-    assertEquals(new Span(8, 9, "NP"), spans[5]);
-    assertEquals(new Span(9, 10, "PP"), spans[6]);
-    assertEquals(new Span(10, 13, "NP"), spans[7]);
-    assertEquals(new Span(13, 14, "VP"), spans[8]);
-    assertEquals(new Span(14, 15, "ADVP"), spans[9]);
+    Assert.assertEquals(10, spans.length);
+    Assert.assertEquals(new Span(0, 1, "NP"), spans[0]);
+    Assert.assertEquals(new Span(1, 2, "PP"), spans[1]);
+    Assert.assertEquals(new Span(2, 5, "NP"), spans[2]);
+    Assert.assertEquals(new Span(5, 6, "VP"), spans[3]);
+    Assert.assertEquals(new Span(6, 7, "ADVP"), spans[4]);
+    Assert.assertEquals(new Span(8, 9, "NP"), spans[5]);
+    Assert.assertEquals(new Span(9, 10, "PP"), spans[6]);
+    Assert.assertEquals(new Span(10, 13, "NP"), spans[7]);
+    Assert.assertEquals(new Span(13, 14, "VP"), spans[8]);
+    Assert.assertEquals(new Span(14, 15, "ADVP"), spans[9]);
   }
 
   @Test
@@ -190,34 +200,30 @@ public class ChunkSampleTest {
         "/opennlp/tools/chunker/output.txt");
 
     DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(in, UTF_8), false);
+        new PlainTextByLineStream(in, StandardCharsets.UTF_8), false);
 
     ChunkSample cs1 = predictedSample.read();
     String[] g1 = Span.spansToStrings(cs1.getPhrasesAsSpanList(), cs1.getSentence());
-    assertEquals(15, g1.length);
+    Assert.assertEquals(15, g1.length);
 
     ChunkSample cs2 = predictedSample.read();
     String[] g2 = Span.spansToStrings(cs2.getPhrasesAsSpanList(), cs2.getSentence());
-    assertEquals(10, g2.length);
+    Assert.assertEquals(10, g2.length);
 
     ChunkSample cs3 = predictedSample.read();
     String[] g3 = Span.spansToStrings(cs3.getPhrasesAsSpanList(), cs3.getSentence());
-    assertEquals(7, g3.length);
-    assertEquals("United", g3[0]);
-    assertEquals("'s directors", g3[1]);
-    assertEquals("voted", g3[2]);
-    assertEquals("themselves", g3[3]);
-    assertEquals("their spouses", g3[4]);
-    assertEquals("lifetime access", g3[5]);
-    assertEquals("to", g3[6]);
+    Assert.assertEquals(7, g3.length);
+    Assert.assertEquals("United", g3[0]);
+    Assert.assertEquals("'s directors", g3[1]);
+    Assert.assertEquals("voted", g3[2]);
+    Assert.assertEquals("themselves", g3[3]);
+    Assert.assertEquals("their spouses", g3[4]);
+    Assert.assertEquals("lifetime access", g3[5]);
+    Assert.assertEquals("to", g3[6]);
 
     predictedSample.close();
 
   }
-
-
-  // following are some tests to check the argument validation. Since all uses
-  // the same validateArguments method, we do a deeper test only once
 
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidPhraseAsSpan1() {
@@ -247,20 +253,10 @@ public class ChunkSampleTest {
 
   @Test
   public void testEquals() {
-    assertFalse(createGoldSample() == createGoldSample());
-    assertTrue(createGoldSample().equals(createGoldSample()));
-    assertFalse(createPredSample().equals(createGoldSample()));
-    assertFalse(createPredSample().equals(new Object()));
-  }
-
-  public static ChunkSample createGoldSample() {
-    return new ChunkSample(createSentence(), createTags(), createChunks());
-  }
-
-  public static ChunkSample createPredSample() {
-    String[] chunks = createChunks();
-    chunks[5] = "B-NP";
-    return new ChunkSample(createSentence(), createTags(), chunks);
+    Assert.assertFalse(createGoldSample() == createGoldSample());
+    Assert.assertTrue(createGoldSample().equals(createGoldSample()));
+    Assert.assertFalse(createPredSample().equals(createGoldSample()));
+    Assert.assertFalse(createPredSample().equals(new Object()));
   }
 
 }

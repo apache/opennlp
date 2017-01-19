@@ -17,14 +17,12 @@
 
 package opennlp.tools.formats.brat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class BratDocumentTest {
@@ -32,7 +30,7 @@ public class BratDocumentTest {
   @Test
   public void testDocumentWithEntitiesParsing() throws IOException {
 
-    Map<String, String> typeToClassMap = new HashMap<String, String>();
+    Map<String, String> typeToClassMap = new HashMap<>();
     BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 
@@ -44,10 +42,10 @@ public class BratDocumentTest {
 
     BratDocument doc = BratDocument.parseDocument(config, "voa-with-entities", txtIn, annIn);
 
-    assertEquals("voa-with-entities", doc.getId());
-    assertTrue(doc.getText().startsWith(" U . S .  President "));
-    assertTrue(doc.getText().endsWith("multinational process . \n"));
+    Assert.assertEquals("voa-with-entities", doc.getId());
+    Assert.assertTrue(doc.getText().startsWith(" U . S .  President "));
+    Assert.assertTrue(doc.getText().endsWith("multinational process . \n"));
 
-    assertEquals(18, doc.getAnnotations().size());
+    Assert.assertEquals(18, doc.getAnnotations().size());
   }
 }

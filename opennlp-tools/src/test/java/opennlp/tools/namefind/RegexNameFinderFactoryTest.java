@@ -31,8 +31,10 @@ public class RegexNameFinderFactoryTest {
 
   private static RegexNameFinder regexNameFinder;
 
-  private static String text = "my email is opennlp@gmail.com and my phone num is 123-234-5678 and i like" +
-      " https://www.google.com and I visited MGRS  11sku528111 AKA  11S KU 528 111 and DMS 45N 123W AKA" +
+  private static String text = "my email is opennlp@gmail.com and my phone num is" +
+      " 123-234-5678 and i like" +
+      " https://www.google.com and I visited MGRS  11sku528111 AKA  11S KU 528 111 and" +
+      " DMS 45N 123W AKA" +
       "  +45.1234, -123.12 AKA  45.1234N 123.12W AKA 45 30 N 50 30 W";
 
   @Before

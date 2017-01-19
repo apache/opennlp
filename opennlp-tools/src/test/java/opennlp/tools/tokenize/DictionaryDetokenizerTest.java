@@ -17,15 +17,14 @@
 
 package opennlp.tools.tokenize;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import opennlp.tools.tokenize.DetokenizationDictionary.Operation;
 import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
-
-import org.junit.Test;
 
 public class DictionaryDetokenizerTest {
 
@@ -48,12 +47,12 @@ public class DictionaryDetokenizerTest {
     DetokenizationOperation detokenizeOperations[] =
       detokenizer.detokenize(new String[]{"Simple",  "test", ".", "co", "-", "worker"});
 
-    assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[0]);
-    assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[1]);
-    assertEquals(DetokenizationOperation.MERGE_TO_LEFT, detokenizeOperations[2]);
-    assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[3]);
-    assertEquals(DetokenizationOperation.MERGE_BOTH, detokenizeOperations[4]);
-    assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[5]);
+    Assert.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[0]);
+    Assert.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[1]);
+    Assert.assertEquals(DetokenizationOperation.MERGE_TO_LEFT, detokenizeOperations[2]);
+    Assert.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[3]);
+    Assert.assertEquals(DetokenizationOperation.MERGE_BOTH, detokenizeOperations[4]);
+    Assert.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[5]);
   }
 
   static Detokenizer createLatinDetokenizer() throws IOException {
@@ -76,7 +75,7 @@ public class DictionaryDetokenizerTest {
 
     String sentence = detokenizer.detokenize(tokens, null);
 
-    assertEquals("A test, (string).", sentence);
+    Assert.assertEquals("A test, (string).", sentence);
   }
 
   @Test
@@ -88,6 +87,6 @@ public class DictionaryDetokenizerTest {
 
     String sentence = detokenizer.detokenize(tokens, null);
 
-    assertEquals("A co-worker helped.", sentence);
+    Assert.assertEquals("A co-worker helped.", sentence);
   }
 }

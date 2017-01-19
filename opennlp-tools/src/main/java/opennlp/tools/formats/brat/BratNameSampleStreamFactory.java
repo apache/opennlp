@@ -19,6 +19,7 @@ package opennlp.tools.formats.brat;
 
 import java.io.File;
 import java.io.IOException;
+
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;

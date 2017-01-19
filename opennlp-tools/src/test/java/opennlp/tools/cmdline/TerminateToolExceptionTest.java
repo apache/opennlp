@@ -17,8 +17,7 @@
 
 package opennlp.tools.cmdline;
 
-import static org.junit.Assert.assertEquals;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -29,6 +28,6 @@ public class TerminateToolExceptionTest {
   @Test
   public void testCreation() {
     TerminateToolException e = new TerminateToolException(-500);
-    assertEquals(-500, e.getCode());
+    Assert.assertEquals(-500, e.getCode());
   }
 }

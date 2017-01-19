@@ -17,15 +17,14 @@
 
 package opennlp.tools.ml;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.ml.TrainerFactory.TrainerType;
-
-import org.junit.Before;
-import org.junit.Test;
 
 public class TrainerFactoryTest {
 
@@ -41,25 +40,25 @@ public class TrainerFactoryTest {
 
   @Test
   public void testBuiltInValid() {
-    assertTrue(TrainerFactory.isValid(mlParams.getSettings()));
+    Assert.assertTrue(TrainerFactory.isValid(mlParams.getSettings()));
   }
 
   @Test
   public void testSequenceTrainerValid() {
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, MockSequenceTrainer.class.getCanonicalName());
-    assertTrue(TrainerFactory.isValid(mlParams.getSettings()));
+    Assert.assertTrue(TrainerFactory.isValid(mlParams.getSettings()));
   }
 
   @Test
   public void testEventTrainerValid() {
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, MockEventTrainer.class.getCanonicalName());
-    assertTrue(TrainerFactory.isValid(mlParams.getSettings()));
+    Assert.assertTrue(TrainerFactory.isValid(mlParams.getSettings()));
   }
 
   @Test
   public void testInvalidTrainer() {
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, "xyz");
-    assertFalse(TrainerFactory.isValid(mlParams.getSettings()));
+    Assert.assertFalse(TrainerFactory.isValid(mlParams.getSettings()));
   }
 
   @Test
@@ -69,7 +68,7 @@ public class TrainerFactoryTest {
 
     TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
 
-    assertTrue(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
+    Assert.assertTrue(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
   }
 
   @Test
@@ -79,7 +78,7 @@ public class TrainerFactoryTest {
 
     TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
 
-    assertFalse(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
+    Assert.assertFalse(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
   }
 
 }

@@ -19,6 +19,7 @@ package opennlp.tools.cmdline.postag;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import opennlp.tools.cmdline.ModelLoader;
 import opennlp.tools.postag.POSModel;
 

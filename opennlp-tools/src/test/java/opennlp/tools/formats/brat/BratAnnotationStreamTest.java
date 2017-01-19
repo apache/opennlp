@@ -21,21 +21,18 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.util.ObjectStream;
-
 import org.junit.Test;
+
+import opennlp.tools.util.ObjectStream;
 
 public class BratAnnotationStreamTest {
 
   private ObjectStream<BratAnnotation> creatBratAnnotationStream(
       AnnotationConfiguration conf, String file) {
 
-    InputStream in = BratAnnotationStreamTest.class.getResourceAsStream(
-        file);
-
+    InputStream in = BratAnnotationStreamTest.class.getResourceAsStream(file);
     return new BratAnnotationStream(conf, "testing", in);
   }
-
 
   static void addEntityTypes(Map<String, String> typeToClassMap) {
     typeToClassMap.put("Person", AnnotationConfiguration.ENTITY_TYPE);
@@ -46,8 +43,7 @@ public class BratAnnotationStreamTest {
 
   @Test
   public void testParsingEntities() throws Exception {
-
-    Map<String, String> typeToClassMap = new HashMap<String, String>();
+    Map<String, String> typeToClassMap = new HashMap<>();
     addEntityTypes(typeToClassMap);
 
     AnnotationConfiguration annConfig = new AnnotationConfiguration(typeToClassMap);
@@ -65,8 +61,7 @@ public class BratAnnotationStreamTest {
 
   @Test
   public void testParsingRelations() throws Exception {
-
-    Map<String, String> typeToClassMap = new HashMap<String, String>();
+    Map<String, String> typeToClassMap = new HashMap<>();
     addEntityTypes(typeToClassMap);
     typeToClassMap.put("Related", AnnotationConfiguration.RELATION_TYPE);
 

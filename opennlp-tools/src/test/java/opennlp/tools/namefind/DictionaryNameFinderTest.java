@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.namefind;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
-
-import org.junit.Before;
-import org.junit.Test;
 
 /**
   *Tests for the {@link DictionaryNameFinder} class.
@@ -40,14 +39,14 @@ public class DictionaryNameFinderTest {
     StringList vanessa = new StringList(new String[]{"Vanessa"});
     mDictionary.put(vanessa);
 
-    StringList vanessaWilliams = new StringList(new String[]{"Vanessa", "Williams"});
+    StringList vanessaWilliams = new StringList("Vanessa", "Williams");
     mDictionary.put(vanessaWilliams);
 
     StringList max = new StringList(new String[]{"Max"});
     mDictionary.put(max);
 
     StringList michaelJordan = new
-        StringList(new String[]{"Michael", "Jordan"});
+        StringList("Michael", "Jordan");
     mDictionary.put(michaelJordan);
   }
 
@@ -58,29 +57,22 @@ public class DictionaryNameFinderTest {
 
   @Test
   public void testSingleTokeNameAtSentenceStart() {
-
     String sentence = "Max a b c d";
-
     SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String tokens[] = tokenizer.tokenize(sentence);
-
     Span names[] = mNameFinder.find(tokens);
-
-    assertTrue(names.length == 1);
-    assertTrue(names[0].getStart() == 0 && names[0].getEnd() == 1);
+    Assert.assertTrue(names.length == 1);
+    Assert.assertTrue(names[0].getStart() == 0 && names[0].getEnd() == 1);
   }
 
   @Test
   public void testSingleTokeNameInsideSentence() {
     String sentence = "a b  Max c d";
-
     SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String tokens[] = tokenizer.tokenize(sentence);
-
     Span names[] = mNameFinder.find(tokens);
-
-    assertTrue(names.length == 1);
-    assertTrue(names[0].getStart() == 2 && names[0].getEnd() == 3);
+    Assert.assertTrue(names.length == 1);
+    Assert.assertTrue(names[0].getStart() == 2 && names[0].getEnd() == 3);
   }
 
   @Test
@@ -89,50 +81,40 @@ public class DictionaryNameFinderTest {
 
     SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String tokens[] = tokenizer.tokenize(sentence);
-
     Span names[] = mNameFinder.find(tokens);
-
-    assertTrue(names.length == 1);
-    assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
+    Assert.assertTrue(names.length == 1);
+    Assert.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
   }
 
   @Test
   public void testLastMatchingTokenNameIsChoosen() {
     String sentence[] = {"a", "b", "c", "Vanessa"};
-
     Span names[] = mNameFinder.find(sentence);
-
-    assertTrue(names.length == 1);
-    assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
+    Assert.assertTrue(names.length == 1);
+    Assert.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
   }
 
   @Test
   public void testLongerTokenNameIsPreferred() {
     String sentence[] = {"a", "b", "c", "Vanessa", "Williams"};
-
     Span names[] = mNameFinder.find(sentence);
-
-    assertTrue(names.length == 1);
-    assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
+    Assert.assertTrue(names.length == 1);
+    Assert.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
   }
 
   @Test
   public void testCaseSensitivity() {
     String sentence[] = {"a", "b", "c", "vanessa", "williams"};
-
     Span names[] = mNameFinder.find(sentence);
-
-    assertTrue(names.length == 1);
-    assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
+    Assert.assertTrue(names.length == 1);
+    Assert.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
   }
 
   @Test
   public void testCaseLongerEntry() {
     String sentence[] = {"a", "b", "michael", "jordan"};
-
     Span names[] = mNameFinder.find(sentence);
-
-    assertTrue(names.length == 1);
-    assertTrue(names[0].length() == 2);
+    Assert.assertTrue(names.length == 1);
+    Assert.assertTrue(names[0].length() == 2);
   }
 }

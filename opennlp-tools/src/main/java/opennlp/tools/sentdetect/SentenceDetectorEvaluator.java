@@ -46,7 +46,7 @@ public class SentenceDetectorEvaluator extends Evaluator<SentenceSample> {
    * @param listeners evaluation sample listeners
    */
   public SentenceDetectorEvaluator(SentenceDetector sentenceDetector,
-      SentenceDetectorEvaluationMonitor... listeners) {
+                                   SentenceDetectorEvaluationMonitor... listeners) {
     super(listeners);
     this.sentenceDetector = sentenceDetector;
   }

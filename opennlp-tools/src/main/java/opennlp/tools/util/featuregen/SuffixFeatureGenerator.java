@@ -25,7 +25,7 @@ public class SuffixFeatureGenerator implements AdaptiveFeatureGenerator {
 
   public static String[] getSuffixes(String lex) {
     String[] suffs = new String[SUFFIX_LENGTH];
-    for (int li = 0, ll = SUFFIX_LENGTH; li < ll; li++) {
+    for (int li = 0; li < SUFFIX_LENGTH; li++) {
       suffs[li] = lex.substring(Math.max(lex.length() - li - 1, 0));
     }
     return suffs;

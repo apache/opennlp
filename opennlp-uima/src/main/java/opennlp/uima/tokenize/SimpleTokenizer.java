@@ -17,21 +17,21 @@
 
 package opennlp.uima.tokenize;
 
-import opennlp.tools.util.Span;
-
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.text.AnnotationFS;
+
+import opennlp.tools.util.Span;
 
 /**
  * OpenNLP Simple Tokenizer annotator.
  * <p>
  * Mandatory parameters
  * <table border=1>
- *   <caption></caption>
- *   <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- *   <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- *   <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
+ * <caption></caption>
+ * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
+ * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
+ * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
  * </table>
  */
 public final class SimpleTokenizer extends AbstractTokenizer {
@@ -44,7 +44,7 @@ public final class SimpleTokenizer extends AbstractTokenizer {
 
   /**
    * Initializes the current instance.
-   *
+   * <p>
    * Note: Use {@link #initialize(UimaContext) } to initialize
    * this instance. Not use the constructor.
    */

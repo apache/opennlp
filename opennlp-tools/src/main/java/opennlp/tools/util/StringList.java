@@ -38,9 +38,7 @@ public class StringList implements Iterable<String> {
    * @param singleToken one single token
    */
   public StringList(String singleToken) {
-    tokens = new String[] {
-          singleToken.intern()
-        };
+    tokens = new String[]{singleToken.intern()};
   }
 
   /**

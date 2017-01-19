@@ -30,24 +30,24 @@ public class Sequence implements Comparable<Sequence> {
 
   /** Creates a new sequence of outcomes. */
   public Sequence() {
-    outcomes = new ArrayList<String>(1);
-    probs = new ArrayList<Double>(1);
+    outcomes = new ArrayList<>(1);
+    probs = new ArrayList<>(1);
     score = 0d;
   }
 
   public Sequence(Sequence s) {
-    outcomes = new ArrayList<String>(s.outcomes.size() + 1);
+    outcomes = new ArrayList<>(s.outcomes.size() + 1);
     outcomes.addAll(s.outcomes);
-    probs = new ArrayList<Double>(s.probs.size() + 1);
+    probs = new ArrayList<>(s.probs.size() + 1);
     probs.addAll(s.probs);
     score = s.score;
   }
 
   public Sequence(Sequence s,String outcome, double p) {
-    outcomes = new ArrayList<String>(s.outcomes.size() + 1);
+    outcomes = new ArrayList<>(s.outcomes.size() + 1);
     outcomes.addAll(s.outcomes);
     outcomes.add(outcome);
-    probs = new ArrayList<Double>(s.probs.size() + 1);
+    probs = new ArrayList<>(s.probs.size() + 1);
     probs.addAll(s.probs);
     probs.add(p);
     score = s.score + Math.log(p);

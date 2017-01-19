@@ -20,10 +20,7 @@ package opennlp.uima.util;
 import java.io.IOException;
 import java.io.InputStream;
 
-import opennlp.tools.dictionary.Dictionary;
-
 import org.apache.uima.UimaContext;
-import org.apache.uima.analysis_engine.annotator.AnnotatorConfigurationException;
 import org.apache.uima.cas.Feature;
 import org.apache.uima.cas.Type;
 import org.apache.uima.cas.TypeSystem;
@@ -32,28 +29,31 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
+import opennlp.tools.dictionary.Dictionary;
+
 /**
  * This is a util class for cas consumer.
+ *
  * @deprecated will be removed after 1.7.1 release, there is no replacement
  */
 @Deprecated
 
 public final class CasConsumerUtil {
 
-  private CasConsumerUtil(){
+  private CasConsumerUtil() {
     // this is a util class must not be instanciated
   }
 
   public static InputStream getOptionalResourceAsStream(UimaContext context,
-      String name) throws ResourceInitializationException {
+                                                        String name) throws ResourceInitializationException {
     try {
       return context.getResourceAsStream(name);
     } catch (ResourceAccessException e) {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] { "There is an internal error in the UIMA SDK: " +
+          new Object[] {"There is an internal error in the UIMA SDK: " +
               e.getMessage(),
-              e });
+              e});
     }
   }
 
@@ -63,18 +63,17 @@ public final class CasConsumerUtil {
    * @param context
    * @param name
    * @return the stream
-   *
    * @throws ResourceInitializationException
    */
   public static InputStream getResourceAsStream(UimaContext context,
-      String name) throws ResourceInitializationException {
+                                                String name) throws ResourceInitializationException {
 
     InputStream inResource = getOptionalResourceAsStream(context, name);
 
     if (inResource == null) {
       throw new ResourceInitializationException(
           ResourceAccessException.STANDARD_MESSAGE_CATALOG,
-          new Object[] { "Unable to load resource!" });
+          new Object[] {"Unable to load resource!"});
     }
 
     return inResource;
@@ -86,7 +85,6 @@ public final class CasConsumerUtil {
    * @param typeSystem
    * @param name
    * @return the type
-   *
    * @throws ResourceInitializationException
    */
   public static Type getType(TypeSystem typeSystem, String name)
@@ -96,7 +94,7 @@ public final class CasConsumerUtil {
     if (type == null) {
       throw new ResourceInitializationException(
           ResourceInitializationException.INCOMPATIBLE_RANGE_TYPES,
-          new Object[] { "Unable to retrieve " + name + " type!" });
+          new Object[] {"Unable to retrieve " + name + " type!"});
     }
 
     return type;
@@ -108,7 +106,6 @@ public final class CasConsumerUtil {
    * @param typeSystem
    * @param name
    * @return the type
-   *
    * @throws ResourceInitializationException
    */
   public static Type getOptionalType(TypeSystem typeSystem, String name)
@@ -122,11 +119,10 @@ public final class CasConsumerUtil {
    * @param context
    * @param parameter
    * @return the parameter
-   *
    * @throws ResourceInitializationException
    */
   public static String getRequiredStringParameter(UimaContext context,
-      String parameter) throws ResourceInitializationException {
+                                                  String parameter) throws ResourceInitializationException {
 
     String value = getOptionalStringParameter(context, parameter);
 
@@ -141,11 +137,10 @@ public final class CasConsumerUtil {
    * @param context
    * @param parameter
    * @return the parameter
-   *
    * @throws ResourceInitializationException
    */
   public static Integer getRequiredIntegerParameter(UimaContext context,
-      String parameter) throws ResourceInitializationException {
+                                                    String parameter) throws ResourceInitializationException {
 
     Integer value = getOptionalIntegerParameter(context, parameter);
 
@@ -160,11 +155,10 @@ public final class CasConsumerUtil {
    * @param context
    * @param parameter
    * @return the parameter
-   *
    * @throws ResourceInitializationException
    */
   public static Float getRequiredFloatParameter(UimaContext context,
-      String parameter) throws ResourceInitializationException {
+                                                String parameter) throws ResourceInitializationException {
 
     Float value = getOptionalFloatParameter(context, parameter);
 
@@ -179,11 +173,10 @@ public final class CasConsumerUtil {
    * @param context
    * @param parameter
    * @return the boolean parameter
-   *
    * @throws ResourceInitializationException
    */
   public static Boolean getRequiredBooleanParameter(UimaContext context,
-      String parameter) throws ResourceInitializationException {
+                                                    String parameter) throws ResourceInitializationException {
 
     Boolean value = getOptionalBooleanParameter(context, parameter);
 
@@ -198,7 +191,7 @@ public final class CasConsumerUtil {
     if (value == null) {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] { "The " + parameterName + " is a required parameter!" });
+          new Object[] {"The " + parameterName + " is a required parameter!"});
     }
   }
 
@@ -211,25 +204,24 @@ public final class CasConsumerUtil {
    * @throws ResourceInitializationException
    */
   public static String getOptionalStringParameter(UimaContext context,
-      String parameter) throws ResourceInitializationException {
+                                                  String parameter) throws ResourceInitializationException {
 
     Object value = getOptionalParameter(context, parameter);
 
     if (value == null) {
       return null;
-    }
-    else if (value instanceof String) {
+    } else if (value instanceof String) {
       return (String) value;
-    }
-    else {
+    } else {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] {"The parameter: "  + parameter + " does not have the expected type String"});
+          new Object[] {"The parameter: " + parameter + " does not have the expected type String"});
     }
   }
 
   public static String[] getOptionalStringArrayParameter(UimaContext context,
-      String parameter) throws ResourceInitializationException {
+                                                         String parameter)
+      throws ResourceInitializationException {
 
     Object value = getOptionalParameter(context, parameter);
 
@@ -240,8 +232,8 @@ public final class CasConsumerUtil {
     } else {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] { "The parameter: " + parameter
-              + " does not have the expected type String array" });
+          new Object[] {"The parameter: " + parameter
+              + " does not have the expected type String array"});
     }
   }
 
@@ -254,20 +246,18 @@ public final class CasConsumerUtil {
    * @throws ResourceInitializationException
    */
   public static Integer getOptionalIntegerParameter(UimaContext context,
-      String parameter) throws ResourceInitializationException {
+                                                    String parameter) throws ResourceInitializationException {
 
     Object value = getOptionalParameter(context, parameter);
 
     if (value == null) {
       return null;
-    }
-    else if (value instanceof Integer) {
+    } else if (value instanceof Integer) {
       return (Integer) value;
-    }
-    else {
+    } else {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] {"The parameter: "  + parameter + " does not have the expected type Integer"});
+          new Object[] {"The parameter: " + parameter + " does not have the expected type Integer"});
     }
   }
 
@@ -277,17 +267,17 @@ public final class CasConsumerUtil {
    * @param context
    * @param parameter
    * @param defaultValue value to use if the optional parameter is not set
-   *
    * @return the boolean parameter or null if not set
    * @throws ResourceInitializationException
    */
   public static Integer getOptionalIntegerParameter(UimaContext context, String parameter,
-      int defaultValue) throws ResourceInitializationException {
+                                                    int defaultValue) throws ResourceInitializationException {
 
     Integer value = getOptionalIntegerParameter(context, parameter);
 
-    if (value == null)
+    if (value == null) {
       value = defaultValue;
+    }
 
     return value;
   }
@@ -301,20 +291,18 @@ public final class CasConsumerUtil {
    * @throws ResourceInitializationException
    */
   public static Float getOptionalFloatParameter(UimaContext context,
-      String parameter) throws ResourceInitializationException {
+                                                String parameter) throws ResourceInitializationException {
 
     Object value = getOptionalParameter(context, parameter);
 
     if (value == null) {
       return null;
-    }
-    else if (value instanceof Float) {
+    } else if (value instanceof Float) {
       return (Float) value;
-    }
-    else {
+    } else {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] {"The parameter: "  + parameter + " does not have the expected type Float"});
+          new Object[] {"The parameter: " + parameter + " does not have the expected type Float"});
     }
   }
 
@@ -327,27 +315,25 @@ public final class CasConsumerUtil {
    * @throws ResourceInitializationException
    */
   public static Boolean getOptionalBooleanParameter(UimaContext context,
-      String parameter) throws ResourceInitializationException {
+                                                    String parameter) throws ResourceInitializationException {
 
     Object value = getOptionalParameter(context, parameter);
 
     if (value == null) {
       return null;
-    }
-    else if (value instanceof Boolean) {
+    } else if (value instanceof Boolean) {
       return (Boolean) value;
-    }
-    else {
+    } else {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] {"The parameter: "  + parameter + " does not have the expected type Boolean"});
+          new Object[] {"The parameter: " + parameter + " does not have the expected type Boolean"});
     }
   }
 
   private static Object getOptionalParameter(UimaContext context,
-      String parameter) {
+                                             String parameter) {
 
-    Object value =  context.getConfigParameterValue(parameter);
+    Object value = context.getConfigParameterValue(parameter);
 
     Logger logger = context.getLogger();
 
@@ -365,7 +351,6 @@ public final class CasConsumerUtil {
    *
    * @param feature
    * @param expectedType
-   *
    * @throws ResourceInitializationException - if type does not match
    */
   public static void checkFeatureType(Feature feature, String expectedType)
@@ -373,7 +358,7 @@ public final class CasConsumerUtil {
     if (!feature.getRange().getName().equals(expectedType)) {
       throw new ResourceInitializationException(
           ResourceInitializationException.STANDARD_MESSAGE_CATALOG,
-          new Object[] { "The Feature " + feature.getName() +
+          new Object[] {"The Feature " + feature.getName() +
               " must be of type " + expectedType + " !"
           });
     }
@@ -419,7 +404,8 @@ public final class CasConsumerUtil {
       }
 
       return dictionary;
-    } else
+    } else {
       return null;
+    }
   }
 }

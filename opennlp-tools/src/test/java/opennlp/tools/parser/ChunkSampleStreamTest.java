@@ -17,16 +17,16 @@
 
 package opennlp.tools.parser;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.io.IOException;
+
+import org.junit.Test;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class ChunkSampleStreamTest {
 

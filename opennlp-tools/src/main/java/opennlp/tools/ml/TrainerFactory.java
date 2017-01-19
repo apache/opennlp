@@ -18,6 +18,7 @@
 package opennlp.tools.ml;
 
 import java.lang.reflect.Constructor;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -123,7 +124,8 @@ public class TrainerFactory {
         trainer.init(trainParams, reportMap);
         return trainer;
       } else {
-        SequenceTrainer trainer = ExtensionLoader.instantiateExtension(SequenceTrainer.class, trainerType);
+        SequenceTrainer trainer =
+            ExtensionLoader.instantiateExtension(SequenceTrainer.class, trainerType);
         trainer.init(trainParams, reportMap);
         return trainer;
       }
@@ -210,7 +212,6 @@ public class TrainerFactory {
     }
 
     // TODO: Check data indexing ...
-
     return true;
   }
 

@@ -25,9 +25,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Random;
 
+import org.junit.Ignore;
+
 import opennlp.tools.ngram.NGramUtils;
 import opennlp.tools.util.StringList;
-import org.junit.Ignore;
 
 /**
  * Utility class for language models tests

@@ -17,14 +17,15 @@
 
 package opennlp.tools.sentdetect;
 
-import opennlp.tools.cmdline.sentdetect.SentenceEvaluationErrorListener;
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.Span;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import opennlp.tools.cmdline.sentdetect.SentenceEvaluationErrorListener;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.Span;
 
 public class SentenceDetectorEvaluatorTest {
 
@@ -59,7 +60,9 @@ public class SentenceDetectorEvaluatorTest {
   }
 
 
-  /** a dummy sentence detector that always return something expected */
+  /**
+   * a dummy sentence detector that always return something expected
+   */
   class DummySD implements SentenceDetector {
 
     private SentenceSample sample;

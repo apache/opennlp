@@ -17,12 +17,13 @@
 
 package opennlp.tools.formats.muc;
 
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamUtils;
+import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamUtils;
 
 public class DocumentSplitterStreamTest {
 
@@ -33,7 +34,7 @@ public class DocumentSplitterStreamTest {
 
     for (int i = 0; i < 2; i++) {
       docsString.append("<DOC>\n");
-      docsString.append("test document #" + i + "\n");
+      docsString.append("test document #").append(i).append("\n");
       docsString.append("</DOC>\n");
     }
 

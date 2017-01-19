@@ -28,15 +28,13 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import morfologik.stemming.DictionaryMetadata;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSDictionary;
 
 public class XMLDictionaryToTableTool extends BasicCmdLineTool {
-
-  interface Params extends XMLDictionaryToTableParams {
-  }
 
   private String SEPARATOR;
 
@@ -119,5 +117,8 @@ public class XMLDictionaryToTableTool extends BasicCmdLineTool {
 
     return "" + SEPARATOR + // base
         word + SEPARATOR + tag;
+  }
+
+  interface Params extends XMLDictionaryToTableParams {
   }
 }

@@ -17,17 +17,18 @@
 
 package opennlp.tools.chunker;
 
-import opennlp.tools.cmdline.chunker.ChunkEvaluationErrorListener;
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.eval.FMeasure;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import opennlp.tools.cmdline.chunker.ChunkEvaluationErrorListener;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.eval.FMeasure;
 
 /**
  * Tests for {@link ChunkerEvaluator}.
@@ -43,6 +44,7 @@ public class ChunkerEvaluatorTest {
    * available at http://www.cnts.ua.ac.be/conll2000/chunking/output.html
    * The output.txt file has only 3 sentences, but can be replaced by the one
    * available at the conll2000 site to validate using a bigger sample.
+   *
    * @throws IOException
    */
   @Test

@@ -37,10 +37,9 @@ public class DictionaryDetokenizer implements Detokenizer {
 
   public DetokenizationOperation[] detokenize(String[] tokens) {
 
-    DetokenizationOperation operations[] =
-        new DetokenizationOperation[tokens.length];
+    DetokenizationOperation operations[] = new DetokenizationOperation[tokens.length];
 
-    Set<String> matchingTokens = new HashSet<String>();
+    Set<String> matchingTokens = new HashSet<>();
 
     for (int i = 0; i < tokens.length; i++) {
       DetokenizationDictionary.Operation dictOperation = dict.getOperation(tokens[i]);

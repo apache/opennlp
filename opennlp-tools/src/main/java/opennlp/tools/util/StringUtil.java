@@ -73,7 +73,6 @@ public class StringUtil {
    * @return lower cased String
    */
   public static String toLowerCase(CharSequence string) {
-
     char lowerCaseChars[] = new char[string.length()];
 
     for (int i = 0; i < string.length(); i++) {
@@ -144,7 +143,6 @@ public class StringUtil {
    * @return the distance
    */
   public static int[][] levenshteinDistance(String wordForm, String lemma) {
-
     int wordLength = wordForm.length();
     int lemmaLength = lemma.length();
     int cost;
@@ -238,7 +236,6 @@ public class StringUtil {
       if (lemmaLength > 0 && (distance[wordFormLength][lemmaLength - 1]
           == distance[wordFormLength][lemmaLength])) {
         lemmaLength--;
-        continue;
       }
     }
   }

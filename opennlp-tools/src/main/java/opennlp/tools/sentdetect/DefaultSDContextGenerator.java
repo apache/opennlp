@@ -51,7 +51,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    * @param eosCharacters
    */
   public DefaultSDContextGenerator(char[] eosCharacters) {
-    this(Collections.<String>emptySet(), eosCharacters);
+    this(Collections.emptySet(), eosCharacters);
   }
 
   /**
@@ -68,7 +68,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     this.inducedAbbreviations = inducedAbbreviations;
     this.eosCharacters = eosCharacters;
     buf = new StringBuffer();
-    collectFeats = new ArrayList<String>();
+    collectFeats = new ArrayList<>();
   }
 
   private static String escapeChar(Character c) {
@@ -88,22 +88,22 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    */
   public String[] getContext(CharSequence sb, int position) {
 
-    /**
+    /*
      * String preceding the eos character in the eos token.
      */
     String prefix;
 
-    /**
+    /*
      * Space delimited token preceding token containing eos character.
      */
     String previous;
 
-    /**
+    /*
      * String following the eos character in the eos token.
      */
     String suffix;
 
-    /**
+    /*
      * Space delimited token following token containing eos character.
      */
     String next;
@@ -244,7 +244,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     }
   }
 
-  private static final boolean isFirstUpper(String s) {
+  private static boolean isFirstUpper(String s) {
     return Character.isUpperCase(s.charAt(0));
   }
 
@@ -255,7 +255,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    * @param seek The index to begin searching from.
    * @return The index which contains the nearest space.
    */
-  private static final int previousSpaceIndex(CharSequence sb, int seek) {
+  private static int previousSpaceIndex(CharSequence sb, int seek) {
     seek--;
     while (seek > 0 && !StringUtil.isWhitespace(sb.charAt(seek))) {
       seek--;
@@ -276,7 +276,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    * @param lastIndex The highest index of the StringBuffer sb.
    * @return The index which contains the nearest space.
    */
-  private static final int nextSpaceIndex(CharSequence sb, int seek, int lastIndex) {
+  private static int nextSpaceIndex(CharSequence sb, int seek, int lastIndex) {
     seek++;
     char c;
     while (seek < lastIndex) {

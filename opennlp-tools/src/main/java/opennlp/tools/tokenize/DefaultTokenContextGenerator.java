@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.tokenize;
 
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
    * Creates a default context generator for tokenizer.
    */
   public DefaultTokenContextGenerator() {
-    this(Collections.<String>emptySet());
+    this(Collections.emptySet());
   }
 
   /**
@@ -71,7 +70,7 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
    *         at the specified index.
    */
   protected List<String> createContext(String sentence, int index) {
-    List<String> preds = new ArrayList<String>();
+    List<String> preds = new ArrayList<>();
     String prefix = sentence.substring(0, index);
     String suffix = sentence.substring(index);
     preds.add("p=" + prefix);

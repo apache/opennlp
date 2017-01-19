@@ -17,8 +17,6 @@
 
 package opennlp.uima.doccat;
 
-import opennlp.uima.util.AnnotatorUtil;
-
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.FSIndex;
@@ -27,9 +25,11 @@ import org.apache.uima.cas.Type;
 import org.apache.uima.cas.TypeSystem;
 import org.apache.uima.cas.text.AnnotationFS;
 
+import opennlp.uima.util.AnnotatorUtil;
+
 /**
  * OpenNLP Document Categorizer.
- *
+ * <p>
  * Mandatory parameters:
  */
 public class DocumentCategorizer extends AbstractDocumentCategorizer {
@@ -37,7 +37,6 @@ public class DocumentCategorizer extends AbstractDocumentCategorizer {
   private Type mCategoryType;
 
   private Feature mCategoryFeature;
-
 
 
   public void typeSystemInit(TypeSystem typeSystem)
@@ -60,8 +59,7 @@ public class DocumentCategorizer extends AbstractDocumentCategorizer {
 
     if (categoryIndex.size() > 0) {
       categoryAnnotation = categoryIndex.iterator().next();
-    }
-    else {
+    } else {
       categoryAnnotation = tcas.createAnnotation(mCategoryType, 0,
           tcas.getDocumentText().length());
 

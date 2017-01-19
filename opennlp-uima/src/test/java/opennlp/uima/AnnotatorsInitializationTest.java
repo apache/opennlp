@@ -18,6 +18,7 @@ package opennlp.uima;
 
 import java.io.File;
 import java.io.IOException;
+
 import org.apache.uima.UIMAFramework;
 import org.apache.uima.analysis_engine.AnalysisEngine;
 import org.apache.uima.cas.CAS;
@@ -27,7 +28,7 @@ import org.apache.uima.resource.ResourceSpecifier;
 import org.apache.uima.util.InvalidXMLException;
 import org.apache.uima.util.XMLInputSource;
 
-import static org.junit.Assert.fail;
+import org.junit.Assert;
 
 /**
  * Test for initialization of the opennlp.uima Annotators
@@ -50,7 +51,7 @@ public class AnnotatorsInitializationTest {
           ae.process(cas);
           ae.reconfigure();
         } catch (Exception e) {
-          fail(e.getLocalizedMessage() + " for desc " + descName);
+          Assert.fail(e.getLocalizedMessage() + " for desc " + descName);
         }
       }
     }
