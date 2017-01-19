@@ -21,6 +21,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 import opennlp.tools.util.InvalidFormatException;
 
@@ -36,11 +37,7 @@ public abstract class ModelLoader<T> {
   private final String modelName;
 
   protected ModelLoader(String modelName) {
-
-    if (modelName == null)
-      throw new IllegalArgumentException("modelName must not be null!");
-
-    this.modelName = modelName;
+    this.modelName = Objects.requireNonNull(modelName, "modelName must not be null!");
   }
 
   protected abstract T loadModel(InputStream modelIn) throws IOException;

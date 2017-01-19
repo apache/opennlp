@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.parser;
 
 import java.io.BufferedReader;
@@ -27,6 +26,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.Map;
+import java.util.Objects;
 
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.ml.BeamSearch;
@@ -141,9 +141,7 @@ public class ParserModel extends BaseModel {
           throw new IllegalArgumentException("attachModel must be null for chunking parser!");
     }
     else if (ParserType.TREEINSERT.equals(modelType)) {
-      if (attachModel == null)
-        throw new IllegalArgumentException("attachModel must not be null!");
-
+      Objects.requireNonNull(attachModel, "attachModel must not be null");
       artifactMap.put(ATTACH_MODEL_ENTRY_NAME, attachModel);
     }
     else {

@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.util.model;
 
 import java.io.BufferedInputStream;
@@ -31,6 +30,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -81,11 +81,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   private BaseModel(String componentName, boolean isLoadedFromSerialized) {
     this.isLoadedFromSerialized = isLoadedFromSerialized;
 
-    if (componentName == null) {
-      throw new IllegalArgumentException("componentName must not be null!");
-    }
-
-    this.componentName = componentName;
+    this.componentName = Objects.requireNonNull(componentName, "componentName must not be null!");
   }
 
   /**
@@ -109,9 +105,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
     this(componentName, false);
 
-    if (languageCode == null) {
-      throw new IllegalArgumentException("languageCode must not be null!");
-    }
+    Objects.requireNonNull(languageCode, "languageCode must not be null");
 
     createBaseArtifactSerializers(artifactSerializers);
 
@@ -197,9 +191,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
   private void loadModel(InputStream in) throws IOException {
 
-    if (in == null) {
-      throw new IllegalArgumentException("in must not be null!");
-    }
+    Objects.requireNonNull(in, "in must not be null");
 
     createBaseArtifactSerializers(artifactSerializers);
 

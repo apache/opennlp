@@ -20,6 +20,7 @@ package opennlp.tools.formats.convert;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.tokenize.Detokenizer;
@@ -37,18 +38,18 @@ public abstract class AbstractToSentenceSampleStream<T> extends
       ObjectStream<T> samples, int chunkSize) {
     super(samples);
 
-    if (detokenizer == null)
-      throw new IllegalArgumentException("detokenizer must not be null!");
+    this.detokenizer = Objects.requireNonNull(detokenizer, "detokenizer must not be null");
 
-    this.detokenizer = detokenizer;
-
-    if (chunkSize < 0)
+    if (chunkSize < 0) {
       throw new IllegalArgumentException("chunkSize must be zero or larger but was " + chunkSize + "!");
+    }
 
-    if (chunkSize > 0)
+    if (chunkSize > 0) {
       this.chunkSize = chunkSize;
-    else
+    }
+    else {
       this.chunkSize = Integer.MAX_VALUE;
+    }
   }
 
   protected abstract String[] toSentence(T sample);
@@ -63,13 +64,14 @@ public abstract class AbstractToSentenceSampleStream<T> extends
       chunks++;
     }
 
-    if (sentences.size() > 0)
+    if (sentences.size() > 0) {
       return new SentenceSample(detokenizer,
           sentences.toArray(new String[sentences.size()][]));
-    else if (posSample != null)
-      return read(); // filter out empty line
-    else {
-      return null; // last sample was read
     }
+    else if (posSample != null) {
+      return read(); // filter out empty line
+    }
+
+    return null; // last sample was read
   }
 }

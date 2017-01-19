@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.util;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * The {@link StringList} is an immutable list of {@link String}s.
@@ -52,9 +52,8 @@ public class StringList implements Iterable<String> {
    */
   public StringList(String... tokens) {
 
-    if (tokens == null) {
-      throw new IllegalArgumentException("tokens must not be null");
-    }
+    Objects.requireNonNull(tokens, "tokens must not be null");
+
     if (tokens.length == 0) {
       throw new IllegalArgumentException("tokens must not be empty");
     }

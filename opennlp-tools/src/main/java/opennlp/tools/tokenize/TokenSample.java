@@ -46,14 +46,9 @@ public class TokenSample {
    * @param tokenSpans the spans which mark the begin and end of the tokens.
    */
   public TokenSample(String text, Span tokenSpans[]) {
+    Objects.requireNonNull(tokenSpans, "tokenSpans must not be null");
 
-    if (text == null)
-      throw new IllegalArgumentException("text must not be null!");
-
-    if (tokenSpans == null)
-      throw new IllegalArgumentException("tokenSpans must not be null! ");
-
-    this.text = text;
+    this.text = Objects.requireNonNull(text, "text must not be null");
     this.tokenSpans = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(tokenSpans)));
 
     for (Span tokenSpan : tokenSpans) {
@@ -161,13 +156,8 @@ public class TokenSample {
   }
 
   public static TokenSample parse(String sampleString, String separatorChars) {
-
-    if (sampleString == null) {
-      throw new IllegalArgumentException("sampleString must not be null!");
-    }
-    if (separatorChars == null) {
-      throw new IllegalArgumentException("separatorChars must not be null!");
-    }
+    Objects.requireNonNull(sampleString, "sampleString must not be null");
+    Objects.requireNonNull(separatorChars, "separatorChars must not be null");
 
     Span whitespaceTokenSpans[] = WhitespaceTokenizer.INSTANCE.tokenizePos(sampleString);
 

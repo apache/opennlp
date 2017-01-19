@@ -18,6 +18,7 @@
 package opennlp.tools.formats.convert;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.tokenize.Detokenizer;
@@ -33,13 +34,9 @@ public class POSToTokenSampleStream extends FilterObjectStream<POSSample, TokenS
   private final Detokenizer detokenizer;
 
   public POSToTokenSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples) {
-
     super(samples);
 
-    if (detokenizer == null)
-      throw new IllegalArgumentException("detokenizer must not be null!");
-
-    this.detokenizer = detokenizer;
+    this.detokenizer = Objects.requireNonNull(detokenizer, "detokenizer must not be null!");
   }
 
   public TokenSample read() throws IOException {

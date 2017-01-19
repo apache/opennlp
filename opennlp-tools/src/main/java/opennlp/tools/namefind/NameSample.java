@@ -45,12 +45,9 @@ public class NameSample {
 
   public NameSample(String id, String[] sentence, Span[] names,
       String[][] additionalContext, boolean clearAdaptiveData) {
-
     this.id = id;
 
-    if (sentence == null) {
-      throw new IllegalArgumentException("sentence must not be null!");
-    }
+    Objects.requireNonNull(sentence, "sentence must not be null");
 
     if (names == null) {
       names = new Span[0];

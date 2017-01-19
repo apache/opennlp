@@ -18,6 +18,7 @@ package opennlp.tools.namefind;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -39,9 +40,8 @@ public class RegexNameFinderFactory {
    */
   public static synchronized RegexNameFinder getDefaultRegexNameFinders(
       Map<String, Pattern[]> config, DEFAULT_REGEX_NAME_FINDER... defaults) {
-    if (config == null) {
-      throw new IllegalArgumentException("config Map cannot be null");
-    }
+    Objects.requireNonNull(config, "config must not be null");
+
     Map<String, Pattern[]> defaultsToMap = new HashMap<>();
     if (defaults != null) {
       defaultsToMap = defaultsToMap(defaults);
@@ -58,9 +58,7 @@ public class RegexNameFinderFactory {
    */
   public static synchronized RegexNameFinder getDefaultRegexNameFinders(
       DEFAULT_REGEX_NAME_FINDER... defaults) {
-    if (defaults == null) {
-      throw new IllegalArgumentException("defaults cannot be null");
-    }
+    Objects.requireNonNull(defaults, "defaults must not be null");
     return new RegexNameFinder(defaultsToMap(defaults));
   }
 

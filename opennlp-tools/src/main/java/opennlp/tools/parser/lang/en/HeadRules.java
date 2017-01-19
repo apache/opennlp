@@ -67,8 +67,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
       leftToRight = l2r;
 
       for (String tag : tags) {
-        if (tag == null)
-            throw new IllegalArgumentException("tags must not contain null values!");
+        Objects.requireNonNull(tag, "tags must not contain null values");
       }
 
       this.tags = tags;

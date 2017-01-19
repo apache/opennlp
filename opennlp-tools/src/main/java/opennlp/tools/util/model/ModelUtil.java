@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.util.model;
 
 import java.io.ByteArrayOutputStream;
@@ -26,6 +25,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import opennlp.tools.ml.maxent.GIS;
@@ -57,13 +57,8 @@ public final class ModelUtil {
   public static void writeModel(MaxentModel model, final OutputStream out)
           throws IOException, IllegalArgumentException {
 
-    if (model == null) {
-      throw new IllegalArgumentException("model parameter must not be null!");
-    }
-
-    if (out == null) {
-      throw new IllegalArgumentException("out parameter must not be null!");
-    }
+    Objects.requireNonNull(model, "model parameter must not be null");
+    Objects.requireNonNull(out, "out parameter must not be null");
 
     GenericModelWriter modelWriter = new GenericModelWriter((AbstractModel) model,
         new DataOutputStream(new OutputStream() {

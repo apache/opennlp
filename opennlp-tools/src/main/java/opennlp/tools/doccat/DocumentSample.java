@@ -44,14 +44,9 @@ public class DocumentSample {
   }
 
   public DocumentSample(String category, String text[], Map<String, Object> extraInformation) {
-    if (category == null) {
-      throw new IllegalArgumentException("category must not be null");
-    }
-    if (text == null) {
-      throw new IllegalArgumentException("text must not be null");
-    }
+    Objects.requireNonNull(text, "text must not be null");
 
-    this.category = category;
+    this.category = Objects.requireNonNull(category, "category must not be null");
     this.text = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(text)));
 
     if (extraInformation == null) {

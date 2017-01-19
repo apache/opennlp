@@ -17,6 +17,7 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 import opennlp.tools.util.InputStreamFactory;
 
@@ -25,19 +26,9 @@ public class ResourceAsStreamFactory implements InputStreamFactory {
   private Class<?> clazz;
   private String name;
 
-  /**
-   *
-   * @param clazz
-   * @param name
-   */
   public ResourceAsStreamFactory(Class<?> clazz, String name) {
-
-    if (clazz == null || name == null) {
-      throw new IllegalArgumentException("Null parameters are not allowed!");
-    }
-
-    this.clazz = clazz;
-    this.name = name;
+    this.clazz = Objects.requireNonNull(clazz, "callz must not be null");
+    this.name = Objects.requireNonNull(name, "name must not be null");
   }
 
   @Override

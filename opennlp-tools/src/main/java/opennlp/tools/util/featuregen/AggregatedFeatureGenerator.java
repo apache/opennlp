@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.util.featuregen;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The {@link AggregatedFeatureGenerator} aggregates a set of
@@ -42,8 +42,7 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
   public AggregatedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
 
     for (AdaptiveFeatureGenerator generator : generators) {
-      if (generator == null)
-        throw new IllegalArgumentException("null values in generators are not permitted!");
+      Objects.requireNonNull(generator, "null values in generators are not permitted");
     }
 
     this.generators = new ArrayList<>(generators.length);

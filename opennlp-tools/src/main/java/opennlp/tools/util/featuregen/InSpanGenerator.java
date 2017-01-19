@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.util.featuregen;
 
 import java.util.List;
+import java.util.Objects;
 
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.util.Span;
@@ -45,16 +45,8 @@ public class InSpanGenerator implements AdaptiveFeatureGenerator {
    * @param finder the {@link TokenNameFinder} used to detect the names.
    */
   public InSpanGenerator(String prefix, TokenNameFinder finder) {
-
-    if (prefix == null)
-      throw new IllegalArgumentException("prefix must not be null!");
-
-    this.prefix = prefix;
-
-    if (finder == null)
-      throw new IllegalArgumentException("finder must not be null!");
-
-    this.finder = finder;
+    this.prefix = Objects.requireNonNull(prefix, "prefix must not be null");
+    this.finder = Objects.requireNonNull(finder, "finder must not be null");
   }
 
   public void createFeatures(List<String> features, String[] tokens, int index,

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.namefind;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.Span;
@@ -44,13 +44,8 @@ public class DictionaryNameFinder implements TokenNameFinder {
    * @param type the name type used for the produced spans
    */
   public DictionaryNameFinder(Dictionary dictionary, String type) {
-    mDictionary = dictionary;
-
-    if (type == null) {
-      throw new IllegalArgumentException("type cannot be null!");
-    }
-
-    this.type = type;
+    mDictionary = Objects.requireNonNull(dictionary, "dictionary must not be null");
+    this.type = Objects.requireNonNull(type, "type must not be null");
   }
 
   /**

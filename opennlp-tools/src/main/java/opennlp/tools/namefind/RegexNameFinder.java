@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,11 +37,7 @@ public final class RegexNameFinder implements TokenNameFinder {
   private Map<String, Pattern[]> regexMap;
 
   public RegexNameFinder(Map<String, Pattern[]> regexMap) {
-    if (regexMap == null) {
-      throw new IllegalArgumentException("regexNameFinders must not be null");
-    }
-    this.regexMap = regexMap;
-
+    this.regexMap = Objects.requireNonNull(regexMap, "regexMap must not be null");
   }
 
   public RegexNameFinder(Pattern patterns[], String type) {

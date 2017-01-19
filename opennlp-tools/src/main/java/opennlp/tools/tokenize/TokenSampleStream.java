@@ -18,6 +18,7 @@
 package opennlp.tools.tokenize;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
@@ -39,19 +40,9 @@ public class TokenSampleStream extends FilterObjectStream<String, TokenSample> {
 
   private final String separatorChars;
 
-
   public TokenSampleStream(ObjectStream<String> sampleStrings, String separatorChars) {
-
-    super(sampleStrings);
-
-    if (sampleStrings == null) {
-      throw new IllegalArgumentException("sampleStrings must not be null!");
-    }
-    if (separatorChars == null) {
-      throw new IllegalArgumentException("separatorChars must not be null!");
-    }
-
-    this.separatorChars = separatorChars;
+    super(Objects.requireNonNull(sampleStrings, "sampleStrings must not be null"));
+    this.separatorChars = Objects.requireNonNull(separatorChars,"separatorChars must not be null");
   }
 
   public TokenSampleStream(ObjectStream<String> sentences) {
