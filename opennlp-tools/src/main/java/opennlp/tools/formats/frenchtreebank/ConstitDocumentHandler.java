@@ -21,14 +21,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.Constituent;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.Span;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 class ConstitDocumentHandler extends DefaultHandler {
 

@@ -19,6 +19,7 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.formats.EvalitaNameSampleStream.LANGUAGE;
@@ -26,10 +27,6 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 /**
  * Note:
@@ -51,30 +48,27 @@ public class EvalitaNameSampleStreamTest {
 
     NameSample personName = sampleStream.read();
 
-    assertNotNull(personName);
+    Assert.assertNotNull(personName);
 
-    assertEquals(11, personName.getSentence().length);
-    assertEquals(1, personName.getNames().length);
-    assertEquals(true, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(11, personName.getSentence().length);
+    Assert.assertEquals(1, personName.getNames().length);
+    Assert.assertEquals(true, personName.isClearAdaptiveDataSet());
 
     Span nameSpan = personName.getNames()[0];
-    assertEquals(8, nameSpan.getStart());
-    assertEquals(10, nameSpan.getEnd());
-    assertEquals(true, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(8, nameSpan.getStart());
+    Assert.assertEquals(10, nameSpan.getEnd());
+    Assert.assertEquals(true, personName.isClearAdaptiveDataSet());
 
-    assertEquals(0, sampleStream.read().getNames().length);
+    Assert.assertEquals(0, sampleStream.read().getNames().length);
 
-    assertNull(sampleStream.read());
+    Assert.assertNull(sampleStream.read());
   }
 
   @Test
   public void testReset() throws IOException {
     ObjectStream<NameSample> sampleStream = openData(LANGUAGE.IT, "evalita-ner-it.sample");
-
     NameSample sample = sampleStream.read();
-
     sampleStream.reset();
-
-    assertEquals(sample, sampleStream.read());
+    Assert.assertEquals(sample, sampleStream.read());
   }
 }

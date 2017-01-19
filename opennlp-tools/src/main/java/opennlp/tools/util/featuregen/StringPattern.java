@@ -44,6 +44,76 @@ public class StringPattern {
     this.digits = digits;
   }
 
+  public static StringPattern recognize(String token) {
+
+    int pattern = ALL_CAPITAL_LETTER | ALL_LOWERCASE_LETTER | ALL_DIGIT | ALL_LETTERS;
+
+    int digits = 0;
+
+    for (int i = 0; i < token.length(); i++) {
+      final char ch = token.charAt(i);
+      final int letterType = Character.getType(ch);
+      boolean isLetter = letterType == Character.UPPERCASE_LETTER ||
+          letterType == Character.LOWERCASE_LETTER ||
+          letterType == Character.TITLECASE_LETTER ||
+          letterType == Character.MODIFIER_LETTER ||
+          letterType == Character.OTHER_LETTER;
+
+      if (isLetter) {
+        pattern |= CONTAINS_LETTERS;
+        pattern &= ~ALL_DIGIT;
+
+        if (letterType == Character.UPPERCASE_LETTER) {
+          if (i == 0) {
+            pattern |= INITAL_CAPITAL_LETTER;
+          }
+
+          pattern |= CONTAINS_UPPERCASE;
+
+          pattern &= ~ALL_LOWERCASE_LETTER;
+        } else {
+          pattern &= ~ALL_CAPITAL_LETTER;
+        }
+      } else {
+        // contains chars other than letter, this means
+        // it can not be one of these:
+        pattern &= ~ALL_LETTERS;
+        pattern &= ~ALL_CAPITAL_LETTER;
+        pattern &= ~ALL_LOWERCASE_LETTER;
+
+        if (letterType == Character.DECIMAL_DIGIT_NUMBER) {
+          pattern |= CONTAINS_DIGIT;
+          digits++;
+        } else {
+          pattern &= ~ALL_DIGIT;
+        }
+
+        switch (ch) {
+          case ',':
+            pattern |= CONTAINS_COMMA;
+            break;
+
+          case '.':
+            pattern |= CONTAINS_PERIOD;
+            break;
+
+          case '/':
+            pattern |= CONTAINS_SLASH;
+            break;
+
+          case '-':
+            pattern |= CONTAINS_HYPHEN;
+            break;
+
+          default:
+            break;
+        }
+      }
+    }
+
+    return new StringPattern(pattern, digits);
+  }
+
   /**
    * @return true if all characters are letters.
    */
@@ -108,80 +178,5 @@ public class StringPattern {
 
   public boolean containsLetters() {
     return (pattern & CONTAINS_LETTERS) > 0;
-  }
-
-  public static StringPattern recognize(String token) {
-
-    int pattern = ALL_CAPITAL_LETTER | ALL_LOWERCASE_LETTER | ALL_DIGIT | ALL_LETTERS;
-
-    int digits = 0;
-
-    for (int i = 0; i < token.length(); i++) {
-      final char ch = token.charAt(i);
-
-      final int letterType = Character.getType(ch);
-
-      boolean isLetter = letterType == Character.UPPERCASE_LETTER ||
-          letterType == Character.LOWERCASE_LETTER ||
-          letterType == Character.TITLECASE_LETTER  ||
-          letterType == Character.MODIFIER_LETTER ||
-          letterType == Character.OTHER_LETTER;
-
-      if (isLetter) {
-        pattern |= CONTAINS_LETTERS;
-        pattern &= ~ALL_DIGIT;
-
-        if (letterType == Character.UPPERCASE_LETTER) {
-          if (i == 0) {
-            pattern |= INITAL_CAPITAL_LETTER;
-          }
-
-          pattern |= CONTAINS_UPPERCASE;
-
-          pattern &= ~ALL_LOWERCASE_LETTER;
-        }
-        else {
-          pattern &= ~ALL_CAPITAL_LETTER;
-        }
-      }
-      else {
-        // contains chars other than letter, this means
-        // it can not be one of these:
-        pattern &= ~ALL_LETTERS;
-        pattern &= ~ALL_CAPITAL_LETTER;
-        pattern &= ~ALL_LOWERCASE_LETTER;
-
-        if (letterType == Character.DECIMAL_DIGIT_NUMBER) {
-          pattern |= CONTAINS_DIGIT;
-          digits++;
-        }
-        else {
-          pattern &= ~ALL_DIGIT;
-        }
-
-        switch (ch) {
-          case ',':
-            pattern |= CONTAINS_COMMA;
-            break;
-
-          case '.':
-            pattern |= CONTAINS_PERIOD;
-            break;
-
-          case '/':
-            pattern |= CONTAINS_SLASH;
-            break;
-
-          case '-':
-            pattern |= CONTAINS_HYPHEN;
-            break;
-
-          default:
-            break;
-        }
-      }
-    }
-
-    return new StringPattern(pattern, digits);
   }
 }

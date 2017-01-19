@@ -22,10 +22,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.EncodingParameter;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.util.ObjectStream;

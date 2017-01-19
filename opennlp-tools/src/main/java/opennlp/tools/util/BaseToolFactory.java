@@ -105,8 +105,7 @@ public abstract class BaseToolFactory {
 
     try {
       // load the ToolFactory using the default constructor
-      theFactory = ExtensionLoader.instantiateExtension(
-          BaseToolFactory.class, subclassName);
+      theFactory = ExtensionLoader.instantiateExtension(BaseToolFactory.class, subclassName);
 
       if (theFactory != null) {
         theFactory.init(artifactProvider);

@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -74,7 +74,7 @@ public class BratDocument {
   public static BratDocument parseDocument(AnnotationConfiguration config, String id,
       InputStream txtIn, InputStream annIn) throws IOException {
 
-    Reader txtReader = new InputStreamReader(txtIn, Charset.forName("UTF-8"));
+    Reader txtReader = new InputStreamReader(txtIn, StandardCharsets.UTF_8);
 
     StringBuilder text = new StringBuilder();
 

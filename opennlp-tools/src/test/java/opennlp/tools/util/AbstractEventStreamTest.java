@@ -23,10 +23,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import opennlp.tools.ml.model.Event;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import opennlp.tools.ml.model.Event;
 
 /**
  * Tests for the {@link AbstractEventStream} class.

@@ -25,7 +25,7 @@ import org.junit.Test;
 import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
 
 public class LineSearchTest {
-  public static final double TOLERANCE = 0.01;
+  private static final double TOLERANCE = 0.01;
 
   @Test
   public void testLineSearchDeterminesSaneStepLength1() {

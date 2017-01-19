@@ -39,16 +39,15 @@ public class DirectorySampleStream implements ObjectStream<File> {
 
   private final FileFilter fileFilter;
 
-  private Stack<File> directories = new Stack<File>();
+  private Stack<File> directories = new Stack<>();
 
-  private Stack<File> textFiles = new Stack<File>();
+  private Stack<File> textFiles = new Stack<>();
 
   public DirectorySampleStream(File dirs[], FileFilter fileFilter, boolean recursive) {
-
     this.fileFilter = fileFilter;
     isRecursiveScan = recursive;
 
-    List<File> inputDirectoryList = new ArrayList<File>(dirs.length);
+    List<File> inputDirectoryList = new ArrayList<>(dirs.length);
 
     for (File dir : dirs) {
       if (!dir.isDirectory()) {
