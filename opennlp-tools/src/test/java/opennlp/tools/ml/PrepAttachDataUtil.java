@@ -70,9 +70,11 @@ public class PrepAttachDataUtil {
       double[] ocs = model.eval(ev.getContext());
 
       int best = 0;
-      for (int i = 1; i < ocs.length; i++)
-        if (ocs[i] > ocs[best])
+      for (int i = 1; i < ocs.length; i++) {
+        if (ocs[i] > ocs[best]) {
           best = i;
+        }
+      }
 
       String predictedLabel = model.getOutcome(best);
 

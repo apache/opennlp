@@ -29,14 +29,13 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EvaluatorParams;
-import opennlp.tools.cmdline.lemmatizer.LemmatizerEvaluatorTool.EvalToolParams;
 import opennlp.tools.lemmatizer.LemmaSample;
 import opennlp.tools.lemmatizer.LemmatizerEvaluationMonitor;
 import opennlp.tools.lemmatizer.LemmatizerEvaluator;
 import opennlp.tools.lemmatizer.LemmatizerModel;
 
 public final class LemmatizerEvaluatorTool
-    extends AbstractEvaluatorTool<LemmaSample, EvalToolParams> {
+    extends AbstractEvaluatorTool<LemmaSample, LemmatizerEvaluatorTool.EvalToolParams> {
 
   public LemmatizerEvaluatorTool() {
     super(LemmaSample.class, EvalToolParams.class);

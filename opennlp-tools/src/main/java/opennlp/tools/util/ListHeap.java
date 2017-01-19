@@ -47,7 +47,7 @@ public class ListHeap<E extends Comparable<E>> implements Heap<E> {
   public ListHeap(int sz, Comparator<E> c) {
     size = sz;
     comp = c;
-    list = new ArrayList<E>(sz);
+    list = new ArrayList<>(sz);
   }
 
   /**
