@@ -111,14 +111,14 @@
     <module name="EmptyCatchBlock">
       <property name="exceptionVariableName" value="expected|ignore"/>
     </module>
-    <!--<module name="CustomImportOrder">-->
-      <!--<property name="sortImportsInGroupAlphabetically" value="true"/>-->
+    <module name="CustomImportOrder">
+      <property name="sortImportsInGroupAlphabetically" value="true"/>
       <!--<property name="separateLineBetweenGroups" value="true"/>-->
-      <!--<property name="specialImportsRegExp" value="opennlp\."/>-->
-      <!--<property name="thirdPartyPackageRegExp" value="^opennlp\."/>-->
-      <!--<property name="customImportOrderRules"-->
-                <!--value="STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE###SPECIAL_IMPORTS###SAME_PACKAGE(1)###STATIC"/>-->
-    <!--</module>-->
+      <property name="specialImportsRegExp" value="opennlp\."/>
+      <property name="thirdPartyPackageRegExp" value="^opennlp\."/>
+      <property name="customImportOrderRules"
+                value="STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE###SPECIAL_IMPORTS###STATIC"/>
+    </module>
     <module name="EqualsHashCode"/>
   </module>
 </module>
