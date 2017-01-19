@@ -77,7 +77,7 @@ public class ConllXPosTaggerEval {
   }
 
   @Test
-  public void evalDanish() throws IOException {
+  public void evalDanishhMaxentGis() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
@@ -88,7 +88,18 @@ public class ConllXPosTaggerEval {
   }
 
   @Test
-  public void evalDutch() throws IOException {
+  public void evalDanishhMaxentQn() throws IOException {
+    TrainingParameters params = EvalUtil.createMaxentQnParams();
+
+    POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
+        "conllx/data/danish/ddt/train/danish_ddt_train.conll"), "da", params);
+
+    eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
+        "conllx/data/danish/ddt/test/danish_ddt_test.conll"), 0.9512987012987013d);
+  }
+
+  @Test
+  public void evalDutchMaxentGis() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
@@ -99,7 +110,18 @@ public class ConllXPosTaggerEval {
   }
 
   @Test
-  public void evalPortuguese() throws IOException {
+  public void evalDutchMaxentQn() throws IOException {
+    TrainingParameters params = EvalUtil.createMaxentQnParams();
+
+    POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
+        "conllx/data/dutch/alpino/train/dutch_alpino_train.conll"), "nl", params);
+
+    eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
+        "conllx/data/dutch/alpino/test/dutch_alpino_test.conll"), 0.9174574753804834d);
+  }
+
+  @Test
+  public void evalPortuguesehMaxentGis() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
@@ -110,8 +132,30 @@ public class ConllXPosTaggerEval {
   }
 
   @Test
-  public void evalSwedish() throws IOException {
+  public void evalPortuguesehMaxentQn() throws IOException {
+    TrainingParameters params = EvalUtil.createMaxentQnParams();
+
+    POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
+        "conllx/data/portuguese/bosque/treebank/portuguese_bosque_train.conll"), "pt", params);
+
+    eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
+        "conllx/data/portuguese/bosque/test/portuguese_bosque_test.conll"), 0.9659110277825124d);
+  }
+
+  @Test
+  public void evalSwedishMaxentGis() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
+
+    POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
+        "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll"), "se", params);
+
+    eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
+        "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll"), 0.9275106082036775d);
+  }
+
+  @Test
+  public void evalSwedishMaxentQn() throws IOException {
+    TrainingParameters params = EvalUtil.createMaxentQnParams();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
         "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll"), "se", params);

@@ -19,7 +19,37 @@ package opennlp.tools.eval;
 
 import java.io.File;
 
+import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
+import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
+import opennlp.tools.ml.perceptron.PerceptronTrainer;
+import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ModelUtil;
+
 public class EvalUtil {
+
+  static TrainingParameters createPerceptronParams() {
+    TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
+    params.put(TrainingParameters.ALGORITHM_PARAM,
+        PerceptronTrainer.PERCEPTRON_VALUE);
+    params.put(TrainingParameters.CUTOFF_PARAM, "0");
+    return params;
+  }
+
+  static TrainingParameters createMaxentQnParams() {
+    TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
+    params.put(TrainingParameters.ALGORITHM_PARAM,
+        QNTrainer.MAXENT_QN_VALUE);
+    params.put(TrainingParameters.CUTOFF_PARAM, "0");
+    return params;
+  }
+
+  static TrainingParameters createNaiveBayesParams() {
+    TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
+    params.put(TrainingParameters.ALGORITHM_PARAM,
+        NaiveBayesTrainer.NAIVE_BAYES_VALUE);
+    params.put(TrainingParameters.CUTOFF_PARAM, "5");
+    return params;
+  }
 
   public static File getOpennlpDataDir() {
     return new File(System.getProperty("OPENNLP_DATA_DIR"));

@@ -67,14 +67,35 @@ public class Conll00ChunkerEval {
   }
 
   @Test
-  public void evalEnglish() throws IOException {
-    TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
+  public void evalEnglishPerceptron() throws IOException {
+    ChunkerModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
+        "conll00/train.txt"), EvalUtil.createPerceptronParams());
 
+    eval(maxentModel,
+        new File(EvalUtil.getOpennlpDataDir(), "conll00/test.txt"),
+        0.9295018353434714d);
+  }
+
+  @Test
+  public void evalEnglishMaxentGis() throws IOException {
+    ChunkerModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
+        "conll00/train.txt"), ModelUtil.createDefaultTrainingParameters());
+
+    eval(maxentModel,
+        new File(EvalUtil.getOpennlpDataDir(), "conll00/test.txt"),
+        0.9239687473746113d);
+  }
+
+  // Note: Don't try to run this on your MacBook
+  @Test
+  public void evalEnglishMaxentQn() throws IOException {
+    TrainingParameters params = EvalUtil.createMaxentQnParams();
+    params.put("Threads", "4");
     ChunkerModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
         "conll00/train.txt"), params);
 
     eval(maxentModel,
         new File(EvalUtil.getOpennlpDataDir(), "conll00/test.txt"),
-        0.9239687473746113d);
+        0.9302599230947028d);
   }
 }
