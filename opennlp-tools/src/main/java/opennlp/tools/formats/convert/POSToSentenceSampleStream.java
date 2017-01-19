@@ -26,8 +26,8 @@ import opennlp.tools.util.ObjectStream;
  */
 public class POSToSentenceSampleStream extends AbstractToSentenceSampleStream<POSSample> {
 
-  public POSToSentenceSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples, int chunkSize) {
-
+  public POSToSentenceSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples,
+                                   int chunkSize) {
     super(detokenizer, samples, chunkSize);
   }
 

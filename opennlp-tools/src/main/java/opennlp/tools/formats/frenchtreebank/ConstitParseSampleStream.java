@@ -26,11 +26,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.xml.sax.SAXException;
+
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
-
-import org.xml.sax.SAXException;
 
 public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> {
 
@@ -50,8 +50,6 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
   }
 
   public Parse read() throws IOException {
-
-
     if (parses.isEmpty()) {
       byte[] xmlbytes = samples.read();
 
@@ -59,7 +57,8 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
 
         List<Parse> producedParses = new ArrayList<>();
         try {
-          saxParser.parse(new ByteArrayInputStream(xmlbytes), new ConstitDocumentHandler(producedParses));
+          saxParser.parse(new ByteArrayInputStream(xmlbytes),
+              new ConstitDocumentHandler(producedParses));
         } catch (SAXException e) {
           //TODO update after Java6 upgrade
           throw new IOException(e.getMessage(), e);
@@ -72,8 +71,6 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
     if (parses.size() > 0) {
       return parses.remove(0);
     }
-    else {
-      return null;
-    }
+    return null;
   }
 }

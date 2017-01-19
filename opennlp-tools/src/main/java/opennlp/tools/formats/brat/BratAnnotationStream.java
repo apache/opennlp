@@ -83,9 +83,8 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
             values[values.length - 1].getEnd()).toString();
 
         try {
-          return new SpanAnnotation(id, type,
-                  new Span(parseInt(values[BEGIN_OFFSET]
-                          .getCoveredText(line).toString()), endOffset, type), coveredText);
+          return new SpanAnnotation(id, type, new Span(parseInt(values[BEGIN_OFFSET]
+              .getCoveredText(line).toString()), endOffset, type), coveredText);
         }
         catch (IllegalArgumentException e) {
           throw new InvalidFormatException(e);

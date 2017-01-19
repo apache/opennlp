@@ -43,7 +43,7 @@ public class BratDocument {
     this.id = id;
     this.text = text;
 
-    Map<String, BratAnnotation> annMap = new HashMap<String, BratAnnotation>();
+    Map<String, BratAnnotation> annMap = new HashMap<>();
     for (BratAnnotation annotation : annotations) {
       annMap.put(annotation.getId(), annotation);
     }
@@ -72,8 +72,7 @@ public class BratDocument {
   }
 
   public static BratDocument parseDocument(AnnotationConfiguration config, String id,
-      InputStream txtIn, InputStream annIn)
-      throws IOException {
+      InputStream txtIn, InputStream annIn) throws IOException {
 
     Reader txtReader = new InputStreamReader(txtIn, Charset.forName("UTF-8"));
 
@@ -86,10 +85,8 @@ public class BratDocument {
       text.append(cbuf, 0, len);
     }
 
-    Collection<BratAnnotation> annotations = new ArrayList<BratAnnotation>();
-
+    Collection<BratAnnotation> annotations = new ArrayList<>();
     ObjectStream<BratAnnotation> annStream = new BratAnnotationStream(config, id, annIn);
-
     BratAnnotation ann;
     while ((ann = annStream.read()) != null) {
       annotations.add(ann);

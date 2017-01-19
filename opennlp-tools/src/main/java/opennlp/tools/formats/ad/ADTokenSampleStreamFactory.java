@@ -32,8 +32,7 @@ import opennlp.tools.util.ObjectStream;
 public class ADTokenSampleStreamFactory extends
     DetokenizerSampleStreamFactory<TokenSample> {
 
-  interface Parameters extends ADNameSampleStreamFactory.Parameters,
-      DetokenizerParameter {
+  interface Parameters extends ADNameSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 
   public static void registerFactory() {
@@ -49,10 +48,8 @@ public class ADTokenSampleStreamFactory extends
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
     ObjectStream<NameSample> samples = StreamFactoryRegistry.getFactory(
-        NameSample.class, "ad")
-        .create(
-            ArgumentParser.filter(args,
-                ADNameSampleStreamFactory.Parameters.class));
+        NameSample.class, "ad").create(
+            ArgumentParser.filter(args, ADNameSampleStreamFactory.Parameters.class));
     return new NameToTokenSampleStream(createDetokenizer(params), samples);
   }
 }

@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.dictionary.serializer;
 
 import java.io.IOException;
@@ -32,10 +31,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.StringList;
-import opennlp.tools.util.model.UncloseableInputStream;
-
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -43,6 +38,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.StringList;
+import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
  * This class is used by for reading and writing dictionaries of all kinds.

@@ -81,8 +81,7 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
       boolean expandME, boolean includeFeatures) throws IOException {
 
     try {
-      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-          in, charsetName));
+      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(in, charsetName));
       this.expandME = expandME;
       this.isIncludeFeatures = includeFeatures;
     } catch (UnsupportedEncodingException e) {

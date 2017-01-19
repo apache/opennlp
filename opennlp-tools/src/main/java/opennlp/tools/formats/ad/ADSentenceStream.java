@@ -100,8 +100,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * Parse the sentence
      */
     public Sentence parse(String sentenceString, int para, boolean isTitle, boolean isBox) {
-      BufferedReader reader = new BufferedReader(new StringReader(
-          sentenceString));
+      BufferedReader reader = new BufferedReader(new StringReader(sentenceString));
       Sentence sentence = new Sentence();
       Node root = new Node();
       try {
