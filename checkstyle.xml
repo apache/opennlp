@@ -113,7 +113,7 @@
     </module>
     <module name="CustomImportOrder">
       <property name="sortImportsInGroupAlphabetically" value="true"/>
-      <!--<property name="separateLineBetweenGroups" value="true"/>-->
+      <property name="separateLineBetweenGroups" value="true"/>
       <property name="specialImportsRegExp" value="opennlp\."/>
       <property name="thirdPartyPackageRegExp" value="^opennlp\."/>
       <property name="customImportOrderRules"
