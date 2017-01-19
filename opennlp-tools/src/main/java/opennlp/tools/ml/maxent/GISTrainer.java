@@ -37,6 +37,7 @@ import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.Prior;
 import opennlp.tools.ml.model.UniformPrior;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 
 
 /**
@@ -135,6 +136,9 @@ class GISTrainer {
    */
   private EvalParameters evalParams;
 
+  // TODO: GISTrainer should be an AbstractEventTrainer, The reportMap should be
+  // held by the AET.
+  private Map<String, String> reportMap = new HashMap<>();
   /**
    * Creates a new <code>GISTrainer</code> instance which does not print
    * progress messages about training to STDOUT.
@@ -198,10 +202,11 @@ class GISTrainer {
   public GISModel trainModel(ObjectStream<Event> eventStream, int iterations,
                              int cutoff) throws IOException {
     DataIndexer indexer = new OnePassDataIndexer();
-    Map<String, String> params = new HashMap<>();
-    params.put(GIS.ITERATIONS_PARAM, Integer.toString(iterations));
-    params.put(GIS.CUTOFF_PARAM, Integer.toString(cutoff));
-    indexer.init(params, new HashMap<>());
+    TrainingParameters indexingParameters = new TrainingParameters();
+    indexingParameters.put(GIS.CUTOFF_PARAM, Integer.toString(cutoff));
+    indexingParameters.put(GIS.ITERATIONS_PARAM, Integer.toString(iterations));
+    reportMap = new HashMap<>();
+    indexer.init(indexingParameters,reportMap);
     indexer.index(eventStream);
     return trainModel(iterations, indexer);
   }

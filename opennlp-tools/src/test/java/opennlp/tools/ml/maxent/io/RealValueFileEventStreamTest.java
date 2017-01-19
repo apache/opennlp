@@ -17,24 +17,38 @@
 
 package opennlp.tools.ml.maxent.io;
 
+import opennlp.tools.ml.AbstractTrainer;
+import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
+import opennlp.tools.util.TrainingParameters;
+
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class RealValueFileEventStreamTest {
 
+  private DataIndexer indexer;
+  @Before
+  public void initIndexer() {
+    TrainingParameters trainingParameters = new TrainingParameters();
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    indexer = new OnePassRealValueDataIndexer();
+    indexer.init(trainingParameters, new HashMap<>());
+  }
+  
   @Test
   public void testLastLineBug() throws IOException {
-    OnePassRealValueDataIndexer indexer;
     RealValueFileEventStream rvfes;
 
     rvfes = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-ok.txt");
     try {
-      indexer = new OnePassRealValueDataIndexer(rvfes, 1);
+      indexer.index(rvfes);
     } finally {
       rvfes.close();
     }
@@ -43,7 +57,7 @@ public class RealValueFileEventStreamTest {
     rvfes = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-broken.txt");
     try {
-      indexer = new OnePassRealValueDataIndexer(rvfes, 1);
+      indexer.index(rvfes);
     } finally {
       rvfes.close();
     }

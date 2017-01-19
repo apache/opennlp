@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import opennlp.tools.ml.AbstractEventTrainer;
@@ -28,29 +29,46 @@ import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.PrepAttachDataUtil;
 import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.ml.model.UniformPrior;
+import opennlp.tools.util.TrainingParameters;
 
 public class MaxentPrepAttachTest {
 
+  private DataIndexer testDataIndexer;
+  @Before
+  public void initIndexer() {
+    TrainingParameters trainingParameters = new TrainingParameters();
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, "false");
+    testDataIndexer = new TwoPassDataIndexer();
+    testDataIndexer.init(trainingParameters, new HashMap<>());
+  }
+  
   @Test
   public void testMaxentOnPrepAttachData() throws IOException {
+    testDataIndexer.index(PrepAttachDataUtil.createTrainingStream());
+    // this shows why the GISTrainer should be a AbstractEventTrainer.
+    // TODO: make sure that the trainingParameter cutoff and the 
+    // cutoff value passed here are equal.
     AbstractModel model =
         new GISTrainer(true).trainModel(100,
-        new TwoPassDataIndexer(PrepAttachDataUtil.createTrainingStream(), 1));
-
+        testDataIndexer,
+        new UniformPrior(), 1);
     PrepAttachDataUtil.testModel(model, 0.7997028967566229);
   }
 
   @Test
   public void testMaxentOnPrepAttachData2Threads() throws IOException {
+    testDataIndexer.index(PrepAttachDataUtil.createTrainingStream());
     AbstractModel model =
         new GISTrainer(true).trainModel(100,
-            new TwoPassDataIndexer(PrepAttachDataUtil.createTrainingStream(), 1),
+            testDataIndexer,
             new UniformPrior(), 2);
-
     PrepAttachDataUtil.testModel(model, 0.7997028967566229);
   }
 

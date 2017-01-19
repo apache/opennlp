@@ -21,9 +21,16 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
+import opennlp.tools.ml.AbstractTrainer;
+import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
+import opennlp.tools.util.TrainingParameters;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -32,10 +39,21 @@ import static org.junit.Assert.assertNotNull;
  * Tests for persisting and reading naive bayes models
  */
 public class NaiveBayesModelReadWriteTest {
+  
+  private DataIndexer testDataIndexer;
+  @Before
+  public void initIndexer() {
+    TrainingParameters trainingParameters = new TrainingParameters();
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, "false");;
+    testDataIndexer = new TwoPassDataIndexer();
+    testDataIndexer.init(trainingParameters, new HashMap<>());
+  }
+  
   @Test
   public void testBinaryModelPersistence() throws Exception {
-    NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(
-        NaiveBayesCorrectnessTest.createTrainingStream(), 1, false));
+    testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
+    NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
     Path tempFile = Files.createTempFile("bnb-", ".bin");
     File file = tempFile.toFile();
     NaiveBayesModelWriter modelWriter = new BinaryNaiveBayesModelWriter(model, file);
@@ -48,8 +66,8 @@ public class NaiveBayesModelReadWriteTest {
 
   @Test
   public void testTextModelPersistence() throws Exception {
-    NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(new TwoPassDataIndexer(
-        NaiveBayesCorrectnessTest.createTrainingStream(), 1, false));
+    testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
+    NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
     Path tempFile = Files.createTempFile("ptnb-", ".txt");
     File file = tempFile.toFile();
     NaiveBayesModelWriter modelWriter = new PlainTextNaiveBayesModelWriter(model, file);

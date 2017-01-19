@@ -17,30 +17,47 @@
 
 package opennlp.tools.ml.naivebayes;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import opennlp.tools.ml.AbstractTrainer;
+import opennlp.tools.ml.model.AbstractDataIndexer;
+import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Test for naive bayes classification correctness without smoothing
  */
 public class NaiveBayesCorrectnessTest {
 
+  private DataIndexer testDataIndexer;
+  @Before
+  public void initIndexer() {
+    TrainingParameters trainingParameters = new TrainingParameters();
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, "false");;
+    testDataIndexer = new TwoPassDataIndexer();
+    testDataIndexer.init(trainingParameters, new HashMap<>());
+  }
+  
   @Test
   public void testNaiveBayes1() throws IOException {
 
+    testDataIndexer.index(createTrainingStream());
     NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(
-            new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
 
     String label = "politics";
     String[] context = {"bow=united", "bow=nations"};
@@ -54,9 +71,9 @@ public class NaiveBayesCorrectnessTest {
   @Test
   public void testNaiveBayes2() throws IOException {
 
+    testDataIndexer.index(createTrainingStream());
     NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(
-            new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
 
     String label = "sports";
     String[] context = {"bow=manchester", "bow=united"};
@@ -70,9 +87,9 @@ public class NaiveBayesCorrectnessTest {
   @Test
   public void testNaiveBayes3() throws IOException {
 
+    testDataIndexer.index(createTrainingStream());
     NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(
-            new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
 
     String label = "politics";
     String[] context = {"bow=united"};
@@ -86,9 +103,9 @@ public class NaiveBayesCorrectnessTest {
   @Test
   public void testNaiveBayes4() throws IOException {
 
+    testDataIndexer.index(createTrainingStream());
     NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(
-            new TwoPassDataIndexer(createTrainingStream(), 1, false));
+        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
 
     String label = "politics";
     String[] context = {};

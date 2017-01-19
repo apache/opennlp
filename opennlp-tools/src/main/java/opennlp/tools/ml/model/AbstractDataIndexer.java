@@ -20,13 +20,14 @@
 package opennlp.tools.ml.model;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import opennlp.tools.ml.AbstractTrainer;
-import opennlp.tools.ml.PluggableParameters;
 import opennlp.tools.util.InsufficientTrainingDataException;
+import opennlp.tools.util.TrainingParameters;
 
 
 /**
@@ -41,10 +42,13 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   public static final String SORT_PARAM = "sort";
   public static final boolean SORT_DEFAULT = true;
 
-  PluggableParameters parameters;
-
-  public void init(Map<String,String> indexingParameters, Map<String, String> reportMap) {
-    parameters = new PluggableParameters(indexingParameters, reportMap);
+  protected TrainingParameters trainingParameters;
+  protected Map<String,String> reportMap;
+  
+  public void init(TrainingParameters indexingParameters,Map<String, String> reportMap) {
+    this.reportMap = reportMap;
+    if (this.reportMap == null) reportMap = new HashMap<>();
+    trainingParameters = indexingParameters;
   }
 
   private int numEvents;

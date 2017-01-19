@@ -23,6 +23,7 @@ import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.DataIndexer;
+import opennlp.tools.ml.model.DataIndexerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.HashSumEventStream;
 import opennlp.tools.ml.model.MaxentModel;
@@ -35,6 +36,9 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
   public static final String DATA_INDEXER_PARAM = "DataIndexer";
   public static final String DATA_INDEXER_ONE_PASS_VALUE = "OnePass";
   public static final String DATA_INDEXER_TWO_PASS_VALUE = "TwoPass";
+  public static final String DATA_INDEXER_ONE_PASS_REAL_VALUE = "OnePassRealValue";
+
+  protected Map<String,String> reportMap = new HashMap<>();
 
   public AbstractEventTrainer() {
   }
@@ -44,18 +48,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
     if (!super.isValid()) {
       return false;
     }
-
-    String dataIndexer = parameters.getStringParam(DATA_INDEXER_PARAM,
-        DATA_INDEXER_TWO_PASS_VALUE);
-
-    if (dataIndexer != null) {
-      if (!(DATA_INDEXER_ONE_PASS_VALUE.equals(dataIndexer) || DATA_INDEXER_TWO_PASS_VALUE
-          .equals(dataIndexer))) {
-        return false;
-      }
-    }
-    // TODO: Check data indexing ...
-
+  
     return true;
   }
 
@@ -63,23 +56,13 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
 
   public DataIndexer getDataIndexer(ObjectStream<Event> events) throws IOException {
 
-    String dataIndexerName = parameters.getStringParam(DATA_INDEXER_PARAM,
-        DATA_INDEXER_TWO_PASS_VALUE);
-    Map<String,String> indexParams = new HashMap<String, String>();
-    indexParams.put(AbstractDataIndexer.CUTOFF_PARAM, Integer.toString(getCutoff()));
-    indexParams.put(AbstractDataIndexer.SORT_PARAM, Boolean.toString(isSortAndMerge()));
-
-    DataIndexer indexer;
-
-    if (DATA_INDEXER_ONE_PASS_VALUE.equals(dataIndexerName)) {
-      indexer = new OnePassDataIndexer();
-    } else if (DATA_INDEXER_TWO_PASS_VALUE.equals(dataIndexerName)) {
-      indexer = new TwoPassDataIndexer();
-    } else {
-      throw new IllegalStateException("Unexpected data indexer name: "
-          + dataIndexerName);
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, Boolean.toString(isSortAndMerge()));
+    // If the cutoff was set, don't overwrite the value.
+    if (trainingParameters.getIntParameter(CUTOFF_PARAM, -1) == -1) {
+      trainingParameters.put(CUTOFF_PARAM, "5");
     }
-    indexer.init(indexParams, parameters.getReportMap());
+    
+    DataIndexer indexer = DataIndexerFactory.getDataIndexer(trainingParameters, reportMap);
     indexer.index(events);
     return indexer;
   }
@@ -91,7 +74,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
       throw new IllegalArgumentException("trainParams are not valid!");
     }
     MaxentModel model = doTrain(indexer);
-    parameters.addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
+    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
     return model;
   }
 

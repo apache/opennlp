@@ -29,6 +29,7 @@ import opennlp.tools.ml.maxent.quasinewton.QNMinimizer.Evaluator;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.DataIndexer;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Maxent model trainer using L-BFGS algorithm.
@@ -98,13 +99,18 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   @Override
+  public void init(TrainingParameters trainingParameters, Map<String, String> reportMap) {
+    super.init(trainingParameters,reportMap);
+    this.m = trainingParameters.getIntParameter(M_PARAM, M_DEFAULT);
+    this.maxFctEval = trainingParameters.getIntParameter(MAX_FCT_EVAL_PARAM, MAX_FCT_EVAL_DEFAULT);
+    this.threads = trainingParameters.getIntParameter(THREADS_PARAM, THREADS_DEFAULT);
+    this.l1Cost = trainingParameters.getDoubleParameter(L1COST_PARAM, L1COST_DEFAULT);
+    this.l2Cost = trainingParameters.getDoubleParameter(L2COST_PARAM, L2COST_DEFAULT);
+  }
+  
+  @Override
   public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
-    super.init(trainParams, reportMap);
-    this.m = parameters.getIntParam(M_PARAM, M_DEFAULT);
-    this.maxFctEval = parameters.getIntParam(MAX_FCT_EVAL_PARAM, MAX_FCT_EVAL_DEFAULT);
-    this.threads = parameters.getIntParam(THREADS_PARAM, THREADS_DEFAULT);
-    this.l1Cost = parameters.getDoubleParam(L1COST_PARAM, L1COST_DEFAULT);
-    this.l2Cost = parameters.getDoubleParam(L2COST_PARAM, L2COST_DEFAULT);
+    init(new TrainingParameters(trainParams),reportMap);
   }
 
   public boolean isValid() {

@@ -27,9 +27,12 @@ import java.util.Map;
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
+import opennlp.tools.util.TrainingParameters;
 
 import org.junit.Test;
 
@@ -37,9 +40,16 @@ public class QNPrepAttachTest {
 
   @Test
   public void testQNOnPrepAttachData() throws IOException {
+    DataIndexer indexer = new TwoPassDataIndexer();
+    TrainingParameters indexingParameters = new TrainingParameters();
+    indexingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    indexingParameters.put(AbstractDataIndexer.SORT_PARAM, "false");    
+    indexer.init(indexingParameters, new HashMap<>());
+    indexer.index(createTrainingStream());
+    
     AbstractModel model =
         new QNTrainer(true).trainModel(
-            100, new TwoPassDataIndexer(createTrainingStream(), 1));
+            100, indexer );
 
     testModel(model, 0.8155484030700668);
   }

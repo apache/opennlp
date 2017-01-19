@@ -17,29 +17,47 @@
 
 package opennlp.tools.ml.maxent;
 
+
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
+import opennlp.tools.ml.AbstractTrainer;
+import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.FileEventStream;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 import opennlp.tools.ml.model.RealValueFileEventStream;
+import opennlp.tools.util.TrainingParameters;
+
 
 public class RealValueModelTest {
 
+  private DataIndexer testDataIndexer;
+  @Before
+  public void initIndexer() {
+    TrainingParameters trainingParameters = new TrainingParameters();
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    testDataIndexer = new OnePassRealValueDataIndexer();
+    testDataIndexer.init(trainingParameters, new HashMap<>());
+  }
+  
   @Test
   public void testRealValuedWeightsVsRepeatWeighting() throws IOException {
     GISModel realModel;
     try (RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt")) {
-      realModel = GIS.trainModel(100, new OnePassRealValueDataIndexer(rvfes1, 1));
+      testDataIndexer.index(rvfes1);
+      realModel = GIS.trainModel(100, testDataIndexer);
     }
 
     GISModel repeatModel;
     try (FileEventStream rvfes2 = new FileEventStream(
         "src/test/resources/data/opennlp/maxent/repeat-weighting-training-data.txt")) {
-      repeatModel = GIS.trainModel(100, new OnePassRealValueDataIndexer(rvfes2, 1));
+      testDataIndexer.index(rvfes2);
+      repeatModel = GIS.trainModel(100,testDataIndexer);
     }
 
     String[] features2Classify = new String[] {"feature2","feature5"};
