@@ -113,8 +113,8 @@ public class BioCodec implements SequenceCodec<String> {
     // To validate the model we check if we have one outcome named "other", at least
     // one outcome with suffix start. After that we check if all outcomes that ends with
     // "cont" have a pair that ends with "start".
-    List<String> start = new ArrayList<String>();
-    List<String> cont = new ArrayList<String>();
+    List<String> start = new ArrayList<>();
+    List<String> cont = new ArrayList<>();
 
     for (int i = 0; i < outcomes.length; i++) {
       String outcome = outcomes[i];
@@ -124,9 +124,7 @@ public class BioCodec implements SequenceCodec<String> {
       } else if (outcome.endsWith(NameFinderME.CONTINUE)) {
         cont.add(outcome.substring(0, outcome.length()
             - NameFinderME.CONTINUE.length()));
-      } else if (outcome.equals(NameFinderME.OTHER)) {
-        // don't fail anymore if couldn't find outcome named OTHER
-      } else {
+      } else if (!outcome.equals(NameFinderME.OTHER)) {
         // got unexpected outcome
         return false;
       }

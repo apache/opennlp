@@ -50,8 +50,8 @@ class ConstitDocumentHandler extends DefaultHandler {
   private final StringBuilder text = new StringBuilder();
 
   private int offset;
-  private final Stack<Constituent> stack = new Stack<Constituent>();
-  private final List<Constituent> cons = new LinkedList<Constituent>();
+  private final Stack<Constituent> stack = new Stack<>();
+  private final List<Constituent> cons = new LinkedList<>();
 
   ConstitDocumentHandler(List<Parse> parses) {
     this.parses = parses;

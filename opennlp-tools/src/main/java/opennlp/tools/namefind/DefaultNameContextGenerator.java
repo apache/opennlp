@@ -113,7 +113,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
    * @return the context for finding names at the specified index.
    */
   public String[] getContext(int index, String[] tokens, String[] preds, Object[] additionalContext) {
-    List<String> features = new ArrayList<String>();
+    List<String> features = new ArrayList<>();
 
     for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
       featureGenerator.createFeatures(features, tokens, index, preds);
