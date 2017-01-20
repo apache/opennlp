@@ -66,7 +66,7 @@ public final class DoccatCrossValidatorTool extends
       mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 
-    List<EvaluationMonitor<DocumentSample>> listeners = new LinkedList<EvaluationMonitor<DocumentSample>>();
+    List<EvaluationMonitor<DocumentSample>> listeners = new LinkedList<>();
     if (params.getMisclassified()) {
       listeners.add(new DoccatEvaluationErrorListener());
     }
@@ -104,8 +104,7 @@ public final class DoccatCrossValidatorTool extends
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
       throw new TerminateToolException(-1,
-          "IO error while reading training data or indexing data: "
-              + e.getMessage(), e);
+          "IO error while reading training data or indexing data: " + e.getMessage(), e);
     } finally {
       try {
         sampleStream.close();

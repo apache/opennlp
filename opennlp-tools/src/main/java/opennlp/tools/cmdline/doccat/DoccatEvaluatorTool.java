@@ -63,7 +63,7 @@ public final class DoccatEvaluatorTool extends
 
     DoccatModel model = new DoccatModelLoader().load(params.getModel());
 
-    List<EvaluationMonitor<DocumentSample>> listeners = new LinkedList<EvaluationMonitor<DocumentSample>>();
+    List<EvaluationMonitor<DocumentSample>> listeners = new LinkedList<>();
     if (params.getMisclassified()) {
       listeners.add(new DoccatEvaluationErrorListener());
     }

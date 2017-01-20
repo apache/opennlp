@@ -572,8 +572,7 @@ public class POSTaggerFineGrainedReportListener implements
       generalConfusionMatrix.get(ref).increment(pred);
 
       if (!tokenConfusionMatrix.containsKey(tok)) {
-        tokenConfusionMatrix.put(tok,
-            new HashMap<String, ConfusionMatrixLine>());
+        tokenConfusionMatrix.put(tok, new HashMap<>());
       }
       if (!tokenConfusionMatrix.get(tok).containsKey(ref)) {
         tokenConfusionMatrix.get(tok).put(ref, new ConfusionMatrixLine(ref));
@@ -645,21 +644,19 @@ public class POSTaggerFineGrainedReportListener implements
     }
 
     public SortedSet<String> getTokensOrderedByFrequency() {
-      SortedSet<String> toks = new TreeSet<>(new Comparator<String>() {
-        public int compare(String o1, String o2) {
-          if (o1.equals(o2)) {
-            return 0;
-          }
-          int e1 = 0, e2 = 0;
-          if (tokOcurrencies.containsKey(o1))
-            e1 = tokOcurrencies.get(o1).value();
-          if (tokOcurrencies.containsKey(o2))
-            e2 = tokOcurrencies.get(o2).value();
-          if (e1 == e2) {
-            return o1.compareTo(o2);
-          }
-          return e2 - e1;
+      SortedSet<String> toks = new TreeSet<>((o1, o2) -> {
+        if (o1.equals(o2)) {
+          return 0;
         }
+        int e1 = 0, e2 = 0;
+        if (tokOcurrencies.containsKey(o1))
+          e1 = tokOcurrencies.get(o1).value();
+        if (tokOcurrencies.containsKey(o2))
+          e2 = tokOcurrencies.get(o2).value();
+        if (e1 == e2) {
+          return o1.compareTo(o2);
+        }
+        return e2 - e1;
       });
 
       toks.addAll(tokOcurrencies.keySet());
@@ -668,21 +665,19 @@ public class POSTaggerFineGrainedReportListener implements
     }
 
     public SortedSet<String> getTokensOrderedByNumberOfErrors() {
-      SortedSet<String> toks = new TreeSet<>(new Comparator<String>() {
-        public int compare(String o1, String o2) {
-          if (o1.equals(o2)) {
-            return 0;
-          }
-          int e1 = 0, e2 = 0;
-          if (tokErrors.containsKey(o1))
-            e1 = tokErrors.get(o1).value();
-          if (tokErrors.containsKey(o2))
-            e2 = tokErrors.get(o2).value();
-          if (e1 == e2) {
-            return o1.compareTo(o2);
-          }
-          return e2 - e1;
+      SortedSet<String> toks = new TreeSet<>((o1, o2) -> {
+        if (o1.equals(o2)) {
+          return 0;
         }
+        int e1 = 0, e2 = 0;
+        if (tokErrors.containsKey(o1))
+          e1 = tokErrors.get(o1).value();
+        if (tokErrors.containsKey(o2))
+          e2 = tokErrors.get(o2).value();
+        if (e1 == e2) {
+          return o1.compareTo(o2);
+        }
+        return e2 - e1;
       });
       toks.addAll(tokErrors.keySet());
       return toks;
@@ -709,21 +704,19 @@ public class POSTaggerFineGrainedReportListener implements
     }
 
     public SortedSet<String> getTagsOrderedByErrors() {
-      SortedSet<String> tags = new TreeSet<>(new Comparator<String>() {
-        public int compare(String o1, String o2) {
-          if (o1.equals(o2)) {
-            return 0;
-          }
-          int e1 = 0, e2 = 0;
-          if (tagErrors.containsKey(o1))
-            e1 = tagErrors.get(o1).value();
-          if (tagErrors.containsKey(o2))
-            e2 = tagErrors.get(o2).value();
-          if (e1 == e2) {
-            return o1.compareTo(o2);
-          }
-          return e2 - e1;
+      SortedSet<String> tags = new TreeSet<>((o1, o2) -> {
+        if (o1.equals(o2)) {
+          return 0;
         }
+        int e1 = 0, e2 = 0;
+        if (tagErrors.containsKey(o1))
+          e1 = tagErrors.get(o1).value();
+        if (tagErrors.containsKey(o2))
+          e2 = tagErrors.get(o2).value();
+        if (e1 == e2) {
+          return o1.compareTo(o2);
+        }
+        return e2 - e1;
       });
       tags.addAll(tagErrors.keySet());
       return Collections.unmodifiableSortedSet(tags);

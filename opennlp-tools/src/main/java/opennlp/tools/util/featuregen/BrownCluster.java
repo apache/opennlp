@@ -58,7 +58,7 @@ public class BrownCluster implements SerializableArtifact {
     }
   }
 
-  private Map<String, String> tokenToClusterMap = new HashMap<String, String>();
+  private Map<String, String> tokenToClusterMap = new HashMap<>();
 
   /**
    * Generates the token to cluster map from Brown cluster input file.

@@ -61,7 +61,7 @@ public abstract class AbstractModel implements MaxentModel {
   }
 
   private void init(String[] predLabels, String[] outcomeNames) {
-    this.pmap = new HashMap<String, Integer>(predLabels.length);
+    this.pmap = new HashMap<>(predLabels.length);
 
     for (int i = 0; i < predLabels.length; i++) {
       pmap.put(predLabels[i], i);

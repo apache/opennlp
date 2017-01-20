@@ -118,8 +118,8 @@ public class GISIndexingTest {
     parameters.put(AbstractDataIndexer.SORT_PARAM, "true");
 
     // guarantee that you have a GIS trainer...
-    EventTrainer trainer = TrainerFactory.getEventTrainer(parameters.getSettings(), 
-        new HashMap<String,String>());
+    EventTrainer trainer =
+        TrainerFactory.getEventTrainer(parameters.getSettings(), new HashMap<>());
     Assert.assertEquals("opennlp.tools.ml.maxent.GIS", trainer.getClass().getName());
     AbstractEventTrainer aeTrainer = (AbstractEventTrainer)trainer;
     // guarantee that you have a OnePassDataIndexer ...
@@ -137,7 +137,7 @@ public class GISIndexingTest {
     parameters.put(AbstractEventTrainer.DATA_INDEXER_PARAM, AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
     parameters.put(AbstractEventTrainer.CUTOFF_PARAM, "2");
     
-    trainer = TrainerFactory.getEventTrainer(parameters.getSettings(), new HashMap<String,String>());
+    trainer = TrainerFactory.getEventTrainer(parameters.getSettings(), new HashMap<>());
     Assert.assertEquals("opennlp.tools.ml.maxent.quasinewton.QNTrainer", trainer.getClass().getName());
     aeTrainer = (AbstractEventTrainer)trainer;
     di = aeTrainer.getDataIndexer(eventStream);

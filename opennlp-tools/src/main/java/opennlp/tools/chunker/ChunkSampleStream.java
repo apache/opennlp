@@ -44,9 +44,9 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
 
   public ChunkSample read() throws IOException {
 
-    List<String> toks = new ArrayList<String>();
-    List<String> tags = new ArrayList<String>();
-    List<String> preds = new ArrayList<String>();
+    List<String> toks = new ArrayList<>();
+    List<String> tags = new ArrayList<>();
+    List<String> preds = new ArrayList<>();
 
     for (String line = samples.read(); line != null && !line.equals(""); line = samples.read()) {
       String[] parts = line.split(" ");
@@ -64,8 +64,7 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
       return new ChunkSample(toks.toArray(new String[toks.size()]),
           tags.toArray(new String[tags.size()]), preds.toArray(new String[preds.size()]));
     }
-    else {
-      return null;
-    }
+
+    return null;
   }
 }

@@ -62,8 +62,7 @@ public class DocumentSampleStream extends FilterObjectStream<String, DocumentSam
 
       return sample;
     }
-    else {
-      return null;
-    }
+
+    return null;
   }
 }
