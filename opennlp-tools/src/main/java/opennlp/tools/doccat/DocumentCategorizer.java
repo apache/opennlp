@@ -40,7 +40,9 @@ public interface DocumentCategorizer {
    * @param text             the tokens of text to categorize
    * @param extraInformation optional extra information to pass for evaluation
    * @return per category probabilities
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
    */
+  @Deprecated
   double[] categorize(String text[], Map<String, Object> extraInformation);
 
   /**
@@ -79,7 +81,9 @@ public interface DocumentCategorizer {
    *
    * @param documentText the text to categorize
    * @return the probabilities of each category (sum up to 1)
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
    */
+  @Deprecated
   double[] categorize(String documentText);
 
   /**
@@ -104,8 +108,29 @@ public interface DocumentCategorizer {
    *
    * @param text the input text to classify
    * @return a map with the score as a key. The value is a Set of categories with the score.
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
    */
+  @Deprecated
   Map<String, Double> scoreMap(String text);
+
+  /**
+   * Returns a map in which the key is the category name and the value is the score
+   *
+   * @param text the input text to classify
+   * @return a map with the score as a key. The value is a Set of categories with the score.
+   */
+  Map<String, Double> scoreMap(String[] text);
+
+  /**
+   * Get a map of the scores sorted in ascending aorder together with their associated categories.
+   * Many categories can have the same score, hence the Set as value
+   *
+   * @param text the input text to classify
+   * @return a map with the score as a key. The value is a Set of categories with the score.
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
+   */
+  @Deprecated
+  SortedMap<Double, Set<String>> sortedScoreMap(String text);
 
   /**
    * Get a map of the scores sorted in ascending aorder together with their associated categories.
@@ -114,7 +139,7 @@ public interface DocumentCategorizer {
    * @param text the input text to classify
    * @return a map with the score as a key. The value is a Set of categories with the score.
    */
-  SortedMap<Double, Set<String>> sortedScoreMap(String text);
+  SortedMap<Double, Set<String>> sortedScoreMap(String[] text);
 
 }
 

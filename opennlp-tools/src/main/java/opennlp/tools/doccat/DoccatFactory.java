@@ -44,23 +44,41 @@ public class DoccatFactory extends BaseToolFactory {
    * the resources.
    */
   public DoccatFactory() {
+    this.tokenizer = WhitespaceTokenizer.INSTANCE;
+  }
+
+  public DoccatFactory(final FeatureGenerator[] featureGenerators) {
+    this.tokenizer = WhitespaceTokenizer.INSTANCE;
+    this.featureGenerators = featureGenerators;
   }
 
   /**
    * Creates a {@link DoccatFactory}. Use this constructor to programmatically
    * create a factory.
    *
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
    * @param tokenizer         the tokenizer
    * @param featureGenerators the feature generators
    */
+  @Deprecated
   public DoccatFactory(Tokenizer tokenizer, FeatureGenerator[] featureGenerators) {
     this.init(tokenizer, featureGenerators);
   }
 
+  /**
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
+   * @param tokenizer the tokenizer
+   * @param featureGenerators feature generators
+   */
+  @Deprecated
   protected void init(Tokenizer tokenizer, FeatureGenerator[] featureGenerators) {
 
     this.featureGenerators = featureGenerators;
     this.tokenizer = tokenizer;
+  }
+
+  protected void init(FeatureGenerator[] featureGenerators) {
+    this.featureGenerators = featureGenerators;
   }
 
   @Override
@@ -97,6 +115,10 @@ public class DoccatFactory extends BaseToolFactory {
     // nothing to validate
   }
 
+  /**
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
+   */
+  @Deprecated
   public static DoccatFactory create(String subclassName, Tokenizer tokenizer,
       FeatureGenerator[] featureGenerators) throws InvalidFormatException {
     if (subclassName == null) {
@@ -116,6 +138,26 @@ public class DoccatFactory extends BaseToolFactory {
       throw new InvalidFormatException(msg, e);
     }
 
+  }
+
+  public static DoccatFactory create(String subclassName, FeatureGenerator[] featureGenerators)
+      throws InvalidFormatException {
+    if (subclassName == null) {
+      // will create the default factory
+      return new DoccatFactory(featureGenerators);
+    }
+    try {
+      DoccatFactory theFactory = ExtensionLoader.instantiateExtension(
+          DoccatFactory.class, subclassName);
+      theFactory.init(featureGenerators);
+      return theFactory;
+    } catch (Exception e) {
+      String msg = "Could not instantiate the " + subclassName
+          + ". The initialization throw an exception.";
+      System.err.println(msg);
+      e.printStackTrace();
+      throw new InvalidFormatException(msg, e);
+    }
   }
 
   private FeatureGenerator[] loadFeatureGenerators(String classNames) {
@@ -150,6 +192,10 @@ public class DoccatFactory extends BaseToolFactory {
     this.featureGenerators = featureGenerators;
   }
 
+  /**
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
+   */
+  @Deprecated
   public Tokenizer getTokenizer() {
     if (this.tokenizer == null) {
       if (artifactProvider != null) {
@@ -166,6 +212,11 @@ public class DoccatFactory extends BaseToolFactory {
     return tokenizer;
   }
 
+  /**
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
+   * @param tokenizer tokenizer
+   */
+  @Deprecated
   public void setTokenizer(Tokenizer tokenizer) {
     this.tokenizer = tokenizer;
   }

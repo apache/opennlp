@@ -57,6 +57,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * @deprecated train a {@link DoccatModel} with a specific
    * {@link DoccatFactory} to customize the {@link FeatureGenerator}s
    */
+  @Deprecated
   public DocumentCategorizerME(DoccatModel model, FeatureGenerator... featureGenerators) {
     this.model = model;
     this.mContextGenerator = new DocumentCategorizerContextGenerator(featureGenerators);
@@ -82,7 +83,6 @@ public class DocumentCategorizerME implements DocumentCategorizer {
 
   /**
    * Categorizes the given text.
-   *
    * @param text the text to categorize
    */
   public double[] categorize(String text[]) {
@@ -93,7 +93,9 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * Categorizes the given text. The Tokenizer is obtained from
    * {@link DoccatFactory#getTokenizer()} and defaults to
    * {@link SimpleTokenizer}.
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
    */
+  @Deprecated
   @Override
   public double[] categorize(String documentText,
       Map<String, Object> extraInformation) {
@@ -104,7 +106,9 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   /**
    * Categorizes the given text. The text is tokenized with the SimpleTokenizer
    * before it is passed to the feature generation.
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
    */
+  @Deprecated
   public double[] categorize(String documentText) {
     Tokenizer tokenizer = model.getFactory().getTokenizer();
     return categorize(tokenizer.tokenize(documentText), Collections.emptyMap());
@@ -115,7 +119,9 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    *
    * @param text the input text to classify
    * @return the score map
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
    */
+  @Deprecated
   public Map<String, Double> scoreMap(String text) {
     Map<String, Double> probDist = new HashMap<>();
 
@@ -126,17 +132,66 @@ public class DocumentCategorizerME implements DocumentCategorizer {
       probDist.put(category, categorize[getIndex(category)]);
     }
     return probDist;
-
   }
 
   /**
-   * Returns a map with the score as a key in ascendng order. The value is a Set of categories with the score.
+   * Returns a map in which the key is the category name and the value is the score
+   *
+   * @param text the input text to classify
+   * @return the score map
+   */
+  @Override
+  public Map<String, Double> scoreMap(String[] text) {
+    Map<String, Double> probDist = new HashMap<>();
+
+    double[] categorize = categorize(text);
+    int catSize = getNumberOfCategories();
+    for (int i = 0; i < catSize; i++) {
+      String category = getCategory(i);
+      probDist.put(category, categorize[getIndex(category)]);
+    }
+    return probDist;
+  }
+
+  /**
+   * Returns a map with the score as a key in ascending order.
+   * The value is a Set of categories with the score.
+   * Many categories can have the same score, hence the Set as value
+   *
+   * @param text the input text to classify
+   * @return the sorted score map
+   * @deprecated will be removed after 1.7.1 release. Don't use it.
+   */
+  @Deprecated
+  @Override
+  public SortedMap<Double, Set<String>> sortedScoreMap(String text) {
+    SortedMap<Double, Set<String>> descendingMap = new TreeMap<>();
+    double[] categorize = categorize(text);
+    int catSize = getNumberOfCategories();
+    for (int i = 0; i < catSize; i++) {
+      String category = getCategory(i);
+      double score = categorize[getIndex(category)];
+      if (descendingMap.containsKey(score)) {
+        descendingMap.get(score).add(category);
+      } else {
+        Set<String> newset = new HashSet<>();
+        newset.add(category);
+        descendingMap.put(score, newset);
+      }
+    }
+    return descendingMap;
+  }
+
+  /**
+   * Returns a map with the score as a key in ascending order.
+   * The value is a Set of categories with the score.
    * Many categories can have the same score, hence the Set as value
    *
    * @param text the input text to classify
    * @return the sorted score map
    */
-  public SortedMap<Double, Set<String>> sortedScoreMap(String text) {
+  @Override
+  public SortedMap<Double, Set<String>> sortedScoreMap(String[] text) {
     SortedMap<Double, Set<String>> descendingMap = new TreeMap<>();
     double[] categorize = categorize(text);
     int catSize = getNumberOfCategories();
