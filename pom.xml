@@ -261,6 +261,9 @@
 
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<additionalparam>-Xdoclint:none</additionalparam>
+				</configuration>
 				<executions>
 					<execution>
 						<id>create-javadoc-jar</id>
@@ -270,7 +273,7 @@
 						<phase>package</phase>
 						<configuration>
 							<show>public</show>
-							<quiet>true</quiet>
+							<quiet>false</quiet>
 							<use>false</use> <!-- Speeds up the build of the javadocs -->
 						</configuration>
 					</execution>
