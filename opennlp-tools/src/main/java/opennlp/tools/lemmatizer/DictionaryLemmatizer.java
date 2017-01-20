@@ -49,8 +49,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
    */
   public DictionaryLemmatizer(final InputStream dictionary) {
     this.dictMap = new HashMap<>();
-    final BufferedReader breader = new BufferedReader(new InputStreamReader(
-        dictionary));
+    final BufferedReader breader = new BufferedReader(new InputStreamReader(dictionary));
     String line;
     try {
       while ((line = breader.readLine()) != null) {
