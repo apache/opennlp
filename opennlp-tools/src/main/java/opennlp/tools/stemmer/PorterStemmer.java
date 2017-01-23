@@ -1,5 +1,3 @@
-package opennlp.tools.stemmer;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -42,6 +40,8 @@ package opennlp.tools.stemmer;
      optimize for fewer object creations.  ]
 
 */
+
+package opennlp.tools.stemmer;
 
 /**
  *
