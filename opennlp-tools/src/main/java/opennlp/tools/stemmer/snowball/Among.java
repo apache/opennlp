@@ -1,3 +1,4 @@
+// CHECKSTYLE:OFF
 /*
 
 Copyright (c) 2001, Dr Martin Porter
@@ -33,7 +34,6 @@ package opennlp.tools.stemmer.snowball;
 
 import java.lang.reflect.Method;
 
-// CHECKSTYLE:OFF
 class Among {
     public Among (String s, int substring_i, int result,
 		  String methodname, SnowballProgram methodobject) {
