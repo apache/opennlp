@@ -68,24 +68,35 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
     // to check if all entities have been used up after the matching is done
 
     Set<String> entityIdSet = new HashSet<>();
+    Map<Integer, Span> coveredIndexes = new HashMap<>();
 
     for (BratAnnotation ann : sample.getAnnotations()) {
       if (ann instanceof SpanAnnotation) {
         entityIdSet.add(ann.getId());
+
+        Span span = ((SpanAnnotation) ann).getSpan();
+        for (int i = span.getStart(); i < span.getEnd(); i++) {
+          coveredIndexes.put(i, span);
+        }
       }
     }
 
-    Span sentences[] = sentDetector.sentPosDetect(sample.getText());
+    List<Span> sentences = new ArrayList<>();
+    for (Span sentence : sentDetector.sentPosDetect(sample.getText())) {
+      Span conflictingName = coveredIndexes.get(sentence.getStart());
 
-    // TODO: Sentence breaks should be avoided inside name annotations
-    // a) Merge two sentences, if an end/begin pair is part of a name annotation
-    // b) Implement a custom sentence validator which can be injected into the SD
+      if (sentences.size() > 0 && conflictingName != null &&
+          conflictingName.getStart() < sentence.getStart()) {
+        Span lastSentence = sentences.remove(sentences.size() - 1);
+        sentences.add(new Span(lastSentence.getStart(), sentence.getEnd()));
 
-    // How could a custom validator be injected into an already instantiated sentence detector ?1
-    // Via a set method ...
-    // Via constructor ... probably best option, but a bit tricky to work with the SD interface then
-    //
-
+        System.out.println("Correcting sentence segmentation in document " +
+            sample.getId());
+      }
+      else {
+        sentences.add(sentence);
+      }
+    }
 
     // TODO: Token breaks should be enforced on name span boundaries
     // a) Just split tokens
@@ -93,7 +104,7 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
 
     // Currently we are missing all
 
-    List<NameSample> samples = new ArrayList<>(sentences.length);
+    List<NameSample> samples = new ArrayList<>(sentences.size());
 
     for (Span sentence : sentences) {
 
