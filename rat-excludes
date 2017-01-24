@@ -1,0 +1,57 @@
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.
+-->
+
+src/test/resources/opennlp/tools/*/*.txt
+src/test/resources/opennlp/tools/*/*.sample
+src/test/resources/opennlp/tools/*/*.txt
+src/test/resources/opennlp/tools/*/*.train
+src/test/resources/opennlp/tools/parser/en_head_rules
+src/test/resources/opennlp/tools/parser/en_head_rules
+src/test/resources/opennlp/tools/parser/parser.train
+src/test/resources/opennlp/tools/parser/test.parse
+src/test/resources/opennlp/tools/postag/AnnotatedSentences.txt
+src/test/resources/opennlp/tools/sentdetect/Sentences.txt
+src/test/resources/opennlp/tools/tokenize/token.train
+src/main/java/opennlp/tools/ml/maxent/AllEnglishAffixes.txt
+src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-broken.txt
+src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-ok.txt
+src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt
+src/test/resources/data/opennlp/maxent/repeat-weighting-training-data.txt
+src/test/resources/data/ppa/bitstrings
+src/test/resources/data/ppa/devset
+src/test/resources/data/ppa/test
+src/test/resources/data/ppa/training
+src/test/resources/data/ppa/NOTICE
+src/test/resources/opennlp/tools/doccat/DoccatSample.txt
+src/test/resources/opennlp/tools/formats/brat/voa-with-entities.ann
+src/test/resources/opennlp/tools/formats/brat/voa-with-entities.txt
+src/test/resources/opennlp/tools/formats/brat/voa-with-relations.ann
+src/test/resources/opennlp/tools/formats/brat/voa-with-relations.txt
+src/test/resources/opennlp/tools/languagemodel/sentences.txt
+src/test/resources/opennlp/tools/lemmatizer/trial.old.tsv
+src/test/resources/opennlp/tools/lemmatizer/output.txt
+
+<!-- head rule files, format does not allow AL header -->
+lang/en/parser/en-head_rules
+lang/es/parser/es-head-rules
+src/test/resources/*.txt
+src/test/resources/*.info
+
+<!-- other licence -->
+src/main/java/opennlp/tools/stemmer/snowball/*.java

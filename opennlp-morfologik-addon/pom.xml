@@ -62,27 +62,6 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-		        <groupId>org.apache.rat</groupId>
-		        <artifactId>apache-rat-plugin</artifactId>
-		        <executions>
-		          <execution>
-		            <id>default-cli</id>
-		            <configuration>
-		              <excludes>
-		                <!-- test data -->
-		                <exclude>src/test/resources/*.txt</exclude>
-		  				<exclude>src/test/resources/*.info</exclude>
-		              </excludes>
-		            </configuration>
-		          </execution>
-		        </executions>
-	      	</plugin>
-		</plugins>
-	</build>
 </project>

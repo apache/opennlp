@@ -352,12 +352,14 @@
 				<plugin>
 					<groupId>org.apache.rat</groupId>
 					<artifactId>apache-rat-plugin</artifactId>
+					<configuration>
+						<excludes>
+							<excludesFile>rat-excludes</excludesFile>
+						</excludes>
+					</configuration>
 					<executions>
 						<execution>
 							<id>default-cli</id>
-							<configuration>
-								<numUnapprovedLicenses>0</numUnapprovedLicenses>
-							</configuration>
 						</execution>
 					</executions>
 				</plugin>
