@@ -439,6 +439,11 @@ new NameFinderME(model);]]>
 					<entry>no</entry>
 					<entry>none</entry>
 			      </row>
+						<row>
+							<entry>tokenpos</entry>
+							<entry>no</entry>
+							<entry><emphasis>model</emphasis> is the file name of the POS Tagger model to use</entry>
+						</row>
 			      <row>
 				<entry>wordcluster</entry>
 				<entry>no</entry>

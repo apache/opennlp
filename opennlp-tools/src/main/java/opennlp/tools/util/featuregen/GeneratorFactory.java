@@ -43,9 +43,11 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.POSModelSerializer;
 
 /**
  * Creates a set of feature generators based on a provided XML descriptor.
@@ -607,6 +609,30 @@ public class GeneratorFactory {
     }
   }
 
+
+
+  /**
+   * @see TokenPatternFeatureGenerator
+   */
+  static class POSTaggerNameFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
+
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+                                           FeatureGeneratorResourceProvider resourceManager)
+        throws  InvalidFormatException {
+
+      String modelResourceKey = generatorElement.getAttribute("model");
+
+      POSModel model = (POSModel)resourceManager.getResource(modelResourceKey);
+
+      return new POSTaggerNameFeatureGenerator(model);
+
+    }
+
+    static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("tokenpos", new POSTaggerNameFeatureGeneratorFactory());
+    }
+  }
+
   // TODO: We have to support custom resources here. How does it work ?!
   // Attributes get into a Map<String, String> properties
 
@@ -678,6 +704,7 @@ public class GeneratorFactory {
     BrownClusterTokenClassFeatureGeneratorFactory.register(factories);
     BrownClusterBigramFeatureGeneratorFactory.register(factories);
     CustomFeatureGeneratorFactory.register(factories);
+    POSTaggerNameFeatureGeneratorFactory.register(factories);
   }
 
   /**
@@ -817,6 +844,16 @@ public class GeneratorFactory {
 
             case "brownclusterbigram": //, ;
               mapping.put(dictName, new BrownCluster.BrownClusterSerializer());
+              break;
+          }
+        }
+
+        String modelName = xmlElement.getAttribute("model");
+        if (modelName != null) {
+
+          switch (xmlElement.getTagName()) {
+            case "tokenpos":
+              mapping.put(modelName, new POSModelSerializer());
               break;
           }
         }
