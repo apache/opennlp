@@ -17,7 +17,6 @@
 
 package opennlp.tools.ml.maxent;
 
-
 import java.io.IOException;
 import java.util.HashMap;
 

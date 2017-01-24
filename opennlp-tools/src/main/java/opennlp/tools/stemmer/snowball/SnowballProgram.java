@@ -1,3 +1,4 @@
+// CHECKSTYLE:OFF
 /*
 
 Copyright (c) 2001, Dr Martin Porter
@@ -33,7 +34,6 @@ package opennlp.tools.stemmer.snowball;
 
 import java.lang.reflect.InvocationTargetException;
 
-// CHECKSTYLE:OFF
 class SnowballProgram {
     protected SnowballProgram()
     {
