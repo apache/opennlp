@@ -37,6 +37,7 @@ public class AnnotationConfiguration {
   public static final String ENTITY_TYPE = "Entity";
   public static final String RELATION_TYPE = "Relation";
   public static final String ATTRIBUTE_TYPE = "Attribute";
+  public static final String EVENT_TYPE = "Event";
 
   private final Map<String, String> typeToClassMap;
 
@@ -81,6 +82,10 @@ public class AnnotationConfiguration {
 
               case "attributes":
                 typeToClassMap.put(typeName, AnnotationConfiguration.ATTRIBUTE_TYPE);
+                break;
+
+              case "events":
+                typeToClassMap.put(typeName, AnnotationConfiguration.EVENT_TYPE);
                 break;
 
               default:

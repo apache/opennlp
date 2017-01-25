@@ -119,6 +119,39 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     }
   }
 
+  static class EventAnnotationParser extends BratAnnotationParser {
+
+    @Override
+    BratAnnotation parse(Span tokens[], CharSequence line) throws IOException {
+
+      String[] typeParts = tokens[TYPE_OFFSET].getCoveredText(line).toString().split(":");
+
+      if (typeParts.length != 2) {
+        throw new InvalidFormatException(String.format(
+            "Failed to parse [%s], type part must be in the format type:trigger", line));
+      }
+
+      String type = typeParts[0];
+      String eventTrigger = typeParts[1];
+
+      Map<String, String> arguments = new HashMap<>();
+
+      for (int i = TYPE_OFFSET + 1; i < tokens.length; i++) {
+        String[] parts = tokens[i].getCoveredText(line).toString().split(":");
+
+        if (parts.length != 2) {
+          throw new InvalidFormatException(String.format(
+              "Failed to parse [%s], argument parts must be in form argument:value", line));
+        }
+
+        arguments.put(parts[0], parts[1]);
+      }
+
+      return new EventAnnotation(tokens[ID_OFFSET].getCoveredText(line).toString(),type, eventTrigger,
+          arguments);
+    }
+  }
+
   static class AttributeAnnotationParser extends BratAnnotationParser {
 
     private static final int ATTACHED_TO_OFFSET = 2;
@@ -145,7 +178,6 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     }
   }
 
-  private final Map<String, BratAnnotationParser> parsers = new HashMap<>();
   private final AnnotationConfiguration config;
   private final BufferedReader reader;
   private final String id;
@@ -155,11 +187,6 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     this.id = id;
 
     reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-
-    parsers.put(AnnotationConfiguration.SPAN_TYPE, new SpanAnnotationParser());
-    parsers.put(AnnotationConfiguration.ENTITY_TYPE, new SpanAnnotationParser());
-    parsers.put(AnnotationConfiguration.RELATION_TYPE, new RelationAnnotationParser());
-    parsers.put(AnnotationConfiguration.ATTRIBUTE_TYPE, new AttributeAnnotationParser());
   }
 
   public BratAnnotation read() throws IOException {
@@ -170,13 +197,36 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
       Span tokens[] = WhitespaceTokenizer.INSTANCE.tokenizePos(line);
 
       if (tokens.length > 2) {
-        String typeClass = config.getTypeClass(tokens[BratAnnotationParser.TYPE_OFFSET]
-            .getCoveredText(line).toString());
+        String annId = tokens[BratAnnotationParser.ID_OFFSET].getCoveredText(line).toString();
 
-        BratAnnotationParser parser = parsers.get(typeClass);
+        if (annId.length() == 0) {
+          throw new InvalidFormatException("annotation id is empty");
+        }
+
+        // The first leter of the annotation id marks the annotation type
+
+        final BratAnnotationParser parser;
+        switch (annId.charAt(0)) {
+          case 'T':
+            parser = new SpanAnnotationParser();
+            break;
+          case 'R':
+            parser = new RelationAnnotationParser();
+            break;
+          case 'A':
+            parser = new AttributeAnnotationParser();
+            break;
+          case 'E':
+            parser = new EventAnnotationParser();
+            break;
+
+          default:
+            // Skip it, do that for everything unsupported (e.g. "*" id)
+            return read();
+        }
 
         if (parser == null) {
-          throw new IOException("Failed to parse ann document with id " + id + ".ann" +
+          throw new IOException("Failed to parse ann document with id " + id + ".ann and" +
               " type class, no parser registered: " + tokens[BratAnnotationParser.TYPE_OFFSET]
               .getCoveredText(line).toString());
         }

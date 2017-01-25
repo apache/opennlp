@@ -17,28 +17,28 @@
 
 package opennlp.tools.formats.brat;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
-public abstract class BratAnnotation {
+public class EventAnnotation extends BratAnnotation {
 
-  private final String id;
-  private final String type;
+  private final String eventTrigger;
+  private final Map<String, String> arguments;
 
-  protected BratAnnotation(String id, String type) {
-    this.id = Objects.requireNonNull(id);
-    this.type = Objects.requireNonNull(type);
+  protected EventAnnotation(String id, String type, String eventTrigger, Map<String, String> arguments) {
+    super(id, type);
+
+    this.eventTrigger = Objects.requireNonNull(eventTrigger);
+    this.arguments = Collections.unmodifiableMap(new HashMap<>(arguments));
   }
 
-  public String getId() {
-    return id;
+  public String getEventTrigger() {
+    return eventTrigger;
   }
 
-  public String getType() {
-    return type;
-  }
-
-  @Override
-  public String toString() {
-    return id + " " + type;
+  public Map<String, String> getArguments() {
+    return arguments;
   }
 }
