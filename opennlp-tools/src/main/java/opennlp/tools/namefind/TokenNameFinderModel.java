@@ -209,6 +209,7 @@ public class TokenNameFinderModel extends BaseModel {
     Map<String, ArtifactSerializer> serializers = BaseModel.createArtifactSerializers();
 
     serializers.put("featuregen", new ByteArraySerializer());
+    serializers.put("bin", new ByteArraySerializer());
     serializers.put("wordcluster", new WordClusterDictionary.WordClusterDictionarySerializer());
     serializers.put("brownclustertoken", new BrownCluster.BrownClusterSerializer());
     serializers.put("brownclustertokenclass", new BrownCluster.BrownClusterSerializer());
