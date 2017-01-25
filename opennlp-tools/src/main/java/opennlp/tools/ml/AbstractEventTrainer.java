@@ -18,8 +18,6 @@
 package opennlp.tools.ml;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.DataIndexer;
@@ -35,8 +33,6 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
   public static final String DATA_INDEXER_ONE_PASS_VALUE = "OnePass";
   public static final String DATA_INDEXER_TWO_PASS_VALUE = "TwoPass";
   public static final String DATA_INDEXER_ONE_PASS_REAL_VALUE = "OnePassRealValue";
-
-  protected Map<String,String> reportMap = new HashMap<>();
 
   public AbstractEventTrainer() {
   }
