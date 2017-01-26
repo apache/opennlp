@@ -20,6 +20,7 @@ package opennlp.tools.formats;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,7 +75,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
   public Conll02NameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
     this.lang = lang;
     try {
-      this.lineStream = new PlainTextByLineStream(in, "UTF-8");
+      this.lineStream = new PlainTextByLineStream(in, StandardCharsets.UTF_8);
       System.setOut(new PrintStream(System.out, true, "UTF-8"));
     } catch (UnsupportedEncodingException e) {
       // UTF-8 is available on all JVMs, will never happen

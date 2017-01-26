@@ -18,7 +18,7 @@
 package opennlp.tools.formats.ontonotes;
 
 import java.io.File;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -53,7 +53,7 @@ public class OntoNotesParseSampleStreamFactory extends AbstractSampleStreamFacto
     // with the refactored version
 
     return new OntoNotesParseSampleStream(new DocumentToLineStream(new FileToStringSampleStream(
-        documentStream, Charset.forName("UTF-8"))));
+        documentStream, StandardCharsets.UTF_8)));
   }
 
   public static void registerFactory() {

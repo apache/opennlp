@@ -20,7 +20,7 @@ package opennlp.tools.formats;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -59,7 +59,7 @@ public class ConllXPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
     try {
       System.setOut(new PrintStream(System.out, true, "UTF-8"));
 
-      return new ConllXPOSSampleStream(inFactory, Charset.forName("UTF-8"));
+      return new ConllXPOSSampleStream(inFactory, StandardCharsets.UTF_8);
     } catch (UnsupportedEncodingException e) {
       // this shouldn't happen
       throw new TerminateToolException(-1, "UTF-8 encoding is not supported: " + e.getMessage(), e);

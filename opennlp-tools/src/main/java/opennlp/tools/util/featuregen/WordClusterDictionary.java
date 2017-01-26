@@ -25,7 +25,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,7 +53,7 @@ public class WordClusterDictionary implements SerializableArtifact {
    * @throws IOException the io exception
    */
   public WordClusterDictionary(InputStream in) throws IOException {
-    BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
     String line;
     while ((line = reader.readLine()) != null) {
       String parts[] = line.split(" ");

@@ -18,7 +18,7 @@
 package opennlp.tools.formats.muc;
 
 import java.io.File;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
@@ -56,7 +56,7 @@ public class Muc6NameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
     ObjectStream<String> mucDocStream = new FileToStringSampleStream(
         new DirectorySampleStream(params.getData(),
             file -> StringUtil.toLowerCase(file.getName()).endsWith(".sgm"), false),
-        Charset.forName("UTF-8"));
+        StandardCharsets.UTF_8);
 
     return new MucNameSampleStream(tokenizer, mucDocStream);
   }

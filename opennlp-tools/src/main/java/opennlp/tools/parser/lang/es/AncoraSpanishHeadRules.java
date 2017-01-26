@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,12 +64,13 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
   public static class HeadRulesSerializer implements ArtifactSerializer<AncoraSpanishHeadRules> {
 
     public AncoraSpanishHeadRules create(InputStream in) throws IOException {
-      return new AncoraSpanishHeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
+      return new AncoraSpanishHeadRules(new BufferedReader(
+          new InputStreamReader(in, StandardCharsets.UTF_8)));
     }
 
     public void serialize(opennlp.tools.parser.lang.es.AncoraSpanishHeadRules artifact, OutputStream out)
         throws IOException {
-      artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
+      artifact.serialize(new OutputStreamWriter(out, StandardCharsets.UTF_8));
     }
   }
 

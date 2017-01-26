@@ -25,7 +25,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -69,7 +69,7 @@ public class BrownCluster implements SerializableArtifact {
   public BrownCluster(InputStream in) throws IOException {
 
     BufferedReader breader =
-        new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
+        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
     String line;
     while ((line = breader.readLine()) != null) {
       String[] lineArray = tabPattern.split(line);

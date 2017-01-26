@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 
@@ -98,12 +99,12 @@ public class ParserModel extends BaseModel {
     public opennlp.tools.parser.lang.en.HeadRules create(InputStream in)
         throws IOException, InvalidFormatException {
       return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(
-          new InputStreamReader(in, "UTF-8")));
+          new InputStreamReader(in, StandardCharsets.UTF_8)));
     }
 
     public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact,
         OutputStream out) throws IOException {
-      artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
+      artifact.serialize(new OutputStreamWriter(out, StandardCharsets.UTF_8));
     }
   }
 

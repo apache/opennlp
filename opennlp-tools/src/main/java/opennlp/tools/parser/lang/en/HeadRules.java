@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,12 +51,12 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
   public static class HeadRulesSerializer implements ArtifactSerializer<HeadRules> {
 
     public HeadRules create(InputStream in) throws IOException {
-      return new HeadRules(new BufferedReader(new InputStreamReader(in, "UTF-8")));
+      return new HeadRules(new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)));
     }
 
     public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact, OutputStream out)
         throws IOException {
-      artifact.serialize(new OutputStreamWriter(out, "UTF-8"));
+      artifact.serialize(new OutputStreamWriter(out, StandardCharsets.UTF_8));
     }
   }
 

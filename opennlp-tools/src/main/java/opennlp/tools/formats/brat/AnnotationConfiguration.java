@@ -24,7 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +53,7 @@ public class AnnotationConfiguration {
   public static AnnotationConfiguration parse(InputStream in) throws IOException {
     Map<String, String> typeToClassMap = new HashMap<>();
 
-    BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 
     // Note: This only supports entities and relations section
     String line;

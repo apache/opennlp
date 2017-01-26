@@ -18,8 +18,8 @@
 package opennlp.tools.ml.model;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -46,12 +46,7 @@ public class HashSumEventStream extends AbstractObjectStream<Event> {
     Event event = super.read();
 
     if (event != null) {
-      try {
-        digest.update(event.toString().getBytes("UTF-8"));
-      }
-      catch (UnsupportedEncodingException e) {
-        throw new IllegalStateException("UTF-8 encoding is not available!", e);
-      }
+      digest.update(event.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     return event;
