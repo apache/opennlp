@@ -46,7 +46,7 @@ import opennlp.tools.util.model.UncloseableInputStream;
 /**
  * This class is used by for reading and writing dictionaries of all kinds.
  */
-public class DictionarySerializer {
+public class DictionaryEntryPersistor {
 
   // TODO: should check for invalid format, make it save
   private static class DictionaryContenthandler implements ContentHandler {
@@ -238,12 +238,12 @@ public class DictionarySerializer {
    *
    * @throws IOException If an I/O error occurs
    * @deprecated Use
-   *     {@link DictionarySerializer#serialize(java.io.OutputStream, java.util.Iterator, boolean)} instead
+   *     {@link DictionaryEntryPersistor#serialize(java.io.OutputStream, java.util.Iterator, boolean)} instead
    */
   @Deprecated
   public static void serialize(OutputStream out, Iterator<Entry> entries)
       throws IOException {
-    DictionarySerializer.serialize(out, entries, true);
+    DictionaryEntryPersistor.serialize(out, entries, true);
   }
 
   /**
@@ -319,11 +319,11 @@ public class DictionarySerializer {
 
     StringList tokens = entry.getTokens();
 
-    for (String token1 : tokens) {
+    for (String token : tokens) {
 
       hd.startElement("", "", TOKEN_ELEMENT, new AttributesImpl());
 
-      hd.characters(token1.toCharArray(), 0, token1.length());
+      hd.characters(token.toCharArray(), 0, token.length());
 
       hd.endElement("", "", TOKEN_ELEMENT);
     }

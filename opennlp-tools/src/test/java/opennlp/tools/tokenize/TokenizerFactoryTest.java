@@ -74,8 +74,7 @@ public class TokenizerFactoryTest {
     Assert.assertTrue(factory.getAbbreviationDictionary() != null);
     Assert.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assert.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern()
-        .pattern());
+    Assert.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
     Assert.assertEquals(lang, factory.getLanguageCode());
     Assert.assertEquals(lang, model.getLanguage());
     Assert.assertFalse(factory.isUseAlphaNumericOptmization());
@@ -90,8 +89,7 @@ public class TokenizerFactoryTest {
     Assert.assertTrue(factory.getAbbreviationDictionary() != null);
     Assert.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assert.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern()
-        .pattern());
+    Assert.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
     Assert.assertEquals(lang, factory.getLanguageCode());
     Assert.assertEquals(lang, model.getLanguage());
     Assert.assertFalse(factory.isUseAlphaNumericOptmization());
@@ -109,8 +107,7 @@ public class TokenizerFactoryTest {
     Assert.assertNull(factory.getAbbreviationDictionary());
     Assert.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assert.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern()
-        .pattern());
+    Assert.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
     Assert.assertEquals(lang, factory.getLanguageCode());
     Assert.assertEquals(lang, model.getLanguage());
     Assert.assertFalse(factory.isUseAlphaNumericOptmization());

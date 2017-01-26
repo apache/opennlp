@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import opennlp.tools.dictionary.serializer.Attributes;
-import opennlp.tools.dictionary.serializer.DictionarySerializer;
+import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
@@ -118,7 +118,7 @@ public class DetokenizationDictionary {
   }
 
   private void init(InputStream in) throws IOException {
-    DictionarySerializer.create(in, entry -> {
+    DictionaryEntryPersistor.create(in, entry -> {
 
       String operationString = entry.getAttributes().getValue("operation");
 
@@ -166,6 +166,6 @@ public class DetokenizationDictionary {
       }
     };
 
-    DictionarySerializer.serialize(out, entries, false);
+    DictionaryEntryPersistor.serialize(out, entries, false);
   }
 }

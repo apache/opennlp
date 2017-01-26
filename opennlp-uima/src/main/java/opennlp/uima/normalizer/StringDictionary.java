@@ -25,10 +25,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import opennlp.tools.dictionary.serializer.Attributes;
-import opennlp.tools.dictionary.serializer.DictionarySerializer;
+import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
-import opennlp.tools.dictionary.serializer.EntryInserter;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
 
 // lookup a string for given token list
@@ -46,11 +44,9 @@ public class StringDictionary {
    * @throws IOException
    */
   public StringDictionary(InputStream in) throws IOException {
-    DictionarySerializer.create(in, new EntryInserter() {
-      public void insert(Entry entry) throws InvalidFormatException {
-        String valueString = entry.getAttributes().getValue("value");
-        put(entry.getTokens(), valueString);
-      }
+    DictionaryEntryPersistor.create(in, entry -> {
+      String valueString = entry.getAttributes().getValue("value");
+      put(entry.getTokens(), valueString);
     });
   }
 
@@ -97,6 +93,6 @@ public class StringDictionary {
       }
     };
 
-    DictionarySerializer.serialize(out, entryIterator, true);
+    DictionaryEntryPersistor.serialize(out, entryIterator, true);
   }
 }
