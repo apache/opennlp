@@ -119,6 +119,7 @@
 	<properties>
 		<!-- Build Properties -->
 		<java.version>1.8</java.version>
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.version>3.3.9</maven.version>
 		<enforcer.plugin.version>1.4.1</enforcer.plugin.version>
 		<junit.version>4.12</junit.version>
@@ -224,6 +225,27 @@
 					</configuration>
 				</plugin>
 
+				<plugin>
+					<groupId>de.thetaphi</groupId>
+					<artifactId>forbiddenapis</artifactId>
+					<version>2.2</version>
+					<configuration>
+						<failOnUnsupportedJava>false</failOnUnsupportedJava>
+						<bundledSignatures>
+							<bundledSignature>jdk-deprecated</bundledSignature>
+							<bundledSignature>jdk-non-portable</bundledSignature>
+						</bundledSignatures>
+					</configuration>
+					<executions>
+						<execution>
+							<phase>validate</phase>
+							<goals>
+								<goal>check</goal>
+								<goal>testCheck</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 
@@ -337,10 +359,13 @@
 			</plugin>
 
 			<plugin>
+				<groupId>de.thetaphi</groupId>
+				<artifactId>forbiddenapis</artifactId>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
-
 		</plugins>
 	</build>
 
