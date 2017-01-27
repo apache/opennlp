@@ -31,10 +31,8 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
@@ -259,15 +257,6 @@ public class Parser extends AbstractBottomUpParser {
     Parse[] newParses = new Parse[newParsesList.size()];
     newParsesList.toArray(newParses);
     return newParses;
-  }
-
-  /**
-   * @deprecated Please do not use anymore, use the ObjectStream train methods instead! This method
-   *     will be removed soon.
-   */
-  @Deprecated
-  public static AbstractModel train(ObjectStream<Event> es, int iterations, int cut) throws IOException {
-    return opennlp.tools.ml.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
   }
 
   public static void mergeReportIntoManifest(Map<String, String> manifest,

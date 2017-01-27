@@ -20,12 +20,12 @@ package opennlp.tools.cmdline.parser;
 import java.io.IOException;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.maxent.GIS;
 import opennlp.tools.ml.model.Event;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
-import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
 
@@ -50,8 +50,9 @@ public final class CheckModelUpdaterTool extends ModelUpdaterTool {
     System.out.println("Training check model");
     ObjectStream<Event> bes = new ParserEventStream(parseSamples,
         originalModel.getHeadRules(), ParserEventTypeEnum.CHECK, mdict);
-    AbstractModel checkModel = Parser.train(bes,
-        100, 5);
+
+    GIS trainer = new GIS();
+    MaxentModel checkModel = trainer.train(bes);
 
     parseSamples.close();
 

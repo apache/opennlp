@@ -37,62 +37,6 @@ import opennlp.tools.util.ObjectStream;
  */
 public class OnePassDataIndexer extends AbstractDataIndexer {
 
-  /**
-   * One argument constructor for DataIndexer which calls the two argument
-   * constructor assuming no cutoff.
-   *
-   * @param eventStream
-   *          An Event[] which contains the a list of all the Events seen in the
-   *          training data.
-   */
-  @Deprecated
-  public OnePassDataIndexer(ObjectStream<Event> eventStream) throws IOException {
-    this(eventStream, 0);
-  }
-
-  @Deprecated
-  public OnePassDataIndexer(ObjectStream<Event> eventStream, int cutoff)
-      throws IOException {
-    this(eventStream, cutoff, true);
-  }
-
-  /**
-   * Two argument constructor for DataIndexer.
-   *
-   * @param eventStream
-   *          An Event[] which contains the a list of all the Events seen in the
-   *          training data.
-   * @param cutoff
-   *          The minimum number of times a predicate must have been observed in
-   *          order to be included in the model.
-   */
-  @Deprecated
-  public OnePassDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort)
-      throws IOException {
-    Map<String, Integer> predicateIndex = new HashMap<>();
-    List<Event> events;
-    List<ComparableEvent> eventsToCompare;
-  
-    System.out.println("Indexing events using cutoff of " + cutoff + "\n");
-  
-    System.out.print("\tComputing event counts...  ");
-    events = computeEventCounts(eventStream, predicateIndex, cutoff);
-    System.out.println("done. " + events.size() + " events");
-  
-    System.out.print("\tIndexing...  ");
-    eventsToCompare = index(events, predicateIndex);
-    // done with event list
-    events = null;
-    // done with predicates
-    predicateIndex = null;
-  
-    System.out.println("done.");
-  
-    System.out.print("Sorting and merging events... ");
-    sortAndMerge(eventsToCompare, sort);
-    System.out.println("Done indexing.");
-  }
-
   public OnePassDataIndexer(){}
 
   @Override

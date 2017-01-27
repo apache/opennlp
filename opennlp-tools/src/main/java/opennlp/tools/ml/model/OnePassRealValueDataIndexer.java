@@ -17,7 +17,6 @@
 
 package opennlp.tools.ml.model;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.util.InsufficientTrainingDataException;
-import opennlp.tools.util.ObjectStream;
 
 /**
  * An indexer for maxent model data which handles cutoffs for uncommon
@@ -35,24 +33,6 @@ import opennlp.tools.util.ObjectStream;
 public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 
   float[][] values;
-  
-  @Deprecated
-  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff, boolean sort)
-      throws IOException {
-    super(eventStream,cutoff,sort);
-  }
-  
-  /**
-   * Two argument constructor for DataIndexer.
-   * @param eventStream An Event[] which contains the a list of all the Events
-   *               seen in the training data.
-   * @param cutoff The minimum number of times a predicate must have been
-   *               observed in order to be included in the model.
-   */
-  @Deprecated
-  public OnePassRealValueDataIndexer(ObjectStream<Event> eventStream, int cutoff) throws IOException {
-    super(eventStream,cutoff);
-  }
 
   public OnePassRealValueDataIndexer() {
   }
@@ -75,7 +55,6 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     }
     return numUniqueEvents;
   }
-
 
   @Override
   protected List<ComparableEvent> index(List<Event> events, Map<String,Integer> predicateIndex) {

@@ -43,8 +43,7 @@ public class BinaryQNModelWriter extends QNModelWriter {
     super(model);
 
     if (f.getName().endsWith(".gz")) {
-      output = new DataOutputStream(new GZIPOutputStream(
-          new FileOutputStream(f)));
+      output = new DataOutputStream(new GZIPOutputStream(new FileOutputStream(f)));
     } else {
       output = new DataOutputStream(new FileOutputStream(f));
     }

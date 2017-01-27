@@ -36,8 +36,6 @@ import opennlp.tools.ml.model.Context;
 public abstract class GISModelWriter extends AbstractModelWriter {
   protected Context[] PARAMS;
   protected String[] OUTCOME_LABELS;
-  protected int CORRECTION_CONSTANT;
-  protected double CORRECTION_PARAM;
   protected String[] PRED_LABELS;
 
   public GISModelWriter(AbstractModel model) {
@@ -49,9 +47,6 @@ public abstract class GISModelWriter extends AbstractModelWriter {
     @SuppressWarnings("unchecked")
     Map<String, Integer> pmap = (Map<String, Integer>) data[1];
     OUTCOME_LABELS = (String[]) data[2];
-    CORRECTION_CONSTANT = (Integer) data[3];
-    CORRECTION_PARAM = (Double) data[4];
-
     PRED_LABELS = new String[pmap.size()];
     for (String pred : pmap.keySet()) {
       PRED_LABELS[pmap.get(pred)] = pred;
@@ -73,17 +68,12 @@ public abstract class GISModelWriter extends AbstractModelWriter {
     // the type of model (GIS)
     writeUTF("GIS");
 
-    // the value of the correction constant
-    writeInt(CORRECTION_CONSTANT);
-
-    // the value of the correction constant
-    writeDouble(CORRECTION_PARAM);
-
     // the mapping from outcomes to their integer indexes
     writeInt(OUTCOME_LABELS.length);
 
-    for (int i = 0; i < OUTCOME_LABELS.length; i++)
-      writeUTF(OUTCOME_LABELS[i]);
+    for (String OUTCOME_LABEL : OUTCOME_LABELS) {
+      writeUTF(OUTCOME_LABEL);
+    }
 
     // the mapping from predicates to the outcomes they contributed to.
     // The sorting is done so that we actually can write this out more
@@ -93,21 +83,23 @@ public abstract class GISModelWriter extends AbstractModelWriter {
 
     writeInt(compressed.size());
 
-    for (int i = 0; i < compressed.size(); i++) {
-      List a = compressed.get(i);
-      writeUTF(a.size() + a.get(0).toString());
+    for (List<ComparablePredicate> aCompressed : compressed) {
+      writeUTF(aCompressed.size() + ((List) aCompressed).get(0).toString());
     }
 
     // the mapping from predicate names to their integer indexes
     writeInt(PARAMS.length);
 
-    for (int i = 0; i < sorted.length; i++)
-      writeUTF(sorted[i].name);
+    for (ComparablePredicate aSorted : sorted) {
+      writeUTF(aSorted.name);
+    }
 
     // write out the parameters
-    for (int i = 0; i < sorted.length; i++)
-      for (int j = 0; j < sorted[i].params.length; j++)
-        writeDouble(sorted[i].params[j]);
+    for (ComparablePredicate aSorted : sorted) {
+      for (int j = 0; j < aSorted.params.length; j++) {
+        writeDouble(aSorted.params[j]);
+      }
+    }
 
     close();
   }

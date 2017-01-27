@@ -47,15 +47,8 @@ public abstract class AbstractModel implements MaxentModel {
   }
 
   public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames) {
-    init(predLabels,outcomeNames);
-    this.evalParams = new EvalParameters(params,outcomeNames.length);
-  }
-
-  @Deprecated
-  public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames,
-      int correctionConstant, double correctionParam) {
-    init(predLabels,outcomeNames);
-    this.evalParams = new EvalParameters(params,correctionParam,correctionConstant,outcomeNames.length);
+    init(predLabels, outcomeNames);
+    this.evalParams = new EvalParameters(params, outcomeNames.length);
   }
 
   private void init(String[] predLabels, String[] outcomeNames) {
@@ -159,21 +152,15 @@ public abstract class AbstractModel implements MaxentModel {
    * <li>index 2: java.lang.String[] containing the names of the outcomes,
    *            stored in the index of the array which represents their
    *            unique ids in the model.
-   * <li>index 3: java.lang.Integer containing the value of the models
-   *            correction constant
-   * <li>index 4: java.lang.Double containing the value of the models
-   *            correction parameter
    * </ul>
    *
    * @return An Object[] with the values as described above.
    */
   public final Object[] getDataStructures() {
-    Object[] data = new Object[5];
+    Object[] data = new Object[3];
     data[0] = evalParams.getParams();
     data[1] = pmap;
     data[2] = outcomeNames;
-    data[3] = (int) evalParams.getCorrectionConstant();
-    data[4] = evalParams.getCorrectionParam();
     return data;
   }
 

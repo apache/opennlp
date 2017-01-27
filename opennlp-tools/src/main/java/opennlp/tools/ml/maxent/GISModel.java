@@ -39,58 +39,9 @@ public final class GISModel extends AbstractModel {
    *          The names of the predicates used in this model.
    * @param outcomeNames
    *          The names of the outcomes this model predicts.
-   * @param correctionConstant
-   *          The maximum number of active features which occur in an event.
-   * @param correctionParam
-   *          The parameter associated with the correction feature.
-   */
-  @Deprecated
-  public GISModel(Context[] params, String[] predLabels, String[] outcomeNames,
-      int correctionConstant, double correctionParam) {
-    this(params, predLabels, outcomeNames, correctionConstant, correctionParam,
-        new UniformPrior());
-  }
-
-  /**
-   * Creates a new model with the specified parameters, outcome names, and
-   * predicate/feature labels.
-   *
-   * @param params
-   *          The parameters of the model.
-   * @param predLabels
-   *          The names of the predicates used in this model.
-   * @param outcomeNames
-   *          The names of the outcomes this model predicts.
    */
   public GISModel(Context[] params, String[] predLabels, String[] outcomeNames) {
-    this(params, predLabels, outcomeNames, 1, 0,
-        new UniformPrior());
-  }
-
-  /**
-   * Creates a new model with the specified parameters, outcome names, and
-   * predicate/feature labels.
-   *
-   * @param params
-   *          The parameters of the model.
-   * @param predLabels
-   *          The names of the predicates used in this model.
-   * @param outcomeNames
-   *          The names of the outcomes this model predicts.
-   * @param correctionConstant
-   *          The maximum number of active features which occur in an event.
-   * @param correctionParam
-   *          The parameter associated with the correction feature.
-   * @param prior
-   *          The prior to be used with this model.
-   */
-  @Deprecated
-  public GISModel(Context[] params, String[] predLabels, String[] outcomeNames,
-      int correctionConstant, double correctionParam, Prior prior) {
-    super(params, predLabels, outcomeNames, correctionConstant, correctionParam);
-    this.prior = prior;
-    prior.setLabels(outcomeNames, predLabels);
-    modelType = ModelType.Maxent;
+    this(params, predLabels, outcomeNames, new UniformPrior());
   }
 
   /**
@@ -107,7 +58,10 @@ public final class GISModel extends AbstractModel {
    *          The prior to be used with this model.
    */
   public GISModel(Context[] params, String[] predLabels, String[] outcomeNames, Prior prior) {
-    this(params, predLabels, outcomeNames, 1, 0, prior);
+    super(params, predLabels, outcomeNames);
+    this.prior = prior;
+    prior.setLabels(outcomeNames, predLabels);
+    modelType = ModelType.Maxent;
   }
 
   /**
