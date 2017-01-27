@@ -49,7 +49,7 @@ class LetsmtSentenceStream implements ObjectStream<SentenceSample>  {
       int begin = sentencesString.length();
 
       if (sentence.getTokens() != null) {
-          sentencesString.append(String.join(" ", sentence.getTokens()));
+        sentencesString.append(String.join(" ", sentence.getTokens()));
       } else if (sentence.getNonTokenizedText() != null) {
         sentencesString.append(sentence.getNonTokenizedText());
       }

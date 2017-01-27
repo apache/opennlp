@@ -158,7 +158,7 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
 
     EvalParameters evalParams = new EvalParameters(params, numOutcomes);
 
-    double stepsize = 1;
+    double stepSize = 1;
 
     for (int ei = 0; ei < numUniqueEvents; ei++) {
       int targetOutcome = outcomeList[ei];
@@ -166,9 +166,9 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
         for (int ci = 0; ci < contexts[ei].length; ci++) {
           int pi = contexts[ei][ci];
           if (values == null) {
-            params[pi].updateParameter(targetOutcome, stepsize);
+            params[pi].updateParameter(targetOutcome, stepSize);
           } else {
-            params[pi].updateParameter(targetOutcome, stepsize * values[ei][ci]);
+            params[pi].updateParameter(targetOutcome, stepSize * values[ei][ci]);
           }
         }
       }

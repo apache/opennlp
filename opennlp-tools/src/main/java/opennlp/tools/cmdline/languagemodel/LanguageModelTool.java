@@ -36,65 +36,68 @@ import opennlp.tools.util.StringList;
  */
 public class LanguageModelTool extends BasicCmdLineTool {
 
-    @Override public String getShortDescription() {
-        return "gives the probability of a sequence of tokens in a language model";
-    }
+  @Override
+  public String getShortDescription() {
+    return "gives the probability of a sequence of tokens in a language model";
+  }
 
-    @Override public void run(String[] args) {
-        File lmFile = new File(args[0]);
-        FileInputStream stream = null;
-        try {
-            stream = new FileInputStream(lmFile);
-            NGramLanguageModel nGramLanguageModel = new NGramLanguageModel(
-                stream);
+  @Override
+  public void run(String[] args) {
+    File lmFile = new File(args[0]);
+    FileInputStream stream = null;
+    try {
+      stream = new FileInputStream(lmFile);
+      NGramLanguageModel nGramLanguageModel = new NGramLanguageModel(
+          stream);
 
-            ObjectStream<String> lineStream;
-            PerformanceMonitor perfMon = null;
+      ObjectStream<String> lineStream;
+      PerformanceMonitor perfMon = null;
 
-            try {
-                lineStream = new PlainTextByLineStream(
-                    new SystemInputStreamFactory(),
-                    SystemInputStreamFactory.encoding());
-                perfMon = new PerformanceMonitor(System.err, "lm");
-                perfMon.start();
-                String line;
-                while ((line = lineStream.read()) != null) {
-                    double probability;
-                    String[] tokens = line.split(" ");
-                    try {
-                        probability = nGramLanguageModel
-                            .calculateProbability(new StringList(tokens));
-                    } catch (Exception e) {
-                        System.err.println("Error:" + e.getLocalizedMessage());
-                        System.err.println(line);
-                        continue;
-                    }
+      try {
+        lineStream = new PlainTextByLineStream(
+            new SystemInputStreamFactory(),
+            SystemInputStreamFactory.encoding());
+        perfMon = new PerformanceMonitor(System.err, "lm");
+        perfMon.start();
+        String line;
+        while ((line = lineStream.read()) != null) {
+          double probability;
+          String[] tokens = line.split(" ");
+          try {
+            probability = nGramLanguageModel
+                .calculateProbability(new StringList(tokens));
+          } catch (Exception e) {
+            System.err.println("Error:" + e.getLocalizedMessage());
+            System.err.println(line);
+            continue;
+          }
 
-                    System.out.println("sequence '" + Arrays.toString(tokens)
-                        + "' has a probability of " + probability);
+          System.out.println("sequence '" + Arrays.toString(tokens)
+              + "' has a probability of " + probability);
 
-                    perfMon.incrementCounter();
-                }
-            } catch (IOException e) {
-                CmdLineUtil.handleStdinIoError(e);
-            }
-
-            perfMon.stopAndPrintFinalResult();
-
-        } catch (java.io.IOException e) {
-            System.err.println(e.getLocalizedMessage());
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    // do nothing
-                }
-            }
+          perfMon.incrementCounter();
         }
-    }
+      } catch (IOException e) {
+        CmdLineUtil.handleStdinIoError(e);
+      }
 
-    @Override public String getHelp() {
-        return "Usage: " + CLI.CMD + " " + getName() + " model";
+      perfMon.stopAndPrintFinalResult();
+
+    } catch (java.io.IOException e) {
+      System.err.println(e.getLocalizedMessage());
+    } finally {
+      if (stream != null) {
+        try {
+          stream.close();
+        } catch (IOException e) {
+          // do nothing
+        }
+      }
     }
+  }
+
+  @Override
+  public String getHelp() {
+    return "Usage: " + CLI.CMD + " " + getName() + " model";
+  }
 }

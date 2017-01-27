@@ -65,15 +65,11 @@ public class GISModelReader extends AbstractModelReader {
    *         GISModelReader (usually via its the constructor).
    */
   public AbstractModel constructModel() throws IOException {
-    int correctionConstant = getCorrectionConstant();
-    double correctionParam = getCorrectionParameter();
     String[] outcomeLabels = getOutcomes();
     int[][] outcomePatterns = getOutcomePatterns();
     String[] predLabels = getPredicates();
     Context[] params = getParameters(outcomePatterns);
-
-    return new GISModel(params, predLabels, outcomeLabels, correctionConstant,
-        correctionParam);
+    return new GISModel(params, predLabels, outcomeLabels);
   }
 
   public void checkModelType() throws java.io.IOException {
@@ -83,11 +79,4 @@ public class GISModelReader extends AbstractModelReader {
           + " model as a GIS model." + " You should expect problems.");
   }
 
-  protected int getCorrectionConstant() throws java.io.IOException {
-    return readInt();
-  }
-
-  protected double getCorrectionParameter() throws java.io.IOException {
-    return readDouble();
-  }
 }

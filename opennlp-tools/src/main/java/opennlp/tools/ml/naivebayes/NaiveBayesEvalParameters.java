@@ -30,7 +30,7 @@ public class NaiveBayesEvalParameters extends EvalParameters {
 
   public NaiveBayesEvalParameters(Context[] params, int numOutcomes,
       double[] outcomeTotals, long vocabulary) {
-    super(params, 0, 0, numOutcomes);
+    super(params, numOutcomes);
     this.outcomeTotals = outcomeTotals;
     this.vocabulary = vocabulary;
   }

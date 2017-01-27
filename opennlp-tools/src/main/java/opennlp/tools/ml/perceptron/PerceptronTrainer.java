@@ -233,7 +233,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
         params[pi].setParameter(aoi, 0.0);
     }
 
-    EvalParameters evalParams = new EvalParameters(params,numOutcomes);
+    EvalParameters evalParams = new EvalParameters(params, numOutcomes);
 
     /* Stores the sum of parameter values of each predicate over many iterations. */
     MutableContext[] summedParams = new MutableContext[numPreds];

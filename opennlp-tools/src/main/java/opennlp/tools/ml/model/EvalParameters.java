@@ -40,32 +40,9 @@ public class EvalParameters {
    * This is used to normalize the number of features which occur in an event. */
   private double correctionConstant;
 
-  /**  Stores inverse of the correction constant, 1/C. */
-  @Deprecated
-  private final double constantInverse;
-  /** The correction parameter of the model. */
-  @Deprecated
-  private double correctionParam;
-
-  /**
-   * Creates a set of parameters which can be evaulated with the eval method.
-   * @param params The parameters of the model.
-   * @param correctionParam The correction parameter.
-   * @param correctionConstant The correction constant.
-   * @param numOutcomes The number of outcomes.
-   */
-  @Deprecated
-  public EvalParameters(Context[] params, double correctionParam,
-      double correctionConstant, int numOutcomes) {
-    this.params = params;
-    this.correctionParam = correctionParam;
-    this.numOutcomes = numOutcomes;
-    this.correctionConstant = correctionConstant;
-    this.constantInverse = 1.0 / correctionConstant;
-  }
-
   public EvalParameters(Context[] params, int numOutcomes) {
-    this(params, 0, 1, numOutcomes);
+    this.params = params;
+    this.numOutcomes = numOutcomes;
   }
 
   public Context[] getParams() {
@@ -76,30 +53,9 @@ public class EvalParameters {
     return numOutcomes;
   }
 
-  @Deprecated
-  public double getCorrectionConstant() {
-    return correctionConstant;
-  }
-
-  @Deprecated
-  public double getConstantInverse() {
-    return constantInverse;
-  }
-
-  @Deprecated
-  public double getCorrectionParam() {
-    return correctionParam;
-  }
-
-  @Deprecated
-  public void setCorrectionParam(double correctionParam) {
-    this.correctionParam = correctionParam;
-  }
-
   @Override
   public int hashCode() {
-    return Objects.hash(Arrays.hashCode(params), numOutcomes, correctionConstant,
-        constantInverse, correctionParam);
+    return Objects.hash(Arrays.hashCode(params), numOutcomes, correctionConstant);
   }
 
   @Override
@@ -113,9 +69,7 @@ public class EvalParameters {
 
       return Arrays.equals(params, evalParameters.params)
           && numOutcomes == evalParameters.numOutcomes
-          && correctionConstant == evalParameters.correctionConstant
-          && constantInverse == evalParameters.constantInverse
-          && correctionParam == evalParameters.correctionParam;
+          && correctionConstant == evalParameters.correctionConstant;
     }
 
     return false;

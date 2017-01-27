@@ -31,10 +31,8 @@ import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.ChunkSampleStream;
 import opennlp.tools.parser.HeadRules;
@@ -206,8 +204,8 @@ public class Parser extends AbstractBottomUpParser {
   @Override
   protected Parse[] advanceChunks(Parse p, double minChunkScore) {
     Parse[] parses = super.advanceChunks(p, minChunkScore);
-    for (int pi = 0; pi < parses.length; pi++) {
-      Parse[] chunks = parses[pi].getChildren();
+    for (Parse parse : parses) {
+      Parse[] chunks = parse.getChildren();
       for (int ci = 0; ci < chunks.length; ci++) {
         setComplete(chunks[ci]);
       }
@@ -530,9 +528,4 @@ public class Parser extends AbstractBottomUpParser {
     return train(languageCode, parseSamples, rules, params);
   }
 
-  @Deprecated
-  public static AbstractModel train(ObjectStream<Event>  es, int iterations, int cut)
-      throws IOException {
-    return opennlp.tools.ml.maxent.GIS.trainModel(iterations, new TwoPassDataIndexer(es, cut));
-  }
 }
