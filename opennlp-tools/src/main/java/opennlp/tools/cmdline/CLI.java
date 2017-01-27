@@ -37,6 +37,7 @@ import opennlp.tools.cmdline.doccat.DoccatEvaluatorTool;
 import opennlp.tools.cmdline.doccat.DoccatTool;
 import opennlp.tools.cmdline.doccat.DoccatTrainerTool;
 import opennlp.tools.cmdline.entitylinker.EntityLinkerTool;
+import opennlp.tools.cmdline.languagemodel.LanguageModelTool;
 import opennlp.tools.cmdline.lemmatizer.LemmatizerEvaluatorTool;
 import opennlp.tools.cmdline.lemmatizer.LemmatizerMETool;
 import opennlp.tools.cmdline.lemmatizer.LemmatizerTrainerTool;
@@ -147,6 +148,9 @@ public final class CLI {
 
     // Entity Linker
     tools.add(new EntityLinkerTool());
+
+    // Language Model
+    tools.add(new LanguageModelTool());
 
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);
