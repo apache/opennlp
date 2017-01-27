@@ -24,6 +24,7 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.MutableContext;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Trains models using the perceptron algorithm.  Each outcome is represented as
@@ -80,6 +81,10 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   public PerceptronTrainer() {
   }
 
+  public PerceptronTrainer(TrainingParameters parameters) {
+    super(parameters);
+  }
+  
   public boolean isValid() {
     String algorithmName = getAlgorithm();
     return !(algorithmName != null && !(PERCEPTRON_VALUE.equals(algorithmName)));

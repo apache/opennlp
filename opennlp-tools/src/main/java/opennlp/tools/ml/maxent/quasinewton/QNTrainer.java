@@ -66,6 +66,10 @@ public class QNTrainer extends AbstractEventTrainer {
   private int m;
   private int maxFctEval;
 
+  public QNTrainer(TrainingParameters parameters) {
+    super(parameters);
+  }
+  
   // Constructor -- to log. For testing purpose
   public QNTrainer(boolean printMessages) {
     this(M_DEFAULT, printMessages);
@@ -106,6 +110,7 @@ public class QNTrainer extends AbstractEventTrainer {
   }
   
   @Override
+  @Deprecated
   public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
     init(new TrainingParameters(trainParams),reportMap);
   }
