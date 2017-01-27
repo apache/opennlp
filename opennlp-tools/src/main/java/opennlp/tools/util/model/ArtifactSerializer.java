@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import opennlp.tools.util.InvalidFormatException;
-
 /**
  * Responsible to create an artifact from an {@link InputStream}.
  */
@@ -37,9 +35,8 @@ public interface ArtifactSerializer<T> {
    * @return the artifact
    *
    * @throws IOException
-   * @throws InvalidFormatException
    */
-  T create(InputStream in) throws IOException, InvalidFormatException;
+  T create(InputStream in) throws IOException;
 
   /**
    * Serializes the artifact to the provided {@link OutputStream}.

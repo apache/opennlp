@@ -29,15 +29,17 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import opennlp.tools.dictionary.serializer.Attributes;
-import opennlp.tools.dictionary.serializer.DictionarySerializer;
+import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.StringUtil;
+import opennlp.tools.util.model.DictionarySerializer;
+import opennlp.tools.util.model.SerializableArtifact;
 
 /**
  * This class is a dictionary.
  */
-public class Dictionary implements Iterable<StringList> {
+public class Dictionary implements Iterable<StringList>, SerializableArtifact {
 
   private class StringListWrapper {
 
@@ -108,29 +110,11 @@ public class Dictionary implements Iterable<StringList> {
   /**
    * Initializes the {@link Dictionary} from an existing dictionary resource.
    *
-   * @param in
+   * @param in {@link InputStream}
    * @throws IOException
    */
   public Dictionary(InputStream in) throws IOException {
-    isCaseSensitive = DictionarySerializer.create(in, entry -> put(entry.getTokens()));
-  }
-
-  /**
-   * Loads a Dictionary from a XML file.
-   *
-   * @deprecated This constructor is deprecated. Passing the case sensitivity
-   *             flag has no effect. Use
-   *             {@link Dictionary#Dictionary(InputStream)} instead and set the
-   *             case sensitivity during the dictionary creation.
-   *
-   * @param in
-   *          the dictionary in its XML format
-   * @param caseSensitive
-   *          has no effect
-   * @throws IOException
-   */
-  public Dictionary(InputStream in, boolean caseSensitive) throws IOException {
-    this(in);
+    isCaseSensitive = DictionaryEntryPersistor.create(in, entry -> put(entry.getTokens()));
   }
 
   /**
@@ -163,7 +147,7 @@ public class Dictionary implements Iterable<StringList> {
   /**
    * Checks if this dictionary has the given entry.
    *
-   * @param tokens
+   * @param tokens query
    * @return true if it contains the entry otherwise false
    */
   public boolean contains(StringList tokens) {
@@ -173,7 +157,7 @@ public class Dictionary implements Iterable<StringList> {
   /**
    * Removes the given tokens form the current instance.
    *
-   * @param tokens
+   * @param tokens filter tokens
    */
   public void remove(StringList tokens) {
     entrySet.remove(new StringListWrapper(tokens));
@@ -215,13 +199,12 @@ public class Dictionary implements Iterable<StringList> {
   /**
    * Writes the current instance to the given {@link OutputStream}.
    *
-   * @param out
+   * @param out {@link OutputStream}
    * @throws IOException
    */
   public void serialize(OutputStream out) throws IOException {
 
-    Iterator<Entry> entryIterator = new Iterator<Entry>()
-    {
+    Iterator<Entry> entryIterator = new Iterator<Entry>() {
       private Iterator<StringList> dictionaryIterator = Dictionary.this.iterator();
 
       public boolean hasNext() {
@@ -241,7 +224,7 @@ public class Dictionary implements Iterable<StringList> {
 
     };
 
-    DictionarySerializer.serialize(out, entryIterator, isCaseSensitive);
+    DictionaryEntryPersistor.serialize(out, entryIterator, isCaseSensitive);
   }
 
   @Override
@@ -278,10 +261,8 @@ public class Dictionary implements Iterable<StringList> {
    * Reads a dictionary which has one entry per line. The tokens inside an
    * entry are whitespace delimited.
    *
-   * @param in
-   *
+   * @param in {@link Reader}
    * @return the parsed dictionary
-   *
    * @throws IOException
    */
   public static Dictionary parseOneEntryPerLine(Reader in) throws IOException {
@@ -360,5 +341,14 @@ public class Dictionary implements Iterable<StringList> {
         return result;
       }
     };
+  }
+
+  /**
+   * Gets the Serializer Class for {@link Dictionary}
+   * @return {@link DictionarySerializer}
+   */
+  @Override
+  public Class<?> getArtifactSerializerClass() {
+    return DictionarySerializer.class;
   }
 }

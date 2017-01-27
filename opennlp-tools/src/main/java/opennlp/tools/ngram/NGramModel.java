@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.dictionary.serializer.Attributes;
-import opennlp.tools.dictionary.serializer.DictionarySerializer;
+import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
@@ -57,7 +57,7 @@ public class NGramModel implements Iterable<StringList> {
    * @throws IOException
    */
   public NGramModel(InputStream in) throws IOException {
-    DictionarySerializer.create(in, entry -> {
+    DictionaryEntryPersistor.create(in, entry -> {
 
       int count;
       String countValueString = null;
@@ -327,7 +327,7 @@ public class NGramModel implements Iterable<StringList> {
 
     };
 
-    DictionarySerializer.serialize(out, entryIterator, false);
+    DictionaryEntryPersistor.serialize(out, entryIterator, false);
   }
 
   @Override

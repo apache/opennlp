@@ -24,7 +24,7 @@ import java.util.Map;
 
 import opennlp.tools.dictionary.Dictionary;
 
-class DictionarySerializer implements ArtifactSerializer<Dictionary> {
+public class DictionarySerializer implements ArtifactSerializer<Dictionary> {
 
   public Dictionary create(InputStream in) throws IOException {
     return new Dictionary(in);

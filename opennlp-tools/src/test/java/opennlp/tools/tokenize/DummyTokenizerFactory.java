@@ -66,9 +66,7 @@ public class DummyTokenizerFactory extends TokenizerFactory {
   @Override
   @SuppressWarnings("rawtypes")
   public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
-    Map<String, ArtifactSerializer> serializers = super
-        .createArtifactSerializersMap();
-
+    Map<String, ArtifactSerializer> serializers = super.createArtifactSerializersMap();
     serializers.put(DUMMY_DICT, new DummyDictionarySerializer());
     return serializers;
   }
@@ -81,7 +79,7 @@ public class DummyTokenizerFactory extends TokenizerFactory {
     return artifactMap;
   }
 
-  static class DummyDictionarySerializer implements
+  public static class DummyDictionarySerializer implements
       ArtifactSerializer<DummyDictionary> {
 
     public DummyDictionary create(InputStream in) throws IOException {
@@ -94,7 +92,7 @@ public class DummyTokenizerFactory extends TokenizerFactory {
     }
   }
 
-  static class DummyDictionary extends Dictionary {
+  public static class DummyDictionary extends Dictionary {
     private Dictionary indict;
 
     public DummyDictionary(Dictionary dict) {
@@ -111,6 +109,11 @@ public class DummyTokenizerFactory extends TokenizerFactory {
 
     public Set<String> asStringSet() {
       return indict.asStringSet();
+    }
+
+    @Override
+    public Class<?> getArtifactSerializerClass() {
+      return DummyDictionarySerializer.class;
     }
   }
 

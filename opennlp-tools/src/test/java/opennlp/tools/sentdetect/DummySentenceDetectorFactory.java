@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
@@ -69,9 +68,7 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
   @Override
   @SuppressWarnings("rawtypes")
   public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
-    Map<String, ArtifactSerializer> serializers = super
-        .createArtifactSerializersMap();
-
+    Map<String, ArtifactSerializer> serializers = super.createArtifactSerializersMap();
     serializers.put(DUMMY_DICT, new DummyDictionarySerializer());
     return serializers;
   }
@@ -79,16 +76,15 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
   @Override
   public Map<String, Object> createArtifactMap() {
     Map<String, Object> artifactMap = super.createArtifactMap();
-    if (this.dict != null)
+    if (this.dict != null) {
       artifactMap.put(DUMMY_DICT, this.dict);
+    }
     return artifactMap;
   }
 
-  static class DummyDictionarySerializer implements
-      ArtifactSerializer<DummyDictionary> {
+  public static class DummyDictionarySerializer implements ArtifactSerializer<DummyDictionary> {
 
-    public DummyDictionary create(InputStream in) throws IOException,
-        InvalidFormatException {
+    public DummyDictionary create(InputStream in) throws IOException {
       return new DummyDictionary(in);
     }
 
@@ -98,7 +94,7 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
     }
   }
 
-  static class DummyDictionary extends Dictionary {
+  public static class DummyDictionary extends Dictionary {
     private Dictionary indict;
 
     public DummyDictionary(Dictionary dict) {
@@ -115,6 +111,11 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
 
     public Set<String> asStringSet() {
       return indict.asStringSet();
+    }
+
+    @Override
+    public Class<?> getArtifactSerializerClass() {
+      return DummyDictionarySerializer.class;
     }
   }
 

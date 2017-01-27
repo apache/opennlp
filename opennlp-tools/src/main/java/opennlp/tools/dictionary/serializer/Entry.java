@@ -24,9 +24,9 @@ import opennlp.tools.util.StringList;
  * An {@link Entry} is a {@link StringList} which can
  * optionally be mapped to attributes.
  *
- * {@link Entry}s is a read and written by the {@link DictionarySerializer}.
+ * {@link Entry}s is a read and written by the {@link DictionaryEntryPersistor}.
  *
- * @see DictionarySerializer
+ * @see DictionaryEntryPersistor
  * @see Attributes
  */
 public class Entry {

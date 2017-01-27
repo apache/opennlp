@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import opennlp.tools.dictionary.serializer.Attributes;
-import opennlp.tools.dictionary.serializer.DictionarySerializer;
+import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
@@ -152,7 +152,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
       }
     };
 
-    DictionarySerializer.serialize(out, entries, caseSensitive);
+    DictionaryEntryPersistor.serialize(out, entries, caseSensitive);
   }
 
   @Override
@@ -224,7 +224,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
 
     final POSDictionary newPosDict = new POSDictionary();
 
-    boolean isCaseSensitive = DictionarySerializer.create(in, entry -> {
+    boolean isCaseSensitive = DictionaryEntryPersistor.create(in, entry -> {
 
       String tagString = entry.getAttributes().getValue("tags");
 
