@@ -24,6 +24,7 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.MutableContext;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Trains models using the perceptron algorithm.  Each outcome is represented as
@@ -92,6 +93,10 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
   public NaiveBayesTrainer() {
   }
 
+  public NaiveBayesTrainer(TrainingParameters parameters) {
+    super(parameters);
+  }
+  
   public boolean isSortAndMerge() {
     return false;
   }

@@ -56,6 +56,10 @@ public class GIS extends AbstractEventTrainer {
   public GIS() {
   }
 
+  public GIS(TrainingParameters parameters) {
+    super(parameters);
+  }
+  
   public boolean isValid() {
 
     if (!super.isValid()) {

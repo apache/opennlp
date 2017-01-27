@@ -46,6 +46,10 @@ public abstract class AbstractTrainer {
   public AbstractTrainer() {
   }
 
+  public AbstractTrainer(TrainingParameters parameters) {
+    init(parameters,new HashMap<>());
+  }
+  
   public void init(TrainingParameters trainingParameters, Map<String,String> reportMap) {
     this.trainingParameters = trainingParameters;
     if (reportMap == null) reportMap = new HashMap<>();
@@ -53,6 +57,7 @@ public abstract class AbstractTrainer {
     printMessages = trainingParameters.getBooleanParameter(VERBOSE_PARAM, VERBOSE_DEFAULT);
   }
   
+  @Deprecated
   public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
     init(new TrainingParameters(trainParams),reportMap);
   }

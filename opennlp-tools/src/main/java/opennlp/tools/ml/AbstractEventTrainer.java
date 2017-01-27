@@ -26,6 +26,7 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.HashSumEventStream;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 
 public abstract class AbstractEventTrainer extends AbstractTrainer implements EventTrainer {
 
@@ -37,6 +38,10 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
   public AbstractEventTrainer() {
   }
 
+  public AbstractEventTrainer(TrainingParameters parameters) {
+    super(parameters);
+  }
+  
   @Override
   public boolean isValid() {
     return super.isValid();
