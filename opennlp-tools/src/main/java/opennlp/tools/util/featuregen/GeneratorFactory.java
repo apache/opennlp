@@ -625,6 +625,58 @@ public class GeneratorFactory {
     }
   }
 
+
+
+  /**
+   * @see TokenNormalizerFeatureGenerator
+   */
+  static class TokenNormalizerFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
+
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+                                           FeatureGeneratorResourceProvider resourceManager)
+        throws InvalidFormatException {
+
+      Collection<AdaptiveFeatureGenerator> aggregatedGenerators = new LinkedList<>();
+
+      NodeList childNodes = generatorElement.getChildNodes();
+
+      for (int i = 0; i < childNodes.getLength(); i++) {
+        Node childNode = childNodes.item(i);
+        if (childNode instanceof Element) {
+          Element aggregatedGeneratorElement = (Element) childNode;
+          aggregatedGenerators.add(
+              GeneratorFactory.createGenerator(aggregatedGeneratorElement, resourceManager));
+        }
+      }
+
+      TokenNormalizerFeatureGenerator featureGenerator = null;
+
+      // use extension?
+      String normalizerClassName = generatorElement.getAttribute("class");
+
+      if (normalizerClassName != null && !normalizerClassName.isEmpty()) {
+        TokenNormalizer tokenNormalizer =
+            ExtensionLoader.instantiateExtension(TokenNormalizer.class, normalizerClassName);
+
+        featureGenerator = new TokenNormalizerFeatureGenerator(tokenNormalizer,
+            new AggregatedFeatureGenerator(aggregatedGenerators.toArray(
+                new AdaptiveFeatureGenerator[aggregatedGenerators.size()])));
+      }
+
+      if (featureGenerator == null) {
+        featureGenerator = new TokenNormalizerFeatureGenerator(
+            new AggregatedFeatureGenerator(aggregatedGenerators.toArray(
+                new AdaptiveFeatureGenerator[aggregatedGenerators.size()])));
+      }
+
+      return featureGenerator;
+    }
+
+    static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("normalizer", new TokenNormalizerFeatureGeneratorFactory());
+    }
+  }
+
   private static Map<String, XmlFeatureGeneratorFactory> factories = new HashMap<>();
 
   static {
@@ -648,6 +700,7 @@ public class GeneratorFactory {
     BrownClusterTokenClassFeatureGeneratorFactory.register(factories);
     BrownClusterBigramFeatureGeneratorFactory.register(factories);
     CustomFeatureGeneratorFactory.register(factories);
+    TokenNormalizerFeatureGeneratorFactory.register(factories);
   }
 
   /**
