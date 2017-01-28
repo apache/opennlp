@@ -29,8 +29,9 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 public interface DetailedFMeasureEvaluatorParams {
 
   @ParameterDescription(valueName = "true|false",
-      description = "if true will print detailed FMeasure results.")
-  @OptionalParameter(defaultValue = "false")
+      description = "if true (default) will print detailed FMeasure results.")
+  @OptionalParameter(defaultValue = "true")
+  @Deprecated // this will be removed in 1.8.0
   Boolean getDetailedF();
 
 }
