@@ -26,12 +26,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.doccat.DoccatCrossValidatorTool.CVToolParams;
 import opennlp.tools.cmdline.params.CVParams;
+import opennlp.tools.cmdline.params.FineGrainedEvaluatorParams;
 import opennlp.tools.doccat.DoccatCrossValidator;
 import opennlp.tools.doccat.DoccatEvaluationMonitor;
 import opennlp.tools.doccat.DoccatFactory;
@@ -44,10 +43,7 @@ import opennlp.tools.util.model.ModelUtil;
 public final class DoccatCrossValidatorTool extends
     AbstractCrossValidatorTool<DocumentSample, CVToolParams> {
 
-  interface CVToolParams extends CVParams, TrainingParams {
-    @ParameterDescription(valueName = "outputFile", description = "the path of the fine-grained report file.")
-    @OptionalParameter
-    File getReportOutputFile();
+  interface CVToolParams extends CVParams, TrainingParams, FineGrainedEvaluatorParams {
   }
 
   public DoccatCrossValidatorTool() {

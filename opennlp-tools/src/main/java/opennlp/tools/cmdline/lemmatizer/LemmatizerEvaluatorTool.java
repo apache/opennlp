@@ -24,11 +24,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EvaluatorParams;
+import opennlp.tools.cmdline.params.FineGrainedEvaluatorParams;
 import opennlp.tools.lemmatizer.LemmaSample;
 import opennlp.tools.lemmatizer.LemmatizerEvaluationMonitor;
 import opennlp.tools.lemmatizer.LemmatizerEvaluator;
@@ -110,9 +109,6 @@ public final class LemmatizerEvaluatorTool
     System.out.println("Accuracy: " + evaluator.getWordAccuracy());
   }
 
-  interface EvalToolParams extends EvaluatorParams {
-    @ParameterDescription(valueName = "outputFile", description = "the path of the fine-grained report file.")
-    @OptionalParameter
-    File getReportOutputFile();
+  interface EvalToolParams extends EvaluatorParams, FineGrainedEvaluatorParams {
   }
 }

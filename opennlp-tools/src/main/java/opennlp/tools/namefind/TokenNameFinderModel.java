@@ -177,6 +177,10 @@ public class TokenNameFinderModel extends BaseModel {
     return TokenNameFinderFactory.class;
   }
 
+  public SequenceCodec<String> getSequenceCodec() {
+    return this.getFactory().getSequenceCodec();
+  }
+
   public TokenNameFinderFactory getFactory() {
     return (TokenNameFinderFactory) this.toolFactory;
   }
