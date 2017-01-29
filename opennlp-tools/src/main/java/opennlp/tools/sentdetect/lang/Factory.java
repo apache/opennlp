@@ -49,9 +49,9 @@ public class Factory {
 
   public SDContextGenerator createSentenceContextGenerator(String languageCode, Set<String> abbreviations) {
 
-    if ("th".equals(languageCode)) {
+    if ("th".equals(languageCode) || "tha".equals(languageCode)) {
       return new SentenceContextGenerator();
-    } else if ("pt".equals(languageCode)) {
+    } else if ("pt".equals(languageCode) || "por".equals(languageCode)) {
       return new DefaultSDContextGenerator(abbreviations, ptEosCharacters);
     }
 
@@ -68,11 +68,11 @@ public class Factory {
   }
 
   public char[] getEOSCharacters(String languageCode) {
-    if ("th".equals(languageCode)) {
+    if ("th".equals(languageCode) || "tha".equals(languageCode)) {
       return thEosCharacters;
-    } else if ("pt".equals(languageCode)) {
+    } else if ("pt".equals(languageCode) || "por".equals(languageCode)) {
       return ptEosCharacters;
-    } else if ("jp".equals(languageCode)) {
+    } else if ("jp".equals(languageCode) || "jpn".equals(languageCode)) {
       return jpEosCharacters;
     }
 
