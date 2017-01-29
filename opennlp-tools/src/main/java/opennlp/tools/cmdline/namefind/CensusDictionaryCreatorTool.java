@@ -50,7 +50,7 @@ public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
   interface Parameters {
 
     @ParameterDescription(valueName = "code")
-    @OptionalParameter(defaultValue = "en")
+    @OptionalParameter(defaultValue = "eng")
     String getLang();
 
     @ParameterDescription(valueName = "charsetName")

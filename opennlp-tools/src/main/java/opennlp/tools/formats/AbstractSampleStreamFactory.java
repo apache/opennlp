@@ -34,7 +34,7 @@ public abstract class AbstractSampleStreamFactory<T> implements ObjectStreamFact
   }
 
   public String getLang() {
-    return "en";
+    return "eng";
   }
 
   @SuppressWarnings({"unchecked"})

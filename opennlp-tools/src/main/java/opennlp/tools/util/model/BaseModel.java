@@ -94,7 +94,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @param componentName
    *          the component name
    * @param languageCode
-   *          the language code
+   *          the ISO-639-3 language code
    * @param manifestInfoEntries
    *          additional information in the manifest
    * @param factory
@@ -151,7 +151,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @param componentName
    *          the component name
    * @param languageCode
-   *          the language code
+   *          the ISO-639-3 language code
    * @param manifestInfoEntries
    *          additional information in the manifest
    */
@@ -518,7 +518,8 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * was used to train the model or x-unspecified if
    * non was set.
    *
-   * @return the language code of this model
+   * @return the language code of this model, from 1.8.0 this is an ISO-639-3 and for older models
+   * it depends on what was written into it, usually an ISO-639-1 code
    */
   public final String getLanguage() {
     return getManifestProperty(LANGUAGE_PROPERTY);

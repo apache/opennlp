@@ -149,7 +149,7 @@ public class TokenNameFinderCrossValidator {
    * Name finder cross validator
    *
    * @param languageCode
-   *          the language of the training data
+   *          the ISO-639-3 language of the training data
    * @param type
    *          null or an override type for all types in the training data
    * @param trainParams
