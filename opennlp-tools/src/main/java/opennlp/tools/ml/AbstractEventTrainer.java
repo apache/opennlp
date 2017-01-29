@@ -25,6 +25,7 @@ import opennlp.tools.ml.model.DataIndexerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.HashSumEventStream;
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
@@ -68,6 +69,11 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
     if (!isValid()) {
       throw new IllegalArgumentException("trainParams are not valid!");
     }
+
+    if (indexer.getOutcomeLabels().length <= 1) {
+      throw new InsufficientTrainingDataException("Training data must contain more than one outcome");
+    }
+
     MaxentModel model = doTrain(indexer);
     addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
     return model;
