@@ -65,6 +65,13 @@ public class GISModelReader extends AbstractModelReader {
    *         GISModelReader (usually via its the constructor).
    */
   public AbstractModel constructModel() throws IOException {
+
+    // read correction constant (not used anymore)
+    readInt();
+
+    // read correction params (not used anymore)
+    readDouble();
+
     String[] outcomeLabels = getOutcomes();
     int[][] outcomePatterns = getOutcomePatterns();
     String[] predLabels = getPredicates();
@@ -78,5 +85,4 @@ public class GISModelReader extends AbstractModelReader {
       System.out.println("Error: attempting to load a " + modelType
           + " model as a GIS model." + " You should expect problems.");
   }
-
 }

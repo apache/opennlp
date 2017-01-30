@@ -68,6 +68,12 @@ public abstract class GISModelWriter extends AbstractModelWriter {
     // the type of model (GIS)
     writeUTF("GIS");
 
+    // the value of the correction constant (not used anymore)
+    writeInt(1);
+
+    // the value of the correction params (not used anymore)
+    writeDouble(1);
+
     // the mapping from outcomes to their integer indexes
     writeInt(OUTCOME_LABELS.length);
 
