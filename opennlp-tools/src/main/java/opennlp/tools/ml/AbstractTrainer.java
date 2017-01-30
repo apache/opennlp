@@ -20,7 +20,7 @@ package opennlp.tools.ml;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.ml.maxent.GISTrainer;
 import opennlp.tools.util.TrainingParameters;
 
 public abstract class AbstractTrainer {
@@ -63,7 +63,7 @@ public abstract class AbstractTrainer {
   }
 
   public String getAlgorithm() {
-    return trainingParameters.getStringParameter(ALGORITHM_PARAM, GIS.MAXENT_VALUE);
+    return trainingParameters.getStringParameter(ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
   }
 
   public int getCutoff() {
@@ -123,7 +123,7 @@ public abstract class AbstractTrainer {
   /**
    * Use the PluggableParameters directly...
    * @param key
-   * @param value
+   * @param defaultValue
    */
   @Deprecated
   protected boolean getBooleanParam(String key, boolean defaultValue) {

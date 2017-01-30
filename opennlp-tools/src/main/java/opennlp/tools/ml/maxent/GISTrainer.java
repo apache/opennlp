@@ -27,9 +27,12 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import opennlp.tools.ml.AbstractEventTrainer;
+import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.Event;
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.MutableContext;
 import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.Prior;
@@ -55,7 +58,7 @@ import opennlp.tools.util.TrainingParameters;
  * relative entropy between the distribution specified by the empirical constraints of the training
  * data and the specified prior.  By default, the uniform distribution is used as the prior.
  */
-public class GISTrainer {
+public class GISTrainer extends AbstractEventTrainer {
 
   private static final double LLThreshold = 0.0001;
   private final boolean printMessages;
@@ -134,12 +137,44 @@ public class GISTrainer {
    */
   private EvalParameters evalParams;
 
+  public static final String MAXENT_VALUE = "MAXENT";
+
+  /**
+   * If we are using smoothing, this is used as the "number" of times we want
+   * the trainer to imagine that it saw a feature that it actually didn't see.
+   * Defaulted to 0.1.
+   */
+  private static final double SMOOTHING_OBSERVATION = 0.1;
+
+  private static final String SMOOTHING_PARAM = "smoothing";
+  private static final boolean SMOOTHING_DEFAULT = false;
+
   /**
    * Creates a new <code>GISTrainer</code> instance which does not print
    * progress messages about training to STDOUT.
    */
-  GISTrainer() {
+  public GISTrainer() {
     printMessages = false;
+  }
+
+  @Override
+  public boolean isSortAndMerge() {
+    return true;
+  }
+
+  @Override
+  public MaxentModel doTrain(DataIndexer indexer) throws IOException {
+    int iterations = getIterations();
+
+    AbstractModel model;
+
+    boolean smoothing = trainingParameters.getBooleanParameter(SMOOTHING_PARAM, SMOOTHING_DEFAULT);
+    int threads = trainingParameters.getIntParameter(TrainingParameters.THREADS_PARAM, 1);
+
+    this.setSmoothing(smoothing);
+    model = trainModel(iterations, indexer, threads);
+
+    return model;
   }
 
   /**
@@ -186,6 +221,20 @@ public class GISTrainer {
   }
 
   /**
+   * Train a model using the GIS algorithm, assuming 100 iterations and no
+   * cutoff.
+   *
+   * @param eventStream
+   *          The EventStream holding the data on which this model will be
+   *          trained.
+   * @return The newly trained model, which can be used immediately or saved to
+   *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
+   */
+  public GISModel trainModel(ObjectStream<Event> eventStream) throws IOException {
+    return trainModel(eventStream, 100, 0);
+  }
+
+  /**
    * Trains a GIS model on the event in the specified event stream, using the specified number
    * of iterations and the specified count cutoff.
    *
@@ -198,8 +247,8 @@ public class GISTrainer {
                              int cutoff) throws IOException {
     DataIndexer indexer = new OnePassDataIndexer();
     TrainingParameters indexingParameters = new TrainingParameters();
-    indexingParameters.put(GIS.CUTOFF_PARAM, Integer.toString(cutoff));
-    indexingParameters.put(GIS.ITERATIONS_PARAM, Integer.toString(iterations));
+    indexingParameters.put(GISTrainer.CUTOFF_PARAM, Integer.toString(cutoff));
+    indexingParameters.put(GISTrainer.ITERATIONS_PARAM, Integer.toString(iterations));
     Map<String, String> reportMap = new HashMap<>();
     indexer.init(indexingParameters, reportMap);
     indexer.index(eventStream);
@@ -216,6 +265,19 @@ public class GISTrainer {
    */
   public GISModel trainModel(int iterations, DataIndexer di) {
     return trainModel(iterations, di, new UniformPrior(), 1);
+  }
+
+  /**
+   * Train a model using the GIS algorithm.
+   *
+   * @param iterations The number of GIS iterations to perform.
+   * @param di         The data indexer used to compress events in memory.
+   * @param threads
+   * @return The newly trained model, which can be used immediately or saved
+   * to disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
+   */
+  public GISModel trainModel(int iterations, DataIndexer di, int threads) {
+    return trainModel(iterations, di, new UniformPrior(), threads);
   }
 
   /**
@@ -529,7 +591,7 @@ public class GISTrainer {
     return loglikelihood;
   }
 
-  private void display(String s) {
+  protected void display(String s) {
     if (printMessages) {
       System.out.print(s);
     }

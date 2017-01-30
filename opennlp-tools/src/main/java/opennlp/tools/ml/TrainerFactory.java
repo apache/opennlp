@@ -18,12 +18,11 @@
 package opennlp.tools.ml;
 
 import java.lang.reflect.Constructor;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.ml.maxent.GISTrainer;
 import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
 import opennlp.tools.ml.perceptron.PerceptronTrainer;
@@ -44,7 +43,7 @@ public class TrainerFactory {
 
   static {
     Map<String, Class> _trainers = new HashMap<>();
-    _trainers.put(GIS.MAXENT_VALUE, GIS.class);
+    _trainers.put(GISTrainer.MAXENT_VALUE, GISTrainer.class);
     _trainers.put(QNTrainer.MAXENT_QN_VALUE, QNTrainer.class);
     _trainers.put(PerceptronTrainer.PERCEPTRON_VALUE, PerceptronTrainer.class);
     _trainers.put(SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE,
@@ -57,7 +56,7 @@ public class TrainerFactory {
   /**
    * Determines the trainer type based on the ALGORITHM_PARAM value.
    *
-   * @param trainParams
+   * @param trainParams - Map of training parameters
    * @return the trainer type or null if type couldn't be determined.
    */
   public static TrainerType getTrainerType(Map<String, String> trainParams) {
@@ -161,7 +160,7 @@ public class TrainerFactory {
     String trainerType = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
     if (trainerType == null) {
       // default to MAXENT
-      AbstractEventTrainer trainer = new GIS();
+      AbstractEventTrainer trainer = new GISTrainer();
       trainer.init(trainParams, reportMap);
       return trainer;
     }
@@ -193,10 +192,14 @@ public class TrainerFactory {
 
     try {
       String cutoffString = trainParams.get(AbstractTrainer.CUTOFF_PARAM);
-      if (cutoffString != null) Integer.parseInt(cutoffString);
+      if (cutoffString != null) {
+        Integer.parseInt(cutoffString);
+      }
 
       String iterationsString = trainParams.get(AbstractTrainer.ITERATIONS_PARAM);
-      if (iterationsString != null) Integer.parseInt(iterationsString);
+      if (iterationsString != null) {
+        Integer.parseInt(iterationsString);
+      }
     }
     catch (NumberFormatException e) {
       return false;

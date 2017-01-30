@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import opennlp.tools.ml.TrainerFactory.TrainerType;
-import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.ml.maxent.GISTrainer;
 import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.util.TrainingParameters;
 
@@ -33,7 +33,7 @@ public class TrainerFactoryTest {
   @Before
   public void setup() {
     mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, GIS.MAXENT_VALUE);
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(10));
     mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(5));
   }
@@ -73,11 +73,8 @@ public class TrainerFactoryTest {
 
   @Test
   public void testIsSequenceTrainerFalse() {
-    mlParams.put(AbstractTrainer.ALGORITHM_PARAM,
-        GIS.MAXENT_VALUE);
-
+    mlParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
     TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
-
     Assert.assertFalse(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
   }
 
