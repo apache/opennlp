@@ -24,18 +24,14 @@ removed. Now Java 1.8 is required.
 
 Additionally the release contains the following noteworthy changes:
 
-- OpenNLP is up to 50% faster at analyzing content
-- A lot of deprecated code has been removed
-- Code base has been cleaned up
-- There is a new brat annotation service
-- Documentation was improved and extended
-- A Naive Bayesian Classifier implementation was added
-- Morofologik addon is now included
-- Added a language model component
-- Added a CLI to the lemmatizer component.
-- Added a supervised statistical lemmatizer.
-- The lemmatizer component API has been entirely rewritten. The changes in
-  the previously existing Dictionary-based lemmatizer are not backward compatible.
+- Name Finder evaluation can now show a confusion matrix
+- The default evaluation output contains more details
+- Added a Language Model CLI tool
+- Add Moses format support
+- More refactoring and cleanup, specially in Machine Learning package and Dictionary
+- Removed deprecated trainers from UIMA integration
+- Fixed potential localization issues and added maven plugin to prevent it (ForbiddenAPI)
+- Fixed issues with the BRAT corpus reader
 
 A detailed list of the issues related to this release can be found in the release
 notes.
