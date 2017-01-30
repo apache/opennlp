@@ -17,7 +17,11 @@
 
 package opennlp.tools.cmdline.namefind;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +32,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderCrossValidatorTool.CVToolParams;
 import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
+import opennlp.tools.cmdline.params.FineGrainedEvaluatorParams;
 import opennlp.tools.namefind.BilouCodec;
 import opennlp.tools.namefind.BioCodec;
 import opennlp.tools.namefind.NameSample;
@@ -43,7 +48,8 @@ import opennlp.tools.util.model.ModelUtil;
 public final class TokenNameFinderCrossValidatorTool
     extends AbstractCrossValidatorTool<NameSample, CVToolParams> {
 
-  interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams {
+  interface CVToolParams extends TrainingParams, CVParams,
+      DetailedFMeasureEvaluatorParams, FineGrainedEvaluatorParams {
   }
 
   public TokenNameFinderCrossValidatorTool() {
@@ -95,6 +101,25 @@ public final class TokenNameFinderCrossValidatorTool
     SequenceCodec<String> sequenceCodec =
         TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
 
+
+    TokenNameFinderFineGrainedReportListener reportListener = null;
+    File reportFile = params.getReportOutputFile();
+    OutputStream reportOutputStream = null;
+
+    if (reportFile != null) {
+      CmdLineUtil.checkOutputFile("Report Output File", reportFile);
+      try {
+        reportOutputStream = new FileOutputStream(reportFile);
+        reportListener = new TokenNameFinderFineGrainedReportListener(sequenceCodec,
+            reportOutputStream);
+        listeners.add(reportListener);
+      } catch (FileNotFoundException e) {
+        throw new TerminateToolException(-1,
+            "IO error while creating Name Finder fine-grained report file: "
+                + e.getMessage());
+      }
+    }
+
     TokenNameFinderFactory nameFinderFactory;
     try {
       nameFinderFactory = TokenNameFinderFactory.create(params.getFactory(),
@@ -122,6 +147,10 @@ public final class TokenNameFinderCrossValidatorTool
     System.out.println("done");
 
     System.out.println();
+
+    if (reportFile != null) {
+      reportListener.writeReport();
+    }
 
     if (detailedFListener == null) {
       System.out.println(validator.getFMeasure());

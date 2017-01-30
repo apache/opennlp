@@ -24,11 +24,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
-import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
-import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.CVParams;
+import opennlp.tools.cmdline.params.FineGrainedEvaluatorParams;
 import opennlp.tools.cmdline.postag.POSTaggerCrossValidatorTool.CVToolParams;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerCrossValidator;
@@ -38,11 +37,7 @@ import opennlp.tools.util.model.ModelUtil;
 public final class POSTaggerCrossValidatorTool
     extends AbstractCrossValidatorTool<POSSample, CVToolParams> {
 
-  interface CVToolParams extends CVParams, TrainingParams {
-    @ParameterDescription(valueName = "outputFile",
-        description = "the path of the fine-grained report file.")
-    @OptionalParameter
-    File getReportOutputFile();
+  interface CVToolParams extends CVParams, TrainingParams, FineGrainedEvaluatorParams {
   }
 
   public POSTaggerCrossValidatorTool() {

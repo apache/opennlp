@@ -17,18 +17,24 @@
 
 package opennlp.tools.cmdline.namefind;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool.EvalToolParams;
 import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;
+import opennlp.tools.cmdline.params.FineGrainedEvaluatorParams;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleTypeFilter;
@@ -41,7 +47,8 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public final class TokenNameFinderEvaluatorTool
     extends AbstractEvaluatorTool<NameSample, EvalToolParams> {
 
-  interface EvalToolParams extends EvaluatorParams, DetailedFMeasureEvaluatorParams {
+  interface EvalToolParams extends EvaluatorParams,
+      DetailedFMeasureEvaluatorParams, FineGrainedEvaluatorParams {
     @OptionalParameter
     @ParameterDescription(valueName = "types", description = "name types to use for evaluation")
     String getNameTypes();
@@ -68,6 +75,24 @@ public final class TokenNameFinderEvaluatorTool
     if (params.getDetailedF()) {
       detailedFListener = new TokenNameFinderDetailedFMeasureListener();
       listeners.add(detailedFListener);
+    }
+
+    TokenNameFinderFineGrainedReportListener reportListener = null;
+    File reportFile = params.getReportOutputFile();
+    OutputStream reportOutputStream = null;
+
+    if (reportFile != null) {
+      CmdLineUtil.checkOutputFile("Report Output File", reportFile);
+      try {
+        reportOutputStream = new FileOutputStream(reportFile);
+        reportListener = new TokenNameFinderFineGrainedReportListener(model.getSequenceCodec(),
+            reportOutputStream);
+        listeners.add(reportListener);
+      } catch (FileNotFoundException e) {
+        throw new TerminateToolException(-1,
+            "IO error while creating Name Finder fine-grained report file: "
+                + e.getMessage());
+      }
     }
 
     if (params.getNameTypes() != null) {
@@ -115,6 +140,10 @@ public final class TokenNameFinderEvaluatorTool
     monitor.stopAndPrintFinalResult();
 
     System.out.println();
+
+    if (reportFile != null) {
+      reportListener.writeReport();
+    }
 
     if (detailedFListener == null) {
       System.out.println(evaluator.getFMeasure());
