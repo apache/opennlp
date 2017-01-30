@@ -46,17 +46,18 @@ public class RealValueModelTest {
   @Test
   public void testRealValuedWeightsVsRepeatWeighting() throws IOException {
     GISModel realModel;
+    GISTrainer gisTrainer = new GISTrainer();
     try (RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt")) {
       testDataIndexer.index(rvfes1);
-      realModel = GIS.trainModel(100, testDataIndexer);
+      realModel = gisTrainer.trainModel(100, testDataIndexer);
     }
 
     GISModel repeatModel;
     try (FileEventStream rvfes2 = new FileEventStream(
         "src/test/resources/data/opennlp/maxent/repeat-weighting-training-data.txt")) {
       testDataIndexer.index(rvfes2);
-      repeatModel = GIS.trainModel(100,testDataIndexer);
+      repeatModel = gisTrainer.trainModel(100,testDataIndexer);
     }
 
     String[] features2Classify = new String[] {"feature2","feature5"};

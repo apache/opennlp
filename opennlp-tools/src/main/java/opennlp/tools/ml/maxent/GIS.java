@@ -31,7 +31,9 @@ import opennlp.tools.util.TrainingParameters;
 /**
  * A Factory class which uses instances of GISTrainer to create and train
  * GISModels.
+ * @deprecated use {@link GISTrainer}
  */
+@Deprecated
 public class GIS extends AbstractEventTrainer {
 
   public static final String MAXENT_VALUE = "MAXENT";

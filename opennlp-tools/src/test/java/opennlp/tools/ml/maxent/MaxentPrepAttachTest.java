@@ -76,7 +76,7 @@ public class MaxentPrepAttachTest {
   public void testMaxentOnPrepAttachDataWithParams() throws IOException {
 
     Map<String, String> trainParams = new HashMap<>();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GIS.MAXENT_VALUE);
+    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
         AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
@@ -91,7 +91,7 @@ public class MaxentPrepAttachTest {
   public void testMaxentOnPrepAttachDataWithParamsDefault() throws IOException {
 
     Map<String, String> trainParams = new HashMap<>();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GIS.MAXENT_VALUE);
+    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
