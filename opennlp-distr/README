@@ -32,6 +32,7 @@ Additionally the release contains the following noteworthy changes:
 - Removed deprecated trainers from UIMA integration
 - Fixed potential localization issues and added maven plugin to prevent it (ForbiddenAPI)
 - Fixed issues with the BRAT corpus reader
+- Deprecated GIS class, will be removed in a future 1.8.x release
 
 A detailed list of the issues related to this release can be found in the release
 notes.
