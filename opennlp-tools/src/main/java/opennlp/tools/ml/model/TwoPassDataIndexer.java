@@ -55,17 +55,17 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     Map<String,Integer> predicateIndex = new HashMap<>();
     List<ComparableEvent> eventsToCompare;
 
-    System.out.println("Indexing events using cutoff of " + cutoff + "\n");
+    display("Indexing events using cutoff of " + cutoff + "\n\n");
 
-    System.out.print("\tComputing event counts...  ");
+    display("\tComputing event counts...  ");
 
     File tmp = File.createTempFile("events", null);
     tmp.deleteOnExit();
     Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
     int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
-    System.out.println("done. " + numEvents + " events");
+    display("done. " + numEvents + " events\n");
 
-    System.out.print("\tIndexing...  ");
+    display("\tIndexing...  ");
 
     try (FileEventStream fes = new FileEventStream(tmp)) {
       eventsToCompare = index(numEvents, fes, predicateIndex);
@@ -73,16 +73,16 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     // done with predicates
     predicateIndex = null;
     tmp.delete();
-    System.out.println("done.");
+    display("done.\n");
 
     if (sort) {
-      System.out.print("Sorting and merging events... ");
+      display("Sorting and merging events... ");
     }
     else {
-      System.out.print("Collecting events... ");
+      display("Collecting events... ");
     }
     sortAndMerge(eventsToCompare,sort);
-    System.out.println("Done indexing.");
+    display("Done indexing.\n");
 
   }
   /**
@@ -120,9 +120,11 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     return eventCount;
   }
 
+  // TODO: merge this code with the copy and paste version in OnePassDataIndexer
   private List<ComparableEvent> index(int numEvents, ObjectStream<Event> es,
       Map<String,Integer> predicateIndex) throws IOException {
     Map<String,Integer> omap = new HashMap<>();
+
     int outcomeCount = 0;
     List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
     List<Integer> indexedContext = new ArrayList<>();
@@ -159,7 +161,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
         eventsToCompare.add(ce);
       }
       else {
-        System.err.println("Dropped event " + ev.getOutcome() + ":" + Arrays.asList(ev.getContext()));
+        display("Dropped event " + ev.getOutcome() + ":" + Arrays.asList(ev.getContext()) + "\n");
       }
       // recycle the TIntArrayList
       indexedContext.clear();
@@ -168,6 +170,5 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     predLabels = toIndexedStringArray(predicateIndex);
     return eventsToCompare;
   }
-
 }
 

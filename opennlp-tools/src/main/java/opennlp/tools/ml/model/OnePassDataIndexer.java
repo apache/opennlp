@@ -48,24 +48,24 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
     List<Event> events;
     List<ComparableEvent> eventsToCompare;
 
-    System.out.println("Indexing events using cutoff of " + cutoff + "\n");
+    display("Indexing events using cutoff of " + cutoff + "\n\n");
 
-    System.out.print("\tComputing event counts...  ");
+    display("\tComputing event counts...  ");
     events = computeEventCounts(eventStream, predicateIndex, cutoff);
-    System.out.println("done. " + events.size() + " events");
+    display("done. " + events.size() + " events\n");
 
-    System.out.print("\tIndexing...  ");
+    display("\tIndexing...  ");
     eventsToCompare = index(events, predicateIndex);
     // done with event list
     events = null;
     // done with predicates
     predicateIndex = null;
 
-    System.out.println("done.");
+    display("done.\n");
 
-    System.out.print("Sorting and merging events... ");
+    display("Sorting and merging events... ");
     sortAndMerge(eventsToCompare, sort);
-    System.out.println("Done indexing.");
+    display("Done indexing.\n");
   }
 
   /**
@@ -140,8 +140,8 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
         ce = new ComparableEvent(ocID, cons);
         eventsToCompare.add(ce);
       } else {
-        System.err.println("Dropped event " + ev.getOutcome() + ":"
-            + Arrays.asList(ev.getContext()));
+        display("Dropped event " + ev.getOutcome() + ":"
+            + Arrays.asList(ev.getContext()) + "\n");
       }
       // recycle the TIntArrayList
       indexedContext.clear();

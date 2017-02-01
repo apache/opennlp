@@ -133,7 +133,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
       throw new InsufficientTrainingDataException("Insufficient training data to create model.");
     }
 
-    if (sort) System.out.println("done. Reduced " + numEvents + " events to " + numUniqueEvents + ".");
+    if (sort) display("done. Reduced " + numEvents + " events to " + numUniqueEvents + ".\n");
 
     contexts = new int[numUniqueEvents][];
     outcomeList = new int[numUniqueEvents];
