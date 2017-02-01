@@ -61,7 +61,6 @@ import opennlp.tools.util.TrainingParameters;
 public class GISTrainer extends AbstractEventTrainer {
 
   private static final double LLThreshold = 0.0001;
-  private final boolean printMessages;
   /**
    * Specifies whether unseen context/outcome pairs should be estimated as occur very infrequently.
    */
