@@ -31,6 +31,7 @@ public class NaiveBayesModel extends AbstractModel {
   protected double[] outcomeTotals;
   protected long vocabulary;
 
+  @Deprecated
   public NaiveBayesModel(Context[] params, String[] predLabels, Map<String, Integer> pmap,
                          String[] outcomeNames) {
     super(params, predLabels, pmap, outcomeNames);
@@ -87,6 +88,7 @@ public class NaiveBayesModel extends AbstractModel {
     return eval(context, null, prior, model, true);
   }
 
+  @Deprecated // visibility will be reduced in 1.8.1
   public static double[] eval(int[] context, float[] values, double[] prior,
                               EvalParameters model, boolean normalize) {
     Probabilities<Integer> probabilities = new LogProbabilities<>();

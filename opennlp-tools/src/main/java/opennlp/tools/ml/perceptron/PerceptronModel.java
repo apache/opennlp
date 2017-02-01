@@ -25,6 +25,10 @@ import opennlp.tools.ml.model.EvalParameters;
 
 public class PerceptronModel extends AbstractModel {
 
+  /**
+   * @deprecated this will be removed in 1.8.1, pmap should be private
+   */
+  @Deprecated
   public PerceptronModel(Context[] params, String[] predLabels, Map<String, Integer> pmap,
                          String[] outcomeNames) {
     super(params,predLabels,pmap,outcomeNames);
@@ -62,6 +66,7 @@ public class PerceptronModel extends AbstractModel {
     return eval(context,null,prior,model,true);
   }
 
+  @Deprecated // visibility will be reduced in 1.8.1
   public static double[] eval(int[] context, float[] values, double[] prior, EvalParameters model,
                               boolean normalize) {
     Context[] params = model.getParams();

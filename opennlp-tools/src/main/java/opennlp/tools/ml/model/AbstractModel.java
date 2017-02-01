@@ -39,6 +39,15 @@ public abstract class AbstractModel implements MaxentModel {
   /** The type of the model. */
   protected ModelType modelType;
 
+  /**
+   * @deprecated this will be removed in 1.8.1, pmap should be private
+   *
+   * @param params
+   * @param predLabels
+   * @param pmap
+   * @param outcomeNames
+   */
+  @Deprecated
   public AbstractModel(Context[] params, String[] predLabels,
       Map<String, Integer> pmap, String[] outcomeNames) {
     this.pmap = pmap;
