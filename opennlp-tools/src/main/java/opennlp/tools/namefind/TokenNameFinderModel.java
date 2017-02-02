@@ -21,7 +21,6 @@ package opennlp.tools.namefind;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
@@ -36,7 +35,7 @@ import opennlp.tools.util.featuregen.BrownCluster;
 import opennlp.tools.util.featuregen.WordClusterDictionary;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
-import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.util.model.ByteArraySerializer;
 
 /**
  * The {@link TokenNameFinderModel} is the model used
@@ -50,17 +49,6 @@ public class TokenNameFinderModel extends BaseModel {
   public static class FeatureGeneratorCreationError extends RuntimeException {
     FeatureGeneratorCreationError(Throwable t) {
       super(t);
-    }
-  }
-
-  private static class ByteArraySerializer implements ArtifactSerializer<byte[]> {
-
-    public byte[] create(InputStream in) throws IOException {
-      return ModelUtil.read(in);
-    }
-
-    public void serialize(byte[] artifact, OutputStream out) throws IOException {
-      out.write(artifact);
     }
   }
 

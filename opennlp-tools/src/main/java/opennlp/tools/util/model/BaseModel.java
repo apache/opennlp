@@ -351,6 +351,8 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     GenericModelSerializer.register(serializers);
     PropertiesSerializer.register(serializers);
     DictionarySerializer.register(serializers);
+    serializers.put("txt", new ByteArraySerializer());
+    serializers.put("html", new ByteArraySerializer());
 
     return serializers;
   }

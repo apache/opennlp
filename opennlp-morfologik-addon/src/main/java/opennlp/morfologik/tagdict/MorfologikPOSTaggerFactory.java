@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -33,7 +32,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.TagDictionary;
 import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.ModelUtil;
+import opennlp.tools.util.model.ByteArraySerializer;
 
 public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
 
@@ -150,16 +149,4 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
             info));
     return new MorfologikTagDictionary(dict);
   }
-
-  static class ByteArraySerializer implements ArtifactSerializer<byte[]> {
-
-    public byte[] create(InputStream in) throws IOException {
-      return ModelUtil.read(in);
-    }
-
-    public void serialize(byte[] artifact, OutputStream out) throws IOException {
-      out.write(artifact);
-    }
-  }
-
 }
