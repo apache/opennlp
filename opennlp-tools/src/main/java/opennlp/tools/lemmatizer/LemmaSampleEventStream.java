@@ -49,7 +49,7 @@ public class LemmaSampleEventStream extends AbstractEventStream<LemmaSample> {
       List<Event> events = new ArrayList<>();
       String[] toksArray = sample.getTokens();
       String[] tagsArray = sample.getTags();
-      String[] lemmasArray = sample.getLemmas();
+      String[] lemmasArray = LemmatizerME.encodeLemmas(toksArray,sample.getLemmas());
       for (int ei = 0, el = sample.getTokens().length; ei < el; ei++) {
         events.add(new Event(lemmasArray[ei],
             contextGenerator.getContext(ei,toksArray,tagsArray,lemmasArray)));

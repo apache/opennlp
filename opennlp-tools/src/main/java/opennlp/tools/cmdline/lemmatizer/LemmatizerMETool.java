@@ -72,10 +72,8 @@ public class LemmatizerMETool extends BasicCmdLineTool {
             continue;
           }
 
-          String[] preds = lemmatizer.lemmatize(posSample.getSentence(),
+          String[] lemmas = lemmatizer.lemmatize(posSample.getSentence(),
               posSample.getTags());
-          String[] lemmas = lemmatizer.decodeLemmas(posSample.getSentence(),
-              preds);
 
           System.out.println(new LemmaSample(posSample.getSentence(),
               posSample.getTags(), lemmas).toString());

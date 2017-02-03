@@ -41,9 +41,9 @@ public class LemmaSampleSequenceStream implements SequenceStream {
     LemmaSample sample = samples.read();
 
     if (sample != null) {
-      String sentence[] = sample.getTokens();
-      String tags[] = sample.getTags();
-      String preds[] = sample.getLemmas();
+      String[] sentence = sample.getTokens();
+      String[] tags = sample.getTags();
+      String[] preds = sample.getLemmas();
       Event[] events = new Event[sentence.length];
 
       for (int i = 0; i < sentence.length; i++) {

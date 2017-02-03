@@ -37,7 +37,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
   /**
    * The hashmap containing the dictionary.
    */
-  private final Map<List<String>, String> dictMap;
+  private final Map<List<String>, List<String>> dictMap;
 
   /**
    * Construct a hashmap from the input tab separated dictionary.
@@ -47,26 +47,24 @@ public class DictionaryLemmatizer implements Lemmatizer {
    * @param dictionary
    *          the input dictionary via inputstream
    */
-  public DictionaryLemmatizer(final InputStream dictionary) {
+  public DictionaryLemmatizer(final InputStream dictionary) throws IOException {
     this.dictMap = new HashMap<>();
-    final BufferedReader breader = new BufferedReader(new InputStreamReader(dictionary));
+    final BufferedReader breader = new BufferedReader(
+        new InputStreamReader(dictionary));
     String line;
-    try {
-      while ((line = breader.readLine()) != null) {
-        final String[] elems = line.split("\t");
-        this.dictMap.put(Arrays.asList(elems[0], elems[1]), elems[2]);
-      }
-    } catch (final IOException e) {
-      e.printStackTrace();
+    while ((line = breader.readLine()) != null) {
+      final String[] elems = line.split("\t");
+      this.dictMap.put(Arrays.asList(elems[0], elems[1]), Arrays.asList(elems[2]));
     }
   }
+
 
   /**
    * Get the Map containing the dictionary.
    *
    * @return dictMap the Map
    */
-  public Map<List<String>, String> getDictMap() {
+  public Map<List<String>, List<String>> getDictMap() {
     return this.dictMap;
   }
 
@@ -85,31 +83,65 @@ public class DictionaryLemmatizer implements Lemmatizer {
     return keys;
   }
 
+
   public String[] lemmatize(final String[] tokens, final String[] postags) {
     List<String> lemmas = new ArrayList<>();
     for (int i = 0; i < tokens.length; i++) {
-      lemmas.add(this.apply(tokens[i], postags[i]));
+      lemmas.add(this.lemmatize(tokens[i], postags[i]));
     }
     return lemmas.toArray(new String[lemmas.size()]);
   }
 
+  public List<List<String>> lemmatize(final List<String> tokens, final List<String> posTags) {
+    List<List<String>> allLemmas = new ArrayList<>();
+    for (int i = 0; i < tokens.size(); i++) {
+      allLemmas.add(this.getAllLemmas(tokens.get(i), posTags.get(i)));
+    }
+    return allLemmas;
+  }
+
   /**
    * Lookup lemma in a dictionary. Outputs "O" if not found.
-   * @param word the token
-   * @param postag the postag
+   *
+   * @param word
+   *          the token
+   * @param postag
+   *          the postag
    * @return the lemma
    */
-  public String apply(final String word, final String postag) {
+  private String lemmatize(final String word, final String postag) {
     String lemma;
     final List<String> keys = this.getDictKeys(word, postag);
     // lookup lemma as value of the map
-    final String keyValue = this.dictMap.get(keys);
-    if (keyValue != null) {
-      lemma = keyValue;
+    final List<String> keyValues = this.dictMap.get(keys);
+    if (!keyValues.isEmpty()) {
+      lemma = keyValues.get(0);
     } else {
       lemma = "O";
     }
     return lemma;
   }
-}
 
+  /**
+   * Lookup every lemma for a word,pos tag in a dictionary. Outputs "O" if not
+   * found.
+   *
+   * @param word
+   *          the token
+   * @param postag
+   *          the postag
+   * @return every lemma
+   */
+  private List<String> getAllLemmas(final String word, final String postag) {
+    List<String> lemmasList = new ArrayList<>();
+    final List<String> keys = this.getDictKeys(word, postag);
+    // lookup lemma as value of the map
+    final List<String> keyValues = this.dictMap.get(keys);
+    if (!keyValues.isEmpty()) {
+      lemmasList.addAll(keyValues);
+    } else {
+      lemmasList.add("O");
+    }
+    return lemmasList;
+  }
+}
