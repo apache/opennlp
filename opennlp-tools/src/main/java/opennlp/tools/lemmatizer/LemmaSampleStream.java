@@ -23,7 +23,6 @@ import java.util.List;
 
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.StringUtil;
 
 
 /**
@@ -51,8 +50,7 @@ public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
       else {
         toks.add(parts[0]);
         tags.add(parts[1]);
-        String ses = StringUtil.getShortestEditScript(parts[0], parts[2]);
-        preds.add(ses);
+        preds.add(parts[2]);
       }
     }
     if (toks.size() > 0) {

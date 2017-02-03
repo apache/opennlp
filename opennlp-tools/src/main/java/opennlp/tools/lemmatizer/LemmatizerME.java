@@ -19,6 +19,7 @@ package opennlp.tools.lemmatizer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class LemmatizerME implements Lemmatizer {
 
+  public static final int LEMMA_NUMBER = 29;
   public static final int DEFAULT_BEAM_SIZE = 3;
   protected int beamSize;
   private Sequence bestSequence;
@@ -86,9 +88,52 @@ public class LemmatizerME implements Lemmatizer {
   }
 
   public String[] lemmatize(String[] toks, String[] tags) {
+    String[] ses = predictSES(toks, tags);
+    String[] lemmas = decodeLemmas(toks, ses);
+    return lemmas;
+  }
+
+  @Override public List<List<String>> lemmatize(List<String> toks,
+      List<String> tags) {
+    String[] tokens = toks.toArray(new String[toks.size()]);
+    String[] posTags = tags.toArray(new String[tags.size()]);
+    String[][] allLemmas = predictLemmas(LEMMA_NUMBER, tokens, posTags);
+    List<List<String>> predictedLemmas = new ArrayList<>();
+    for (int i = 0; i < allLemmas.length; i++) {
+      predictedLemmas.add(Arrays.asList(allLemmas[i]));
+    }
+    return predictedLemmas;
+  }
+
+  /**
+   * Predict Short Edit Script (automatically induced lemma class).
+   * @param toks the array of tokens
+   * @param tags the array of pos tags
+   * @return an array containing the lemma classes
+   */
+  public String[] predictSES(String[] toks, String[] tags) {
     bestSequence = model.bestSequence(toks, new Object[] {tags}, contextGenerator, sequenceValidator);
-    List<String> c = bestSequence.getOutcomes();
-    return c.toArray(new String[c.size()]);
+    List<String> ses = bestSequence.getOutcomes();
+    return ses.toArray(new String[ses.size()]);
+  }
+
+  /**
+   * Predict all possible lemmas (using a default upper bound).
+   * @param numLemmas the default number of lemmas
+   * @param toks the tokens
+   * @param tags the postags
+   * @return a double array containing all posible lemmas for each token and postag pair
+   */
+  public String[][] predictLemmas(int numLemmas, String[] toks, String[] tags) {
+    Sequence[] bestSequences = model.bestSequences(numLemmas, toks, new Object[] {tags},
+            contextGenerator, sequenceValidator);
+    String[][] allLemmas = new String[bestSequences.length][];
+    for (int i = 0; i < allLemmas.length; i++) {
+      List<String> ses = bestSequences[i].getOutcomes();
+      String[] sesArray = ses.toArray(new String[ses.size()]);
+      allLemmas[i] = decodeLemmas(toks,sesArray);
+    }
+    return allLemmas;
   }
 
   /**
@@ -97,17 +142,28 @@ public class LemmatizerME implements Lemmatizer {
    * @param preds the predicted lemma classes
    * @return the array of decoded lemmas
    */
-  public String[] decodeLemmas(String[] toks, String[] preds) {
+  public static String[] decodeLemmas(String[] toks, String[] preds) {
     List<String> lemmas = new ArrayList<>();
     for (int i = 0; i < toks.length; i++) {
       String lemma = StringUtil.decodeShortestEditScript(toks[i].toLowerCase(), preds[i]);
-      //System.err.println("-> DEBUG: " + toks[i].toLowerCase() + " " + preds[i] + " " + lemma);
       if (lemma.length() == 0) {
         lemma = "_";
       }
       lemmas.add(lemma);
     }
     return lemmas.toArray(new String[lemmas.size()]);
+  }
+
+  public static String[] encodeLemmas(String[] toks, String[] lemmas) {
+    List<String> sesList = new ArrayList<>();
+    for (int i = 0; i < toks.length; i++) {
+      String ses = StringUtil.getShortestEditScript(toks[i], lemmas[i]);
+      if (ses.length() == 0) {
+        ses = "_";
+      }
+      sesList.add(ses);
+    }
+    return sesList.toArray(new String[sesList.size()]);
   }
 
   public Sequence[] topKSequences(String[] sentence, String[] tags) {
