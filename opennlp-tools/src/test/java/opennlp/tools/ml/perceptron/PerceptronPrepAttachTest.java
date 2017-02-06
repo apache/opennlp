@@ -23,7 +23,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,7 +57,7 @@ public class PerceptronPrepAttachTest {
   @Test
   public void testPerceptronOnPrepAttachDataWithSkippedAveraging() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put("UseSkippedAveraging", Boolean.toString(true));
@@ -71,7 +70,7 @@ public class PerceptronPrepAttachTest {
   @Test
   public void testPerceptronOnPrepAttachDataWithTolerance() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put(AbstractTrainer.ITERATIONS_PARAM, Integer.toString(500));
@@ -85,7 +84,7 @@ public class PerceptronPrepAttachTest {
   @Test
   public void testPerceptronOnPrepAttachDataWithStepSizeDecrease() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put(AbstractTrainer.ITERATIONS_PARAM, Integer.toString(500));
@@ -99,7 +98,7 @@ public class PerceptronPrepAttachTest {
   @Test
   public void testModelSerialization() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put("UseSkippedAveraging", Boolean.toString(true));
@@ -123,7 +122,7 @@ public class PerceptronPrepAttachTest {
 
   @Test
   public void testModelEquals() throws IOException {
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
     trainParams.put("UseSkippedAveraging", Boolean.toString(true));

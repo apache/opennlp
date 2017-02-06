@@ -27,6 +27,7 @@ import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
 import opennlp.tools.ml.perceptron.PerceptronTrainer;
 import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.ext.ExtensionNotLoadedException;
 
@@ -59,16 +60,16 @@ public class TrainerFactory {
    * @param trainParams - Map of training parameters
    * @return the trainer type or null if type couldn't be determined.
    */
-  public static TrainerType getTrainerType(Map<String, String> trainParams) {
+  public static TrainerType getTrainerType(TrainingParameters trainParams) {
 
-    String alogrithmValue = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
+    String algorithmValue = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
 
     // Check if it is defaulting to the MAXENT trainer
-    if (alogrithmValue == null) {
+    if (algorithmValue == null) {
       return TrainerType.EVENT_MODEL_TRAINER;
     }
 
-    Class<?> trainerClass = BUILTIN_TRAINERS.get(alogrithmValue);
+    Class<?> trainerClass = BUILTIN_TRAINERS.get(algorithmValue);
 
     if (trainerClass != null) {
 
@@ -86,7 +87,7 @@ public class TrainerFactory {
     // Try to load the different trainers, and return the type on success
 
     try {
-      ExtensionLoader.instantiateExtension(EventTrainer.class, alogrithmValue);
+      ExtensionLoader.instantiateExtension(EventTrainer.class, algorithmValue);
       return TrainerType.EVENT_MODEL_TRAINER;
     }
     catch (ExtensionNotLoadedException ignored) {
@@ -94,7 +95,7 @@ public class TrainerFactory {
     }
 
     try {
-      ExtensionLoader.instantiateExtension(EventModelSequenceTrainer.class, alogrithmValue);
+      ExtensionLoader.instantiateExtension(EventModelSequenceTrainer.class, algorithmValue);
       return TrainerType.EVENT_MODEL_SEQUENCE_TRAINER;
     }
     catch (ExtensionNotLoadedException ignored) {
@@ -102,7 +103,7 @@ public class TrainerFactory {
     }
 
     try {
-      ExtensionLoader.instantiateExtension(SequenceTrainer.class, alogrithmValue);
+      ExtensionLoader.instantiateExtension(SequenceTrainer.class, algorithmValue);
       return TrainerType.SEQUENCE_TRAINER;
     }
     catch (ExtensionNotLoadedException ignored) {
@@ -112,9 +113,9 @@ public class TrainerFactory {
     return null;
   }
 
-  public static SequenceTrainer getSequenceModelTrainer(Map<String, String> trainParams,
+  public static SequenceTrainer getSequenceModelTrainer(TrainingParameters trainParams,
       Map<String, String> reportMap) {
-    String trainerType = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
+    String trainerType = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
 
     if (trainerType != null) {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
@@ -134,9 +135,10 @@ public class TrainerFactory {
     }
   }
 
-  public static EventModelSequenceTrainer getEventModelSequenceTrainer(Map<String, String> trainParams,
+  public static EventModelSequenceTrainer getEventModelSequenceTrainer(TrainingParameters trainParams,
       Map<String, String> reportMap) {
-    String trainerType = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
+    String trainerType = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
+
     if (trainerType != null) {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
         EventModelSequenceTrainer trainer = TrainerFactory.<EventModelSequenceTrainer>createBuiltinTrainer(
@@ -155,34 +157,30 @@ public class TrainerFactory {
     }
   }
 
-  public static EventTrainer getEventTrainer(Map<String, String> trainParams,
+  public static EventTrainer getEventTrainer(TrainingParameters trainParams,
       Map<String, String> reportMap) {
-    String trainerType = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
-    if (trainerType == null) {
-      // default to MAXENT
-      AbstractEventTrainer trainer = new GISTrainer();
+
+    // if the trainerType is not defined -- use the GISTrainer.
+    String trainerType = 
+        trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+
+    if (BUILTIN_TRAINERS.containsKey(trainerType)) {
+      EventTrainer trainer = TrainerFactory.<EventTrainer>createBuiltinTrainer(
+          BUILTIN_TRAINERS.get(trainerType));
+      trainer.init(trainParams, reportMap);
+      return trainer;
+    } else {
+      EventTrainer trainer = ExtensionLoader.instantiateExtension(EventTrainer.class, trainerType);
       trainer.init(trainParams, reportMap);
       return trainer;
     }
-    else {
-      if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        EventTrainer trainer = TrainerFactory.<EventTrainer>createBuiltinTrainer(
-            BUILTIN_TRAINERS.get(trainerType));
-        trainer.init(trainParams, reportMap);
-        return trainer;
-      } else {
-        EventTrainer trainer = ExtensionLoader.instantiateExtension(EventTrainer.class, trainerType);
-        trainer.init(trainParams, reportMap);
-        return trainer;
-      }
-    }
+
   }
 
-  public static boolean isValid(Map<String, String> trainParams) {
+  public static boolean isValid(TrainingParameters trainParams) {
 
     // TODO: Need to validate all parameters correctly ... error prone?!
-
-    String algorithmName = trainParams.get(AbstractTrainer.ALGORITHM_PARAM);
+    String algorithmName = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
 
     // If a trainer type can be determined, then the trainer is valid!
     if (algorithmName != null &&
@@ -191,28 +189,17 @@ public class TrainerFactory {
     }
 
     try {
-      String cutoffString = trainParams.get(AbstractTrainer.CUTOFF_PARAM);
-      if (cutoffString != null) {
-        Integer.parseInt(cutoffString);
-      }
-
-      String iterationsString = trainParams.get(AbstractTrainer.ITERATIONS_PARAM);
-      if (iterationsString != null) {
-        Integer.parseInt(iterationsString);
-      }
+      // require that the Cutoff and the number of iterations be an integer.
+      // if they are not set, the default values will be ok.
+      trainParams.getIntParameter(AbstractTrainer.CUTOFF_PARAM, 0);
+      trainParams.getIntParameter(AbstractTrainer.ITERATIONS_PARAM, 0);
     }
     catch (NumberFormatException e) {
       return false;
     }
 
-    String dataIndexer = trainParams.get(AbstractEventTrainer.DATA_INDEXER_PARAM);
-
-    if (dataIndexer != null) {
-      if (!(AbstractEventTrainer.DATA_INDEXER_ONE_PASS_VALUE.equals(dataIndexer)
-          || AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE.equals(dataIndexer))) {
-        return false;
-      }
-    }
+    // no reason to require that the dataIndexer be a 1-pass or 2-pass dataindexer.
+    trainParams.getStringParameter(AbstractEventTrainer.DATA_INDEXER_PARAM, null);
 
     // TODO: Check data indexing ...
     return true;

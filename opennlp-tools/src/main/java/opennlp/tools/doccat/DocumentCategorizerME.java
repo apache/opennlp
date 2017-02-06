@@ -236,7 +236,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(
-        mlParams.getSettings(), manifestInfoEntries);
+        mlParams, manifestInfoEntries);
 
     MaxentModel model = trainer.train(
         new DocumentCategorizerEventStream(samples, factory.getFeatureGenerators()));

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.SequenceStream;
+import opennlp.tools.util.TrainingParameters;
 
 public class MockSequenceTrainer implements EventModelSequenceTrainer {
 
@@ -34,4 +35,9 @@ public class MockSequenceTrainer implements EventModelSequenceTrainer {
       Map<String, String> reportMap) {
   }
 
+  @Override
+  public void init(TrainingParameters trainParams,
+      Map<String, String> reportMap) {
+  }
+  
 }

@@ -157,26 +157,26 @@ public class LemmatizerME implements Lemmatizer {
 
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
-    TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
+    TrainerType trainerType = TrainerFactory.getTrainerType(trainParams);
 
     MaxentModel lemmatizerModel = null;
     SequenceClassificationModel<String> seqLemmatizerModel = null;
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new LemmaSampleEventStream(samples, contextGenerator);
 
-      EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams.getSettings(),
+      EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams,
           manifestInfoEntries);
       lemmatizerModel = trainer.train(es);
     }
     else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       LemmaSampleSequenceStream ss = new LemmaSampleSequenceStream(samples, contextGenerator);
       EventModelSequenceTrainer trainer =
-          TrainerFactory.getEventModelSequenceTrainer(trainParams.getSettings(), manifestInfoEntries);
+          TrainerFactory.getEventModelSequenceTrainer(trainParams, manifestInfoEntries);
       lemmatizerModel = trainer.train(ss);
     }
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
       SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
-          trainParams.getSettings(), manifestInfoEntries);
+          trainParams, manifestInfoEntries);
 
       // TODO: This will probably cause issue, since the feature generator uses the outcomes array
 

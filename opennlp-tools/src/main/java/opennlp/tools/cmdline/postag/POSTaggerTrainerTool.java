@@ -56,7 +56,7 @@ public final class POSTaggerTrainerTool
     super.run(format, args);
 
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
-    if (mlParams != null && !TrainerFactory.isValid(mlParams.getSettings())) {
+    if (mlParams != null && !TrainerFactory.isValid(mlParams)) {
       throw new TerminateToolException(1, "Training parameters file '" + params.getParams() +
           "' is invalid!");
     }

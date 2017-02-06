@@ -171,7 +171,7 @@ public class ChunkerME implements Chunker {
 
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
-    TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
+    TrainerType trainerType = TrainerFactory.getTrainerType(mlParams);
 
 
     MaxentModel chunkerModel = null;
@@ -179,13 +179,13 @@ public class ChunkerME implements Chunker {
 
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new ChunkerEventStream(in, factory.getContextGenerator());
-      EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams.getSettings(),
+      EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams,
           manifestInfoEntries);
       chunkerModel = trainer.train(es);
     }
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
       SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
-          mlParams.getSettings(), manifestInfoEntries);
+          mlParams, manifestInfoEntries);
 
       // TODO: This will probably cause issue, since the feature generator uses the outcomes array
 

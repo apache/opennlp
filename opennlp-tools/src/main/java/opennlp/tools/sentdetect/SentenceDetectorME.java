@@ -320,7 +320,7 @@ public class SentenceDetectorME implements SentenceDetector {
     ObjectStream<Event> eventStream = new SDEventStream(samples,
         sdFactory.getSDContextGenerator(), sdFactory.getEndOfSentenceScanner());
 
-    EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams.getSettings(), manifestInfoEntries);
+    EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams, manifestInfoEntries);
 
     MaxentModel sentModel = trainer.train(eventStream);
 
