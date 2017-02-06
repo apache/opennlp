@@ -24,6 +24,7 @@ import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 
 public class MockEventTrainer implements EventTrainer {
 
@@ -38,6 +39,11 @@ public class MockEventTrainer implements EventTrainer {
 
   @Override
   public void init(Map<String, String> trainParams,
+      Map<String, String> reportMap) {
+  }
+
+  @Override
+  public void init(TrainingParameters trainingParams,
       Map<String, String> reportMap) {
   }
 }

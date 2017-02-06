@@ -120,23 +120,23 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
 
     if (mlParams != null) {
-      if (!TrainerFactory.isValid(mlParams.getSettings("build"))) {
+      if (!TrainerFactory.isValid(mlParams.getParameters("build"))) {
         throw new TerminateToolException(1, "Build training parameters are invalid!");
       }
 
-      if (!TrainerFactory.isValid(mlParams.getSettings("check"))) {
+      if (!TrainerFactory.isValid(mlParams.getParameters("check"))) {
         throw new TerminateToolException(1, "Check training parameters are invalid!");
       }
 
-      if (!TrainerFactory.isValid(mlParams.getSettings("attach"))) {
+      if (!TrainerFactory.isValid(mlParams.getParameters("attach"))) {
         throw new TerminateToolException(1, "Attach training parameters are invalid!");
       }
 
-      if (!TrainerFactory.isValid(mlParams.getSettings("tagger"))) {
+      if (!TrainerFactory.isValid(mlParams.getParameters("tagger"))) {
         throw new TerminateToolException(1, "Tagger training parameters are invalid!");
       }
 
-      if (!TrainerFactory.isValid(mlParams.getSettings("chunker"))) {
+      if (!TrainerFactory.isValid(mlParams.getParameters("chunker"))) {
         throw new TerminateToolException(1, "Chunker training parameters are invalid!");
       }
     }

@@ -63,12 +63,12 @@ public final class TokenizerTrainerTool
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
 
     if (mlParams != null) {
-      if (!TrainerFactory.isValid(mlParams.getSettings())) {
+      if (!TrainerFactory.isValid(mlParams)) {
         throw new TerminateToolException(1, "Training parameters file '" + params.getParams() +
             "' is invalid!");
       }
 
-      if (!TrainerType.EVENT_MODEL_TRAINER.equals(TrainerFactory.getTrainerType(mlParams.getSettings()))) {
+      if (!TrainerType.EVENT_MODEL_TRAINER.equals(TrainerFactory.getTrainerType(mlParams))) {
         throw new TerminateToolException(1, "Sequence training is not supported!");
       }
     }

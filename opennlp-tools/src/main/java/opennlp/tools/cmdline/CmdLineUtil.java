@@ -324,11 +324,11 @@ public final class CmdLineUtil {
         throw new TerminateToolException(-1, "Error during parameters loading: " + e.getMessage(), e);
       }
 
-      if (!TrainerFactory.isValid(params.getSettings())) {
+      if (!TrainerFactory.isValid(params)) {
         throw new TerminateToolException(1, "Training parameters file '" + paramFile + "' is invalid!");
       }
 
-      TrainerFactory.TrainerType trainerType = TrainerFactory.getTrainerType(params.getSettings());
+      TrainerFactory.TrainerType trainerType = TrainerFactory.getTrainerType(params);
 
       if (!supportSequenceTraining
           && trainerType.equals(TrainerFactory.TrainerType.EVENT_MODEL_SEQUENCE_TRAINER)) {

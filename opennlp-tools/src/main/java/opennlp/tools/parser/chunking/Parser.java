@@ -284,7 +284,7 @@ public class Parser extends AbstractBottomUpParser {
     ObjectStream<Event> bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
     Map<String, String> buildReportMap = new HashMap<>();
     EventTrainer buildTrainer =
-        TrainerFactory.getEventTrainer(mlParams.getSettings("build"), buildReportMap);
+        TrainerFactory.getEventTrainer(mlParams.getParameters("build"), buildReportMap);
     MaxentModel buildModel = buildTrainer.train(bes);
     mergeReportIntoManifest(manifestInfoEntries, buildReportMap, "build");
 
@@ -314,7 +314,7 @@ public class Parser extends AbstractBottomUpParser {
     ObjectStream<Event> kes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.CHECK);
     Map<String, String> checkReportMap = new HashMap<>();
     EventTrainer checkTrainer =
-        TrainerFactory.getEventTrainer(mlParams.getSettings("check"), checkReportMap);
+        TrainerFactory.getEventTrainer(mlParams.getParameters("check"), checkReportMap);
     MaxentModel checkModel = checkTrainer.train(kes);
     mergeReportIntoManifest(manifestInfoEntries, checkReportMap, "check");
 

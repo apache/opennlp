@@ -19,7 +19,6 @@ package opennlp.tools.ml.maxent.quasinewton;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Test;
 
@@ -53,7 +52,7 @@ public class QNPrepAttachTest {
   @Test
   public void testQNOnPrepAttachDataWithParamsDefault() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
 
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
@@ -65,7 +64,7 @@ public class QNPrepAttachTest {
   @Test
   public void testQNOnPrepAttachDataWithElasticNetParams() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
         AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
@@ -82,7 +81,7 @@ public class QNPrepAttachTest {
   @Test
   public void testQNOnPrepAttachDataWithL1Params() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
         AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
@@ -99,7 +98,7 @@ public class QNPrepAttachTest {
   @Test
   public void testQNOnPrepAttachDataWithL2Params() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
         AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
@@ -116,7 +115,7 @@ public class QNPrepAttachTest {
   @Test
   public void testQNOnPrepAttachDataInParallel() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put(QNTrainer.THREADS_PARAM, Integer.toString(2));
 

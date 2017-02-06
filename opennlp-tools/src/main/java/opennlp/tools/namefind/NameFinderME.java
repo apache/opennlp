@@ -232,13 +232,13 @@ public class NameFinderME implements TokenNameFinder {
 
     SequenceClassificationModel<String> seqModel = null;
 
-    TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
+    TrainerType trainerType = TrainerFactory.getTrainerType(trainParams);
 
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> eventStream = new NameFinderEventStream(samples, type,
               factory.createContextGenerator(), factory.createSequenceCodec());
 
-      EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams.getSettings(), manifestInfoEntries);
+      EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, manifestInfoEntries);
       nameFinderModel = trainer.train(eventStream);
     } // TODO: Maybe it is not a good idea, that these two don't use the context generator ?!
     // These also don't use the sequence codec ?!
@@ -246,11 +246,11 @@ public class NameFinderME implements TokenNameFinder {
       NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, factory.createContextGenerator());
 
       EventModelSequenceTrainer trainer = TrainerFactory.getEventModelSequenceTrainer(
-              trainParams.getSettings(), manifestInfoEntries);
+              trainParams, manifestInfoEntries);
       nameFinderModel = trainer.train(ss);
     } else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
       SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
-              trainParams.getSettings(), manifestInfoEntries);
+              trainParams, manifestInfoEntries);
 
       NameSampleSequenceStream ss =
           new NameSampleSequenceStream(samples, factory.createContextGenerator(), false);

@@ -40,25 +40,25 @@ public class TrainerFactoryTest {
 
   @Test
   public void testBuiltInValid() {
-    Assert.assertTrue(TrainerFactory.isValid(mlParams.getSettings()));
+    Assert.assertTrue(TrainerFactory.isValid(mlParams));
   }
 
   @Test
   public void testSequenceTrainerValid() {
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, MockSequenceTrainer.class.getCanonicalName());
-    Assert.assertTrue(TrainerFactory.isValid(mlParams.getSettings()));
+    Assert.assertTrue(TrainerFactory.isValid(mlParams));
   }
 
   @Test
   public void testEventTrainerValid() {
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, MockEventTrainer.class.getCanonicalName());
-    Assert.assertTrue(TrainerFactory.isValid(mlParams.getSettings()));
+    Assert.assertTrue(TrainerFactory.isValid(mlParams));
   }
 
   @Test
   public void testInvalidTrainer() {
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, "xyz");
-    Assert.assertFalse(TrainerFactory.isValid(mlParams.getSettings()));
+    Assert.assertFalse(TrainerFactory.isValid(mlParams));
   }
 
   @Test
@@ -66,7 +66,7 @@ public class TrainerFactoryTest {
     mlParams.put(AbstractTrainer.ALGORITHM_PARAM,
         SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE);
 
-    TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
+    TrainerType trainerType = TrainerFactory.getTrainerType(mlParams);
 
     Assert.assertTrue(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
   }
@@ -74,7 +74,7 @@ public class TrainerFactoryTest {
   @Test
   public void testIsSequenceTrainerFalse() {
     mlParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
-    TrainerType trainerType = TrainerFactory.getTrainerType(mlParams.getSettings());
+    TrainerType trainerType = TrainerFactory.getTrainerType(mlParams);
     Assert.assertFalse(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
   }
 

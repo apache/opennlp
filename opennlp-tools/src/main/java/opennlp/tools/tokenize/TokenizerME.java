@@ -242,7 +242,7 @@ public class TokenizerME extends AbstractTokenizer {
         factory.getAlphaNumericPattern(), factory.getContextGenerator());
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(
-        mlParams.getSettings(), manifestInfoEntries);
+        mlParams, manifestInfoEntries);
 
     MaxentModel maxentModel = trainer.train(eventStream);
 

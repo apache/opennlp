@@ -19,7 +19,6 @@ package opennlp.tools.ml.naivebayes;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -61,7 +60,7 @@ public class NaiveBayesPrepAttachTest {
 
   @Test
   public void testNaiveBayesOnPrepAttachDataUsingTrainUtil() throws IOException {
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
 
@@ -73,7 +72,7 @@ public class NaiveBayesPrepAttachTest {
 
   @Test
   public void testNaiveBayesOnPrepAttachDataUsingTrainUtilWithCutoff5() throws IOException {
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(5));
 

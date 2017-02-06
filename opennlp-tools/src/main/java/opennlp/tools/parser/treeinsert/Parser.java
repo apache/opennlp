@@ -471,7 +471,7 @@ public class Parser extends AbstractBottomUpParser {
     Map<String, String> buildReportMap = new HashMap<>();
 
     EventTrainer buildTrainer = TrainerFactory.getEventTrainer(
-        mlParams.getSettings("build"), buildReportMap);
+        mlParams.getParameters("build"), buildReportMap);
     MaxentModel buildModel = buildTrainer.train(bes);
     opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(
         manifestInfoEntries, buildReportMap, "build");
@@ -485,7 +485,7 @@ public class Parser extends AbstractBottomUpParser {
     Map<String, String> checkReportMap = new HashMap<>();
 
     EventTrainer checkTrainer = TrainerFactory.getEventTrainer(
-        mlParams.getSettings("check"), checkReportMap);
+        mlParams.getParameters("check"), checkReportMap);
     MaxentModel checkModel = checkTrainer.train(kes);
     opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(
         manifestInfoEntries, checkReportMap, "check");
@@ -498,7 +498,7 @@ public class Parser extends AbstractBottomUpParser {
         ParserEventTypeEnum.ATTACH);
     Map<String, String> attachReportMap = new HashMap<>();
     EventTrainer attachTrainer = TrainerFactory.getEventTrainer(
-        mlParams.getSettings("attach"), attachReportMap);
+        mlParams.getParameters("attach"), attachReportMap);
     MaxentModel attachModel = attachTrainer.train(attachEvents);
     opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(
         manifestInfoEntries, attachReportMap, "attach");

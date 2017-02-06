@@ -19,7 +19,6 @@ package opennlp.tools.ml.maxent;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -75,7 +74,7 @@ public class MaxentPrepAttachTest {
   @Test
   public void testMaxentOnPrepAttachDataWithParams() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
         AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
@@ -90,7 +89,7 @@ public class MaxentPrepAttachTest {
   @Test
   public void testMaxentOnPrepAttachDataWithParamsDefault() throws IOException {
 
-    Map<String, String> trainParams = new HashMap<>();
+    TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);

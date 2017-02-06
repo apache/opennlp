@@ -236,26 +236,26 @@ public class POSTaggerME implements POSTagger {
 
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
-    TrainerType trainerType = TrainerFactory.getTrainerType(trainParams.getSettings());
+    TrainerType trainerType = TrainerFactory.getTrainerType(trainParams);
 
     MaxentModel posModel = null;
     SequenceClassificationModel<String> seqPosModel = null;
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new POSSampleEventStream(samples, contextGenerator);
 
-      EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams.getSettings(),
+      EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams,
           manifestInfoEntries);
       posModel = trainer.train(es);
     }
     else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
       EventModelSequenceTrainer trainer =
-          TrainerFactory.getEventModelSequenceTrainer(trainParams.getSettings(), manifestInfoEntries);
+          TrainerFactory.getEventModelSequenceTrainer(trainParams, manifestInfoEntries);
       posModel = trainer.train(ss);
     }
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
       SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
-          trainParams.getSettings(), manifestInfoEntries);
+          trainParams, manifestInfoEntries);
 
       // TODO: This will probably cause issue, since the feature generator uses the outcomes array
 
