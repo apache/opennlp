@@ -20,10 +20,9 @@ Welcome to Apache OpenNLP!
 
 [![Build Status](https://api.travis-ci.org/apache/opennlp.svg?branch=master)](https://travis-ci.org/apache/opennlp)
 [![Coverage Status](https://coveralls.io/repos/github/apache/opennlp/badge.svg?branch=master)](https://coveralls.io/github/apache/opennlp?branch=master)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp/badge.svg?style=plastic])](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp)
 [![Documentation Status](https://img.shields.io/:docs-latest-green.svg)](http://opennlp.apache.org/documentation.html)
 [![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/apache/opennlp/master/LICENSE)
-[![GitHub forks](https://img.shields.io/github/forks/apache/opennlp.svg)](https://github.com/apache/opennlp/network)
-[![GitHub stars](https://img.shields.io/github/stars/apache/opennlp.svg)](https://github.com/apache/opennlp/stargazers)
 [![Twitter Follow](https://img.shields.io/twitter/follow/ApacheOpennlp.svg?style=social)](https://twitter.com/ApacheOpenNLP)
 
 The Apache OpenNLP library is a machine learning based toolkit for the processing of natural language text.
@@ -38,7 +37,7 @@ well as the annotated text resources that those models are derived from.
 
 For additional information about OpenNLP, visit the [OpenNLP Home Page](http://opennlp.apache.org/)
 
-Documentation for OpenNLP, including JavaDocs, code usage and command line interface are available[here](http://opennlp.apache.org/documentation.html)
+Documentation for OpenNLP, including JavaDocs, code usage and command line interface are available [here](http://opennlp.apache.org/documentation.html)
 
 ####Using OpenNLP as a Library
 Running any application that uses OpenNLP will require installing a binary or source version and setting the environment.
