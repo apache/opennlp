@@ -37,6 +37,7 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.ml.perceptron.PerceptronTrainer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceCodec;
@@ -219,6 +220,11 @@ public class NameFinderME implements TokenNameFinder {
   public static TokenNameFinderModel train(String languageCode, String type,
           ObjectStream<NameSample> samples, TrainingParameters trainParams,
           TokenNameFinderFactory factory) throws IOException {
+
+    trainParams.putIfAbsent(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    trainParams.putIfAbsent(TrainingParameters.CUTOFF_PARAM, "0");
+    trainParams.putIfAbsent(TrainingParameters.ITERATIONS_PARAM, "300");
+
     String beamSizeString = trainParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
 
     int beamSize = NameFinderME.DEFAULT_BEAM_SIZE;

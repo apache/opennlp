@@ -42,8 +42,8 @@ import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.EvaluationMonitor;
-import opennlp.tools.util.model.ModelUtil;
 
 public final class TokenNameFinderCrossValidatorTool
     extends AbstractCrossValidatorTool<NameSample, CVToolParams> {
@@ -65,7 +65,7 @@ public final class TokenNameFinderCrossValidatorTool
 
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
     if (mlParams == null) {
-      mlParams = ModelUtil.createDefaultTrainingParameters();
+      mlParams = new TrainingParameters();
     }
 
     byte featureGeneratorBytes[] =

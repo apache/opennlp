@@ -285,6 +285,7 @@ public class NameFinderMETest {
         new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
     params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
 

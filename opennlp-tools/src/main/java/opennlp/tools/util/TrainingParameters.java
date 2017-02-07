@@ -130,6 +130,19 @@ public class TrainingParameters {
     return params;
   }
 
+  public void putIfAbsent(String namespace, String key, String value) {
+    if (namespace == null) {
+      parameters.putIfAbsent(key, value);
+    }
+    else {
+      parameters.putIfAbsent(namespace + "." + key, value);
+    }
+  }
+
+  public void putIfAbsent(String key, String value) {
+    putIfAbsent(null, key, value);
+  }
+
   public void put(String namespace, String key, String value) {
 
     if (namespace == null) {
