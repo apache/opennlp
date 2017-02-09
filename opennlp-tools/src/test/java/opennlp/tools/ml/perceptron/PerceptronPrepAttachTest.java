@@ -23,6 +23,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -133,5 +134,21 @@ public class PerceptronPrepAttachTest {
 
     Assert.assertEquals(modelA, modelB);
     Assert.assertEquals(modelA.hashCode(), modelB.hashCode());
+  }
+  
+  @Test
+  public void verifyReportMap() throws IOException {
+    TrainingParameters trainParams = new TrainingParameters();
+    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
+    // Since we are verifying the report map, we don't need to have more than 1 iteration
+    trainParams.put(AbstractTrainer.ITERATIONS_PARAM, Integer.toString(1));
+    trainParams.put("UseSkippedAveraging", Boolean.toString(true));
+    
+    Map<String,String> reportMap = new HashMap<>();
+    EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, reportMap);
+    trainer.train(PrepAttachDataUtil.createTrainingStream());
+    Assert.assertTrue("Report Map does not contain the training event hash",
+        reportMap.containsKey("Training-Eventhash")); 
   }
 }
