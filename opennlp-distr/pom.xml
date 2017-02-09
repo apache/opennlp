@@ -24,7 +24,7 @@
 	<parent>
 		<groupId>org.apache.opennlp</groupId>
 		<artifactId>opennlp</artifactId>
-		<version>1.7.3-SNAPSHOT</version>
+		<version>1.8.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -127,7 +127,7 @@
               <phase>generate-resources</phase> 
               <goals><goal>jira-report</goal></goals>
                 <configuration>
-                  <fixVersionIds>12339150</fixVersionIds>
+                  <fixVersionIds>12339249</fixVersionIds>
                   <outputDirectory>${basedir}/target/issuesFixed/</outputDirectory>
                   <maxEntries>1000</maxEntries> <!-- hopefully, bigger than ever needed -->
                 </configuration>
