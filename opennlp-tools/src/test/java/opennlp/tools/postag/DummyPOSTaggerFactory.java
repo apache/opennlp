@@ -36,8 +36,8 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
   public DummyPOSTaggerFactory() {
   }
 
-  public DummyPOSTaggerFactory(Dictionary ngramDictionary, DummyPOSDictionary posDictionary) {
-    super(ngramDictionary, null);
+  public DummyPOSTaggerFactory(DummyPOSDictionary posDictionary) {
+    super(null, null, null);
     this.dict = posDictionary;
   }
 
@@ -81,7 +81,7 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
 
   }
 
-  static class DummyPOSDictionarySerializer implements ArtifactSerializer<DummyPOSDictionary> {
+  public static class DummyPOSDictionarySerializer implements ArtifactSerializer<DummyPOSDictionary> {
 
     public DummyPOSDictionary create(InputStream in) throws IOException {
       return DummyPOSDictionary.create(new UncloseableInputStream(in));
@@ -106,6 +106,9 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
 
     private POSDictionary dict;
 
+    public DummyPOSDictionary() {
+    }
+
     public DummyPOSDictionary(POSDictionary dict) {
       this.dict = dict;
     }
@@ -123,6 +126,9 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
       return dict.getTags(word);
     }
 
+    @Override
+    public Class<?> getArtifactSerializerClass() {
+      return DummyPOSDictionarySerializer.class;
+    }
   }
-
 }

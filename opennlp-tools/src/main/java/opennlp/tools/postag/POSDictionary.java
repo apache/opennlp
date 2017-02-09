@@ -32,12 +32,13 @@ import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.StringUtil;
+import opennlp.tools.util.model.SerializableArtifact;
 
 /**
  * Provides a means of determining which tags are valid for a particular word
  * based on a tag dictionary read from a file.
  */
-public class POSDictionary implements Iterable<String>, MutableTagDictionary {
+public class POSDictionary implements Iterable<String>, MutableTagDictionary, SerializableArtifact {
 
   private Map<String, String[]> dictionary;
 
@@ -264,5 +265,10 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
 
   public boolean isCaseSensitive() {
     return this.caseSensitive;
+  }
+
+  @Override
+  public Class<?> getArtifactSerializerClass() {
+    return POSTaggerFactory.POSDictionarySerializer.class;
   }
 }

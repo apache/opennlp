@@ -67,7 +67,7 @@ public final class TokenNameFinderTrainerTool
     return null;
   }
 
-  static byte[] openFeatureGeneratorBytes(File featureGenDescriptorFile) {
+  public static byte[] openFeatureGeneratorBytes(File featureGenDescriptorFile) {
     byte[] featureGeneratorBytes = null;
     // load descriptor file into memory
     if (featureGenDescriptorFile != null) {

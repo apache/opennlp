@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import opennlp.tools.dictionary.Dictionary;
@@ -32,6 +33,7 @@ import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.ByteArraySerializer;
 
 /**
  * The {@link POSModel} is the model used
@@ -42,18 +44,23 @@ import opennlp.tools.util.model.BaseModel;
 public final class POSModel extends BaseModel {
 
   private static final String COMPONENT_NAME = "POSTaggerME";
-
   static final String POS_MODEL_ENTRY_NAME = "pos.model";
+  static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
 
   public POSModel(String languageCode, SequenceClassificationModel<String> posModel,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, posFactory);
 
-    if (posModel == null)
-        throw new IllegalArgumentException("The maxentPosModel param must not be null!");
+    artifactMap.put(POS_MODEL_ENTRY_NAME,
+        Objects.requireNonNull(posModel, "posModel must not be null"));
 
-    artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
+    artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, posFactory.getFeatureGenerator());
+
+    for (Map.Entry<String, Object> resource : posFactory.getResources().entrySet()) {
+      artifactMap.put(resource.getKey(), resource.getValue());
+    }
+
     // TODO: This fails probably for the sequence model ... ?!
     // checkArtifactMap();
   }
@@ -68,13 +75,18 @@ public final class POSModel extends BaseModel {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, posFactory);
 
-    if (posModel == null)
-        throw new IllegalArgumentException("The maxentPosModel param must not be null!");
+    Objects.requireNonNull(posModel, "posModel must not be null");
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
     manifest.setProperty(BeamSearch.BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
 
     artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
+    artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, posFactory.getFeatureGenerator());
+
+    for (Map.Entry<String, Object> resource : posFactory.getResources().entrySet()) {
+      artifactMap.put(resource.getKey(), resource.getValue());
+    }
+
     checkArtifactMap();
   }
 
@@ -96,14 +108,6 @@ public final class POSModel extends BaseModel {
   }
 
   @Override
-  @SuppressWarnings("rawtypes")
-  protected void createArtifactSerializers(
-      Map<String, ArtifactSerializer> serializers) {
-
-    super.createArtifactSerializers(serializers);
-  }
-
-  @Override
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
 
@@ -114,6 +118,7 @@ public final class POSModel extends BaseModel {
 
   /**
    * @deprecated use getPosSequenceModel instead. This method will be removed soon.
+   * Only required for Parser 1.5.x backward compatibility. Newer models don't need this anymore.
    */
   @Deprecated
   public MaxentModel getPosModel() {
@@ -149,6 +154,13 @@ public final class POSModel extends BaseModel {
 
   public POSTaggerFactory getFactory() {
     return (POSTaggerFactory) this.toolFactory;
+  }
+
+  @Override
+  protected void createArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
+    super.createArtifactSerializers(serializers);
+
+    serializers.put("featuregen", new ByteArraySerializer());
   }
 
   /**

@@ -29,14 +29,17 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {
+  @ParameterDescription(valueName = "featuregenFile", description = "The feature generator descriptor file")
+  @OptionalParameter
+  File getFeaturegen();
+
+  @ParameterDescription(valueName = "resourcesDir", description = "The resources directory")
+  @OptionalParameter
+  File getResources();
+
   @ParameterDescription(valueName = "dictionaryPath", description = "The XML tag dictionary file")
   @OptionalParameter
   File getDict();
-
-  @ParameterDescription(valueName = "cutoff",
-      description = "NGram cutoff. If not specified will not create ngram dictionary.")
-  @OptionalParameter
-  Integer getNgram();
 
   @ParameterDescription(valueName = "tagDictCutoff",
       description = "TagDictionary cutoff. If specified will create/expand a mutable TagDictionary")

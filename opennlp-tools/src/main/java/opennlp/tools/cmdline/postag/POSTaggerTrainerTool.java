@@ -19,13 +19,14 @@ package opennlp.tools.cmdline.postag;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.cmdline.params.TrainingToolParams;
 import opennlp.tools.cmdline.postag.POSTaggerTrainerTool.TrainerToolParams;
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.postag.MutableTagDictionary;
 import opennlp.tools.postag.POSModel;
@@ -66,25 +67,16 @@ public final class POSTaggerTrainerTool
     File modelOutFile = params.getModel();
     CmdLineUtil.checkOutputFile("pos tagger model", modelOutFile);
 
-    Dictionary ngramDict = null;
+    Map<String, Object> resources = TokenNameFinderTrainerTool.loadResources(
+        params.getResources(), params.getFeaturegen());
 
-    Integer ngramCutoff = params.getNgram();
-
-    if (ngramCutoff != null) {
-      System.err.print("Building ngram dictionary ... ");
-      try {
-        ngramDict = POSTaggerME.buildNGramDictionary(sampleStream, ngramCutoff);
-        sampleStream.reset();
-      } catch (IOException e) {
-        throw new TerminateToolException(-1,
-            "IO error while building NGram Dictionary: " + e.getMessage(), e);
-      }
-      System.err.println("done");
-    }
+    byte[] featureGeneratorBytes =
+        TokenNameFinderTrainerTool.openFeatureGeneratorBytes(params.getFeaturegen());
 
     POSTaggerFactory postaggerFactory;
     try {
-      postaggerFactory = POSTaggerFactory.create(params.getFactory(), ngramDict, null);
+      postaggerFactory = POSTaggerFactory.create(params.getFactory(), featureGeneratorBytes,
+          resources, null);
     } catch (InvalidFormatException e) {
       throw new TerminateToolException(-1, e.getMessage(), e);
     }
@@ -95,7 +87,7 @@ public final class POSTaggerTrainerTool
             .createTagDictionary(params.getDict()));
       } catch (IOException e) {
         throw new TerminateToolException(-1,
-            "IO error while loading POS Dictionary: " + e.getMessage(), e);
+            "IO error while loading POS Dictionary", e);
       }
     }
 

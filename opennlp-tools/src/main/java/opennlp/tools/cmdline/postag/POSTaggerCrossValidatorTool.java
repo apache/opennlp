@@ -22,10 +22,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.cmdline.params.CVParams;
 import opennlp.tools.cmdline.params.FineGrainedEvaluatorParams;
 import opennlp.tools.cmdline.postag.POSTaggerCrossValidatorTool.CVToolParams;
@@ -75,10 +77,16 @@ public final class POSTaggerCrossValidatorTool
       }
     }
 
+    Map<String, Object> resources = TokenNameFinderTrainerTool.loadResources(
+        params.getResources(), params.getFeaturegen());
+
+    byte[] featureGeneratorBytes =
+        TokenNameFinderTrainerTool.openFeatureGeneratorBytes(params.getFeaturegen());
+
     POSTaggerCrossValidator validator;
     try {
       validator = new POSTaggerCrossValidator(params.getLang(), mlParams,
-          params.getDict(), params.getNgram(), params.getTagDictCutoff(),
+          params.getDict(), featureGeneratorBytes, resources, params.getTagDictCutoff(),
           params.getFactory(), missclassifiedListener, reportListener);
 
       validator.evaluate(sampleStream, params.getFolds());

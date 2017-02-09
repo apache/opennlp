@@ -489,6 +489,17 @@ public class GeneratorFactory {
     }
   }
 
+  static class PosTaggerFeatureGeneratorFactory implements XmlFeatureGeneratorFactory {
+    public AdaptiveFeatureGenerator create(Element generatorElement,
+                                           FeatureGeneratorResourceProvider resourceManager) {
+      return new PosTaggerFeatureGenerator();
+    }
+
+    static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
+      factoryMap.put("postagger", new PosTaggerFeatureGeneratorFactory());
+    }
+  }
+
   /**
    * @see WindowFeatureGenerator
    */
@@ -658,6 +669,7 @@ public class GeneratorFactory {
     TokenFeatureGeneratorFactory.register(factories);
     BigramNameFeatureGeneratorFactory.register(factories);
     TokenPatternFeatureGeneratorFactory.register(factories);
+    PosTaggerFeatureGeneratorFactory.register(factories);
     PrefixFeatureGeneratorFactory.register(factories);
     SuffixFeatureGeneratorFactory.register(factories);
     WindowFeatureGeneratorFactory.register(factories);
