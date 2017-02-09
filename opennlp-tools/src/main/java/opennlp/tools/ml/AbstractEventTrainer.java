@@ -88,6 +88,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
     HashSumEventStream hses = new HashSumEventStream(events);
     DataIndexer indexer = getDataIndexer(hses);
 
+    addToReport("Training-Eventhash", hses.calculateHashSum().toString(16));
     return train(indexer);
   }
 }
