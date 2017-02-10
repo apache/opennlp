@@ -34,8 +34,6 @@ import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.postag.TagDictionary;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelType;
 import opennlp.tools.util.model.ModelUtil;
 
 public final class POSTaggerTrainerTool
@@ -63,7 +61,6 @@ public final class POSTaggerTrainerTool
 
     if (mlParams == null) {
       mlParams = ModelUtil.createDefaultTrainingParameters();
-      mlParams.put(TrainingParameters.ALGORITHM_PARAM, getModelType(params.getType()).toString());
     }
 
     File modelOutFile = params.getModel();
@@ -141,27 +138,5 @@ public final class POSTaggerTrainerTool
     }
 
     CmdLineUtil.writeModel("pos tagger", modelOutFile, model);
-  }
-
-  static ModelType getModelType(String modelString) {
-    ModelType model;
-    if (modelString == null)
-      modelString = "maxent";
-
-    switch (modelString) {
-      case "maxent":
-        model = ModelType.MAXENT;
-        break;
-      case "perceptron":
-        model = ModelType.PERCEPTRON;
-        break;
-      case "perceptron_sequence":
-        model = ModelType.PERCEPTRON_SEQUENCE;
-        break;
-      default:
-        model = null;
-        break;
-    }
-    return model;
   }
 }

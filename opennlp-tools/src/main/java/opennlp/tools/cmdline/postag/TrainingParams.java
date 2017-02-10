@@ -29,12 +29,6 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {
-
-  @ParameterDescription(valueName = "maxent|perceptron|perceptron_sequence",
-      description = "The type of the token name finder model. One of maxent|perceptron|perceptron_sequence.")
-  @OptionalParameter(defaultValue = "maxent")
-  String getType();
-
   @ParameterDescription(valueName = "dictionaryPath", description = "The XML tag dictionary file")
   @OptionalParameter
   File getDict();
