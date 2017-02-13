@@ -555,7 +555,16 @@ public class GeneratorFactory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
-      return new PrefixFeatureGenerator();
+        
+      String attribute = generatorElement.getAttribute("length");
+        
+      int prefixLength = PrefixFeatureGenerator.DEFAULT_MAX_LENGTH;
+        
+      if (!Objects.equals(attribute, "")) {
+        prefixLength = Integer.parseInt(attribute);
+      }
+        
+      return new PrefixFeatureGenerator(prefixLength);
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
@@ -570,7 +579,16 @@ public class GeneratorFactory {
 
     public AdaptiveFeatureGenerator create(Element generatorElement,
         FeatureGeneratorResourceProvider resourceManager) {
-      return new SuffixFeatureGenerator();
+        
+      String attribute = generatorElement.getAttribute("length");
+        
+      int suffixLength = SuffixFeatureGenerator.DEFAULT_MAX_LENGTH;
+        
+      if (!Objects.equals(attribute, "")) {
+        suffixLength = Integer.parseInt(attribute);
+      }
+        
+      return new SuffixFeatureGenerator(suffixLength);
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
