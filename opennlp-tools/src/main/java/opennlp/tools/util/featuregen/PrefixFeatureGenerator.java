@@ -21,21 +21,35 @@ import java.util.List;
 
 public class PrefixFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private static final int PREFIX_LENGTH = 4;
-
-  private static String[] getPrefixes(String lex) {
-    String[] prefs = new String[PREFIX_LENGTH];
-    for (int li = 0; li < PREFIX_LENGTH; li++) {
-      prefs[li] = lex.substring(0, Math.min(li + 1, lex.length()));
-    }
-    return prefs;
+  static final int DEFAULT_MAX_LENGTH = 4;
+  
+  private final int prefixLength;
+  
+  public PrefixFeatureGenerator() {
+    prefixLength = DEFAULT_MAX_LENGTH;
+  }
+  
+  public PrefixFeatureGenerator(int prefixLength) {
+    this.prefixLength = prefixLength;
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
-    String[] prefs = PrefixFeatureGenerator.getPrefixes(tokens[index]);
+    String[] prefs = getPrefixes(tokens[index]);
     for (String pref : prefs) {
       features.add("pre=" + pref);
     }
+  }
+  
+  private String[] getPrefixes(String lex) {
+      
+    int prefixes = Math.min(prefixLength, lex.length());
+    
+    String[] prefs = new String[prefixes];
+    for (int li = 0; li < prefixes; li++) {
+      prefs[li] = lex.substring(0, Math.min(li + 1, lex.length()));
+    }
+    return prefs;
   }
 }
