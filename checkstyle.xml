@@ -42,6 +42,8 @@
     <property name="eachLine" value="true"/>
   </module>
 
+  <module name="NewlineAtEndOfFile" />
+
   <module name="RegexpMultiline">
     <property name="format" value="\r\n"/>
     <property name="message" value="CRLF line endings are prohibited"/>
