@@ -54,7 +54,7 @@ public class LanguageModelEvaluationTest {
 
     NGramLanguageModel trigramLM = new NGramLanguageModel(3);
     for (StringList sentence : trainingVocabulary) {
-      trigramLM.add(sentence, 2, 3);
+      trigramLM.add(sentence, 1, 3);
     }
     double trigramPerplexity =
         LanguageModelTestUtils.getPerplexity(trigramLM, testVocabulary, 3);

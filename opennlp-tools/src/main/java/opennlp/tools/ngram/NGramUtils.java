@@ -34,13 +34,12 @@ public class NGramUtils {
    *
    * @param ngram the ngram to get the probability for
    * @param set   the vocabulary
-   * @param size  the size of the vocabulary
    * @param k     the smoothing factor
    * @return the Laplace smoothing probability
    * @see <a href="https://en.wikipedia.org/wiki/Additive_smoothing">Additive Smoothing</a>
    */
   public static double calculateLaplaceSmoothingProbability(StringList ngram,
-      Iterable<StringList> set, int size, Double k) {
+      Iterable<StringList> set, Double k) {
     return (count(ngram, set) + k) / (count(getNMinusOneTokenFirst(ngram), set) + k * 1);
   }
 

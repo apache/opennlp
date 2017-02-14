@@ -26,52 +26,30 @@ import opennlp.tools.util.StringList;
 
 /**
  * A {@link opennlp.tools.languagemodel.LanguageModel} based on a {@link opennlp.tools.ngram.NGramModel}
- * using Laplace smoothing probability estimation to get the probabilities of the ngrams.
- * See also {@link NGramUtils#calculateLaplaceSmoothingProbability(
- *opennlp.tools.util.StringList, Iterable, int, Double)}.
+ * using Stupid Backoff to get the probabilities of the ngrams.
  */
 public class NGramLanguageModel extends NGramModel implements LanguageModel {
 
   private static final int DEFAULT_N = 3;
-  private static final double DEFAULT_K = 1d;
 
   private final int n;
-  private final double k;
 
   public NGramLanguageModel() {
-    this(DEFAULT_N, DEFAULT_K);
+    this(DEFAULT_N);
   }
 
   public NGramLanguageModel(int n) {
-    this(n, DEFAULT_K);
-  }
-
-  public NGramLanguageModel(double k) {
-    this(DEFAULT_N, k);
-  }
-
-  public NGramLanguageModel(int n, double k) {
     this.n = n;
-    this.k = k;
   }
 
   public NGramLanguageModel(InputStream in) throws IOException {
-    this(in, DEFAULT_N, DEFAULT_K);
+    this(in, DEFAULT_N);
   }
 
-  public NGramLanguageModel(InputStream in, double k) throws IOException {
-    this(in, DEFAULT_N, k);
-  }
-
-  public NGramLanguageModel(InputStream in, int n) throws IOException {
-    this(in, n, DEFAULT_K);
-  }
-
-  public NGramLanguageModel(InputStream in, int n, double k)
+  public NGramLanguageModel(InputStream in, int n)
       throws IOException {
     super(in);
     this.n = n;
-    this.k = k;
   }
 
   @Override
@@ -79,24 +57,13 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
     double probability = 0d;
     if (size() > 0) {
       for (StringList ngram : NGramUtils.getNGrams(sample, n)) {
-        StringList nMinusOneToken = NGramUtils
-            .getNMinusOneTokenFirst(ngram);
-        if (size() > 1000000) {
-          // use stupid backoff
-          probability += Math.log(
-              getStupidBackoffProbability(ngram, nMinusOneToken));
-        } else {
-          // use laplace smoothing
-          probability += Math.log(
-              getLaplaceSmoothingProbability(ngram, nMinusOneToken));
+        double score = stupidBackoff(ngram);
+        probability += Math.log(score);
+        if (Double.isNaN(probability)) {
+          probability = 0d;
         }
       }
-      if (Double.isNaN(probability)) {
-        probability = 0d;
-      } else if (probability != 0) {
-        probability = Math.exp(probability);
-      }
-
+      probability = Math.exp(probability);
     }
     return probability;
   }
@@ -125,24 +92,21 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
     return token;
   }
 
-  private double getLaplaceSmoothingProbability(StringList ngram,
-                                                StringList nMinusOneToken) {
-    return (getCount(ngram) + k) / (getCount(nMinusOneToken) + k * size());
-  }
-
-  private double getStupidBackoffProbability(StringList ngram,
-                                             StringList nMinusOneToken) {
+  private double stupidBackoff(StringList ngram) {
     int count = getCount(ngram);
+    StringList nMinusOneToken = NGramUtils.getNMinusOneTokenFirst(ngram);
     if (nMinusOneToken == null || nMinusOneToken.size() == 0) {
-      return count / size();
+      return (double) count / (double) size();
     } else if (count > 0) {
-      return ((double) count) / ((double) getCount(
-          nMinusOneToken)); // maximum likelihood probability
+      double countM1 = getCount(nMinusOneToken);
+      if (countM1 == 0d) {
+        countM1 = size(); // to avoid Infinite if n-1grams do not exist
+      }
+      return (double) count / countM1;
     } else {
-      StringList nextNgram = NGramUtils.getNMinusOneTokenLast(ngram);
-      return 0.4d * getStupidBackoffProbability(nextNgram,
-          NGramUtils.getNMinusOneTokenFirst(nextNgram));
+      return 0.4 * stupidBackoff(NGramUtils.getNMinusOneTokenLast(ngram));
     }
+
   }
 
 }
