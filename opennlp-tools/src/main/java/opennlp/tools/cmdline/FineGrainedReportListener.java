@@ -802,8 +802,8 @@ public abstract class FineGrainedReportListener {
       }
     }
 
-    public void add(String[] text, String ref, String pred) {
-      int length = text.length;
+    public void add(int length, String ref, String pred) {
+
       averageSentenceLength.add(length);
 
       if (minimalSentenceLength > length) {
@@ -820,7 +820,16 @@ public abstract class FineGrainedReportListener {
       updateTagFMeasure(refs, preds);
 
       commit("", ref, pred);
+    }
 
+    public void add(String[] text, String ref, String pred) {
+      int length = text.length;
+      this.add(length, ref, pred);
+    }
+
+    public void add(CharSequence text, String ref, String pred) {
+      int length = text.length();
+      this.add(length, ref, pred);
     }
 
 

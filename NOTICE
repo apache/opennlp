@@ -10,3 +10,10 @@ opennlp-tools/src/main/java/opennlp/tools/stemmer/snowball
 were developed by Martin Porter and Richard Boulton.
 The full snowball package is available from
 http://snowball.tartarus.org/
+
+
+The Language Detector normalizer in
+opennlp.tools.util.normalizer.UnicodeCharSequenceNormalizer.java
+and its tests and resources were developed by Shuyo Nakatani.
+The full Language Detector package is available from
+https://github.com/shuyo/language-detection
