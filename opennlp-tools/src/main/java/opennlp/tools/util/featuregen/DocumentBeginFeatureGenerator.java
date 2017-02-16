@@ -21,7 +21,7 @@ import java.util.List;
 
 public class DocumentBeginFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private String firstSentence[];
+  private String[] firstSentence;
 
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {

@@ -70,7 +70,7 @@ public class DoccatTool extends BasicCmdLineTool {
         while ((document = documentStream.read()) != null) {
           String[] tokens = model.getFactory().getTokenizer().tokenize(document);
 
-          double prob[] = doccat.categorize(tokens);
+          double[] prob = doccat.categorize(tokens);
           String category = doccat.getBestCategory(prob);
 
           DocumentSample sample = new DocumentSample(category, tokens);

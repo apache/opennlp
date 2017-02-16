@@ -68,14 +68,14 @@ public final class TokenNameFinderCrossValidatorTool
       mlParams = new TrainingParameters();
     }
 
-    byte featureGeneratorBytes[] =
+    byte[] featureGeneratorBytes =
         TokenNameFinderTrainerTool.openFeatureGeneratorBytes(params.getFeaturegen());
 
     Map<String, Object> resources =
         TokenNameFinderTrainerTool.loadResources(params.getResources(), params.getFeaturegen());
 
     if (params.getNameTypes() != null) {
-      String nameTypes[] = params.getNameTypes().split(",");
+      String[] nameTypes = params.getNameTypes().split(",");
       sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
     }
 

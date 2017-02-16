@@ -156,7 +156,7 @@ public final class GISModel extends AbstractModel {
   public static double[] eval(int[] context, float[] values, double[] prior,
       EvalParameters model) {
     Context[] params = model.getParams();
-    int numfeats[] = new int[model.getNumOutcomes()];
+    int[] numfeats = new int[model.getNumOutcomes()];
     int[] activeOutcomes;
     double[] activeParameters;
     double value = 1;

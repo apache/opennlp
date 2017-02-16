@@ -250,7 +250,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
         //training feature count computation
         for (int ei = 0; ei < events.length; ei++, oei++) {
           String[] contextStrings = events[ei].getContext();
-          float values[] = events[ei].getValues();
+          float[] values = events[ei].getValues();
           int oi = omap.get(events[ei].getOutcome());
           for (int ci = 0; ci < contextStrings.length; ci++) {
             float value = 1;
@@ -272,7 +272,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
         // {System.err.print(" "+taggerEvents[ei].getOutcome());} System.err.println();
         for (Event taggerEvent : taggerEvents) {
           String[] contextStrings = taggerEvent.getContext();
-          float values[] = taggerEvent.getValues();
+          float[] values = taggerEvent.getValues();
           int oi = omap.get(taggerEvent.getOutcome());
           for (int ci = 0; ci < contextStrings.length; ci++) {
             float value = 1;

@@ -169,7 +169,7 @@ public class ArgumentParser {
 
         // all checks should also be performed for super interfaces
 
-        Method methods[] = proxyInterface.getMethods();
+        Method[] methods = proxyInterface.getMethods();
 
         if (methods.length == 0)
           throw new IllegalArgumentException("proxy interface must at least declare one method!");
@@ -204,7 +204,7 @@ public class ArgumentParser {
 
   private static String methodNameToParameter(String methodName) {
     // remove get from method name
-    char parameterNameChars[] = methodName.toCharArray();
+    char[] parameterNameChars = methodName.toCharArray();
 
     // name length is checked to be at least 4 prior
     parameterNameChars[3] = Character.toLowerCase(parameterNameChars[3]);
@@ -385,7 +385,7 @@ public class ArgumentParser {
    * @return true, if arguments are valid
    */
   @SuppressWarnings({"unchecked"})
-  public static <T> boolean validateArguments(String args[], Class<T> argProxyInterface) {
+  public static <T> boolean validateArguments(String[] args, Class<T> argProxyInterface) {
     return validateArguments(args, new Class[]{argProxyInterface});
   }
 
@@ -398,7 +398,7 @@ public class ArgumentParser {
    * @param argProxyInterfaces interfaces with parameters description
    * @return true, if arguments are valid
    */
-  public static boolean validateArguments(String args[], Class<?>... argProxyInterfaces) {
+  public static boolean validateArguments(String[] args, Class<?>... argProxyInterfaces) {
     return null == validateArgumentsLoudly(args, argProxyInterfaces);
   }
 
@@ -409,7 +409,7 @@ public class ArgumentParser {
    * @param argProxyInterface interface with parameters description
    * @return null, if arguments are valid or error message otherwise
    */
-  public static String validateArgumentsLoudly(String args[], Class<?> argProxyInterface) {
+  public static String validateArgumentsLoudly(String[] args, Class<?> argProxyInterface) {
     return validateArgumentsLoudly(args, new Class[]{argProxyInterface});
   }
 
@@ -420,7 +420,7 @@ public class ArgumentParser {
    * @param argProxyInterfaces interfaces with parameters description
    * @return null, if arguments are valid or error message otherwise
    */
-  public static String validateArgumentsLoudly(String args[], Class<?>... argProxyInterfaces) {
+  public static String validateArgumentsLoudly(String[] args, Class<?>... argProxyInterfaces) {
     // number of parameters must be always be even
     if (args.length % 2 != 0) {
       return "Number of parameters must be always be even";
@@ -478,7 +478,7 @@ public class ArgumentParser {
    *     if the proxy interface is not compatible.
    */
   @SuppressWarnings("unchecked")
-  public static <T> T parse(String args[], Class<T> argProxyInterface) {
+  public static <T> T parse(String[] args, Class<T> argProxyInterface) {
 
     checkProxyInterfaces(argProxyInterface);
 
@@ -533,7 +533,7 @@ public class ArgumentParser {
    * @param <T> T
    * @return arguments pertaining to argProxyInterface
    */
-  public static <T> String[] filter(String args[], Class<T> argProxyInterface) {
+  public static <T> String[] filter(String[] args, Class<T> argProxyInterface) {
     ArrayList<String> parameters = new ArrayList<>(args.length);
 
     for (Method method : argProxyInterface.getMethods()) {

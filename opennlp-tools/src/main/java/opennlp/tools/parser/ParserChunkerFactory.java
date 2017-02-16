@@ -35,7 +35,7 @@ public class ParserChunkerFactory extends ChunkerFactory {
 
     MaxentModel model = artifactProvider.getArtifact("chunker.model");
 
-    String outcomes[] = new String[model.getNumOutcomes()];
+    String[] outcomes = new String[model.getNumOutcomes()];
     for (int i = 0; i < outcomes.length; i++) {
       outcomes[i] = model.getOutcome(i);
     }

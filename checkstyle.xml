@@ -126,5 +126,6 @@
                 value="STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE###SPECIAL_IMPORTS###STATIC"/>
     </module>
     <module name="EqualsHashCode"/>
+    <module name="ArrayTypeStyle"/>
   </module>
 </module>

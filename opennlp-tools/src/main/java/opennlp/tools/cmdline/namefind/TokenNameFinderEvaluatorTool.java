@@ -96,7 +96,7 @@ public final class TokenNameFinderEvaluatorTool
     }
 
     if (params.getNameTypes() != null) {
-      String nameTypes[] = params.getNameTypes().split(",");
+      String[] nameTypes = params.getNameTypes().split(",");
       sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
     }
 

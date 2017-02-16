@@ -37,7 +37,7 @@ public class POSSample {
 
   private final String[][] additionalContext;
 
-  public POSSample(String sentence[], String tags[]) {
+  public POSSample(String[] sentence, String[] tags) {
     this(sentence, tags, null);
   }
 
@@ -66,7 +66,7 @@ public class POSSample {
     this.additionalContext = ac;
   }
 
-  public POSSample(String sentence[], String tags[],
+  public POSSample(String[] sentence, String[] tags,
       String[][] additionalContext) {
     this(Arrays.asList(sentence), Arrays.asList(tags), additionalContext);
   }
@@ -120,10 +120,10 @@ public class POSSample {
 
   public static POSSample parse(String sentenceString) throws InvalidFormatException {
 
-    String tokenTags[] = WhitespaceTokenizer.INSTANCE.tokenize(sentenceString);
+    String[] tokenTags = WhitespaceTokenizer.INSTANCE.tokenize(sentenceString);
 
-    String sentence[] = new String[tokenTags.length];
-    String tags[] = new String[tokenTags.length];
+    String[] sentence = new String[tokenTags.length];
+    String[] tags = new String[tokenTags.length];
 
     for (int i = 0; i < tokenTags.length; i++) {
       int split = tokenTags[i].lastIndexOf("_");

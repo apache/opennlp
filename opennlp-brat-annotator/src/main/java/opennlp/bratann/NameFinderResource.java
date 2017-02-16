@@ -39,7 +39,7 @@ public class NameFinderResource {
 
   private SentenceDetector sentDetect = NameFinderAnnService.sentenceDetector;
   private Tokenizer tokenizer = NameFinderAnnService.tokenizer;
-  private TokenNameFinder nameFinders[] = NameFinderAnnService.nameFinders;
+  private TokenNameFinder[] nameFinders = NameFinderAnnService.nameFinders;
 
   private static int findNextNonWhitespaceChar(CharSequence s, int beginOffset, int endOffset) {
     for (int i = beginOffset; i < endOffset; i++) {
@@ -66,10 +66,10 @@ public class NameFinderResource {
       // offset of sentence gets lost here!
       Span[] tokenSpans = tokenizer.tokenizePos(sentenceText);
 
-      String tokens[] = Span.spansToStrings(tokenSpans, sentenceText);
+      String[] tokens = Span.spansToStrings(tokenSpans, sentenceText);
 
       for (TokenNameFinder nameFinder : nameFinders) {
-        Span names[] = nameFinder.find(tokens);
+        Span[] names = nameFinder.find(tokens);
 
         for (Span name : names) {
 

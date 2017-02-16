@@ -36,7 +36,7 @@ public final class NumberUtil {
   public static boolean isLanguageSupported(String languageCode) {
     Locale locale = new Locale(languageCode);
 
-    Locale possibleLocales[] = NumberFormat.getAvailableLocales();
+    Locale[] possibleLocales = NumberFormat.getAvailableLocales();
 
     boolean isLocaleSupported = false;
 

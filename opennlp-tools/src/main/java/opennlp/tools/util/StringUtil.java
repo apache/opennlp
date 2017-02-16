@@ -73,7 +73,7 @@ public class StringUtil {
    * @return lower cased String
    */
   public static String toLowerCase(CharSequence string) {
-    char lowerCaseChars[] = new char[string.length()];
+    char[] lowerCaseChars = new char[string.length()];
 
     for (int i = 0; i < string.length(); i++) {
       lowerCaseChars[i] = Character.toLowerCase(string.charAt(i));
@@ -91,7 +91,7 @@ public class StringUtil {
    * @return upper cased String
    */
   public static String toUpperCase(CharSequence string) {
-    char upperCaseChars[] = new char[string.length()];
+    char[] upperCaseChars = new char[string.length()];
 
     for (int i = 0; i < string.length(); i++) {
       upperCaseChars[i] = Character.toUpperCase(string.charAt(i));

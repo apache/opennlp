@@ -29,5 +29,5 @@ public abstract class BasicCmdLineTool extends CmdLineTool {
    *
    * @param args arguments
    */
-  public abstract void run(String args[]);
+  public abstract void run(String[] args);
 }

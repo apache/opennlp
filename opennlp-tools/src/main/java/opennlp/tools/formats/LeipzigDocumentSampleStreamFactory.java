@@ -51,7 +51,7 @@ public class LeipzigDocumentSampleStreamFactory
     Parameters params = ArgumentParser.parse(args, Parameters.class);
     File sentencesFileDir = params.getSentencesDir();
 
-    File sentencesFiles[] = sentencesFileDir.listFiles(new FilenameFilter() {
+    File[] sentencesFiles = sentencesFileDir.listFiles(new FilenameFilter() {
       @Override
       public boolean accept(File dir, String name) {
         return name.contains("sentences") && name.endsWith(".txt");
@@ -59,7 +59,7 @@ public class LeipzigDocumentSampleStreamFactory
     });
 
     @SuppressWarnings("unchecked")
-    ObjectStream<DocumentSample> sampleStreams[] =
+    ObjectStream<DocumentSample>[] sampleStreams =
         new ObjectStream[sentencesFiles.length];
 
     for (int i = 0; i < sentencesFiles.length; i++) {

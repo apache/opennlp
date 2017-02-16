@@ -41,8 +41,8 @@ public class ConllXPOSSampleStreamTest {
 
     POSSample a = sampleStream.read();
 
-    String aSentence[] = a.getSentence();
-    String aTags[] = a.getTags();
+    String[] aSentence = a.getSentence();
+    String[] aTags = a.getTags();
 
     assertEquals(22, aSentence.length);
     assertEquals(22, aTags.length);
@@ -115,8 +115,8 @@ public class ConllXPOSSampleStreamTest {
 
     POSSample b = sampleStream.read();
 
-    String bSentence[] = b.getSentence();
-    String bTags[] = b.getTags();
+    String[] bSentence = b.getSentence();
+    String[] bTags = b.getTags();
 
     assertEquals(12, bSentence.length);
     assertEquals(12, bTags.length);

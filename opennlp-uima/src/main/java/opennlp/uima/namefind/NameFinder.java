@@ -154,9 +154,9 @@ public final class NameFinder extends AbstractNameFinder {
 
   protected Span[] find(CAS cas, String[] tokens) {
 
-    Span names[] = mNameFinder.find(tokens);
+    Span[] names = mNameFinder.find(tokens);
 
-    double probs[] = mNameFinder.probs();
+    double[] probs = mNameFinder.probs();
 
     for (double prob : probs) {
       documentConfidence.add(prob);
@@ -165,7 +165,7 @@ public final class NameFinder extends AbstractNameFinder {
     return names;
   }
 
-  protected void postProcessAnnotations(Span detectedNames[],
+  protected void postProcessAnnotations(Span[] detectedNames,
                                         AnnotationFS[] nameAnnotations) {
 
     if (probabilityFeature != null) {

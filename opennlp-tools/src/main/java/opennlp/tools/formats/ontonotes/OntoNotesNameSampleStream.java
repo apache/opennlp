@@ -105,7 +105,7 @@ public class OntoNotesNameSampleStream extends
             break;
           }
 
-          String tokens[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
+          String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(line);
 
           List<Span> entities = new LinkedList<>();
           List<String> cleanedTokens = new ArrayList<>(tokens.length);

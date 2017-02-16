@@ -101,7 +101,7 @@ public class NameSampleTest {
   @Test
   public void testNameAtEnd() {
 
-    String sentence[] = new String[] {
+    String[] sentence = new String[] {
         "My",
         "name",
         "is",

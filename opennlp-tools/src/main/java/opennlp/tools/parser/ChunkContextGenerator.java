@@ -160,7 +160,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     features.add(ctbo0 + "," + ct1);
     features.add(ct0 + "," + ctbo1);
     features.add(ctbo0 + "," + ctbo1);
-    String contexts[] = features.toArray(new String[features.size()]);
+    String[] contexts = features.toArray(new String[features.size()]);
     if (contextsCache != null) {
       contextsCache.put(cacheKey,contexts);
     }

@@ -36,5 +36,5 @@ public interface ObjectStreamFactory<T> {
    * @param args arguments
    * @return ObjectStream instance
    */
-  ObjectStream<T> create(String args[]);
+  ObjectStream<T> create(String[] args);
 }

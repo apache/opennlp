@@ -30,7 +30,7 @@ public interface TokenNameFinder {
    * @param tokens an array of the tokens or words of the sequence, typically a sentence.
    * @return an array of spans for each of the names identified.
    */
-  Span[] find(String tokens[]);
+  Span[] find(String[] tokens);
 
   /**
    * Forgets all adaptive data which was collected during previous

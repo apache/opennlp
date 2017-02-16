@@ -37,8 +37,8 @@ public class PosSampleStream extends FilterObjectStream<Parse, POSSample> {
 
       Parse[] nodes = parse.getTagNodes();
 
-      String toks[] = new String[nodes.length];
-      String preds[] = new String[nodes.length];
+      String[] toks = new String[nodes.length];
+      String[] preds = new String[nodes.length];
 
       for (int ti = 0; ti < nodes.length; ti++) {
         Parse tok = nodes[ti];

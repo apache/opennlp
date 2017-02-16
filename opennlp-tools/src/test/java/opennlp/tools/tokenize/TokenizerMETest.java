@@ -40,7 +40,7 @@ public class TokenizerMETest {
 
     TokenizerME tokenizer = new TokenizerME(model);
 
-    String tokens[] = tokenizer.tokenize("test,");
+    String[] tokens = tokenizer.tokenize("test,");
 
     Assert.assertEquals(2, tokens.length);
     Assert.assertEquals("test", tokens[0]);
@@ -52,7 +52,7 @@ public class TokenizerMETest {
     TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
 
     TokenizerME tokenizer = new TokenizerME(model);
-    String tokens[] = tokenizer.tokenize("Sounds like it's not properly thought through!");
+    String[] tokens = tokenizer.tokenize("Sounds like it's not properly thought through!");
 
     Assert.assertEquals(9, tokens.length);
     Assert.assertEquals("Sounds", tokens[0]);

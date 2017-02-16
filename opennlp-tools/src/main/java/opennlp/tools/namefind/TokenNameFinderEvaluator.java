@@ -73,8 +73,8 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
       nameFinder.clearAdaptiveData();
     }
 
-    Span predictedNames[] = nameFinder.find(reference.getSentence());
-    Span references[] = reference.getNames();
+    Span[] predictedNames = nameFinder.find(reference.getSentence());
+    Span[] references = reference.getNames();
 
     // OPENNLP-396 When evaluating with a file in the old format
     // the type of the span is null, but must be set to default to match

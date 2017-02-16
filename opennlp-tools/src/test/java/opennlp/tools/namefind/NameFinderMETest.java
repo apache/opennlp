@@ -78,7 +78,7 @@ public class NameFinderMETest {
 
     // now test if it can detect the sample sentences
 
-    String sentence[] = {"Alisa",
+    String[] sentence = {"Alisa",
         "appreciated",
         "the",
         "hint",
@@ -89,7 +89,7 @@ public class NameFinderMETest {
         "traditional",
         "meal."};
 
-    Span names[] = nameFinder.find(sentence);
+    Span[] names = nameFinder.find(sentence);
 
     Assert.assertEquals(1, names.length);
     Assert.assertEquals(new Span(0, 1, DEFAULT), names[0]);
@@ -150,10 +150,10 @@ public class NameFinderMETest {
     Assert.assertEquals("person", names2[0].getType());
     Assert.assertEquals("person", names2[1].getType());
 
-    String sentence[] = { "Alisa", "appreciated", "the", "hint", "and",
+    String[] sentence = { "Alisa", "appreciated", "the", "hint", "and",
         "enjoyed", "a", "delicious", "traditional", "meal." };
 
-    Span names[] = nameFinder.find(sentence);
+    Span[] names = nameFinder.find(sentence);
 
     Assert.assertEquals(1, names.length);
     Assert.assertEquals(new Span(0, 1, "person"), names[0]);
@@ -319,8 +319,8 @@ public class NameFinderMETest {
 
   @Test
   public void testDropOverlappingSpans() {
-    Span spans[] = new Span[] {new Span(1, 10), new Span(1,11), new Span(1,11), new Span(5, 15)};
-    Span remainingSpan[] = NameFinderME.dropOverlappingSpans(spans);
+    Span[] spans = new Span[] {new Span(1, 10), new Span(1,11), new Span(1,11), new Span(5, 15)};
+    Span[] remainingSpan = NameFinderME.dropOverlappingSpans(spans);
     Assert.assertEquals(new Span(1, 11), remainingSpan[0]);
   }
 

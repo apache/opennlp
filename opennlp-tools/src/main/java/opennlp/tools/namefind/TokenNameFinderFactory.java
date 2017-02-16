@@ -80,7 +80,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
         throw new IllegalStateException("Classpath must contain ner-default-features.xml file!");
       }
 
-      byte buf[] = new byte[1024];
+      byte[] buf = new byte[1024];
       int len;
       while ((len = in.read(buf)) > 0) {
         bytes.write(buf, 0, len);

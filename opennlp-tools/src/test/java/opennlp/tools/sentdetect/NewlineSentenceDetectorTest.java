@@ -29,7 +29,7 @@ public class NewlineSentenceDetectorTest {
   private static void testSentenceValues(String sentences) {
     NewlineSentenceDetector sd = new NewlineSentenceDetector();
 
-    String results[] = sd.sentDetect(sentences);
+    String[] results = sd.sentDetect(sentences);
 
     Assert.assertEquals(3, results.length);
     Assert.assertEquals("one.", results[0]);

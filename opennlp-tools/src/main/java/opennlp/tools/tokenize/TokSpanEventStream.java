@@ -99,7 +99,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
 
     List<Event> events = new ArrayList<>(50);
 
-    Span tokens[] = tokenSample.getTokenSpans();
+    Span[] tokens = tokenSample.getTokenSpans();
     String text = tokenSample.getText();
 
     if (tokens.length > 0) {

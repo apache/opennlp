@@ -33,9 +33,9 @@ public class InSpanGenerator implements AdaptiveFeatureGenerator {
 
   private final TokenNameFinder finder;
 
-  private String currentSentence[];
+  private String[] currentSentence;
 
-  private Span currentNames[];
+  private Span[] currentNames;
 
   /**
    * Initializes the current instance.

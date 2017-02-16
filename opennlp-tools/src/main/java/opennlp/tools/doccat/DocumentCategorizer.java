@@ -32,7 +32,7 @@ public interface DocumentCategorizer {
    * @param text the tokens of text to categorize
    * @return per category probabilities
    */
-  double[] categorize(String text[]);
+  double[] categorize(String[] text);
 
   /**
    * Categorizes the given text, provided in separate tokens.
@@ -43,7 +43,7 @@ public interface DocumentCategorizer {
    * @deprecated will be removed after 1.7.1 release. Don't use it.
    */
   @Deprecated
-  double[] categorize(String text[], Map<String, Object> extraInformation);
+  double[] categorize(String[] text, Map<String, Object> extraInformation);
 
   /**
    * get the best category from previously generated outcome probabilities
@@ -101,7 +101,7 @@ public interface DocumentCategorizer {
    * @param results the probabilities of each category
    * @return the name of the outcome
    */
-  String getAllResults(double results[]);
+  String getAllResults(double[] results);
 
   /**
    * Returns a map in which the key is the category name and the value is the score

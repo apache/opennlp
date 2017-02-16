@@ -87,7 +87,7 @@ public class LeipzigDoccatSampleStream extends
     String line;
     while (count < sentencesPerDocument && (line = samples.read()) != null) {
 
-      String tokens[] = tokenizer.tokenize(line);
+      String[] tokens = tokenizer.tokenize(line);
 
       if (tokens.length == 0) {
         throw new IOException("Empty lines are not allowed!");

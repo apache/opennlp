@@ -132,7 +132,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
       overrideType(names);
     }
 
-    String outcomes[] = codec.encode(names, sample.getSentence().length);
+    String[] outcomes = codec.encode(names, sample.getSentence().length);
     // String outcomes[] = generateOutcomes(sample.getNames(), type, sample.getSentence().length);
     additionalContextFeatureGenerator.setCurrentContext(sample.getAdditionalContext());
     String[] tokens = new String[sample.getSentence().length];

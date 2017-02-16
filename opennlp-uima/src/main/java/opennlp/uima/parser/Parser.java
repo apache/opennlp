@@ -199,8 +199,8 @@ public class Parser extends CasAnnotator_ImplBase {
 
   protected AnnotationFS createAnnotation(CAS cas, int offset, Parse parse) {
 
-    Parse parseChildren[] = parse.getChildren();
-    AnnotationFS parseChildAnnotations[] = new AnnotationFS[parseChildren.length];
+    Parse[] parseChildren = parse.getChildren();
+    AnnotationFS[] parseChildAnnotations = new AnnotationFS[parseChildren.length];
 
     // do this for all children
     for (int i = 0; i < parseChildren.length; i++) {
@@ -244,13 +244,13 @@ public class Parser extends CasAnnotator_ImplBase {
      * @param sentence
      * @param tokens
      */
-    public ParseConverter(String sentence, Span tokens[]) {
+    public ParseConverter(String sentence, Span[] tokens) {
 
       mSentence = sentence;
 
       StringBuilder sentenceStringBuilder = new StringBuilder();
 
-      String tokenList[] = new String[tokens.length];
+      String[] tokenList = new String[tokens.length];
 
       for (int i = 0; i < tokens.length; i++) {
         String tokenString = tokens[i].getCoveredText(sentence).toString();

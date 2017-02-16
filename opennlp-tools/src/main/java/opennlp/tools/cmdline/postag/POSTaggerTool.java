@@ -63,7 +63,7 @@ public final class POSTaggerTool extends BasicCmdLineTool {
         String line;
         while ((line = lineStream.read()) != null) {
 
-          String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
+          String[] whitespaceTokenizerLine = WhitespaceTokenizer.INSTANCE.tokenize(line);
           String[] tags = tagger.tag(whitespaceTokenizerLine);
 
           POSSample sample = new POSSample(whitespaceTokenizerLine, tags);

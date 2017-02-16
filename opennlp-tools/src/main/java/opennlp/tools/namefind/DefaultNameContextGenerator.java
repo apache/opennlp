@@ -36,7 +36,7 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  */
 public class DefaultNameContextGenerator implements NameContextGenerator {
 
-  private AdaptiveFeatureGenerator featureGenerators[];
+  private AdaptiveFeatureGenerator[] featureGenerators;
 
   @Deprecated
   private static AdaptiveFeatureGenerator windowFeatures = new CachedFeatureGenerator(
@@ -73,7 +73,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
   }
 
   public void addFeatureGenerator(AdaptiveFeatureGenerator generator) {
-    AdaptiveFeatureGenerator generators[] = featureGenerators;
+    AdaptiveFeatureGenerator[] generators = featureGenerators;
 
     featureGenerators = new AdaptiveFeatureGenerator[featureGenerators.length + 1];
 

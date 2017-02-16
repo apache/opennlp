@@ -33,7 +33,7 @@ public class PreviousMapFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator fg = new PreviousMapFeatureGenerator();
 
-    String sentence[] = new String[] {"a", "b", "c"};
+    String[] sentence = new String[] {"a", "b", "c"};
 
     List<String> features = new ArrayList<>();
 

@@ -38,7 +38,7 @@ public interface SequenceCodec<T> {
    *
    * @return
    */
-  T[] encode(Span names[], int length);
+  T[] encode(Span[] names, int length);
 
   /**
    * Creates a sequence validator which can validate a sequence of outcomes.

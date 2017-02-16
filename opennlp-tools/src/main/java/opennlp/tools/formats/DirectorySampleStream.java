@@ -43,7 +43,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
 
   private Stack<File> textFiles = new Stack<>();
 
-  public DirectorySampleStream(File dirs[], FileFilter fileFilter, boolean recursive) {
+  public DirectorySampleStream(File[] dirs, FileFilter fileFilter, boolean recursive) {
     this.fileFilter = fileFilter;
     isRecursiveScan = recursive;
 
@@ -73,7 +73,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
     while (textFiles.isEmpty() && !directories.isEmpty()) {
       File dir = directories.pop();
 
-      File files[];
+      File[] files;
 
       if (fileFilter != null) {
         files = dir.listFiles(fileFilter);

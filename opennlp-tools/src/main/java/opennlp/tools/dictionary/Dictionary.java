@@ -275,7 +275,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
     while ((line = lineReader.readLine()) != null) {
       StringTokenizer whiteSpaceTokenizer = new StringTokenizer(line, " ");
 
-      String tokens[] = new String[whiteSpaceTokenizer.countTokens()];
+      String[] tokens = new String[whiteSpaceTokenizer.countTokens()];
 
       if (tokens.length > 0) {
         int tokenIndex = 0;

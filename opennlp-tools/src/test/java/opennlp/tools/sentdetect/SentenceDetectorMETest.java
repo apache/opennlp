@@ -124,7 +124,7 @@ public class SentenceDetectorMETest {
     Assert.assertEquals(sents[0],"This is a test");
 
     // Test that sentPosDetect also works
-    Span pos[] = sentDetect.sentPosDetect(sampleSentences2);
+    Span[] pos = sentDetect.sentPosDetect(sampleSentences2);
     Assert.assertEquals(pos.length,2);
     probs = sentDetect.getSentenceProbabilities();
     Assert.assertEquals(probs.length,2);

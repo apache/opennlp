@@ -27,7 +27,7 @@ public class ParserChunkerSequenceValidator implements SequenceValidator<String>
 
   private Map<String, String> continueStartMap;
 
-  public ParserChunkerSequenceValidator(String outcomes[]) {
+  public ParserChunkerSequenceValidator(String[] outcomes) {
 
     continueStartMap = new HashMap<>(outcomes.length);
     for (int oi = 0, on = outcomes.length; oi < on; oi++) {

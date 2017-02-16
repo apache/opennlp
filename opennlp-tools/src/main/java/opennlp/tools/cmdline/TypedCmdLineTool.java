@@ -116,7 +116,7 @@ public abstract class TypedCmdLineTool<T>
    * @param format format to work with
    * @param args command line arguments
    */
-  public abstract void run(String format, String args[]);
+  public abstract void run(String format, String[] args);
 
   /**
    * Retrieves a description on how to use the tool.

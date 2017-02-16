@@ -93,7 +93,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
             // Run entity linker ... and output result ...
 
             StringBuilder text = new StringBuilder();
-            Span sentences[] = new Span[document.size()];
+            Span[] sentences = new Span[document.size()];
             Span[][] tokensBySentence = new Span[document.size()][];
             Span[][] namesBySentence = new Span[document.size()][];
 

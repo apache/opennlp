@@ -33,7 +33,7 @@ public class BeamSearchTest {
 
     private String[] outcomeSequence;
 
-    IdentityFeatureGenerator(String outcomeSequence[]) {
+    IdentityFeatureGenerator(String[] outcomeSequence) {
       this.outcomeSequence = outcomeSequence;
     }
 
@@ -53,7 +53,7 @@ public class BeamSearchTest {
     private double bestOutcomeProb = 0.8d;
     private double otherOutcomeProb;
 
-    IdentityModel(String outcomes[]) {
+    IdentityModel(String[] outcomes) {
       this.outcomes = outcomes;
 
       for (int i = 0; i < outcomes.length; i++) {
@@ -65,7 +65,7 @@ public class BeamSearchTest {
 
     public double[] eval(String[] context) {
 
-      double probs[] = new double[outcomes.length];
+      double[] probs = new double[outcomes.length];
 
       for (int i = 0; i < probs.length; i++) {
         if (outcomes[i].equals(context[0])) {
@@ -118,10 +118,10 @@ public class BeamSearchTest {
   @Test
   public void testBestSequenceZeroLengthInput() {
 
-    String sequence[] = new String[0];
+    String[] sequence = new String[0];
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
 
-    String outcomes[] = new String[] {"1", "2", "3"};
+    String[] outcomes = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
     BeamSearch<String> bs = new BeamSearch<>(3, model);
@@ -138,10 +138,10 @@ public class BeamSearchTest {
    */
   @Test
   public void testBestSequenceOneElementInput() {
-    String sequence[] = {"1"};
+    String[] sequence = {"1"};
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
 
-    String outcomes[] = new String[] {"1", "2", "3"};
+    String[] outcomes = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
     BeamSearch<String> bs = new BeamSearch<>(3, model);
@@ -160,10 +160,10 @@ public class BeamSearchTest {
    */
   @Test
   public void testBestSequence() {
-    String sequence[] = {"1", "2", "3", "2", "1"};
+    String[] sequence = {"1", "2", "3", "2", "1"};
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
 
-    String outcomes[] = new String[] {"1", "2", "3"};
+    String[] outcomes = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
     BeamSearch<String> bs = new BeamSearch<>(2, model);
@@ -186,10 +186,10 @@ public class BeamSearchTest {
    */
   @Test
   public void testBestSequenceWithValidator() {
-    String sequence[] = {"1", "2", "3", "2", "1"};
+    String[] sequence = {"1", "2", "3", "2", "1"};
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
 
-    String outcomes[] = new String[] {"1", "2", "3"};
+    String[] outcomes = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
     BeamSearch<String> bs = new BeamSearch<>(2, model, 0);

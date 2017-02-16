@@ -116,7 +116,7 @@ public final class ModelUtil {
     ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
 
     int length;
-    byte buffer[] = new byte[1024];
+    byte[] buffer = new byte[1024];
     while ((length = in.read(buffer)) > 0) {
       byteArrayOut.write(buffer, 0, length);
     }

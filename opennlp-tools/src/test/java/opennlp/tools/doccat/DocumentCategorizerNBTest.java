@@ -53,10 +53,10 @@ public class DocumentCategorizerNBTest {
 
     DocumentCategorizer doccat = new DocumentCategorizerME(model);
 
-    double aProbs[] = doccat.categorize("a");
+    double[] aProbs = doccat.categorize("a");
     Assert.assertEquals("1", doccat.getBestCategory(aProbs));
 
-    double bProbs[] = doccat.categorize("x");
+    double[] bProbs = doccat.categorize("x");
     Assert.assertEquals("0", doccat.getBestCategory(bProbs));
 
     //test to make sure sorted map's last key is cat 1 because it has the highest score.

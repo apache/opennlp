@@ -41,7 +41,7 @@ public class TokenizerStream implements ObjectStream<TokenSample> {
     String inputString = input.read();
 
     if (inputString != null) {
-      Span tokens[] = tokenizer.tokenizePos(inputString);
+      Span[] tokens = tokenizer.tokenizePos(inputString);
 
       return new TokenSample(inputString, tokens);
     }

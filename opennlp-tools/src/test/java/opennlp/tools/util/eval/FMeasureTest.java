@@ -29,7 +29,7 @@ public class FMeasureTest {
 
   private static final double DELTA = 1.0E-9d;
 
-  private Span gold[] = {
+  private Span[] gold = {
       new Span(8, 9),
       new Span(9, 10),
       new Span(10, 12),
@@ -38,7 +38,7 @@ public class FMeasureTest {
       new Span(15, 16)
   };
 
-  private Span predicted[] = {
+  private Span[] predicted = {
       new Span(14, 15),
       new Span(15, 16),
       new Span(100, 120),
@@ -46,7 +46,7 @@ public class FMeasureTest {
       new Span(220, 230)
   };
 
-  private Span predictedCompletelyDistinct[] = {
+  private Span[] predictedCompletelyDistinct = {
       new Span(100, 120),
       new Span(210, 220),
       new Span(211, 220),
@@ -54,7 +54,7 @@ public class FMeasureTest {
       new Span(220, 230)
   };
 
-  private Span goldToMerge[] = {
+  private Span[] goldToMerge = {
       new Span(8, 9),
       new Span(9, 10),
       new Span(11, 11),
@@ -64,7 +64,7 @@ public class FMeasureTest {
       new Span(18, 19),
   };
 
-  private Span predictedToMerge[] = {
+  private Span[] predictedToMerge = {
       new Span(8, 9),
       new Span(14, 15),
       new Span(15, 16),

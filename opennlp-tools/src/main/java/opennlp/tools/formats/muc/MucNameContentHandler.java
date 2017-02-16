@@ -106,7 +106,7 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
   @Override
   public void characters(CharSequence chars) {
     if (isInsideContentElement) {
-      String tokens [] = tokenizer.tokenize(chars.toString());
+      String[] tokens = tokenizer.tokenize(chars.toString());
       text.addAll(Arrays.asList(tokens));
     }
   }
