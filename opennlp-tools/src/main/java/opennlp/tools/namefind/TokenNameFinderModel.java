@@ -211,7 +211,7 @@ public class TokenNameFinderModel extends BaseModel {
 
   private boolean isModelValid(MaxentModel model) {
 
-    String outcomes[] = new String[model.getNumOutcomes()];
+    String[] outcomes = new String[model.getNumOutcomes()];
 
     for (int i = 0; i < model.getNumOutcomes(); i++) {
       outcomes[i] = model.getOutcome(i);

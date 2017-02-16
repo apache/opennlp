@@ -102,7 +102,7 @@ public class ParseTest {
   public void testGetTagNodes() {
     Parse p = Parse.parseParse(PARSE_STRING);
 
-    Parse tags[] = p.getTagNodes();
+    Parse[] tags = p.getTagNodes();
 
     for (Parse node : tags) {
       Assert.assertTrue(node.isPosTag());

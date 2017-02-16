@@ -28,14 +28,14 @@ import java.util.List;
  */
 public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
 
-  private char eosCharacters[];
+  private char[] eosCharacters;
 
   /**
    * Initializes the current instance.
    *
    * @param eosCharacters
    */
-  public DefaultEndOfSentenceScanner(char eosCharacters[]) {
+  public DefaultEndOfSentenceScanner(char[] eosCharacters) {
     this.eosCharacters = eosCharacters;
   }
 

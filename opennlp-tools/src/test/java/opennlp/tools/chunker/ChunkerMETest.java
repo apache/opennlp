@@ -85,7 +85,7 @@ public class ChunkerMETest {
   @Test
   public void testChunkAsArray() throws Exception {
 
-    String preds[] = chunker.chunk(toks1, tags1);
+    String[] preds = chunker.chunk(toks1, tags1);
 
     Assert.assertArrayEquals(expect1, preds);
   }

@@ -87,7 +87,7 @@ public abstract class AbstractSentenceDetector extends CasAnnotator_ImplBase {
 
   protected abstract Span[] detectSentences(String text);
 
-  protected void postProcessAnnotations(AnnotationFS sentences[]) {
+  protected void postProcessAnnotations(AnnotationFS[] sentences) {
   }
 
   @Override
@@ -106,7 +106,7 @@ public abstract class AbstractSentenceDetector extends CasAnnotator_ImplBase {
 
       Span[] sentPositions = detectSentences(text);
 
-      AnnotationFS sentences[] = new AnnotationFS[sentPositions.length];
+      AnnotationFS[] sentences = new AnnotationFS[sentPositions.length];
 
       for (int i = 0; i < sentPositions.length; i++) {
 

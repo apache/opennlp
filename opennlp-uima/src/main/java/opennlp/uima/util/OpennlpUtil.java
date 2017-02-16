@@ -61,7 +61,7 @@ final public class OpennlpUtil {
 
     try (InputStream in = new FileInputStream(inFile)) {
 
-      byte buffer[] = new byte[1024];
+      byte[] buffer = new byte[1024];
       int len;
       while ((len = in.read(buffer)) > 0) {
         bytes.write(buffer, 0, len);

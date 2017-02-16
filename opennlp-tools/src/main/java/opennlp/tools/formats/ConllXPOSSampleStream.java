@@ -76,7 +76,7 @@ public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample>
 
         final int minNumberOfFields = 5;
 
-        String parts[] = line.split("\t");
+        String[] parts = line.split("\t");
 
         if (parts.length >= minNumberOfFields) {
           tokens.add(parts[1]);

@@ -99,7 +99,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary {
     return dictionary.keySet().iterator();
   }
 
-  private static String tagsToString(String tags[]) {
+  private static String tagsToString(String[] tags) {
 
     StringBuilder tagString = new StringBuilder();
 

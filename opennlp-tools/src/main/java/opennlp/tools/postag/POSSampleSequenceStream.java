@@ -59,8 +59,8 @@ public class POSSampleSequenceStream implements SequenceStream {
     POSSample sample = psi.read();
 
     if (sample != null) {
-      String sentence[] = sample.getSentence();
-      String tags[] = sample.getTags();
+      String[] sentence = sample.getSentence();
+      String[] tags = sample.getTags();
       Event[] events = new Event[sentence.length];
 
       for (int i = 0; i < sentence.length; i++) {

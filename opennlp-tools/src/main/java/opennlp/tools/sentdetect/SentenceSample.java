@@ -53,7 +53,7 @@ public class SentenceSample {
 
     StringBuilder documentBuilder = new StringBuilder();
 
-    for (String sentenceTokens[] : sentences) {
+    for (String[] sentenceTokens : sentences) {
 
       String sampleSentence = detokenizer.detokenize(sentenceTokens, null);
 

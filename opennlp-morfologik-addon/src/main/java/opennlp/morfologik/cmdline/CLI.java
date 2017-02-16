@@ -101,7 +101,7 @@ public final class CLI {
       System.exit(0);
     }
 
-    String toolArguments[] = new String[args.length - 1];
+    String[] toolArguments = new String[args.length - 1];
     System.arraycopy(args, 1, toolArguments, 0, toolArguments.length);
 
     String toolName = args[0];

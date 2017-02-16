@@ -56,7 +56,7 @@ public class WordClusterDictionary implements SerializableArtifact {
     BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
     String line;
     while ((line = reader.readLine()) != null) {
-      String parts[] = line.split(" ");
+      String[] parts = line.split(" ");
       if (parts.length == 3) {
         tokenToClusterMap.put(parts[0], parts[1].intern());
       } else if (parts.length == 2) {

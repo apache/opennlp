@@ -33,7 +33,7 @@ public interface Chunker {
    *
    * @return an array of chunk tags for each token in the sequence.
    */
-  String[] chunk(String[] toks, String tags[]);
+  String[] chunk(String[] toks, String[] tags);
 
   /**
    * Generates tagged chunk spans for the given sequence returning the result in a span array.
@@ -43,7 +43,7 @@ public interface Chunker {
    *
    * @return an array of spans with chunk tags for each chunk in the sequence.
    */
-  Span[] chunkAsSpans(String[] toks, String tags[]);
+  Span[] chunkAsSpans(String[] toks, String[] tags);
 
   /**
    * Returns the top k chunk sequences for the specified sentence with the specified pos-tags

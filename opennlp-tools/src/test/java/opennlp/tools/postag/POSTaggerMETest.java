@@ -63,7 +63,7 @@ public class POSTaggerMETest {
 
     POSTagger tagger = new POSTaggerME(posModel);
 
-    String tags[] = tagger.tag(new String[] {
+    String[] tags = tagger.tag(new String[] {
         "The",
         "driver",
         "got",

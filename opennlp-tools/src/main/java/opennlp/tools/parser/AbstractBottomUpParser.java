@@ -388,9 +388,9 @@ public abstract class AbstractBottomUpParser implements Parser {
   protected Parse[] advanceChunks(final Parse p, double minChunkScore) {
     // chunk
     Parse[] children = p.getChildren();
-    String words[] = new String[children.length];
-    String ptags[] = new String[words.length];
-    double probs[] = new double[words.length];
+    String[] words = new String[children.length];
+    String[] ptags = new String[words.length];
+    double[] probs = new double[words.length];
 
     for (int i = 0, il = children.length; i < il; i++) {
       Parse sp = children[i];

@@ -86,8 +86,8 @@ public class NameSampleSequenceStream implements SequenceStream {
   public Sequence read() throws IOException {
     NameSample sample = psi.read();
     if (sample != null) {
-      String sentence[] = sample.getSentence();
-      String tags[] = seqCodec.encode(sample.getNames(), sentence.length);
+      String[] sentence = sample.getSentence();
+      String[] tags = seqCodec.encode(sample.getNames(), sentence.length);
       Event[] events = new Event[sentence.length];
 
       for (int i = 0; i < sentence.length; i++) {

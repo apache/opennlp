@@ -89,7 +89,7 @@ public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
       format = args[0];
       ObjectStreamFactory<T> streamFactory = getStreamFactory(format);
 
-      String formatArgs[] = new String[args.length - 1];
+      String[] formatArgs = new String[args.length - 1];
       System.arraycopy(args, 1, formatArgs, 0, formatArgs.length);
 
       String helpString = createHelpString(format, ArgumentParser.createUsage(streamFactory.getParameters()));

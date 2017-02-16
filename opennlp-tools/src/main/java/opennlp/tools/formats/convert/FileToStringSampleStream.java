@@ -45,7 +45,7 @@ public class FileToStringSampleStream extends FilterObjectStream<File, String> {
     StringBuilder text = new StringBuilder();
 
     try {
-      char buffer[] = new char[1024];
+      char[] buffer = new char[1024];
       int length;
       while ((length = in.read(buffer, 0, buffer.length)) > 0) {
         text.append(buffer, 0, length);

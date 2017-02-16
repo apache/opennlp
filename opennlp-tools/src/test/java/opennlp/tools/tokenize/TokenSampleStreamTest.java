@@ -45,7 +45,7 @@ public class TokenSampleStreamTest {
 
     TokenSample tokenSample = sampleTokenStream.read();
 
-    Span tokenSpans[] = tokenSample.getTokenSpans();
+    Span[] tokenSpans = tokenSample.getTokenSpans();
 
     Assert.assertEquals(4, tokenSpans.length);
 
@@ -69,7 +69,7 @@ public class TokenSampleStreamTest {
 
     TokenSample tokenSample = sampleTokenStream.read();
 
-    Span tokenSpans[] = tokenSample.getTokenSpans();
+    Span[] tokenSpans = tokenSample.getTokenSpans();
 
     Assert.assertEquals(4, tokenSpans.length);
 
@@ -101,7 +101,7 @@ public class TokenSampleStreamTest {
 
     TokenSample tokenSample = sampleTokenStream.read();
 
-    Span tokenSpans[] = tokenSample.getTokenSpans();
+    Span[] tokenSpans = tokenSample.getTokenSpans();
 
     Assert.assertEquals(5, tokenSpans.length);
 

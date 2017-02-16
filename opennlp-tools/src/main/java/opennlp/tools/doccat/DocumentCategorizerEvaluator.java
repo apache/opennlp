@@ -57,9 +57,9 @@ public class DocumentCategorizerEvaluator extends Evaluator<DocumentSample> {
    */
   public DocumentSample processSample(DocumentSample sample) {
 
-    String document[] = sample.getText();
+    String[] document = sample.getText();
 
-    double probs[] = categorizer.categorize(document, sample.getExtraInformation());
+    double[] probs = categorizer.categorize(document, sample.getExtraInformation());
 
     String cat = categorizer.getBestCategory(probs);
 

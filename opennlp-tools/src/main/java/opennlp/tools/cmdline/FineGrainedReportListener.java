@@ -60,7 +60,7 @@ public abstract class FineGrainedReportListener {
 
   private static String generateAlphaLabel(int index) {
 
-    char labelChars[] = new char[3];
+    char[] labelChars = new char[3];
     int i;
 
     for (i = 2; i >= 0; i--) {

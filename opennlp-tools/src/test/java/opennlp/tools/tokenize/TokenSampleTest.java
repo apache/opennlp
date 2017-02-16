@@ -45,7 +45,7 @@ public class TokenSampleTest {
 
     Detokenizer detokenizer = DictionaryDetokenizerTest.createLatinDetokenizer();
 
-    String tokens[] = new String[]{
+    String[] tokens = new String[]{
         "start",
         "(", // move right
         ")", // move left

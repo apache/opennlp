@@ -35,7 +35,7 @@ public class RegexNameFinderTest {
   public void testFindSingleTokenPattern() {
 
     Pattern testPattern = Pattern.compile("test");
-    String sentence[] = new String[]{"a", "test", "b", "c"};
+    String[] sentence = new String[]{"a", "test", "b", "c"};
 
 
     Pattern[] patterns = new Pattern[]{testPattern};
@@ -59,7 +59,7 @@ public class RegexNameFinderTest {
   public void testFindTokenizdPattern() {
     Pattern testPattern = Pattern.compile("[0-9]+ year");
 
-    String sentence[] = new String[]{"a", "80", "year", "b", "c"};
+    String[] sentence = new String[]{"a", "80", "year", "b", "c"};
 
     Pattern[] patterns = new Pattern[]{testPattern};
     Map<String, Pattern[]> regexMap = new HashMap<>();
@@ -83,7 +83,7 @@ public class RegexNameFinderTest {
   public void testFindMatchingPatternWithoutMatchingTokenBounds() {
     Pattern testPattern = Pattern.compile("[0-8] year"); // does match "0 year"
 
-    String sentence[] = new String[]{"a", "80", "year", "c"};
+    String[] sentence = new String[]{"a", "80", "year", "c"};
     Pattern[] patterns = new Pattern[]{testPattern};
     Map<String, Pattern[]> regexMap = new HashMap<>();
     String type = "testtype";

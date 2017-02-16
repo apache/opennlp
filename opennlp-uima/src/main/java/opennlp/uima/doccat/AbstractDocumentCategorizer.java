@@ -82,7 +82,7 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
 
   public void process(CAS cas) {
 
-    double result[];
+    double[] result;
 
     if (mTokenType != null) {
       // TODO:

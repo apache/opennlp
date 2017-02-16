@@ -204,7 +204,7 @@ public final class CmdLineUtil {
    * @param args arguments
    * @return the index of the parameter in the arguments, or -1 if the parameter is not found
    */
-  public static int getParameterIndex(String param, String args[]) {
+  public static int getParameterIndex(String param, String[] args) {
     for (int i = 0; i < args.length; i++) {
       if (args[i].startsWith("-") && args[i].equals(param)) {
         return i;
@@ -221,7 +221,7 @@ public final class CmdLineUtil {
    * @param args arguments
    * @return parameter value
    */
-  public static String getParameter(String param, String args[]) {
+  public static String getParameter(String param, String[] args) {
     int i = getParameterIndex(param, args);
     if (-1 < i) {
       i++;
@@ -240,7 +240,7 @@ public final class CmdLineUtil {
    * @param args arguments
    * @return parameter value
    */
-  public static Integer getIntParameter(String param, String args[]) {
+  public static Integer getIntParameter(String param, String[] args) {
     String value = getParameter(param, args);
 
     try {
@@ -261,7 +261,7 @@ public final class CmdLineUtil {
    * @param args arguments
    * @return parameter value
    */
-  public static Double getDoubleParameter(String param, String args[]) {
+  public static Double getDoubleParameter(String param, String[] args) {
     String value = getParameter(param, args);
 
     try {
@@ -286,7 +286,7 @@ public final class CmdLineUtil {
     }
   }
 
-  public static boolean containsParam(String param, String args[]) {
+  public static boolean containsParam(String param, String[] args) {
     for (String arg : args) {
       if (arg.equals(param)) {
         return true;

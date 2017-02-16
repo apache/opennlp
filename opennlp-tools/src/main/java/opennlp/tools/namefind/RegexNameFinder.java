@@ -32,7 +32,7 @@ import opennlp.tools.util.Span;
  */
 public final class RegexNameFinder implements TokenNameFinder {
 
-  private Pattern mPatterns[];
+  private Pattern[] mPatterns;
   private String sType;
   private Map<String, Pattern[]> regexMap;
 
@@ -40,7 +40,7 @@ public final class RegexNameFinder implements TokenNameFinder {
     this.regexMap = Objects.requireNonNull(regexMap, "regexMap must not be null");
   }
 
-  public RegexNameFinder(Pattern patterns[], String type) {
+  public RegexNameFinder(Pattern[] patterns, String type) {
     if (patterns == null || patterns.length == 0) {
       throw new IllegalArgumentException("patterns must not be null or empty!");
     }
@@ -55,7 +55,7 @@ public final class RegexNameFinder implements TokenNameFinder {
    * {@link #RegexNameFinder(Map)}
    */
   @Deprecated
-  public RegexNameFinder(Pattern patterns[]) {
+  public RegexNameFinder(Pattern[] patterns) {
     if (patterns == null || patterns.length == 0) {
       throw new IllegalArgumentException("patterns must not be null or empty!");
     }
@@ -65,7 +65,7 @@ public final class RegexNameFinder implements TokenNameFinder {
   }
 
   @Override
-  public Span[] find(String tokens[]) {
+  public Span[] find(String[] tokens) {
     Map<Integer, Integer> sentencePosTokenMap = new HashMap<>();
 
     StringBuilder sentenceString = new StringBuilder(tokens.length * 10);

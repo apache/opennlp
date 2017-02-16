@@ -29,12 +29,12 @@ import org.junit.Test;
  */
 public class CachedFeatureGeneratorTest {
 
-  private AdaptiveFeatureGenerator identityGenerator[] = new AdaptiveFeatureGenerator[] {
+  private AdaptiveFeatureGenerator[] identityGenerator = new AdaptiveFeatureGenerator[] {
       new IdentityFeatureGenerator()};
 
-  private String testSentence1[];
+  private String[] testSentence1;
 
-  private String testSentence2[];
+  private String[] testSentence2;
 
   private List<String> features;
 

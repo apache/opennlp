@@ -85,7 +85,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
    * Categorizes the given text.
    * @param text the text to categorize
    */
-  public double[] categorize(String text[]) {
+  public double[] categorize(String[] text) {
     return this.categorize(text, Collections.emptyMap());
   }
 
@@ -225,7 +225,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     return model.getMaxentModel().getNumOutcomes();
   }
 
-  public String getAllResults(double results[]) {
+  public String getAllResults(double[] results) {
     return model.getMaxentModel().getAllOutcomes(results);
   }
 

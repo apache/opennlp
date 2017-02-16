@@ -30,7 +30,7 @@ import opennlp.tools.util.ObjectStreamUtils;
 
 public class ConstitParseSampleStreamTest {
 
-  private String sample1Tokens[] = new String[]{
+  private String[] sample1Tokens = new String[]{
       "L'",
       "autonomie",
       "de",
@@ -88,7 +88,7 @@ public class ConstitParseSampleStreamTest {
   private static byte[] getSample1() throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-    byte buffer[] = new byte[1024];
+    byte[] buffer = new byte[1024];
     int length;
     try (InputStream sampleIn =
         ConstitParseSampleStreamTest.class.getResourceAsStream("sample1.xml")) {

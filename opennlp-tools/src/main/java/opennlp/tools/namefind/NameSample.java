@@ -179,7 +179,7 @@ public class NameSample {
     return result.toString();
   }
 
-  private static String errorTokenWithContext(String sentence[], int index) {
+  private static String errorTokenWithContext(String[] sentence, int index) {
 
     StringBuilder errorString = new StringBuilder();
 

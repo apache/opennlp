@@ -76,7 +76,7 @@ public class BioCodec implements SequenceCodec<String> {
     return spans.toArray(new Span[spans.size()]);
   }
 
-  public String[] encode(Span names[], int length) {
+  public String[] encode(Span[] names, int length) {
     String[] outcomes = new String[length];
     for (int i = 0; i < outcomes.length; i++) {
       outcomes[i] = BioCodec.OTHER;

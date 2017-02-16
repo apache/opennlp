@@ -87,8 +87,8 @@ public class DetokenizationDictionary {
    * @param operations an array of operations which specifies which operation
    *        should be used for the provided tokens
    */
-  public DetokenizationDictionary(String tokens[],
-      DetokenizationDictionary.Operation operations[]) {
+  public DetokenizationDictionary(String[] tokens,
+      DetokenizationDictionary.Operation[] operations) {
     if (tokens.length != operations.length)
       throw new IllegalArgumentException("tokens and ops must have the same length: tokens=" +
           tokens.length + ", operations=" + operations.length + "!");

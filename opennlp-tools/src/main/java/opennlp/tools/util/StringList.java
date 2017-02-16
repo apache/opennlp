@@ -27,7 +27,7 @@ import java.util.Objects;
  */
 public class StringList implements Iterable<String> {
 
-  private String tokens[];
+  private String[] tokens;
 
   /**
    * Initializes the current instance.

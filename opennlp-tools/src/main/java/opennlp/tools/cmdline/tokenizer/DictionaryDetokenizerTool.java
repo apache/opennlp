@@ -58,7 +58,7 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
         while ((tokenizedLine = tokenizedLineStream.read()) != null) {
 
           // white space tokenize line
-          String tokens[] = WhitespaceTokenizer.INSTANCE.tokenize(tokenizedLine);
+          String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(tokenizedLine);
 
           System.out.println(detokenizer.detokenize(tokens, null));
 

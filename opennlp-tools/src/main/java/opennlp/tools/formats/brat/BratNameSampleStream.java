@@ -111,7 +111,7 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
       String sentenceText = sentence.getCoveredText(
           sample.getText()).toString();
 
-      Span tokens[] = tokenizer.tokenizePos(sentenceText);
+      Span[] tokens = tokenizer.tokenizePos(sentenceText);
 
       // Note:
       // A begin and end token index can be identical, but map to different

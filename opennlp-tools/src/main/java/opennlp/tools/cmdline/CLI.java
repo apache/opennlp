@@ -210,7 +210,7 @@ public final class CLI {
     }
 
     final long startTime = System.currentTimeMillis();
-    String toolArguments[] = new String[args.length - 1];
+    String[] toolArguments = new String[args.length - 1];
     System.arraycopy(args, 1, toolArguments, 0, toolArguments.length);
 
     String toolName = args[0];

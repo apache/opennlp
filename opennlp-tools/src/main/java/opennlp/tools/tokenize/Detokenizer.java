@@ -57,7 +57,7 @@ public interface Detokenizer {
    * @param tokens the tokens to detokenize.
    * @return the merge operations to detokenize the input tokens.
    */
-  DetokenizationOperation[] detokenize(String tokens[]);
+  DetokenizationOperation[] detokenize(String[] tokens);
 
   /**
    * Detokenize the input tokens into a String. Tokens which
@@ -69,5 +69,5 @@ public interface Detokenizer {
    *
    * @return the concatenated tokens
    */
-  String detokenize(String tokens[], String splitMarker);
+  String detokenize(String[] tokens, String splitMarker);
 }

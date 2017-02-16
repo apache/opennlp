@@ -41,7 +41,7 @@ public class WordTagSampleStreamTest {
         new WordTagSampleStream(new CollectionObjectStream<>(sampleString));
 
     POSSample sample = stream.read();
-    String words[] = sample.getSentence();
+    String[] words = sample.getSentence();
 
     Assert.assertEquals("This", words[0]);
     Assert.assertEquals("is", words[1]);
@@ -50,7 +50,7 @@ public class WordTagSampleStreamTest {
     Assert.assertEquals("sentence", words[4]);
     Assert.assertEquals(".", words[5]);
 
-    String tags[] = sample.getTags();
+    String[] tags = sample.getTags();
     Assert.assertEquals("x1", tags[0]);
     Assert.assertEquals("x2", tags[1]);
     Assert.assertEquals("x3", tags[2]);

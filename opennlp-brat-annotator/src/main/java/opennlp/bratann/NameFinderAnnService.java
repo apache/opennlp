@@ -44,7 +44,7 @@ public class NameFinderAnnService {
 
   public static SentenceDetector sentenceDetector = new NewlineSentenceDetector();
   public static Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
-  public static TokenNameFinder nameFinders[];
+  public static TokenNameFinder[] nameFinders;
 
   public static void main(String[] args) throws Exception {
 

@@ -120,7 +120,7 @@ public class ArgumentParserTest {
   @Test
   public void testSimpleArgumentsUsage() {
 
-    String arguments[] = new String[] {"-encoding charset",
+    String[] arguments = new String[] {"-encoding charset",
         "[-iterations num]",
         "[-alphaNumOpt true|false]"};
 
@@ -144,7 +144,7 @@ public class ArgumentParserTest {
   @Test
   public void testDefaultEncodingParameter() {
 
-    String args[] = "-something aValue".split(" ");
+    String[] args = "-something aValue".split(" ");
     Assert.assertTrue(ArgumentParser.validateArguments(args, ExtendsEncodingParameter.class));
 
     ExtendsEncodingParameter params = ArgumentParser.parse(args, ExtendsEncodingParameter.class);
@@ -162,7 +162,7 @@ public class ArgumentParserTest {
       }
     }
 
-    String args[] = ("-something aValue -encoding " + notTheDefaultCharset).split(" ");
+    String[] args = ("-something aValue -encoding " + notTheDefaultCharset).split(" ");
     Assert.assertTrue(ArgumentParser.validateArguments(args, ExtendsEncodingParameter.class));
 
     ExtendsEncodingParameter params = ArgumentParser.parse(args, ExtendsEncodingParameter.class);

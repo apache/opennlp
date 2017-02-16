@@ -134,7 +134,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
     }
   }
 
-  protected void postProcessAnnotations(Span detectedNames[],
+  protected void postProcessAnnotations(Span[] detectedNames,
       AnnotationFS[] nameAnnotations) {
   }
 
@@ -186,7 +186,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
       Span[] names  = find(cas,
           sentenceTokenList.toArray(new String[sentenceTokenList.size()]));
 
-      AnnotationFS nameAnnotations[] = new AnnotationFS[names.length];
+      AnnotationFS[] nameAnnotations = new AnnotationFS[names.length];
 
       for (int i = 0; i < names.length; i++) {
 

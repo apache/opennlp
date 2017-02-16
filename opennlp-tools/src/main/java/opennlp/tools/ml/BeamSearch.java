@@ -171,7 +171,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
 
   public Sequence bestSequence(T[] sequence, Object[] additionalContext,
       BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
-    Sequence sequences[] =  bestSequences(1, sequence, additionalContext, cg, validator);
+    Sequence[] sequences =  bestSequences(1, sequence, additionalContext, cg, validator);
 
     if (sequences.length > 0)
       return sequences[0];
@@ -181,7 +181,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
 
   @Override
   public String[] getOutcomes() {
-    String outcomes[] = new String[model.getNumOutcomes()];
+    String[] outcomes = new String[model.getNumOutcomes()];
 
     for (int i = 0; i < model.getNumOutcomes(); i++) {
       outcomes[i] = model.getOutcome(i);

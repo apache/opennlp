@@ -78,7 +78,7 @@ public class BratDocument {
 
     StringBuilder text = new StringBuilder();
 
-    char cbuf[] = new char[1024];
+    char[] cbuf = new char[1024];
 
     int len;
     while ((len = txtReader.read(cbuf)) > 0) {

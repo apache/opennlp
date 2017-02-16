@@ -31,9 +31,9 @@ public class DictionaryDetokenizerTest {
   @Test
   public void testDetokenizer() {
 
-    String tokens[] = new String[]{".", "!", "(", ")", "\"", "-"};
+    String[] tokens = new String[]{".", "!", "(", ")", "\"", "-"};
 
-    Operation operations[] = new Operation[]{
+    Operation[] operations = new Operation[]{
         Operation.MOVE_LEFT,
         Operation.MOVE_LEFT,
         Operation.MOVE_RIGHT,
@@ -44,7 +44,7 @@ public class DictionaryDetokenizerTest {
     DetokenizationDictionary dict = new DetokenizationDictionary(tokens, operations);
     Detokenizer detokenizer = new DictionaryDetokenizer(dict);
 
-    DetokenizationOperation detokenizeOperations[] =
+    DetokenizationOperation[] detokenizeOperations =
       detokenizer.detokenize(new String[]{"Simple",  "test", ".", "co", "-", "worker"});
 
     Assert.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[0]);
@@ -71,7 +71,7 @@ public class DictionaryDetokenizerTest {
 
     Detokenizer detokenizer = createLatinDetokenizer();
 
-    String tokens[] = new String[]{"A", "test", ",", "(", "string", ")", "."};
+    String[] tokens = new String[]{"A", "test", ",", "(", "string", ")", "."};
 
     String sentence = detokenizer.detokenize(tokens, null);
 
@@ -83,7 +83,7 @@ public class DictionaryDetokenizerTest {
 
     Detokenizer detokenizer = createLatinDetokenizer();
 
-    String tokens[] = new String[]{"A", "co", "-", "worker", "helped", "."};
+    String[] tokens = new String[]{"A", "co", "-", "worker", "helped", "."};
 
     String sentence = detokenizer.detokenize(tokens, null);
 

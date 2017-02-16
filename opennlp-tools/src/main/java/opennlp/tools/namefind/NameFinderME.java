@@ -302,7 +302,7 @@ public class NameFinderME implements TokenNameFinder {
    *
    * @return non-overlapping spans
    */
-  public static Span[] dropOverlappingSpans(Span spans[]) {
+  public static Span[] dropOverlappingSpans(Span[] spans) {
 
     List<Span> sortedSpans = new ArrayList<>(spans.length);
     Collections.addAll(sortedSpans, spans);

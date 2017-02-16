@@ -36,9 +36,9 @@ public class TokenNameFinderCrossValidator {
 
   private class DocumentSample {
 
-    private NameSample samples[];
+    private NameSample[] samples;
 
-    DocumentSample(NameSample samples[]) {
+    DocumentSample(NameSample[] samples) {
       this.samples = samples;
     }
 

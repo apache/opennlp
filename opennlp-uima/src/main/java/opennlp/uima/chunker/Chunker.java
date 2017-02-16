@@ -150,7 +150,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
         context, mTokenType, UimaUtil.POS_FEATURE_PARAMETER, CAS.TYPE_NAME_STRING);
   }
 
-  private void addChunkAnnotation(CAS tcas, AnnotationFS tokenAnnotations[],
+  private void addChunkAnnotation(CAS tcas, AnnotationFS[] tokenAnnotations,
                                   String tag, int start, int end) {
     AnnotationFS chunk = tcas.createAnnotation(mChunkType,
         tokenAnnotations[start].getBegin(), tokenAnnotations[end - 1].getEnd());
@@ -167,9 +167,9 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
     FSIndex<AnnotationFS> tokenAnnotationIndex = tcas.getAnnotationIndex(mTokenType);
 
-    String tokens[] = new String[tokenAnnotationIndex.size()];
-    String pos[] = new String[tokenAnnotationIndex.size()];
-    AnnotationFS tokenAnnotations[] = new AnnotationFS[tokenAnnotationIndex
+    String[] tokens = new String[tokenAnnotationIndex.size()];
+    String[] pos = new String[tokenAnnotationIndex.size()];
+    AnnotationFS[] tokenAnnotations = new AnnotationFS[tokenAnnotationIndex
         .size()];
 
     int index = 0;
@@ -184,7 +184,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
           mPosFeature);
     }
 
-    String result[] = mChunker.chunk(tokens, pos);
+    String[] result = mChunker.chunk(tokens, pos);
 
     int start = -1;
     int end = -1;

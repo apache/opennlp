@@ -53,7 +53,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
       System.out.println(getHelp());
     } else {
 
-      NameFinderME nameFinders[] = new NameFinderME[args.length];
+      NameFinderME[] nameFinders = new NameFinderME[args.length];
 
       for (int i = 0; i < nameFinders.length; i++) {
         TokenNameFinderModel model = new TokenNameFinderModelLoader().load(new File(args[i]));
@@ -71,7 +71,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
             new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
         String line;
         while ((line = untokenizedLineStream.read()) != null) {
-          String whitespaceTokenizerLine[] = WhitespaceTokenizer.INSTANCE.tokenize(line);
+          String[] whitespaceTokenizerLine = WhitespaceTokenizer.INSTANCE.tokenize(line);
 
           // A new line indicates a new document,
           // adaptive data must be cleared for a new document
@@ -90,7 +90,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
 
           // Simple way to drop intersecting spans, otherwise the
           // NameSample is invalid
-          Span reducedNames[] = NameFinderME.dropOverlappingSpans(
+          Span[] reducedNames = NameFinderME.dropOverlappingSpans(
                   names.toArray(new Span[names.size()]));
 
           NameSample nameSample = new NameSample(whitespaceTokenizerLine,

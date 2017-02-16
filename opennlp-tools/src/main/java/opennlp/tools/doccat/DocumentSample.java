@@ -39,11 +39,11 @@ public class DocumentSample {
     this(category, WhitespaceTokenizer.INSTANCE.tokenize(text));
   }
 
-  public DocumentSample(String category, String text[]) {
+  public DocumentSample(String category, String[] text) {
     this(category, text, null);
   }
 
-  public DocumentSample(String category, String text[], Map<String, Object> extraInformation) {
+  public DocumentSample(String category, String[] text, Map<String, Object> extraInformation) {
     Objects.requireNonNull(text, "text must not be null");
 
     this.category = Objects.requireNonNull(category, "category must not be null");

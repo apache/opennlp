@@ -68,7 +68,7 @@ public final class TokenNameFinderTrainerTool
   }
 
   static byte[] openFeatureGeneratorBytes(File featureGenDescriptorFile) {
-    byte featureGeneratorBytes[] = null;
+    byte[] featureGeneratorBytes = null;
     // load descriptor file into memory
     if (featureGenDescriptorFile != null) {
 
@@ -118,7 +118,7 @@ public final class TokenNameFinderTrainerTool
         }
       }
 
-      File resourceFiles[] = resourcePath.listFiles();
+      File[] resourceFiles = resourcePath.listFiles();
 
       for (File resourceFile : resourceFiles) {
         String resourceName = resourceFile.getName();
@@ -172,7 +172,7 @@ public final class TokenNameFinderTrainerTool
 
     File modelOutFile = params.getModel();
 
-    byte featureGeneratorBytes[] = openFeatureGeneratorBytes(params.getFeaturegen());
+    byte[] featureGeneratorBytes = openFeatureGeneratorBytes(params.getFeaturegen());
 
 
     // TODO: Support Custom resources:
@@ -184,7 +184,7 @@ public final class TokenNameFinderTrainerTool
     CmdLineUtil.checkOutputFile("name finder model", modelOutFile);
 
     if (params.getNameTypes() != null) {
-      String nameTypes[] = params.getNameTypes().split(",");
+      String[] nameTypes = params.getNameTypes().split(",");
       sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
     }
 

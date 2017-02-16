@@ -40,7 +40,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     static final int ID_OFFSET = 0;
     static final int TYPE_OFFSET = 1;
 
-    BratAnnotation parse(Span tokens[], CharSequence line) throws IOException {
+    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
       return null;
     }
 
@@ -60,7 +60,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     private static final int END_OFFSET = 3;
 
     @Override
-    BratAnnotation parse(Span values[], CharSequence line) throws IOException {
+    BratAnnotation parse(Span[] values, CharSequence line) throws IOException {
 
       if (values.length > 4) {
         String type = values[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString();
@@ -111,7 +111,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     }
 
     @Override
-    BratAnnotation parse(Span tokens[], CharSequence line) throws IOException {
+    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
       return new RelationAnnotation(tokens[BratAnnotationParser.ID_OFFSET].getCoveredText(line).toString(),
           tokens[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString(),
           parseArg(tokens[ARG1_OFFSET].getCoveredText(line).toString()),
@@ -122,7 +122,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
   static class EventAnnotationParser extends BratAnnotationParser {
 
     @Override
-    BratAnnotation parse(Span tokens[], CharSequence line) throws IOException {
+    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
 
       String[] typeParts = tokens[TYPE_OFFSET].getCoveredText(line).toString().split(":");
 
@@ -194,7 +194,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     String line = reader.readLine();
 
     if (line != null) {
-      Span tokens[] = WhitespaceTokenizer.INSTANCE.tokenizePos(line);
+      Span[] tokens = WhitespaceTokenizer.INSTANCE.tokenizePos(line);
 
       if (tokens.length > 2) {
         String annId = tokens[BratAnnotationParser.ID_OFFSET].getCoveredText(line).toString();

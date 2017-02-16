@@ -45,7 +45,7 @@ public class TokenSample {
    * @param text the text which contains the tokens.
    * @param tokenSpans the spans which mark the begin and end of the tokens.
    */
-  public TokenSample(String text, Span tokenSpans[]) {
+  public TokenSample(String text, Span[] tokenSpans) {
     Objects.requireNonNull(tokenSpans, "tokenSpans must not be null");
 
     this.text = Objects.requireNonNull(text, "text must not be null");
@@ -60,7 +60,7 @@ public class TokenSample {
     }
   }
 
-  public TokenSample(Detokenizer detokenizer, String tokens[]) {
+  public TokenSample(Detokenizer detokenizer, String[] tokens) {
 
     StringBuilder sentence = new StringBuilder();
 
@@ -159,7 +159,7 @@ public class TokenSample {
     Objects.requireNonNull(sampleString, "sampleString must not be null");
     Objects.requireNonNull(separatorChars, "separatorChars must not be null");
 
-    Span whitespaceTokenSpans[] = WhitespaceTokenizer.INSTANCE.tokenizePos(sampleString);
+    Span[] whitespaceTokenSpans = WhitespaceTokenizer.INSTANCE.tokenizePos(sampleString);
 
     // Pre-allocate 20% for newly created tokens
     List<Span> realTokenSpans = new ArrayList<>((int) (whitespaceTokenSpans.length * 1.2d));

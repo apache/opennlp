@@ -128,7 +128,7 @@ public class SentenceDetectorME implements SentenceDetector {
    */
   public String[] sentDetect(String s) {
     Span[] spans = sentPosDetect(s);
-    String sentences[];
+    String[] sentences;
     if (spans.length != 0) {
       sentences = new String[spans.length];
       for (int si = 0; si < spans.length; si++) {
