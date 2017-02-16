@@ -90,10 +90,10 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
               params.getHeadRulesSerializerImpl());
     }
     else {
-      if ("en".equals(params.getLang())) {
+      if ("en".equalsIgnoreCase(params.getLang()) || "eng".equalsIgnoreCase(params.getLang())) {
         headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
       }
-      else if ("es".equals(params.getLang())) {
+      else if ("es".equalsIgnoreCase(params.getLang()) || "spa".equalsIgnoreCase(params.getLang())) {
         headRulesSerializer = new opennlp.tools.parser.lang.es.AncoraSpanishHeadRules.HeadRulesSerializer();
       }
       else {

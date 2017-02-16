@@ -56,7 +56,7 @@ public class TokenizerFactory extends BaseToolFactory {
    * programmatically create a factory.
    *
    * @param languageCode
-   *          the language of the natural text
+   *          the ISO-639-3 language of the natural text
    * @param abbreviationDictionary
    *          an abbreviations dictionary
    * @param useAlphaNumericOptimization
@@ -125,7 +125,7 @@ public class TokenizerFactory extends BaseToolFactory {
    * Factory method the framework uses create a new {@link TokenizerFactory}.
    *
    * @param subclassName the name of the class implementing the {@link TokenizerFactory}
-   * @param languageCode the language code the tokenizer should use
+   * @param languageCode the ISO-639-3  language code the tokenizer should use
    * @param abbreviationDictionary an optional dictionary containing abbreviations, or null if not present
    * @param useAlphaNumericOptimization indicate if the alpha numeric optimization
    *     should be enabled or disabled

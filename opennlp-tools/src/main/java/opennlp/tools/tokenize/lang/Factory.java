@@ -32,7 +32,7 @@ public class Factory {
    * locally because this call is expensive.
    *
    * @param languageCode
-   *          the language code. If null or unknow the default pattern will be
+   *          the ISO-639-3 language code. If null or unknow the default pattern will be
    *          returned.
    * @return the alpha numeric pattern for the language or the default pattern.
    */
