@@ -416,7 +416,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
         // Major and minor version must match, revision might be
         // this check allows for the use of models of n minor release behind current minor release
         if (Version.currentVersion().getMajor() != version.getMajor() ||
-            Version.currentVersion().getMinor() - 2 > version.getMinor()) {
+            Version.currentVersion().getMinor() - 3 > version.getMinor()) {
           throw new InvalidFormatException("Model version " + version + " is not supported by this ("
               + Version.currentVersion() + ") version of OpenNLP!");
         }
