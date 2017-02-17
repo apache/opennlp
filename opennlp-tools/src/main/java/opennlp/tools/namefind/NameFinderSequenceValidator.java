@@ -35,8 +35,9 @@ public class NameFinderSequenceValidator implements
         return false;
       } else if (outcomesSequence[li].endsWith(NameFinderME.OTHER)) {
         return false;
-      } else if (outcomesSequence[li].endsWith(NameFinderME.CONTINUE)) {
-        // if it is continue, we have to check if previous match was of the same type
+      } else if (outcomesSequence[li].endsWith(NameFinderME.CONTINUE) ||
+          outcomesSequence[li].endsWith(NameFinderME.START)) {
+        // if it is continue or start, we have to check if previous match was of the same type
         String previousNameType = NameFinderME.extractNameType(outcomesSequence[li]);
         String nameType = NameFinderME.extractNameType(outcome);
         if (previousNameType != null || nameType != null ) {

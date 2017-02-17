@@ -287,9 +287,9 @@ public class Conll02NameFinderEval {
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NL, params,
         combinedType);
 
-    eval(maxentModel, dutchTestAFile, LANGUAGE.NL,   combinedType, 0.6728164867517175d);
+    eval(maxentModel, dutchTestAFile, LANGUAGE.NL,   combinedType, 0.6673209028459275d);
 
-    eval(maxentModel, dutchTestBFile, LANGUAGE.NL, combinedType, 0.6985893619774816d);
+    eval(maxentModel, dutchTestBFile, LANGUAGE.NL, combinedType, 0.6984085910208306d);
   }
 
   @Test
@@ -507,9 +507,9 @@ public class Conll02NameFinderEval {
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.ES, params,
         combinedType);
 
-    eval(maxentModel, spanishTestAFile, LANGUAGE.ES, combinedType, 0.706765154179857d);
+    eval(maxentModel, spanishTestAFile, LANGUAGE.ES, combinedType, 0.707400023454908d);
 
-    eval(maxentModel, spanishTestBFile, LANGUAGE.ES, combinedType, 0.7583580194667795d);
+    eval(maxentModel, spanishTestBFile, LANGUAGE.ES, combinedType, 0.7576868829337094d);
   }
 
   @Test
