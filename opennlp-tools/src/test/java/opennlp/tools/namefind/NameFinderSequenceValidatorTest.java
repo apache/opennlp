@@ -17,7 +17,6 @@
 package opennlp.tools.namefind;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -55,7 +54,6 @@ public class NameFinderSequenceValidatorTest {
 
   }
 
-  @Ignore
   @Test
   public void testContinueAfterStartAndNotSameType() {
 
