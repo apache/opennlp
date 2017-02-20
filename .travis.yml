@@ -20,7 +20,7 @@ before_install:
   - export M2_HOME=$PWD/apache-maven-3.3.9
   - export PATH=$M2_HOME/bin:$PATH
 
-script: mvn clean install
+script: mvn clean install -Pjacoco
 
 after_success:
-  - mvn clean test -Pjacoco jacoco:report coveralls:report
+  - mvn jacoco:report coveralls:report

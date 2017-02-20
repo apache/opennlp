@@ -214,9 +214,6 @@
 					<groupId>org.eluder.coveralls</groupId>
 					<artifactId>coveralls-maven-plugin</artifactId>
 					<version>${coveralls.maven.plugin}</version>
-					<configuration>
-						<repoToken>BD8e0j90KZlQdko7H3wEo5a0mTLhmoeyk</repoToken>
-					</configuration>
 				</plugin>
 
 				<plugin>
@@ -397,6 +394,9 @@
 
 		<profile>
 			<id>jacoco</id>
+			<properties>
+				<opennlp.forkCount>1</opennlp.forkCount>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
