@@ -329,8 +329,7 @@ public final class AnnotatorUtil {
     } else {
       throw new ResourceInitializationException(
           ExceptionMessages.MESSAGE_CATALOG,
-          ExceptionMessages.WRONG_PARAMETER_TYPE, new Object[] {parameter,
-          "String array"});
+          ExceptionMessages.WRONG_PARAMETER_TYPE, new Object[] {parameter, "String array"});
     }
   }
 
@@ -443,8 +442,7 @@ public final class AnnotatorUtil {
     if (inResource == null) {
       throw new ResourceInitializationException(
           ExceptionMessages.MESSAGE_CATALOG,
-          ExceptionMessages.IO_ERROR_MODEL_READING, new Object[] {name
-          + " could not be found!"});
+          ExceptionMessages.IO_ERROR_MODEL_READING, new Object[] {name + " could not be found!"});
     }
 
     return inResource;

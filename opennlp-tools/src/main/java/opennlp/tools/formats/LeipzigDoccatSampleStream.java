@@ -20,6 +20,9 @@ package opennlp.tools.formats;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.tokenize.SimpleTokenizer;
@@ -36,7 +39,7 @@ import opennlp.tools.util.PlainTextByLineStream;
  * <p>
  * The input text is tokenized with the {@link SimpleTokenizer}. The input text classified
  * by the language model must also be tokenized by the {@link SimpleTokenizer} to produce
- * exactly the same tokenization during testing and training.
+ * exactly the same tokenization during testing and training.ø
  */
 public class LeipzigDoccatSampleStream extends
     FilterObjectStream<String, DocumentSample> {
@@ -79,10 +82,8 @@ public class LeipzigDoccatSampleStream extends
   }
 
   public DocumentSample read() throws IOException {
-
     int count = 0;
-
-    StringBuilder sampleText = new StringBuilder();
+    List<String> tokensList = new ArrayList<>();
 
     String line;
     while (count < sentencesPerDocument && (line = samples.read()) != null) {
@@ -94,17 +95,13 @@ public class LeipzigDoccatSampleStream extends
       }
 
       // Always skip first token, that is the sentence number!
-      for (int i = 1; i < tokens.length; i++) {
-        sampleText.append(tokens[i]);
-        sampleText.append(' ');
-      }
+      tokensList.addAll(Arrays.asList(tokens).subList(1, tokens.length));
 
       count++;
     }
 
-
-    if (sampleText.length() > 0) {
-      return new DocumentSample(language, sampleText.toString());
+    if (tokensList.size() > 0) {
+      return new DocumentSample(language, tokensList.toArray(new String[tokensList.size()]));
     }
 
     return null;

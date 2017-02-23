@@ -17,12 +17,17 @@
 
 package opennlp.uima.doccat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.CasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CAS;
+import org.apache.uima.cas.FSIterator;
 import org.apache.uima.cas.Type;
 import org.apache.uima.cas.TypeSystem;
+import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.resource.ResourceAccessException;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
@@ -72,28 +77,24 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
     mCategorizer = new DocumentCategorizerME(model);
   }
 
-  public void typeSystemInit(TypeSystem typeSystem)
-      throws AnalysisEngineProcessException {
+  public void typeSystemInit(TypeSystem typeSystem) throws AnalysisEngineProcessException {
     mTokenType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
-        UimaUtil.SENTENCE_TYPE_PARAMETER);
+        UimaUtil.TOKEN_TYPE_PARAMETER);
   }
 
   protected abstract void setBestCategory(CAS cas, String bestCategory);
 
   public void process(CAS cas) {
 
-    double[] result;
+    FSIterator<AnnotationFS> tokenAnnotations = cas.getAnnotationIndex(mTokenType).iterator();
+    List<String> tokensList = new ArrayList<>();
 
-    if (mTokenType != null) {
-      // TODO:
-      // count tokens
-      // create token array
-      // pass array to doccat
-      // create result annotation
-      result = mCategorizer.categorize(cas.getDocumentText());
-    } else {
-      result = mCategorizer.categorize(cas.getDocumentText());
+    while (tokenAnnotations.hasNext()) {
+      tokensList.add(tokenAnnotations.next().getCoveredText());
     }
+
+    double[] result =
+        mCategorizer.categorize(tokensList.toArray(new String[tokensList.size()]));
 
     String bestCategory = mCategorizer.getBestCategory(result);
 

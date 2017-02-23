@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import opennlp.tools.tokenize.WhitespaceTokenizer;
-
 /**
  * Class which holds a classified document and its category.
  */
@@ -34,10 +32,6 @@ public class DocumentSample {
   private final String category;
   private final List<String> text;
   private final Map<String, Object> extraInformation;
-
-  public DocumentSample(String category, String text) {
-    this(category, WhitespaceTokenizer.INSTANCE.tokenize(text));
-  }
 
   public DocumentSample(String category, String[] text) {
     this(category, text, null);

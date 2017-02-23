@@ -36,7 +36,6 @@ import opennlp.tools.doccat.DoccatEvaluationMonitor;
 import opennlp.tools.doccat.DoccatFactory;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.doccat.FeatureGenerator;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -84,16 +83,12 @@ public final class DoccatCrossValidatorTool extends
     FeatureGenerator[] featureGenerators = DoccatTrainerTool
         .createFeatureGenerators(params.getFeatureGenerators());
 
-    Tokenizer tokenizer = DoccatTrainerTool.createTokenizer(params
-        .getTokenizer());
-
     DoccatEvaluationMonitor[] listenersArr = listeners
         .toArray(new DoccatEvaluationMonitor[listeners.size()]);
 
     DoccatCrossValidator validator;
     try {
-      DoccatFactory factory = DoccatFactory.create(params.getFactory(),
-          tokenizer, featureGenerators);
+      DoccatFactory factory = DoccatFactory.create(params.getFactory(), featureGenerators);
       validator = new DoccatCrossValidator(params.getLang(), mlParams,
           factory, listenersArr);
 

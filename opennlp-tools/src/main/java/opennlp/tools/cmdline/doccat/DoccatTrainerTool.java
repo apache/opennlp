@@ -66,12 +66,9 @@ public class DoccatTrainerTool
     FeatureGenerator[] featureGenerators = createFeatureGenerators(params
         .getFeatureGenerators());
 
-    Tokenizer tokenizer = createTokenizer(params.getTokenizer());
-
     DoccatModel model;
     try {
-      DoccatFactory factory = DoccatFactory.create(params.getFactory(),
-          tokenizer, featureGenerators);
+      DoccatFactory factory = DoccatFactory.create(params.getFactory(), featureGenerators);
       model = DocumentCategorizerME.train(params.getLang(), sampleStream,
           mlParams, factory);
     } catch (IOException e) {
