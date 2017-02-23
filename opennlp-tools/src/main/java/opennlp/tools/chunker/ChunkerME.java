@@ -34,6 +34,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TokenTag;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -49,10 +50,10 @@ public class ChunkerME implements Chunker {
   /**
    * The model used to assign chunk tags to a sequence of tokens.
    */
-  protected SequenceClassificationModel<String> model;
+  protected SequenceClassificationModel<TokenTag> model;
 
   private ChunkerContextGenerator contextGenerator;
-  private SequenceValidator<String> sequenceValidator;
+  private SequenceValidator<TokenTag> sequenceValidator;
 
   /**
    * Initializes the current instance with the specified model and
@@ -67,7 +68,7 @@ public class ChunkerME implements Chunker {
    *     to configure the {@link SequenceValidator} and {@link ChunkerContextGenerator}.
    */
   @Deprecated
-  private ChunkerME(ChunkerModel model, int beamSize, SequenceValidator<String> sequenceValidator,
+  private ChunkerME(ChunkerModel model, int beamSize, SequenceValidator<TokenTag> sequenceValidator,
       ChunkerContextGenerator contextGenerator) {
 
     this.sequenceValidator = sequenceValidator;
@@ -117,7 +118,8 @@ public class ChunkerME implements Chunker {
   }
 
   public String[] chunk(String[] toks, String[] tags) {
-    bestSequence = model.bestSequence(toks, new Object[] {tags}, contextGenerator, sequenceValidator);
+    TokenTag[] tuples = TokenTag.create(toks, tags);
+    bestSequence = model.bestSequence(tuples, new Object[] {}, contextGenerator, sequenceValidator);
     List<String> c = bestSequence.getOutcomes();
     return c.toArray(new String[c.size()]);
   }
@@ -128,12 +130,15 @@ public class ChunkerME implements Chunker {
   }
 
   public Sequence[] topKSequences(String[] sentence, String[] tags) {
-    return model.bestSequences(DEFAULT_BEAM_SIZE, sentence,
-        new Object[] { tags }, contextGenerator, sequenceValidator);
+    TokenTag[] tuples = TokenTag.create(sentence, tags);
+
+    return model.bestSequences(DEFAULT_BEAM_SIZE, tuples,
+        new Object[] { }, contextGenerator, sequenceValidator);
   }
 
   public Sequence[] topKSequences(String[] sentence, String[] tags, double minSequenceScore) {
-    return model.bestSequences(DEFAULT_BEAM_SIZE, sentence, new Object[] { tags }, minSequenceScore,
+    TokenTag[] tuples = TokenTag.create(sentence, tags);
+    return model.bestSequences(DEFAULT_BEAM_SIZE, tuples, new Object[] { }, minSequenceScore,
         contextGenerator, sequenceValidator);
   }
 

@@ -18,8 +18,9 @@
 package opennlp.tools.chunker;
 
 import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.util.TokenTag;
 
-public class DefaultChunkerSequenceValidator implements SequenceValidator<String> {
+public class DefaultChunkerSequenceValidator implements SequenceValidator<TokenTag> {
 
   private boolean validOutcome(String outcome, String prevOutcome) {
     if (outcome.startsWith("I-")) {
@@ -46,7 +47,7 @@ public class DefaultChunkerSequenceValidator implements SequenceValidator<String
     return validOutcome(outcome,prevOutcome);
   }
 
-  public boolean validSequence(int i, String[] sequence, String[] s, String outcome) {
+  public boolean validSequence(int i, TokenTag[] sequence, String[] s, String outcome) {
     return validOutcome(outcome, s);
   }
 

@@ -18,6 +18,7 @@
 package opennlp.tools.chunker;
 
 import opennlp.tools.util.SequenceValidator;
+import opennlp.tools.util.TokenTag;
 
 public class DummyChunkerFactory extends ChunkerFactory {
 
@@ -30,7 +31,7 @@ public class DummyChunkerFactory extends ChunkerFactory {
   }
 
   @Override
-  public SequenceValidator<String> getSequenceValidator() {
+  public SequenceValidator<TokenTag> getSequenceValidator() {
     return new DummySequenceValidator();
   }
 
@@ -46,7 +47,7 @@ public class DummyChunkerFactory extends ChunkerFactory {
   static class DummySequenceValidator extends DefaultChunkerSequenceValidator {
 
     @Override
-    public boolean validSequence(int i, String[] sequence, String[] s,
+    public boolean validSequence(int i, TokenTag[] sequence, String[] s,
         String outcome) {
       return super.validSequence(i, sequence, s, outcome);
     }

@@ -22,6 +22,7 @@ import java.util.List;
 
 import opennlp.tools.chunker.ChunkerContextGenerator;
 import opennlp.tools.util.Cache;
+import opennlp.tools.util.TokenTag;
 
 /**
  * Creates predivtive context for the pre-chunking phases of parsing.
@@ -44,11 +45,13 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     }
   }
 
+  @Deprecated
   public String[] getContext(Object o) {
     Object[] data = (Object[]) o;
     return getContext((Integer) data[0], (String[]) data[1], (String[]) data[2], (String[]) data[3]);
   }
 
+  @Deprecated
   public String[] getContext(int i, String[] words, String[] prevDecisions, Object[] ac) {
     return getContext(i,words,(String[]) ac[0],prevDecisions);
   }
@@ -183,5 +186,14 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
       feat.append("|").append(chunk);
     }
     return feat.toString();
+  }
+
+  @Override
+  public String[] getContext(int index, TokenTag[] sequence, String[] priorDecisions,
+                             Object[] additionalContext) {
+    String[] token = TokenTag.extractTokens(sequence);
+    String[] tags = TokenTag.extractTags(sequence);
+
+    return getContext(index, token, tags, priorDecisions);
   }
 }
