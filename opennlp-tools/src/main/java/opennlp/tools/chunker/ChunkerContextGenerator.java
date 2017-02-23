@@ -18,11 +18,12 @@
 package opennlp.tools.chunker;
 
 import opennlp.tools.util.BeamSearchContextGenerator;
+import opennlp.tools.util.TokenTag;
 
 /**
  * Interface for the context generator used in syntactic chunking.
  */
-public interface ChunkerContextGenerator extends BeamSearchContextGenerator<String> {
+public interface ChunkerContextGenerator extends BeamSearchContextGenerator<TokenTag> {
 
   /**
    * Returns the contexts for chunking of the specified index.

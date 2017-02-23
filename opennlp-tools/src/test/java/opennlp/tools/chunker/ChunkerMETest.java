@@ -124,7 +124,7 @@ public class ChunkerMETest {
   public void testTokenProbMinScore() throws Exception {
     Sequence[] preds = chunker.topKSequences(toks1, tags1, -5.55);
 
-    Assert.assertTrue(preds.length == 4);
+    Assert.assertEquals(4, preds.length);
     Assert.assertEquals(expect1.length, preds[0].getProbs().length);
     Assert.assertEquals(Arrays.asList(expect1), preds[0].getOutcomes());
     Assert.assertNotSame(Arrays.asList(expect1), preds[1].getOutcomes());
