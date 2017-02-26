@@ -33,10 +33,6 @@
   <packaging>bundle</packaging>
   <name>Apache OpenNLP Tools</name>
 
-  <properties>
-    <argLine>-Xmx4096m</argLine>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.osgi</groupId>
@@ -81,7 +77,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>@{argLine}</argLine>
           <excludes>
             <exclude>/opennlp/tools/eval/**/*</exclude>
           </excludes>
