@@ -28,6 +28,7 @@ import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -36,7 +37,7 @@ public class DoccatTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "learnable document categorizer";
+    return "learned document categorizer";
   }
 
   @Override
@@ -53,7 +54,7 @@ public class DoccatTool extends BasicCmdLineTool {
 
       DoccatModel model = new DoccatModelLoader().load(new File(args[0]));
 
-      DocumentCategorizerME doccat = new DocumentCategorizerME(model);
+      DocumentCategorizerME documentCategorizerME = new DocumentCategorizerME(model);
 
       /*
        * moved initialization to the try block to catch new IOException
@@ -68,10 +69,10 @@ public class DoccatTool extends BasicCmdLineTool {
             new SystemInputStreamFactory(), SystemInputStreamFactory.encoding()));
         String document;
         while ((document = documentStream.read()) != null) {
-          String[] tokens = model.getFactory().getTokenizer().tokenize(document);
+          String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(document);
 
-          double[] prob = doccat.categorize(tokens);
-          String category = doccat.getBestCategory(prob);
+          double[] prob = documentCategorizerME.categorize(tokens);
+          String category = documentCategorizerME.getBestCategory(prob);
 
           DocumentSample sample = new DocumentSample(category, tokens);
           System.out.println(sample.toString());

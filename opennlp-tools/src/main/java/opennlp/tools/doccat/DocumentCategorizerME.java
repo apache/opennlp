@@ -29,8 +29,6 @@ import java.util.TreeMap;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.tokenize.SimpleTokenizer;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
@@ -48,22 +46,6 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   private DocumentCategorizerContextGenerator mContextGenerator;
 
   /**
-   * Initializes the current instance with a doccat model and custom feature
-   * generation. The feature generation must be identical to the configuration
-   * at training time.
-   *
-   * @param model             the doccat model
-   * @param featureGenerators the feature generators
-   * @deprecated train a {@link DoccatModel} with a specific
-   * {@link DoccatFactory} to customize the {@link FeatureGenerator}s
-   */
-  @Deprecated
-  public DocumentCategorizerME(DoccatModel model, FeatureGenerator... featureGenerators) {
-    this.model = model;
-    this.mContextGenerator = new DocumentCategorizerContextGenerator(featureGenerators);
-  }
-
-  /**
    * Initializes the current instance with a doccat model. Default feature
    * generation is used.
    *
@@ -75,6 +57,13 @@ public class DocumentCategorizerME implements DocumentCategorizer {
         .getFactory().getFeatureGenerators());
   }
 
+  /**
+   * Categorize the given text provided as tokens along with
+   * the provided extra information
+   *
+   * @param text text tokens to categorize
+   * @param extraInformation additional information
+   */
   @Override
   public double[] categorize(String[] text, Map<String, Object> extraInformation) {
     return model.getMaxentModel().eval(
@@ -83,55 +72,12 @@ public class DocumentCategorizerME implements DocumentCategorizer {
 
   /**
    * Categorizes the given text.
+   *
    * @param text the text to categorize
    */
+  @Override
   public double[] categorize(String[] text) {
     return this.categorize(text, Collections.emptyMap());
-  }
-
-  /**
-   * Categorizes the given text. The Tokenizer is obtained from
-   * {@link DoccatFactory#getTokenizer()} and defaults to
-   * {@link SimpleTokenizer}.
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   */
-  @Deprecated
-  @Override
-  public double[] categorize(String documentText,
-      Map<String, Object> extraInformation) {
-    Tokenizer tokenizer = model.getFactory().getTokenizer();
-    return categorize(tokenizer.tokenize(documentText), extraInformation);
-  }
-
-  /**
-   * Categorizes the given text. The text is tokenized with the SimpleTokenizer
-   * before it is passed to the feature generation.
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   */
-  @Deprecated
-  public double[] categorize(String documentText) {
-    Tokenizer tokenizer = model.getFactory().getTokenizer();
-    return categorize(tokenizer.tokenize(documentText), Collections.emptyMap());
-  }
-
-  /**
-   * Returns a map in which the key is the category name and the value is the score
-   *
-   * @param text the input text to classify
-   * @return the score map
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   */
-  @Deprecated
-  public Map<String, Double> scoreMap(String text) {
-    Map<String, Double> probDist = new HashMap<>();
-
-    double[] categorize = categorize(text);
-    int catSize = getNumberOfCategories();
-    for (int i = 0; i < catSize; i++) {
-      String category = getCategory(i);
-      probDist.put(category, categorize[getIndex(category)]);
-    }
-    return probDist;
   }
 
   /**
@@ -151,35 +97,6 @@ public class DocumentCategorizerME implements DocumentCategorizer {
       probDist.put(category, categorize[getIndex(category)]);
     }
     return probDist;
-  }
-
-  /**
-   * Returns a map with the score as a key in ascending order.
-   * The value is a Set of categories with the score.
-   * Many categories can have the same score, hence the Set as value
-   *
-   * @param text the input text to classify
-   * @return the sorted score map
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   */
-  @Deprecated
-  @Override
-  public SortedMap<Double, Set<String>> sortedScoreMap(String text) {
-    SortedMap<Double, Set<String>> descendingMap = new TreeMap<>();
-    double[] categorize = categorize(text);
-    int catSize = getNumberOfCategories();
-    for (int i = 0; i < catSize; i++) {
-      String category = getCategory(i);
-      double score = categorize[getIndex(category)];
-      if (descendingMap.containsKey(score)) {
-        descendingMap.get(score).add(category);
-      } else {
-        Set<String> newset = new HashSet<>();
-        newset.add(category);
-        descendingMap.put(score, newset);
-      }
-    }
-    return descendingMap;
   }
 
   /**

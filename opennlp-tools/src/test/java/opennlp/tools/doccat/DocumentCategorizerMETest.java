@@ -42,27 +42,23 @@ public class DocumentCategorizerMETest {
         new DocumentSample("0", new String[]{"x", "y", "z", "7", "8"}));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
-    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
+    params.put(TrainingParameters.ITERATIONS_PARAM, "100");
+    params.put(TrainingParameters.CUTOFF_PARAM, "0");
 
     DoccatModel model = DocumentCategorizerME.train("x-unspecified", samples,
             params, new DoccatFactory());
 
     DocumentCategorizer doccat = new DocumentCategorizerME(model);
 
-    double[] aProbs = doccat.categorize("a");
+    double[] aProbs = doccat.categorize(new String[]{"a"});
     Assert.assertEquals("1", doccat.getBestCategory(aProbs));
 
-    double[] bProbs = doccat.categorize("x");
+    double[] bProbs = doccat.categorize(new String[]{"x"});
     Assert.assertEquals("0", doccat.getBestCategory(bProbs));
 
     //test to make sure sorted map's last key is cat 1 because it has the highest score.
-    SortedMap<Double, Set<String>> sortedScoreMap = doccat.sortedScoreMap("a");
-    for (String cat : sortedScoreMap.get(sortedScoreMap.lastKey())) {
-      Assert.assertEquals("1", cat);
-      break;
-    }
-    System.out.println("");
-
+    SortedMap<Double, Set<String>> sortedScoreMap = doccat.sortedScoreMap(new String[]{"a"});
+    Set<String> cat = sortedScoreMap.get(sortedScoreMap.lastKey());
+    Assert.assertEquals(1, cat.size());
   }
 }

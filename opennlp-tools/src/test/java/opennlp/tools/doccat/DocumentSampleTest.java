@@ -31,11 +31,11 @@ public class DocumentSampleTest {
   }
 
   public static DocumentSample createGoldSample() {
-    return new DocumentSample("aCategory", "a small text");
+    return new DocumentSample("aCategory", new String[]{"a", "small", "text"});
   }
 
   public static DocumentSample createPredSample() {
-    return new DocumentSample("anotherCategory", "a small text");
+    return new DocumentSample("anotherCategory", new String[]{"a", "small", "text"});
   }
 
 }

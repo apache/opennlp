@@ -22,8 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ExtensionLoader;
@@ -34,47 +32,17 @@ import opennlp.tools.util.ext.ExtensionLoader;
 public class DoccatFactory extends BaseToolFactory {
 
   private static final String FEATURE_GENERATORS = "doccat.featureGenerators";
-  private static final String TOKENIZER_NAME = "doccat.tokenizer";
 
   private FeatureGenerator[] featureGenerators;
-  private Tokenizer tokenizer;
 
   /**
    * Creates a {@link DoccatFactory} that provides the default implementation of
    * the resources.
    */
-  public DoccatFactory() {
-    this.tokenizer = WhitespaceTokenizer.INSTANCE;
-  }
+  public DoccatFactory() {}
 
   public DoccatFactory(final FeatureGenerator[] featureGenerators) {
-    this.tokenizer = WhitespaceTokenizer.INSTANCE;
     this.featureGenerators = featureGenerators;
-  }
-
-  /**
-   * Creates a {@link DoccatFactory}. Use this constructor to programmatically
-   * create a factory.
-   *
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   * @param tokenizer         the tokenizer
-   * @param featureGenerators the feature generators
-   */
-  @Deprecated
-  public DoccatFactory(Tokenizer tokenizer, FeatureGenerator[] featureGenerators) {
-    this.init(tokenizer, featureGenerators);
-  }
-
-  /**
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   * @param tokenizer the tokenizer
-   * @param featureGenerators feature generators
-   */
-  @Deprecated
-  protected void init(Tokenizer tokenizer, FeatureGenerator[] featureGenerators) {
-
-    this.featureGenerators = featureGenerators;
-    this.tokenizer = tokenizer;
   }
 
   protected void init(FeatureGenerator[] featureGenerators) {
@@ -84,11 +52,6 @@ public class DoccatFactory extends BaseToolFactory {
   @Override
   public Map<String, String> createManifestEntries() {
     Map<String, String> manifestEntries = super.createManifestEntries();
-
-    if (getTokenizer() != null) {
-      manifestEntries.put(TOKENIZER_NAME, getTokenizer().getClass()
-          .getCanonicalName());
-    }
 
     if (getFeatureGenerators() != null) {
       manifestEntries.put(FEATURE_GENERATORS, featureGeneratorsAsString());
@@ -113,31 +76,6 @@ public class DoccatFactory extends BaseToolFactory {
   @Override
   public void validateArtifactMap() throws InvalidFormatException {
     // nothing to validate
-  }
-
-  /**
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   */
-  @Deprecated
-  public static DoccatFactory create(String subclassName, Tokenizer tokenizer,
-      FeatureGenerator[] featureGenerators) throws InvalidFormatException {
-    if (subclassName == null) {
-      // will create the default factory
-      return new DoccatFactory(tokenizer, featureGenerators);
-    }
-    try {
-      DoccatFactory theFactory = ExtensionLoader.instantiateExtension(
-          DoccatFactory.class, subclassName);
-      theFactory.init(tokenizer, featureGenerators);
-      return theFactory;
-    } catch (Exception e) {
-      String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
-      throw new InvalidFormatException(msg, e);
-    }
-
   }
 
   public static DoccatFactory create(String subclassName, FeatureGenerator[] featureGenerators)
@@ -190,35 +128,6 @@ public class DoccatFactory extends BaseToolFactory {
 
   public void setFeatureGenerators(FeatureGenerator[] featureGenerators) {
     this.featureGenerators = featureGenerators;
-  }
-
-  /**
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   */
-  @Deprecated
-  public Tokenizer getTokenizer() {
-    if (this.tokenizer == null) {
-      if (artifactProvider != null) {
-        String className = artifactProvider.getManifestProperty(TOKENIZER_NAME);
-        if (className != null) {
-          this.tokenizer = ExtensionLoader.instantiateExtension(
-              Tokenizer.class, className);
-        }
-      }
-      if (this.tokenizer == null) { // could not load using artifact provider
-        this.tokenizer = WhitespaceTokenizer.INSTANCE;
-      }
-    }
-    return tokenizer;
-  }
-
-  /**
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   * @param tokenizer tokenizer
-   */
-  @Deprecated
-  public void setTokenizer(Tokenizer tokenizer) {
-    this.tokenizer = tokenizer;
   }
 
 }

@@ -27,23 +27,21 @@ import java.util.SortedMap;
 public interface DocumentCategorizer {
 
   /**
-   * Categorizes the given text, provided in separate tokens.
+   * Categorize the given text provided as tokens along with
+   * the provided extra information
    *
+   * @param text the tokens of text to categorize
+   * @param extraInformation extra information
+   * @return per category probabilities
+   */
+  double[] categorize(String[] text, Map<String, Object> extraInformation);
+
+  /**
+   * Categorizes the given text, provided in separate tokens.
    * @param text the tokens of text to categorize
    * @return per category probabilities
    */
   double[] categorize(String[] text);
-
-  /**
-   * Categorizes the given text, provided in separate tokens.
-   *
-   * @param text             the tokens of text to categorize
-   * @param extraInformation optional extra information to pass for evaluation
-   * @return per category probabilities
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   */
-  @Deprecated
-  double[] categorize(String[] text, Map<String, Object> extraInformation);
 
   /**
    * get the best category from previously generated outcome probabilities
@@ -77,25 +75,6 @@ public interface DocumentCategorizer {
   int getNumberOfCategories();
 
   /**
-   * categorize a piece of text
-   *
-   * @param documentText the text to categorize
-   * @return the probabilities of each category (sum up to 1)
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   */
-  @Deprecated
-  double[] categorize(String documentText);
-
-  /**
-   * categorize a piece of text, providing extra metadata.
-   *
-   * @param documentText     the text to categorize
-   * @param extraInformation extra metadata
-   * @return the probabilities of each category (sum up to 1)
-   */
-  double[] categorize(String documentText, Map<String, Object> extraInformation);
-
-  /**
    * get the name of the category associated with the given probabilties
    *
    * @param results the probabilities of each category
@@ -108,29 +87,8 @@ public interface DocumentCategorizer {
    *
    * @param text the input text to classify
    * @return a map with the score as a key. The value is a Set of categories with the score.
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   */
-  @Deprecated
-  Map<String, Double> scoreMap(String text);
-
-  /**
-   * Returns a map in which the key is the category name and the value is the score
-   *
-   * @param text the input text to classify
-   * @return a map with the score as a key. The value is a Set of categories with the score.
    */
   Map<String, Double> scoreMap(String[] text);
-
-  /**
-   * Get a map of the scores sorted in ascending aorder together with their associated categories.
-   * Many categories can have the same score, hence the Set as value
-   *
-   * @param text the input text to classify
-   * @return a map with the score as a key. The value is a Set of categories with the score.
-   * @deprecated will be removed after 1.7.1 release. Don't use it.
-   */
-  @Deprecated
-  SortedMap<Double, Set<String>> sortedScoreMap(String text);
 
   /**
    * Get a map of the scores sorted in ascending aorder together with their associated categories.
