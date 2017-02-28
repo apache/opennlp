@@ -126,7 +126,7 @@
 		<checkstyle.plugin.version>2.17</checkstyle.plugin.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
-		<jacoco.maven.plugin>0.7.8</jacoco.maven.plugin>
+		<jacoco.maven.plugin>0.7.9</jacoco.maven.plugin>
 		<maven.surefire.plugin>2.19.1</maven.surefire.plugin>
 	</properties>
 
@@ -185,7 +185,13 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.7.8</version>
+					<version>${jacoco.maven.plugin}</version>
+					<configuration>
+						<excludes>
+                            <exclude>**/stemmer/*</exclude>
+							<exclude>**/stemmer/snowball/*</exclude>
+                        </excludes>
+					</configuration>
 					<executions>
 						<execution>
 							<id>jacoco-prepare-agent</id>
@@ -222,6 +228,10 @@
 					<version>${maven.surefire.plugin}</version>
 					<configuration>
 						<forkCount>${opennlp.forkCount}</forkCount>
+						<excludes>
+							<exclude>**/stemmer/*</exclude>
+							<exclude>**/stemmer/snowball/*</exclude>
+						</excludes>
 					</configuration>
 				</plugin>
 
