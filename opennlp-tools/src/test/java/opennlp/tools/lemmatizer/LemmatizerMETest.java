@@ -82,8 +82,7 @@ public class LemmatizerMETest {
   @Test
   public void testLemmasAsArray() throws Exception {
 
-    String[] preds = lemmatizer.lemmatize(tokens, postags);
-    String[] lemmas = lemmatizer.decodeLemmas(tokens, preds);
+    String[] lemmas = lemmatizer.lemmatize(tokens, postags);
 
     Assert.assertArrayEquals(expect, lemmas);
   }

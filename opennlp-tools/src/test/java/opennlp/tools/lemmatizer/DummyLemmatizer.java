@@ -19,6 +19,7 @@ package opennlp.tools.lemmatizer;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * This dummy lemmatizer implementation simulates a LemmatizerME. The file has
@@ -54,6 +55,12 @@ public class DummyLemmatizer implements Lemmatizer {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public List<List<String>> lemmatize(List<String> toks,
+      List<String> tags) {
+    return null;
   }
 
 }
