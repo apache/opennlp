@@ -23,19 +23,22 @@ public class BilouNameFinderSequenceValidator implements
     SequenceValidator<String> {
 
   public boolean validSequence(int i, String[] inputSequence,
-      String[] outcomesSequence, String outcome) {
+                               String[] outcomesSequence, String outcome) {
 
-    if (outcome.endsWith(NameFinderME.CONTINUE) || outcome.endsWith(BilouCodec.LAST)) {
+    if (outcome.endsWith(BilouCodec.CONTINUE) || outcome.endsWith(BilouCodec.LAST)) {
 
       int li = outcomesSequence.length - 1;
 
       if (li == -1) {
         return false;
-      } else if (outcomesSequence[li].endsWith(NameFinderME.OTHER) ||
+      } else if (outcomesSequence[li].endsWith(BilouCodec.OTHER) ||
           outcomesSequence[li].endsWith(BilouCodec.UNIT)) {
         return false;
-      } else if (outcomesSequence[li].endsWith(NameFinderME.CONTINUE) ||
-          outcomesSequence[li].endsWith(NameFinderME.START)) {
+      } else if (outcomesSequence[li].endsWith(BilouCodec.LAST) &&
+          (outcome.endsWith(BilouCodec.CONTINUE) || outcome.endsWith(BilouCodec.LAST))) {
+        return false;
+      } else if (outcomesSequence[li].endsWith(BilouCodec.CONTINUE) ||
+          outcomesSequence[li].endsWith(BilouCodec.START)) {
         // if it is continue, we have to check if previous match was of the same type
         String previousNameType = NameFinderME.extractNameType(outcomesSequence[li]);
         String nameType = NameFinderME.extractNameType(outcome);
@@ -50,10 +53,12 @@ public class BilouNameFinderSequenceValidator implements
       }
     }
 
-    if (outcomesSequence.length - 1 > 0) {
-      if (outcome.endsWith(NameFinderME.OTHER)) {
-        if (outcomesSequence[outcomesSequence.length - 1].endsWith(NameFinderME.START)
-            || outcomesSequence[outcomesSequence.length - 1].endsWith(NameFinderME.CONTINUE)) {
+    if (outcomesSequence.length > 0) {
+      if (outcome.endsWith(BilouCodec.START)
+          || outcome.endsWith(BilouCodec.OTHER)
+          || outcome.endsWith(BilouCodec.UNIT)) {
+        if (outcomesSequence[outcomesSequence.length - 1].endsWith(BilouCodec.START)
+            || outcomesSequence[outcomesSequence.length - 1].endsWith(BilouCodec.CONTINUE)) {
           return false;
         }
       }
