@@ -20,7 +20,8 @@ package opennlp.tools.cmdline.parser;
 import java.io.IOException;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.ml.maxent.GIS;
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.parser.Parse;
@@ -28,6 +29,7 @@ import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.model.ModelUtil;
 
 public final class BuildModelUpdaterTool extends ModelUpdaterTool {
 
@@ -50,7 +52,8 @@ public final class BuildModelUpdaterTool extends ModelUpdaterTool {
     ObjectStream<Event> bes = new ParserEventStream(parseSamples,
         originalModel.getHeadRules(), ParserEventTypeEnum.BUILD, mdict);
 
-    GIS trainer = new GIS();
+    EventTrainer trainer = TrainerFactory.getEventTrainer(
+        ModelUtil.createDefaultTrainingParameters(), null);
     MaxentModel buildModel = trainer.train(bes);
 
     parseSamples.close();
