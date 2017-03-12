@@ -25,6 +25,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
@@ -34,6 +36,7 @@ import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.model.ModelUtil;
 
 public class ScaleDoesntMatterTest {
 
@@ -52,7 +55,6 @@ public class ScaleDoesntMatterTest {
    * predicates doesn't matter when it comes the probability assigned to each
    * outcome. Strangely, if we use (1,2) and (10,20) there's no difference. If
    * we use (0.1,0.2) and (10,20) there is a difference.
-   *
    */
   @Test
   public void testScaleResults() throws Exception {
@@ -68,8 +70,11 @@ public class ScaleDoesntMatterTest {
         new PlainTextByLineStream(new MockInputStreamFactory(smallValues), StandardCharsets.UTF_8));
 
     testDataIndexer.index(smallEventStream);
-    MaxentModel smallModel = GIS.trainModel(100,
-        testDataIndexer, false);
+
+    EventTrainer smallModelTrainer = TrainerFactory.getEventTrainer(
+        ModelUtil.createDefaultTrainingParameters(), null);
+
+    MaxentModel smallModel = smallModelTrainer.train(testDataIndexer);
     String[] contexts = smallTest.split(" ");
     float[] values = RealValueFileEventStream.parseContexts(contexts);
     double[] smallResults = smallModel.eval(contexts, values);
@@ -81,13 +86,16 @@ public class ScaleDoesntMatterTest {
         new PlainTextByLineStream(new MockInputStreamFactory(largeValues), StandardCharsets.UTF_8));
 
     testDataIndexer.index(largeEventStream);
-    MaxentModel largeModel = GIS.trainModel(100,
-        testDataIndexer, false);
+
+    EventTrainer largeModelTrainer = TrainerFactory.getEventTrainer(
+        ModelUtil.createDefaultTrainingParameters(), null);
+
+    MaxentModel largeModel = largeModelTrainer.train(testDataIndexer);
     contexts = largeTest.split(" ");
     values = RealValueFileEventStream.parseContexts(contexts);
     double[] largeResults = largeModel.eval(contexts, values);
 
-    String largeResultString = smallModel.getAllOutcomes(largeResults);
+    String largeResultString = largeModel.getAllOutcomes(largeResults);
     System.out.println("largeResults: " + largeResultString);
 
     Assert.assertEquals(smallResults.length, largeResults.length);
