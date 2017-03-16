@@ -19,7 +19,9 @@ package opennlp.tools.namefind;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.SequenceValidator;
@@ -111,8 +113,67 @@ public class BilouCodec implements SequenceCodec<String> {
     return new BilouNameFinderSequenceValidator();
   }
 
+  /**
+   * B requires CL or L
+   * C requires BL
+   * L requires B
+   * O requires any valid combo/unit
+   * U requires none
+   *
+   * @param outcomes all possible model outcomes
+   *
+   * @return true, if model outcomes are compatible
+   */
   @Override
   public boolean areOutcomesCompatible(String[] outcomes) {
+    Set<String> start = new HashSet<>();
+    Set<String> cont = new HashSet<>();
+    Set<String> last = new HashSet<>();
+    Set<String> unit = new HashSet<>();
+
+    for (int i = 0; i < outcomes.length; i++) {
+      String outcome = outcomes[i];
+      if (outcome.endsWith(BilouCodec.START)) {
+        start.add(outcome.substring(0, outcome.length()
+            - BilouCodec.START.length()));
+      } else if (outcome.endsWith(BilouCodec.CONTINUE)) {
+        cont.add(outcome.substring(0, outcome.length()
+            - BilouCodec.CONTINUE.length()));
+      } else if (outcome.endsWith(BilouCodec.LAST)) {
+        last.add(outcome.substring(0, outcome.length()
+            - BilouCodec.LAST.length()));
+      } else if (outcome.endsWith(BilouCodec.UNIT)) {
+        unit.add(outcome.substring(0, outcome.length()
+            - BilouCodec.UNIT.length()));
+      } else if (!outcome.equals(BilouCodec.OTHER)) {
+        return false;
+      }
+    }
+
+    if (start.size() == 0 && unit.size() == 0) {
+      return false;
+    } else {
+      // Start, must have matching Last
+      for (String startPrefix : start) {
+        if (!last.contains(startPrefix)) {
+          return false;
+        }
+      }
+      // Cont, must have matching Start and Last
+      for (String contPrefix : cont) {
+        if (!start.contains(contPrefix) && !last.contains(contPrefix)) {
+          return false;
+        }
+      }
+      // Last, must have matching Start
+      for (String lastPrefix : last) {
+        if (!start.contains(lastPrefix)) {
+          return false;
+        }
+      }
+
+    }
+
     return true;
   }
 }
