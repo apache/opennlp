@@ -206,4 +206,379 @@ public class BilouCodecTest {
     Assert.assertArrayEquals(expected, actual);
   }
 
+
+  @Test
+  public void testCompatibilityEmpty() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {}));
+  }
+
+  /**
+   * Singles and singles in combination with other valid type (unit/start+last)
+   */
+
+  /**
+   * B-Start => Fail
+   * A-Unit, B-Start => Fail
+   * A-Start, A-Last, B-Start => Fail
+   */
+  @Test
+  public void testCompatibilitySinglesStart() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_START}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_UNIT, B_START}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_START}));
+  }
+
+  /**
+   * B-Continue => Fail
+   * A-Unit, B-Continue => Fail
+   * A-Start, A-Last, B-Continue => Fail
+   */
+  @Test
+  public void testCompatibilitySinglesContinue() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_CONTINUE}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_UNIT, B_CONTINUE}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_CONTINUE}));
+  }
+
+  /**
+   * B-Last => Fail
+   * A-Unit, B-Last => Fail
+   * A-Start, A-Last, B-Last => Fail
+   */
+  @Test
+  public void testCompatibilitySinglesLast() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_LAST}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_UNIT, B_LAST}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_LAST}));
+  }
+
+  /**
+   * Other => Fail
+   * A-Unit, Other => Pass
+   * A-Start, A-Last, Other => Pass
+   */
+  @Test
+  public void testCompatibilitySinglesOther() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {OTHER}));
+    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_UNIT, OTHER}));
+    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, OTHER}));
+  }
+
+  /**
+   * B-Unit => Pass
+   * A-Unit, B-Unit => Pass
+   * A-Start, A-Last, B-Unit => Pass
+   */
+  @Test
+  public void testCompatibilitySinglesUnit() {
+    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {B_UNIT}));
+    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_UNIT, B_UNIT}));
+    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_UNIT}));
+  }
+
+  /**
+   * Doubles and doubles in combination with other valid type (unit/start+last)
+   *
+   * B-Start, B-Continue => Fail
+   * A-Unit, B-Start, B-Continue => Fail
+   * A-Start, A-Last, B-Start, B-Continue => Fail
+   */
+  @Test
+  public void testCompatibilityStartContinue() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_START, B_CONTINUE}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_UNIT, B_START, B_CONTINUE}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_START, B_CONTINUE}));
+  }
+
+  /**
+   * B-Start, B-Last => Pass
+   * A-Unit, B-Start, B-Last => Pass
+   * A-Start, A-Last, B-Start, B-Last => Pass
+   */
+  @Test
+  public void testCompatibilityStartLast() {
+    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {B_START, B_LAST}));
+    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_UNIT, B_START, B_LAST}));
+    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_START, B_LAST}));
+  }
+
+  /**
+   * B-Start, Other => Fail
+   * A-Unit, B-Start, Other => Fail
+   * A-Start, A-Last, B-Start, Other => Fail
+   */
+  @Test
+  public void testCompatibilityStartOther() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_START, OTHER}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_UNIT, B_START, OTHER}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_START, OTHER}));
+  }
+
+  /**
+   * B-Start, B-Unit => Fail
+   * A-Unit, B-Start, B-Unit => Fail
+   * A-Start, A-Last, B-Start, B-Unit => Fail
+   */
+  @Test
+  public void testCompatibilityStartUnit() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_START, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_UNIT, B_START, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_START, B_UNIT}));
+  }
+
+  /**
+   * B-Continue, C-Last => Fail
+   * A-Unit, B-Continue, C-Last => Fail
+   * A-Start, A-Last, B-Continue, B-Last => Fail
+   */
+  @Test
+  public void testCompatibilityContinueLast() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_CONTINUE, B_LAST}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_UNIT, B_CONTINUE, B_LAST}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_CONTINUE, B_LAST}));
+  }
+
+  /**
+   * B-Continue, Other => Fail
+   * A-Unit, B-Continue, Other => Fail
+   * A-Start, A-Last, B-Continue, Other => Fail
+   */
+  @Test
+  public void testCompatibilityContinueOther() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_CONTINUE, OTHER}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_UNIT, B_CONTINUE, OTHER}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_CONTINUE, OTHER}));
+  }
+
+  /**
+   * B-Continue, B-Unit => Fail
+   * A-Unit, B-Continue, B-Unit => Fail
+   * A-Start, A-Last, B-Continue, B-Unit => Fail
+   */
+  @Test
+  public void testCompatibilityContinueUnit() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_CONTINUE, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_UNIT, B_CONTINUE, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_CONTINUE, B_UNIT}));
+  }
+
+  /**
+   * B-Last, Other => Fail
+   * A-Unit, B-Last, Other => Fail
+   * A-Start, A-Last, B-Last, Other => Fail
+   */
+  @Test
+  public void testCompatibilityLastOther() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_LAST, OTHER}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_UNIT, B_LAST, OTHER}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_LAST, OTHER}));
+  }
+
+  /**
+   * B-Last, B-Unit => Fail
+   * A-Unit, B-Last, B-Unit => Fail
+   * A-Start, A-Last, B-Last, B-Unit => Fail
+   */
+  @Test
+  public void testCompatibilityLastUnit() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_LAST, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_UNIT, B_LAST, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, B_LAST, B_UNIT}));
+  }
+
+  /**
+   * Other, B-Unit => Pass
+   * A-Unit, Other, B-Unit => Pass
+   * A-Start, A-Last, Other, B-Unit => Pass
+   */
+  @Test
+  public void testCompatibilityOtherUnit() {
+    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {OTHER, B_UNIT}));
+    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_UNIT, OTHER, B_UNIT}));
+    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_START, A_LAST, OTHER, B_UNIT}));
+  }
+
+  /**
+   * Triples and triples in combination with other valid type (unit/start+last)
+   *
+   * B-Start, B-Continue, B-Last => Pass
+   * A-Unit, B-Start, B-Continue, B-Last => Pass
+   * A-Start, A-Last, B-Start, B-Continue, B-Last => Pass
+   */
+  @Test
+  public void testCompatibilityStartContinueLast() {
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {B_START, B_CONTINUE, B_LAST}));
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {A_UNIT, B_START, B_CONTINUE, B_LAST}));
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {A_START, A_LAST, B_START, B_CONTINUE, B_LAST}));
+  }
+
+  /**
+   * B-Start, B-Continue, Other => Fail
+   * A-Unit, B-Start, B-Continue, Other => Fail
+   * A-Start, A-Last, B-Start, B-Continue, Other => Fail
+   */
+  @Test
+  public void testCompatibilityStartContinueOther() {
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {B_START, B_CONTINUE, OTHER}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_UNIT, B_START, B_CONTINUE, OTHER}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_START, A_LAST, B_START, B_CONTINUE, OTHER}));
+  }
+
+  /**
+   * B-Start, B-Continue, B-Unit => Fail
+   * A-Unit, B-Start, B-Continue, B-Unit => Fail
+   * A-Start, A-Last, B-Start, B-Continue, B-Unit => Fail
+   */
+  @Test
+  public void testCompatibilityStartContinueUnit() {
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {B_START, B_CONTINUE, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_UNIT, B_START, B_CONTINUE, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_START, A_LAST, B_START, B_CONTINUE, B_UNIT}));
+  }
+
+  /**
+   * B-Continue, B-Last, Other => Fail
+   * A-Unit, B-Continue, B-Last, Other => Fail
+   * A-Start, A-Last, B-Continue, B-Last, Other => Fail
+   */
+  @Test
+  public void testCompatibilityContinueLastOther() {
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {B_CONTINUE, B_LAST, OTHER}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_UNIT, B_CONTINUE, B_LAST, OTHER}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_START, A_LAST, B_CONTINUE, B_LAST, OTHER}));
+  }
+
+  /**
+   * B-Continue, B-Last, B-Unit => Fail
+   * A-Unit, B-Continue, B-Last, B_Unit => Fail
+   * A-Start, A-Last, B-Continue, B-Last, B_Unit => Fail
+   */
+  @Test
+  public void testCompatibilityContinueLastUnit() {
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {B_CONTINUE, B_LAST, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_UNIT, B_CONTINUE, B_LAST, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_START, A_LAST, B_CONTINUE, B_LAST, B_UNIT}));
+  }
+
+  /**
+   * B-Last, Other, B-Unit => Fail
+   * A-Unit, B-Continue, B-Last, B_Unit => Fail
+   * A-Start, A-Last, B-Continue, B-Last, B_Unit => Fail
+   */
+  @Test
+  public void testCompatibilityLastOtherUnit() {
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {B_LAST, OTHER, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_UNIT, B_LAST, OTHER, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_START, A_LAST, B_LAST, OTHER, B_UNIT}));
+  }
+
+  /**
+   * Quadruples and quadruple in combination of unit/start+last
+   *
+   * B-Start, B-Continue, B-Last, Other => Pass
+   * A-Unit, B-Start, B-Continue, B-Last, Other => Pass
+   * A-Start, A-Last, B-Start, B-Continue, B-Last, Other => Pass
+   */
+  @Test
+  public void testCompatibilityStartContinueLastOther() {
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {B_START, B_CONTINUE, B_LAST, OTHER}));
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {A_UNIT, B_START, B_CONTINUE, B_LAST, OTHER}));
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {A_START, A_LAST, B_START, B_CONTINUE, B_LAST, OTHER}));
+  }
+
+  /**
+   * B-Start, B-Continue, B-Last, B-Unit => Pass
+   * A-Unit, B-Start, B-Continue, B-Last, B-Unit => Pass
+   * A-Start, A-Last, B-Start, B-Continue, B-Last, B-Unit => Pass
+   */
+  @Test
+  public void testCompatibilityStartContinueLastUnit() {
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {B_START, B_CONTINUE, B_LAST, B_UNIT}));
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {A_UNIT, B_START, B_CONTINUE, B_LAST, B_UNIT}));
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {A_START, A_LAST, B_START, B_CONTINUE, B_LAST, B_UNIT}));
+  }
+
+
+  /**
+   * B-Continue, B-Last, Other, B-Unit => Fail
+   * A-Unit, B-Continue, B-Last, Other, B-Unit => Fail
+   * A-Start, A-Last, B-Continue, B-Last, Other, B-Unit => Fail
+   */
+  @Test
+  public void testCompatibilityContinueLastOtherUnit() {
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {B_CONTINUE, B_LAST, OTHER, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_UNIT, B_CONTINUE, B_LAST, OTHER, B_UNIT}));
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_START, A_LAST, B_CONTINUE, B_LAST, OTHER, B_UNIT}));
+  }
+
+  /**
+   * Quintuple
+   *
+   * B-Start, B-Continue, B-Last, Other, B-Unit => Pass
+   * A-Unit, B-Start, B-Continue, B-Last, Other, B-Unit => Pass
+   * A-Staart, A-Last, B-Start, B-Continue, B-Last, Other, B-Unit => Pass
+   */
+  @Test
+  public void testCompatibilityUnitOther() {
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {B_START, B_CONTINUE, B_LAST, OTHER, B_UNIT}));
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {A_UNIT, B_START, B_CONTINUE, B_LAST, OTHER, B_UNIT}));
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {A_START, A_LAST, B_START, B_CONTINUE, B_LAST, OTHER, B_UNIT}));
+  }
+
+  /**
+   * Multiclass
+   */
+  @Test
+  public void testCompatibilityMultiClass() {
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {B_UNIT, A_CONTINUE, A_LAST, A_UNIT,
+            B_START, B_LAST, A_START, C_UNIT, OTHER}));
+  }
+
+  /**
+   * Bad combinations
+   */
+  @Test
+  public void testCompatibilityBadTag() {
+    Assert.assertFalse(codec.areOutcomesCompatible(
+        new String[] {A_START, A_CONTINUE, OTHER, "BAD"}));
+  }
+
+  @Test
+  public void testCompatibilityWrongClass() {
+    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, B_LAST, OTHER}));
+  }
+
+
+
 }
