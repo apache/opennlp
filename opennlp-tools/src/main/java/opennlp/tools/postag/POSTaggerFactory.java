@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import opennlp.tools.dictionary.Dictionary;
@@ -186,10 +187,9 @@ public class POSTaggerFactory extends BaseToolFactory {
   public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
     Map<String, ArtifactSerializer> serializers = super.createArtifactSerializersMap();
 
+
     // NOTE: This is only needed for old models and this if can be removed if support is dropped
-    if (Version.currentVersion().getMinor() < 8) {
-      POSDictionarySerializer.register(serializers);
-    }
+    POSDictionarySerializer.register(serializers);
 
     return serializers;
   }
@@ -269,11 +269,19 @@ public class POSTaggerFactory extends BaseToolFactory {
   }
 
   public POSContextGenerator getPOSContextGenerator(int cacheSize) {
-    if (Version.currentVersion().getMinor() >= 8) {
-      return new ConfigurablePOSContextGenerator(cacheSize, createFeatureGenerators());
-    }
 
-    return new DefaultPOSContextGenerator(cacheSize, getDictionary());
+    if (artifactProvider != null) {
+      Properties manifest = (Properties) artifactProvider.getArtifact("manifest.properties");
+
+      String version = manifest.getProperty("OpenNLP-Version");
+
+      if (Version.parse(version).getMinor() < 8) {
+        return new DefaultPOSContextGenerator(cacheSize, getDictionary());
+      }
+    }
+    
+    return new ConfigurablePOSContextGenerator(cacheSize, createFeatureGenerators());
+
   }
 
   public SequenceValidator<String> getSequenceValidator() {

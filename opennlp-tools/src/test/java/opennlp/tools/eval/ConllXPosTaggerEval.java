@@ -84,7 +84,7 @@ public class ConllXPosTaggerEval {
         "conllx/data/danish/ddt/train/danish_ddt_train.conll"), "da", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/danish/ddt/test/danish_ddt_test.conll"), 0.9512987012987013d);
+        "conllx/data/danish/ddt/test/danish_ddt_test.conll"), 0.9504442925495558d);
   }
 
   @Test
@@ -95,7 +95,7 @@ public class ConllXPosTaggerEval {
         "conllx/data/danish/ddt/train/danish_ddt_train.conll"), "da", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/danish/ddt/test/danish_ddt_test.conll"), 0.9456596035543404d);
+        "conllx/data/danish/ddt/test/danish_ddt_test.conll"), 0.9564251537935748d);
   }
 
   @Test
@@ -106,7 +106,7 @@ public class ConllXPosTaggerEval {
         "conllx/data/dutch/alpino/train/dutch_alpino_train.conll"), "nl", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/dutch/alpino/test/dutch_alpino_test.conll"), 0.9174574753804834d);
+        "conllx/data/dutch/alpino/test/dutch_alpino_test.conll"), 0.9213965980304387d);
   }
 
   @Test
@@ -117,7 +117,7 @@ public class ConllXPosTaggerEval {
         "conllx/data/dutch/alpino/train/dutch_alpino_train.conll"), "nl", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/dutch/alpino/test/dutch_alpino_test.conll"), 0.9025962399283796d);
+        "conllx/data/dutch/alpino/test/dutch_alpino_test.conll"), 0.9282005371530886d);
   }
 
   @Test
@@ -128,7 +128,7 @@ public class ConllXPosTaggerEval {
         "conllx/data/portuguese/bosque/treebank/portuguese_bosque_train.conll"), "pt", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/portuguese/bosque/test/portuguese_bosque_test.conll"), 0.9659110277825124d);
+        "conllx/data/portuguese/bosque/test/portuguese_bosque_test.conll"), 0.9671041418101244d);
   }
 
   @Test
@@ -139,7 +139,7 @@ public class ConllXPosTaggerEval {
         "conllx/data/portuguese/bosque/treebank/portuguese_bosque_train.conll"), "pt", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/portuguese/bosque/test/portuguese_bosque_test.conll"), 0.9676154763933867d);
+        "conllx/data/portuguese/bosque/test/portuguese_bosque_test.conll"), 0.9662519175046872d);
   }
 
   @Test
@@ -150,7 +150,7 @@ public class ConllXPosTaggerEval {
         "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll"), "se", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll"), 0.9275106082036775d);
+        "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll"), 0.9248585572842999d);
   }
 
   @Test
@@ -161,6 +161,6 @@ public class ConllXPosTaggerEval {
         "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll"), "se", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll"), 0.9245049504950495d);
+        "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll"), 0.9322842998585573d);
   }
 }
