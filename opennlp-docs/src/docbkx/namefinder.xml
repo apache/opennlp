@@ -388,7 +388,7 @@ new NameFinderME(model);]]>
 </generators>]]>
 				 </programlisting>
 		    The root element must be generators, each sub-element adds a feature generator to the configuration.
-		    The sample xml is constains additional feature generators with respect to the API defined above.
+		    The sample xml contains additional feature generators with respect to the API defined above.
 			</para>
 			<para>
 			The following table shows the supported elements:
