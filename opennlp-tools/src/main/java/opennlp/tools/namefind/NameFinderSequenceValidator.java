@@ -19,6 +19,9 @@ package opennlp.tools.namefind;
 
 import opennlp.tools.util.SequenceValidator;
 
+/**
+ * This class is created by the {@link BioCodec}.
+ */
 public class NameFinderSequenceValidator implements
     SequenceValidator<String> {
 
@@ -27,16 +30,16 @@ public class NameFinderSequenceValidator implements
 
     // outcome is formatted like "cont" or "sometype-cont", so we
     // can check if it ends with "cont".
-    if (outcome.endsWith(NameFinderME.CONTINUE)) {
+    if (outcome.endsWith(BioCodec.CONTINUE)) {
 
       int li = outcomesSequence.length - 1;
 
       if (li == -1) {
         return false;
-      } else if (outcomesSequence[li].endsWith(NameFinderME.OTHER)) {
+      } else if (outcomesSequence[li].endsWith(BioCodec.OTHER)) {
         return false;
-      } else if (outcomesSequence[li].endsWith(NameFinderME.CONTINUE) ||
-          outcomesSequence[li].endsWith(NameFinderME.START)) {
+      } else if (outcomesSequence[li].endsWith(BioCodec.CONTINUE) ||
+          outcomesSequence[li].endsWith(BioCodec.START)) {
         // if it is continue or start, we have to check if previous match was of the same type
         String previousNameType = NameFinderME.extractNameType(outcomesSequence[li]);
         String nameType = NameFinderME.extractNameType(outcome);
