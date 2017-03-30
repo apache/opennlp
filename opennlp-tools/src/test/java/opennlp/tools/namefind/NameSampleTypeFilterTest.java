@@ -73,7 +73,6 @@ public class NameSampleTypeFilterTest {
     Assert.assertEquals(1, ns.getNames().length);
     Assert.assertEquals(organization, ns.getNames()[0].getType());
 
-
   }
 
   @Test
