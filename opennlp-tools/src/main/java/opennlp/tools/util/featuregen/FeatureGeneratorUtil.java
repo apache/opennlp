@@ -85,11 +85,13 @@ public class FeatureGeneratorUtil {
         feat = "num";
       }
     }
-    else if (pattern.isAllCapitalLetter() && token.length() == 1) {
-      feat = "sc";
-    }
     else if (pattern.isAllCapitalLetter()) {
-      feat = "ac";
+      if (token.length() == 1) {
+        feat = "sc";
+      }
+      else {
+        feat = "ac";
+      }
     }
     else if (capPeriod.matcher(token).find()) {
       feat = "cp";
