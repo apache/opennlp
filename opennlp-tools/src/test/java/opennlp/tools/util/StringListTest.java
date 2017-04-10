@@ -28,6 +28,16 @@ import org.junit.Test;
 public class StringListTest {
 
   /**
+   * Tests {@link StringList} which uses {@link String#intern}.
+   */
+  @Test
+  public void testIntern() {
+    StringList l1 = new StringList("a");
+    StringList l2 = new StringList("a", "b");
+    Assert.assertTrue(l1.getToken(0) == l2.getToken(0));
+  }
+
+  /**
    * Tests {@link StringList#getToken(int)}.
    */
   @Test
@@ -90,6 +100,8 @@ public class StringListTest {
   public void testHashCode() {
     Assert.assertEquals(new StringList("a", "b").hashCode(),
         new StringList("a", "b").hashCode());
+    Assert.assertNotEquals(new StringList("a", "b").hashCode(),
+        new StringList("a", "c").hashCode());
   }
 
   /**
@@ -97,6 +109,7 @@ public class StringListTest {
    */
   @Test
   public void testToString() {
-    new StringList("a", "b").toString();
+    Assert.assertEquals("[a]", new StringList("a").toString());
+    Assert.assertEquals("[a,b]", new StringList("a", "b").toString());
   }
 }
