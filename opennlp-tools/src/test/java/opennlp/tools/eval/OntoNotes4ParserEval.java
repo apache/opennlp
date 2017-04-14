@@ -61,7 +61,7 @@ public class OntoNotes4ParserEval {
 
     cv.evaluate(samples, 10);
 
-    Assert.assertEquals(0.8d, cv.getFMeasure().getFMeasure(), expectedScore);
+    Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.001d);
   }
 
   @Test
