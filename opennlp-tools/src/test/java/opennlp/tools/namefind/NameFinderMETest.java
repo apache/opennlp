@@ -17,7 +17,7 @@
 
 package opennlp.tools.namefind;
 
-import java.io.InputStream;
+import java.io.File;
 import java.util.Collections;
 
 import org.junit.Assert;
@@ -57,15 +57,12 @@ public class NameFinderMETest {
   public void testNameFinder() throws Exception {
 
     // train the name finder
-
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/namefind/AnnotatedSentences.txt");
-
     String encoding = "ISO-8859-1";
 
     ObjectStream<NameSample> sampleStream =
         new NameSampleDataStream(
-            new PlainTextByLineStream(new MockInputStreamFactory(in), encoding));
+            new PlainTextByLineStream(new MockInputStreamFactory(
+              new File("opennlp/tools/namefind/AnnotatedSentences.txt")), encoding));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -119,14 +116,11 @@ public class NameFinderMETest {
   public void testNameFinderWithTypes() throws Exception {
 
     // train the name finder
-
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt");
-
     String encoding = "ISO-8859-1";
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(in), encoding));
+        new PlainTextByLineStream(new MockInputStreamFactory(
+          new File("opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt")), encoding));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -168,12 +162,9 @@ public class NameFinderMETest {
   public void testOnlyWithNames() throws Exception {
 
     // train the name finder
-
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-            "opennlp/tools/namefind/OnlyWithNames.train");
-
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-            new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+            new PlainTextByLineStream(new MockInputStreamFactory(
+              new File("opennlp/tools/namefind/OnlyWithNames.train")), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -201,12 +192,9 @@ public class NameFinderMETest {
   public void testOnlyWithNamesTypeOverride() throws Exception {
 
     // train the name finder
-
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/namefind/OnlyWithNames.train");
-
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+        new PlainTextByLineStream(new MockInputStreamFactory(
+          new File("opennlp/tools/namefind/OnlyWithNames.train")), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -239,12 +227,9 @@ public class NameFinderMETest {
   public void testOnlyWithNamesWithTypes() throws Exception {
 
     // train the name finder
-
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/namefind/OnlyWithNamesWithTypes.train");
-
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+        new PlainTextByLineStream(new MockInputStreamFactory(
+          new File("opennlp/tools/namefind/OnlyWithNamesWithTypes.train")), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
@@ -277,12 +262,9 @@ public class NameFinderMETest {
   public void testOnlyWithEntitiesWithTypes() throws Exception {
 
     // train the name finder
-
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/namefind/OnlyWithEntitiesWithTypes.train");
-
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+        new PlainTextByLineStream(new MockInputStreamFactory(
+          new File("opennlp/tools/namefind/OnlyWithEntitiesWithTypes.train")), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
@@ -332,12 +314,9 @@ public class NameFinderMETest {
   public void testNameFinderWithMultipleTypes() throws Exception {
 
     // train the name finder
-
-    InputStream in = getClass().getClassLoader().getResourceAsStream(
-        "opennlp/tools/namefind/voa1.train");
-
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+        new PlainTextByLineStream(new MockInputStreamFactory(
+          new File("opennlp/tools/namefind/voa1.train")), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
