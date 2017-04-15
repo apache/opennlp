@@ -127,33 +127,16 @@ $ opennlp DoccatTrainer -model en-doccat.bin -lang en -data en-doccat.train -enc
 		<programlisting language="java">
 						<![CDATA[
 DoccatModel model = null;
-
 InputStream dataIn = null;
-try {
-  dataIn = new FileInputStream("en-sentiment.train");
+
+try (dataIn = new FileInputStream("en-sentiment.train")) {
   ObjectStream<String> lineStream =
 		new PlainTextByLineStream(dataIn, "UTF-8");
   ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
 
   model = DocumentCategorizerME.train("en", sampleStream);
 }
-catch (IOException e) {
-  // Failed to read or parse training data, training failed
-  e.printStackTrace();
-}
-finally {
-  if (dataIn != null) {
-    try {
-      dataIn.close();
-    }
-    catch (IOException e) {
-      // Not an issue, training already finished.
-      // The exception should be logged and investigated
-      // if part of a production system.
-      e.printStackTrace();
-    }
-  }
-}]]>
+]]>
 	</programlisting>
 	Now might be a good time to cruise over to Hulu or something, because this could take a while if you've got a large training set.
 	You may see a lot of output as well. Once you're done, you can pretty quickly step to classification directly,
@@ -162,27 +145,10 @@ finally {
 		<para>
 		<programlisting language="java">
 						<![CDATA[
-OutputStream modelOut = null;
-try {
-  modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))) {
   model.serialize(modelOut);
 }
-catch (IOException e) {
-  // Failed to save model
-  e.printStackTrace();
-}
-finally {
-  if (modelOut != null) {
-    try {
-       modelOut.close();
-    }
-    catch (IOException e) {
-      // Failed to correctly save model.
-      // Written model might be invalid.
-      e.printStackTrace();
-    }
-  }
-}]]>
+]]>
 </programlisting>
 		</para>
 		</section>

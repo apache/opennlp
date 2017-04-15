@@ -65,23 +65,10 @@ under the License.
             constructor of the model class:
             <programlisting language="java">
                     <![CDATA[
-InputStream modelIn = new FileInputStream("lang-model-name.bin");
-
-try {
+try (InputStream modelIn = new FileInputStream("lang-model-name.bin")) {
   SomeModel model = new SomeModel(modelIn);
 }
-catch (IOException e) {
-  //handle the exception
-}
-finally {
-  if (null != modelIn) {
-    try {
-      modelIn.close();
-    }
-    catch (IOException e) {
-    }
-  }
-}]]>
+]]>
             </programlisting>
         </para>
         <para>

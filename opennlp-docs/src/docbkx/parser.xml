@@ -218,7 +218,7 @@ $ opennlp TaggerModelReplacer en-parser-chunking.bin en-pos-maxent.bin]]>
 				<para>Call a Parser train method: This can be either the CHUNKING or the TREEINSERT parser.</para>
 			</listitem>
 			<listitem>
-				<para>Save the ParseModel to a file or database.</para>
+				<para>Save the ParseModel to a file</para>
 			</listitem>
 		</itemizedlist>
 		The following code snippet shows how to instantiate the HeadRules:

@@ -154,22 +154,9 @@ London share prices were bolstered largely by continued gains on Wall Street and
 			can be loaded.
 			<programlisting language="java">
 			<![CDATA[
-InputStream modelIn = new FileInputStream("en-token.bin");
 
-try {
+try (InputStream modelIn = new FileInputStream("en-token.bin")) {
   TokenizerModel model = new TokenizerModel(modelIn);
-}
-catch (IOException e) {
-  e.printStackTrace();
-}
-finally {
-  if (modelIn != null) {
-    try {
-      modelIn.close();
-    }
-    catch (IOException e) {
-    }
-  }
 }]]>
 		 </programlisting>
 			After the model is loaded the TokenizerME can be instantiated.

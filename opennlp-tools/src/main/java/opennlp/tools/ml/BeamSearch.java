@@ -105,13 +105,8 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
         String[] contexts = cg.getContext(i, sequence, outcomes, additionalContext);
         double[] scores;
         if (contextsCache != null) {
-          scores = contextsCache.get(contexts);
-          if (scores == null) {
-            scores = model.eval(contexts, probs);
-            contextsCache.put(contexts,scores);
-          }
-        }
-        else {
+          scores = contextsCache.computeIfAbsent(contexts, c -> model.eval(c, probs));
+        } else {
           scores = model.eval(contexts, probs);
         }
 
@@ -123,13 +118,13 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
         double min = temp_scores[Math.max(0,scores.length - size)];
 
         for (int p = 0; p < scores.length; p++) {
-          if (scores[p] < min)
-            continue; //only advance first "size" outcomes
-          String out = model.getOutcome(p);
-          if (validator.validSequence(i, sequence, outcomes, out)) {
-            Sequence ns = new Sequence(top, out, scores[p]);
-            if (ns.getScore() > minSequenceScore) {
-              next.add(ns);
+          if (scores[p] >= min) {
+            String out = model.getOutcome(p);
+            if (validator.validSequence(i, sequence, outcomes, out)) {
+              Sequence ns = new Sequence(top, out, scores[p]);
+              if (ns.getScore() > minSequenceScore) {
+                next.add(ns);
+              }
             }
           }
         }

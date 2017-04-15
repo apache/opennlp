@@ -81,19 +81,8 @@ Rockwell_NNP said_VBD the_DT agreement_NN calls_VBZ for_IN it_PRP to_TO supply_V
 InputStream modelIn = null;
 ChunkerModel model = null;
 
-try {
-  modelIn = new FileInputStream("en-chunker.bin");
+try (modelIn = new FileInputStream("en-chunker.bin")){
   model = new ChunkerModel(modelIn);
-} catch (IOException e) {
-  // Model loading failed, handle the error
-  e.printStackTrace();
-} finally {
-  if (modelIn != null) {
-    try {
-      modelIn.close();
-    } catch (IOException e) {
-    }
-  }
 }]]>
 			</programlisting>
 			After the model is loaded a Chunker can be instantiated.
@@ -242,28 +231,18 @@ $ opennlp ChunkerTrainerME -model en-chunker.bin -lang en -data en-chunker.train
                 illustrates how to do it:
                 <programlisting language="java">
                     <![CDATA[
-Charset charset = Charset.forName("UTF-8");
 ObjectStream<String> lineStream =
-    new PlainTextByLineStream(new FileInputStream("en-chunker.train"),charset);
-ObjectStream<ChunkSample> sampleStream = new ChunkSampleStream(lineStream);
+    new PlainTextByLineStream(new FileInputStream("en-chunker.train"), StandardCharsets.UTF_8);
 
 ChunkerModel model;
 
-try {
+try(ObjectStream<ChunkSample> sampleStream = new ChunkSampleStream(lineStream)) {
   model = ChunkerME.train("en", sampleStream,
       new DefaultChunkerContextGenerator(), TrainingParameters.defaultParams());
 }
-finally {
-  sampleStream.close();
-}
 
-OutputStream modelOut = null;
-try {
-  modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))) {
   model.serialize(modelOut);
-} finally {
-  if (modelOut != null)
-     modelOut.close();
 }]]>
                 </programlisting>
             </para>

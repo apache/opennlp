@@ -81,22 +81,9 @@ $ opennlp SentenceDetector en-sent.bin < input.txt > output.txt]]>
 		To instantiate the Sentence Detector the sentence model must be loaded first.
 		<programlisting language="java">
 				<![CDATA[
-InputStream modelIn = new FileInputStream("en-sent.bin");
 
-try {
+try (InputStream modelIn = new FileInputStream("en-sent.bin")) {
   SentenceModel model = new SentenceModel(modelIn);
-}
-catch (IOException e) {
-  e.printStackTrace();
-}
-finally {
-  if (modelIn != null) {
-    try {
-      modelIn.close();
-    }
-    catch (IOException e) {
-    }
-  }
 }]]>
 		</programlisting>
 		After the model is loaded the SentenceDetectorME can be instantiated.
@@ -123,7 +110,7 @@ Span sentences[] = sentenceDetector.sentPosDetect("  First sentence. Second sent
 	</section>
 	<section id="tools.sentdetect.training">
 		<title>Sentence Detector Training</title>
-		<para></para>
+		<para/>
 		<section id="tools.sentdetect.training.tool">
 		<title>Training Tool</title>
 		<para>
@@ -220,27 +207,17 @@ Path: en-sent.bin
 			The following sample code illustrates these steps:
 					<programlisting language="java">
 				<![CDATA[
-Charset charset = Charset.forName("UTF-8");				
 ObjectStream<String> lineStream =
-  new PlainTextByLineStream(new FileInputStream("en-sent.train"), charset);
-ObjectStream<SentenceSample> sampleStream = new SentenceSampleStream(lineStream);
+  new PlainTextByLineStream(new FileInputStream("en-sent.train"), StandardCharsets.UTF_8);
 
 SentenceModel model;
 
-try {
+try (ObjectStream<SentenceSample> sampleStream = new SentenceSampleStream(lineStream)) {
   model = SentenceDetectorME.train("en", sampleStream, true, null, TrainingParameters.defaultParams());
 }
-finally {
-  sampleStream.close();
-}
 
-OutputStream modelOut = null;
-try {
-  modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))) {
   model.serialize(modelOut);
-} finally {
-  if (modelOut != null) 
-     modelOut.close();      
 }]]>
 		</programlisting>
 		</para>

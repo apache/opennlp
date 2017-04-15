@@ -69,24 +69,8 @@ Mr._NNP Vinken_NNP is_VBZ chairman_NN of_IN Elsevier_NNP N.V._NNP ,_, the_DT Dut
 			In the sample below its loaded from disk.
 			<programlisting language="java">
 				<![CDATA[
-InputStream modelIn = null;
-
-try {
-  modelIn = new FileInputStream("en-pos-maxent.bin");
+try (InputStream modelIn = new FileInputStream("en-pos-maxent.bin"){
   POSModel model = new POSModel(modelIn);
-}
-catch (IOException e) {
-  // Model loading failed, handle the error
-  e.printStackTrace();
-}
-finally {
-  if (modelIn != null) {
-    try {
-      modelIn.close();
-    }
-    catch (IOException e) {
-    }
-  }
 }]]>
 			</programlisting>
 			After the model is loaded the POSTaggerME can be instantiated.
@@ -214,7 +198,7 @@ $ opennlp POSTaggerTrainer -type maxent -model en-pos-maxent.bin \
 				<para>Call the POSTagger.train method</para>
 			</listitem>
 			<listitem>
-				<para>Save the POSModel to a file or database</para>
+				<para>Save the POSModel to a file</para>
 			</listitem>
 		</itemizedlist>
 		The following code illustrates that:
@@ -222,30 +206,11 @@ $ opennlp POSTaggerTrainer -type maxent -model en-pos-maxent.bin \
 				<![CDATA[
 POSModel model = null;
 
-InputStream dataIn = null;
-try {
-  dataIn = new FileInputStream("en-pos.train");
-  ObjectStream<String> lineStream = new PlainTextByLineStream(dataIn, "UTF-8");
+try (InputStream dataIn = new FileInputStream("en-pos.train")){
+  ObjectStream<String> lineStream = new PlainTextByLineStream(dataIn, StandardCharsets.UTF_8);
   ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
 
   model = POSTaggerME.train("en", sampleStream, TrainingParameters.defaultParams(), null, null);
-}
-catch (IOException e) {
-  // Failed to read or parse training data, training failed
-  e.printStackTrace();
-}
-finally {
-  if (dataIn != null) {
-    try {
-      dataIn.close();
-    }
-    catch (IOException e) {
-      // Not an issue, training already finished.
-      // The exception should be logged and investigated
-      // if part of a production system.
-      e.printStackTrace();
-    }
-  }
 }]]>
 	</programlisting>
 	The above code performs the first two steps, opening the data and training
@@ -253,25 +218,8 @@ finally {
 	the sample below it is written into a file.
 	<programlisting language="java">
 				<![CDATA[
-OutputStream modelOut = null;
-try {
-  modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))){
   model.serialize(modelOut);
-}
-catch (IOException e) {
-  // Failed to save model
-  e.printStackTrace();
-}
-finally {
-  if (modelOut != null) {
-  try {
-     modelOut.close();
-  }
-  catch (IOException e) {
-    // Failed to correctly save model.
-    // Written model might be invalid.
-    e.printStackTrace();
-  }
 }]]>
 		</programlisting>
 		</para>
