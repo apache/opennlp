@@ -28,24 +28,30 @@ import java.util.Stack;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * The directory sample stream scans a directory (recursively) for plain text
- * files and outputs each file as a String object.
+ * The directory sample stream allows for creating a stream
+ * from a directory listing of files.
  */
 public class DirectorySampleStream implements ObjectStream<File> {
 
   private final List<File> inputDirectories;
 
-  private final boolean isRecursiveScan;
+  private final boolean recursive;
 
   private final FileFilter fileFilter;
 
   private Stack<File> directories = new Stack<>();
 
   private Stack<File> textFiles = new Stack<>();
-
+  
+  /**
+   * Creates a new directory sample stream.
+   * @param dirs The directories to read.
+   * @param fileFilter The {@link FileFilter filter} to apply while enumerating files.
+   * @param recursive Enables or disables recursive file listing.
+   */
   public DirectorySampleStream(File[] dirs, FileFilter fileFilter, boolean recursive) {
     this.fileFilter = fileFilter;
-    isRecursiveScan = recursive;
+    this.recursive = recursive;
 
     List<File> inputDirectoryList = new ArrayList<>(dirs.length);
 
@@ -64,10 +70,17 @@ public class DirectorySampleStream implements ObjectStream<File> {
     directories.addAll(inputDirectories);
   }
 
+  /**
+   * Creates a new directory sample stream.
+   * @param dir The {@link File directory}.
+   * @param fileFilter The {@link FileFilter filter} to apply while enumerating files.
+   * @param recursive Enables or disables recursive file listing.
+   */
   public DirectorySampleStream(File dir, FileFilter fileFilter, boolean recursive) {
     this(new File[]{dir}, fileFilter, recursive);
   }
 
+  @Override
   public File read() throws IOException {
 
     while (textFiles.isEmpty() && !directories.isEmpty()) {
@@ -86,7 +99,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
         if (file.isFile()) {
           textFiles.push(file);
         }
-        else if (isRecursiveScan && file.isDirectory()) {
+        else if (recursive && file.isDirectory()) {
           directories.push(file);
         }
       }
@@ -100,6 +113,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
     }
   }
 
+  @Override
   public void reset() {
     directories.clear();
     textFiles.clear();
@@ -107,6 +121,14 @@ public class DirectorySampleStream implements ObjectStream<File> {
     directories.addAll(inputDirectories);
   }
 
+  /**
+   * {@inheritDoc}
+   * Calling this function has no effect on
+   * the stream.
+   */
+  @Override
   public void close() throws IOException {
+
   }
+  
 }
