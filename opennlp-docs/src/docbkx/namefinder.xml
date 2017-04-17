@@ -80,23 +80,10 @@ Mr . <START:person> Vinken <END> is chairman of Elsevier N.V. , the Dutch publis
 			In the sample below it is loaded from disk.
 			<programlisting language="java">
 				<![CDATA[
-InputStream modelIn = new FileInputStream("en-ner-person.bin");
-
-try {
+try (InputStream modelIn = new FileInputStream("en-ner-person.bin")){
   TokenNameFinderModel model = new TokenNameFinderModel(modelIn);
 }
-catch (IOException e) {
-  e.printStackTrace();
-}
-finally {
-  if (modelIn != null) {
-    try {
-      modelIn.close();
-    }
-    catch (IOException e) {
-    }
-  }
-}]]>
+]]>
 			 </programlisting>
 			 There is a number of reasons why the model loading can fail:
 			 <itemizedlist>
@@ -274,33 +261,24 @@ $ opennlp TokenNameFinderTrainer -featuregen brown.xml -sequenceCodec BILOU -res
 					<para>Call the NameFinderME.train method</para>
 				</listitem>
 				<listitem>
-					<para>Save the TokenNameFinderModel to a file or database</para>
+					<para>Save the TokenNameFinderModel to a file</para>
 				</listitem>
 			</itemizedlist>
 			The three steps are illustrated by the following sample code:
 			<programlisting language="java">
 				<![CDATA[
-Charset charset = Charset.forName("UTF-8");
 ObjectStream<String> lineStream =
-		new PlainTextByLineStream(new FileInputStream("en-ner-person.train"), charset);
-ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream);
+		new PlainTextByLineStream(new FileInputStream("en-ner-person.train"), StandardCharsets.UTF8);
 
 TokenNameFinderModel model;
 
-try {
+try (ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream)) {
   model = NameFinderME.train("en", "person", sampleStream, TrainingParameters.defaultParams(),
             TokenNameFinderFactory nameFinderFactory);
 }
-finally {
-  sampleStream.close();
-}
 
-try {
-  modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+try (modelOut = new BufferedOutputStream(new FileOutputStream(modelFile)){
   model.serialize(modelOut);
-} finally {
-  if (modelOut != null) 
-     modelOut.close();      
 }]]>
 			 </programlisting>
 		</para>
@@ -542,7 +520,7 @@ System.out.println(result.toString());]]>
 			<programlisting language="java">
 				<![CDATA[
 FileInputStream sampleDataIn = new FileInputStream("en-ner-person.train");
-ObjectStream<NameSample> sampleStream = new PlainTextByLineStream(sampleDataIn.getChannel(), "UTF-8"); 
+ObjectStream<NameSample> sampleStream = new PlainTextByLineStream(sampleDataIn.getChannel(), StandardCharsets.UTF_8);
 TokenNameFinderCrossValidator evaluator = new TokenNameFinderCrossValidator("en", 100, 5);
 evaluator.evaluate(sampleStream, 10);
 

@@ -88,22 +88,11 @@ signed VBD sign
 				In the example below it is loaded from disk:
 				<programlisting language="java">
 		<![CDATA[
-InputStream modelIn = null;
 LemmatizerModel model = null;
-try {
-  modelIn = new FileInputStream("en-lemmatizer.bin");
+try (InputStream modelIn = new FileInputStream("en-lemmatizer.bin"))) {
   model = new LemmatizerModel(modelIn);
-} catch (IOException e) {
-  // Model loading failed, handle the error
-  e.printStackTrace();
-} finally {
-  if (modelIn != null) {
-    try {
-    modelIn.close();
-    } catch (IOException e) {
-      }
-  }
-}]]>
+}
+]]>
 			</programlisting>
 				After the model is loaded a LemmatizerME can be instantiated.
 				<programlisting language="java">
@@ -174,22 +163,10 @@ shrapnel        NN      shrapnel
 				<![CDATA[
 InputStream dictLemmatizer = null;
 
-try {
-  dictLemmatizer = new FileInputStream("english-lemmatizer.txt");
+try (dictLemmatizer = new FileInputStream("english-lemmatizer.txt")) {
+
 }
-catch (IOException e) {
-  // dictionary loading failed, handle the error
-  e.printStackTrace();
-}
-finally {
-  if (dictLemmatizer != null) {
-    try {
-      dictLemmatizer.close();
-    }
-    catch (IOException e) {
-    }
-  }
-}]]>
+]]>
 			</programlisting>
 				After the dictionary is loaded the DictionaryLemmatizer can be
 				instantiated.
@@ -303,8 +280,7 @@ $ opennlp LemmatizerTrainerME -model en-lemmatizer.bin -params PerceptronTrainer
  TrainingParameters mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
  if (mlParams == null) {
    mlParams = ModelUtil.createDefaultTrainingParameters();
- }
-]]>
+ }]]>
                 </programlisting>
 					Then we read the training data:
 					<programlisting language="java">
