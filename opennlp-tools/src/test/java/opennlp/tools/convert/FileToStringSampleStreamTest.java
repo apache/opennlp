@@ -53,17 +53,17 @@ public class FileToStringSampleStreamTest {
     File tempFile2 = directory.newFile();
     FileUtils.writeStringToFile(tempFile2, sentence2);
     
-    FileToStringSampleStream stream = 
+    FileToStringSampleStream stream =
         new FileToStringSampleStream(directorySampleStream, Charset.defaultCharset());
 
-    String read = stream.read();    
+    String read = stream.read();
     Assert.assertTrue(sentences.contains(read));
-    
-    read = stream.read();    
+
+    read = stream.read();
     Assert.assertTrue(sentences.contains(read));
-    
+
     stream.close();
-    
+
   }
 
 }
