@@ -18,30 +18,42 @@
 package opennlp.tools.util;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class MockInputStreamFactory implements InputStreamFactory {
 
-  private InputStream is;
+  private final File inputSourceFile;
+  private final String inputSourceStr;
+  private final Charset charset;
 
-  public MockInputStreamFactory(InputStream is) throws FileNotFoundException {
-    this.is = is;
+  public MockInputStreamFactory(File file) {
+    this.inputSourceFile = file;
+    this.inputSourceStr = null;
+    this.charset = null;
   }
 
-  public MockInputStreamFactory(String str) throws FileNotFoundException {
-    this.is = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
+  public MockInputStreamFactory(String str) {
+    this(str, StandardCharsets.UTF_8);
   }
 
-  public MockInputStreamFactory(String str, Charset charset) throws FileNotFoundException {
-    this.is = new ByteArrayInputStream(str.getBytes(charset));
+  public MockInputStreamFactory(String str, Charset charset) {
+    this.inputSourceFile = null;
+    this.inputSourceStr = str;
+    this.charset = charset;
   }
 
   @Override
   public InputStream createInputStream() throws IOException {
-    return is;
+    if (inputSourceFile != null) {
+      return getClass().getClassLoader().getResourceAsStream(inputSourceFile.getPath());
+    }
+    else {
+      return new ByteArrayInputStream(inputSourceStr.getBytes(charset));
+    }
   }
 }

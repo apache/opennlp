@@ -17,8 +17,8 @@
 
 package opennlp.tools.lemmatizer;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -63,11 +63,9 @@ public class LemmatizerMETest {
   public void startup() throws IOException {
     // train the lemmatizer
 
-    InputStream in = getClass().getClassLoader()
-        .getResourceAsStream("opennlp/tools/lemmatizer/trial.old.tsv");
-
     ObjectStream<LemmaSample> sampleStream = new LemmaSampleStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(in), "UTF-8"));
+        new PlainTextByLineStream(new MockInputStreamFactory(
+          new File("opennlp/tools/lemmatizer/trial.old.tsv")), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));

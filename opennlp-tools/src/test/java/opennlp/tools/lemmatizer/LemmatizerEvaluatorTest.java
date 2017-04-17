@@ -18,8 +18,8 @@
 package opennlp.tools.lemmatizer;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.junit.Assert;
@@ -47,18 +47,18 @@ public class LemmatizerEvaluatorTest {
    */
   @Test
   public void testEvaluator() throws IOException {
-    InputStream inPredicted = getClass().getClassLoader()
-        .getResourceAsStream("opennlp/tools/lemmatizer/output.txt");
-    InputStream inExpected = getClass().getClassLoader()
-        .getResourceAsStream("opennlp/tools/lemmatizer/output.txt");
+    String inPredicted = "opennlp/tools/lemmatizer/output.txt";
+    String inExpected = "opennlp/tools/lemmatizer/output.txt";
 
     String encoding = "UTF-8";
 
     DummyLemmaSampleStream predictedSample = new DummyLemmaSampleStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(inPredicted), encoding), true);
+        new PlainTextByLineStream(
+          new MockInputStreamFactory(new File(inPredicted)), encoding), true);
 
     DummyLemmaSampleStream expectedSample = new DummyLemmaSampleStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(inExpected), encoding), false);
+        new PlainTextByLineStream(
+          new MockInputStreamFactory(new File(inExpected)), encoding), false);
 
     Lemmatizer dummyLemmatizer = new DummyLemmatizer(predictedSample);
 
