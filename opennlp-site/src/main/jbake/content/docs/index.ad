@@ -1,0 +1,18 @@
+= Documentation
+:jbake-type: page
+:jbake-tags: documentation
+:jbake-status: published
+:idprefix:
+
+There exists a manual and Javadoc API documentation for Apache OpenNLP. The manual
+explains how the various OpenNLP components can be used and trained.
+
+### Apache OpenNLP 1.7.2 documentation
+
+* link:/docs/1.7.2/manual/opennlp.html[Apache OpenNLP Manual]
+* link:/docs/1.7.2/apidocs/opennlp-tools/index.html[Apache OpenNLP Tools Javadoc]
+* link:/docs/1.7.2/apidocs/opennlp-uima/index.html[Apache OpenNLP UIMA Javadoc]
+* link:/docs/1.7.2/apidocs/opennlp-brat-annotator/index.html[Apache OpenNLP BRAT Annotator Javadoc]
+* link:/docs/1.7.2/apidocs/opennlp-morfologik-addon/index.html[Apache OpenNLP Morfologik Addon Javadoc]
+
+Note: All the documentation is also included in the binary distribution.

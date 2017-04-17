@@ -1,0 +1,25 @@
+= Get Involved
+:jbake-type: page
+:jbake-tags: download
+:jbake-status: published
+:idprefix:
+
+
+The Apache OpenNLP project is developed by volunteers and is always looking for new contributors
+to work on all parts of the project. Every contribution is welcome and needed to make it better.
+A contribution can be anything from a small documentation typo fix to a new component.
+
+Before you start to contribute we suggest to join the user and development mailing lists.
+
+A contribution is always done through https://issues.apache.org/jira/browse/OPENNLP[Apache OpenNLP JIRA].
+Please https://issues.apache.org/jira/secure/CreateIssue.jspa?pid=12311215&issuetype=4[create a JIRA issue]
+which describes the change and attach a patch to it.
+Every received patch will be reviewed and then either be committed or we give appropriate feedback
+to change it.
+
+Bigger contributions can eventually only be accepted when an
+https://www.apache.org/licenses/icla.txt[ICLA], https://www.apache.org/licenses/cla-corporate.txt[CCLA]
+or https://www.apache.org/licenses/software-grant.txt[software grant] is on file.
+
+Contributors who have a history of successful participation are invited to join
+the project as a committer from the https://incubator.apache.org/guides/ppmc.html[PPMC].
