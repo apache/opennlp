@@ -1,16 +1,12 @@
 <#include "header.ftl">
 
-      <#include "menu.ftl">
+<#include "menu.ftl">
 
-      <div class="row-fluid marketing">
-        <div class="span12">
-          <h1>${content.title}</h1>
-          
-          <p>${content.body}</p>
-        </div>
+<div class="container">
+    <h1 class="title">${content.title}</h1>
 
-      </div>
+    ${content.body}
 
-      <hr>
+</div>
 
 <#include "footer.ftl">

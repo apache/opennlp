@@ -1,69 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
-      <title><#if (content.title)??><#escape x as x?xml>${content.title} - Apache OpenNLP</#escape><#else>Apache OpenNLP</#if></title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta name="description" content="Apache OpenNLP  is a machine learning based toolkit for the processing of natural language text." />
-      <meta name="author" content="The Apache OpenNLP Team" />
-      <meta name="keywords" content="java, natural language processing, nlp, apache, open source, web site" />
-      <meta name="generator" content="JBake"/>
+    <title><#if (content.title)??><#escape x as x?xml>${content.title} - Apache OpenNLP</#escape><#else>Apache OpenNLP</#if></title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Apache OpenNLP  is a machine learning based toolkit for the processing of natural language text." />
+    <meta name="author" content="The Apache OpenNLP Team" />
+    <meta name="keywords" content="java, natural language processing, nlp, apache, open source, web site" />
+    <meta name="generator" content="JBake"/>
 
-	<link rel="alternate" type="application/rss+xml" title="RSS" href="/${config.feed_file}" />
-	<link rel="shortcut icon" href="/favicon.ico" />
-	
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/${config.feed_file}" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+
     <!-- Le styles -->
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/asciidoctor.css" rel="stylesheet">
-    <link href="/css/bootstrap-responsive.min.css" rel="stylesheet">
     <link href="/css/prettify.css" rel="stylesheet">
     <style type="text/css">
-      body {
-        padding-top: 20px;
-        padding-bottom: 40px;
-      }
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 80px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 80px;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
 
-      /* Custom container */
-      .container-narrow {
-        margin: 0 auto;
-        max-width: 700px;
-      }
-      .container-narrow > hr {
-        margin: 30px 0;
-      }
+body > .container {
+  padding: 60px 15px 0;
+}
+.footer .text-muted {
+  margin: 20px 0;
+}
 
-      /* Main marketing message and sign up button */
-      .jumbotron {
-        margin: 60px 0;
-        text-align: center;
-      }
-      .jumbotron h1 {
-        font-size: 72px;
-        line-height: 1;
-      }
-      .jumbotron .btn {
-        font-size: 21px;
-        padding: 14px 24px;
-      }
+.footer > .container {
+  padding-right: 15px;
+  padding-left: 15px;
+}
 
-      /* Supporting marketing content */
-      .marketing {
-        margin: 30px 0;
-      }
-      .marketing p + h4 {
-        margin-top: 28px;
-      }
-      
-      /*.navbar .btn-navbar {
-      	float: left;
-      }*/
-      .navbar-fixed-top .container {
-        width: 700px;
-      }
-      @media (max-width: 979px) {
-      .navbar-fixed-top .container {
-       width: auto;
-       }
+.jumbotron {
+  margin: 0px 0;
+  text-align: center;
+  background-color: transparent;
+  padding-top: 0px;
+}
+
+.jumbotron h1 {
+    line-height: 1;
+    font-weight: bold;
+}
+
     </style>
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -77,7 +75,6 @@
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
     <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
     <link rel="shortcut icon" href="../assets/ico/favicon.png">-->
-  </head>
-  <body onload="prettyPrint()">
-    <div class="container-narrow">
+</head>
+<body onload="prettyPrint()">
    
