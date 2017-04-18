@@ -26,23 +26,31 @@ public class ParagraphStreamTest {
 
   @Test
   public void testSimpleReading() throws IOException {
-    String line1 = "1";
-    String line2 = "2";
-    String line3 = "";
-    String line4 = "4";
-    String line5 = "5";
-    String line6 = "";
-
     ParagraphStream paraStream = new ParagraphStream(
-        ObjectStreamUtils.createObjectStream(line1, line2, line3, line4, line5));
+            ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5"));
 
     Assert.assertEquals("1\n2\n", paraStream.read());
     Assert.assertEquals("4\n5\n", paraStream.read());
+    Assert.assertNull(paraStream.read());
 
     paraStream = new ParagraphStream(
-        ObjectStreamUtils.createObjectStream(line1, line2, line3, line4, line5, line6));
+            ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5", ""));
 
     Assert.assertEquals("1\n2\n", paraStream.read());
     Assert.assertEquals("4\n5\n", paraStream.read());
+    Assert.assertNull(paraStream.read());
+  }
+
+  @Test
+  public void testReset() throws IOException {
+    ParagraphStream paraStream = new ParagraphStream(
+            ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5", ""));
+
+    Assert.assertEquals("1\n2\n", paraStream.read());
+    paraStream.reset();
+
+    Assert.assertEquals("1\n2\n", paraStream.read());
+    Assert.assertEquals("4\n5\n", paraStream.read());
+    Assert.assertNull(paraStream.read());
   }
 }

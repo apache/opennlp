@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.StringTokenizer;
 
 import opennlp.tools.util.ObjectStream;
@@ -33,7 +34,7 @@ import opennlp.tools.util.ObjectStream;
  */
 public class FileEventStream implements ObjectStream<Event> {
 
-  protected BufferedReader reader;
+  protected final BufferedReader reader;
 
   /**
    * Creates a new file event stream from the specified file name.
@@ -41,16 +42,16 @@ public class FileEventStream implements ObjectStream<Event> {
    * @throws IOException When the specified file can not be read.
    */
   public FileEventStream(String fileName, String encoding) throws IOException {
-    if (encoding == null) {
-      reader = new BufferedReader(new FileReader(fileName));
-    }
-    else {
-      reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName),encoding));
-    }
+    this(encoding == null ?
+      new FileReader(fileName) : new InputStreamReader(new FileInputStream(fileName), encoding));
   }
 
   public FileEventStream(String fileName) throws IOException {
     this(fileName,null);
+  }
+
+  public FileEventStream(Reader reader) throws IOException {
+    this.reader = new BufferedReader(reader);
   }
 
   /**
