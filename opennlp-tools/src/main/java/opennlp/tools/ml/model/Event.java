@@ -18,22 +18,24 @@
 package opennlp.tools.ml.model;
 
 
+import java.util.Objects;
+
 /**
  * The context of a decision point during training.  This includes
  * contextual predicates and an outcome.
  */
 public class Event {
-  private String outcome;
-  private String[] context;
-  private float[] values;
+  private final String outcome;
+  private final String[] context;
+  private final float[] values;
 
   public Event(String outcome, String[] context) {
     this(outcome,context,null);
   }
 
   public Event(String outcome, String[] context, float[] values) {
-    this.outcome = outcome;
-    this.context = context;
+    this.outcome = Objects.requireNonNull(outcome, "outcome must not be null");
+    this.context = Objects.requireNonNull(context, "context must not be null");
     this.values = values;
   }
 
