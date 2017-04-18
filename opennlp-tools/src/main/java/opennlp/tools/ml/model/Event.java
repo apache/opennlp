@@ -23,9 +23,9 @@ package opennlp.tools.ml.model;
  * contextual predicates and an outcome.
  */
 public class Event {
-  private String outcome;
-  private String[] context;
-  private float[] values;
+  private final String outcome;
+  private final String[] context;
+  private final float[] values;
 
   public Event(String outcome, String[] context) {
     this(outcome,context,null);
