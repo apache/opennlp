@@ -23,6 +23,16 @@ import org.junit.Test;
 public class EventTest {
 
   @Test
+  public void testNullOutcome() {
+    try {
+      new Event(null, new String[]{"aa", "bb", "cc"});
+      Assert.fail("NPE must be thrown");
+    }
+    catch (NullPointerException expected) {
+    }
+  }
+
+  @Test
   public void testNullContext() {
     try {
       new Event("o1", null);

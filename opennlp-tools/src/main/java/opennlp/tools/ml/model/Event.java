@@ -34,9 +34,8 @@ public class Event {
   }
 
   public Event(String outcome, String[] context, float[] values) {
-    Objects.requireNonNull(context, "context must not be null");
-    this.outcome = outcome;
-    this.context = context;
+    this.outcome = Objects.requireNonNull(outcome, "outcome must not be null");
+    this.context = Objects.requireNonNull(context, "context must not be null");
     this.values = values;
   }
 
