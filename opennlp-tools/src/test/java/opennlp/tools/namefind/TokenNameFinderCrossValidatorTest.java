@@ -28,6 +28,7 @@ import org.junit.Test;
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -50,8 +51,8 @@ public class TokenNameFinderCrossValidatorTest {
         new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "70");
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, "1");
 
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
@@ -77,8 +78,8 @@ public class TokenNameFinderCrossValidatorTest {
         new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "70");
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, "1");
 
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
@@ -95,4 +96,28 @@ public class TokenNameFinderCrossValidatorTest {
     Assert.assertTrue(out.size() > 0);
     Assert.assertNotNull(cv.getFMeasure());
   }
+  
+  @Test(expected = InsufficientTrainingDataException.class)
+  public void testWithInsufficientData() throws Exception {
+
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/namefind/AnnotatedSentencesInsufficient.txt");
+
+    ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
+        new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
+
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "70");
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, "1");
+
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM,
+        ModelType.MAXENT.toString());
+
+    TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en",
+        TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor)null);
+
+    cv.evaluate(sampleStream, 2);
+
+  }
+  
 }

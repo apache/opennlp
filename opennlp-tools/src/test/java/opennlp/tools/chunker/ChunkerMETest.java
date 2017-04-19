@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
@@ -127,6 +128,23 @@ public class ChunkerMETest {
     Assert.assertEquals(expect1.length, preds[0].getProbs().length);
     Assert.assertEquals(Arrays.asList(expect1), preds[0].getOutcomes());
     Assert.assertNotSame(Arrays.asList(expect1), preds[1].getOutcomes());
+  }
+  
+  @Test(expected = InsufficientTrainingDataException.class)
+  public void testInsufficientData() throws IOException {
+
+    ResourceAsStreamFactory in = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/chunker/test-insufficient.txt");
+
+    ObjectStream<ChunkSample> sampleStream = new ChunkSampleStream(
+        new PlainTextByLineStream(in, StandardCharsets.UTF_8));
+
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, "70");
+    params.put(TrainingParameters.CUTOFF_PARAM, "1");
+
+    ChunkerME.train("en", sampleStream, params, new ChunkerFactory());
+
   }
 
 }
