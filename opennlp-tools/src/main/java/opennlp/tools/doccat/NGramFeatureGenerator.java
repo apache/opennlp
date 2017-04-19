@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import opennlp.tools.util.InvalidFormatException;
 
@@ -30,9 +31,8 @@ import opennlp.tools.util.InvalidFormatException;
  */
 public class NGramFeatureGenerator implements FeatureGenerator {
 
-  //default values for bigrams
-  private int minGram = 2;
-  private int maxGram = 2;
+  private final int minGram;
+  private final int maxGram;
 
   /**
    * Constructor for ngrams.
@@ -59,7 +59,8 @@ public class NGramFeatureGenerator implements FeatureGenerator {
   /**
    * Default constructor for Bi grams
    */
-  public NGramFeatureGenerator() {
+  public NGramFeatureGenerator() throws InvalidFormatException {
+    this(2, 2);
   }
 
   /**
@@ -70,7 +71,7 @@ public class NGramFeatureGenerator implements FeatureGenerator {
    * @return a collection of n gram features
    */
   public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInfo) {
-
+    Objects.requireNonNull(text, "text must not be null");
     List<String> features = new ArrayList<>();
 
     for (int i = 0; i <= text.length - minGram; i++) {
