@@ -225,12 +225,7 @@ public class POSTaggerME implements POSTagger {
       ObjectStream<POSSample> samples, TrainingParameters trainParams,
       POSTaggerFactory posFactory) throws IOException {
 
-    String beamSizeString = trainParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
-
-    int beamSize = POSTaggerME.DEFAULT_BEAM_SIZE;
-    if (beamSizeString != null) {
-      beamSize = Integer.parseInt(beamSizeString);
-    }
+    int beamSize = trainParams.getIntParameter(BeamSearch.BEAM_SIZE_PARAMETER, POSTaggerME.DEFAULT_BEAM_SIZE);
 
     POSContextGenerator contextGenerator = posFactory.getPOSContextGenerator();
 
