@@ -47,6 +47,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " model1 model2 ... modelN < sentences";
   }
 
+  @Override
   public void run(String[] args) {
 
     if (args.length == 0) {
