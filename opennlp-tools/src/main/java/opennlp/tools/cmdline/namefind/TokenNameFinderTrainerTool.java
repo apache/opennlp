@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.w3c.dom.Element;
 
@@ -47,6 +50,8 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class TokenNameFinderTrainerTool
     extends AbstractTrainerTool<NameSample, TrainerToolParams> {
+
+  private static final Pattern EXTENSION_PATTERN = Pattern.compile(".*\\.([^\\.]*)$");
 
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
 
@@ -122,23 +127,35 @@ public final class TokenNameFinderTrainerTool
 
       for (File resourceFile : resourceFiles) {
         String resourceName = resourceFile.getName();
-        //gettting the serializer key from the element tag name
-        //if the element contains a dict attribute
+
+        // if the element contains a dict attribute we try gettting
+        // the serializer key from the element tag name
         for (Element xmlElement : elements) {
           String dictName = xmlElement.getAttribute("dict");
           if (dictName != null && dictName.equals(resourceName)) {
             serializer = artifactSerializers.get(xmlElement.getTagName());
           }
         }
-        // TODO: Do different? For now just ignore ....
-        if (serializer == null)
-          continue;
+
+        // otherwise we use the extension
+        if (Objects.isNull(serializer)) {
+          Matcher matcher = EXTENSION_PATTERN.matcher(resourceName);
+          if (matcher.matches()) {
+            String resourceExtension = matcher.group(1);
+            serializer = artifactSerializers.get(resourceExtension);
+            if (Objects.isNull(serializer)) {
+              throw new TerminateToolException(-1,
+                  "Unable to find a serializer for extension: " + resourceExtension);
+            }
+          } else {
+            throw new TerminateToolException(-1, "Unable to get file extension: " + resourceName);
+          }
+        }
 
         try (InputStream resourceIn = CmdLineUtil.openInFile(resourceFile)) {
           resources.put(resourceName, serializer.create(resourceIn));
         } catch (IOException e) {
-          // TODO: Fix exception handling
-          e.printStackTrace();
+          throw new TerminateToolException(-1, "Exception loading resource: " + resourceName, e);
         }
       }
     }
