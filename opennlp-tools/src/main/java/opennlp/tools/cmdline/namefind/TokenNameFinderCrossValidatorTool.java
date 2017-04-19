@@ -71,8 +71,14 @@ public final class TokenNameFinderCrossValidatorTool
     byte[] featureGeneratorBytes =
         TokenNameFinderTrainerTool.openFeatureGeneratorBytes(params.getFeaturegen());
 
-    Map<String, Object> resources =
-        TokenNameFinderTrainerTool.loadResources(params.getResources(), params.getFeaturegen());
+    Map<String, Object> resources;
+
+    try {
+      resources = TokenNameFinderTrainerTool.loadResources(params.getResources(), params.getFeaturegen());
+    }
+    catch (IOException e) {
+      throw new TerminateToolException(-1,"IO error while loading resources", e);
+    }
 
     if (params.getNameTypes() != null) {
       String[] nameTypes = params.getNameTypes().split(",");

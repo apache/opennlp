@@ -20,12 +20,8 @@ package opennlp.tools.cmdline.namefind;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import org.w3c.dom.Element;
 
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -89,77 +85,29 @@ public final class TokenNameFinderTrainerTool
    * @param featureGenDescriptor the feature xml descriptor
    * @return a map consisting of the file name of the resource and its corresponding Object
    */
-  public static Map<String, Object> loadResources(File resourcePath, File featureGenDescriptor) {
+  public static Map<String, Object> loadResources(File resourcePath, File featureGenDescriptor)
+      throws IOException {
     Map<String, Object> resources = new HashMap<>();
 
     if (resourcePath != null) {
+      Map<String, ArtifactSerializer> artifactSerializers = new HashMap<>();
 
-      Map<String, ArtifactSerializer> artifactSerializers = TokenNameFinderModel
-          .createArtifactSerializers();
-      List<Element> elements = new ArrayList<>();
-      ArtifactSerializer serializer = null;
-
-
-      // TODO: If there is descriptor file, it should be consulted too
       if (featureGenDescriptor != null) {
 
         try (InputStream xmlDescriptorIn = CmdLineUtil.openInFile(featureGenDescriptor)) {
           artifactSerializers.putAll(
-              GeneratorFactory.extractCustomArtifactSerializerMappings(xmlDescriptorIn));
-        } catch (IOException e) {
-          // TODO: Improve error handling!
-          e.printStackTrace();
-        }
-
-        try (InputStream inputStreamXML = CmdLineUtil.openInFile(featureGenDescriptor)) {
-          elements = GeneratorFactory.getDescriptorElements(inputStreamXML);
-        } catch (IOException e) {
-          e.printStackTrace();
+              GeneratorFactory.extractArtifactSerializerMappings(xmlDescriptorIn));
         }
       }
 
-      File[] resourceFiles = resourcePath.listFiles();
-
-      for (File resourceFile : resourceFiles) {
-        String resourceName = resourceFile.getName();
-        //gettting the serializer key from the element tag name
-        //if the element contains a dict attribute
-        for (Element xmlElement : elements) {
-          String dictName = xmlElement.getAttribute("dict");
-          if (dictName != null && dictName.equals(resourceName)) {
-            serializer = artifactSerializers.get(xmlElement.getTagName());
-          }
-        }
-        // TODO: Do different? For now just ignore ....
-        if (serializer == null)
-          continue;
-
-        try (InputStream resourceIn = CmdLineUtil.openInFile(resourceFile)) {
-          resources.put(resourceName, serializer.create(resourceIn));
-        } catch (IOException e) {
-          // TODO: Fix exception handling
-          e.printStackTrace();
+      for (Map.Entry<String, ArtifactSerializer> serializerMapping : artifactSerializers.entrySet()) {
+        String resourceName = serializerMapping.getKey();
+        try (InputStream resourceIn = CmdLineUtil.openInFile(new File(resourcePath, resourceName))) {
+          resources.put(resourceName, serializerMapping.getValue().create(resourceIn));
         }
       }
     }
     return resources;
-  }
-
-  /**
-   * Calls a loadResources method above to load any external resource required for training.
-   * @param resourceDirectory the directory where the resources are to be found
-   * @param featureGeneratorDescriptor the xml feature generator
-   * @return a map containing the file name of the resource and its mapped Object
-   */
-  static Map<String, Object> loadResources(String resourceDirectory, File featureGeneratorDescriptor) {
-
-    if (resourceDirectory != null) {
-      File resourcePath = new File(resourceDirectory);
-
-      return loadResources(resourcePath, featureGeneratorDescriptor);
-    }
-
-    return new HashMap<>();
   }
 
   public void run(String format, String[] args) {
@@ -174,12 +122,17 @@ public final class TokenNameFinderTrainerTool
 
     byte[] featureGeneratorBytes = openFeatureGeneratorBytes(params.getFeaturegen());
 
-
     // TODO: Support Custom resources:
     //       Must be loaded into memory, or written to tmp file until descriptor
     //       is loaded which defines parses when model is loaded
 
-    Map<String, Object> resources = loadResources(params.getResources(), params.getFeaturegen());
+    Map<String, Object> resources;
+    try {
+      resources = loadResources(params.getResources(), params.getFeaturegen());
+    }
+    catch (IOException e) {
+      throw new TerminateToolException(-1, e.getMessage(), e);
+    }
 
     CmdLineUtil.checkOutputFile("name finder model", modelOutFile);
 

@@ -755,7 +755,7 @@ public class GeneratorFactory {
     return createGenerator(generatorElement, resourceManager);
   }
 
-  public static Map<String, ArtifactSerializer<?>> extractCustomArtifactSerializerMappings(
+  public static Map<String, ArtifactSerializer<?>> extractArtifactSerializerMappings(
       InputStream xmlDescriptorIn) throws IOException {
 
     Map<String, ArtifactSerializer<?>> mapping = new HashMap<>();
@@ -763,7 +763,6 @@ public class GeneratorFactory {
     org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
 
     XPath xPath = XPathFactory.newInstance().newXPath();
-
 
     NodeList customElements;
     try {
@@ -774,7 +773,6 @@ public class GeneratorFactory {
     }
 
     for (int i = 0; i < customElements.getLength(); i++) {
-
       if (customElements.item(i) instanceof Element) {
         Element customElement = (Element) customElements.item(i);
 
@@ -788,6 +786,43 @@ public class GeneratorFactory {
         }
       }
     }
+
+    NodeList allElements;
+    try {
+      XPathExpression exp = xPath.compile("//*");
+      allElements = (NodeList) exp.evaluate(xmlDescriptorDOM.getDocumentElement(), XPathConstants.NODESET);
+    } catch (XPathExpressionException e) {
+      throw new IllegalStateException("The hard coded XPath expression should always be valid!");
+    }
+
+    for (int i = 0; i < allElements.getLength(); i++) {
+      if (allElements.item(i) instanceof Element) {
+        Element xmlElement = (Element) allElements.item(i);
+
+        String dictName = xmlElement.getAttribute("dict");
+        if (dictName != null) {
+
+          switch (xmlElement.getTagName()) {
+            case "wordcluster":
+              mapping.put(dictName, new WordClusterDictionary.WordClusterDictionarySerializer());
+              break;
+
+            case "brownclustertoken":
+              mapping.put(dictName, new BrownCluster.BrownClusterSerializer());
+              break;
+
+            case "brownclustertokenclass"://, ;
+              mapping.put(dictName, new BrownCluster.BrownClusterSerializer());
+              break;
+
+            case "brownclusterbigram": //, ;
+              mapping.put(dictName, new BrownCluster.BrownClusterSerializer());
+              break;
+          }
+        }
+      }
+    }
+
     return mapping;
   }
 

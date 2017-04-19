@@ -120,7 +120,7 @@ public class GeneratorFactoryTest {
         "/opennlp/tools/util/featuregen/CustomClassLoadingWithSerializers.xml");
 
     Map<String, ArtifactSerializer<?>> mapping =
-        GeneratorFactory.extractCustomArtifactSerializerMappings(descIn);
+        GeneratorFactory.extractArtifactSerializerMappings(descIn);
 
     Assert.assertTrue(mapping.get("test.resource") instanceof WordClusterDictionarySerializer);
   }

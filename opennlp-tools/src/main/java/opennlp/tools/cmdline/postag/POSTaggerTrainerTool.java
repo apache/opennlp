@@ -67,8 +67,15 @@ public final class POSTaggerTrainerTool
     File modelOutFile = params.getModel();
     CmdLineUtil.checkOutputFile("pos tagger model", modelOutFile);
 
-    Map<String, Object> resources = TokenNameFinderTrainerTool.loadResources(
-        params.getResources(), params.getFeaturegen());
+    Map<String, Object> resources;
+
+    try {
+      resources = TokenNameFinderTrainerTool.loadResources(
+          params.getResources(), params.getFeaturegen());
+    }
+    catch (IOException e) {
+      throw new TerminateToolException(-1,"IO error while loading resources", e);
+    }
 
     byte[] featureGeneratorBytes =
         TokenNameFinderTrainerTool.openFeatureGeneratorBytes(params.getFeaturegen());
