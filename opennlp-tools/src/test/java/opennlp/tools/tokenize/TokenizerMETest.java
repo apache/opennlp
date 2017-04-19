@@ -18,9 +18,17 @@
 package opennlp.tools.tokenize;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InsufficientTrainingDataException;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Tests for the {@link TokenizerME} class.
@@ -65,4 +73,22 @@ public class TokenizerMETest {
     Assert.assertEquals("through", tokens[7]);
     Assert.assertEquals("!", tokens[8]);
   }
+  
+  @Test(expected = InsufficientTrainingDataException.class)
+  public void testInsufficientData() throws IOException {
+
+    InputStreamFactory trainDataIn = new ResourceAsStreamFactory(
+        TokenizerModel.class, "/opennlp/tools/tokenize/token-insufficient.train");
+
+    ObjectStream<TokenSample> samples = new TokenSampleStream(
+        new PlainTextByLineStream(trainDataIn, StandardCharsets.UTF_8));
+
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "100");
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, "5");
+
+    TokenizerME.train(samples, TokenizerFactory.create(null, "en", null, true, null), mlParams);
+
+  }
+  
 }

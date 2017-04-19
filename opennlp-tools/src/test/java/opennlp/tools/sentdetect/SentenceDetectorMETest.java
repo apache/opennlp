@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
@@ -42,12 +43,14 @@ public class SentenceDetectorMETest {
         "/opennlp/tools/sentdetect/Sentences.txt");
 
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(100));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(0));
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "100");
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, "0");
+
+    SentenceDetectorFactory factory = new SentenceDetectorFactory("en", true, null, null);
 
     SentenceModel sentdetectModel = SentenceDetectorME.train(
         "en", new SentenceSampleStream(new PlainTextByLineStream(in,
-            StandardCharsets.UTF_8)), true, null, mlParams);
+            StandardCharsets.UTF_8)), factory, mlParams);
 
     Assert.assertEquals("en", sentdetectModel.getLanguage());
 
@@ -132,4 +135,23 @@ public class SentenceDetectorMETest {
     Assert.assertEquals(new Span(16, 56), pos[1]);
 
   }
+  
+  @Test(expected = InsufficientTrainingDataException.class)
+  public void testInsufficientData() throws IOException {
+
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/sentdetect/SentencesInsufficient.txt");
+
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "100");
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, "0");
+
+    SentenceDetectorFactory factory = new SentenceDetectorFactory("en", true, null, null);
+    
+    SentenceDetectorME.train("en", 
+        new SentenceSampleStream(
+            new PlainTextByLineStream(in, StandardCharsets.UTF_8)), factory, mlParams);
+    
+  }
+  
 }
