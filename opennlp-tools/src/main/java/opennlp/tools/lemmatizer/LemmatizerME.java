@@ -202,12 +202,8 @@ public class LemmatizerME implements Lemmatizer {
       ObjectStream<LemmaSample> samples, TrainingParameters trainParams,
       LemmatizerFactory posFactory) throws IOException {
 
-    String beamSizeString = trainParams.getSettings().get(BeamSearch.BEAM_SIZE_PARAMETER);
-
-    int beamSize = LemmatizerME.DEFAULT_BEAM_SIZE;
-    if (beamSizeString != null) {
-      beamSize = Integer.parseInt(beamSizeString);
-    }
+    int beamSize = trainParams.getIntParameter(BeamSearch.BEAM_SIZE_PARAMETER,
+            LemmatizerME.DEFAULT_BEAM_SIZE);
 
     LemmatizerContextGenerator contextGenerator = posFactory.getContextGenerator();
 
