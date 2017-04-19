@@ -216,6 +216,7 @@ public class NGramModel implements Iterable<StringList> {
    *
    * @return iterator over all grams
    */
+  @Override
   public Iterator<StringList> iterator() {
     return mNGrams.keySet().iterator();
   }
@@ -306,10 +307,12 @@ public class NGramModel implements Iterable<StringList> {
     {
       private Iterator<StringList> mDictionaryIterator = NGramModel.this.iterator();
 
+      @Override
       public boolean hasNext() {
         return mDictionaryIterator.hasNext();
       }
 
+      @Override
       public Entry next() {
 
         StringList tokens = mDictionaryIterator.next();
@@ -317,10 +320,11 @@ public class NGramModel implements Iterable<StringList> {
         Attributes attributes = new Attributes();
 
         attributes.setValue(COUNT, Integer.toString(getCount(tokens)));
-
+        
         return new Entry(tokens, attributes);
       }
 
+      @Override
       public void remove() {
         throw new UnsupportedOperationException();
       }
