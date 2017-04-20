@@ -75,8 +75,8 @@ public class ChunkerMETest {
         new PlainTextByLineStream(in, StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
-    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     ChunkerModel chunkerModel = ChunkerME.train("en", sampleStream, params, new ChunkerFactory());
 
@@ -140,8 +140,8 @@ public class ChunkerMETest {
         new PlainTextByLineStream(in, StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, "70");
-    params.put(TrainingParameters.CUTOFF_PARAM, "1");
+    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     ChunkerME.train("en", sampleStream, params, new ChunkerFactory());
 

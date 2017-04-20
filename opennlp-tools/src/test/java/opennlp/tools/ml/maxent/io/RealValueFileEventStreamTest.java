@@ -37,7 +37,7 @@ public class RealValueFileEventStreamTest {
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
-    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
     indexer = new OnePassRealValueDataIndexer();
     indexer.init(trainingParameters, new HashMap<>());
   }

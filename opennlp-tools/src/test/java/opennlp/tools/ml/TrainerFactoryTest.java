@@ -34,8 +34,8 @@ public class TrainerFactoryTest {
   public void setup() {
     mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(10));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(5));
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 10);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, 5);
   }
 
   @Test

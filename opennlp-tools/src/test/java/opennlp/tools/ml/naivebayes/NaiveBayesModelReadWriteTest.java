@@ -43,8 +43,8 @@ public class NaiveBayesModelReadWriteTest {
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
-    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
-    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, "false");;
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);;
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }

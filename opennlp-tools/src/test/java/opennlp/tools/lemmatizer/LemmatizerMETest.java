@@ -69,8 +69,8 @@ public class LemmatizerMETest {
           new File("opennlp/tools/lemmatizer/trial.old.tsv")), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, "100");
-    params.put(TrainingParameters.CUTOFF_PARAM, "5");
+    params.put(TrainingParameters.ITERATIONS_PARAM, 100);
+    params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
     LemmatizerModel lemmatizerModel = LemmatizerME.train("en", sampleStream,
         params, new LemmatizerFactory());
@@ -95,8 +95,8 @@ public class LemmatizerMETest {
                 "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, "100");
-    params.put(TrainingParameters.CUTOFF_PARAM, "5");
+    params.put(TrainingParameters.ITERATIONS_PARAM, 100);
+    params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
     LemmatizerME.train("en", sampleStream, params, new LemmatizerFactory());
 

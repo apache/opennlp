@@ -39,8 +39,8 @@ public class QNPrepAttachTest {
   public void testQNOnPrepAttachData() throws IOException {
     DataIndexer indexer = new TwoPassDataIndexer();
     TrainingParameters indexingParameters = new TrainingParameters();
-    indexingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
-    indexingParameters.put(AbstractDataIndexer.SORT_PARAM, "false");
+    indexingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    indexingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
     indexer.init(indexingParameters, new HashMap<>());
     indexer.index(PrepAttachDataUtil.createTrainingStream());
 
@@ -68,9 +68,9 @@ public class QNPrepAttachTest {
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
         AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
-    trainParams.put(QNTrainer.L1COST_PARAM, Double.toString(0.25));
-    trainParams.put(QNTrainer.L2COST_PARAM, Double.toString(1.0));
+    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainParams.put(QNTrainer.L1COST_PARAM, 0.25);
+    trainParams.put(QNTrainer.L2COST_PARAM, 1.0D);
 
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(PrepAttachDataUtil.createTrainingStream());
@@ -85,9 +85,9 @@ public class QNPrepAttachTest {
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
         AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
-    trainParams.put(QNTrainer.L1COST_PARAM, Double.toString(1.0));
-    trainParams.put(QNTrainer.L2COST_PARAM, Double.toString(0));
+    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainParams.put(QNTrainer.L1COST_PARAM, 1.0D);
+    trainParams.put(QNTrainer.L2COST_PARAM, 0D);
 
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(PrepAttachDataUtil.createTrainingStream());
@@ -102,9 +102,9 @@ public class QNPrepAttachTest {
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
         AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
-    trainParams.put(QNTrainer.L1COST_PARAM, Double.toString(0));
-    trainParams.put(QNTrainer.L2COST_PARAM, Double.toString(1.0));
+    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainParams.put(QNTrainer.L1COST_PARAM, 0D);
+    trainParams.put(QNTrainer.L2COST_PARAM, 1.0D);
 
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(PrepAttachDataUtil.createTrainingStream());
@@ -117,7 +117,7 @@ public class QNPrepAttachTest {
 
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
-    trainParams.put(QNTrainer.THREADS_PARAM, Integer.toString(2));
+    trainParams.put(QNTrainer.THREADS_PARAM, 2);
 
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
                                       .train(PrepAttachDataUtil.createTrainingStream());

@@ -111,8 +111,8 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     this.iterations = iterations;
     this.sequenceStream = sequenceStream;
 
-    trainingParameters.put(AbstractDataIndexer.CUTOFF_PARAM, Integer.toString(cutoff));
-    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, Boolean.toString(false));
+    trainingParameters.put(AbstractDataIndexer.CUTOFF_PARAM, cutoff);
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
     DataIndexer di = new OnePassDataIndexer();
     di.init(trainingParameters,reportMap);
     di.index(new SequenceStreamEventStream(sequenceStream));

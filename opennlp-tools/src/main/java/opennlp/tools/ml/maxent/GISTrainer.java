@@ -246,8 +246,8 @@ public class GISTrainer extends AbstractEventTrainer {
                              int cutoff) throws IOException {
     DataIndexer indexer = new OnePassDataIndexer();
     TrainingParameters indexingParameters = new TrainingParameters();
-    indexingParameters.put(GISTrainer.CUTOFF_PARAM, Integer.toString(cutoff));
-    indexingParameters.put(GISTrainer.ITERATIONS_PARAM, Integer.toString(iterations));
+    indexingParameters.put(GISTrainer.CUTOFF_PARAM, cutoff);
+    indexingParameters.put(GISTrainer.ITERATIONS_PARAM, iterations);
     Map<String, String> reportMap = new HashMap<>();
     indexer.init(indexingParameters, reportMap);
     indexer.index(eventStream);

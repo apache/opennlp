@@ -45,7 +45,7 @@ public class ScaleDoesntMatterTest {
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
-    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "0");
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 0);
     testDataIndexer = new OnePassRealValueDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }

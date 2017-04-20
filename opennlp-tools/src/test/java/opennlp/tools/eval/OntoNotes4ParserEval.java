@@ -75,10 +75,10 @@ public class OntoNotes4ParserEval {
     }
 
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-    params.put("build.Threads", "4");
-    params.put("tagger.Threads", "4");
-    params.put("chunker.Threads", "4");
-    params.put("check.Threads", "4");
+    params.put("build.Threads", 4);
+    params.put("tagger.Threads", 4);
+    params.put("chunker.Threads", 4);
+    params.put("check.Threads", 4);
 
 
     crossEval(params, headRules, 0.937987617163142d);

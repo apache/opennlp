@@ -528,15 +528,7 @@ public abstract class AbstractBottomUpParser implements Parser {
   public static Dictionary buildDictionary(ObjectStream<Parse> data, HeadRules rules,
       TrainingParameters params) throws IOException {
 
-    int cutoff = 5;
-
-    String cutoffString = params.getSettings("dict").
-        get(TrainingParameters.CUTOFF_PARAM);
-
-    if (cutoffString != null) {
-      // TODO: Maybe throw illegal argument exception if not parse able
-      cutoff = Integer.parseInt(cutoffString);
-    }
+    int cutoff = params.getIntParameter("dict", TrainingParameters.CUTOFF_PARAM, 5);
 
     NGramModel mdict = new NGramModel();
     Parse p;
@@ -621,7 +613,7 @@ public abstract class AbstractBottomUpParser implements Parser {
       throws IOException {
 
     TrainingParameters params = new TrainingParameters();
-    params.put("dict", TrainingParameters.CUTOFF_PARAM, Integer.toString(cutoff));
+    params.put("dict", TrainingParameters.CUTOFF_PARAM, cutoff);
 
     return buildDictionary(data, rules, params);
   }
