@@ -34,21 +34,11 @@ public class TrainingParametersTest {
         new TrainingParameters(build("key1=val1,key2=val2,key3=val3"));
 
     TrainingParameters tp2 = new TrainingParameters(
-      new ByteArrayInputStream("key1=val1\nkey2=val2\nkey3=val3\n".getBytes())
+        new ByteArrayInputStream("key1=val1\nkey2=val2\nkey3=val3\n".getBytes())
     );
 
     TrainingParameters tp3 = new TrainingParameters(tp2);
 
-    /*
-    Assert.assertEquals(3, tp1.getSettings().size());
-    Assert.assertEquals(3, tp3.getSettings().size());
-    Assert.assertEquals(tp1.getStringParameter("key1", "v11"),
-            tp3.getStringParameter("key1", "v22"));   // use different defaults
-    Assert.assertEquals(tp1.getStringParameter("key2", "v11"),
-            tp3.getStringParameter("key2", "v22"));   // use different defaults
-    Assert.assertEquals(tp1.getStringParameter("key2", "v11"),
-            tp3.getStringParameter("key2", "v22"));   // use different defaults
-            */
     assertEquals(tp1, tp2);
     assertEquals(tp2, tp3);
   }
@@ -60,14 +50,14 @@ public class TrainingParametersTest {
     Assert.assertEquals(4, tr.getSettings().size());
     Assert.assertEquals("MAXENT", tr.algorithm());
     Assert.assertEquals(EventTrainer.EVENT_VALUE,
-            tr.getStringParameter(TrainingParameters.TRAINER_TYPE_PARAM,
-                    "v11"));  // use different defaults
+        tr.getStringParameter(TrainingParameters.TRAINER_TYPE_PARAM,
+            "v11"));  // use different defaults
     Assert.assertEquals(100,
-            tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM,
-                    200));  // use different defaults
+        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM,
+            200));  // use different defaults
     Assert.assertEquals(5,
-            tr.getIntParameter(TrainingParameters.CUTOFF_PARAM,
-                    200));  // use different defaults
+        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM,
+            200));  // use different defaults
   }
 
   @Test
@@ -131,7 +121,7 @@ public class TrainingParametersTest {
   private static Map<String, String> buildMap(String str) {
     String[] pairs = str.split(",");
     Map<String, String> map = new HashMap<>(pairs.length);
-    for (String pair: pairs) {
+    for (String pair : pairs) {
       String[] keyValue = pair.split("=");
       map.put(keyValue[0], keyValue[1]);
     }
@@ -148,7 +138,7 @@ public class TrainingParametersTest {
     Assert.assertNotNull(map1);
     Assert.assertNotNull(map2);
     Assert.assertEquals(map1.size(), map2.size());
-    for (String key: map1.keySet()) {
+    for (String key : map1.keySet()) {
       Assert.assertEquals(map1.get(key), map2.get(key));
     }
   }
@@ -161,8 +151,7 @@ public class TrainingParametersTest {
   private static void assertEquals(TrainingParameters expected, TrainingParameters actual) {
     if (expected == null) {
       Assert.assertNull(actual);
-    }
-    else {
+    } else {
       assertEquals(expected.getSettings(), actual);
     }
   }
