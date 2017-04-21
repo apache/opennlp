@@ -86,8 +86,17 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   }
   
   public boolean isValid() {
+    if (!super.isValid()) {
+      return false;
+    }
+
     String algorithmName = getAlgorithm();
-    return !(algorithmName != null && !(PERCEPTRON_VALUE.equals(algorithmName)));
+    if (algorithmName != null) {
+      return PERCEPTRON_VALUE.equals(algorithmName);
+    }
+    else {
+      return true;
+    }
   }
 
   public boolean isSortAndMerge() {
