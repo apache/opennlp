@@ -972,6 +972,22 @@ public class Parse implements Cloneable, Comparable<Parse> {
     return tags.toArray(new Parse[tags.size()]);
   }
 
+  public Parse[] getTokenNodes() {
+    List<Parse> tokens = new LinkedList<>();
+    List<Parse> nodes = new LinkedList<>();
+    nodes.addAll(this.parts);
+    while (nodes.size() != 0) {
+      Parse p = nodes.remove(0);
+      if (p.getType().equals(AbstractBottomUpParser.TOK_NODE)) {
+        tokens.add(p);
+      }
+      else {
+        nodes.addAll(0, p.parts);
+      }
+    }
+    return tokens.toArray(new Parse[tokens.size()]);
+  }
+
   /**
    * Returns the deepest shared parent of this node and the specified node.
    * If the nodes are identical then their parent is returned.

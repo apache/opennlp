@@ -89,15 +89,14 @@ public class ParserEvaluator extends Evaluator<Parse> {
     return consts.toArray(new Span[consts.size()]);
   }
 
-  /* (non-Javadoc)
-   * @see opennlp.tools.util.eval.Evaluator#processSample(java.lang.Object)
-   */
   @Override
   protected final Parse processSample(final Parse reference) {
+    List<String> tokens = new ArrayList<>();
+    for (Parse token : reference.getTokenNodes()) {
+      tokens.add(token.getSpan().getCoveredText(reference.getText()).toString());
+    }
 
-    String sentenceText = reference.getText();
-
-    Parse[] predictions = ParserTool.parseLine(sentenceText, parser, 1);
+    Parse[] predictions = ParserTool.parseLine(String.join(" ", tokens), parser, 1);
 
     Parse prediction = null;
     if (predictions.length > 0) {
