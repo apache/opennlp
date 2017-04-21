@@ -43,8 +43,8 @@ public class SentenceDetectorMETest {
         "/opennlp/tools/sentdetect/Sentences.txt");
 
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "100");
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, "0");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
 
     SentenceDetectorFactory factory = new SentenceDetectorFactory("en", true, null, null);
 
@@ -143,8 +143,8 @@ public class SentenceDetectorMETest {
         "/opennlp/tools/sentdetect/SentencesInsufficient.txt");
 
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "100");
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, "0");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
 
     SentenceDetectorFactory factory = new SentenceDetectorFactory("en", true, null, null);
     

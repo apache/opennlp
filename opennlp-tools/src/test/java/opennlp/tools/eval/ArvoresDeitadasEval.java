@@ -173,7 +173,7 @@ public class ArvoresDeitadasEval {
   @Test
   public void evalPortugueseTokenizerMaxentQnMultipleThreads() throws IOException {
     TrainingParameters params = EvalUtil.createMaxentQnParams();
-    params.put("Threads", "4");
+    params.put("Threads", 4);
     tokenizerCrossEval(params, 0.9996017148748251d);
   }
 
@@ -192,7 +192,7 @@ public class ArvoresDeitadasEval {
   @Test
   public void evalPortugueseChunkerGisMultipleThreads() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-    params.put("Threads", "4");
+    params.put("Threads", 4);
     chunkerCrossEval(params, 0.9573860781121228d);
   }
 
@@ -205,7 +205,7 @@ public class ArvoresDeitadasEval {
   @Test
   public void evalPortugueseChunkerQnMultipleThreads() throws IOException {
     TrainingParameters params = EvalUtil.createMaxentQnParams();
-    params.put("Threads", "4");
+    params.put("Threads", 4);
 
     // NOTE: Should be the same as without multiple threads!!!
     chunkerCrossEval(params, 0.9647304571382662);

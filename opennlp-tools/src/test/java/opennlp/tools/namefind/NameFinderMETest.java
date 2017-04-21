@@ -65,8 +65,8 @@ public class NameFinderMETest {
               new File("opennlp/tools/namefind/AnnotatedSentences.txt")), encoding));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
-    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -123,8 +123,8 @@ public class NameFinderMETest {
           new File("opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt")), encoding));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
-    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -167,8 +167,8 @@ public class NameFinderMETest {
               new File("opennlp/tools/namefind/OnlyWithNames.train")), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
-    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
             params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -197,8 +197,8 @@ public class NameFinderMETest {
           new File("opennlp/tools/namefind/OnlyWithNames.train")), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
-    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", TYPE_OVERRIDE, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -232,8 +232,8 @@ public class NameFinderMETest {
           new File("opennlp/tools/namefind/OnlyWithNamesWithTypes.train")), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
-    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -268,8 +268,8 @@ public class NameFinderMETest {
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
-    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -319,8 +319,8 @@ public class NameFinderMETest {
           new File("opennlp/tools/namefind/voa1.train")), "UTF-8"));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
-    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));

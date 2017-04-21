@@ -99,20 +99,20 @@ public class TrainingParametersTest {
     Assert.assertEquals("def", tp.getStringParameter("str", "k4", "def"));
 
     Assert.assertEquals(-100, tp.getIntParameter("k11", -100));
-    tp.put("k11", "234");
+    tp.put("k11", 234);
     Assert.assertEquals(234, tp.getIntParameter("k11", -100));
     Assert.assertEquals(123, tp.getIntParameter("int", "k2", -100));
     Assert.assertEquals(-100, tp.getIntParameter("int", "k4", -100));
 
     Assert.assertEquals(234.5, tp.getDoubleParameter("k21", -100), 0.001);
-    tp.put("k21", "345.6");
+    tp.put("k21", 345.6);
     Assert.assertEquals(345.6, tp.getDoubleParameter("k21", -100), 0.001); // should be changed
-    tp.putIfAbsent("k21", "456.7");
+    tp.putIfAbsent("k21", 456.7);
     Assert.assertEquals(345.6, tp.getDoubleParameter("k21", -100), 0.001); // should be unchanged
     Assert.assertEquals(123.45, tp.getDoubleParameter("double", "k5", -100), 0.001);
 
     Assert.assertEquals(true, tp.getBooleanParameter("k31", true));
-    tp.put("k31", "false");
+    tp.put("k31", false);
     Assert.assertEquals(false, tp.getBooleanParameter("k31", true));
     Assert.assertEquals(false, tp.getBooleanParameter("boolean", "k4", true));
   }

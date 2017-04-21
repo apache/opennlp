@@ -44,8 +44,8 @@ public class NaiveBayesPrepAttachTest {
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
-    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
-    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, "false");
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
@@ -62,7 +62,7 @@ public class NaiveBayesPrepAttachTest {
   public void testNaiveBayesOnPrepAttachDataUsingTrainUtil() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(1));
+    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
@@ -74,7 +74,7 @@ public class NaiveBayesPrepAttachTest {
   public void testNaiveBayesOnPrepAttachDataUsingTrainUtilWithCutoff5() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, Integer.toString(5));
+    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 5);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());

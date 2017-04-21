@@ -51,8 +51,8 @@ public class POSTaggerMETest {
   static POSModel trainPOSModel(ModelType type) throws IOException {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM, type.toString());
-    params.put(TrainingParameters.ITERATIONS_PARAM, "100");
-    params.put(TrainingParameters.CUTOFF_PARAM, "5");
+    params.put(TrainingParameters.ITERATIONS_PARAM, 100);
+    params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
     return POSTaggerME.train("en", createSampleStream(), params,
         new POSTaggerFactory());
@@ -98,8 +98,8 @@ public class POSTaggerMETest {
  
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM, ModelType.MAXENT.name());
-    params.put(TrainingParameters.ITERATIONS_PARAM, "100");
-    params.put(TrainingParameters.CUTOFF_PARAM, "5");
+    params.put(TrainingParameters.ITERATIONS_PARAM, 100);
+    params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
     POSTaggerME.train("en", stream, params, new POSTaggerFactory());
 

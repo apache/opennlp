@@ -104,8 +104,8 @@ public class TokenNameFinderToolTest {
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream);
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, Integer.toString(70));
-    params.put(TrainingParameters.CUTOFF_PARAM, Integer.toString(1));
+    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    params.put(TrainingParameters.CUTOFF_PARAM, 1);
     
     TokenNameFinderModel model;
 

@@ -38,7 +38,7 @@ public class RealValueModelTest {
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
-    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, "1");
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
     testDataIndexer = new OnePassRealValueDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }

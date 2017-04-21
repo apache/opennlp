@@ -31,7 +31,7 @@ public class EvalUtil {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM,
         PerceptronTrainer.PERCEPTRON_VALUE);
-    params.put(TrainingParameters.CUTOFF_PARAM, "0");
+    params.put(TrainingParameters.CUTOFF_PARAM, 0);
     return params;
   }
 
@@ -39,7 +39,7 @@ public class EvalUtil {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM,
         QNTrainer.MAXENT_QN_VALUE);
-    params.put(TrainingParameters.CUTOFF_PARAM, "0");
+    params.put(TrainingParameters.CUTOFF_PARAM, 0);
     return params;
   }
 
@@ -47,7 +47,7 @@ public class EvalUtil {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM,
         NaiveBayesTrainer.NAIVE_BAYES_VALUE);
-    params.put(TrainingParameters.CUTOFF_PARAM, "5");
+    params.put(TrainingParameters.CUTOFF_PARAM, 5);
     return params;
   }
 

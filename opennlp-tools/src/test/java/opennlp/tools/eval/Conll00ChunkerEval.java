@@ -90,7 +90,7 @@ public class Conll00ChunkerEval {
   @Test
   public void evalEnglishMaxentQn() throws IOException {
     TrainingParameters params = EvalUtil.createMaxentQnParams();
-    params.put("Threads", "4");
+    params.put("Threads", 4);
     ChunkerModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
         "conll00/train.txt"), params);
 

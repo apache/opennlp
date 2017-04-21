@@ -514,16 +514,16 @@ public class Parser extends AbstractBottomUpParser {
       throws IOException {
 
     TrainingParameters params = new TrainingParameters();
-    params.put("dict", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
+    params.put("dict", TrainingParameters.CUTOFF_PARAM, cut);
 
-    params.put("tagger", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
-    params.put("tagger", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-    params.put("chunker", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
-    params.put("chunker", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-    params.put("check", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
-    params.put("check", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
-    params.put("build", TrainingParameters.CUTOFF_PARAM, Integer.toString(cut));
-    params.put("build", TrainingParameters.ITERATIONS_PARAM, Integer.toString(iterations));
+    params.put("tagger", TrainingParameters.CUTOFF_PARAM, cut);
+    params.put("tagger", TrainingParameters.ITERATIONS_PARAM, iterations);
+    params.put("chunker", TrainingParameters.CUTOFF_PARAM, cut);
+    params.put("chunker", TrainingParameters.ITERATIONS_PARAM, iterations);
+    params.put("check", TrainingParameters.CUTOFF_PARAM, cut);
+    params.put("check", TrainingParameters.ITERATIONS_PARAM, iterations);
+    params.put("build", TrainingParameters.CUTOFF_PARAM, cut);
+    params.put("build", TrainingParameters.ITERATIONS_PARAM, iterations);
 
     return train(languageCode, parseSamples, rules, params);
   }

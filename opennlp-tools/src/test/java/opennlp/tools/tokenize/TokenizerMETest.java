@@ -84,8 +84,8 @@ public class TokenizerMETest {
         new PlainTextByLineStream(trainDataIn, StandardCharsets.UTF_8));
 
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "100");
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, "5");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, 5);
 
     TokenizerME.train(samples, TokenizerFactory.create(null, "en", null, true, null), mlParams);
 

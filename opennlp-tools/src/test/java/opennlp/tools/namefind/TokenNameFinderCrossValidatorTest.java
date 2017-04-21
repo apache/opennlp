@@ -51,8 +51,8 @@ public class TokenNameFinderCrossValidatorTest {
         new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "70");
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, "1");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
@@ -78,8 +78,8 @@ public class TokenNameFinderCrossValidatorTest {
         new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "70");
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, "1");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
@@ -107,8 +107,8 @@ public class TokenNameFinderCrossValidatorTest {
         new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, "70");
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, "1");
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
