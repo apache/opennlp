@@ -25,6 +25,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import opennlp.tools.chunker.Chunker;
@@ -89,8 +90,8 @@ public class SourceForgeModelEval {
     }
   }
 
-  @Test
-  public void ensureTestDataIsCorrect() throws IOException {
+  @BeforeClass
+  public static void ensureTestDataIsCorrect() throws IOException {
     MessageDigest digest = createDigest();
 
     try (ObjectStream<String> lines = new PlainTextByLineStream(
