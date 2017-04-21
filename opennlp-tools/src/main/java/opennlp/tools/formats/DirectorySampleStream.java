@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
@@ -95,6 +96,8 @@ public class DirectorySampleStream implements ObjectStream<File> {
         files = dir.listFiles();
       }
 
+      Arrays.sort(files);
+
       for (File file : files) {
         if (file.isFile()) {
           textFiles.push(file);
@@ -128,7 +131,5 @@ public class DirectorySampleStream implements ObjectStream<File> {
    */
   @Override
   public void close() throws IOException {
-
   }
-  
 }

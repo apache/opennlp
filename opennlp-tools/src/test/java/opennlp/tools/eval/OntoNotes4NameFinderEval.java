@@ -68,7 +68,7 @@ public class OntoNotes4NameFinderEval {
   @Test
   public void evalEnglishPersonNameFinder() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-    crossEval(params, "person", 0.8299903903167106d);
+    crossEval(params, "person", 0.8286204642039883d);
   }
 
   @Test
