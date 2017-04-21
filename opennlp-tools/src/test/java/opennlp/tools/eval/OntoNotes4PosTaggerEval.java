@@ -19,9 +19,13 @@ package opennlp.tools.eval;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import opennlp.tools.formats.DirectorySampleStream;
@@ -29,6 +33,7 @@ import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.formats.convert.ParseToPOSSampleStream;
 import opennlp.tools.formats.ontonotes.DocumentToLineStream;
 import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStream;
+import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerCrossValidator;
 import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.util.ObjectStream;
@@ -37,9 +42,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public class OntoNotes4PosTaggerEval {
 
-  private static void crossEval(TrainingParameters params, double expectedScore)
-      throws IOException {
-
+  private static ObjectStream<POSSample> createPOSSampleStream() throws IOException {
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
         EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"),
         file -> {
@@ -50,16 +53,40 @@ public class OntoNotes4PosTaggerEval {
           return file.isDirectory();
         }, true);
 
-    ParseToPOSSampleStream samples = new ParseToPOSSampleStream(new OntoNotesParseSampleStream(
+    return new ParseToPOSSampleStream(new OntoNotesParseSampleStream(
         new DocumentToLineStream(
-            new FileToStringSampleStream(documentStream, Charset.forName("UTF-8")))));
-
-    POSTaggerCrossValidator cv = new POSTaggerCrossValidator("en", params, new POSTaggerFactory());
-    cv.evaluate(samples, 10);
-
-    Assert.assertEquals(expectedScore, cv.getWordAccuracy(), 0.0001d);
+            new FileToStringSampleStream(documentStream, StandardCharsets.UTF_8))));
   }
 
+  private static void crossEval(TrainingParameters params, double expectedScore)
+      throws IOException {
+    try (ObjectStream<POSSample> samples = createPOSSampleStream()) {
+      POSTaggerCrossValidator cv = new POSTaggerCrossValidator("en", params, new POSTaggerFactory());
+      cv.evaluate(samples, 10);
+
+      Assert.assertEquals(expectedScore, cv.getWordAccuracy(), 0.0001d);
+    }
+  }
+
+  @BeforeClass
+  public static void verifyTrainingData() throws IOException {
+    MessageDigest digest;
+    try {
+      digest = MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
+    }
+
+    try (ObjectStream<POSSample> samples = createPOSSampleStream()) {
+      POSSample sample;
+      while ((sample = samples.read()) != null) {
+        digest.update(sample.toString().getBytes(StandardCharsets.UTF_8));
+      }
+
+      Assert.assertEquals(new BigInteger("300430765214895870888056958221353356972"),
+          new BigInteger(1, digest.digest()));
+    }
+  }
   @Test
   public void evalEnglishMaxentTagger() throws IOException {
     crossEval(ModelUtil.createDefaultTrainingParameters(), 0.9698145168879707d);

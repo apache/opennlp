@@ -21,9 +21,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import opennlp.tools.formats.DirectorySampleStream;
@@ -31,6 +35,7 @@ import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.formats.ontonotes.DocumentToLineStream;
 import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStream;
 import opennlp.tools.parser.HeadRules;
+import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserCrossValidator;
 import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.lang.en.HeadRulesTest;
@@ -40,9 +45,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public class OntoNotes4ParserEval {
 
-  private static void crossEval(TrainingParameters params, HeadRules rules, double expectedScore)
-      throws IOException {
-
+  private static ObjectStream<Parse> createParseSampleStream() throws IOException {
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
         EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"),
         file -> {
@@ -53,15 +56,39 @@ public class OntoNotes4ParserEval {
           return file.isDirectory();
         }, true);
 
-    OntoNotesParseSampleStream samples = new OntoNotesParseSampleStream(
+    return new OntoNotesParseSampleStream(
         new DocumentToLineStream(new FileToStringSampleStream(
-            documentStream, Charset.forName("UTF-8"))));
+            documentStream, StandardCharsets.UTF_8)));
+  }
 
-    ParserCrossValidator cv = new ParserCrossValidator("en", params, rules, ParserType.CHUNKING);
+  private static void crossEval(TrainingParameters params, HeadRules rules, double expectedScore)
+      throws IOException {
+    try (ObjectStream<Parse> samples = createParseSampleStream()) {
+      ParserCrossValidator cv = new ParserCrossValidator("en", params, rules, ParserType.CHUNKING);
+      cv.evaluate(samples, 10);
 
-    cv.evaluate(samples, 10);
+      Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.001d);
+    }
+  }
 
-    Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.001d);
+  @BeforeClass
+  public static void verifyTrainingData() throws IOException {
+    MessageDigest digest;
+    try {
+      digest = MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
+    }
+
+    try (ObjectStream<Parse> samples = createParseSampleStream()) {
+      Parse sample;
+      while ((sample = samples.read()) != null) {
+        digest.update(sample.toString().getBytes(StandardCharsets.UTF_8));
+      }
+
+      Assert.assertEquals(new BigInteger("83833369887442127665956850482411800415"),
+          new BigInteger(1, digest.digest()));
+    }
   }
 
   @Test
