@@ -1,0 +1,60 @@
+////
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.   
+////
+= Apache OpenNLP 1.7.0 released
+Apache OpenNLP
+2016-12-31
+:jbake-type: post
+:jbake-tags: community
+:jbake-status: published
+:category: news
+:idprefix:
+
+The Apache OpenNLP team is pleased to announce the release of version 1.7.0 of Apache OpenNLP.
+
+The Apache OpenNLP library is a machine learning based toolkit for the processing of natural language text.
+
+It supports the most common NLP tasks, such as tokenization, sentence segmentation, part-of-speech tagging, named entity extraction, chunking, parsing, and coreference resolution.
+
+The OpenNLP 1.7.0 binary and source distributions are available for download from our download page: <http://opennlp.apache.org/cgi-bin/download.cgi>
+
+The OpenNLP library is distributed by Maven Central as well. See the Maven Dependency page for more details: <http://opennlp.apache.org/maven-dependency.html>
+
+This release introduces many new features, improvements and bug fixes. The API has been improved for a better consistency and deprecated methods were removed. Now Java 1.8 and Maven 3.3.9 are required.
+
+Additionally the release contains the following noteworthy changes:
+
+- OpenNLP is up to 50% faster at analyzing content
+- A lot of deprecated code has been removed
+- Code base has been cleaned up
+- There is a new brat annotation service
+- Documentation was improved and extended
+- A Naive Bayesian Classifier implementation was added
+- Morofologik addon is now included
+- Added a language model component
+- Added a CLI to the lemmatizer component.
+- Added a supervised statistical lemmatizer.
+- The lemmatizer component API has been entirely rewritten. The changes in
+  the previously existing Dictionary-based lemmatizer are not backward compatible.
+
+A detailed list of the issues related to this release can be found in the release
+notes.
+
+For a complete list of fixed bugs and improvements please see the RELEASE_NOTES file included in the distribution.
+
+--The Apache OpenNLP Team

@@ -1,0 +1,31 @@
+////
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.   
+////
+= First release of 1.5.1-incubating is ready!
+Apache OpenNLP
+2011-11-28
+:jbake-type: post
+:jbake-tags: news
+:jbake-status: published
+:category: news
+:idprefix:
+
+* First release of opennlp-1.5.1-incubating ready for primetime.
+* Voting started on opennlp-dev list voting +1 (5-binding and 2-non-binding).
+* Voting carried over to general list voting +1 (1-binding and 1-non-binding).
+* Recorded no 0 votes or -1 votes.

@@ -1,0 +1,73 @@
+////
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.   
+////
+= Building from Source
+:jbake-type: page
+:jbake-tags: building, source
+:jbake-status: published
+:idprefix:
+
+## Last Offical
+
+## Prerequisites
+
+ - If you have an IDE installed such as https://netbeans.org/[NetBeans] or https://www.eclipse.org/[Eclipse] installed,
+ it will make your development easier.  However, follow on for the brave.
+
+ - At least http://www.oracle.com/technetwork/java/javase/overview/index.html[JDK 8] is required to compile and run
+  the object code.
+
+ - At least https://maven.apache.org/[Apache Maven 3.3.9] is required to build the source
+ files and assemble the project.
+
+## Build Procedure
+
+OpenNLP can either be build from the distributed sources or from
+a subversion checkout. These build instructions document how
+to build from the latest trunk version. The distributed source package
+includes a README file which explains how to build it.
+
+On the first checkout everything should be built.
+Go to the opennlp folder inside the trunk folder (e.g. opennlp-trunk) and type 
+
+-----
+cd opennlp
+mvn install
+-----
+
+to build all modules.
+The build installs the maven artifacts in the local repository
+and creates a binary and source distribution inside the 
+opennlp-distr/target folder.
+
+After the initial build the individual modules can be built on their own
+with: ``mvn install``
+
+In the opennlp-docs project it is
+recommended to always build with ``mvn clean install`` because
+changed docbook xml files might not be re-processed otherwise.
+
+In some cases it might be convenient to skip the tests.
+That can be done with the ``-Dmaven.test.skip=true``  option.
+For example type: ``mvn clean install -Dmaven.test.skip=true``
+
+No tests will be executed.
+
+It might happen from time to time that the build fails,
+if so please report a broken build on the opennlp-dev mailing
+list. The build should always work for everyone.

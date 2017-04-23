@@ -1,0 +1,93 @@
+////
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.   
+////
+= Maven Dependency
+:jbake-type: page
+:jbake-tags: maven
+:jbake-status: published
+:idprefix:
+
+
+Apache OpenNLP is also distributed via the Maven Central Repository and
+the maven artifacts are located http://repo1.maven.org/maven2/org/apache/opennlp/[here].
+
+The Apache OpenNLP project publishes the library, javadoc and source code jars.
+
+To use OpenNLP in your project specify exactly one of the following dependencies,
+all transient dependencies are resolved automatically.
+
+## OpenNLP Tools Dependency
+
+To use the OpenNLP Tools define the following dependency:
+
+
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-tools</artifactId>
+      <version>1.7.2</version>
+    </dependency>
+
+
+## OpenNLP UIMA Annotators Dependency
+
+To use the OpenNLP UIMA Annotators define the following dependency:
+
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-uima</artifactId>
+      <version>1.7.2</version>
+    </dependency>
+
+## OpenNLP Morfologik AddOn Dependency
+
+To use the OpenNLP Morfologik-Addon define the following dependency:
+
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-morfologik-addon</artifactId>
+      <version>1.7.2</version>
+    </dependency>
+
+## OpenNLP Brat Annotator Dependency
+
+To use the OpenNLP UIMA Annotators define the following dependency:
+
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-brat-annotator</artifactId>
+      <version>1.7.2</version>
+    </dependency>
+
+## OpenNLP Tools SNAPSHOT Dependency
+
+To use the current trunk version define the following dependency:
+
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-tools</artifactId>
+      <version>1.7.3-SNAPSHOT</version>
+    </dependency>
+
+The SNAPSHOT dependency requires the following repository:
+
+    <repositories>
+      <repository>
+        <id>apache opennlp snapshot</id>
+        <url>https://repository.apache.org/content/repositories/snapshots/</url>
+      </repository>
+    </repositories>
