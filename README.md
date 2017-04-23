@@ -29,19 +29,21 @@ The Apache OpenNLP library is a machine learning based toolkit for the processin
 It supports the most common NLP tasks, such as tokenization, sentence segmentation,
 part-of-speech tagging, named entity extraction, chunking, parsing, and coreference resolution.
 These tasks are usually required to build more advanced text processing services.
-OpenNLP also included maximum entropy and perceptron based machine learning.  
+OpenNLP also includes maximum entropy and perceptron based machine learning.
       
-The goal of the OpenNLP project will be to create a mature toolkit for the abovementioned tasks.
+The goal of the OpenNLP project is to create a mature toolkit for the above mentioned tasks.
 An additional goal is to provide a large number of pre-built models for a variety of languages, as
-well as the annotated text resources that those models are derived from.      
+well as the annotated text resources that those models are derived from.
 
 For additional information about OpenNLP, visit the [OpenNLP Home Page](http://opennlp.apache.org/)
 
 Documentation for OpenNLP, including JavaDocs, code usage and command line interface are available [here](http://opennlp.apache.org/documentation.html)
 
-####Using OpenNLP as a Library
+#### Using OpenNLP as a Library
+
 Running any application that uses OpenNLP will require installing a binary or source version and setting the environment.
 To compile from source:
+
 * `mvn -DskipTests clean install`
 * To run tests do `mvn test`
 
@@ -54,3 +56,4 @@ To use maven, add the appropriate setting to your pom.xml or build.sbt following
     <version>${opennlp.version}</version>
 </dependency>
 ```
+
