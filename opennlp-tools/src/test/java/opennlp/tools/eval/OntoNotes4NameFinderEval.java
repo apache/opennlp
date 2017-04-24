@@ -71,7 +71,7 @@ public class OntoNotes4NameFinderEval {
         filteredSamples = samples;
       }
 
-      cv.evaluate(filteredSamples, 10);
+      cv.evaluate(filteredSamples, 5);
 
       Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.001d);
     }
@@ -100,18 +100,21 @@ public class OntoNotes4NameFinderEval {
   @Test
   public void evalEnglishPersonNameFinder() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-    crossEval(params, "person", 0.8286204642039883d);
+    params.put("Threads", "4");
+    crossEval(params, "person", 0.822014580552418d);
   }
 
   @Test
   public void evalEnglishDateNameFinder() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-    crossEval(params, "date", 0.8065329969459567);
+    params.put("Threads", "4");
+    crossEval(params, "date", 0.8043873255040994d);
   }
 
   @Test
   public void evalAllTypesNameFinder() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-    crossEval(params, null, 0.8061722553169423d);
+    params.put("Threads", "4");
+    crossEval(params, null, 0.8014054850253551d);
   }
 }

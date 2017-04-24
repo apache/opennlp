@@ -65,9 +65,9 @@ public class OntoNotes4ParserEval {
       throws IOException {
     try (ObjectStream<Parse> samples = createParseSampleStream()) {
       ParserCrossValidator cv = new ParserCrossValidator("en", params, rules, ParserType.CHUNKING);
-      cv.evaluate(samples, 10);
+      cv.evaluate(samples, 5);
 
-      Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.001d);
+      Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);
     }
   }
 
@@ -108,6 +108,6 @@ public class OntoNotes4ParserEval {
     params.put("check.Threads", 4);
 
 
-    crossEval(params, headRules, 0.937987617163142d);
+    crossEval(params, headRules, 0.9373673649973432d);
   }
 }
