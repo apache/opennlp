@@ -19,9 +19,13 @@ package opennlp.tools.eval;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import opennlp.tools.formats.DirectorySampleStream;
@@ -37,9 +41,7 @@ import opennlp.tools.util.model.ModelUtil;
 
 public class OntoNotes4NameFinderEval {
 
-  private static void crossEval(TrainingParameters params, String type, double expectedScore)
-      throws IOException {
-
+  private static ObjectStream<NameSample> createNameSampleStream() throws IOException {
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
         EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"),
         file -> {
@@ -50,25 +52,55 @@ public class OntoNotes4NameFinderEval {
           return file.isDirectory();
         }, true);
 
-    ObjectStream<NameSample> samples = new OntoNotesNameSampleStream(new FileToStringSampleStream(
-        documentStream, Charset.forName("UTF-8")));
+    return new OntoNotesNameSampleStream(new FileToStringSampleStream(
+        documentStream, StandardCharsets.UTF_8));
+  }
 
-    TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en", null,
-        params, new TokenNameFinderFactory());
+  private static void crossEval(TrainingParameters params, String type, double expectedScore)
+      throws IOException {
+    try (ObjectStream<NameSample> samples = createNameSampleStream()) {
 
-    if (type != null) {
-      samples = new NameSampleTypeFilter(new String[] {type}, samples);
+      TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en", null,
+          params, new TokenNameFinderFactory());
+
+      ObjectStream<NameSample> filteredSamples;
+      if (type != null) {
+        filteredSamples = new NameSampleTypeFilter(new String[] {type}, samples);
+      }
+      else {
+        filteredSamples = samples;
+      }
+
+      cv.evaluate(filteredSamples, 10);
+
+      Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.001d);
+    }
+  }
+
+  @BeforeClass
+  public static void verifyTrainingData() throws IOException {
+    MessageDigest digest;
+    try {
+      digest = MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
     }
 
-    cv.evaluate(samples, 10);
+    try (ObjectStream<NameSample> samples = createNameSampleStream()) {
+      NameSample sample;
+      while ((sample = samples.read()) != null) {
+        digest.update(sample.toString().getBytes(StandardCharsets.UTF_8));
+      }
 
-    Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.001d);
+      Assert.assertEquals(new BigInteger("168206908604555450993491898907821588182"),
+          new BigInteger(1, digest.digest()));
+    }
   }
 
   @Test
   public void evalEnglishPersonNameFinder() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-    crossEval(params, "person", 0.8299903903167106d);
+    crossEval(params, "person", 0.8286204642039883d);
   }
 
   @Test
