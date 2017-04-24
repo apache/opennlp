@@ -62,6 +62,6 @@ public class OntoNotes4PosTaggerEval {
 
   @Test
   public void evalEnglishMaxentTagger() throws IOException {
-    crossEval(ModelUtil.createDefaultTrainingParameters(), 0.9699561275750962d);
+    crossEval(ModelUtil.createDefaultTrainingParameters(), 0.9698145168879707d);
   }
 }
