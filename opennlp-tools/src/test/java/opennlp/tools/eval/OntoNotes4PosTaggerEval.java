@@ -62,7 +62,7 @@ public class OntoNotes4PosTaggerEval {
       throws IOException {
     try (ObjectStream<POSSample> samples = createPOSSampleStream()) {
       POSTaggerCrossValidator cv = new POSTaggerCrossValidator("en", params, new POSTaggerFactory());
-      cv.evaluate(samples, 10);
+      cv.evaluate(samples, 5);
 
       Assert.assertEquals(expectedScore, cv.getWordAccuracy(), 0.0001d);
     }

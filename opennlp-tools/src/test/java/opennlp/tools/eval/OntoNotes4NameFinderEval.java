@@ -71,7 +71,7 @@ public class OntoNotes4NameFinderEval {
         filteredSamples = samples;
       }
 
-      cv.evaluate(filteredSamples, 10);
+      cv.evaluate(filteredSamples, 5);
 
       Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.001d);
     }
