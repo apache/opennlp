@@ -72,11 +72,8 @@ public final class ParserTool extends BasicCmdLineTool {
 
     // tokenize
     List<String> tokens = Arrays.asList( tokenizer.tokenize(line));
-    StringBuilder sb = new StringBuilder();
-    for (String tok : tokens) {
-      sb.append(tok).append(" ");
-    }
-    String text = sb.substring(0, sb.length());
+    String text = String.join(" ", tokens);
+
     Parse p = new Parse(text, new Span(0, text.length()), AbstractBottomUpParser.INC_NODE, 0, 0);
     int start = 0;
     int i = 0;
