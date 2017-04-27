@@ -95,7 +95,7 @@ public class TokenNameFinderToolTest {
   }
   
   private File trainModel() throws IOException {
-    
+
     String encoding = "ISO-8859-1";
 
     ObjectStream<String> lineStream =
@@ -120,15 +120,15 @@ public class TokenNameFinderToolTest {
     }
 
     BufferedOutputStream modelOut = null;
-    
+
     File modelFile = File.createTempFile("model", ".bin");
     
     try {
       modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
       model.serialize(modelOut);
     } finally {
-      if (modelOut != null) 
-       modelOut.close();    
+      if (modelOut != null)
+       modelOut.close();
     }
     
     return modelFile;
