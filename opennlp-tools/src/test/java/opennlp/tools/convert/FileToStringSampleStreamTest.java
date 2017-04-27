@@ -45,7 +45,8 @@ public class FileToStringSampleStreamTest {
   
     List<String> sentences = Arrays.asList(sentence1, sentence2);
     
-    DirectorySampleStream directorySampleStream = new DirectorySampleStream(directory.getRoot(), null, false);
+    DirectorySampleStream directorySampleStream =
+        new DirectorySampleStream(directory.getRoot(), null, false);
       
     File tempFile1 = directory.newFile();
     FileUtils.writeStringToFile(tempFile1, sentence1);
@@ -53,17 +54,15 @@ public class FileToStringSampleStreamTest {
     File tempFile2 = directory.newFile();
     FileUtils.writeStringToFile(tempFile2, sentence2);
     
-    FileToStringSampleStream stream = 
-        new FileToStringSampleStream(directorySampleStream, Charset.defaultCharset());
+    try (FileToStringSampleStream stream =
+        new FileToStringSampleStream(directorySampleStream, Charset.defaultCharset())) {
 
-    String read = stream.read();    
-    Assert.assertTrue(sentences.contains(read));
-    
-    read = stream.read();    
-    Assert.assertTrue(sentences.contains(read));
-    
-    stream.close();
-    
+      String read = stream.read();
+      Assert.assertTrue(sentences.contains(read));
+
+      read = stream.read();
+      Assert.assertTrue(sentences.contains(read));
+    }
   }
 
 }

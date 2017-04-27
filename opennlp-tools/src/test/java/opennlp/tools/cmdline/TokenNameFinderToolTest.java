@@ -95,13 +95,11 @@ public class TokenNameFinderToolTest {
   }
   
   private File trainModel() throws IOException {
-    
-    String encoding = "ISO-8859-1";
 
     ObjectStream<String> lineStream =
         new PlainTextByLineStream(new MockInputStreamFactory(
-            new File("opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt")), encoding);
-    ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream);
+            new File("opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt")),
+            StandardCharsets.ISO_8859_1);
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -111,24 +109,16 @@ public class TokenNameFinderToolTest {
 
     TokenNameFinderFactory nameFinderFactory = new TokenNameFinderFactory();
 
-    try {
+    try (ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream)) {
       model = NameFinderME.train("en", null, sampleStream, params,
           nameFinderFactory);
     }
-    finally {
-      sampleStream.close();
-    }
-
-    BufferedOutputStream modelOut = null;
     
     File modelFile = File.createTempFile("model", ".bin");
     
-    try {
-      modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+    try (BufferedOutputStream modelOut =
+             new BufferedOutputStream(new FileOutputStream(modelFile))) {
       model.serialize(modelOut);
-    } finally {
-      if (modelOut != null) 
-       modelOut.close();    
     }
     
     return modelFile;
