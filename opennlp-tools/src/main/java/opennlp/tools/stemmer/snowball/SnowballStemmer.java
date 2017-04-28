@@ -29,6 +29,7 @@ public class SnowballStemmer implements Stemmer {
     FRENCH,
     GERMAN,
     HUNGARIAN,
+    IRISH,
     ITALIAN,
     NORWEGIAN,
     PORTER,
@@ -66,6 +67,9 @@ public class SnowballStemmer implements Stemmer {
     }
     else if (ALGORITHM.HUNGARIAN.equals(algorithm)) {
       stemmer = new hungarianStemmer();
+    }
+    else if (ALGORITHM.IRISH.equals(algorithm)) {
+      stemmer = new irishStemmer();
     }
     else if (ALGORITHM.ITALIAN.equals(algorithm)) {
       stemmer = new italianStemmer();
