@@ -47,52 +47,52 @@ public class SnowballStemmer implements Stemmer {
     this.repeat = repeat;
 
     if (ALGORITHM.DANISH.equals(algorithm)) {
-      stemmer = new danishStemmer();
+      stemmer = new DanishStemmer();
     }
     else if (ALGORITHM.DUTCH.equals(algorithm)) {
-      stemmer = new dutchStemmer();
+      stemmer = new DutchStemmer();
     }
     else if (ALGORITHM.ENGLISH.equals(algorithm)) {
-      stemmer = new englishStemmer();
+      stemmer = new EnglishStemmer();
     }
     else if (ALGORITHM.FINNISH.equals(algorithm)) {
-      stemmer = new finnishStemmer();
+      stemmer = new FinnishStemmer();
     }
     else if (ALGORITHM.FRENCH.equals(algorithm)) {
-      stemmer = new frenchStemmer();
+      stemmer = new FrenchStemmer();
     }
     else if (ALGORITHM.GERMAN.equals(algorithm)) {
-      stemmer = new germanStemmer();
+      stemmer = new GermanStemmer();
     }
     else if (ALGORITHM.HUNGARIAN.equals(algorithm)) {
-      stemmer = new hungarianStemmer();
+      stemmer = new HungarianStemmer();
     }
     else if (ALGORITHM.ITALIAN.equals(algorithm)) {
-      stemmer = new italianStemmer();
+      stemmer = new ItalianStemmer();
     }
     else if (ALGORITHM.NORWEGIAN.equals(algorithm)) {
-      stemmer = new norwegianStemmer();
+      stemmer = new NorwegianStemmer();
     }
     else if (ALGORITHM.PORTER.equals(algorithm)) {
-      stemmer = new porterStemmer();
+      stemmer = new PorterStemmer();
     }
     else if (ALGORITHM.PORTUGUESE.equals(algorithm)) {
-      stemmer = new portugueseStemmer();
+      stemmer = new PortugueseStemmer();
     }
     else if (ALGORITHM.ROMANIAN.equals(algorithm)) {
-      stemmer = new romanianStemmer();
+      stemmer = new RomanianStemmer();
     }
     else if (ALGORITHM.RUSSIAN.equals(algorithm)) {
-      stemmer = new russianStemmer();
+      stemmer = new RussianStemmer();
     }
     else if (ALGORITHM.SPANISH.equals(algorithm)) {
-      stemmer = new spanishStemmer();
+      stemmer = new SpanishStemmer();
     }
     else if (ALGORITHM.SWEDISH.equals(algorithm)) {
-      stemmer = new swedishStemmer();
+      stemmer = new SwedishStemmer();
     }
     else if (ALGORITHM.TURKISH.equals(algorithm)) {
-      stemmer = new turkishStemmer();
+      stemmer = new TurkishStemmer();
     }
     else {
       throw new IllegalStateException("Unexpected stemmer algorithm: " + algorithm.toString());
