@@ -28,7 +28,10 @@ import java.util.List;
  * return the top K values which have been added where K is specified by the size passed to
  * the constructor. K+1 values are not gaurenteed to be kept in the heap or returned in a
  * particular order.
+ *
+ * This is now deprecated and will be removed in Release 1.8.1
  */
+@Deprecated
 public class ListHeap<E extends Comparable<E>> implements Heap<E> {
   private List<E> list;
 
