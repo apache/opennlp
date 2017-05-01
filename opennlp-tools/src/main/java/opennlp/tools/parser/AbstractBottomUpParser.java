@@ -22,14 +22,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.postag.POSTagger;
-import opennlp.tools.util.Heap;
-import opennlp.tools.util.ListHeap;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
@@ -77,17 +77,17 @@ public abstract class AbstractBottomUpParser implements Parser {
   /**
    * Completed parses.
    */
-  protected Heap<Parse> completeParses;
+  private SortedSet<Parse> completeParses;
 
   /**
    * Incomplete parses which will be advanced.
    */
-  protected Heap<Parse> odh;
+  private SortedSet<Parse> odh;
 
   /**
    * Incomplete parses which have been advanced.
    */
-  protected Heap<Parse> ndh;
+  private SortedSet<Parse> ndh;
 
   /**
    * The head rules for the parser.
@@ -182,9 +182,9 @@ public abstract class AbstractBottomUpParser implements Parser {
     reportFailedParse = true;
     this.headRules = headRules;
     this.punctSet = headRules.getPunctuationTags();
-    odh = new ListHeap<>(K);
-    ndh = new ListHeap<>(K);
-    completeParses = new ListHeap<>(K);
+    odh = new TreeSet<>();
+    ndh = new TreeSet<>();
+    completeParses = new TreeSet<>();
   }
 
   /**
@@ -279,11 +279,11 @@ public abstract class AbstractBottomUpParser implements Parser {
     double bestComplete = -100000; //approximating -infinity/0 in ln domain
     while (odh.size() > 0 && (completeParses.size() < M || (odh.first()).getProb() < minComplete)
         && derivationStage < maxDerivationLength) {
-      ndh = new ListHeap<>(K);
+      ndh = new TreeSet<>();
 
       int derivationRank = 0;
       for (Iterator<Parse> pi = odh.iterator(); pi.hasNext()
-          && derivationRank < K; derivationRank++) { // forearch derivation
+          && derivationRank < K; derivationRank++) { // foreach derivation
         Parse tp = pi.next();
         //TODO: Need to look at this for K-best parsing cases
         /*
@@ -359,7 +359,8 @@ public abstract class AbstractBottomUpParser implements Parser {
     else {
       List<Parse> topParses = new ArrayList<>(numParses);
       while (!completeParses.isEmpty() && topParses.size() < numParses) {
-        Parse tp = completeParses.extract();
+        Parse tp = completeParses.last();
+        completeParses.remove(tp);
         topParses.add(tp);
         //parses.remove(tp);
       }

@@ -24,7 +24,10 @@ import java.util.Iterator;
  * their natural ordering or the comparator provided to an implementation.
  * While this is a typical of a heap it allows this objects natural ordering to
  * match that of other sorted collections.
+ *
+ * This is now deprecated and will be removed in Release 1.8.1
  * */
+@Deprecated
 public interface Heap<E>  {
 
   /**

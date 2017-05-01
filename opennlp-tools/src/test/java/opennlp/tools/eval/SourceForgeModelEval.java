@@ -346,7 +346,7 @@ public class SourceForgeModelEval {
       }
     }
 
-    Assert.assertEquals(new BigInteger("155722144104513046994135548456420803172"),
+    Assert.assertEquals(new BigInteger("13162568910062822351942983467905626940"),
         new BigInteger(1, digest.digest()));
   }
 }
