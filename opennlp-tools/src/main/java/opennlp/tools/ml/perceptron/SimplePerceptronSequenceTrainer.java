@@ -83,16 +83,28 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
   public SimplePerceptronSequenceTrainer() {
   }
 
-  public boolean isValid() {
-
-    if (!super.isValid()) {
-      return false;
-    }
+  @Override
+  public void validate() {
+    super.validate();
 
     String algorithmName = getAlgorithm();
+    if (algorithmName != null) {
+      if (!PERCEPTRON_SEQUENCE_VALUE.equals(algorithmName)) {
+        throw new IllegalArgumentException("algorithmName must be PERCEPTRON_SEQUENCE");
+      }
+    }
+  }
 
-    return !(algorithmName != null
-        && !(PERCEPTRON_SEQUENCE_VALUE.equals(algorithmName)));
+  @Deprecated
+  @Override
+  public boolean isValid() {
+    try {
+      validate();
+      return true;
+    }
+    catch (IllegalArgumentException e) {
+      return false;
+    }
   }
 
   public AbstractModel doTrain(SequenceStream events) throws IOException {

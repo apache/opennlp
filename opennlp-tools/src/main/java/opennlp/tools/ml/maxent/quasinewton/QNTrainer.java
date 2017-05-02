@@ -115,42 +115,52 @@ public class QNTrainer extends AbstractEventTrainer {
     init(new TrainingParameters(trainParams),reportMap);
   }
 
-  public boolean isValid() {
-
-    if (!super.isValid()) {
-      return false;
-    }
+  @Override
+  public void validate() {
+    super.validate();
 
     String algorithmName = getAlgorithm();
     if (algorithmName != null && !(MAXENT_QN_VALUE.equals(algorithmName))) {
-      return false;
+      throw new IllegalArgumentException("algorithmName must be MAXENT_QN");
     }
 
     // Number of Hessian updates to remember
     if (m < 0) {
-      return false;
+      throw new IllegalArgumentException(
+          "Number of Hessian updates to remember must be >= 0");
     }
 
     // Maximum number of function evaluations
     if (maxFctEval < 0) {
-      return false;
+      throw new IllegalArgumentException(
+          "Maximum number of function evaluations must be >= 0");
     }
 
     // Number of threads must be >= 1
     if (threads < 1) {
-      return false;
+      throw new IllegalArgumentException("Number of threads must be >= 1");
     }
 
     // Regularization costs must be >= 0
     if (l1Cost < 0) {
-      return false;
+      throw new IllegalArgumentException("Regularization costs must be >= 0");
     }
 
     if (l2Cost < 0) {
+      throw new IllegalArgumentException("Regularization costs must be >= 0");
+    }
+  }
+
+  @Deprecated
+  @Override
+  public boolean isValid() {
+    try {
+      validate();
+      return true;
+    }
+    catch (IllegalArgumentException e) {
       return false;
     }
-
-    return true;
   }
 
   public boolean isSortAndMerge() {

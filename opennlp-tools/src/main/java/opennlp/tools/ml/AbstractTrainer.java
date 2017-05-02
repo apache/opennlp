@@ -74,20 +74,36 @@ public abstract class AbstractTrainer {
     return trainingParameters.getIntParameter(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
   }
 
-  public boolean isValid() {
-
+  /**
+   * Check parameters. If subclass overrides this, it should call super.validate();
+   *
+   * @throws java.lang.IllegalArgumentException
+   */
+  public void validate() {
     // TODO: Need to validate all parameters correctly ... error prone?!
-
     // should validate if algorithm is set? What about the Parser?
 
     try {
       trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
       trainingParameters.getIntParameter(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
     } catch (NumberFormatException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
+  /**
+   * @deprecated Use {@link #validate()} instead.
+   * @return
+   */
+  @Deprecated
+  public boolean isValid() {
+    try {
+      validate();
+      return true;
+    }
+    catch (IllegalArgumentException e) {
       return false;
     }
-    
-    return true;
   }
 
 /**

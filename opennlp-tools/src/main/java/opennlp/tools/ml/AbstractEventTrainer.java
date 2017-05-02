@@ -42,7 +42,13 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
   public AbstractEventTrainer(TrainingParameters parameters) {
     super(parameters);
   }
-  
+
+  @Override
+  public void validate() {
+    super.validate();
+  }
+
+  @Deprecated
   @Override
   public boolean isValid() {
     return super.isValid();
@@ -66,9 +72,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
   public abstract MaxentModel doTrain(DataIndexer indexer) throws IOException;
 
   public final MaxentModel train(DataIndexer indexer) throws IOException {
-    if (!isValid()) {
-      throw new IllegalArgumentException("trainParams are not valid!");
-    }
+    validate();
 
     if (indexer.getOutcomeLabels().length <= 1) {
       throw new InsufficientTrainingDataException("Training data must contain more than one outcome");
@@ -80,10 +84,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
   }
 
   public final MaxentModel train(ObjectStream<Event> events) throws IOException {
-
-    if (!isValid()) {
-      throw new IllegalArgumentException("trainParams are not valid!");
-    }
+    validate();
 
     HashSumEventStream hses = new HashSumEventStream(events);
     DataIndexer indexer = getDataIndexer(hses);

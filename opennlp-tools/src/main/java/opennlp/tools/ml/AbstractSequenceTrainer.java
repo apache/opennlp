@@ -32,10 +32,7 @@ public abstract class AbstractSequenceTrainer extends AbstractTrainer implements
       throws IOException;
 
   public final SequenceClassificationModel<String> train(SequenceStream events) throws IOException {
-
-    if (!isValid()) {
-      throw new IllegalArgumentException("trainParams are not valid!");
-    }
+    validate();
 
     SequenceClassificationModel<String> model = doTrain(events);
     addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, SequenceTrainer.SEQUENCE_VALUE);
