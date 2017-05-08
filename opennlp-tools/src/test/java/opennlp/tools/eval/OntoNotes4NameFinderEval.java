@@ -17,17 +17,27 @@
 
 package opennlp.tools.eval;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.formats.ontonotes.OntoNotesNameSampleStream;
@@ -116,5 +126,58 @@ public class OntoNotes4NameFinderEval {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put("Threads", "4");
     crossEval(params, null, 0.8014054850253551d);
+  }
+
+  @Test
+  public void evalAllTypesWithPOSNameFinder() throws IOException {
+    TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
+    params.put("Threads", "4");
+
+    // load the feature generator
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (InputStream in = this.getClass().getResourceAsStream(
+        "ner-en_pos-features.xml")) {
+      byte[] buf = new byte[1024];
+      int len;
+      while ((len = in.read(buf)) > 0) {
+        bytes.write(buf, 0, len);
+      }
+    }
+    catch (IOException e) {
+      throw new IllegalStateException("Failed reading from ner-default-features.xml file on classpath!");
+    }
+
+    byte[] featureGen = bytes.toByteArray();
+
+    // create a temp resource folder and copy the pos model there
+    Path resourcesPath = Files.createTempDirectory("opennlp_resources");
+    Files.copy(new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-pos-perceptron.bin").toPath(),
+        new File(resourcesPath.toFile(), "en-pos-perceptron.bin").toPath(),
+        StandardCopyOption.REPLACE_EXISTING);
+
+    Map<String, Object> resources;
+
+    try {
+      resources = TokenNameFinderTrainerTool.loadResources(resourcesPath.toFile(),
+          Paths.get(this.getClass().getResource("ner-en_pos-features.xml").toURI()).toFile());
+    }
+    catch (IOException | URISyntaxException e) {
+      throw new TerminateToolException(-1,"IO error while loading resources", e);
+    }
+
+
+    try (ObjectStream<NameSample> samples = createNameSampleStream()) {
+
+      TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en", null,
+          params, featureGen, resources);
+
+      ObjectStream<NameSample> filteredSamples;
+
+      filteredSamples = samples;
+
+      cv.evaluate(filteredSamples, 5);
+
+      Assert.assertEquals(0.8044097625338349d, cv.getFMeasure().getFMeasure(), 0.001d);
+    }
   }
 }

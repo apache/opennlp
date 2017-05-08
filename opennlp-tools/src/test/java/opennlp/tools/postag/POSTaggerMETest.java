@@ -48,7 +48,7 @@ public class POSTaggerMETest {
    *
    * @return {@link POSModel}
    */
-  static POSModel trainPOSModel(ModelType type) throws IOException {
+  public static POSModel trainPOSModel(ModelType type) throws IOException {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM, type.toString());
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
