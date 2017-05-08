@@ -102,10 +102,6 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
   }
 
   public AbstractModel doTrain(DataIndexer indexer) throws IOException {
-    if (!isValid()) {
-      throw new IllegalArgumentException("trainParams are not valid!");
-    }
-
     return this.trainModel(indexer);
   }
 

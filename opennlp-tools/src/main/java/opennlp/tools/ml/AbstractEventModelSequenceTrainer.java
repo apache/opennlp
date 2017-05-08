@@ -32,10 +32,7 @@ public abstract class AbstractEventModelSequenceTrainer extends AbstractTrainer 
       throws IOException;
 
   public final MaxentModel train(SequenceStream events) throws IOException {
-
-    if (!isValid()) {
-      throw new IllegalArgumentException("trainParams are not valid!");
-    }
+    validate();
 
     MaxentModel model = doTrain(events);
     addToReport(AbstractTrainer.TRAINER_TYPE_PARAM,

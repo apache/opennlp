@@ -84,7 +84,21 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   public PerceptronTrainer(TrainingParameters parameters) {
     super(parameters);
   }
-  
+
+  @Override
+  public void validate() {
+    super.validate();
+
+    String algorithmName = getAlgorithm();
+    if (algorithmName != null) {
+      if (!PERCEPTRON_VALUE.equals(algorithmName)) {
+        throw new IllegalArgumentException("algorithmName must be PERCEPTRON");
+      }
+    }
+  }
+
+  @Deprecated
+  @Override
   public boolean isValid() {
     if (!super.isValid()) {
       return false;
@@ -104,10 +118,6 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   }
 
   public AbstractModel doTrain(DataIndexer indexer) throws IOException {
-    if (!isValid()) {
-      throw new IllegalArgumentException("trainParams are not valid!");
-    }
-
     int iterations = getIterations();
     int cutoff = getCutoff();
 
