@@ -19,22 +19,25 @@ What is new in Apache OpenNLP ${pom.version}
 ---------------------------------------
 
 This release introduces many new features, improvements and bug fixes. The API
-has been improved for a better consistency and 1.4 deprecated methods were
-removed. Now Java 1.8 is required.
+has been improved for a better consistency and many deprecated methods were
+removed. Java 1.8 is required.
 
 Additionally the release contains the following noteworthy changes:
 
-- Name Finder evaluation can now show a confusion matrix
-- The default evaluation output contains more details
-- Added a Language Model CLI tool
-- Add Moses format support
-- More refactoring and cleanup, specially in Machine Learning package and Dictionary
-- Removed deprecated trainers from UIMA integration
-- Fixed potential localization issues and added maven plugin to prevent it (ForbiddenAPI)
-- Fixed issues with the BRAT corpus reader
-- Deprecated GIS class, will be removed in a future 1.8.x release
+- POS Tagger context generator now supports feature generation XML
+- Add a Name Finder feature generator that adds POS Tag features
+- Add CONLL-U format support
+- Improve default Name Finder settings
+- TokenNameFinderEvaluator CLI now support nameTypes argument
+- Stupid backoff is now the default in NGramLanguageModel
+- Language codes now are ISO 639-3 compliant
+- Add many unit tests
+- Distribution package now includes example parameters file
+- Now prefix and suffix feature generators are configurable
+- Remove API in Document Categorizer for user specified tokenizer
+- Learnable lemmatizer now returns all possible lemmas for a given word and pos tag
+- Add stemmer, detokenizer and sentence detection abbreviations for Irish
+- Chunker SequenceValidator signature changed to allow access to both token and POS tag
 
 A detailed list of the issues related to this release can be found in the release
 notes.
-
-

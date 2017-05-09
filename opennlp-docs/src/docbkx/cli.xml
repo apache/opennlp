@@ -42,7 +42,7 @@ under the License.
 
 <title>Doccat</title>
 
-<para>Learnable document categorizer</para>
+<para>Learned document categorizer</para>
 
 <screen>
 <![CDATA[
@@ -60,15 +60,15 @@ Usage: opennlp Doccat model < documents
 
 <screen>
 <![CDATA[
-Usage: opennlp DoccatTrainer[.leipzig] [-factory factoryName] [-tokenizer tokenizer] [-featureGenerators fg] 
+Usage: opennlp DoccatTrainer[.leipzig] [-factory factoryName] [-featureGenerators fg] [-tokenizer tokenizer] 
         [-params paramsFile] -lang language -model modelFile -data sampleData [-encoding charsetName] 
 Arguments description:
 	-factory factoryName
 		A sub-class of DoccatFactory where to get implementation and resources.
-	-tokenizer tokenizer
-		Tokenizer implementation. WhitespaceTokenizer is used if not specified.
 	-featureGenerators fg
 		Comma separated feature generator classes. Bag of words is used if not specified.
+	-tokenizer tokenizer
+		Tokenizer implementation. WhitespaceTokenizer is used if not specified.
 	-params paramsFile
 		training parameters file.
 	-lang language
@@ -113,13 +113,13 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp DoccatEvaluator[.leipzig] [-misclassified true|false] -model model [-reportOutputFile 
+Usage: opennlp DoccatEvaluator[.leipzig] -model model [-misclassified true|false] [-reportOutputFile 
         outputFile] -data sampleData [-encoding charsetName] 
 Arguments description:
-	-misclassified true|false
-		if true will print false negatives and false positives.
 	-model model
 		the model file to be evaluated.
+	-misclassified true|false
+		if true will print false negatives and false positives.
 	-reportOutputFile outputFile
 		the path of the fine-grained report file.
 	-data sampleData
@@ -160,20 +160,20 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp DoccatCrossValidator[.leipzig] [-folds num] [-misclassified true|false] [-factory factoryName] 
-        [-tokenizer tokenizer] [-featureGenerators fg] [-params paramsFile] -lang language [-reportOutputFile 
+Usage: opennlp DoccatCrossValidator[.leipzig] [-misclassified true|false] [-folds num] [-factory factoryName] 
+        [-featureGenerators fg] [-tokenizer tokenizer] [-params paramsFile] -lang language [-reportOutputFile 
         outputFile] -data sampleData [-encoding charsetName] 
 Arguments description:
-	-folds num
-		number of folds, default is 10.
 	-misclassified true|false
 		if true will print false negatives and false positives.
+	-folds num
+		number of folds, default is 10.
 	-factory factoryName
 		A sub-class of DoccatFactory where to get implementation and resources.
-	-tokenizer tokenizer
-		Tokenizer implementation. WhitespaceTokenizer is used if not specified.
 	-featureGenerators fg
 		Comma separated feature generator classes. Bag of words is used if not specified.
+	-tokenizer tokenizer
+		Tokenizer implementation. WhitespaceTokenizer is used if not specified.
 	-params paramsFile
 		training parameters file.
 	-lang language
@@ -351,16 +351,16 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>splitHyphenatedTokens</entry>
 <entry>split</entry>
 <entry>Yes</entry>
 <entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -463,13 +463,13 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenizerMEEvaluator[.ad|.pos|.conllx|.namefinder|.parse] [-misclassified true|false] -model 
-        model -data sampleData [-encoding charsetName] 
+Usage: opennlp TokenizerMEEvaluator[.ad|.pos|.conllx|.namefinder|.parse] -model model [-misclassified 
+        true|false] -data sampleData [-encoding charsetName] 
 Arguments description:
-	-misclassified true|false
-		if true will print false negatives and false positives.
 	-model model
 		the model file to be evaluated.
+	-misclassified true|false
+		if true will print false negatives and false positives.
 	-data sampleData
 		data to be used, usually a file name.
 	-encoding charsetName
@@ -490,16 +490,16 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>splitHyphenatedTokens</entry>
 <entry>split</entry>
 <entry>Yes</entry>
 <entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -602,14 +602,14 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenizerCrossValidator[.ad|.pos|.conllx|.namefinder|.parse] [-folds num] [-misclassified 
-        true|false] [-factory factoryName] [-abbDict path] [-alphaNumOpt isAlphaNumOpt] [-params paramsFile] 
+Usage: opennlp TokenizerCrossValidator[.ad|.pos|.conllx|.namefinder|.parse] [-misclassified true|false] 
+        [-folds num] [-factory factoryName] [-abbDict path] [-alphaNumOpt isAlphaNumOpt] [-params paramsFile] 
         -lang language -data sampleData [-encoding charsetName] 
 Arguments description:
-	-folds num
-		number of folds, default is 10.
 	-misclassified true|false
 		if true will print false negatives and false positives.
+	-folds num
+		number of folds, default is 10.
 	-factory factoryName
 		A sub-class of TokenizerFactory where to get implementation and resources.
 	-abbDict path
@@ -640,16 +640,16 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>splitHyphenatedTokens</entry>
 <entry>split</entry>
 <entry>Yes</entry>
 <entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -769,16 +769,16 @@ Usage: opennlp TokenizerConverter help|ad|pos|conllx|namefinder|parse [help|opti
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>splitHyphenatedTokens</entry>
 <entry>split</entry>
 <entry>Yes</entry>
 <entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -916,15 +916,15 @@ Usage: opennlp SentenceDetector model < sentences
 <screen>
 <![CDATA[
 Usage: opennlp SentenceDetectorTrainer[.ad|.pos|.conllx|.namefinder|.parse|.moses|.letsmt] [-factory 
-        factoryName] [-eosChars string] [-abbDict path] [-params paramsFile] -lang language -model modelFile 
+        factoryName] [-abbDict path] [-eosChars string] [-params paramsFile] -lang language -model modelFile 
         -data sampleData [-encoding charsetName] 
 Arguments description:
 	-factory factoryName
 		A sub-class of SentenceDetectorFactory where to get implementation and resources.
-	-eosChars string
-		EOS characters.
 	-abbDict path
 		abbreviation dictionary in XML format.
+	-eosChars string
+		EOS characters.
 	-params paramsFile
 		training parameters file.
 	-lang language
@@ -951,16 +951,16 @@ Arguments description:
 <entry>Encoding for reading and writing text.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>includeTitles</entry>
 <entry>includeTitles</entry>
 <entry>Yes</entry>
 <entry>If true will include sentences marked as headlines.</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -1089,13 +1089,13 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp SentenceDetectorEvaluator[.ad|.pos|.conllx|.namefinder|.parse|.moses|.letsmt] [-misclassified 
-        true|false] -model model -data sampleData [-encoding charsetName] 
+Usage: opennlp SentenceDetectorEvaluator[.ad|.pos|.conllx|.namefinder|.parse|.moses|.letsmt] -model model 
+        [-misclassified true|false] -data sampleData [-encoding charsetName] 
 Arguments description:
-	-misclassified true|false
-		if true will print false negatives and false positives.
 	-model model
 		the model file to be evaluated.
+	-misclassified true|false
+		if true will print false negatives and false positives.
 	-data sampleData
 		data to be used, usually a file name.
 	-encoding charsetName
@@ -1116,16 +1116,16 @@ Arguments description:
 <entry>Encoding for reading and writing text.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>includeTitles</entry>
 <entry>includeTitles</entry>
 <entry>Yes</entry>
 <entry>If true will include sentences marked as headlines.</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -1255,23 +1255,23 @@ Arguments description:
 <screen>
 <![CDATA[
 Usage: opennlp SentenceDetectorCrossValidator[.ad|.pos|.conllx|.namefinder|.parse|.moses|.letsmt] [-factory 
-        factoryName] [-eosChars string] [-abbDict path] [-params paramsFile] -lang language [-folds num] 
-        [-misclassified true|false] -data sampleData [-encoding charsetName] 
+        factoryName] [-abbDict path] [-eosChars string] [-params paramsFile] -lang language [-misclassified 
+        true|false] [-folds num] -data sampleData [-encoding charsetName] 
 Arguments description:
 	-factory factoryName
 		A sub-class of SentenceDetectorFactory where to get implementation and resources.
-	-eosChars string
-		EOS characters.
 	-abbDict path
 		abbreviation dictionary in XML format.
+	-eosChars string
+		EOS characters.
 	-params paramsFile
 		training parameters file.
 	-lang language
 		language which is being processed.
-	-folds num
-		number of folds, default is 10.
 	-misclassified true|false
 		if true will print false negatives and false positives.
+	-folds num
+		number of folds, default is 10.
 	-data sampleData
 		data to be used, usually a file name.
 	-encoding charsetName
@@ -1292,16 +1292,16 @@ Arguments description:
 <entry>Encoding for reading and writing text.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>includeTitles</entry>
 <entry>includeTitles</entry>
 <entry>Yes</entry>
 <entry>If true will include sentences marked as headlines.</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -1447,16 +1447,16 @@ Usage: opennlp SentenceDetectorConverter help|ad|pos|conllx|namefinder|parse|mos
 <entry>Encoding for reading and writing text.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>includeTitles</entry>
 <entry>includeTitles</entry>
 <entry>Yes</entry>
 <entry>If true will include sentences marked as headlines.</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -1642,14 +1642,14 @@ Arguments description:
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
-<entry>lang</entry>
-<entry>it</entry>
+<entry>types</entry>
+<entry>per,loc,org,gpe</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,gpe</entry>
+<entry>lang</entry>
+<entry>it</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -1673,16 +1673,16 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>splitHyphenatedTokens</entry>
 <entry>split</entry>
 <entry>Yes</entry>
 <entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -1692,14 +1692,14 @@ Arguments description:
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll03</entry>
-<entry>lang</entry>
-<entry>en|de</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>eng|deu</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -1736,14 +1736,14 @@ Arguments description:
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll02</entry>
-<entry>lang</entry>
-<entry>es|nl</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>es|nl</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -1836,17 +1836,17 @@ Arguments description:
 <screen>
 <![CDATA[
 Usage: opennlp TokenNameFinderEvaluator[.evalita|.ad|.conll03|.bionlp2004|.conll02|.muc6|.ontonotes|.brat] 
-        [-nameTypes types] [-misclassified true|false] -model model [-detailedF true|false] 
+        [-nameTypes types] -model model [-misclassified true|false] [-detailedF true|false] 
         [-reportOutputFile outputFile] -data sampleData [-encoding charsetName] 
 Arguments description:
 	-nameTypes types
 		name types to use for evaluation
-	-misclassified true|false
-		if true will print false negatives and false positives.
 	-model model
 		the model file to be evaluated.
+	-misclassified true|false
+		if true will print false negatives and false positives.
 	-detailedF true|false
-		if true will print detailed FMeasure results.
+		if true (default) will print detailed FMeasure results.
 	-reportOutputFile outputFile
 		the path of the fine-grained report file.
 	-data sampleData
@@ -1863,14 +1863,14 @@ Arguments description:
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
-<entry>lang</entry>
-<entry>it</entry>
+<entry>types</entry>
+<entry>per,loc,org,gpe</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,gpe</entry>
+<entry>lang</entry>
+<entry>it</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -1894,16 +1894,16 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>splitHyphenatedTokens</entry>
 <entry>split</entry>
 <entry>Yes</entry>
 <entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -1913,14 +1913,14 @@ Arguments description:
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll03</entry>
-<entry>lang</entry>
-<entry>en|de</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>eng|deu</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -1957,14 +1957,14 @@ Arguments description:
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll02</entry>
-<entry>lang</entry>
-<entry>es|nl</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>es|nl</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2059,8 +2059,8 @@ Arguments description:
 Usage: opennlp 
         TokenNameFinderCrossValidator[.evalita|.ad|.conll03|.bionlp2004|.conll02|.muc6|.ontonotes|.brat] 
         [-factory factoryName] [-resources resourcesDir] [-type modelType] [-featuregen featuregenFile] 
-        [-nameTypes types] [-sequenceCodec codec] [-params paramsFile] -lang language [-folds num] 
-        [-misclassified true|false] [-detailedF true|false] [-reportOutputFile outputFile] -data sampleData 
+        [-nameTypes types] [-sequenceCodec codec] [-params paramsFile] -lang language [-misclassified 
+        true|false] [-folds num] [-detailedF true|false] [-reportOutputFile outputFile] -data sampleData 
         [-encoding charsetName] 
 Arguments description:
 	-factory factoryName
@@ -2079,12 +2079,12 @@ Arguments description:
 		training parameters file.
 	-lang language
 		language which is being processed.
-	-folds num
-		number of folds, default is 10.
 	-misclassified true|false
 		if true will print false negatives and false positives.
+	-folds num
+		number of folds, default is 10.
 	-detailedF true|false
-		if true will print detailed FMeasure results.
+		if true (default) will print detailed FMeasure results.
 	-reportOutputFile outputFile
 		the path of the fine-grained report file.
 	-data sampleData
@@ -2101,14 +2101,14 @@ Arguments description:
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
-<entry>lang</entry>
-<entry>it</entry>
+<entry>types</entry>
+<entry>per,loc,org,gpe</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,gpe</entry>
+<entry>lang</entry>
+<entry>it</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2132,16 +2132,16 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>splitHyphenatedTokens</entry>
 <entry>split</entry>
 <entry>Yes</entry>
 <entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -2151,14 +2151,14 @@ Arguments description:
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll03</entry>
-<entry>lang</entry>
-<entry>en|de</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>eng|deu</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2195,14 +2195,14 @@ Arguments description:
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll02</entry>
-<entry>lang</entry>
-<entry>es|nl</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>es|nl</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2305,14 +2305,14 @@ Usage: opennlp TokenNameFinderConverter help|evalita|ad|conll03|bionlp2004|conll
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
-<entry>lang</entry>
-<entry>it</entry>
+<entry>types</entry>
+<entry>per,loc,org,gpe</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,gpe</entry>
+<entry>lang</entry>
+<entry>it</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2336,16 +2336,16 @@ Usage: opennlp TokenNameFinderConverter help|evalita|ad|conll03|bionlp2004|conll
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>splitHyphenatedTokens</entry>
 <entry>split</entry>
 <entry>Yes</entry>
 <entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -2355,14 +2355,14 @@ Usage: opennlp TokenNameFinderConverter help|evalita|ad|conll03|bionlp2004|conll
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll03</entry>
-<entry>lang</entry>
-<entry>en|de</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>eng|deu</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2399,14 +2399,14 @@ Usage: opennlp TokenNameFinderConverter help|evalita|ad|conll03|bionlp2004|conll
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll02</entry>
-<entry>lang</entry>
-<entry>es|nl</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>es|nl</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2498,13 +2498,13 @@ Usage: opennlp TokenNameFinderConverter help|evalita|ad|conll03|bionlp2004|conll
 
 <screen>
 <![CDATA[
-Usage: opennlp CensusDictionaryCreator [-encoding charsetName] [-lang code] -dict dict -censusData censusDict
+Usage: opennlp CensusDictionaryCreator [-encoding charsetName] [-lang code] -censusData censusDict -dict dict
 
 Arguments description:
 	-encoding charsetName
 	-lang code
-	-dict dict
 	-censusData censusDict
+	-dict dict
 
 ]]>
 </screen> 
@@ -2538,19 +2538,18 @@ Usage: opennlp POSTagger model < sentences
 
 <screen>
 <![CDATA[
-Usage: opennlp POSTaggerTrainer[.ad|.conllx|.parse|.ontonotes] [-factory factoryName] [-type 
-        maxent|perceptron|perceptron_sequence] [-dict dictionaryPath] [-ngram cutoff] [-tagDictCutoff 
-        tagDictCutoff] [-params paramsFile] -lang language -model modelFile -data sampleData [-encoding 
-        charsetName] 
+Usage: opennlp POSTaggerTrainer[.ad|.conllx|.parse|.ontonotes|.conllu] [-factory factoryName] [-resources 
+        resourcesDir] [-featuregen featuregenFile] [-dict dictionaryPath] [-tagDictCutoff tagDictCutoff] 
+        [-params paramsFile] -lang language -model modelFile -data sampleData [-encoding charsetName] 
 Arguments description:
 	-factory factoryName
 		A sub-class of POSTaggerFactory where to get implementation and resources.
-	-type maxent|perceptron|perceptron_sequence
-		The type of the token name finder model. One of maxent|perceptron|perceptron_sequence.
+	-resources resourcesDir
+		The resources directory
+	-featuregen featuregenFile
+		The feature generator descriptor file
 	-dict dictionaryPath
 		The XML tag dictionary file
-	-ngram cutoff
-		NGram cutoff. If not specified will not create ngram dictionary.
 	-tagDictCutoff tagDictCutoff
 		TagDictionary cutoff. If specified will create/expand a mutable TagDictionary
 	-params paramsFile
@@ -2579,12 +2578,6 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>expandME</entry>
 <entry>expandME</entry>
 <entry>Yes</entry>
@@ -2595,6 +2588,12 @@ Arguments description:
 <entry>includeFeatures</entry>
 <entry>Yes</entry>
 <entry>Combine POS Tags with word features, like number and gender.</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -2635,6 +2634,25 @@ Arguments description:
 <entry>No</entry>
 <entry></entry>
 </row>
+<row>
+<entry morerows='2' valign='middle'>conllu</entry>
+<entry>tagset</entry>
+<entry>tagset</entry>
+<entry>Yes</entry>
+<entry>U|x u for unified tags and x for language-specific part-of-speech tags</entry>
+</row>
+<row>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
 </tbody>
 </tgroup></informaltable>
 
@@ -2648,13 +2666,13 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp POSTaggerEvaluator[.ad|.conllx|.parse|.ontonotes] [-misclassified true|false] -model model 
-        [-reportOutputFile outputFile] -data sampleData [-encoding charsetName] 
+Usage: opennlp POSTaggerEvaluator[.ad|.conllx|.parse|.ontonotes|.conllu] -model model [-misclassified 
+        true|false] [-reportOutputFile outputFile] -data sampleData [-encoding charsetName] 
 Arguments description:
-	-misclassified true|false
-		if true will print false negatives and false positives.
 	-model model
 		the model file to be evaluated.
+	-misclassified true|false
+		if true will print false negatives and false positives.
 	-reportOutputFile outputFile
 		the path of the fine-grained report file.
 	-data sampleData
@@ -2677,12 +2695,6 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>expandME</entry>
 <entry>expandME</entry>
 <entry>Yes</entry>
@@ -2693,6 +2705,12 @@ Arguments description:
 <entry>includeFeatures</entry>
 <entry>Yes</entry>
 <entry>Combine POS Tags with word features, like number and gender.</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -2733,6 +2751,25 @@ Arguments description:
 <entry>No</entry>
 <entry></entry>
 </row>
+<row>
+<entry morerows='2' valign='middle'>conllu</entry>
+<entry>tagset</entry>
+<entry>tagset</entry>
+<entry>Yes</entry>
+<entry>U|x u for unified tags and x for language-specific part-of-speech tags</entry>
+</row>
+<row>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
 </tbody>
 </tgroup></informaltable>
 
@@ -2746,23 +2783,23 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp POSTaggerCrossValidator[.ad|.conllx|.parse|.ontonotes] [-folds num] [-misclassified 
-        true|false] [-factory factoryName] [-type maxent|perceptron|perceptron_sequence] [-dict 
-        dictionaryPath] [-ngram cutoff] [-tagDictCutoff tagDictCutoff] [-params paramsFile] -lang language 
-        [-reportOutputFile outputFile] -data sampleData [-encoding charsetName] 
+Usage: opennlp POSTaggerCrossValidator[.ad|.conllx|.parse|.ontonotes|.conllu] [-misclassified true|false] 
+        [-folds num] [-factory factoryName] [-resources resourcesDir] [-featuregen featuregenFile] [-dict 
+        dictionaryPath] [-tagDictCutoff tagDictCutoff] [-params paramsFile] -lang language [-reportOutputFile 
+        outputFile] -data sampleData [-encoding charsetName] 
 Arguments description:
-	-folds num
-		number of folds, default is 10.
 	-misclassified true|false
 		if true will print false negatives and false positives.
+	-folds num
+		number of folds, default is 10.
 	-factory factoryName
 		A sub-class of POSTaggerFactory where to get implementation and resources.
-	-type maxent|perceptron|perceptron_sequence
-		The type of the token name finder model. One of maxent|perceptron|perceptron_sequence.
+	-resources resourcesDir
+		The resources directory
+	-featuregen featuregenFile
+		The feature generator descriptor file
 	-dict dictionaryPath
 		The XML tag dictionary file
-	-ngram cutoff
-		NGram cutoff. If not specified will not create ngram dictionary.
 	-tagDictCutoff tagDictCutoff
 		TagDictionary cutoff. If specified will create/expand a mutable TagDictionary
 	-params paramsFile
@@ -2791,12 +2828,6 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>expandME</entry>
 <entry>expandME</entry>
 <entry>Yes</entry>
@@ -2807,6 +2838,12 @@ Arguments description:
 <entry>includeFeatures</entry>
 <entry>Yes</entry>
 <entry>Combine POS Tags with word features, like number and gender.</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -2847,6 +2884,25 @@ Arguments description:
 <entry>No</entry>
 <entry></entry>
 </row>
+<row>
+<entry morerows='2' valign='middle'>conllu</entry>
+<entry>tagset</entry>
+<entry>tagset</entry>
+<entry>Yes</entry>
+<entry>U|x u for unified tags and x for language-specific part-of-speech tags</entry>
+</row>
+<row>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
 </tbody>
 </tgroup></informaltable>
 
@@ -2856,11 +2912,11 @@ Arguments description:
 
 <title>POSTaggerConverter</title>
 
-<para>Converts foreign data formats (ad,conllx,parse,ontonotes) to native OpenNLP format</para>
+<para>Converts foreign data formats (ad,conllx,parse,ontonotes,conllu) to native OpenNLP format</para>
 
 <screen>
 <![CDATA[
-Usage: opennlp POSTaggerConverter help|ad|conllx|parse|ontonotes [help|options...]
+Usage: opennlp POSTaggerConverter help|ad|conllx|parse|ontonotes|conllu [help|options...]
 
 ]]>
 </screen> 
@@ -2877,12 +2933,6 @@ Usage: opennlp POSTaggerConverter help|ad|conllx|parse|ontonotes [help|options..
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>language</entry>
-<entry>No</entry>
-<entry>Language which is being processed.</entry>
-</row>
-<row>
 <entry>expandME</entry>
 <entry>expandME</entry>
 <entry>Yes</entry>
@@ -2893,6 +2943,12 @@ Usage: opennlp POSTaggerConverter help|ad|conllx|parse|ontonotes [help|options..
 <entry>includeFeatures</entry>
 <entry>Yes</entry>
 <entry>Combine POS Tags with word features, like number and gender.</entry>
+</row>
+<row>
+<entry>lang</entry>
+<entry>language</entry>
+<entry>No</entry>
+<entry>Language which is being processed.</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -2932,6 +2988,25 @@ Usage: opennlp POSTaggerConverter help|ad|conllx|parse|ontonotes [help|options..
 <entry>OntoNotes 4.0 corpus directory</entry>
 <entry>No</entry>
 <entry></entry>
+</row>
+<row>
+<entry morerows='2' valign='middle'>conllu</entry>
+<entry>tagset</entry>
+<entry>tagset</entry>
+<entry>Yes</entry>
+<entry>U|x u for unified tags and x for language-specific part-of-speech tags</entry>
+</row>
+<row>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 </tbody>
 </tgroup></informaltable>
@@ -2966,7 +3041,7 @@ Usage: opennlp LemmatizerME model < sentences
 
 <screen>
 <![CDATA[
-Usage: opennlp LemmatizerTrainerME [-factory factoryName] [-params paramsFile] -lang language -model 
+Usage: opennlp LemmatizerTrainerME[.conllu] [-factory factoryName] [-params paramsFile] -lang language -model 
         modelFile -data sampleData [-encoding charsetName] 
 Arguments description:
 	-factory factoryName
@@ -2989,6 +3064,25 @@ Arguments description:
 <informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
 <thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
 <tbody>
+<row>
+<entry morerows='2' valign='middle'>conllu</entry>
+<entry>tagset</entry>
+<entry>tagset</entry>
+<entry>Yes</entry>
+<entry>U|x u for unified tags and x for language-specific part-of-speech tags</entry>
+</row>
+<row>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
 </tbody>
 </tgroup></informaltable>
 
@@ -3002,13 +3096,13 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp LemmatizerEvaluator [-misclassified true|false] -model model [-reportOutputFile outputFile] 
-        -data sampleData [-encoding charsetName] 
+Usage: opennlp LemmatizerEvaluator[.conllu] -model model [-misclassified true|false] [-reportOutputFile 
+        outputFile] -data sampleData [-encoding charsetName] 
 Arguments description:
-	-misclassified true|false
-		if true will print false negatives and false positives.
 	-model model
 		the model file to be evaluated.
+	-misclassified true|false
+		if true will print false negatives and false positives.
 	-reportOutputFile outputFile
 		the path of the fine-grained report file.
 	-data sampleData
@@ -3023,6 +3117,25 @@ Arguments description:
 <informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
 <thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
 <tbody>
+<row>
+<entry morerows='2' valign='middle'>conllu</entry>
+<entry>tagset</entry>
+<entry>tagset</entry>
+<entry>Yes</entry>
+<entry>U|x u for unified tags and x for language-specific part-of-speech tags</entry>
+</row>
+<row>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
 </tbody>
 </tgroup></informaltable>
 
@@ -3123,15 +3236,15 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp ChunkerEvaluator[.ad] [-misclassified true|false] -model model [-detailedF true|false] -data 
+Usage: opennlp ChunkerEvaluator[.ad] -model model [-misclassified true|false] [-detailedF true|false] -data 
         sampleData [-encoding charsetName] 
 Arguments description:
-	-misclassified true|false
-		if true will print false negatives and false positives.
 	-model model
 		the model file to be evaluated.
+	-misclassified true|false
+		if true will print false negatives and false positives.
 	-detailedF true|false
-		if true will print detailed FMeasure results.
+		if true (default) will print detailed FMeasure results.
 	-data sampleData
 		data to be used, usually a file name.
 	-encoding charsetName
@@ -3188,8 +3301,9 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp ChunkerCrossValidator[.ad] [-factory factoryName] [-params paramsFile] -lang language [-folds 
-        num] [-misclassified true|false] [-detailedF true|false] -data sampleData [-encoding charsetName] 
+Usage: opennlp ChunkerCrossValidator[.ad] [-factory factoryName] [-params paramsFile] -lang language 
+        [-misclassified true|false] [-folds num] [-detailedF true|false] -data sampleData [-encoding 
+        charsetName] 
 Arguments description:
 	-factory factoryName
 		A sub-class of ChunkerFactory where to get implementation and resources.
@@ -3197,12 +3311,12 @@ Arguments description:
 		training parameters file.
 	-lang language
 		language which is being processed.
-	-folds num
-		number of folds, default is 10.
 	-misclassified true|false
 		if true will print false negatives and false positives.
+	-folds num
+		number of folds, default is 10.
 	-detailedF true|false
-		if true will print detailed FMeasure results.
+		if true (default) will print detailed FMeasure results.
 	-data sampleData
 		data to be used, usually a file name.
 	-encoding charsetName
@@ -3399,13 +3513,13 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp ParserEvaluator[.ontonotes|.frenchtreebank] [-misclassified true|false] -model model -data 
+Usage: opennlp ParserEvaluator[.ontonotes|.frenchtreebank] -model model [-misclassified true|false] -data 
         sampleData [-encoding charsetName] 
 Arguments description:
-	-misclassified true|false
-		if true will print false negatives and false positives.
 	-model model
 		the model file to be evaluated.
+	-misclassified true|false
+		if true will print false negatives and false positives.
 	-data sampleData
 		data to be used, usually a file name.
 	-encoding charsetName
@@ -3633,15 +3747,15 @@ Usage: opennlp EntityLinker model < sentences
 
 <title>Languagemodel</title>
 
-<section id='tools.cli.languagemodel.LanguageModel'>
+<section id='tools.cli.languagemodel.NGramLanguageModel'>
 
-<title>LanguageModel</title>
+<title>NGramLanguageModel</title>
 
-<para>Gives the probability of a sequence of tokens in a language model</para>
+<para>Gives the probability and most probable next token(s) of a sequence of tokens in a language model</para>
 
 <screen>
 <![CDATA[
-Usage: opennlp LanguageModel model
+Usage: opennlp NGramLanguageModel model
 
 ]]>
 </screen> 
