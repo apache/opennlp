@@ -114,7 +114,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
     final List<String> keys = this.getDictKeys(word, postag);
     // lookup lemma as value of the map
     final List<String> keyValues = this.dictMap.get(keys);
-    if (!keyValues.isEmpty()) {
+    if ( keyValues != null && !keyValues.isEmpty()) {
       lemma = keyValues.get(0);
     } else {
       lemma = "O";
