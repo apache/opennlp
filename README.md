@@ -26,29 +26,54 @@ Welcome to Apache OpenNLP!
 [![Twitter Follow](https://img.shields.io/twitter/follow/ApacheOpennlp.svg?style=social)](https://twitter.com/ApacheOpenNLP)
 
 The Apache OpenNLP library is a machine learning based toolkit for the processing of natural language text.
-It supports the most common NLP tasks, such as tokenization, sentence segmentation,
-part-of-speech tagging, named entity extraction, chunking, parsing, and coreference resolution.
+
+This toolkit is written completly in Java and provides support for common NLP tasks, such as tokenization, sentence segmentation, part-of-speech tagging, named entity extraction, chunking, parsing, coreference resolution and more!
+
 These tasks are usually required to build more advanced text processing services.
-OpenNLP also includes maximum entropy and perceptron based machine learning.
-      
-The goal of the OpenNLP project is to create a mature toolkit for the above mentioned tasks.
+
+The goal of the OpenNLP project is to be a mature toolkit for the abovementioned tasks.
+
 An additional goal is to provide a large number of pre-built models for a variety of languages, as
 well as the annotated text resources that those models are derived from.
 
-For additional information about OpenNLP, visit the [OpenNLP Home Page](http://opennlp.apache.org/)
+Currently, OpenNLP also includes common classifiers such as Maximum Entropy, Perceptron and Naive Bayes.
 
-Documentation for OpenNLP, including JavaDocs, code usage and command line interface are available [here](http://opennlp.apache.org/documentation.html)
+OpenNLP can be used both programmatically through its Java API or from a terminal through its CLI.
 
-#### Using OpenNLP as a Library
+## Useful Links
+       
+For additional information, visit the [OpenNLP Home Page](http://opennlp.apache.org/)
 
-Running any application that uses OpenNLP will require installing a binary or source version and setting the environment.
-To compile from source:
+You can use OpenNLP with any language, demo models are provided [here](http://opennlp.sourceforge.net/models-1.5/).
 
-* `mvn -DskipTests clean install`
-* To run tests do `mvn test`
+The models are fully compatible with the latest release, they can be used for testing or getting started. 
 
-To use maven, add the appropriate setting to your pom.xml or build.sbt following the template below.
+Please train your own models for all other use cases.
 
+Documentation, including JavaDocs, code usage and command-line interface examples are available [here](http://opennlp.apache.org/docs/)
+
+You can also follow our [mailing lists](http://opennlp.apache.org/mailing-lists.html) for news and updates.
+
+## Overview
+
+Currently the library has different packages:
+
+`opennlp-tools` : The core toolkit.
+
+`opennlp-uima` : A set of [Apache UIMA](https://uima.apache.org) annotators.
+
+`opennlp-brat-annotator` : A set of annotators for [BRAT](http://brat.nlplab.org/)
+
+`opennlp-morfologik-addon` : An addon for Morfologik
+
+`opennlp-sandbox`: Other projects in progress are found in the [sandbox](https://github.com/apache/opennlp-sandbox)
+
+
+## Getting Started
+
+You can import the core toolkit directly from Maven, SBT or Gradle:
+
+#### Maven
 ```
 <dependency>
     <groupId>org.apache.opennlp</groupId>
@@ -57,3 +82,31 @@ To use maven, add the appropriate setting to your pom.xml or build.sbt following
 </dependency>
 ```
 
+#### SBT
+```
+libraryDependencies += "org.apache.opennlp" % "opennlp-tools" % "${opennlp.version}"
+```
+
+#### Gradle
+```
+compile group: "org.apache.opennlp", name: "opennlp-tools", version: "$opennlp.version"
+```
+
+
+For more details please check our [documentation](http://opennlp.apache.org/docs/)
+
+## Building OpenNLP
+
+At least JDK 8 and Maven 3.3.9 are required to build the library.
+
+After cloning the repository go into the destination directory and run:
+
+```
+mvn install
+```
+
+## Contributing
+
+The Apache OpenNLP project is developed by volunteers and is always looking for new contributors to work on all parts of the project. Every contribution is welcome and needed to make it better. A contribution can be anything from a small documentation typo fix to a new component.
+
+If you would like to get involved please follow the instructions [here](https://github.com/apache/opennlp/blob/master/.github/CONTRIBUTING.md)
