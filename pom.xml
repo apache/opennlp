@@ -434,7 +434,7 @@
 						<configuration>
 							<includes>
 								<include>**/*Test.java</include>
-								<include>**/SourceForgeModelEval.java</include>
+								<include>**/*Eval.java</include>
 							</includes>
 						</configuration>
 					</plugin>
