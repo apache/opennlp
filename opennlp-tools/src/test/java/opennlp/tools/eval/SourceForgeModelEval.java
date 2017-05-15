@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -339,14 +340,16 @@ public class SourceForgeModelEval {
       while ((line = lines.read()) != null) {
         Parse[] parse = ParserTool.parseLine(String.join(" ", line.getText()), parser, 1);
         if (parse.length > 0) {
-          digest.update(parse[0].toString().getBytes("UTF-8"));
+          StringBuffer sb = new StringBuffer();
+          parse[0].show(sb);
+          digest.update(sb.toString().getBytes(StandardCharsets.UTF_8));
         } else {
-          digest.update("empty".getBytes("UTF-8"));
+          digest.update("empty".getBytes(StandardCharsets.UTF_8));
         }
       }
     }
 
-    Assert.assertEquals(new BigInteger("13162568910062822351942983467905626940"),
+    Assert.assertEquals(new BigInteger("312218841713337505306598301082074515847"),
         new BigInteger(1, digest.digest()));
   }
 }
