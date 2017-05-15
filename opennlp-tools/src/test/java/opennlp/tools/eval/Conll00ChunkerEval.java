@@ -19,6 +19,7 @@ package opennlp.tools.eval;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,7 +50,7 @@ public class Conll00ChunkerEval {
 
     ObjectStream<ChunkSample> samples = new ChunkSampleStream(
         new PlainTextByLineStream(
-            new MarkableFileInputStreamFactory(trainFile), "UTF-8"));
+            new MarkableFileInputStreamFactory(trainFile), StandardCharsets.UTF_8));
 
     return ChunkerME.train("en", samples, params, new ChunkerFactory());
   }
@@ -58,7 +59,7 @@ public class Conll00ChunkerEval {
                            double expectedFMeasure) throws IOException {
 
     ObjectStream<ChunkSample> samples = new ChunkSampleStream(
-        new PlainTextByLineStream(new MarkableFileInputStreamFactory(testData), "UTF-8"));
+        new PlainTextByLineStream(new MarkableFileInputStreamFactory(testData), StandardCharsets.UTF_8));
 
     ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model));
     evaluator.evaluate(samples);

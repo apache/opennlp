@@ -18,6 +18,15 @@
 package opennlp.tools.eval;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+import org.junit.Assert;
 
 import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
@@ -26,6 +35,8 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
 public class EvalUtil {
+
+  static final double ACCURACY_DELTA = 0.0001d;
 
   static TrainingParameters createPerceptronParams() {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
@@ -53,5 +64,27 @@ public class EvalUtil {
 
   public static File getOpennlpDataDir() {
     return new File(System.getProperty("OPENNLP_DATA_DIR"));
+  }
+
+  static MessageDigest createDigest() {
+    try {
+      return MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  static void verifyFileChecksum(Path file, BigInteger checksum) throws IOException {
+    MessageDigest digest = createDigest();
+
+    try (InputStream in = Files.newInputStream(file)) {
+      byte[] buf = new byte[65536];
+      int len;
+      while ((len = in.read(buf)) > 0) {
+        digest.update(buf, 0, len);
+      }
+    }
+
+    Assert.assertEquals(checksum, new BigInteger(1, digest.digest()));
   }
 }

@@ -17,7 +17,7 @@
 
 package opennlp.tools.formats.conllu;
 
-enum ConlluTagset {
+public enum ConlluTagset {
   U,
   X
 }

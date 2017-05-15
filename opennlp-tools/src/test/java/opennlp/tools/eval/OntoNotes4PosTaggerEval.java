@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -70,12 +69,7 @@ public class OntoNotes4PosTaggerEval {
 
   @BeforeClass
   public static void verifyTrainingData() throws IOException {
-    MessageDigest digest;
-    try {
-      digest = MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException(e);
-    }
+    MessageDigest digest = EvalUtil.createDigest();
 
     try (ObjectStream<POSSample> samples = createPOSSampleStream()) {
       POSSample sample;

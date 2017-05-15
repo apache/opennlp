@@ -29,7 +29,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -89,12 +88,7 @@ public class OntoNotes4NameFinderEval {
 
   @BeforeClass
   public static void verifyTrainingData() throws IOException {
-    MessageDigest digest;
-    try {
-      digest = MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException(e);
-    }
+    MessageDigest digest = EvalUtil.createDigest();
 
     try (ObjectStream<NameSample> samples = createNameSampleStream()) {
       NameSample sample;

@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -73,12 +72,7 @@ public class OntoNotes4ParserEval {
 
   @BeforeClass
   public static void verifyTrainingData() throws IOException {
-    MessageDigest digest;
-    try {
-      digest = MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException(e);
-    }
+    MessageDigest digest = EvalUtil.createDigest();
 
     try (ObjectStream<Parse> samples = createParseSampleStream()) {
       Parse sample;

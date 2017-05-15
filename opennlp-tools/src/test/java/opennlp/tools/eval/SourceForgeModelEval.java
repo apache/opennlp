@@ -20,10 +20,8 @@ package opennlp.tools.eval;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -83,25 +81,17 @@ import opennlp.tools.util.Span;
  */
 public class SourceForgeModelEval {
 
-  private static MessageDigest createDigest() {
-    try {
-      return MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
   @BeforeClass
   public static void ensureTestDataIsCorrect() throws IOException {
-    MessageDigest digest = createDigest();
+    MessageDigest digest = EvalUtil.createDigest();
 
     try (ObjectStream<String> lines = new PlainTextByLineStream(
         new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
-            "leipzig/eng_news_2010_300K-sentences.txt")), Charset.forName("UTF-8"))) {
+            "leipzig/eng_news_2010_300K-sentences.txt")), StandardCharsets.UTF_8)) {
 
       String line;
       while ((line = lines.read()) != null) {
-        digest.update(line.getBytes("UTF-8"));
+        digest.update(line.getBytes(StandardCharsets.UTF_8));
       }
 
       Assert.assertEquals(new BigInteger("248567841356936801447294643695012852392"),
@@ -115,7 +105,7 @@ public class SourceForgeModelEval {
     SentenceModel model = new SentenceModel(
         new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-sent.bin"));
 
-    MessageDigest digest = createDigest();
+    MessageDigest digest = EvalUtil.createDigest();
 
     SentenceDetector sentenceDetector = new SentenceDetectorME(model);
 
@@ -134,7 +124,7 @@ public class SourceForgeModelEval {
     String[] sentences = sentenceDetector.sentDetect(text.toString());
 
     for (String sentence : sentences) {
-      digest.update(sentence.getBytes("UTF-8"));
+      digest.update(sentence.getBytes(StandardCharsets.UTF_8));
     }
 
     Assert.assertEquals(new BigInteger("228544068397077998410949364710969159291"),
@@ -151,7 +141,7 @@ public class SourceForgeModelEval {
     TokenizerModel model = new TokenizerModel(
         new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-token.bin"));
 
-    MessageDigest digest = createDigest();
+    MessageDigest digest = EvalUtil.createDigest();
 
     Tokenizer tokenizer = new TokenizerME(model);
 
@@ -164,7 +154,7 @@ public class SourceForgeModelEval {
       while ((line = lines.read()) != null) {
         String[] tokens = tokenizer.tokenize(String.join(" ", line.getText()));
         for (String token : tokens) {
-          digest.update(token.getBytes("UTF-8"));
+          digest.update(token.getBytes(StandardCharsets.UTF_8));
         }
       }
     }
@@ -183,7 +173,7 @@ public class SourceForgeModelEval {
   private void evalNameFinder(TokenNameFinderModel model, BigInteger expectedHash)
       throws IOException {
 
-    MessageDigest digest = createDigest();
+    MessageDigest digest = EvalUtil.createDigest();
 
     TokenNameFinder nameFinder = new NameFinderME(model);
 
@@ -193,7 +183,8 @@ public class SourceForgeModelEval {
       while ((line = lines.read()) != null) {
         Span[] names = nameFinder.find(line.getText());
         for (Span name : names) {
-          digest.update((name.getType() + name.getStart() + name.getEnd()).getBytes("UTF-8"));
+          digest.update((name.getType() + name.getStart()
+              + name.getEnd()).getBytes(StandardCharsets.UTF_8));
         }
       }
     }
@@ -260,7 +251,7 @@ public class SourceForgeModelEval {
   @Test
   public void evalChunkerModel() throws IOException {
 
-    MessageDigest digest = createDigest();
+    MessageDigest digest = EvalUtil.createDigest();
 
     POSTagger tagger = new POSTaggerME(new POSModel(
         new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-pos-perceptron.bin")));
@@ -276,7 +267,7 @@ public class SourceForgeModelEval {
 
         String[] chunks = chunker.chunk(sentence.getSentence(), sentence.getTags());
         for (String chunk : chunks) {
-          digest.update(chunk.getBytes("UTF-8"));
+          digest.update(chunk.getBytes(StandardCharsets.UTF_8));
         }
       }
     }
@@ -290,7 +281,7 @@ public class SourceForgeModelEval {
     // break the input stream into sentences
     // The input stream is tokenized and can be processed here directly
 
-    MessageDigest digest = createDigest();
+    MessageDigest digest = EvalUtil.createDigest();
 
     POSTagger tagger = new POSTaggerME(model);
 
@@ -300,7 +291,7 @@ public class SourceForgeModelEval {
       while ((line = lines.read()) != null) {
         String[] tags = tagger.tag(line.getText());
         for (String tag : tags) {
-          digest.update(tag.getBytes("UTF-8"));
+          digest.update(tag.getBytes(StandardCharsets.UTF_8));
         }
       }
     }
@@ -330,7 +321,7 @@ public class SourceForgeModelEval {
     ParserModel model = new ParserModel(
         new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-parser-chunking.bin"));
 
-    MessageDigest digest = createDigest();
+    MessageDigest digest = EvalUtil.createDigest();
 
     Parser parser = ParserFactory.create(model);
 

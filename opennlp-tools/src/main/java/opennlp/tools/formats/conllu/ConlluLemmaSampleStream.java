@@ -29,7 +29,7 @@ public class ConlluLemmaSampleStream extends FilterObjectStream<ConlluSentence, 
 
   private final ConlluTagset tagset;
 
-  ConlluLemmaSampleStream(ObjectStream<ConlluSentence> samples, ConlluTagset tagset) {
+  public ConlluLemmaSampleStream(ObjectStream<ConlluSentence> samples, ConlluTagset tagset) {
     super(samples);
     this.tagset = tagset;
   }

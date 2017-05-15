@@ -19,7 +19,7 @@ package opennlp.tools.eval;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class ConllXPosTaggerEval {
                                 TrainingParameters params) throws IOException {
 
     ObjectStream<POSSample> samples =
-        new ConllXPOSSampleStream(new MarkableFileInputStreamFactory(trainFile), Charset.forName("UTF-8"));
+        new ConllXPOSSampleStream(new MarkableFileInputStreamFactory(trainFile), StandardCharsets.UTF_8);
 
     return POSTaggerME.train(lang, samples, params, new POSTaggerFactory());
   }
@@ -68,7 +68,7 @@ public class ConllXPosTaggerEval {
                            double expectedAccuracy) throws IOException {
 
     ObjectStream<POSSample> samples = new ConllXPOSSampleStream(
-        new MarkableFileInputStreamFactory(testData), Charset.forName("UTF-8"));
+        new MarkableFileInputStreamFactory(testData), StandardCharsets.UTF_8);
 
     POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model));
     evaluator.evaluate(samples);
