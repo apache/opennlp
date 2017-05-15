@@ -20,6 +20,8 @@ package opennlp.tools.util.model;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.postag.POSModel;
@@ -36,8 +38,14 @@ public class POSModelSerializer implements ArtifactSerializer<POSModel> {
     Version version = posModel.getVersion();
     if (version.getMajor() == 1 && version.getMinor() == 5) {
       if (posModel.getManifestProperty(BeamSearch.BEAM_SIZE_PARAMETER) == null) {
+        Map<String, String> manifestInfoEntries = new HashMap<>();
+
+        // The version in the model must be correct or otherwise version
+        // dependent code branches in other places fail
+        manifestInfoEntries.put("OpenNLP-Version", "1.5.0");
+
         posModel = new POSModel(posModel.getLanguage(), posModel.getPosModel(), 10,
-            null, posModel.getFactory());
+            manifestInfoEntries, posModel.getFactory());
       }
     }
 
