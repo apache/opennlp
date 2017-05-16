@@ -29,7 +29,7 @@ import java.util.Map;
 
 /**
  * Lemmatize by simple dictionary lookup into a hashmap built from a file
- * containing, for each line, word\tablemma\tabpostag.
+ * containing, for each line, word\tabpostag\tablemma.
  * @version 2014-07-08
  */
 public class DictionaryLemmatizer implements Lemmatizer {
@@ -42,7 +42,9 @@ public class DictionaryLemmatizer implements Lemmatizer {
   /**
    * Construct a hashmap from the input tab separated dictionary.
    *
-   * The input file should have, for each line, word\tablemma\tabpostag
+   * The input file should have, for each line, word\tabpostag\tablemma.
+   * Alternatively, if multiple lemmas are possible for each word,postag pair,
+   * then the format should be word\tab\postag\tablemma01#lemma02#lemma03
    *
    * @param dictionary
    *          the input dictionary via inputstream
@@ -54,7 +56,8 @@ public class DictionaryLemmatizer implements Lemmatizer {
     String line;
     while ((line = breader.readLine()) != null) {
       final String[] elems = line.split("\t");
-      this.dictMap.put(Arrays.asList(elems[0], elems[1]), Arrays.asList(elems[2]));
+      final String[] lemmas = elems[2].split("#");
+      this.dictMap.put(Arrays.asList(elems[0], elems[1]), Arrays.asList(lemmas));
     }
   }
 
@@ -137,7 +140,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
     final List<String> keys = this.getDictKeys(word, postag);
     // lookup lemma as value of the map
     final List<String> keyValues = this.dictMap.get(keys);
-    if (!keyValues.isEmpty()) {
+    if (keyValues != null && !keyValues.isEmpty()) {
       lemmasList.addAll(keyValues);
     } else {
       lemmasList.add("O");
