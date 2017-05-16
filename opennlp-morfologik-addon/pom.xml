@@ -36,19 +36,20 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<morfologik.version>2.1.3</morfologik.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.carrot2</groupId>
 			<artifactId>morfologik-stemming</artifactId>
-			<version>2.1.0</version>
+			<version>${morfologik.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.carrot2</groupId>
 			<artifactId>morfologik-tools</artifactId>
-			<version>2.1.0</version>
+			<version>${morfologik.version}</version>
 			<scope>compile</scope>
 		</dependency>
 
