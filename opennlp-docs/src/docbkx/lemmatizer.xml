@@ -121,10 +121,9 @@ String[] postags = new String[] { "NNP", "NNP", "NNP", "POS", "NNP", "NN",
     "NNP", "NNP", "TO", "VB", "JJ", "NNS", "IN", "NNP", "POS", "CD", "NNS",
     "." };
 
-String[] lemmas = lemmatizer.lemmatize(tokens, postags);
-String[] decodedLemmas = lemmatizer.decodeLemmas(tokens, lemmas);]]>
+String[] lemmas = lemmatizer.lemmatize(tokens, postags);]]>
 		</programlisting>
-				The decodedLemmas array contains one lemma for each token in the
+				The lemmas array contains one lemma for each token in the
 				input array. The corresponding
 				tag and lemma can be found at the same index as the token has in the
 				input array.
@@ -133,29 +132,37 @@ String[] decodedLemmas = lemmatizer.decodeLemmas(tokens, lemmas);]]>
 			<para>
 				The DictionaryLemmatizer is constructed
 				by passing the InputStream of a lemmatizer dictionary. Such dictionary
-				consists of a
-				text file containing, for each row, a word, its postag and the
-				corresponding lemma:
+				consists of a text file containing, for each row, a word, its postag and the
+				corresponding lemma, each column separated by a tab character.
 				<screen>
 		<![CDATA[
-show    NN      show
-showcase        NN      showcase
-showcases       NNS     showcase
-showdown        NN      showdown
-showdowns       NNS     showdown
-shower  NN      shower
-showers NNS     shower
-showman NN      showman
-showmanship     NN      showmanship
-showmen NNS     showman
-showroom        NN      showroom
-showrooms       NNS     showroom
-shows   NNS     show
-showstopper     NN      showstopper
-showstoppers    NNS     showstopper
-shrapnel        NN      shrapnel
+show		NN	show
+showcase	NN	showcase
+showcases	NNS	showcase
+showdown	NN	showdown
+showdowns	NNS	showdown
+shower		NN	shower
+showers		NNS	shower
+showman		NN	showman
+showmanship	NN	showmanship
+showmen		NNS	showman
+showroom	NN	showroom
+showrooms	NNS	showroom
+shows		NNS	show
+shrapnel	NN	shrapnel
 		]]>
 		</screen>
+				Alternatively, if a (word,postag) pair can output multiple lemmas, the
+				the lemmatizer dictionary would consists of a text file containing, for 
+				each row, a word, its postag and the corresponding lemmas separated by "#":
+				<screen>
+		<![CDATA[
+muestras	NN	muestra
+cantaba		V	cantar
+fue		V	ir#ser
+entramos	V	entrar
+		]]>
+					</screen>
 				First the dictionary must be loaded into memory from disk or another
 				source.
 				In the sample below it is loaded from disk.
@@ -180,8 +187,7 @@ DictionaryLemmatizer lemmatizer = new DictionaryLemmatizer(dictLemmatizer);]]>
 			</para>
 			<para>
 				The following code shows how to find a lemma using a
-				DictionaryLemmatizer. There is no need to decode the
-				lemmas when using the DictionaryLemmatizer.
+				DictionaryLemmatizer.
 				<programlisting language="java">
 		  <![CDATA[
 String[] tokens = new String[]{"Most", "large", "cities", "in", "the", "US", "had",
