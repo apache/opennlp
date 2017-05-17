@@ -35,7 +35,7 @@ import opennlp.tools.util.ObjectStream;
 public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
 
   interface Parameters extends BasicFormatParams {
-    @ParameterDescription(valueName = "es|nl")
+    @ParameterDescription(valueName = "spa|nld")
     String getLang();
 
     @ParameterDescription(valueName = "per,loc,org,misc")
@@ -56,12 +56,12 @@ public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
     LANGUAGE lang;
-    if ("nl".equals(params.getLang())) {
-      lang = LANGUAGE.NL;
+    if ("nl".equals(params.getLang()) || "nld".equals(params.getLang())) {
+      lang = LANGUAGE.NLD;
       language = params.getLang();
     }
-    else if ("es".equals(params.getLang())) {
-      lang = LANGUAGE.ES;
+    else if ("es".equals(params.getLang()) || "spa".equals(params.getLang())) {
+      lang = LANGUAGE.SPA;
       language = params.getLang();
     }
     else {

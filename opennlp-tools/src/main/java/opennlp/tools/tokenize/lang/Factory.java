@@ -37,7 +37,7 @@ public class Factory {
    * @return the alpha numeric pattern for the language or the default pattern.
    */
   public Pattern getAlphanumeric(String languageCode) {
-    if ("pt".equals(languageCode)) {
+    if ("pt".equals(languageCode) || "por".equals(languageCode)) {
       return Pattern.compile("^[0-9a-záãâàéêíóõôúüçA-ZÁÃÂÀÉÊÍÓÕÔÚÜÇ]+$");
     }
 

@@ -29,7 +29,6 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 /**
- *
  * Note:
  * Sample training data must be UTF-8 encoded and uncompressed!
  */
@@ -45,7 +44,7 @@ public class Conll02NameSampleStreamTest {
   @Test
   public void testParsingSpanishSample() throws IOException {
 
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.ES, "conll2002-es.sample");
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.SPA, "conll2002-es.sample");
 
     NameSample personName = sampleStream.read();
 
@@ -67,7 +66,7 @@ public class Conll02NameSampleStreamTest {
 
   @Test
   public void testParsingDutchSample() throws IOException {
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NL, "conll2002-nl.sample");
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NLD, "conll2002-nl.sample");
 
     NameSample personName = sampleStream.read();
 
@@ -83,7 +82,7 @@ public class Conll02NameSampleStreamTest {
 
   @Test
   public void testReset() throws IOException {
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NL, "conll2002-nl.sample");
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NLD, "conll2002-nl.sample");
 
     NameSample sample = sampleStream.read();
 

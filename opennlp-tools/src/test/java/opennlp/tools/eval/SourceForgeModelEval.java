@@ -111,7 +111,7 @@ public class SourceForgeModelEval {
 
     StringBuilder text = new StringBuilder();
 
-    try (ObjectStream<DocumentSample> lineBatches = new LeipzigDoccatSampleStream("en", 25,
+    try (ObjectStream<DocumentSample> lineBatches = new LeipzigDoccatSampleStream("eng", 25,
         new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
             "leipzig/eng_news_2010_300K-sentences.txt")))) {
 
@@ -145,7 +145,7 @@ public class SourceForgeModelEval {
 
     Tokenizer tokenizer = new TokenizerME(model);
 
-    try (ObjectStream<DocumentSample> lines = new LeipzigDoccatSampleStream("en", 1,
+    try (ObjectStream<DocumentSample> lines = new LeipzigDoccatSampleStream("eng", 1,
         WhitespaceTokenizer.INSTANCE,
         new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
             "leipzig/eng_news_2010_300K-sentences.txt")))) {
@@ -164,7 +164,7 @@ public class SourceForgeModelEval {
   }
 
   private ObjectStream<DocumentSample> createLineWiseStream() throws IOException {
-    return new LeipzigDoccatSampleStream("en", 1,
+    return new LeipzigDoccatSampleStream("eng", 1,
         new MarkableFileInputStreamFactory(new File(EvalUtil.getOpennlpDataDir(),
             "leipzig/eng_news_2010_300K-sentences.txt")));
   }

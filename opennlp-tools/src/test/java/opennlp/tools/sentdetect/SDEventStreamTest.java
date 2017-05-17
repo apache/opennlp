@@ -45,8 +45,8 @@ public class SDEventStreamTest {
     Factory factory = new Factory();
 
     ObjectStream<Event> eventStream = new SDEventStream(sampleStream,
-        factory.createSentenceContextGenerator("en"),
-        factory.createEndOfSentenceScanner("en"));
+        factory.createSentenceContextGenerator("eng"),
+        factory.createEndOfSentenceScanner("eng"));
 
     Assert.assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.read().getOutcome());
     Assert.assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());

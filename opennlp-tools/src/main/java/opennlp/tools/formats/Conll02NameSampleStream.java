@@ -50,8 +50,8 @@ import opennlp.tools.util.StringUtil;
 public class Conll02NameSampleStream implements ObjectStream<NameSample> {
 
   public enum LANGUAGE {
-    NL,
-    ES
+    NLD,
+    SPA
   }
 
   public static final int GENERATE_PERSON_ENTITIES = 0x01;
@@ -120,7 +120,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
     String line;
     while ((line = lineStream.read()) != null && !StringUtil.isEmpty(line)) {
 
-      if (LANGUAGE.NL.equals(lang) && line.startsWith(DOCSTART)) {
+      if (LANGUAGE.NLD.equals(lang) && line.startsWith(DOCSTART)) {
         isClearAdaptiveData = true;
         continue;
       }
@@ -138,7 +138,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
     }
 
     // Always clear adaptive data for spanish
-    if (LANGUAGE.ES.equals(lang))
+    if (LANGUAGE.SPA.equals(lang))
       isClearAdaptiveData = true;
 
     if (sentence.size() > 0) {

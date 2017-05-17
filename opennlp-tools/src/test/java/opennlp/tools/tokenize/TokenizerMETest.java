@@ -87,7 +87,7 @@ public class TokenizerMETest {
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 5);
 
-    TokenizerME.train(samples, TokenizerFactory.create(null, "en", null, true, null), mlParams);
+    TokenizerME.train(samples, TokenizerFactory.create(null, "eng", null, true, null), mlParams);
 
   }
   

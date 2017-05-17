@@ -46,13 +46,13 @@ public class SentenceDetectorMETest {
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
 
-    SentenceDetectorFactory factory = new SentenceDetectorFactory("en", true, null, null);
+    SentenceDetectorFactory factory = new SentenceDetectorFactory("eng", true, null, null);
 
     SentenceModel sentdetectModel = SentenceDetectorME.train(
-        "en", new SentenceSampleStream(new PlainTextByLineStream(in,
+        "eng", new SentenceSampleStream(new PlainTextByLineStream(in,
             StandardCharsets.UTF_8)), factory, mlParams);
 
-    Assert.assertEquals("en", sentdetectModel.getLanguage());
+    Assert.assertEquals("eng", sentdetectModel.getLanguage());
 
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
 
@@ -146,9 +146,9 @@ public class SentenceDetectorMETest {
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
 
-    SentenceDetectorFactory factory = new SentenceDetectorFactory("en", true, null, null);
+    SentenceDetectorFactory factory = new SentenceDetectorFactory("eng", true, null, null);
     
-    SentenceDetectorME.train("en", 
+    SentenceDetectorME.train("eng",
         new SentenceSampleStream(
             new PlainTextByLineStream(in, StandardCharsets.UTF_8)), factory, mlParams);
     

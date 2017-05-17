@@ -78,7 +78,7 @@ public class ChunkerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    ChunkerModel chunkerModel = ChunkerME.train("en", sampleStream, params, new ChunkerFactory());
+    ChunkerModel chunkerModel = ChunkerME.train("eng", sampleStream, params, new ChunkerFactory());
 
     this.chunker = new ChunkerME(chunkerModel);
   }
@@ -143,7 +143,7 @@ public class ChunkerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    ChunkerME.train("en", sampleStream, params, new ChunkerFactory());
+    ChunkerME.train("eng", sampleStream, params, new ChunkerFactory());
 
   }
 

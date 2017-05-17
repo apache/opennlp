@@ -52,7 +52,7 @@ public class Conll00ChunkerEval {
         new PlainTextByLineStream(
             new MarkableFileInputStreamFactory(trainFile), StandardCharsets.UTF_8));
 
-    return ChunkerME.train("en", samples, params, new ChunkerFactory());
+    return ChunkerME.train("eng", samples, params, new ChunkerFactory());
   }
 
   private static void eval(ChunkerModel model, File testData,

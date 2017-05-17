@@ -47,7 +47,7 @@ public class ChunkerFactoryTest {
 
   private static ChunkerModel trainModel(ModelType type, ChunkerFactory factory)
       throws IOException {
-    return ChunkerME.train("en", createSampleStream(),
+    return ChunkerME.train("eng", createSampleStream(),
         TrainingParameters.defaultParams(), factory);
   }
 

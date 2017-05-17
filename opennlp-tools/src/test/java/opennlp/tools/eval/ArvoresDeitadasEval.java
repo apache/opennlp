@@ -18,8 +18,8 @@
 package opennlp.tools.eval;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -66,14 +66,12 @@ public class ArvoresDeitadasEval {
   private static final String BOSQUE = "ad/Bosque_CF_8.0.ad.txt";
   private static final String FLORESTA_VIRGEM = "ad/FlorestaVirgem_CF_3.0_ad.txt";
 
-  private static final String ENCODING = "ISO-8859-1";
-
-  private static final String LANG = "pt";
+  private static final String LANG = "por";
 
   private static ObjectStream<String> getLineSample(String corpus)
       throws IOException {
     return new PlainTextByLineStream(new MarkableFileInputStreamFactory(
-        new File(EvalUtil.getOpennlpDataDir(), corpus)), ENCODING);
+        new File(EvalUtil.getOpennlpDataDir(), corpus)), StandardCharsets.ISO_8859_1);
   }
 
   private static void sentenceCrossEval(TrainingParameters params,
@@ -99,8 +97,7 @@ public class ArvoresDeitadasEval {
         getLineSample(FLORESTA_VIRGEM), true);
 
     DictionaryDetokenizer detokenizer = new DictionaryDetokenizer(
-        new DetokenizationDictionary(new FileInputStream(new File(
-            "lang/pt/tokenizer/pt-detokenizer.xml"))));
+        new DetokenizationDictionary(new File("lang/pt/tokenizer/pt-detokenizer.xml")));
 
     ObjectStream<TokenSample> samples = new NameToTokenSampleStream(
         detokenizer, nameSamples);

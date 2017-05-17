@@ -110,7 +110,7 @@ public class TokenNameFinderToolTest {
     TokenNameFinderFactory nameFinderFactory = new TokenNameFinderFactory();
 
     try (ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream)) {
-      model = NameFinderME.train("en", null, sampleStream, params,
+      model = NameFinderME.train("eng", null, sampleStream, params,
           nameFinderFactory);
     }
     

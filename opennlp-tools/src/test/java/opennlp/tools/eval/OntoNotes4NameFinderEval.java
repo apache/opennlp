@@ -68,7 +68,7 @@ public class OntoNotes4NameFinderEval {
       throws IOException {
     try (ObjectStream<NameSample> samples = createNameSampleStream()) {
 
-      TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en", null,
+      TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng", null,
           params, new TokenNameFinderFactory());
 
       ObjectStream<NameSample> filteredSamples;
@@ -150,7 +150,7 @@ public class OntoNotes4NameFinderEval {
 
     try (ObjectStream<NameSample> samples = createNameSampleStream()) {
 
-      TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("en", null,
+      TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng", null,
           params, featureGen, resources);
 
       ObjectStream<NameSample> filteredSamples;

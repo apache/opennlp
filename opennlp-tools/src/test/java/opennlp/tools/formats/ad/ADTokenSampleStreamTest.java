@@ -54,7 +54,7 @@ public class ADTokenSampleStreamTest {
     File data = new File(getClass().getClassLoader()
         .getResource("opennlp/tools/formats/ad.sample").toURI());
     String[] args = { "-data", data.getCanonicalPath(), "-encoding", "UTF-8",
-        "-lang", "pt", "-detokenizer", dict.getCanonicalPath() };
+        "-lang", "por", "-detokenizer", dict.getCanonicalPath() };
     ObjectStream<TokenSample> tokenSampleStream = factory.create(args);
 
     TokenSample sample = tokenSampleStream.read();

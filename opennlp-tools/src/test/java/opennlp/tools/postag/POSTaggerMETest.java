@@ -54,7 +54,7 @@ public class POSTaggerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
-    return POSTaggerME.train("en", createSampleStream(), params,
+    return POSTaggerME.train("eng", createSampleStream(), params,
         new POSTaggerFactory());
   }
 
@@ -101,7 +101,7 @@ public class POSTaggerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
-    POSTaggerME.train("en", stream, params, new POSTaggerFactory());
+    POSTaggerME.train("eng", stream, params, new POSTaggerFactory());
 
   }
   

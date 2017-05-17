@@ -58,7 +58,7 @@ public class TokenizerTestUtil {
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
 
     return TokenizerME.train(new CollectionObjectStream<>(samples),
-      TokenizerFactory.create(null, "en", null, true, null), mlParams);
+      TokenizerFactory.create(null, "eng", null, true, null), mlParams);
   }
 
   static TokenizerModel createMaxentTokenModel() throws IOException {
@@ -73,7 +73,7 @@ public class TokenizerTestUtil {
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
 
-    return TokenizerME.train(samples, TokenizerFactory.create(null, "en", null, true, null), mlParams);
+    return TokenizerME.train(samples, TokenizerFactory.create(null, "eng", null, true, null), mlParams);
   }
 
 }

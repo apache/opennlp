@@ -55,7 +55,7 @@ public class SentenceDetectorFactoryTest {
 
   private static SentenceModel train(SentenceDetectorFactory factory)
       throws IOException {
-    return SentenceDetectorME.train("en", createSampleStream(), factory,
+    return SentenceDetectorME.train("eng", createSampleStream(), factory,
         TrainingParameters.defaultParams());
   }
 
@@ -72,7 +72,7 @@ public class SentenceDetectorFactoryTest {
     Dictionary dic = loadAbbDictionary();
 
     char[] eos = {'.', '?'};
-    SentenceModel sdModel = train(new SentenceDetectorFactory("en", true, dic,
+    SentenceModel sdModel = train(new SentenceDetectorFactory("eng", true, dic,
         eos));
 
     SentenceDetectorFactory factory = sdModel.getFactory();
@@ -97,7 +97,7 @@ public class SentenceDetectorFactoryTest {
     Dictionary dic = null;
 
     char[] eos = {'.', '?'};
-    SentenceModel sdModel = train(new SentenceDetectorFactory("en", true,
+    SentenceModel sdModel = train(new SentenceDetectorFactory("eng", true,
         dic, eos));
 
     SentenceDetectorFactory factory = sdModel.getFactory();
@@ -124,7 +124,7 @@ public class SentenceDetectorFactoryTest {
     Dictionary dic = null;
 
     char[] eos = null;
-    SentenceModel sdModel = train(new SentenceDetectorFactory("en", true,
+    SentenceModel sdModel = train(new SentenceDetectorFactory("eng", true,
         dic, eos));
 
     SentenceDetectorFactory factory = sdModel.getFactory();
@@ -154,7 +154,7 @@ public class SentenceDetectorFactoryTest {
     Dictionary dic = loadAbbDictionary();
 
     char[] eos = {'.', '?'};
-    SentenceModel sdModel = train(new DummySentenceDetectorFactory("en", true,
+    SentenceModel sdModel = train(new DummySentenceDetectorFactory("eng", true,
         dic, eos));
 
     SentenceDetectorFactory factory = sdModel.getFactory();
@@ -185,7 +185,7 @@ public class SentenceDetectorFactoryTest {
     char[] eos = {'.', '?'};
 
     SentenceDetectorFactory factory = SentenceDetectorFactory.create(
-        DummySentenceDetectorFactory.class.getCanonicalName(), "es", false,
+        DummySentenceDetectorFactory.class.getCanonicalName(), "spa", false,
         dic, eos);
 
     Assert.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);

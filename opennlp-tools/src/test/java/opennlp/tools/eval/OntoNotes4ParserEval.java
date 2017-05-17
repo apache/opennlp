@@ -63,7 +63,7 @@ public class OntoNotes4ParserEval {
   private static void crossEval(TrainingParameters params, HeadRules rules, double expectedScore)
       throws IOException {
     try (ObjectStream<Parse> samples = createParseSampleStream()) {
-      ParserCrossValidator cv = new ParserCrossValidator("en", params, rules, ParserType.CHUNKING);
+      ParserCrossValidator cv = new ParserCrossValidator("eng", params, rules, ParserType.CHUNKING);
       cv.evaluate(samples, 5);
 
       Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);

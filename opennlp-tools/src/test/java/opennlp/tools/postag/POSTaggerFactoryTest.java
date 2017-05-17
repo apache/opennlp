@@ -52,7 +52,7 @@ public class POSTaggerFactoryTest {
 
   private static POSModel trainPOSModel(POSTaggerFactory factory)
       throws IOException {
-    return POSTaggerME.train("en", createSampleStream(),
+    return POSTaggerME.train("eng", createSampleStream(),
         TrainingParameters.defaultParams(), factory);
   }
 

@@ -72,7 +72,7 @@ public class LemmatizerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
-    LemmatizerModel lemmatizerModel = LemmatizerME.train("en", sampleStream,
+    LemmatizerModel lemmatizerModel = LemmatizerME.train("eng", sampleStream,
         params, new LemmatizerFactory());
 
     this.lemmatizer = new LemmatizerME(lemmatizerModel);
@@ -98,7 +98,7 @@ public class LemmatizerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
-    LemmatizerME.train("en", sampleStream, params, new LemmatizerFactory());
+    LemmatizerME.train("eng", sampleStream, params, new LemmatizerFactory());
 
   }
 

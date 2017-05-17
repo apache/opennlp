@@ -82,7 +82,7 @@ public class ConllXPosTaggerEval {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/danish/ddt/train/danish_ddt_train.conll"), "da", params);
+        "conllx/data/danish/ddt/train/danish_ddt_train.conll"), "dan", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
         "conllx/data/danish/ddt/test/danish_ddt_test.conll"), 0.9504442925495558d);
@@ -93,7 +93,7 @@ public class ConllXPosTaggerEval {
     TrainingParameters params = EvalUtil.createMaxentQnParams();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/danish/ddt/train/danish_ddt_train.conll"), "da", params);
+        "conllx/data/danish/ddt/train/danish_ddt_train.conll"), "dan", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
         "conllx/data/danish/ddt/test/danish_ddt_test.conll"), 0.9564251537935748d);
@@ -104,7 +104,7 @@ public class ConllXPosTaggerEval {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/dutch/alpino/train/dutch_alpino_train.conll"), "nl", params);
+        "conllx/data/dutch/alpino/train/dutch_alpino_train.conll"), "nld", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
         "conllx/data/dutch/alpino/test/dutch_alpino_test.conll"), 0.9213965980304387d);
@@ -116,7 +116,7 @@ public class ConllXPosTaggerEval {
     TrainingParameters params = EvalUtil.createMaxentQnParams();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/dutch/alpino/train/dutch_alpino_train.conll"), "nl", params);
+        "conllx/data/dutch/alpino/train/dutch_alpino_train.conll"), "nld", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
         "conllx/data/dutch/alpino/test/dutch_alpino_test.conll"), 0.9282005371530886d);
@@ -127,7 +127,7 @@ public class ConllXPosTaggerEval {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/portuguese/bosque/treebank/portuguese_bosque_train.conll"), "pt", params);
+        "conllx/data/portuguese/bosque/treebank/portuguese_bosque_train.conll"), "por", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
         "conllx/data/portuguese/bosque/test/portuguese_bosque_test.conll"), 0.9671041418101244d);
@@ -138,7 +138,7 @@ public class ConllXPosTaggerEval {
     TrainingParameters params = EvalUtil.createMaxentQnParams();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/portuguese/bosque/treebank/portuguese_bosque_train.conll"), "pt", params);
+        "conllx/data/portuguese/bosque/treebank/portuguese_bosque_train.conll"), "por", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
         "conllx/data/portuguese/bosque/test/portuguese_bosque_test.conll"), 0.9662519175046872d);
@@ -149,7 +149,7 @@ public class ConllXPosTaggerEval {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll"), "se", params);
+        "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll"), "swe", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
         "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll"), 0.9248585572842999d);
@@ -160,7 +160,7 @@ public class ConllXPosTaggerEval {
     TrainingParameters params = EvalUtil.createMaxentQnParams();
 
     POSModel maxentModel = train(new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll"), "se", params);
+        "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll"), "swe", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
         "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll"), 0.9347595473833098d);
