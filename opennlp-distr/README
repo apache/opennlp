@@ -36,6 +36,7 @@ Additionally the release contains the following noteworthy changes:
 - Now prefix and suffix feature generators are configurable
 - Remove API in Document Categorizer for user specified tokenizer
 - Learnable lemmatizer now returns all possible lemmas for a given word and pos tag
+- Lemmatizer API backward compatibility break: no need to encode/decode lemmas anymore, now LemmatizerME lemmatize method returns the actual lemma
 - Add stemmer, detokenizer and sentence detection abbreviations for Irish
 - Chunker SequenceValidator signature changed to allow access to both token and POS tag
 
