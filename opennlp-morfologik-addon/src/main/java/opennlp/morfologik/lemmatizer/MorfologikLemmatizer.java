@@ -39,7 +39,12 @@ public class MorfologikLemmatizer implements Lemmatizer {
 
   public MorfologikLemmatizer(Path dictionaryPath) throws IllegalArgumentException,
       IOException {
-    dictLookup = new DictionaryLookup(Dictionary.read(dictionaryPath));
+    this(Dictionary.read(dictionaryPath));
+  }
+
+  public MorfologikLemmatizer(Dictionary dictionary) throws IllegalArgumentException,
+      IOException {
+    dictLookup = new DictionaryLookup(dictionary);
   }
 
   private List<String> lemmatize(String word, String postag) {
