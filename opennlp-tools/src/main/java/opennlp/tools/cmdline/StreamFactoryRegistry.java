@@ -29,6 +29,7 @@ import opennlp.tools.formats.ConllXSentenceSampleStreamFactory;
 import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
 import opennlp.tools.formats.DocumentSampleStreamFactory;
 import opennlp.tools.formats.EvalitaNameSampleStreamFactory;
+import opennlp.tools.formats.LanguageDetectorSampleStreamFactory;
 import opennlp.tools.formats.LeipzigDocumentSampleStreamFactory;
 import opennlp.tools.formats.LemmatizerSampleStreamFactory;
 import opennlp.tools.formats.NameSampleDataStreamFactory;
@@ -75,6 +76,7 @@ public final class StreamFactoryRegistry {
     TokenSampleStreamFactory.registerFactory();
     WordTagSampleStreamFactory.registerFactory();
     LemmatizerSampleStreamFactory.registerFactory();
+    LanguageDetectorSampleStreamFactory.registerFactory();
 
     NameToSentenceSampleStreamFactory.registerFactory();
     NameToTokenSampleStreamFactory.registerFactory();
