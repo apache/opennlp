@@ -35,7 +35,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
@@ -123,7 +122,7 @@ public class OntoNotes4NameFinderEval {
   }
 
   @Test
-  public void evalAllTypesWithPOSNameFinder() throws IOException {
+  public void evalAllTypesWithPOSNameFinder() throws IOException, URISyntaxException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put("Threads", "4");
 
@@ -137,9 +136,6 @@ public class OntoNotes4NameFinderEval {
         bytes.write(buf, 0, len);
       }
     }
-    catch (IOException e) {
-      throw new IllegalStateException("Failed reading from ner-default-features.xml file on classpath!");
-    }
 
     byte[] featureGen = bytes.toByteArray();
 
@@ -149,16 +145,8 @@ public class OntoNotes4NameFinderEval {
         new File(resourcesPath.toFile(), "en-pos-perceptron.bin").toPath(),
         StandardCopyOption.REPLACE_EXISTING);
 
-    Map<String, Object> resources;
-
-    try {
-      resources = TokenNameFinderTrainerTool.loadResources(resourcesPath.toFile(),
+    Map<String, Object> resources = TokenNameFinderTrainerTool.loadResources(resourcesPath.toFile(),
           Paths.get(this.getClass().getResource("ner-en_pos-features.xml").toURI()).toFile());
-    }
-    catch (IOException | URISyntaxException e) {
-      throw new TerminateToolException(-1,"IO error while loading resources", e);
-    }
-
 
     try (ObjectStream<NameSample> samples = createNameSampleStream()) {
 
@@ -171,7 +159,7 @@ public class OntoNotes4NameFinderEval {
 
       cv.evaluate(filteredSamples, 5);
 
-      Assert.assertEquals(0.8044097625338349d, cv.getFMeasure().getFMeasure(), 0.001d);
+      Assert.assertEquals(0.8070226153653437d, cv.getFMeasure().getFMeasure(), 0.001d);
     }
   }
 }
