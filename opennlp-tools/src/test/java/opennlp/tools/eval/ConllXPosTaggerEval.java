@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import opennlp.tools.formats.ConllXPOSSampleStream;
@@ -110,6 +111,7 @@ public class ConllXPosTaggerEval {
   }
 
   @Test
+  @Ignore
   public void evalDutchMaxentQn() throws IOException {
     TrainingParameters params = EvalUtil.createMaxentQnParams();
 
