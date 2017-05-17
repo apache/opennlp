@@ -227,6 +227,7 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>${maven.surefire.plugin}</version>
 					<configuration>
+						<argLine>-Xmx2048m</argLine>
 						<forkCount>${opennlp.forkCount}</forkCount>
 						<failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
 						<excludes>
@@ -435,6 +436,7 @@
 						<artifactId>maven-surefire-plugin</artifactId>
 						<version>${maven.surefire.plugin}</version>
 						<configuration>
+							<argLine>-Xmx4g</argLine>
 							<includes>
 								<include>**/*Test.java</include>
 								<include>**/*Eval.java</include>

@@ -39,8 +39,11 @@ import opennlp.tools.util.PlainTextByLineStream;
  * <p>
  * The input text is tokenized with the {@link SimpleTokenizer}. The input text classified
  * by the language model must also be tokenized by the {@link SimpleTokenizer} to produce
- * exactly the same tokenization during testing and training.ø
+ * exactly the same tokenization during testing and training.
+ *
+ * @deprecated will be removed, use the language detector instead
  */
+@Deprecated
 public class LeipzigDoccatSampleStream extends
     FilterObjectStream<String, DocumentSample> {
 

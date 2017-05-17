@@ -29,6 +29,7 @@ import opennlp.tools.formats.ConllXSentenceSampleStreamFactory;
 import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
 import opennlp.tools.formats.DocumentSampleStreamFactory;
 import opennlp.tools.formats.EvalitaNameSampleStreamFactory;
+import opennlp.tools.formats.LanguageDetectorSampleStreamFactory;
 import opennlp.tools.formats.LeipzigDocumentSampleStreamFactory;
 import opennlp.tools.formats.LemmatizerSampleStreamFactory;
 import opennlp.tools.formats.NameSampleDataStreamFactory;
@@ -56,6 +57,7 @@ import opennlp.tools.formats.convert.ParseToTokenSampleStreamFactory;
 import opennlp.tools.formats.frenchtreebank.ConstitParseSampleStreamFactory;
 import opennlp.tools.formats.irishsentencebank.IrishSentenceBankSentenceStreamFactory;
 import opennlp.tools.formats.irishsentencebank.IrishSentenceBankTokenSampleStreamFactory;
+import opennlp.tools.formats.leipzig.LeipzigLanguageSampleStreamFactory;
 import opennlp.tools.formats.letsmt.LetsmtSentenceStreamFactory;
 import opennlp.tools.formats.moses.MosesSentenceSampleStreamFactory;
 import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
@@ -79,6 +81,7 @@ public final class StreamFactoryRegistry {
     TokenSampleStreamFactory.registerFactory();
     WordTagSampleStreamFactory.registerFactory();
     LemmatizerSampleStreamFactory.registerFactory();
+    LanguageDetectorSampleStreamFactory.registerFactory();
 
     NameToSentenceSampleStreamFactory.registerFactory();
     NameToTokenSampleStreamFactory.registerFactory();
@@ -124,6 +127,7 @@ public final class StreamFactoryRegistry {
 
     IrishSentenceBankSentenceStreamFactory.registerFactory();
     IrishSentenceBankTokenSampleStreamFactory.registerFactory();
+    LeipzigLanguageSampleStreamFactory.registerFactory();
   }
 
   public static final String DEFAULT_FORMAT = "opennlp";

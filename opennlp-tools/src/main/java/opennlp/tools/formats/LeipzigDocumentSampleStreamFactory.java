@@ -33,7 +33,10 @@ import opennlp.tools.util.ObjectStreamUtils;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @deprecated will be removed, use the language detector instead
  */
+@Deprecated
 public class LeipzigDocumentSampleStreamFactory
     extends AbstractSampleStreamFactory<DocumentSample> {
 

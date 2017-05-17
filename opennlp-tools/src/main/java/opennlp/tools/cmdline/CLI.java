@@ -37,6 +37,11 @@ import opennlp.tools.cmdline.doccat.DoccatEvaluatorTool;
 import opennlp.tools.cmdline.doccat.DoccatTool;
 import opennlp.tools.cmdline.doccat.DoccatTrainerTool;
 import opennlp.tools.cmdline.entitylinker.EntityLinkerTool;
+import opennlp.tools.cmdline.langdetect.LanguageDetectorConverterTool;
+import opennlp.tools.cmdline.langdetect.LanguageDetectorCrossValidatorTool;
+import opennlp.tools.cmdline.langdetect.LanguageDetectorEvaluatorTool;
+import opennlp.tools.cmdline.langdetect.LanguageDetectorTool;
+import opennlp.tools.cmdline.langdetect.LanguageDetectorTrainerTool;
 import opennlp.tools.cmdline.languagemodel.NGramLanguageModelTool;
 import opennlp.tools.cmdline.lemmatizer.LemmatizerEvaluatorTool;
 import opennlp.tools.cmdline.lemmatizer.LemmatizerMETool;
@@ -89,6 +94,13 @@ public final class CLI {
     tools.add(new DoccatEvaluatorTool());
     tools.add(new DoccatCrossValidatorTool());
     tools.add(new DoccatConverterTool());
+
+    // Language Detector
+    tools.add(new LanguageDetectorTool());
+    tools.add(new LanguageDetectorTrainerTool());
+    tools.add(new LanguageDetectorConverterTool());
+    tools.add(new LanguageDetectorCrossValidatorTool());
+    tools.add(new LanguageDetectorEvaluatorTool());
 
     // Dictionary Builder
     tools.add(new DictionaryBuilderTool());
