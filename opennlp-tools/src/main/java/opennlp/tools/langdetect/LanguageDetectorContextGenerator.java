@@ -25,12 +25,6 @@ import opennlp.tools.util.StringList;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.normalizer.AggregateCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.CharSequenceNormalizer;
-import opennlp.tools.util.normalizer.EmojiCharSequenceNormalizer;
-import opennlp.tools.util.normalizer.NumberCharSequenceNormalizer;
-import opennlp.tools.util.normalizer.ShrinkCharSequenceNormalizer;
-import opennlp.tools.util.normalizer.TwitterCharSequenceNormalizer;
-import opennlp.tools.util.normalizer.UnicodeCharSequenceNormalizer;
-import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
 
 /**
  * Context generator for document categorizer
@@ -46,19 +40,20 @@ class LanguageDetectorContextGenerator {
     this.maxLength = maxLength;
 
     this.normalizer = new AggregateCharSequenceNormalizer(
-        EmojiCharSequenceNormalizer.getInstance(),
-        UrlCharSequenceNormalizer.getInstance(),
-        TwitterCharSequenceNormalizer.getInstance(),
-        NumberCharSequenceNormalizer.getInstance(),
-        UnicodeCharSequenceNormalizer.getInstance(),
-        ShrinkCharSequenceNormalizer.getInstance());
+        // EmojiCharSequenceNormalizer.getInstance(),
+        //UrlCharSequenceNormalizer.getInstance(),
+        //TwitterCharSequenceNormalizer.getInstance(),
+        //NumberCharSequenceNormalizer.getInstance(),
+        //UnicodeCharSequenceNormalizer.getInstance(),
+        //ShrinkCharSequenceNormalizer.getInstance());
+    );
   }
 
   /**
    * Initializes the current instance with min 2 length and max 5 length of ngrams.
    */
   LanguageDetectorContextGenerator() {
-    this(2, 5);
+    this(3, 3);
   }
 
   public String[] getContext(String document) {

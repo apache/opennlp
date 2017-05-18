@@ -28,10 +28,8 @@ public class LanguageSample {
   private final CharSequence context;
 
   public LanguageSample(Language language, CharSequence context) {
-    Objects.requireNonNull(context, "context must not be null");
-    Objects.requireNonNull(language, "language must not be null");
-    this.language = language;
-    this.context = context;
+    this.language = Objects.requireNonNull(language, "language must not be null");
+    this.context = Objects.requireNonNull(context, "context must not be null");
   }
 
   public Language getLanguage() {
@@ -44,12 +42,7 @@ public class LanguageSample {
 
   @Override
   public String toString() {
-
-    StringBuilder sampleString = new StringBuilder();
-
-    sampleString.append(language.getLang()).append('\t').append(context);
-
-    return sampleString.toString();
+    return language.getLang() + '\t' +  context;
   }
 
   @Override

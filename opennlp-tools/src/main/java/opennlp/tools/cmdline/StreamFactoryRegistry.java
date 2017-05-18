@@ -53,6 +53,7 @@ import opennlp.tools.formats.convert.ParseToPOSSampleStreamFactory;
 import opennlp.tools.formats.convert.ParseToSentenceSampleStreamFactory;
 import opennlp.tools.formats.convert.ParseToTokenSampleStreamFactory;
 import opennlp.tools.formats.frenchtreebank.ConstitParseSampleStreamFactory;
+import opennlp.tools.formats.leipzig.LeipzigLanguageSampleStreamFactory;
 import opennlp.tools.formats.letsmt.LetsmtSentenceStreamFactory;
 import opennlp.tools.formats.moses.MosesSentenceSampleStreamFactory;
 import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
@@ -117,6 +118,8 @@ public final class StreamFactoryRegistry {
 
     ConlluPOSSampleStreamFactory.registerFactory();
     ConlluLemmaSampleStreamFactory.registerFactory();
+
+    LeipzigLanguageSampleStreamFactory.registerFactory();
   }
 
   public static final String DEFAULT_FORMAT = "opennlp";
