@@ -42,11 +42,11 @@ public class LeipzigLanguageSampleStreamFactory
 
     @ParameterDescription(valueName = "sentencesPerSample",
         description = "number of sentences per sample")
-    int getSentencesPerSample();
+    String getSentencesPerSample();
 
     @ParameterDescription(valueName = "samplesPerLanguage",
         description = "number of samples per language")
-    int getSamplesPerLanguage();
+    String getSamplesPerLanguage();
   }
 
   protected <P> LeipzigLanguageSampleStreamFactory(Class<P> params) {
@@ -64,8 +64,9 @@ public class LeipzigLanguageSampleStreamFactory
     File sentencesFileDir = params.getSentencesDir();
 
     try {
-      return new LeipzigLanguageSampleStream(sentencesFileDir, params.getSentencesPerSample(),
-          params.getSamplesPerLanguage());
+      return new LeipzigLanguageSampleStream(sentencesFileDir,
+          Integer.parseInt(params.getSentencesPerSample()),
+          Integer.parseInt(params.getSamplesPerLanguage()));
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while opening sample data.", e);
     }
