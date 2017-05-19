@@ -53,6 +53,7 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
 
     @Override
     public LanguageSample read() throws IOException {
+
       if (sampleCount < numberOfSamples) {
         StringBuilder sampleString = new StringBuilder();
 
@@ -60,8 +61,10 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
         String line;
         while (count < sentencesPerSample && (line = lineStream.read()) != null) {
 
+          int textStart = line.indexOf('\t') + 1;
+
           // TODO: It should it be changed to contain an array of sample strings ?!
-          sampleString.append(line + " ");
+          sampleString.append(line.substring(textStart) + " ");
 
           count++;
         }
