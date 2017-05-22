@@ -66,8 +66,7 @@ public class PerceptronModel extends AbstractModel {
     return eval(context,null,prior,model,true);
   }
 
-  @Deprecated // visibility will be reduced in 1.8.1
-  public static double[] eval(int[] context, float[] values, double[] prior, EvalParameters model,
+  static double[] eval(int[] context, float[] values, double[] prior, EvalParameters model,
                               boolean normalize) {
     Context[] params = model.getParams();
     double[] activeParameters;

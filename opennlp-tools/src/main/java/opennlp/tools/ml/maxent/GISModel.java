@@ -152,8 +152,7 @@ public final class GISModel extends AbstractModel {
    *         string representation of the outcomes can be obtained from the
    *         method getOutcome(int i).
    */
-  @Deprecated // visibility will be reduced in 1.8.1
-  public static double[] eval(int[] context, float[] values, double[] prior,
+  static double[] eval(int[] context, float[] values, double[] prior,
       EvalParameters model) {
     Context[] params = model.getParams();
     int[] numfeats = new int[model.getNumOutcomes()];

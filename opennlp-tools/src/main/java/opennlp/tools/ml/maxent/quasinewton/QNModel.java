@@ -103,8 +103,7 @@ public class QNModel extends AbstractModel {
    *          Model parameters
    * @return Normalized probabilities for the outcomes given the context.
    */
-  @Deprecated // visibility will be reduced in 1.8.1
-  public static double[] eval(int[] context, float[] values, double[] probs,
+  static double[] eval(int[] context, float[] values, double[] probs,
       int nOutcomes, int nPredLabels, double[] parameters) {
 
     for (int i = 0; i < context.length; i++) {
