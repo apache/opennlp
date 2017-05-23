@@ -1,0 +1,30 @@
+# sent_id = train-s21
+# text = Fachlich kompetent, sehr gute Beratung und ein freundliches Team.
+1	Fachlich	fachlich	ADV	ADJD	_	2	advmod	_	_
+2	kompetent	kompetent	ADJ	ADJD	Degree=Pos	0	root	_	SpaceAfter=No
+3	,	,	PUNCT	$,	_	2	punct	_	_
+4	sehr	sehr	ADV	ADV	_	5	advmod	_	_
+5	gute	gut	ADJ	ADJA	Degree=Pos	6	amod	_	_
+6	Beratung	Beratung	NOUN	NN	_	2	parataxis	_	_
+7	und	und	CCONJ	KON	_	10	cc	_	_
+8	ein	ein	DET	ART	Definite=Ind|PronType=Art	10	det	_	_
+9	freundliches	freundlich	ADJ	ADJA	Degree=Pos	10	amod	_	_
+10	Team	Team	NOUN	NN	_	6	conj	_	SpaceAfter=No
+11	.	.	PUNCT	$.	_	2	punct	_	_
+
+# sent_id = train-s22
+# text = Beiden Zahnärzten verdanke ich einen neuen Biss und dadurch endlich keine Rückenschmerzen mehr.
+1	Beiden	beide	PRON	PIAT	Case=Dat|Number=Plur|NumType=Card|PronType=Tot	2	det	_	_
+2	Zahnärzten	Zahnarzt	NOUN	NN	Case=Dat|Number=Plur	3	iobj	_	_
+3	verdanke	verdanken	VERB	VVFIN	Number=Sing|Person=1|VerbForm=Fin	0	root	_	_
+4	ich	ich	PRON	PPER	Case=Nom|Number=Sing|Person=1|PronType=Prs	3	nsubj	_	_
+5	einen	ein	DET	ART	Case=Acc|Definite=Ind|Number=Plur|PronType=Art	7	det	_	_
+6	neuen	neu	ADJ	ADJA	Case=Acc|Degree=Pos|Number=Plur	7	amod	_	_
+7	Biss	Biß	NOUN	NN	Case=Acc|Number=Plur	3	obj	_	_
+8	und	und	CCONJ	KON	_	12	cc	_	_
+9	dadurch	dadurch	ADV	PAV	_	7	advmod	_	_
+10	endlich	endlich	ADV	ADV	_	12	advmod	_	_
+11	keine	kein	PRON	PIAT	PronType=Neg	12	advmod	_	_
+12	Rückenschmerzen	Rückenschmerz	NOUN	NN	_	7	conj	_	_
+13	mehr	mehr	ADV	ADV	_	12	advmod	_	SpaceAfter=No
+14	.	.	PUNCT	$.	_	3	punct	_	_

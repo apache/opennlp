@@ -23,11 +23,24 @@ public class ConlluSentence {
 
   private List<ConlluWordLine> wordLines;
 
-  ConlluSentence(List<ConlluWordLine> wordLines) {
+  private String sentenceIdComment;
+  private String textComment;
+
+  ConlluSentence(List<ConlluWordLine> wordLines, String sentenceIdComment, String textComment) {
     this.wordLines = wordLines;
+    this.sentenceIdComment = sentenceIdComment;
+    this.textComment = textComment;
   }
 
   public List<ConlluWordLine> getWordLines() {
     return wordLines;
+  }
+
+  public String getSentenceIdComment() {
+    return sentenceIdComment;
+  }
+
+  public String getTextComment() {
+    return textComment;
   }
 }

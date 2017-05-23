@@ -27,10 +27,10 @@ public class ConlluWordLineTest {
   @Test
   public void testParseLine() throws InvalidFormatException {
     ConlluWordLine line = new ConlluWordLine(
-        "12\tHÃ¤nden\tHand\tNOUN\tNN\tCase=Dat|Number=Plur\t5\tnmod\t_\t_");
+        "12\tHänden\tHand\tNOUN\tNN\tCase=Dat|Number=Plur\t5\tnmod\t_\t_");
 
     Assert.assertEquals("12", line.getId());
-    Assert.assertEquals("HÃ¤nden", line.getForm());
+    Assert.assertEquals("Händen", line.getForm());
     Assert.assertEquals("Hand", line.getLemma());
     Assert.assertEquals("NOUN", line.getPosTag(ConlluTagset.U));
     Assert.assertEquals("NN", line.getPosTag(ConlluTagset.X));

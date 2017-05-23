@@ -22,56 +22,36 @@ import java.io.IOException;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
-import opennlp.tools.lemmatizer.LemmaSample;
+import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
-/**
- * <b>Note:</b> Do not use this class, internal use only!
- */
-public class ConlluLemmaSampleStreamFactory extends AbstractSampleStreamFactory<LemmaSample> {
+public class ConlluTokenSampleStreamFactory extends AbstractSampleStreamFactory<TokenSample> {
 
   interface Parameters extends BasicFormatParams {
-    @ArgumentParser.ParameterDescription(valueName = "tagset",
-        description = "u|x u for unified tags and x for language-specific part-of-speech tags")
-    @ArgumentParser.OptionalParameter(defaultValue = "u")
-    String getTagset();
   }
 
   public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(LemmaSample.class,
+    StreamFactoryRegistry.registerFactory(TokenSample.class,
         ConlluPOSSampleStreamFactory.CONLLU_FORMAT,
-        new ConlluLemmaSampleStreamFactory(Parameters.class));
+        new ConlluTokenSampleStreamFactory(ConlluTokenSampleStreamFactory.Parameters.class));
   }
 
-  protected <P> ConlluLemmaSampleStreamFactory(Class<P> params) {
+  protected <P> ConlluTokenSampleStreamFactory(Class<P> params) {
     super(params);
   }
 
-  public ObjectStream<LemmaSample> create(String[] args) {
+  @Override
+  public ObjectStream<TokenSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    ConlluTagset tagset;
-
-    switch (params.getTagset()) {
-      case "u":
-        tagset = ConlluTagset.U;
-        break;
-      case  "x":
-        tagset = ConlluTagset.X;
-        break;
-      default:
-        throw new TerminateToolException(-1, "Unkown tagset parameter: " + params.getTagset());
-    }
 
     InputStreamFactory inFactory =
         CmdLineUtil.createInputStreamFactory(params.getData());
 
     try {
-      return new ConlluLemmaSampleStream(new ConlluStream(inFactory), tagset);
+      return new ConlluTokenSampleStream(new ConlluStream(inFactory));
     } catch (IOException e) {
       // That will throw an exception
       CmdLineUtil.handleCreateObjectStreamError(e);

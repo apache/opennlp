@@ -49,15 +49,39 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
 
       BufferedReader reader = new BufferedReader(new StringReader(sentence));
 
+      String sentenceId = null;
+      String text = null;
+
       String line;
       while ((line = reader.readLine())  != null) {
-        // # indicates a comment line and should be skipped
-        if (!line.trim().startsWith("#")) {
+        // # indicates a comment line and contains additional data
+        if (line.trim().startsWith("#")) {
+          String commentLine = line.trim().substring(1);
+
+          int separator = commentLine.indexOf('=');
+
+          if (separator != -1) {
+            String firstPart = commentLine.substring(0, separator).trim();
+            String secondPart = commentLine.substring(separator + 1, commentLine.length()).trim();
+
+            if (!secondPart.isEmpty()) {
+              switch (firstPart) {
+                case "sent_id":
+                  sentenceId = secondPart;
+                  break;
+                case "text":
+                  text = secondPart;
+                  break;
+              }
+            }
+          }
+        }
+        else {
           wordLines.add(new ConlluWordLine(line));
         }
       }
 
-      return new ConlluSentence(wordLines);
+      return new ConlluSentence(wordLines, sentenceId, text);
     }
 
     return null;
