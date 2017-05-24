@@ -1,0 +1,54 @@
+////
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.   
+////
+= Making a release
+:jbake-type: page
+:jbake-tags: maven
+:jbake-status: published
+:idprefix:
+
+The following documents the steps which are necessary to make a
+release of Apache OpenNLP.
+
+- Release discussion and release planning on the mailing list
+- Elect a release manager
+- Prepare Jira for the release
+- Crate an empty test plan for the release
+- Make a release candidate
+- Test the candidate accoding to the test plan and iterate until tests pass
+- Do the release vote on opennlp-dev and on general incubator
+
+## Releasing
+
+The release candidate can be released after a successful release vote on
+the opennlp-dev and incubator general list.
+
+- Release the staging repository. This will make the artifacts available in the Maven Central repository.
+To do this go to the http://repository.apache.org[repository server], log in, go to the staging area and release the staging repository linked to this release.
+- Upload artifacts to the distribution server. All release artifacts need to be copied to `/www/www.apache.org/dist/incubator/opennlp` on `people.apache.org`.
+- Update the download page. The download page should only offer the latest release. Old releases can be downloaded from the archive.
+- Deploy the documentation. The documentation is part of the website and need to be checked into subversion. Remove all old files from the documentation folder.
+Download the release, copy everything inside the doc folder to the documentation folder of our website and commit the changes.
+- Update the news page. Add a news item to the website.
+- Release the staged website.
+- Test and review the website. Test that all download links are working. Test that the documentation is updated and can be viewed.
+- Send out announcements.
+- Update Jira for the next release.
+
+It is suggested to use the wiki to plan all tasks for the release
+and to distribute them among the team.

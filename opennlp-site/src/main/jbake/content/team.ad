@@ -1,0 +1,60 @@
+////
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.   
+////
+= Apache OpenNLP project team
+:jbake-type: page
+:jbake-tags: maven
+:jbake-status: published
+:idprefix:
+
+The OpenNLP team currently consists of:
+
+* Jörn Kottmann (joern) **Chair** (C-P)
+* Grant Ingersoll (gsingers) (C-P)
+* Isabel Drost (isabel) (P)
+* James Kosin (jkosin) (C-P)
+* Jason Baldridge (jbaldrid) (C-P)
+* Thomas Morton (tsmorton) (C-P)
+* William Silva (colen) (C-P)
+* Rodrigo Agerri (ragerri) (C-P)
+* Aliaksandr Autayeu (autayeu) ( C )
+* Boris Galitsky (bgalitsky) ( C )
+* Mark Giaconia ( C ) 
+* Tommaso Teofili (tommaso) (C-P)
+* Vinh Khuc (vkhuc) ( C )
+* Anthony Beylerian (beylerian) ( C )
+* Mondher Bouazizi (mondher) ( C )
+* Chris Mattmann (mattmann) ( C )
+* Anastasija Mensikova (anastasijam) ( C )
+* Suneel Marthi (smarthi) (C-P)
+* Daniel Russ (druss) (C-P)
+* Peter Thygesen (thygesen) ( C )
+* Koji Sekiguchi (koji) ( C )
+* Bruno P. Kinoshita (kinow) ( C )
+* Jeffrey Zemerick (jzemerick) ( C )
+
+These people contributed to OpenNLP:
+
+* Thilo Goetz (twgoetz)
+* Gann Bierner
+* Eric Friedman
+* Joao Cavalcanti
+* Hyosup Shim
+
+*C* indicates a commiter and *P* a PMC member.
+ 

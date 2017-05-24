@@ -1,0 +1,86 @@
+////
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.   
+////
+= Download
+:jbake-type: page
+:jbake-tags: download
+:jbake-status: published
+:idprefix:
+
+## Last Official Release
+
+Apache OpenNLP 1.7.2 is now available for download.
+
+[options="header"]
+|===
+|File | Signatures
+
+|https://www.apache.org/dyn/closer.cgi/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-bin.tar.gz[apache-opennlp-1.7.2-bin.tar.gz]
+|https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-bin.tar.gz.md5[md5]
+https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-bin.tar.gz.sha1[sha1]
+https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-bin.tar.gz.asc[asc]
+
+|https://www.apache.org/dyn/closer.cgi/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-bin.zip[apache-opennlp-1.7.2-bin.zip]
+|https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-bin.zip.md5[md5]
+https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-bin.zip.sha1[sha1]
+https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-bin.zip.asc[asc]
+
+|https://www.apache.org/dyn/closer.cgi/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-src.tar.gz[apache-opennlp-1.7.2-src.tar.gz]
+|https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-src.tar.gz.md5[md5]
+https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-src.tar.gz.sha1[sha1]
+https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-src.tar.gz.asc[asc]
+
+|https://www.apache.org/dyn/closer.cgi/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-src.zip[apache-opennlp-1.7.2-src.zip]
+|https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-src.zip.md5[md5]
+https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-src.zip.sha1[sha1]
+https://www.apache.org/dist/opennlp/opennlp-1.7.2/apache-opennlp-1.7.2-src.zip.asc[asc]
+|===
+
+Note: Please note that the tar.gz archive contain file names longer than 100 characters and has
+been created using GNU tar extensions. It must be untarred with a GNU compatible version of tar.
+
+### Verifying Signatures
+The md5, sha1 and asc files are signature files and can be used to verify the integrity of the
+downloaded distribution package.
+
+Use the following commands to verify the integrity:
+
+* gpg --print-md MD5 fileName.zip
+* gpg --print-md SHA1 fileName.tar.gz
+* gpg --verify fileName.tar.gz.asc
+
+It might be necessary to import the https://www.apache.org/dist/opennlp/KEYS[KEYS file] to verify the integrity
+of the asc files.
+
+That can easily be done with:
+
+* gpg --import KEYS
+
+More information about release signing and verifying signatures can
+be found https://www.apache.org/dev/release-signing.html[here].
+
+## Models
+The models over at SourceForge for 1.5.0 can be http://opennlp.sourceforge.net/models-1.5/[found here]
+and are fully compatible with Apache OpenNLP 1.7.2.
+
+The models can be used for testing or getting started, please train your own models for all other use cases.
+
+## Archive
+
+Historical releases can be downloaded from the archived https://sourceforge.net/projects/opennlp/[SourceForge project]
+or the https://archive.apache.org/dist/opennlp/[Apache archive].
