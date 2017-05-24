@@ -45,6 +45,15 @@ public class SentenceSample {
   public SentenceSample(CharSequence document, Span... sentences) {
     this.document = document.toString();
     this.sentences = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(sentences)));
+
+    // validate that all spans are inside the document text
+    for (Span sentence : sentences) {
+      if (sentence.getEnd() > document.length()) {
+        throw new IllegalArgumentException(
+            String.format("Sentence span is outside of document text [len %d] and span %s",
+            document.length(), sentence));
+      }
+    }
   }
 
   public SentenceSample(Detokenizer detokenizer, String[][] sentences) {
