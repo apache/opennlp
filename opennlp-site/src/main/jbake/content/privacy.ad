@@ -1,0 +1,38 @@
+= Privacy
+Jonathan Bullock
+2015-06-04
+:jbake-type: page
+:jbake-tags: policy
+:jbake-status: published
+:idprefix:
+
+== Our Policy
+
+Like many other web sites owners, the team (us) behind JBake use Google Analytics on this site.
+
+Google Analytics is a piece of software provided by Google that records various data about visitors (you) to this site.
+
+=== What does Google Analytics record?
+
+We use Google Analytics to collect non-personal data such as:
+
+* What kind of browser & operating system your visitor the site on
+* How long you stay on the site for
+* What pages on the site you visit
+* What area of the world you are located in
+
+=== How is this data is used?
+
+The data gathered allow us to better understand the visitors to this site and how it is used, this allows us to make better decisions about the site and any future 
+developments for it.
+
+Occasionally we will compile aggregate statistics on various usage and/or user metrics for the site. No personally identifying data is included in this type of reporting.
+
+None of the data gathered through Google Analytics is shared with any 3rd party.
+
+All of our activity falls within the bounds of the http://www.google.com/analytics/terms/us.html[Google Analytics Terms of Service]
+
+=== How to opt out of tracking
+
+You can opt out of the tracking conducted by Google Analytics by using the https://tools.google.com/dlpage/gaoptout?hl=en[browser plugin] provided by Google that 
+prevents your data from being used by Google Analytics. 

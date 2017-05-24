@@ -1,0 +1,11 @@
+= Issue tracker moved to JIRA
+Apache OpenNLP
+2011-01-29
+:jbake-type: post
+:jbake-tags: news
+:jbake-status: published
+:category: news
+:idprefix:
+
+* We have moved JIRA issues to a new list. Special THANKS go to Gavin for helping.
+* We are preparing for our first full release of the package.
