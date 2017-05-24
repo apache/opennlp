@@ -131,5 +131,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
    */
   @Override
   public void close() throws IOException {
+
   }
+  
 }
