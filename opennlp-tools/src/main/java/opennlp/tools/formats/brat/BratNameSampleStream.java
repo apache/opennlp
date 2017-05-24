@@ -43,7 +43,7 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
   private SentenceDetector sentDetector;
   private Tokenizer tokenizer;
 
-  protected BratNameSampleStream(SentenceDetector sentDetector,
+  public BratNameSampleStream(SentenceDetector sentDetector,
       Tokenizer tokenizer, ObjectStream<BratDocument> samples) {
     super(samples);
 
@@ -51,7 +51,7 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
     this.tokenizer = tokenizer;
   }
 
-  protected BratNameSampleStream(SentenceModel sentModel, TokenizerModel tokenModel,
+  public BratNameSampleStream(SentenceModel sentModel, TokenizerModel tokenModel,
       ObjectStream<BratDocument> samples) {
     super(samples);
 
