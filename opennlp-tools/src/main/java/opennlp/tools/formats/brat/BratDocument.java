@@ -91,6 +91,7 @@ public class BratDocument {
     while ((ann = annStream.read()) != null) {
       annotations.add(ann);
     }
+    annStream.close();
 
     return new BratDocument(config, id, text.toString(), annotations);
   }
