@@ -29,6 +29,7 @@ import org.junit.Test;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.WordClusterDictionary.WordClusterDictionarySerializer;
 import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.DictionarySerializer;
 
 public class GeneratorFactoryTest {
 
@@ -123,5 +124,17 @@ public class GeneratorFactoryTest {
         GeneratorFactory.extractArtifactSerializerMappings(descIn);
 
     Assert.assertTrue(mapping.get("test.resource") instanceof WordClusterDictionarySerializer);
+  }
+
+  @Test
+  public void testDictionaryArtifactToSerializerMappingExtraction() throws IOException {
+
+    InputStream descIn = getClass().getResourceAsStream(
+            "/opennlp/tools/util/featuregen/TestDictionarySerializerMappingExtractionxml");
+
+    Map<String, ArtifactSerializer<?>> mapping =
+            GeneratorFactory.extractArtifactSerializerMappings(descIn);
+
+    Assert.assertTrue(mapping.get("test.dictionary") instanceof DictionarySerializer);
   }
 }
