@@ -47,6 +47,7 @@ import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.DictionarySerializer;
 import opennlp.tools.util.model.POSModelSerializer;
 
 /**
@@ -844,6 +845,10 @@ public class GeneratorFactory {
 
             case "brownclusterbigram": //, ;
               mapping.put(dictName, new BrownCluster.BrownClusterSerializer());
+              break;
+
+            case "dictionary":
+              mapping.put(dictName, new DictionarySerializer());
               break;
           }
         }

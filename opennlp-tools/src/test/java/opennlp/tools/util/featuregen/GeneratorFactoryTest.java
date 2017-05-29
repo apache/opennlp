@@ -29,6 +29,7 @@ import org.junit.Test;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.WordClusterDictionary.WordClusterDictionarySerializer;
 import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.DictionarySerializer;
 
 public class GeneratorFactoryTest {
 
@@ -116,12 +117,25 @@ public class GeneratorFactoryTest {
   @Test
   public void testArtifactToSerializerMappingExtraction() throws IOException {
     // TODO: Define a new one here with custom elements ...
-    InputStream descIn = getClass().getResourceAsStream(
-        "/opennlp/tools/util/featuregen/CustomClassLoadingWithSerializers.xml");
+    try (InputStream descIn = getClass().getResourceAsStream(
+        "/opennlp/tools/util/featuregen/CustomClassLoadingWithSerializers.xml")) {
+      Map<String, ArtifactSerializer<?>> mapping =
+              GeneratorFactory.extractArtifactSerializerMappings(descIn);
 
-    Map<String, ArtifactSerializer<?>> mapping =
-        GeneratorFactory.extractArtifactSerializerMappings(descIn);
-
-    Assert.assertTrue(mapping.get("test.resource") instanceof WordClusterDictionarySerializer);
+      Assert.assertTrue(mapping.get("test.resource") instanceof WordClusterDictionarySerializer);
+    }
   }
+
+  @Test
+  public void testDictionaryArtifactToSerializerMappingExtraction() throws IOException {
+
+    try (InputStream descIn = getClass().getResourceAsStream(
+            "/opennlp/tools/util/featuregen/TestDictionarySerializerMappingExtractionxml")) {
+      Map<String, ArtifactSerializer<?>> mapping =
+              GeneratorFactory.extractArtifactSerializerMappings(descIn);
+
+      Assert.assertTrue(mapping.get("test.dictionary") instanceof DictionarySerializer);
+    }
+  }
+
 }
