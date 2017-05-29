@@ -22,7 +22,7 @@ import java.io.IOException;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.cmdline.params.SentenceDetectorFormatParams;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.SentenceSampleStream;
 import opennlp.tools.util.InputStreamFactory;
@@ -35,7 +35,8 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class SentenceSampleStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
 
-  interface Parameters extends BasicFormatParams {
+  interface Parameters extends SentenceDetectorFormatParams {
+
   }
 
   public static void registerFactory() {
@@ -60,6 +61,34 @@ public class SentenceSampleStreamFactory extends AbstractSampleStreamFactory<Sen
       CmdLineUtil.handleCreateObjectStreamError(ex);
     }
 
-    return new SentenceSampleStream(lineStream);
+    char[] eos = extractEOS(params);
+
+    Character defaultEOS = extractDefaultEOS(params);
+
+
+    return new SentenceSampleStream(lineStream, eos, defaultEOS);
+  }
+
+  public static char[] extractEOS(SentenceDetectorFormatParams params) {
+    char[] eos = null;
+    if (params.getEosChars() != null) {
+      String eosString = SentenceSampleStream.replaceNewLineEscapeTags(
+          params.getEosChars());
+      eos = eosString.toCharArray();
+    }
+    return eos;
+  }
+
+  public static Character extractDefaultEOS(SentenceDetectorFormatParams params) {
+    Character defaultEOS = null;
+    if (params.getDefaultEosChars() != null) {
+      String eosString = SentenceSampleStream.replaceNewLineEscapeTags(
+          params.getEosChars());
+      if (eosString != null && eosString.length() > 0) {
+        defaultEOS = eosString.toCharArray()[0];
+      }
+
+    }
+    return defaultEOS;
   }
 }

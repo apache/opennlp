@@ -22,15 +22,16 @@ import java.io.IOException;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.cmdline.params.SentenceDetectorFormatParams;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
+import opennlp.tools.formats.SentenceSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
 public class ConlluSentenceSampleStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
 
-  interface Parameters extends BasicFormatParams {
+  interface Parameters extends SentenceDetectorFormatParams {
     @ArgumentParser.ParameterDescription(valueName = "sentencesPerSample",
         description = "number of sentences per sample")
     String getSentencesPerSample();
@@ -53,9 +54,12 @@ public class ConlluSentenceSampleStreamFactory extends AbstractSampleStreamFacto
     InputStreamFactory inFactory =
         CmdLineUtil.createInputStreamFactory(params.getData());
 
+    char[] eos = SentenceSampleStreamFactory.extractEOS(params);
+    Character defaultEOS = SentenceSampleStreamFactory.extractDefaultEOS(params);
+
     try {
       return new ConlluSentenceSampleStream(new ConlluStream(inFactory),
-          Integer.parseInt(params.getSentencesPerSample()));
+          Integer.parseInt(params.getSentencesPerSample()), eos, defaultEOS);
     } catch (IOException e) {
       // That will throw an exception
       CmdLineUtil.handleCreateObjectStreamError(e);

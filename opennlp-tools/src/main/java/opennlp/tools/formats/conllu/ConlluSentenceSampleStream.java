@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.sentdetect.SentenceSampleStream;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
@@ -29,10 +30,19 @@ import opennlp.tools.util.Span;
 public class ConlluSentenceSampleStream extends FilterObjectStream<ConlluSentence, SentenceSample> {
 
   private final int sentencesPerSample;
+  private final char[] eos;
+  private final Character defaultEOS;
 
-  public ConlluSentenceSampleStream(ObjectStream<ConlluSentence> samples, int sentencesPerSample) {
+  public ConlluSentenceSampleStream(ObjectStream<ConlluSentence> samples, int sentencesPerSample,
+                                    char[] eos, Character defaultEOS) {
     super(samples);
     this.sentencesPerSample = sentencesPerSample;
+    this.eos = eos;
+    this.defaultEOS = defaultEOS;
+  }
+
+  public ConlluSentenceSampleStream(ObjectStream<ConlluSentence> samples, int sentencesPerSample) {
+    this(samples, sentencesPerSample, null, null);
   }
 
   @Override
@@ -45,7 +55,9 @@ public class ConlluSentenceSampleStream extends FilterObjectStream<ConlluSentenc
     for (int i = 0; i <  sentencesPerSample && (sentence = samples.read()) != null; i++) {
 
       int startIndex = documentText.length();
-      documentText.append(sentence.getTextComment()).append(' ');
+      String textComment = SentenceSampleStream
+          .addMissingEOS(sentence.getTextComment(), eos, defaultEOS);
+      documentText.append(textComment).append(' ');
       sentenceSpans.add(new Span(startIndex, documentText.length() - 1));
     }
 
