@@ -22,7 +22,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
@@ -81,10 +84,93 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
         }
       }
 
+      wordLines = postProcessContractions(wordLines);
+
       return new ConlluSentence(wordLines, sentenceId, text);
     }
 
     return null;
+  }
+
+  private List<ConlluWordLine> postProcessContractions(List<ConlluWordLine> lines) {
+
+
+    // 1. Find contractions
+    Map<String, Integer> index = new HashMap();
+    Map<String, List<String>> contractions = new HashMap();
+    List<String> linesToDelete = new ArrayList();
+
+    for (int i = 0; i < lines.size(); i++) {
+      ConlluWordLine line = lines.get(i);
+      index.put(line.getId(), i);
+      if (line.getId().contains("-")) {
+        List<String> expandedContractions = new ArrayList();
+        String[] ids = line.getId().split("-");
+        int start = Integer.parseInt(ids[0]);
+        int end = Integer.parseInt(ids[1]);
+        for (int j = start; j <= end; j++) {
+          String js = Integer.toString(j);
+          expandedContractions.add(js);
+          linesToDelete.add(js);
+        }
+        contractions.put(line.getId(), expandedContractions);
+      }
+    }
+
+    // 2. Merge annotation
+    for (String contractionId: contractions.keySet()) {
+      ConlluWordLine contraction = lines.get(index.get(contractionId));
+      List<ConlluWordLine> expandedParts = new ArrayList();
+      for (String id : contractions.get(contractionId)) {
+        expandedParts.add(lines.get(index.get(id)));
+      }
+      ConlluWordLine merged = mergeAnnotation(contraction, expandedParts);
+      lines.set(index.get(contractionId), merged);
+    }
+
+    // 3. Delete the expanded parts
+    for (int i = linesToDelete.size() - 1; i >= 0; i--) {
+      lines.remove(index.get(linesToDelete.get(i)).intValue());
+    }
+    return lines;
+  }
+
+  /**
+   * Merges token level annotations
+   * @param contraction the line that receives the annotation
+   * @param expandedParts the lines to get annotation
+   * @return the merged line
+   */
+  private ConlluWordLine mergeAnnotation(ConlluWordLine contraction,
+                                         List<ConlluWordLine> expandedParts) {
+    String id = contraction.getId();
+    String form = contraction.getForm();
+    String lemma = expandedParts.stream()
+        .filter(p -> !"_".equals(p.getLemma()))
+        .map(p -> p.getLemma())
+        .collect(Collectors.joining("+"));
+
+    String uPosTag = expandedParts.stream()
+        .filter(p -> !"_".equals(p.getPosTag(ConlluTagset.U)))
+        .map(p -> p.getPosTag(ConlluTagset.U))
+        .collect(Collectors.joining("+"));
+
+    String xPosTag = expandedParts.stream()
+        .filter(p -> !"_".equals(p.getPosTag(ConlluTagset.X)))
+        .map(p -> p.getPosTag(ConlluTagset.X))
+        .collect(Collectors.joining("+"));
+
+    String feats = expandedParts.stream()
+        .filter(p -> !"_".equals(p.getFeats()))
+        .map(p -> p.getFeats())
+        .collect(Collectors.joining("+"));
+
+    String head = contraction.getHead();
+    String deprel = contraction.getDeprel();
+    String deps = contraction.getDeps();
+    String misc = contraction.getMisc();
+
+    return new ConlluWordLine(id, form, lemma, uPosTag, xPosTag, feats,head, deprel, deps, misc);
   }
 
   @Override

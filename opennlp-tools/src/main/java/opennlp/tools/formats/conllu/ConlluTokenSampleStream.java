@@ -53,15 +53,12 @@ public class ConlluTokenSampleStream extends FilterObjectStream<ConlluSentence, 
                 token, sentence.getSentenceIdComment(), text));
           }
 
-          int charAfterTokenIndex = tokenIndex + token.length();
-          if (charAfterTokenIndex < text.length()) {
-            if (!StringUtil.isWhitespace(text.charAt(charAfterTokenIndex))) {
-              text.insert(charAfterTokenIndex,
+          searchIndex = tokenIndex + token.length();
+          if (searchIndex < text.length()) {
+            if (!StringUtil.isWhitespace(text.charAt(searchIndex))) {
+              text.insert(searchIndex,
                   TokenSample.DEFAULT_SEPARATOR_CHARS);
-              searchIndex += TokenSample.DEFAULT_SEPARATOR_CHARS.length();
             }
-
-            searchIndex += token.length();
           }
         }
         return TokenSample.parse(text.toString(), TokenSample.DEFAULT_SEPARATOR_CHARS);
