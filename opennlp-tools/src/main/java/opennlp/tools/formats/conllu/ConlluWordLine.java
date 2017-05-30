@@ -32,6 +32,20 @@ public class ConlluWordLine {
   private final String deps;
   private final String misc;
 
+  ConlluWordLine(String id, String form, String lemma, String uPosTag, String xPosTag,
+                 String feats, String head, String deprel, String deps, String misc) {
+    this.id = id;
+    this.form = form;
+    this.lemma = lemma;
+    this.uPosTag = uPosTag;
+    this.xPosTag = xPosTag;
+    this.feats = feats;
+    this.head = head;
+    this.deprel = deprel;
+    this.deps = deps;
+    this.misc = misc;
+  }
+
   ConlluWordLine(String line) throws InvalidFormatException {
 
     String[] fields = line.split("\t");
