@@ -163,6 +163,6 @@ public class ConllXPosTaggerEval {
         "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll"), "se", params);
 
     eval(maxentModel, new File(EvalUtil.getOpennlpDataDir(),
-        "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll"), 0.9322842998585573d);
+        "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll"), 0.9347595473833098d);
   }
 }

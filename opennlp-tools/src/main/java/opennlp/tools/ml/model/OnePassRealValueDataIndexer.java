@@ -17,11 +17,7 @@
 
 package opennlp.tools.ml.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import opennlp.tools.util.InsufficientTrainingDataException;
 
@@ -41,7 +37,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     return values;
   }
 
-  protected int sortAndMerge(List<ComparableEvent> eventsToCompare,boolean sort)
+  protected int sortAndMerge(List<ComparableEvent> eventsToCompare, boolean sort)
       throws InsufficientTrainingDataException {
     int numUniqueEvents = super.sortAndMerge(eventsToCompare,sort);
     values = new float[numUniqueEvents][];
@@ -55,53 +51,4 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
     }
     return numUniqueEvents;
   }
-
-  @Override
-  protected List<ComparableEvent> index(List<Event> events, Map<String,Integer> predicateIndex) {
-    Map<String,Integer> omap = new HashMap<>();
-
-    int numEvents = events.size();
-    int outcomeCount = 0;
-    List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
-    List<Integer> indexedContext = new ArrayList<>();
-
-    for (Event ev:events) {
-      String[] econtext = ev.getContext();
-      ComparableEvent ce;
-
-      int ocID;
-      String oc = ev.getOutcome();
-
-      if (omap.containsKey(oc)) {
-        ocID = omap.get(oc);
-      } else {
-        ocID = outcomeCount++;
-        omap.put(oc, ocID);
-      }
-
-      for (String pred : econtext) {
-        if (predicateIndex.containsKey(pred)) {
-          indexedContext.add(predicateIndex.get(pred));
-        }
-      }
-
-      //drop events with no active features
-      if (indexedContext.size() > 0) {
-        int[] cons = new int[indexedContext.size()];
-        for (int ci = 0; ci < cons.length; ci++) {
-          cons[ci] = indexedContext.get(ci);
-        }
-        ce = new ComparableEvent(ocID, cons, ev.getValues());
-        eventsToCompare.add(ce);
-      } else {
-        System.err.println("Dropped event " + ev.getOutcome() + ":" + Arrays.asList(ev.getContext()));
-      }
-
-      indexedContext.clear();
-    }
-    outcomeLabels = toIndexedStringArray(omap);
-    predLabels = toIndexedStringArray(predicateIndex);
-    return eventsToCompare;
-  }
-
 }

@@ -17,14 +17,20 @@
 
 package opennlp.tools.ml.model;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.util.InsufficientTrainingDataException;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
 
@@ -152,6 +158,35 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     return numUniqueEvents;
   }
 
+  protected List<ComparableEvent> index(ObjectStream<Event> events,
+                                        Map<String, Integer> predicateIndex) throws IOException {
+    Map<String, Integer> omap = new HashMap<>();
+
+    List<ComparableEvent> eventsToCompare = new ArrayList<>();
+
+    Event ev;
+    while ((ev = events.read()) != null) {
+
+      omap.putIfAbsent(ev.getOutcome(), omap.size());
+
+      int[] cons = Arrays.stream(ev.getContext())
+          .map(pred -> predicateIndex.get(pred))
+          .filter(Objects::nonNull)
+          .mapToInt(i -> i).toArray();
+
+      // drop events with no active features
+      if (cons.length > 0) {
+        int ocID = omap.get(ev.getOutcome());
+        eventsToCompare.add(new ComparableEvent(ocID, cons, ev.getValues()));
+      } else {
+        display("Dropped event " + ev.getOutcome() + ":"
+            + Arrays.asList(ev.getContext()) + "\n");
+      }
+    }
+    outcomeLabels = toIndexedStringArray(omap);
+    predLabels = toIndexedStringArray(predicateIndex);
+    return eventsToCompare;
+  }
 
   public int getNumEvents() {
     return numEvents;
@@ -163,20 +198,28 @@ public abstract class AbstractDataIndexer implements DataIndexer {
    * @param predicateSet The set of predicates which will be used for model building.
    * @param counter The predicate counters.
    * @param cutoff The cutoff which determines whether a predicate is included.
+   * @deprecated will be removed after 1.8.1 release
    */
+  @Deprecated
   protected static void update(String[] ec, Set<String> predicateSet,
       Map<String,Integer> counter, int cutoff) {
     for (String s : ec) {
-      Integer i = counter.get(s);
-      if (i == null) {
-        counter.put(s, 1);
-      }
-      else {
-        counter.put(s, i + 1);
-      }
+      counter.merge(s, 1, (value, one) -> value + one);
+
       if (!predicateSet.contains(s) && counter.get(s) >= cutoff) {
         predicateSet.add(s);
       }
+    }
+  }
+
+  /**
+   * Updates the set of predicated and counter with the specified event contexts.
+   * @param ec The contexts/features which occur in a event.
+   * @param counter The predicate counters.
+   */
+  protected static void update(String[] ec, Map<String,Integer> counter) {
+    for (String s : ec) {
+      counter.merge(s, 1, (value, one) -> value + one);
     }
   }
 
@@ -188,14 +231,10 @@ public abstract class AbstractDataIndexer implements DataIndexer {
    *
    * @param labelToIndexMap a <code>TObjectIntHashMap</code> value
    * @return a <code>String[]</code> value
-   * @since maxent 1.2.6
    */
-  protected static String[] toIndexedStringArray(Map<String,Integer> labelToIndexMap) {
-    final String[] array = new String[labelToIndexMap.size()];
-    for (String label : labelToIndexMap.keySet()) {
-      array[labelToIndexMap.get(label)] = label;
-    }
-    return array;
+  protected static String[] toIndexedStringArray(Map<String, Integer> labelToIndexMap) {
+    return labelToIndexMap.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue))
+        .map(Map.Entry::getKey).toArray(String[]::new);
   }
 
   public float[][] getValues() {

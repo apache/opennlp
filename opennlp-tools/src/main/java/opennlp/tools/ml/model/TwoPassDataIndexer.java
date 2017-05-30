@@ -23,14 +23,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import opennlp.tools.util.ObjectStream;
 
@@ -52,26 +48,30 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     int cutoff = trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
     boolean sort = trainingParameters.getBooleanParameter(SORT_PARAM, SORT_DEFAULT);
 
-    Map<String,Integer> predicateIndex = new HashMap<>();
-    List<ComparableEvent> eventsToCompare;
+    long start = System.currentTimeMillis();
 
-    display("Indexing events using cutoff of " + cutoff + "\n\n");
+    display("Indexing events with TwoPass using cutoff of " + cutoff + "\n\n");
 
     display("\tComputing event counts...  ");
 
+    Map<String,Integer> predicateIndex = new HashMap<>();
+
     File tmp = File.createTempFile("events", null);
     tmp.deleteOnExit();
-    Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),"UTF8"));
-    int numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
+    int numEvents;
+    try (Writer osw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp),
+        StandardCharsets.UTF_8))) {
+      numEvents = computeEventCounts(eventStream, osw, predicateIndex, cutoff);
+    }
     display("done. " + numEvents + " events\n");
 
     display("\tIndexing...  ");
 
+    List<ComparableEvent> eventsToCompare;
     try (FileEventStream fes = new FileEventStream(tmp)) {
-      eventsToCompare = index(numEvents, fes, predicateIndex);
+      eventsToCompare = index(fes, predicateIndex);
     }
-    // done with predicates
-    predicateIndex = null;
+
     tmp.delete();
     display("done.\n");
 
@@ -82,9 +82,9 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
       display("Collecting events... ");
     }
     sortAndMerge(eventsToCompare,sort);
-    display("Done indexing.\n");
-
+    display(String.format("Done indexing in %.2f s.\n", (System.currentTimeMillis() - start) / 1000d));
   }
+
   /**
    * Reads events from <tt>eventStream</tt> into a linked list.  The
    * predicates associated with each event are counted and any which
@@ -100,75 +100,26 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
       Map<String,Integer> predicatesInOut, int cutoff) throws IOException {
     Map<String,Integer> counter = new HashMap<>();
     int eventCount = 0;
-    Set<String> predicateSet = new HashSet<>();
 
     Event ev;
     while ((ev = eventStream.read()) != null) {
       eventCount++;
       eventStore.write(FileEventStream.toLine(ev));
       String[] ec = ev.getContext();
-      update(ec,predicateSet,counter,cutoff);
+      update(ec, counter);
     }
-    predCounts = new int[predicateSet.size()];
-    int index = 0;
-    for (Iterator<String> pi = predicateSet.iterator(); pi.hasNext(); index++) {
-      String predicate = pi.next();
-      predCounts[index] = counter.get(predicate);
-      predicatesInOut.put(predicate,index);
+
+    String[] predicateSet = counter.entrySet().stream()
+        .filter(entry -> entry.getValue() >= cutoff)
+        .map(Map.Entry::getKey).sorted()
+        .toArray(String[]::new);
+
+    predCounts = new int[predicateSet.length];
+    for (int i = 0; i < predicateSet.length; i++) {
+      predCounts[i] = counter.get(predicateSet[i]);
+      predicatesInOut.put(predicateSet[i], i);
     }
-    eventStore.close();
+
     return eventCount;
   }
-
-  // TODO: merge this code with the copy and paste version in OnePassDataIndexer
-  private List<ComparableEvent> index(int numEvents, ObjectStream<Event> es,
-      Map<String,Integer> predicateIndex) throws IOException {
-    Map<String,Integer> omap = new HashMap<>();
-
-    int outcomeCount = 0;
-    List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
-    List<Integer> indexedContext = new ArrayList<>();
-
-    Event ev;
-    while ((ev = es.read()) != null) {
-      String[] econtext = ev.getContext();
-      ComparableEvent ce;
-
-      int ocID;
-      String oc = ev.getOutcome();
-
-      if (omap.containsKey(oc)) {
-        ocID = omap.get(oc);
-      }
-      else {
-        ocID = outcomeCount++;
-        omap.put(oc, ocID);
-      }
-
-      for (String pred : econtext) {
-        if (predicateIndex.containsKey(pred)) {
-          indexedContext.add(predicateIndex.get(pred));
-        }
-      }
-
-      // drop events with no active features
-      if (indexedContext.size() > 0) {
-        int[] cons = new int[indexedContext.size()];
-        for (int ci = 0;ci < cons.length; ci++) {
-          cons[ci] = indexedContext.get(ci);
-        }
-        ce = new ComparableEvent(ocID, cons);
-        eventsToCompare.add(ce);
-      }
-      else {
-        display("Dropped event " + ev.getOutcome() + ":" + Arrays.asList(ev.getContext()) + "\n");
-      }
-      // recycle the TIntArrayList
-      indexedContext.clear();
-    }
-    outcomeLabels = toIndexedStringArray(omap);
-    predLabels = toIndexedStringArray(predicateIndex);
-    return eventsToCompare;
-  }
 }
-

@@ -18,17 +18,13 @@
 package opennlp.tools.ml.model;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamUtils;
 
 /**
  * An indexer for maxent model data which handles cutoffs for uncommon
@@ -44,28 +40,24 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
     int cutoff = trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
     boolean sort = trainingParameters.getBooleanParameter(SORT_PARAM, SORT_DEFAULT);
 
-    Map<String, Integer> predicateIndex = new HashMap<>();
-    List<Event> events;
-    List<ComparableEvent> eventsToCompare;
+    long start = System.currentTimeMillis();
 
-    display("Indexing events using cutoff of " + cutoff + "\n\n");
+    display("Indexing events with OnePass using cutoff of " + cutoff + "\n\n");
 
     display("\tComputing event counts...  ");
-    events = computeEventCounts(eventStream, predicateIndex, cutoff);
+    Map<String, Integer> predicateIndex = new HashMap<>();
+    List<Event> events = computeEventCounts(eventStream, predicateIndex, cutoff);
     display("done. " + events.size() + " events\n");
 
     display("\tIndexing...  ");
-    eventsToCompare = index(events, predicateIndex);
-    // done with event list
-    events = null;
-    // done with predicates
-    predicateIndex = null;
+    List<ComparableEvent> eventsToCompare =
+        index(ObjectStreamUtils.createObjectStream(events), predicateIndex);
 
     display("done.\n");
 
     display("Sorting and merging events... ");
     sortAndMerge(eventsToCompare, sort);
-    display("Done indexing.\n");
+    display(String.format("Done indexing in %.2f s.\n", (System.currentTimeMillis() - start) / 1000d));
   }
 
   /**
@@ -84,71 +76,26 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
    */
   private List<Event> computeEventCounts(ObjectStream<Event> eventStream,
       Map<String, Integer> predicatesInOut, int cutoff) throws IOException {
-    Set<String> predicateSet = new HashSet<>();
+
     Map<String, Integer> counter = new HashMap<>();
     List<Event> events = new LinkedList<>();
     Event ev;
     while ((ev = eventStream.read()) != null) {
       events.add(ev);
-      update(ev.getContext(), predicateSet, counter, cutoff);
+      update(ev.getContext(), counter);
     }
-    predCounts = new int[predicateSet.size()];
-    int index = 0;
-    for (Iterator<String> pi = predicateSet.iterator(); pi.hasNext(); index++) {
-      String predicate = pi.next();
-      predCounts[index] = counter.get(predicate);
-      predicatesInOut.put(predicate, index);
+
+    String[] predicateSet = counter.entrySet().stream()
+        .filter(entry -> entry.getValue() >= cutoff)
+        .map(Map.Entry::getKey).sorted()
+        .toArray(String[]::new);
+
+    predCounts = new int[predicateSet.length];
+    for (int i = 0; i < predicateSet.length; i++) {
+      predCounts[i] = counter.get(predicateSet[i]);
+      predicatesInOut.put(predicateSet[i], i);
     }
+
     return events;
   }
-
-  protected List<ComparableEvent> index(List<Event> events,
-      Map<String, Integer> predicateIndex) {
-    Map<String, Integer> omap = new HashMap<>();
-
-    int numEvents = events.size();
-    int outcomeCount = 0;
-    List<ComparableEvent> eventsToCompare = new ArrayList<>(numEvents);
-    List<Integer> indexedContext = new ArrayList<>();
-
-    for (Event ev:events) {
-      String[] econtext = ev.getContext();
-      ComparableEvent ce;
-
-      int ocID;
-      String oc = ev.getOutcome();
-
-      if (omap.containsKey(oc)) {
-        ocID = omap.get(oc);
-      } else {
-        ocID = outcomeCount++;
-        omap.put(oc, ocID);
-      }
-
-      for (String pred : econtext) {
-        if (predicateIndex.containsKey(pred)) {
-          indexedContext.add(predicateIndex.get(pred));
-        }
-      }
-
-      // drop events with no active features
-      if (indexedContext.size() > 0) {
-        int[] cons = new int[indexedContext.size()];
-        for (int ci = 0; ci < cons.length; ci++) {
-          cons[ci] = indexedContext.get(ci);
-        }
-        ce = new ComparableEvent(ocID, cons);
-        eventsToCompare.add(ce);
-      } else {
-        display("Dropped event " + ev.getOutcome() + ":"
-            + Arrays.asList(ev.getContext()) + "\n");
-      }
-      // recycle the TIntArrayList
-      indexedContext.clear();
-    }
-    outcomeLabels = toIndexedStringArray(omap);
-    predLabels = toIndexedStringArray(predicateIndex);
-    return eventsToCompare;
-  }
-
 }

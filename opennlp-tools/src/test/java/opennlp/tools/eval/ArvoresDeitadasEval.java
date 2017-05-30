@@ -199,7 +199,7 @@ public class ArvoresDeitadasEval {
   @Test
   public void evalPortugueseChunkerQn() throws IOException {
     chunkerCrossEval(EvalUtil.createMaxentQnParams(),
-        0.9652111035230788d);
+        0.9648211936491359d);
   }
 
   @Test
@@ -208,7 +208,7 @@ public class ArvoresDeitadasEval {
     params.put("Threads", 4);
 
     // NOTE: Should be the same as without multiple threads!!!
-    chunkerCrossEval(params, 0.9647304571382662);
+    chunkerCrossEval(params, 0.9649180953528779d);
   }
 
   @Test
