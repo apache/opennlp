@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Map;
 
 import opennlp.tools.dictionary.Dictionary;
@@ -79,6 +80,10 @@ public final class TokenizerModel extends BaseModel {
    */
   public TokenizerModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
+  }
+
+  public TokenizerModel(Path modelPath) throws IOException {
+    this(modelPath.toFile());
   }
 
   /**

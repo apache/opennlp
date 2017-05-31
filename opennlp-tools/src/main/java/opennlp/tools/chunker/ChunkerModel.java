@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
 
@@ -78,6 +79,10 @@ public class ChunkerModel extends BaseModel {
 
   public ChunkerModel(File modelFile) throws IOException, InvalidFormatException {
     super(COMPONENT_NAME, modelFile);
+  }
+
+  public ChunkerModel(Path modelPath) throws IOException, InvalidFormatException {
+    this(modelPath.toFile());
   }
 
   public ChunkerModel(URL modelURL) throws IOException, InvalidFormatException {

@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Map;
 
 import opennlp.tools.dictionary.Dictionary;
@@ -93,6 +94,10 @@ public class SentenceModel extends BaseModel {
 
   public SentenceModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
+  }
+
+  public SentenceModel(Path modelPath) throws IOException {
+    this(modelPath.toFile());
   }
 
   public SentenceModel(URL modelURL) throws IOException {

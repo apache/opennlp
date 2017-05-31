@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
 
@@ -105,6 +106,10 @@ public class TokenNameFinderModel extends BaseModel {
 
   public TokenNameFinderModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
+  }
+
+  public TokenNameFinderModel(Path modelPath) throws IOException {
+    this(modelPath.toFile());
   }
 
   public TokenNameFinderModel(URL modelURL) throws IOException {
