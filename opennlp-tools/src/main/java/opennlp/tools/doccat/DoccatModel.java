@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractModel;
@@ -51,6 +52,10 @@ public class DoccatModel extends BaseModel {
 
   public DoccatModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
+  }
+
+  public DoccatModel(Path modelPath) throws IOException {
+    this(modelPath.toFile());
   }
 
   public DoccatModel(URL modelURL) throws IOException {

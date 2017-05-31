@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 
@@ -131,6 +132,10 @@ public class ParserModel extends BaseModel {
 
   public ParserModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
+  }
+
+  public ParserModel(Path modelPath) throws IOException {
+    this(modelPath.toFile());
   }
 
   public ParserModel(URL modelURL) throws IOException {

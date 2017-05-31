@@ -18,9 +18,12 @@
 package opennlp.tools.lemmatizer;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,7 +40,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
   /**
    * The hashmap containing the dictionary.
    */
-  private final Map<List<String>, List<String>> dictMap;
+  private final Map<List<String>, List<String>> dictMap = new HashMap<>();
 
   /**
    * Construct a hashmap from the input tab separated dictionary.
@@ -50,7 +53,20 @@ public class DictionaryLemmatizer implements Lemmatizer {
    *          the input dictionary via inputstream
    */
   public DictionaryLemmatizer(final InputStream dictionary) throws IOException {
-    this.dictMap = new HashMap<>();
+    init(dictionary);
+  }
+
+  public DictionaryLemmatizer(File dictionaryFile) throws IOException {
+    try (InputStream in = new FileInputStream(dictionaryFile)) {
+      init(in);
+    }
+  }
+
+  public DictionaryLemmatizer(Path dictionaryFile) throws IOException {
+    this(dictionaryFile.toFile());
+  }
+
+  private void init(InputStream dictionary) throws IOException {
     final BufferedReader breader = new BufferedReader(
         new InputStreamReader(dictionary));
     String line;
@@ -60,8 +76,6 @@ public class DictionaryLemmatizer implements Lemmatizer {
       this.dictMap.put(Arrays.asList(elems[0], elems[1]), Arrays.asList(lemmas));
     }
   }
-
-
   /**
    * Get the Map containing the dictionary.
    *

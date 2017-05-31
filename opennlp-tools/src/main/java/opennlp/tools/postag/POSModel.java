@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -96,6 +97,10 @@ public final class POSModel extends BaseModel {
 
   public POSModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
+  }
+
+  public POSModel(Path modelPath) throws IOException {
+    this(modelPath.toFile());
   }
 
   public POSModel(URL modelURL) throws IOException {
