@@ -18,9 +18,11 @@
 package opennlp.tools.util.model;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -28,6 +30,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -596,6 +599,16 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
     zip.finish();
     zip.flush();
+  }
+
+  public final void serialize(File model) throws IOException {
+    try (OutputStream out = new BufferedOutputStream(new FileOutputStream(model))) {
+      serialize(out);
+    }
+  }
+
+  public final void serialize(Path model) throws IOException {
+    serialize(model.toFile());
   }
 
   @SuppressWarnings("unchecked")
