@@ -425,6 +425,9 @@
 					<name>OPENNLP_DATA_DIR</name>
 				</property>
 			</activation>
+			<properties>
+				<opennlp.forkCount>0.5C</opennlp.forkCount>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
