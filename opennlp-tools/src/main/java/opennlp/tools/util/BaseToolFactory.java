@@ -113,8 +113,6 @@ public abstract class BaseToolFactory {
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
           + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
       throw new InvalidFormatException(msg, e);
     }
     return theFactory;
@@ -131,8 +129,6 @@ public abstract class BaseToolFactory {
         String msg = "Could not instantiate the "
             + factoryClass.getCanonicalName()
             + ". The initialization throw an exception.";
-        System.err.println(msg);
-        e.printStackTrace();
         throw new InvalidFormatException(msg, e);
       }
     }
