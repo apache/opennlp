@@ -65,6 +65,7 @@ public class GISIndexingTest {
     try (ObjectStream<Event> eventStream = createEventStream()) {
       TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
       params.put(AbstractTrainer.CUTOFF_PARAM, 1);
+      params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
       EventTrainer trainer = TrainerFactory.getEventTrainer(params,  null);
 
@@ -81,6 +82,8 @@ public class GISIndexingTest {
       TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
       params.put(AbstractTrainer.CUTOFF_PARAM, 1);
       params.put("smoothing", true);
+      params.put(AbstractTrainer.VERBOSE_PARAM, false);
+
       EventTrainer trainer = TrainerFactory.getEventTrainer(params, null);
 
       Assert.assertNotNull(trainer.train(eventStream));
@@ -97,6 +100,7 @@ public class GISIndexingTest {
 
       params.put(AbstractTrainer.ITERATIONS_PARAM, 10);
       params.put(AbstractTrainer.CUTOFF_PARAM, 1);
+      params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
       EventTrainer trainer = TrainerFactory.getEventTrainer(params, null);
 
@@ -113,6 +117,7 @@ public class GISIndexingTest {
       TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
       params.put(AbstractTrainer.ITERATIONS_PARAM, 10);
       params.put(AbstractTrainer.CUTOFF_PARAM, 1);
+      params.put(AbstractTrainer.VERBOSE_PARAM, false);
       GISTrainer trainer = (GISTrainer) TrainerFactory.getEventTrainer(params, null);
       trainer.setGaussianSigma(0.01);
 
@@ -133,6 +138,7 @@ public class GISIndexingTest {
       params.put(AbstractTrainer.CUTOFF_PARAM, 1);
       params.put("smoothing", false);
       params.put(AbstractTrainer.VERBOSE_PARAM, false);
+      params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
       EventTrainer trainer = TrainerFactory.getEventTrainer(params, null);
       Assert.assertNotNull(trainer.train(eventStream));
@@ -150,6 +156,7 @@ public class GISIndexingTest {
     parameters.put(AbstractEventTrainer.CUTOFF_PARAM, 1);
     // note: setting the SORT_PARAM to true is the default, so it is not really needed
     parameters.put(AbstractDataIndexer.SORT_PARAM, true);
+    parameters.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     // guarantee that you have a GIS trainer...
     EventTrainer trainer =
@@ -170,7 +177,7 @@ public class GISIndexingTest {
     parameters.put(TrainingParameters.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     parameters.put(AbstractEventTrainer.DATA_INDEXER_PARAM, AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
     parameters.put(AbstractEventTrainer.CUTOFF_PARAM, 2);
-    
+
     trainer = TrainerFactory.getEventTrainer(parameters, new HashMap<>());
     Assert.assertEquals("opennlp.tools.ml.maxent.quasinewton.QNTrainer", trainer.getClass().getName());
     aeTrainer = (AbstractEventTrainer)trainer;
@@ -188,7 +195,8 @@ public class GISIndexingTest {
     // set the cutoff to 1 for this test.
     TrainingParameters parameters = new TrainingParameters();
     parameters.put(AbstractDataIndexer.CUTOFF_PARAM, 1);
-    
+    parameters.put(AbstractTrainer.VERBOSE_PARAM, false);
+
     // test with a 1 pass data indexer...
     parameters.put(AbstractEventTrainer.DATA_INDEXER_PARAM, AbstractEventTrainer.DATA_INDEXER_ONE_PASS_VALUE);
     DataIndexer di = DataIndexerFactory.getDataIndexer(parameters, myReportMap);

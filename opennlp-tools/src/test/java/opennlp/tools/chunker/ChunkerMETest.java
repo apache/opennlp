@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
@@ -77,6 +78,7 @@ public class ChunkerMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     ChunkerModel chunkerModel = ChunkerME.train("eng", sampleStream, params, new ChunkerFactory());
 
@@ -107,7 +109,6 @@ public class ChunkerMETest {
     Assert.assertEquals(new Span(9, 13, "NP"), preds[7]);
     Assert.assertEquals(new Span(13, 14, "PP"), preds[8]);
     Assert.assertEquals(new Span(14, 16, "NP"), preds[9]);
-
   }
 
   @Test
@@ -142,9 +143,8 @@ public class ChunkerMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     ChunkerME.train("eng", sampleStream, params, new ChunkerFactory());
-
   }
-
 }

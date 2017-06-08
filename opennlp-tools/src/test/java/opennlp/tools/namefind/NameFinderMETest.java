@@ -18,11 +18,13 @@
 package opennlp.tools.namefind;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
@@ -57,16 +59,14 @@ public class NameFinderMETest {
   public void testNameFinder() throws Exception {
 
     // train the name finder
-    String encoding = "ISO-8859-1";
-
-    ObjectStream<NameSample> sampleStream =
-        new NameSampleDataStream(
+    ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
             new PlainTextByLineStream(new MockInputStreamFactory(
-              new File("opennlp/tools/namefind/AnnotatedSentences.txt")), encoding));
+            new File("opennlp/tools/namefind/AnnotatedSentences.txt")), StandardCharsets.ISO_8859_1));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -116,15 +116,14 @@ public class NameFinderMETest {
   public void testNameFinderWithTypes() throws Exception {
 
     // train the name finder
-    String encoding = "ISO-8859-1";
-
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt")), encoding));
+          new File("opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt")), StandardCharsets.ISO_8859_1));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -169,6 +168,7 @@ public class NameFinderMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
             params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -194,11 +194,12 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/OnlyWithNames.train")), "UTF-8"));
+          new File("opennlp/tools/namefind/OnlyWithNames.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", TYPE_OVERRIDE, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -229,11 +230,12 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/OnlyWithNamesWithTypes.train")), "UTF-8"));
+          new File("opennlp/tools/namefind/OnlyWithNamesWithTypes.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -264,12 +266,13 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/OnlyWithEntitiesWithTypes.train")), "UTF-8"));
+          new File("opennlp/tools/namefind/OnlyWithEntitiesWithTypes.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -316,11 +319,12 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/voa1.train")), "UTF-8"));
+          new File("opennlp/tools/namefind/voa1.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
@@ -358,5 +362,4 @@ public class NameFinderMETest {
     Assert.assertEquals("person", names2[0].getType());
     Assert.assertEquals("organization", names2[1].getType());
   }
-
 }
