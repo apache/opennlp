@@ -19,6 +19,7 @@ package opennlp.tools.ml.naivebayes;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Class implementing the probability distribution over labels returned by
@@ -101,15 +102,16 @@ public class LogProbabilities<T> extends Probabilities<T> {
       return normalised;
     Map<T, Double> temp = createMapDataStructure();
     double highestLogProbability = Double.NEGATIVE_INFINITY;
-    for (T t : map.keySet()) {
-      Double p = map.get(t);
+    for (Entry<T, Double> entry : map.entrySet()) {
+      final Double p = entry.getValue();
       if (p != null && p > highestLogProbability) {
         highestLogProbability = p;
       }
     }
     double sum = 0;
-    for (T t : map.keySet()) {
-      Double p = map.get(t);
+    for (Entry<T, Double> entry : map.entrySet()) {
+      T t = entry.getKey();
+      Double p = entry.getValue();
       if (p != null) {
         double temp_p = Math.exp(p - highestLogProbability);
         if (!Double.isNaN(temp_p)) {
@@ -118,8 +120,9 @@ public class LogProbabilities<T> extends Probabilities<T> {
         }
       }
     }
-    for (T t : temp.keySet()) {
-      Double p = temp.get(t);
+    for (Entry<T, Double> entry : temp.entrySet()) {
+      final T t = entry.getKey();
+      final Double p = entry.getValue();
       if (p != null && sum > Double.MIN_VALUE) {
         temp.put(t, p / sum);
       }
@@ -162,8 +165,9 @@ public class LogProbabilities<T> extends Probabilities<T> {
   public void discardCountsBelow(double i) {
     i = Math.log(i);
     ArrayList<T> labelsToRemove = new ArrayList<>();
-    for (T label : map.keySet()) {
-      Double sum = map.get(label);
+    for (Entry<T, Double> entry : map.entrySet()) {
+      final T label = entry.getKey();
+      Double sum = entry.getValue();
       if (sum == null) sum = Double.NEGATIVE_INFINITY;
       if (sum < i)
         labelsToRemove.add(label);
@@ -190,8 +194,9 @@ public class LogProbabilities<T> extends Probabilities<T> {
   public T getMax() {
     double max = Double.NEGATIVE_INFINITY;
     T maxT = null;
-    for (T t : map.keySet()) {
-      Double temp = map.get(t);
+    for (Entry<T, Double> entry : map.entrySet()) {
+      final T t = entry.getKey();
+      final Double temp = entry.getValue();
       if (temp >= max) {
         max = temp;
         maxT = t;

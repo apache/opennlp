@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import opennlp.tools.util.InputStreamFactory;
@@ -96,15 +97,15 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
 
 
     // 1. Find contractions
-    Map<String, Integer> index = new HashMap();
-    Map<String, List<String>> contractions = new HashMap();
-    List<String> linesToDelete = new ArrayList();
+    Map<String, Integer> index = new HashMap<>();
+    Map<String, List<String>> contractions = new HashMap<>();
+    List<String> linesToDelete = new ArrayList<>();
 
     for (int i = 0; i < lines.size(); i++) {
       ConlluWordLine line = lines.get(i);
       index.put(line.getId(), i);
       if (line.getId().contains("-")) {
-        List<String> expandedContractions = new ArrayList();
+        List<String> expandedContractions = new ArrayList<>();
         String[] ids = line.getId().split("-");
         int start = Integer.parseInt(ids[0]);
         int end = Integer.parseInt(ids[1]);
@@ -118,14 +119,17 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     }
 
     // 2. Merge annotation
-    for (String contractionId: contractions.keySet()) {
-      ConlluWordLine contraction = lines.get(index.get(contractionId));
-      List<ConlluWordLine> expandedParts = new ArrayList();
-      for (String id : contractions.get(contractionId)) {
+    for (Entry<String, List<String>> entry : contractions.entrySet()) {
+      final String contractionId = entry.getKey();
+      final List<String> expandedContractions = entry.getValue();
+      int contractionIndex = index.get(contractionId);
+      ConlluWordLine contraction = lines.get(contractionIndex);
+      List<ConlluWordLine> expandedParts = new ArrayList<>();
+      for (String id : expandedContractions) {
         expandedParts.add(lines.get(index.get(id)));
       }
       ConlluWordLine merged = mergeAnnotation(contraction, expandedParts);
-      lines.set(index.get(contractionId), merged);
+      lines.set(contractionIndex, merged);
     }
 
     // 3. Delete the expanded parts

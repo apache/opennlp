@@ -96,19 +96,19 @@ public class TokenSampleStreamTest {
   public void testParsingWhitespaceAndSeparatedString() throws IOException {
     String sampleTokens = "a b<SPLIT>c d<SPLIT>e";
 
-    ObjectStream<TokenSample> sampleTokenStream = new TokenSampleStream(
-        ObjectStreamUtils.createObjectStream(sampleTokens));
+    try (ObjectStream<TokenSample> sampleTokenStream = new TokenSampleStream(
+        ObjectStreamUtils.createObjectStream(sampleTokens))) {
+      TokenSample tokenSample = sampleTokenStream.read();
 
-    TokenSample tokenSample = sampleTokenStream.read();
+      Span[] tokenSpans = tokenSample.getTokenSpans();
 
-    Span[] tokenSpans = tokenSample.getTokenSpans();
+      Assert.assertEquals(5, tokenSpans.length);
 
-    Assert.assertEquals(5, tokenSpans.length);
-
-    Assert.assertEquals("a", tokenSpans[0].getCoveredText(tokenSample.getText()));
-    Assert.assertEquals("b", tokenSpans[1].getCoveredText(tokenSample.getText()));
-    Assert.assertEquals("c", tokenSpans[2].getCoveredText(tokenSample.getText()));
-    Assert.assertEquals("d", tokenSpans[3].getCoveredText(tokenSample.getText()));
-    Assert.assertEquals("e", tokenSpans[4].getCoveredText(tokenSample.getText()));
+      Assert.assertEquals("a", tokenSpans[0].getCoveredText(tokenSample.getText()));
+      Assert.assertEquals("b", tokenSpans[1].getCoveredText(tokenSample.getText()));
+      Assert.assertEquals("c", tokenSpans[2].getCoveredText(tokenSample.getText()));
+      Assert.assertEquals("d", tokenSpans[3].getCoveredText(tokenSample.getText()));
+      Assert.assertEquals("e", tokenSpans[4].getCoveredText(tokenSample.getText()));
+    }
   }
 }

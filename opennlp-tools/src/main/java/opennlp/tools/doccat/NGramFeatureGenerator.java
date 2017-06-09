@@ -75,12 +75,14 @@ public class NGramFeatureGenerator implements FeatureGenerator {
     List<String> features = new ArrayList<>();
 
     for (int i = 0; i <= text.length - minGram; i++) {
-      String feature = "ng=";
+      final StringBuilder sb = new StringBuilder();
+      sb.append("ng=");
       for (int y = 0; y < maxGram && i + y < text.length; y++) {
-        feature = feature + ":" + text[i + y];
+        sb.append(":");
+        sb.append(text[i + y]);
         int gramCount = y + 1;
         if (maxGram >= gramCount && gramCount >= minGram) {
-          features.add(feature);
+          features.add(sb.toString());
         }
       }
     }

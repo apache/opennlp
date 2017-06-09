@@ -39,13 +39,13 @@ public class POSSampleEventStreamTest {
 
     POSSample sample = POSSample.parse(sentence);
 
-    ObjectStream<Event> eventStream = new POSSampleEventStream(
-        ObjectStreamUtils.createObjectStream(sample));
-
-    Assert.assertEquals("DT", eventStream.read().getOutcome());
-    Assert.assertEquals("VBZ", eventStream.read().getOutcome());
-    Assert.assertEquals("JJ", eventStream.read().getOutcome());
-    Assert.assertEquals(".", eventStream.read().getOutcome());
-    Assert.assertNull(eventStream.read());
+    try (ObjectStream<Event> eventStream = new POSSampleEventStream(
+        ObjectStreamUtils.createObjectStream(sample))) {
+      Assert.assertEquals("DT", eventStream.read().getOutcome());
+      Assert.assertEquals("VBZ", eventStream.read().getOutcome());
+      Assert.assertEquals("JJ", eventStream.read().getOutcome());
+      Assert.assertEquals(".", eventStream.read().getOutcome());
+      Assert.assertNull(eventStream.read());
+    }
   }
 }

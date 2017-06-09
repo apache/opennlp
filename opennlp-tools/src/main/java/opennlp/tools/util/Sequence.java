@@ -20,6 +20,7 @@ package opennlp.tools.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /** Represents a weighted sequence of outcomes. */
 public class Sequence implements Comparable<Sequence> {
@@ -59,14 +60,31 @@ public class Sequence implements Comparable<Sequence> {
   }
 
   public int compareTo(Sequence s) {
-    if (score < s.score)
-      return 1;
-    if (score > s.score)
-      return -1;
-    return 0;
+    return Double.compare(s.score, score);
   }
 
-  /** Adds an outcome and probability to this sequence.
+  @Override
+  public int hashCode() {
+    return Objects.hash(outcomes, probs, score);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+
+    if (obj instanceof Sequence) {
+      Sequence other = (Sequence) obj;
+      double epsilon = 0.0000001;
+      return Objects.equals(outcomes, other.outcomes) &&
+          Objects.equals(probs, other.probs) &&
+          Math.abs(score - other.score) < epsilon;
+    }
+
+    return false;
+  }
+
+/** Adds an outcome and probability to this sequence.
    * @param outcome the outcome to be added.
    * @param p the probability associated with this outcome.
    */

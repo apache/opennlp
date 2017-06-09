@@ -87,7 +87,7 @@ public final class RegexNameFinder implements TokenNameFinder {
 
     Collection<Span> annotations = new LinkedList<>();
 
-    if (mPatterns == null && regexMap != null) {
+    if (regexMap != null) {
       for (Map.Entry<String, Pattern[]> entry : regexMap.entrySet()) {
         for (Pattern mPattern : entry.getValue()) {
           Matcher matcher = mPattern.matcher(sentenceString);
@@ -141,7 +141,7 @@ public final class RegexNameFinder implements TokenNameFinder {
 
   private Span[] getAnnotations(String text) {
     Collection<Span> annotations = new LinkedList<>();
-    if (mPatterns == null && regexMap != null) {
+    if (regexMap != null) {
       for (Map.Entry<String, Pattern[]> entry : regexMap.entrySet()) {
         for (Pattern mPattern : entry.getValue()) {
           Matcher matcher = mPattern.matcher(text);

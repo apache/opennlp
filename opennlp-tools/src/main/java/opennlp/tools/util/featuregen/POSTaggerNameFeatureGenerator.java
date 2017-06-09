@@ -18,8 +18,8 @@
 
 package opennlp.tools.util.featuregen;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
@@ -56,7 +56,7 @@ public class POSTaggerNameFeatureGenerator implements AdaptiveFeatureGenerator {
 
 
   public void createFeatures(List<String> feats, String[] toks, int index, String[] preds) {
-    if (!Objects.equals(this.cachedTokens, toks)) {
+    if (!Arrays.equals(this.cachedTokens, toks)) {
       this.cachedTokens = toks;
       this.cachedTags = this.posTagger.tag(toks);
     }

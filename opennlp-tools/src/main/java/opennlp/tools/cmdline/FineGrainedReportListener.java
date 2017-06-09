@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -497,19 +498,17 @@ public abstract class FineGrainedReportListener {
       this.categoryAccuracy = new HashMap<>();
 
       // compute grouped categories
-      for (String key :
-          confusionMatrix.keySet()) {
-        String category;
+      for (Entry<String, ConfusionMatrixLine> entry : confusionMatrix.entrySet()) {
+        final String key = entry.getKey();
+        final ConfusionMatrixLine confusionMatrixLine = entry.getValue();
+        final String category;
         if (key.contains("-")) {
           category = key.split("-")[0];
         } else {
           category = key;
         }
-        if (!categoryAccuracy.containsKey(category)) {
-          categoryAccuracy.put(category, 0.0);
-        }
-        categoryAccuracy.put(category,
-            categoryAccuracy.get(category) + confusionMatrix.get(key).getAccuracy());
+        double currentAccuracy = categoryAccuracy.getOrDefault(category, 0.0d);
+        categoryAccuracy.put(category, currentAccuracy + confusionMatrixLine.getAccuracy());
       }
     }
 
@@ -557,7 +556,7 @@ public abstract class FineGrainedReportListener {
             return -1;
           }
         }
-        if (t1 == t2) {
+        if (t1.equals(t2)) {
           return o1.compareTo(o2);
         }
         if (t2 > t1) {
@@ -572,7 +571,7 @@ public abstract class FineGrainedReportListener {
     return new MatrixLabelComparator(confusionMatrix);
   }
 
-  public class SimpleLabelComparator implements Comparator<String> {
+  public static class SimpleLabelComparator implements Comparator<String> {
 
     private Map<String, Counter> map;
 
@@ -611,19 +610,17 @@ public abstract class FineGrainedReportListener {
       this.categoryCounter = new HashMap<>();
 
       // compute grouped categories
-      for (String key :
-          labelCounter.keySet()) {
-        String category;
+      for (Entry<String, Counter> entry : labelCounter.entrySet()) {
+        final String key = entry.getKey();
+        final Counter value = entry.getValue();
+        final String category;
         if (key.contains("-")) {
           category = key.split("-")[0];
         } else {
           category = key;
         }
-        if (!categoryCounter.containsKey(category)) {
-          categoryCounter.put(category, 0);
-        }
-        categoryCounter.put(category,
-            categoryCounter.get(category) + labelCounter.get(key).value());
+        int currentCount = categoryCounter.getOrDefault(category, 0);
+        categoryCounter.put(category, currentCount + value.value());
       }
     }
 
@@ -671,7 +668,7 @@ public abstract class FineGrainedReportListener {
             return -1;
           }
         }
-        if (t1 == t2) {
+        if (t1.equals(t2)) {
           return o1.compareTo(o2);
         }
         if (t2 > t1) {
@@ -726,9 +723,9 @@ public abstract class FineGrainedReportListener {
      */
     public double getAccuracy() {
       // we save the accuracy because it is frequently used by the comparator
-      if (acc == -1) {
+      if (Math.abs(acc - 1.0d) < 0.0000000001) {
         if (total == 0)
-          acc = 0;
+          acc = 0.0d;
         acc = (double) correct / (double) total;
       }
       return acc;

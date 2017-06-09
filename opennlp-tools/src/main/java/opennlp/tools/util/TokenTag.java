@@ -82,7 +82,7 @@ public class TokenTag {
     } else if (o instanceof TokenTag) {
       return Objects.equals(this.token, ((TokenTag) o).token)
           && Objects.equals(this.tag, ((TokenTag) o).tag)
-          && Objects.equals(this.addtionalData, ((TokenTag) o).addtionalData);
+          && Arrays.equals(this.addtionalData, ((TokenTag) o).addtionalData);
     }
     return false;
   }

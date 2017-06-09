@@ -188,7 +188,7 @@ public abstract class AbstractContextGenerator {
         for (Iterator<Parse> pi = punct2s.iterator(); pi.hasNext();) {
           Parse p = pi.next();
           // String punct = punct(p,c2.index);
-          String punctbo = punctbo(p,c2.index <= 0 ? c2.index - 1 : c2.index);
+          String punctbo = punctbo(p, c2.index);
           //punct(2)
           //TODO consider changing
           //features.add(punct);
