@@ -42,11 +42,13 @@ public class NGramGenerator {
 
     List<String> outGrams = new ArrayList<>();
     for (int i = 0; i < input.size() - (n - 2); i++) {
-      String gram = "";
+      final StringBuilder sb = new StringBuilder();
       if ((i + n) <= input.size()) {
         for (int x = i; x < (n + i); x++) {
-          gram += input.get(x) + separator;
+          sb.append(input.get(x));
+          sb.append(separator);
         }
+        String gram = sb.toString();
         gram = gram.substring(0, gram.lastIndexOf(separator));
         outGrams.add(gram);
       }
@@ -66,11 +68,13 @@ public class NGramGenerator {
 
     List<String> outGrams = new ArrayList<>();
     for (int i = 0; i < input.length - (n - 2); i++) {
-      String gram = "";
+      final StringBuilder sb = new StringBuilder();
       if ((i + n) <= input.length) {
         for (int x = i; x < (n + i); x++) {
-          gram += input[x] + separator;
+          sb.append(input[x]);
+          sb.append(separator);
         }
+        String gram = sb.toString();
         gram = gram.substring(0, gram.lastIndexOf(separator));
         outGrams.add(gram);
       }

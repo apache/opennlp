@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import opennlp.tools.ml.EventTrainer;
@@ -215,8 +216,9 @@ public class TrainingParameters {
     TrainingParameters params = new TrainingParameters();
     Map<String, Object> settings = getObjectSettings(namespace);
 
-    for (String key: settings.keySet()) {
-      Object value = settings.get(key);
+    for (Entry<String, Object> entry: settings.entrySet()) {
+      String key = entry.getKey();
+      Object value = entry.getValue();;
       if (value instanceof Integer) {
         params.put(key, (Integer)value);
       }

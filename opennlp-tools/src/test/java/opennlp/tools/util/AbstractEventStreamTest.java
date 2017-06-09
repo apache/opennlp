@@ -46,15 +46,15 @@ public class AbstractEventStreamTest {
     samples.add(RESULT.EMPTY);
     samples.add(RESULT.EVENTS);
 
-    TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<>(samples));
+    try (TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<>(samples))) {
+      int eventCounter = 0;
 
-    int eventCounter = 0;
+      while (eventStream.read() != null) {
+        eventCounter++;
+      }
 
-    while (eventStream.read() != null) {
-      eventCounter++;
+      Assert.assertEquals(2, eventCounter);
     }
-
-    Assert.assertEquals(2, eventCounter);
   }
 
   /**
@@ -67,15 +67,16 @@ public class AbstractEventStreamTest {
     List<RESULT> samples = new ArrayList<>();
     samples.add(RESULT.EMPTY);
 
-    TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<>(samples));
-    Assert.assertNull(eventStream.read());
+    try (TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<>(samples))) {
+      Assert.assertNull(eventStream.read());
 
-    // now check if it can handle multiple empty event iterators
-    samples.add(RESULT.EMPTY);
-    samples.add(RESULT.EMPTY);
-
-    eventStream = new TestEventStream(new CollectionObjectStream<>(samples));
-    Assert.assertNull(eventStream.read());
+      // now check if it can handle multiple empty event iterators
+      samples.add(RESULT.EMPTY);
+      samples.add(RESULT.EMPTY);
+    }
+    try (TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<>(samples))) {
+      Assert.assertNull(eventStream.read());
+    }
   }
 
   private enum RESULT {

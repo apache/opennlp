@@ -19,7 +19,6 @@ package opennlp.tools.util.model;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -33,6 +32,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -134,8 +134,8 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
       // new manifest entries
       Map<String, String> entries = factory.createManifestEntries();
-      for (String key : entries.keySet()) {
-        setManifestProperty(key, entries.get(key));
+      for (Entry<String, String> entry : entries.entrySet()) {
+        setManifestProperty(entry.getKey(), entry.getValue());
       }
     }
 
@@ -554,8 +554,9 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
           "The method BaseModel.loadArtifactSerializers() was not called by BaseModel subclass constructor.");
     }
 
-    for (String name : artifactMap.keySet()) {
-      Object artifact = artifactMap.get(name);
+    for (Entry<String, Object> entry : artifactMap.entrySet()) {
+      final String name = entry.getKey();
+      final Object artifact = entry.getValue();
       if (artifact instanceof SerializableArtifact) {
 
         SerializableArtifact serializableArtifact = (SerializableArtifact) artifact;
@@ -570,10 +571,11 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
     ZipOutputStream zip = new ZipOutputStream(out);
 
-    for (String name : artifactMap.keySet()) {
+    for (Entry<String, Object> entry : artifactMap.entrySet()) {
+      String name = entry.getKey();
       zip.putNextEntry(new ZipEntry(name));
 
-      Object artifact = artifactMap.get(name);
+      Object artifact = entry.getValue();
 
       ArtifactSerializer serializer = getArtifactSerializer(name);
 
@@ -617,18 +619,6 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     if (artifact == null)
       return null;
     return (T) artifact;
-  }
-
-  private static byte[] toByteArray(InputStream input) throws IOException {
-    ByteArrayOutputStream output = new ByteArrayOutputStream();
-    byte[] buffer = new byte[1024 * 4];
-    int count = 0;
-    int n;
-    while (-1 != (n = input.read(buffer))) {
-      output.write(buffer, 0, n);
-      count += n;
-    }
-    return output.toByteArray();
   }
 
   public boolean isLoadedFromSerialized() {

@@ -111,7 +111,7 @@ class ConstitDocumentHandler extends DefaultHandler {
       else {
         String catint = attributes.getValue("catint");
         if (catint != null) {
-          type = cat + (catint != null ? catint : "");
+          type = cat + catint;
         }
         else {
           type = cat + subcat;

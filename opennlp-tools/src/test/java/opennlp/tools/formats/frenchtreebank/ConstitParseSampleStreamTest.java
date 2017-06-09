@@ -102,28 +102,28 @@ public class ConstitParseSampleStreamTest {
 
   @Test
   public void testThereIsExactlyOneSent() throws IOException {
-    ObjectStream<Parse> samples =
-        new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()));
-
-    Assert.assertNotNull(samples.read());
-    Assert.assertNull(samples.read());
-    Assert.assertNull(samples.read());
+    try (ObjectStream<Parse> samples =
+        new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
+      Assert.assertNotNull(samples.read());
+      Assert.assertNull(samples.read());
+      Assert.assertNull(samples.read());
+    }
   }
 
   @Test
   public void testTokensAreCorrect() throws IOException {
 
-    ObjectStream<Parse> samples =
-        new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()));
+    try (ObjectStream<Parse> samples =
+        new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
+      Parse p = samples.read();
 
-    Parse p = samples.read();
+      Parse[] tagNodes = p.getTagNodes();
+      String[] tokens = new String[tagNodes.length];
+      for (int ti = 0; ti < tagNodes.length; ti++) {
+        tokens[ti] = tagNodes[ti].getCoveredText();
+      }
 
-    Parse[] tagNodes = p.getTagNodes();
-    String[] tokens = new String[tagNodes.length];
-    for (int ti = 0; ti < tagNodes.length; ti++) {
-      tokens[ti] = tagNodes[ti].getCoveredText();
+      Assert.assertArrayEquals(sample1Tokens, tokens);
     }
-
-    Assert.assertArrayEquals(sample1Tokens, tokens);
   }
 }

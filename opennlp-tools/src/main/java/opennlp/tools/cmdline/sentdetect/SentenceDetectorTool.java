@@ -62,9 +62,8 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
       PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
       perfMon.start();
 
-      try {
-        ObjectStream<String> paraStream = new ParagraphStream(new PlainTextByLineStream(
-            new SystemInputStreamFactory(), SystemInputStreamFactory.encoding()));
+      try (ObjectStream<String> paraStream = new ParagraphStream(new PlainTextByLineStream(
+            new SystemInputStreamFactory(), SystemInputStreamFactory.encoding()))) {
 
         String para;
         while ((para = paraStream.read()) != null) {

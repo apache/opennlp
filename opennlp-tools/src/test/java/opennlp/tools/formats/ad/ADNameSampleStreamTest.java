@@ -18,6 +18,7 @@
 package opennlp.tools.formats.ad;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,14 +115,12 @@ public class ADNameSampleStreamTest {
     InputStreamFactory in = new ResourceAsStreamFactory(ADParagraphStreamTest.class,
         "/opennlp/tools/formats/ad.sample");
 
-    ADNameSampleStream stream = new ADNameSampleStream(
-        new PlainTextByLineStream(in, "UTF-8"), true);
-
-    NameSample sample = stream.read();
-
-    while (sample != null) {
-      samples.add(sample);
-      sample = stream.read();
+    try (ADNameSampleStream stream =
+            new ADNameSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
+      NameSample sample;
+      while ((sample = stream.read()) != null) {
+        samples.add(sample);
+      }
     }
   }
 

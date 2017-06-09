@@ -136,7 +136,7 @@ public class ArgumentParser {
           throw new TerminateToolException(1,  String.format(INVALID_ARG, argName, argValue) +
               "Character should have size 1.");
         }
-        return new Character(chars[0]);
+        return Character.valueOf(chars[0]);
       }
       return null;
     }
@@ -236,7 +236,6 @@ public class ArgumentParser {
    * @param argProxyInterface interface with parameter descriptions
    * @return the help message usage string
    */
-  @SuppressWarnings({"unchecked"})
   public static <T> String createUsage(Class<T> argProxyInterface) {
     return createUsage(new Class[]{argProxyInterface});
   }
@@ -400,7 +399,6 @@ public class ArgumentParser {
    * @param argProxyInterface interface with parameters description
    * @return true, if arguments are valid
    */
-  @SuppressWarnings({"unchecked"})
   public static <T> boolean validateArguments(String[] args, Class<T> argProxyInterface) {
     return validateArguments(args, new Class[]{argProxyInterface});
   }

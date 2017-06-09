@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -240,8 +241,9 @@ public class IrishSentenceBankDocument {
             }
           }
           IrishSentenceBankFlex[] flexa = new IrishSentenceBankFlex[flexes];
-          for (Integer flexidx : toks.keySet()) {
-            String left = toks.get(flexidx);
+          for (Entry<Integer, String> entry : toks.entrySet()) {
+            final Integer flexidx = entry.getKey();
+            final String left = entry.getValue();
             if (flx.get(flexidx) == null) {
               flexa = null;
               break;

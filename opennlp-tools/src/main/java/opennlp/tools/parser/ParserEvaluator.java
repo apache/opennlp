@@ -101,9 +101,8 @@ public class ParserEvaluator extends Evaluator<Parse> {
     Parse prediction = null;
     if (predictions.length > 0) {
       prediction = predictions[0];
+      fmeasure.updateScores(getConstituencySpans(reference), getConstituencySpans(prediction));
     }
-
-    fmeasure.updateScores(getConstituencySpans(reference), getConstituencySpans(prediction));
 
     return prediction;
   }

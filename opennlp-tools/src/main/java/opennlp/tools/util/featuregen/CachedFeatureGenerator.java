@@ -42,7 +42,6 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
     contextsCache = new Cache<>(100);
   }
 
-  @SuppressWarnings("unchecked")
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 

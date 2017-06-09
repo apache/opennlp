@@ -38,7 +38,6 @@ public abstract class AbstractTypedParamTool<T, P> extends TypedCmdLineTool<T> {
     this.paramsClass = paramsClass;
   }
 
-  @SuppressWarnings({"unchecked"})
   public String getHelp(String format) {
     if ("".equals(format) || StreamFactoryRegistry.DEFAULT_FORMAT.equals(format)) {
       return getBasicHelp(paramsClass,

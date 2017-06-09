@@ -225,12 +225,6 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
             return read();
         }
 
-        if (parser == null) {
-          throw new IOException("Failed to parse ann document with id " + id + ".ann and" +
-              " type class, no parser registered: " + tokens[BratAnnotationParser.TYPE_OFFSET]
-              .getCoveredText(line).toString());
-        }
-
         try {
           return parser.parse(tokens, line);
         }

@@ -17,6 +17,9 @@
 
 package opennlp.tools.ml.model;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * A maxent predicate representation which we can use to sort based on the
  * outcomes. This allows us to make the mapping of features to their parameters
@@ -34,18 +37,42 @@ public class ComparablePredicate implements Comparable<ComparablePredicate> {
   }
 
   public int compareTo(ComparablePredicate cp) {
-    int smallerLength = outcomes.length > cp.outcomes.length ?
-        cp.outcomes.length : outcomes.length;
+    int smallerLength = Math.min(outcomes.length, cp.outcomes.length);
 
     for (int i = 0; i < smallerLength; i++) {
-      if (outcomes[i] < cp.outcomes[i]) return -1;
-      else if (outcomes[i] > cp.outcomes[i]) return 1;
+      int compareOutcomes = Integer.compare(outcomes[i], cp.outcomes[i]);
+      if (compareOutcomes != 0) {
+        return compareOutcomes;
+      }
     }
 
-    if (outcomes.length < cp.outcomes.length) return -1;
-    else if (outcomes.length > cp.outcomes.length) return 1;
+    int compareOutcomesLength = Integer.compare(outcomes.length, cp.outcomes.length);
+    if (compareOutcomesLength != 0) {
+      return compareOutcomesLength;
+    }
 
     return 0;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, Arrays.hashCode(outcomes), Arrays.hashCode(params));
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+
+    if (this == obj)
+      return true;
+
+    if (obj instanceof ComparablePredicate) {
+      ComparablePredicate other = (ComparablePredicate) obj;
+      return Objects.equals(name, other.name) &&
+          Arrays.equals(outcomes, other.outcomes) &&
+          Arrays.equals(params, other.params);
+    }
+
+    return false;
   }
 
   public String toString() {

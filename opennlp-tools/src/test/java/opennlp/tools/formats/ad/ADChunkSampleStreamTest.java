@@ -68,14 +68,11 @@ public class ADChunkSampleStreamTest {
     InputStreamFactory in = new ResourceAsStreamFactory(
         ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample");
 
-    ADChunkSampleStream stream = new ADChunkSampleStream(
-        new PlainTextByLineStream(in, "UTF-8"));
-
-    ChunkSample sample = stream.read();
-
-    while (sample != null) {
-      samples.add(sample);
-      sample = stream.read();
+    try (ADChunkSampleStream stream = new ADChunkSampleStream(new PlainTextByLineStream(in, "UTF-8"))) {
+      ChunkSample sample;
+      while ((sample = stream.read()) != null) {
+        samples.add(sample);
+      }
     }
   }
 
