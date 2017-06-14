@@ -31,7 +31,7 @@ public class QNModel extends AbstractModel {
     return this.outcomeNames.length;
   }
 
-  private Integer getPredIndex(String predicate) {
+  private Context getPredIndex(String predicate) {
     return pmap.get(predicate);
   }
 
@@ -60,17 +60,16 @@ public class QNModel extends AbstractModel {
    * @return Normalized probabilities for the outcomes given the context.
    */
   private double[] eval(String[] context, float[] values, double[] probs) {
-    Context[] params = evalParams.getParams();
 
     for (int ci = 0; ci < context.length; ci++) {
-      Integer predIdx = getPredIndex(context[ci]);
+      Context pred = getPredIndex(context[ci]);
 
-      if (predIdx != null) {
+      if (pred != null) {
         double predValue = 1.0;
         if (values != null) predValue = values[ci];
 
-        double[] parameters = params[predIdx].getParameters();
-        int[] outcomes = params[predIdx].getOutcomes();
+        double[] parameters = pred.getParameters();
+        int[] outcomes = pred.getOutcomes();
         for (int i = 0; i < outcomes.length; i++) {
           int oi = outcomes[i];
           probs[oi] += predValue * parameters[i];

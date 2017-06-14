@@ -46,12 +46,17 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
     PARAMS = (Context[]) data[0];
 
     @SuppressWarnings("unchecked")
-    Map<String, Integer> pmap = (Map<String, Integer>) data[1];
-    OUTCOME_LABELS = (String[]) data[2];
+    Map<String, Context> pmap = (Map<String, Context>) data[1];
 
+    OUTCOME_LABELS = (String[]) data[2];
+    PARAMS = new Context[pmap.size()];
     PRED_LABELS = new String[pmap.size()];
-    for (String pred : pmap.keySet()) {
-      PRED_LABELS[pmap.get(pred)] = pred;
+
+    int i = 0;
+    for (Map.Entry<String, Context> pred : pmap.entrySet()) {
+      PRED_LABELS[i] = pred.getKey();
+      PARAMS[i] = pred.getValue();
+      i++;
     }
   }
 

@@ -33,6 +33,11 @@ public class UniformPrior implements Prior {
     }
   }
 
+  @Override
+  public void logPrior(double[] dist, Context[] context, float[] values) {
+    logPrior(dist, (int[]) null, values);
+  }
+
   public void logPrior(double[] dist, int[] context) {
     logPrior(dist,context,null);
   }

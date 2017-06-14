@@ -193,12 +193,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
 
     /* Create and return the model ****/
     String[] updatedPredLabels = predLabels;
-    /*
-    String[] updatedPredLabels = new String[pmap.size()];
-    for (String pred : pmap.keySet()) {
-      updatedPredLabels[pmap.get(pred)]=pred;
-    }
-     */
+
     if (useAverage) {
       return new PerceptronModel(averageParams, updatedPredLabels, outcomeLabels);
     }
@@ -235,7 +230,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     for (int oi = 0; oi < numOutcomes; oi++) {
       featureCounts.add(new HashMap<>());
     }
-    PerceptronModel model = new PerceptronModel(params,predLabels,pmap,outcomeLabels);
+    PerceptronModel model = new PerceptronModel(params,predLabels,outcomeLabels);
 
     sequenceStream.reset();
 
@@ -328,7 +323,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
             }
           }
         }
-        model = new PerceptronModel(params,predLabels,pmap,outcomeLabels);
+        model = new PerceptronModel(params,predLabels,outcomeLabels);
       }
       si++;
     }
@@ -364,7 +359,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     Sequence sequence;
     while ((sequence = sequenceStream.read()) != null) {
       Event[] taggerEvents = sequenceStream.updateContext(sequence,
-          new PerceptronModel(params,predLabels,pmap,outcomeLabels));
+          new PerceptronModel(params,predLabels,outcomeLabels));
       for (int ei = 0; ei < taggerEvents.length; ei++, oei++) {
         int max = omap.get(taggerEvents[ei].getOutcome());
         if (max == outcomeList[oei]) {

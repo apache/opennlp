@@ -103,10 +103,9 @@ public final class GISModel extends AbstractModel {
    *         method getOutcome(int i).
    */
   public final double[] eval(String[] context, float[] values, double[] outsums) {
-    int[] scontexts = new int[context.length];
+    Context[] scontexts = new Context[context.length];
     for (int i = 0; i < context.length; i++) {
-      Integer ci = pmap.get(context[i]);
-      scontexts[i] = ci == null ? -1 : ci;
+      scontexts[i] = pmap.get(context[i]);
     }
     prior.logPrior(outsums, scontexts, values);
     return GISModel.eval(scontexts, values, outsums, evalParams);
@@ -154,14 +153,42 @@ public final class GISModel extends AbstractModel {
    */
   static double[] eval(int[] context, float[] values, double[] prior,
       EvalParameters model) {
-    Context[] params = model.getParams();
+
+    Context[] scontexts = new Context[context.length];
+    for (int i = 0; i < context.length; i++) {
+      scontexts[i] = model.getParams()[context[i]];
+    }
+
+    return GISModel.eval(scontexts, values, prior, model);
+  }
+
+  /**
+   * Use this model to evaluate a context and return an array of the likelihood
+   * of each outcome given the specified context and the specified parameters.
+   *
+   * @param context
+   *          The integer values of the predicates which have been observed at
+   *          the present decision point.
+   * @param values
+   *          The values for each of the parameters.
+   * @param prior
+   *          The prior distribution for the specified context.
+   * @param model
+   *          The set of parametes used in this computation.
+   * @return The normalized probabilities for the outcomes given the context.
+   *         The indexes of the double[] are the outcome ids, and the actual
+   *         string representation of the outcomes can be obtained from the
+   *         method getOutcome(int i).
+   */
+  static double[] eval(Context[] context, float[] values, double[] prior,
+                       EvalParameters model) {
     int[] numfeats = new int[model.getNumOutcomes()];
     int[] activeOutcomes;
     double[] activeParameters;
     double value = 1;
     for (int ci = 0; ci < context.length; ci++) {
-      if (context[ci] >= 0) {
-        Context predParams = params[context[ci]];
+      if (context[ci] != null) {
+        Context predParams = context[ci];
         activeOutcomes = predParams.getOutcomes();
         activeParameters = predParams.getParameters();
         if (values != null) {

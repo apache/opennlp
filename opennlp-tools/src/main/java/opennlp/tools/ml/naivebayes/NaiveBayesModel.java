@@ -31,8 +31,7 @@ public class NaiveBayesModel extends AbstractModel {
   protected double[] outcomeTotals;
   protected long vocabulary;
 
-  @Deprecated
-  public NaiveBayesModel(Context[] params, String[] predLabels, Map<String, Integer> pmap,
+  NaiveBayesModel(Context[] params, String[] predLabels, Map<String, Context> pmap,
                          String[] outcomeNames) {
     super(params, predLabels, pmap, outcomeNames);
     outcomeTotals = initOutcomeTotals(outcomeNames, params);
@@ -75,11 +74,10 @@ public class NaiveBayesModel extends AbstractModel {
   }
 
   public double[] eval(String[] context, float[] values, double[] outsums) {
-    int[] scontexts = new int[context.length];
+    Context[] scontexts = new Context[context.length];
     java.util.Arrays.fill(outsums, 0);
     for (int i = 0; i < context.length; i++) {
-      Integer ci = pmap.get(context[i]);
-      scontexts[i] = ci == null ? -1 : ci;
+      scontexts[i] = pmap.get(context[i]);
     }
     return eval(scontexts, values, outsums, evalParams, true);
   }
@@ -88,8 +86,8 @@ public class NaiveBayesModel extends AbstractModel {
     return eval(context, null, prior, model, true);
   }
 
-  static double[] eval(int[] context, float[] values, double[] prior,
-                              EvalParameters model, boolean normalize) {
+  static double[] eval(Context[] context, float[] values, double[] prior,
+                       EvalParameters model, boolean normalize) {
     Probabilities<Integer> probabilities = new LogProbabilities<>();
     Context[] params = model.getParams();
     double[] outcomeTotals = model instanceof NaiveBayesEvalParameters
@@ -100,8 +98,8 @@ public class NaiveBayesModel extends AbstractModel {
     int[] activeOutcomes;
     double value = 1;
     for (int ci = 0; ci < context.length; ci++) {
-      if (context[ci] >= 0) {
-        Context predParams = params[context[ci]];
+      if (context[ci] != null) {
+        Context predParams = context[ci];
         activeOutcomes = predParams.getOutcomes();
         activeParameters = predParams.getParameters();
         if (values != null) {
@@ -128,6 +126,16 @@ public class NaiveBayesModel extends AbstractModel {
       prior[i] = probabilities.get(i);
     }
     return prior;
+  }
+
+  static double[] eval(int[] context, float[] values, double[] prior,
+                              EvalParameters model, boolean normalize) {
+    Context[] scontexts = new Context[context.length];
+    for (int i = 0; i < context.length; i++) {
+      scontexts[i] = model.getParams()[context[i]];
+    }
+
+    return eval(scontexts, values, prior, model, normalize);
   }
 
   private static double getProbability(double numerator, double denominator,

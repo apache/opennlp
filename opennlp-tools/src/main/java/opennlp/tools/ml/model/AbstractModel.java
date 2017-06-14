@@ -26,7 +26,7 @@ import java.util.Objects;
 public abstract class AbstractModel implements MaxentModel {
 
   /** Mapping between predicates/contexts and an integer representing them. */
-  protected Map<String, Integer> pmap;
+  protected Map<String, Context> pmap;
   /** The names of the outcomes. */
   protected String[] outcomeNames;
   /** Parameters for the model. */
@@ -39,32 +39,23 @@ public abstract class AbstractModel implements MaxentModel {
   /** The type of the model. */
   protected ModelType modelType;
 
-  /**
-   * @deprecated this will be removed in 1.8.1, pmap should be private
-   *
-   * @param params
-   * @param predLabels
-   * @param pmap
-   * @param outcomeNames
-   */
-  @Deprecated
-  public AbstractModel(Context[] params, String[] predLabels,
-      Map<String, Integer> pmap, String[] outcomeNames) {
+  protected AbstractModel(Context[] params, String[] predLabels,
+      Map<String, Context> pmap, String[] outcomeNames) {
     this.pmap = pmap;
     this.outcomeNames =  outcomeNames;
     this.evalParams = new EvalParameters(params,outcomeNames.length);
   }
 
   public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames) {
-    init(predLabels, outcomeNames);
+    init(predLabels, params, outcomeNames);
     this.evalParams = new EvalParameters(params, outcomeNames.length);
   }
 
-  private void init(String[] predLabels, String[] outcomeNames) {
+  private void init(String[] predLabels, Context[] params, String[] outcomeNames) {
     this.pmap = new HashMap<>(predLabels.length);
 
     for (int i = 0; i < predLabels.length; i++) {
-      pmap.put(predLabels[i], i);
+      pmap.put(predLabels[i], params[i]);
     }
 
     this.outcomeNames =  outcomeNames;
@@ -188,7 +179,7 @@ public abstract class AbstractModel implements MaxentModel {
       AbstractModel model = (AbstractModel) obj;
 
       return pmap.equals(model.pmap) && Objects.deepEquals(outcomeNames, model.outcomeNames)
-          && evalParams.equals(model.evalParams) && Objects.equals(prior, model.prior);
+          && Objects.equals(prior, model.prior);
     }
 
     return false;
