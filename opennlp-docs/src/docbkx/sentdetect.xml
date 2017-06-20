@@ -56,6 +56,8 @@ Rudolph Agnew, 55 years old and former chairman of Consolidated Gold Fields PLC,
 		Most components in OpenNLP expect input which is segmented into sentences.
 		</para>
 		
+		<ulink url="http://my-ai-launcher.appspot.com/#/visualnlp/opennlp" show-destination="new"> Try Online </ulink>
+		
 		<section id="tools.sentdetect.detection.cmdline">
 		<title>Sentence Detection Tool</title>
 		<para>
