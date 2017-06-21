@@ -84,6 +84,13 @@ public final class SentenceDetectorTrainerTool
       eos = eosString.toCharArray();
     }
 
+    Character defaultEOS;
+    if (params.getDefaultEosChar() != null) {
+      defaultEOS = params.getDefaultEosChar();
+    } else {
+      defaultEOS = '\n';
+    }
+
     SentenceModel model;
 
     try {
@@ -91,7 +98,7 @@ public final class SentenceDetectorTrainerTool
       SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
           params.getFactory(), params.getLang(), true, dict, eos);
       model = SentenceDetectorME.train(params.getLang(), sampleStream,
-          sdFactory, mlParams);
+          sdFactory, mlParams, defaultEOS);
     } catch (IOException e) {
       throw createTerminationIOException(e);
     }
