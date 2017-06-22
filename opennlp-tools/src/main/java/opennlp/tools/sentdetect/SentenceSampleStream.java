@@ -33,8 +33,17 @@ import opennlp.tools.util.Span;
  */
 public class SentenceSampleStream extends FilterObjectStream<String, SentenceSample> {
 
-  public SentenceSampleStream(ObjectStream<String> sentences) {
+  private final Character defaultEOS;
+  private final char[] eos;
+
+  public SentenceSampleStream(ObjectStream<String> sentences, char[] eos, Character defaultEOS) {
     super(new EmptyLinePreprocessorStream(sentences));
+    this.eos = eos;
+    this.defaultEOS = defaultEOS;
+  }
+
+  public SentenceSampleStream(ObjectStream<String> sentences) {
+    this(sentences, null, null);
   }
 
   public static String replaceNewLineEscapeTags(String s) {
@@ -51,6 +60,7 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
       int begin = sentencesString.length();
       sentence = sentence.trim();
       sentence = replaceNewLineEscapeTags(sentence);
+      sentence = addMissingEOS(sentence, eos, defaultEOS);
       sentencesString.append(sentence);
       int end = sentencesString.length();
       sentenceSpans.add(new Span(begin, end));
@@ -62,5 +72,22 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
           sentenceSpans.toArray(new Span[sentenceSpans.size()]));
     }
     return null;
+  }
+
+  public static String addMissingEOS(String sentence, char[] eos, Character defaultEOS) {
+    if (defaultEOS != null && eos != null) {
+      boolean isMissingEOS = true;
+      for (char c :
+          eos) {
+        if (sentence.charAt(sentence.length() - 1) == c) {
+          isMissingEOS = false;
+          break;
+        }
+      }
+      if (isMissingEOS) {
+        sentence = sentence + defaultEOS;
+      }
+    }
+    return sentence;
   }
 }
