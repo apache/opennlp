@@ -38,6 +38,11 @@ interface TrainingParams extends BasicTrainingParams {
   @OptionalParameter
   String getEosChars();
 
+  @ParameterDescription(valueName = "string", description = "EOS character to use if EOS is " +
+      "missing in sample. Default is \\n.")
+  @OptionalParameter
+  Character getDefaultEosChar();
+
   @ParameterDescription(valueName = "factoryName",
       description = "A sub-class of SentenceDetectorFactory where to get implementation and resources.")
   @OptionalParameter

@@ -42,11 +42,7 @@ public class SDEventStreamTest {
     ObjectStream<SentenceSample> sampleStream =
         ObjectStreamUtils.createObjectStream(sample);
 
-    Factory factory = new Factory();
-
-    ObjectStream<Event> eventStream = new SDEventStream(sampleStream,
-        factory.createSentenceContextGenerator("eng"),
-        factory.createEndOfSentenceScanner("eng"));
+    ObjectStream<Event> eventStream = createSDEventStream(sampleStream,"eng", '\n');
 
     Assert.assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.read().getOutcome());
     Assert.assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());
@@ -54,5 +50,32 @@ public class SDEventStreamTest {
     Assert.assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());
 
     Assert.assertNull(eventStream.read());
+  }
+
+  @Test
+  public void testInsertDefaultEOS() throws IOException {
+
+    String document = "Test sent. one Test sent. 2";
+    SentenceSample sample = new SentenceSample(document,
+        new Span(0, 14), new Span(15, 27));
+
+    ObjectStream<SentenceSample> sampleStream =
+        ObjectStreamUtils.createObjectStream(sample);
+
+
+    SDEventStream eventStream = createSDEventStream(sampleStream,"eng", '\n');
+
+    String sent = "abc";
+    Assert.assertEquals(sent + "\n", eventStream.addTrailingEosIfMissing(sent));
+    sent = "abc.";
+    Assert.assertEquals(sent, eventStream.addTrailingEosIfMissing(sent));
+  }
+
+  private SDEventStream createSDEventStream(ObjectStream<SentenceSample> sampleStream,
+                                            String languageCode, Character defaultEOS) {
+    Factory factory = new Factory();
+    return new SDEventStream(sampleStream,
+        factory.createSentenceContextGenerator(languageCode),
+        factory.createEndOfSentenceScanner(languageCode), defaultEOS);
   }
 }

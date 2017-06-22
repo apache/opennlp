@@ -29,13 +29,13 @@ import opennlp.tools.sentdetect.lang.th.SentenceContextGenerator;
 public class Factory {
 
   public static final char[] ptEosCharacters = new char[] { '.', '?', '!', ';',
-      ':', '(', ')', '«', '»', '\'', '"' };
+      ':', '(', ')', '«', '»', '\'', '"', '\n'};
 
-  public static final char[] defaultEosCharacters = new char[] { '.', '!', '?' };
+  public static final char[] defaultEosCharacters = new char[] { '.', '!', '?', '\n'};
 
   public static final char[] thEosCharacters = new char[] { ' ','\n' };
 
-  public static final char[] jpEosCharacters = new char[] {'。', '！', '？'};
+  public static final char[] jpEosCharacters = new char[] {'。', '！', '？', '\n'};
 
   public EndOfSentenceScanner createEndOfSentenceScanner(String languageCode) {
 

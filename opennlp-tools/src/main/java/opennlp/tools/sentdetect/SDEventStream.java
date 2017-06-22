@@ -20,6 +20,7 @@ package opennlp.tools.sentdetect;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.AbstractEventStream;
@@ -28,6 +29,7 @@ import opennlp.tools.util.Span;
 
 public class SDEventStream extends AbstractEventStream<SentenceSample> {
 
+  private final Character defaultEOS;
   private SDContextGenerator cg;
   private EndOfSentenceScanner scanner;
 
@@ -37,20 +39,39 @@ public class SDEventStream extends AbstractEventStream<SentenceSample> {
    * @param samples
    */
   public SDEventStream(ObjectStream<SentenceSample> samples, SDContextGenerator cg,
-      EndOfSentenceScanner scanner) {
+                       EndOfSentenceScanner scanner, Character defaultEOS) {
     super(samples);
 
     this.cg = cg;
     this.scanner = scanner;
+    this.defaultEOS = defaultEOS;
+  }
+
+  /**
+   * Initializes the current instance with NEW LINE as default EOS.
+   *
+   * @param samples
+   */
+  public SDEventStream(ObjectStream<SentenceSample> samples, SDContextGenerator cg,
+                       EndOfSentenceScanner scanner) {
+    super(samples);
+
+    this.cg = cg;
+    this.scanner = scanner;
+    this.defaultEOS = '\n';
   }
 
   @Override
   protected Iterator<Event> createEvents(SentenceSample sample) {
 
-    Collection<Event> events = new ArrayList<Event>();
+    Collection<Event> events = new ArrayList();
 
     for (Span sentenceSpan : sample.getSentences()) {
       String sentenceString = sentenceSpan.getCoveredText(sample.getDocument()).toString();
+
+      // last position should be a EOS, if not we add it.
+      sentenceString = addTrailingEosIfMissing(sentenceString);
+
 
       for (Iterator<Integer> it = scanner.getPositions(
           sentenceString).iterator(); it.hasNext();) {
@@ -68,5 +89,15 @@ public class SDEventStream extends AbstractEventStream<SentenceSample> {
 
 
     return events.iterator();
+  }
+
+  protected String addTrailingEosIfMissing(String sentenceString) {
+    List<Integer> positions = scanner.getPositions(
+        sentenceString.substring(sentenceString.length() - 2));
+    if (positions.size() > 0) {
+      // trailing is a EOS
+      return sentenceString;
+    }
+    return sentenceString + defaultEOS;
   }
 }

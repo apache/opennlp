@@ -67,11 +67,18 @@ public final class SentenceDetectorCrossValidatorTool
       eos = eosString.toCharArray();
     }
 
+    Character defaultEOS;
+    if (params.getDefaultEosChar() != null) {
+      defaultEOS = params.getDefaultEosChar();
+    } else {
+      defaultEOS = '\n';
+    }
+
     try {
       Dictionary abbreviations = SentenceDetectorTrainerTool.loadDict(params.getAbbDict());
       SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
           params.getFactory(), params.getLang(), true, abbreviations, eos);
-      validator = new SDCrossValidator(params.getLang(), mlParams, sdFactory,
+      validator = new SDCrossValidator(params.getLang(), mlParams, sdFactory, defaultEOS,
           errorListener);
 
       validator.evaluate(sampleStream, params.getFolds());
