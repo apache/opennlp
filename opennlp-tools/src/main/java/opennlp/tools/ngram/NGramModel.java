@@ -168,14 +168,14 @@ public class NGramModel implements Iterable<StringList> {
    * @param minLength
    * @param maxLength
    */
-  public void add(String chars, int minLength, int maxLength) {
+  public void add(CharSequence chars, int minLength, int maxLength) {
 
     for (int lengthIndex = minLength; lengthIndex < maxLength + 1; lengthIndex++) {
       for (int textIndex = 0;
           textIndex + lengthIndex - 1 < chars.length(); textIndex++) {
 
         String gram = StringUtil.toLowerCase(
-            chars.substring(textIndex, textIndex + lengthIndex));
+            chars.subSequence(textIndex, textIndex + lengthIndex));
 
         add(new StringList(new String[]{gram}));
       }

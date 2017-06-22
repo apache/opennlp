@@ -58,7 +58,7 @@ class LanguageDetectorContextGenerator {
     Collection<String> context = new ArrayList<>();
 
     NGramModel model = new NGramModel();
-    model.add(document, minLength, maxLength);
+    model.add(normalizer.normalize(document), minLength, maxLength);
 
     for (StringList tokenList : model) {
       if (tokenList.size() > 0) {
