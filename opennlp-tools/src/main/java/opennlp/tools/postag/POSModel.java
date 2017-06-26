@@ -35,6 +35,8 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ByteArraySerializer;
+import opennlp.tools.util.model.POSModelSerializer;
+import opennlp.tools.util.model.SerializableArtifact;
 
 /**
  * The {@link POSModel} is the model used
@@ -42,7 +44,7 @@ import opennlp.tools.util.model.ByteArraySerializer;
  *
  * @see POSTaggerME
  */
-public final class POSModel extends BaseModel {
+public final class POSModel extends BaseModel implements SerializableArtifact {
 
   private static final String COMPONENT_NAME = "POSTaggerME";
   static final String POS_MODEL_ENTRY_NAME = "pos.model";
@@ -177,5 +179,10 @@ public final class POSModel extends BaseModel {
     if (getFactory() != null)
       return getFactory().getDictionary();
     return null;
+  }
+
+  @Override
+  public Class<POSModelSerializer> getArtifactSerializerClass() {
+    return POSModelSerializer.class;
   }
 }
