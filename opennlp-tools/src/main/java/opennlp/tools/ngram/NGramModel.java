@@ -146,9 +146,9 @@ public class NGramModel implements Iterable<StringList> {
       throw new IllegalArgumentException("minLength param must not be larger than " +
           "maxLength param. minLength=" + minLength + ", maxLength= " + maxLength);
 
-    for (int lengthIndex = minLength; lengthIndex < maxLength + 1; lengthIndex++) {
-      for (int textIndex = 0;
-          textIndex + lengthIndex - 1 < ngram.size(); textIndex++) {
+    for (int textIndex = 0; textIndex < ngram.size(); textIndex++) {
+      for (int lengthIndex = minLength; textIndex + lengthIndex - 1 < ngram.size()
+          && lengthIndex < maxLength + 1; lengthIndex++) {
 
         String[] grams = new String[lengthIndex];
 
@@ -170,9 +170,9 @@ public class NGramModel implements Iterable<StringList> {
    */
   public void add(CharSequence chars, int minLength, int maxLength) {
 
-    for (int lengthIndex = minLength; lengthIndex < maxLength + 1; lengthIndex++) {
-      for (int textIndex = 0;
-          textIndex + lengthIndex - 1 < chars.length(); textIndex++) {
+    for (int textIndex = 0; textIndex < chars.length(); textIndex++) {
+      for (int lengthIndex = minLength; textIndex + lengthIndex - 1 < chars.length()
+          && lengthIndex < maxLength + 1; lengthIndex++) {
 
         String gram = StringUtil.toLowerCase(
             chars.subSequence(textIndex, textIndex + lengthIndex));
