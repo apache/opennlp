@@ -18,6 +18,7 @@
 package opennlp.tools.formats.ad;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,16 +55,16 @@ public class ADSentenceSampleStreamTest {
     InputStreamFactory in = new ResourceAsStreamFactory(ADSentenceSampleStreamTest.class,
         "/opennlp/tools/formats/ad.sample");
 
-    ADSentenceSampleStream stream = new ADSentenceSampleStream(
-        new PlainTextByLineStream(in, "UTF-8"), true);
+    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
+          new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
 
-    SentenceSample sample = stream.read();
+      SentenceSample sample;
 
-    while (sample != null) {
-      System.out.println(sample.getDocument());
-      System.out.println("<fim>");
-      samples.add(sample);
-      sample = stream.read();
+      while ((sample = stream.read()) != null) {
+        System.out.println(sample.getDocument());
+        System.out.println("<fim>");
+        samples.add(sample);
+      }
     }
   }
 

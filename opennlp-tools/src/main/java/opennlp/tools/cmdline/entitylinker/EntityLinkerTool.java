@@ -79,10 +79,8 @@ public class EntityLinkerTool extends BasicCmdLineTool {
       PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
       perfMon.start();
 
-      try {
-
-        ObjectStream<String> untokenizedLineStream = new PlainTextByLineStream(
-            new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
+      try (ObjectStream<String> untokenizedLineStream = new PlainTextByLineStream(
+          new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {
 
         List<NameSample> document = new ArrayList<>();
 

@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
@@ -261,9 +262,9 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
    */
   public void serialize(Writer writer) throws IOException {
 
-    for (String type : headRules.keySet()) {
-
-      HeadRule headRule = headRules.get(type);
+    for (Entry<String, HeadRule> entry : headRules.entrySet()) {
+      String type = entry.getKey();
+      HeadRule headRule = entry.getValue();
 
       // write num of tags
       writer.write(Integer.toString(headRule.tags.length + 2));

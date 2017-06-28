@@ -34,7 +34,7 @@ import opennlp.tools.util.eval.FMeasure;
 
 public class TokenNameFinderCrossValidator {
 
-  private class DocumentSample {
+  private static class DocumentSample {
 
     private NameSample[] samples;
 
@@ -50,7 +50,7 @@ public class TokenNameFinderCrossValidator {
   /**
    * Reads Name Samples to group them as a document based on the clear adaptive data flag.
    */
-  private class NameToDocumentSampleStream extends FilterObjectStream<NameSample, DocumentSample> {
+  private static class NameToDocumentSampleStream extends FilterObjectStream<NameSample, DocumentSample> {
 
     private NameSample beginSample;
 
@@ -105,7 +105,7 @@ public class TokenNameFinderCrossValidator {
   /**
    * Splits DocumentSample into NameSamples.
    */
-  private class DocumentToNameSampleStream extends FilterObjectStream<DocumentSample, NameSample> {
+  private static class DocumentToNameSampleStream extends FilterObjectStream<DocumentSample, NameSample> {
 
     protected DocumentToNameSampleStream(ObjectStream<DocumentSample> samples) {
       super(samples);

@@ -244,7 +244,7 @@ public final class CLI {
       if ((0 == toolArguments.length && tool.hasParams()) ||
           0 < toolArguments.length && "help".equals(toolArguments[0])) {
         if (tool instanceof TypedCmdLineTool) {
-          System.out.println(((TypedCmdLineTool) tool).getHelp(formatName));
+          System.out.println(((TypedCmdLineTool<?>) tool).getHelp(formatName));
         } else if (tool instanceof BasicCmdLineTool) {
           System.out.println(tool.getHelp());
         }
@@ -253,7 +253,7 @@ public final class CLI {
       }
 
       if (tool instanceof TypedCmdLineTool) {
-        ((TypedCmdLineTool) tool).run(formatName, toolArguments);
+        ((TypedCmdLineTool<?>) tool).run(formatName, toolArguments);
       } else if (tool instanceof BasicCmdLineTool) {
         if (-1 == idx) {
           ((BasicCmdLineTool) tool).run(toolArguments);

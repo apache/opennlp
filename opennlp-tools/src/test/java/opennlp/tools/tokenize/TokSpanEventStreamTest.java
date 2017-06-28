@@ -42,15 +42,16 @@ public class TokSpanEventStreamTest {
 
     ObjectStream<TokenSample> tokenSampleStream = new TokenSampleStream(sentenceStream);
 
-    ObjectStream<Event> eventStream = new TokSpanEventStream(tokenSampleStream, false);
+    try (ObjectStream<Event> eventStream = new TokSpanEventStream(tokenSampleStream, false)) {
 
-    Assert.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
-    Assert.assertEquals(TokenizerME.NO_SPLIT, eventStream.read().getOutcome());
-    Assert.assertEquals(TokenizerME.NO_SPLIT, eventStream.read().getOutcome());
-    Assert.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
-    Assert.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
+      Assert.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
+      Assert.assertEquals(TokenizerME.NO_SPLIT, eventStream.read().getOutcome());
+      Assert.assertEquals(TokenizerME.NO_SPLIT, eventStream.read().getOutcome());
+      Assert.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
+      Assert.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
 
-    Assert.assertNull(eventStream.read());
-    Assert.assertNull(eventStream.read());
+      Assert.assertNull(eventStream.read());
+      Assert.assertNull(eventStream.read());
+    }
   }
 }

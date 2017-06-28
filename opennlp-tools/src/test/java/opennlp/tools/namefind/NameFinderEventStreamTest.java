@@ -49,17 +49,18 @@ public class NameFinderEventStreamTest {
     NameSample nameSample = new NameSample(SENTENCE,
         new Span[]{new Span(0, 2, "person")}, false);
 
-    ObjectStream<Event> eventStream = new NameFinderEventStream(
-        ObjectStreamUtils.createObjectStream(nameSample));
+    try (ObjectStream<Event> eventStream = new NameFinderEventStream(
+        ObjectStreamUtils.createObjectStream(nameSample))) {
 
-    Assert.assertEquals("person-" + NameFinderME.START, eventStream.read().getOutcome());
-    Assert.assertEquals("person-" + NameFinderME.CONTINUE, eventStream.read().getOutcome());
+      Assert.assertEquals("person-" + NameFinderME.START, eventStream.read().getOutcome());
+      Assert.assertEquals("person-" + NameFinderME.CONTINUE, eventStream.read().getOutcome());
 
-    for (int i = 0; i < 10; i++) {
-      Assert.assertEquals(NameFinderME.OTHER, eventStream.read().getOutcome());
+      for (int i = 0; i < 10; i++) {
+        Assert.assertEquals(NameFinderME.OTHER, eventStream.read().getOutcome());
+      }
+
+      Assert.assertNull(eventStream.read());
     }
-
-    Assert.assertNull(eventStream.read());
   }
 
 

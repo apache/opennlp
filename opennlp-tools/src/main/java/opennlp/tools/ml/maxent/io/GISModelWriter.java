@@ -94,7 +94,7 @@ public abstract class GISModelWriter extends AbstractModelWriter {
     writeInt(compressed.size());
 
     for (List<ComparablePredicate> aCompressed : compressed) {
-      writeUTF(aCompressed.size() + ((List) aCompressed).get(0).toString());
+      writeUTF(aCompressed.size() + ((List<?>) aCompressed).get(0).toString());
     }
 
     // the mapping from predicate names to their integer indexes

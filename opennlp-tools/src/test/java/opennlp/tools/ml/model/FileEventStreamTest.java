@@ -36,30 +36,28 @@ public class FileEventStreamTest {
 
   @Test
   public void testSimpleReading() throws IOException {
-    FileEventStream feStream = new FileEventStream(new StringReader(EVENTS));
-
-    Assert.assertEquals("other [wc=ic w&c=he,ic n1wc=lc n1w&c=belongs,lc n2wc=lc]",
-            feStream.read().toString());
-    Assert.assertEquals("other [wc=lc w&c=belongs,lc p1wc=ic p1w&c=he,ic n1wc=lc]",
-            feStream.read().toString());
-    Assert.assertEquals("other [wc=lc w&c=to,lc p1wc=lc p1w&c=belongs,lc p2wc=ic]",
-            feStream.read().toString());
-    Assert.assertEquals("org-start [wc=ic w&c=apache,ic p1wc=lc p1w&c=to,lc]",
-            feStream.read().toString());
-    Assert.assertEquals("org-cont [wc=ic w&c=software,ic p1wc=ic p1w&c=apache,ic]",
-            feStream.read().toString());
-    Assert.assertEquals("org-cont [wc=ic w&c=foundation,ic p1wc=ic p1w&c=software,ic]",
-            feStream.read().toString());
-    Assert.assertEquals("other [wc=other w&c=.,other p1wc=ic]",
-            feStream.read().toString());
-    Assert.assertNull(feStream.read());
+    try (FileEventStream feStream = new FileEventStream(new StringReader(EVENTS))) {
+      Assert.assertEquals("other [wc=ic w&c=he,ic n1wc=lc n1w&c=belongs,lc n2wc=lc]",
+              feStream.read().toString());
+      Assert.assertEquals("other [wc=lc w&c=belongs,lc p1wc=ic p1w&c=he,ic n1wc=lc]",
+              feStream.read().toString());
+      Assert.assertEquals("other [wc=lc w&c=to,lc p1wc=lc p1w&c=belongs,lc p2wc=ic]",
+              feStream.read().toString());
+      Assert.assertEquals("org-start [wc=ic w&c=apache,ic p1wc=lc p1w&c=to,lc]",
+              feStream.read().toString());
+      Assert.assertEquals("org-cont [wc=ic w&c=software,ic p1wc=ic p1w&c=apache,ic]",
+              feStream.read().toString());
+      Assert.assertEquals("org-cont [wc=ic w&c=foundation,ic p1wc=ic p1w&c=software,ic]",
+              feStream.read().toString());
+      Assert.assertEquals("other [wc=other w&c=.,other p1wc=ic]",
+              feStream.read().toString());
+      Assert.assertNull(feStream.read());
+    }
   }
 
   @Test
   public void testReset() throws IOException {
-    FileEventStream feStream = new FileEventStream(new StringReader(EVENTS));
-
-    try {
+    try (FileEventStream feStream = new FileEventStream(new StringReader(EVENTS))) {
       feStream.reset();
       Assert.fail("UnsupportedOperationException should be thrown");
     }

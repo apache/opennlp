@@ -24,6 +24,7 @@ import java.io.StringReader;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -46,8 +47,9 @@ public class GenerateManualTool {
 
     // organize by package name
     LinkedHashMap<String, Map<String, CmdLineTool>> packageNameToolMap = new LinkedHashMap<>();
-    for (String toolName : CLI.getToolLookupMap().keySet()) {
-      CmdLineTool tool = CLI.getToolLookupMap().get(toolName);
+    for (Entry<String, CmdLineTool> entry : CLI.getToolLookupMap().entrySet()) {
+      final String toolName = entry.getKey();
+      final CmdLineTool tool = entry.getValue();
       String packageName = tool.getClass().getPackage().getName();
       packageName = packageName.substring(packageName.lastIndexOf(".") + 1);
 
@@ -59,8 +61,8 @@ public class GenerateManualTool {
     }
 
     // add tools grouped by package
-    for (String grouName : packageNameToolMap.keySet()) {
-      appendToolGroup(grouName, packageNameToolMap.get(grouName), sb);
+    for (Entry<String, Map<String, CmdLineTool>> entry : packageNameToolMap.entrySet()) {
+      appendToolGroup(entry.getKey(), entry.getValue(), sb);
     }
 
     // footer
@@ -92,8 +94,8 @@ public class GenerateManualTool {
     sb.append("<section id='tools.cli.").append(groupName).append("'>\n\n");
     sb.append("<title>").append(firstCaps(groupName)).append("</title>\n\n");
 
-    for (String toolName : toolsMap.keySet()) {
-      appendTool(groupName, toolName, toolsMap.get(toolName), sb);
+    for (Entry<String, CmdLineTool> entry : toolsMap.entrySet()) {
+      appendTool(groupName, entry.getKey(), entry.getValue(), sb);
     }
 
     sb.append("</section>\n\n");
@@ -124,7 +126,6 @@ public class GenerateManualTool {
     sb.append("</section>\n\n");
   }
 
-  @SuppressWarnings("unchecked")
   private static void appendHelpForTool(TypedCmdLineTool<?> tool,
       StringBuilder sb) {
     Class<?> type = tool.type;
@@ -153,8 +154,9 @@ public class GenerateManualTool {
             "<entry>Optional</entry><entry>Description</entry></row></thead>\n");
     sb.append("<tbody>\n");
 
-    for (String format : formatArguments.keySet()) {
-      List<Argument> arguments = formatArguments.get(format);
+    for (Entry<String, List<Argument>> entry : formatArguments.entrySet()) {
+      final String format = entry.getKey();
+      final List<Argument> arguments = entry.getValue();
       int i = 0;
       for (Argument argument : arguments) {
         sb.append("<row>\n");

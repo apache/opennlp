@@ -516,9 +516,6 @@ public class Parse implements Cloneable, Comparable<Parse> {
     parts.add(daughter);
     this.span = new Span(span.getStart(),daughter.getSpan().getEnd());
     this.head = rules.getHead(getChildren(),type);
-    if (head == null) {
-      System.err.println(parts);
-    }
     this.headIndex = head.headIndex;
   }
 
@@ -1039,13 +1036,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   public int compareTo(Parse p) {
-    if (this.getProb() > p.getProb()) {
-      return -1;
-    }
-    else if (this.getProb() < p.getProb()) {
-      return 1;
-    }
-    return 0;
+    return Double.compare(p.getProb(), this.getProb());
   }
 
   /**

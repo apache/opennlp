@@ -217,7 +217,7 @@ public class QNTrainer extends AbstractEventTrainer {
   /**
    * For measuring model's training accuracy
    */
-  private class ModelEvaluator implements Evaluator {
+  private static class ModelEvaluator implements Evaluator {
 
     private DataIndexer indexer;
 
