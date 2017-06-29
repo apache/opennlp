@@ -79,6 +79,6 @@ public class UniversalDependency20Eval {
     double wordAccuracy = trainAndEval("spa", SPA_ANCORA_TRAIN,
         params, SPA_ANCORA_DEV);
 
-    Assert.assertEquals(0.9046675934566091d, wordAccuracy, EvalUtil.ACCURACY_DELTA);
+    Assert.assertEquals(0.9057341692068787d, wordAccuracy, EvalUtil.ACCURACY_DELTA);
   }
 }
