@@ -22,9 +22,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import opennlp.tools.HighMemoryUsage;
 import opennlp.tools.formats.ConllXPOSSampleStream;
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
@@ -111,7 +112,7 @@ public class ConllXPosTaggerEval {
   }
 
   @Test
-  @Ignore
+  @Category(HighMemoryUsage.class)
   public void evalDutchMaxentQn() throws IOException {
     TrainingParameters params = EvalUtil.createMaxentQnParams();
 

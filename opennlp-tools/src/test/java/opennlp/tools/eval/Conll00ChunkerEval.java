@@ -23,7 +23,9 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import opennlp.tools.HighMemoryUsage;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkSampleStream;
 import opennlp.tools.chunker.ChunkerEvaluator;
@@ -89,6 +91,7 @@ public class Conll00ChunkerEval {
 
   // Note: Don't try to run this on your MacBook
   @Test
+  @Category(HighMemoryUsage.class)
   public void evalEnglishMaxentQn() throws IOException {
     TrainingParameters params = EvalUtil.createMaxentQnParams();
     params.put("Threads", 4);
