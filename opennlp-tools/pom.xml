@@ -25,13 +25,17 @@
   <parent>
     <groupId>org.apache.opennlp</groupId>
     <artifactId>opennlp</artifactId>
-    <version>1.8.2-SNAPSHOT</version>
+    <version>1.8.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
     
   <artifactId>opennlp-tools</artifactId>
   <packaging>bundle</packaging>
   <name>Apache OpenNLP Tools</name>
+
+  <properties>
+    <argLine>-Xmx4096m</argLine>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -73,7 +77,17 @@
       </resource>
     </resources>
     <plugins>
-
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>@{argLine}</argLine>
+          <excludes>
+            <exclude>/opennlp/tools/eval/**/*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+			
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>

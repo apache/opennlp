@@ -24,7 +24,7 @@
 	<parent>
 		<groupId>org.apache.opennlp</groupId>
 		<artifactId>opennlp</artifactId>
-		<version>1.8.2-SNAPSHOT</version>
+		<version>1.8.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -72,7 +72,7 @@
 							     many file have more than 100 chars.
 							     Right now only javadoc files are too long.
 							 -->
-							 <tarLongFileMode>posix</tarLongFileMode>
+							 <tarLongFileMode>gnu</tarLongFileMode>
 							 
 							 <finalName>apache-opennlp-${project.version}</finalName>
 						</configuration>
@@ -127,7 +127,7 @@
               <phase>generate-resources</phase> 
               <goals><goal>jira-report</goal></goals>
                 <configuration>
-                  <onlyCurrentVersion>true</onlyCurrentVersion>
+                  <fixVersionIds>12339249</fixVersionIds>
                   <outputDirectory>${basedir}/target/issuesFixed/</outputDirectory>
                   <maxEntries>1000</maxEntries> <!-- hopefully, bigger than ever needed -->
                 </configuration>
