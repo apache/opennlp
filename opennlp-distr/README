@@ -24,21 +24,17 @@ removed. Java 1.8 is required.
 
 Additionally the release contains the following noteworthy changes:
 
-- POS Tagger context generator now supports feature generation XML
-- Add a Name Finder feature generator that adds POS Tag features
-- Add CONLL-U format support
-- Improve default Name Finder settings
-- TokenNameFinderEvaluator CLI now support nameTypes argument
-- Stupid backoff is now the default in NGramLanguageModel
-- Language codes now are ISO 639-3 compliant
-- Add many unit tests
-- Distribution package now includes example parameters file
-- Now prefix and suffix feature generators are configurable
-- Remove API in Document Categorizer for user specified tokenizer
-- Learnable lemmatizer now returns all possible lemmas for a given word and pos tag
-- Lemmatizer API backward compatibility break: no need to encode/decode lemmas anymore, now LemmatizerME lemmatize method returns the actual lemma
-- Add stemmer, detokenizer and sentence detection abbreviations for Irish
-- Chunker SequenceValidator signature changed to allow access to both token and POS tag
+- A new Language Detection Component
+- Support for Irish Sentence Bank formats
+- Support to train the sentence detector and tokenizer on the UD corpus
+- Evaluation tests now support ISO-639-3 language codes
+- Convenience methods to load models from a path
+- Refactored the Data Indexer Code
+- Optimized NGram creation loop to better leverage CPU cache
+- Refactored BratNameSampleStream
+- Remove deprecated code from util package
+- Redesigned web site - https://opennlp.apache.org
+- New logo for the project
 
 A detailed list of the issues related to this release can be found in the release
 notes.
