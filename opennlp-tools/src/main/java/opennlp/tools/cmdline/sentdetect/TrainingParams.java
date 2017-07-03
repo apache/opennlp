@@ -39,7 +39,7 @@ interface TrainingParams extends BasicTrainingParams {
   String getEosChars();
 
   @ParameterDescription(valueName = "string", description = "EOS character to use if EOS is " +
-      "missing in sample. Default is \\n.")
+      "missing in sample.")
   @OptionalParameter
   Character getDefaultEosChar();
 

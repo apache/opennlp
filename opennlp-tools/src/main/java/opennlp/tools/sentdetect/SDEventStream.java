@@ -58,7 +58,7 @@ public class SDEventStream extends AbstractEventStream<SentenceSample> {
 
     this.cg = cg;
     this.scanner = scanner;
-    this.defaultEOS = '\n';
+    this.defaultEOS = null;
   }
 
   @Override
@@ -92,12 +92,17 @@ public class SDEventStream extends AbstractEventStream<SentenceSample> {
   }
 
   protected String addTrailingEosIfMissing(String sentenceString) {
-    List<Integer> positions = scanner.getPositions(
-        sentenceString.substring(sentenceString.length() - 2));
-    if (positions.size() > 0) {
-      // trailing is a EOS
-      return sentenceString;
+
+    if (sentenceString.length() > 0) {
+      List<Integer> positions = scanner.getPositions(
+          sentenceString.substring(sentenceString.length() - 1));
+
+      if (positions.size() > 0) {
+        // trailing is a EOS
+        return sentenceString;
+      }
     }
-    return sentenceString + defaultEOS;
+
+    return sentenceString + (defaultEOS != null ? defaultEOS.toString() : "");
   }
 }
