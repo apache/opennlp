@@ -94,6 +94,13 @@
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
 			</dependency>
+			
+			<dependency>
+				<artifactId>opennlp-tools</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+				<type>test-jar</type>
+			</dependency>
 
 			<dependency>
 				<artifactId>opennlp-uima</artifactId>
