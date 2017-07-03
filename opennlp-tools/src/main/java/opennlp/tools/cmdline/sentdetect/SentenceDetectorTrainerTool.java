@@ -84,11 +84,9 @@ public final class SentenceDetectorTrainerTool
       eos = eosString.toCharArray();
     }
 
-    Character defaultEOS;
+    Character defaultEOS = null;
     if (params.getDefaultEosChar() != null) {
       defaultEOS = params.getDefaultEosChar();
-    } else {
-      defaultEOS = '\n';
     }
 
     SentenceModel model;

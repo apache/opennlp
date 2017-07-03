@@ -314,7 +314,7 @@ public class SentenceDetectorME implements SentenceDetector {
                                     ObjectStream<SentenceSample> samples, SentenceDetectorFactory sdFactory,
                                     TrainingParameters mlParams) throws IOException {
 
-    return train(languageCode, samples, sdFactory, mlParams, '\n');
+    return train(languageCode, samples, sdFactory, mlParams, null);
   }
 
   public static SentenceModel train(String languageCode,
