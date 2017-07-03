@@ -299,7 +299,7 @@ public class SentenceDetectorME implements SentenceDetector {
 
   /**
    * @deprecated Use
-   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters, Character)}
+   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
    *             and pass in af {@link SentenceDetectorFactory}.
    */
   public static SentenceModel train(String languageCode,
@@ -307,25 +307,18 @@ public class SentenceDetectorME implements SentenceDetector {
       Dictionary abbreviations, TrainingParameters mlParams) throws IOException {
     SentenceDetectorFactory sdFactory = new SentenceDetectorFactory(
         languageCode, useTokenEnd, abbreviations, null);
-    return train(languageCode, samples, sdFactory, mlParams, null);
-  }
-
-  public static SentenceModel train(String languageCode,
-                                    ObjectStream<SentenceSample> samples, SentenceDetectorFactory sdFactory,
-                                    TrainingParameters mlParams) throws IOException {
-
-    return train(languageCode, samples, sdFactory, mlParams, '\n');
+    return train(languageCode, samples, sdFactory, mlParams);
   }
 
   public static SentenceModel train(String languageCode,
       ObjectStream<SentenceSample> samples, SentenceDetectorFactory sdFactory,
-      TrainingParameters mlParams, Character defaultEOS) throws IOException {
+      TrainingParameters mlParams) throws IOException {
 
-    Map<String, String> manifestInfoEntries = new HashMap();
+    Map<String, String> manifestInfoEntries = new HashMap<>();
 
     // TODO: Fix the EventStream to throw exceptions when training goes wrong
     ObjectStream<Event> eventStream = new SDEventStream(samples,
-        sdFactory.getSDContextGenerator(), sdFactory.getEndOfSentenceScanner(), defaultEOS);
+        sdFactory.getSDContextGenerator(), sdFactory.getEndOfSentenceScanner());
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams, manifestInfoEntries);
 
@@ -336,7 +329,7 @@ public class SentenceDetectorME implements SentenceDetector {
 
   /**
    * @deprecated Use
-   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters, Character)}
+   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
    *             and pass in af {@link SentenceDetectorFactory}.
    */
   @Deprecated

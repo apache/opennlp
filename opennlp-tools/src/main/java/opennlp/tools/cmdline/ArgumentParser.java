@@ -127,21 +127,6 @@ public class ArgumentParser {
     }
   }
 
-  private static class CharacterArgumentFactory implements ArgumentFactory {
-
-    public Object parseArgument(Method method, String argName, String argValue) {
-      if (argValue != null) {
-        char[] chars = argValue.toCharArray();
-        if (chars.length != 1) {
-          throw new TerminateToolException(1,  String.format(INVALID_ARG, argName, argValue) +
-              "Character should have size 1.");
-        }
-        return Character.valueOf(chars[0]);
-      }
-      return null;
-    }
-  }
-
   private static class ArgumentProxy implements InvocationHandler {
 
     private final Map<String, Object> arguments;
@@ -169,7 +154,6 @@ public class ArgumentParser {
     factories.put(String.class, new StringArgumentFactory());
     factories.put(File.class, new FileArgumentFactory());
     factories.put(Charset.class, new CharsetArgumentFactory());
-    factories.put(Character.class, new CharacterArgumentFactory());
 
     argumentFactories = Collections.unmodifiableMap(factories);
   }
@@ -236,6 +220,7 @@ public class ArgumentParser {
    * @param argProxyInterface interface with parameter descriptions
    * @return the help message usage string
    */
+  @SuppressWarnings({"unchecked"})
   public static <T> String createUsage(Class<T> argProxyInterface) {
     return createUsage(new Class[]{argProxyInterface});
   }
@@ -399,6 +384,7 @@ public class ArgumentParser {
    * @param argProxyInterface interface with parameters description
    * @return true, if arguments are valid
    */
+  @SuppressWarnings({"unchecked"})
   public static <T> boolean validateArguments(String[] args, Class<T> argProxyInterface) {
     return validateArguments(args, new Class[]{argProxyInterface});
   }
