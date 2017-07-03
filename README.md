@@ -27,18 +27,21 @@ Welcome to Apache OpenNLP!
 
 The Apache OpenNLP library is a machine learning based toolkit for the processing of natural language text.
 
-This toolkit is written completly in Java and provides support for common NLP tasks, such as tokenization, sentence segmentation, part-of-speech tagging, named entity extraction, chunking, parsing, coreference resolution and more!
+This toolkit is written completely in Java and provides support for common NLP tasks, such as tokenization,
+ sentence segmentation, part-of-speech tagging, named entity extraction, chunking, parsing,
+  coreference resolution, language detection and more!
 
 These tasks are usually required to build more advanced text processing services.
 
-The goal of the OpenNLP project is to be a mature toolkit for the abovementioned tasks.
+The goal of the OpenNLP project is to be a mature toolkit for the above mentioned tasks.
 
 An additional goal is to provide a large number of pre-built models for a variety of languages, as
 well as the annotated text resources that those models are derived from.
 
-Currently, OpenNLP also includes common classifiers such as Maximum Entropy, Perceptron and Naive Bayes.
+Presently, OpenNLP includes common classifiers such as Maximum Entropy, Perceptron and Naive Bayes.
 
-OpenNLP can be used both programmatically through its Java API or from a terminal through its CLI.
+OpenNLP can be used both programmatically through its Java API or from a terminal through its CLI. 
+OpenNLP API can be easily plugged into distributed streaming data pipelines like Apache Flink, Apache NiFi, Apache Spark.
 
 ## Useful Links
        
