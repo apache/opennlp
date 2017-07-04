@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter id="tools.langdetect">
+<title>Language Detector</title>
+	<section id="tools.langdetect.classifying">
+		<title>Classifying</title>
+		<para>
+		The OpenNLP Language Detector classifies a document in ISO-639-3 languages according to the model capabilities.
+		A model can be trained with Maxent, Perceptron or Naive Bayes algorithms. By default normalizes a text and
+			the context generator extracts n-grams of size 1, 2 and 3. The n-gram sizes, the normalization and the
+			context generator can be customized by extending the LanguageDetectorFactory.
+
+		</para>
+		<para>
+			The default normalizers are:
+
+			<table>
+				<title>Normalizers</title>
+				<tgroup cols="2">
+					<colspec colname="c1"/>
+					<colspec colname="c2"/>
+					<thead>
+						<row>
+							<entry>Normalizer</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>EmojiCharSequenceNormalizer</entry>
+							<entry>Replaces emojis by blank space</entry>
+						</row>
+						<row>
+							<entry>UrlCharSequenceNormalizer</entry>
+							<entry>Replaces URLs and E-Mails by a blank space.</entry>
+						</row>
+						<row>
+							<entry>TwitterCharSequenceNormalizer</entry>
+							<entry>Replaces hashtags and Twitter user names by blank spaces.</entry>
+						</row>
+						<row>
+							<entry>NumberCharSequenceNormalizer</entry>
+							<entry>Replaces number sequences by blank spaces</entry>
+						</row>
+						<row>
+							<entry>ShrinkCharSequenceNormalizer</entry>
+							<entry>Shrink characters that repeats three or more times to only two repetitions.</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+		</para>
+	</section>
+	
+	<section id="tools.langdetect.classifying.cmdline">
+		<title>Language Detector Tool</title>
+		<para>
+		The easiest way to try out the language detector is the command line tool. The tool is only
+		intended for demonstration and testing. The following command shows how to use the language detector tool.
+		  <screen>
+			<![CDATA[
+$ bin/opennlp LanguageDetector model]]>
+		 </screen>
+		 The input is read from standard input and output is written to standard output, unless they are redirected
+		 or piped.
+		</para>
+ 	 </section>
+  	<section id="tools.langdetect.classifying.api">
+		<title>Language Detector API</title>
+		<para>
+			To perform classification you will need a machine learning model -
+			these are encapsulated in the LanguageDetectorModel class of OpenNLP tools.
+		</para>
+		<para>
+			First you need to grab the bytes from the serialized model on an InputStream - 
+			we'll leave it you to do that, since you were the one who serialized it to begin with. Now for the easy part:
+						<programlisting language="java">
+				<![CDATA[
+InputStream is = ...
+LanguageDetectorModel m = new LanguageDetectorModel(is);]]>
+				</programlisting>
+				With the LanguageDetectorModel in hand we are just about there:
+						<programlisting language="java">
+				<![CDATA[
+String inputText = ...
+LanguageDetector myCategorizer = new LanguageDetectorME(m);
+
+// Get the most probable language
+Language bestLanguage = myCategorizer.predictLanguage(inputText);
+System.out.println("Best language: " + bestLanguage.getLang());
+System.out.println("Best language confidence: " + bestLanguage.getConfidence());
+
+// Get an array with the most probable languages
+Language[] languages = myCategorizer.predictLanguages(null);]]>
+				</programlisting>
+
+			Note that the both the API or the CLI will consider the complete text to choose the most probable languages.
+			To handle mixed language one can analyze smaller chunks of text to find language regions.
+		</para>
+	</section>
+	<section id="tools.langdetect.training">
+		<title>Training</title>
+		<para>
+			The Language Detector can be trained on annotated training material. The data
+			can be in OpenNLP Language Detector training format. This is one document per line,
+			containing the ISO-639-3 language code and text separated by a tab. Other formats can also be
+			available.
+			The following sample shows the sample from above in the required format.
+			<screen>
+				<![CDATA[
+spa     A la fecha tres calles bonaerenses recuerdan su nombre (en Ituzaingó, Merlo y Campana). A la fecha, unas 50 \
+		naves y 20 aviones se han perdido en esa área particular del océano Atlántico.
+deu     Alle Jahre wieder: Millionen Spanier haben am Dienstag die Auslosung in der größten Lotterie der Welt verfolgt.\
+ 		Alle Jahre wieder: So gelingt der stressfreie Geschenke-Umtausch Artikel per E-Mail empfehlen So gelingt der \
+ 		stressfre ie Geschenke-Umtausch Nicht immer liegt am Ende das unter dem Weihnachtsbaum, was man sich gewünscht hat.
+srp     Већина становника боравила је кућама од блата или шаторима, како би радили на својим удаљеним пољима у долини \
+		Јордана и напасали своје стадо оваца и коза. Већина становника говори оба језика.
+lav     Egija Tri-Active procedūru īpaši iesaka izmantot siltākajos gadalaikos, jo ziemā aukstums var šķist arī \
+		nepatīkams. Valdība vienojās, ka izmaiņas nodokļu politikā tiek konceptuāli atbalstītas, tomēr deva \
+		nedēļu laika Ekonomikas ministrijai, Finanšu ministrijai un Labklājības ministrijai, lai ar vienotu \
+		pozīciju atgrieztos pie jautājuma izskatīšanas.]]>
+			</screen>
+			Note: The line breaks marked with a backslash are just inserted for formatting purposes and must not be
+			included in the training data.
+		</para>
+		<section id="tools.langdetect.training.tool">
+			<title>Training Tool</title>
+			<para>
+				The following command will train the language detector and write the model to langdetect.bin:
+				<screen>
+					<![CDATA[
+$ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] [-factory factoryName] -data sampleData [-encoding charsetName]
+]]>
+				</screen>
+				Note: To customize the language detector, extend the class opennlp.tools.langdetect.LanguageDetectorFactory
+				add it to the classpath and pass it in the -factory argument.
+			</para>
+		</section>
+		<section id="tools.langdetect.training.leipzig">
+			<title>Training with Leipzig</title>
+			<para>
+				The Leipzig Corpora collection presents corpora in different languages. The corpora is a collection
+				of individual sentences collected from the web and newspapers. The Corpora is available as plain text
+				and as MySQL database tables. The OpenNLP integration can only use the plain text version. More
+				information about the corpora and how to download can be found in the
+				<link linkend="tools.corpora.leipzig">Corpora section</link>.
+			</para>
+			<para>
+				This corpora is specially good to train Language Detector and a converter is provided. First, you need to
+				download the files that compose the Leipzig Corpora collection to a folder. Apache OpenNLP Language
+				Detector supports training, evaluation and cross validation using the Leipzig Corpora. For example,
+				the following command shows how to train a model.
+
+				<screen>
+					<![CDATA[
+$ bin/opennlp LanguageDetectorTrainer.leipzig -model modelFile [-params paramsFile] [-factory factoryName] \
+	-sentencesDir sentencesDir -sentencesPerSample sentencesPerSample -samplesPerLanguage samplesPerLanguage \
+	[-encoding charsetName]
+]]>
+				</screen>
+
+			</para>
+			<para>
+				The following sequence of commands shows how to convert the Leipzig Corpora collection at folder
+				leipzig-train/ to the default Language Detector format, by creating groups of 5 sentences as documents
+				and limiting to 10000 documents per language. Them, it shuffles the result and select the first
+				100000 lines as train corpus and the last 20000 as evaluation corpus:
+				<screen>
+					<![CDATA[
+$ bin/opennlp LanguageDetectorConverter leipzig -sentencesDir leipzig-train/ -sentencesPerSample 5 -samplesPerLanguage 10000 > leipzig.txt
+$ perl -MList::Util=shuffle -e 'print shuffle(<STDIN>);' < leipzig.txt > leipzig_shuf.txt
+$ head -100000 < leipzig_shuf.txt > leipzig.train
+$ tail -20000 < leipzig_shuf.txt > leipzig.eval
+]]>
+				</screen>
+		</para>
+		</section>
+		<section id="tools.langdetect.training.api">
+		<title>Training API</title>
+		<para>
+		The following example shows how to train a model from API.
+		<programlisting language="java">
+						<![CDATA[
+InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("corpus.txt"));
+
+ObjectStream<String> lineStream =
+  new PlainTextByLineStream(inputStreamFactory, "UTF-8");
+ObjectStream<LanguageSample> sampleStream = new LanguageDetectorSampleStream(lineStream);
+
+TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
+params.put(TrainingParameters.ALGORITHM_PARAM,
+  PerceptronTrainer.PERCEPTRON_VALUE);
+params.put(TrainingParameters.CUTOFF_PARAM, 0);
+
+LanguageDetectorFactory factory = new LanguageDetectorFactory();
+
+LanguageDetectorModel model = LanguageDetectorME.train(sampleStream, params, factory);
+model.serialize(new File("langdetect.bin"));
+}
+]]>
+	</programlisting>
+		</para>
+		</section>
+	</section>
+</chapter>
