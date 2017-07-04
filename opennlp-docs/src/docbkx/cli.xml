@@ -247,6 +247,255 @@ Usage: opennlp DoccatConverter help|leipzig [help|options...]
 
 </section>
 
+<section id='tools.cli.langdetect'>
+
+<title>Langdetect</title>
+
+<section id='tools.cli.langdetect.LanguageDetector'>
+
+<title>LanguageDetector</title>
+
+<para>Learned language detector</para>
+
+<screen>
+<![CDATA[
+Usage: opennlp LanguageDetector model < documents
+
+]]>
+</screen> 
+</section>
+
+<section id='tools.cli.langdetect.LanguageDetectorTrainer'>
+
+<title>LanguageDetectorTrainer</title>
+
+<para>Trainer for the learnable language detector</para>
+
+<screen>
+<![CDATA[
+Usage: opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] [-factory factoryName] 
+        -data sampleData [-encoding charsetName] 
+Arguments description:
+	-model modelFile
+		output model file.
+	-params paramsFile
+		training parameters file.
+	-factory factoryName
+		A sub-class of LanguageDetectorFactory where to get implementation and resources.
+	-data sampleData
+		data to be used, usually a file name.
+	-encoding charsetName
+		encoding for reading and writing text, if absent the system default is used.
+
+]]>
+</screen> 
+<para>The supported formats and arguments are:</para>
+
+<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
+<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<tbody>
+<row>
+<entry morerows='3' valign='middle'>leipzig</entry>
+<entry>sentencesDir</entry>
+<entry>sentencesDir</entry>
+<entry>No</entry>
+<entry>Dir with Leipig sentences to be used</entry>
+</row>
+<row>
+<entry>sentencesPerSample</entry>
+<entry>sentencesPerSample</entry>
+<entry>No</entry>
+<entry>Number of sentences per sample</entry>
+</row>
+<row>
+<entry>samplesPerLanguage</entry>
+<entry>samplesPerLanguage</entry>
+<entry>No</entry>
+<entry>Number of samples per language</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+</tbody>
+</tgroup></informaltable>
+
+</section>
+
+<section id='tools.cli.langdetect.LanguageDetectorConverter'>
+
+<title>LanguageDetectorConverter</title>
+
+<para>Converts leipzig data format to native OpenNLP format</para>
+
+<screen>
+<![CDATA[
+Usage: opennlp LanguageDetectorConverter help|leipzig [help|options...]
+
+]]>
+</screen> 
+<para>The supported formats and arguments are:</para>
+
+<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
+<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<tbody>
+<row>
+<entry morerows='3' valign='middle'>leipzig</entry>
+<entry>sentencesDir</entry>
+<entry>sentencesDir</entry>
+<entry>No</entry>
+<entry>Dir with Leipig sentences to be used</entry>
+</row>
+<row>
+<entry>sentencesPerSample</entry>
+<entry>sentencesPerSample</entry>
+<entry>No</entry>
+<entry>Number of sentences per sample</entry>
+</row>
+<row>
+<entry>samplesPerLanguage</entry>
+<entry>samplesPerLanguage</entry>
+<entry>No</entry>
+<entry>Number of samples per language</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+</tbody>
+</tgroup></informaltable>
+
+</section>
+
+<section id='tools.cli.langdetect.LanguageDetectorCrossValidator'>
+
+<title>LanguageDetectorCrossValidator</title>
+
+<para>K-fold cross validator for the learnable Language Detector</para>
+
+<screen>
+<![CDATA[
+Usage: opennlp LanguageDetectorCrossValidator[.leipzig] [-misclassified true|false] [-folds num] [-factory 
+        factoryName] [-params paramsFile] [-reportOutputFile outputFile] -data sampleData [-encoding 
+        charsetName] 
+Arguments description:
+	-misclassified true|false
+		if true will print false negatives and false positives.
+	-folds num
+		number of folds, default is 10.
+	-factory factoryName
+		A sub-class of LanguageDetectorFactory where to get implementation and resources.
+	-params paramsFile
+		training parameters file.
+	-reportOutputFile outputFile
+		the path of the fine-grained report file.
+	-data sampleData
+		data to be used, usually a file name.
+	-encoding charsetName
+		encoding for reading and writing text, if absent the system default is used.
+
+]]>
+</screen> 
+<para>The supported formats and arguments are:</para>
+
+<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
+<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<tbody>
+<row>
+<entry morerows='3' valign='middle'>leipzig</entry>
+<entry>sentencesDir</entry>
+<entry>sentencesDir</entry>
+<entry>No</entry>
+<entry>Dir with Leipig sentences to be used</entry>
+</row>
+<row>
+<entry>sentencesPerSample</entry>
+<entry>sentencesPerSample</entry>
+<entry>No</entry>
+<entry>Number of sentences per sample</entry>
+</row>
+<row>
+<entry>samplesPerLanguage</entry>
+<entry>samplesPerLanguage</entry>
+<entry>No</entry>
+<entry>Number of samples per language</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+</tbody>
+</tgroup></informaltable>
+
+</section>
+
+<section id='tools.cli.langdetect.LanguageDetectorEvaluator'>
+
+<title>LanguageDetectorEvaluator</title>
+
+<para>Measures the performance of the Language Detector model with the reference data</para>
+
+<screen>
+<![CDATA[
+Usage: opennlp LanguageDetectorEvaluator[.leipzig] -model model [-misclassified true|false] 
+        [-reportOutputFile outputFile] -data sampleData [-encoding charsetName] 
+Arguments description:
+	-model model
+		the model file to be evaluated.
+	-misclassified true|false
+		if true will print false negatives and false positives.
+	-reportOutputFile outputFile
+		the path of the fine-grained report file.
+	-data sampleData
+		data to be used, usually a file name.
+	-encoding charsetName
+		encoding for reading and writing text, if absent the system default is used.
+
+]]>
+</screen> 
+<para>The supported formats and arguments are:</para>
+
+<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
+<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<tbody>
+<row>
+<entry morerows='3' valign='middle'>leipzig</entry>
+<entry>sentencesDir</entry>
+<entry>sentencesDir</entry>
+<entry>No</entry>
+<entry>Dir with Leipig sentences to be used</entry>
+</row>
+<row>
+<entry>sentencesPerSample</entry>
+<entry>sentencesPerSample</entry>
+<entry>No</entry>
+<entry>Number of sentences per sample</entry>
+</row>
+<row>
+<entry>samplesPerLanguage</entry>
+<entry>samplesPerLanguage</entry>
+<entry>No</entry>
+<entry>Number of samples per language</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+</tbody>
+</tgroup></informaltable>
+
+</section>
+
+</section>
+
 <section id='tools.cli.dictionary'>
 
 <title>Dictionary</title>
@@ -315,9 +564,9 @@ Usage: opennlp TokenizerME model < sentences
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenizerTrainer[.ad|.pos|.conllx|.namefinder|.parse] [-factory factoryName] [-abbDict path] 
-        [-alphaNumOpt isAlphaNumOpt] [-params paramsFile] -lang language -model modelFile -data sampleData 
-        [-encoding charsetName] 
+Usage: opennlp TokenizerTrainer[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.conllu] [-factory 
+        factoryName] [-abbDict path] [-alphaNumOpt isAlphaNumOpt] [-params paramsFile] -lang language -model 
+        modelFile -data sampleData [-encoding charsetName] 
 Arguments description:
 	-factory factoryName
 		A sub-class of TokenizerFactory where to get implementation and resources.
@@ -344,17 +593,24 @@ Arguments description:
 <thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
 <tbody>
 <row>
+<entry morerows='1' valign='middle'>irishsentencebank</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
 <entry morerows='4' valign='middle'>ad</entry>
 <entry>encoding</entry>
 <entry>charsetName</entry>
 <entry>No</entry>
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
-</row>
-<row>
-<entry>splitHyphenatedTokens</entry>
-<entry>split</entry>
-<entry>Yes</entry>
-<entry>If true all hyphenated tokens will be separated (default true)</entry>
 </row>
 <row>
 <entry>lang</entry>
@@ -367,6 +623,12 @@ Arguments description:
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>splitHyphenatedTokens</entry>
+<entry>split</entry>
+<entry>Yes</entry>
+<entry>If true all hyphenated tokens will be separated (default true)</entry>
 </row>
 <row>
 <entry>detokenizer</entry>
@@ -450,6 +712,19 @@ Arguments description:
 <entry>No</entry>
 <entry>Specifies the file with detokenizer dictionary.</entry>
 </row>
+<row>
+<entry morerows='1' valign='middle'>conllu</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
 </tbody>
 </tgroup></informaltable>
 
@@ -463,8 +738,8 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenizerMEEvaluator[.ad|.pos|.conllx|.namefinder|.parse] -model model [-misclassified 
-        true|false] -data sampleData [-encoding charsetName] 
+Usage: opennlp TokenizerMEEvaluator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.conllu] -model 
+        model [-misclassified true|false] -data sampleData [-encoding charsetName] 
 Arguments description:
 	-model model
 		the model file to be evaluated.
@@ -483,17 +758,24 @@ Arguments description:
 <thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
 <tbody>
 <row>
+<entry morerows='1' valign='middle'>irishsentencebank</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
 <entry morerows='4' valign='middle'>ad</entry>
 <entry>encoding</entry>
 <entry>charsetName</entry>
 <entry>No</entry>
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
-</row>
-<row>
-<entry>splitHyphenatedTokens</entry>
-<entry>split</entry>
-<entry>Yes</entry>
-<entry>If true all hyphenated tokens will be separated (default true)</entry>
 </row>
 <row>
 <entry>lang</entry>
@@ -506,6 +788,12 @@ Arguments description:
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>splitHyphenatedTokens</entry>
+<entry>split</entry>
+<entry>Yes</entry>
+<entry>If true all hyphenated tokens will be separated (default true)</entry>
 </row>
 <row>
 <entry>detokenizer</entry>
@@ -589,6 +877,19 @@ Arguments description:
 <entry>No</entry>
 <entry>Specifies the file with detokenizer dictionary.</entry>
 </row>
+<row>
+<entry morerows='1' valign='middle'>conllu</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
 </tbody>
 </tgroup></informaltable>
 
@@ -602,9 +903,9 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenizerCrossValidator[.ad|.pos|.conllx|.namefinder|.parse] [-misclassified true|false] 
-        [-folds num] [-factory factoryName] [-abbDict path] [-alphaNumOpt isAlphaNumOpt] [-params paramsFile] 
-        -lang language -data sampleData [-encoding charsetName] 
+Usage: opennlp TokenizerCrossValidator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.conllu] 
+        [-misclassified true|false] [-folds num] [-factory factoryName] [-abbDict path] [-alphaNumOpt 
+        isAlphaNumOpt] [-params paramsFile] -lang language -data sampleData [-encoding charsetName] 
 Arguments description:
 	-misclassified true|false
 		if true will print false negatives and false positives.
@@ -633,17 +934,24 @@ Arguments description:
 <thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
 <tbody>
 <row>
+<entry morerows='1' valign='middle'>irishsentencebank</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
 <entry morerows='4' valign='middle'>ad</entry>
 <entry>encoding</entry>
 <entry>charsetName</entry>
 <entry>No</entry>
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
-</row>
-<row>
-<entry>splitHyphenatedTokens</entry>
-<entry>split</entry>
-<entry>Yes</entry>
-<entry>If true all hyphenated tokens will be separated (default true)</entry>
 </row>
 <row>
 <entry>lang</entry>
@@ -656,6 +964,12 @@ Arguments description:
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>splitHyphenatedTokens</entry>
+<entry>split</entry>
+<entry>Yes</entry>
+<entry>If true all hyphenated tokens will be separated (default true)</entry>
 </row>
 <row>
 <entry>detokenizer</entry>
@@ -738,6 +1052,19 @@ Arguments description:
 <entry>dictionary</entry>
 <entry>No</entry>
 <entry>Specifies the file with detokenizer dictionary.</entry>
+</row>
+<row>
+<entry morerows='1' valign='middle'>conllu</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 </tbody>
 </tgroup></informaltable>
@@ -748,12 +1075,12 @@ Arguments description:
 
 <title>TokenizerConverter</title>
 
-<para>Converts foreign data formats (ad,pos,conllx,namefinder,parse) to native OpenNLP format</para>
+<para>Converts foreign data formats (irishsentencebank,ad,pos,conllx,namefinder,parse,conllu) to native OpenNLP format</para>
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenizerConverter help|ad|pos|conllx|namefinder|parse [help|options...]
-
+Usage: opennlp TokenizerConverter help|irishsentencebank|ad|pos|conllx|namefinder|parse|conllu 
+        [help|options...] 
 ]]>
 </screen> 
 <para>The supported formats and arguments are:</para>
@@ -762,17 +1089,24 @@ Usage: opennlp TokenizerConverter help|ad|pos|conllx|namefinder|parse [help|opti
 <thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
 <tbody>
 <row>
+<entry morerows='1' valign='middle'>irishsentencebank</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
 <entry morerows='4' valign='middle'>ad</entry>
 <entry>encoding</entry>
 <entry>charsetName</entry>
 <entry>No</entry>
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
-</row>
-<row>
-<entry>splitHyphenatedTokens</entry>
-<entry>split</entry>
-<entry>Yes</entry>
-<entry>If true all hyphenated tokens will be separated (default true)</entry>
 </row>
 <row>
 <entry>lang</entry>
@@ -785,6 +1119,12 @@ Usage: opennlp TokenizerConverter help|ad|pos|conllx|namefinder|parse [help|opti
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>splitHyphenatedTokens</entry>
+<entry>split</entry>
+<entry>Yes</entry>
+<entry>If true all hyphenated tokens will be separated (default true)</entry>
 </row>
 <row>
 <entry>detokenizer</entry>
@@ -867,6 +1207,19 @@ Usage: opennlp TokenizerConverter help|ad|pos|conllx|namefinder|parse [help|opti
 <entry>dictionary</entry>
 <entry>No</entry>
 <entry>Specifies the file with detokenizer dictionary.</entry>
+</row>
+<row>
+<entry morerows='1' valign='middle'>conllu</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 </tbody>
 </tgroup></informaltable>
@@ -915,16 +1268,17 @@ Usage: opennlp SentenceDetector model < sentences
 
 <screen>
 <![CDATA[
-Usage: opennlp SentenceDetectorTrainer[.ad|.pos|.conllx|.namefinder|.parse|.moses|.letsmt] [-factory 
-        factoryName] [-abbDict path] [-eosChars string] [-params paramsFile] -lang language -model modelFile 
-        -data sampleData [-encoding charsetName] 
+Usage: opennlp 
+        SentenceDetectorTrainer[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.moses|.conllu|.letsmt] 
+        [-factory factoryName] [-eosChars string] [-abbDict path] [-params paramsFile] -lang language -model 
+        modelFile -data sampleData [-encoding charsetName] 
 Arguments description:
 	-factory factoryName
 		A sub-class of SentenceDetectorFactory where to get implementation and resources.
-	-abbDict path
-		abbreviation dictionary in XML format.
 	-eosChars string
 		EOS characters.
+	-abbDict path
+		abbreviation dictionary in XML format.
 	-params paramsFile
 		training parameters file.
 	-lang language
@@ -944,17 +1298,24 @@ Arguments description:
 <thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
 <tbody>
 <row>
+<entry morerows='1' valign='middle'>irishsentencebank</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
 <entry morerows='3' valign='middle'>ad</entry>
 <entry>encoding</entry>
 <entry>charsetName</entry>
 <entry>No</entry>
 <entry>Encoding for reading and writing text.</entry>
-</row>
-<row>
-<entry>includeTitles</entry>
-<entry>includeTitles</entry>
-<entry>Yes</entry>
-<entry>If true will include sentences marked as headlines.</entry>
 </row>
 <row>
 <entry>lang</entry>
@@ -967,6 +1328,12 @@ Arguments description:
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>includeTitles</entry>
+<entry>includeTitles</entry>
+<entry>Yes</entry>
+<entry>If true will include sentences marked as headlines.</entry>
 </row>
 <row>
 <entry morerows='2' valign='middle'>pos</entry>
@@ -1046,6 +1413,25 @@ Arguments description:
 </row>
 <row>
 <entry morerows='1' valign='middle'>moses</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
+<entry morerows='2' valign='middle'>conllu</entry>
+<entry>sentencesPerSample</entry>
+<entry>sentencesPerSample</entry>
+<entry>No</entry>
+<entry>Number of sentences per sample</entry>
+</row>
+<row>
 <entry>data</entry>
 <entry>sampleData</entry>
 <entry>No</entry>
@@ -1089,8 +1475,9 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp SentenceDetectorEvaluator[.ad|.pos|.conllx|.namefinder|.parse|.moses|.letsmt] -model model 
-        [-misclassified true|false] -data sampleData [-encoding charsetName] 
+Usage: opennlp 
+        SentenceDetectorEvaluator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.moses|.conllu|.letsmt] 
+        -model model [-misclassified true|false] -data sampleData [-encoding charsetName] 
 Arguments description:
 	-model model
 		the model file to be evaluated.
@@ -1109,17 +1496,24 @@ Arguments description:
 <thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
 <tbody>
 <row>
+<entry morerows='1' valign='middle'>irishsentencebank</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
 <entry morerows='3' valign='middle'>ad</entry>
 <entry>encoding</entry>
 <entry>charsetName</entry>
 <entry>No</entry>
 <entry>Encoding for reading and writing text.</entry>
-</row>
-<row>
-<entry>includeTitles</entry>
-<entry>includeTitles</entry>
-<entry>Yes</entry>
-<entry>If true will include sentences marked as headlines.</entry>
 </row>
 <row>
 <entry>lang</entry>
@@ -1132,6 +1526,12 @@ Arguments description:
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>includeTitles</entry>
+<entry>includeTitles</entry>
+<entry>Yes</entry>
+<entry>If true will include sentences marked as headlines.</entry>
 </row>
 <row>
 <entry morerows='2' valign='middle'>pos</entry>
@@ -1211,6 +1611,25 @@ Arguments description:
 </row>
 <row>
 <entry morerows='1' valign='middle'>moses</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
+<entry morerows='2' valign='middle'>conllu</entry>
+<entry>sentencesPerSample</entry>
+<entry>sentencesPerSample</entry>
+<entry>No</entry>
+<entry>Number of sentences per sample</entry>
+</row>
+<row>
 <entry>data</entry>
 <entry>sampleData</entry>
 <entry>No</entry>
@@ -1254,16 +1673,17 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp SentenceDetectorCrossValidator[.ad|.pos|.conllx|.namefinder|.parse|.moses|.letsmt] [-factory 
-        factoryName] [-abbDict path] [-eosChars string] [-params paramsFile] -lang language [-misclassified 
-        true|false] [-folds num] -data sampleData [-encoding charsetName] 
+Usage: opennlp 
+        SentenceDetectorCrossValidator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.moses|.conllu|.letsmt] 
+        [-factory factoryName] [-eosChars string] [-abbDict path] [-params paramsFile] -lang language 
+        [-misclassified true|false] [-folds num] -data sampleData [-encoding charsetName] 
 Arguments description:
 	-factory factoryName
 		A sub-class of SentenceDetectorFactory where to get implementation and resources.
-	-abbDict path
-		abbreviation dictionary in XML format.
 	-eosChars string
 		EOS characters.
+	-abbDict path
+		abbreviation dictionary in XML format.
 	-params paramsFile
 		training parameters file.
 	-lang language
@@ -1285,17 +1705,24 @@ Arguments description:
 <thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
 <tbody>
 <row>
+<entry morerows='1' valign='middle'>irishsentencebank</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
 <entry morerows='3' valign='middle'>ad</entry>
 <entry>encoding</entry>
 <entry>charsetName</entry>
 <entry>No</entry>
 <entry>Encoding for reading and writing text.</entry>
-</row>
-<row>
-<entry>includeTitles</entry>
-<entry>includeTitles</entry>
-<entry>Yes</entry>
-<entry>If true will include sentences marked as headlines.</entry>
 </row>
 <row>
 <entry>lang</entry>
@@ -1308,6 +1735,12 @@ Arguments description:
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>includeTitles</entry>
+<entry>includeTitles</entry>
+<entry>Yes</entry>
+<entry>If true will include sentences marked as headlines.</entry>
 </row>
 <row>
 <entry morerows='2' valign='middle'>pos</entry>
@@ -1387,6 +1820,25 @@ Arguments description:
 </row>
 <row>
 <entry morerows='1' valign='middle'>moses</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
+<entry morerows='2' valign='middle'>conllu</entry>
+<entry>sentencesPerSample</entry>
+<entry>sentencesPerSample</entry>
+<entry>No</entry>
+<entry>Number of sentences per sample</entry>
+</row>
+<row>
 <entry>data</entry>
 <entry>sampleData</entry>
 <entry>No</entry>
@@ -1426,12 +1878,12 @@ Arguments description:
 
 <title>SentenceDetectorConverter</title>
 
-<para>Converts foreign data formats (ad,pos,conllx,namefinder,parse,moses,letsmt) to native OpenNLP format</para>
+<para>Converts foreign data formats (irishsentencebank,ad,pos,conllx,namefinder,parse,moses,conllu,letsmt) to native OpenNLP format</para>
 
 <screen>
 <![CDATA[
-Usage: opennlp SentenceDetectorConverter help|ad|pos|conllx|namefinder|parse|moses|letsmt [help|options...]
-
+Usage: opennlp SentenceDetectorConverter 
+        help|irishsentencebank|ad|pos|conllx|namefinder|parse|moses|conllu|letsmt [help|options...] 
 ]]>
 </screen> 
 <para>The supported formats and arguments are:</para>
@@ -1440,17 +1892,24 @@ Usage: opennlp SentenceDetectorConverter help|ad|pos|conllx|namefinder|parse|mos
 <thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
 <tbody>
 <row>
+<entry morerows='1' valign='middle'>irishsentencebank</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
 <entry morerows='3' valign='middle'>ad</entry>
 <entry>encoding</entry>
 <entry>charsetName</entry>
 <entry>No</entry>
 <entry>Encoding for reading and writing text.</entry>
-</row>
-<row>
-<entry>includeTitles</entry>
-<entry>includeTitles</entry>
-<entry>Yes</entry>
-<entry>If true will include sentences marked as headlines.</entry>
 </row>
 <row>
 <entry>lang</entry>
@@ -1463,6 +1922,12 @@ Usage: opennlp SentenceDetectorConverter help|ad|pos|conllx|namefinder|parse|mos
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>includeTitles</entry>
+<entry>includeTitles</entry>
+<entry>Yes</entry>
+<entry>If true will include sentences marked as headlines.</entry>
 </row>
 <row>
 <entry morerows='2' valign='middle'>pos</entry>
@@ -1542,6 +2007,25 @@ Usage: opennlp SentenceDetectorConverter help|ad|pos|conllx|namefinder|parse|mos
 </row>
 <row>
 <entry morerows='1' valign='middle'>moses</entry>
+<entry>data</entry>
+<entry>sampleData</entry>
+<entry>No</entry>
+<entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>encoding</entry>
+<entry>charsetName</entry>
+<entry>Yes</entry>
+<entry>Encoding for reading and writing text, if absent the system default is used.</entry>
+</row>
+<row>
+<entry morerows='2' valign='middle'>conllu</entry>
+<entry>sentencesPerSample</entry>
+<entry>sentencesPerSample</entry>
+<entry>No</entry>
+<entry>Number of sentences per sample</entry>
+</row>
+<row>
 <entry>data</entry>
 <entry>sampleData</entry>
 <entry>No</entry>
@@ -1642,14 +2126,14 @@ Arguments description:
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
-<entry>types</entry>
-<entry>per,loc,org,gpe</entry>
+<entry>lang</entry>
+<entry>it</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>it</entry>
+<entry>types</entry>
+<entry>per,loc,org,gpe</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -1673,12 +2157,6 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>splitHyphenatedTokens</entry>
-<entry>split</entry>
-<entry>Yes</entry>
-<entry>If true all hyphenated tokens will be separated (default true)</entry>
-</row>
-<row>
 <entry>lang</entry>
 <entry>language</entry>
 <entry>No</entry>
@@ -1691,15 +2169,21 @@ Arguments description:
 <entry>Data to be used, usually a file name.</entry>
 </row>
 <row>
+<entry>splitHyphenatedTokens</entry>
+<entry>split</entry>
+<entry>Yes</entry>
+<entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
 <entry morerows='3' valign='middle'>conll03</entry>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>eng|deu</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>eng|deu</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -1736,14 +2220,14 @@ Arguments description:
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll02</entry>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>spa|nld</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>es|nl</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -1863,14 +2347,14 @@ Arguments description:
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
-<entry>types</entry>
-<entry>per,loc,org,gpe</entry>
+<entry>lang</entry>
+<entry>it</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>it</entry>
+<entry>types</entry>
+<entry>per,loc,org,gpe</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -1894,12 +2378,6 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>splitHyphenatedTokens</entry>
-<entry>split</entry>
-<entry>Yes</entry>
-<entry>If true all hyphenated tokens will be separated (default true)</entry>
-</row>
-<row>
 <entry>lang</entry>
 <entry>language</entry>
 <entry>No</entry>
@@ -1912,15 +2390,21 @@ Arguments description:
 <entry>Data to be used, usually a file name.</entry>
 </row>
 <row>
+<entry>splitHyphenatedTokens</entry>
+<entry>split</entry>
+<entry>Yes</entry>
+<entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
 <entry morerows='3' valign='middle'>conll03</entry>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>eng|deu</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>eng|deu</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -1957,14 +2441,14 @@ Arguments description:
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll02</entry>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>spa|nld</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>es|nl</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2101,14 +2585,14 @@ Arguments description:
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
-<entry>types</entry>
-<entry>per,loc,org,gpe</entry>
+<entry>lang</entry>
+<entry>it</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>it</entry>
+<entry>types</entry>
+<entry>per,loc,org,gpe</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2132,12 +2616,6 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>splitHyphenatedTokens</entry>
-<entry>split</entry>
-<entry>Yes</entry>
-<entry>If true all hyphenated tokens will be separated (default true)</entry>
-</row>
-<row>
 <entry>lang</entry>
 <entry>language</entry>
 <entry>No</entry>
@@ -2150,15 +2628,21 @@ Arguments description:
 <entry>Data to be used, usually a file name.</entry>
 </row>
 <row>
+<entry>splitHyphenatedTokens</entry>
+<entry>split</entry>
+<entry>Yes</entry>
+<entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
 <entry morerows='3' valign='middle'>conll03</entry>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>eng|deu</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>eng|deu</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2195,14 +2679,14 @@ Arguments description:
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll02</entry>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>spa|nld</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>es|nl</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2305,14 +2789,14 @@ Usage: opennlp TokenNameFinderConverter help|evalita|ad|conll03|bionlp2004|conll
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
-<entry>types</entry>
-<entry>per,loc,org,gpe</entry>
+<entry>lang</entry>
+<entry>it</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>it</entry>
+<entry>types</entry>
+<entry>per,loc,org,gpe</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2336,12 +2820,6 @@ Usage: opennlp TokenNameFinderConverter help|evalita|ad|conll03|bionlp2004|conll
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>splitHyphenatedTokens</entry>
-<entry>split</entry>
-<entry>Yes</entry>
-<entry>If true all hyphenated tokens will be separated (default true)</entry>
-</row>
-<row>
 <entry>lang</entry>
 <entry>language</entry>
 <entry>No</entry>
@@ -2354,15 +2832,21 @@ Usage: opennlp TokenNameFinderConverter help|evalita|ad|conll03|bionlp2004|conll
 <entry>Data to be used, usually a file name.</entry>
 </row>
 <row>
+<entry>splitHyphenatedTokens</entry>
+<entry>split</entry>
+<entry>Yes</entry>
+<entry>If true all hyphenated tokens will be separated (default true)</entry>
+</row>
+<row>
 <entry morerows='3' valign='middle'>conll03</entry>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>eng|deu</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>eng|deu</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2399,14 +2883,14 @@ Usage: opennlp TokenNameFinderConverter help|evalita|ad|conll03|bionlp2004|conll
 </row>
 <row>
 <entry morerows='3' valign='middle'>conll02</entry>
-<entry>types</entry>
-<entry>per,loc,org,misc</entry>
+<entry>lang</entry>
+<entry>spa|nld</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
 <row>
-<entry>lang</entry>
-<entry>es|nl</entry>
+<entry>types</entry>
+<entry>per,loc,org,misc</entry>
 <entry>No</entry>
 <entry></entry>
 </row>
@@ -2539,19 +3023,19 @@ Usage: opennlp POSTagger model < sentences
 <screen>
 <![CDATA[
 Usage: opennlp POSTaggerTrainer[.ad|.conllx|.parse|.ontonotes|.conllu] [-factory factoryName] [-resources 
-        resourcesDir] [-featuregen featuregenFile] [-dict dictionaryPath] [-tagDictCutoff tagDictCutoff] 
+        resourcesDir] [-tagDictCutoff tagDictCutoff] [-featuregen featuregenFile] [-dict dictionaryPath] 
         [-params paramsFile] -lang language -model modelFile -data sampleData [-encoding charsetName] 
 Arguments description:
 	-factory factoryName
 		A sub-class of POSTaggerFactory where to get implementation and resources.
 	-resources resourcesDir
 		The resources directory
+	-tagDictCutoff tagDictCutoff
+		TagDictionary cutoff. If specified will create/expand a mutable TagDictionary
 	-featuregen featuregenFile
 		The feature generator descriptor file
 	-dict dictionaryPath
 		The XML tag dictionary file
-	-tagDictCutoff tagDictCutoff
-		TagDictionary cutoff. If specified will create/expand a mutable TagDictionary
 	-params paramsFile
 		training parameters file.
 	-lang language
@@ -2578,18 +3062,6 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>expandME</entry>
-<entry>expandME</entry>
-<entry>Yes</entry>
-<entry>Expand multiword expressions.</entry>
-</row>
-<row>
-<entry>includeFeatures</entry>
-<entry>includeFeatures</entry>
-<entry>Yes</entry>
-<entry>Combine POS Tags with word features, like number and gender.</entry>
-</row>
-<row>
 <entry>lang</entry>
 <entry>language</entry>
 <entry>No</entry>
@@ -2600,6 +3072,18 @@ Arguments description:
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>expandME</entry>
+<entry>expandME</entry>
+<entry>Yes</entry>
+<entry>Expand multiword expressions.</entry>
+</row>
+<row>
+<entry>includeFeatures</entry>
+<entry>includeFeatures</entry>
+<entry>Yes</entry>
+<entry>Combine POS Tags with word features, like number and gender.</entry>
 </row>
 <row>
 <entry morerows='1' valign='middle'>conllx</entry>
@@ -2695,18 +3179,6 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>expandME</entry>
-<entry>expandME</entry>
-<entry>Yes</entry>
-<entry>Expand multiword expressions.</entry>
-</row>
-<row>
-<entry>includeFeatures</entry>
-<entry>includeFeatures</entry>
-<entry>Yes</entry>
-<entry>Combine POS Tags with word features, like number and gender.</entry>
-</row>
-<row>
 <entry>lang</entry>
 <entry>language</entry>
 <entry>No</entry>
@@ -2717,6 +3189,18 @@ Arguments description:
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>expandME</entry>
+<entry>expandME</entry>
+<entry>Yes</entry>
+<entry>Expand multiword expressions.</entry>
+</row>
+<row>
+<entry>includeFeatures</entry>
+<entry>includeFeatures</entry>
+<entry>Yes</entry>
+<entry>Combine POS Tags with word features, like number and gender.</entry>
 </row>
 <row>
 <entry morerows='1' valign='middle'>conllx</entry>
@@ -2784,9 +3268,9 @@ Arguments description:
 <screen>
 <![CDATA[
 Usage: opennlp POSTaggerCrossValidator[.ad|.conllx|.parse|.ontonotes|.conllu] [-misclassified true|false] 
-        [-folds num] [-factory factoryName] [-resources resourcesDir] [-featuregen featuregenFile] [-dict 
-        dictionaryPath] [-tagDictCutoff tagDictCutoff] [-params paramsFile] -lang language [-reportOutputFile 
-        outputFile] -data sampleData [-encoding charsetName] 
+        [-folds num] [-factory factoryName] [-resources resourcesDir] [-tagDictCutoff tagDictCutoff] 
+        [-featuregen featuregenFile] [-dict dictionaryPath] [-params paramsFile] -lang language 
+        [-reportOutputFile outputFile] -data sampleData [-encoding charsetName] 
 Arguments description:
 	-misclassified true|false
 		if true will print false negatives and false positives.
@@ -2796,12 +3280,12 @@ Arguments description:
 		A sub-class of POSTaggerFactory where to get implementation and resources.
 	-resources resourcesDir
 		The resources directory
+	-tagDictCutoff tagDictCutoff
+		TagDictionary cutoff. If specified will create/expand a mutable TagDictionary
 	-featuregen featuregenFile
 		The feature generator descriptor file
 	-dict dictionaryPath
 		The XML tag dictionary file
-	-tagDictCutoff tagDictCutoff
-		TagDictionary cutoff. If specified will create/expand a mutable TagDictionary
 	-params paramsFile
 		training parameters file.
 	-lang language
@@ -2828,18 +3312,6 @@ Arguments description:
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>expandME</entry>
-<entry>expandME</entry>
-<entry>Yes</entry>
-<entry>Expand multiword expressions.</entry>
-</row>
-<row>
-<entry>includeFeatures</entry>
-<entry>includeFeatures</entry>
-<entry>Yes</entry>
-<entry>Combine POS Tags with word features, like number and gender.</entry>
-</row>
-<row>
 <entry>lang</entry>
 <entry>language</entry>
 <entry>No</entry>
@@ -2850,6 +3322,18 @@ Arguments description:
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>expandME</entry>
+<entry>expandME</entry>
+<entry>Yes</entry>
+<entry>Expand multiword expressions.</entry>
+</row>
+<row>
+<entry>includeFeatures</entry>
+<entry>includeFeatures</entry>
+<entry>Yes</entry>
+<entry>Combine POS Tags with word features, like number and gender.</entry>
 </row>
 <row>
 <entry morerows='1' valign='middle'>conllx</entry>
@@ -2933,18 +3417,6 @@ Usage: opennlp POSTaggerConverter help|ad|conllx|parse|ontonotes|conllu [help|op
 <entry>Encoding for reading and writing text, if absent the system default is used.</entry>
 </row>
 <row>
-<entry>expandME</entry>
-<entry>expandME</entry>
-<entry>Yes</entry>
-<entry>Expand multiword expressions.</entry>
-</row>
-<row>
-<entry>includeFeatures</entry>
-<entry>includeFeatures</entry>
-<entry>Yes</entry>
-<entry>Combine POS Tags with word features, like number and gender.</entry>
-</row>
-<row>
 <entry>lang</entry>
 <entry>language</entry>
 <entry>No</entry>
@@ -2955,6 +3427,18 @@ Usage: opennlp POSTaggerConverter help|ad|conllx|parse|ontonotes|conllu [help|op
 <entry>sampleData</entry>
 <entry>No</entry>
 <entry>Data to be used, usually a file name.</entry>
+</row>
+<row>
+<entry>expandME</entry>
+<entry>expandME</entry>
+<entry>Yes</entry>
+<entry>Expand multiword expressions.</entry>
+</row>
+<row>
+<entry>includeFeatures</entry>
+<entry>includeFeatures</entry>
+<entry>Yes</entry>
+<entry>Combine POS Tags with word features, like number and gender.</entry>
 </row>
 <row>
 <entry morerows='1' valign='middle'>conllx</entry>
@@ -3206,16 +3690,16 @@ Arguments description:
 <entry>Language which is being processed.</entry>
 </row>
 <row>
-<entry>start</entry>
-<entry>start</entry>
-<entry>Yes</entry>
-<entry>Index of first sentence</entry>
-</row>
-<row>
 <entry>end</entry>
 <entry>end</entry>
 <entry>Yes</entry>
 <entry>Index of last sentence</entry>
+</row>
+<row>
+<entry>start</entry>
+<entry>start</entry>
+<entry>Yes</entry>
+<entry>Index of first sentence</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -3271,16 +3755,16 @@ Arguments description:
 <entry>Language which is being processed.</entry>
 </row>
 <row>
-<entry>start</entry>
-<entry>start</entry>
-<entry>Yes</entry>
-<entry>Index of first sentence</entry>
-</row>
-<row>
 <entry>end</entry>
 <entry>end</entry>
 <entry>Yes</entry>
 <entry>Index of last sentence</entry>
+</row>
+<row>
+<entry>start</entry>
+<entry>start</entry>
+<entry>Yes</entry>
+<entry>Index of first sentence</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -3343,16 +3827,16 @@ Arguments description:
 <entry>Language which is being processed.</entry>
 </row>
 <row>
-<entry>start</entry>
-<entry>start</entry>
-<entry>Yes</entry>
-<entry>Index of first sentence</entry>
-</row>
-<row>
 <entry>end</entry>
 <entry>end</entry>
 <entry>Yes</entry>
 <entry>Index of last sentence</entry>
+</row>
+<row>
+<entry>start</entry>
+<entry>start</entry>
+<entry>Yes</entry>
+<entry>Index of first sentence</entry>
 </row>
 <row>
 <entry>data</entry>
@@ -3396,16 +3880,16 @@ Usage: opennlp ChunkerConverter help|ad [help|options...]
 <entry>Language which is being processed.</entry>
 </row>
 <row>
-<entry>start</entry>
-<entry>start</entry>
-<entry>Yes</entry>
-<entry>Index of first sentence</entry>
-</row>
-<row>
 <entry>end</entry>
 <entry>end</entry>
 <entry>Yes</entry>
 <entry>Index of last sentence</entry>
+</row>
+<row>
+<entry>start</entry>
+<entry>start</entry>
+<entry>Yes</entry>
+<entry>Index of first sentence</entry>
 </row>
 <row>
 <entry>data</entry>
