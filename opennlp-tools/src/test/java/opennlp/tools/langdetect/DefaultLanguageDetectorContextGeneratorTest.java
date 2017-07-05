@@ -24,13 +24,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
-public class LanguageDetectorContextGeneratorTest {
+public class DefaultLanguageDetectorContextGeneratorTest {
 
   @Test
   public void extractContext() throws Exception {
     String doc = "abcde fghijk";
 
-    LanguageDetectorContextGenerator cg = new LanguageDetectorContextGenerator(1, 3);
+    LanguageDetectorContextGenerator cg = new DefaultLanguageDetectorContextGenerator(1, 3);
 
     Collection<String> features = Arrays.asList(cg.getContext(doc));
 

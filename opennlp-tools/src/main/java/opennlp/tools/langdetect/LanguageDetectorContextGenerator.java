@@ -17,54 +17,9 @@
 
 package opennlp.tools.langdetect;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import opennlp.tools.ngram.NGramModel;
-import opennlp.tools.util.StringList;
-import opennlp.tools.util.normalizer.AggregateCharSequenceNormalizer;
-import opennlp.tools.util.normalizer.CharSequenceNormalizer;
-
 /**
- * A context generator for language detector.
+ * A context generator interface for language detector.
  */
-class LanguageDetectorContextGenerator {
-
-  protected final int minLength;
-  protected final int maxLength;
-  protected final CharSequenceNormalizer normalizer;
-
-  /**
-   * Creates a customizable @{@link LanguageDetectorContextGenerator} that computes ngrams from text
-   * @param minLength min ngrams chars
-   * @param maxLength max ngrams chars
-   * @param normalizers zero or more normalizers to
-   *                    be applied in to the text before extracting ngrams
-   */
-  public LanguageDetectorContextGenerator(int minLength, int maxLength,
-                                          CharSequenceNormalizer... normalizers) {
-    this.minLength = minLength;
-    this.maxLength = maxLength;
-
-    this.normalizer = new AggregateCharSequenceNormalizer(normalizers);
-  }
-
-  /**
-   * Generates the context for a document using character ngrams.
-   * @param document document to extract context from
-   * @return the generated context
-   */
-  public String[] getContext(String document) {
-    Collection<String> context = new ArrayList<>();
-
-    NGramModel model = new NGramModel();
-    model.add(normalizer.normalize(document), minLength, maxLength);
-
-    for (StringList tokenList : model) {
-      if (tokenList.size() > 0) {
-        context.add(tokenList.getToken(0));
-      }
-    }
-    return context.toArray(new String[context.size()]);
-  }
+public interface LanguageDetectorContextGenerator {
+  String[] getContext(CharSequence document);
 }

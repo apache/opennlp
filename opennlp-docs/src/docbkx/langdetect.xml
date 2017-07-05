@@ -162,9 +162,9 @@ $ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params params
 			<para>
 				The Leipzig Corpora collection presents corpora in different languages. The corpora is a collection
 				of individual sentences collected from the web and newspapers. The Corpora is available as plain text
-				and as MySQL database tables. The OpenNLP integration can only use the plain text version. More
-				information about the corpora and how to download can be found in the
-				<link linkend="tools.corpora.leipzig">Corpora section</link>.
+				and as MySQL database tables. The OpenNLP integration can only use the plain text version.
+				The	individual plain text packages can be downloaded here:
+				<ulink url="http://corpora.uni-leipzig.de/download.html">http://corpora.uni-leipzig.de/download.html</ulink>
 			</para>
 			<para>
 				This corpora is specially good to train Language Detector and a converter is provided. First, you need to
