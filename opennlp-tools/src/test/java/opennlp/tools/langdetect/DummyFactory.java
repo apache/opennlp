@@ -53,22 +53,22 @@ public class DummyFactory extends LanguageDetectorFactory {
     }
   }
 
-  public class MyContectGenerator extends LanguageDetectorContextGenerator {
+  public class MyContectGenerator extends DefaultLanguageDetectorContextGenerator {
 
     public MyContectGenerator(int min, int max, CharSequenceNormalizer... normalizers) {
       super(min, max, normalizers);
     }
 
     @Override
-    public String[] getContext(String document) {
+    public String[] getContext(CharSequence document) {
       String[] superContext = super.getContext(document);
 
       List<String> context = new ArrayList(Arrays.asList(superContext));
 
-      document = this.normalizer.normalize(document).toString();
+      document = this.normalizer.normalize(document);
 
       SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
-      String[] words = tokenizer.tokenize(document);
+      String[] words = tokenizer.tokenize(document.toString());
       NGramModel tokenNgramModel = new NGramModel();
       if (words.length > 0) {
         tokenNgramModel.add(new StringList(words), 1, 3);

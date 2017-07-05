@@ -27,10 +27,24 @@ import opennlp.tools.util.normalizer.TwitterCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
 
 
+/**
+ * <p>Default factory used by Language Detector. Extend this class to change the Language Detector
+ * behaviour, such as the {@link LanguageDetectorContextGenerator}.</p>
+ * <p>The default {@link DefaultLanguageDetectorContextGenerator} will use char n-grams of
+ * size 1 to 3 and the following normalizers:
+ * <ul>
+ * <li> {@link EmojiCharSequenceNormalizer}
+ * <li> {@link UrlCharSequenceNormalizer}
+ * <li> {@link TwitterCharSequenceNormalizer}
+ * <li> {@link NumberCharSequenceNormalizer}
+ * <li> {@link ShrinkCharSequenceNormalizer}
+ * </ul>
+ * </p>
+ */
 public class LanguageDetectorFactory extends BaseToolFactory {
 
   public LanguageDetectorContextGenerator getContextGenerator() {
-    return new LanguageDetectorContextGenerator(1, 3,
+    return new DefaultLanguageDetectorContextGenerator(1, 3,
         EmojiCharSequenceNormalizer.getInstance(),
         UrlCharSequenceNormalizer.getInstance(),
         TwitterCharSequenceNormalizer.getInstance(),
