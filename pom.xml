@@ -43,6 +43,17 @@
 		<tag>HEAD</tag>
 	</scm>
 
+	<repositories>
+		<repository>
+			<id>apache.snapshots</id>
+			<name>Apache Snapshot Repository</name>
+			<url>http://repository.apache.org/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
 	<mailingLists>
 		<mailingList>
 			<name>Apache OpenNLP Users</name>
