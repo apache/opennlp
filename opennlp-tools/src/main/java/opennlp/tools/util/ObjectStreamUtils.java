@@ -91,8 +91,61 @@ public class ObjectStreamUtils {
    * @param streams
    * @return
    */
+  public static <T> ObjectStream<T> concatenateObjectStream(final Collection<ObjectStream<T>> streams) {
+
+    // We may want to skip null streams instead of throwing a 
+    for (ObjectStream<T> stream : streams) {
+      if (stream == null) {
+        throw new NullPointerException("stream cannot be null");
+      }
+    }
+
+    return new ObjectStream<T>() {
+
+      private Iterator<ObjectStream<T>> iterator = streams.iterator();
+      private ObjectStream<T> currentStream = iterator.next();
+
+      @Override
+      public T read() throws IOException {
+        T object = null;
+
+        while (currentStream != null && object == null) {
+          object = currentStream.read();
+          if (object == null) {
+            currentStream = (iterator.hasNext()) ? iterator.next() : null;
+          }
+        }
+        return object;
+      }
+
+      @Override
+      public void reset() throws IOException, UnsupportedOperationException {
+        for (ObjectStream<T> stream : streams) {
+          stream.reset();
+        }
+        iterator = streams.iterator();
+      }
+
+      @Override
+      public void close() throws IOException {
+        for (ObjectStream<T> stream : streams) {
+          stream.close();
+        }
+      }
+
+    };
+
+  }
+
+  /**
+   * Creates a single concatenated ObjectStream from multiple individual
+   * ObjectStreams with the same type.
+   *
+   * @param streams
+   * @return
+   */
   @SafeVarargs
-  public static <T> ObjectStream<T> createObjectStream(final ObjectStream<T>... streams) {
+  public static <T> ObjectStream<T> concatenateObjectStream(final ObjectStream<T>... streams) {
 
     for (ObjectStream<T> stream : streams) {
       if (stream == null) {

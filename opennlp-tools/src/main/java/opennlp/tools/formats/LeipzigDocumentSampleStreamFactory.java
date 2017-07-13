@@ -75,7 +75,7 @@ public class LeipzigDocumentSampleStreamFactory
       }
     }
 
-    return ObjectStreamUtils.createObjectStream(sampleStreams);
+    return ObjectStreamUtils.concatenateObjectStream(sampleStreams);
   }
 
   interface Parameters extends EncodingParameter {
