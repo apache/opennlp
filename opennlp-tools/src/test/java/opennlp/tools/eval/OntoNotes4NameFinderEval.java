@@ -28,7 +28,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.security.MessageDigest;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -47,11 +46,11 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
-public class OntoNotes4NameFinderEval {
+public class OntoNotes4NameFinderEval extends AbstractEvalTest {
 
   private static ObjectStream<NameSample> createNameSampleStream() throws IOException {
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
-        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"),
+        getOpennlpDataDir(), "ontonotes4/data/files/data/english"),
         file -> {
           if (file.isFile()) {
             return file.getName().endsWith(".name");
@@ -64,7 +63,7 @@ public class OntoNotes4NameFinderEval {
         documentStream, StandardCharsets.UTF_8));
   }
 
-  private static void crossEval(TrainingParameters params, String type, double expectedScore)
+  private void crossEval(TrainingParameters params, String type, double expectedScore)
       throws IOException {
     try (ObjectStream<NameSample> samples = createNameSampleStream()) {
 
@@ -86,18 +85,9 @@ public class OntoNotes4NameFinderEval {
   }
 
   @BeforeClass
-  public static void verifyTrainingData() throws IOException {
-    MessageDigest digest = EvalUtil.createDigest();
-
-    try (ObjectStream<NameSample> samples = createNameSampleStream()) {
-      NameSample sample;
-      while ((sample = samples.read()) != null) {
-        digest.update(sample.toString().getBytes(StandardCharsets.UTF_8));
-      }
-
-      Assert.assertEquals(new BigInteger("168206908604555450993491898907821588182"),
-          new BigInteger(1, digest.digest()));
-    }
+  public static void verifyTrainingData() throws Exception {
+    verifyDirectoryChecksum(new File(getOpennlpDataDir(), "ontonotes4/data/files/data/english").toPath(),
+        ".name", new BigInteger("74675117716526375898817028829433420680"));
   }
 
   @Test
@@ -141,7 +131,7 @@ public class OntoNotes4NameFinderEval {
 
     // create a temp resource folder and copy the pos model there
     Path resourcesPath = Files.createTempDirectory("opennlp_resources");
-    Files.copy(new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-pos-perceptron.bin").toPath(),
+    Files.copy(new File(getOpennlpDataDir(), "models-sf/en-pos-perceptron.bin").toPath(),
         new File(resourcesPath.toFile(), "en-pos-perceptron.bin").toPath(),
         StandardCopyOption.REPLACE_EXISTING);
 

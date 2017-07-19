@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -42,11 +41,11 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
-public class OntoNotes4ParserEval {
+public class OntoNotes4ParserEval extends AbstractEvalTest {
 
   private static ObjectStream<Parse> createParseSampleStream() throws IOException {
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
-        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"),
+        getOpennlpDataDir(), "ontonotes4/data/files/data/english"),
         file -> {
           if (file.isFile()) {
             return file.getName().endsWith(".parse");
@@ -60,7 +59,7 @@ public class OntoNotes4ParserEval {
             documentStream, StandardCharsets.UTF_8)));
   }
 
-  private static void crossEval(TrainingParameters params, HeadRules rules, double expectedScore)
+  private void crossEval(TrainingParameters params, HeadRules rules, double expectedScore)
       throws IOException {
     try (ObjectStream<Parse> samples = createParseSampleStream()) {
       ParserCrossValidator cv = new ParserCrossValidator("eng", params, rules, ParserType.CHUNKING);
@@ -71,18 +70,8 @@ public class OntoNotes4ParserEval {
   }
 
   @BeforeClass
-  public static void verifyTrainingData() throws IOException {
-    MessageDigest digest = EvalUtil.createDigest();
-
-    try (ObjectStream<Parse> samples = createParseSampleStream()) {
-      Parse sample;
-      while ((sample = samples.read()) != null) {
-        digest.update(sample.toString().getBytes(StandardCharsets.UTF_8));
-      }
-
-      Assert.assertEquals(new BigInteger("83833369887442127665956850482411800415"),
-          new BigInteger(1, digest.digest()));
-    }
+  public static void verifyTrainingData() throws Exception {
+    verifyTrainingData(createParseSampleStream(), new BigInteger("83833369887442127665956850482411800415"));
   }
 
   @Test

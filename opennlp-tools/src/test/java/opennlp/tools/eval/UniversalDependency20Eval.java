@@ -38,24 +38,24 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
-public class UniversalDependency20Eval {
+public class UniversalDependency20Eval extends AbstractEvalTest {
 
-  private static File SPA_ANCORA_TRAIN =
-      new File(EvalUtil.getOpennlpDataDir(),"ud20/UD_Spanish-AnCora/es_ancora-ud-train.conllu");
-  private static File SPA_ANCORA_DEV =
-      new File(EvalUtil.getOpennlpDataDir(),"ud20/UD_Spanish-AnCora/es_ancora-ud-dev.conllu");
+  private static File SPA_ANCORA_TRAIN;      
+  private static File SPA_ANCORA_DEV;
 
   @BeforeClass
-  public static void ensureTestDataIsCorrect() throws IOException {
-    SourceForgeModelEval.ensureTestDataIsCorrect();
+  public static void verifyTrainingData() throws Exception {
 
-    EvalUtil.verifyFileChecksum(SPA_ANCORA_TRAIN.toPath(),
+    SPA_ANCORA_TRAIN = new File(getOpennlpDataDir(),"ud20/UD_Spanish-AnCora/es_ancora-ud-train.conllu");
+    SPA_ANCORA_DEV = new File(getOpennlpDataDir(),"ud20/UD_Spanish-AnCora/es_ancora-ud-dev.conllu");
+
+    verifyFileChecksum(SPA_ANCORA_TRAIN.toPath(),
         new BigInteger("224942804200733453179524127037951530195"));
-    EvalUtil.verifyFileChecksum(SPA_ANCORA_DEV.toPath(),
+    verifyFileChecksum(SPA_ANCORA_DEV.toPath(),
         new BigInteger("280996187464384493180190898172297941708"));
   }
 
-  private static double trainAndEval(String lang, File trainFile, TrainingParameters params,
+  private double trainAndEval(String lang, File trainFile, TrainingParameters params,
                                      File evalFile) throws IOException {
     ConlluTagset tagset = ConlluTagset.X;
 
@@ -79,6 +79,6 @@ public class UniversalDependency20Eval {
     double wordAccuracy = trainAndEval("spa", SPA_ANCORA_TRAIN,
         params, SPA_ANCORA_DEV);
 
-    Assert.assertEquals(0.9057341692068787d, wordAccuracy, EvalUtil.ACCURACY_DELTA);
+    Assert.assertEquals(0.9057341692068787d, wordAccuracy, ACCURACY_DELTA);
   }
 }
