@@ -20,7 +20,10 @@ package opennlp.tools.eval;
 import java.io.File;
 import java.io.IOException;
 
+import java.math.BigInteger;
+
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import opennlp.tools.formats.Conll02NameSampleStream;
@@ -48,27 +51,17 @@ import opennlp.tools.util.model.ModelUtil;
  * - Double check the encoding which is used to open the files. Currently that is UTF-8.
  * - Make the Conll02 reader compatible. Currently it doesn't work with spanish data without pos tags.
  */
-public class Conll02NameFinderEval {
+public class Conll02NameFinderEval extends AbstractEvalTest {
 
-  private final File dutchTrainingFile;
-  private final File dutchTestAFile;
-  private final File dutchTestBFile;
+  private static File dutchTrainingFile;
+  private static File dutchTestAFile;
+  private static File dutchTestBFile;
+  private static File spanishTrainingFile;
+  private static File spanishTestAFile;
+  private static File spanishTestBFile;
+      
 
-  private final File spanishTrainingFile;
-  private final File spanishTestAFile;
-  private final File spanishTestBFile;
-
-  public Conll02NameFinderEval() {
-    dutchTrainingFile = new File(EvalUtil.getOpennlpDataDir(), "conll02/ner/data/ned.train");
-    dutchTestAFile = new File(EvalUtil.getOpennlpDataDir(), "conll02/ner/data/ned.testa");
-    dutchTestBFile = new File(EvalUtil.getOpennlpDataDir(), "conll02/ner/data/ned.testb");
-
-    spanishTrainingFile = new File(EvalUtil.getOpennlpDataDir(), "conll02/ner/data/esp.train");
-    spanishTestAFile = new File(EvalUtil.getOpennlpDataDir(), "conll02/ner/data/esp.testa");
-    spanishTestBFile = new File(EvalUtil.getOpennlpDataDir(), "conll02/ner/data/esp.testb");
-  }
-
-  private static TokenNameFinderModel train(File trainFile, LANGUAGE lang,
+  private TokenNameFinderModel train(File trainFile, LANGUAGE lang,
       TrainingParameters params, int types) throws IOException {
 
     ObjectStream<NameSample> samples = new Conll02NameSampleStream(
@@ -78,7 +71,7 @@ public class Conll02NameFinderEval {
         params, new TokenNameFinderFactory());
   }
 
-  private static void eval(TokenNameFinderModel model, File testData, LANGUAGE lang,
+  private void eval(TokenNameFinderModel model, File testData, LANGUAGE lang,
       int types, double expectedFMeasure) throws IOException {
 
     ObjectStream<NameSample> samples = new Conll02NameSampleStream(
@@ -89,10 +82,48 @@ public class Conll02NameFinderEval {
 
     Assert.assertEquals(expectedFMeasure, evaluator.getFMeasure().getFMeasure(), 0.0001);
   }
+  
+  @BeforeClass
+  public static void verifyTrainingData() throws Exception {
+
+    dutchTrainingFile = new File(getOpennlpDataDir(), "conll02/ner/data/ned.train");
+    dutchTestAFile = new File(getOpennlpDataDir(), "conll02/ner/data/ned.testa");
+    dutchTestBFile = new File(getOpennlpDataDir(), "conll02/ner/data/ned.testb");
+    spanishTrainingFile = new File(getOpennlpDataDir(), "conll02/ner/data/esp.train");
+    spanishTestAFile = new File(getOpennlpDataDir(), "conll02/ner/data/esp.testa");
+    spanishTestBFile = new File(getOpennlpDataDir(), "conll02/ner/data/esp.testb");
+    
+    verifyTrainingData(new Conll02NameSampleStream(
+        LANGUAGE.NLD, new MarkableFileInputStreamFactory(dutchTrainingFile),
+          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+            new BigInteger("109687424525847313767541246922170457976"));
+    verifyTrainingData(new Conll02NameSampleStream(
+        LANGUAGE.NLD, new MarkableFileInputStreamFactory(dutchTestAFile),
+          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+            new BigInteger("12942966701628852910737840182656846323"));
+    verifyTrainingData(new Conll02NameSampleStream(
+        LANGUAGE.NLD, new MarkableFileInputStreamFactory(dutchTestBFile),
+          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+            new BigInteger("223206987942490952427646331013509976957"));
+    
+    verifyTrainingData(new Conll02NameSampleStream(
+        LANGUAGE.SPA, new MarkableFileInputStreamFactory(spanishTrainingFile),
+          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+            new BigInteger("226089384066775461905386060946810714487"));  
+    verifyTrainingData(new Conll02NameSampleStream(
+        LANGUAGE.SPA, new MarkableFileInputStreamFactory(spanishTestAFile),
+          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+            new BigInteger("313879596837181728494732341737647284762"));
+    verifyTrainingData(new Conll02NameSampleStream(
+        LANGUAGE.SPA, new MarkableFileInputStreamFactory(spanishTestBFile),
+          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+            new BigInteger("24037715705115461166858183817622459974"));
+
+  }
 
   @Test
   public void evalDutchPersonPerceptron() throws IOException {
-    TrainingParameters params = EvalUtil.createPerceptronParams();
+    TrainingParameters params = createPerceptronParams();
 
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
@@ -120,7 +151,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalDutchPersonMaxentQn() throws IOException {
-    TrainingParameters params = EvalUtil.createMaxentQnParams();
+    TrainingParameters params = createMaxentQnParams();
 
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
@@ -134,7 +165,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalDutchOrganizationPerceptron() throws IOException {
-    TrainingParameters params = EvalUtil.createPerceptronParams();
+    TrainingParameters params = createPerceptronParams();
 
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
@@ -162,7 +193,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalDutchOrganizationMaxentQn() throws IOException {
-    TrainingParameters params = EvalUtil.createMaxentQnParams();
+    TrainingParameters params = createMaxentQnParams();
 
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
@@ -176,7 +207,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalDutchLocationPerceptron() throws IOException {
-    TrainingParameters params = EvalUtil.createPerceptronParams();
+    TrainingParameters params = createPerceptronParams();
 
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
@@ -204,7 +235,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalDutchLocationMaxentQn() throws IOException {
-    TrainingParameters params = EvalUtil.createMaxentQnParams();
+    TrainingParameters params = createMaxentQnParams();
 
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
@@ -218,7 +249,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalDutchMiscPerceptron() throws IOException {
-    TrainingParameters params = EvalUtil.createPerceptronParams();
+    TrainingParameters params = createPerceptronParams();
 
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
@@ -246,7 +277,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalDutchMiscMaxentQn() throws IOException {
-    TrainingParameters params = EvalUtil.createMaxentQnParams();
+    TrainingParameters params = createMaxentQnParams();
 
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
@@ -260,7 +291,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalDutchCombinedPerceptron() throws IOException {
-    TrainingParameters params = EvalUtil.createPerceptronParams();
+    TrainingParameters params = createPerceptronParams();
 
     int combinedType = Conll02NameSampleStream.GENERATE_PERSON_ENTITIES
         | Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES
@@ -294,7 +325,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalDutchCombinedMaxentQn() throws IOException {
-    TrainingParameters params = EvalUtil.createMaxentQnParams();
+    TrainingParameters params = createMaxentQnParams();
 
     int combinedType = Conll02NameSampleStream.GENERATE_PERSON_ENTITIES
         | Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES
@@ -311,7 +342,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalSpanishPersonPerceptron() throws IOException {
-    TrainingParameters params = EvalUtil.createPerceptronParams();
+    TrainingParameters params = createPerceptronParams();
 
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.SPA, params,
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
@@ -340,7 +371,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalSpanishPersonMaxentQn() throws IOException {
-    TrainingParameters params = EvalUtil.createMaxentQnParams();
+    TrainingParameters params = createMaxentQnParams();
 
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.SPA, params,
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
@@ -354,7 +385,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalSpanishOrganizationPerceptron() throws IOException {
-    TrainingParameters params = EvalUtil.createPerceptronParams();
+    TrainingParameters params = createPerceptronParams();
 
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.SPA, params,
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
@@ -382,7 +413,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalSpanishOrganizationMaxentQn() throws IOException {
-    TrainingParameters params = EvalUtil.createMaxentQnParams();
+    TrainingParameters params = createMaxentQnParams();
 
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.SPA, params,
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
@@ -396,7 +427,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalSpanishLocationPerceptron() throws IOException {
-    TrainingParameters params = EvalUtil.createPerceptronParams();
+    TrainingParameters params = createPerceptronParams();
 
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.SPA, params,
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
@@ -424,7 +455,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalSpanishLocationMaxentQn() throws IOException {
-    TrainingParameters params = EvalUtil.createMaxentQnParams();
+    TrainingParameters params = createMaxentQnParams();
 
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.SPA, params,
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
@@ -438,7 +469,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalSpanishMiscPerceptron() throws IOException {
-    TrainingParameters params = EvalUtil.createPerceptronParams();
+    TrainingParameters params = createPerceptronParams();
 
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.SPA, params,
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
@@ -466,7 +497,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalSpanishMiscMaxentQn() throws IOException {
-    TrainingParameters params = EvalUtil.createMaxentQnParams();
+    TrainingParameters params = createMaxentQnParams();
 
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.SPA, params,
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
@@ -480,7 +511,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalSpanishCombinedPerceptron() throws IOException {
-    TrainingParameters params = EvalUtil.createPerceptronParams();
+    TrainingParameters params = createPerceptronParams();
 
     int combinedType = Conll02NameSampleStream.GENERATE_PERSON_ENTITIES
         | Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES
@@ -514,7 +545,7 @@ public class Conll02NameFinderEval {
 
   @Test
   public void evalSpanishCombinedMaxentQn() throws IOException {
-    TrainingParameters params = EvalUtil.createMaxentQnParams();
+    TrainingParameters params = createMaxentQnParams();
 
     int combinedType = Conll02NameSampleStream.GENERATE_PERSON_ENTITIES
         | Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES

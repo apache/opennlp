@@ -20,8 +20,8 @@ package opennlp.tools.eval;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -39,11 +39,11 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
-public class OntoNotes4PosTaggerEval {
+public class OntoNotes4PosTaggerEval extends AbstractEvalTest {
 
   private static ObjectStream<POSSample> createPOSSampleStream() throws IOException {
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
-        EvalUtil.getOpennlpDataDir(), "ontonotes4/data/files/data/english"),
+        getOpennlpDataDir(), "ontonotes4/data/files/data/english"),
         file -> {
           if (file.isFile()) {
             return file.getName().endsWith(".parse");
@@ -57,7 +57,7 @@ public class OntoNotes4PosTaggerEval {
             new FileToStringSampleStream(documentStream, StandardCharsets.UTF_8))));
   }
 
-  private static void crossEval(TrainingParameters params, double expectedScore)
+  private void crossEval(TrainingParameters params, double expectedScore)
       throws IOException {
     try (ObjectStream<POSSample> samples = createPOSSampleStream()) {
       POSTaggerCrossValidator cv = new POSTaggerCrossValidator("eng", params, new POSTaggerFactory());
@@ -68,19 +68,10 @@ public class OntoNotes4PosTaggerEval {
   }
 
   @BeforeClass
-  public static void verifyTrainingData() throws IOException {
-    MessageDigest digest = EvalUtil.createDigest();
-
-    try (ObjectStream<POSSample> samples = createPOSSampleStream()) {
-      POSSample sample;
-      while ((sample = samples.read()) != null) {
-        digest.update(sample.toString().getBytes(StandardCharsets.UTF_8));
-      }
-
-      Assert.assertEquals(new BigInteger("300430765214895870888056958221353356972"),
-          new BigInteger(1, digest.digest()));
-    }
+  public static void verifyTrainingData() throws Exception {
+    verifyTrainingData(createPOSSampleStream(), new BigInteger("300430765214895870888056958221353356972"));
   }
+  
   @Test
   public void evalEnglishMaxentTagger() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
