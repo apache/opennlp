@@ -64,9 +64,9 @@ public class LeipzigLanguageSampleStreamFactory
     File sentencesFileDir = params.getSentencesDir();
 
     try {
-      return new LeipzigLanguageSampleStream(sentencesFileDir,
+      return new SampleShuffleStream(new LeipzigLanguageSampleStream(sentencesFileDir,
           Integer.parseInt(params.getSentencesPerSample()),
-          Integer.parseInt(params.getSamplesPerLanguage()));
+          Integer.parseInt(params.getSamplesPerLanguage())));
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while opening sample data.", e);
     }
