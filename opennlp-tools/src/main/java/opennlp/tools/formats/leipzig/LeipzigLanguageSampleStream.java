@@ -20,10 +20,18 @@ package opennlp.tools.formats.leipzig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import opennlp.tools.langdetect.Language;
 import opennlp.tools.langdetect.LanguageSample;
@@ -34,46 +42,72 @@ import opennlp.tools.util.PlainTextByLineStream;
 public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample> {
 
   private class LeipzigSentencesStream implements ObjectStream<LanguageSample> {
-    private final String lang;
-    private int sentencesPerSample;
-    private int numberOfSamples;
 
-    private ObjectStream<String> lineStream;
-    private int sampleCount;
+    private final String lang;
+
+    private Iterator<String> lineIterator;
 
     LeipzigSentencesStream(String lang, File sentencesFile, int sentencesPerSample, int numberOfSamples)
         throws IOException {
-      this.lang = sentencesFile.getName().substring(0, 3);
-      this.sentencesPerSample = sentencesPerSample;
-      this.numberOfSamples = numberOfSamples;
 
-      lineStream = new PlainTextByLineStream(new MarkableFileInputStreamFactory(sentencesFile),
-          StandardCharsets.UTF_8);
+      this.lang = lang;
+
+      // The file name contains the number of lines, but to make this more stable
+      // the file is once scanned for the count even tough this is slower
+      int totalLineCount = (int) Files.lines(sentencesFile.toPath()).count();
+
+      List<Integer> indexes = IntStream.range(0, totalLineCount)
+          .boxed().collect(Collectors.toList());
+
+      Collections.shuffle(indexes, random);
+
+      Set<Integer> selectedLines = new HashSet<>(
+          indexes.subList(0, sentencesPerSample * numberOfSamples));
+
+      List<String> sentences = new ArrayList<>();
+
+      try (ObjectStream<String> lineStream = new PlainTextByLineStream(
+          new MarkableFileInputStreamFactory(sentencesFile), StandardCharsets.UTF_8)) {
+
+        int lineIndex = 0;
+        String line;
+        while ((line = lineStream.read()) != null) {
+
+          int tabIndex = line.indexOf('\t');
+          if (tabIndex != -1) {
+            if (selectedLines.contains(lineIndex)) {
+              sentences.add(line);
+            }
+          }
+
+          lineIndex++;
+        }
+      }
+
+      Collections.shuffle(sentences, random);
+
+      lineIterator = sentences.iterator();
     }
 
     @Override
     public LanguageSample read() throws IOException {
+      StringBuilder sampleString = new StringBuilder();
 
-      if (sampleCount < numberOfSamples) {
-        StringBuilder sampleString = new StringBuilder();
+      int count = 0;
+      while (count < sentencesPerSample && lineIterator.hasNext()) {
 
-        int count = 0;
-        String line;
-        while (count < sentencesPerSample && (line = lineStream.read()) != null) {
+        String line = lineIterator.next();
+        int textStart = line.indexOf('\t') + 1;
 
-          int textStart = line.indexOf('\t') + 1;
+        sampleString.append(line.substring(textStart) + " ");
 
-          // TODO: It should it be changed to contain an array of sample strings ?!
-          sampleString.append(line.substring(textStart) + " ");
-
-          count++;
-        }
-
-        if (sampleString.length() > 0) {
-          sampleCount++;
-          return new LanguageSample(new Language(lang), sampleString);
-        }
+        count++;
       }
+
+      if (sampleString.length() > 0) {
+        return new LanguageSample(new Language(lang), sampleString);
+      }
+
       return null;
     }
   }
@@ -86,10 +120,13 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
   private Iterator<File> sentencesFilesIt;
   private ObjectStream<LanguageSample> sampleStream;
 
+  private final Random random;
+
   public LeipzigLanguageSampleStream(File leipzigFolder, final int sentencesPerSample,
                                      final int samplesPerLanguage) throws IOException {
     this.sentencesPerSample = sentencesPerSample;
-    // TODO: Use a FileFilter to make this more reliable in case there are files which should be ignored
+    // TODO: Use a FileFilter to make this more reliable in case there are
+    //       files which should be ignored or are shorter than 3 chars for the lang detect substring
     sentencesFiles = leipzigFolder.listFiles();
     Arrays.sort(sentencesFiles);
 
@@ -99,6 +136,8 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
 
     langSampleCounts = langCounts.entrySet().stream()
         .collect(Collectors.toMap(Map.Entry::getKey, e -> samplesPerLanguage / e.getValue()));
+
+    random = new Random(23);
 
     reset();
   }
@@ -111,7 +150,7 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
     else {
       if (sentencesFilesIt.hasNext()) {
         File sentencesFile = sentencesFilesIt.next();
-        System.out.println(sentencesFile);
+
         String lang = sentencesFile.getName().substring(0, 3);
 
         sampleStream = new LeipzigSentencesStream(lang, sentencesFile,
@@ -127,10 +166,5 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
   public void reset() throws IOException {
     sentencesFilesIt = Arrays.asList(sentencesFiles).iterator();
     sampleStream = null;
-  }
-
-  public static void main(String[] args) throws Exception {
-    new LeipzigLanguageSampleStream(new File("/home/blue/opennlp-data-dir/leipzig-lang"),
-        10, 100000);
   }
 }
