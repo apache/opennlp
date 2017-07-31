@@ -54,7 +54,9 @@ public class NameSample {
     }
 
     this.sentence = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(sentence)));
-    this.names = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(names)));
+    List<Span> namesList = Arrays.asList(names);
+    Collections.sort(namesList);
+    this.names = Collections.unmodifiableList(namesList);
 
     if (additionalContext != null) {
       this.additionalContext = new String[additionalContext.length][];
@@ -158,7 +160,6 @@ public class NameSample {
             result.append(NameSampleDataStream.START_TAG_PREFIX).append(name.getType()).append("> ");
           }
         }
-
         if (name.getEnd() == tokenIndex) {
           result.append(NameSampleDataStream.END_TAG).append(' ');
         }

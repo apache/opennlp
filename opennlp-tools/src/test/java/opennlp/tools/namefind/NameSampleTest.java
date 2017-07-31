@@ -62,6 +62,44 @@ public class NameSampleTest {
   }
 
   /**
+   * Test serialization of sequential spans.
+   */
+  @Test
+  public void testSequentialSpans() {
+
+    String[] sentence = {"A", "Place", "a", "time", "A", "Person", "."};
+
+    Span[] names = {new Span(0, 2, "Place"), new Span(2, 4, "Time"),
+        new Span(4, 6, "Person")};
+
+    NameSample nameSample;
+    nameSample = new NameSample(sentence, names, false);
+
+    Assert.assertEquals(
+        "<START:Place> A Place <END> <START:Time> a time <END> <START:Person> A Person <END> .",
+        nameSample.toString());
+  }
+
+  /**
+   * Test serialization of unsorted sequential spans.
+   */
+  @Test
+  public void testUnsortedSequentialSpans() {
+
+    String[] sentence = {"A", "Place", "a", "time", "A", "Person", "."};
+
+    Span[] names = {new Span(0, 2, "Place"), new Span(4, 6, "Person"),
+        new Span(2, 4, "Time")};
+
+    NameSample nameSample;
+    nameSample = new NameSample(sentence, names, false);
+
+    Assert.assertEquals(
+        "<START:Place> A Place <END> <START:Time> a time <END> <START:Person> A Person <END> .",
+        nameSample.toString());
+  }
+
+  /**
    * Checks if could create a NameSample without NameTypes, generate the
    * string representation and validate it.
    */
