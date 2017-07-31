@@ -31,7 +31,7 @@ import opennlp.tools.util.eval.EvaluationMonitor;
  */
 public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> {
 
-  private PrintStream printStream;
+  protected PrintStream printStream;
 
   protected EvaluationErrorPrinter(OutputStream outputStream) {
     this.printStream = new PrintStream(outputStream);
