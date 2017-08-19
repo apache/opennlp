@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -47,6 +48,11 @@ public class LeipzigLanguageSampleStreamFactory
     @ParameterDescription(valueName = "samplesPerLanguage",
         description = "number of samples per language")
     String getSamplesPerLanguage();
+
+    @ParameterDescription(valueName = "samplesToSkip",
+        description = "number of samples to skip before returning")
+    @OptionalParameter(defaultValue = "0")
+    String getSamplesToSkip();
   }
 
   protected <P> LeipzigLanguageSampleStreamFactory(Class<P> params) {
@@ -64,9 +70,11 @@ public class LeipzigLanguageSampleStreamFactory
     File sentencesFileDir = params.getSentencesDir();
 
     try {
-      return new SampleShuffleStream(new LeipzigLanguageSampleStream(sentencesFileDir,
+      return new SampleSkipStream(new SampleShuffleStream(
+          new LeipzigLanguageSampleStream(sentencesFileDir,
           Integer.parseInt(params.getSentencesPerSample()),
-          Integer.parseInt(params.getSamplesPerLanguage())));
+          Integer.parseInt(params.getSamplesPerLanguage()) + Integer.parseInt(params.getSamplesToSkip()))),
+          Integer.parseInt(params.getSamplesToSkip()));
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while opening sample data.", e);
     }
