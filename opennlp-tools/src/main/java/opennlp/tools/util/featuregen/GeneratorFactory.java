@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -736,6 +737,12 @@ public class GeneratorFactory {
   private static org.w3c.dom.Document createDOM(InputStream xmlDescriptorIn)
       throws IOException {
     DocumentBuilderFactory documentBuilderFacoty = DocumentBuilderFactory.newInstance();
+    try {
+      documentBuilderFacoty.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    } catch (ParserConfigurationException e) {
+      // should not fail because we are using XMLConstants, but we should force it anyway.
+      throw new IllegalStateException("Could not set FEATURE_SECURE_PROCESSING=true", e);
+    }
 
     DocumentBuilder documentBuilder;
 
