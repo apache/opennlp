@@ -30,8 +30,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -40,6 +38,7 @@ import org.xml.sax.SAXException;
 
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.XmlUtil;
 
 /**
  * A structure to hold an Irish Sentence Bank document, which is a collection
@@ -154,8 +153,7 @@ public class IrishSentenceBankDocument {
     IrishSentenceBankDocument document = new IrishSentenceBankDocument();
 
     try {
-      DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+      DocumentBuilder docBuilder = XmlUtil.createDocumentBuilder();
       Document doc = docBuilder.parse(is);
 
       String root = doc.getDocumentElement().getNodeName();
@@ -262,8 +260,6 @@ public class IrishSentenceBankDocument {
         }
       }
       return document;
-    } catch (ParserConfigurationException e) {
-      throw new IllegalStateException(e);
     } catch (SAXException e) {
       throw new IOException("Failed to parse IrishSentenceBank document", e);
     }

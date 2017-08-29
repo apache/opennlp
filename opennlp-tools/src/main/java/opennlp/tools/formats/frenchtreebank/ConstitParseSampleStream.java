@@ -22,15 +22,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.SAXException;
 
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.XmlUtil;
 
 public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> {
 
@@ -40,13 +39,7 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
 
   protected ConstitParseSampleStream(ObjectStream<byte[]> samples) {
     super(samples);
-
-    SAXParserFactory factory = SAXParserFactory.newInstance();
-    try {
-      saxParser = factory.newSAXParser();
-    } catch (ParserConfigurationException | SAXException e) {
-      throw new IllegalStateException(e);
-    }
+    saxParser = XmlUtil.createSaxParser();
   }
 
   public Parse read() throws IOException {

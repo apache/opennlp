@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -45,6 +43,7 @@ import org.xml.sax.SAXException;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.XmlUtil;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.DictionarySerializer;
@@ -735,15 +734,8 @@ public class GeneratorFactory {
 
   private static org.w3c.dom.Document createDOM(InputStream xmlDescriptorIn)
       throws IOException {
-    DocumentBuilderFactory documentBuilderFacoty = DocumentBuilderFactory.newInstance();
 
-    DocumentBuilder documentBuilder;
-
-    try {
-      documentBuilder = documentBuilderFacoty.newDocumentBuilder();
-    } catch (ParserConfigurationException e) {
-      throw new IllegalStateException(e);
-    }
+    DocumentBuilder documentBuilder = XmlUtil.createDocumentBuilder();
 
     org.w3c.dom.Document xmlDescriptorDOM;
 

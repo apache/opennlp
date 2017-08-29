@@ -26,14 +26,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
+
+import opennlp.tools.util.XmlUtil;
 
 /**
  * A structure to hold the letsmt document. The documents contains sentences and depending on the
@@ -118,18 +118,14 @@ public class LetsmtDocument {
   }
 
   static LetsmtDocument parse(InputStream letsmtXmlIn) throws IOException {
-    SAXParserFactory spf = SAXParserFactory.newInstance();
+    SAXParser saxParser = XmlUtil.createSaxParser();
 
     try {
-      SAXParser saxParser = spf.newSAXParser();
-
       XMLReader xmlReader = saxParser.getXMLReader();
       LetsmtDocumentHandler docHandler = new LetsmtDocumentHandler();
       xmlReader.setContentHandler(docHandler);
       xmlReader.parse(new InputSource(letsmtXmlIn));
       return new LetsmtDocument(docHandler.sentences);
-    } catch (ParserConfigurationException e) {
-      throw new IllegalStateException(e);
     } catch (SAXException e) {
       throw new IOException("Failed to parse letsmt xml!", e);
     }
