@@ -97,4 +97,16 @@ public class MaxentPrepAttachTest {
 
     PrepAttachDataUtil.testModel(model, 0.8086159940579352 );
   }
+  
+  @Test
+  public void testMaxentOnPrepAttachDataWithParamsLLThreshold() throws IOException {
+    TrainingParameters trainParams = new TrainingParameters();
+    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+    trainParams.put(GISTrainer.LOG_LIKELIHOOD_THRESHOLD_PARAM, 5.);
+
+    EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
+    MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
+
+    PrepAttachDataUtil.testModel(model, 0.8103490963109681 );
+  }
 }

@@ -60,7 +60,9 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class GISTrainer extends AbstractEventTrainer {
 
-  private static final double LLThreshold = 0.0001;
+  public static final String LOG_LIKELIHOOD_THRESHOLD_PARAM = "llthreshold";
+  public static final double LOG_LIKELIHOOD_THRESHOLD_DEFAULT = 0.0001;
+  private double llThreshold = 0.0001;
   /**
    * Specifies whether unseen context/outcome pairs should be estimated as occur very infrequently.
    */
@@ -169,7 +171,9 @@ public class GISTrainer extends AbstractEventTrainer {
 
     boolean smoothing = trainingParameters.getBooleanParameter(SMOOTHING_PARAM, SMOOTHING_DEFAULT);
     int threads = trainingParameters.getIntParameter(TrainingParameters.THREADS_PARAM, 1);
-
+    llThreshold = trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM, 
+        LOG_LIKELIHOOD_THRESHOLD_DEFAULT);
+    
     this.setSmoothing(smoothing);
     model = trainModel(iterations, indexer, threads);
 
@@ -458,7 +462,7 @@ public class GISTrainer extends AbstractEventTrainer {
           System.err.println("Model Diverging: loglikelihood decreased");
           break;
         }
-        if (currLL - prevLL < LLThreshold) {
+        if (currLL - prevLL < llThreshold) {
           break;
         }
       }
