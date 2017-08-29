@@ -17,10 +17,14 @@
 
 package opennlp.tools.langdetect;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import opennlp.tools.cmdline.langdetect.LanguageDetectorEvaluationErrorListener;
 
 
 public class LanguageDetectorEvaluatorTest {
@@ -32,6 +36,8 @@ public class LanguageDetectorEvaluatorTest {
 
     final AtomicInteger correctCount = new AtomicInteger();
     final AtomicInteger incorrectCount = new AtomicInteger();
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
     LanguageDetectorEvaluator evaluator = new LanguageDetectorEvaluator(langdetector,
         new LanguageDetectorEvaluationMonitor() {
@@ -46,7 +52,7 @@ public class LanguageDetectorEvaluatorTest {
                                      LanguageSample prediction) {
             incorrectCount.incrementAndGet();
           }
-        });
+        }, new LanguageDetectorEvaluationErrorListener(outputStream));
 
     evaluator.evaluateSample(new LanguageSample(new Language("pob"),
         "escreve e faz palestras pelo mundo inteiro sobre anjos"));
@@ -63,6 +69,12 @@ public class LanguageDetectorEvaluatorTest {
 
     Assert.assertEquals(3, evaluator.getDocumentCount());
     Assert.assertEquals(0.33, evaluator.getAccuracy(), 0.01);
+
+    String report = outputStream.toString(StandardCharsets.UTF_8.name());
+
+    Assert.assertEquals("Expected\tPredicted\tContext\n" +
+        "fra\tpob\tescreve e faz palestras pelo mundo inteiro sobre anjos\n" +
+        "fra\tpob\tescreve e faz palestras pelo mundo inteiro sobre anjos\n", report);
   }
 
 }
