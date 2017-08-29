@@ -44,6 +44,7 @@ public class LanguageDetectorEvaluationErrorListener extends
    */
   public LanguageDetectorEvaluationErrorListener(OutputStream outputStream) {
     super(outputStream);
+    printStream.println("Expected\tPredicted\tContext");
   }
 
   @Override
@@ -51,4 +52,10 @@ public class LanguageDetectorEvaluationErrorListener extends
     printError(reference, prediction);
   }
 
+  @Override
+  protected void printError(LanguageSample referenceSample, LanguageSample predictedSample) {
+    printStream.println(String.join("\t", referenceSample.getLanguage().getLang(),
+        predictedSample.getLanguage().getLang(),
+        referenceSample.getContext()));
+  }
 }
