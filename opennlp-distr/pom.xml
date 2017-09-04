@@ -32,6 +32,10 @@
 	<packaging>pom</packaging>
 	<name>Apache OpenNLP Distribution</name>
 
+	<properties>
+		<opennlp.version>${pom.version}</opennlp.version>
+	</properties>
+
 	<!--  Versions will automatically be updated by the release plugin -->
 	<dependencies>
 		<dependency>
@@ -54,6 +58,24 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>com.ruleoftech</groupId>
+				<artifactId>markdown-page-generator-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<inputDirectory>${basedir}/../</inputDirectory>
+					<outputDirectory>${basedir}/target</outputDirectory>
+					<headerHtmlFile>${basedir}/README_HEADER.html</headerHtmlFile>
+				</configuration>
+			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>

@@ -92,7 +92,7 @@ libraryDependencies += "org.apache.opennlp" % "opennlp-tools" % "${opennlp.versi
 
 #### Gradle
 ```
-compile group: "org.apache.opennlp", name: "opennlp-tools", version: "$opennlp.version"
+compile group: "org.apache.opennlp", name: "opennlp-tools", version: "${opennlp.version}"
 ```
 
 

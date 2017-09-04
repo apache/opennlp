@@ -46,7 +46,7 @@
 	    	<directory>src/main/readme</directory>
 	    	<fileMode>644</fileMode>
 	    	<directoryMode>755</directoryMode>
-			<outputDirectory>.</outputDirectory>
+	    	<outputDirectory>.</outputDirectory>
 	    </fileSet>
 		
 	    <fileSet>
@@ -55,11 +55,20 @@
 	      <fileMode>644</fileMode>
 	      <directoryMode>755</directoryMode> 
 	      <includes>
-	        <include>README</include>
 	        <include>RELEASE_NOTES.html</include>
 	      </includes>       
 	    </fileSet>
-	    
+
+	    <fileSet>
+	      <directory>target</directory>
+	      <fileMode>644</fileMode>
+	      <directoryMode>755</directoryMode>
+	      <outputDirectory>.</outputDirectory>
+	      <includes>
+	        <include>README.html</include>
+	      </includes>
+	    </fileSet>
+
 	    <fileSet>
 	      <directory>target/issuesFixed</directory>
 	      <fileMode>644</fileMode>
