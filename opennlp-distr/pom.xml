@@ -74,6 +74,10 @@
 					<inputDirectory>${basedir}/../</inputDirectory>
 					<outputDirectory>${basedir}/target</outputDirectory>
 					<headerHtmlFile>${basedir}/README_HEADER.html</headerHtmlFile>
+					<footerHtmlFile>${basedir}/README_FOOTER.html</footerHtmlFile>
+					<pegdownExtensions>TABLES,FENCED_CODE_BLOCKS,AUTOLINKS</pegdownExtensions>
+					<!-- needed for the opennlp.version property -->
+					<applyFiltering>true</applyFiltering>
 				</configuration>
 			</plugin>
 			<plugin>

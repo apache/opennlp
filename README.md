@@ -61,22 +61,18 @@ You can also follow our [mailing lists](http://opennlp.apache.org/mailing-lists.
 
 Currently the library has different packages:
 
-`opennlp-tools` : The core toolkit.
-
-`opennlp-uima` : A set of [Apache UIMA](https://uima.apache.org) annotators.
-
-`opennlp-brat-annotator` : A set of annotators for [BRAT](http://brat.nlplab.org/)
-
-`opennlp-morfologik-addon` : An addon for Morfologik
-
-`opennlp-sandbox`: Other projects in progress are found in the [sandbox](https://github.com/apache/opennlp-sandbox)
-
+* `opennlp-tools` : The core toolkit.
+* `opennlp-uima` : A set of [Apache UIMA](https://uima.apache.org) annotators.
+* `opennlp-brat-annotator` : A set of annotators for [BRAT](http://brat.nlplab.org/)
+* `opennlp-morfologik-addon` : An addon for Morfologik
+* `opennlp-sandbox`: Other projects in progress are found in the [sandbox](https://github.com/apache/opennlp-sandbox)
 
 ## Getting Started
 
 You can import the core toolkit directly from Maven, SBT or Gradle:
 
 #### Maven
+
 ```
 <dependency>
     <groupId>org.apache.opennlp</groupId>
@@ -86,15 +82,16 @@ You can import the core toolkit directly from Maven, SBT or Gradle:
 ```
 
 #### SBT
+
 ```
 libraryDependencies += "org.apache.opennlp" % "opennlp-tools" % "${opennlp.version}"
 ```
 
 #### Gradle
+
 ```
 compile group: "org.apache.opennlp", name: "opennlp-tools", version: "${opennlp.version}"
 ```
-
 
 For more details please check our [documentation](http://opennlp.apache.org/docs/)
 

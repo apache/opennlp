@@ -20,9 +20,30 @@ limitations under the License.
 <head>
     <title>Apache OpenNLP Readme</title>
     <style>
-        [href='https://travis-ci.org/apache/opennlp']{ display: none }
-        [href='https://coveralls.io/github/apache/opennlp?branch=master']{ display: none }
-        [href='https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp']{ display: none }
-        [href='http://opennlp.apache.org/docs/index.html']{ display: none }
+/*
+Change default font.
+*/
+html {
+  font-family:sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;
+}
+/*
+Format code.
+*/
+code,kbd,pre,samp {
+  font-family:Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+code {
+  padding:0;font-size:inherit;color:inherit;white-space:pre-wrap;background-color:transparent;border-radius:0;
+}
+code {
+  padding:2px 4px;font-size:90%;color:#c7254e;background-color:#f9f2f4;border-radius:4px;
+}
+/*
+This hides the first paragraph in the page, which contains badges.
+*/
+p > a > img {
+  display: none;
+}
     </style>
 </head>
+<body>
