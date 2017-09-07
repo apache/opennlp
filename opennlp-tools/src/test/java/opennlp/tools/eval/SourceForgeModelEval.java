@@ -85,7 +85,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
     verifyTrainingData(new LeipzigDoccatSampleStream("eng", 25,
             new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
                     "leipzig/eng_news_2010_300K-sentences.txt"))), 
-        new BigInteger("248567841356936801447294643695012852392"));
+        new BigInteger("172812413483919324675263268750583851712"));
   }
 
   @Test
