@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen RNGSchema="NKJP_structure.rng" type="xml"?>
+
+<teiCorpus xmlns:xi="http://www.w3.org/2001/XInclude" xmlns="http://www.tei-c.org/ns/1.0">
+    <TEI>
+        <text>
+            <group>
+                <text decls="#bibl-1" xml:id="text-1">
+                    <front>
+                        <docTitle>
+                            <titlePart type="main" xml:id="titlePart-1">Krótki tekst</titlePart>
+                        </docTitle>
+                    </front>
+                    <body>
+                        <div type="article" xml:id="div-1">
+                            <p xml:id="p-1">To krótki tekst w formacie NKJP. Zawiera dwa zdania.</p>
+                            <ab xml:id="ab-1">To krótkie zdanie w drugim akapicie.</ab>
+                        </div>
+                    </body>
+                </text>
+            </group>
+        </text>
+    </TEI>
+</teiCorpus>

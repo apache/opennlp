@@ -61,6 +61,7 @@ import opennlp.tools.formats.leipzig.LeipzigLanguageSampleStreamFactory;
 import opennlp.tools.formats.letsmt.LetsmtSentenceStreamFactory;
 import opennlp.tools.formats.moses.MosesSentenceSampleStreamFactory;
 import opennlp.tools.formats.muc.Muc6NameSampleStreamFactory;
+import opennlp.tools.formats.nkjp.NKJPSentenceSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesNameSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesPOSSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStreamFactory;
@@ -128,6 +129,7 @@ public final class StreamFactoryRegistry {
     IrishSentenceBankSentenceStreamFactory.registerFactory();
     IrishSentenceBankTokenSampleStreamFactory.registerFactory();
     LeipzigLanguageSampleStreamFactory.registerFactory();
+    NKJPSentenceSampleStreamFactory.registerFactory();
   }
 
   public static final String DEFAULT_FORMAT = "opennlp";
