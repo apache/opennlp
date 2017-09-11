@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<teiCorpus xmlns:xi="http://www.w3.org/2001/XInclude" xmlns="http://www.tei-c.org/ns/1.0" xmlns:nkjp="http://www.nkjp.pl/ns/1.0">
+    <TEI>
+        <text xml:id="segm_text" xml:lang="pl">
+            <body xml:id="segm_body">
+                <p corresp="text.xml#txt_1-div" xml:id="segm_1-p">
+                    <s xml:id="segm_1.1-s">
+                        <seg corresp="text_structure.xml#string-range(ab-1,0,2)" xml:id="segm_1.1-seg"/>
+                        <seg corresp="text_structure.xml#string-range(ab-1,3,7)" xml:id="segm_1.2-seg"/>
+                        <seg corresp="text_structure.xml#string-range(ab-1,11,6)" xml:id="segm_1.3-seg"/>
+                        <seg corresp="text_structure.xml#string-range(ab-1,18,1)" xml:id="segm_1.4-seg"/>
+                        <seg corresp="text_structure.xml#string-range(ab-1,20,6)" xml:id="segm_1.5-seg"/>
+                        <seg corresp="text_structure.xml#string-range(ab-1,27,8)" xml:id="segm_1.6-seg"/>
+                        <seg corresp="text_structure.xml#string-range(ab-1,35,1)" nkjp:nps="true" xml:id="segm_1.7-seg"/>
+                    </s>
+                </p>
+            </body>
+        </text>
+    </TEI>
+</teiCorpus>
