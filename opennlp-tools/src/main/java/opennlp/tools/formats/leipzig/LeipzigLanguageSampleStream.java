@@ -18,6 +18,7 @@
 package opennlp.tools.formats.leipzig;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -125,9 +126,15 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
   public LeipzigLanguageSampleStream(File leipzigFolder, final int sentencesPerSample,
                                      final int samplesPerLanguage) throws IOException {
     this.sentencesPerSample = sentencesPerSample;
-    // TODO: Use a FileFilter to make this more reliable in case there are
-    //       files which should be ignored or are shorter than 3 chars for the lang detect substring
-    sentencesFiles = leipzigFolder.listFiles();
+
+    sentencesFiles = leipzigFolder.listFiles(new FileFilter() {
+      @Override
+      public boolean accept(File pathname) {
+        return !pathname.isHidden() && pathname.isFile()
+                && pathname.getName().length() >= 3
+                && pathname.getName().substring(0,3).matches("[a-z]+");
+      }
+    });
     Arrays.sort(sentencesFiles);
 
     Map<String, Integer> langCounts = Arrays.stream(sentencesFiles)

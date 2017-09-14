@@ -1,0 +1,3 @@
+1	This sentence should not be read.
+2	The same goes for this sentence.
+3	If we got this far then something went wrong!
