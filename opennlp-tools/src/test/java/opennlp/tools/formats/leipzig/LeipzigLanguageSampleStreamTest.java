@@ -23,34 +23,45 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import opennlp.tools.langdetect.LanguageSample;
+import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Tests for the {@link LeipzigLanguageSampleStream} class.
  */
 public class LeipzigLanguageSampleStreamTest {
 
+  private static String testDataPath = LeipzigLanguageSampleStreamTest.class
+          .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").getPath();
+
   @Test
   public void testReadSentenceFiles() {
-    String testDataPath = LeipzigLanguageSampleStreamTest.class
-            .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").getPath();
+
     int samplesPerLanguage = 2;
     int sentencesPerSample = 1;
     try {
-
       LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(new File(testDataPath),
               sentencesPerSample, samplesPerLanguage);
       int count = 0;
-      LanguageSample sample = null;
-      while ((sample = stream.read()) != null) {
+      while (stream.read() != null)
         count++;
-        System.out.println(sample.getContext());
-      }
+
       Assert.assertEquals(4, count);
 
     } catch (IOException e) {
       Assert.fail();
     }
+  }
+
+  @Test(expected = InvalidFormatException.class)
+  public void testNotEnoughSentences() throws IOException {
+    int samplesPerLanguage = 2;
+    int sentencesPerSample = 2;
+
+    LeipzigLanguageSampleStream stream =
+            new LeipzigLanguageSampleStream(new File(testDataPath),
+              sentencesPerSample, samplesPerLanguage);
+    while (stream.read() != null);
+
   }
 
 }

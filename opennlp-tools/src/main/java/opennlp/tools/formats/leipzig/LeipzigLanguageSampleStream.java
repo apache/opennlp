@@ -36,6 +36,7 @@ import java.util.stream.IntStream;
 
 import opennlp.tools.langdetect.Language;
 import opennlp.tools.langdetect.LanguageSample;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -56,14 +57,19 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
       // The file name contains the number of lines, but to make this more stable
       // the file is once scanned for the count even tough this is slower
       int totalLineCount = (int) Files.lines(sentencesFile.toPath()).count();
+      int requiredLines = sentencesPerSample * numberOfSamples;
+
+      if (totalLineCount < requiredLines)
+        throw new InvalidFormatException(
+                String.format("%s does not contain enough lines (%d lines < %d required lines).",
+                        sentencesFile.getPath(), totalLineCount, requiredLines));
 
       List<Integer> indexes = IntStream.range(0, totalLineCount)
           .boxed().collect(Collectors.toList());
 
       Collections.shuffle(indexes, random);
 
-      Set<Integer> selectedLines = new HashSet<>(
-          indexes.subList(0, sentencesPerSample * numberOfSamples));
+      Set<Integer> selectedLines = new HashSet<>(indexes.subList(0, requiredLines));
 
       List<String> sentences = new ArrayList<>();
 
