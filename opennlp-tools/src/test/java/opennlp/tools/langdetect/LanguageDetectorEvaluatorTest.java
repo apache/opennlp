@@ -72,9 +72,9 @@ public class LanguageDetectorEvaluatorTest {
 
     String report = outputStream.toString(StandardCharsets.UTF_8.name());
 
-    Assert.assertEquals("Expected\tPredicted\tContext\n" +
-        "fra\tpob\tescreve e faz palestras pelo mundo inteiro sobre anjos\n" +
-        "fra\tpob\tescreve e faz palestras pelo mundo inteiro sobre anjos\n", report);
+    Assert.assertEquals("Expected\tPredicted\tContext" + System.lineSeparator() +
+        "fra\tpob\tescreve e faz palestras pelo mundo inteiro sobre anjos" + System.lineSeparator() +
+        "fra\tpob\tescreve e faz palestras pelo mundo inteiro sobre anjos" + System.lineSeparator(), report);
   }
 
 }
