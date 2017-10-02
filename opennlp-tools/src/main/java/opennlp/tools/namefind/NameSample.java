@@ -71,7 +71,15 @@ public class NameSample {
     }
     isClearAdaptiveData = clearAdaptiveData;
 
-    // TODO: Check that name spans are not overlapping, otherwise throw exception
+    // Check that name spans are not overlapping, otherwise throw exception
+    if (this.names.size() > 1) {
+      for (int i = 1; i < this.names.size(); i++) {
+        if (this.names.get(i).getStart() < this.names.get(i - 1).getEnd()) {
+          throw new RuntimeException(String.format("name spans %s and %s are overlapped",
+              this.names.get(i - 1), this.names.get(i)));
+        }
+      }
+    }
   }
 
   /**

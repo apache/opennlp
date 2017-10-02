@@ -100,6 +100,20 @@ public class NameSampleTest {
   }
 
   /**
+   * Test if it fails to name spans are overlapping
+   */
+  @Test(expected = RuntimeException.class)
+  public void testOverlappingNameSpans() throws Exception {
+
+    String[] sentence = {"A", "Place", "a", "time", "A", "Person", "."};
+
+    Span[] names = {new Span(0, 2, "Place"), new Span(3, 5, "Person"),
+        new Span(2, 4, "Time")};
+
+    new NameSample(sentence, names, false);
+  }
+
+  /**
    * Checks if could create a NameSample without NameTypes, generate the
    * string representation and validate it.
    */
@@ -225,6 +239,15 @@ public class NameSampleTest {
   @Test(expected = IOException.class)
   public void testTypeWithInvalidChar2() throws Exception {
     NameSample.parse("<START:abc>a> token <END>", false);
+  }
+
+  /**
+   * Test if it fails to parse nested names
+   * @throws Exception
+   */
+  @Test(expected = IOException.class)
+  public void testNestedNameSpans() throws Exception {
+    NameSample.parse("<START:Person> <START:Location> Kennedy <END> City <END>", false);
   }
 
   @Test
