@@ -42,11 +42,11 @@ public class BilouCodec implements SequenceCodec<String> {
     List<Span> spans = new ArrayList<>(c.size());
     for (int li = 0; li < c.size(); li++) {
       String chunkTag = c.get(li);
-      if (chunkTag.endsWith(BioCodec.START)) {
+      if (chunkTag.endsWith(BilouCodec.START)) {
         start = li;
         end = li + 1;
       }
-      else if (chunkTag.endsWith(BioCodec.CONTINUE)) {
+      else if (chunkTag.endsWith(BilouCodec.CONTINUE)) {
         end = li + 1;
       }
       else if (chunkTag.endsWith(LAST)) {
@@ -67,24 +67,24 @@ public class BilouCodec implements SequenceCodec<String> {
   @Override
   public String[] encode(Span[] names, int length) {
     String[] outcomes = new String[length];
-    Arrays.fill(outcomes, BioCodec.OTHER);
+    Arrays.fill(outcomes, BilouCodec.OTHER);
 
     for (Span name : names) {
 
       if (name.length() > 1) {
         if (name.getType() == null) {
-          outcomes[name.getStart()] = "default" + "-" + BioCodec.START;
+          outcomes[name.getStart()] = "default" + "-" + BilouCodec.START;
         }
         else {
-          outcomes[name.getStart()] = name.getType() + "-" + BioCodec.START;
+          outcomes[name.getStart()] = name.getType() + "-" + BilouCodec.START;
         }
         // now iterate from begin + 1 till end
         for (int i = name.getStart() + 1; i < name.getEnd() - 1; i++) {
           if (name.getType() == null) {
-            outcomes[i] = "default" + "-" + BioCodec.CONTINUE;
+            outcomes[i] = "default" + "-" + BilouCodec.CONTINUE;
           }
           else {
-            outcomes[i] = name.getType() + "-" + BioCodec.CONTINUE;
+            outcomes[i] = name.getType() + "-" + BilouCodec.CONTINUE;
           }
         }
 
