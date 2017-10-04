@@ -286,7 +286,8 @@ public class SpanTest {
    */
   @Test
   public void testToString() {
-    new Span(50, 100).toString();
+    Assert.assertEquals("[50..100)", new Span(50, 100).toString());
+    Assert.assertEquals("[50..100) myType", new Span(50, 100, "myType").toString());
   }
 
   @Test
@@ -301,5 +302,29 @@ public class SpanTest {
     String string1 = "              ";
     Span span1 = new Span(0, string1.length());
     Assert.assertEquals("", span1.trim(string1).getCoveredText(string1));
+  }
+
+  /**
+   * Test if it fails to construct span with invalid start
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testTooSmallStart() throws Exception {
+    new Span(-1, 100);
+  }
+
+  /**
+   * Test if it fails to construct span with invalid end
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testTooSmallEnd() throws Exception {
+    new Span(50, -1);
+  }
+
+  /**
+   * Test if it fails to construct span with start > end
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testStartLargerThanEnd() throws Exception {
+    new Span(100, 50);
   }
 }
