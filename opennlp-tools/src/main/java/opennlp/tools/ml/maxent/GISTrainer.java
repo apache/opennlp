@@ -60,7 +60,10 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class GISTrainer extends AbstractEventTrainer {
 
-  public static final String LOG_LIKELIHOOD_THRESHOLD_PARAM = "llthreshold";
+  @Deprecated
+  public static final String OLD_LL_THRESHOLD_PARAM = "llthreshold";
+  
+  public static final String LOG_LIKELIHOOD_THRESHOLD_PARAM = "LLThreshold";
   public static final double LOG_LIKELIHOOD_THRESHOLD_DEFAULT = 0.0001;
   private double llThreshold = 0.0001;
   /**
@@ -145,11 +148,16 @@ public class GISTrainer extends AbstractEventTrainer {
    * the trainer to imagine that it saw a feature that it actually didn't see.
    * Defaulted to 0.1.
    */
+  private static final String SMOOTHING_PARAM = "Smoothing";
+  private static final boolean SMOOTHING_DEFAULT = false;
+  private static final String SMOOTHING_OBSERVATION_PARAM = "SmoothingObservation";
   private static final double SMOOTHING_OBSERVATION = 0.1;
 
-  private static final String SMOOTHING_PARAM = "smoothing";
-  private static final boolean SMOOTHING_DEFAULT = false;
-
+  private static final String GAUSSIAN_SMOOTHING_PARAM = "GaussianSmoothing";
+  private static final boolean GAUSSIAN_SMOOTHING_DEFAULT = false;
+  private static final String GAUSSIAN_SMOOTHING_SIGMA_PARAM = "GaussianSmoothingSigma";
+  private static final double GAUSSIAN_SMOOTHING_SIGMA_DEFAULT = 2.0;
+  
   /**
    * Creates a new <code>GISTrainer</code> instance which does not print
    * progress messages about training to STDOUT.
@@ -164,18 +172,48 @@ public class GISTrainer extends AbstractEventTrainer {
   }
 
   @Override
+  public void init(TrainingParameters trainingParameters, Map<String, String> reportMap) {
+    super.init(trainingParameters, reportMap);
+
+    // Just in case someone is using "llthreshold" instead of LLThreshold...
+    // this warning can be removed in a future version of OpenNLP.
+    if (trainingParameters.getDoubleParameter(OLD_LL_THRESHOLD_PARAM, -1.) > 0. ) {
+      display("WARNING: the training parameter: " + OLD_LL_THRESHOLD_PARAM + 
+          " has been deprecated.  Please use " +
+          LOG_LIKELIHOOD_THRESHOLD_DEFAULT + " instead");
+      // if they didn't supply a value for both llthreshold AND LLThreshold  copy it over..
+      if (trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM, -1.) < 0. ) {
+        trainingParameters.put(LOG_LIKELIHOOD_THRESHOLD_PARAM,
+            trainingParameters.getDoubleParameter(OLD_LL_THRESHOLD_PARAM, LOG_LIKELIHOOD_THRESHOLD_DEFAULT));
+      }
+    }
+
+    llThreshold = trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM, 
+        LOG_LIKELIHOOD_THRESHOLD_DEFAULT);
+
+    useSimpleSmoothing = trainingParameters.getBooleanParameter(SMOOTHING_PARAM, SMOOTHING_DEFAULT);
+    if (useSimpleSmoothing) {
+      _smoothingObservation = 
+          trainingParameters.getDoubleParameter(SMOOTHING_OBSERVATION_PARAM, SMOOTHING_OBSERVATION);
+    }
+    
+    useGaussianSmoothing = 
+        trainingParameters.getBooleanParameter(GAUSSIAN_SMOOTHING_PARAM, GAUSSIAN_SMOOTHING_DEFAULT);
+    if (useGaussianSmoothing) {
+      sigma = trainingParameters.getDoubleParameter(
+          GAUSSIAN_SMOOTHING_SIGMA_PARAM, GAUSSIAN_SMOOTHING_SIGMA_DEFAULT);
+    }
+    
+    if (useSimpleSmoothing && useGaussianSmoothing) 
+      throw new RuntimeException("Cannot set both Gaussian smoothing and Simple smoothing");
+  }
+  
+  @Override
   public MaxentModel doTrain(DataIndexer indexer) throws IOException {
     int iterations = getIterations();
 
-    AbstractModel model;
-
-    boolean smoothing = trainingParameters.getBooleanParameter(SMOOTHING_PARAM, SMOOTHING_DEFAULT);
     int threads = trainingParameters.getIntParameter(TrainingParameters.THREADS_PARAM, 1);
-    llThreshold = trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM, 
-        LOG_LIKELIHOOD_THRESHOLD_DEFAULT);
-    
-    this.setSmoothing(smoothing);
-    model = trainModel(iterations, indexer, threads);
+    AbstractModel model = trainModel(iterations, indexer, threads);
 
     return model;
   }

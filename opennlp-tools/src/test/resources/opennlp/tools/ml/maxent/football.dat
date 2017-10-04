@@ -1,0 +1,14 @@
+home=man_united Beckham=false Scholes=true Neville=true Henry=true Kanu=true Parlour=false Ferguson=confident Wengler=tense arsenal_lost_previous man_united_won_previous arsenal
+home=man_united Beckham=true Scholes=false Neville=true Henry=false Kanu=true Parlour=false Ferguson=tense Wengler=confident arsenal_won_previous man_united_lost_previous man_united
+home=man_united Beckham=false Scholes=true Neville=true Henry=true Kanu=true Parlour=false Ferguson=tense Wengler=tense arsenal_lost_previous man_united_won_previous tie
+home=man_united Beckham=true Scholes=true Neville=false Henry=true Kanu=false Parlour=false Ferguson=confident Wengler=confident arsenal_won_previous man_united_won_previous tie
+home=man_united Beckham=false Scholes=true Neville=true Henry=true Kanu=true Parlour=false Ferguson=confident Wengler=tense arsenal_won_previous man_united_won_previous arsenal
+home=man_united Beckham=false Scholes=true Neville=true Henry=false Kanu=true Parlour=false Ferguson=confident Wengler=confident arsenal_won_previous man_united_won_previous man_united
+home=man_united Beckham=true Scholes=true Neville=false Henry=true Kanu=true Parlour=false Ferguson=confident Wengler=tense arsenal_won_previous man_united_won_previous man_united
+home=arsenal Beckham=false Scholes=true Neville=true Henry=true Kanu=true Parlour=false Ferguson=confident Wengler=tense arsenal_lost_previous man_united_won_previous arsenal
+home=arsenal Beckham=true Scholes=false Neville=true Henry=false Kanu=true Parlour=false Ferguson=tense Wengler=confident arsenal_won_previous man_united_lost_previous arsenal
+home=arsenal Beckham=false Scholes=true Neville=true Henry=true Kanu=true Parlour=false Ferguson=tense Wengler=tense arsenal_lost_previous man_united_won_previous tie
+home=arsenal Beckham=true Scholes=true Neville=false Henry=true Kanu=false Parlour=false Ferguson=confident Wengler=confident arsenal_won_previous man_united_won_previous man_united
+home=arsenal Beckham=false Scholes=true Neville=true Henry=true Kanu=true Parlour=false Ferguson=confident Wengler=tense arsenal_won_previous man_united_won_previous arsenal
+home=arsenal Beckham=false Scholes=true Neville=true Henry=false Kanu=true Parlour=false Ferguson=confident Wengler=confident arsenal_won_previous man_united_won_previous man_united
+home=arsenal Beckham=true Scholes=true Neville=false Henry=true Kanu=true Parlour=false Ferguson=confident Wengler=tense arsenal_won_previous man_united_won_previous arsenal
