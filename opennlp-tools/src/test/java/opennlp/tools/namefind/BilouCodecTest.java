@@ -560,9 +560,12 @@ public class BilouCodecTest {
    */
   @Test
   public void testCompatibilityMultiClass() {
-    Assert.assertTrue(codec.areOutcomesCompatible(
+    Assert.assertFalse(codec.areOutcomesCompatible(
         new String[] {B_UNIT, A_CONTINUE, A_LAST, A_UNIT,
             B_START, B_LAST, A_START, C_UNIT, OTHER}));
+    Assert.assertTrue(codec.areOutcomesCompatible(
+        new String[] {B_UNIT, A_START, A_CONTINUE, A_LAST, A_UNIT,
+            B_START, B_LAST, C_UNIT, OTHER}));
   }
 
   /**
