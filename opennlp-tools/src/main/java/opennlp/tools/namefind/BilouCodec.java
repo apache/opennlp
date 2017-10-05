@@ -19,10 +19,9 @@ package opennlp.tools.namefind;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import opennlp.tools.util.DFA;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
@@ -34,6 +33,16 @@ public class BilouCodec implements SequenceCodec<String> {
   public static final String LAST = "last";
   public static final String UNIT = "unit";
   public static final String OTHER = "other";
+
+  private String currentType;
+  private static final int[][] MOVE_FUNCTION = {
+      { 0, 1, DFA.ERROR_STATE, DFA.ERROR_STATE, DFA.ERROR_STATE,
+          DFA.ERROR_STATE, 2},                // state == 0
+      { DFA.ERROR_STATE, DFA.ERROR_STATE, 1, DFA.ERROR_STATE, 2,
+          DFA.ERROR_STATE, DFA.ERROR_STATE},  // state == 1
+      { 2, 1, DFA.ERROR_STATE, DFA.ERROR_STATE, DFA.ERROR_STATE,
+          DFA.ERROR_STATE, 2}                 // state == 2
+  };
 
   @Override
   public Span[] decode(List<String> c) {
@@ -113,67 +122,71 @@ public class BilouCodec implements SequenceCodec<String> {
     return new BilouNameFinderSequenceValidator();
   }
 
-  /**
-   * B requires CL or L
-   * C requires BL
-   * L requires B
-   * O requires any valid combo/unit
-   * U requires none
+  /*
+   * state transition chart
    *
-   * @param outcomes all possible model outcomes
+   *                    |   state   |
+   *                    +---+---+---+
+   *       symbol       | 0 | 1 | 2 |
+   * -------------------+---+---+---+
+   * 0 (other)          | 0 |ERR| 2 |
+   * 1 (start)          | 1 |ERR| 1 |
+   * 2 (cont; same type)|ERR| 1 |ERR|
+   * 3 (cont; diff type)|ERR|ERR|ERR|
+   * 4 (last; same type)|ERR| 2 |ERR|
+   * 5 (last; diff type)|ERR|ERR|ERR|
+   * 6 (unit)           | 2 |ERR| 2 |
    *
-   * @return true, if model outcomes are compatible
+   * initial state: 0
+   * accepting state set: { 2 }
    */
   @Override
   public boolean areOutcomesCompatible(String[] outcomes) {
-    Set<String> start = new HashSet<>();
-    Set<String> cont = new HashSet<>();
-    Set<String> last = new HashSet<>();
-    Set<String> unit = new HashSet<>();
-
-    for (int i = 0; i < outcomes.length; i++) {
-      String outcome = outcomes[i];
-      if (outcome.endsWith(BilouCodec.START)) {
-        start.add(outcome.substring(0, outcome.length()
-            - BilouCodec.START.length()));
-      } else if (outcome.endsWith(BilouCodec.CONTINUE)) {
-        cont.add(outcome.substring(0, outcome.length()
-            - BilouCodec.CONTINUE.length()));
-      } else if (outcome.endsWith(BilouCodec.LAST)) {
-        last.add(outcome.substring(0, outcome.length()
-            - BilouCodec.LAST.length()));
-      } else if (outcome.endsWith(BilouCodec.UNIT)) {
-        unit.add(outcome.substring(0, outcome.length()
-            - BilouCodec.UNIT.length()));
-      } else if (!outcome.equals(BilouCodec.OTHER)) {
+    DFA dfa = new DFA(0, MOVE_FUNCTION, new int[]{ 2 });
+    for (String outcome: outcomes) {
+      int symbol = getSymbol(outcome);
+      if (symbol == -1) {
         return false;
       }
+      else {
+        if (!dfa.read(symbol)) {
+          return false;
+        }
+      }
+    }
+    return dfa.accept();
+  }
+
+  private int getSymbol(String outcome) {
+    if (outcome.endsWith(BilouCodec.OTHER)) {
+      return 0;
+    }
+    else if (outcome.endsWith(BilouCodec.START)) {
+      currentType = outcome.substring(0, outcome.length() - BilouCodec.START.length());
+      return 1;
+    }
+    else if (outcome.endsWith(BilouCodec.CONTINUE)) {
+      String theType = outcome.substring(0, outcome.length() - BilouCodec.CONTINUE.length());
+      if (currentType.equals(theType)) {
+        return 2;
+      }
+      else {
+        return 3;
+      }
+    }
+    else if (outcome.endsWith(BilouCodec.LAST)) {
+      String theType = outcome.substring(0, outcome.length() - BilouCodec.LAST.length());
+      if (currentType.equals(theType)) {
+        return 4;
+      }
+      else {
+        return 5;
+      }
+    }
+    else if (outcome.endsWith(BilouCodec.UNIT)) {
+      return 6;
     }
 
-    if (start.size() == 0 && unit.size() == 0) {
-      return false;
-    } else {
-      // Start, must have matching Last
-      for (String startPrefix : start) {
-        if (!last.contains(startPrefix)) {
-          return false;
-        }
-      }
-      // Cont, must have matching Start and Last
-      for (String contPrefix : cont) {
-        if (!start.contains(contPrefix) && !last.contains(contPrefix)) {
-          return false;
-        }
-      }
-      // Last, must have matching Start
-      for (String lastPrefix : last) {
-        if (!start.contains(lastPrefix)) {
-          return false;
-        }
-      }
-
-    }
-
-    return true;
+    return -1; //unknown symbol
   }
 }

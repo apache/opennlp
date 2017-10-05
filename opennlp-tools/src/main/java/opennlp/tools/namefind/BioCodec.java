@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.util.DFA;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.Span;
 
@@ -32,6 +33,12 @@ public class BioCodec implements SequenceCodec<String> {
   public static final String OTHER = "other";
 
   private static final Pattern typedOutcomePattern = Pattern.compile("(.+)-\\w+");
+
+  private String currentType;
+  private static final int[][] MOVE_FUNCTION = {
+      { 0, 1, DFA.ERROR_STATE, DFA.ERROR_STATE}, // state == 0
+      { 1, 1, 1, DFA.ERROR_STATE}                // state == 1
+  };
 
   static String extractNameType(String outcome) {
     Matcher matcher = typedOutcomePattern.matcher(outcome);
@@ -106,40 +113,56 @@ public class BioCodec implements SequenceCodec<String> {
     return new NameFinderSequenceValidator();
   }
 
+  /*
+   * state transition chart
+   *
+   *                    | state |
+   *                    +---+---+
+   *       symbol       | 0 | 1 |
+   * -------------------+---+---+
+   * 0 (other)          | 0 | 1 |
+   * 1 (start)          | 1 | 1 |
+   * 2 (cont; same type)|ERR| 1 |
+   * 3 (cont; diff type)|ERR|ERR|
+   *
+   * initial state: 0
+   * accepting state set: { 1 }
+   */
   @Override
   public boolean areOutcomesCompatible(String[] outcomes) {
-    // We should have *optionally* one outcome named "other", some named xyz-start and sometimes
-    // they have a pair xyz-cont. We should not have any other outcome
-    // To validate the model we check if we have one outcome named "other", at least
-    // one outcome with suffix start. After that we check if all outcomes that ends with
-    // "cont" have a pair that ends with "start".
-    List<String> start = new ArrayList<>();
-    List<String> cont = new ArrayList<>();
-
-    for (int i = 0; i < outcomes.length; i++) {
-      String outcome = outcomes[i];
-      if (outcome.endsWith(BioCodec.START)) {
-        start.add(outcome.substring(0, outcome.length()
-            - BioCodec.START.length()));
-      } else if (outcome.endsWith(BioCodec.CONTINUE)) {
-        cont.add(outcome.substring(0, outcome.length()
-            - BioCodec.CONTINUE.length()));
-      } else if (!outcome.equals(BioCodec.OTHER)) {
-        // got unexpected outcome
+    DFA dfa = new DFA(0, MOVE_FUNCTION, new int[]{ 1 });
+    for (String outcome: outcomes) {
+      int symbol = getSymbol(outcome);
+      if (symbol == -1) {
         return false;
       }
-    }
-
-    if (start.size() == 0) {
-      return false;
-    } else {
-      for (String contPreffix : cont) {
-        if (!start.contains(contPreffix)) {
+      else {
+        if (!dfa.read(symbol)) {
           return false;
         }
       }
     }
+    return dfa.accept();
+  }
 
-    return true;
+  private int getSymbol(String outcome) {
+    if (outcome.endsWith(BioCodec.OTHER)) {
+      return 0;
+    }
+    else if (outcome.endsWith(BioCodec.START)) {
+      currentType = outcome.substring(0, outcome.length() - BioCodec.START.length());
+      return 1;
+    }
+    else if (outcome.endsWith(BioCodec.CONTINUE)) {
+      String theType = outcome.substring(0, outcome.length() - BioCodec.CONTINUE.length());
+      if (currentType.equals(theType)) {
+        return 2;
+      }
+      else {
+        return 3;
+      }
+    }
+
+    return -1; //unknown symbol
   }
 }
