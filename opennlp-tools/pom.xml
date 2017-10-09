@@ -83,6 +83,9 @@
               <addClasspath>true</addClasspath>
               <mainClass>opennlp.tools.cmdline.CLI</mainClass>
             </manifest>
+            <manifestEntries>
+              <Automatic-Module-Name>org.apache.opennlp.tools</Automatic-Module-Name>
+            </manifestEntries>
           </archive>
         </configuration>
         <executions>
