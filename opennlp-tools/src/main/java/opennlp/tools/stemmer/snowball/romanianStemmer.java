@@ -41,8 +41,6 @@ package opennlp.tools.stemmer.snowball;
   */
 class romanianStemmer extends opennlp.tools.stemmer.snowball.AbstractSnowballStemmer {
 
-private static final long serialVersionUID = 1L;
-
         private final static romanianStemmer methodObject = new romanianStemmer ();
 
                 private final static Among a_0[] = {

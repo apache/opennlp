@@ -23,9 +23,8 @@ import java.io.IOException;
 /**
  * This exception indicates that a resource violates the expected data format.
  */
+@SuppressWarnings("serial")
 public class InvalidFormatException extends IOException {
-
-  private static final long serialVersionUID = 0;
 
   public InvalidFormatException() {
   }
