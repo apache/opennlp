@@ -20,9 +20,8 @@ package opennlp.tools.util.ext;
 /**
  * Exception indicates that an OpenNLP extension could not be loaded.
  */
+@SuppressWarnings("serial")
 public class ExtensionNotLoadedException extends RuntimeException {
-
-  private static final long serialVersionUID = 1L;
 
   private final boolean isOSGiEnvironment;
 
