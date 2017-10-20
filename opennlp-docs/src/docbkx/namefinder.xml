@@ -560,21 +560,21 @@ System.out.println(result.toString());]]>
 				</listitem>
 				<listitem>
 					<para>
-						<ulink  url="http://projects.ldc.upenn.edu/ace/docs/English-Entities-Guidelines_v5.6.1.pdf">
+						<ulink  url="https://www.ldc.upenn.edu/sites/www.ldc.upenn.edu/files/english-entities-guidelines-v6.6.pdf">
 							ACE
 						</ulink>
 					</para>
 				</listitem>
                 <listitem>
                     <para>
-                        <ulink  url="http://www.cnts.ua.ac.be/conll2002/ner/">
+                        <ulink  url="https://www.clips.uantwerpen.be/conll2002/ner/">
                             CONLL 2002
                         </ulink>
                     </para>
                 </listitem>
 				<listitem>
 					<para>
-						<ulink  url="http://www.cnts.ua.ac.be/conll2003/ner/annotation.txt">
+						<ulink  url="https://www.clips.uantwerpen.be/conll2003/ner/">
 							CONLL 2003
 						</ulink>
 					</para>
