@@ -131,7 +131,7 @@ InputStream dataIn = null;
 
 try (dataIn = new FileInputStream("en-sentiment.train")) {
   ObjectStream<String> lineStream =
-		new PlainTextByLineStream(dataIn, "UTF-8");
+		new PlainTextByLineStream(dataIn, StandardCharsets.UTF_8);
   ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
 
   model = DocumentCategorizerME.train("en", sampleStream);

@@ -302,7 +302,7 @@ InputStreamFactory inputStreamFactory = null;
     LemmaSampleStream lemmaStream = null;
     try {
       lineStream = new PlainTextByLineStream(
-      (inputStreamFactory), "UTF-8");
+      (inputStreamFactory), StandardCharsets.UTF_8);
       lemmaStream = new LemmaSampleStream(lineStream);
     } catch (IOException e) {
       CmdLineUtil.handleCreateObjectStreamError(e);

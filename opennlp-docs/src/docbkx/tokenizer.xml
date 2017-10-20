@@ -311,9 +311,8 @@ Path: en-token.bin]]>
                 The following sample code illustrates these steps:
                 <programlisting language="java">
                     <![CDATA[
-Charset charset = Charset.forName("UTF-8");
 ObjectStream<String> lineStream = new PlainTextByLineStream(new FileInputStream("en-sent.train"),
-    charset);
+    StandardCharsets.UTF_8);
 ObjectStream<TokenSample> sampleStream = new TokenSampleStream(lineStream);
 
 TokenizerModel model;
