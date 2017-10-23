@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.maxent.GISTrainer;
 
 public class TrainingParameters {
 
@@ -443,7 +444,7 @@ public class TrainingParameters {
   
   public static TrainingParameters defaultParams() {
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
     mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 5);
