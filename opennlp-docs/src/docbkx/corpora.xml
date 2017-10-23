@@ -50,7 +50,7 @@ under the License.
 		(211727 tokens) and section 20 as test data (47377 tokens). The annotation of the 
 		data has been derived from the WSJ corpus by a program written by Sabine Buchholz 
 		from Tilburg University, The Netherlands. Both training and test data can be
-		obtained from <ulink url="http://www.cnts.ua.ac.be/conll2000/chunking">http://www.cnts.ua.ac.be/conll2000/chunking</ulink>. 
+		obtained from <ulink url="https://www.clips.uantwerpen.be/conll2000/chunking/">https://www.clips.uantwerpen.be/conll2000/chunking/</ulink>.
 		</para>
 		</section>
 		<section id="tools.corpora.conll.2000.converting">
