@@ -266,7 +266,7 @@ CmdLineUtil.checkOutputFile("parser model", modelOutFile);
 try {
   HeadRules rules = createHeadRules(params);
   InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("parsing.train"));
-  ObjectStream<String> stringStream = new PlainTextByLineStream(inputStreamFactory, "UTF-8");
+  ObjectStream<String> stringStream = new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
   ObjectStream<Parse> sampleStream = new ParseSample(stringStream);
 
   ParserType type = parseParserType(params.getParserType());
@@ -366,7 +366,7 @@ System.out.println(result.toString());]]>
 			<programlisting language="java">
 				<![CDATA[
 InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("parsing.train"));
-ObjectStream<String> stringStream = new PlainTextByLineStream(inputStreamFactory, "UTF-8");
+ObjectStream<String> stringStream = new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
 ObjectStream<Parse> sampleStream = new ParseSample(stringStream);
 ParserCrossValidator evaluator = new ParserCrossValidator("en", trainParameters, headRules, \
 parserType, listeners.toArray(new ParserEvaluationMonitor[listeners.size()])));

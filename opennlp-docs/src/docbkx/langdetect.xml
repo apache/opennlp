@@ -205,7 +205,7 @@ $ tail -20000 < leipzig_shuf.txt > leipzig.eval
 InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("corpus.txt"));
 
 ObjectStream<String> lineStream =
-  new PlainTextByLineStream(inputStreamFactory, "UTF-8");
+  new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
 ObjectStream<LanguageSample> sampleStream = new LanguageDetectorSampleStream(lineStream);
 
 TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
