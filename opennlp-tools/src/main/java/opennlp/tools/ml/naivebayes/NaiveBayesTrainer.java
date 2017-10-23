@@ -27,11 +27,10 @@ import opennlp.tools.ml.model.MutableContext;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Trains models using the perceptron algorithm.  Each outcome is represented as
- * a binary perceptron classifier.  This supports standard (integer) weighting as well
- * average weighting as described in:
- * Discriminative Training Methods for Hidden Markov Models: Theory and Experiments
- * with the Perceptron Algorithm. Michael Collins, EMNLP 2002.
+ * Trains models using the combination of EM algorithm and Naive Bayes classifier
+ * which is described in:
+ * Text Classification from Labeled and Unlabeled Documents using EM
+ * Nigam, McCallum, et al paper of 2000
  */
 public class NaiveBayesTrainer extends AbstractEventTrainer {
 
