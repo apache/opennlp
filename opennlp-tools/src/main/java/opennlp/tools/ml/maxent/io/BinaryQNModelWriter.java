@@ -63,19 +63,19 @@ public class BinaryQNModelWriter extends QNModelWriter {
     output = dos;
   }
 
-  public void writeUTF(String s) throws java.io.IOException {
+  public void writeUTF(String s) throws IOException {
     output.writeUTF(s);
   }
 
-  public void writeInt(int i) throws java.io.IOException {
+  public void writeInt(int i) throws IOException {
     output.writeInt(i);
   }
 
-  public void writeDouble(double d) throws java.io.IOException {
+  public void writeDouble(double d) throws IOException {
     output.writeDouble(d);
   }
 
-  public void close() throws java.io.IOException {
+  public void close() throws IOException {
     output.flush();
     output.close();
   }

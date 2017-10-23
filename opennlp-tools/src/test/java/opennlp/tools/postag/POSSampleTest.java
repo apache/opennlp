@@ -18,6 +18,14 @@
 
 package opennlp.tools.postag;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -46,6 +54,32 @@ public class POSSampleTest {
     String sentence = "the_DT stories_NNS about_NNS well-heeled_JJ "
         + "communities_NNS and_CC developers_CC";
     return POSSample.parse(sentence);
+  }
+
+  @Test
+  public void testPOSSampleSerDe() throws IOException {
+    POSSample posSample = createGoldSample();
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    ObjectOutput out = new ObjectOutputStream(byteArrayOutputStream);
+    out.writeObject(posSample);
+    out.flush();
+    byte[] bytes = byteArrayOutputStream.toByteArray();
+
+    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+    ObjectInput objectInput = new ObjectInputStream(byteArrayInputStream);
+
+    POSSample deSerializedPOSSample = null;
+    try {
+      deSerializedPOSSample = (POSSample) objectInput.readObject();
+    } catch (ClassNotFoundException e) {
+      // do nothing
+    }
+
+    Assert.assertNotNull(deSerializedPOSSample);
+    Assert.assertArrayEquals(posSample.getAddictionalContext(),
+        deSerializedPOSSample.getAddictionalContext());
+    Assert.assertArrayEquals(posSample.getSentence(), deSerializedPOSSample.getSentence());
+    Assert.assertArrayEquals(posSample.getTags(), deSerializedPOSSample.getTags());
   }
 
   /**

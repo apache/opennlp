@@ -18,7 +18,13 @@
 package opennlp.tools.lemmatizer;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.StringReader;
 
 import org.junit.Assert;
@@ -45,6 +51,31 @@ public class LemmaSampleTest {
   private static String[] createLemmas() {
     return new String[] { "Forecast", "for", "the", "trade", "figure", "range",
         "widely", "." };
+  }
+
+  @Test
+  public void testLemmaSampleSerDe() throws IOException {
+    LemmaSample lemmaSample = createGoldSample();
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    ObjectOutput out = new ObjectOutputStream(byteArrayOutputStream);
+    out.writeObject(lemmaSample);
+    out.flush();
+    byte[] bytes = byteArrayOutputStream.toByteArray();
+
+    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+    ObjectInput objectInput = new ObjectInputStream(byteArrayInputStream);
+
+    LemmaSample deSerializedLemmaSample = null;
+    try {
+      deSerializedLemmaSample = (LemmaSample) objectInput.readObject();
+    } catch (ClassNotFoundException e) {
+      // do nothing
+    }
+
+    Assert.assertNotNull(deSerializedLemmaSample);
+    Assert.assertArrayEquals(lemmaSample.getLemmas(), deSerializedLemmaSample.getLemmas());
+    Assert.assertArrayEquals(lemmaSample.getTokens(), deSerializedLemmaSample.getTokens());
+    Assert.assertArrayEquals(lemmaSample.getTags(), deSerializedLemmaSample.getTags());
   }
 
   @Test

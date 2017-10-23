@@ -17,13 +17,14 @@
 
 package opennlp.tools.util;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Class for storing start and end integer offsets.
  *
  */
-public class Span implements Comparable<Span> {
+public class Span implements Comparable<Span>, Serializable {
 
   private final int start;
   private final int end;

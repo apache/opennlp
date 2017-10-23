@@ -17,7 +17,13 @@
 
 package opennlp.tools.tokenize;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,6 +44,30 @@ public class TokenSampleTest {
 
     Assert.assertEquals(new Span(0, 1), sample.getTokenSpans()[0]);
     Assert.assertEquals(new Span(2, 6), sample.getTokenSpans()[1]);
+  }
+
+  @Test
+  public void testTokenSampleSerDe() throws IOException {
+    TokenSample tokenSample = createGoldSample();
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    ObjectOutput out = new ObjectOutputStream(byteArrayOutputStream);
+    out.writeObject(tokenSample);
+    out.flush();
+    byte[] bytes = byteArrayOutputStream.toByteArray();
+
+    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+    ObjectInput objectInput = new ObjectInputStream(byteArrayInputStream);
+
+    TokenSample deSerializedTokenSample = null;
+    try {
+      deSerializedTokenSample = (TokenSample) objectInput.readObject();
+    } catch (ClassNotFoundException e) {
+      // do nothing
+    }
+
+    Assert.assertNotNull(deSerializedTokenSample);
+    Assert.assertEquals(tokenSample.getText(), deSerializedTokenSample.getText());
+    Assert.assertArrayEquals(tokenSample.getTokenSpans(), deSerializedTokenSample.getTokenSpans());
   }
 
   @Test

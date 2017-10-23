@@ -17,6 +17,7 @@
 
 package opennlp.tools.tokenize;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,7 +30,7 @@ import opennlp.tools.util.Span;
 /**
  * A {@link TokenSample} is text with token spans.
  */
-public class TokenSample {
+public class TokenSample implements Serializable {
 
   public static final String DEFAULT_SEPARATOR_CHARS = "<SPLIT>";
 
