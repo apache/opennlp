@@ -17,6 +17,14 @@
 
 package opennlp.tools.doccat;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,6 +36,30 @@ public class DocumentSampleTest {
     Assert.assertTrue(createGoldSample().equals(createGoldSample()));
     Assert.assertFalse(createPredSample().equals(createGoldSample()));
     Assert.assertFalse(createPredSample().equals(new Object()));
+  }
+
+  @Test
+  public void testDocumentSampleSerDe() throws IOException {
+    DocumentSample documentSample = createGoldSample();
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    ObjectOutput out = new ObjectOutputStream(byteArrayOutputStream);
+    out.writeObject(documentSample);
+    out.flush();
+    byte[] bytes = byteArrayOutputStream.toByteArray();
+
+    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+    ObjectInput objectInput = new ObjectInputStream(byteArrayInputStream);
+
+    DocumentSample deSerializedDocumentSample = null;
+    try {
+      deSerializedDocumentSample = (DocumentSample) objectInput.readObject();
+    } catch (ClassNotFoundException e) {
+      // do nothing
+    }
+
+    Assert.assertNotNull(deSerializedDocumentSample);
+    Assert.assertEquals(documentSample.getCategory(), deSerializedDocumentSample.getCategory());
+    Assert.assertArrayEquals(documentSample.getText(), deSerializedDocumentSample.getText());
   }
 
   public static DocumentSample createGoldSample() {

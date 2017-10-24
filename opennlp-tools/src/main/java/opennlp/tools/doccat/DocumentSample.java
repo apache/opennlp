@@ -17,6 +17,7 @@
 
 package opennlp.tools.doccat;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +28,7 @@ import java.util.Objects;
 /**
  * Class which holds a classified document and its category.
  */
-public class DocumentSample {
+public class DocumentSample implements Serializable {
 
   private final String category;
   private final List<String> text;

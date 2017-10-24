@@ -17,6 +17,7 @@
 
 package opennlp.tools.sentdetect;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,10 +31,9 @@ import opennlp.tools.util.Span;
  * A {@link SentenceSample} contains a document with
  * begin indexes of the individual sentences.
  */
-public class SentenceSample {
+public class SentenceSample implements Serializable {
 
   private final String document;
-
   private final List<Span> sentences;
 
   /**

@@ -18,6 +18,7 @@
 
 package opennlp.tools.postag;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +30,7 @@ import opennlp.tools.util.InvalidFormatException;
 /**
  * Represents an pos-tagged sentence.
  */
-public class POSSample {
+public class POSSample implements Serializable {
 
   private List<String> sentence;
 

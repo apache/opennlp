@@ -17,10 +17,16 @@
 
 package opennlp.tools.langdetect;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 
 import org.junit.Assert;
 import org.junit.Test;
-
 
 public class LanguageSampleTest {
 
@@ -33,6 +39,35 @@ public class LanguageSampleTest {
 
     Assert.assertEquals(lang, sample.getLanguage());
     Assert.assertEquals(context, sample.getContext());
+  }
+
+  @Test
+  public void testLanguageSampleSerDe() throws IOException {
+    Language lang = new Language("aLang");
+    CharSequence context = "aContext";
+
+    LanguageSample languageSample = new LanguageSample(lang, context);
+
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    ObjectOutput out = new ObjectOutputStream(byteArrayOutputStream);
+    out.writeObject(languageSample);
+    out.flush();
+    byte[] bytes = byteArrayOutputStream.toByteArray();
+
+    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+    ObjectInput objectInput = new ObjectInputStream(byteArrayInputStream);
+
+    LanguageSample deSerializedLanguageSample = null;
+    try {
+      deSerializedLanguageSample = (LanguageSample) objectInput.readObject();
+    } catch (ClassNotFoundException e) {
+      // do nothing
+    }
+
+    Assert.assertNotNull(deSerializedLanguageSample);
+    Assert.assertEquals(languageSample.getContext(), deSerializedLanguageSample.getContext());
+    Assert.assertEquals(languageSample.getLanguage(), deSerializedLanguageSample.getLanguage());
+    Assert.assertEquals(languageSample, deSerializedLanguageSample);
   }
 
   @Test(expected = NullPointerException.class)
@@ -84,6 +119,6 @@ public class LanguageSampleTest {
     Assert.assertNotEquals(sampleA, sampleB);
     Assert.assertNotEquals(sampleA, sampleC);
     Assert.assertNotEquals(sampleB, sampleC);
-    Assert.assertFalse(sampleA.equals("something else"));
+    Assert.assertNotEquals(sampleA, "something else");
   }
 }

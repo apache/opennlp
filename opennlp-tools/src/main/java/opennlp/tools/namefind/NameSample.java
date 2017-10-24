@@ -18,6 +18,7 @@
 package opennlp.tools.namefind;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,7 +33,7 @@ import opennlp.tools.util.Span;
 /**
  * Class for holding names for a single unit of text.
  */
-public class NameSample {
+public class NameSample implements Serializable {
 
   private final String id;
   private final List<String> sentence;

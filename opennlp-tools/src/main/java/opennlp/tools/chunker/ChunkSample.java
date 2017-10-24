@@ -17,6 +17,7 @@
 
 package opennlp.tools.chunker;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,7 +29,7 @@ import opennlp.tools.util.Span;
 /**
  * Class for holding chunks for a single unit of text.
  */
-public class ChunkSample {
+public class ChunkSample implements Serializable {
 
   private final List<String> sentence;
   private final List<String> tags;
@@ -167,12 +168,12 @@ public class ChunkSample {
     StringBuilder result = new StringBuilder(" ");
 
     for (int tokenIndex = 0; tokenIndex < sentence.size(); tokenIndex++) {
-      for (int nameIndex = 0; nameIndex < spans.length; nameIndex++) {
-        if (spans[nameIndex].getStart() == tokenIndex) {
-          result.append("[").append(spans[nameIndex].getType()).append(" ");
+      for (Span span : spans) {
+        if (span.getStart() == tokenIndex) {
+          result.append("[").append(span.getType()).append(" ");
         }
 
-        if (spans[nameIndex].getEnd() == tokenIndex) {
+        if (span.getEnd() == tokenIndex) {
           result.append("]").append(' ');
         }
       }
@@ -183,8 +184,8 @@ public class ChunkSample {
     if (sentence.size() > 1)
       result.setLength(result.length() - 1);
 
-    for (int nameIndex = 0; nameIndex < spans.length; nameIndex++) {
-      if (spans[nameIndex].getEnd() == sentence.size()) {
+    for (Span span : spans) {
+      if (span.getEnd() == sentence.size()) {
         result.append(']');
       }
     }

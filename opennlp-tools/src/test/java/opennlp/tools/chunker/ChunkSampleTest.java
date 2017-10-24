@@ -18,7 +18,13 @@
 package opennlp.tools.chunker;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -105,6 +111,34 @@ public class ChunkSampleTest {
     String[] chunks = createChunks();
     chunks[5] = "B-NP";
     return new ChunkSample(createSentence(), createTags(), chunks);
+  }
+
+  @Test
+  public void testChunkSampleSerDe() throws IOException {
+    ChunkSample chunkSample = createGoldSample();
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    ObjectOutput out = new ObjectOutputStream(byteArrayOutputStream);
+    out.writeObject(chunkSample);
+    out.flush();
+    byte[] bytes = byteArrayOutputStream.toByteArray();
+
+    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+    ObjectInput objectInput = new ObjectInputStream(byteArrayInputStream);
+
+    ChunkSample deSerializedChunkSample = null;
+    try {
+      deSerializedChunkSample = (ChunkSample) objectInput.readObject();
+    } catch (ClassNotFoundException e) {
+      // do nothing
+    }
+
+    Assert.assertNotNull(deSerializedChunkSample);
+    Assert.assertArrayEquals(chunkSample.getPhrasesAsSpanList(),
+        deSerializedChunkSample.getPhrasesAsSpanList());
+    Assert.assertArrayEquals(chunkSample.getPreds(), deSerializedChunkSample.getPreds());
+    Assert.assertArrayEquals(chunkSample.getTags(), deSerializedChunkSample.getTags());
+    Assert.assertArrayEquals(chunkSample.getSentence(), deSerializedChunkSample.getSentence());
+    Assert.assertEquals(chunkSample, deSerializedChunkSample);
   }
 
   @Test(expected = IllegalArgumentException.class)
