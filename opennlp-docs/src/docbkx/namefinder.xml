@@ -191,7 +191,7 @@ Mr . <START:person> Vinken <END> is chairman of Elsevier N.V. , the Dutch publis
 $ opennlp TokenNameFinderTrainer
 Usage: opennlp TokenNameFinderTrainer[.evalita|.ad|.conll03|.bionlp2004|.conll02|.muc6|.ontonotes|.brat] \
 [-featuregen featuregenFile] [-nameTypes types] [-sequenceCodec codec] [-factory factoryName] \
-[-resources resourcesDir] [-type modelType] [-params paramsFile] -lang language \
+[-resources resourcesDir] [-type typeOverride] [-params paramsFile] -lang language \
 -model modelFile -data sampleData [-encoding charsetName]
 
 Arguments description:
@@ -205,8 +205,8 @@ Arguments description:
                 A sub-class of TokenNameFinderFactory
         -resources resourcesDir
                 The resources directory
-        -type modelType
-                The type of the token name finder model
+        -type typeOverride
+                Overrides the type parameter in the provided samples
         -params paramsFile
                 training parameters file.
         -lang language
