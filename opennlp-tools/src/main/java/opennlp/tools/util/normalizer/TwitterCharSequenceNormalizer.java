@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package opennlp.tools.util.normalizer;
 
 import java.util.regex.Pattern;
 
+/**
+ * Normalizer for Twitter character sequences
+ */
 public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final Pattern HASH_USER_REGEX =

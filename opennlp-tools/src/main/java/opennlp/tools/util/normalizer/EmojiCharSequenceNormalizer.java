@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package opennlp.tools.util.normalizer;
 
 import java.util.regex.Pattern;
 
+/**
+ * Normalizer for emojis.
+ */
 public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final EmojiCharSequenceNormalizer INSTANCE = new EmojiCharSequenceNormalizer();
@@ -32,7 +33,6 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
       Pattern.compile("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+");
 
   public CharSequence normalize (CharSequence text) {
-    String modified = EMOJI_REGEX.matcher(text).replaceAll(" ");
-    return modified;
+    return EMOJI_REGEX.matcher(text).replaceAll(" ");
   }
 }
