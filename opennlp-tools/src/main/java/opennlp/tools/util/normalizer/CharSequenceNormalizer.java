@@ -17,7 +17,8 @@
 package opennlp.tools.util.normalizer;
 
 /**
- * A char sequence normalizer, used to adjusting (prune, substitute, add, etc.) characters in order to remove noise from text
+ * A char sequence normalizer, used to adjusting (prune, substitute, add, etc.)
+ * characters in order to remove noise from text
  *
  * @see <a href="https://en.wikipedia.org/wiki/Text_normalization">Text normalization</a>
  *
