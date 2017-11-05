@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package opennlp.tools.util.normalizer;
 
 import java.util.regex.Pattern;
 
+/**
+ * Normalizer to shrink repeated spaces / chars
+ */
 public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final Pattern REPEATED_CHAR_REGEX = Pattern.compile("(.)\\1{2,}",

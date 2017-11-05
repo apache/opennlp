@@ -14,10 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package opennlp.tools.util.normalizer;
 
+/**
+ * A char sequence normalizer, used to adjusting (prune, substitute, add, etc.) characters in order to remove noise from text
+ *
+ * @see <a href="https://en.wikipedia.org/wiki/Text_normalization">Text normalization</a>
+ *
+ */
 public interface CharSequenceNormalizer {
+
+  /**
+   * normalize a sequence of characters
+   * @param text the char sequence to normalize
+   * @return the normalized char sequence
+   */
   CharSequence normalize(CharSequence text);
 }

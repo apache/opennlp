@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package opennlp.tools.util.normalizer;
 
 import java.util.regex.Pattern;
 
+/**
+ * Normalizer that removes URls and email addresses.
+ */
 public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final Pattern URL_REGEX =
