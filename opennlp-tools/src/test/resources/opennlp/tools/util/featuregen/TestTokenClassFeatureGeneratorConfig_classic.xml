@@ -19,7 +19,6 @@
 	under the License.
 -->
 
-<featureGenerators>
-	<unkown-element/>
-</featureGenerators>
-
+<generators>
+	<tokenclass wordAndClass="true"/>
+</generators>

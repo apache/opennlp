@@ -18,19 +18,28 @@
 -->
 
 <!-- Default name finder feature generator configuration -->
-<generators>
-  <cache> 
-    <generators>
-      <window prevLength = "2" nextLength = "2">          
-        <tokenclass/>
-      </window>
-      <window prevLength = "2" nextLength = "2">                
-        <token/>
-      </window>
-      <definition/>
-      <prevmap/>
-      <bigram/>
-      <sentence begin="true" end="false"/>
-    </generators>
-  </cache> 
-</generators>
+<featureGenerators name="nameFinder">
+  <generator class="opennlp.tools.util.featuregen.AggregatedFeatureGeneratorFactory">
+    <generator class="opennlp.tools.util.featuregen.CachedFeatureGeneratorFactory">
+      <generator class="opennlp.tools.util.featuregen.AggregatedFeatureGeneratorFactory">
+        <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
+          <int name="prevLength">2</int>
+          <int name="nextLength">2</int>
+          <generator class="opennlp.tools.util.featuregen.TokenClassFeatureGeneratorFactory"/>
+        </generator>
+        <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
+          <int name="prevLength">2</int>
+          <int name="nextLength">2</int>
+          <generator class="opennlp.tools.util.featuregen.TokenFeatureGeneratorFactory"/>
+        </generator>
+        <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
+        <generator class="opennlp.tools.util.featuregen.PreviousMapFeatureGeneratorFactory"/>
+        <generator class="opennlp.tools.util.featuregen.BigramNameFeatureGeneratorFactory"/>
+        <generator class="opennlp.tools.util.featuregen.SentenceFeatureGeneratorFactory">
+          <bool name="begin">true</bool>
+          <bool name="end">false</bool>
+        </generator>
+      </generator>
+    </generator>
+  </generator>
+</featureGenerators>

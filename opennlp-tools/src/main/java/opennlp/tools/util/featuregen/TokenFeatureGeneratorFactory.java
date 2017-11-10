@@ -19,17 +19,31 @@ package opennlp.tools.util.featuregen;
 
 import java.util.Map;
 
+import org.w3c.dom.Element;
+
 import opennlp.tools.util.InvalidFormatException;
 
-@Deprecated   // TODO: (OPENNLP-1174) remove back-compat support when it is unnecessary
-public abstract class CustomFeatureGenerator implements AdaptiveFeatureGenerator {
+public class TokenFeatureGeneratorFactory
+    extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory
+    implements GeneratorFactory.XmlFeatureGeneratorFactory {
 
-  /**
-   * Initialized the Custom Feature Generator with defined properties and loaded resources.
-   *
-   * @param properties
-   * @param resourceProvider
-   */
-  public abstract void init(Map<String, String> properties, FeatureGeneratorResourceProvider resourceProvider)
-        throws InvalidFormatException;
+  public TokenFeatureGeneratorFactory() {
+    super();
+  }
+
+  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
+  public AdaptiveFeatureGenerator create(Element generatorElement,
+             FeatureGeneratorResourceProvider resourceManager) {
+    return new TokenFeatureGenerator();
+  }
+
+  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("token", new TokenFeatureGeneratorFactory());
+  }
+
+  @Override
+  public AdaptiveFeatureGenerator create() throws InvalidFormatException {
+    return new TokenFeatureGenerator();
+  }
 }

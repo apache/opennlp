@@ -8,9 +8,9 @@
 	to you under the Apache License, Version 2.0 (the
 	"License"); you may not use this file except in compliance
 	with the License.  You may obtain a copy of the License at
-	
+
 	http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing,
 	software distributed under the License is distributed on an
 	"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,7 +19,13 @@
 	under the License.
 -->
 
-<featureGenerators>
-	<unkown-element/>
+<featureGenerators name="testParameters">
+  <generator class="opennlp.tools.util.featuregen.GeneratorFactoryTest$TestParametersFeatureGeneratorFactory">
+    <int name="intParam">123</int>
+    <float name="floatParam">45</float>
+    <long name="longParam">67890</long>
+    <double name="doubleParam">123456.789</double>
+    <bool name="boolParam">true</bool>
+    <str name="strParam">HELLO</str>
+  </generator>
 </featureGenerators>
-
