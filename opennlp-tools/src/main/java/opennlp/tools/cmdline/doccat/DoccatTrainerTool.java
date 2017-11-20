@@ -30,8 +30,6 @@ import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.doccat.FeatureGenerator;
-import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -83,13 +81,6 @@ public class DoccatTrainerTool
     }
 
     CmdLineUtil.writeModel("document categorizer", modelOutFile, model);
-  }
-
-  static Tokenizer createTokenizer(String tokenizer) {
-    if (tokenizer != null) {
-      return ExtensionLoader.instantiateExtension(Tokenizer.class, tokenizer);
-    }
-    return WhitespaceTokenizer.INSTANCE;
   }
 
   static FeatureGenerator[] createFeatureGenerators(String featureGeneratorsNames) {
