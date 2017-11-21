@@ -131,8 +131,8 @@ public class NameFinderResource {
   }
 
   public static class NameAnn {
-    int[][] offsets;
-    String[] texts;
-    String type;
+    public int[][] offsets;
+    public String[] texts;
+    public String type;
   }
 }
