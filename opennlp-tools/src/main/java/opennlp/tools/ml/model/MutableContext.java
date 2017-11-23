@@ -18,6 +18,7 @@
 package opennlp.tools.ml.model;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Class used to store parameters or expected values associated with this context which
@@ -33,7 +34,7 @@ public class MutableContext extends Context {
    * @param parameters Parameters for the outcomes specified.
    */
   public MutableContext(int[] outcomePattern, double[] parameters) {
-    super(outcomePattern, parameters);
+    super(outcomePattern, Objects.requireNonNull(parameters));
   }
 
   /**

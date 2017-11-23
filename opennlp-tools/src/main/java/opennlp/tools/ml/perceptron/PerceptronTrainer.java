@@ -18,6 +18,15 @@
 package opennlp.tools.ml.perceptron;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.model.AbstractModel;
@@ -236,7 +245,31 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     return new PerceptronModel(finalParameters, predLabels, outcomeLabels);
   }
 
+  void shuffleContext() {
+    // If running on Java 6 or older, use `new Random()` on RHS here
+    Random rnd = ThreadLocalRandom.current();
+    for (int i = contexts.length - 1; i > 0; i--) {
+      int index = rnd.nextInt(i + 1);
+
+      // swap contexts
+      int[] context = contexts[index];
+      contexts[index] = contexts[i];
+      contexts[i] = context;
+
+      // swap outcomes
+      int outcome = outcomeList[index];
+      outcomeList[index] = outcomeList[i];
+      outcomeList[i] = outcome;
+    }
+  }
+
   private MutableContext[] findParameters(int iterations, boolean useAverage) {
+
+    int threads = 1; // TODO: Use training parameter instead
+
+    ExecutorService executor = Executors.newFixedThreadPool(threads);
+    CompletionService<ComputerShardParametersTask> completionService =
+        new ExecutorCompletionService<>(executor);
 
     display("Performing " + iterations + " iterations.\n");
 
@@ -245,14 +278,13 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       allOutcomesPattern[oi] = oi;
 
     /* Stores the estimated parameter value of each predicate during iteration. */
-    MutableContext[] params = new MutableContext[numPreds];
+    MutableContext[][] params = new MutableContext[threads][numPreds]; // TODO: Replace that with thread num
     for (int pi = 0; pi < numPreds; pi++) {
-      params[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
-      for (int aoi = 0; aoi < numOutcomes; aoi++)
-        params[pi].setParameter(aoi, 0.0);
+      params[0][pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
+      for (int aoi = 0; aoi < numOutcomes; aoi++) {
+        params[0][pi].setParameter(aoi, 0.0);
+      }
     }
-
-    EvalParameters evalParams = new EvalParameters(params, numOutcomes);
 
     /* Stores the sum of parameter values of each predicate over many iterations. */
     MutableContext[] summedParams = new MutableContext[numPreds];
@@ -267,15 +299,17 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     // Keep track of the previous three accuracies. The difference of
     // the mean of these and the current training set accuracy is used
     // with tolerance to decide whether to stop.
-    double prevAccuracy1 = 0.0;
-    double prevAccuracy2 = 0.0;
-    double prevAccuracy3 = 0.0;
+    double prevAccuracy1 = -1;
+    double prevAccuracy2 = -1;
+    double prevAccuracy3 = -1;
 
     // A counter for the denominator for averaging.
     int numTimesSummed = 0;
 
     double stepsize = 1;
     for (int i = 1; i <= iterations; i++) {
+
+      // shuffleContext(); // TODO: Use training parameter instead
 
       // Decrease the stepsize by a small amount.
       if (stepSizeDecrease != null)
@@ -285,40 +319,60 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
       int numCorrect = 0;
 
-      for (int ei = 0; ei < numUniqueEvents; ei++) {
-        int targetOutcome = outcomeList[ei];
+      if (threads > 1) {
+        for (int pi = 0; pi < params[0].length; pi++) {
+          for (int ti = 1; ti < threads; ti++) {
+            params[ti][pi] = new MutableContext(params[0][pi].getOutcomes(),
+                Arrays.copyOf(params[0][pi].getParameters(), params[0][pi].getParameters().length));
+          }
+        }
+      }
 
-        for (int ni = 0; ni < this.numTimesEventsSeen[ei]; ni++) {
+      int taskSize = numUniqueEvents / threads;
+      int leftOver = numUniqueEvents % threads;
 
-          // Compute the model's prediction according to the current parameters.
-          double[] modelDistribution = new double[numOutcomes];
-          if (values != null)
-            PerceptronModel.eval(contexts[ei], values[ei], modelDistribution, evalParams, false);
-          else
-            PerceptronModel.eval(contexts[ei], null, modelDistribution, evalParams, false);
+      // TODO: fire up the compute tasks
+      for (int ti = 0; ti < threads; ti++) {
+        if (ti < leftOver) {
+          completionService.submit(
+              new ComputerShardParametersTask(params[ti], stepsize, ti, ti * taskSize + ti, taskSize + 1));
+        } else {
+          completionService.submit(
+              new ComputerShardParametersTask(params[ti], stepsize, ti, ti * taskSize + leftOver, taskSize));
+        }
+      }
 
-          int maxOutcome = maxIndex(modelDistribution);
+      for (int ti = 0; ti < threads; ti++) {
+        ComputerShardParametersTask finishedTask;
+        try {
+          finishedTask = completionService.take().get();
+        } catch (InterruptedException e) {
+          // TODO: We got interrupted, but that is currently not really supported!
+          // For now we just print the exception and fail hard. We hopefully soon
+          // handle this case properly!
+          e.printStackTrace();
+          throw new IllegalStateException("Interruption is not supported!", e);
+        } catch (ExecutionException e) {
+          // Only runtime exception can be thrown during training, if one was thrown
+          // it should be re-thrown. That could for example be a NullPointerException
+          // which is caused through a bug in our implementation.
+          throw new RuntimeException("Exception during training: " + e.getMessage(), e);
+        }
 
-          // If the predicted outcome is different from the target
-          // outcome, do the standard update: boost the parameters
-          // associated with the target and reduce those associated
-          // with the incorrect predicted outcome.
-          if (maxOutcome != targetOutcome) {
-            for (int ci = 0; ci < contexts[ei].length; ci++) {
-              int pi = contexts[ei][ci];
-              if (values == null) {
-                params[pi].updateParameter(targetOutcome, stepsize);
-                params[pi].updateParameter(maxOutcome, -stepsize);
-              } else {
-                params[pi].updateParameter(targetOutcome, stepsize * values[ei][ci]);
-                params[pi].updateParameter(maxOutcome, -stepsize * values[ei][ci]);
-              }
+        numCorrect += finishedTask.getNumCorrect();
+      }
+
+      if (threads > 1) {
+        for (int pi = 0; pi < params.length; pi++) {
+          for (int ti = 1; ti < threads; ti++) {
+            for (int wi = 0; wi < params[0][pi].getParameters().length; wi++) {
+              params[0][pi].getParameters()[wi] += params[ti][pi].getParameters()[wi];
             }
           }
 
-          // Update the counts for accuracy.
-          if (maxOutcome == targetOutcome)
-            numCorrect++;
+          for (int wi = 0; wi < params[0][pi].getParameters().length; wi++) {
+            params[0][pi].getParameters()[wi] /= threads;
+          }
         }
       }
 
@@ -331,13 +385,14 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
       boolean doAveraging;
 
+      // TODO: This is always true if useAverage is true, which is set to enable
       doAveraging = useAverage && useSkippedlAveraging && (i < 20 || isPerfectSquare(i)) || useAverage;
 
       if (doAveraging) {
         numTimesSummed++;
         for (int pi = 0; pi < numPreds; pi++)
           for (int aoi = 0; aoi < numOutcomes; aoi++)
-            summedParams[pi].updateParameter(aoi, params[pi].getParameters()[aoi]);
+            summedParams[pi].updateParameter(aoi, params[0][pi].getParameters()[aoi]);
       }
 
       // If the tolerance is greater than the difference between the
@@ -356,6 +411,9 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       prevAccuracy3 = trainingAccuracy;
     }
 
+    executor.shutdown();
+
+    EvalParameters evalParams = new EvalParameters(params[0], numOutcomes);
     // Output the final training stats.
     trainingStats(evalParams);
 
@@ -366,11 +424,8 @@ public class PerceptronTrainer extends AbstractEventTrainer {
           summedParams[pi].setParameter(aoi, summedParams[pi].getParameters()[aoi] / numTimesSummed);
 
       return summedParams;
-
     } else {
-
-      return params;
-
+      return params[0];
     }
 
   }
@@ -426,4 +481,75 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     return root * root == n;
   }
 
+  private class ComputerShardParametersTask implements Callable<ComputerShardParametersTask> {
+
+    private final double stepsize;
+    private final int startIndex;
+    private final int length;
+    private final int threadIndex;
+
+    private MutableContext[] localParams;
+    private EvalParameters evalParams;
+
+    private int numCorrect;
+
+    // Needs a copy of the parameters ...
+    ComputerShardParametersTask(MutableContext[] localParams, double stepsize,
+                                int threadIndex, int startIndex, int length) {
+      this.localParams = localParams;
+      this.stepsize = stepsize;
+
+      this.startIndex = startIndex;
+      this.length = length;
+      this.threadIndex = threadIndex;
+
+      evalParams = new EvalParameters(localParams, numOutcomes);
+    }
+
+    public int getNumCorrect() {
+      return numCorrect;
+    }
+
+    @Override
+    public ComputerShardParametersTask call() throws Exception {
+
+      for (int ei = startIndex; ei < startIndex + length; ei++) {
+
+        int targetOutcome = outcomeList[ei];
+
+        for (int ni = 0; ni < numTimesEventsSeen[ei]; ni++) {
+          // Compute the model's prediction according to the current parameters.
+          double[] modelDistribution = new double[numOutcomes];
+          if (values != null)
+            PerceptronModel.eval(contexts[ei], values[ei], modelDistribution, evalParams, false);
+          else
+            PerceptronModel.eval(contexts[ei], null, modelDistribution, evalParams, false);
+
+          int maxOutcome = maxIndex(modelDistribution);
+
+          // If the predicted outcome is different from the target
+          // outcome, do the standard update: boost the parameters
+          // associated with the target and reduce those associated
+          // with the incorrect predicted outcome.
+          if (maxOutcome != targetOutcome) {
+            for (int ci = 0; ci < contexts[ei].length; ci++) {
+              int pi = contexts[ei][ci];
+              if (values == null) {
+                localParams[pi].updateParameter(targetOutcome, stepsize);
+                localParams[pi].updateParameter(maxOutcome, -stepsize);
+              } else {
+                localParams[pi].updateParameter(targetOutcome, stepsize * values[ei][ci]);
+                localParams[pi].updateParameter(maxOutcome, -stepsize * values[ei][ci]);
+              }
+            }
+          }
+          else {
+            numCorrect++;
+          }
+        }
+      }
+
+      return this;
+    }
+  }
 }
