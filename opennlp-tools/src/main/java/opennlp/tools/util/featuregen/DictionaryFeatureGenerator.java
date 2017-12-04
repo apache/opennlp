@@ -22,6 +22,8 @@ import java.util.List;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.namefind.DictionaryNameFinder;
+import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.DictionarySerializer;
 
 /**
  * The {@link DictionaryFeatureGenerator} uses the {@link DictionaryNameFinder}
@@ -33,13 +35,23 @@ import opennlp.tools.namefind.DictionaryNameFinder;
  */
 public class DictionaryFeatureGenerator implements AdaptiveFeatureGenerator {
 
+  private final String dictName;
   private InSpanGenerator isg;
+
+  DictionaryFeatureGenerator(String dictName) {
+    this.dictName = dictName;
+  }
 
   public DictionaryFeatureGenerator(Dictionary dict) {
     this("",dict);
   }
 
   public DictionaryFeatureGenerator(String prefix, Dictionary dict) {
+    this(prefix, dict, DictionarySerializer.class.getSimpleName());
+  }
+
+  public DictionaryFeatureGenerator(String prefix, Dictionary dict, String dictName) {
+    this.dictName = dictName;
     setDictionary(prefix,dict);
   }
 
@@ -55,4 +67,11 @@ public class DictionaryFeatureGenerator implements AdaptiveFeatureGenerator {
     isg.createFeatures(features, tokens, index, previousOutcomes);
   }
 
+  public ArtifactSerializer<?> getArtifactSerializer() {
+    return new DictionarySerializer();
+  }
+
+  public String getArtifactSerializerName() {
+    return dictName;
+  }
 }

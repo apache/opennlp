@@ -123,4 +123,8 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
     return super.toString() + ": Prev window size: " + prevWindowSize
         + ", Next window size: " + nextWindowSize;
   }
+
+  public AdaptiveFeatureGenerator[] getChildAdaptiveFeatureGenerators() {
+    return new AdaptiveFeatureGenerator[]{ generator };
+  }
 }

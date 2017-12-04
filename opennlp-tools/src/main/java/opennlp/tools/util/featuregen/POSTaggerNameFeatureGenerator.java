@@ -24,24 +24,33 @@ import java.util.List;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.POSModelSerializer;
 
 /**
  * Adds the token POS Tag as feature. Requires a POS Tag model.
  */
 public class POSTaggerNameFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private POSTagger posTagger;
+  private final String modelName;
+  private final POSTagger posTagger;
 
   private String[] cachedTokens;
   private String[] cachedTags;
+
+  POSTaggerNameFeatureGenerator(String modelName) {
+    this((POSTagger)null, modelName);
+  }
 
   /**
    * Initializes a new instance.
    *
    * @param aPosTagger a POSTagger implementation.
+   * @param modelName the name of the model
    */
-  public POSTaggerNameFeatureGenerator(POSTagger aPosTagger) {
+  public POSTaggerNameFeatureGenerator(POSTagger aPosTagger, String modelName) {
     this.posTagger = aPosTagger;
+    this.modelName = modelName;
   }
 
   /**
@@ -50,10 +59,18 @@ public class POSTaggerNameFeatureGenerator implements AdaptiveFeatureGenerator {
    * @param aPosModel a POSTagger model.
    */
   public POSTaggerNameFeatureGenerator(POSModel aPosModel) {
-
-    this.posTagger = new POSTaggerME(aPosModel);
+    this(aPosModel, POSModelSerializer.class.getSimpleName());
   }
 
+  /**
+   * Initializes a new instance.
+   *
+   * @param aPosModel a POSTagger model.
+   * @param modelName the name of the model
+   */
+  public POSTaggerNameFeatureGenerator(POSModel aPosModel, String modelName) {
+    this(new POSTaggerME(aPosModel), modelName);
+  }
 
   public void createFeatures(List<String> feats, String[] toks, int index, String[] preds) {
     if (!Arrays.equals(this.cachedTokens, toks)) {
@@ -64,5 +81,11 @@ public class POSTaggerNameFeatureGenerator implements AdaptiveFeatureGenerator {
     feats.add("pos=" + this.cachedTags[index]);
   }
 
+  public ArtifactSerializer<?> getArtifactSerializer() {
+    return new POSModelSerializer();
+  }
 
+  public String getArtifactSerializerName() {
+    return modelName;
+  }
 }

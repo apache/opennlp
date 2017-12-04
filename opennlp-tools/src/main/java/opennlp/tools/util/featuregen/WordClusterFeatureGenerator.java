@@ -20,15 +20,20 @@ package opennlp.tools.util.featuregen;
 import java.util.List;
 
 import opennlp.tools.util.StringUtil;
+import opennlp.tools.util.model.ArtifactSerializer;
 
 public class WordClusterFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private WordClusterDictionary tokenDictionary;
-  private String resourceName;
-  private boolean lowerCaseDictionary;
+  private final WordClusterDictionary tokenDictionary;
+  private final String resourceName;
+  private final boolean lowerCaseDictionary;
+
+  WordClusterFeatureGenerator(String dictResourceKey) {
+    this(null, dictResourceKey, false);
+  }
 
   public WordClusterFeatureGenerator(WordClusterDictionary dict,
-      String dictResourceKey, boolean lowerCaseDictionary) {
+                                     String dictResourceKey, boolean lowerCaseDictionary) {
     tokenDictionary = dict;
     resourceName = dictResourceKey;
     this.lowerCaseDictionary = lowerCaseDictionary;
@@ -46,5 +51,13 @@ public class WordClusterFeatureGenerator implements AdaptiveFeatureGenerator {
     if (clusterId != null) {
       features.add(resourceName + clusterId);
     }
+  }
+
+  public ArtifactSerializer<?> getArtifactSerializer() {
+    return new WordClusterDictionary.WordClusterDictionarySerializer();
+  }
+
+  public String getArtifactSerializerName() {
+    return resourceName;
   }
 }

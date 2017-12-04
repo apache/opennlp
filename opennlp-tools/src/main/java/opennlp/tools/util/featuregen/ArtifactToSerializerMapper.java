@@ -21,6 +21,7 @@ import java.util.Map;
 
 import opennlp.tools.util.model.ArtifactSerializer;
 
+@Deprecated
 public interface ArtifactToSerializerMapper {
   Map<String, ArtifactSerializer<?>> getArtifactSerializerMapping();
 }
