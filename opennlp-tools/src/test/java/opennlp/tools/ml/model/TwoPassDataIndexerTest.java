@@ -23,8 +23,15 @@ import java.util.Collections;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.tools.namefind.DefaultNameContextGenerator;
+import opennlp.tools.namefind.NameContextGenerator;
+import opennlp.tools.namefind.NameFinderEventStream;
+import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
 public class TwoPassDataIndexerTest {
 
@@ -60,5 +67,26 @@ public class TwoPassDataIndexerTest {
     Assert.assertArrayEquals(new String[]{"ppo=other"}, indexer.getPredLabels());
     Assert.assertArrayEquals(new String[]{"other", "org-start", "org-cont"}, indexer.getOutcomeLabels());
     Assert.assertArrayEquals(new int[]{5}, indexer.getPredCounts());
+  }
+
+  @Test
+  public void testIndexWithNewline() throws IOException {
+
+    String[] sentence = "He belongs to Apache \n Software Foundation .".split(" ");
+
+    NameContextGenerator CG = new DefaultNameContextGenerator(
+            (AdaptiveFeatureGenerator[]) null);
+
+    NameSample nameSample = new NameSample(sentence,
+            new Span[] { new Span(3, 7) }, false);
+
+    ObjectStream<Event> eventStream = new NameFinderEventStream(
+            ObjectStreamUtils.createObjectStream(nameSample), "org", CG, null);
+
+    DataIndexer indexer = new TwoPassDataIndexer();
+    indexer.init(new TrainingParameters(Collections.emptyMap()), null);
+    indexer.index(eventStream);
+    Assert.assertEquals(5, indexer.getContexts().length);
+
   }
 }
