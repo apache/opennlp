@@ -222,8 +222,8 @@ public class POSTaggerME implements POSTagger {
   }
 
   public static POSModel train(String languageCode,
-      ObjectStream<POSSample> samples, TrainingParameters trainParams,
-      POSTaggerFactory posFactory) throws IOException {
+                               ObjectStream<POSSample> samples, TrainingParameters trainParams,
+                               POSTaggerFactory posFactory) throws IOException {
 
     int beamSize = trainParams.getIntParameter(BeamSearch.BEAM_SIZE_PARAMETER, POSTaggerME.DEFAULT_BEAM_SIZE);
 
@@ -288,7 +288,7 @@ public class POSTaggerME implements POSTagger {
   }
 
   public static void populatePOSDictionary(ObjectStream<POSSample> samples,
-      MutableTagDictionary dict, int cutoff) throws IOException {
+                                           MutableTagDictionary dict, int cutoff) throws IOException {
     System.out.println("Expanding POS Dictionary ...");
     long start = System.nanoTime();
 
