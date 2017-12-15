@@ -44,27 +44,17 @@ class FloatArrayVector implements WordVector {
   }
 
   @Override
-  public float[] toFloatArray() {
-    return toFloatBuffer().array();
-  }
-
-  @Override
-  public double[] toDoubleArray() {
-    double[] doubleVector = new double[vector.length];
-    for (int i = 0; i < doubleVector.length ; i++) {
-      doubleVector[i] = vector[i];
-    }
-    return doubleVector;
-  }
-
-  @Override
   public FloatBuffer toFloatBuffer() {
     return FloatBuffer.wrap(vector).asReadOnlyBuffer();
   }
 
   @Override
   public DoubleBuffer toDoubleBuffer() {
-    return DoubleBuffer.wrap(toDoubleArray());
+    double[] doubleVector = new double[vector.length];
+    for (int i = 0; i < doubleVector.length ; i++) {
+      doubleVector[i] = vector[i];
+    }
+    return DoubleBuffer.wrap(doubleVector).asReadOnlyBuffer();
   }
 
   @Override

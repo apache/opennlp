@@ -35,9 +35,6 @@ public interface WordVector {
   float getAsFloat(int index);
   double getAsDouble(int index);
 
-  float[] toFloatArray();
-  double[] toDoubleArray();
-
   FloatBuffer toFloatBuffer();
   DoubleBuffer toDoubleBuffer();
 
