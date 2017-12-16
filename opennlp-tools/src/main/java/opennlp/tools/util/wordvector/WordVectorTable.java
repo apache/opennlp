@@ -28,7 +28,7 @@ import opennlp.tools.util.java.Experimental;
 @Experimental
 public interface WordVectorTable {
 
-  WordVector get(CharSequence token);
+  WordVector get(String token);
 
   int size();
 

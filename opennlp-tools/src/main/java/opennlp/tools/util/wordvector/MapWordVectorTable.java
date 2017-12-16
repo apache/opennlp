@@ -28,8 +28,8 @@ class MapWordVectorTable implements WordVectorTable {
   }
 
   @Override
-  public WordVector get(CharSequence token) {
-    return vectors.get(token.toString());
+  public WordVector get(String token) {
+    return vectors.get(token);
   }
 
   @Override

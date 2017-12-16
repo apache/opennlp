@@ -43,9 +43,9 @@ public class Glove {
    * <p>
    * Warning: Experimental new feature, see OPENNLP-1144 for details, the API might be changed anytime.
    *
-   * @param in
-   * @return
-   * @throws IOException
+   * @param in the input stream for Glove vectors
+   * @return a Glove based wv table
+   * @throws IOException if any error occurs during parsing
    */
   @Experimental
   public static WordVectorTable parse(InputStream in) throws IOException {
