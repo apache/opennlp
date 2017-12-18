@@ -22,7 +22,7 @@ import java.nio.FloatBuffer;
 
 class DoubleArrayVector implements WordVector {
 
-  private double[] vector;
+  private final double[] vector;
 
   DoubleArrayVector(double[] vector) {
     this.vector = vector;

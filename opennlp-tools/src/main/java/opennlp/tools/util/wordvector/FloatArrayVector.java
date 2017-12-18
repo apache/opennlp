@@ -22,7 +22,7 @@ import java.nio.FloatBuffer;
 
 class FloatArrayVector implements WordVector {
 
-  private float[] vector;
+  private final float[] vector;
 
   FloatArrayVector(float[] vector) {
     this.vector = vector;
