@@ -35,6 +35,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerMETest;
+import opennlp.tools.util.FileUtil;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -52,7 +53,6 @@ public class TokenNameFinderModelTest {
     // save a POS model there
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.MAXENT);
     File posModelFile = new File(resourcesFolder.toFile(),"pos-model.bin");
-    FileOutputStream fos = new FileOutputStream(posModelFile);
 
     posModel.serialize(posModelFile);
 
@@ -77,6 +77,9 @@ public class TokenNameFinderModelTest {
     catch (IOException e) {
       throw new TerminateToolException(-1, e.getMessage(), e);
     }
+    finally {
+      Files.delete(featureGenerator);
+    }
 
 
     // train a name finder
@@ -94,11 +97,17 @@ public class TokenNameFinderModelTest {
 
 
     File model = File.createTempFile("nermodel", ".bin");
-    FileOutputStream modelOut = new FileOutputStream(model);
-    nameFinderModel.serialize(modelOut);
+    try {
+      FileOutputStream modelOut = new FileOutputStream(model);
+      nameFinderModel.serialize(modelOut);
 
-    modelOut.close();
+      modelOut.close();
 
-    Assert.assertTrue(model.exists());
+      Assert.assertTrue(model.exists());
+    }
+    finally {
+      model.delete();
+      FileUtil.deleteDirectory(resourcesFolder.toFile());
+    }
   }
 }

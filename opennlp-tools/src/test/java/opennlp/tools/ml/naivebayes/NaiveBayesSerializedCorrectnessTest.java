@@ -154,11 +154,16 @@ public class NaiveBayesSerializedCorrectnessTest {
   protected static NaiveBayesModel persistedModel(NaiveBayesModel model) throws IOException {
     Path tempFilePath = Files.createTempFile("ptnb-", ".bin");
     File file = tempFilePath.toFile();
-    NaiveBayesModelWriter modelWriter = new BinaryNaiveBayesModelWriter(model, tempFilePath.toFile());
-    modelWriter.persist();
-    NaiveBayesModelReader reader = new BinaryNaiveBayesModelReader(file);
-    reader.checkModelType();
-    return (NaiveBayesModel)reader.constructModel();
+    try {
+      NaiveBayesModelWriter modelWriter = new BinaryNaiveBayesModelWriter(model, file);
+      modelWriter.persist();
+      NaiveBayesModelReader reader = new BinaryNaiveBayesModelReader(file);
+      reader.checkModelType();
+      return (NaiveBayesModel)reader.constructModel();
+    }
+    finally {
+      file.delete();
+    }
   }
 
   protected static void testModelOutcome(NaiveBayesModel model1, NaiveBayesModel model2, Event event) {
