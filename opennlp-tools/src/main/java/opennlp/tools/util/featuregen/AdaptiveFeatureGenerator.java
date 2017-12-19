@@ -20,6 +20,8 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+import opennlp.tools.util.model.ArtifactSerializer;
+
 /**
  * An interface for generating features for name entity identification and for
  * updating document level contexts.
@@ -51,11 +53,36 @@ public interface AdaptiveFeatureGenerator {
    * @param tokens The tokens of the sentence or other text unit which has been processed.
    * @param outcomes The outcomes associated with the specified tokens.
    */
-  default void updateAdaptiveData(String[] tokens, String[] outcomes) {};
+  default void updateAdaptiveData(String[] tokens, String[] outcomes) {}
 
   /**
    * Informs the feature generator that the context of the adaptive data (typically a document)
    * is no longer valid.
    */
-  default void clearAdaptiveData() {};
+  default void clearAdaptiveData() {}
+
+  /**
+   * return all children
+   * @return child AdaptiveFeatureGenerators
+   */
+  default public AdaptiveFeatureGenerator[] getChildAdaptiveFeatureGenerators() {
+    return null;
+  }
+
+  /**
+   * feature generator can implement this to return its {@link opennlp.tools.util.model.ArtifactSerializer}
+   * @return the Serializer
+   */
+  default public ArtifactSerializer<?> getArtifactSerializer() {
+    return null;
+  }
+
+  /**
+   * feature generator can implement this to return the mapping name of its
+   * {@link opennlp.tools.util.model.ArtifactSerializer}
+   * @return the mapping name of the Serializer
+   */
+  default public String getArtifactSerializerName() {
+    return null;
+  }
 }

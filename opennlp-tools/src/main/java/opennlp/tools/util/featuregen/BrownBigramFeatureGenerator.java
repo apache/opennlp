@@ -19,18 +19,35 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+import opennlp.tools.util.model.ArtifactSerializer;
+
 /**
  * Generates Brown cluster features for token bigrams.
  */
 public class BrownBigramFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private BrownCluster brownCluster;
+  private final String dictName;
+  private final BrownCluster brownCluster;
+
+  BrownBigramFeatureGenerator(String dictName) {
+    this(null, dictName);
+  }
 
   /**
    * Creates a new Brown Cluster bigram feature generator.
    * @param brownCluster A {@link BrownCluster}.
    */
   public BrownBigramFeatureGenerator(BrownCluster brownCluster) {
+    this(brownCluster, BrownCluster.BrownClusterSerializer.class.getSimpleName());
+  }
+
+  /**
+   * Creates a new Brown Cluster bigram feature generator.
+   * @param brownCluster A {@link BrownCluster}.
+   * @param dictName dictionary name
+   */
+  public BrownBigramFeatureGenerator(BrownCluster brownCluster, String dictName) {
+    this.dictName = dictName;
     this.brownCluster = brownCluster;
   }
 
@@ -55,4 +72,11 @@ public class BrownBigramFeatureGenerator implements AdaptiveFeatureGenerator {
     }
   }
 
+  public ArtifactSerializer<?> getArtifactSerializer() {
+    return new BrownCluster.BrownClusterSerializer();
+  }
+
+  public String getArtifactSerializerName() {
+    return dictName;
+  }
 }

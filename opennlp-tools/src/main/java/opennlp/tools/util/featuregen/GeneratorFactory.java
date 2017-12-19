@@ -46,8 +46,6 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.XmlUtil;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.DictionarySerializer;
-import opennlp.tools.util.model.POSModelSerializer;
 
 /**
  * Creates a set of feature generators based on a provided XML descriptor.
@@ -245,15 +243,18 @@ public class GeneratorFactory {
 
       String dictResourceKey = generatorElement.getAttribute("dict");
 
-      Object dictResource = resourceManager.getResource(dictResourceKey);
-
-      if (!(dictResource instanceof Dictionary)) {
-        throw new InvalidFormatException("No dictionary resource for key: " + dictResourceKey);
+      if (resourceManager == null) {
+        return new DictionaryFeatureGenerator(dictResourceKey);
       }
+      else {
+        Object dictResource = resourceManager.getResource(dictResourceKey);
 
-      String prefix = generatorElement.getAttribute("prefix");
-
-      return new DictionaryFeatureGenerator(prefix, (Dictionary) dictResource);
+        if (!(dictResource instanceof Dictionary)) {
+          throw new InvalidFormatException("No dictionary resource for key: " + dictResourceKey);
+        }
+        String prefix = generatorElement.getAttribute("prefix");
+        return new DictionaryFeatureGenerator(prefix, (Dictionary) dictResource);
+      }
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
@@ -284,18 +285,21 @@ public class GeneratorFactory {
         FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
 
       String dictResourceKey = generatorElement.getAttribute("dict");
-      boolean lowerCaseDictionary = "true".equals(generatorElement.getAttribute("lowerCase"));
 
-      Object dictResource = resourceManager.getResource(dictResourceKey);
-
-
-      if (!(dictResource instanceof WordClusterDictionary)) {
-        throw new InvalidFormatException("Not a WordClusterDictionary resource for key: "
-            + dictResourceKey);
+      if (resourceManager == null) {
+        return new WordClusterFeatureGenerator(dictResourceKey);
       }
+      else {
+        boolean lowerCaseDictionary = "true".equals(generatorElement.getAttribute("lowerCase"));
+        Object dictResource = resourceManager.getResource(dictResourceKey);
+        if (!(dictResource instanceof WordClusterDictionary)) {
+          throw new InvalidFormatException("Not a WordClusterDictionary resource for key: "
+              + dictResourceKey);
+        }
 
-      return new WordClusterFeatureGenerator((WordClusterDictionary) dictResource,
-          dictResourceKey, lowerCaseDictionary);
+        return new WordClusterFeatureGenerator((WordClusterDictionary) dictResource,
+            dictResourceKey, lowerCaseDictionary);
+      }
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
@@ -313,14 +317,16 @@ public class GeneratorFactory {
 
       String dictResourceKey = generatorElement.getAttribute("dict");
 
-      Object dictResource = resourceManager.getResource(dictResourceKey);
-
-
-      if (!(dictResource instanceof BrownCluster)) {
-        throw new InvalidFormatException("Not a BrownLexicon resource for key: " + dictResourceKey);
+      if (resourceManager == null) {
+        return new BrownTokenFeatureGenerator(dictResourceKey);
       }
-
-      return new BrownTokenFeatureGenerator((BrownCluster) dictResource);
+      else {
+        Object dictResource = resourceManager.getResource(dictResourceKey);
+        if (!(dictResource instanceof BrownCluster)) {
+          throw new InvalidFormatException("Not a BrownLexicon resource for key: " + dictResourceKey);
+        }
+        return new BrownTokenFeatureGenerator((BrownCluster) dictResource, dictResourceKey);
+      }
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
@@ -338,14 +344,16 @@ public class GeneratorFactory {
 
       String dictResourceKey = generatorElement.getAttribute("dict");
 
-      Object dictResource = resourceManager.getResource(dictResourceKey);
-
-
-      if (!(dictResource instanceof BrownCluster)) {
-        throw new InvalidFormatException("Not a BrownLexicon resource for key: " + dictResourceKey);
+      if (resourceManager == null) {
+        return new BrownTokenClassFeatureGenerator(dictResourceKey);
       }
-
-      return new BrownTokenClassFeatureGenerator((BrownCluster) dictResource);
+      else {
+        Object dictResource = resourceManager.getResource(dictResourceKey);
+        if (!(dictResource instanceof BrownCluster)) {
+          throw new InvalidFormatException("Not a BrownLexicon resource for key: " + dictResourceKey);
+        }
+        return new BrownTokenClassFeatureGenerator((BrownCluster) dictResource, dictResourceKey);
+      }
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
@@ -363,14 +371,16 @@ public class GeneratorFactory {
 
       String dictResourceKey = generatorElement.getAttribute("dict");
 
-      Object dictResource = resourceManager.getResource(dictResourceKey);
-
-
-      if (!(dictResource instanceof BrownCluster)) {
-        throw new InvalidFormatException("Not a BrownLexicon resource for key: " + dictResourceKey);
+      if (resourceManager == null) {
+        return new BrownBigramFeatureGenerator(dictResourceKey);
       }
-
-      return new BrownBigramFeatureGenerator((BrownCluster) dictResource);
+      else {
+        Object dictResource = resourceManager.getResource(dictResourceKey);
+        if (!(dictResource instanceof BrownCluster)) {
+          throw new InvalidFormatException("Not a BrownLexicon resource for key: " + dictResourceKey);
+        }
+        return new BrownBigramFeatureGenerator((BrownCluster) dictResource, dictResourceKey);
+      }
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
@@ -622,10 +632,13 @@ public class GeneratorFactory {
 
       String modelResourceKey = generatorElement.getAttribute("model");
 
-      POSModel model = (POSModel)resourceManager.getResource(modelResourceKey);
-
-      return new POSTaggerNameFeatureGenerator(model);
-
+      if (resourceManager == null) {
+        return new POSTaggerNameFeatureGenerator(modelResourceKey);
+      }
+      else {
+        POSModel model = (POSModel)resourceManager.getResource(modelResourceKey);
+        return new POSTaggerNameFeatureGenerator(model, modelResourceKey);
+      }
     }
 
     static void register(Map<String, XmlFeatureGeneratorFactory> factoryMap) {
@@ -780,84 +793,31 @@ public class GeneratorFactory {
 
     Map<String, ArtifactSerializer<?>> mapping = new HashMap<>();
 
-    org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
-
-    XPath xPath = XPathFactory.newInstance().newXPath();
-
-    NodeList customElements;
-    try {
-      XPathExpression exp = xPath.compile("//custom");
-      customElements = (NodeList) exp.evaluate(xmlDescriptorDOM.getDocumentElement(), XPathConstants.NODESET);
-    } catch (XPathExpressionException e) {
-      throw new IllegalStateException("The hard coded XPath expression should always be valid!");
-    }
-
-    for (int i = 0; i < customElements.getLength(); i++) {
-      if (customElements.item(i) instanceof Element) {
-        Element customElement = (Element) customElements.item(i);
-
-        // Note: The resource provider is not available at that point, to provide
-        // resources they need to be loaded first!
-        AdaptiveFeatureGenerator generator = createGenerator(customElement, null);
-
-        if (generator instanceof ArtifactToSerializerMapper) {
-          ArtifactToSerializerMapper mapper = (ArtifactToSerializerMapper) generator;
-          mapping.putAll(mapper.getArtifactSerializerMapping());
-        }
-      }
-    }
-
-    NodeList allElements;
-    try {
-      XPathExpression exp = xPath.compile("//*");
-      allElements = (NodeList) exp.evaluate(xmlDescriptorDOM.getDocumentElement(), XPathConstants.NODESET);
-    } catch (XPathExpressionException e) {
-      throw new IllegalStateException("The hard coded XPath expression should always be valid!");
-    }
-
-    for (int i = 0; i < allElements.getLength(); i++) {
-      if (allElements.item(i) instanceof Element) {
-        Element xmlElement = (Element) allElements.item(i);
-
-        String dictName = xmlElement.getAttribute("dict");
-        if (dictName != null) {
-
-          switch (xmlElement.getTagName()) {
-            case "wordcluster":
-              mapping.put(dictName, new WordClusterDictionary.WordClusterDictionarySerializer());
-              break;
-
-            case "brownclustertoken":
-              mapping.put(dictName, new BrownCluster.BrownClusterSerializer());
-              break;
-
-            case "brownclustertokenclass"://, ;
-              mapping.put(dictName, new BrownCluster.BrownClusterSerializer());
-              break;
-
-            case "brownclusterbigram": //, ;
-              mapping.put(dictName, new BrownCluster.BrownClusterSerializer());
-              break;
-
-            case "dictionary":
-              mapping.put(dictName, new DictionarySerializer());
-              break;
-          }
-        }
-
-        String modelName = xmlElement.getAttribute("model");
-        if (modelName != null) {
-
-          switch (xmlElement.getTagName()) {
-            case "tokenpos":
-              mapping.put(modelName, new POSModelSerializer());
-              break;
-          }
-        }
-      }
-    }
+    AdaptiveFeatureGenerator featureGenerator = create(xmlDescriptorIn, null);
+    extractArtifactSerializerMappings(mapping, featureGenerator);
 
     return mapping;
+  }
+
+  static void extractArtifactSerializerMappings(Map<String, ArtifactSerializer<?>> mapping,
+      AdaptiveFeatureGenerator featureGenerator) {
+    AdaptiveFeatureGenerator[] childFeatureGenerators =
+        featureGenerator.getChildAdaptiveFeatureGenerators();
+
+    if (childFeatureGenerators == null) {
+      String name = featureGenerator.getArtifactSerializerName();
+      if (name != null) {
+        ArtifactSerializer serializer = featureGenerator.getArtifactSerializer();
+        if (serializer != null) {
+          mapping.put(name, serializer);
+        }
+      }
+    }
+    else {
+      for (AdaptiveFeatureGenerator fg: childFeatureGenerators) {
+        extractArtifactSerializerMappings(mapping, fg);
+      }
+    }
   }
 
   /**

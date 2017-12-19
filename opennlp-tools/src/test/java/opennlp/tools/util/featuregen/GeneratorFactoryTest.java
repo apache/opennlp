@@ -130,7 +130,7 @@ public class GeneratorFactoryTest {
   public void testDictionaryArtifactToSerializerMappingExtraction() throws IOException {
 
     InputStream descIn = getClass().getResourceAsStream(
-            "/opennlp/tools/util/featuregen/TestDictionarySerializerMappingExtractionxml");
+            "/opennlp/tools/util/featuregen/TestDictionarySerializerMappingExtraction.xml");
 
     Map<String, ArtifactSerializer<?>> mapping =
             GeneratorFactory.extractArtifactSerializerMappings(descIn);

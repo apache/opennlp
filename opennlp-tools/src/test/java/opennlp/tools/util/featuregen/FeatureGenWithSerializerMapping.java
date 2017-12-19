@@ -53,4 +53,12 @@ public class FeatureGenWithSerializerMapping extends CustomFeatureGenerator
       FeatureGeneratorResourceProvider resourceProvider)
       throws InvalidFormatException {
   }
+
+  public ArtifactSerializer<?> getArtifactSerializer() {
+    return new WordClusterDictionary.WordClusterDictionarySerializer();
+  }
+
+  public String getArtifactSerializerName() {
+    return "test.resource";
+  }
 }

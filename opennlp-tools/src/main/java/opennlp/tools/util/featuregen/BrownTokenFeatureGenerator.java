@@ -19,15 +19,27 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+import opennlp.tools.util.model.ArtifactSerializer;
+
 /**
  * Generates Brown cluster features for current token.
  */
 public class BrownTokenFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private BrownCluster brownLexicon;
+  private final String dictName;
+  private final BrownCluster brownLexicon;
+
+  BrownTokenFeatureGenerator(String dictName) {
+    this(null, dictName);
+  }
 
   public BrownTokenFeatureGenerator(BrownCluster dict) {
+    this(dict, BrownCluster.BrownClusterSerializer.class.getSimpleName());
+  }
+
+  public BrownTokenFeatureGenerator(BrownCluster dict, String dictName) {
     this.brownLexicon = dict;
+    this.dictName = dictName;
   }
 
   public void createFeatures(List<String> features, String[] tokens, int index,
@@ -40,4 +52,11 @@ public class BrownTokenFeatureGenerator implements AdaptiveFeatureGenerator {
     }
   }
 
+  public ArtifactSerializer<?> getArtifactSerializer() {
+    return new BrownCluster.BrownClusterSerializer();
+  }
+
+  public String getArtifactSerializerName() {
+    return dictName;
+  }
 }

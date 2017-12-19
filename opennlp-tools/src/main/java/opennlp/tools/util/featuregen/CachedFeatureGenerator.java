@@ -103,4 +103,8 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
         + " misses=" + numberOfCacheMisses + " hit%" + (numberOfCacheHits > 0 ?
         (double) numberOfCacheHits / (numberOfCacheMisses + numberOfCacheHits) : 0);
   }
+
+  public AdaptiveFeatureGenerator[] getChildAdaptiveFeatureGenerators() {
+    return new AdaptiveFeatureGenerator[]{ generator };
+  }
 }

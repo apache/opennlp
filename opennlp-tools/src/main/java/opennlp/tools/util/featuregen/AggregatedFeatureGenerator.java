@@ -99,4 +99,8 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
   public Collection<AdaptiveFeatureGenerator> getGenerators() {
     return generators;
   }
+
+  public AdaptiveFeatureGenerator[] getChildAdaptiveFeatureGenerators() {
+    return generators.toArray(new AdaptiveFeatureGenerator[generators.size()]);
+  }
 }
