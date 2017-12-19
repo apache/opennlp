@@ -17,38 +17,19 @@
 
 package opennlp.tools.formats.brat;
 
-import java.util.Objects;
 
-public abstract class BratAnnotation {
-
-  private final String id;
-  private final String type;
-  private String note;
+public class AnnotatorNoteAnnotation extends BratAnnotation {
   
-  protected BratAnnotation(String id, String type) {
-    this.id = Objects.requireNonNull(id);
-    this.type = Objects.requireNonNull(type);
-    this.note = "";
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public void setNote(String note) {
-    this.note = note;
+  private final String attachedId;
+  
+  protected AnnotatorNoteAnnotation(String id, String attachedId, String note) {
+    super(id, "#AnnotationNote");
+    this.attachedId = attachedId;
+    this.setNote(note);
   }
   
-  public String getNote() {
-    return note;
+  public String getAttachedId() {
+    return attachedId;
   }
   
-  @Override
-  public String toString() {
-    return (id + " " + type + " " + note).trim();
-  }
 }

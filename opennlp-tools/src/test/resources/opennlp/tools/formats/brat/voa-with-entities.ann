@@ -16,3 +16,5 @@ T15	Location 978 989	South Korea
 T16	Location 1000 1013	United States
 T17	Person 1121 1126	Obama
 T18	Location 1168 1177	Pyongyang
+#1	AnnotatorNotes	T2	President Obama was the 44th U.S. president
+#2	AnnotatorNotes	T3	The capital of South Korea is Seoul

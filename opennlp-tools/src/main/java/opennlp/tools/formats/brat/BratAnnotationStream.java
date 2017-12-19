@@ -39,6 +39,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
 
     static final int ID_OFFSET = 0;
     static final int TYPE_OFFSET = 1;
+    static final String NOTES_TYPE = "AnnotatorNotes";
 
     BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
       return null;
@@ -178,6 +179,22 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     }
   }
 
+  static class AnnotatorNoteParser extends BratAnnotationParser {
+    private static final int ATTACH_TO_OFFSET = 2;
+    private static final int START_VALUE_OFFSET = 3;
+
+    @Override
+    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
+
+      
+      Span noteSpan = new Span( tokens[START_VALUE_OFFSET].getStart(), 
+          tokens[tokens.length - 1].getEnd() );      
+
+      return new AnnotatorNoteAnnotation(tokens[ID_OFFSET].getCoveredText(line).toString(), 
+          tokens[ATTACH_TO_OFFSET].getCoveredText(line).toString(), 
+          noteSpan.getCoveredText(line).toString());
+    }
+  }
   private final AnnotationConfiguration config;
   private final BufferedReader reader;
   private final String id;
@@ -219,9 +236,17 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
           case 'E':
             parser = new EventAnnotationParser();
             break;
-
+          case '#':
+            // the # can be a Note or a comment... if a note, handle it, otherwise skip the unsupported type..
+            if ( tokens[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString().equals(
+                BratAnnotationParser.NOTES_TYPE) ) {
+              parser = new AnnotatorNoteParser();
+            } else {
+              return read();
+            }
+            break;
           default:
-            // Skip it, do that for everything unsupported (e.g. "*" id)
+          // Skip it, do that for everything unsupported (e.g. "*" id)
             return read();
         }
 
