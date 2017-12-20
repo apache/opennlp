@@ -55,12 +55,17 @@ public class NaiveBayesModelReadWriteTest {
     NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
     Path tempFile = Files.createTempFile("bnb-", ".bin");
     File file = tempFile.toFile();
-    NaiveBayesModelWriter modelWriter = new BinaryNaiveBayesModelWriter(model, file);
-    modelWriter.persist();
-    NaiveBayesModelReader reader = new BinaryNaiveBayesModelReader(file);
-    reader.checkModelType();
-    AbstractModel abstractModel = reader.constructModel();
-    Assert.assertNotNull(abstractModel);
+    try {
+      NaiveBayesModelWriter modelWriter = new BinaryNaiveBayesModelWriter(model, file);
+      modelWriter.persist();
+      NaiveBayesModelReader reader = new BinaryNaiveBayesModelReader(file);
+      reader.checkModelType();
+      AbstractModel abstractModel = reader.constructModel();
+      Assert.assertNotNull(abstractModel);
+    }
+    finally {
+      file.delete();
+    }
   }
 
   @Test
@@ -69,11 +74,16 @@ public class NaiveBayesModelReadWriteTest {
     NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
     Path tempFile = Files.createTempFile("ptnb-", ".txt");
     File file = tempFile.toFile();
-    NaiveBayesModelWriter modelWriter = new PlainTextNaiveBayesModelWriter(model, file);
-    modelWriter.persist();
-    NaiveBayesModelReader reader = new PlainTextNaiveBayesModelReader(file);
-    reader.checkModelType();
-    AbstractModel abstractModel = reader.constructModel();
-    Assert.assertNotNull(abstractModel);
+    try {
+      NaiveBayesModelWriter modelWriter = new PlainTextNaiveBayesModelWriter(model, file);
+      modelWriter.persist();
+      NaiveBayesModelReader reader = new PlainTextNaiveBayesModelReader(file);
+      reader.checkModelType();
+      AbstractModel abstractModel = reader.constructModel();
+      Assert.assertNotNull(abstractModel);
+    }
+    finally {
+      file.delete();
+    }
   }
 }
