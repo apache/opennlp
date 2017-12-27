@@ -19,7 +19,7 @@
 	under the License.
 -->
 
-<featureGenerators>
-	<unkown-element/>
-</featureGenerators>
+<generators>
+	<definition/>
+</generators>
 
