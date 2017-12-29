@@ -19,9 +19,7 @@
 
 <!-- Default pos tagger feature generator configuration -->
 <featureGenerators name="posTagger">
-  <generator class="opennlp.tools.util.featuregen.AggregatedFeatureGeneratorFactory">
     <generator class="opennlp.tools.util.featuregen.CachedFeatureGeneratorFactory">
-      <generator class="opennlp.tools.util.featuregen.AggregatedFeatureGeneratorFactory">
         <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
         <generator class="opennlp.tools.util.featuregen.SuffixFeatureGeneratorFactory"/>
         <generator class="opennlp.tools.util.featuregen.PrefixFeatureGeneratorFactory"/>
@@ -40,7 +38,5 @@
         </generator>
         <generator class="opennlp.tools.util.featuregen.TokenClassFeatureGeneratorFactory"/>
         <generator class="opennlp.tools.util.featuregen.PosTaggerFeatureGeneratorFactory"/>
-      </generator>
     </generator>
-  </generator>
 </featureGenerators>

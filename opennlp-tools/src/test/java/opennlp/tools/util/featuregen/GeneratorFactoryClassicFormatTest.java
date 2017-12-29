@@ -55,7 +55,7 @@ public class GeneratorFactoryClassicFormatTest {
   @Test
   public void testCreationWihtSimpleDescriptor() throws Exception {
     InputStream generatorDescriptorIn = getClass().getResourceAsStream(
-        "/opennlp/tools/util/featuregen/TestFeatureGeneratorConfig.xml");
+        "/opennlp/tools/util/featuregen/TestFeatureGeneratorConfig_classic.xml");
 
     // If this fails the generator descriptor could not be found
     // at the expected location

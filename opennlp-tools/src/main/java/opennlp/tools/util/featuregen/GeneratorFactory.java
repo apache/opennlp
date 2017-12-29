@@ -52,10 +52,9 @@ import opennlp.tools.util.model.POSModelSerializer;
  * Creates a set of feature generators based on a provided XML descriptor.
  *
  * Example of an XML descriptor:
- *<p>
- *   &lt;generator class="opennlp.tools.util.featuregen.AggregatedFeatureGeneratorFactory"&gt;
+ * <p>
+ * &lt;featureGenerators name="namefind"&gt;
  *     &lt;generator class="opennlp.tools.util.featuregen.CachedFeatureGeneratorFactory"&gt;
- *       &lt;generator class="opennlp.tools.util.featuregen.AggregatedFeatureGeneratorFactory"&gt;
  *         &lt;generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory"&gt;
  *           &lt;int name="prevLength"&gt;2&lt;/int&gt;
  *           &lt;int name="nextLength"&gt;2&lt;/int&gt;
@@ -73,9 +72,8 @@ import opennlp.tools.util.model.POSModelSerializer;
  *           &lt;bool name="begin"&gt;true&lt;/bool&gt;
  *           &lt;bool name="end"&gt;false&lt;/bool&gt;
  *         &lt;/generator&gt;
- *       &lt;/generator&gt;
  *     &lt;/generator&gt;
- *   &lt;/generator&gt;
+ * &lt;/featureGenerators&gt;
  * </p>
  *
  * Each XML element is mapped to a {@link GeneratorFactory.XmlFeatureGeneratorFactory} which
@@ -140,7 +138,7 @@ public class GeneratorFactory {
         throws InvalidFormatException {
       this.generatorElement = element;
       this.resourceManager = resourceManager;
-      int generators = 0;
+      List<AdaptiveFeatureGenerator> generators = new ArrayList<>();
       NodeList childNodes = generatorElement.getChildNodes();
       for (int i = 0; i < childNodes.getLength(); i++) {
         Node childNode = childNodes.item(i);
@@ -148,8 +146,9 @@ public class GeneratorFactory {
           Element elem = (Element)childNode;
           String type = elem.getTagName();
           if (type.equals("generator")) {
-            String key = "generator#" + Integer.toString(generators++);
+            String key = "generator#" + Integer.toString(generators.size());
             AdaptiveFeatureGenerator afg = buildGenerator(elem, resourceManager);
+            generators.add(afg);
             if (afg != null)
               args.put(key, afg);
           }
@@ -184,6 +183,13 @@ public class GeneratorFactory {
             }
           }
         }
+      }
+
+      if (generators.size() > 1) {
+        AdaptiveFeatureGenerator aggregatedFeatureGenerator =
+            new AggregatedFeatureGenerator(generators.toArray(
+                new AdaptiveFeatureGenerator[generators.size()]));
+        args.put("generator#0", aggregatedFeatureGenerator);
       }
     }
 
@@ -447,14 +453,27 @@ public class GeneratorFactory {
 
     // check it is new format?
     if (elementName.equals("featureGenerators")) {
-      Element firstElem = getFirstChild(generatorElement);
-      if (firstElem != null) {
-        if (firstElem.getTagName().equals("generator")) {
-          return buildGenerator(firstElem, resourceManager);
+
+      List<AdaptiveFeatureGenerator> generators = new ArrayList<>();
+      NodeList childNodes = generatorElement.getChildNodes();
+      for (int i = 0; i < childNodes.getLength(); i++) {
+        Node childNode = childNodes.item(i);
+        if (childNode instanceof Element) {
+          Element elem = (Element)childNode;
+          String type = elem.getTagName();
+          if (type.equals("generator")) {
+            generators.add(buildGenerator(elem, resourceManager));
+          }
+          else
+            throw new InvalidFormatException("Unexpected element: " + elementName);
         }
-        else
-          throw new InvalidFormatException("Unexpected element: " + elementName);
       }
+
+      if (generators.size() == 1)
+        return generators.get(0);
+      else if (generators.size() > 1)
+        return new AggregatedFeatureGenerator(generators.toArray(
+            new AdaptiveFeatureGenerator[generators.size()]));
       else
         throw new InvalidFormatException("featureGenerators must have one or more generators");
     }

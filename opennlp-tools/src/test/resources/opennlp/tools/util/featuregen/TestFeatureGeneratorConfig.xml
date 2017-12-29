@@ -19,7 +19,8 @@
 	under the License.
 -->
 
-<generators>
-	<definition/>
-</generators>
-
+<featureGenerators name="test">
+  <generator class="opennlp.tools.util.featuregen.AggregatedFeatureGeneratorFactory">
+    <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
+  </generator>
+</featureGenerators>
