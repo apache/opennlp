@@ -22,23 +22,42 @@ import opennlp.tools.stemmer.Stemmer;
 public class SnowballStemmer implements Stemmer {
 
   public enum ALGORITHM {
-    DANISH,
-    DUTCH,
-    ENGLISH,
-    FINNISH,
-    FRENCH,
-    GERMAN,
-    HUNGARIAN,
-    IRISH,
-    ITALIAN,
-    NORWEGIAN,
-    PORTER,
-    PORTUGUESE,
-    ROMANIAN,
-    RUSSIAN,
-    SPANISH,
-    SWEDISH,
-    TURKISH
+    DANISH("dan"),
+    DUTCH("nld"),
+    ENGLISH("eng"),
+    FINNISH("fin"),
+    FRENCH("fra"),
+    GERMAN("deu"),
+    HUNGARIAN("hun"),
+    IRISH("gle"),
+    ITALIAN("ita"),
+    NORWEGIAN("nor"),
+    PORTER("porter"),
+    PORTUGUESE("por"),
+    ROMANIAN("ron"),
+    RUSSIAN("rus"),
+    SPANISH("spa"),
+    SWEDISH("swe"),
+    TURKISH("tur");
+
+    private String languageCode;
+
+    private ALGORITHM(String languageCode) {
+      this.languageCode = languageCode;
+    }
+
+    public String getLanguageCode() {
+      return languageCode;
+    }
+
+    public static ALGORITHM getByLanguageCode(String languageCode) {
+      for (ALGORITHM algorithm : ALGORITHM.values()) {
+        if (languageCode.equalsIgnoreCase(algorithm.getLanguageCode())) {
+          return algorithm;
+        }
+      }
+      throw new IllegalArgumentException("No stemmer for language code " + languageCode);
+    }
   }
 
   private final AbstractSnowballStemmer stemmer;
