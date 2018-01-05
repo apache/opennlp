@@ -26,6 +26,12 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM;
 public class SnowballStemmerTest {
 
   @Test
+  public void getLanguageByCode() {
+    Assert.assertEquals(ALGORITHM.ENGLISH, SnowballStemmer.ALGORITHM.getByLanguageCode("eng"));
+    Assert.assertEquals(ALGORITHM.SPANISH, SnowballStemmer.ALGORITHM.getByLanguageCode("spa"));
+  }
+
+  @Test
   public void testDanish() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.DANISH);
     Assert.assertEquals(stemmer.stem("aabenbaringen"), "aabenbaring");
