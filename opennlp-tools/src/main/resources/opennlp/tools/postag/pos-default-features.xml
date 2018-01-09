@@ -18,25 +18,23 @@
 -->
 
 <!-- Default pos tagger feature generator configuration -->
-<featureGenerators name="posTagger">
-    <generator class="opennlp.tools.util.featuregen.CachedFeatureGeneratorFactory">
-        <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
-        <generator class="opennlp.tools.util.featuregen.SuffixFeatureGeneratorFactory"/>
-        <generator class="opennlp.tools.util.featuregen.PrefixFeatureGeneratorFactory"/>
-        <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
-          <int name="prevLength">2</int>
-          <int name="nextLength">2</int>
-          <generator class="opennlp.tools.util.featuregen.TokenFeatureGeneratorFactory"/>
-        </generator>
-        <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
-          <int name="prevLength">2</int>
-          <int name="nextLength">2</int>
-          <generator class="opennlp.tools.util.featuregen.SentenceFeatureGeneratorFactory">
-            <bool name="begin">true</bool>
-            <bool name="end">false</bool>
-          </generator>
-        </generator>
-        <generator class="opennlp.tools.util.featuregen.TokenClassFeatureGeneratorFactory"/>
-        <generator class="opennlp.tools.util.featuregen.PosTaggerFeatureGeneratorFactory"/>
+<featureGenerators cache="true" name="posTagger">
+  <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.SuffixFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.PrefixFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
+    <int name="prevLength">2</int>
+    <int name="nextLength">2</int>
+    <generator class="opennlp.tools.util.featuregen.TokenFeatureGeneratorFactory"/>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
+    <int name="prevLength">2</int>
+    <int name="nextLength">2</int>
+    <generator class="opennlp.tools.util.featuregen.SentenceFeatureGeneratorFactory">
+      <bool name="begin">true</bool>
+      <bool name="end">false</bool>
     </generator>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.TokenClassFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.PosTaggerFeatureGeneratorFactory"/>
 </featureGenerators>

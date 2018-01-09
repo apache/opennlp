@@ -469,13 +469,25 @@ public class GeneratorFactory {
         }
       }
 
+      AdaptiveFeatureGenerator featureGenerator = null;
       if (generators.size() == 1)
-        return generators.get(0);
+        featureGenerator = generators.get(0);
       else if (generators.size() > 1)
-        return new AggregatedFeatureGenerator(generators.toArray(
+        featureGenerator = new AggregatedFeatureGenerator(generators.toArray(
             new AdaptiveFeatureGenerator[generators.size()]));
       else
         throw new InvalidFormatException("featureGenerators must have one or more generators");
+
+      // disallow manually specifying CachedFeatureGenerator
+      if (featureGenerator instanceof CachedFeatureGenerator)
+        throw new InvalidFormatException("CachedFeatureGeneratorFactory cannot be specified manually." +
+          "Use cache=\"true\" attribute in featureGenerators element instead.");
+
+      // check cache usage
+      if (Boolean.parseBoolean(generatorElement.getAttribute("cache")))
+        return new CachedFeatureGenerator(featureGenerator);
+      else
+        return featureGenerator;
     }
     else {
       // support classic format
