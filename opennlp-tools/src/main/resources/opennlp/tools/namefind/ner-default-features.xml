@@ -19,9 +19,7 @@
 
 <!-- Default name finder feature generator configuration -->
 <featureGenerators name="nameFinder">
-  <generator class="opennlp.tools.util.featuregen.AggregatedFeatureGeneratorFactory">
     <generator class="opennlp.tools.util.featuregen.CachedFeatureGeneratorFactory">
-      <generator class="opennlp.tools.util.featuregen.AggregatedFeatureGeneratorFactory">
         <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
           <int name="prevLength">2</int>
           <int name="nextLength">2</int>
@@ -39,7 +37,5 @@
           <bool name="begin">true</bool>
           <bool name="end">false</bool>
         </generator>
-      </generator>
     </generator>
-  </generator>
 </featureGenerators>

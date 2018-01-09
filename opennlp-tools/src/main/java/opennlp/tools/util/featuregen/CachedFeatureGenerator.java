@@ -37,8 +37,14 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
   private long numberOfCacheHits;
   private long numberOfCacheMisses;
 
+  @Deprecated
   public CachedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
     this.generator = new AggregatedFeatureGenerator(generators);
+    contextsCache = new Cache<>(100);
+  }
+
+  public CachedFeatureGenerator(AdaptiveFeatureGenerator generator) {
+    this.generator = generator;
     contextsCache = new Cache<>(100);
   }
 
@@ -102,5 +108,9 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
     return super.toString() + ": hits=" + numberOfCacheHits
         + " misses=" + numberOfCacheMisses + " hit%" + (numberOfCacheHits > 0 ?
         (double) numberOfCacheHits / (numberOfCacheMisses + numberOfCacheHits) : 0);
+  }
+
+  public AdaptiveFeatureGenerator getCachedFeatureGenerator() {
+    return generator;
   }
 }
