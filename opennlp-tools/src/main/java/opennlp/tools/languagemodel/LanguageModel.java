@@ -26,19 +26,39 @@ import opennlp.tools.util.StringList;
 public interface LanguageModel {
 
   /**
-   * Calculate the probability of a series of tokens (e.g. a sentence), given a vocabulary
+   * Calculate the probability of a series of tokens (e.g. a sentence), given a vocabulary.
+   *
+   * @param tokens the text tokens to calculate the probability for
+   * @return the probability of the given text tokens in the vocabulary
+   * @deprecated use {@link #calculateProbability(String...)}
+   */
+  @Deprecated
+  double calculateProbability(StringList tokens);
+
+  /**
+   * Calculate the probability of a series of tokens (e.g. a sentence), given a vocabulary.
    *
    * @param tokens the text tokens to calculate the probability for
    * @return the probability of the given text tokens in the vocabulary
    */
-  double calculateProbability(StringList tokens);
+  double calculateProbability(String... tokens);
 
   /**
-   * Predict the most probable output sequence of tokens, given an input sequence of tokens
+   * Predict the most probable output sequence of tokens, given an input sequence of tokens.
+   *
+   * @param tokens a sequence of tokens
+   * @return the most probable subsequent token sequence
+   * @deprecated use {@link #predictNextTokens(String...)}
+   */
+  @Deprecated
+  StringList predictNextTokens(StringList tokens);
+
+  /**
+   * Predict the most probable output sequence of tokens, given an input sequence of tokens.
    *
    * @param tokens a sequence of tokens
    * @return the most probable subsequent token sequence
    */
-  StringList predictNextTokens(StringList tokens);
+  String[] predictNextTokens(String... tokens);
 
 }
