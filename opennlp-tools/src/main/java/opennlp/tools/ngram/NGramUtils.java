@@ -229,7 +229,7 @@ public class NGramUtils {
   }
 
   /**
-   * get the ngrams of dimension n of a certain input sequence of tokens
+   * Get the ngrams of dimension n of a certain input sequence of tokens.
    *
    * @param sequence a sequence of tokens
    * @param size     the size of the resulting ngrmams
@@ -247,6 +247,30 @@ public class NGramUtils {
           ngram[j] = sequence.getToken(i + j);
         }
         ngrams.add(new StringList(ngram));
+      }
+    }
+    return ngrams;
+  }
+
+  /**
+   * Get the ngrams of dimension n of a certain input sequence of tokens.
+   *
+   * @param sequence a sequence of tokens
+   * @param size     the size of the resulting ngrmams
+   * @return all the possible ngrams of the given size derivable from the input sequence
+   */
+  public static Collection<String[]> getNGrams(String[] sequence, int size) {
+    Collection<String[]> ngrams = new LinkedList<>();
+    if (size == -1 || size >= sequence.length) {
+      ngrams.add(sequence);
+    } else {
+      for (int i = 0; i < sequence.length - size + 1; i++) {
+        String[] ngram = new String[size];
+        ngram[0] = sequence[i];
+        for (int j = 1; j < size; j++) {
+          ngram[j] = sequence[i + j];
+        }
+        ngrams.add(ngram);
       }
     }
 

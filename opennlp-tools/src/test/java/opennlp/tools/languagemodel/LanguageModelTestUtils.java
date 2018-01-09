@@ -26,7 +26,6 @@ import java.util.Random;
 import org.junit.Ignore;
 
 import opennlp.tools.ngram.NGramUtils;
-import opennlp.tools.util.StringList;
 
 /**
  * Utility class for language models tests
@@ -39,16 +38,16 @@ public class LanguageModelTestUtils {
 
   private static final char[] chars = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
 
-  public static Collection<StringList> generateRandomVocabulary(int size) {
-    Collection<StringList> vocabulary = new LinkedList<>();
+  public static Collection<String[]> generateRandomVocabulary(int size) {
+    Collection<String[]> vocabulary = new LinkedList<>();
     for (int i = 0; i < size; i++) {
-      StringList sentence = generateRandomSentence();
+      String[] sentence = generateRandomSentence();
       vocabulary.add(sentence);
     }
     return vocabulary;
   }
 
-  public static StringList generateRandomSentence() {
+  public static String[] generateRandomSentence() {
     int dimension = r.nextInt(10) + 1;
     String[] sentence = new String[dimension];
     for (int j = 0; j < dimension; j++) {
@@ -56,15 +55,15 @@ public class LanguageModelTestUtils {
       char c = chars[i];
       sentence[j] = c + "-" + c + "-" + c;
     }
-    return new StringList(sentence);
+    return sentence;
   }
 
-  public static double getPerplexity(LanguageModel lm, Collection<StringList> testSet, int ngramSize)
+  public static double getPerplexity(LanguageModel lm, Collection<String[]> testSet, int ngramSize)
       throws ArithmeticException {
     BigDecimal perplexity = new BigDecimal(1d);
 
-    for (StringList sentence : testSet) {
-      for (StringList ngram : NGramUtils.getNGrams(sentence, ngramSize)) {
+    for (String[] sentence : testSet) {
+      for (String[] ngram : NGramUtils.getNGrams(sentence, ngramSize)) {
         double ngramProbability = lm.calculateProbability(ngram);
         perplexity = perplexity.multiply(new BigDecimal(1d).divide(
             new BigDecimal(ngramProbability), CONTEXT));

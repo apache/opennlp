@@ -19,6 +19,7 @@ package opennlp.tools.cmdline.languagemodel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
@@ -28,7 +29,6 @@ import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.languagemodel.NGramLanguageModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.StringList;
 
 /**
  * Command line tool for {@link opennlp.tools.languagemodel.NGramLanguageModel}.
@@ -60,19 +60,20 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
         String line;
         while ((line = lineStream.read()) != null) {
           double probability;
-          StringList predicted;
+          String[] predicted;
+          // TODO : use a Tokenizer here
           String[] tokens = line.split(" ");
-          StringList sample = new StringList(tokens);
           try {
-            probability = nGramLanguageModel.calculateProbability(sample);
-            predicted = nGramLanguageModel.predictNextTokens(sample);
+            probability = nGramLanguageModel.calculateProbability(tokens);
+            predicted = nGramLanguageModel.predictNextTokens(tokens);
           } catch (Exception e) {
             System.err.println("Error:" + e.getLocalizedMessage());
             System.err.println(line);
             continue;
           }
 
-          System.out.println(sample + " -> prob:" + probability + ", next:" + predicted);
+          System.out.println(Arrays.toString(tokens) + " -> prob:" + probability + ", " +
+              "next:" + Arrays.toString(predicted));
 
           perfMon.incrementCounter();
         }

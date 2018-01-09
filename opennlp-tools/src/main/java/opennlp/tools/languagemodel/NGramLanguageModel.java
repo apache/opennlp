@@ -52,15 +52,37 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
     this.n = n;
   }
 
+  public void add(String... tokens) {
+    add(new StringList(tokens), 1, n);
+  }
+
   @Override
-  public double calculateProbability(StringList sample) {
+  public double calculateProbability(StringList tokens) {
     double probability = 0d;
     if (size() > 0) {
-      for (StringList ngram : NGramUtils.getNGrams(sample, n)) {
+      for (StringList ngram : NGramUtils.getNGrams(tokens, n)) {
         double score = stupidBackoff(ngram);
         probability += Math.log(score);
         if (Double.isNaN(probability)) {
           probability = 0d;
+          break;
+        }
+      }
+      probability = Math.exp(probability);
+    }
+    return probability;
+  }
+
+  @Override
+  public double calculateProbability(String... tokens) {
+    double probability = 0d;
+    if (size() > 0) {
+      for (String[] ngram : NGramUtils.getNGrams(tokens, n)) {
+        double score = stupidBackoff(new StringList(ngram));
+        probability += Math.log(score);
+        if (Double.isNaN(probability)) {
+          probability = 0d;
+          break;
         }
       }
       probability = Math.exp(probability);
@@ -86,6 +108,32 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
       if (v > maxProb) {
         maxProb = v;
         token = ngram;
+      }
+    }
+
+    return token;
+  }
+
+  @Override
+  public String[] predictNextTokens(String... tokens) {
+    double maxProb = Double.NEGATIVE_INFINITY;
+    String[] token = null;
+
+    for (StringList ngram : this) {
+      String[] sequence = new String[ngram.size() + tokens.length];
+      for (int i = 0; i < tokens.length; i++) {
+        sequence[i] = tokens[i];
+      }
+      for (int i = 0; i < ngram.size(); i++) {
+        sequence[i + tokens.length] = ngram.getToken(i);
+      }
+      double v = calculateProbability(sequence);
+      if (v > maxProb) {
+        maxProb = v;
+        token = new String[ngram.size()];
+        for (int i = 0; i < ngram.size(); i++) {
+          token[i] = ngram.getToken(i);
+        }
       }
     }
 
