@@ -15,33 +15,29 @@
   ~ limitations under the License.
   -->
 
-<featureGenerators name="nameFinder">
-    <generator class="opennlp.tools.util.featuregen.CachedFeatureGeneratorFactory">
-      <generator class="opennlp.tools.util.featuregen.AggregatedFeatureGeneratorFactory">
-        <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
-          <int name="prevLength">2</int>
-          <int name="nextLength">2</int>
-          <generator class="opennlp.tools.util.featuregen.TokenClassFeatureGeneratorFactory"/>
-        </generator>
-        <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
-          <int name="prevLength">2</int>
-          <int name="nextLength">2</int>
-          <generator class="opennlp.tools.util.featuregen.TokenFeatureGeneratorFactory"/>
-        </generator>
-        <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
-          <int name="prevLength">2</int>
-          <int name="nextLength">2</int>
-          <generator class="opennlp.tools.util.featuregen.POSTaggerNameFeatureGeneratorFactory">
-            <str name="model">pos-model.bin</str>
-          </generator>
-        </generator>
-        <generator class="opennlp.tools.util.featuregen.PreviousMapFeatureGeneratorFactory"/>
-        <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
-        <generator class="opennlp.tools.util.featuregen.BigramNameFeatureGeneratorFactory"/>
-        <generator class="opennlp.tools.util.featuregen.SentenceFeatureGeneratorFactory">
-          <bool name="begin">true</bool>
-          <bool name="end">false</bool>
-        </generator>
-      </generator>
+<featureGenerators cache="true" name="nameFinder">
+  <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
+    <int name="prevLength">2</int>
+    <int name="nextLength">2</int>
+    <generator class="opennlp.tools.util.featuregen.TokenClassFeatureGeneratorFactory"/>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
+    <int name="prevLength">2</int>
+    <int name="nextLength">2</int>
+    <generator class="opennlp.tools.util.featuregen.TokenFeatureGeneratorFactory"/>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
+    <int name="prevLength">2</int>
+    <int name="nextLength">2</int>
+    <generator class="opennlp.tools.util.featuregen.POSTaggerNameFeatureGeneratorFactory">
+      <str name="model">pos-model.bin</str>
     </generator>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.PreviousMapFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.BigramNameFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.SentenceFeatureGeneratorFactory">
+    <bool name="begin">true</bool>
+    <bool name="end">false</bool>
+  </generator>
 </featureGenerators>

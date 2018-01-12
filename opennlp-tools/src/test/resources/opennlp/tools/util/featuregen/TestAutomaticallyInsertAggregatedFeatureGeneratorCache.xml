@@ -19,10 +19,8 @@
 	under the License.
 -->
 
-<featureGenerators name="test">
-  <generator class="opennlp.tools.util.featuregen.CachedFeatureGeneratorFactory">
-    <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
-    <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
-    <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
-  </generator>
+<featureGenerators cache="true" name="test">
+  <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
 </featureGenerators>

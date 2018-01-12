@@ -208,7 +208,7 @@ public class GeneratorFactoryTest {
   @Test
   public void testNotAutomaticallyInsertAggregatedFeatureGeneratorChild() throws Exception {
     InputStream generatorDescriptorIn = getClass().getResourceAsStream(
-        "/opennlp/tools/util/featuregen/TestNotAutomaticallyInsertAggregatedFeatureGeneratorChild.xml");
+        "/opennlp/tools/util/featuregen/TestNotAutomaticallyInsertAggregatedFeatureGeneratorCache.xml");
 
     // If this fails the generator descriptor could not be found
     // at the expected location
@@ -225,7 +225,7 @@ public class GeneratorFactoryTest {
   @Test
   public void testAutomaticallyInsertAggregatedFeatureGeneratorChildren() throws Exception {
     InputStream generatorDescriptorIn = getClass().getResourceAsStream(
-        "/opennlp/tools/util/featuregen/TestAutomaticallyInsertAggregatedFeatureGeneratorChildren.xml");
+        "/opennlp/tools/util/featuregen/TestAutomaticallyInsertAggregatedFeatureGeneratorCache.xml");
 
     // If this fails the generator descriptor could not be found
     // at the expected location
@@ -242,6 +242,29 @@ public class GeneratorFactoryTest {
     Assert.assertEquals(3, aggregatedFeatureGenerator.getGenerators().size());
     for (AdaptiveFeatureGenerator afgen: aggregatedFeatureGenerator.getGenerators()) {
       Assert.assertTrue(afgen instanceof OutcomePriorFeatureGenerator);
+    }
+  }
+
+  @Test
+  public void testInsertCachedFeatureGenerator() throws Exception {
+    InputStream generatorDescriptorIn = getClass().getResourceAsStream(
+        "/opennlp/tools/util/featuregen/TestInsertCachedFeatureGenerator.xml");
+
+    // If this fails the generator descriptor could not be found
+    // at the expected location
+    Assert.assertNotNull(generatorDescriptorIn);
+
+    AdaptiveFeatureGenerator featureGenerator = GeneratorFactory.create(generatorDescriptorIn, null);
+    Assert.assertTrue(featureGenerator instanceof CachedFeatureGenerator);
+    CachedFeatureGenerator cachedFeatureGenerator = (CachedFeatureGenerator)featureGenerator;
+
+    Assert.assertTrue(cachedFeatureGenerator.getCachedFeatureGenerator()
+        instanceof AggregatedFeatureGenerator);
+    AggregatedFeatureGenerator aggregatedFeatureGenerator =
+        (AggregatedFeatureGenerator)cachedFeatureGenerator.getCachedFeatureGenerator();
+    Assert.assertEquals(3, aggregatedFeatureGenerator.getGenerators().size());
+    for (AdaptiveFeatureGenerator afg: aggregatedFeatureGenerator.getGenerators()) {
+      Assert.assertTrue(afg instanceof OutcomePriorFeatureGenerator);
     }
   }
 }
