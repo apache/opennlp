@@ -33,6 +33,7 @@ import opennlp.tools.tokenize.DummyTokenizerFactory.DummyContextGenerator;
 import opennlp.tools.tokenize.DummyTokenizerFactory.DummyDictionary;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -66,7 +67,7 @@ public class TokenizerFactoryTest {
   public void testDefault() throws IOException {
 
     Dictionary dic = loadAbbDictionary();
-    final String lang = "spa";
+    final String lang = LanguageCode.SPANISH.getCode();
 
     TokenizerModel model = train(new TokenizerFactory(lang, dic, false, null));
 
@@ -99,7 +100,7 @@ public class TokenizerFactoryTest {
   public void testNullDict() throws IOException {
 
     Dictionary dic = null;
-    final String lang = "spa";
+    final String lang = LanguageCode.SPANISH.getCode();
 
     TokenizerModel model = train(new TokenizerFactory(lang, dic, false, null));
 
@@ -132,7 +133,7 @@ public class TokenizerFactoryTest {
   public void testCustomPatternAndAlphaOpt() throws IOException {
 
     Dictionary dic = null;
-    final String lang = "spa";
+    final String lang = LanguageCode.SPANISH.getCode();
     String pattern = "^[0-9A-Za-z]+$";
 
     TokenizerModel model = train(new TokenizerFactory(lang, dic, true,
@@ -166,7 +167,7 @@ public class TokenizerFactoryTest {
   public void testDummyFactory() throws IOException {
 
     Dictionary dic = loadAbbDictionary();
-    final String lang = "spa";
+    final String lang = LanguageCode.SPANISH.getCode();
     String pattern = "^[0-9A-Za-z]+$";
 
     TokenizerModel model = train(new DummyTokenizerFactory(lang, dic, true,
@@ -198,7 +199,7 @@ public class TokenizerFactoryTest {
   @Test
   public void testCreateDummyFactory() throws IOException {
     Dictionary dic = loadAbbDictionary();
-    final String lang = "spa";
+    final String lang = LanguageCode.SPANISH.getCode();
     String pattern = "^[0-9A-Za-z]+$";
 
     TokenizerFactory factory = TokenizerFactory.create(

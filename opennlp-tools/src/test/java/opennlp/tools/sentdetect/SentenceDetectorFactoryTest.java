@@ -34,6 +34,7 @@ import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyEOSScanner;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummySDContextGenerator;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -55,8 +56,8 @@ public class SentenceDetectorFactoryTest {
 
   private static SentenceModel train(SentenceDetectorFactory factory)
       throws IOException {
-    return SentenceDetectorME.train("eng", createSampleStream(), factory,
-        TrainingParameters.defaultParams());
+    return SentenceDetectorME.train(LanguageCode.ENGLISH.getCode(),
+        createSampleStream(), factory, TrainingParameters.defaultParams());
   }
 
   private static Dictionary loadAbbDictionary() throws IOException {
@@ -72,8 +73,8 @@ public class SentenceDetectorFactoryTest {
     Dictionary dic = loadAbbDictionary();
 
     char[] eos = {'.', '?'};
-    SentenceModel sdModel = train(new SentenceDetectorFactory("eng", true, dic,
-        eos));
+    SentenceModel sdModel = train(new SentenceDetectorFactory(LanguageCode.ENGLISH.getCode(),
+        true, dic, eos));
 
     SentenceDetectorFactory factory = sdModel.getFactory();
     Assert.assertTrue(factory.getSDContextGenerator() instanceof DefaultSDContextGenerator);
@@ -97,8 +98,8 @@ public class SentenceDetectorFactoryTest {
     Dictionary dic = null;
 
     char[] eos = {'.', '?'};
-    SentenceModel sdModel = train(new SentenceDetectorFactory("eng", true,
-        dic, eos));
+    SentenceModel sdModel = train(new SentenceDetectorFactory(LanguageCode.ENGLISH.getCode(),
+        true, dic, eos));
 
     SentenceDetectorFactory factory = sdModel.getFactory();
     Assert.assertNull(factory.getAbbreviationDictionary());
@@ -124,8 +125,8 @@ public class SentenceDetectorFactoryTest {
     Dictionary dic = null;
 
     char[] eos = null;
-    SentenceModel sdModel = train(new SentenceDetectorFactory("eng", true,
-        dic, eos));
+    SentenceModel sdModel = train(new SentenceDetectorFactory(LanguageCode.ENGLISH.getCode(),
+        true, dic, eos));
 
     SentenceDetectorFactory factory = sdModel.getFactory();
     Assert.assertNull(factory.getAbbreviationDictionary());
@@ -154,8 +155,8 @@ public class SentenceDetectorFactoryTest {
     Dictionary dic = loadAbbDictionary();
 
     char[] eos = {'.', '?'};
-    SentenceModel sdModel = train(new DummySentenceDetectorFactory("eng", true,
-        dic, eos));
+    SentenceModel sdModel = train(new DummySentenceDetectorFactory(
+        LanguageCode.ENGLISH.getCode(), true, dic, eos));
 
     SentenceDetectorFactory factory = sdModel.getFactory();
     Assert.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
@@ -185,8 +186,8 @@ public class SentenceDetectorFactoryTest {
     char[] eos = {'.', '?'};
 
     SentenceDetectorFactory factory = SentenceDetectorFactory.create(
-        DummySentenceDetectorFactory.class.getCanonicalName(), "spa", false,
-        dic, eos);
+        DummySentenceDetectorFactory.class.getCanonicalName(), LanguageCode.SPANISH.getCode(),
+        false, dic, eos);
 
     Assert.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
     Assert.assertTrue(factory.getSDContextGenerator() instanceof DummySDContextGenerator);

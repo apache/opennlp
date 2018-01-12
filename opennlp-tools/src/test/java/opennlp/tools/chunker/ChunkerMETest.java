@@ -28,6 +28,7 @@ import org.junit.Test;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.util.InsufficientTrainingDataException;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Sequence;
@@ -78,7 +79,8 @@ public class ChunkerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    ChunkerModel chunkerModel = ChunkerME.train("eng", sampleStream, params, new ChunkerFactory());
+    ChunkerModel chunkerModel = ChunkerME.train(LanguageCode.ENGLISH.getCode(), sampleStream,
+        params, new ChunkerFactory());
 
     this.chunker = new ChunkerME(chunkerModel);
   }
@@ -143,7 +145,7 @@ public class ChunkerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    ChunkerME.train("eng", sampleStream, params, new ChunkerFactory());
+    ChunkerME.train(LanguageCode.ENGLISH.getCode(), sampleStream, params, new ChunkerFactory());
 
   }
 

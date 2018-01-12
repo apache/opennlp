@@ -57,6 +57,7 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -102,7 +103,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
     @Override
     public String toString() {
 
-      StringBuilder sampleString = new StringBuilder("eng");
+      StringBuilder sampleString = new StringBuilder(LanguageCode.ENGLISH.getCode());
 
       sampleString.append('\t');
 

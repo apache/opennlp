@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import opennlp.tools.util.InsufficientTrainingDataException;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -72,8 +73,8 @@ public class LemmatizerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
-    LemmatizerModel lemmatizerModel = LemmatizerME.train("eng", sampleStream,
-        params, new LemmatizerFactory());
+    LemmatizerModel lemmatizerModel = LemmatizerME.train(LanguageCode.ENGLISH.getCode(),
+        sampleStream, params, new LemmatizerFactory());
 
     this.lemmatizer = new LemmatizerME(lemmatizerModel);
   }
@@ -98,7 +99,8 @@ public class LemmatizerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
-    LemmatizerME.train("eng", sampleStream, params, new LemmatizerFactory());
+    LemmatizerME.train(LanguageCode.ENGLISH.getCode(), sampleStream,
+        params, new LemmatizerFactory());
 
   }
 

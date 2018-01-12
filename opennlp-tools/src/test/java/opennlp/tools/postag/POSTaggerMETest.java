@@ -26,6 +26,7 @@ import org.junit.Test;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InsufficientTrainingDataException;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -54,7 +55,7 @@ public class POSTaggerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
-    return POSTaggerME.train("eng", createSampleStream(), params,
+    return POSTaggerME.train(LanguageCode.ENGLISH.getCode(), createSampleStream(), params,
         new POSTaggerFactory());
   }
 
@@ -101,7 +102,7 @@ public class POSTaggerMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 5);
 
-    POSTaggerME.train("eng", stream, params, new POSTaggerFactory());
+    POSTaggerME.train(LanguageCode.ENGLISH.getCode(), stream, params, new POSTaggerFactory());
 
   }
   

@@ -34,6 +34,7 @@ import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.chunking.Parser;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -90,10 +91,10 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
               params.getHeadRulesSerializerImpl());
     }
     else {
-      if ("en".equals(params.getLang()) || "eng".equals(params.getLang())) {
+      if ("en".equals(params.getLang()) || LanguageCode.ENGLISH.equals(params.getLang())) {
         headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
       }
-      else if ("es".equals(params.getLang()) || "spa".equals(params.getLang())) {
+      else if ("es".equals(params.getLang()) || LanguageCode.SPANISH.equals(params.getLang())) {
         headRulesSerializer = new opennlp.tools.parser.lang.es.AncoraSpanishHeadRules.HeadRulesSerializer();
       }
       else {

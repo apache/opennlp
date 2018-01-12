@@ -20,7 +20,6 @@ package opennlp.tools.eval;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-
 import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
@@ -35,6 +34,7 @@ import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStream;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerCrossValidator;
 import opennlp.tools.postag.POSTaggerFactory;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
@@ -60,7 +60,8 @@ public class OntoNotes4PosTaggerEval extends AbstractEvalTest {
   private void crossEval(TrainingParameters params, double expectedScore)
       throws IOException {
     try (ObjectStream<POSSample> samples = createPOSSampleStream()) {
-      POSTaggerCrossValidator cv = new POSTaggerCrossValidator("eng", params, new POSTaggerFactory());
+      POSTaggerCrossValidator cv = new POSTaggerCrossValidator(LanguageCode.ENGLISH.getCode(),
+          params, new POSTaggerFactory());
       cv.evaluate(samples, 5);
 
       Assert.assertEquals(expectedScore, cv.getWordAccuracy(), 0.0001d);

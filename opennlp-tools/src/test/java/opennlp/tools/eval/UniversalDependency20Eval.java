@@ -33,6 +33,7 @@ import opennlp.tools.lemmatizer.LemmatizerEvaluator;
 import opennlp.tools.lemmatizer.LemmatizerFactory;
 import opennlp.tools.lemmatizer.LemmatizerME;
 import opennlp.tools.lemmatizer.LemmatizerModel;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
@@ -76,7 +77,7 @@ public class UniversalDependency20Eval extends AbstractEvalTest {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put("Threads", "4");
 
-    double wordAccuracy = trainAndEval("spa", SPA_ANCORA_TRAIN,
+    double wordAccuracy = trainAndEval(LanguageCode.SPANISH.getCode(), SPA_ANCORA_TRAIN,
         params, SPA_ANCORA_DEV);
 
     Assert.assertEquals(0.9057341692068787d, wordAccuracy, ACCURACY_DELTA);
