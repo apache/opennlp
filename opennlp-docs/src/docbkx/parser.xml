@@ -131,7 +131,7 @@ Parse topParses[] = ParserTool.parseLine(sentence, parser, 1);]]>
 (TOP (S (NP-SBJ (PRP I) )(VP (VBP say) (NP (CD 1992) ))(. .) ('' '') ))]]>
 		</programlisting>
 		Penn Treebank annotation guidelines can be found on the
-            <ulink url="http://www.cis.upenn.edu/~treebank/">Penn Treebank home page</ulink>.
+            <ulink url="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">Penn Treebank home page</ulink>.
 		A parser model also contains a pos tagger model, depending on the amount of available
 		training data it is recommend to switch the tagger model against a tagger model which
 		was trained on a larger corpus. The pre-trained parser model provided on the website

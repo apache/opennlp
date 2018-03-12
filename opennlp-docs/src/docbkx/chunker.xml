@@ -67,7 +67,7 @@ Rockwell_NNP said_VBD the_DT agreement_NN calls_VBZ for_IN it_PRP to_TO supply_V
     [NP it_PRP ] [VP to_TO supply_VB ] [NP 200_CD additional_JJ so-called_JJ shipsets_NNS ]
     [PP for_IN ] [NP the_DT planes_NNS ] ._.]]>
 		</screen>
-		The tag set used by the english pos model is the <ulink url="http://www.cis.upenn.edu/~treebank/">Penn Treebank tag set</ulink>.
+		The tag set used by the english pos model is the <ulink url="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">Penn Treebank tag set</ulink>.
 		</para>
 		</section>
 		<section id="tools.parser.chunking.api">
