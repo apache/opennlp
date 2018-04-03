@@ -115,18 +115,12 @@
 	            <phase>verify</phase> 
 	            <configuration> 
 	              <target> 
-	                <checksum algorithm="sha1" format="MD5SUM"> 
+	                <checksum algorithm="sha1" format="MD5SUM">
 	                  <fileset dir="${project.build.directory}"> 
 	                    <include name="*.zip" /> 
 	                    <include name="*.gz" /> 
 	                  </fileset> 
-	                </checksum> 
-	                <checksum algorithm="md5" format="MD5SUM"> 
-	                  <fileset dir="${project.build.directory}"> 
-	                    <include name="*.zip" /> 
-	                    <include name="*.gz" /> 
-	                  </fileset> 
-	                </checksum> 
+	                </checksum>
 	              </target> 
 	            </configuration> 
 	          </execution> 
