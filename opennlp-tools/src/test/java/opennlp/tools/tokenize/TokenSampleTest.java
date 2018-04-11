@@ -32,12 +32,27 @@ import opennlp.tools.util.Span;
 
 public class TokenSampleTest {
 
+  public static TokenSample createGoldSample() {
+    return new TokenSample("A test.", new Span[] {new Span(0, 1),
+        new Span(2, 6)});
+  }
+
+  public static TokenSample createPredSample() {
+    return new TokenSample("A test.", new Span[] {new Span(0, 3),
+        new Span(2, 6)});
+  }
+
+  public static TokenSample createPredSilverSample() {
+    return new TokenSample("A t st.", new Span[] {new Span(0, 1),
+        new Span(2, 6)});
+  }
+
   @Test
   public void testRetrievingContent() {
 
     String sentence = "A test";
 
-    TokenSample sample = new TokenSample(sentence, new Span[]{new Span(0, 1),
+    TokenSample sample = new TokenSample(sentence, new Span[] {new Span(0, 1),
         new Span(2, 6)});
 
     Assert.assertEquals("A test", sample.getText());
@@ -75,7 +90,7 @@ public class TokenSampleTest {
 
     Detokenizer detokenizer = DictionaryDetokenizerTest.createLatinDetokenizer();
 
-    String[] tokens = new String[]{
+    String[] tokens = new String[] {
         "start",
         "(", // move right
         ")", // move left
@@ -115,15 +130,5 @@ public class TokenSampleTest {
     Assert.assertTrue(createGoldSample().equals(createGoldSample()));
     Assert.assertFalse(createPredSample().equals(createGoldSample()));
     Assert.assertFalse(createPredSample().equals(new Object()));
-  }
-
-  public static TokenSample createGoldSample() {
-    return new TokenSample("A test.", new Span[] { new Span(0, 1),
-        new Span(2, 6) });
-  }
-
-  public static TokenSample createPredSample() {
-    return new TokenSample("A test.", new Span[] { new Span(0, 3),
-        new Span(2, 6) });
   }
 }
