@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
@@ -66,14 +68,26 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
       if (values.length > 4) {
         String type = values[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString();
 
-        int endOffset = -1;
-
         int firstTextTokenIndex = -1;
 
+        int beginIndex = parseInt(values[BEGIN_OFFSET].getCoveredText(line).toString());
+
+        List<Span> fragments = new ArrayList<>();
+
         for (int i = END_OFFSET; i < values.length; i++) {
-          if (!values[i].getCoveredText(line).toString().contains(";")) {
+
+          int endOffset;
+          int nextBeginOffset = -1;
+          if (values[i].getCoveredText(line).toString().contains(";")) {
+            String[] parts = values[i].getCoveredText(line).toString().split(";");
+            endOffset = parseInt(parts[0]);
+            fragments.add(new Span(beginIndex, endOffset, type));
+            beginIndex = parseInt(parts[1]);
+          }
+          else {
             endOffset = parseInt(values[i].getCoveredText(line).toString());
             firstTextTokenIndex = i + 1;
+            fragments.add(new Span(beginIndex, endOffset, type));
             break;
           }
         }
@@ -84,8 +98,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
             values[values.length - 1].getEnd()).toString();
 
         try {
-          return new SpanAnnotation(id, type, new Span(parseInt(values[BEGIN_OFFSET]
-              .getCoveredText(line).toString()), endOffset, type), coveredText);
+          return new SpanAnnotation(id, type, fragments.toArray(new Span[fragments.size()]), coveredText);
         }
         catch (IllegalArgumentException e) {
           throw new InvalidFormatException(e);
