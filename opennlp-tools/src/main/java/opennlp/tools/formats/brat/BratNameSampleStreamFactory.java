@@ -19,6 +19,9 @@ package opennlp.tools.formats.brat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
@@ -63,6 +66,9 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
     @OptionalParameter(defaultValue = "false")
     Boolean getRecursive();
 
+    @ParameterDescription(valueName = "names")
+    @OptionalParameter
+    String getNameTypes();
   }
 
   protected BratNameSampleStreamFactory() {
@@ -148,7 +154,15 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
       }
     }
 
-    return new BratNameSampleStream(sentDetector, tokenizer, samples);
+    Set<String> nameTypes = null;
+    if (params.getNameTypes() != null) {
+      String[] nameTypesArr = params.getNameTypes().split(",");
+      if (nameTypesArr.length > 0) {
+        nameTypes = Arrays.stream(nameTypesArr).map(String::trim).collect(Collectors.toSet());
+      }
+    }
+
+    return new BratNameSampleStream(sentDetector, tokenizer, samples, nameTypes);
   }
 
   public static void registerFactory() {
