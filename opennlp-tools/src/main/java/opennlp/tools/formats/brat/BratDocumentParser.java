@@ -34,10 +34,20 @@ public class BratDocumentParser {
 
   private SentenceDetector sentDetector;
   private Tokenizer tokenizer;
+  private final Set<String> nameTypes;
 
   public BratDocumentParser(SentenceDetector sentenceDetector, Tokenizer tokenizer) {
+    this(sentenceDetector, tokenizer, null);
+  }
+
+  public BratDocumentParser(SentenceDetector sentenceDetector, Tokenizer tokenizer,
+                            Set<String> nameTypes) {
+    if (nameTypes != null && nameTypes.size() == 0) {
+      throw new IllegalArgumentException("nameTypes should be null or have one or more elements");
+    }
     this.sentDetector = sentenceDetector;
     this.tokenizer = tokenizer;
+    this.nameTypes = nameTypes;
   }
 
   public List<NameSample> parse(BratDocument sample) {
@@ -49,7 +59,7 @@ public class BratDocumentParser {
     Map<Integer, Span> coveredIndexes = new HashMap<>();
 
     for (BratAnnotation ann : sample.getAnnotations()) {
-      if (ann instanceof SpanAnnotation) {
+      if (isSpanAnnotation(ann)) {
         entityIdSet.add(ann.getId());
 
         Span span = ((SpanAnnotation) ann).getSpan();
@@ -109,7 +119,7 @@ public class BratDocumentParser {
 
       for (BratAnnotation ann : sample.getAnnotations()) {
 
-        if (ann instanceof SpanAnnotation) {
+        if (isSpanAnnotation(ann)) {
           SpanAnnotation entity = (SpanAnnotation) ann;
 
           Span entitySpan = entity.getSpan();
@@ -144,6 +154,13 @@ public class BratDocumentParser {
     }
 
     return samples;
+  }
+
+  private boolean isSpanAnnotation(BratAnnotation ann) {
+    if (ann instanceof SpanAnnotation && (nameTypes == null || nameTypes.contains(ann.getType()))) {
+      return true;
+    }
+    return false;
   }
 }
 
