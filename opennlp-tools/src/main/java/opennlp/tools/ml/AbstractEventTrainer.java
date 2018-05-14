@@ -92,4 +92,12 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
     addToReport("Training-Eventhash", hses.calculateHashSum().toString(16));
     return train(indexer);
   }
+
+  public static int maxIndex(double[] values) {
+    int max = 0;
+    for (int i = 1; i < values.length; i++)
+      if (values[i] > values[max])
+        max = i;
+    return max;
+  }
 }

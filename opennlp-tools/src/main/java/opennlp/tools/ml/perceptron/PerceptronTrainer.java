@@ -398,15 +398,6 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     return trainingAccuracy;
   }
 
-
-  private int maxIndex(double[] values) {
-    int max = 0;
-    for (int i = 1; i < values.length; i++)
-      if (values[i] > values[max])
-        max = i;
-    return max;
-  }
-
   private void displayIteration(int i) {
     if (i > 10 && (i % 10) != 0)
       return;
