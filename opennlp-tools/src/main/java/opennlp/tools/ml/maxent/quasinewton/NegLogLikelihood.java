@@ -19,6 +19,7 @@ package opennlp.tools.ml.maxent.quasinewton;
 
 import java.util.Arrays;
 
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 
