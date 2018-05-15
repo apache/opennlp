@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.DataIndexer;
 
 /**

@@ -17,6 +17,7 @@
 
 package opennlp.tools.ml.maxent.quasinewton;
 
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
 
 /**

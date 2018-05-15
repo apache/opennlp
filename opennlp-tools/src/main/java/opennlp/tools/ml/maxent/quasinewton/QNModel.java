@@ -17,6 +17,7 @@
 
 package opennlp.tools.ml.maxent.quasinewton;
 
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
 

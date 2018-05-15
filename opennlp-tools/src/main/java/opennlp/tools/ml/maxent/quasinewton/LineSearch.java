@@ -17,6 +17,8 @@
 
 package opennlp.tools.ml.maxent.quasinewton;
 
+import opennlp.tools.ml.ArrayMath;
+
 /**
  * Class that performs line search to find minimum
  */

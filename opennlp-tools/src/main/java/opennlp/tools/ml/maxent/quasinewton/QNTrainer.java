@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.ml.AbstractEventTrainer;
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.maxent.quasinewton.QNMinimizer.Evaluator;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
@@ -247,7 +248,7 @@ public class QNTrainer extends AbstractEventTrainer {
 
         double[] probs = new double[nOutcomes];
         QNModel.eval(context, value, probs, nOutcomes, nPredLabels, parameters);
-        int outcome = ArrayMath.maxIdx(probs);
+        int outcome = ArrayMath.argmax(probs);
         if (outcome == outcomeList[ei]) {
           nCorrect += nEventsSeen[ei];
         }
