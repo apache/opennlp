@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import opennlp.tools.ml.ArrayMath;
+
 public abstract class AbstractModel implements MaxentModel {
 
   /** Mapping between predicates/contexts and an integer representing them. */
@@ -71,10 +73,7 @@ public abstract class AbstractModel implements MaxentModel {
    * @return    The name of the most likely outcome.
    */
   public final String getBestOutcome(double[] ocs) {
-    int best = 0;
-    for (int i = 1; i < ocs.length; i++)
-      if (ocs[i] > ocs[best]) best = i;
-    return outcomeNames[best];
+    return outcomeNames[ArrayMath.argmax(ocs)];
   }
 
   public ModelType getModelType() {

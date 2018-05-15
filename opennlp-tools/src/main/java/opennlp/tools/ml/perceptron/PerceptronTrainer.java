@@ -20,6 +20,7 @@ package opennlp.tools.ml.perceptron;
 import java.io.IOException;
 
 import opennlp.tools.ml.AbstractEventTrainer;
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
@@ -297,7 +298,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
           else
             PerceptronModel.eval(contexts[ei], null, modelDistribution, evalParams, false);
 
-          int maxOutcome = maxIndex(modelDistribution);
+          int maxOutcome = ArrayMath.argmax(modelDistribution);
 
           // If the predicted outcome is different from the target
           // outcome, do the standard update: boost the parameters
@@ -388,7 +389,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
         else
           PerceptronModel.eval(contexts[ei], null, modelDistribution, evalParams, false);
 
-        int max = maxIndex(modelDistribution);
+        int max = ArrayMath.argmax(modelDistribution);
         if (max == outcomeList[ei])
           numCorrect++;
       }
@@ -396,15 +397,6 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     double trainingAccuracy = (double) numCorrect / numEvents;
     display("Stats: (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy + "\n");
     return trainingAccuracy;
-  }
-
-
-  private int maxIndex(double[] values) {
-    int max = 0;
-    for (int i = 1; i < values.length; i++)
-      if (values[i] > values[max])
-        max = i;
-    return max;
   }
 
   private void displayIteration(int i) {
