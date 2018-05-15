@@ -20,6 +20,7 @@ package opennlp.tools.ml.naivebayes;
 import java.io.IOException;
 
 import opennlp.tools.ml.AbstractEventTrainer;
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
@@ -189,7 +190,7 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
         else
           NaiveBayesModel.eval(contexts[ei], null, modelDistribution, evalParams, false);
 
-        int max = maxIndex(modelDistribution);
+        int max = ArrayMath.argmax(modelDistribution);
         if (max == outcomeList[ei])
           numCorrect++;
       }
@@ -199,12 +200,4 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
     return trainingAccuracy;
   }
 
-
-  private int maxIndex(double[] values) {
-    int max = 0;
-    for (int i = 1; i < values.length; i++)
-      if (values[i] > values[max])
-        max = i;
-    return max;
-  }
 }

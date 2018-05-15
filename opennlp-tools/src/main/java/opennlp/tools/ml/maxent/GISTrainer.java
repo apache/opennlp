@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import opennlp.tools.ml.AbstractEventTrainer;
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
@@ -691,12 +692,7 @@ public class GISTrainer extends AbstractEventTrainer {
 
         numEvents += numTimesEventsSeen[ei];
         if (printMessages) {
-          int max = 0;
-          for (int oi = 1; oi < numOutcomes; oi++) {
-            if (modelDistribution[oi] > modelDistribution[max]) {
-              max = oi;
-            }
-          }
+          int max = ArrayMath.argmax(modelDistribution);
           if (max == outcomeList[ei]) {
             numCorrect += numTimesEventsSeen[ei];
           }
