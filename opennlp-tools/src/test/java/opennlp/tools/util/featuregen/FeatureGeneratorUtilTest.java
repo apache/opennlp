@@ -41,5 +41,24 @@ public class FeatureGeneratorUtilTest {
     Assert.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("A."));
     Assert.assertEquals("ic", FeatureGeneratorUtil.tokenFeature("Mike"));
     Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("somethingStupid"));
+
+    // symbols
+    Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature(","));
+    Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("."));
+    Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("?"));
+    Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("!"));
+  }
+
+  @Test
+  public void testJapanese() {
+    // Hiragana
+    Assert.assertEquals("jah", FeatureGeneratorUtil.tokenFeature("そういえば"));
+    Assert.assertEquals("jah", FeatureGeneratorUtil.tokenFeature("おーぷん・そ〜す・そふとうぇあ"));
+    Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("あぱっち・そふとうぇあ財団"));
+
+    // Katakana
+    Assert.assertEquals("jak", FeatureGeneratorUtil.tokenFeature("ジャパン"));
+    Assert.assertEquals("jak", FeatureGeneratorUtil.tokenFeature("オープン・ソ〜ス・ソフトウェア"));
+    Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("アパッチ・ソフトウェア財団"));
   }
 }

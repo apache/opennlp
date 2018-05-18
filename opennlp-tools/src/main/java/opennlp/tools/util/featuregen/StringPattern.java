@@ -27,13 +27,15 @@ public class StringPattern {
   private static final int ALL_LOWERCASE_LETTER = 0x1 << 2;
   private static final int ALL_LETTERS = 0x1 << 3;
   private static final int ALL_DIGIT = 0x1 << 4;
-  private static final int CONTAINS_PERIOD = 0x1 << 5;
-  private static final int CONTAINS_COMMA = 0x1 << 6;
-  private static final int CONTAINS_SLASH = 0x1 << 7;
-  private static final int CONTAINS_DIGIT = 0x1 << 8;
-  private static final int CONTAINS_HYPHEN = 0x1 << 9;
-  private static final int CONTAINS_LETTERS = 0x1 << 10;
-  private static final int CONTAINS_UPPERCASE = 0x1 << 11;
+  private static final int ALL_HIRAGANA = 0x1 << 5;
+  private static final int ALL_KATAKANA = 0x1 << 6;
+  private static final int CONTAINS_PERIOD = 0x1 << 7;
+  private static final int CONTAINS_COMMA = 0x1 << 8;
+  private static final int CONTAINS_SLASH = 0x1 << 9;
+  private static final int CONTAINS_DIGIT = 0x1 << 10;
+  private static final int CONTAINS_HYPHEN = 0x1 << 11;
+  private static final int CONTAINS_LETTERS = 0x1 << 12;
+  private static final int CONTAINS_UPPERCASE = 0x1 << 13;
 
   private final int pattern;
 
@@ -46,7 +48,8 @@ public class StringPattern {
 
   public static StringPattern recognize(String token) {
 
-    int pattern = ALL_CAPITAL_LETTER | ALL_LOWERCASE_LETTER | ALL_DIGIT | ALL_LETTERS;
+    int pattern = ALL_CAPITAL_LETTER | ALL_LOWERCASE_LETTER | ALL_DIGIT | ALL_LETTERS
+        | ALL_HIRAGANA | ALL_KATAKANA;
 
     int digits = 0;
 
@@ -83,6 +86,7 @@ public class StringPattern {
 
         if (letterType == Character.DECIMAL_DIGIT_NUMBER) {
           pattern |= CONTAINS_DIGIT;
+          pattern &= ~(ALL_HIRAGANA | ALL_KATAKANA);
           digits++;
         } else {
           pattern &= ~ALL_DIGIT;
@@ -107,6 +111,29 @@ public class StringPattern {
 
           default:
             break;
+        }
+      }
+
+      // for Japanese...
+      final int codePoint = token.codePointAt(i);
+      final Character.UnicodeScript us = Character.UnicodeScript.of(codePoint);
+      if (us != Character.UnicodeScript.COMMON) {
+        if (us == Character.UnicodeScript.LATIN) {
+          pattern &= ~(ALL_HIRAGANA | ALL_KATAKANA);
+        }
+        else if (us == Character.UnicodeScript.HAN) {
+          pattern &= ~(ALL_HIRAGANA | ALL_KATAKANA | ALL_LOWERCASE_LETTER);
+        }
+        else if (us == Character.UnicodeScript.HIRAGANA) {
+          pattern &= ~(ALL_KATAKANA | ALL_LOWERCASE_LETTER);
+        }
+        else if (us == Character.UnicodeScript.KATAKANA) {
+          pattern &= ~(ALL_HIRAGANA | ALL_LOWERCASE_LETTER);
+        }
+      }
+      else {
+        if (ch == ',' || ch == '.' || ch == '?' || ch == '!') {
+          pattern &= ~(ALL_HIRAGANA | ALL_KATAKANA);
         }
       }
     }
@@ -147,6 +174,20 @@ public class StringPattern {
    */
   public boolean isAllDigit() {
     return (pattern & ALL_DIGIT) > 0;
+  }
+
+  /**
+   * @return true if all chars are hiragana.
+   */
+  public boolean isAllHiragana() {
+    return (pattern & ALL_HIRAGANA) > 0;
+  }
+
+  /**
+   * @return true if all chars are katakana.
+   */
+  public boolean isAllKatakana() {
+    return (pattern & ALL_KATAKANA) > 0;
   }
 
   /**
