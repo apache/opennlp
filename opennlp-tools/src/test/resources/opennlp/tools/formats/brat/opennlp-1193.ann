@@ -1,0 +1,4 @@
+T1      Name 0 7;17 24;8 15     spanA_1 spanA_2 spanA_3
+T2      Name 26 33;40 47        spanB_1 spanB_2
+T3      Event 34 39  spanC
+E1      Event:T3
