@@ -34,6 +34,8 @@ public class FeatureGeneratorUtil {
    * Generates a class name for the specified token.
    * The classes are as follows where the first matching class is used:
    * <ul>
+   * <li>jah - Japanese Hiragana</li>
+   * <li>jak - Japanese Katakana</li>
    * <li>lc - lowercase alphabetic</li>
    * <li>2d - two digits </li>
    * <li>4d - four digits </li>
@@ -56,7 +58,13 @@ public class FeatureGeneratorUtil {
     StringPattern pattern = StringPattern.recognize(token);
 
     String feat;
-    if (pattern.isAllLowerCaseLetter()) {
+    if (pattern.isAllHiragana()) {
+      feat = "jah";
+    }
+    else if (pattern.isAllKatakana()) {
+      feat = "jak";
+    }
+    else if (pattern.isAllLowerCaseLetter()) {
       feat = "lc";
     }
     else if (pattern.digits() == 2) {
