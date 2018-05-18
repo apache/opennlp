@@ -215,7 +215,8 @@ double tokenProbs[] = tokenizer.getTokenProbabilities();]]>
 				available from the model download page on various corpora. The data
 				can be converted to the OpenNLP Tokenizer training format or used directly.
                 The OpenNLP format contains one sentence per line. Tokens are either separated by a
-                whitespace or by a special &lt;SPLIT&gt; tag.
+                whitespace or by a special &lt;SPLIT&gt; tag. Tokens are split automaticaly on whitespace
+                and at least one &lt;SPLIT&gt; tag must be present in the training text.
 				
 				The following sample shows the sample from above in the correct format.
 				<screen>
