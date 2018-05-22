@@ -34,6 +34,7 @@ import opennlp.tools.chunker.ChunkerEvaluator;
 import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -59,7 +60,8 @@ public class Conll00ChunkerEval extends AbstractEvalTest {
         new PlainTextByLineStream(
             new MarkableFileInputStreamFactory(trainFile), StandardCharsets.UTF_8));
 
-    return ChunkerME.train("eng", samples, params, new ChunkerFactory());
+    return ChunkerME.train(LanguageCode.ENGLISH.getCode(), samples,
+        params, new ChunkerFactory());
   }
 
   private static void eval(ChunkerModel model, File testData,

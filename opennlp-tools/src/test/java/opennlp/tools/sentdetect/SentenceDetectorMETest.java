@@ -27,6 +27,7 @@ import org.junit.Test;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InsufficientTrainingDataException;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
@@ -46,13 +47,14 @@ public class SentenceDetectorMETest {
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
 
-    SentenceDetectorFactory factory = new SentenceDetectorFactory("eng", true, null, null);
+    SentenceDetectorFactory factory = new SentenceDetectorFactory(LanguageCode.ENGLISH.getCode(),
+        true, null, null);
 
     SentenceModel sentdetectModel = SentenceDetectorME.train(
-        "eng", new SentenceSampleStream(new PlainTextByLineStream(in,
-            StandardCharsets.UTF_8)), factory, mlParams);
+        LanguageCode.ENGLISH.getCode(), new SentenceSampleStream(new PlainTextByLineStream(in,
+        StandardCharsets.UTF_8)), factory, mlParams);
 
-    Assert.assertEquals("eng", sentdetectModel.getLanguage());
+    Assert.assertEquals(LanguageCode.ENGLISH.getCode(), sentdetectModel.getLanguage());
 
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
 
@@ -146,9 +148,10 @@ public class SentenceDetectorMETest {
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
 
-    SentenceDetectorFactory factory = new SentenceDetectorFactory("eng", true, null, null);
+    SentenceDetectorFactory factory = new SentenceDetectorFactory(LanguageCode.ENGLISH.getCode(),
+        true, null, null);
     
-    SentenceDetectorME.train("eng",
+    SentenceDetectorME.train(LanguageCode.ENGLISH.getCode(),
         new SentenceSampleStream(
             new PlainTextByLineStream(in, StandardCharsets.UTF_8)), factory, mlParams);
     

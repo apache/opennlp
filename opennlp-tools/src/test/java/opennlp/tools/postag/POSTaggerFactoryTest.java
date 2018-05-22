@@ -32,6 +32,7 @@ import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSSequenceValidator;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -52,7 +53,7 @@ public class POSTaggerFactoryTest {
 
   private static POSModel trainPOSModel(POSTaggerFactory factory)
       throws IOException {
-    return POSTaggerME.train("eng", createSampleStream(),
+    return POSTaggerME.train(LanguageCode.ENGLISH.getCode(), createSampleStream(),
         TrainingParameters.defaultParams(), factory);
   }
 

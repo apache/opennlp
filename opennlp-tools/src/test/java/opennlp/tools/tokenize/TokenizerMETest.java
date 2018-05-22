@@ -26,6 +26,7 @@ import org.junit.Test;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InsufficientTrainingDataException;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -87,7 +88,8 @@ public class TokenizerMETest {
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 5);
 
-    TokenizerME.train(samples, TokenizerFactory.create(null, "eng", null, true, null), mlParams);
+    TokenizerME.train(samples, TokenizerFactory.create(null, LanguageCode.ENGLISH.getCode(),
+        null, true, null), mlParams);
 
   }
   

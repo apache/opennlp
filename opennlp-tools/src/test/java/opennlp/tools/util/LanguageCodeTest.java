@@ -15,31 +15,20 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats;
+package opennlp.tools.util;
 
-import opennlp.tools.cmdline.ObjectStreamFactory;
-import opennlp.tools.util.LanguageCode;
+import org.junit.Assert;
+import org.junit.Test;
 
-/**
- * Base class for sample stream factories.
- */
-public abstract class AbstractSampleStreamFactory<T> implements ObjectStreamFactory<T> {
+public class LanguageCodeTest {
 
-  protected Class params;
+  @Test
+  public void equalsTest() {
 
-  private AbstractSampleStreamFactory() {
+    Assert.assertEquals(new LanguageCode("eng"), LanguageCode.ENGLISH);
+    Assert.assertNotEquals(new LanguageCode("not"), LanguageCode.ENGLISH);
+    Assert.assertNotEquals(new LanguageCode("not"), LanguageCode.ENGLISH);
+
   }
 
-  protected <P> AbstractSampleStreamFactory(Class<P> params) {
-    this.params = params;
-  }
-
-  public String getLang() {
-    return LanguageCode.ENGLISH.getCode();
-  }
-
-  @SuppressWarnings({"unchecked"})
-  public <P> Class<P> getParameters() {
-    return params;
-  }
 }

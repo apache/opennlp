@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.sentdetect.lang.Factory;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Span;
@@ -45,8 +46,8 @@ public class SDEventStreamTest {
     Factory factory = new Factory();
 
     ObjectStream<Event> eventStream = new SDEventStream(sampleStream,
-        factory.createSentenceContextGenerator("eng"),
-        factory.createEndOfSentenceScanner("eng"));
+        factory.createSentenceContextGenerator(LanguageCode.ENGLISH.getCode()),
+        factory.createEndOfSentenceScanner(LanguageCode.ENGLISH.getCode()));
 
     Assert.assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.read().getOutcome());
     Assert.assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());

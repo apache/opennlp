@@ -27,6 +27,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.formats.Conll02NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 
 /**
@@ -56,11 +57,11 @@ public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
     LANGUAGE lang;
-    if ("nl".equals(params.getLang()) || "nld".equals(params.getLang())) {
+    if ("nl".equals(params.getLang()) || LanguageCode.DUTCH.equals(params.getLang())) {
       lang = LANGUAGE.NLD;
       language = params.getLang();
     }
-    else if ("es".equals(params.getLang()) || "spa".equals(params.getLang())) {
+    else if ("es".equals(params.getLang()) || LanguageCode.SPANISH.equals(params.getLang())) {
       lang = LANGUAGE.SPA;
       language = params.getLang();
     }

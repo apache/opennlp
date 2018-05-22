@@ -42,6 +42,7 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleTypeFilter;
 import opennlp.tools.namefind.TokenNameFinderCrossValidator;
 import opennlp.tools.namefind.TokenNameFinderFactory;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
@@ -67,8 +68,8 @@ public class OntoNotes4NameFinderEval extends AbstractEvalTest {
       throws IOException {
     try (ObjectStream<NameSample> samples = createNameSampleStream()) {
 
-      TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng", null,
-          params, new TokenNameFinderFactory());
+      TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator(
+          LanguageCode.ENGLISH.getCode(), null, params, new TokenNameFinderFactory());
 
       ObjectStream<NameSample> filteredSamples;
       if (type != null) {
@@ -140,8 +141,8 @@ public class OntoNotes4NameFinderEval extends AbstractEvalTest {
 
     try (ObjectStream<NameSample> samples = createNameSampleStream()) {
 
-      TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng", null,
-          params, featureGen, resources);
+      TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator(
+          LanguageCode.ENGLISH.getCode(), null, params, featureGen, resources);
 
       ObjectStream<NameSample> filteredSamples;
 

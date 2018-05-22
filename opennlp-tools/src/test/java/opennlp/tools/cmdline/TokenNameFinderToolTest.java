@@ -36,6 +36,7 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
 import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -111,8 +112,8 @@ public class TokenNameFinderToolTest {
     TokenNameFinderFactory nameFinderFactory = new TokenNameFinderFactory();
 
     try (ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream)) {
-      model = NameFinderME.train("eng", null, sampleStream, params,
-          nameFinderFactory);
+      model = NameFinderME.train(LanguageCode.ENGLISH.getCode(), null, sampleStream,
+          params, nameFinderFactory);
     }
     
     File modelFile = File.createTempFile("model", ".bin");

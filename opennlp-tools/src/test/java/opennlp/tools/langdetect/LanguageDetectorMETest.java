@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 
@@ -47,9 +48,9 @@ public class LanguageDetectorMETest {
 
     Assert.assertEquals(4, languages.length);
     Assert.assertEquals("pob", languages[0].getLang());
-    Assert.assertEquals("ita", languages[1].getLang());
-    Assert.assertEquals("spa", languages[2].getLang());
-    Assert.assertEquals("fra", languages[3].getLang());
+    Assert.assertEquals(LanguageCode.ITALIAN.getCode(), languages[1].getLang());
+    Assert.assertEquals(LanguageCode.SPANISH.getCode(), languages[2].getLang());
+    Assert.assertEquals(LanguageCode.FRENCH.getCode(), languages[3].getLang());
   }
 
   @Test
@@ -57,7 +58,7 @@ public class LanguageDetectorMETest {
     LanguageDetector ld = new LanguageDetectorME(this.model);
     Language language = ld.predictLanguage("Dove è meglio che giochi");
 
-    Assert.assertEquals("ita", language.getLang());
+    Assert.assertEquals(LanguageCode.ITALIAN.getCode(), language.getLang());
   }
 
   @Test

@@ -27,6 +27,7 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 
 public class Conll03NameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
@@ -54,11 +55,11 @@ public class Conll03NameSampleStreamFactory extends LanguageSampleStreamFactory<
 
     // TODO: support the other languages with this CoNLL.
     LANGUAGE lang;
-    if ("eng".equals(params.getLang())) {
+    if (LanguageCode.ENGLISH.equals(params.getLang())) {
       lang = LANGUAGE.EN;
       language = params.getLang();
     }
-    else if ("deu".equals(params.getLang())) {
+    else if (LanguageCode.GERMAN.equals(params.getLang())) {
       lang = LANGUAGE.DE;
       language = params.getLang();
     }

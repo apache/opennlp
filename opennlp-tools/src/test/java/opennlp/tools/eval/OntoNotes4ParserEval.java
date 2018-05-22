@@ -37,6 +37,7 @@ import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserCrossValidator;
 import opennlp.tools.parser.ParserType;
 import opennlp.tools.parser.lang.en.HeadRulesTest;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
@@ -62,7 +63,8 @@ public class OntoNotes4ParserEval extends AbstractEvalTest {
   private void crossEval(TrainingParameters params, HeadRules rules, double expectedScore)
       throws IOException {
     try (ObjectStream<Parse> samples = createParseSampleStream()) {
-      ParserCrossValidator cv = new ParserCrossValidator("eng", params, rules, ParserType.CHUNKING);
+      ParserCrossValidator cv = new ParserCrossValidator(LanguageCode.ENGLISH.getCode(),
+          params, rules, ParserType.CHUNKING);
       cv.evaluate(samples, 5);
 
       Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);

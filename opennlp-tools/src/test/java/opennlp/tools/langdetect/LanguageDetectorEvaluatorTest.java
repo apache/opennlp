@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.cmdline.langdetect.LanguageDetectorEvaluationErrorListener;
+import opennlp.tools.util.LanguageCode;
 
 
 public class LanguageDetectorEvaluatorTest {
@@ -57,10 +58,10 @@ public class LanguageDetectorEvaluatorTest {
     evaluator.evaluateSample(new LanguageSample(new Language("pob"),
         "escreve e faz palestras pelo mundo inteiro sobre anjos"));
 
-    evaluator.evaluateSample(new LanguageSample(new Language("fra"),
+    evaluator.evaluateSample(new LanguageSample(new Language(LanguageCode.FRENCH.getCode()),
         "escreve e faz palestras pelo mundo inteiro sobre anjos"));
 
-    evaluator.evaluateSample(new LanguageSample(new Language("fra"),
+    evaluator.evaluateSample(new LanguageSample(new Language(LanguageCode.FRENCH.getCode()),
         "escreve e faz palestras pelo mundo inteiro sobre anjos"));
 
 

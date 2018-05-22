@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.util.LanguageCode;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -68,7 +69,8 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train(LanguageCode.ENGLISH.getCode(),
+        null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     TokenNameFinder nameFinder = new NameFinderME(nameFinderModel);
@@ -126,7 +128,8 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train(LanguageCode.ENGLISH.getCode(),
+        null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -170,8 +173,9 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
-            params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
+    TokenNameFinderModel nameFinderModel = NameFinderME.train(LanguageCode.ENGLISH.getCode(),
+        null, sampleStream,
+        params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
@@ -200,8 +204,9 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", TYPE_OVERRIDE, sampleStream,
-        params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
+    TokenNameFinderModel nameFinderModel = NameFinderME.train(LanguageCode.ENGLISH.getCode(),
+        TYPE_OVERRIDE, sampleStream, params,
+        TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
@@ -235,7 +240,8 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train(LanguageCode.ENGLISH.getCode(),
+        null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -271,7 +277,8 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train(LanguageCode.ENGLISH.getCode(),
+        null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
@@ -322,7 +329,8 @@ public class NameFinderMETest {
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
+    TokenNameFinderModel nameFinderModel = NameFinderME.train(LanguageCode.ENGLISH.getCode(),
+        null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
