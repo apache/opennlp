@@ -19,6 +19,8 @@ package opennlp.tools.ml;
 
 import java.util.List;
 
+import opennlp.tools.ml.model.Context;
+
 /**
  * Utility class for simple vector arithmetic.
  */
@@ -98,6 +100,24 @@ public class ArrayMath {
         maxIdx = i;
     }
     return maxIdx;
+  }
+
+  public static void sumFeatures(Context[] context, float[] values, double[] prior) {
+    for (int ci = 0; ci < context.length; ci++) {
+      if (context[ci] != null) {
+        Context predParams = context[ci];
+        int[] activeOutcomes = predParams.getOutcomes();
+        double[] activeParameters = predParams.getParameters();
+        double value = 1;
+        if (values != null) {
+          value = values[ci];
+        }
+        for (int ai = 0; ai < activeOutcomes.length; ai++) {
+          int oid = activeOutcomes[ai];
+          prior[oid] += activeParameters[ai] * value;
+        }
+      }
+    }
   }
 
   // === Not really related to math ===

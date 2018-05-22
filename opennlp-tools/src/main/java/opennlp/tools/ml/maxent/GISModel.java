@@ -17,6 +17,7 @@
 
 package opennlp.tools.ml.maxent;
 
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.EvalParameters;
@@ -182,25 +183,8 @@ public final class GISModel extends AbstractModel {
    */
   static double[] eval(Context[] context, float[] values, double[] prior,
                        EvalParameters model) {
-    int[] numfeats = new int[model.getNumOutcomes()];
-    int[] activeOutcomes;
-    double[] activeParameters;
-    double value = 1;
-    for (int ci = 0; ci < context.length; ci++) {
-      if (context[ci] != null) {
-        Context predParams = context[ci];
-        activeOutcomes = predParams.getOutcomes();
-        activeParameters = predParams.getParameters();
-        if (values != null) {
-          value = values[ci];
-        }
-        for (int ai = 0; ai < activeOutcomes.length; ai++) {
-          int oid = activeOutcomes[ai];
-          numfeats[oid]++;
-          prior[oid] += activeParameters[ai] * value;
-        }
-      }
-    }
+
+    ArrayMath.sumFeatures(context, values, prior);
 
     double normal = 0.0;
     for (int oid = 0; oid < model.getNumOutcomes(); oid++) {

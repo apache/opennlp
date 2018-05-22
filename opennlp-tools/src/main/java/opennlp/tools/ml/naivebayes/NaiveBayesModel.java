@@ -89,7 +89,6 @@ public class NaiveBayesModel extends AbstractModel {
   static double[] eval(Context[] context, float[] values, double[] prior,
                        EvalParameters model, boolean normalize) {
     Probabilities<Integer> probabilities = new LogProbabilities<>();
-    Context[] params = model.getParams();
     double[] outcomeTotals = model instanceof NaiveBayesEvalParameters
         ? ((NaiveBayesEvalParameters) model).getOutcomeTotals() : new double[prior.length];
     long vocabulary = model instanceof NaiveBayesEvalParameters

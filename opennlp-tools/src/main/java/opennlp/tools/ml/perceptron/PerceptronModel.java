@@ -17,6 +17,7 @@
 
 package opennlp.tools.ml.perceptron;
 
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.EvalParameters;
@@ -65,24 +66,8 @@ public class PerceptronModel extends AbstractModel {
 
   static double[] eval(Context[] context, float[] values, double[] prior, EvalParameters model,
                        boolean normalize) {
-    Context[] params = model.getParams();
-    double[] activeParameters;
-    int[] activeOutcomes;
-    double value = 1;
-    for (int ci = 0; ci < context.length; ci++) {
-      if (context[ci] != null) {
-        Context predParams = context[ci];
-        activeOutcomes = predParams.getOutcomes();
-        activeParameters = predParams.getParameters();
-        if (values != null) {
-          value = values[ci];
-        }
-        for (int ai = 0; ai < activeOutcomes.length; ai++) {
-          int oid = activeOutcomes[ai];
-          prior[oid] += activeParameters[ai] * value;
-        }
-      }
-    }
+
+    ArrayMath.sumFeatures(context, values, prior);
 
     if (normalize) {
       int numOutcomes = model.getNumOutcomes();
