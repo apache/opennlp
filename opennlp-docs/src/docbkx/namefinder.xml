@@ -341,144 +341,127 @@ new NameFinderME(model);]]>
 			The following sample shows a xml descriptor which contains the default feature generator plus several types of clustering features:
 				<programlisting language="xml">
 					<![CDATA[
-<generators>
-  <cache> 
-    <generators>
-      <window prevLength = "2" nextLength = "2">          
-        <tokenclass/>
-      </window>
-      <window prevLength = "2" nextLength = "2">                
-        <token/>
-      </window>
-      <definition/>
-      <prevmap/>
-      <bigram/>
-      <sentence begin="true" end="false"/>
-      <window prevLength = "2" nextLength = "2">
-        <brownclustertoken dict="brownCluster" />
-      </window>
-      <brownclustertokenclass dict="brownCluster" />
-      <brownclusterbigram dict="brownCluster" />
-      <wordcluster dict="word2vec.cluster" />
-      <wordcluster dict="clark.cluster" />
-    </generators>
-  </cache> 
-</generators>]]>
+<featureGenerators cache="true" name="nameFinder">
+  <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
+    <int name="prevLength">2</int>
+    <int name="nextLength">2</int>
+    <generator class="opennlp.tools.util.featuregen.TokenClassFeatureGeneratorFactory"/>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
+    <int name="prevLength">2</int>
+    <int name="nextLength">2</int>
+    <generator class="opennlp.tools.util.featuregen.TokenFeatureGeneratorFactory"/>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.PreviousMapFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.BigramNameFeatureGeneratorFactory"/>
+  <generator class="opennlp.tools.util.featuregen.SentenceFeatureGeneratorFactory">
+    <bool name="begin">true</bool>
+    <bool name="end">false</bool>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
+    <int name="prevLength">2</int>
+    <int name="nextLength">2</int>
+    <generator class="opennlp.tools.util.featuregen.BrownClusterTokenClassFeatureGeneratorFactory">
+      <str name="dict">brownCluster</str>
+    </generator>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.BrownClusterTokenFeatureGeneratorFactory">
+    <str name="dict">brownCluster</str>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.BrownClusterBigramFeatureGeneratorFactory">
+    <str name="dict">brownCluster</str>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.WordClusterFeatureGeneratorFactory">
+    <str name="dict">word2vec.cluster</str>
+  </generator>
+  <generator class="opennlp.tools.util.featuregen.WordClusterFeatureGeneratorFactory">
+    <str name="dict">clark.cluster</str>
+  </generator>
+</featureGenerators>]]>
 				 </programlisting>
-		    The root element must be generators, each sub-element adds a feature generator to the configuration.
+		    The root element must be featureGenerators, each sub-element adds a feature generator to the configuration.
 		    The sample xml contains additional feature generators with respect to the API defined above.
 			</para>
 			<para>
-			The following table shows the supported elements:
+			The following table shows the supported feature generators (you must specify the Factory's FQDN):
 			<table>
-			  <title>Generator elements</title>
+			  <title>Feature Generators</title>
 			  <tgroup cols="2">
 			    <colspec colname="c1"/>
 			    <colspec colname="c2"/>
 			    <thead>
 			      <row>
-				<entry>Element</entry>
-				<entry>Aggregated</entry>
-				<entry>Attributes</entry>
+				<entry>Feature Generator</entry>
+				<entry>Parameters</entry>
 			      </row>
 			    </thead>
 			    <tbody>
 			      <row>
-					<entry>generators</entry>
-					<entry>yes</entry>
-					<entry>none</entry>
-			      </row>
-			      <row>
-					<entry>cache</entry>
-					<entry>yes</entry>
-					<entry>none</entry>
-			      </row>
-			      <row>
-					<entry>charngram</entry>
-					<entry>no</entry>
+					<entry>CharacterNgramFeatureGeneratorFactory</entry>
 					<entry><emphasis>min</emphasis> and <emphasis>max</emphasis> specify the length of the generated character ngrams</entry>
 			      </row>
 			      <row>
-					<entry>definition</entry>
-					<entry>no</entry>
+					<entry>DefinitionFeatureGeneratorFactory</entry>
 					<entry>none</entry>
 			      </row>
 			      <row>
-					<entry>dictionary</entry>
-					<entry>no</entry>
+					<entry>DictionaryFeatureGeneratorFactory</entry>
 					<entry><emphasis>dict</emphasis> is the key of the dictionary resource to use,
 					       and <emphasis>prefix</emphasis> is a feature prefix string</entry>
 			      </row>
 			      <row>
-					<entry>prevmap</entry>
-					<entry>no</entry>
+					<entry>PreviousMapFeatureGeneratorFactory</entry>
 					<entry>none</entry>
 			      </row>
 			      <row>
-					<entry>sentence</entry>
-					<entry>no</entry>
+					<entry>SentenceFeatureGeneratorFactory</entry>
 					<entry><emphasis>begin</emphasis> and <emphasis>end</emphasis> to generate begin or end features, both are optional and are boolean values</entry>
 			      </row>
 			      <row>
-					<entry>tokenclass</entry>
-					<entry>no</entry>
+					<entry>TokenClassFeatureGeneratorFactory</entry>
 					<entry>none</entry>
 			      </row>
 			      <row>
-					<entry>token</entry>
-					<entry>no</entry>
+					<entry>TokenFeatureGeneratorFactory</entry>
 					<entry>none</entry>
 			      </row>
 			      <row>
-					<entry>bigram</entry>
-					<entry>no</entry>
+					<entry>BigramNameFeatureGeneratorFactory</entry>
 					<entry>none</entry>
 			      </row>
 			      <row>
-					<entry>tokenpattern</entry>
-					<entry>no</entry>
+					<entry>TokenPatternFeatureGeneratorFactory</entry>
 					<entry>none</entry>
 			      </row>
 						<row>
-							<entry>tokenpos</entry>
-							<entry>no</entry>
+							<entry>POSTaggerNameFeatureGeneratorFactory</entry>
 							<entry><emphasis>model</emphasis> is the file name of the POS Tagger model to use</entry>
 						</row>
 			      <row>
-				<entry>wordcluster</entry>
-				<entry>no</entry>
+				<entry>WordClusterFeatureGeneratorFactory</entry>
 				<entry><emphasis>dict</emphasis> is the key of the clustering resource to use</entry>
 			      </row>
 			      <row>
-				<entry>brownclustertoken</entry>
-				<entry>no</entry>
+				<entry>BrownClusterTokenFeatureGeneratorFactory</entry>
 				<entry><emphasis>dict</emphasis> is the key of the clustering resource to use</entry>
 				</row>
 				<row>
-				<entry>brownclustertokenclass</entry>
-				<entry>no</entry>
+				<entry>BrownClusterTokenClassFeatureGeneratorFactory</entry>
 				<entry><emphasis>dict</emphasis> is the key of the clustering resource to use</entry>
 			      </row>
 			      <row>
-				<entry>brownclusterbigram</entry>
-				<entry>no</entry>
+				<entry>BrownClusterBigramFeatureGeneratorFactory</entry>
 				<entry><emphasis>dict</emphasis> is the key of the clustering resource to use</entry>
 			      </row>
 			      <row>
-					<entry>window</entry>
-					<entry>yes</entry>
+					<entry>WindowFeatureGeneratorFactory</entry>
 					<entry><emphasis>prevLength</emphasis> and <emphasis>nextLength</emphasis> must be integers ans specify the window size</entry>
-			      </row>
-			      <row>
-					<entry>custom</entry>
-					<entry>no</entry>
-					<entry><emphasis>class</emphasis> is the name of the feature generator class which will be loaded</entry>
 			      </row>
 			    </tbody>
 			  </tgroup>
 			</table>
-			Aggregated feature generators can contain other generators, like the cache or the window feature
-			generator in the sample.
+			Window feature generator can contain other generators.
 			</para>
 			</section>
 		</section>
