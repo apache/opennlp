@@ -129,10 +129,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.6238361266294227d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.6349496797804209d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.744312026002167d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.7254575707154741d);
   }
 
   @Test
@@ -143,10 +143,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.5696539485359361d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.5660714285714287d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.7127771911298839d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.6967257112184647d);
   }
 
   @Test
@@ -157,10 +157,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.6363636363636364d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.647985989492119d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.7482403898213319d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.7538218239325251d);
   }
 
   @Test
@@ -171,10 +171,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.6081871345029239d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.6120857699805068d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.6502808988764045d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.6367521367521367d);
   }
 
   @Test
@@ -185,10 +185,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.5197969543147207d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.5241935483870968d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.5753228120516498d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.5757358219669778d);
   }
 
   @Test
@@ -199,10 +199,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.5412748171368861d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.5774647887323944d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.5764966740576497d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.6099495313626532d);
   }
 
   @Test
@@ -213,10 +213,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7978609625668449d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.8056768558951964d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7880434782608695d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7971830985915492d);
   }
 
   @Test
@@ -227,10 +227,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.5451977401129944d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.5598885793871866d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.680952380952381d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.6873508353221957d);
   }
 
   @Test
@@ -241,10 +241,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.6737683089214381d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.6816380449141347d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7433903576982893d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7421875d);
   }
 
   @Test
@@ -255,10 +255,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.6651198762567672d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.6691176470588235d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.6748166259168704d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.6788560712611346d);
   }
 
   @Test
@@ -269,10 +269,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5831157528285466d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5819456617002629d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5762897914379803d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5709552733296521d);
   }
 
   @Test
@@ -283,10 +283,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.4227642276422764d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5871559633027523d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.455294863665187d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.572928821470245d);
   }
 
   @Test
@@ -301,9 +301,9 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         combinedType);
 
-    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,   combinedType, 0.727808326787117d);
+    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,   combinedType, 0.7225274725274724d);
 
-    eval(maxentModel, dutchTestBFile, LANGUAGE.NLD, combinedType, 0.7388253638253639d);
+    eval(maxentModel, dutchTestBFile, LANGUAGE.NLD, combinedType, 0.7463230508915789d);
   }
 
   @Test
@@ -318,9 +318,9 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         combinedType);
 
-    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,   combinedType, 0.6673209028459275d);
+    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,   combinedType, 0.6681034482758621d);
 
-    eval(maxentModel, dutchTestBFile, LANGUAGE.NLD, combinedType, 0.6984085910208306d);
+    eval(maxentModel, dutchTestBFile, LANGUAGE.NLD, combinedType, 0.6937297996121526d);
   }
 
   @Test
@@ -335,9 +335,9 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         combinedType);
 
-    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,   combinedType, 0.6999800915787379d);
+    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,   combinedType, 0.6804615996816554d);
 
-    eval(maxentModel, dutchTestBFile, LANGUAGE.NLD, combinedType, 0.7101430258496261d);
+    eval(maxentModel, dutchTestBFile, LANGUAGE.NLD, combinedType, 0.7041513399894903d);
   }
 
   @Test
@@ -348,10 +348,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.8331210191082803d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.8156374944469125d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.8419705694177864d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.8577101257445401d);
   }
 
   @Test
@@ -362,10 +362,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.686960933536276d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.6958710976837865d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.8132033008252063d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.8035714285714285d);
   }
 
 
@@ -377,10 +377,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.7454634624816087d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.7475633528265108d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.8215339233038348d);
+        Conll02NameSampleStream.GENERATE_PERSON_ENTITIES, 0.8277372262773722d);
   }
 
   @Test
@@ -391,10 +391,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7478819748758399d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7429893032668402d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7715330894579315d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7630548302872063d);
   }
 
   @Test
@@ -405,10 +405,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.6982288828337874d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.6979911474293496d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7640449438202247d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7628711010898159d);
   }
 
   @Test
@@ -419,10 +419,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.682961897915169d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.6874105865522175d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7776447105788423d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7796340493237868d);
   }
 
   @Test
@@ -433,10 +433,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7018867924528303d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7032136105860114d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.6315158777711205d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.6150121065375302d);
   }
 
   @Test
@@ -447,10 +447,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7386907929749867d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7417640807651434d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.6772777167947311d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.6761800219538968d);
   }
 
   @Test
@@ -461,10 +461,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7544565842438182d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7520278099652375d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.7005019520356944d);
+        Conll02NameSampleStream.GENERATE_LOCATION_ENTITIES, 0.6840317100792752d);
   }
 
   @Test
@@ -475,10 +475,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5102880658436214d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5190409026798307d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5842696629213483d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5769230769230769d);
   }
 
   @Test
@@ -489,10 +489,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.40971168437025796d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.4108761329305136d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.45703124999999994d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.4470588235294118d);
   }
 
   @Test
@@ -503,10 +503,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.470219435736677d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.48037676609105173d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5020576131687243d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.4686192468619247d);
   }
 
   @Test
@@ -521,9 +521,9 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.SPA, params,
         combinedType);
 
-    eval(maxentModel, spanishTestAFile, LANGUAGE.SPA, combinedType, 0.7476700838769804d);
+    eval(maxentModel, spanishTestAFile, LANGUAGE.SPA, combinedType, 0.7526026435840448d);
 
-    eval(maxentModel, spanishTestBFile, LANGUAGE.SPA, combinedType, 0.7692307692307693d);
+    eval(maxentModel, spanishTestBFile, LANGUAGE.SPA, combinedType, 0.7633094535749403d);
   }
 
   @Test
@@ -538,9 +538,9 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.SPA, params,
         combinedType);
 
-    eval(maxentModel, spanishTestAFile, LANGUAGE.SPA, combinedType, 0.707400023454908d);
+    eval(maxentModel, spanishTestAFile, LANGUAGE.SPA, combinedType, 0.7130964943135186d);
 
-    eval(maxentModel, spanishTestBFile, LANGUAGE.SPA, combinedType, 0.7576868829337094d);
+    eval(maxentModel, spanishTestBFile, LANGUAGE.SPA, combinedType, 0.7600507829030893d);
   }
 
   @Test
@@ -555,8 +555,8 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
     TokenNameFinderModel maxentModel = train(spanishTrainingFile, LANGUAGE.SPA, params,
         combinedType);
 
-    eval(maxentModel, spanishTestAFile, LANGUAGE.SPA, combinedType, 0.7455564833591795d);
+    eval(maxentModel, spanishTestAFile, LANGUAGE.SPA, combinedType, 0.7192413875885248d);
 
-    eval(maxentModel, spanishTestBFile, LANGUAGE.SPA, combinedType, 0.7856735159817352d);
+    eval(maxentModel, spanishTestBFile, LANGUAGE.SPA, combinedType, 0.7692528735632184d);
   }
 }
