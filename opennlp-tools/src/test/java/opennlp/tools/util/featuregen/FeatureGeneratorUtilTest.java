@@ -47,6 +47,9 @@ public class FeatureGeneratorUtilTest {
     Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("."));
     Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("?"));
     Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("!"));
+    Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("#"));
+    Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("%"));
+    Assert.assertEquals("other", FeatureGeneratorUtil.tokenFeature("&"));
   }
 
   @Test
