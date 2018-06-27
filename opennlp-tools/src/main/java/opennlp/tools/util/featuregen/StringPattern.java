@@ -132,9 +132,8 @@ public class StringPattern {
         }
       }
       else {
-        if (ch == ',' || ch == '.' || ch == '?' || ch == '!') {
+        if (ch != '・' && ch != 'ー' && ch != '〜')
           pattern &= ~(ALL_HIRAGANA | ALL_KATAKANA);
-        }
       }
     }
 
