@@ -270,6 +270,8 @@ path: .\es_ner_person.bin]]>
 		<para>After one of the corpora is available the data must be
 		transformed as explained in the README file to the CONLL format.
 		The transformed data can be read by the OpenNLP CONLL03 converter.
+
+      Note that for CoNLL-2003 corpora, the -lang argument should either be "eng" or "deu", instead of "en" or "de".
 		</para>
 		</section>
 		<section id="tools.corpora.conll.2003.converting">
@@ -278,13 +280,13 @@ path: .\es_ner_person.bin]]>
 		To convert the information to the OpenNLP format:
 		<screen>
 			<![CDATA[
-$ opennlp TokenNameFinderConverter conll03 -lang en -types per -data eng.train > corpus_train.txt]]>
+$ opennlp TokenNameFinderConverter conll03 -lang eng -types per -data eng.train > corpus_train.txt]]>
 		</screen>
 		Optionally, you can convert the training test samples as well.
 		<screen>
 			<![CDATA[
-$ opennlp TokenNameFinderConverter conll03 -lang en -types per -data eng.testa > corpus_testa.txt
-$ opennlp TokenNameFinderConverter conll03 -lang en -types per -data eng.testb > corpus_testb.txt]]>
+$ opennlp TokenNameFinderConverter conll03 -lang eng -types per -data eng.testa > corpus_testa.txt
+$ opennlp TokenNameFinderConverter conll03 -lang eng -types per -data eng.testb > corpus_testb.txt]]>
 		</screen>
 		</para>
 		</section>
@@ -295,7 +297,7 @@ $ opennlp TokenNameFinderConverter conll03 -lang en -types per -data eng.testb >
                 <screen>
                 <![CDATA[
 $ opennlp TokenNameFinderTrainer.conll03 -model en_ner_person.bin -iterations 500 \
-                                 -lang en -types per -data eng.train -encoding utf8]]>
+                                 -lang eng -types per -data eng.train -encoding utf8]]>
                 </screen>
             </para>
 		    <para>
@@ -346,7 +348,7 @@ path: .\en_ner_person.bin]]>
                 <screen>
                 <![CDATA[
 $ opennlp TokenNameFinderEvaluator.conll03 -model en_ner_person.bin \
-                                   -lang en -types per -data eng.testa -encoding utf8]]>
+                                   -lang eng -types per -data eng.testa -encoding utf8]]>
                 </screen>
             </para>
 		    <para>
