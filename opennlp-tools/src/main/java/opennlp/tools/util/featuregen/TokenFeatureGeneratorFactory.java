@@ -44,6 +44,6 @@ public class TokenFeatureGeneratorFactory
 
   @Override
   public AdaptiveFeatureGenerator create() throws InvalidFormatException {
-    return new TokenFeatureGenerator();
+    return new TokenFeatureGenerator(getBool("lowercase", true));
   }
 }
