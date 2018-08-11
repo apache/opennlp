@@ -55,7 +55,7 @@ public class WindowFeatureGeneratorTest {
 
     Assert.assertEquals(1, features.size());
 
-    Assert.assertEquals(features.get(0), testSentence[testTokenIndex]);
+    Assert.assertEquals("c", features.get(0));
   }
 
   @Test
@@ -68,6 +68,10 @@ public class WindowFeatureGeneratorTest {
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
 
     Assert.assertEquals(3, features.size());
+
+    Assert.assertEquals("c", features.get(0));
+    Assert.assertEquals("p1b", features.get(1));
+    Assert.assertEquals("n1d", features.get(2));
   }
 
   @Test
@@ -78,7 +82,7 @@ public class WindowFeatureGeneratorTest {
     int testTokenIndex = 0;
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
     Assert.assertEquals(1, features.size());
-    Assert.assertEquals(features.get(0), testSentence[testTokenIndex]);
+    Assert.assertEquals("a", features.get(0));
   }
 
   @Test
@@ -89,7 +93,7 @@ public class WindowFeatureGeneratorTest {
     int testTokenIndex = testSentence.length - 1;
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
     Assert.assertEquals(1, features.size());
-    Assert.assertEquals(features.get(0), testSentence[testTokenIndex]);
+    Assert.assertEquals("h", features.get(0));
   }
 
   /**
@@ -104,16 +108,10 @@ public class WindowFeatureGeneratorTest {
     windowFeatureGenerator.createFeatures(features, testSentence, testTokenIndex, null);
     Assert.assertEquals(5, features.size());
 
-    Assert.assertTrue(features.contains(WindowFeatureGenerator.PREV_PREFIX + "2" +
-        testSentence[testTokenIndex - 2]));
-    Assert.assertTrue(features.contains(WindowFeatureGenerator.PREV_PREFIX + "1" +
-        testSentence[testTokenIndex - 1]));
-
-    Assert.assertTrue(features.contains(testSentence[testTokenIndex]));
-
-    Assert.assertTrue(features.contains(WindowFeatureGenerator.NEXT_PREFIX + "1" +
-        testSentence[testTokenIndex + 1]));
-    Assert.assertTrue(features.contains(WindowFeatureGenerator.NEXT_PREFIX + "2" +
-        testSentence[testTokenIndex + 2]));
+    Assert.assertEquals("d", features.get(0));
+    Assert.assertEquals("p1c", features.get(1));
+    Assert.assertEquals("p2b", features.get(2));
+    Assert.assertEquals("n1e", features.get(3));
+    Assert.assertEquals("n2f", features.get(4));
   }
 }
