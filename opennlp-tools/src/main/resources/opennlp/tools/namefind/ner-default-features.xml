@@ -27,7 +27,9 @@
   <generator class="opennlp.tools.util.featuregen.WindowFeatureGeneratorFactory">
     <int name="prevLength">2</int>
     <int name="nextLength">2</int>
-    <generator class="opennlp.tools.util.featuregen.TokenFeatureGeneratorFactory"/>
+    <generator class="opennlp.tools.util.featuregen.TokenFeatureGeneratorFactory">
+      <bool name="lowercase">true</bool>
+    </generator>
   </generator>
   <generator class="opennlp.tools.util.featuregen.DefinitionFeatureGeneratorFactory"/>
   <generator class="opennlp.tools.util.featuregen.PreviousMapFeatureGeneratorFactory"/>
