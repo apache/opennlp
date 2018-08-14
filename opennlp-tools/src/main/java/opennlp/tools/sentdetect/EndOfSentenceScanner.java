@@ -18,6 +18,7 @@
 package opennlp.tools.sentdetect;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Scans Strings, StringBuffers, and char[] arrays for the offsets of
@@ -34,7 +35,14 @@ public interface EndOfSentenceScanner {
    * Returns an array of character which can indicate the end of a sentence.
    * @return an array of character which can indicate the end of a sentence.
    */
+  @Deprecated
   char[] getEndOfSentenceCharacters();
+
+  /**
+   * Returns a set of character which can indicate the end of a sentence.
+   * @return a set of character which can indicate the end of a sentence.
+   */
+  Set<Character> getEOSCharacters();
 
   /**
    * The receiver scans the specified string for sentence ending characters and

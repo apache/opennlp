@@ -19,7 +19,9 @@
 package opennlp.tools.sentdetect;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Default implementation of the {@link EndOfSentenceScanner}.
@@ -28,7 +30,9 @@ import java.util.List;
  */
 public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
 
-  private char[] eosCharacters;
+  private Set<Character> eosCharacters;
+  @Deprecated
+  private char[] eosChars;
 
   /**
    * Initializes the current instance.
@@ -36,7 +40,11 @@ public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
    * @param eosCharacters
    */
   public DefaultEndOfSentenceScanner(char[] eosCharacters) {
-    this.eosCharacters = eosCharacters;
+    this.eosCharacters = new HashSet<>();
+    for (char eosChar: eosCharacters) {
+      this.eosCharacters.add(eosChar);
+    }
+    this.eosChars = eosCharacters;
   }
 
   public List<Integer> getPositions(String s) {
@@ -49,19 +57,21 @@ public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
 
   public List<Integer> getPositions(char[] cbuf) {
     List<Integer> l = new ArrayList<>();
-    char[] eosCharacters = getEndOfSentenceCharacters();
     for (int i = 0; i < cbuf.length; i++) {
-      for (char eosCharacter : eosCharacters) {
-        if (cbuf[i] == eosCharacter) {
-          l.add(i);
-          break;
-        }
+      if (eosCharacters.contains(cbuf[i])) {
+        l.add(i);
       }
     }
     return l;
   }
 
+  @Deprecated
   public char[] getEndOfSentenceCharacters() {
+    return eosChars;
+  }
+
+  @Override
+  public Set<Character> getEOSCharacters() {
     return eosCharacters;
   }
 }
