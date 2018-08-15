@@ -35,7 +35,7 @@ public class Factory {
 
   public static final char[] thEosCharacters = new char[] { ' ','\n' };
 
-  public static final char[] jaEosCharacters = new char[] {'。', '！', '？'};
+  public static final char[] jpnEosCharacters = new char[] {'。', '！', '？'};
 
   public EndOfSentenceScanner createEndOfSentenceScanner(String languageCode) {
 
@@ -72,8 +72,8 @@ public class Factory {
       return thEosCharacters;
     } else if ("pt".equals(languageCode) || "por".equals(languageCode)) {
       return ptEosCharacters;
-    } else if ("ja".equals(languageCode) || "jpn".equals(languageCode)) {
-      return jaEosCharacters;
+    } else if ("jpn".equals(languageCode)) {
+      return jpnEosCharacters;
     }
 
     return defaultEosCharacters;
