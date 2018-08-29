@@ -39,7 +39,7 @@ under the License.
  		Tool with the following command.
 				<screen>
 				<![CDATA[
-$ opennlp Parser en-parser.bin en-parser-chunking.bin]]>
+$ opennlp Parser en-parser-chunking.bin]]>
 		</screen>
 		Loading the big parser model can take several seconds, be patient.
 		Copy this sample sentence to the console.
@@ -56,7 +56,7 @@ The quick brown fox jumps over the lazy dog .]]>
 		With the following command the input can be read from a file and be written to an output file.
 				<screen>
 				<![CDATA[
-$ opennlp Parser en-parser.bin en-parser-chunking.bin < article-tokenized.txt > article-parsed.txt.]]>
+$ opennlp Parser en-parser-chunking.bin < article-tokenized.txt > article-parsed.txt.]]>
 		</screen>
 		The article-tokenized.txt file must contain one sentence per line which is
 		tokenized with the English tokenizer model from our website.
