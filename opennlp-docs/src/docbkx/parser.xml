@@ -182,7 +182,7 @@ Arguments description:
 		<screen>
 		<![CDATA[
 $ opennlp ParserTrainer -model en-parser-chunking.bin -parserType CHUNKING \
-                        -head-rules head_rules \
+                        -headRules head_rules \
                         -lang en -data train.all -encoding ISO-8859-1
     ]]>
 		</screen>
