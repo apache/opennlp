@@ -29,7 +29,12 @@ if [ -z "$JAVACMD" ] ; then
   fi
 fi
 
+unset HEAP
+if [ -n "$JAVA_HEAP" ] ; then
+  HEAP="-Xmx$JAVA_HEAP"
+fi
+
 # Might fail if $0 is a link
 OPENNLP_HOME=`dirname "$0"`/..
 
-$JAVACMD -Xmx1024m -cp $(echo $OPENNLP_HOME/lib/*.jar | tr ' ' ':') opennlp.tools.cmdline.CLI $@
+$JAVACMD $HEAP -cp $(echo $OPENNLP_HOME/lib/*.jar | tr ' ' ':') opennlp.tools.cmdline.CLI $@

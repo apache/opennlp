@@ -31,6 +31,12 @@ IF "%JAVA_CMD%" == "" (
 	)
 )
 
+REM remove HEAP variable
+SET HEAP=
+IF not "%JAVA_HEAP%" == "" (
+	SET HEAP="-Xmx%JAVA_HEAP%"
+)
+
 REM #  Should work with Windows XP and greater.  If not, specify the path to where it is installed.
 IF "%OPENNLP_HOME%" == "" (
 	SET OPENNLP_HOME=%~sp0..
@@ -42,6 +48,6 @@ IF "%OPENNLP_HOME%" == "" (
 REM #  Get the library JAR file name (JIRA OPENNLP-554)
 FOR %%A IN ("%OPENNLP_HOME%\lib\opennlp-tools-*.jar") DO SET JAR_FILE=%%A
 
-%JAVA_CMD% -Xmx1024m -jar %JAR_FILE% %*
+%JAVA_CMD% %HEAP% -jar %JAR_FILE% %*
 
 ENDLOCAL
