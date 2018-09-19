@@ -36,7 +36,7 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  */
 public class DefaultNameContextGenerator implements NameContextGenerator {
 
-  private AdaptiveFeatureGenerator[] featureGenerators;
+  protected AdaptiveFeatureGenerator[] featureGenerators;
 
   @Deprecated
   private static AdaptiveFeatureGenerator windowFeatures = new CachedFeatureGenerator(
