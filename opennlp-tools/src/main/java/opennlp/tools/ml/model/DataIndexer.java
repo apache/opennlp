@@ -85,7 +85,7 @@ public interface DataIndexer {
   /**
    * Performs the data indexing. Make sure the init(...) method is called first.
    * 
-   * @param eventStream {@link ObjectStream<Event>}
+   * @param eventStream a stream of events
    */
   void index(ObjectStream<Event> eventStream) throws IOException;
 }

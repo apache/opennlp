@@ -311,23 +311,25 @@ public class TrainingParameters {
   }
 
   /**
-   * get a String parameter
+   * get a String parameter.
+   *
+   * {@link java.lang.ClassCastException} can be thrown if the value is not {@code String}
    * @param key
    * @param defaultValue
    * @return
-   * @throws {@link java.lang.ClassCastException} can be thrown if the value is not {@link String}
    */
   public String getStringParameter(String key, String defaultValue) {
     return getStringParameter(null, key, defaultValue);
   }
 
   /**
-   * get a String parameter in the specified namespace
+   * get a String parameter in the specified namespace.
+   *
+   * {@link java.lang.ClassCastException} can be thrown if the value is not {@link String}
    * @param namespace
    * @param key
    * @param defaultValue
    * @return
-   * @throws {@link java.lang.ClassCastException} can be thrown if the value is not {@link String}
    */
   public String getStringParameter(String namespace, String key, String defaultValue) {
     Object value = parameters.get(getKey(namespace, key));
