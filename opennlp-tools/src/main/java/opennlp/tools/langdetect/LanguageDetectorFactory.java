@@ -28,9 +28,9 @@ import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
 
 
 /**
- * <p>Default factory used by Language Detector. Extend this class to change the Language Detector
- * behaviour, such as the {@link LanguageDetectorContextGenerator}.</p>
- * <p>The default {@link DefaultLanguageDetectorContextGenerator} will use char n-grams of
+ * Default factory used by Language Detector. Extend this class to change the Language Detector
+ * behaviour, such as the {@link LanguageDetectorContextGenerator}.
+ * The default {@link DefaultLanguageDetectorContextGenerator} will use char n-grams of
  * size 1 to 3 and the following normalizers:
  * <ul>
  * <li> {@link EmojiCharSequenceNormalizer}
@@ -39,7 +39,7 @@ import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
  * <li> {@link NumberCharSequenceNormalizer}
  * <li> {@link ShrinkCharSequenceNormalizer}
  * </ul>
- * </p>
+ *
  */
 public class LanguageDetectorFactory extends BaseToolFactory {
 

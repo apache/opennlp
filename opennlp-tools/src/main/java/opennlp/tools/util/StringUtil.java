@@ -101,11 +101,11 @@ public class StringUtil {
   }
 
   /**
-   * Returns <tt>true</tt> if {@link CharSequence#length()} is
-   * <tt>0</tt> or <tt>null</tt>.
+   * Returns {@code true} if {@link CharSequence#length()} is
+   * {@code 0} or {@code null}.
    *
-   * @return <tt>true</tt> if {@link CharSequence#length()} is <tt>0</tt>, otherwise
-   *         <tt>false</tt>
+   * @return {@code true} if {@link CharSequence#length()} is {@code 0}, otherwise
+   *         {@code false}
    *
    * @since 1.5.1
    */
