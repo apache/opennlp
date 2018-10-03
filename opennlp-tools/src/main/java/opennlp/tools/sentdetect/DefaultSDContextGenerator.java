@@ -19,6 +19,7 @@ package opennlp.tools.sentdetect;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -42,7 +43,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
 
   private Set<String> inducedAbbreviations;
 
-  private char[] eosCharacters;
+  private Set<Character> eosCharacters;
 
   /**
    * Creates a new <code>SDContextGenerator</code> instance with
@@ -66,7 +67,10 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    */
   public DefaultSDContextGenerator(Set<String> inducedAbbreviations, char[] eosCharacters) {
     this.inducedAbbreviations = inducedAbbreviations;
-    this.eosCharacters = eosCharacters;
+    this.eosCharacters = new HashSet<>();
+    for (char eosChar: eosCharacters) {
+      this.eosCharacters.add(eosChar);
+    }
     buf = new StringBuffer();
     collectFeats = new ArrayList<>();
   }
@@ -121,12 +125,9 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     int c = position;
     { ///assign prefix, stop if you run into a period though otherwise stop at space
       while (--c > prefixStart) {
-        for (int eci = 0, ecl = eosCharacters.length; eci < ecl; eci++) {
-          if (sb.charAt(c) == eosCharacters[eci]) {
-            prefixStart = c;
-            c++; // this gets us out of while loop.
-            break;
-          }
+        if (eosCharacters.contains(sb.charAt(c))) {
+          prefixStart = c;
+          c++; // this gets us out of while loop.
         }
       }
       prefix = String.valueOf(sb.subSequence(prefixStart, position)).trim();
@@ -138,12 +139,9 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     {
       c = position;
       while (++c < suffixEnd) {
-        for (int eci = 0, ecl = eosCharacters.length; eci < ecl; eci++) {
-          if (sb.charAt(c) == eosCharacters[eci]) {
-            suffixEnd = c;
-            c--; // this gets us out of while loop.
-            break;
-          }
+        if (eosCharacters.contains(sb.charAt(c))) {
+          suffixEnd = c;
+          c--; // this gets us out of while loop.
         }
       }
     }
