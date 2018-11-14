@@ -481,7 +481,14 @@ public class GISTrainer extends AbstractEventTrainer {
   /* Estimate and return the model parameters. */
   private void findParameters(int iterations, double correctionConstant) {
     int threads = modelExpects.length;
-    ExecutorService executor = Executors.newFixedThreadPool(threads);
+
+    ExecutorService executor = Executors.newFixedThreadPool(threads, runnable -> {
+      Thread thread = new Thread(runnable);
+      thread.setName("opennlp.tools.ml.maxent.ModelExpactationComputeTask.nextIteration()");
+      thread.setDaemon(true);
+      return thread;
+    });
+
     CompletionService<ModelExpectationComputeTask> completionService =
         new ExecutorCompletionService<>(executor);
     double prevLL = 0.0;

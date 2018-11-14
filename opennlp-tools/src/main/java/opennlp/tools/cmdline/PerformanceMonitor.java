@@ -36,8 +36,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class PerformanceMonitor {
 
-  private ScheduledExecutorService scheduler =
-      Executors.newScheduledThreadPool(1);
+  private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1, runnable -> {
+    Thread thread = new Thread(runnable);
+    thread.setName("opennlp.tools.cmdline.PerformanceMonitor");
+    thread.setDaemon(true);
+    return thread;
+  });
 
   private final String unit;
 
