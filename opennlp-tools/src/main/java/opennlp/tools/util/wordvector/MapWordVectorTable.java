@@ -17,6 +17,7 @@
 
 package opennlp.tools.util.wordvector;
 
+import java.util.Iterator;
 import java.util.Map;
 
 class MapWordVectorTable implements WordVectorTable {
@@ -30,6 +31,11 @@ class MapWordVectorTable implements WordVectorTable {
   @Override
   public WordVector get(String token) {
     return vectors.get(token);
+  }
+
+  @Override
+  public Iterator<String> tokens() {
+    return vectors.keySet().iterator();
   }
 
   @Override
