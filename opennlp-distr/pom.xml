@@ -157,6 +157,43 @@
         </plugins>     
       </build>
     </profile>
+    <profile>
+      <id>docker</id>
+      <build>
+      <plugins>
+        <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>0.4.13</version>
+        <executions>
+          <execution>
+          <phase>package</phase>
+          <goals>
+            <goal>build</goal>
+          </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <imageName>apacheopennlp</imageName>
+          <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+          <imageTags>
+          <imageTag>${project.version}</imageTag>
+          </imageTags>
+          <buildArgs>
+            <OPENNLP_BINARY>apache-opennlp-${project.version}-bin.tar.gz</OPENNLP_BINARY>
+          </buildArgs>
+          <resources>
+          <resource>
+            <targetPath>/</targetPath>
+            <directory>${project.build.directory}</directory>
+            <include>apache-opennlp-${project.version}-bin.tar.gz</include>
+          </resource>
+          </resources>
+        </configuration>
+        </plugin>
+      </plugins>
+      </build>
+    </profile>
   </profiles> 
   
 </project>
