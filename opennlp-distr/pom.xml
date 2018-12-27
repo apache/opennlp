@@ -107,7 +107,7 @@
 			</plugin>
 			<plugin> 
 	        <artifactId>maven-antrun-plugin</artifactId> 
-	        <version>1.6</version> 
+	        <version>1.8</version>
 	        <executions> 
 	          <execution> 
 	            <id>generate checksums for binary artifacts</id> 
@@ -115,7 +115,7 @@
 	            <phase>verify</phase> 
 	            <configuration> 
 	              <target> 
-	                <checksum algorithm="sha1" format="MD5SUM">
+	                <checksum algorithm="sha256" format="MD5SUM">
 	                  <fileset dir="${project.build.directory}"> 
 	                    <include name="*.zip" /> 
 	                    <include name="*.gz" /> 
