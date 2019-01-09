@@ -60,18 +60,15 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
 
       if (obj == this) {
         result = true;
-      }
-      else if (obj instanceof StringListWrapper) {
+      } else if (obj instanceof StringListWrapper) {
         StringListWrapper other = (StringListWrapper) obj;
 
         if (isCaseSensitive) {
           result = this.stringList.equals(other.getStringList());
-        }
-        else {
+        } else {
           result = this.stringList.compareToIgnoreCase(other.getStringList());
         }
-      }
-      else {
+      } else {
         result = false;
       }
 
@@ -129,7 +126,6 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   }
 
   /**
-   *
    * @return minimum token count in the dictionary
    */
   public int getMinTokenCount() {
@@ -137,7 +133,6 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   }
 
   /**
-   *
    * @return maximum token count in the dictionary
    */
   public int getMaxTokenCount() {
@@ -234,13 +229,11 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
 
     if (obj == this) {
       result = true;
-    }
-    else if (obj instanceof Dictionary) {
-      Dictionary dictionary  = (Dictionary) obj;
+    } else if (obj instanceof Dictionary) {
+      Dictionary dictionary = (Dictionary) obj;
 
       result = entrySet.equals(dictionary.entrySet);
-    }
-    else {
+    } else {
       result = false;
     }
 
@@ -293,7 +286,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   /**
    * Gets this dictionary as a {@code Set<String>}. Only {@code iterator()},
    * {@code size()} and {@code contains(Object)} methods are implemented.
-   *
+   * <p>
    * If this dictionary entries are multi tokens only the first token of the
    * entry will be part of the Set.
    *
@@ -313,9 +306,9 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
           }
 
           public String next() {
-            return entries.next().getStringList().getToken(0);
+            return String.join(" ",entries.next().getStringList());
           }
-
+          
           public void remove() {
             throw new UnsupportedOperationException();
           }
@@ -345,6 +338,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
 
   /**
    * Gets the Serializer Class for {@link Dictionary}
+   *
    * @return {@link DictionarySerializer}
    */
   @Override
