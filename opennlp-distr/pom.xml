@@ -115,7 +115,7 @@
 	            <phase>verify</phase> 
 	            <configuration> 
 	              <target> 
-	                <checksum algorithm="sha-256" format="MD5SUM">
+	                <checksum algorithm="sha-512" format="MD5SUM" fileext=".sha512">
 	                  <fileset dir="${project.build.directory}"> 
 	                    <include name="*.zip" /> 
 	                    <include name="*.gz" /> 
