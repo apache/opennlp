@@ -26,6 +26,14 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM;
 public class SnowballStemmerTest {
 
   @Test
+  public void testArabic() {
+    SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.ARABIC);
+    Assert.assertEquals(stemmer.stem("أأباءاهم"), "اباء");
+    Assert.assertEquals(stemmer.stem("استفتياكما"), "استفتي");
+    Assert.assertEquals(stemmer.stem("استنتاجاتهما"), "استنتاجا");
+  }
+
+  @Test
   public void testDanish() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.DANISH);
     Assert.assertEquals(stemmer.stem("aabenbaringen"), "aabenbaring");
@@ -76,6 +84,15 @@ public class SnowballStemmerTest {
     Assert.assertEquals(stemmer.stem("buchbindergesellen"), "buchbindergesell");
     Assert.assertEquals(stemmer.stem("mindere"), "mind");
     Assert.assertEquals(stemmer.stem("mitverursacht"), "mitverursacht");
+
+  }
+
+  @Test
+  public void testGreek() {
+    SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.GREEK);
+    Assert.assertEquals(stemmer.stem("επιστροφή"), "επιστροφ");
+    Assert.assertEquals(stemmer.stem("Αμερικανών"), "αμερικαν");
+    Assert.assertEquals(stemmer.stem("στρατιωτών"), "στρατιωτ");
 
   }
 

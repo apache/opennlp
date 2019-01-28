@@ -22,12 +22,14 @@ import opennlp.tools.stemmer.Stemmer;
 public class SnowballStemmer implements Stemmer {
 
   public enum ALGORITHM {
+    ARABIC,
     DANISH,
     DUTCH,
     ENGLISH,
     FINNISH,
     FRENCH,
     GERMAN,
+    GREEK,
     HUNGARIAN,
     IRISH,
     ITALIAN,
@@ -47,7 +49,10 @@ public class SnowballStemmer implements Stemmer {
   public SnowballStemmer(ALGORITHM algorithm, int repeat) {
     this.repeat = repeat;
 
-    if (ALGORITHM.DANISH.equals(algorithm)) {
+    if (ALGORITHM.ARABIC.equals(algorithm)) {
+      stemmer = new arabicStemmer();
+    }
+    else if (ALGORITHM.DANISH.equals(algorithm)) {
       stemmer = new danishStemmer();
     }
     else if (ALGORITHM.DUTCH.equals(algorithm)) {
@@ -64,6 +69,9 @@ public class SnowballStemmer implements Stemmer {
     }
     else if (ALGORITHM.GERMAN.equals(algorithm)) {
       stemmer = new germanStemmer();
+    }
+    else if (ALGORITHM.GREEK.equals(algorithm)) {
+      stemmer = new greekStemmer();
     }
     else if (ALGORITHM.HUNGARIAN.equals(algorithm)) {
       stemmer = new hungarianStemmer();
