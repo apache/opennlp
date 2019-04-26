@@ -17,9 +17,11 @@
 
 package opennlp.tools.langdetect;
 
+import java.io.Serializable;
+
 /**
  * A context generator interface for language detector.
  */
-public interface LanguageDetectorContextGenerator {
+public interface LanguageDetectorContextGenerator extends Serializable {
   String[] getContext(CharSequence document);
 }
