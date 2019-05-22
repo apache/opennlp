@@ -58,7 +58,6 @@ public class LanguageDetectorCrossValidatorTest {
     cv.evaluate(sampleStream, 2);
 
     Assert.assertEquals(99, cv.getDocumentCount());
-    Assert.assertEquals(0.98989898989899, cv.getDocumentAccuracy(), 0.01);
+    Assert.assertEquals(1, cv.getDocumentAccuracy(), 0.01);
   }
-
 }
