@@ -19,6 +19,7 @@ package opennlp.tools.formats.leipzig;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,9 +31,16 @@ import opennlp.tools.util.InvalidFormatException;
  */
 public class LeipzigLanguageSampleStreamTest {
 
-  private static String testDataPath = LeipzigLanguageSampleStreamTest.class
-          .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").getPath();
-
+  private static String testDataPath;
+  static {
+    try {
+      testDataPath =
+              LeipzigLanguageSampleStreamTest.class
+                      .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").toURI().getPath();
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+  }
   @Test
   public void testReadSentenceFiles() {
 

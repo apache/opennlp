@@ -42,7 +42,9 @@
     <property name="eachLine" value="true"/>
   </module>
 
-  <module name="NewlineAtEndOfFile" />
+  <module name="NewlineAtEndOfFile">
+    <property name="severity" value="ignore" />
+  </module>
 
   <module name="RegexpMultiline">
     <property name="format" value="\r\n"/>

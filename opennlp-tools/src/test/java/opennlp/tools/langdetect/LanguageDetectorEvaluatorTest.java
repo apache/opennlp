@@ -71,6 +71,8 @@ public class LanguageDetectorEvaluatorTest {
     Assert.assertEquals(0.33, evaluator.getAccuracy(), 0.01);
 
     String report = outputStream.toString(StandardCharsets.UTF_8.name());
+    //cross os compatibility
+    report = report.replaceAll("\r\n", "\n");
 
     Assert.assertEquals("Expected\tPredicted\tContext\n" +
         "fra\tpob\tescreve e faz palestras pelo mundo inteiro sobre anjos\n" +
