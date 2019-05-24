@@ -53,7 +53,8 @@ public class POSTaggerFactoryTest {
     try {
       sampleDataIn =
               new MarkableFileInputStreamFactory(
-                      new File(POSTaggerFactory.class.getResource("/AnnotatedSentences.txt").toURI().getPath()));
+                      new File(POSTaggerFactory.class.getResource(
+                              "/AnnotatedSentences.txt").toURI().getPath()));
     } catch (URISyntaxException e) {
       throw new IOException(e);
     }

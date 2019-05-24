@@ -36,7 +36,9 @@ public class LeipzigLanguageSampleStreamTest {
     try {
       testDataPath =
               LeipzigLanguageSampleStreamTest.class
-                      .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").toURI().getPath();
+                      .getClassLoader()
+                      .getResource("opennlp/tools/formats/leipzig/samples")
+                      .toURI().getPath();
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
