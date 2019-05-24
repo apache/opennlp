@@ -208,7 +208,7 @@ public class Version {
 
     String versionString = manifest.getProperty("OpenNLP-Version", DEV_VERSION_STRING);
 
-    if (versionString.equals("${pom.version}"))
+    if (versionString.equals("${project.version}"))
       versionString = DEV_VERSION_STRING;
 
     return Version.parse(versionString);
