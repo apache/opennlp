@@ -40,7 +40,7 @@ package opennlp.tools.stemmer.snowball;
   */
 class finnishStemmer extends opennlp.tools.stemmer.snowball.AbstractSnowballStemmer {
 
-        private final static finnishStemmer methodObject = new finnishStemmer ();
+        public final static finnishStemmer methodObject = new finnishStemmer ();
 
                 private final static Among a_0[] = {
                     new Among ( "pa", -1, 1, "", methodObject ),
