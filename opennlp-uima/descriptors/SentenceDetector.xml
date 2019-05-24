@@ -27,7 +27,7 @@
 	<analysisEngineMetaData>
 		<name>Sentence Detector</name>
 		<description></description>
-		<version>${pom.version}</version>
+		<version>${project.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>
 			<configurationParameter>
