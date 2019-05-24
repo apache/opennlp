@@ -25,7 +25,7 @@
 	<annotatorImplementationName>opennlp.uima.tokenize.Tokenizer</annotatorImplementationName>
 	<analysisEngineMetaData>
 		<name>Tokenizer</name>
-		<version>${pom.version}</version>
+		<version>${project.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>
 			<configurationParameter>

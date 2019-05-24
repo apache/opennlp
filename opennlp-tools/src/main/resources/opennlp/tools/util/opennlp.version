@@ -14,4 +14,4 @@
 # limitations under the License.
 
 # Version is injected by the maven build, fall back version is 0.0.0-SNAPSHOT
-OpenNLP-Version: ${pom.version}
+OpenNLP-Version: ${project.version}
