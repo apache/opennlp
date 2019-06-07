@@ -34,7 +34,7 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class LanguageDetectorME implements LanguageDetector {
 
-  private LanguageDetectorModel model;
+  protected LanguageDetectorModel model;
   private LanguageDetectorContextGenerator mContextGenerator;
 
   /**
