@@ -53,6 +53,25 @@ public class LanguageDetectorMETest {
   }
 
   @Test
+  public void testProbingPredictLanguages() {
+    LanguageDetectorME ld = new LanguageDetectorME(this.model);
+    for (int i = 0; i < 10000; i += 1000) {
+      StringBuilder sb = new StringBuilder();
+      for (int j = 0; j <= i; j++) {
+        sb.append("estava em uma marcenaria na Rua Bruno ");
+      }
+      ProbingLanguageDetectionResult result = ld.probingPredictLanguages(sb.toString());
+      Assert.assertTrue(result.getLength() <= 600);
+      Language[] languages = result.getLanguages();
+      Assert.assertEquals(4, languages.length);
+      Assert.assertEquals("pob", languages[0].getLang());
+      Assert.assertEquals("ita", languages[1].getLang());
+      Assert.assertEquals("spa", languages[2].getLang());
+      Assert.assertEquals("fra", languages[3].getLang());
+    }
+  }
+
+  @Test
   public void testPredictLanguage() {
     LanguageDetector ld = new LanguageDetectorME(this.model);
     Language language = ld.predictLanguage("Dove è meglio che giochi");
