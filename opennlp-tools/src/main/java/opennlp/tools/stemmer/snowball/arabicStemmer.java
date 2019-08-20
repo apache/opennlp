@@ -2056,7 +2056,3 @@ public class arabicStemmer extends AbstractSnowballStemmer {
   public int hashCode() {
     return arabicStemmer.class.getName().hashCode();
   }
-
-
-}
-

@@ -33,7 +33,7 @@
 	<name>Apache OpenNLP Distribution</name>
 
 	<properties>
-		<opennlp.version>${pom.version}</opennlp.version>
+		<opennlp.version>${project.version}</opennlp.version>
 	</properties>
 
 	<!--  Versions will automatically be updated by the release plugin -->
