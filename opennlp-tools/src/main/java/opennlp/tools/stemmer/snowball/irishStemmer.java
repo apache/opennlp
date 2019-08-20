@@ -607,8 +607,5 @@ public class irishStemmer extends opennlp.tools.stemmer.snowball.AbstractSnowbal
         public int hashCode() {
             return irishStemmer.class.getName().hashCode();
         }
-
-
-
 }
 
