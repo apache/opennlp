@@ -25,12 +25,14 @@ public class SnowballStemmer implements Stemmer {
     ARABIC,
     DANISH,
     DUTCH,
+    CATALAN,
     ENGLISH,
     FINNISH,
     FRENCH,
     GERMAN,
     GREEK,
     HUNGARIAN,
+    INDONESIAN,
     IRISH,
     ITALIAN,
     NORWEGIAN,
@@ -58,6 +60,9 @@ public class SnowballStemmer implements Stemmer {
     else if (ALGORITHM.DUTCH.equals(algorithm)) {
       stemmer = new dutchStemmer();
     }
+    else if (ALGORITHM.CATALAN.equals(algorithm)) {
+      stemmer = new catalanStemmer();
+    }
     else if (ALGORITHM.ENGLISH.equals(algorithm)) {
       stemmer = new englishStemmer();
     }
@@ -75,6 +80,9 @@ public class SnowballStemmer implements Stemmer {
     }
     else if (ALGORITHM.HUNGARIAN.equals(algorithm)) {
       stemmer = new hungarianStemmer();
+    }
+    else if (ALGORITHM.INDONESIAN.equals(algorithm)) {
+      stemmer = indonesianStemmer.methodObject;
     }
     else if (ALGORITHM.IRISH.equals(algorithm)) {
       stemmer = new irishStemmer();
