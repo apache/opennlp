@@ -1,0 +1,145 @@
+<graph xmlns="http://www.xces.org/ns/GrAF/1.0/">
+    <graphHeader>
+        <labelsDecl>
+            <labelUsage label="tok" occurs="12"/>
+        </labelsDecl>
+        <dependencies>
+            <dependsOn f.id="f.seg"/>
+        </dependencies>
+        <annotationSpaces>
+            <annotationSpace as.id="anc"/>
+        </annotationSpaces>
+    </graphHeader>
+
+    <node xml:id="penn-n0">
+        <link targets="seg-r0"/>
+    </node>
+    <a xml:id="penn-N65571" label="tok" ref="penn-n0" as="anc">
+        <fs>
+            <f name="base" value="this"/>
+            <f name="msd" value="DT"/>
+            <f name="string" value="This"/>
+        </fs>
+    </a>
+
+    <node xml:id="penn-n1">
+        <link targets="seg-r2"/>
+    </node>
+    <a xml:id="penn-N65599" label="tok" ref="penn-n1" as="anc">
+        <fs>
+            <f name="base" value="is"/>
+            <f name="msd" value="VB"/>
+            <f name="string" value="is"/>
+        </fs>
+    </a>
+
+    <node xml:id="penn-n10">
+        <link targets="seg-r20"/>
+    </node>
+    <a xml:id="penn-N65847" label="tok" ref="penn-n10" as="anc">
+        <fs>
+            <f name="base" value="sentence"/>
+            <f name="msd" value="NN"/>
+            <f name="string" value="sentence"/>
+        </fs>
+    </a>
+
+    <node xml:id="penn-n11">
+        <link targets="seg-r21"/>
+    </node>
+    <a xml:id="penn-N65875" label="tok" ref="penn-n11" as="anc">
+        <fs>
+            <f name="base" value="."/>
+            <f name="msd" value="."/>
+            <f name="string" value="."/>
+        </fs>
+    </a>
+
+    <node xml:id="penn-n2">
+        <link targets="seg-r4"/>
+    </node>
+    <a xml:id="penn-N65627" label="tok" ref="penn-n2" as="anc">
+        <fs>
+            <f name="base" value="a"/>
+            <f name="msd" value="AT"/>
+            <f name="string" value="a"/>
+        </fs>
+    </a>
+
+    <node xml:id="penn-n3">
+        <link targets="seg-r6"/>
+    </node>
+    <a xml:id="penn-N65655" label="tok" ref="penn-n3" as="anc">
+        <fs>
+            <f name="base" value="sample"/>
+            <f name="msd" value="NN"/>
+            <f name="string" value="sample"/>
+        </fs>
+    </a>
+
+    <node xml:id="penn-n4">
+        <link targets="seg-r8"/>
+    </node>
+    <a xml:id="penn-N65683" label="tok" ref="penn-n4" as="anc">
+        <fs>
+            <f name="base" value="sentence"/>
+            <f name="msd" value="NN"/>
+            <f name="string" value="Sentence"/>
+        </fs>
+    </a>
+
+    <node xml:id="penn-n5">
+        <link targets="seg-r9"/>
+    </node>
+    <a xml:id="penn-N65711" label="tok" ref="penn-n5" as="anc">
+        <fs>
+            <f name="string" value="."/>
+            <f name="msd" value="."/>
+            <f name="base" value="."/>
+        </fs>
+    </a>
+
+    <node xml:id="penn-n6">
+        <link targets="seg-r11"/>
+    </node>
+    <a xml:id="penn-N65739" label="tok" ref="penn-n6" as="anc">
+        <fs>
+            <f name="base" value="this"/>
+            <f name="msd" value="DT"/>
+            <f name="string" value="This"/>
+        </fs>
+    </a>
+
+    <node xml:id="penn-n7">
+        <link targets="seg-r13"/>
+    </node>
+    <a xml:id="penn-N65767" label="tok" ref="penn-n7" as="anc">
+        <fs>
+            <f name="base" value="is"/>
+            <f name="msd" value="VB"/>
+            <f name="string" value="is"/>
+        </fs>
+    </a>
+
+    <node xml:id="penn-n8">
+        <link targets="seg-r15 seg-r16"/>
+    </node>
+    <a xml:id="penn-N65795" label="tok" ref="penn-n8" as="anc">
+        <fs>
+            <f name="base" value="'nother"/>
+            <f name="msd" value="RB"/>
+            <f name="string" value="'nother"/>
+        </fs>
+    </a>
+
+    <node xml:id="penn-n9">
+        <link targets="seg-r18"/>
+    </node>
+    <a xml:id="penn-N65819" label="tok" ref="penn-n9" as="anc">
+        <fs>
+            <f name="base" value="sample"/>
+            <f name="msd" value="NN"/>
+            <f name="string" value="sample"/>
+        </fs>
+    </a>
+</graph>
