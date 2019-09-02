@@ -1,0 +1,20 @@
+<graph xmlns="http://www.xces.org/ns/GrAF/1.0/">
+    <graphHeader>
+        <labelsDecl>
+            <labelUsage label="person" occurs="1"/>
+        </labelsDecl>
+        <dependencies>
+            <dependsOn f.id="f.penn"/>
+        </dependencies>
+        <annotationSpaces>
+            <annotationSpace as.id="anc"/>
+        </annotationSpaces>
+    </graphHeader>
+    <node xml:id="ne-n0"/>
+    <a xml:id="ne-N65579" label="org" ref="ne-n0" as="anc">
+        <fs>
+            <f name="type" value="person"/>
+        </fs>
+    </a>
+    <edge xml:id="ne-lnk1" from="ne-n0" to="penn-n4"/>
+</graph>
