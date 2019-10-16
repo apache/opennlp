@@ -1,6 +1,6 @@
 language: java
 os: linux
-jdk: oraclejdk8
+jdk: openjdk8
 
 sudo: false
 
